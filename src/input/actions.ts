@@ -21,6 +21,12 @@ export interface ActionDefinition {
   readonly descriptionKey: `input.action.${ActionId}`;
 }
 
+export interface SemanticActionEvent {
+  readonly action: ActionId;
+  readonly phase: 'started' | 'ended';
+  readonly source: 'keyboard' | 'pointer';
+}
+
 export const ACTION_REGISTRY: Readonly<Record<ActionId, ActionDefinition>> = {
   'camera.up': {
     id: 'camera.up', behavior: 'continuous', contexts: ['world', 'construction'], descriptionKey: 'input.action.camera.up',

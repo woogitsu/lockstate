@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_KEYBOARD_BINDINGS, KeyboardInputAdapter, decodeInputSettings, findBindingConflicts, remapKeyboardBinding, resolveKeyboardLabel, validateInputSettings } from '../../src/input';
+import { DEFAULT_KEYBOARD_BINDINGS, KeyboardInputAdapter, PointerInputAdapter, decodeInputSettings, findBindingConflicts, remapKeyboardBinding, resolveKeyboardLabel, validateInputSettings } from '../../src/input';
 
 describe('semantic input', () => {
   it('uses physical movement keys, independently of the keyboard layout', () => {
     const adapter = new KeyboardInputAdapter(DEFAULT_KEYBOARD_BINDINGS, () => ['world']);
-    expect(adapter.keyDown({ code: 'KeyW' })).toEqual([{ action: 'camera.up', phase: 'started' }]);
+    expect(adapter.keyDown({ code: 'KeyW' })).toEqual([{ action: 'camera.up', phase: 'started', source: 'keyboard' }]);
     expect(adapter.isActive('camera.up')).toBe(true);
-    expect(adapter.keyUp({ code: 'KeyW' })).toEqual([{ action: 'camera.up', phase: 'ended' }]);
+    expect(adapter.keyUp({ code: 'KeyW' })).toEqual([{ action: 'camera.up', phase: 'ended', source: 'keyboard' }]);
   });
 
   it('does not dispatch world controls when their context is inactive', () => {
@@ -45,5 +45,26 @@ describe('semantic input', () => {
     const result = remapKeyboardBinding(settings, 1, 'KeyW');
     expect(result).toMatchObject({ ok: false, reason: 'binding-conflict' });
     expect(validateInputSettings(settings)).toEqual({ ok: true, value: settings });
+  });
+
+  it('maps mouse, pen and touch primary input to the shared semantic contract', () => {
+    const adapter = new PointerInputAdapter(() => ['world']);
+    expect(adapter.pointerDown({ pointerId: 1, pointerType: 'touch' })).toEqual([
+      { action: 'selection.primary', phase: 'started', source: 'pointer' },
+    ]);
+    expect(adapter.pointerUp({ pointerId: 1, pointerType: 'touch' })).toEqual([
+      { action: 'selection.primary', phase: 'ended', source: 'pointer' },
+    ]);
+    expect(adapter.pointerDown({ pointerId: 2, pointerType: 'mouse', button: 2 })).toEqual([]);
+  });
+
+  it('maps construction primary and cancellation gestures without raw-device checks in consumers', () => {
+    const adapter = new PointerInputAdapter(() => ['construction']);
+    expect(adapter.pointerDown({ pointerId: 1, pointerType: 'pen' })).toEqual([
+      { action: 'build.confirm', phase: 'started', source: 'pointer' },
+    ]);
+    expect(adapter.pointerCancel({ pointerId: 1, pointerType: 'pen' })).toEqual([
+      { action: 'build.cancel', phase: 'started', source: 'pointer' },
+    ]);
   });
 });
