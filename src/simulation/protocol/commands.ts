@@ -1,7 +1,7 @@
 import { z } from 'zod';
+import type { JsonValue } from '../../shared/json';
 import type { VersionedPayload } from './types';
 
-// Opaque command types that can be packed into VersionedPayload
 export const placeBuildOrderSchema = z.object({
   type: z.literal('PlaceBuildOrder'),
   orderId: z.string(),
@@ -18,7 +18,7 @@ export const cancelBuildOrderSchema = z.object({
 
 export const zoneRoomSchema = z.object({
   type: z.literal('ZoneRoom'),
-  roomId: z.string(), // ID of the Room definition (e.g. 'office')
+  roomId: z.string(),
   x: z.number().int(),
   y: z.number().int(),
   width: z.number().int(),
@@ -44,12 +44,50 @@ export const simulationCommandSchema = z.discriminatedUnion('type', [
 
 export type SimulationCommand = z.infer<typeof simulationCommandSchema>;
 
+function commandJson(command: SimulationCommand): JsonValue {
+  switch (command.type) {
+    case 'PlaceBuildOrder':
+      return {
+        type: command.type,
+        orderId: command.orderId,
+        definitionId: command.definitionId,
+        x: command.x,
+        y: command.y,
+        ...(command.transactionId === undefined
+          ? {}
+          : { transactionId: command.transactionId }),
+      };
+
+    case 'CancelBuildOrder':
+      return { type: command.type, orderId: command.orderId };
+
+    case 'ZoneRoom':
+      return {
+        type: command.type,
+        roomId: command.roomId,
+        x: command.x,
+        y: command.y,
+        width: command.width,
+        height: command.height,
+        ...(command.transactionId === undefined
+          ? {}
+          : { transactionId: command.transactionId }),
+      };
+
+    case 'Undo':
+    case 'Redo':
+      return { type: command.type };
+  }
+}
+
 export function packCommand(command: SimulationCommand): VersionedPayload {
+  const parsed = simulationCommandSchema.parse(command);
+
   return {
     schemaId: 'lockstate.simulation.command',
     schemaVersion: 1,
     transport: 'structured-clone',
-    data: command,
+    data: commandJson(parsed),
   };
 }
 
