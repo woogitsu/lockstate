@@ -1,33 +1,42 @@
-# World chunk contract
+# World chunk, terrain and parcel contract
 
-`src/simulation/world` owns the authoritative sparse chunk metadata used by
-future simulation systems. It imports no renderer, browser persistence or cloud
-code.
+`src/simulation/world` owns authoritative sparse chunk metadata, terrain layers and parcel ownership used by simulation systems. It imports no renderer, browser persistence or cloud code.
 
-## Coordinates
+## Coordinates and chunk size
 
-Tile and chunk coordinates are safe integers. Tile-to-chunk conversion uses
-mathematical floor division, so tile `-1` in a 32-tile chunk is chunk `-1`,
-local tile `31`. Chunk keys use the stable, locale-independent `x,y` format.
+Tile and chunk coordinates are safe integers. Tile-to-chunk conversion uses mathematical floor division, so tile `-1` in a 32-tile chunk is chunk `-1`, local tile `31`. Chunk keys use the stable, locale-independent `x,y` format.
 
-`32` is only the current candidate passed to `SparseWorld`; the module does not
-freeze a global chunk-size decision. Issue #13 must supply benchmark evidence
-and an ADR before one becomes product policy.
+Per [ADR-0004](./adr/0004-chunk-size-selection.md), `32×32` logical tiles (`1024` tiles) is the default production chunk size, backed by benchmarks comparing `16×16`, `32×32` and `64×64` candidates across sparse-edge and dense workloads.
 
-## Lifecycle and projections
+## Terrain layers
 
-An untouched coordinate is absent and allocates no record. An owned coordinate
-may have cheap `metadata-only` state; loaded chunks have simulation data
-available for mutation. Geometry and content revisions are independent and a
-mutation makes a loaded chunk dirty.
+Terrain definitions are data-driven records with stable string IDs, packed numeric IDs (0..255), and gameplay properties (`buildable`, `walkable`, `movementCost`, `isWater`).
 
-Land ownership is persistent world state. Renderer visibility and simulation
-activity are separate, non-persistent projections owned by later systems; they
-are intentionally not fields of `SparseWorld`.
+- Loaded chunks store terrain in packed `Uint8Array(chunkSize * chunkSize)` buffers (1 KiB per 32×32 chunk).
+- Terrain mutations advance the chunk's `contentRevision` and mark the chunk `dirty`.
+- Serialization uses deterministic Run-Length Encoding (RLE) tuples `[numericId, count]` to minimize snapshot size for uniform regions.
+
+## Parcels and land ownership
+
+Parcels are gameplay/economy ownership regions that are decoupled from chunk boundaries:
+- Parcels define arbitrary bounding rectangles that can span multiple chunks or partial chunks.
+- Tile ownership (`world.isTileOwned(tile)`) returns true if the tile falls within any owned parcel or directly owned chunk.
+- Purchase eligibility (`canPurchaseParcel`) and pricing (`getParcelPrice`) are decoupled through pure hooks (`defaultParcelEligibilityHook`, `defaultParcelPricingHook`).
+
+## Buildability
+
+`canBuildAt(world, tile, requirement)` validates construction suitability:
+- Verifies land ownership (`requiresOwnedLand`).
+- Checks terrain properties (e.g. `requiresBuildableTerrain`, `allowWater`).
 
 ## Snapshot schema
 
-`WorldSnapshotV1` contains the candidate chunk size, sorted owned chunk
-positions and sorted chunk records. Deserialization rejects unknown versions,
-duplicate chunk references, unknown fields and invalid revisions. This is a
-module-level snapshot contract, not an IndexedDB or cloud save adapter.
+`WorldSnapshotV1` contains:
+- `version`: snapshot format version (`1`),
+- `chunkSize`: chunk dimension (default `32`),
+- `ownedChunks`: sorted list of owned chunk positions,
+- `chunks`: sorted chunk records with revisions and optional RLE terrain,
+- `parcels`: sorted registered parcel definitions,
+- `ownedParcels`: sorted list of owned parcel IDs.
+
+Deserialization rejects unknown versions, duplicate references, unexpected keys and invalid revisions.
