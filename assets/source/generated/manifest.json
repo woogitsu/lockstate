@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "batchId": "owner-generated-2026-08-22",
+  "sourceFormat": "png-rgba-1448x1086",
+  "entries": [
+    "door.interior.variants",
+    "door.security.variants",
+    "fixture.ceiling_light.panel.variants",
+    "fixture.cell.toilet_sink",
+    "floor.concrete.variants",
+    "floor.linoleum.institutional",
+    "furniture.cell.bed.single.variants",
+    "furniture.cell.locker.variants",
+    "furniture.cell.table_stool",
+    "furniture.corridor.bench.variants",
+    "furniture.office.desk.employee.variants",
+    "furniture.reception.counter.variants",
+    "furniture.visitor.chair.variants",
+    "perimeter.fence.modules",
+    "perimeter.light.pole.variants",
+    "perimeter.vehicle_gate.sliding.variants",
+    "perimeter.watchtower.variants",
+    "security.access_reader.variants",
+    "security.camera.wall.variants",
+    "security.checkpoint.turnstile.variants",
+    "storage.container.variants",
+    "wall.exterior.modules",
+    "wall.interior.modules"
+  ]
+}
