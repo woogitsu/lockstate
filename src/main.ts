@@ -17,6 +17,8 @@ class BootScene extends Phaser.Scene {
   );
   private grid?: Phaser.GameObjects.Graphics;
   private lastGridSignature?: string;
+  private panPointerId: number | undefined;
+  private lastPanScreenPoint: { readonly x: number; readonly y: number } | undefined;
 
   public constructor() {
     super('BootScene');
@@ -49,6 +51,24 @@ class BootScene extends Phaser.Scene {
         camera.setScroll(next.scroll.x, next.scroll.y);
       },
     );
+
+    this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      if (pointer.button !== 1) return;
+      this.panPointerId = pointer.id;
+      this.lastPanScreenPoint = { x: pointer.x, y: pointer.y };
+    });
+    this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+      if (this.panPointerId !== pointer.id || this.lastPanScreenPoint === undefined) return;
+      const camera = this.cameras.main;
+      camera.scrollX -= (pointer.x - this.lastPanScreenPoint.x) / camera.zoom;
+      camera.scrollY -= (pointer.y - this.lastPanScreenPoint.y) / camera.zoom;
+      this.lastPanScreenPoint = { x: pointer.x, y: pointer.y };
+    });
+    this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
+      if (this.panPointerId !== pointer.id) return;
+      this.panPointerId = undefined;
+      this.lastPanScreenPoint = undefined;
+    });
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       window.removeEventListener('keydown', keyDown);
