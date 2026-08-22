@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { NamedRngStreams, Xoshiro128StarStar } from '../../src/simulation/rng';
+import { NamedRngStreams, Xoshiro128StarStar, deriveXoshiroState } from '../../src/simulation/rng';
 
 describe('xoshiro128**', () => {
   it('matches the deterministic golden vector for a known state', () => {
@@ -34,5 +34,11 @@ describe('xoshiro128**', () => {
     streams.get('economy').nextUint32();
     expect(streams.get('ai.needs').snapshot()).toEqual(before);
     expect(streams.snapshot().map((entry) => entry.name)).toEqual(['ai.needs', 'economy']);
+  });
+
+  it('derives reproducible independent states from master seed and stable names', () => {
+    expect(deriveXoshiroState(42, 'ai.needs')).toEqual(deriveXoshiroState(42, 'ai.needs'));
+    expect(deriveXoshiroState(42, 'ai.needs')).not.toEqual(deriveXoshiroState(42, 'economy'));
+    expect(deriveXoshiroState(42, 'ai.needs')).not.toEqual(deriveXoshiroState(43, 'ai.needs'));
   });
 });
