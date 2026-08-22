@@ -1,5 +1,27 @@
-import type { ChunkPosition } from './coordinates';
-import { chunkCoordinate, chunkKey, chunkSize, compareChunkPositions } from './coordinates';
+import type { ChunkPosition, TilePosition } from './coordinates';
+import {
+  chunkCoordinate,
+  chunkKey,
+  chunkSize,
+  compareChunkPositions,
+  tileCoordinate,
+  tileToChunk,
+} from './coordinates';
+import type {
+  ParcelDefinition,
+  ParcelPricingHook,
+  ParcelPurchaseEligibility,
+  ParcelPurchaseEligibilityHook,
+  SerializedParcelDefinition,
+} from './parcel';
+import {
+  createParcelRect,
+  defaultParcelEligibilityHook,
+  defaultParcelPricingHook,
+  isTileInParcel,
+} from './parcel';
+import type { TerrainDefinition } from './terrain';
+import { TerrainRegistry } from './terrain';
 
 export const WORLD_SNAPSHOT_VERSION = 1;
 
@@ -13,6 +35,8 @@ export interface ChunkState {
   readonly dirty: boolean;
 }
 
+export type TerrainRle = readonly (readonly [numericId: number, count: number])[];
+
 export interface SerializedChunkState {
   readonly x: number;
   readonly y: number;
@@ -20,6 +44,7 @@ export interface SerializedChunkState {
   readonly geometryRevision: number;
   readonly contentRevision: number;
   readonly dirty: boolean;
+  readonly terrain?: TerrainRle;
 }
 
 export interface WorldSnapshotV1 {
@@ -27,6 +52,8 @@ export interface WorldSnapshotV1 {
   readonly chunkSize: number;
   readonly ownedChunks: readonly ChunkPosition[];
   readonly chunks: readonly SerializedChunkState[];
+  readonly parcels?: readonly SerializedParcelDefinition[];
+  readonly ownedParcels?: readonly string[];
 }
 
 export class WorldSnapshotError extends Error {
@@ -61,17 +88,29 @@ function object(value: unknown, label: string): Record<string, unknown> {
   return value as Record<string, unknown>;
 }
 
-function exactKeys(value: Record<string, unknown>, expected: readonly string[], label: string): void {
-  const keys = Object.keys(value).sort();
-  const sortedExpected = [...expected].sort();
-  if (keys.length !== sortedExpected.length || keys.some((key, index) => key !== sortedExpected[index])) {
-    throw new WorldSnapshotError(`${label} has unknown or missing fields.`);
+function allowedKeys(
+  value: Record<string, unknown>,
+  required: readonly string[],
+  optional: readonly string[],
+  label: string,
+): void {
+  const allowedSet = new Set([...required, ...optional]);
+  const keys = Object.keys(value);
+  for (const key of keys) {
+    if (!allowedSet.has(key)) {
+      throw new WorldSnapshotError(`${label} has unknown or missing fields.`);
+    }
+  }
+  for (const req of required) {
+    if (!(req in value)) {
+      throw new WorldSnapshotError(`${label} has unknown or missing fields.`);
+    }
   }
 }
 
 function decodePosition(value: unknown, label: string): ChunkPosition {
   const record = object(value, label);
-  exactKeys(record, ['x', 'y'], label);
+  allowedKeys(record, ['x', 'y'], [], label);
   if (typeof record.x !== 'number' || typeof record.y !== 'number') {
     throw new WorldSnapshotError(`${label} coordinates must be numbers.`);
   }
@@ -83,9 +122,68 @@ function decodePosition(value: unknown, label: string): ChunkPosition {
   }
 }
 
+export function encodeTerrainRle(data: Uint8Array): [number, number][] {
+  if (data.length === 0) return [];
+  const result: [number, number][] = [];
+  let currentId = data[0]!;
+  let currentCount = 1;
+
+  for (let i = 1; i < data.length; i += 1) {
+    const id = data[i]!;
+    if (id === currentId) {
+      currentCount += 1;
+    } else {
+      result.push([currentId, currentCount]);
+      currentId = id;
+      currentCount = 1;
+    }
+  }
+  result.push([currentId, currentCount]);
+  return result;
+}
+
+export function decodeTerrainRle(rle: TerrainRle, expectedLength: number): Uint8Array {
+  const data = new Uint8Array(expectedLength);
+  let offset = 0;
+
+  for (const entry of rle) {
+    if (!Array.isArray(entry) || entry.length !== 2) {
+      throw new WorldSnapshotError('Terrain RLE entry must be a [numericId, count] tuple.');
+    }
+    const [numericId, count] = entry;
+    if (
+      typeof numericId !== 'number' ||
+      !Number.isSafeInteger(numericId) ||
+      numericId < 0 ||
+      numericId > 255
+    ) {
+      throw new WorldSnapshotError(`Invalid terrain numericId in RLE: ${String(numericId)}.`);
+    }
+    if (typeof count !== 'number' || !Number.isSafeInteger(count) || count <= 0) {
+      throw new WorldSnapshotError(`Invalid terrain count in RLE: ${String(count)}.`);
+    }
+    if (offset + count > expectedLength) {
+      throw new WorldSnapshotError('Terrain RLE expands beyond chunk capacity.');
+    }
+    data.fill(numericId, offset, offset + count);
+    offset += count;
+  }
+
+  if (offset !== expectedLength) {
+    throw new WorldSnapshotError(`Terrain RLE length mismatch: expected ${expectedLength}, got ${offset}.`);
+  }
+
+  return data;
+}
+
 function decodeChunk(value: unknown): SerializedChunkState {
   const record = object(value, 'Chunk');
-  exactKeys(record, ['contentRevision', 'dirty', 'geometryRevision', 'lifecycle', 'x', 'y'], 'Chunk');
+  allowedKeys(
+    record,
+    ['contentRevision', 'dirty', 'geometryRevision', 'lifecycle', 'x', 'y'],
+    ['terrain'],
+    'Chunk',
+  );
   if (
     typeof record.x !== 'number' ||
     typeof record.y !== 'number' ||
@@ -96,6 +194,14 @@ function decodeChunk(value: unknown): SerializedChunkState {
     throw new WorldSnapshotError('Chunk fields have invalid types.');
   }
 
+  let terrain: TerrainRle | undefined;
+  if (record.terrain !== undefined) {
+    if (!Array.isArray(record.terrain)) {
+      throw new WorldSnapshotError('Chunk terrain must be an array.');
+    }
+    terrain = record.terrain as TerrainRle;
+  }
+
   try {
     return {
       x: chunkCoordinate(record.x),
@@ -104,6 +210,7 @@ function decodeChunk(value: unknown): SerializedChunkState {
       geometryRevision: assertRevision(record.geometryRevision, 'Geometry revision'),
       contentRevision: assertRevision(record.contentRevision, 'Content revision'),
       dirty: record.dirty,
+      ...(terrain !== undefined ? { terrain } : {}),
     };
   } catch (error) {
     if (error instanceof WorldSnapshotError) throw error;
@@ -111,16 +218,50 @@ function decodeChunk(value: unknown): SerializedChunkState {
   }
 }
 
+function decodeParcel(value: unknown): SerializedParcelDefinition {
+  const record = object(value, 'Parcel');
+  allowedKeys(record, ['basePrice', 'height', 'id', 'width', 'x', 'y'], ['name'], 'Parcel');
+  if (
+    typeof record.id !== 'string' ||
+    typeof record.x !== 'number' ||
+    typeof record.y !== 'number' ||
+    typeof record.width !== 'number' ||
+    typeof record.height !== 'number' ||
+    typeof record.basePrice !== 'number'
+  ) {
+    throw new WorldSnapshotError('Parcel fields have invalid types.');
+  }
+
+  if (record.name !== undefined && typeof record.name !== 'string') {
+    throw new WorldSnapshotError('Parcel name must be a string.');
+  }
+
+  return {
+    id: record.id,
+    x: record.x,
+    y: record.y,
+    width: record.width,
+    height: record.height,
+    basePrice: record.basePrice,
+    ...(record.name !== undefined ? { name: record.name } : {}),
+  };
+}
+
 /**
- * Authoritative sparse chunk metadata. Ownership is persistent product state;
- * renderer visibility and simulation activity are projections owned by their
- * respective systems and deliberately are not stored here.
+ * Authoritative sparse chunk metadata, terrain layers and parcel land ownership.
+ * Renderer visibility and simulation activity are separate projections.
  */
 export class SparseWorld {
   private readonly chunks = new Map<string, ChunkState>();
   private readonly owned = new Set<string>();
+  private readonly chunkTerrain = new Map<string, Uint8Array>();
+  private readonly parcels = new Map<string, ParcelDefinition>();
+  private readonly ownedParcels = new Set<string>();
 
-  public constructor(public readonly tileChunkSize: number) {
+  public constructor(
+    public readonly tileChunkSize: number,
+    public readonly terrainRegistry: TerrainRegistry = new TerrainRegistry(),
+  ) {
     chunkSize(tileChunkSize);
   }
 
@@ -165,18 +306,22 @@ export class SparseWorld {
   }
 
   public load(position: ChunkPosition): ChunkState {
+    this.ensureMetadata(position);
+    const key = chunkKey(position);
     const state = this.requireState(position);
     if (state.lifecycle === 'metadata-only') {
-      this.chunks.set(chunkKey(position), { ...state, lifecycle: 'loaded' });
+      this.chunks.set(key, { ...state, lifecycle: 'loaded' });
+      this.ensureTerrainStorage(key);
     }
 
     return this.getChunk(position) as ChunkState;
   }
 
   public unload(position: ChunkPosition): ChunkState {
+    const key = chunkKey(position);
     const state = this.requireState(position);
     if (state.lifecycle === 'loaded') {
-      this.chunks.set(chunkKey(position), { ...state, lifecycle: 'metadata-only' });
+      this.chunks.set(key, { ...state, lifecycle: 'metadata-only' });
     }
 
     return this.getChunk(position) as ChunkState;
@@ -196,35 +341,203 @@ export class SparseWorld {
     return this.getChunk(position) as ChunkState;
   }
 
-  public snapshot(): WorldSnapshotV1 {
-    const positions = (keys: Iterable<string>): ChunkPosition[] => [...keys]
-      .map((key) => this.requireStateByKey(key).position)
-      .sort(compareChunkPositions)
-      .map((position) => ({ ...position }));
+  // --- Terrain Layer Operations ---
 
-    const chunks = [...this.chunks.values()]
+  public getTerrainNumericId(tile: TilePosition): number {
+    const { chunk, local } = tileToChunk(tile, this.tileChunkSize);
+    const key = chunkKey(chunk);
+    const terrainData = this.chunkTerrain.get(key);
+    if (terrainData === undefined) {
+      return 0; // default terrain numericId 0 (dirt)
+    }
+    const index = local.y * this.tileChunkSize + local.x;
+    return terrainData[index] ?? 0;
+  }
+
+  public getTerrain(tile: TilePosition): TerrainDefinition {
+    const numericId = this.getTerrainNumericId(tile);
+    return this.terrainRegistry.requireByNumericId(numericId);
+  }
+
+  public setTerrain(tile: TilePosition, terrain: string | TerrainDefinition): void {
+    const def =
+      typeof terrain === 'string'
+        ? this.terrainRegistry.requireById(terrain)
+        : terrain;
+    const { chunk, local } = tileToChunk(tile, this.tileChunkSize);
+    const key = chunkKey(chunk);
+
+    if (!this.hasChunk(chunk) || this.chunks.get(key)?.lifecycle !== 'loaded') {
+      this.load(chunk);
+    }
+
+    const terrainData = this.ensureTerrainStorage(key);
+    const index = local.y * this.tileChunkSize + local.x;
+    if (terrainData[index] !== def.numericId) {
+      terrainData[index] = def.numericId;
+      this.markContentChanged(chunk);
+    }
+  }
+
+  public fillTerrain(position: ChunkPosition, terrain: string | TerrainDefinition): void {
+    const def =
+      typeof terrain === 'string'
+        ? this.terrainRegistry.requireById(terrain)
+        : terrain;
+    const key = chunkKey(position);
+
+    if (!this.hasChunk(position) || this.chunks.get(key)?.lifecycle !== 'loaded') {
+      this.load(position);
+    }
+
+    const terrainData = this.ensureTerrainStorage(key);
+    terrainData.fill(def.numericId);
+    this.markContentChanged(position);
+  }
+
+  public getChunkTerrainArray(position: ChunkPosition): Uint8Array | undefined {
+    return this.chunkTerrain.get(chunkKey(position));
+  }
+
+  // --- Parcel Operations ---
+
+  public registerParcel(parcel: ParcelDefinition): void {
+    if (this.parcels.has(parcel.id)) {
+      throw new Error(`Duplicate parcel id: "${parcel.id}".`);
+    }
+    this.parcels.set(parcel.id, Object.freeze({ ...parcel }));
+  }
+
+  public getParcel(id: string): ParcelDefinition | undefined {
+    return this.parcels.get(id);
+  }
+
+  public getAllParcels(): readonly ParcelDefinition[] {
+    return [...this.parcels.values()].sort((a, b) => a.id.localeCompare(b.id));
+  }
+
+  public isParcelOwned(id: string): boolean {
+    return this.ownedParcels.has(id);
+  }
+
+  public setParcelOwned(id: string, owned: boolean): void {
+    if (!this.parcels.has(id)) {
+      throw new RangeError(`Unknown parcel id: "${id}".`);
+    }
+    if (owned) {
+      this.ownedParcels.add(id);
+    } else {
+      this.ownedParcels.delete(id);
+    }
+  }
+
+  public getParcelAtTile(tile: TilePosition): ParcelDefinition | undefined {
+    for (const parcel of this.parcels.values()) {
+      if (isTileInParcel(tile, parcel)) {
+        return parcel;
+      }
+    }
+    return undefined;
+  }
+
+  /**
+   * Tile ownership is true if the tile belongs to an owned parcel OR directly owned chunk.
+   */
+  public isTileOwned(tile: TilePosition): boolean {
+    const parcel = this.getParcelAtTile(tile);
+    if (parcel !== undefined && this.isParcelOwned(parcel.id)) {
+      return true;
+    }
+
+    const { chunk } = tileToChunk(tile, this.tileChunkSize);
+    return this.isOwned(chunk);
+  }
+
+  public canPurchaseParcel(
+    parcelId: string,
+    hook: ParcelPurchaseEligibilityHook = defaultParcelEligibilityHook,
+    context?: unknown,
+  ): ParcelPurchaseEligibility {
+    const all = this.getAllParcels();
+    return hook((id) => this.isParcelOwned(id), all, parcelId, context);
+  }
+
+  public getParcelPrice(
+    parcelId: string,
+    hook: ParcelPricingHook = defaultParcelPricingHook,
+    context?: unknown,
+  ): number {
+    const all = this.getAllParcels();
+    return hook((id) => this.isParcelOwned(id), all, parcelId, context);
+  }
+
+  // --- Snapshot & Serialization ---
+
+  public snapshot(): WorldSnapshotV1 {
+    const positions = (keys: Iterable<string>): ChunkPosition[] =>
+      [...keys]
+        .map((key) => this.requireStateByKey(key).position)
+        .sort(compareChunkPositions)
+        .map((position) => ({ ...position }));
+
+    const chunks: SerializedChunkState[] = [...this.chunks.values()]
       .sort((left, right) => compareChunkPositions(left.position, right.position))
-      .map((state) => ({
-        x: state.position.x,
-        y: state.position.y,
-        lifecycle: state.lifecycle,
-        geometryRevision: state.geometryRevision,
-        contentRevision: state.contentRevision,
-        dirty: state.dirty,
+      .map((state) => {
+        const key = chunkKey(state.position);
+        const terrainData = this.chunkTerrain.get(key);
+        const hasTerrain = state.lifecycle === 'loaded' && terrainData !== undefined;
+
+        return {
+          x: state.position.x,
+          y: state.position.y,
+          lifecycle: state.lifecycle,
+          geometryRevision: state.geometryRevision,
+          contentRevision: state.contentRevision,
+          dirty: state.dirty,
+          ...(hasTerrain ? { terrain: encodeTerrainRle(terrainData) } : {}),
+        };
+      });
+
+    const sortedParcels: SerializedParcelDefinition[] = [...this.parcels.values()]
+      .sort((a, b) => a.id.localeCompare(b.id))
+      .map((p) => ({
+        id: p.id,
+        x: p.bounds.x,
+        y: p.bounds.y,
+        width: p.bounds.width,
+        height: p.bounds.height,
+        basePrice: p.basePrice,
+        ...(p.name !== undefined ? { name: p.name } : {}),
       }));
+
+    const sortedOwnedParcels = [...this.ownedParcels].sort();
 
     return {
       version: WORLD_SNAPSHOT_VERSION,
       chunkSize: this.tileChunkSize,
       ownedChunks: positions(this.owned),
       chunks,
+      ...(sortedParcels.length > 0 ? { parcels: sortedParcels } : {}),
+      ...(sortedOwnedParcels.length > 0 ? { ownedParcels: sortedOwnedParcels } : {}),
     };
   }
 
-  public static fromSnapshot(value: unknown): SparseWorld {
+  public static fromSnapshot(
+    value: unknown,
+    terrainRegistry: TerrainRegistry = new TerrainRegistry(),
+  ): SparseWorld {
     const record = object(value, 'World snapshot');
-    exactKeys(record, ['chunkSize', 'chunks', 'ownedChunks', 'version'], 'World snapshot');
-    if (record.version !== WORLD_SNAPSHOT_VERSION || !Array.isArray(record.chunks) || !Array.isArray(record.ownedChunks)) {
+    allowedKeys(
+      record,
+      ['chunkSize', 'chunks', 'ownedChunks', 'version'],
+      ['ownedParcels', 'parcels'],
+      'World snapshot',
+    );
+    if (
+      record.version !== WORLD_SNAPSHOT_VERSION ||
+      !Array.isArray(record.chunks) ||
+      !Array.isArray(record.ownedChunks)
+    ) {
       throw new WorldSnapshotError('World snapshot version or collections are invalid.');
     }
 
@@ -235,7 +548,7 @@ export class SparseWorld {
       throw new WorldSnapshotError('World snapshot chunk size is invalid.');
     }
 
-    const world = new SparseWorld(size);
+    const world = new SparseWorld(size, terrainRegistry);
     for (const rawChunk of record.chunks) {
       const chunk = decodeChunk(rawChunk);
       const position = { x: chunkCoordinate(chunk.x), y: chunkCoordinate(chunk.y) };
@@ -248,6 +561,15 @@ export class SparseWorld {
         contentRevision: chunk.contentRevision,
         dirty: chunk.dirty,
       });
+
+      if (chunk.lifecycle === 'loaded') {
+        if (chunk.terrain !== undefined) {
+          const terrainData = decodeTerrainRle(chunk.terrain, size * size);
+          world.chunkTerrain.set(key, terrainData);
+        } else {
+          world.ensureTerrainStorage(key);
+        }
+      }
     }
 
     for (const rawPosition of record.ownedChunks) {
@@ -258,7 +580,52 @@ export class SparseWorld {
       world.owned.add(key);
     }
 
+    if (record.parcels !== undefined) {
+      if (!Array.isArray(record.parcels)) {
+        throw new WorldSnapshotError('Parcels must be an array.');
+      }
+      for (const rawParcel of record.parcels) {
+        const p = decodeParcel(rawParcel);
+        if (world.parcels.has(p.id)) {
+          throw new WorldSnapshotError(`World snapshot has duplicate parcel "${p.id}".`);
+        }
+        world.registerParcel({
+          id: p.id,
+          bounds: createParcelRect(p.x, p.y, p.width, p.height),
+          basePrice: p.basePrice,
+          ...(p.name !== undefined ? { name: p.name } : {}),
+        });
+      }
+    }
+
+    if (record.ownedParcels !== undefined) {
+      if (!Array.isArray(record.ownedParcels)) {
+        throw new WorldSnapshotError('Owned parcels must be an array.');
+      }
+      for (const rawId of record.ownedParcels) {
+        if (typeof rawId !== 'string') {
+          throw new WorldSnapshotError('Owned parcel ID must be a string.');
+        }
+        if (!world.parcels.has(rawId)) {
+          throw new WorldSnapshotError(`Owned parcel "${rawId}" is not in registered parcels.`);
+        }
+        if (world.ownedParcels.has(rawId)) {
+          throw new WorldSnapshotError(`Duplicate owned parcel "${rawId}".`);
+        }
+        world.ownedParcels.add(rawId);
+      }
+    }
+
     return world;
+  }
+
+  private ensureTerrainStorage(key: string): Uint8Array {
+    let data = this.chunkTerrain.get(key);
+    if (data === undefined) {
+      data = new Uint8Array(this.tileChunkSize * this.tileChunkSize);
+      this.chunkTerrain.set(key, data);
+    }
+    return data;
   }
 
   private requireState(position: ChunkPosition): ChunkState {
@@ -273,9 +640,14 @@ export class SparseWorld {
     return state;
   }
 
-  private markChanged(position: ChunkPosition, revision: 'geometryRevision' | 'contentRevision'): ChunkState {
+  private markChanged(
+    position: ChunkPosition,
+    revision: 'geometryRevision' | 'contentRevision',
+  ): ChunkState {
     const state = this.requireState(position);
-    if (state.lifecycle !== 'loaded') throw new RangeError('Chunk must be loaded before it can change.');
+    if (state.lifecycle !== 'loaded') {
+      throw new RangeError('Chunk must be loaded before it can change.');
+    }
     const nextRevision = state[revision] + 1;
     if (!Number.isSafeInteger(nextRevision)) throw new RangeError('Chunk revision overflow.');
     this.chunks.set(chunkKey(position), { ...state, [revision]: nextRevision, dirty: true });
