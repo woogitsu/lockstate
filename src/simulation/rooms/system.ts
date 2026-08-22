@@ -1,7 +1,6 @@
-import { SparseWorld } from '../world/sparse-world';
-import { TopologyManager, type GlobalTopologyId } from './topology';
-import { RoomRegistry } from './definition';
-import { TilePosition, chunkCoordinate, tileCoordinate } from '../world/coordinates';
+import type { SparseWorld } from '../world/sparse-world';
+import type { TopologyManager, GlobalTopologyId } from './topology';
+import type { RoomRegistry } from './definition';
 
 export interface RoomValidationResult {
   readonly isValid: boolean;
