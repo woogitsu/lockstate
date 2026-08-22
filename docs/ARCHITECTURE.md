@@ -44,7 +44,7 @@ Simulation time advances in deterministic fixed ticks independent of rendering F
 The `Kernel` orchestrates this logic using a strict 50ms tick interval and deterministic system ordering. See [DETERMINISM.md](./DETERMINISM.md) for full details on tick semantics, command ordering, and RNG ownership.
 
 ### Worker boundary
-The simulation is designed to execute in a Dedicated Web Worker. The only supported main-thread/worker boundary is the versioned protocol under `src/simulation/protocol/`, defined by [ADR-0003](./adr/0003-simulation-worker-protocol.md).
+The simulation is designed to execute in a Dedicated Web Worker. The only supported main-thread/worker boundary is the versioned protocol under `src/simulation/protocol/`, defined by [ADR-0003](./adr/0003-simulation-worker-protocol.md). The worker lifecycle and state machine are governed by [ADR-0006](./adr/0006-simulation-worker-adapter.md).
 
 Boundary rules:
 - every received value is decoded through the direction-specific runtime validator before dispatch;
