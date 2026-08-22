@@ -10,13 +10,23 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "pnpm typecheck && node scripts/cloudflare-task.mjs build production",
+    "build:production": "pnpm build",
+    "build:staging": "pnpm typecheck && node scripts/cloudflare-task.mjs build staging",
     "preview": "vite preview",
+    "preview:production": "node scripts/cloudflare-task.mjs preview production",
+    "preview:staging": "node scripts/cloudflare-task.mjs preview staging",
     "typecheck": "tsc -b --pretty false",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
-    "verify": "pnpm typecheck && pnpm test && pnpm build",
-    "deploy": "pnpm build && wrangler deploy"
+    "smoke:deployment": "node scripts/cloudflare-task.mjs build production && node scripts/verify-deployment-preview.mjs",
+    "verify": "pnpm typecheck && pnpm test && node scripts/cloudflare-task.mjs build production",
+    "verify:deployment": "node scripts/verify-cloudflare-deployment.mjs",
+    "deploy": "pnpm deploy:production",
+    "deploy:staging": "node scripts/cloudflare-task.mjs deploy staging",
+    "deploy:production": "node scripts/cloudflare-task.mjs deploy production",
+    "deploy:dry-run:staging": "node scripts/cloudflare-task.mjs dry-run staging",
+    "deploy:dry-run:production": "node scripts/cloudflare-task.mjs dry-run production"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.112.3",

@@ -30,6 +30,28 @@ Core platform:
 - multiple prisons per account; five free save slots is the current product direction, with future optional paid expansion
 - multi-device save conflict protection rather than silent last-write-wins overwrites
 
+## Getting started
+
+Required versions are Node.js 24.19.0 and pnpm 11.22.0.
+
+```bash
+corepack enable
+corepack prepare pnpm@11.22.0 --activate
+pnpm install --frozen-lockfile
+pnpm verify
+pnpm verify:deployment
+pnpm dev
+```
+
+Production-like local preview:
+
+```bash
+pnpm build
+pnpm preview
+```
+
+See [`docs/DEPENDENCY_POLICY.md`](./docs/DEPENDENCY_POLICY.md) for controlled dependency upgrades and [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md) for Cloudflare environments, dry-runs, custom-domain setup, cache policy, smoke tests and rollback.
+
 ## Repository governance
 
 Before making changes, read:
