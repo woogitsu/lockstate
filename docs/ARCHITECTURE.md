@@ -15,7 +15,7 @@ Browser main thread
   Phaser 4 renderer
   Camera / visual effects / animation
           |
-          | typed commands + snapshots/deltas
+          | versioned typed commands + snapshots/deltas/events
           v
 Dedicated Simulation Worker
   fixed-step scheduler
@@ -43,7 +43,20 @@ Phaser objects are views. Their position, animation and visual state are derived
 Simulation time advances in deterministic fixed ticks independent of rendering FPS. Systems run at explicit frequencies; expensive low-frequency systems must not run every tick merely for convenience.
 
 ### Worker boundary
-The simulation is designed to execute in a Dedicated Web Worker. Communication uses typed message contracts. Large transfers should use transferable buffers or compact deltas where profiling proves beneficial.
+The simulation is designed to execute in a Dedicated Web Worker. The only supported main-thread/worker boundary is the versioned protocol under `src/simulation/protocol/`, defined by [ADR-0003](./adr/0003-simulation-worker-protocol.md).
+
+Boundary rules:
+- every received value is decoded through the direction-specific runtime validator before dispatch;
+- the main thread sends lifecycle requests, semantic clock controls and ordered commands, but never render-frame deltas or direct state mutations;
+- the worker publishes snapshots, deltas and domain events; renderer or Phaser objects never cross the boundary;
+- request/response operations use stable message IDs and explicit correlation;
+- malformed, wrong-direction or incompatible messages fail closed before simulation state is touched;
+- domain payload schemas evolve independently from the envelope protocol version;
+- normal control traffic uses structured clone with finite, acyclic JSON-compatible values;
+- an `ArrayBuffer` may be transferred only through an explicit versioned payload and transfer list, and the sender must treat it as detached after posting;
+- `SharedArrayBuffer` is not approved without a separate concurrency, cross-origin-isolation and benchmark decision.
+
+The current protocol is intentionally strict during pre-alpha. Wire-contract changes require tests and ADR review rather than silent widening.
 
 ### Chunked world
 The world is sparse and chunk-addressed. Land ownership determines buildable regions. Unpurchased land can exist as cheap metadata without fully materializing all gameplay layers.
@@ -104,4 +117,4 @@ Initial stress tiers:
 - 2,500 actors: high-load target,
 - 5,000 actors: stretch/engineering stress case.
 
-Exact frame/tick budgets will be set after the first benchmark harness exists.
+Exact frame/tick budgets will be set after representative benchmark scenarios exist.
