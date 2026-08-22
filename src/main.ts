@@ -1,32 +1,93 @@
 import Phaser from 'phaser';
+import {
+  DEFAULT_KEYBOARD_BINDINGS,
+  KeyboardInputAdapter,
+} from './input';
+import {
+  tileRangeInBounds,
+  visibleWorldBounds,
+  zoomAtScreenPoint,
+} from './rendering/camera';
 import './styles.css';
 
 class BootScene extends Phaser.Scene {
+  private readonly keyboard = new KeyboardInputAdapter(
+    DEFAULT_KEYBOARD_BINDINGS,
+    () => ['world'],
+  );
+  private grid?: Phaser.GameObjects.Graphics;
+  private lastGridSignature?: string;
+
   public constructor() {
     super('BootScene');
   }
 
   public create(): void {
-    const { width, height } = this.scale;
-
     this.cameras.main.setBackgroundColor('#101317');
+    this.grid = this.add.graphics();
 
-    this.add
-      .text(width / 2, height / 2 - 24, 'LOCKSTATE', {
-        fontFamily: 'Arial, sans-serif',
-        fontSize: '40px',
-        fontStyle: 'bold',
-        color: '#f1f4f7',
-      })
-      .setOrigin(0.5);
+    const keyDown = (event: KeyboardEvent): void => {
+      this.keyboard.keyDown(event);
+    };
+    const keyUp = (event: KeyboardEvent): void => {
+      this.keyboard.keyUp(event);
+    };
+    window.addEventListener('keydown', keyDown);
+    window.addEventListener('keyup', keyUp);
 
-    this.add
-      .text(width / 2, height / 2 + 24, 'Production foundation initialized', {
-        fontFamily: 'Arial, sans-serif',
-        fontSize: '16px',
-        color: '#a9b2bb',
-      })
-      .setOrigin(0.5);
+    this.input.on(
+      'wheel',
+      (pointer: Phaser.Input.Pointer, _objects: Phaser.GameObjects.GameObject[], _deltaX: number, deltaY: number) => {
+        const camera = this.cameras.main;
+        const next = zoomAtScreenPoint(
+          { scroll: { x: camera.scrollX, y: camera.scrollY }, zoom: camera.zoom },
+          { x: pointer.x, y: pointer.y },
+          camera.zoom * (deltaY > 0 ? 0.9 : 1.1),
+          { min: 0.5, max: 3 },
+        );
+        camera.setZoom(next.zoom);
+        camera.setScroll(next.scroll.x, next.scroll.y);
+      },
+    );
+
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      window.removeEventListener('keydown', keyDown);
+      window.removeEventListener('keyup', keyUp);
+    });
+    this.drawVisibleGrid();
+  }
+
+  public override update(_time: number, delta: number): void {
+    const camera = this.cameras.main;
+    const speed = 0.7 * delta / camera.zoom;
+    const horizontal = Number(this.keyboard.isActive('camera.right')) - Number(this.keyboard.isActive('camera.left'));
+    const vertical = Number(this.keyboard.isActive('camera.down')) - Number(this.keyboard.isActive('camera.up'));
+    if (horizontal !== 0 || vertical !== 0) {
+      camera.scrollX += horizontal * speed;
+      camera.scrollY += vertical * speed;
+    }
+    this.drawVisibleGrid();
+  }
+
+  private drawVisibleGrid(): void {
+    if (this.grid === undefined) return;
+    const camera = this.cameras.main;
+    const viewport = { width: camera.width, height: camera.height };
+    const range = tileRangeInBounds(visibleWorldBounds(
+      { scroll: { x: camera.scrollX, y: camera.scrollY }, zoom: camera.zoom },
+      viewport,
+    ));
+    const signature = `${range.minX}:${range.maxX}:${range.minY}:${range.maxY}:${camera.zoom.toFixed(2)}`;
+    if (signature === this.lastGridSignature) return;
+    this.lastGridSignature = signature;
+    this.grid.clear();
+    this.grid.lineStyle(1 / camera.zoom, 0x2a333d, 0.8);
+    for (let x = range.minX; x <= range.maxX; x += 1) {
+      this.grid.lineBetween(x, range.minY, x, range.maxY);
+    }
+    for (let y = range.minY; y <= range.maxY; y += 1) {
+      this.grid.lineBetween(range.minX, y, range.maxX, y);
+    }
   }
 }
 
