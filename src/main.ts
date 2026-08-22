@@ -89,7 +89,7 @@ class BootScene extends Phaser.Scene {
       camera.scrollY -= (pointer.y - this.lastPanScreenPoint.y) / camera.zoom;
       this.lastPanScreenPoint = { x: pointer.x, y: pointer.y };
     });
-    this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
+    const finishPointer = (pointer: Phaser.Input.Pointer): void => {
       if (pointer.wasTouch) {
         this.touchGestures.end(pointer.id);
         return;
@@ -97,7 +97,9 @@ class BootScene extends Phaser.Scene {
       if (this.panPointerId !== pointer.id) return;
       this.panPointerId = undefined;
       this.lastPanScreenPoint = undefined;
-    });
+    };
+    this.input.on('pointerup', finishPointer);
+    this.input.on('pointerupoutside', finishPointer);
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       window.removeEventListener('keydown', keyDown);
