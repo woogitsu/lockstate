@@ -3,11 +3,9 @@ import {
   createConstructionCommandHandler,
 } from '../construction';
 import { Kernel } from '../kernel';
-import {
-  defaultRoomRegistry,
-  RoomSystem,
-  TopologyManager,
-} from '../rooms';
+import { defaultRoomRegistry } from '../rooms/definition';
+import { RoomSystem } from '../rooms/system';
+import { TopologyManager } from '../rooms/topology';
 import { chunkCoordinate } from '../world/coordinates';
 import { SparseWorld } from '../world/sparse-world';
 
