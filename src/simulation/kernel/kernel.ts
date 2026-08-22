@@ -1,6 +1,5 @@
 import { NamedRngStreams, type NamedRngStreamState } from '../rng/streams';
 import type { SystemRegistration, SimulationContext } from './system';
-import { ProtocolFault } from '../protocol/types';
 
 export interface QueuedCommand {
   readonly id: string;
@@ -85,9 +84,15 @@ export class Kernel {
       rng: this._rng,
     };
 
-    // 1. Apply commands due at this tick
-    while (this._commands.length > 0 && this._commands[0].executeAtTick === this._tick) {
-      const command = this._commands.shift()!;
+    // 1. Apply commands due at this tick.
+    // Reading the head into a local keeps the queue safe under
+    // noUncheckedIndexedAccess while preserving deterministic ordering.
+    while (true) {
+      const nextCommand = this._commands[0];
+      if (nextCommand === undefined || nextCommand.executeAtTick !== this._tick) break;
+
+      const command = this._commands.shift();
+      if (command === undefined) break;
       this._commandHandler(command, context);
     }
 
