@@ -1,0 +1,47 @@
+{
+  "name": "lockstate",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.22.0",
+  "engines": {
+    "node": ">=24.19.0 <25",
+    "pnpm": "11.22.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "pnpm typecheck && node scripts/cloudflare-task.mjs build production",
+    "build:production": "pnpm build",
+    "build:staging": "pnpm typecheck && node scripts/cloudflare-task.mjs build staging",
+    "preview": "vite preview",
+    "preview:production": "node scripts/cloudflare-task.mjs preview production",
+    "preview:staging": "node scripts/cloudflare-task.mjs preview staging",
+    "typecheck": "tsc -b --pretty false",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "benchmark": "node scripts/run-benchmarks.mjs --profile full",
+    "benchmark:smoke": "node scripts/run-benchmarks.mjs --profile smoke --output benchmark-results/smoke.json",
+    "verify:benchmark": "pnpm benchmark:smoke && node scripts/verify-benchmark-result.mjs benchmark-results/smoke.json",
+    "smoke:deployment": "node scripts/cloudflare-task.mjs build production && node scripts/verify-deployment-preview.mjs",
+    "verify": "pnpm typecheck && pnpm test && node scripts/cloudflare-task.mjs build production",
+    "verify:deployment": "node scripts/verify-cloudflare-deployment.mjs",
+    "deploy": "pnpm deploy:production",
+    "deploy:staging": "node scripts/cloudflare-task.mjs deploy staging",
+    "deploy:production": "node scripts/cloudflare-task.mjs deploy production",
+    "deploy:dry-run:staging": "node scripts/cloudflare-task.mjs dry-run staging",
+    "deploy:dry-run:production": "node scripts/cloudflare-task.mjs dry-run production"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.112.3",
+    "phaser": "4.2.1",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "1.53.1",
+    "@types/node": "24.10.1",
+    "typescript": "7.0.2",
+    "vite": "8.2.2",
+    "vitest": "4.1.11",
+    "wrangler": "4.125.0"
+  }
+}

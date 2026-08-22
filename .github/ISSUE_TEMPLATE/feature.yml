@@ -1,0 +1,54 @@
+name: Feature / system task
+description: Implementation task with explicit contracts and acceptance criteria
+title: "[System] "
+body:
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Why this work exists and what architecture/docs it depends on.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: In scope
+      description: Exact work allowed in this issue.
+    validations:
+      required: true
+  - type: textarea
+    id: out_of_scope
+    attributes:
+      label: Out of scope
+      description: Explicit boundaries to prevent scope creep.
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: Blocking issues, ADRs, schemas, or assets.
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Use markdown checkboxes for objectively verifiable outcomes.
+    validations:
+      required: true
+  - type: textarea
+    id: tests
+    attributes:
+      label: Required verification
+      description: Unit/integration/e2e/benchmark/manual verification required before completion.
+    validations:
+      required: true
+  - type: textarea
+    id: performance
+    attributes:
+      label: Performance constraints
+      description: State budgets or write N/A with rationale.
+  - type: textarea
+    id: docs
+    attributes:
+      label: Documentation impact
+      description: Docs/ADRs/schemas that must be updated.

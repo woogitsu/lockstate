@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI: true
+  COREPACK_ENABLE_DOWNLOAD_PROMPT: 0
+
+jobs:
+  verify:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, Linux, X64, wsl2]
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: '.node-version'
+          package-manager-cache: false
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Activate pnpm
+        run: corepack prepare pnpm@11.22.0 --activate
+
+      - name: Verify toolchain versions
+        run: |
+          test "$(node --version)" = "v$(cat .node-version)"
+          test "$(pnpm --version)" = "11.22.0"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify project
+        run: pnpm verify
+
+      - name: Verify benchmark harness
+        run: pnpm verify:benchmark
+
+      - name: Verify Cloudflare deployment packages
+        run: pnpm verify:deployment
+
+      - name: Verify generated output did not modify tracked files
+        run: test -z "$(git status --porcelain)"

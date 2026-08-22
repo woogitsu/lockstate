@@ -1,0 +1,34 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "lockstate-development",
+  "compatibility_date": "2026-08-22",
+  "workers_dev": true,
+  "preview_urls": true,
+  "assets": {
+    "not_found_handling": "single-page-application"
+  },
+  "env": {
+    "staging": {
+      "name": "lockstate-staging",
+      "workers_dev": true,
+      "preview_urls": true,
+      "assets": {
+        "not_found_handling": "single-page-application"
+      }
+    },
+    "production": {
+      "name": "lockstate",
+      "workers_dev": false,
+      "preview_urls": false,
+      "routes": [
+        {
+          "pattern": "lockstate.io",
+          "custom_domain": true
+        }
+      ],
+      "assets": {
+        "not_found_handling": "single-page-application"
+      }
+    }
+  }
+}
