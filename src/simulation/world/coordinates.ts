@@ -89,3 +89,11 @@ export function chunkKey(position: ChunkPosition): string {
 export function compareChunkPositions(left: ChunkPosition, right: ChunkPosition): number {
   return left.y - right.y || left.x - right.x;
 }
+
+export function tileKey(position: TilePosition): string {
+  return `${position.x},${position.y}`;
+}
+
+export function compareTilePositions(left: TilePosition, right: TilePosition): number {
+  return left.y - right.y || left.x - right.x;
+}

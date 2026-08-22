@@ -75,7 +75,7 @@ Navigation is hierarchical and budgeted:
 4. path cache with geometry-version invalidation,
 5. flow fields or shared route structures for high-volume common destinations where benchmarks justify them.
 
-A full-map A* per actor per frame is forbidden.
+A full-map A* per actor per frame is forbidden. The region/portal graph, door/permission model, route format and cache invalidation are defined in [NAVIGATION.md](./NAVIGATION.md); flow fields, shared-route optimization and CPU budgets are separate, not-yet-implemented work (#22).
 
 ### Saves
 Local-first persistence uses IndexedDB. Cloud persistence uses Supabase Auth + Postgres metadata and, when snapshots become large enough, Supabase Storage for compressed payloads. The versioned save envelope, its runtime schema, checksum and forward-migration framework are defined in [PERSISTENCE.md](./PERSISTENCE.md) independently of which storage backend consumes it.
