@@ -14,12 +14,13 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '24'
+          node-version-file: '.node-version'
+          package-manager-cache: false
 
       - name: Enable Corepack
         run: corepack enable
@@ -27,14 +28,21 @@ jobs:
       - name: Activate pnpm
         run: corepack prepare pnpm@11.22.0 --activate
 
-      - name: Install dependencies
+      - name: Verify toolchain versions
+        run: |
+          test "$(node --version)" = "v24.19.0"
+          test "$(pnpm --version)" = "11.22.0"
+
+      - name: Install dependencies and generate lockfile
         run: pnpm install --no-frozen-lockfile
 
-      - name: Typecheck
-        run: pnpm typecheck
+      - name: Upload generated lockfile
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnpm-lock
+          path: pnpm-lock.yaml
+          if-no-files-found: error
+          retention-days: 1
 
-      - name: Test
-        run: pnpm test
-
-      - name: Build
-        run: pnpm build
+      - name: Verify project
+        run: pnpm verify
