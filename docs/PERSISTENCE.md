@@ -1,9 +1,9 @@
 # Save schema and migration contract
 
 This document covers `src/persistence/`: the canonical save envelope, its
-runtime validation, checksum and forward-migration framework. It does not
-select a storage backend — IndexedDB (#19) and Supabase sync (#20) are
-separate issues that consume the envelope this module produces.
+runtime validation, checksum and forward-migration framework, and (in
+"Local persistence" below) the IndexedDB-backed repository that consumes it.
+Supabase sync (#20) is a separate, not-yet-implemented issue.
 
 ## Envelope shape (`SaveEnvelopeV1`)
 
@@ -120,3 +120,103 @@ decode/validate on this development container; `JSON.stringify`/`parse`
 themselves were a few milliseconds. Zod validation cost scales with world
 size, so it should be profiled against representative content before it
 gates a pull request, per the referenced benchmark policy.
+
+## Local persistence (`src/persistence/local/`)
+
+A local-first repository around the save envelope above: create/read/list/
+delete prison slots, atomic generation-rotated writes, startup corruption
+recovery, autosave coalescing, and export/import. Cloud sync (#20) is not
+implemented here — `PendingSyncState` only stores the bookkeeping a future
+sync engine would read.
+
+### Storage abstraction and dependency review
+
+`LocalSaveStore`/`LocalSaveTransaction` (`store.ts`) model exactly the shape
+of an IndexedDB transaction (get/put/delete against two stores, committed or
+rejected as a unit), so that **all policy** — generation retention
+(`generation-policy.ts`), recovery and export/import (`repository.ts`),
+autosave coalescing (`autosave.ts`) — lives in `PrisonSaveRepository` and is
+unit-tested against `MemoryLocalSaveStore`, an in-memory fake, with no real
+or polyfilled IndexedDB involved at all.
+
+This sidesteps rather than resolves the "approved browser test environment"
+`docs/TESTING.md` requires before browser-specific code can be tested, and
+that gap is deliberate: `IndexedDbLocalSaveStore` (`indexeddb-store.ts`) is
+the one piece that must call the real `indexedDB` global, and it is kept
+deliberately thin (open the database with a two-store schema; wrap each
+request in a promise; surface transaction completion/abort) so it can be
+reviewed by inspection against the fake it mirrors, rather than requiring
+this issue to introduce jsdom/happy-dom or a polyfill like `fake-indexeddb`
+into the test suite's approved environment set.
+
+**Dependency review — `idb` vs. a native adapter (issue #19's required
+review):** not adopted. `IndexedDbLocalSaveStore`'s entire surface is one
+`runTransaction` method over a fixed two-object-store schema; `idb`'s value
+(a general-purpose promise wrapper plus cursor/index helpers) is not needed
+for that fixed shape, and `AGENTS.md` calls out not adding a dependency for
+functionality this trivial to hand-write and review directly. Revisit if a
+future issue needs cursors, indexes, or a significantly larger store schema
+where `idb`'s helpers would materially reduce risk.
+
+### Schema
+
+Database `lockstate-saves`, version 1, two object stores:
+
+- `prisons` (keyPath `prisonId`) — one `PrisonSlotMetadata` record per slot:
+  game version, display name, `currentGenerationId`, the ordered
+  (oldest-first) `generationIds` window, timestamps, optional
+  `pendingSync`.
+- `generations` (out-of-line key `` `${prisonId}:${generationId}` ``) — one
+  validated `SaveEnvelopeV1` per generation.
+
+### Generation retention and recovery
+
+`save()` writes the new generation, advances `currentGenerationId`, and only
+then deletes whatever `applyGenerationRetention` prunes — all inside one
+`readwrite` transaction, so a failed write can never destroy the last
+known-good generation. The default window keeps the current generation plus
+two previous ones (`keepGenerations: 3`), matching the issue's minimum.
+
+`loadCurrent()` tries the current generation first (schema + checksum via
+`decodeSaveEnvelope`, i.e. #18's validation, not a separate check). If it is
+missing or fails validation, it walks the remaining generations newest-first
+and adopts the first one that validates — healing `currentGenerationId` and
+dropping the confirmed-corrupt generation(s) so the pointer does not force
+the same recovery scan on every subsequent load. `no-valid-generation` is
+returned only when nothing in the retained window validates.
+
+### Autosave
+
+`AutosaveScheduler` schedules a trailing-edge save `intervalMs` after
+`markDirty(prisonId)`; further dirty markers before that timer fires are
+coalesced into the same pending save. A dirty marker that arrives while a
+save is already in flight schedules exactly one follow-up save once that
+write settles — never a second concurrent write for the same prison. Tests
+use Vitest's fake timers (`vi.useFakeTimers()`/`advanceTimersByTimeAsync`),
+per `docs/TESTING.md`'s "own the complete timer lifecycle" rule, rather than
+real elapsed time.
+
+### Export/import
+
+`exportSave` returns the current generation's already-validated envelope.
+`importSave` runs an arbitrary value through `decodeSaveEnvelope` (schema +
+migration + checksum) before it can reach `save()` — an invalid import never
+touches storage.
+
+### Errors
+
+`classifyStoreError` (`errors.ts`) distinguishes `quota-exceeded` (browser
+`QuotaExceededError`) and `transaction-aborted` (`AbortError` and related
+transaction-lifecycle errors) from `unknown-error`, by `.name` rather than
+`instanceof DOMException` — `DOMException` does not exist in the Node test
+environment, so classification is exercised in unit tests with plain
+`Error` objects and works identically against real browser errors.
+
+### What is out of scope here
+
+Supabase execution (#20); full service-worker asset caching; simulating
+elapsed time while the browser was closed; and any cross-tab/multi-writer
+concurrency control beyond the single-process autosave/manual-save
+coalescing above — `revision` is caller-managed and this repository does
+not yet enforce optimistic concurrency on it, matching the "not this issue"
+scope in `save-schema.ts`'s own documentation.
