@@ -40,6 +40,7 @@ function run(command, args, env = process.env) {
       cwd: repositoryRoot,
       env,
       stdio: 'inherit',
+      shell: process.platform === 'win32',
     });
 
     child.once('error', reject);
