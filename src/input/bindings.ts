@@ -23,6 +23,43 @@ export interface BindingConflict {
   readonly conflictingBindingIndex?: number;
 }
 
+export interface KeyboardLayoutMap {
+  get(code: string): string | undefined;
+}
+
+export interface KeyboardLabelSource {
+  getLayoutMap(): Promise<KeyboardLayoutMap>;
+}
+
+const FALLBACK_KEY_LABELS: Readonly<Record<string, string>> = {
+  Escape: 'Esc',
+  Equal: '+',
+  Minus: '-',
+  Space: 'Space',
+};
+
+export function fallbackKeyboardLabel(code: string): string {
+  if (code in FALLBACK_KEY_LABELS) return FALLBACK_KEY_LABELS[code] as string;
+  if (code.startsWith('Key') && code.length === 4) return code.slice(3);
+  if (code.startsWith('Digit') && code.length === 6) return code.slice(5);
+  return code;
+}
+
+export async function resolveKeyboardLabel(
+  code: string,
+  layoutSource?: KeyboardLabelSource,
+): Promise<string> {
+  if (layoutSource !== undefined) {
+    try {
+      const label = (await layoutSource.getLayoutMap()).get(code);
+      if (label !== undefined && label.length > 0) return label;
+    } catch {
+      // Keyboard layout APIs are optional and must not make controls unavailable.
+    }
+  }
+  return fallbackKeyboardLabel(code);
+}
+
 export function findBindingConflicts(
   bindings: readonly KeyboardBinding[],
 ): readonly BindingConflict[] {

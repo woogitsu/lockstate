@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_KEYBOARD_BINDINGS, KeyboardInputAdapter, decodeInputSettings, findBindingConflicts } from '../../src/input';
+import { DEFAULT_KEYBOARD_BINDINGS, KeyboardInputAdapter, decodeInputSettings, findBindingConflicts, remapKeyboardBinding, resolveKeyboardLabel, validateInputSettings } from '../../src/input';
 
 describe('semantic input', () => {
   it('uses physical movement keys, independently of the keyboard layout', () => {
@@ -32,5 +32,18 @@ describe('semantic input', () => {
       { device: 'keyboard', code: 'KeyQ', action: 'camera.up', contexts: ['world'] },
       { device: 'keyboard', code: 'KeyQ', action: 'selection.primary', contexts: ['world'] },
     ] })).toBeUndefined();
+  });
+
+  it('uses a browser keyboard-layout label when available, with deterministic fallbacks', async () => {
+    await expect(resolveKeyboardLabel('KeyW', { getLayoutMap: async () => new Map([['KeyW', 'z']]) })).resolves.toBe('z');
+    await expect(resolveKeyboardLabel('KeyW')).resolves.toBe('W');
+    await expect(resolveKeyboardLabel('Escape')).resolves.toBe('Esc');
+  });
+
+  it('reports a remapping conflict without changing valid settings', () => {
+    const settings = { version: 1 as const, keyboardBindings: DEFAULT_KEYBOARD_BINDINGS };
+    const result = remapKeyboardBinding(settings, 1, 'KeyW');
+    expect(result).toMatchObject({ ok: false, reason: 'binding-conflict' });
+    expect(validateInputSettings(settings)).toEqual({ ok: true, value: settings });
   });
 });
