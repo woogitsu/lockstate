@@ -139,15 +139,26 @@ autosave coalescing (`autosave.ts`) — lives in `PrisonSaveRepository` and is
 unit-tested against `MemoryLocalSaveStore`, an in-memory fake, with no real
 or polyfilled IndexedDB involved at all.
 
-This sidesteps rather than resolves the "approved browser test environment"
-`docs/TESTING.md` requires before browser-specific code can be tested, and
-that gap is deliberate: `IndexedDbLocalSaveStore` (`indexeddb-store.ts`) is
-the one piece that must call the real `indexedDB` global, and it is kept
-deliberately thin (open the database with a two-store schema; wrap each
-request in a promise; surface transaction completion/abort) so it can be
-reviewed by inspection against the fake it mirrors, rather than requiring
-this issue to introduce jsdom/happy-dom or a polyfill like `fake-indexeddb`
-into the test suite's approved environment set.
+`IndexedDbLocalSaveStore` (`indexeddb-store.ts`) is the one piece that must
+call the real `indexedDB` global, and it is kept deliberately thin (open the
+database with a two-store schema; wrap each request in a promise; surface
+transaction completion/abort).
+
+**Test-environment decision:** `docs/TESTING.md` gates any browser/storage
+test environment behind "a dedicated dependency and architecture review."
+`fake-indexeddb` (a pure-JS, dependency-free IndexedDB implementation, added
+as an exact-pinned **devDependency only** — it never reaches the production
+bundle) is that review's outcome for this one adapter:
+`IndexedDbLocalSaveStore` is integration-tested against it in
+`tests/integration/persistence-local-indexeddb.test.ts`, each test opening
+its own fresh `IDBFactory` instance rather than any shared/global one, so
+this stays an explicit, narrowly-scoped addition rather than a silent
+environment change for the rest of the suite (the global Vitest environment
+is still `node`; nothing here introduces jsdom/happy-dom/DOM globals).
+Real-browser-only behavior — actual storage quota limits, private-mode
+restrictions — is still unverified; `classifyStoreError` covers the
+documented `.name`-based classification with plain `Error` objects instead
+(see "Errors" below), since `fake-indexeddb` does not simulate quota limits.
 
 **Dependency review — `idb` vs. a native adapter (issue #19's required
 review):** not adopted. `IndexedDbLocalSaveStore`'s entire surface is one
@@ -211,6 +222,16 @@ transaction-lifecycle errors) from `unknown-error`, by `.name` rather than
 `instanceof DOMException` — `DOMException` does not exist in the Node test
 environment, so classification is exercised in unit tests with plain
 `Error` objects and works identically against real browser errors.
+
+### Performance
+
+Directional-only (not a committed benchmark or threshold, same caveat as
+above): five sequential `save()` calls against `IndexedDbLocalSaveStore`
+(via `fake-indexeddb`) for a 100-chunk / 500-build-order prison took
+~15–24 ms each (schema/checksum validation plus the transaction itself),
+and `loadCurrent()` ~14 ms. `fake-indexeddb`'s in-process cost is not the
+same as a real browser's disk-backed IndexedDB, so this is a lower bound,
+not a production estimate.
 
 ### What is out of scope here
 

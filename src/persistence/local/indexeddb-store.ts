@@ -39,9 +39,11 @@ export function openLockstateDatabase(indexedDbFactory: IDBFactory = indexedDB):
  * all retention/recovery/coalescing policy lives in `PrisonSaveRepository`
  * against the storage-agnostic `LocalSaveStore` interface this implements.
  *
- * Not unit-tested: see docs/PERSISTENCE.md for why this issue does not
- * introduce a real-or-polyfilled IndexedDB test environment. Review by
- * inspection alongside `MemoryLocalSaveStore`, which mirrors its contract.
+ * Integration-tested against `fake-indexeddb` in
+ * tests/integration/persistence-local-indexeddb.test.ts (a pure-JS
+ * IndexedDB implementation used only as a devDependency, not a jsdom/
+ * browser test environment) — see docs/PERSISTENCE.md for that scoping
+ * decision. Real-browser quota/private-mode behavior is still unverified.
  */
 export class IndexedDbLocalSaveStore implements LocalSaveStore {
   public constructor(private readonly db: IDBDatabase) {}
