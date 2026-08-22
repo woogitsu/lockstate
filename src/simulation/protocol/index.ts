@@ -7,6 +7,7 @@ export {
   type ProtocolValidationIssue,
 } from './decode';
 export { collectProtocolTransferables } from './transferables';
+export * from './commands';
 export {
   MAIN_TO_WORKER_MESSAGE_KINDS,
   SIMULATION_PROTOCOL_VERSION,
