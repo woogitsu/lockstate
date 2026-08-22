@@ -8,6 +8,7 @@ export const placeBuildOrderSchema = z.object({
   definitionId: z.string(),
   x: z.number().int(),
   y: z.number().int(),
+  transactionId: z.string().optional(),
 }).strict();
 
 export const cancelBuildOrderSchema = z.object({
@@ -15,9 +16,30 @@ export const cancelBuildOrderSchema = z.object({
   orderId: z.string(),
 }).strict();
 
+export const zoneRoomSchema = z.object({
+  type: z.literal('ZoneRoom'),
+  roomId: z.string(), // ID of the Room definition (e.g. 'office')
+  x: z.number().int(),
+  y: z.number().int(),
+  width: z.number().int(),
+  height: z.number().int(),
+  transactionId: z.string().optional(),
+}).strict();
+
+export const undoCommandSchema = z.object({
+  type: z.literal('Undo'),
+}).strict();
+
+export const redoCommandSchema = z.object({
+  type: z.literal('Redo'),
+}).strict();
+
 export const simulationCommandSchema = z.discriminatedUnion('type', [
   placeBuildOrderSchema,
   cancelBuildOrderSchema,
+  zoneRoomSchema,
+  undoCommandSchema,
+  redoCommandSchema,
 ]);
 
 export type SimulationCommand = z.infer<typeof simulationCommandSchema>;

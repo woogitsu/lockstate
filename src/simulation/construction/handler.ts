@@ -11,13 +11,16 @@ export function createConstructionCommandHandler(
     if (!simCommand) return;
 
     switch (simCommand.type) {
-      case 'PlaceBuildOrder':
-        constructionSystem.submitOrder(createBuildOrder(
+      case 'PlaceBuildOrder': {
+        const order = createBuildOrder(
           simCommand.orderId,
           simCommand.definitionId,
           { x: simCommand.x, y: simCommand.y, layer: 'terrain' }
-        ));
+        );
+        constructionSystem.submitOrder(order);
+        constructionSystem.registerTransactionOrder(order.id, simCommand.transactionId);
         break;
+      }
         
       case 'CancelBuildOrder':
         try {
@@ -25,6 +28,13 @@ export function createConstructionCommandHandler(
         } catch (e) {
           // Log or handle gracefully in simulation
         }
+        break;
+      case 'Undo':
+        constructionSystem.undo();
+        break;
+        
+      case 'Redo':
+        constructionSystem.redo();
         break;
     }
   };

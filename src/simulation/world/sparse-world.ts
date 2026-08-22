@@ -45,6 +45,9 @@ export interface SerializedChunkState {
   readonly contentRevision: number;
   readonly dirty: boolean;
   readonly terrain?: TerrainRle;
+  readonly topEdge?: TerrainRle; // Reusing TerrainRle format (RLE of Uint8) for simplicity
+  readonly leftEdge?: TerrainRle;
+  readonly zoning?: TerrainRle;
 }
 
 export interface WorldSnapshotV1 {
@@ -181,7 +184,7 @@ function decodeChunk(value: unknown): SerializedChunkState {
   allowedKeys(
     record,
     ['contentRevision', 'dirty', 'geometryRevision', 'lifecycle', 'x', 'y'],
-    ['terrain'],
+    ['terrain', 'topEdge', 'leftEdge', 'zoning'],
     'Chunk',
   );
   if (
@@ -195,11 +198,25 @@ function decodeChunk(value: unknown): SerializedChunkState {
   }
 
   let terrain: TerrainRle | undefined;
+  let topEdge: TerrainRle | undefined;
+  let leftEdge: TerrainRle | undefined;
+  let zoning: TerrainRle | undefined;
+
   if (record.terrain !== undefined) {
-    if (!Array.isArray(record.terrain)) {
-      throw new WorldSnapshotError('Chunk terrain must be an array.');
-    }
+    if (!Array.isArray(record.terrain)) throw new WorldSnapshotError('Chunk terrain must be an array.');
     terrain = record.terrain as TerrainRle;
+  }
+  if (record.topEdge !== undefined) {
+    if (!Array.isArray(record.topEdge)) throw new WorldSnapshotError('Chunk topEdge must be an array.');
+    topEdge = record.topEdge as TerrainRle;
+  }
+  if (record.leftEdge !== undefined) {
+    if (!Array.isArray(record.leftEdge)) throw new WorldSnapshotError('Chunk leftEdge must be an array.');
+    leftEdge = record.leftEdge as TerrainRle;
+  }
+  if (record.zoning !== undefined) {
+    if (!Array.isArray(record.zoning)) throw new WorldSnapshotError('Chunk zoning must be an array.');
+    zoning = record.zoning as TerrainRle;
   }
 
   try {
@@ -211,6 +228,9 @@ function decodeChunk(value: unknown): SerializedChunkState {
       contentRevision: assertRevision(record.contentRevision, 'Content revision'),
       dirty: record.dirty,
       ...(terrain !== undefined ? { terrain } : {}),
+      ...(topEdge !== undefined ? { topEdge } : {}),
+      ...(leftEdge !== undefined ? { leftEdge } : {}),
+      ...(zoning !== undefined ? { zoning } : {}),
     };
   } catch (error) {
     if (error instanceof WorldSnapshotError) throw error;
@@ -255,6 +275,9 @@ export class SparseWorld {
   private readonly chunks = new Map<string, ChunkState>();
   private readonly owned = new Set<string>();
   private readonly chunkTerrain = new Map<string, Uint8Array>();
+  private readonly chunkTopEdge = new Map<string, Uint8Array>();
+  private readonly chunkLeftEdge = new Map<string, Uint8Array>();
+  private readonly chunkZoning = new Map<string, Uint8Array>();
   private readonly parcels = new Map<string, ParcelDefinition>();
   private readonly ownedParcels = new Set<string>();
 
@@ -311,7 +334,7 @@ export class SparseWorld {
     const state = this.requireState(position);
     if (state.lifecycle === 'metadata-only') {
       this.chunks.set(key, { ...state, lifecycle: 'loaded' });
-      this.ensureTerrainStorage(key);
+      this.ensureStorage(key);
     }
 
     return this.getChunk(position) as ChunkState;
@@ -371,7 +394,7 @@ export class SparseWorld {
       this.load(chunk);
     }
 
-    const terrainData = this.ensureTerrainStorage(key);
+    const terrainData = this.ensureStorageMap(this.chunkTerrain, key);
     const index = local.y * this.tileChunkSize + local.x;
     if (terrainData[index] !== def.numericId) {
       terrainData[index] = def.numericId;
@@ -390,13 +413,75 @@ export class SparseWorld {
       this.load(position);
     }
 
-    const terrainData = this.ensureTerrainStorage(key);
+    const terrainData = this.ensureStorageMap(this.chunkTerrain, key);
     terrainData.fill(def.numericId);
     this.markContentChanged(position);
   }
 
   public getChunkTerrainArray(position: ChunkPosition): Uint8Array | undefined {
     return this.chunkTerrain.get(chunkKey(position));
+  }
+
+  // --- Edge and Zoning Operations ---
+  
+  public getTopEdge(tile: TilePosition): number {
+    return this.getMapValue(this.chunkTopEdge, tile);
+  }
+
+  public setTopEdge(tile: TilePosition, value: number): void {
+    this.setMapValue(this.chunkTopEdge, tile, value);
+    const { chunk } = tileToChunk(tile, this.tileChunkSize);
+    this.markGeometryChanged(chunk);
+  }
+
+  public getLeftEdge(tile: TilePosition): number {
+    return this.getMapValue(this.chunkLeftEdge, tile);
+  }
+
+  public setLeftEdge(tile: TilePosition, value: number): void {
+    this.setMapValue(this.chunkLeftEdge, tile, value);
+    const { chunk } = tileToChunk(tile, this.tileChunkSize);
+    this.markGeometryChanged(chunk);
+  }
+
+  public getZoning(tile: TilePosition): number {
+    return this.getMapValue(this.chunkZoning, tile);
+  }
+
+  public setZoning(tile: TilePosition, value: number): void {
+    this.setMapValue(this.chunkZoning, tile, value);
+    const { chunk } = tileToChunk(tile, this.tileChunkSize);
+    this.markContentChanged(chunk);
+  }
+
+  private getMapValue(map: Map<string, Uint8Array>, tile: TilePosition): number {
+    const { chunk, local } = tileToChunk(tile, this.tileChunkSize);
+    const key = chunkKey(chunk);
+    const data = map.get(key);
+    if (data === undefined) return 0;
+    return data[local.y * this.tileChunkSize + local.x] ?? 0;
+  }
+
+  private setMapValue(map: Map<string, Uint8Array>, tile: TilePosition, value: number): void {
+    const { chunk, local } = tileToChunk(tile, this.tileChunkSize);
+    const key = chunkKey(chunk);
+
+    if (!this.hasChunk(chunk) || this.chunks.get(key)?.lifecycle !== 'loaded') {
+      this.load(chunk);
+    }
+
+    const data = this.ensureStorageMap(map, key);
+    const index = local.y * this.tileChunkSize + local.x;
+    data[index] = value;
+  }
+
+  private ensureStorageMap(map: Map<string, Uint8Array>, key: string): Uint8Array {
+    let data = map.get(key);
+    if (data === undefined) {
+      data = new Uint8Array(this.tileChunkSize * this.tileChunkSize);
+      map.set(key, data);
+    }
+    return data;
   }
 
   // --- Parcel Operations ---
@@ -485,7 +570,11 @@ export class SparseWorld {
       .map((state) => {
         const key = chunkKey(state.position);
         const terrainData = this.chunkTerrain.get(key);
-        const hasTerrain = state.lifecycle === 'loaded' && terrainData !== undefined;
+        const topEdgeData = this.chunkTopEdge.get(key);
+        const leftEdgeData = this.chunkLeftEdge.get(key);
+        const zoningData = this.chunkZoning.get(key);
+        
+        const hasData = state.lifecycle === 'loaded';
 
         return {
           x: state.position.x,
@@ -494,7 +583,10 @@ export class SparseWorld {
           geometryRevision: state.geometryRevision,
           contentRevision: state.contentRevision,
           dirty: state.dirty,
-          ...(hasTerrain ? { terrain: encodeTerrainRle(terrainData) } : {}),
+          ...(hasData && terrainData ? { terrain: encodeTerrainRle(terrainData) } : {}),
+          ...(hasData && topEdgeData ? { topEdge: encodeTerrainRle(topEdgeData) } : {}),
+          ...(hasData && leftEdgeData ? { leftEdge: encodeTerrainRle(leftEdgeData) } : {}),
+          ...(hasData && zoningData ? { zoning: encodeTerrainRle(zoningData) } : {}),
         };
       });
 
@@ -563,12 +655,11 @@ export class SparseWorld {
       });
 
       if (chunk.lifecycle === 'loaded') {
-        if (chunk.terrain !== undefined) {
-          const terrainData = decodeTerrainRle(chunk.terrain, size * size);
-          world.chunkTerrain.set(key, terrainData);
-        } else {
-          world.ensureTerrainStorage(key);
-        }
+        if (chunk.terrain !== undefined) world.chunkTerrain.set(key, decodeTerrainRle(chunk.terrain, size * size));
+        if (chunk.topEdge !== undefined) world.chunkTopEdge.set(key, decodeTerrainRle(chunk.topEdge, size * size));
+        if (chunk.leftEdge !== undefined) world.chunkLeftEdge.set(key, decodeTerrainRle(chunk.leftEdge, size * size));
+        if (chunk.zoning !== undefined) world.chunkZoning.set(key, decodeTerrainRle(chunk.zoning, size * size));
+        world.ensureStorage(key);
       }
     }
 
@@ -619,13 +710,11 @@ export class SparseWorld {
     return world;
   }
 
-  private ensureTerrainStorage(key: string): Uint8Array {
-    let data = this.chunkTerrain.get(key);
-    if (data === undefined) {
-      data = new Uint8Array(this.tileChunkSize * this.tileChunkSize);
-      this.chunkTerrain.set(key, data);
-    }
-    return data;
+  private ensureStorage(key: string): void {
+    this.ensureStorageMap(this.chunkTerrain, key);
+    this.ensureStorageMap(this.chunkTopEdge, key);
+    this.ensureStorageMap(this.chunkLeftEdge, key);
+    this.ensureStorageMap(this.chunkZoning, key);
   }
 
   private requireState(position: ChunkPosition): ChunkState {

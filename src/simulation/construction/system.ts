@@ -13,6 +13,12 @@ export class ConstructionSystem implements SystemRegistration {
 
   private orders = new Map<string, BuildOrder>();
 
+  // A transaction is just a list of order IDs.
+  private undoStack: string[][] = [];
+  private redoStack: string[][] = [];
+  private currentTransaction: string[] = [];
+  private currentTransactionId: string | undefined;
+
   public constructor(private readonly world: SparseWorld) {}
 
   public submitOrder(order: BuildOrder): void {
@@ -34,6 +40,68 @@ export class ConstructionSystem implements SystemRegistration {
     // For now, immediately approve valid orders
     order.state = 'approved';
     this.orders.set(order.id, order);
+  }
+
+  public registerTransactionOrder(orderId: string, transactionId?: string): void {
+    if (transactionId !== this.currentTransactionId) {
+      if (this.currentTransaction.length > 0) {
+        this.undoStack.push([...this.currentTransaction]);
+      }
+      this.currentTransaction = [];
+      this.currentTransactionId = transactionId;
+      this.redoStack = []; // Clear redo stack on new action
+    }
+    this.currentTransaction.push(orderId);
+  }
+
+  public undo(): void {
+    if (this.currentTransaction.length > 0) {
+      this.undoStack.push([...this.currentTransaction]);
+      this.currentTransaction = [];
+      this.currentTransactionId = undefined;
+    }
+
+    const transaction = this.undoStack.pop();
+    if (!transaction) return; // Nothing to undo
+
+    const redoTransaction: string[] = [];
+
+    for (const orderId of transaction) {
+      const order = this.orders.get(orderId);
+      if (!order) continue;
+      
+      // Only undo if uncommitted (or just pending materials)
+      if (order.state === 'planned' || order.state === 'approved' || order.state === 'materials-pending') {
+        order.state = 'cancelled';
+        redoTransaction.push(orderId);
+      }
+    }
+
+    if (redoTransaction.length > 0) {
+      this.redoStack.push(redoTransaction);
+    }
+  }
+
+  public redo(): void {
+    const transaction = this.redoStack.pop();
+    if (!transaction) return; // Nothing to redo
+
+    const undoTransaction: string[] = [];
+
+    for (const orderId of transaction) {
+      const order = this.orders.get(orderId);
+      if (!order) continue;
+      
+      if (order.state === 'cancelled') {
+        // We restore it to approved
+        order.state = 'approved';
+        undoTransaction.push(orderId);
+      }
+    }
+
+    if (undoTransaction.length > 0) {
+      this.undoStack.push(undoTransaction);
+    }
   }
 
   public cancelOrder(id: string): void {
@@ -108,9 +176,8 @@ export class ConstructionSystem implements SystemRegistration {
   }
 
   public snapshot(): any {
-    return {
-      orders: Array.from(this.orders.values()).map(o => ({ ...o, materialsAllocated: [...o.materialsAllocated] })),
-    };
+    const serializedOrders = Array.from(this.orders.values()).map(o => ({ ...o, materialsAllocated: [...o.materialsAllocated] }));
+    return { orders: serializedOrders, undoStack: this.undoStack, redoStack: this.redoStack };
   }
 
   public restore(data: any): void {
@@ -118,5 +185,9 @@ export class ConstructionSystem implements SystemRegistration {
     for (const order of data.orders) {
       this.orders.set(order.id, order);
     }
+    this.undoStack = Array.isArray(data.undoStack) ? data.undoStack : [];
+    this.redoStack = Array.isArray(data.redoStack) ? data.redoStack : [];
+    this.currentTransaction = [];
+    this.currentTransactionId = undefined;
   }
 }
