@@ -1,6 +1,6 @@
 import { test, expect } from 'vitest';
 import { Kernel } from '../../src/simulation/kernel/kernel';
-import type { SystemRegistration, SimulationContext, QueuedCommand } from '../../src/simulation/kernel/system';
+import type { SystemRegistration } from '../../src/simulation/kernel/system';
 import { NamedRngStreams } from '../../src/simulation/rng/streams';
 
 test('Kernel rejects duplicate system IDs', () => {
