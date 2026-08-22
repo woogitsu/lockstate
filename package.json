@@ -17,7 +17,7 @@
     "preview:production": "node scripts/cloudflare-task.mjs preview production",
     "preview:staging": "node scripts/cloudflare-task.mjs preview staging",
     "typecheck": "tsc -b --pretty false",
-    "test": "vitest run --passWithNoTests",
+    "test": "vitest run",
     "test:watch": "vitest",
     "smoke:deployment": "node scripts/cloudflare-task.mjs build production && node scripts/verify-deployment-preview.mjs",
     "verify": "pnpm typecheck && pnpm test && node scripts/cloudflare-task.mjs build production",

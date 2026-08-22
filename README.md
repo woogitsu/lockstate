@@ -50,7 +50,7 @@ pnpm build
 pnpm preview
 ```
 
-See [`docs/DEPENDENCY_POLICY.md`](./docs/DEPENDENCY_POLICY.md) for controlled dependency upgrades and [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md) for Cloudflare environments, dry-runs, custom-domain setup, cache policy, smoke tests and rollback.
+See [`docs/DEPENDENCY_POLICY.md`](./docs/DEPENDENCY_POLICY.md) for controlled dependency upgrades, [`docs/TESTING.md`](./docs/TESTING.md) for the executable testing contract, and [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md) for Cloudflare environments, dry-runs, custom-domain setup, cache policy, smoke tests and rollback.
 
 ## Repository governance
 
