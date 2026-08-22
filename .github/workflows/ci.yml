@@ -51,6 +51,9 @@ jobs:
       - name: Verify project
         run: pnpm verify
 
+      - name: Verify benchmark harness
+        run: pnpm verify:benchmark
+
       - name: Verify Cloudflare deployment packages
         run: pnpm verify:deployment
 

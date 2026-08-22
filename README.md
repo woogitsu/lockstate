@@ -39,6 +39,7 @@ corepack enable
 corepack prepare pnpm@11.22.0 --activate
 pnpm install --frozen-lockfile
 pnpm verify
+pnpm verify:benchmark
 pnpm verify:deployment
 pnpm dev
 ```
@@ -50,7 +51,7 @@ pnpm build
 pnpm preview
 ```
 
-See [`docs/DEPENDENCY_POLICY.md`](./docs/DEPENDENCY_POLICY.md) for controlled dependency upgrades, [`docs/TESTING.md`](./docs/TESTING.md) for the executable testing contract, and [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md) for Cloudflare environments, dry-runs, custom-domain setup, cache policy, smoke tests and rollback.
+See [`docs/DEPENDENCY_POLICY.md`](./docs/DEPENDENCY_POLICY.md) for controlled dependency upgrades, [`docs/TESTING.md`](./docs/TESTING.md) for the executable testing contract, [`docs/BENCHMARKING.md`](./docs/BENCHMARKING.md) for repeatable performance evidence, and [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md) for Cloudflare environments, dry-runs, custom-domain setup, cache policy, smoke tests and rollback.
 
 ## Repository governance
 
