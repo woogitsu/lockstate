@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import {
   DEFAULT_KEYBOARD_BINDINGS,
   KeyboardInputAdapter,
+  TouchGestureTracker,
 } from './input';
 import {
   tileRangeInBounds,
@@ -17,6 +18,7 @@ class BootScene extends Phaser.Scene {
   );
   private grid?: Phaser.GameObjects.Graphics;
   private lastGridSignature?: string;
+  private readonly touchGestures = new TouchGestureTracker();
   private panPointerId: number | undefined;
   private lastPanScreenPoint: { readonly x: number; readonly y: number } | undefined;
 
@@ -53,11 +55,34 @@ class BootScene extends Phaser.Scene {
     );
 
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      if (pointer.wasTouch) {
+        this.touchGestures.begin({ id: pointer.id, x: pointer.x, y: pointer.y });
+        return;
+      }
       if (pointer.button !== 1) return;
       this.panPointerId = pointer.id;
       this.lastPanScreenPoint = { x: pointer.x, y: pointer.y };
     });
     this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+      if (pointer.wasTouch) {
+        const gesture = this.touchGestures.move({ id: pointer.id, x: pointer.x, y: pointer.y });
+        if (gesture?.kind === 'pan') {
+          const camera = this.cameras.main;
+          camera.scrollX -= gesture.deltaX / camera.zoom;
+          camera.scrollY -= gesture.deltaY / camera.zoom;
+        } else if (gesture?.kind === 'pinch') {
+          const camera = this.cameras.main;
+          const next = zoomAtScreenPoint(
+            { scroll: { x: camera.scrollX, y: camera.scrollY }, zoom: camera.zoom },
+            { x: gesture.centerX, y: gesture.centerY },
+            camera.zoom * gesture.scale,
+            { min: 0.5, max: 3 },
+          );
+          camera.setZoom(next.zoom);
+          camera.setScroll(next.scroll.x, next.scroll.y);
+        }
+        return;
+      }
       if (this.panPointerId !== pointer.id || this.lastPanScreenPoint === undefined) return;
       const camera = this.cameras.main;
       camera.scrollX -= (pointer.x - this.lastPanScreenPoint.x) / camera.zoom;
@@ -65,6 +90,10 @@ class BootScene extends Phaser.Scene {
       this.lastPanScreenPoint = { x: pointer.x, y: pointer.y };
     });
     this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
+      if (pointer.wasTouch) {
+        this.touchGestures.end(pointer.id);
+        return;
+      }
       if (this.panPointerId !== pointer.id) return;
       this.panPointerId = undefined;
       this.lastPanScreenPoint = undefined;
