@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Xoshiro128StarStar } from '../../src/simulation/rng';
+import { NamedRngStreams, Xoshiro128StarStar } from '../../src/simulation/rng';
 
 describe('xoshiro128**', () => {
   it('matches the deterministic golden vector for a known state', () => {
@@ -23,5 +23,16 @@ describe('xoshiro128**', () => {
       expect(rng.nextFloat()).toBeLessThan(1);
     }
     expect(() => rng.nextInt(0)).toThrow(RangeError);
+  });
+
+  it('keeps named streams isolated and snapshots in stable order', () => {
+    const streams = new NamedRngStreams([
+      { name: 'economy', state: { algorithm: 'xoshiro128**', version: 1, words: [1, 2, 3, 4] } },
+      { name: 'ai.needs', state: { algorithm: 'xoshiro128**', version: 1, words: [5, 6, 7, 8] } },
+    ]);
+    const before = streams.get('ai.needs').snapshot();
+    streams.get('economy').nextUint32();
+    expect(streams.get('ai.needs').snapshot()).toEqual(before);
+    expect(streams.snapshot().map((entry) => entry.name)).toEqual(['ai.needs', 'economy']);
   });
 });
