@@ -34,6 +34,22 @@ export class Xoshiro128StarStar {
     return result;
   }
 
+  public nextFloat(): number {
+    return this.nextUint32() / 0x1_0000_0000;
+  }
+
+  public nextInt(boundExclusive: number): number {
+    if (!Number.isInteger(boundExclusive) || boundExclusive <= 0 || boundExclusive > 0x1_0000_0000) {
+      throw new RangeError('Bound must be a positive uint32 range.');
+    }
+    const limit = Math.floor(0x1_0000_0000 / boundExclusive) * boundExclusive;
+    let value: number;
+    do {
+      value = this.nextUint32();
+    } while (value >= limit);
+    return value % boundExclusive;
+  }
+
   public snapshot(): Xoshiro128StarStarState {
     return { algorithm: 'xoshiro128**', version: 1, words: [this.state[0], this.state[1], this.state[2], this.state[3]] };
   }
