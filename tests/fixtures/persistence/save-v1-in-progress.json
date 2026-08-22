@@ -1,0 +1,185 @@
+{
+  "saveSchemaVersion": 1,
+  "gameVersion": "lockstate-0.0.0",
+  "prisonId": "prison-in-progress-002",
+  "revision": 7,
+  "createdAt": 1700000000000,
+  "updatedAt": 1700003600000,
+  "checksum": "23b0d706894f8c5f",
+  "payload": {
+    "kernel": {
+      "tick": 120,
+      "expectedSequence": 4,
+      "rngStates": [
+        {
+          "name": "world.terrain",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              1,
+              2,
+              3,
+              4
+            ]
+          }
+        }
+      ],
+      "commands": [
+        {
+          "id": "cmd-1",
+          "sequence": 3,
+          "executeAtTick": 130,
+          "payload": {
+            "schemaId": "lockstate.simulation.command",
+            "schemaVersion": 1,
+            "transport": "structured-clone",
+            "data": {
+              "type": "PlaceBuildOrder",
+              "orderId": "order-3",
+              "definitionId": "wall-brick",
+              "x": 3,
+              "y": 1
+            }
+          }
+        }
+      ]
+    },
+    "world": {
+      "version": 1,
+      "chunkSize": 32,
+      "ownedChunks": [
+        {
+          "x": 0,
+          "y": 0
+        }
+      ],
+      "chunks": [
+        {
+          "x": 0,
+          "y": 0,
+          "lifecycle": "loaded",
+          "geometryRevision": 0,
+          "contentRevision": 0,
+          "dirty": false,
+          "terrain": [
+            [
+              0,
+              1024
+            ]
+          ],
+          "topEdge": [
+            [
+              0,
+              1024
+            ]
+          ],
+          "leftEdge": [
+            [
+              0,
+              1024
+            ]
+          ],
+          "zoning": [
+            [
+              0,
+              1024
+            ]
+          ]
+        }
+      ],
+      "parcels": [
+        {
+          "id": "parcel-a",
+          "x": 0,
+          "y": 0,
+          "width": 8,
+          "height": 8,
+          "basePrice": 500,
+          "name": "North Yard"
+        }
+      ],
+      "ownedParcels": [
+        "parcel-a"
+      ]
+    },
+    "construction": {
+      "orders": [
+        {
+          "id": "order-1",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 1,
+            "y": 1
+          },
+          "state": "in-progress",
+          "progress": 20,
+          "materialsAllocated": [
+            {
+              "itemId": "brick",
+              "quantity": 4
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "order-2",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 2,
+            "y": 1
+          },
+          "state": "cancelled",
+          "progress": 0,
+          "materialsAllocated": []
+        }
+      ],
+      "undoStack": [
+        [
+          "order-1"
+        ]
+      ],
+      "redoStack": [
+        [
+          "order-2"
+        ]
+      ]
+    },
+    "entities": {
+      "capacity": 8,
+      "nextAvailableIndex": 2,
+      "maxActiveIndex": 1,
+      "freeCount": 0,
+      "generations": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "freeIndices": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "alive": [
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  }
+}

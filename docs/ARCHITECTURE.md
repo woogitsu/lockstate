@@ -78,7 +78,7 @@ Navigation is hierarchical and budgeted:
 A full-map A* per actor per frame is forbidden.
 
 ### Saves
-Local-first persistence uses IndexedDB. Cloud persistence uses Supabase Auth + Postgres metadata and, when snapshots become large enough, Supabase Storage for compressed payloads.
+Local-first persistence uses IndexedDB. Cloud persistence uses Supabase Auth + Postgres metadata and, when snapshots become large enough, Supabase Storage for compressed payloads. The versioned save envelope, its runtime schema, checksum and forward-migration framework are defined in [PERSISTENCE.md](./PERSISTENCE.md) independently of which storage backend consumes it.
 
 Every save contains at minimum:
 - save schema version,

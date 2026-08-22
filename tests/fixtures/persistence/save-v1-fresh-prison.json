@@ -1,0 +1,42 @@
+{
+  "saveSchemaVersion": 1,
+  "gameVersion": "lockstate-0.0.0",
+  "prisonId": "prison-fresh-001",
+  "revision": 0,
+  "createdAt": 1700000000000,
+  "updatedAt": 1700000000000,
+  "checksum": "bd4cc062939ba110",
+  "payload": {
+    "kernel": {
+      "tick": 0,
+      "expectedSequence": 0,
+      "rngStates": [],
+      "commands": []
+    },
+    "world": {
+      "version": 1,
+      "chunkSize": 32,
+      "ownedChunks": [
+        {
+          "x": 0,
+          "y": 0
+        }
+      ],
+      "chunks": [
+        {
+          "x": 0,
+          "y": 0,
+          "lifecycle": "metadata-only",
+          "geometryRevision": 0,
+          "contentRevision": 0,
+          "dirty": false
+        }
+      ]
+    },
+    "construction": {
+      "orders": [],
+      "undoStack": [],
+      "redoStack": []
+    }
+  }
+}

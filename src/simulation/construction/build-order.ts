@@ -10,16 +10,21 @@ export type BuildOrderLifecycleState =
   | 'cancelled'
   | 'failed';
 
+export interface BuildOrderMaterial {
+  readonly itemId: string;
+  readonly quantity: number;
+}
+
 export interface BuildOrder {
   readonly id: string;
   readonly definitionId: string;
   readonly location: TilePosition;
-  
+
   state: BuildOrderLifecycleState;
   progress: number;
-  
+
   // Future logistics state
-  materialsAllocated: { itemId: string; quantity: number }[];
+  materialsAllocated: BuildOrderMaterial[];
   assignedWorkerId?: string;
   failReason?: string;
 }

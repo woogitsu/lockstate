@@ -41,15 +41,15 @@ export const jsonValueSchema = z.custom<JsonValue>(
   (value: unknown): value is JsonValue => isJsonValue(value),
 );
 
-const identifierSchema = z
+export const identifierSchema = z
   .string()
   .min(1)
   .max(128)
   .regex(/^[A-Za-z0-9][A-Za-z0-9._:/-]*$/);
-const tickSchema = z.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
-const sequenceSchema = z.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
-const uint32Schema = z.number().int().min(0).max(0xffff_ffff);
-const schemaVersionSchema = z.number().int().positive();
+export const tickSchema = z.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
+export const sequenceSchema = z.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
+export const uint32Schema = z.number().int().min(0).max(0xffff_ffff);
+export const schemaVersionSchema = z.number().int().positive();
 const protocolVersionSchema = z.number().int().positive();
 const capabilityListSchema = z.array(identifierSchema).max(64);
 
