@@ -1,8 +1,8 @@
 import Phaser from 'phaser';
 import {
-  DEFAULT_KEYBOARD_BINDINGS,
   KeyboardInputAdapter,
   TouchGestureTracker,
+  loadInputSettings,
 } from './input';
 import {
   tileRangeInBounds,
@@ -13,7 +13,7 @@ import './styles.css';
 
 class BootScene extends Phaser.Scene {
   private readonly keyboard = new KeyboardInputAdapter(
-    DEFAULT_KEYBOARD_BINDINGS,
+    loadInputSettings(window.localStorage).keyboardBindings,
     () => ['world'],
   );
   private grid?: Phaser.GameObjects.Graphics;
