@@ -1,4 +1,8 @@
 import { Kernel } from '../kernel/kernel';
+import {
+  createNewSimulationRuntime,
+  type SimulationRuntime,
+} from '../runtime/new-session';
 import { FixedStepClock, type ClockControl } from '../clock/fixed-step-clock';
 import { 
   type MainToWorkerMessage, 
@@ -21,6 +25,7 @@ export interface MessagePortLike {
 export class SimulationWorkerStateMachine {
   private _state: WorkerState = 'uninitialized';
   private _kernel: Kernel | null = null;
+  private _runtime: SimulationRuntime | null = null;
   private _clock: FixedStepClock = new FixedStepClock(50, { mode: 'paused' });
   private _tickTimerId: any | null = null;
 
@@ -152,7 +157,8 @@ export class SimulationWorkerStateMachine {
     }
 
     if (msg.payload.source.kind === 'new') {
-      this._kernel = new Kernel(); // Should inject proper RNG state here eventually
+      this._runtime = createNewSimulationRuntime();
+      this._kernel = this._runtime.kernel;
     } else {
       // Implement snapshot restore when needed
       throw new Error('Snapshot restore not yet implemented');
