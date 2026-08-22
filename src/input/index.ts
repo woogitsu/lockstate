@@ -1,4 +1,5 @@
 export * from './actions';
+export * from './accessibility';
 export * from './bindings';
 export * from './keyboard';
 export * from './pointer';
