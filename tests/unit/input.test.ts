@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_KEYBOARD_BINDINGS, KeyboardInputAdapter, PointerInputAdapter, decodeInputSettings, findBindingConflicts, remapKeyboardBinding, resolveKeyboardLabel, validateInputSettings } from '../../src/input';
+import { DEFAULT_KEYBOARD_BINDINGS, KeyboardInputAdapter, PointerInputAdapter, TouchGestureTracker, decodeInputSettings, findBindingConflicts, remapKeyboardBinding, resolveKeyboardLabel, validateInputSettings } from '../../src/input';
 
 describe('semantic input', () => {
   it('uses physical movement keys, independently of the keyboard layout', () => {
@@ -66,5 +66,13 @@ describe('semantic input', () => {
     expect(adapter.pointerCancel({ pointerId: 1, pointerType: 'pen' })).toEqual([
       { action: 'build.cancel', phase: 'started', source: 'pointer' },
     ]);
+  });
+
+  it('normalizes single-touch pan and two-touch pinch', () => {
+    const gestures = new TouchGestureTracker();
+    gestures.begin({ id: 1, x: 10, y: 10 });
+    expect(gestures.move({ id: 1, x: 14, y: 7 })).toEqual({ kind: 'pan', deltaX: 4, deltaY: -3 });
+    gestures.begin({ id: 2, x: 34, y: 7 });
+    expect(gestures.move({ id: 2, x: 54, y: 7 })).toEqual({ kind: 'pinch', centerX: 34, centerY: 7, scale: 2 });
   });
 });
