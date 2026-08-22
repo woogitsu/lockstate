@@ -6,17 +6,15 @@ on:
   pull_request:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   verify:
     runs-on: [self-hosted, Linux, X64, wsl2]
     timeout-minutes: 15
     steps:
-      - name: Checkout pull request branch
+      - name: Checkout
         uses: actions/checkout@v6
-        with:
-          ref: ${{ github.head_ref || github.ref_name }}
 
       - name: Setup Node
         uses: actions/setup-node@v6
@@ -35,22 +33,8 @@ jobs:
           test "$(node --version)" = "v24.19.0"
           test "$(pnpm --version)" = "11.22.0"
 
-      - name: Install dependencies and generate lockfile
-        run: pnpm install --no-frozen-lockfile
-
-      - name: Commit generated lockfile
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-        env:
-          HEAD_REF: ${{ github.head_ref }}
-        run: |
-          if [ -z "$(git status --porcelain -- pnpm-lock.yaml)" ]; then
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add pnpm-lock.yaml
-          git commit -m "build: commit reproducible pnpm lockfile"
-          git push origin "HEAD:${HEAD_REF}"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Verify project
         run: pnpm verify
