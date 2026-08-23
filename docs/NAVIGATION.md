@@ -35,9 +35,14 @@ segments.
 ## Doors and world geometry are independent layers
 
 `DoorRegistry` (`door.ts`) is deliberately **not** part of `SparseWorld`.
-Door placement is not wired into `ConstructionSystem` yet (`finalizeConstruction`
-only bumps the geometry revision — see its own comment), so navigation
-cannot assume a door corresponds to any particular wall-edge numericId.
+Completing a build order does write world geometry: `finalizeConstruction`
+sets the tile's `topEdge`/`leftEdge` value for an edge-geometry buildable and
+only bumps the geometry revision for everything else. Door placement is still
+not wired into `ConstructionSystem`, for a narrower reason — the only door in
+`BUILDABLE_REGISTRY` is `category: 'object'`, so `edgeNumericIdFor` returns 0
+for it, it writes no edge value and it registers nothing with `DoorRegistry`.
+Navigation therefore still cannot assume a door corresponds to any particular
+wall-edge numericId.
 Instead: a door registered at an edge is authoritative for gating that
 edge, whatever the world's own edge value is; a plain nonzero edge value
 with no registered door is an ordinary, permanently impassable wall. When
