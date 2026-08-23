@@ -2,6 +2,26 @@ import { captureSessionSnapshot, restoreSimulationRuntime, type SessionSnapshotB
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../simulation/runtime/new-session';
 
 /**
+ * Thrown by `startFromSnapshot` when the failure is attributable to the
+ * *snapshot* rather than to the host: the payload decoded as a save envelope
+ * and then could not be restored.
+ *
+ * The distinction is load-bearing, not decoration. `SessionController` demotes
+ * the generation it just tried to load when it sees this error, and demoting
+ * drops that generation from the retained window — so a hung, dead or
+ * mid-shutdown host must *not* raise it, or one broken worker would delete a
+ * player's newest good saves one load at a time. Everything else
+ * (`WorkerSessionHost`'s reply timeout, a `send` that throws, a stopped
+ * session) keeps propagating as an ordinary `Error` and demotes nothing.
+ */
+export class SnapshotRestoreRejectedError extends Error {
+  public constructor(message: string, options?: { readonly cause?: unknown }) {
+    super(message, options);
+    this.name = 'SnapshotRestoreRejectedError';
+  }
+}
+
+/**
  * Where a session's authoritative simulation state actually lives, from
  * the persistence layer's point of view.
  *
@@ -22,7 +42,14 @@ import { createNewSimulationRuntime, type SimulationRuntime } from '../../simula
 export interface SessionRuntimeHost {
   /** Starts a brand-new simulation. */
   startNew(masterSeed: number): Promise<void>;
-  /** Starts a simulation restored from a previously captured bundle. */
+  /**
+   * Starts a simulation restored from a previously captured bundle.
+   *
+   * Rejects with `SnapshotRestoreRejectedError` when the *bundle* was refused,
+   * and with an ordinary `Error` for anything about the host itself (no reply,
+   * gone away). `SessionController` demotes a save generation on the first and
+   * never on the second, so an implementation must not blur the two.
+   */
   startFromSnapshot(bundle: SessionSnapshotBundle): Promise<void>;
   /** Captures current authoritative state. Rejects if no session is running. */
   capture(): Promise<SessionSnapshotBundle>;
@@ -54,7 +81,18 @@ export class InProcessSessionHost implements SessionRuntimeHost {
   }
 
   public async startFromSnapshot(bundle: SessionSnapshotBundle): Promise<void> {
-    this.runtime = restoreSimulationRuntime(bundle).runtime;
+    try {
+      this.runtime = restoreSimulationRuntime(bundle).runtime;
+    } catch (error) {
+      // In process there is no host to blame: `restoreSimulationRuntime`
+      // throwing means the bundle itself could not be restored. The previous
+      // session is left in place, exactly as a worker keeps its own state
+      // when it refuses a snapshot.
+      throw new SnapshotRestoreRejectedError(
+        `Snapshot could not be restored: ${error instanceof Error ? error.message : String(error)}`,
+        { cause: error },
+      );
+    }
   }
 
   public async capture(): Promise<SessionSnapshotBundle> {

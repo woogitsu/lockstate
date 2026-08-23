@@ -786,6 +786,34 @@ dropping the confirmed-corrupt generation(s) so the pointer does not force
 the same recovery scan on every subsequent load. `no-valid-generation` is
 returned only when nothing in the retained window validates.
 
+#### Demotion also covers saves that decode and cannot be restored (#103)
+
+`loadCurrent` can only judge a generation by schema, migration and checksum.
+A save that passes all three and then fails *semantic* restore was returned as
+`{ ok: true, outcome: 'current' }`, so `recoverToGeneration` never ran and the
+bad generation stayed current for ever — every subsequent load in that tab
+repeated it. Such saves are not hypothetical: this schema deliberately does
+not duplicate `SparseWorld.fromSnapshot`'s semantic checks (see the note above
+`worldSnapshotSchema`), so each of those checks describes a save that decodes
+and cannot be restored.
+
+`demoteGeneration(prisonId, generationId)` is the primitive that closes it. It
+drops one generation from the retained window, deletes the record and — when
+that generation was the current one — repoints `currentGenerationId` at the
+newest survivor. Deleting rather than merely un-pointing, for the same reason
+the decode path already deletes: a generation outside `generationIds` is
+unreachable by every read path and would not be cleaned up by `delete()`
+either. A prison whose every generation is demoted keeps its metadata row with
+an empty window, which `loadCurrent` reports as `no-valid-generation` — the
+player still sees the prison and is told its saves are unreadable rather than
+finding it silently gone.
+
+Who calls it is deliberately narrow: `SessionController.loadPrison` demotes
+**only** on a `SnapshotRestoreRejectedError`, the error a host raises when the
+*snapshot* was refused. A host that timed out, was never started or has gone
+away propagates unchanged and costs no generation — demoting a good save
+because the worker was busy would be the more expensive mistake.
+
 ### Autosave
 
 `AutosaveScheduler` schedules a trailing-edge save `intervalMs` after
@@ -866,6 +894,25 @@ Two implementations satisfy it:
   and every request has a timeout, so a worker that faults or hangs
   mid-save surfaces as a **failed save with evidence** rather than a
   promise that never settles.
+
+  That correlation only works if the worker actually sends the `replyTo`, and
+  until #103 no fault did. The pending `initialize` therefore sat until its
+  15 s timeout and reported "the simulation worker did not reply" for a save
+  that was simply bad. Faults raised while handling a request now carry the
+  request's id, which ADR 0003 has always permitted ("A protocol fault may
+  optionally identify the rejected request", decision 2; "A fault that *was*
+  prompted by a request is free to carry the `replyTo` its schema already
+  permits", amendment). A fault with no request behind it — the tick loop, an
+  undecodable message — still carries none, because it must not resolve a
+  pending request that happens to share an id.
+
+  The fault's code reaches the caller too (`WorkerFaultError`), because
+  `snapshot-incompatible` is the one answer that may cost a generation: it
+  becomes a `SnapshotRestoreRejectedError`, and everything else stays an
+  ordinary error. Refusing a snapshot also leaves the worker usable rather
+  than `faulted` — it installed no runtime, and `handleInitialize` accepts
+  only `uninitialized`, so faulting it would make one bad save cost every
+  later load in the tab.
 - **`InProcessSessionHost`** (tests, headless tooling) runs the same
   simulation in-process. This is not a bypass of the boundary — it is the
   same boundary honoured through the same interface, for contexts where a
@@ -922,7 +969,12 @@ pending command queue intact, seed determinism, and both fault paths.
   dirty marker arriving during capture still coalesces into one follow-up
   rather than starting an overlapping save.
 - `loadPrison` sends the validated envelope payload to the host and reports
-  whether recovery fell back to an earlier generation.
+  whether recovery fell back to an earlier generation. When the host *rejects*
+  the snapshot it demotes that generation and tries the next-newest one, so
+  the newest-first walk covers restore failures and not only decode failures
+  (#103, and "Demotion also covers saves that decode and cannot be restored"
+  above). A generation offered again after being demoted throws rather than
+  looping: demotion is what makes the walk terminate.
 
 Default autosave cadence is `DEFAULT_AUTOSAVE_INTERVAL_MS` (30s),
 justified by the measurements below rather than picked by feel — issue

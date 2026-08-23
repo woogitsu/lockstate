@@ -202,6 +202,70 @@ describe('PrisonSaveRepository: loadCurrent recovery', () => {
   });
 });
 
+/**
+ * Issue #103: `loadCurrent` can only judge a generation by schema, migration
+ * and checksum, so a save that decodes and then fails *semantic* restore
+ * stayed current for ever. `demoteGeneration` is the primitive that lets the
+ * session layer retire such a generation, matching what the decode path
+ * already does for one it proves corrupt.
+ */
+describe('PrisonSaveRepository: demoteGeneration', () => {
+  it('drops the demoted generation, deletes it and repoints the current pointer at the newest survivor', async () => {
+    const store = new MemoryLocalSaveStore();
+    const repo = new PrisonSaveRepository(store, { generateGenerationId: idSequence('gen') });
+    await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0' });
+    await repo.save('prison-1', buildEnvelope(1));
+    await repo.save('prison-1', buildEnvelope(2));
+
+    await repo.demoteGeneration('prison-1', 'gen-2');
+
+    const [metadata] = await repo.list();
+    expect(metadata).toMatchObject({ currentGenerationId: 'gen-1', generationIds: ['gen-1'] });
+    // Deleted, not merely un-pointed: a generation outside `generationIds` is
+    // unreachable by every read path and would never be cleaned up.
+    const orphan = await store.runTransaction('readonly', (tx) => tx.getGeneration('prison-1', 'gen-2'));
+    expect(orphan).toBeUndefined();
+
+    const result = await repo.loadCurrent('prison-1');
+    expect(result).toMatchObject({ ok: true, generationId: 'gen-1', outcome: 'current' });
+  });
+
+  it('leaves the pointer alone when the demoted generation was not the current one', async () => {
+    const repo = new PrisonSaveRepository(new MemoryLocalSaveStore(), { generateGenerationId: idSequence('gen') });
+    await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0' });
+    await repo.save('prison-1', buildEnvelope(1));
+    await repo.save('prison-1', buildEnvelope(2));
+
+    await repo.demoteGeneration('prison-1', 'gen-1');
+
+    const [metadata] = await repo.list();
+    expect(metadata).toMatchObject({ currentGenerationId: 'gen-2', generationIds: ['gen-2'] });
+  });
+
+  it('reports no-valid-generation once every generation has been demoted, rather than losing the slot', async () => {
+    const repo = new PrisonSaveRepository(new MemoryLocalSaveStore(), { generateGenerationId: idSequence('gen') });
+    await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0' });
+    await repo.save('prison-1', buildEnvelope(1));
+
+    await repo.demoteGeneration('prison-1', 'gen-1');
+
+    expect(await repo.loadCurrent('prison-1')).toEqual({ ok: false, reason: 'no-valid-generation' });
+    expect(await repo.list()).toHaveLength(1);
+  });
+
+  it('is a no-op for an unknown prison or an unknown generation', async () => {
+    const repo = new PrisonSaveRepository(new MemoryLocalSaveStore(), { generateGenerationId: idSequence('gen') });
+    await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0' });
+    await repo.save('prison-1', buildEnvelope(1));
+
+    await repo.demoteGeneration('prison-2', 'gen-1');
+    await repo.demoteGeneration('prison-1', 'gen-nonexistent');
+
+    const [metadata] = await repo.list();
+    expect(metadata).toMatchObject({ currentGenerationId: 'gen-1', generationIds: ['gen-1'] });
+  });
+});
+
 describe('PrisonSaveRepository: export/import', () => {
   it('exports the current envelope and imports it back through full validation as a new generation', async () => {
     const sourceRepo = new PrisonSaveRepository(new MemoryLocalSaveStore(), { generateGenerationId: idSequence('gen') });

@@ -174,6 +174,49 @@ export class PrisonSaveRepository {
     return { ok: false, reason: 'no-valid-generation' };
   }
 
+  /**
+   * Demotes one generation: drops it from the retained window, deletes the
+   * record, and — if it was the current one — repoints
+   * `currentGenerationId` at the newest generation that remains.
+   *
+   * This is the same demotion `loadCurrent` performs for a generation that
+   * fails schema/checksum validation, exposed for the failures `loadCurrent`
+   * structurally cannot see. A save can pass `decodeSaveEnvelope` and still
+   * be impossible to restore — `save-schema.ts` deliberately does not
+   * duplicate `SparseWorld.fromSnapshot`'s semantic checks — and until #103
+   * such a generation stayed current for ever, so every later load in that
+   * tab retried the same unloadable save.
+   *
+   * Deleting rather than merely un-pointing, for the reason the decode path
+   * already deletes: a generation left out of `generationIds` is unreachable
+   * by every read path and would never be deleted by `delete()` either, so
+   * un-pointing alone would leak it. The caller decides what counts as
+   * confirmed-unrestorable; `SessionController.loadPrison` demotes only on a
+   * `SnapshotRestoreRejectedError`, never on a host that failed to answer.
+   *
+   * A prison whose every generation is demoted keeps its metadata row with
+   * an empty window, which `loadCurrent` reports as `no-valid-generation` —
+   * the same outcome it already returns when nothing in the window validates.
+   */
+  public async demoteGeneration(prisonId: string, generationId: string): Promise<void> {
+    await this.store.runTransaction('readwrite', async (tx) => {
+      const metadata = await tx.getMetadata(prisonId);
+      if (metadata === undefined) return;
+      const generationIds = metadata.generationIds.filter((id) => id !== generationId);
+      // `generationIds` is ordered oldest-first, so the newest survivor is last.
+      const nextCurrent = metadata.currentGenerationId === generationId
+        ? generationIds[generationIds.length - 1]
+        : metadata.currentGenerationId;
+      await tx.putMetadata({
+        ...metadata,
+        currentGenerationId: nextCurrent,
+        generationIds,
+        updatedAt: this.now(),
+      });
+      await tx.deleteGeneration(prisonId, generationId);
+    });
+  }
+
   private async recoverToGeneration(
     prisonId: string,
     recoveredGenerationId: string,
