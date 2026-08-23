@@ -57,4 +57,10 @@ export const defaultLocaleEnCatalog = buildLocalizationCatalog({
   'item.dirty-linen.name': 'Dirty Linen',
   'item.clean-linen.name': 'Clean Linen',
   'item.waste.name': 'Waste',
+
+  'grade.general.name': 'General',
+  'grade.medical.name': 'Medical',
+  'grade.high-security.name': 'High Security',
+  'grade.staff-only.name': 'Staff Only',
+  'grade.administrative.name': 'Administrative',
 });

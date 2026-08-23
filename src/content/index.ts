@@ -4,6 +4,7 @@ export * from './localization';
 export * from './object-catalog';
 export * from './registry';
 export * from './room-catalog';
+export * from './security-grade-catalog';
 export * from './staff-role-catalog';
 export * from './validate-catalog';
 
