@@ -6,7 +6,14 @@ const port = 5183;
 const baseURL = `http://127.0.0.1:${port}`;
 
 /**
- * Real-browser verification for `src/persistence/local/` only.
+ * Real-browser verification for `src/persistence/local/` and `src/ui/`.
+ *
+ * Both are here for the same reason: a claim that only a real browser can
+ * settle. For persistence that is durability across a navigation, real
+ * `DOMException` names and a genuinely exhausted quota; for the UI it is that
+ * a real click on a real disabled button does nothing, that no
+ * `unhandledrejection` fires, and what a *computed* font stack and
+ * `getBoundingClientRect` actually are. Everything else stays headless.
  *
  * `docs/TESTING.md` gates browser test environments behind explicit review,
  * so this stays a narrowly-scoped, opt-in project: it is NOT part of

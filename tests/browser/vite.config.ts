@@ -19,7 +19,7 @@ export default defineConfig({
   // Keep the optimizer off `index.html` (which pulls in Phaser); the harness
   // page only needs the persistence + simulation sources and zod.
   optimizeDeps: {
-    entries: ['tests/browser/harness.html'],
+    entries: ['tests/browser/harness.html', 'tests/browser/ui-harness.html'],
   },
   server: {
     host: '127.0.0.1',
