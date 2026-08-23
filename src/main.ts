@@ -4,12 +4,25 @@ import {
   TouchGestureTracker,
   loadInputSettings,
 } from './input';
+import { IndexedDbLocalSaveStore, openLockstateDatabase } from './persistence/local/indexeddb-store';
+import { PrisonSaveRepository, type SaveResult } from './persistence/local/repository';
+import { LifecycleSaveHandler } from './persistence/session/lifecycle';
+import { SessionController } from './persistence/session/session-controller';
+import { WorkerSessionHost } from './persistence/session/worker-session-host';
+import { SimulationClient } from './simulation/worker/client';
+// `?worker` is Vite's statically-analyzable worker import: it emits the
+// worker as its own chunk and gives us a constructor. See SimulationClient's
+// constructor docs for why a bare `new URL(...)` cannot work here.
+import SimulationWorker from './simulation/worker/worker.ts?worker';
 import {
   tileRangeInBounds,
   visibleWorldBounds,
   zoomAtScreenPoint,
 } from './rendering/camera';
+import { SavePanel } from './ui/save-panel';
 import './styles.css';
+
+const GAME_VERSION = 'lockstate-dev';
 
 class BootScene extends Phaser.Scene {
   private readonly keyboard = new KeyboardInputAdapter(
@@ -161,3 +174,51 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
 };
 
 new Phaser.Game(gameConfig);
+
+/**
+ * Local-first persistence wiring (issue #19). Deliberately independent of
+ * the Phaser game above: `AGENTS.md` requires the main thread to own
+ * "rendering, browser UI and input orchestration" separately, and that
+ * "persistence consumes explicit snapshots" rather than reaching into
+ * renderer internals. The save panel talks only to `SessionController`,
+ * which in turn only ever reads the simulation runtime's own snapshot
+ * methods.
+ *
+ * Storage failures here are non-fatal by design: a browser with IndexedDB
+ * blocked (private mode, hardened settings) must still boot into a
+ * playable, unsaveable session rather than a blank screen.
+ */
+async function bootPersistence(): Promise<void> {
+  const app = document.getElementById('app');
+  if (app === null) return;
+
+  let controller: SessionController;
+  let panel: SavePanel;
+  try {
+    const database = await openLockstateDatabase();
+    const repository = new PrisonSaveRepository(new IndexedDbLocalSaveStore(database));
+
+    // Authoritative simulation state lives in the worker, never here.
+    // Saving goes through its snapshot request/response (ADR 0003), so the
+    // main thread only ever holds derived projections and save envelopes.
+    const client = new SimulationClient(new SimulationWorker());
+    const host = new WorkerSessionHost(client);
+
+    controller = new SessionController(repository, host, {
+      gameVersion: GAME_VERSION,
+      onSaveResult: (_prisonId: string, result: SaveResult) => panel.reportBackgroundSave(result),
+    });
+    panel = new SavePanel(controller, app);
+  } catch (error) {
+    console.warn('Local save storage is unavailable; continuing without persistence.', error);
+    return;
+  }
+
+  // Best-effort only -- see LifecycleSaveHandler's docs on why correctness
+  // never depends on these events firing.
+  new LifecycleSaveHandler(controller).attach();
+
+  await panel.refresh();
+}
+
+void bootPersistence();

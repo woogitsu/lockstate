@@ -30,6 +30,17 @@ describe('classifyStoreError', () => {
     expect(classifyStoreError(error)).toMatchObject({ code: 'quota-exceeded' });
   });
 
+  /**
+   * Real Chromium raises `QuotaExceededError` with an **empty** message
+   * (measured in tests/browser/local-save-quota.spec.ts), which would
+   * otherwise leave the player-facing failure evidence blank for the most
+   * likely storage failure of all.
+   */
+  it('never yields an empty message, falling back to the error name', () => {
+    const error = Object.assign(new Error(''), { name: 'QuotaExceededError' });
+    expect(classifyStoreError(error)).toEqual({ code: 'quota-exceeded', message: 'QuotaExceededError' });
+  });
+
   it('classifies AbortError and related transaction-lifecycle errors as transaction-aborted', () => {
     for (const name of ['AbortError', 'TransactionInactiveError', 'InvalidStateError']) {
       const error = Object.assign(new Error(name), { name });

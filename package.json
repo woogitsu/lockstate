@@ -19,6 +19,7 @@
     "typecheck": "tsc -b --pretty false",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:browser": "playwright test --config tests/browser/playwright.config.ts",
     "benchmark": "node scripts/run-benchmarks.mjs --profile full",
     "benchmark:smoke": "node scripts/run-benchmarks.mjs --profile smoke --output benchmark-results/smoke.json",
     "verify:benchmark": "pnpm benchmark:smoke && node scripts/verify-benchmark-result.mjs benchmark-results/smoke.json",
@@ -38,6 +39,7 @@
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "1.53.1",
+    "@playwright/test": "1.56.1",
     "@types/node": "24.10.1",
     "fake-indexeddb": "6.2.5",
     "typescript": "7.0.2",

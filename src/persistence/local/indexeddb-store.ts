@@ -85,7 +85,29 @@ export class IndexedDbLocalSaveStore implements LocalSaveStore {
     // microtasks). Modern engines keep a transaction alive across
     // microtask gaps between its own requests, but awaiting unrelated I/O
     // here would let it auto-commit or expire before later operations run.
-    const result = await work(tx);
+    let result: T;
+    try {
+      result = await work(tx);
+    } catch (error) {
+      // Without this, a throw from `work` rejects the returned promise but
+      // leaves the transaction to commit normally -- any writes already
+      // staged before the throw would land, breaking `LocalSaveStore`'s
+      // "commit or fail together" contract and silently diverging from
+      // `MemoryLocalSaveStore`, which only publishes staging once `work`
+      // resolves. Verified against real Chromium in
+      // tests/browser/local-save-errors.spec.ts.
+      // Attach the handler *before* aborting: the abort below rejects
+      // `committed`, and this path rethrows `work`'s original error rather
+      // than awaiting it, so without a handler that rejection would surface
+      // as an unhandled promise rejection in the page.
+      void committed.catch(() => {});
+      try {
+        idbTransaction.abort();
+      } catch {
+        // Already finished (committed or aborted); nothing left to roll back.
+      }
+      throw error;
+    }
     await committed;
     return result;
   }

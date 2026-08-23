@@ -3,6 +3,13 @@ import {
   createNewSimulationRuntime,
   type SimulationRuntime,
 } from '../runtime/new-session';
+import {
+  captureSessionSnapshot,
+  restoreSimulationRuntime,
+  SESSION_SNAPSHOT_SCHEMA_ID,
+  SESSION_SNAPSHOT_SCHEMA_VERSION,
+  type SessionSnapshotBundle,
+} from '../runtime/restore-session';
 import { FixedStepClock, type ClockControl } from '../clock/fixed-step-clock';
 import { 
   type MainToWorkerMessage, 
@@ -157,11 +164,32 @@ export class SimulationWorkerStateMachine {
     }
 
     if (msg.payload.source.kind === 'new') {
-      this._runtime = createNewSimulationRuntime();
+      this._runtime = createNewSimulationRuntime(msg.payload.source.masterSeed);
       this._kernel = this._runtime.kernel;
     } else {
-      // Implement snapshot restore when needed
-      throw new Error('Snapshot restore not yet implemented');
+      // Restore from a persisted snapshot (ADR 0003: "Initialization
+      // explicitly chooses either a new simulation with a u32 master seed
+      // or a versioned snapshot"). The envelope schema/checksum was already
+      // validated by the persistence layer before the snapshot was sent;
+      // what this boundary must still reject is a payload carrying a
+      // schemaId/version this worker build does not understand.
+      const { snapshot } = msg.payload.source;
+      if (snapshot.schemaId !== SESSION_SNAPSHOT_SCHEMA_ID || snapshot.schemaVersion !== SESSION_SNAPSHOT_SCHEMA_VERSION) {
+        return this.fault(
+          'snapshot-incompatible',
+          `Cannot restore snapshot "${snapshot.schemaId}" v${snapshot.schemaVersion}; this build understands "${SESSION_SNAPSHOT_SCHEMA_ID}" v${SESSION_SNAPSHOT_SCHEMA_VERSION}.`,
+        );
+      }
+      if (snapshot.transport !== 'structured-clone') {
+        return this.fault('snapshot-incompatible', `Session snapshots must use the structured-clone transport, got "${snapshot.transport}".`);
+      }
+
+      try {
+        this._runtime = restoreSimulationRuntime(snapshot.data as unknown as SessionSnapshotBundle).runtime;
+      } catch (error) {
+        return this.fault('snapshot-incompatible', `Snapshot could not be restored: ${error instanceof Error ? error.message : String(error)}`);
+      }
+      this._kernel = this._runtime.kernel;
     }
 
     this._clock = new FixedStepClock(50, { mode: 'paused' });
@@ -247,12 +275,24 @@ export class SimulationWorkerStateMachine {
     }
   }
 
+  /**
+   * ADR 0003: "Saving is represented by a snapshot request and correlated
+   * snapshot response." This is therefore the *only* way persisted state
+   * leaves the simulation — the main thread never holds an authoritative
+   * runtime of its own, and never scrapes renderer state (issue #19: "save
+   * creation consumes explicit Worker snapshots, not renderer internals").
+   *
+   * The payload carries the full session bundle (kernel + world +
+   * construction + entities) rather than the kernel alone, under its own
+   * `schemaId`/`schemaVersion` — which ADR 0003 explicitly allows to evolve
+   * independently of the envelope version.
+   */
   private handleRequestSnapshot(msg: Extract<MainToWorkerMessage, { kind: 'simulation/request-snapshot' }>): void {
-    if (!this._kernel) {
+    if (!this._kernel || !this._runtime) {
       return this.fault('not-initialized', 'Kernel is not initialized.');
     }
 
-    const snapshot = this._kernel.snapshot();
+    const bundle = captureSessionSnapshot(this._runtime);
     this.post({
       protocolVersion: SIMULATION_PROTOCOL_VERSION,
       messageId: crypto.randomUUID(),
@@ -263,9 +303,9 @@ export class SimulationWorkerStateMachine {
         reason: msg.payload.reason,
         snapshot: {
           transport: 'structured-clone',
-          schemaId: 'core-snapshot',
-          schemaVersion: 1,
-          data: snapshot as any, // Cast as it's fully JSON-compatible
+          schemaId: SESSION_SNAPSHOT_SCHEMA_ID,
+          schemaVersion: SESSION_SNAPSHOT_SCHEMA_VERSION,
+          data: bundle as any, // Structurally JSON-compatible; validated as a save envelope on the persistence side.
         }
       }
     });
