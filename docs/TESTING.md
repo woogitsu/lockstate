@@ -23,23 +23,28 @@ The persistence measurement harness is likewise opt-in: `pnpm exec vitest run --
 
 `pnpm verify:assets` is separate from `pnpm verify` for the same reason and by
 the same rule: it reads the runtime atlas PNGs, which live in Git LFS, so it is
-the only check that needs LFS content. CI runs it as a required `assets` job —
-the only job checked out with `lfs: true` — so ordinary runs stay on a cheap
-pointer-only checkout (see [ADR-0012](./adr/0012-art-storage-and-runtime-asset-delivery.md)).
-Separate does **not** mean optional. A pointer-only checkout cannot pass it
-silently: the validator recognises a Git LFS pointer and fails naming it, rather
-than treating an unfetched file as valid art, and the job asserts the PNG
-signature and a size floor on every atlas before it even runs the validator.
+the only check that needs LFS content. CI runs it as a required `assets` job, so
+ordinary runs stay on a cheap pointer-only checkout (see
+[ADR-0012](./adr/0012-art-storage-and-runtime-asset-delivery.md)). Only `*.png`
+is LFS-tracked; the atlas manifests and `asset-registry.json` are plain files, so
+nothing in `pnpm verify` needs LFS content at all.
 
-The `assets` job `needs: verify`, and the `verify` job runs
-`scripts/provision-git-lfs.sh`. That ordering is forced rather than stylistic:
-`actions/checkout` is the first step of its own job, so a job cannot install the
-`git-lfs` binary that its own `lfs: true` checkout requires — on a runner
-without it the checkout fails in seconds with "Unable to locate executable file:
-git-lfs". Provisioning in the job before it is what lets a runner rebuilt from
-scratch go green with nobody remembering a manual step, exactly as
-`scripts/provision-postgres.sh` does for `verify:sql`. Both scripts are
-idempotent, check before acting, and add no third-party apt repository.
+Separate does **not** mean optional, and a pointer-only checkout cannot pass it
+silently. The validator recognises a Git LFS pointer and fails naming it rather
+than treating an unfetched file as valid art, and the job asserts the PNG
+signature and a size floor on every atlas before it even runs the validator. That
+assertion is not belt-and-braces theatre: it is what caught `actions/checkout`
+with `lfs: true` leaving pointers in place on this runner.
+
+The `assets` job provisions `git-lfs` with `scripts/provision-git-lfs.sh` and
+then fetches content with an explicit, path-scoped `git lfs pull` rather than
+using `lfs: true`. On a self-hosted runner the workspace is already at the target
+commit from the previous job, so checkout is a no-op, the LFS smudge filter never
+runs, and `lfs: true` downloads objects that never reach the working tree. An
+explicit pull materialises regardless, and takes a path filter so the job fetches
+only the ~17 MB it reads instead of all 55 MB. Provisioning lives in the job that
+uses it, idempotent and with no third-party apt repository, exactly as
+`scripts/provision-postgres.sh` does for `verify:sql`.
 
 The rejection modes themselves are proven in the ordinary suite.
 `tests/contract/runtime-atlas-validation.test.ts` drives the same validator

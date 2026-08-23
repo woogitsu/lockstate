@@ -72,16 +72,20 @@ failure in one pass.
 pnpm verify:assets
 ```
 
-CI runs it as a required `assets` job. That job is the only one checked out with
-`lfs: true`, because it is the only check that reads image bytes; see
+CI runs it as a required `assets` job, the only check that reads image bytes; see
 [ADR-0012](./adr/0012-art-storage-and-runtime-asset-delivery.md). A checkout
-without LFS leaves 130-byte pointer files in place of PNGs, so the validator
-detects a pointer and fails naming it rather than passing vacuously, and the job
-asserts the PNG signature and a size floor on every atlas before validating.
+without LFS content leaves 130-byte pointer files in place of PNGs, so the
+validator detects a pointer and fails naming it rather than passing vacuously,
+and the job asserts the PNG signature and a size floor on every atlas before
+validating.
 
-The job `needs: verify`, which runs `scripts/provision-git-lfs.sh`, because
-`actions/checkout` is the first step of its own job and so cannot install the
-`git-lfs` binary its own `lfs: true` checkout requires.
+That job provisions `git-lfs` with `scripts/provision-git-lfs.sh` and fetches
+with an explicit `git lfs pull --include="public/assets/actors"`, rather than
+`actions/checkout` with `lfs: true`. On a self-hosted runner whose workspace is
+already at the target commit, checkout is a no-op, so the LFS smudge filter never
+runs and `lfs: true` downloads objects that never reach the working tree. The
+explicit pull materialises regardless, and its path filter fetches only the
+runtime atlases instead of every LFS object in the repository.
 
 `tests/contract/runtime-atlas-validation.test.ts` drives that same
 implementation against tiny synthetic fixtures to prove each rejection mode

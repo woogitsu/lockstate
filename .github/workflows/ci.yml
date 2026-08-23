@@ -48,13 +48,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Provisioned here, not in the `assets` job that needs it: `actions/checkout`
-      # is the first step of its own job, so a job cannot install the binary its
-      # own `lfs: true` checkout requires. `assets` therefore `needs: verify`,
-      # and a runner rebuilt from scratch heals itself on the first run.
-      - name: Provision Git LFS
-        run: bash scripts/provision-git-lfs.sh
-
       - name: Verify project
         run: pnpm verify
 
@@ -95,21 +88,56 @@ jobs:
   # (docs/TESTING.md), which found three real defects the first time it was run.
   assets:
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-    # `verify` provisions git-lfs. `actions/checkout` is the first step of its
-    # own job, so this job cannot install the binary its `lfs: true` checkout
-    # depends on; depending on `verify` is what makes a from-scratch runner heal
-    # itself instead of failing with "Unable to locate executable file: git-lfs".
-    # It also means this job never spends LFS bandwidth on a build that is
-    # already failing.
+    # Only so a failing build does not spend metered LFS bandwidth. Nothing in
+    # this job depends on `verify` having provisioned anything.
     needs: verify
     runs-on: [self-hosted, Linux, X64, wsl2]
     timeout-minutes: 20
     steps:
-      - name: Checkout with LFS art
+      # Deliberately NOT `lfs: true`, for two measured reasons.
+      #
+      # 1. It does not work on a reused workspace. `actions/checkout` runs
+      #    `git lfs fetch` and then relies on the following `git checkout` to
+      #    smudge pointers into real files. This is a self-hosted runner, so the
+      #    workspace is already at the target commit from the `verify` job; the
+      #    checkout is a no-op, the smudge filter never runs, and the objects sit
+      #    downloaded-but-unused while the working tree keeps 130-byte pointers.
+      #    Observed in run 32637895668: LFS fetch succeeded, every atlas was
+      #    still a pointer.
+      # 2. It fetches every LFS object for the ref -- all 55 MB, including the
+      #    source sheets this gate never reads.
+      #
+      # An explicit `git lfs pull` below fixes both: it materialises regardless
+      # of whether the checkout moved anything, and it takes a path filter.
+      - name: Checkout
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
-          lfs: true
+
+      - name: Provision Git LFS
+        run: bash scripts/provision-git-lfs.sh
+
+      # Only the runtime atlases (~17 MB), not the ~36 MB of source sheets under
+      # public/game-content/ that this gate never opens.
+      #
+      # The credential is supplied for this command alone and removed on exit,
+      # rather than by relaxing `persist-credentials` above: this is a private
+      # repository so the transfer needs auth, but a self-hosted runner keeps its
+      # workspace between jobs and a token left in .git/config would outlive this
+      # one. This is the same config key `actions/checkout` sets for its own
+      # `git lfs fetch`, which is why git-lfs honours it.
+      - name: Fetch runtime art from Git LFS
+        env:
+          LFS_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cleanup() {
+            git config --local --unset-all 'http.https://github.com/.extraheader' 2>/dev/null || true
+          }
+          trap cleanup EXIT
+          git config --local 'http.https://github.com/.extraheader' \
+            "AUTHORIZATION: basic $(printf 'x-access-token:%s' "$LFS_TOKEN" | base64 -w0)"
+          git lfs pull --include="public/assets/actors"
 
       # A green run must mean the validator saw pixels. `pnpm verify:assets`
       # already refuses a pointer file, but this asserts it up front and prints

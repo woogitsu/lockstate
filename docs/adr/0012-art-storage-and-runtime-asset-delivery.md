@@ -50,30 +50,37 @@ consequences, so they belong in an ADR rather than in a `_headers` file and a
 - Runtime atlases are validated against the authored contract in
   `assets/contracts/` by `tooling/validate-runtime-atlas.mjs`, exposed as
   `pnpm verify:assets` and run in CI as a required `assets` job.
-- That job is the only one that checks out LFS content (`lfs: true`). The main
-  `verify` job stays on a pointer-only checkout so ordinary runs do not consume
-  metered LFS bandwidth.
+- That job is the only one that materialises LFS content. The main `verify` job
+  stays on a pointer-only checkout so ordinary runs do not consume metered LFS
+  bandwidth, which is safe because only `*.png` is LFS-tracked: the atlas
+  manifests and `asset-registry.json` are plain files.
 - Because a pointer-only checkout is the normal case, the validator recognises a
   Git LFS pointer and fails naming it, rather than treating an unfetched file as
   valid art. A gate that cannot tell the difference is worse than no gate. The
   job additionally asserts the PNG signature and a size floor on every atlas
   before validating, so the log carries positive evidence that image bytes
   materialised rather than only the absence of a failure.
-- The `git-lfs` binary is provisioned by `scripts/provision-git-lfs.sh`, run in
-  the `verify` job, and `assets` declares `needs: verify`. This ordering is
-  forced: `actions/checkout` is the first step of its own job, so a job cannot
-  install the binary its own `lfs: true` checkout depends on. A runner missing
-  it fails the checkout in seconds before any other step can help. Provisioning
-  it in the job before is the only shape that both keeps the simple `lfs: true`
-  checkout and lets a from-scratch runner heal itself, and it mirrors
+- The `assets` job does **not** use `actions/checkout` with `lfs: true`. It
+  checks out plain, provisions the client with `scripts/provision-git-lfs.sh`,
+  and fetches with an explicit `git lfs pull --include="public/assets/actors"`.
+  Two measured reasons:
+  - `lfs: true` does not work on a reused workspace. Checkout runs
+    `git lfs fetch` and then relies on the following `git checkout` to smudge
+    pointers into files. On a self-hosted runner the workspace is already at the
+    target commit from the previous job, so the checkout is a no-op, the smudge
+    filter never runs, and the objects sit downloaded-but-unused while the
+    working tree keeps its 130-byte pointers. Observed in run 32637895668: the
+    LFS fetch succeeded and every atlas was still a pointer.
+  - `lfs: true` fetches every LFS object for the ref — all 55 MB, including the
+    source sheets this gate never opens. The explicit pull takes a path filter
+    and moves ~17 MB.
+- Provisioning lives in the job that uses it, which is possible precisely
+  because checkout no longer needs the binary at step one. A gate that depends
+  on hand-installed runner state is not a gate; this mirrors
   `scripts/provision-postgres.sh` (PR #54) rather than inventing a second
-  pattern. It also stops the asset job spending LFS bandwidth on a build that is
-  already failing.
-- Known limitation: this heals a rebuilt runner because the self-hosted pool is
-  a single machine, so `assets` lands where `verify` provisioned. If the pool
-  grows, `git-lfs` belongs in the runner image and the `needs:` edge becomes an
-  optimisation rather than a prerequisite. Until then the failure mode is loud
-  and names the missing binary, not silent.
+  pattern.
+- `assets` still declares `needs: verify`, now purely so a failing build does
+  not spend metered LFS bandwidth.
 
 ### Delivery and caching
 

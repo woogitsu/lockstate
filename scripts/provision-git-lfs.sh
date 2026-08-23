@@ -7,14 +7,18 @@
 # nothing real to check.
 #
 # WHY A SCRIPT RATHER THAN AN ASSUMED RUNNER PREREQUISITE.
-# `actions/checkout` is the first step of its own job, so nothing inside the
-# `assets` job can install `git-lfs` before that job's `lfs: true` checkout
-# runs. On a runner without the binary that checkout fails in seconds with
-# "Unable to locate executable file: git-lfs" -- which is exactly how the gap
-# was found. `.github/workflows/ci.yml` therefore runs this in the `verify` job,
-# which `assets` depends on, so the binary exists before the LFS checkout
-# happens. Same reasoning as `scripts/provision-postgres.sh` (PR #54): a gate
-# that depends on undocumented, hand-installed runner state is not a gate.
+# The `assets` CI job checks out without `lfs: true` and then runs an explicit
+# `git lfs pull`, so this can provision the binary inside that job, before the
+# step that needs it. A gate that depends on undocumented, hand-installed runner
+# state is not a gate -- the same reasoning as `scripts/provision-postgres.sh`
+# (PR #54), and the reason `git-lfs` missing from the runner was able to break
+# CI silently in the first place.
+#
+# Note that provisioning could *not* live in that job if it used
+# `actions/checkout` with `lfs: true`: checkout is the first step of its own job,
+# so nothing can install the binary that step requires. See the comments in
+# `.github/workflows/ci.yml` for why an explicit pull is the better shape
+# regardless.
 #
 # IDEMPOTENT. It checks before it acts, so a re-run does no apt work and exits
 # in well under a second.
@@ -23,10 +27,10 @@
 # (3.7.1-1 on Ubuntu 26.04); nothing here adds an external source or pins a
 # version.
 #
-# DOES NOT TOUCH GIT FILTER CONFIGURATION. `actions/checkout` with `lfs: true`
-# fetches and checks out LFS content itself. Writing `filter.lfs.*` here would
-# only add a way for one job to change how a later job on the same self-hosted
-# runner materialises files.
+# DOES NOT TOUCH GIT FILTER CONFIGURATION. `git lfs pull` materialises content
+# explicitly and needs no clean/smudge filter to do it. Writing `filter.lfs.*`
+# here would only add a way for one job to change how a later job on the same
+# self-hosted runner materialises files.
 #
 # Usage:
 #   scripts/provision-git-lfs.sh
