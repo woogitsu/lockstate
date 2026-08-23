@@ -101,6 +101,10 @@ manifests and the manifests name the images, so a re-rendered atlas needs no
 renderer change. `directionFromMovement` is the single place the contract's
 "direction describes world movement, `+x` east and `+y` south" rule is encoded.
 
+`AtlasFrameIndex` flattens what the library can resolve into a per-frame lookup
+the render loop can afford, and the world renderer draws through it; see
+[RENDERING.md](./RENDERING.md).
+
 Frames, pivots and direction are presentation metadata shared by the renderer
 and placement previews. They are never simulation authority.
 
