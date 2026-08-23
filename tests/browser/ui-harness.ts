@@ -2,7 +2,7 @@ import type { SaveResult } from '../../src/persistence/local/repository';
 import type { PrisonSlotMetadata } from '../../src/persistence/local/store';
 import type { ActiveSession, SessionLoadOutcome } from '../../src/persistence/session/session-controller';
 import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
-import { type HudIntent, type HudViewModel, mountHud } from '../../src/ui/hud';
+import { EMPTY_HUD_VIEW_MODEL, type HudIntent, type HudViewModel, mountHud } from '../../src/ui/hud';
 import { SavePanel, type SavePanelSessions } from '../../src/ui/save-panel';
 import type { BuildProbe, ButtonState, HudProbe, LayoutBox, LayoutProbe, LockstateUiHarness } from './ui-harness-api';
 import { HUD_MESSAGE_KEY, type HudBuildViewModel } from '../../src/ui/hud';
@@ -105,7 +105,8 @@ const localizer = new Localizer({ locale: 'en', catalogs: [defaultMessageCatalog
 
 const BASE_VIEW_MODEL: HudViewModel = {
   counts: { prisoners: 142, prisonerCapacity: 180, staff: 27, rooms: 61, activeIncidents: 0, contrabandFound: 4 },
-  clock: { day: 3, minuteOfDay: 7 * 60 + 45, mode: 'paused', speed: 1 },
+  // Day 3, a quarter of the way through a 2,400-tick day, paused.
+  clock: { day: 3, tickOfDay: 600, dayLengthTicks: 2_400, mode: 'paused', speed: 1 },
   alerts: [],
 };
 
@@ -181,12 +182,14 @@ window.lockstateUiHarness = {
     await new Promise((resolve) => setTimeout(resolve, 0));
   },
 
-  mountHudShell(): void {
+  mountHudShell(options?: { readonly empty?: boolean }): void {
     hud?.destroy();
     intents.length = 0;
     hud = mountHud(root, {
       localizer,
-      viewModel: BASE_VIEW_MODEL,
+      // `empty` mounts the shipped default instead of a populated prison --
+      // the state the real app paints before any session exists.
+      viewModel: options?.empty === true ? EMPTY_HUD_VIEW_MODEL : BASE_VIEW_MODEL,
       build: BUILD_MODEL,
       onIntent: (intent: HudIntent) => {
         intents.push(JSON.stringify(intent));
@@ -225,6 +228,8 @@ window.lockstateUiHarness = {
       pressedTransport: [...document.querySelectorAll<HTMLElement>('.hud-strip__transport [aria-pressed="true"]')].map(
         (node) => node.getAttribute('title') ?? '',
       ),
+      clockDay: document.querySelector('.hud-clock__day')?.textContent ?? '',
+      clockDayProgress: document.querySelector('.hud-clock__day-progress')?.textContent ?? '',
       valueCount: values.length,
       nonMonospaceValues: nonMonospace.map((node) => node.textContent ?? ''),
       // Scoped to the minimap frame: the Build panel uses the same section
