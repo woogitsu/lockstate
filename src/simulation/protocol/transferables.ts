@@ -36,6 +36,10 @@ export function collectProtocolTransferables(
     case 'protocol/pong':
     case 'simulation/ready':
     case 'simulation/clock-state':
+    // Ten integers under structured clone. ADR 0003's transferable policy
+    // reserves `ArrayBuffer` for payloads profiling shows need ownership
+    // transfer, which this is the opposite of.
+    case 'simulation/status-counts':
     case 'simulation/command-result':
     case 'simulation/stopped':
     case 'protocol/error':
