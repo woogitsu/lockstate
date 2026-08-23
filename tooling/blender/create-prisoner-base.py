@@ -1,4 +1,8 @@
-"""Create a procedural Lockstate actor source scene and walk cycle."""
+"""Create a procedural Lockstate actor source scene and walk cycle.
+
+Determinism-critical behaviour lives in `pipeline_common`; see that module for
+what issue #64 measured and why each control exists.
+"""
 import argparse
 import math
 from pathlib import Path
@@ -6,6 +10,9 @@ import sys
 
 import bpy
 from mathutils import Vector
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import pipeline_common  # noqa: E402  (Blender does not add the script directory to sys.path)
 
 PROFILES = {
     "actor.prisoner.base": {"uniform": (0.75, 0.12, 0.015), "patch": (0.55, 0.57, 0.58), "headwear": None},
@@ -20,6 +27,10 @@ def arguments():
     separator = sys.argv.index("--") if "--" in sys.argv else len(sys.argv)
     parser = argparse.ArgumentParser()
     parser.add_argument("--asset-id", choices=sorted(PROFILES), required=True)
+    # The output path used to be hard-coded relative to this file, which forced
+    # anything wanting a scratch build -- the determinism runner in particular --
+    # to clone the whole tooling tree at the same directory depth.
+    parser.add_argument("--output", type=Path, default=None, help="destination .blend (default: assets/source/blender/<asset-id>.blend)")
     return parser.parse_args(sys.argv[separator + 1:])
 
 
@@ -50,9 +61,15 @@ def cube(name, location, scale, material, parent, bevel=0.06):
 
 
 def sphere(name, location, scale, material, parent):
-    bpy.ops.mesh.primitive_uv_sphere_add(segments=24, ring_count=12, location=location)
-    item = bpy.context.object
-    item.name, item.scale = name, scale
+    """Add a sphere whose face and loop order is identical on every run.
+
+    This used `bpy.ops.mesh.primitive_uv_sphere_add`, which re-orders faces and
+    loops on each call and was the single cause of run-to-run pixel drift in the
+    walk atlas (issue #64). `pipeline_common.uv_sphere_mesh` produces the same
+    vertex positions in a fixed order.
+    """
+    item = pipeline_common.add_mesh_object(name, pipeline_common.uv_sphere_mesh(name, segments=24, ring_count=12), location)
+    item.scale = scale
     item.parent = parent
     if parent is not None:
         item.matrix_parent_inverse = parent.matrix_world.inverted()
@@ -100,9 +117,11 @@ def face(object_, target):
 
 
 def main():
+    pipeline_common.require_blender_version()
     options = arguments()
     profile = PROFILES[options.asset_id]
-    output = Path(__file__).resolve().parents[2] / f"assets/source/blender/{options.asset_id}.blend"
+    output = options.output or Path(__file__).resolve().parents[2] / f"assets/source/blender/{options.asset_id}.blend"
+    output = output.resolve()
     bpy.ops.object.select_all(action="SELECT")
     bpy.ops.object.delete(use_global=False)
     uniform = mat("Uniform", profile["uniform"], 0.72)
@@ -146,8 +165,7 @@ def main():
     scene = bpy.context.scene
     scene.camera, scene.frame_start, scene.frame_end = camera, 1, 8
     scene.render.resolution_x, scene.render.resolution_y, scene.render.resolution_percentage = 256, 384, 100
-    scene.render.image_settings.file_format, scene.render.image_settings.color_mode = "PNG", "RGBA"
-    scene.render.film_transparent = True
+    pipeline_common.apply_deterministic_render_settings(scene)
     output.parent.mkdir(parents=True, exist_ok=True)
     bpy.ops.wm.save_as_mainfile(filepath=str(output))
 

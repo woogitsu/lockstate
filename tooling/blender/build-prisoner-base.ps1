@@ -1,3 +1,10 @@
+# Rebuild the starter actor set: source scenes, directional frames, atlases,
+# validation and the runtime asset registry.
+#
+# The pipeline is pinned to the Blender version in `pipeline_common.py`
+# (SUPPORTED_BLENDER_VERSION). Each Blender script asserts `bpy.app.version`
+# against it and refuses to run otherwise, so pointing -Blender at another
+# install fails immediately instead of producing subtly different pixels.
 [CmdletBinding()]
 param(
     [string]$Blender = 'C:\Program Files\Blender Foundation\Blender 5.2\blender.exe'
@@ -13,17 +20,21 @@ if (-not (Test-Path -LiteralPath $Blender -PathType Leaf)) {
     throw "Blender executable was not found: $Blender"
 }
 
+# --factory-startup keeps user preferences, enabled add-ons and startup files out
+# of the render. Without it the output depends on whoever's machine ran it.
+$blenderFlags = @('--background', '--factory-startup', '--python-exit-code', '1')
+
 $actorIds = @('actor.prisoner.base', 'actor.guard.base', 'actor.medic.base', 'actor.cook.base', 'actor.staff.base')
 foreach ($actorId in $actorIds) {
     $blend = Join-Path $repositoryRoot "assets\source\blender\$actorId.blend"
     $actorIntermediate = Join-Path $intermediate (Join-Path 'build' $actorId)
-    & $Blender --background --python-exit-code 1 --python (Join-Path $PSScriptRoot 'create-prisoner-base.py') -- --asset-id $actorId
+    & $Blender @blenderFlags --python (Join-Path $PSScriptRoot 'create-prisoner-base.py') -- --asset-id $actorId --output $blend
     if ($LASTEXITCODE -ne 0) { throw "Source-scene creation failed for $actorId." }
 
-    & $Blender --background --python-exit-code 1 $blend --python (Join-Path $PSScriptRoot 'export-directional-sprites.py') -- --asset-id $actorId --output $actorIntermediate
+    & $Blender @blenderFlags $blend --python (Join-Path $PSScriptRoot 'export-directional-sprites.py') -- --asset-id $actorId --output $actorIntermediate
     if ($LASTEXITCODE -ne 0) { throw "Directional sprite export failed for $actorId." }
 
-    & $Blender --background --python-exit-code 1 --python (Join-Path $PSScriptRoot 'pack-sprite-atlas.py') -- --input $actorIntermediate --contract $contract --output $runtime
+    & $Blender @blenderFlags --python (Join-Path $PSScriptRoot 'pack-sprite-atlas.py') -- --input $actorIntermediate --contract $contract --output $runtime
     if ($LASTEXITCODE -ne 0) { throw "Atlas packing failed for $actorId." }
 }
 
