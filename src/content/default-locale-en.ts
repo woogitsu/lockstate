@@ -50,4 +50,11 @@ export const defaultLocaleEnCatalog = buildLocalizationCatalog({
   'staff-role.doctor.name': 'Doctor',
   'staff-role.maintenance-worker.name': 'Maintenance Worker',
   'staff-role.kitchen-staff.name': 'Kitchen Staff',
+
+  'item.brick.name': 'Brick',
+  'item.wood-plank.name': 'Wood Plank',
+  'item.food-ration.name': 'Food Ration',
+  'item.dirty-linen.name': 'Dirty Linen',
+  'item.clean-linen.name': 'Clean Linen',
+  'item.waste.name': 'Waste',
 });

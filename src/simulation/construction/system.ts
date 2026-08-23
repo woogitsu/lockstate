@@ -1,6 +1,7 @@
 import { type SystemRegistration, type SimulationContext } from '../kernel/system';
 import { type BuildOrder } from './build-order';
 import { getBuildableDefinition } from './definition';
+import { type ConstructionMaterialsProvider, UNLIMITED_MATERIALS_PROVIDER } from './materials-provider';
 import { SparseWorld } from '../world/sparse-world';
 import { tileToChunk } from '../world/coordinates';
 
@@ -25,7 +26,10 @@ export class ConstructionSystem implements SystemRegistration {
   private currentTransaction: string[] = [];
   private currentTransactionId: string | undefined;
 
-  public constructor(private readonly world: SparseWorld) {}
+  public constructor(
+    private readonly world: SparseWorld,
+    private readonly materialsProvider: ConstructionMaterialsProvider = UNLIMITED_MATERIALS_PROVIDER,
+  ) {}
 
   public submitOrder(order: BuildOrder): void {
     if (this.orders.has(order.id)) {
@@ -135,13 +139,18 @@ export class ConstructionSystem implements SystemRegistration {
           order.state = 'materials-pending';
           break;
           
-        case 'materials-pending':
-          // Mock logistics: instantly allocate materials
-          for (const req of def.materialsRequired) {
-            order.materialsAllocated.push({ itemId: req.itemId, quantity: req.quantity });
-          }
+        case 'materials-pending': {
+          // Issue #25: real logistics can wire a ContainerMaterialsProvider
+          // here so an order genuinely waits for delivered materials;
+          // UNLIMITED_MATERIALS_PROVIDER (the default) preserves #16's
+          // original always-available behavior for every caller that
+          // hasn't opted into a real materials substrate.
+          const satisfied = this.materialsProvider.tryAllocate(def.materialsRequired);
+          if (!satisfied) break; // stays materials-pending, retried next scheduled tick
+          order.materialsAllocated = def.materialsRequired.map((req) => ({ itemId: req.itemId, quantity: req.quantity }));
           order.state = 'assigned';
           break;
+        }
 
         case 'assigned':
           // Mock job assignment: immediately start

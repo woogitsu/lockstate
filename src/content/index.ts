@@ -1,4 +1,5 @@
 export * from './default-locale-en';
+export * from './item-catalog';
 export * from './localization';
 export * from './object-catalog';
 export * from './registry';
