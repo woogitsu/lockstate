@@ -59,7 +59,7 @@ fails `pnpm test` without needing any art at all.
 
 ```bash
 scripts/provision-postgres.sh   # needs root or passwordless sudo
-pnpm verify:sql                 # 63 pgTAP assertions
+pnpm verify:sql                 # 89 pgTAP assertions
 ```
 
 It is deliberately **version-agnostic**. It uses whichever PostgreSQL major version is already installed, or failing that whichever one the distribution ships, and installs the matching `postgresql-<major>-pgtap`. No third-party apt repository is added and no major version is pinned anywhere: the schema is executed and green on **PostgreSQL 16.13 + pgTAP 1.3.2** and on **18.6 + pgTAP 1.3.4**, and Ubuntu 26.04 does not package 16 at all. It then ensures the cluster is running and that the invoking user has a login role with SUPERUSER — the compatibility harness creates extensions and roles, so CREATEDB alone is insufficient. Set `DATABASE_URL` to point `pnpm verify:sql` at an existing server instead; the role step then does nothing.
@@ -96,7 +96,7 @@ A single non-DOM Web API can be reviewed and approved narrower than a full brows
 
 ```bash
 scripts/provision-playwright-browsers.sh   # no root, no apt, no third-party repository
-pnpm test:browser                          # 31 tests
+pnpm test:browser                          # 40 tests
 ```
 
 The suite starts its own dev server on port 5183 and **never reuses one that is already listening**. It used to reuse outside CI, which meant a run could attach to a server started from a different checkout of this repository — the suite then loaded that tree's `src/**` and reported on code the developer was not editing. That was observed, not theorised: a deliberately broken design token came back green because the page under test came from another worktree. Refusing to reuse turns that into a loud "port is already used"; set `LOCKSTATE_BROWSER_TEST_PORT` to run a second checkout alongside the first. The CI job sets it to a port the kernel just handed out, because the self-hosted runner shares its host with active development and 5183 is regularly taken there — the first run of that job died on exactly this.

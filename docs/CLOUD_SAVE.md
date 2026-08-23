@@ -53,9 +53,12 @@ design. That gap is now closed except where noted:
   upload/download/restore timing. The local stack makes this newly
   possible, but it is a benchmark of its own rather than a by-product of
   this verification. See "Storage placement" below.
-- **Still not executed:** anything against a *hosted* Supabase project. The
-  local stack runs the same images, but nothing here has exercised a real
-  project's networking, quotas or connection pooling.
+- **Applied, but not exercised, on a *hosted* Supabase project:** all nine
+  migrations are applied to the hosted staging project as of 2026-08-23
+  (`docs/DEPLOYMENT.md`, "Database migrations"), so the DDL itself has now run
+  there. None of the checks above has. The local stack runs the same images,
+  but nothing here has exercised a real project's networking, quotas or
+  connection pooling.
 - **Fully implemented and unit-tested:** `PrisonSyncEngine`,
   `resolveSyncConflict` and `MemoryCloudSaveClient`
   (`src/persistence/cloud/`) — the client-side sync/conflict policy is
@@ -354,9 +357,12 @@ the next action; it never resolves anything on its own:
 | `duplicate` | `duplicate-as-new-prison` | Keep the local content as a **new** prison; the original cloud prison and its history are untouched. |
 | `cancel` | `cancel` | Do nothing. |
 
-There is no session/save UI yet to actually present these choices or call
-`push`/`pull`/the local repository together — this issue stops at the
-policy layer, same as #19 stopped at the repository layer.
+Nothing presents these choices or calls `push`/`pull` — this issue stops at
+the policy layer, same as #19 stopped at the repository layer. The save UI
+that #19's follow-up wiring did produce (`src/ui/save-panel.ts` over
+`SessionController`) drives the *local* repository only; `SessionController`
+touches Supabase nowhere, and no module in `src/ui/` imports
+`src/persistence/cloud/`.
 
 ## Anonymous identity upgrade
 

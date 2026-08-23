@@ -207,13 +207,15 @@ export class SimulationSnapshotFeed implements RenderFeed {
         revision: this.frame.revision + 1,
         world: WorldRenderView.fromSnapshot(bundle.world),
         structures: structuresFromConstruction(bundle.construction),
-        // Always empty, and honestly so: `SessionSnapshotBundle` carries the
-        // kernel, the world, construction and entity-id *liveness*, but no
-        // actor positions (see `CURRENT_SAVE_RESTORED_SCOPE` -- prisoner state
-        // is listed there as not carried by this save version). No protocol
-        // message publishes them either. Until the simulation exposes actor
-        // state, this feed cannot invent it; `DemoActorFeed` exercises the
-        // sprite path instead, and is clearly not simulation state.
+        // Always empty, and this feed is the reason -- not the bundle. Since
+        // #70 `SessionSnapshotBundle.simulation` does carry prisoner state,
+        // tile positions included (`session-systems.ts`, `tileX`/`tileY`), and
+        // `CURRENT_SAVE_RESTORED_SCOPE` lists "prisoners, needs, actions and
+        // cell assignments" under `restored`. What is missing is on this side:
+        // nothing here decodes that section into `RenderFrame.actors`, and no
+        // delta or event publishes actor state either. Reading it is the whole
+        // change; until then `DemoActorFeed` exercises the sprite path, and is
+        // clearly not simulation state.
         actors: [],
       };
       this.lastAppliedTick = payload.tick;

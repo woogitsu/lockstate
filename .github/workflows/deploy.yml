@@ -1,12 +1,22 @@
 name: Deploy
 
-# Frontend delivery only. Database migrations are a separate, manual workflow
-# (migrate-database.yml) because they are irreversible and must never ride
-# along with a routine merge.
+# Frontend delivery only. This workflow never touches a database.
 #
-# Staging deploys itself on every merge to `main`. Production never does: it
-# runs only from a manual dispatch, through the `production` GitHub Environment,
-# so a merged pull request cannot reach lockstate.io on its own.
+# Database migrations reach the hosted *staging* project on a merge to `main`
+# anyway -- not from here, but through Supabase's own GitHub integration,
+# configured in Supabase's dashboard and invisible from this repository
+# (docs/DEPLOYMENT.md, "Automated deployment"). Migrations to a *production*
+# project stay in migrate-database.yml, manual and gated, because they are
+# irreversible and rollback is not automated.
+#
+# Staging deploys itself on every merge to `main`. The production job never
+# does: it runs only from a manual dispatch, through the `production` GitHub
+# Environment.
+#
+# That does NOT mean a merge cannot reach lockstate.io. It already does: the
+# domain is attached by hand to the *staging* Worker, so the `staging` job
+# below updates the public site on every merge. See the production job's own
+# comment, and docs/DEPLOYMENT.md, "What currently serves lockstate.io".
 
 on:
   push:

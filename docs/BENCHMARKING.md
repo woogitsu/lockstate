@@ -98,10 +98,20 @@ Correctness and deterministic checksum failures are hard gates immediately.
 
 ## Planned scenario families
 
-These are inputs to future measurement work, not accepted implementation decisions or budgets:
+Two families that were on this list have since been delivered, and neither is
+an input to future work any more. Chunk storage/culling candidates (16×16,
+32×32 and 64×64 logical tiles) shipped as `world.chunk-size-sparse-edge` and
+`world.chunk-size-dense-prison`, and their measurements are what
+[ADR-0004](./adr/0004-chunk-size-selection.md) decided the production chunk
+size on — the one case so far where a family on this list did go on to gate a
+decision. Fixed-step simulation throughput shipped as
+`kernel.throughput.benchmark` (tick loop, command queue and multi-rate system
+scheduling; backlog behaviour under a starved tick is still unmeasured). Both
+are registered in `benchmarks/registry.mjs` and run under `pnpm benchmark`.
 
-- chunk storage/culling candidates: 16×16, 32×32 and 64×64 logical tiles;
-- fixed-step simulation throughput and backlog behavior;
+The rest are still inputs to future measurement work, not accepted implementation decisions or budgets:
+
+- backlog behavior under a tick the scheduler cannot keep up with;
 - worker snapshot/delta encode, transfer and decode cost;
 - save serialization, compression, checksum and migration cost;
 - IndexedDB read/write and recovery behavior;

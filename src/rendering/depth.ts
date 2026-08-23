@@ -36,8 +36,9 @@ const LAYER_BIAS: Readonly<Record<RowSortedLayer, number>> = {
  * nothing can stand in front of it.
  *
  * It is far enough below the row-sorted band that no plausible world
- * coordinate reaches it -- a row would have to sit 125 million pixels (about
- * 3.9 million tiles) north of the origin to collide.
+ * coordinate reaches it -- a row would have to sit 125 million world units
+ * (about 1.95 million tiles at `TILE_SIZE_PX` 64) north of the origin to
+ * collide.
  */
 export const FLOOR_DEPTH = -1_000_000_000;
 

@@ -45,10 +45,12 @@ and threat model) and [ADR 0009](./adr/0009-challenge-verification-strategy.md)
   ownership boundaries and the signed-out read surface via `/rest/v1`. This
   is the only check that proves GoTrue actually mints the identity
   `auth.uid()` reads; the pgTAP suites fake it with `set_config`.
-- **Still NOT executed:** anything against a hosted Supabase *project*. The
-  local stack runs the same GoTrue/PostgREST/Storage images, but nothing
-  here has exercised a real project's networking, quotas or connection
-  pooling.
+- **Applied, but NOT exercised, on a hosted Supabase *project*:** the
+  migrations are applied to the hosted staging project as of 2026-08-23
+  (`docs/DEPLOYMENT.md`, "Database migrations"), so the schema itself has run
+  there; none of the checks above has. The local stack runs the same
+  GoTrue/PostgREST/Storage images, but nothing here has exercised a real
+  project's networking, quotas or connection pooling.
 - **Deliberately not built:** the deployed server functions themselves (the
   Edge Function/Worker handlers), a payment provider integration, a replay
   runner and a telemetry ingestion endpoint. Each is either out of scope

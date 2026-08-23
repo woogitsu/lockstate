@@ -3,14 +3,31 @@ name: Database migrations
 # DELIBERATELY MANUAL, AND DELIBERATELY SEPARATE FROM deploy.yml.
 #
 # `supabase db push` applies migrations to a live project and is not
-# reversible. Attaching it to a merge would mean any pull request could alter
-# production data as a side effect of being merged. It runs only when a human
-# starts it, only through a GitHub Environment, and only after typing the
-# project ref back as confirmation.
+# reversible, and rollback is not automated. Attaching it to a merge means any
+# pull request can alter a database as a side effect of being merged. This
+# workflow therefore runs only when a human starts it, only through a GitHub
+# Environment, and only after typing the project ref back as confirmation.
+#
+# THAT IS NO LONGER THE ONLY PATH, AND THIS IS NOT THE ONE THAT USUALLY RUNS.
+# Since 2026-08-23 a merge to `main` applies pending migrations to the hosted
+# *staging* project, through Supabase's own GitHub integration -- configured
+# in Supabase's dashboard, invisible from this repository, and triggered by
+# the merge rather than by anything under supabase/migrations/ having changed.
+# See docs/DEPLOYMENT.md, "Automated deployment", for the observed evidence.
+#
+# So this workflow is not the staging path any more; it is two other things.
+# It is the ONLY path to a production project -- the integration has one
+# target and must never be repointed at production (ADR 0016 §2, Proposed) --
+# and its dry-run mode is the only way to inspect what a hosted project
+# actually has applied without changing anything. It also remains a recovery
+# path for staging: `supabase db push` skips already-applied migrations, so
+# the two mechanisms reaching the same project is idempotent.
 #
 # The schema in supabase/migrations/ has been executed against a local
-# PostgreSQL and against the local Supabase stack, never against a hosted
-# project. Target a disposable project first.
+# PostgreSQL, against the local Supabase stack, and -- since 2026-08-23 --
+# against the hosted staging project, where all nine migrations
+# (20260822190000 through 20260823100000) are applied. Target a disposable
+# project first.
 
 on:
   workflow_dispatch:

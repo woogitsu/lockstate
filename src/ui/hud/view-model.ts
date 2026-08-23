@@ -97,7 +97,8 @@ export interface HudAlertViewModel {
  *
  * Deliberately re-declared here rather than imported: the HUD may not import
  * `src/simulation/**` (`AGENTS.md` boundary 1, checked by
- * `tests/unit/ui-hud-messages.test.ts`). The simulation's `BuildEdge` is the
+ * `tests/unit/ui-hud-messages.test.ts`, "imports nothing from the
+ * simulation"). The simulation's `BuildEdge` is the
  * authority; this is the wire shape the host translates to and from, and
  * `tests/unit/ui-hud-build-panel.test.ts` pins the two to the same members so
  * they cannot drift silently.

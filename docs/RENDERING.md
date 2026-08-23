@@ -135,11 +135,15 @@ the feed drop polling entirely without the renderer changing at all.
 ## What is not rendered yet, and why
 
 - **Actors from the simulation.** A fresh session has none: the simulation
-  fabricates no default population, and `SessionSnapshotBundle` carries no actor
-  positions even when some exist (`CURRENT_SAVE_RESTORED_SCOPE` lists prisoner
-  state as not carried). No protocol message publishes them either. The renderer
-  is ready for them -- swapping the feed is the whole change -- but it will not
-  invent them.
+  fabricates no default population. The bundle is no longer the obstacle it once
+  was -- since #70 `SessionSnapshotBundle.simulation` carries prisoner state
+  including tile positions, and `CURRENT_SAVE_RESTORED_SCOPE` lists "prisoners,
+  needs, actions and cell assignments" under `restored`, not under
+  `notCarriedByThisSaveVersion`. What is missing is on the renderer's side:
+  `SimulationSnapshotFeed` decodes the world and construction sections and never
+  reads that one, so `RenderFrame.actors` is always empty, and no delta or event
+  publishes actor state either. The renderer is ready for them -- reading that
+  section is the whole change -- but it will not invent them.
 
   `?actors=demo` puts scripted actors on screen instead. They are a renderer-side
   demonstration of the sprite path, clearly labelled as such in

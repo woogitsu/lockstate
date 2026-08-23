@@ -108,7 +108,7 @@ $env:LOCKSTATE_PRODUCTION_DEPLOY = '1'
 pnpm deploy:production
 ```
 
-Wrangler credentials must be supplied by the operator or a future protected release workflow, normally through `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. Use a least-privileged token. Never store Cloudflare tokens, Supabase service-role keys or production secrets in the repository, frontend bundle, issue text or logs.
+Wrangler credentials must be supplied by the operator or by the protected release workflow `.github/workflows/deploy.yml`, which reads them from GitHub Environment secrets — normally through `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. Use a least-privileged token. Never store Cloudflare tokens, Supabase service-role keys or production secrets in the repository, frontend bundle, issue text or logs.
 
 Ordinary CI (`.github/workflows/ci.yml`) validates packages but does not publish. Publishing is `.github/workflows/deploy.yml` — see "Automated deployment" below.
 
@@ -118,9 +118,24 @@ Ordinary CI (`.github/workflows/ci.yml`) validates packages but does not publish
 | --- | --- | --- |
 | Frontend → Cloudflare **staging** | automatically, on every merge to `main` | none |
 | Frontend → Cloudflare **production** | manual dispatch only | `production` environment approval |
-| Migrations → Supabase | manual dispatch only | environment approval **and** a typed project ref |
+| Migrations → Supabase **staging** | automatically, on every merge to `main`, through Supabase's own GitHub integration | none |
+| Migrations → Supabase **production** | manual dispatch of `migrate-database.yml` | environment approval **and** a typed project ref |
 
-Migrations live in their own workflow (`migrate-database.yml`) on purpose: `supabase db push` is irreversible, and attaching it to a merge would let any pull request alter a database as a side effect of being merged.
+**A merge to `main` can now change a hosted database.** That is a recent and deliberate change, and it inverts what this table said until 2026-08-23, so it is worth being precise about what is known.
+
+The mechanism is not in this repository. Supabase's GitHub integration is configured in Supabase's own dashboard with a production branch of `main`; nothing here can see it, and no workflow in `.github/workflows/` runs `supabase db push` on a push. What was observed on 2026-08-23:
+
+| Time (UTC) | Event | `supabase migration list` |
+| --- | --- | --- |
+| 18:42:10 | `migrate-database.yml` run `32658871514`, dry run | nine local migrations, **`Remote` empty for every one** |
+| 18:44:14 | PR #87 merged to `main` | — |
+| 18:45:25 | `migrate-database.yml` run `32659046172`, dry run | **`Remote` populated for all nine**, matching `Local` |
+
+`migrate-database.yml` has three runs in its entire history — one that failed at `Link the project` before reaching the database, and the two above. All three are `workflow_dispatch`; in both successful ones the `Apply migrations` step was skipped, because neither ran with `dry_run` unchecked. So the nine migrations went from unapplied to applied inside a 71-second window containing a merge, and no GitHub Actions run applied them. **Inferred, not proven from here:** that the integration specifically did it. It is the only configured mechanism that does this, and it had been enabled minutes earlier; a hand-applied `supabase db push` in that window is excluded by the absence of any reason to think so, not by the evidence.
+
+**Read that row as "on every merge", not "when migration files change".** PR #87 touched `deploy.yml`, this document and an ADR — no file under `supabase/migrations/` — and the migrations were applied anyway. The integration applies whatever is *pending* on a push to the configured branch. A pull request that changes nothing about the schema still triggers the apply; a merge is the trigger, not the diff.
+
+The reasoning that put migrations in their own workflow has not changed, and is what keeps production out of the arrangement above: `supabase db push` is irreversible, rollback is not automated (see "Rollback"), and attaching it to a merge means any pull request can alter a database as a side effect of being merged. That is tolerable for a disposable project holding no player data and intolerable for one that does — which is why `migrate-database.yml` remains the only path to production, gated by environment approval and a typed project ref, and why the integration must never be repointed at a production project. [ADR 0016](./adr/0016-migration-delivery-mechanism.md) argues that split and asks a reviewer to accept it; it is **Proposed, not accepted**, so it records the open decision rather than sanctioning what the table above describes.
 
 ### What currently serves lockstate.io
 
@@ -181,7 +196,7 @@ It is catastrophic for a secret / service-role key. `AGENTS.md` forbids service-
 
 ## Database migrations
 
-The SQL under `supabase/migrations/` has been executed against a local PostgreSQL (`pnpm verify:sql`) and against the local Supabase stack (`supabase test db`, plus `pnpm verify:stack` over real HTTP). **It has never been applied to a hosted project.** Target a disposable project first.
+The SQL under `supabase/migrations/` has been executed against a local PostgreSQL (`pnpm verify:sql`) and against the local Supabase stack (`supabase test db`, plus `pnpm verify:stack` over real HTTP). **It has also been applied to a hosted project**: as of 2026-08-23 all nine migrations, `20260822190000` through `20260823100000`, are applied, confirmed by `supabase migration list` through a dry-run of `migrate-database.yml` reporting the same timestamps local and remote. That was the `staging` environment — it is the only one carrying `SUPABASE_PROJECT_REF` (see "Credentials" above). The dry run *confirmed* the state; it did not create it. What applied them is covered under "Automated deployment". Target a disposable project first.
 
 Run `migrate-database.yml` with **dry run left checked**: it links the project and prints `supabase migration list` without applying anything. Read that list, then re-run with dry run unchecked.
 
