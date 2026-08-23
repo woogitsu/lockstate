@@ -1,0 +1,149 @@
+/*
+ * Lockstate design tokens.
+ *
+ * Two layers, deliberately:
+ *
+ *   1. RAW RAMPS -- the only place a literal colour ever appears. Named for
+ *      what the colour *is* (`--ink-700`), never for what it is used for.
+ *   2. SEMANTIC ALIASES -- named for the *role* (`--surface-raised`,
+ *      `--text-muted`, `--border-strong`). Every component references only
+ *      these.
+ *
+ * Components may not reference layer 1. That single rule is what makes a
+ * re-skin a one-file change: swap the ramp values (or repoint the aliases at
+ * a different ramp) and nothing under `src/ui/primitives/` or `src/ui/hud/`
+ * needs to be touched. It is enforced executably by
+ * `tests/unit/ui-design-tokens.test.ts`, which fails if any other stylesheet
+ * in `src/ui/` contains a raw colour literal.
+ *
+ * The palette is cold and institutional -- concrete and steel. No gradients,
+ * no glows, no shadows, no bevels: separation comes from a 1px hairline and a
+ * background step, and from nothing else.
+ */
+
+:root {
+  /* ---------------------------------------------------------------- */
+  /* Layer 1: raw ramps                                               */
+  /* ---------------------------------------------------------------- */
+
+  /* Cold neutral ink. `--ink-800` is the existing application background. */
+  --ink-900: #0b0e12;
+  --ink-800: #101317;
+  --ink-700: #171c23;
+  --ink-600: #1f2630;
+  --ink-500: #2a323e;
+
+  /* Cool off-white "paper" ramp, used for text and for hairlines. */
+  --paper-100: #eef2f6;
+  --paper-200: #dbe2e9;
+  --paper-400: #a8b1bc;
+  --paper-500: #7d8894;
+
+  /* Hairlines are the paper hue at low alpha so they sit *in* the surface
+     rather than on top of it. Kept as raw ramp entries because they are
+     colours, not roles. */
+  --paper-alpha-07: rgba(238, 242, 246, 0.07);
+  --paper-alpha-13: rgba(238, 242, 246, 0.13);
+  --paper-alpha-22: rgba(238, 242, 246, 0.22);
+
+  /* Desaturated steel blue: the single interactive hue. */
+  --sky-300: #86b2cf;
+  --sky-600: #4a7fa5;
+  --sky-alpha-14: rgba(134, 178, 207, 0.14);
+
+  /* Status hues. Muted on purpose -- a warning must read as information,
+     not as an alarm light. */
+  --moss-300: #86b596;
+  --moss-alpha-14: rgba(134, 181, 150, 0.14);
+  --amber-300: #e8b463;
+  --amber-alpha-14: rgba(232, 180, 99, 0.14);
+  --clay-300: #d4785c;
+  --clay-alpha-14: rgba(212, 120, 92, 0.14);
+
+  /* ---------------------------------------------------------------- */
+  /* Layer 2: semantic aliases -- the only names components may use    */
+  /* ---------------------------------------------------------------- */
+
+  /* Surfaces, darkest (furthest back) to lightest (nearest). */
+  --surface-sunken: var(--ink-900);
+  --surface-base: var(--ink-800);
+  --surface-raised: var(--ink-700);
+  --surface-overlay: var(--ink-600);
+  --surface-active: var(--ink-500);
+
+  --text-heading: var(--paper-100);
+  --text-body: var(--paper-200);
+  --text-subtle: var(--paper-400);
+  --text-muted: var(--paper-500);
+
+  --border-hairline: var(--paper-alpha-07);
+  --border: var(--paper-alpha-13);
+  --border-strong: var(--paper-alpha-22);
+
+  --accent: var(--sky-300);
+  --accent-deep: var(--sky-600);
+  --accent-soft: var(--sky-alpha-14);
+  --accent-contrast: var(--ink-900);
+
+  --status-success: var(--moss-300);
+  --status-warning: var(--amber-300);
+  --status-danger: var(--clay-300);
+  --status-info: var(--sky-300);
+
+  /* Badge background/foreground pairs. Paired here so a badge can never be
+     assembled from a mismatched combination at a call site. */
+  --badge-neutral-bg: var(--paper-alpha-07);
+  --badge-neutral-fg: var(--text-subtle);
+  --badge-success-bg: var(--moss-alpha-14);
+  --badge-success-fg: var(--status-success);
+  --badge-warning-bg: var(--amber-alpha-14);
+  --badge-warning-fg: var(--status-warning);
+  --badge-danger-bg: var(--clay-alpha-14);
+  --badge-danger-fg: var(--status-danger);
+  --badge-info-bg: var(--sky-alpha-14);
+  --badge-info-fg: var(--status-info);
+
+  /* ---------------------------------------------------------------- */
+  /* Non-colour tokens                                                 */
+  /* ---------------------------------------------------------------- */
+
+  /* 4px spacing grid. Nothing in the UI may use an off-grid length. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+
+  --hairline: 1px;
+
+  --font-ui:
+    system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  /* Tabular figures are mandatory for every number in the HUD: a counter
+     that changes width as it counts makes a dense strip twitch. */
+  --font-mono:
+    ui-monospace, 'SF Mono', 'Cascadia Mono', 'Roboto Mono', Menlo, Consolas,
+    'Liberation Mono', monospace;
+
+  --text-size-value: 13px;
+  --text-size-body: 13px;
+  --text-size-label: 11px;
+  --label-tracking: 0.14em;
+
+  --icon-size-sm: 16px;
+  --icon-size-md: 18px;
+  --icon-size-lg: 20px;
+  --icon-stroke: 1.5;
+
+  /* Every control is tap-reachable; 44px is the smallest target that is
+     comfortably hittable on a touch screen. */
+  --tap-target: 44px;
+
+  --hud-layer: 20;
+  /* Shared by the strip and by anything that must clear it -- the save panel
+     positions itself from this rather than from a duplicated magic number. */
+  --hud-strip-height: 48px;
+}
