@@ -110,7 +110,57 @@ pnpm deploy:production
 
 Wrangler credentials must be supplied by the operator or a future protected release workflow, normally through `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. Use a least-privileged token. Never store Cloudflare tokens, Supabase service-role keys or production secrets in the repository, frontend bundle, issue text or logs.
 
-Ordinary CI validates packages but does not publish. A future deployment workflow requires protected environments, explicit production approval and a separate operational decision.
+Ordinary CI (`.github/workflows/ci.yml`) validates packages but does not publish. Publishing is `.github/workflows/deploy.yml` — see "Automated deployment" below.
+
+## Automated deployment
+
+| What | When | Gate |
+| --- | --- | --- |
+| Frontend → Cloudflare **staging** | automatically, on every merge to `main` | none |
+| Frontend → Cloudflare **production** | manual dispatch only | `production` environment approval |
+| Migrations → Supabase | manual dispatch only | environment approval **and** a typed project ref |
+
+Migrations live in their own workflow (`migrate-database.yml`) on purpose: `supabase db push` is irreversible, and attaching it to a merge would let any pull request alter a database as a side effect of being merged.
+
+The production job re-runs `pnpm verify` against the exact commit being shipped. CI having passed on `main` earlier is a statement about a different moment.
+
+### Credentials
+
+Put every value into **GitHub Environment secrets** directly, under Settings → Environments. No token should pass through a message, a file, a commit or an issue — GitHub masks environment secrets in logs; a chat transcript does not.
+
+Create environments `staging` and `production`, and give `production` **required reviewers**. That approval, not the workflow's `if:` condition, is what actually stops an unattended production deploy.
+
+Both environments take the same secret names with different values:
+
+| Secret | What it is | Where |
+| --- | --- | --- |
+| `CLOUDFLARE_API_TOKEN` | scoped API token, **not** the Global API Key | Cloudflare → My Profile → API Tokens |
+| `CLOUDFLARE_ACCOUNT_ID` | account identifier | Workers overview, or the dashboard URL |
+| `VITE_SUPABASE_URL` | project URL | Supabase → Project Settings → API |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | **publishable/anon** key | same page |
+| `SUPABASE_ACCESS_TOKEN` | personal access token | Supabase → Account → Access Tokens |
+| `SUPABASE_PROJECT_REF` | project ref | Supabase → Project Settings → General |
+| `SUPABASE_DB_PASSWORD` | database password | set when the project was created |
+
+Scope the Cloudflare token to `Account → Workers Scripts → Edit` for the one account. The Global API Key authenticates everything the Cloudflare login can do, including DNS and billing, and cannot be scoped or rotated independently.
+
+### Why `VITE_` is the dangerous prefix
+
+Everything named `VITE_*` is **inlined into the browser bundle** by Vite and published to every visitor. That is correct and intended for `VITE_SUPABASE_PUBLISHABLE_KEY`, which is designed to be public and is useless without a JWT identity behind it.
+
+It is catastrophic for a secret / service-role key. `AGENTS.md` forbids service-role keys in client code, ADR 0008 classifies the browser as an untrusted zone, and issue #20's real-stack verification established that `service_role` bypasses RLS entirely — a published one hands every visitor every row.
+
+`scripts/check-deploy-secrets.sh` runs before each deploy and refuses one whose `VITE_SUPABASE_PUBLISHABLE_KEY` looks like a secret key, including a `service_role` JWT, which it detects by decoding only the role claim. It prints no part of any value. A failure there has caught a real mistake.
+
+## Database migrations
+
+The SQL under `supabase/migrations/` has been executed against a local PostgreSQL (`pnpm verify:sql`) and against the local Supabase stack (`supabase test db`, plus `pnpm verify:stack` over real HTTP). **It has never been applied to a hosted project.** Target a disposable project first.
+
+Run `migrate-database.yml` with **dry run left checked**: it links the project and prints `supabase migration list` without applying anything. Read that list, then re-run with dry run unchecked.
+
+A fresh Supabase project is not empty — its own bootstrap runs before these migrations. That is precisely how issue #20's real-stack verification discovered the platform no longer grants the Data API roles table privileges by default, which had left every RLS policy in this schema unreachable.
+
+Rollback of a migration is **not** automated, and the Worker rollback below does not touch it — see "Rollback".
 
 ## Custom-domain prerequisites
 

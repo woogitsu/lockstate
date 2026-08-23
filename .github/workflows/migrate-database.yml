@@ -1,0 +1,98 @@
+name: Database migrations
+
+# DELIBERATELY MANUAL, AND DELIBERATELY SEPARATE FROM deploy.yml.
+#
+# `supabase db push` applies migrations to a live project and is not
+# reversible. Attaching it to a merge would mean any pull request could alter
+# production data as a side effect of being merged. It runs only when a human
+# starts it, only through a GitHub Environment, and only after typing the
+# project ref back as confirmation.
+#
+# The schema in supabase/migrations/ has been executed against a local
+# PostgreSQL and against the local Supabase stack, never against a hosted
+# project. Target a disposable project first.
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Which Supabase project to migrate
+        type: choice
+        options: [staging, production]
+        default: staging
+      confirm_project_ref:
+        description: Type the target project ref exactly, to confirm
+        required: true
+        type: string
+      dry_run:
+        description: Only show what would be applied, change nothing
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: migrate-${{ inputs.target }}
+  cancel-in-progress: false # never interrupt a migration mid-apply
+
+env:
+  CI: true
+  COREPACK_ENABLE_DOWNLOAD_PROMPT: 0
+
+jobs:
+  migrate:
+    runs-on: [self-hosted, Linux, X64, wsl2]
+    timeout-minutes: 30
+    environment:
+      name: ${{ inputs.target }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Provision the Supabase CLI
+        run: bash scripts/provision-supabase-cli.sh
+
+      # The typed confirmation is compared against the secret, so a mistyped or
+      # copy-pasted-from-the-wrong-tab ref stops here rather than at the point
+      # of no return. It is compared without printing either value.
+      - name: Confirm the operator meant this project
+        env:
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          CONFIRMED: ${{ inputs.confirm_project_ref }}
+        run: |
+          if [ -z "${SUPABASE_PROJECT_REF:-}" ]; then
+            echo "::error::SUPABASE_PROJECT_REF is not set for the '${{ inputs.target }}' environment. See docs/DEPLOYMENT.md."
+            exit 1
+          fi
+          if [ "$CONFIRMED" != "$SUPABASE_PROJECT_REF" ]; then
+            echo "::error::The confirmation you typed does not match the project ref configured for '${{ inputs.target }}'. Nothing was applied."
+            exit 1
+          fi
+          echo "Confirmation matches the configured project ref."
+
+      - name: Link the project
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: supabase link --project-ref "$SUPABASE_PROJECT_REF"
+
+      - name: Show what would be applied
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: supabase migration list
+
+      - name: Apply migrations
+        if: ${{ inputs.dry_run == false }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: supabase db push
+
+      - name: Report that nothing was applied
+        if: ${{ inputs.dry_run == true }}
+        run: echo "::notice::Dry run — the list above is what a real run would apply. Re-run with dry_run unchecked to apply it."
