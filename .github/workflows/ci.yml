@@ -194,3 +194,128 @@ jobs:
       # Uses no dependencies, so it deliberately runs without pnpm install.
       - name: Validate runtime atlases against the authored contract
         run: pnpm verify:assets
+
+  # `tests/browser/` is the only layer in this repository that can settle
+  # durability across a real page navigation, what a real browser's
+  # `DOMException`s are actually named, behaviour under a genuinely exhausted
+  # quota, and what a *computed* style, `elementFromPoint` or a decoded PNG
+  # really is. It has earned its keep: a real adapter defect (#19,
+  # docs/PERSISTENCE.md) and two real HUD layout defects that no unit test
+  # could have found (docs/TESTING.md).
+  #
+  # And until this job it did not run in CI. `pnpm test:browser` was opt-in, so
+  # the layer that keeps finding real defects only ran when a human remembered
+  # to type it. That is the same failure as CI passing because someone had
+  # installed something by hand, wearing a different costume.
+  #
+  # Separate job, not a merged step. docs/TESTING.md requires `pnpm test:browser`
+  # to stay out of `pnpm test` and `pnpm verify`, and that separation is correct:
+  # the ordinary suite must stay fast and browser-free. A required job is how the
+  # check becomes non-optional without becoming part of them -- the same
+  # precedent as `verify:sql` and `verify:assets`.
+  browser:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    # Ordered after `assets` for two reasons, neither of them a data dependency.
+    #
+    # 1. A browser run is a couple of minutes on a single self-hosted runner.
+    #    There is no point spending it on a tree that does not typecheck, test
+    #    or build.
+    # 2. `assets` has already materialised the runtime atlases into this
+    #    workspace, so the `git lfs pull` below finds every object in the local
+    #    LFS store and transfers nothing. The pull stays regardless: this job
+    #    has to be correct on a cold workspace, not merely on the one `assets`
+    #    happened to leave behind.
+    needs: assets
+    runs-on: [self-hosted, Linux, X64, wsl2]
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      # `app-shell.spec.ts` loads the real `index.html`, and the renderer asks a
+      # real browser to decode every runtime atlas. A pointer-only checkout puts
+      # a ~130-byte text stub behind a `200 image/png`, which is exactly the
+      # failure that spec exists to catch -- so the art has to be real here for
+      # the same reason it does in `assets`.
+      #
+      # Not asserted byte-by-byte again: `assets` already did that on this
+      # workspace at this commit, and the spec's own failure names the file that
+      # would not decode.
+      - name: Provision Git LFS
+        run: bash scripts/provision-git-lfs.sh
+
+      # Same path filter and same scoped credential as the `assets` job; see the
+      # comments there for why the token is set for this command alone.
+      - name: Fetch runtime art from Git LFS
+        env:
+          LFS_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cleanup() {
+            git config --local --unset-all 'http.https://github.com/.extraheader' 2>/dev/null || true
+          }
+          trap cleanup EXIT
+          git config --local 'http.https://github.com/.extraheader' \
+            "AUTHORIZATION: basic $(printf 'x-access-token:%s' "$LFS_TOKEN" | base64 -w0)"
+          git lfs pull --include="public/assets/actors"
+
+      - name: Setup Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: '.node-version'
+          package-manager-cache: false
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Activate pnpm
+        run: corepack prepare pnpm@11.22.0 --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Playwright's browsers are not in the package and are not checked in, so
+      # this runner has no Chromium unless something puts one there. The script
+      # is idempotent and does no download when the browser is already on disk
+      # and launches, which on this runner is every run after the first.
+      #
+      # It also carries the two things this host needs and a stock
+      # `playwright install` does not: the fallback build for a distribution
+      # release Playwright has no listing for, and an `ldd`-based check instead
+      # of `--with-deps` (which needs root and, here, fails for the same
+      # platform reason). See the script's header.
+      - name: Provision Playwright's Chromium
+        run: bash scripts/provision-playwright-browsers.sh
+
+      # Headless: `tests/browser/playwright.config.ts` never sets
+      # `headless: false`, so no display, xvfb or DISPLAY is involved.
+      #
+      # A FREE PORT, ASKED FOR RATHER THAN ASSUMED. This runner shares its host
+      # with active development, so the suite's default 5183 is regularly taken
+      # by a developer's harness server or by another checkout running the same
+      # suite -- observed on the first run of this job, which died with
+      # "127.0.0.1:5183 is already used". The suite deliberately refuses to
+      # reuse a server it did not start, because attaching to one from a
+      # different working tree means testing that tree's sources; so the fix is
+      # a port nothing else holds, not a reuse flag.
+      #
+      # The suite must not be able to pass vacuously. `playwright test` already
+      # fails when no test matches, and `forbidOnly` is on under CI; the second
+      # guard adds the case neither covers -- a suite that ran but skipped its
+      # way to green.
+      - name: Run the real-browser suite
+        run: |
+          set -euo pipefail
+          port="$(node -e 'const s = require("net").createServer(); s.listen(0, "127.0.0.1", () => { process.stdout.write(String(s.address().port)); s.close(); });')"
+          echo "harness dev server port: $port"
+          LOCKSTATE_BROWSER_TEST_PORT="$port" pnpm test:browser 2>&1 | tee browser-suite.log
+          if ! grep -qE '[0-9]+ passed' browser-suite.log; then
+            echo "::error::the browser suite reported no passing tests"
+            exit 1
+          fi
+          if grep -qE '[0-9]+ (skipped|did not run)' browser-suite.log; then
+            echo "::error::the browser suite skipped tests; running them is the entire point of this job"
+            exit 1
+          fi

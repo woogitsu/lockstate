@@ -1,10 +1,21 @@
-"""Pack Blender directional frame PNGs into deterministic per-clip atlas files."""
+"""Pack Blender directional frame PNGs into deterministic per-clip atlas files.
+
+The atlas and the manifest written here are the pipeline's reproducible
+artefacts. The frames they are built from are not: Blender stamps `Date`,
+`RenderTime` and the absolute source `.blend` path into every rendered PNG as
+`tEXt` chunks. Copying frame pixels into a fresh atlas image drops that
+metadata, so the atlas is a byte-exact function of the pixels alone -- which is
+what `tooling/verify-pipeline-determinism.mjs` compares.
+"""
 import argparse
 import json
 import sys
 from pathlib import Path
 
 import bpy
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import pipeline_common  # noqa: E402  (Blender does not add the script directory to sys.path)
 
 
 def args():
@@ -29,7 +40,11 @@ def copy_frame(destination_pixels, atlas_width, source, x, y, width, height, ext
 
 
 def main():
+    pipeline_common.require_blender_version()
     options = args()
+    # `Image.save` takes PNG compression and colour depth from the scene's image
+    # settings, so they are pinned here as well as in the render step.
+    pipeline_common.apply_deterministic_render_settings(bpy.context.scene)
     root = Path(__file__).resolve().parents[2]
     if not options.input.is_absolute():
         options.input = root / options.input
@@ -85,7 +100,7 @@ def main():
         atlas.save()
         manifests.append({"schemaVersion": 1, "assetId": asset_dir.name, "image": image_name, "widthPx": atlas_width, "heightPx": atlas_height, "frame": {"widthPx": width, "heightPx": height, "footPivotPx": frame["footPivotPx"], "extrudePx": extrude}, "directions": directions, "clips": {clip_name: {"fps": clip["fps"], "loop": clip["loop"], "frames": frames}}})
         bpy.data.images.remove(atlas)
-    (options.output / f"{asset_dir.name}.atlas-manifests.json").write_text(json.dumps(manifests, indent=2) + "\n", encoding="utf-8")
+    pipeline_common.write_text(options.output / f"{asset_dir.name}.atlas-manifests.json", json.dumps(manifests, indent=2) + "\n")
 
 
 if __name__ == "__main__":

@@ -214,19 +214,57 @@ function buildCatalogue(): HudBuildViewModel {
   return { buildables, origin: { x: 16, y: 16 } };
 }
 
-function mountInterface(
-  app: HTMLElement,
-  client: SimulationClient,
-  commands: SimulationCommandSender,
-  tool: BuildTool | undefined,
-): void {
+interface InterfaceHost {
+  /**
+   * Absent when no worker started. Every control that would reach the
+   * simulation then *throws*, which the HUD reports on the control that was
+   * pressed -- a pause button that silently does nothing is a lie the player
+   * has no way to detect (issue #82's point, applied to the build controls
+   * too).
+   */
+  readonly client?: SimulationClient;
+  readonly commands?: SimulationCommandSender;
+  readonly tool?: BuildTool;
+}
+
+/**
+ * A control that reaches the simulation, when there is no simulation to reach.
+ *
+ * Throwing rather than returning: the HUD reports a rejection on the control
+ * that was pressed, and a build button that quietly does nothing is exactly
+ * the failure issue #82 was about.
+ */
+function requireSimulation(commands: SimulationCommandSender | undefined): SimulationCommandSender {
+  if (commands === undefined) {
+    throw new Error('The simulation worker could not be started, so nothing can be sent to it.');
+  }
+  return commands;
+}
+
+function mountInterface(app: HTMLElement, host: InterfaceHost = {}): void {
+  const { client, commands, tool } = host;
+  const simulationUnavailable = client === undefined;
   const localizer = new Localizer({
     locale: 'en',
     catalogs: [messageCatalogFromLocalizationCatalog('en', defaultLocaleEnCatalog)],
   });
 
   let hud: HudHandle | undefined;
-  let viewModel: HudViewModel = EMPTY_HUD_VIEW_MODEL;
+
+  /**
+   * Without a worker there is no simulation and no session, so there is
+   * genuinely nothing to save -- a save panel here would be a prop. What the
+   * player is owed is being *told*, which the console message alone never did.
+   * The alerts region already exists for exactly this (issue #82).
+   */
+  let viewModel: HudViewModel = simulationUnavailable
+    ? {
+        ...EMPTY_HUD_VIEW_MODEL,
+        alerts: [
+          { id: 'simulation-unavailable', labelKey: 'hud.alerts.simulation-unavailable', severity: 'danger' },
+        ],
+      }
+    : EMPTY_HUD_VIEW_MODEL;
 
   /**
    * Repaints the clock from what the worker last said, and from nothing else.
@@ -241,7 +279,7 @@ function mountInterface(
     hud?.update(viewModel);
   };
 
-  client.addListener((message) => {
+  client?.addListener((message) => {
     if (message.kind === 'simulation/ready' || message.kind === 'simulation/clock-state') {
       const { clock } = message.payload;
       applyClock(clock.mode, clock.mode === 'running' ? clock.speed : viewModel.clock.speed);
@@ -250,6 +288,10 @@ function mountInterface(
 
   hud = mountHud(app, {
     localizer,
+    // Passed at mount, not left to the first `update`: with no worker there
+    // is no snapshot coming, so an alert the HUD only learns about on the
+    // next repaint would never be painted at all (issue #82).
+    viewModel,
     build: buildCatalogue(),
     onIntent: (intent: HudIntent) => {
       switch (intent.kind) {
@@ -270,11 +312,13 @@ function mountInterface(
           // control through the HUD's own error path. Silently returning
           // would be worse -- a pause button that reports success and does
           // nothing is a lie the player has no way to detect.
-          commands.setClock(intent.mode === 'paused' ? { mode: 'paused' } : { mode: 'running', speed: intent.speed });
+          requireSimulation(commands).setClock(
+            intent.mode === 'paused' ? { mode: 'paused' } : { mode: 'running', speed: intent.speed },
+          );
           return;
 
         case 'place-build-order':
-          commands.submit({
+          requireSimulation(commands).submit({
             type: 'PlaceBuildOrder',
             // A fresh id per order: the kernel refuses a duplicate, and a
             // stable one would make the second wall a no-op.
@@ -296,8 +340,6 @@ function mountInterface(
 async function bootPersistence(client: SimulationClient): Promise<void> {
   const app = document.getElementById('app');
   if (app === null) return;
-
-  mountInterface(app, client, commandSender ?? new SimulationCommandSender(client), buildTool);
 
   let controller: SessionController;
   let panel: SavePanel;
@@ -325,6 +367,28 @@ async function bootPersistence(client: SimulationClient): Promise<void> {
   new LifecycleSaveHandler(controller).attach();
 
   await panel.refresh();
+}
+
+/*
+ * Mounted unconditionally, and before the persistence boot.
+ *
+ * This call used to sit inside `bootPersistence`, which runs only when the
+ * worker started -- so a browser that could not start one got a canvas and
+ * nothing else: no HUD, no save panel, no way to be told why (issue #82). The
+ * comment on `mountInterface` already described the intended arrangement; only
+ * the placement disagreed with it, which is why no unit test caught it. Both
+ * functions behave correctly in a browser where everything works.
+ *
+ * The HUD is a view over whatever state exists, including none, and it holds
+ * no simulation state at all -- so there is nothing for it to wait on.
+ */
+const appRoot = document.getElementById('app');
+if (appRoot !== null) {
+  mountInterface(appRoot, {
+    ...(simulation === undefined ? {} : { client: simulation }),
+    ...(commandSender === undefined ? {} : { commands: commandSender }),
+    ...(buildTool === undefined ? {} : { tool: buildTool }),
+  });
 }
 
 if (simulation !== undefined) void bootPersistence(simulation);

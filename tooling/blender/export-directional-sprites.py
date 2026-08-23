@@ -3,6 +3,13 @@
 Run with: blender -b source.blend --python this-file -- --asset-id actor.prisoner.base --output assets/intermediate/actor.prisoner.base
 The current scene camera, world and animation actions are source-controlled in
 the .blend. This script only rotates the authored SpriteRoot and writes PNG frames.
+
+Determinism-critical behaviour lives in `pipeline_common`; see that module for
+what issue #64 measured and why each control exists. Note that the individual
+frames this writes are *not* byte-stable and must never be hashed as pipeline
+outputs: Blender embeds `Date`, `RenderTime` and the absolute source `.blend`
+path into every PNG as `tEXt` chunks. The packed atlas and the manifest are the
+reproducible artefacts.
 """
 import argparse
 import json
@@ -11,6 +18,9 @@ import sys
 from pathlib import Path
 
 import bpy
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import pipeline_common  # noqa: E402  (Blender does not add the script directory to sys.path)
 
 DIRECTIONS = ("south", "southWest", "west", "northWest", "north", "northEast", "east", "southEast")
 CLIPS = {"idle": (1, 1), "walk": (8, 10)}
@@ -30,6 +40,7 @@ def cli_arguments():
 
 
 def main():
+    pipeline_common.require_blender_version()
     args = cli_arguments()
     if not args.output.is_absolute():
         args.output = Path(__file__).resolve().parents[2] / args.output
@@ -46,9 +57,7 @@ def main():
     scene.render.engine = "BLENDER_EEVEE"
     scene.render.resolution_x, scene.render.resolution_y = FRAME_SIZE
     scene.render.resolution_percentage = 100
-    scene.render.image_settings.file_format = "PNG"
-    scene.render.image_settings.color_mode = "RGBA"
-    scene.render.film_transparent = True
+    pipeline_common.apply_deterministic_render_settings(scene)
     args.output.mkdir(parents=True, exist_ok=True)
     for direction_index, direction in enumerate(DIRECTIONS):
         root.rotation_euler.z = original_rotation.z + math.radians(direction_index * 45)
@@ -60,10 +69,10 @@ def main():
                 scene.render.filepath = str(destination)
                 bpy.ops.render.render(write_still=True)
     root.rotation_euler = original_rotation
-    (args.output / args.asset_id / "render-contract.json").write_text(json.dumps({
+    pipeline_common.write_text(args.output / args.asset_id / "render-contract.json", json.dumps({
         "schemaVersion": 1, "assetId": args.asset_id, "frame": {"widthPx": 256, "heightPx": 384, "footPivotPx": {"x": FOOT_PIVOT[0], "y": FOOT_PIVOT[1]}},
         "directions": list(DIRECTIONS), "clips": {name: {"framesPerDirection": count, "fps": fps} for name, (count, fps) in CLIPS.items()}
-    }, indent=2) + "\n", encoding="utf-8")
+    }, indent=2) + "\n")
 
 
 if __name__ == "__main__":
