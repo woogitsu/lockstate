@@ -1,4 +1,4 @@
-# ADR 0004: Deterministic Kernel and Scheduler
+# ADR 0020: Deterministic Kernel and Scheduler
 
 ## Status
 Accepted

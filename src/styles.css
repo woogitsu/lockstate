@@ -31,26 +31,57 @@ canvas {
   display: block;
 }
 
-/* Save/load panel (issue #19) — plain DOM browser UI beside the Phaser
-   canvas, never inside the renderer's scene graph. It now sits below the HUD
-   status strip rather than under it, positioned from the shared token so the
-   two cannot drift apart. */
+/*
+ * Save/load panel (issue #19) — plain DOM browser UI beside the Phaser
+ * canvas, never inside the renderer's scene graph.
+ *
+ * It is *laid out by the HUD* (issue #88). It used to be its own
+ * `position: fixed` layer pinned under the status strip at `z-index: 10`,
+ * which meant it had no spatial relationship to anything in the HUD at all:
+ * on the Build tab the Build panel — a `z-index: 20` layer with
+ * `pointer-events: auto` — landed on top of it and swallowed the clicks,
+ * silently. With the Build panel's numeric fallback expanded, one tap from
+ * the default, that was 91 % of this panel at 1280x720 and all five of its
+ * buttons; folded, three of the five at 900x600. `src/main.ts` now mounts it
+ * into `HudHandle.asideSlot`, the top of the HUD's right rail, so it is a
+ * normal block in the same flex column as the Build panel and the two cannot
+ * overlap at any viewport size.
+ *
+ * It stays its own component rather than becoming a `ui-panel`: it
+ * type-imports from `src/persistence/**` and `src/simulation/runtime/**`, and
+ * `AGENTS.md` boundary 1 keeps both out of `src/ui/hud/`. A slot is what lets
+ * the HUD own the geometry without owning the panel.
+ */
 .save-panel {
-  position: fixed;
-  top: var(--hud-strip-height);
-  right: 0;
-  z-index: 10;
-  width: min(20rem, 90vw);
-  max-height: calc(100vh - var(--hud-strip-height));
+  width: var(--hud-rail-panel-width);
+  max-width: 100%;
+  box-sizing: border-box;
+  /*
+   * The panel's height budget comes from the rail, not from the viewport, and
+   * it has no `max-height` of its own on purpose. `overflow-y: auto` makes
+   * this a scroll container, which is also what gives it an automatic minimum
+   * size of 0 as a flex item -- so the rail can shrink it, and a long prison
+   * list or a short window scrolls *here* instead of pushing the Build panel
+   * past the rail's edge. It used to be `max-height: 60vh`, which is a budget
+   * the rail never agreed to: at 1280x720 that is 432px inside a 603px rail
+   * that also has to hold the Build panel.
+   */
   overflow-y: auto;
   padding: var(--space-3);
-  box-sizing: border-box;
   background: var(--surface-raised);
-  border-left: var(--hairline) solid var(--border);
-  border-bottom: var(--hairline) solid var(--border);
-  border-bottom-left-radius: var(--radius-md);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-md);
   font-size: var(--text-size-body);
   touch-action: auto;
+}
+
+/* The same breakpoint the HUD's rail uses: the rail stops being a fixed-width
+   column, so its contents stop being one too. Height needs no override -- the
+   rail sizes this panel in both regimes. */
+@media (max-width: 720px) {
+  .save-panel {
+    width: 100%;
+  }
 }
 
 .save-panel__heading {

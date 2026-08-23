@@ -7,7 +7,7 @@ below to actor names and works the category-1 case through in detail.
 
 ## Context
 
-[ADR 0004](./0004-deterministic-kernel.md) makes the kernel deterministic and
+[ADR 0020](./0020-deterministic-kernel.md) makes the kernel deterministic and
 [ADR 0009](./0009-challenge-verification-strategy.md) turns that into a product
 guarantee: a run is reproduced from a seed plus a command stream, and a replay
 that disagrees invalidates stored evidence. `docs/DETERMINISM.md` states the

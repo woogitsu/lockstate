@@ -45,10 +45,12 @@ export class Kernel {
    * The resolved execution order of every registered system, as
    * `{ id, order }` pairs in the exact sequence `step()` runs them.
    *
-   * Read-only diagnostic surface. ADR 0004 makes "systems run in a declared
-   * integer order" part of the determinism contract, and ADR 0009 turns
-   * that contract into a *product* guarantee -- inserting a system into the
-   * middle of the order changes every stored challenge replay. That is only
+   * Read-only diagnostic surface.
+   * [ADR 0020](../../../docs/adr/0020-deterministic-kernel.md) makes "systems
+   * run in a declared integer order" part of the determinism contract, and
+   * ADR 0009 turns that contract into a *product* guarantee -- inserting a
+   * system into the middle of the order changes every stored challenge
+   * replay. That is only
    * reviewable if the resolved order can be asserted from outside the
    * kernel, which is what `tests/determinism/kernel-system-order.test.ts`
    * does. It exposes no mutable state: the array and its entries are fresh

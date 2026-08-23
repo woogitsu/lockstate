@@ -5,9 +5,10 @@ import { packCommand } from '../../src/simulation/protocol/commands';
 import { buildDeterminismScenario } from '../helpers/determinism-scenario';
 
 /**
- * ADR 0004: "every registered system must define an explicit integer
- * `order` and a stable string `id`. Systems are deterministically sorted
- * primarily by `order` and secondarily by `id`." ADR 0009 makes that a
+ * [ADR 0020](../../docs/adr/0020-deterministic-kernel.md): "every registered
+ * system must define an explicit integer `order` and a stable string `id`.
+ * Systems are deterministically sorted primarily by `order` and secondarily
+ * by `id`." ADR 0009 makes that a
  * product guarantee -- inserting a system into the middle of the order
  * changes the outcome of every stored challenge replay -- so the resolved
  * order must be a property of the declarations alone, never of the order

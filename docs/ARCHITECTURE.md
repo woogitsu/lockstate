@@ -30,8 +30,8 @@ Dedicated Simulation Worker
           v
 Persistence layer
   IndexedDB local-first
-  Supabase cloud sync
-  compressed immutable save versions
+  Supabase cloud sync (contract and SQL only — not reachable from the app)
+  immutable save versions (payloads are not compressed)
 ```
 
 ## Core rules
@@ -80,7 +80,7 @@ Navigation is hierarchical and budgeted:
 A full-map A* per actor per frame is forbidden. The region/portal graph, door/permission model, route format and cache invalidation are defined in [NAVIGATION.md](./NAVIGATION.md); flow fields, shared-route optimization and CPU budgets are separate work (#22), decided by [ADR-0007](./adr/0007-navigation-work-budgets-and-flow-fields.md) and implemented in `src/simulation/navigation/` (`flow-field.ts`, `path-request-queue.ts`) — see NAVIGATION.md's own section on them.
 
 ### Saves
-Local-first persistence uses IndexedDB. Cloud persistence uses Supabase Auth + Postgres metadata and, when snapshots become large enough, Supabase Storage for compressed payloads. The versioned save envelope, its runtime schema, checksum and forward-migration framework are defined in [PERSISTENCE.md](./PERSISTENCE.md) independently of which storage backend consumes it.
+Local-first persistence uses IndexedDB, and it is the only persistence the running app reaches: nothing under `src/` reads `VITE_SUPABASE_*` or imports `src/persistence/cloud/`, so the cloud client, sync engine and their SQL are a specified contract with no caller yet — see [CLOUD_SAVE.md](./CLOUD_SAVE.md). Cloud persistence is specified as Supabase Auth + Postgres metadata; moving large payloads into Supabase Storage is a candidate, not a decision, and no payload is compressed anywhere in `src/`. The versioned save envelope, its runtime schema, checksum and forward-migration framework are defined in [PERSISTENCE.md](./PERSISTENCE.md) independently of which storage backend consumes it.
 
 Every save contains at minimum:
 - save schema version,
@@ -111,7 +111,7 @@ Only the Supabase anon/publishable client key may appear in frontend configurati
 Boundary rules. The first two are statically enforced by `tests/unit/services-layer-boundaries.test.ts`; the last two are design constraints that no static check can express, and are asserted only where a concrete behaviour makes them testable (the projection's expiry and clamping, in `tests/unit/services-entitlements.test.ts`):
 - no module under `src/simulation/` or `src/persistence/` may import this layer;
 - the layer imports no Phaser and touches no DOM globals, so the same modules run in a tab, a worker and a trusted server function;
-- nothing in it runs on the tick or frame path; every call is asynchronous, failable and optional;
+- no module in this layer may be called from the simulation tick loop, and anything that leaves the device — a telemetry send, an entitlement read, a challenge submission — is asynchronous, failable and optional. The layer also holds pure synchronous logic, and the localization runtime is the deliberate exception to "asynchronous": `Localizer.format`/`formatNumber` are synchronous in-process calls made from the HUD's repaint path (`src/ui/hud/status-strip.ts`), so they must perform no I/O and must stay allocation-cheap — `formatNumber` today constructs a new `Intl.NumberFormat` per call (`src/services/localization/format.ts`), which is the cost this constraint is about;
 - a client cache of server-authoritative state is a projection that expires and may only ever reduce what the client believes it may do.
 
 ### Localization

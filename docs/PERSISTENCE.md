@@ -22,7 +22,8 @@ and client-side sync/conflict policy (`src/persistence/cloud/`) are covered in
   payload: {
     kernel: { tick, expectedSequence, rngStates, commands },  // Kernel.snapshot()
     world: { ... },                                           // SparseWorld.snapshot()
-    construction: { orders, undoStack, redoStack },           // ConstructionSystem.snapshot()
+    construction: { orders, undoStack, redoStack,              // ConstructionSystem.snapshot()
+                    currentTransaction?, currentTransactionId? },  // the open build gesture, #108
     entities?: { capacity, nextAvailableIndex, maxActiveIndex,
                  generations: [[value, length], ...],         // run-length encoded
                  freeIndices: [ ... ],                        // the live free-list prefix only
@@ -61,6 +62,37 @@ use for "the current version"; `SaveEnvelopeV1`…`V3` name specific historical
 shapes and should appear only in `save-schema.ts` and `save-migrations.ts`.
 V2 exists because #50 changed the entity section; V3 because #70 added
 `simulation` — see the two version sections below.
+
+### Adding an optional field without a version bump
+
+Three payload fields have been added since their section was first written --
+`construction.orders[].edge` (#74) and `construction.currentTransaction` /
+`currentTransactionId` (#108) -- and none of them bumped the schema version.
+The conditions that make that correct, rather than merely convenient, are:
+
+- **The field is optional, and absent means what the older build already
+  did.** An order with no `edge` resolves to `DEFAULT_BUILD_EDGE`; a
+  construction snapshot with no `currentTransaction` means "no build gesture
+  is open", which is exactly what every restore assumed before the field
+  existed. So an older save needs no migration step and none is added -- the
+  same reasoning `migrateSaveEnvelopeV2ToV3` uses for its two optional
+  sections, applied to a field instead of a section.
+- **The key still has to be declared.** `buildOrderSchema` and
+  `constructionSnapshotSchema` are `.strict()`, as every object in this schema
+  is, so an undeclared key is not trimmed -- it fails the whole save. Both
+  additions existed in `ConstructionSystem` before they were nameable in the
+  schema, and until they were declared a snapshot carrying one could not be
+  saved at all.
+- **A version bump would be required instead if absence were ambiguous** --
+  if the reader could not tell "this save predates the field" from a real
+  value -- or if an existing field changed shape or meaning. That is the line
+  V2 (#50) and V3 (#70) crossed and these did not.
+
+What #108 could *not* do is repair saves already written without the field: a
+save from a build that never recorded the open gesture simply has no entry for
+it, so the newest gesture at the time of that save stays outside the undo
+history. The fix stops the loss; it does not reconstruct it, and a migration
+that invented an entry would be asserting a gesture the save never recorded.
 
 ### Chunk size is bounded, and why that is a format decision
 
@@ -1093,6 +1125,42 @@ assigns "rendering, browser UI and input orchestration" to the main thread
 as separate concerns, and save/load is browser UI over persistence with no
 business in the renderer's scene graph. It reads only controller
 projections.
+
+**It is laid out by the HUD, and owned by neither.** `main.ts` mounts it into
+`HudHandle.asideSlot` — a slot at the top of the HUD's right rail that the HUD
+positions and never renders into. The panel predates the HUD shell and used to
+be a `position: fixed` layer of its own at `z-index: 10`, with no layout
+relating it to anything in the HUD; issue #88 is what that cost. On the Build
+tab the Build panel — inside a `z-index: 20` layer, with `pointer-events: auto`
+— landed on top of it and swallowed the clicks, silently and with no console
+message. Measured on that layout, with the Build panel's numeric fallback
+expanded (one tap from the default, and the state the issue was reported in):
+it covered 91 % of the save panel at 1280x720, 91 % at 900x600, 89 % at
+1024x768, 83 % at 375x812 and 37 % at 1440x900, taking all five of New prison,
+Save now, Export, Load and Delete at four of those five sizes — at 1440x900 it
+took only the per-prison Load and Delete. Folded it was narrower but not
+harmless — 66 % and three of the five buttons at 900x600. Sharing one flex
+column with the Build panel makes the overlap impossible rather than merely
+corrected.
+
+**Its height comes from the rail, not from the viewport.** The slot asks the
+rail for no height of its own and takes what the Build panel does not need,
+with a floor of a quarter of the rail; the panel is a scroll container inside
+it, so a long prison list scrolls in place instead of pushing anything. That
+matters to this module in one concrete way: the panel is free to render as
+many prison rows as the player has, and none of them can move the Build
+panel. Measured on the Build tab at 1280x720 with one prison saved, the panel
+is 161px tall with New prison, Save now and Export fully in view and the
+per-prison Load and Delete row straddling its lower edge, which the panel
+scrolls to; at 1440x900 it gets its full height and does not scroll at all. The panel used to cap itself at `60vh`
+instead, which is a budget the rail never agreed to — 432px of a 603px rail
+that also has to hold the Build panel.
+
+The slot exists instead of folding the panel into `src/ui/hud/` because this
+module type-imports `SaveResult`, `PrisonSlotMetadata`, `SaveEnvelope` and
+`RestoredScope` from `src/persistence/**` and `src/simulation/runtime/**`, and
+the HUD may import neither (`AGENTS.md` boundary 1). The HUD supplies a box;
+the composition root supplies the panel.
 
 `describeSaveResult` maps each failure code to its **own** state and
 advice, satisfying "quota, private-mode and transaction-abort errors are

@@ -160,6 +160,25 @@ const constructionSnapshotSchema = z
     orders: z.array(buildOrderSchema),
     undoStack: z.array(z.array(z.string())),
     redoStack: z.array(z.array(z.string())),
+    /**
+     * The build gesture that is still open (#108) -- the top of the undo
+     * history, which `ConstructionSystem` keeps in a buffer until the next
+     * gesture arrives. Before these two keys existed the newest gesture was
+     * absent from every save, so the first undo after a load cancelled the
+     * previous gesture instead of the newest one.
+     *
+     * Optional, and **not** a version bump, on exactly the same reasoning as
+     * `edge` above. The schema is `.strict()`, so the keys had to be named
+     * here for a snapshot carrying them to be saved at all; because they are
+     * optional they are equally valid in the V1 and V2 payload shapes below,
+     * so no migration step is needed and none is added. A save written
+     * before the fix simply has neither key, and `ConstructionSystem.restore`
+     * reads an absent buffer as "no gesture is open" -- which is the state
+     * every restore assumed unconditionally until now, so an older save
+     * loads exactly as it did before.
+     */
+    currentTransaction: z.array(z.string()).optional(),
+    currentTransactionId: z.string().optional(),
   })
   .strict();
 

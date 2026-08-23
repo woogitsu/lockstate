@@ -8,10 +8,10 @@ import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from 
 import { hashFullRuntime } from '../helpers/determinism-state';
 
 /**
- * ADR 0004's reason for named streams, tested rather than read: "Instead of
- * a single global RNG which couples unrelated systems (e.g. UI animations
- * perturbing pathfinding), subsystems claim named `Xoshiro128**` RNG
- * streams."
+ * [ADR 0020](../../docs/adr/0020-deterministic-kernel.md)'s reason for named
+ * streams, tested rather than read: "Instead of a single global RNG which
+ * couples unrelated systems (e.g. UI animations perturbing pathfinding),
+ * subsystems claim named `Xoshiro128**` RNG streams."
  *
  * The property that matters is not "each stream produces numbers" but that
  * *adding or reordering draws in one subsystem leaves every other
