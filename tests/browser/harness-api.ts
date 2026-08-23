@@ -20,6 +20,51 @@ export interface HarnessLoadSummary {
   readonly generationId: string | null;
   readonly revision: number | null;
   readonly reason: string | null;
+  /** The version the loaded envelope carries *after* any migration ran. */
+  readonly saveSchemaVersion: number | null;
+  /** `null` when the loaded envelope has no entity section. */
+  readonly entities: HarnessEntityLiveness | null;
+}
+
+/**
+ * Entity-ID liveness expanded to one entry per slot, via the production
+ * decoder. V1 wrote this shape directly and V2 writes run-length runs, so
+ * expanding both to it is what lets a spec assert that a migrated ledger
+ * reproduces the V1 one exactly rather than merely parsing.
+ */
+export interface HarnessEntityLiveness {
+  readonly capacity: number;
+  readonly nextAvailableIndex: number;
+  readonly maxActiveIndex: number;
+  readonly freeCount: number;
+  readonly generations: readonly number[];
+  /** The live free-list prefix only; the residue above `freeCount` is unreadable by `EntityStore.spawn`. */
+  readonly freeIndices: readonly number[];
+  readonly alive: readonly number[];
+}
+
+/** One legacy V1 generation to plant directly in storage, as an older build would have left it. */
+export interface HarnessLegacyGeneration {
+  readonly generationId: string;
+  readonly revision: number;
+  /**
+   * Mutates the payload *after* the fixture's checksum was written, leaving a
+   * structurally valid V1 record whose checksum no longer matches — the shape
+   * real corruption takes.
+   */
+  readonly tampered?: boolean;
+}
+
+/** A stored generation exactly as it sits in the object store, before any decode or migration. */
+export interface HarnessStoredGeneration {
+  readonly exists: boolean;
+  readonly saveSchemaVersion: number | null;
+  readonly checksum: string | null;
+  /** Sorted key names of `payload.entities`; `null` when the record carries no entity section. */
+  readonly entityFields: readonly string[] | null;
+  /** Verbatim, so V1's flat per-slot arrays and V2's `[value, length]` runs are distinguishable. */
+  readonly rawGenerations: unknown;
+  readonly rawFreeIndices: unknown;
 }
 
 export interface HarnessSlotSummary {
@@ -39,6 +84,14 @@ export interface HarnessErrorProbe {
   readonly isError: boolean;
   readonly isDomException: boolean;
   readonly classifiedAs: SaveWriteErrorCode;
+  /**
+   * `classifyStoreError(...).message`. Recorded separately from
+   * `errorMessage` because the two genuinely differ: a real
+   * `QuotaExceededError` carries an empty `message`, and `errors.ts` falls
+   * back to the error's name so the failure a player is most likely to hit
+   * never reports blank evidence.
+   */
+  readonly classifiedMessage: string;
   /** Free-form observation the scenario wants recorded (e.g. "transaction did not abort"). */
   readonly note: string;
 }
@@ -75,9 +128,27 @@ export interface LockstateBrowserHarness {
   loadCurrent(prisonId: string): Promise<HarnessLoadSummary>;
   listPrisons(): Promise<readonly HarnessSlotSummary[]>;
 
+  /**
+   * Loads the current generation and writes it straight back. This is the
+   * real upgrade-on-next-save path: a V1 save decoded (and therefore
+   * migrated) on load is re-persisted at the current version.
+   */
+  resaveCurrent(prisonId: string): Promise<HarnessSaveSummary>;
+
   /** Overwrites a stored generation with a structurally invalid record. */
   corruptGeneration(prisonId: string, generationId: string): Promise<void>;
   generationExists(prisonId: string, generationId: string): Promise<boolean>;
+  readStoredGeneration(prisonId: string, generationId: string): Promise<HarnessStoredGeneration>;
+
+  /**
+   * Plants the checked-in V1 fixture directly in real IndexedDB, bypassing
+   * `save()` — which can only ever write the current version — so the
+   * migration runs against a record that genuinely predates this build.
+   */
+  seedLegacyV1Prison(prisonId: string, generations: readonly HarnessLegacyGeneration[]): Promise<void>;
+
+  /** The fixture's own V1 liveness ledger, for comparison against what a migrated load produces. */
+  legacyV1Liveness(): HarnessEntityLiveness;
 
   /**
    * Writes incompressible random blobs through the real adapter until a write
