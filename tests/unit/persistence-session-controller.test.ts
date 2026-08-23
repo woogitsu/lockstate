@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryLocalSaveStore } from '../../src/persistence/local/memory-store';
 import { PrisonSaveRepository } from '../../src/persistence/local/repository';
-import { InProcessSessionHost } from '../../src/persistence/session/runtime-host';
+import { InProcessSessionHost, type SessionRuntimeHost } from '../../src/persistence/session/runtime-host';
 import { SessionController } from '../../src/persistence/session/session-controller';
 import { packCommand } from '../../src/simulation/protocol/commands';
 
@@ -290,5 +290,79 @@ describe('SessionController: export/import through schema validation', () => {
   it('exportActive returns undefined when there is no active session', async () => {
     const { controller } = buildController();
     expect(await controller.exportActive()).toBeUndefined();
+  });
+});
+
+describe('SessionController: a failed createPrison leaves no slot behind (#65)', () => {
+  /**
+   * Wraps a real host so one method can be made to fail. Using the real host
+   * for everything else keeps these tests about the rollback rather than about
+   * a stub's fidelity.
+   */
+  function hostThatFails(which: 'startNew' | 'capture'): SessionRuntimeHost {
+    const inner = new InProcessSessionHost();
+    return {
+      startNew: async (seed: number) => {
+        if (which === 'startNew') throw new Error('The simulation worker did not reply within 15000ms.');
+        return inner.startNew(seed);
+      },
+      startFromSnapshot: (bundle) => inner.startFromSnapshot(bundle),
+      capture: async () => {
+        if (which === 'capture') throw new Error('The simulation worker did not reply within 15000ms.');
+        return inner.capture();
+      },
+      stop: () => inner.stop(),
+    };
+  }
+
+  function controllerWith(host: SessionRuntimeHost, store = new MemoryLocalSaveStore()) {
+    const repository = new PrisonSaveRepository(store);
+    const controller = new SessionController(repository, host, { gameVersion: 'test-version' });
+    return { repository, controller };
+  }
+
+  it('deletes the slot when the worker never starts the session', async () => {
+    const { repository, controller } = controllerWith(hostThatFails('startNew'));
+
+    await expect(controller.createPrison('prison-1')).rejects.toThrow(/did not reply/);
+
+    // The defect this pins: the slot was written before the worker was asked,
+    // so without a rollback it survives with zero generations and shows up in
+    // the prison list as a row that can never be loaded.
+    expect(await repository.list()).toEqual([]);
+  });
+
+  it('deletes the slot when the session starts but generation 1 cannot be written', async () => {
+    const { repository, controller } = controllerWith(hostThatFails('capture'));
+
+    // `saveNow` reports failure as a value rather than throwing, so this path
+    // is invisible to a try/catch and needs its own rollback.
+    const result = await controller.createPrison('prison-1');
+    expect(result.ok).toBe(false);
+
+    expect(await repository.list()).toEqual([]);
+    expect(controller.getActiveSession()).toBeUndefined();
+  });
+
+  it('leaves an existing session untouched when creation fails before adoption', async () => {
+    const store = new MemoryLocalSaveStore();
+    const { controller: first } = controllerWith(new InProcessSessionHost(), store);
+    await first.createPrison('prison-keep', 'Keep me');
+
+    // Same store, a controller whose host cannot start: the failure happens
+    // before adoption, so nothing about the earlier prison may change.
+    const { repository, controller } = controllerWith(hostThatFails('startNew'), store);
+    await expect(controller.createPrison('prison-doomed')).rejects.toThrow(/did not reply/);
+
+    expect((await repository.list()).map((prison) => prison.prisonId)).toEqual(['prison-keep']);
+    expect((await repository.loadCurrent('prison-keep')).ok).toBe(true);
+  });
+
+  it('still creates normally when nothing fails', async () => {
+    const { repository, controller } = controllerWith(new InProcessSessionHost());
+
+    expect((await controller.createPrison('prison-1')).ok).toBe(true);
+    expect((await repository.list()).map((prison) => prison.prisonId)).toEqual(['prison-1']);
+    expect((await repository.list())[0]!.generationIds).toHaveLength(1);
   });
 });
