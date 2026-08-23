@@ -255,10 +255,25 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   }
   paintPlacement();
 
+  // Collapsible, because the panel and the thing it operates on compete for
+  // the same screen. At 375px it covers most of the world, and the whole
+  // interaction is now "point at the world" -- so folding it to its header
+  // while placing is not a nicety. Arming survives the fold: the tool is
+  // still yours, you just want to see what you are doing.
+  let panelCollapsed = false;
   const panel = createPanel({
     title: t(HUD_MESSAGE_KEY.buildTitle),
     icon: 'build',
     className: 'hud-build',
+    collapse: {
+      collapseLabel: t(HUD_MESSAGE_KEY.panelCollapse),
+      expandLabel: t(HUD_MESSAGE_KEY.panelExpand),
+      collapsed: false,
+      onToggle: () => {
+        panelCollapsed = !panelCollapsed;
+        panel.setCollapsed(panelCollapsed);
+      },
+    },
   });
   panel.body.append(
     catalogue.element,

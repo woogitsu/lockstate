@@ -10,7 +10,8 @@ import { screenToWorld, visibleWorldBounds, zoomAtScreenPoint } from '../camera'
 import {
   type BuildToolPort,
   type EdgeTarget,
-  edgeRunBetween,
+  type WorldPoint,
+  edgeRunFromDrag,
   edgeTargetsEqual,
   pickEdgeAtWorld,
 } from '../build/edge-picking';
@@ -75,9 +76,9 @@ export class WorldScene extends Phaser.Scene {
   private lastPanScreenPoint: { readonly x: number; readonly y: number } | undefined;
 
   private readonly buildTool: BuildToolPort | undefined;
-  /** The pointer currently drawing a wall run, and where the run started. */
+  /** The pointer currently drawing a wall run, and the world point it pressed. */
   private buildPointerId: number | undefined;
-  private buildAnchor: EdgeTarget | undefined;
+  private buildPress: WorldPoint | undefined;
   private buildSegments: readonly EdgeTarget[] = [];
   private hoveredEdge: EdgeTarget | undefined;
 
@@ -115,6 +116,13 @@ export class WorldScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor('#0b0e12');
     this.tiles = new TileLayer(this);
     this.buildOverlay = new BuildOverlay(this);
+
+    // Phaser tracks exactly one touch pointer unless told otherwise, so a
+    // second finger was never delivered and `TouchGestureTracker` could not
+    // see a pinch at all: two-finger zoom has been dead since the scene was
+    // written, silently, because nothing exercised it in a real browser.
+    // Three is one spare beyond the two the gestures use.
+    this.input.addPointer(2);
 
     const keyDown = (event: KeyboardEvent): void => {
       this.keyboard.keyDown(event);
@@ -288,16 +296,20 @@ export class WorldScene extends Phaser.Scene {
   }
 
   private beginBuild(pointer: Phaser.Input.Pointer): void {
+    // The *press point* is kept, not the edge it resolved to: a drag can still
+    // change which axis the run lies on, and re-deriving from the original
+    // point is what lets it do that without moving the tile the player aimed
+    // at. See `edgeRunFromDrag`.
     this.buildPointerId = pointer.id;
-    this.buildAnchor = pickEdgeAtWorld(this.worldPointOf(pointer));
-    this.buildSegments = [this.buildAnchor];
+    this.buildPress = this.worldPointOf(pointer);
+    this.buildSegments = [pickEdgeAtWorld(this.buildPress)];
     this.paintBuildPreview();
   }
 
   /** True when the move belonged to a run in progress and the camera must not act on it. */
   private extendBuild(pointer: Phaser.Input.Pointer): boolean {
-    if (this.buildPointerId !== pointer.id || this.buildAnchor === undefined) return false;
-    this.buildSegments = edgeRunBetween(this.buildAnchor, this.worldPointOf(pointer));
+    if (this.buildPointerId !== pointer.id || this.buildPress === undefined) return false;
+    this.buildSegments = edgeRunFromDrag(this.buildPress, this.worldPointOf(pointer));
     this.paintBuildPreview();
     return true;
   }
@@ -307,7 +319,7 @@ export class WorldScene extends Phaser.Scene {
     if (this.buildPointerId !== pointer.id) return false;
     const segments = this.buildSegments;
     this.buildPointerId = undefined;
-    this.buildAnchor = undefined;
+    this.buildPress = undefined;
     this.buildSegments = [];
     this.hoveredEdge = undefined;
     this.buildOverlay?.clear();
@@ -320,7 +332,7 @@ export class WorldScene extends Phaser.Scene {
   private cancelBuild(): void {
     if (this.buildPointerId === undefined) return;
     this.buildPointerId = undefined;
-    this.buildAnchor = undefined;
+    this.buildPress = undefined;
     this.buildSegments = [];
     this.buildOverlay?.clear();
     this.buildTool?.target?.(undefined);

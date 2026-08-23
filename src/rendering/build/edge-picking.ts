@@ -87,13 +87,63 @@ export function pickEdgeAtWorld(point: WorldPoint): EdgeTarget {
 }
 
 /**
- * The run of edges a drag from `anchor` to `point` asks for.
+ * How far a drag must travel before it counts as a drag rather than a click.
  *
- * The axis is fixed by the anchor, not re-chosen as the drag moves: a north
- * edge runs east-west, a west edge runs north-south. Letting the drag flip
- * the axis mid-gesture would make the wall you get depend on the exact path
- * your hand took, and would silently abandon the edge the player deliberately
- * aimed at.
+ * Half a tile: far enough that a shaky tap is still a tap, close enough that
+ * a deliberate drag is recognised before the hand has left the first tile.
+ */
+export const DRAG_AXIS_THRESHOLD_PX = TILE_SIZE_PX / 2;
+
+/**
+ * The edge nearest a point *on a given axis*.
+ *
+ * A run along x is made of north edges, a run along y of west edges. Once the
+ * drag has said which way it is going, the only question left is which of the
+ * two candidate edges on that axis the press was nearer -- the top of this
+ * tile or the top of the next one down; the left of this tile or the left of
+ * the one to its right.
+ */
+export function pickEdgeOnAxis(point: WorldPoint, axis: 'x' | 'y'): EdgeTarget {
+  const tileX = worldToTile(point.x);
+  const tileY = worldToTile(point.y);
+  if (axis === 'x') {
+    const withinY = point.y / TILE_SIZE_PX - tileY;
+    return { tileX, tileY: withinY < 0.5 ? tileY : tileY + 1, edge: 'north' };
+  }
+  const withinX = point.x / TILE_SIZE_PX - tileX;
+  return { tileX: withinX < 0.5 ? tileX : tileX + 1, tileY, edge: 'west' };
+}
+
+/**
+ * The whole gesture: what a press at `press` dragged to `current` asks for.
+ *
+ * A press that has barely moved is a click, and a click is exactly the
+ * nearest edge -- all four sides live, corner included, so pointing at the
+ * bottom of a tile places the wall you are pointing at.
+ *
+ * Once the drag has clearly committed to a direction, that direction picks
+ * the axis and the axis re-picks the edge. An earlier version locked the axis
+ * to whichever edge the press happened to land nearest, and it was wrong in
+ * the hand: pressing a hair left of centre and dragging *sideways* laid a
+ * single vertical segment and no run at all. The press says which tile; the
+ * drag says which way. Both are information the gesture already carried, and
+ * the ghost shows the answer before the player commits to it.
+ */
+export function edgeRunFromDrag(press: WorldPoint, current: WorldPoint): readonly EdgeTarget[] {
+  const dx = current.x - press.x;
+  const dy = current.y - press.y;
+  if (Math.max(Math.abs(dx), Math.abs(dy)) < DRAG_AXIS_THRESHOLD_PX) {
+    return [pickEdgeAtWorld(press)];
+  }
+  return edgeRunBetween(pickEdgeOnAxis(press, Math.abs(dx) >= Math.abs(dy) ? 'x' : 'y'), current);
+}
+
+/**
+ * The run of edges from `anchor` towards `point`, once the axis is settled.
+ *
+ * A north edge runs east-west and a west edge runs north-south, so the anchor
+ * fixes the axis here -- choosing it is `edgeRunFromDrag`'s job, one level up,
+ * where the drag direction is known.
  *
  * Always ascending, whichever way the drag went, so the same wall submits the
  * same commands in the same order (`docs/DETERMINISM.md`). Always includes
