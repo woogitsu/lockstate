@@ -5,23 +5,34 @@
 --
 -- `p_new_revision` must be exactly `current_revision + 1`; anything else
 -- is a conflict the caller must resolve (never a silent overwrite, never
--- a silent "latest wins"). A resubmission of a checksum already recorded
--- for this prison is treated as a successful idempotent replay rather
--- than a conflict or a duplicate row, so retrying an upload whose
--- response was lost (but which actually committed) is always safe.
+-- a silent "latest wins").
+--
+-- A save attempt is identified by (prison, revision, checksum) -- not by
+-- content alone. Resubmitting the same checksum *at the same revision* is
+-- an idempotent replay, so retrying an upload whose response was lost but
+-- which actually committed is always safe. Because the lookup is keyed on
+-- the revision the caller asked for, a replay can only ever report back
+-- that same revision: client and cloud cannot end up disagreeing about
+-- which revision committed.
+--
+-- Keying idempotency on the checksum alone -- the original design -- broke
+-- exactly there. A prison that legitimately returns to an earlier state (a
+-- player undoing a build) resubmits an old checksum at a *new* revision,
+-- and was answered with a replay of the old one: the pointer never
+-- advanced, the client recorded itself as synced at a revision the cloud
+-- had never reached, and its next push conflicted for no reason. Content
+-- recurring in a save history is normal; a revert is not the same event as
+-- a retry, and only the revision distinguishes them.
 --
 -- KNOWN, ACCEPTED RISK: `checksum` is #18's diagnostic 64-bit
--- (non-cryptographic) canonical-JSON hash, reused here as the idempotency
--- key. A genuine hash collision between two *different* payloads for the
--- same prison would make this function treat the second, different save
--- as an idempotent replay of the first and silently drop it -- the one
--- scenario this design does not protect against. At 64 bits this needs
--- billions of saves for a prison before it becomes a realistic risk
--- (birthday bound), but if that stops being acceptable, replace the
--- idempotency key with a client-generated attempt UUID stored alongside
--- checksum rather than widening checksum's own hash width, since
--- checksum's job (corruption detection, docs/PERSISTENCE.md) is
--- unrelated to this one.
+-- (non-cryptographic) canonical-JSON hash, reused here as half of the
+-- idempotency key. Two *different* payloads whose hashes collide would be
+-- treated as replays of each other, silently dropping the second -- but
+-- only when they collide within one prison AND at the same revision
+-- number, which a client produces at most once. If that ever stops being
+-- acceptable, replace the checksum half with a client-generated attempt
+-- UUID rather than widening checksum's own hash width, since checksum's
+-- job (corruption detection, docs/PERSISTENCE.md) is unrelated to this one.
 create or replace function public.create_save_version(
   p_prison_id uuid,
   p_new_revision int,
@@ -47,7 +58,6 @@ declare
   v_current_checksum text;
   v_new_version_id uuid;
   v_existing_id uuid;
-  v_existing_revision int;
 begin
   if p_new_revision <= 0 then
     raise exception 'revision must be positive';
@@ -84,12 +94,21 @@ begin
   -- `42702 column reference "revision" is ambiguous` at runtime. Without
   -- the alias this statement -- which runs on every call, before any
   -- branch -- makes the function fail outright.
-  select sv.id, sv.revision into v_existing_id, v_existing_revision
+  --
+  -- Matching on the revision as well as the checksum is what keeps a replay
+  -- honest: the row returned is the caller's own earlier attempt at this
+  -- exact revision, so the reported revision is p_new_revision by
+  -- construction. A row at this revision holding *different* content is not
+  -- a replay at all -- it falls through to the conflict branch below, which
+  -- is the correct answer, since someone else's save already occupies it.
+  select sv.id into v_existing_id
   from public.save_versions sv
-  where sv.prison_id = p_prison_id and sv.checksum = p_checksum;
+  where sv.prison_id = p_prison_id
+    and sv.revision = p_new_revision
+    and sv.checksum = p_checksum;
 
   if found then
-    return query select 'idempotent_replay'::text, v_existing_id, v_existing_revision, p_checksum;
+    return query select 'idempotent_replay'::text, v_existing_id, p_new_revision, p_checksum;
     return;
   end if;
 

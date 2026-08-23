@@ -40,7 +40,7 @@ describe('PrisonSyncEngine: push', () => {
     expect(result).toEqual({ ok: true, outcome: 'uploaded', revision: 1 });
   });
 
-  it('treats resubmitting the same accepted content as already-synced, not an error or a conflict', async () => {
+  it('treats resubmitting the same accepted content at the same revision as already-synced, not an error or a conflict', async () => {
     const client = new MemoryCloudSaveClient();
     await client.registerPrison('prison-1', 'lockstate-0.0.0', 0);
     const engine = new PrisonSyncEngine(client);
@@ -48,6 +48,32 @@ describe('PrisonSyncEngine: push', () => {
     await engine.push('prison-1', buildEnvelope(1));
     const replay = await engine.push('prison-1', buildEnvelope(1));
     expect(replay).toEqual({ ok: true, outcome: 'already-synced', revision: 1 });
+  });
+
+  it('treats content that recurs at a later revision as a new revision, not a replay of the earlier one', async () => {
+    const client = new MemoryCloudSaveClient();
+    await client.registerPrison('prison-1', 'lockstate-0.0.0', 0);
+    const engine = new PrisonSyncEngine(client);
+
+    const revisionOne = buildEnvelope(1);
+    await engine.push('prison-1', revisionOne);
+
+    // The player undoes their change, so revision 2's content is byte-identical
+    // to revision 1's. Keying idempotency on the checksum alone answered this
+    // with a replay of revision 1: the cloud pointer never advanced while the
+    // client recorded itself as synced, and its next push conflicted for no
+    // reason. A revert is a new revision, not a retry of an old one.
+    const revertedToRevisionOne = { ...buildEnvelope(2), checksum: revisionOne.checksum } as SaveEnvelopeV1;
+    expect(await engine.push('prison-1', revertedToRevisionOne)).toEqual({
+      ok: true,
+      outcome: 'uploaded',
+      revision: 2,
+    });
+
+    // The pointer really advanced, so the next correctly-sequenced push is
+    // accepted rather than reported as a spurious conflict.
+    const revisionThree = { ...buildEnvelope(3), checksum: 'checksum-rev-3' } as SaveEnvelopeV1;
+    expect(await engine.push('prison-1', revisionThree)).toEqual({ ok: true, outcome: 'uploaded', revision: 3 });
   });
 
   it('never silently overwrites: a stale push is reported as an explicit conflict', async () => {

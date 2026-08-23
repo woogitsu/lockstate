@@ -22,12 +22,19 @@ create table if not exists public.save_versions (
     (payload is not null and storage_path is null)
     or (payload is null and storage_path is not null)
   ),
-  constraint save_versions_prison_revision_unique unique (prison_id, revision),
   -- Idempotent-resume key (issue #20: "offline pending work resumes
-  -- idempotently"): retrying the same local revision's upload after a
-  -- dropped response must not create a duplicate version. A given
-  -- (prison, checksum) pair is only ever the content of one version.
-  constraint save_versions_prison_checksum_unique unique (prison_id, checksum)
+  -- idempotently"). Retrying the same local revision's upload after a
+  -- dropped response must not create a duplicate version, and this
+  -- constraint is what makes the retry safe: create_save_version() looks up
+  -- (prison_id, revision, checksum) and replays whatever row it finds.
+  --
+  -- Content is deliberately NOT unique on its own. An earlier design also
+  -- carried `unique (prison_id, checksum)` and keyed idempotency off the
+  -- checksum alone, which made a legitimately recurring state (a player
+  -- undoing back to an earlier layout) indistinguishable from a retry --
+  -- see the RPC migration's header for what that cost. A revision is part
+  -- of the identity of a save attempt; content on its own is not.
+  constraint save_versions_prison_revision_unique unique (prison_id, revision)
 );
 
 create index if not exists save_versions_prison_id_idx on public.save_versions (prison_id);
