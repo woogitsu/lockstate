@@ -1,5 +1,5 @@
 -- pgTAP tests for the database-tier bound on free-tier cloud-save capacity
--- (issue #57, ADR 0012): the slot cap, the per-save payload bound, the
+-- (issue #57, ADR 0013): the slot cap, the per-save payload bound, the
 -- distinguishable refusals, and the read-only degradation that must survive
 -- both.
 --
@@ -8,7 +8,7 @@
 -- touch it without limit?" -- because with
 -- `[auth] enable_anonymous_sign_ins = true` the `authenticated` role is
 -- effectively anyone, so "the owner may do it" and "anyone may do it" are
--- the same sentence for anything that is not also bounded. Before ADR 0012
+-- the same sentence for anything that is not also bounded. Before ADR 0013
 -- nothing here bounded slot count or payload size at all: the five-free-slots
 -- rule lived only in src/services/entitlements/products.ts, which ADR 0008
 -- classifies as untrusted, and `p_byte_size` was recorded rather than
@@ -149,7 +149,7 @@ select is(
 -- --- The payload bound ------------------------------------------------
 --
 -- Both cases are expressed in terms of public.max_save_payload_bytes()
--- rather than a literal, so approving a different figure in ADR 0012 stays
+-- rather than a literal, so approving a different figure in ADR 0013 stays
 -- the one-line change it is meant to be. A jsonb string's text
 -- representation is the string plus two quote characters, so `limit - 2`
 -- characters land exactly on the limit and `limit` characters land two

@@ -82,7 +82,7 @@ select is(
 );
 
 -- INSERT above is deliberately retained rather than revoked in favour of
--- create_prison(). ADR 0012 argues the case: the slot cap is a count
+-- create_prison(). ADR 0013 argues the case: the slot cap is a count
 -- invariant of this table, so it is enforced by a trigger that holds on
 -- every write path, and does not depend on this grant staying revoked.
 -- supabase/tests/004_free_tier_capacity.test.sql is what makes that
@@ -283,7 +283,7 @@ select is(
 -- roles' own grant), but PL/pgSQL refuses to run one outside a trigger, so
 -- they are not a Data API surface. Everything else is.
 
--- Three of these six are constant-returning helpers added by ADR 0012
+-- Three of these six are constant-returning helpers added by ADR 0013
 -- (`base_save_slot_capacity`, `max_save_slot_capacity`,
 -- `max_save_payload_bytes`). They are deliberately readable so a client can
 -- ask the server what the limits are and warn before spending a 4 MiB

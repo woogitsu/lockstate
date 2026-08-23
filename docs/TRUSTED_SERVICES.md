@@ -279,7 +279,7 @@ buy a misleading UI, not a right, because the point of effect re-checks
 capacity.
 
 **That re-check now exists** (issue #57,
-[ADR 0012](./adr/0012-free-tier-cloud-save-capacity.md)). It did not when
+[ADR 0013](./adr/0013-free-tier-cloud-save-capacity.md)). It did not when
 this paragraph was first written, which is why it used to overclaim: slot
 creation was a plain `INSERT` into `prisons` under `prisons_insert_own`,
 which enforces ownership and nothing about capacity, and
@@ -309,12 +309,12 @@ to them. `supabase/tests/004_free_tier_capacity.test.sql` asserts exactly
 that, including after a revocation leaves an account holding seven prisons
 with an entitlement to five.
 
-**The 4 MiB per-save figure is proposed, not accepted** — ADR 0012 is in
+**The 4 MiB per-save figure is proposed, not accepted** — ADR 0013 is in
 `Proposed` status and names the three numbers a reviewer is being asked to
 sign off on. Revision-history depth and a total-bytes-per-account cap are
 proposed and deliberately unimplemented, and anonymous-identity churn stays
 a separate lever (GoTrue rate limits, cleanup of abandoned anonymous
-accounts) that #57 names and ADR 0012 records rather than closes.
+accounts) that #57 names and ADR 0013 records rather than closes.
 
 ## Data retention and account deletion
 
@@ -335,4 +335,4 @@ implement the replay runner; deploy any server function; build a
 telemetry ingestion endpoint; or translate the game.
 
 Save-slot capacity at the database tier *was* on this list and no longer is:
-issue #57 and ADR 0012 close it, as described under "Offline degradation".
+issue #57 and ADR 0013 close it, as described under "Offline degradation".

@@ -18,7 +18,7 @@
  * this project's identity model -- a flow that is GoTrue behaviour, not
  * row-level SQL, so `supabase test db` structurally cannot cover it.
  *
- * ON THE FREE-TIER CAPACITY BOUND (issue #57, ADR 0012). The pgTAP suite
+ * ON THE FREE-TIER CAPACITY BOUND (issue #57, ADR 0013). The pgTAP suite
  * proves the cap in SQL. Only this script can prove the two things a client
  * depends on: that a DIRECT PostgREST insert into `prisons` -- not merely
  * the create_prison() RPC -- is refused, and that PostgREST turns the
@@ -511,7 +511,7 @@ async function main() {
     `${clientWebhook.status} ${JSON.stringify(clientWebhook.body)}`,
   );
 
-  // --- The free-tier capacity bound (issue #57, ADR 0012) ---------------
+  // --- The free-tier capacity bound (issue #57, ADR 0013) ---------------
   //
   // The pgTAP suite proves this in SQL; only this script can prove the two
   // things a client actually depends on: that a direct PostgREST insert --
@@ -536,7 +536,7 @@ async function main() {
   check('a free account creates its five slots unhindered', freeSlotInsertsAccepted === 5, `${freeSlotInsertsAccepted}/5 accepted`);
 
   // The bypass check. `create_prison()` is the front door, but the INSERT
-  // grant on `prisons` is deliberately still there (ADR 0012), so this is
+  // grant on `prisons` is deliberately still there (ADR 0013), so this is
   // the path an attacker would actually use and the one that must refuse.
   const sixthDirect = await rest('prisons', {
     session: playerB,

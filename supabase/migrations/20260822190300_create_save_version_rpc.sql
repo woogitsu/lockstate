@@ -34,7 +34,7 @@
 -- UUID rather than widening checksum's own hash width, since checksum's
 -- job (corruption detection, docs/PERSISTENCE.md) is unrelated to this one.
 --
--- ON `p_byte_size` (issue #57, ADR 0012). It used to be recorded and never
+-- ON `p_byte_size` (issue #57, ADR 0013). It used to be recorded and never
 -- bounded, and the length of `p_payload` was not checked either, so the two
 -- need not have agreed and the storage one anonymous identity could consume
 -- was unbounded at the tier that is actually authoritative. Both are now

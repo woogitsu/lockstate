@@ -19,7 +19,7 @@ create table if not exists public.prisons (
   -- constraint cannot count sibling rows, so it cannot express "at most N
   -- slots per owner" whatever N is. That bound is enforced by the
   -- `prisons_enforce_slot_capacity` trigger in
-  -- 20260823100000_bound_free_tier_capacity.sql (issue #57, ADR 0012).
+  -- 20260823100000_bound_free_tier_capacity.sql (issue #57, ADR 0013).
   constraint prisons_owner_slot_unique unique (owner_id, slot_index)
 );
 
@@ -38,14 +38,14 @@ create policy "prisons_select_own"
 -- This policy caps *who* may insert, never *how many* -- and with
 -- `enable_anonymous_sign_ins = true` the `authenticated` role is
 -- effectively anyone, since a fresh identity costs one signup call. The
--- "how many" half is now answered (issue #57, ADR 0012) by the
+-- "how many" half is now answered (issue #57, ADR 0013) by the
 -- `prisons_enforce_slot_capacity` trigger in
 -- 20260823100000_bound_free_tier_capacity.sql, which counts an owner's
 -- existing prisons against the capacity derived from the server-authoritative
 -- `entitlements` projection and refuses with SQLSTATE LS001.
 --
 -- The INSERT grant below is deliberately NOT revoked in favour of that
--- migration's create_prison() RPC: ADR 0012 argues that the cap is a count
+-- migration's create_prison() RPC: ADR 0013 argues that the cap is a count
 -- invariant of this table, so it belongs on every write path into it rather
 -- than on one blessed door whose exclusivity depends on a grant staying
 -- revoked. create_prison() exists alongside it as the front door that

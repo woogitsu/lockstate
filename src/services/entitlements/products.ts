@@ -19,7 +19,7 @@ import { type DeepReadonly, identifierSchema } from '../../simulation/protocol/t
  * mirrored by `public.max_save_slot_capacity()`. Changing either value here
  * without changing it there makes the client's arithmetic disagree with the
  * server's, which surfaces as a slot that looks available and is not.
- * See docs/adr/0012-free-tier-cloud-save-capacity.md.
+ * See docs/adr/0013-free-tier-cloud-save-capacity.md.
  */
 export const BASE_SAVE_SLOTS = 5 as const;
 

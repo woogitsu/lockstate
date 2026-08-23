@@ -1,4 +1,4 @@
-# ADR 0012: Free-tier cloud-save capacity and where it is enforced
+# ADR 0013: Free-tier cloud-save capacity and where it is enforced
 
 ## Status
 

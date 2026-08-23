@@ -1,5 +1,5 @@
 -- Free-tier cloud-save capacity, bounded at the database tier (issue #57,
--- ADR 0012).
+-- ADR 0013).
 --
 -- WHY THIS EXISTS. `supabase/config.toml` sets
 -- `[auth] enable_anonymous_sign_ins = true` because anonymous auth is this
@@ -22,11 +22,11 @@
 -- absolute ceiling of 50 (`MAX_TOTAL_SAVE_SLOTS`). Enforcing them here is
 -- not a new decision; it is making an existing rule authoritative in the
 -- only tier that actually is. The per-save byte bound is NOT decided: ADR
--- 0012 proposes it pending human approval, which is why its number lives in
+-- 0013 proposes it pending human approval, which is why its number lives in
 -- exactly one function below -- approving a different figure is a one-line
 -- change, not a migration rewrite.
 --
--- WHY A TRIGGER RATHER THAN "ONLY AN RPC". See ADR 0012 for the full
+-- WHY A TRIGGER RATHER THAN "ONLY AN RPC". See ADR 0013 for the full
 -- argument. In short: a `SECURITY DEFINER` create-slot RPC only bounds
 -- anything once the direct `INSERT` path is closed, so the RPC alone makes
 -- the cap contingent on a grant staying revoked, whereas the invariant
@@ -55,7 +55,7 @@ create or replace function public.max_save_slot_capacity() returns int
 language sql immutable parallel safe
 as $$ select 50 $$;
 
--- PROPOSED, PENDING HUMAN APPROVAL (ADR 0012). 4 MiB per stored save
+-- PROPOSED, PENDING HUMAN APPROVAL (ADR 0013). 4 MiB per stored save
 -- version. The largest tier in docs/PERSISTENCE.md's measured envelopes is
 -- comfortably under this and a small prison is 66.0 KiB, so this is roughly
 -- an order of magnitude of headroom over anything the game produces today

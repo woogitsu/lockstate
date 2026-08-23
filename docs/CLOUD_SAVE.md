@@ -417,7 +417,7 @@ repository uses the service-role key.
 
 This used to be an open question here, recorded by the security review and
 deliberately not fixed inside a privilege change. It is now answered by
-[ADR 0012](./adr/0012-free-tier-cloud-save-capacity.md), and the answer is
+[ADR 0013](./adr/0013-free-tier-cloud-save-capacity.md), and the answer is
 partly decided and partly proposed -- **the ADR is `Proposed`, not
 `Accepted`**, and the split matters.
 
@@ -473,10 +473,10 @@ client-side projection, asserted in
 `pnpm verify:stack`.
 
 Two things are explicitly **not** closed. Revision history is still
-unbounded within a bounded slot (ADR 0012 §5–§6), and anonymous-identity
+unbounded within a bounded slot (ADR 0013 §5–§6), and anonymous-identity
 churn — GoTrue signup rate limits, cleanup of abandoned anonymous accounts
 — is a separate lever that #57 names and this work records rather than
-implements (ADR 0012 §7).
+implements (ADR 0013 §7).
 
 ## What is out of scope here
 
@@ -485,4 +485,4 @@ leaderboards; realtime collaborative simulation; automatic destructive
 conflict resolution (every conflict requires the explicit choices above);
 revision-history depth, a total-bytes-per-account cap and
 anonymous-identity churn (all three proposed but deliberately not
-implemented — see ADR 0012 §5–§7).
+implemented — see ADR 0013 §5–§7).
