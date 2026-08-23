@@ -38,7 +38,10 @@ design. That gap is now closed except where noted:
   JWT verification, PostgREST, Storage or Realtime. It needs no Docker and
   stays the fast check, but it is not a substitute for the stack run — see
   defect 4 for what an emulator that is *more* permissive than the platform
-  costs.
+  costs. It is also the check that runs in CI, after
+  `scripts/provision-postgres.sh`, so a change to this schema cannot reach
+  `main` unexecuted again — see `docs/TESTING.md` for the provisioning
+  contract. The stack run needs Docker and stays a local, manual gate.
 - **Not executed:** `SupabaseCloudSaveClient` (`src/persistence/cloud/
   supabase-client.ts`) still has no automated test; a pure-JS fake would
   test the fake, not the contract. `verify:stack` at least exercises the

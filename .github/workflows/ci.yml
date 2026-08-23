@@ -57,5 +57,18 @@ jobs:
       - name: Verify Cloudflare deployment packages
         run: pnpm verify:deployment
 
+      # The pgTAP suite is the only thing in this repository that executes
+      # the SQL under supabase/. It was skipped through issues #20 and #36
+      # and, when finally run, found three real defects (docs/CLOUD_SAVE.md).
+      # Provisioning is a repository-owned script rather than a service
+      # container: verify:sql shells out to a local psql, no published
+      # Postgres image ships pgTAP, and the whole point of this check is that
+      # it survives an environment where container images cannot be pulled.
+      - name: Provision PostgreSQL and pgTAP
+        run: bash scripts/provision-postgres.sh
+
+      - name: Verify Supabase SQL (migrations + pgTAP)
+        run: pnpm verify:sql
+
       - name: Verify generated output did not modify tracked files
         run: test -z "$(git status --porcelain)"

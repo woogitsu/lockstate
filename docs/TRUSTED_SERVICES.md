@@ -17,30 +17,34 @@ and threat model) and [ADR 0009](./adr/0009-challenge-verification-strategy.md)
   and localization runtime are all exercised in Node
   (`tests/unit/services-*.test.ts`).
 - **Executed against the real Supabase local stack:** every migration in
-  `supabase/migrations/` and all three pgTAP suites in `supabase/tests/`
-  (49 assertions, 17 of them this issue's), under Supabase CLI 2.115.0 with
-  GoTrue, PostgREST, Storage and Realtime running. Reproduce with:
+  `supabase/migrations/` and all three pgTAP suites in `supabase/tests/`,
+  under Supabase CLI 2.115.0 with GoTrue, PostgREST, Storage and Realtime
+  running. Reproduce with:
   ```bash
   supabase start && supabase db reset && supabase test db
   ```
   The first such run found a defect that had been invisible to every earlier
-  check — see "Defects this tooling found" below.
+  check, and the security audit of that run found a second — see "Defects
+  this tooling found" below.
 - **Also executed against a plain PostgreSQL 16/18 + pgTAP:** the same
-  migrations and suites, with:
+  migrations and suites. First run on 16.13 + pgTAP 1.3.2, since also on
+  18.6 + pgTAP 1.3.4 — no major version is required or pinned. Reproduce
+  with:
   ```bash
-  # Debian/Ubuntu: apt-get install postgresql-16 postgresql-16-pgtap
+  scripts/provision-postgres.sh # installs whichever major the distro ships
   pnpm verify:sql               # as a superuser role, or set DATABASE_URL
   ```
   `scripts/verify-supabase-sql.mjs` applies every migration in order and
   runs every pgTAP suite against a scratch database prepared by
-  `scripts/sql/supabase-compat-harness.sql`. This path needs no Docker and
-  stays the fast check; it is not a substitute for the one above.
+  `scripts/sql/supabase-compat-harness.sql`. This path needs no Docker, so
+  it is what CI runs on every pull request; it stays the fast check and is
+  not a substitute for the stack run above, which is a local manual gate.
 - **Executed through the platform's own front doors:** `pnpm verify:stack`
-  (`scripts/verify-supabase-stack.mjs`, 17 checks) drives a running local
-  stack over HTTP — anonymous sign-in via `/auth/v1`, then the cloud-save
-  contract and its ownership boundaries via `/rest/v1`. This is the only
-  check that proves GoTrue actually mints the identity `auth.uid()` reads;
-  the pgTAP suites fake it with `set_config`.
+  (`scripts/verify-supabase-stack.mjs`) drives a running local stack over
+  HTTP — anonymous sign-in via `/auth/v1`, then the cloud-save contract, its
+  ownership boundaries and the signed-out read surface via `/rest/v1`. This
+  is the only check that proves GoTrue actually mints the identity
+  `auth.uid()` reads; the pgTAP suites fake it with `set_config`.
 - **Still NOT executed:** anything against a hosted Supabase *project*. The
   local stack runs the same GoTrue/PostgREST/Storage images, but nothing
   here has exercised a real project's networking, quotas or connection

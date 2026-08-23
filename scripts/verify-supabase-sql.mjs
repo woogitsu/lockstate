@@ -23,11 +23,16 @@
  * docs/CLOUD_SAVE.md, "Defects found by executing this schema" (defect 4).
  *
  * Usage:
+ *   scripts/provision-postgres.sh && pnpm verify:sql
  *   sudo -u postgres node scripts/verify-supabase-sql.mjs
  *   DATABASE_URL=postgres://user:pass@host:5432/scratch node scripts/verify-supabase-sql.mjs
  *
- * Requires: a reachable PostgreSQL 16 server, the `psql` client and the
- * pgTAP extension (Debian/Ubuntu: `postgresql-16 postgresql-16-pgtap`).
+ * Requires: a reachable PostgreSQL server, the `psql` client, the pgTAP
+ * extension, and a connecting role allowed to create databases, roles and
+ * extensions. No specific major version: the schema is green on 16.13 +
+ * pgTAP 1.3.2 and on 18.6 + pgTAP 1.3.4. `scripts/provision-postgres.sh`
+ * sets all of that up on Debian/Ubuntu using whichever major the
+ * distribution ships; CI runs it before this script.
  */
 import { execFileSync } from 'node:child_process';
 import { readdirSync } from 'node:fs';
