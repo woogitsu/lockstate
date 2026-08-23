@@ -31,29 +31,40 @@ class FakeEventTarget {
   }
 }
 
+/**
+ * Two doubles, not one, because the production wiring is two targets:
+ * `visibilitychange` comes from `document` and `pagehide` from `window`
+ * (issue #92). A single shared double would receive whatever a test
+ * dispatched at it and so could not tell the two registrations apart --
+ * which is how #92 went unnoticed here. These tests pin *which* target each
+ * listener lands on; that a real browser-generated `pagehide` reaches the
+ * real `window` is only provable a layer up, in
+ * `tests/browser/lifecycle-save.spec.ts`.
+ */
 async function buildHarness(visibility: { value: DocumentVisibilityState }) {
   const store = new MemoryLocalSaveStore();
   const controller = new SessionController(new PrisonSaveRepository(store), new InProcessSessionHost(), { gameVersion: 'test-version' });
-  const target = new FakeEventTarget();
+  const visibilityTarget = new FakeEventTarget();
+  const pageTransitionTarget = new FakeEventTarget();
   const attempts: LifecycleSaveTrigger[] = [];
   const handler = new LifecycleSaveHandler(controller, {
-    target,
+    targets: { visibility: visibilityTarget, pageTransition: pageTransitionTarget },
     visibilityState: () => visibility.value,
     onAttempt: (trigger) => attempts.push(trigger),
   });
   handler.attach();
-  return { store, controller, target, attempts, handler };
+  return { store, controller, visibilityTarget, pageTransitionTarget, attempts, handler };
 }
 
 describe('LifecycleSaveHandler: best-effort, never load-bearing', () => {
   it('saves when the tab becomes hidden', async () => {
     const visibility = { value: 'visible' as DocumentVisibilityState };
-    const { controller, target, attempts } = await buildHarness(visibility);
+    const { controller, visibilityTarget, attempts } = await buildHarness(visibility);
     await controller.createPrison('prison-1');
     const revisionBefore = controller.getActiveSession()!.revision;
 
     visibility.value = 'hidden';
-    target.dispatch('visibilitychange');
+    visibilityTarget.dispatch('visibilitychange');
     await vi.waitFor(() => expect(controller.getActiveSession()!.revision).toBe(revisionBefore + 1));
 
     expect(attempts).toEqual(['visibility-hidden']);
@@ -61,40 +72,62 @@ describe('LifecycleSaveHandler: best-effort, never load-bearing', () => {
 
   it('ignores a visibilitychange that leaves the tab visible', async () => {
     const visibility = { value: 'visible' as DocumentVisibilityState };
-    const { controller, target, attempts } = await buildHarness(visibility);
+    const { controller, visibilityTarget, attempts } = await buildHarness(visibility);
     await controller.createPrison('prison-1');
 
-    target.dispatch('visibilitychange');
+    visibilityTarget.dispatch('visibilitychange');
     expect(attempts).toEqual([]);
   });
 
   it('saves on pagehide', async () => {
     const visibility = { value: 'visible' as DocumentVisibilityState };
-    const { controller, target, attempts } = await buildHarness(visibility);
+    const { controller, pageTransitionTarget, attempts } = await buildHarness(visibility);
     await controller.createPrison('prison-1');
     const revisionBefore = controller.getActiveSession()!.revision;
 
-    target.dispatch('pagehide');
+    pageTransitionTarget.dispatch('pagehide');
     await vi.waitFor(() => expect(controller.getActiveSession()!.revision).toBe(revisionBefore + 1));
 
     expect(attempts).toEqual(['pagehide']);
   });
 
+  /**
+   * Issue #92: both listeners used to go on one target, so in a browser
+   * `pagehide` sat on `document` and never fired. This pins each listener to
+   * its own target -- the events are not interchangeable, and neither
+   * registration may drift onto the other's object.
+   */
+  it('registers each event on its own target and nowhere else', async () => {
+    const visibility = { value: 'hidden' as DocumentVisibilityState };
+    const { controller, visibilityTarget, pageTransitionTarget, attempts } = await buildHarness(visibility);
+    await controller.createPrison('prison-1');
+
+    expect(visibilityTarget.listenerCount('pagehide')).toBe(0);
+    expect(pageTransitionTarget.listenerCount('visibilitychange')).toBe(0);
+
+    // Crossed dispatches reach nothing, so a save is never attempted.
+    visibilityTarget.dispatch('pagehide');
+    pageTransitionTarget.dispatch('visibilitychange');
+    expect(attempts).toEqual([]);
+  });
+
   it('never listens to `unload` -- it blocks bfcache and does not fire on mobile', async () => {
     const visibility = { value: 'visible' as DocumentVisibilityState };
-    const { target } = await buildHarness(visibility);
-    expect(target.listenerCount('unload')).toBe(0);
-    expect(target.listenerCount('beforeunload')).toBe(0);
-    expect(target.listenerCount('visibilitychange')).toBe(1);
-    expect(target.listenerCount('pagehide')).toBe(1);
+    const { visibilityTarget, pageTransitionTarget } = await buildHarness(visibility);
+    for (const target of [visibilityTarget, pageTransitionTarget]) {
+      expect(target.listenerCount('unload')).toBe(0);
+      expect(target.listenerCount('beforeunload')).toBe(0);
+    }
+    expect(visibilityTarget.listenerCount('visibilitychange')).toBe(1);
+    expect(pageTransitionTarget.listenerCount('pagehide')).toBe(1);
   });
 
   it('does nothing when there is no active session', async () => {
     const visibility = { value: 'hidden' as DocumentVisibilityState };
-    const { target, attempts } = await buildHarness(visibility);
+    const { visibilityTarget, pageTransitionTarget, attempts } = await buildHarness(visibility);
 
-    target.dispatch('visibilitychange');
-    target.dispatch('pagehide');
+    visibilityTarget.dispatch('visibilitychange');
+    pageTransitionTarget.dispatch('pagehide');
     expect(attempts).toEqual([]);
   });
 
@@ -105,7 +138,7 @@ describe('LifecycleSaveHandler: best-effort, never load-bearing', () => {
    */
   it('swallows a failing lifecycle save instead of throwing out of the event handler', async () => {
     const visibility = { value: 'visible' as DocumentVisibilityState };
-    const { controller, store, target } = await buildHarness(visibility);
+    const { controller, store, visibilityTarget } = await buildHarness(visibility);
     await controller.createPrison('prison-1');
 
     const quotaError = new Error('quota');
@@ -113,7 +146,7 @@ describe('LifecycleSaveHandler: best-effort, never load-bearing', () => {
     store.failNextWrite = quotaError;
 
     visibility.value = 'hidden';
-    expect(() => target.dispatch('visibilitychange')).not.toThrow();
+    expect(() => visibilityTarget.dispatch('visibilitychange')).not.toThrow();
 
     // The failure is still recorded for the UI to surface later.
     await vi.waitFor(() => expect(controller.getLastSaveResult()?.ok).toBe(false));
@@ -121,15 +154,15 @@ describe('LifecycleSaveHandler: best-effort, never load-bearing', () => {
 
   it('detach removes every listener', async () => {
     const visibility = { value: 'hidden' as DocumentVisibilityState };
-    const { controller, target, attempts, handler } = await buildHarness(visibility);
+    const { controller, visibilityTarget, pageTransitionTarget, attempts, handler } = await buildHarness(visibility);
     await controller.createPrison('prison-1');
 
     handler.detach();
-    expect(target.listenerCount('visibilitychange')).toBe(0);
-    expect(target.listenerCount('pagehide')).toBe(0);
+    expect(visibilityTarget.listenerCount('visibilitychange')).toBe(0);
+    expect(pageTransitionTarget.listenerCount('pagehide')).toBe(0);
 
-    target.dispatch('visibilitychange');
-    target.dispatch('pagehide');
+    visibilityTarget.dispatch('visibilitychange');
+    pageTransitionTarget.dispatch('pagehide');
     expect(attempts).toEqual([]);
   });
 });

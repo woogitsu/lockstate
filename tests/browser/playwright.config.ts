@@ -13,7 +13,8 @@ const port = Number(process.env['LOCKSTATE_BROWSER_TEST_PORT'] ?? 5183);
 const baseURL = `http://127.0.0.1:${port}`;
 
 /**
- * Real-browser verification for `src/persistence/local/`, `src/ui/` and the
+ * Real-browser verification for `src/persistence/local/`,
+ * `src/persistence/session/`'s DOM event wiring, `src/ui/` and the
  * assembled application page.
  *
  * All three are here for the same reason: a claim that only a real browser
@@ -21,8 +22,10 @@ const baseURL = `http://127.0.0.1:${port}`;
  * `DOMException` names and a genuinely exhausted quota; for the UI it is that
  * a real click on a real disabled button does nothing, that no
  * `unhandledrejection` fires, and what a *computed* font stack and
- * `getBoundingClientRect` actually are; for the assembled page it is canvas
- * sizing, hit-testing the centre pixel and decoding a real PNG.
+ * `getBoundingClientRect` actually are; for the lifecycle handler it is which
+ * object a real `pagehide` is dispatched at (issue #92); for the assembled
+ * page it is canvas sizing, hit-testing the centre pixel and decoding a real
+ * PNG.
  * Everything else stays headless.
  *
  * `docs/TESTING.md` gates browser test environments behind explicit review,

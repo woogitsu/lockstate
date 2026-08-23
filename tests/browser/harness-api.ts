@@ -114,6 +114,22 @@ export interface HarnessQuotaEstimate {
   readonly quota: number | null;
 }
 
+/**
+ * What the lifecycle-save probe observed, read back after a real navigation.
+ *
+ * `triggers` is recorded into `sessionStorage` *synchronously* from
+ * `LifecycleSaveHandler`'s `onAttempt` hook, because the interesting case is
+ * a page that is going away: the save itself is fire-and-forget and may never
+ * land, but a synchronous same-tab storage write inside the event handler
+ * does, and it survives the navigation for the next load to read.
+ */
+export interface HarnessLifecycleObservation {
+  /** Triggers seen, in order, since `attachLifecycleSaveHandler` was called -- across navigations. */
+  readonly triggers: readonly string[];
+  /** `document.visibilityState` at the moment of the last recorded trigger, or `null` if none. */
+  readonly lastVisibilityState: string | null;
+}
+
 export interface LockstateBrowserHarness {
   /**
    * Opens `lockstate-saves` and builds a repository over the real adapter.
@@ -173,6 +189,27 @@ export interface LockstateBrowserHarness {
    * failure must surface through the awaited promise, never as a stray
    * rejection the page cannot handle.
    */
+  /**
+   * Builds a real `SessionController` over the real IndexedDB repository,
+   * creates a session, and attaches a real `LifecycleSaveHandler` with **no**
+   * `targets` option -- i.e. exactly the production wiring `src/main.ts`
+   * constructs. Only `onAttempt` is supplied, purely to observe; it cannot
+   * influence which target a listener lands on.
+   *
+   * `forceHiddenVisibility` additionally injects `visibilityState`, for the
+   * one case that needs a `visibilitychange` listener to act while the real
+   * page is still visible. It leaves `targets` alone.
+   */
+  attachLifecycleSaveHandler(prisonId: string, forceHiddenVisibility?: boolean): Promise<void>;
+
+  /** Dispatches a non-bubbling event at `document`, so only listeners on `document` itself can see it. */
+  dispatchAtDocument(type: string): void;
+  /** Dispatches a non-bubbling event at `window`, so only listeners on `window` itself can see it. */
+  dispatchAtWindow(type: string): void;
+
+  /** Reads back everything the attached handler recorded, including across a navigation. */
+  readLifecycleObservation(): HarnessLifecycleObservation;
+
   takeUnhandledRejections(): readonly string[];
 }
 

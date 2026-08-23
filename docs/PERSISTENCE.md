@@ -927,6 +927,21 @@ is out of scope). `LifecycleSaveHandler` therefore:
   `unload`/`beforeunload`, which do not fire on modern mobile browsers and
   block bfcache where they do. A test asserts no listener is ever attached
   to them.
+- registers those two events on **two different targets**: `visibilitychange`
+  on `document` and `pagehide` on `window`. This is not a style choice. The
+  DOM dispatches `pagehide` at `Window`, and a window event does not
+  propagate down to the document, so a single shared target cannot receive
+  both. Issue #92 was exactly that: one resolved target carried both
+  registrations, so in a browser the `pagehide` listener sat on `document`
+  and never fired once. `LifecycleSaveOptions.targets` therefore takes a
+  named pair (`visibility`, `pageTransition`), both required, and defaults to
+  the two globals; `src/main.ts` passes nothing and gets the correct pair.
+  The consequence of #92 was a degraded safety net, not lost data — the
+  interval autosave still bounded the loss — but `pagehide` is the only one
+  of the two that covers navigating away, closing the tab and entering the
+  bfcache while the page is still visible, so those transitions fell back to
+  the full 30s autosave window instead of the near-zero one the design
+  intends.
 - fires a save attempt **without awaiting it**, because a lifecycle
   handler cannot hold the page open for an async IndexedDB transaction.
 - swallows failures rather than throwing out of a page event handler,
@@ -935,6 +950,18 @@ is out of scope). `LifecycleSaveHandler` therefore:
 Correctness never depends on these events firing; they only narrow the
 window of lost play between interval autosaves. The interval autosave
 remains the actual durability mechanism.
+
+Which object each event really arrives on is settled in
+`tests/browser/lifecycle-save.spec.ts`, not in the unit tests. A fake event
+target receives whatever a test dispatches at it, so it agrees with the
+browser regardless of what the browser actually does — the unit tests passed
+throughout #92, and still pass if the *default* target pair is broken. The
+browser spec drives a real navigation for a real, browser-generated
+`pagehide` (Chromium dispatches it before it marks the tab hidden), and uses
+non-bubbling synthetic dispatches to pin each listener to its own object: a
+real `visibilitychange` bubbles from `document` up to `window`, so a
+real-navigation assertion alone cannot tell a `document` registration from a
+`window` one.
 
 ### Save/load UI (`src/ui/save-panel.ts`)
 
