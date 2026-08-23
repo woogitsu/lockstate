@@ -45,6 +45,31 @@ jobs:
           test "$(node --version)" = "v$(cat .node-version)"
           test "$(pnpm --version)" = "11.22.0"
 
+      # A self-hosted runner keeps its workspace between jobs, so `node_modules`
+      # arrives as whatever the previous job left behind. When that is a symlink
+      # (a worktree sharing one install) or anything other than a plain
+      # directory, `pnpm install` dies with
+      # `ENOTDIR: not a directory, mkdir .../node_modules` before one line of
+      # project code runs -- and the pull request reads as failing its own
+      # verification when nothing is wrong with it.
+      #
+      # Observed, not theorised: runs 32663976393, 32665157556 and 32665179804
+      # (pull requests #98, #100 and #101) all died here on runners 3 and 4,
+      # identically on a re-run, while the same base commit passed on another
+      # runner. Three unrelated diffs, one workspace fault.
+      #
+      # Narrow on purpose. It removes a `node_modules` that is not a plain
+      # directory and nothing else, so a real install failure still fails and a
+      # healthy `node_modules` is left for pnpm to reuse.
+      - name: Clear a node_modules the runner left unusable
+        run: |
+          set -euo pipefail
+          if [ -L node_modules ] || { [ -e node_modules ] && [ ! -d node_modules ]; }; then
+            echo "node_modules is not a plain directory; removing it:"
+            ls -ld node_modules
+            rm -rf node_modules
+          fi
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -272,6 +297,18 @@ jobs:
 
       - name: Activate pnpm
         run: corepack prepare pnpm@11.22.0 --activate
+
+      # Same workspace fault as the `verify` job guards against; see the comment
+      # there. A self-hosted runner reuses its checkout, so every job that
+      # installs needs this, not just the first one.
+      - name: Clear a node_modules the runner left unusable
+        run: |
+          set -euo pipefail
+          if [ -L node_modules ] || { [ -e node_modules ] && [ ! -d node_modules ]; }; then
+            echo "node_modules is not a plain directory; removing it:"
+            ls -ld node_modules
+            rm -rf node_modules
+          fi
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
