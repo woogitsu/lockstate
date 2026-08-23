@@ -53,12 +53,19 @@ canvas {
  * the HUD own the geometry without owning the panel.
  */
 .save-panel {
-  width: 264px;
+  width: var(--hud-rail-panel-width);
   max-width: 100%;
   box-sizing: border-box;
-  /* The rail scrolls as a whole; this only stops one very long prison list
-     from pushing the Build panel out of reach on its own. */
-  max-height: 60vh;
+  /*
+   * The panel's height budget comes from the rail, not from the viewport, and
+   * it has no `max-height` of its own on purpose. `overflow-y: auto` makes
+   * this a scroll container, which is also what gives it an automatic minimum
+   * size of 0 as a flex item -- so the rail can shrink it, and a long prison
+   * list or a short window scrolls *here* instead of pushing the Build panel
+   * past the rail's edge. It used to be `max-height: 60vh`, which is a budget
+   * the rail never agreed to: at 1280x720 that is 432px inside a 603px rail
+   * that also has to hold the Build panel.
+   */
   overflow-y: auto;
   padding: var(--space-3);
   background: var(--surface-raised);
@@ -69,11 +76,11 @@ canvas {
 }
 
 /* The same breakpoint the HUD's rail uses: the rail stops being a fixed-width
-   column, so its contents stop being one too. */
+   column, so its contents stop being one too. Height needs no override -- the
+   rail sizes this panel in both regimes. */
 @media (max-width: 720px) {
   .save-panel {
     width: 100%;
-    max-height: 45vh;
   }
 }
 

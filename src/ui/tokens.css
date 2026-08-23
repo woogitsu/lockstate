@@ -150,4 +150,11 @@
      the strip by hand any more -- the grid does it. Still a token rather than
      a literal because the 720px breakpoint overrides it. */
   --hud-strip-height: 48px;
+  /* The border-box width of every panel in the HUD's right rail, above the
+     720px breakpoint where the rail stretches and its panels go full-width
+     instead. The panels have to agree exactly or the column stops reading as
+     one, and they live in different files -- the save panel in
+     `src/styles.css`, the Build panel in `src/ui/hud/hud.css` -- so a literal
+     in each is two numbers that nothing keeps equal. */
+  --hud-rail-panel-width: 264px;
 }

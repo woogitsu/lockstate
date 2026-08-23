@@ -141,6 +141,14 @@ export interface HudHandle {
    * The slot is *not* tab-scoped. What sits here is available on every tab,
    * which is the point: saving is not a Build-tab activity (issue #88).
    *
+   * **Its height is the rail's to give, not the panel's to take.** The slot
+   * asks for no height of its own and receives whatever the Build panel below
+   * it does not need, with a floor of a quarter of the rail (`hud.css`). A
+   * panel mounted here should therefore be able to scroll its own content --
+   * it will regularly be shorter than that content on a short window -- and
+   * should not set a height of its own, least of all one in `vh`, which is a
+   * budget the rail never agreed to.
+   *
    * Empty, it collapses to nothing and the rail is exactly what it was before.
    */
   readonly asideSlot: HTMLElement;
