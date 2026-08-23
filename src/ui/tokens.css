@@ -143,7 +143,11 @@
   --tap-target: 44px;
 
   --hud-layer: 20;
-  /* Shared by the strip and by anything that must clear it -- the save panel
-     positions itself from this rather than from a duplicated magic number. */
+  /* The height of the HUD's status strip. It used to be shared with code
+     outside the HUD: the save panel was a `position: fixed` layer of its own
+     and pinned itself below the strip from this token. Issue #88 moved the
+     panel into the HUD's own grid, so nothing outside `hud.css` has to clear
+     the strip by hand any more -- the grid does it. Still a token rather than
+     a literal because the 720px breakpoint overrides it. */
   --hud-strip-height: 48px;
 }

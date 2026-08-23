@@ -950,9 +950,15 @@ positions and never renders into. The panel predates the HUD shell and used to
 be a `position: fixed` layer of its own at `z-index: 10`, with no layout
 relating it to anything in the HUD; issue #88 is what that cost. On the Build
 tab the Build panel — inside a `z-index: 20` layer, with `pointer-events: auto`
-— covered 90 % of it and swallowed every click on all five of its buttons,
-silently and with no console message. Sharing one flex column with the Build
-panel makes the overlap impossible rather than merely corrected.
+— landed on top of it and swallowed the clicks, silently and with no console
+message. Measured on that layout, with the Build panel's numeric fallback
+expanded (one tap from the default, and the state the issue was reported in):
+it covered 91 % of the save panel at 1280x720, 89 % at 1024x768, 83 % at
+375x812 and 37 % at 1440x900, taking all five of New prison, Save now, Export,
+Load and Delete at four of those five sizes. Folded it was narrower but not
+harmless — 66 % and three of the five buttons at 900x600. Sharing one flex
+column with the Build panel makes the overlap impossible rather than merely
+corrected.
 
 The slot exists instead of folding the panel into `src/ui/hud/` because this
 module type-imports `SaveResult`, `PrisonSlotMetadata`, `SaveEnvelope` and

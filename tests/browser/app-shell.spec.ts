@@ -40,10 +40,11 @@ import { expect, test, type Page } from '@playwright/test';
  *    reachability, and until issue #88 this file only ever asserted the
  *    first. The save panel and the HUD were two independently-positioned
  *    `fixed` layers that had never been laid out relative to each other, so
- *    on the Build tab the Build panel covered the save panel and all five of
- *    its buttons did nothing — silently, with this suite green. Only a
- *    browser answers `elementFromPoint`, and only the assembled page has
- *    both regions in it at once.
+ *    on the Build tab with its numeric fallback expanded the Build panel
+ *    covered 91 % of the save panel and all five of its buttons did nothing —
+ *    silently, with this suite green. Only a browser answers
+ *    `elementFromPoint`, and only the assembled page has both regions in it at
+ *    once.
  *
  * Deliberately NOT here, because a headless test already proves it and a
  * browser test that repeats one costs a minute of CI and adds no evidence:
@@ -155,21 +156,61 @@ async function openApp(page: Page): Promise<void> {
 const INTERACTIVE_SELECTOR =
   'button, [role="button"], a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
+/**
+ * The controls that are deliberately unreachable at 720px and below, because
+ * `hud.css` drops `.hud__corner` there: the minimap and the alerts section go
+ * away entirely rather than compete with the Build panel for a phone's width.
+ *
+ * Written out rather than inferred. A reachability check that skips whatever
+ * happens not to be laid out cannot tell a considered responsive decision from
+ * a control that has quietly collapsed to nothing, and the second is the shape
+ * of the defect this test exists for. Anything appearing here that is not on
+ * this list fails; anything on this list that becomes reachable fails too.
+ */
+const NEVER_LAID_OUT_BELOW_720 = [
+  'button.ui-icon-button ui-icon-button--quiet ui-panel__toggle "Collapse"',
+  'button.ui-section__header "Alerts"',
+] as const;
+
 interface UnreachableControl {
   readonly control: string;
   readonly hit: string;
 }
 
+interface ControlReachability {
+  /**
+   * Every control the selector matched, in document order, described. The
+   * index into this list is the control's identity for the run: tab switching
+   * and resizing hide and show controls but never add or remove them, so
+   * index `n` is the same element in every state the test visits.
+   */
+  readonly controls: readonly string[];
+  /** Indices of the controls that were laid out, and so actually measured. */
+  readonly measured: readonly number[];
+  readonly unreachable: readonly UnreachableControl[];
+}
+
 /**
- * Which controls are covered by something else.
+ * Which controls are covered by something else, and which were not laid out
+ * at all so could not be measured.
  *
- * For every laid-out interactive element, `document.elementFromPoint` at the
- * centre of its own box must resolve to that element or to something inside
- * it. Anything else means the topmost thing at those pixels belongs to a
- * different control, and the press lands there instead.
+ * For every laid-out interactive element, `document.elementFromPoint` must
+ * resolve to that element or to something inside it. Anything else means the
+ * topmost thing at those pixels belongs to a different control, and the press
+ * lands there instead.
  *
- * Three deliberate details:
+ * Four deliberate details:
  *
+ * - **Five points, not one.** The centre, plus four points 20 % in from each
+ *   edge along the centre lines. A control whose *centre pixel* happens to be
+ *   clear while a fifth of it is buried is a defect a player meets as a
+ *   mis-click, and one sample cannot see it. Measured, not assumed: against
+ *   the pre-#88 layout at 900x600 with the Build coordinates expanded, the
+ *   centre alone found 11 unreachable controls and these five found 13 -- the
+ *   two extra being the edge chooser's North and West buttons, whose lower
+ *   fifth had been carried off the bottom of the viewport while their centres
+ *   were still clear. The insets stay off the corners on purpose, where a
+ *   `border-radius` legitimately belongs to the parent.
  * - **Scrolled into view first.** A control inside a scroll container may
  *   legitimately be out of view; that is not a collision, and the player
  *   reaches it by scrolling. Scrolling it into view and re-measuring asks the
@@ -178,11 +219,14 @@ interface UnreachableControl {
  * - **A `null` hit is a failure, not a skip.** `elementFromPoint` returns
  *   `null` for a point outside the viewport, so a control pushed off the
  *   edge by an overflowing layout reports here rather than silently passing.
- * - **Zero-area elements are skipped.** An inactive tab's panel and the
- *   corners the responsive rules drop are not laid out at all; "is it
- *   displayed" is a different question, asserted separately.
+ * - **Zero-area elements are reported, not swallowed.** An inactive tab's
+ *   panel and the corner the responsive rules drop are not laid out, so there
+ *   is nothing to hit-test; but "skipped" has to be a fact the caller can
+ *   assert on, which is what `measured` is for. A control that is never laid
+ *   out in *any* state the test visits has silently escaped the check, and
+ *   the caller fails on exactly that.
  */
-async function unreachableControls(page: Page): Promise<readonly UnreachableControl[]> {
+async function controlReachability(page: Page): Promise<ControlReachability> {
   return page.evaluate((selector: string) => {
     const describe = (node: Element): string => {
       const label =
@@ -191,24 +235,39 @@ async function unreachableControls(page: Page): Promise<readonly UnreachableCont
       return `${node.tagName.toLowerCase()}${classes}${label === '' ? '' : ` "${label}"`}`;
     };
 
+    const controls = [...document.querySelectorAll<HTMLElement>(selector)];
+    const measured: number[] = [];
     const unreachable: { control: string; hit: string }[] = [];
-    for (const control of document.querySelectorAll<HTMLElement>(selector)) {
-      if (control.getBoundingClientRect().width === 0) continue;
-      if (control.getBoundingClientRect().height === 0) continue;
+
+    controls.forEach((control, index) => {
+      const initial = control.getBoundingClientRect();
+      if (initial.width === 0 || initial.height === 0) return;
+      measured.push(index);
 
       control.scrollIntoView({ block: 'nearest', inline: 'nearest' });
 
       // Re-read after the scroll: that is where the control now is.
       const rect = control.getBoundingClientRect();
-      const hit = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
-      if (hit !== null && control.contains(hit)) continue;
+      const samples: readonly (readonly [number, number])[] = [
+        [rect.x + rect.width / 2, rect.y + rect.height / 2],
+        [rect.x + rect.width * 0.2, rect.y + rect.height / 2],
+        [rect.x + rect.width * 0.8, rect.y + rect.height / 2],
+        [rect.x + rect.width / 2, rect.y + rect.height * 0.2],
+        [rect.x + rect.width / 2, rect.y + rect.height * 0.8],
+      ];
 
-      unreachable.push({
-        control: describe(control),
-        hit: hit === null ? '(outside the viewport)' : describe(hit),
-      });
-    }
-    return unreachable;
+      for (const [x, y] of samples) {
+        const hit = document.elementFromPoint(x, y);
+        if (hit !== null && control.contains(hit)) continue;
+        unreachable.push({
+          control: describe(control),
+          hit: hit === null ? '(outside the viewport)' : describe(hit),
+        });
+        return;
+      }
+    });
+
+    return { controls: controls.map(describe), measured, unreachable };
   }, INTERACTIVE_SELECTOR);
 }
 
@@ -347,24 +406,47 @@ test.describe('the assembled application', () => {
    *
    * The save panel and the Build panel were two independently-positioned
    * `fixed` layers that had never been laid out relative to each other. On
-   * the Build tab the Build panel covered the save panel and swallowed every
-   * click on it, so **New prison, Save now, Export, Load and Delete all did
-   * nothing** — with no error, no console message and no status change. The
-   * suite was green throughout, because every assertion it had asked whether
-   * an element *existed*.
+   * the Build tab, with the Build panel's numeric fallback expanded — one tap
+   * from the default — the Build panel covered 91 % of the save panel at
+   * 1280x720 and swallowed every click on it, so **New prison, Save now,
+   * Export, Load and Delete all did nothing** — with no error, no console
+   * message and no status change. The suite was green throughout, because
+   * every assertion it had asked whether an element *existed*.
    *
    * This is deliberately not an assertion about those two panels. It is the
    * general property: on the assembled page, at every viewport this suite
-   * visits and on every tab, the topmost element at the centre of each
-   * control is that control. It costs one `elementFromPoint` per control and
-   * it catches the whole class — any future region that lands on top of
-   * another one fails here, whichever two they are.
+   * visits and on every tab, the topmost element over each control is that
+   * control. It costs five `elementFromPoint` calls per control and it catches
+   * the whole class — any future region that lands on top of another one fails
+   * here, whichever two they are.
    *
-   * The Build tab's numeric fallback is expanded as its own case: it is the
-   * tallest the Build panel gets, it is one tap away, and it is the state the
-   * issue was measured in.
+   * The Build tab's numeric fallback is expanded as its own case, and it is
+   * load-bearing rather than thorough-for-its-own-sake. Measured against the
+   * pre-#88 layout, the folded Build panel covers the save panel enough to
+   * take a control centre only at 900x600; expanded it buries the save panel
+   * at *every* viewport here (91 % at 1280x720, 89 % at 1024x768, 83 % at
+   * 375x812, 37 % at 1440x900). Drop this case and the guard keeps almost none
+   * of its teeth.
+   *
+   * Every control is accounted for rather than merely visited. A control that
+   * is not laid out cannot be hit-tested, so the sweep skips it — but a
+   * control that is never laid out in *any* state this test visits has escaped
+   * the check entirely, and `NEVER_LAID_OUT_BELOW_720` above is the explicit,
+   * named list of the ones that legitimately do. Anything else appearing there
+   * fails: it is how a control that quietly collapses to nothing shows up as a
+   * defect instead of as a pass.
    */
   test('every control can actually be pressed, on every tab and at every viewport (#88)', async ({ page }) => {
+    // The most expensive test in the suite by a wide margin, and the only one
+    // that needs more than the 60 s default: five viewports x six states, each
+    // a real relayout of the whole page followed by a hit-test sweep over
+    // every control. Measured between 29 s and 53 s on this machine against
+    // that 60 s -- close enough that a slower CI runner would fail it for
+    // being slow rather than for finding anything, which is the worst kind of
+    // red. `test.slow()` triples the budget; it does not make the test do
+    // less.
+    test.slow();
+
     await page.setViewportSize({ width: 1280, height: 720 });
     await openApp(page);
 
@@ -390,10 +472,20 @@ test.describe('the assembled application', () => {
         .poll(async () => (await canvasMetrics(page))?.cssWidth, { message: `canvas did not follow ${width}px` })
         .toBe(width);
 
+      // Which controls this viewport managed to hit-test at all, across every
+      // state it visits. Accumulated so the "never laid out anywhere" check
+      // below is about the viewport, not about one tab: the Build panel is
+      // legitimately absent on three of the four tabs.
+      const everMeasured = new Set<number>();
+      let inventory: readonly string[] = [];
+
       for (const tab of ['overview', 'build', 'security', 'regime'] as const) {
         await page.locator(`.ui-tab[data-tab="${tab}"]`).click();
+        const reachability = await controlReachability(page);
+        inventory = reachability.controls;
+        for (const index of reachability.measured) everMeasured.add(index);
         expect(
-          await unreachableControls(page),
+          reachability.unreachable,
           `controls covered by something else on the ${tab} tab at ${width}x${height}`,
         ).toEqual([]);
       }
@@ -419,12 +511,30 @@ test.describe('the assembled application', () => {
       // the state issue #88 was measured in.
       const coordinates = page.locator('.hud-build .ui-section__header').last();
       if ((await coordinates.getAttribute('aria-expanded')) === 'false') await coordinates.click();
+      const expanded = await controlReachability(page);
+      for (const index of expanded.measured) everMeasured.add(index);
       expect(
-        await unreachableControls(page),
+        expanded.unreachable,
         `controls covered by something else with the Build coordinates expanded at ${width}x${height}`,
       ).toEqual([]);
       // Folded away again, so the next viewport starts from the same state.
       if ((await coordinates.getAttribute('aria-expanded')) === 'true') await coordinates.click();
+
+      // Nothing got a free pass by never being laid out. At desktop widths the
+      // Build tab with its coordinates expanded shows every control there is,
+      // so the list is empty; at 720px and below the responsive rules drop
+      // `.hud__corner` outright — the minimap and the alerts section — and
+      // those two controls genuinely cannot be reached at any tab. That is a
+      // deliberate responsive decision (see `hud.css`), named here so it stays
+      // one: it is the honest limit of what this test can claim about a phone.
+      const neverLaidOut = inventory.filter((_, index) => !everMeasured.has(index));
+      expect(neverLaidOut, `controls never laid out in any state at ${width}x${height}`).toEqual(
+        width <= 720 ? [...NEVER_LAID_OUT_BELOW_720] : [],
+      );
+      expect(
+        everMeasured.size,
+        `hit-tested only ${everMeasured.size} of ${inventory.length} controls at ${width}x${height}`,
+      ).toBe(inventory.length - (width <= 720 ? NEVER_LAID_OUT_BELOW_720.length : 0));
     }
   });
 

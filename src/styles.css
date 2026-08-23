@@ -39,10 +39,12 @@ canvas {
  * `position: fixed` layer pinned under the status strip at `z-index: 10`,
  * which meant it had no spatial relationship to anything in the HUD at all:
  * on the Build tab the Build panel — a `z-index: 20` layer with
- * `pointer-events: auto` — covered it and swallowed every click on all five
- * of its buttons, silently. `src/main.ts` now mounts it into
- * `HudHandle.asideSlot`, the top of the HUD's right rail, so it is a normal
- * block in the same flex column as the Build panel and the two cannot
+ * `pointer-events: auto` — landed on top of it and swallowed the clicks,
+ * silently. With the Build panel's numeric fallback expanded, one tap from
+ * the default, that was 91 % of this panel at 1280x720 and all five of its
+ * buttons; folded, three of the five at 900x600. `src/main.ts` now mounts it
+ * into `HudHandle.asideSlot`, the top of the HUD's right rail, so it is a
+ * normal block in the same flex column as the Build panel and the two cannot
  * overlap at any viewport size.
  *
  * It stays its own component rather than becoming a `ui-panel`: it
