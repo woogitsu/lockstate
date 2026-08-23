@@ -46,14 +46,26 @@ import type { LocalizationKey } from './localization';
  *
  * ## Staying complete
  *
- * `sourceFile`/`declaration`/`form` are not documentation. The
- * `content-catalogs` test suite reads each declaration out of the real
- * source text (the technique `tests/determinism/ambient-nondeterminism-contract.test.ts`
- * already uses) and fails when a declared value has no label here -- so a
- * need or an incident type added to the simulation cannot ship without a
- * key. The same suite scans `src/simulation/` and `src/content/` for
- * enum-shaped declarations that no group covers, so a whole *new* enum
- * cannot slip past either.
+ * `sourceFile`/`declaration`/`form` are not documentation. The source
+ * declaration is the authority and this table conforms to it:
+ * `tests/unit/simulation-message-keys.test.ts` reads each declaration out
+ * of the real source text (the technique
+ * `tests/determinism/ambient-nondeterminism-contract.test.ts` already uses,
+ * with the rules themselves living in `validate-catalog.ts`) and fails when
+ * a declared value has no label here -- so a need or an incident type added
+ * to the simulation cannot ship without a key. The same test scans
+ * `src/simulation/` and `src/content/` for enum-shaped declarations that no
+ * group covers, so a whole *new* enum cannot slip past either.
+ *
+ * ## What is deliberately not here
+ *
+ * Runtime-registered ids are not enum values and cannot be labelled from a
+ * static table: `GangRegistry` accepts any `GangDefinition.id` a scenario
+ * registers, so a gang's label has to come from the definition that created
+ * it (a `nameKey` field, the way the content catalogs do it), not from
+ * here. `docs/HUD_PROJECTIONS.md` gap 3 lists gang ids alongside the
+ * enumerations for that reason -- they are the same *symptom*, but a
+ * different fix.
  */
 
 /** How a group's values are written in its source declaration. Each form has one extractor in the completeness test. */
@@ -550,7 +562,8 @@ export type SimulationEnumGroupError =
   | { readonly kind: 'duplicate-namespace'; readonly namespace: string }
   | { readonly kind: 'duplicate-key'; readonly key: LocalizationKey }
   | { readonly kind: 'empty-label'; readonly namespace: string; readonly id: string }
-  | { readonly kind: 'undeclared-additional-id'; readonly namespace: string; readonly id: string };
+  | { readonly kind: 'undeclared-additional-id'; readonly namespace: string; readonly id: string }
+  | { readonly kind: 'unexplained-additional-id'; readonly namespace: string; readonly id: string };
 
 /**
  * Self-validation of the group table, in the same spirit as each catalog
@@ -579,6 +592,12 @@ export function validateSimulationEnumGroups(
     for (const additional of group.additionalIds ?? []) {
       if (!Object.hasOwn(group.labels, additional.id)) {
         errors.push({ kind: 'undeclared-additional-id', namespace: group.namespace, id: additional.id });
+      }
+      // An exemption from "the source declaration is the authority" has to
+      // say why, or it is simply a way to switch the completeness check off
+      // for one value.
+      if (additional.reason.trim().length < 40) {
+        errors.push({ kind: 'unexplained-additional-id', namespace: group.namespace, id: additional.id });
       }
     }
   }

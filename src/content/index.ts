@@ -6,6 +6,7 @@ export * from './object-catalog';
 export * from './registry';
 export * from './room-catalog';
 export * from './security-grade-catalog';
+export * from './simulation-message-keys';
 export * from './staff-role-catalog';
 export * from './validate-catalog';
 
