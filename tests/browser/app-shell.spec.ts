@@ -48,14 +48,15 @@ import { expect, test, type Page } from '@playwright/test';
  * design); and atlas manifest/registry schema rejection
  * (`tests/contract/runtime-atlas-validation.test.ts`).
  *
- * One case is missing on purpose. `src/main.ts` promises, in its own
- * comments, that a browser which cannot start the simulation worker still
- * gets an interface; it does not — `mountInterface` sits inside
- * `bootPersistence`, which only runs when the worker was constructed. That is
- * issue #82, reported rather than fixed, so no assertion for it is committed
- * here: it would be red on `main` today. The guard belongs in this file once
- * the boot order is fixed — block `Worker`, load the page, assert `.hud` is
- * still mounted — because only a real browser can settle it.
+ * The one case this file previously left open is now closed. `src/main.ts`
+ * promises, in its own comments, that a browser which cannot start the
+ * simulation worker still gets an interface — and it did not, because
+ * `mountInterface` sat inside `bootPersistence`, which only runs when the
+ * worker was constructed (issue #82). The comment described the intended
+ * arrangement; only the placement disagreed with it, which is exactly why no
+ * headless test caught it: both functions behave correctly in a browser where
+ * everything works. The guard for it is the last test below, and it belongs
+ * here because only a real browser can settle it.
  */
 
 const APP_URL = '/index.html';
@@ -346,6 +347,42 @@ test.describe('the assembled application', () => {
 
     await expect(page.locator('.save-panel__item-label')).toHaveText('New Prison (1 gen)');
     await expect(page.locator('.save-panel__empty')).toHaveCount(0);
+  });
+
+  test('still mounts the interface when the simulation worker cannot start (#82)', async ({ page }) => {
+    // Break `Worker` before any module evaluates, which is the one failure
+    // mode `src/main.ts` explicitly promises to survive: "a browser that
+    // cannot start a worker still gets a running page". A hardened browser,
+    // a blocked blob: URL or a strict CSP all land here.
+    await page.addInitScript(() => {
+      Object.defineProperty(window, 'Worker', {
+        configurable: true,
+        value: function BlockedWorker(): never {
+          throw new DOMException('Worker construction is blocked in this test.', 'SecurityError');
+        },
+      });
+    });
+
+    await page.goto(APP_URL);
+
+    // The HUD holds no simulation state, so there is nothing for it to wait
+    // on. Before the fix this was absent entirely and the player got a canvas
+    // with no way to be told why.
+    await expect(page.locator('.hud')).toHaveCount(1);
+
+    // And it must be the real HUD, not an empty shell.
+    await expect(page.locator('.hud-strip')).toBeVisible();
+    expect(await page.locator('.hud-tabs__inner .ui-tab').count()).toBeGreaterThan(0);
+
+    // The player is told. A console message is not communication: it has to
+    // reach the screen, and the alerts region is where the HUD already says
+    // things of this kind.
+    await expect(page.locator('.hud-alerts__list')).toContainText('Simulation unavailable');
+
+    // No save panel, and that is correct rather than a second bug: with no
+    // worker there is no session, so nothing exists to save. A panel here
+    // would offer an action that cannot work.
+    await expect(page.locator('.save-panel')).toHaveCount(0);
   });
 });
 

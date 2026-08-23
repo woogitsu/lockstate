@@ -15,7 +15,7 @@ import { EMPTY_RENDER_FRAME, type RenderFeed } from './rendering/feed/render-fee
 import { SimulationSnapshotFeed } from './rendering/feed/simulation-snapshot-feed';
 import { WorldScene } from './rendering/scene/world-scene';
 import { SavePanel } from './ui/save-panel';
-import { mountHud, type HudIntent } from './ui/hud';
+import { EMPTY_HUD_VIEW_MODEL, mountHud, type HudIntent } from './ui/hud';
 import { defaultLocaleEnCatalog } from './content/default-locale-en';
 import { messageCatalogFromLocalizationCatalog } from './services/localization/catalog';
 import { Localizer } from './services/localization/localizer';
@@ -130,7 +130,7 @@ if (isDemoActorsRequested(window.location.search)) {
  * feed supplies a real view model it paints its empty-prison default, which is
  * the honest picture of a session with nothing in it.
  */
-function mountInterface(app: HTMLElement): void {
+function mountInterface(app: HTMLElement, simulationUnavailable = false): void {
   const localizer = new Localizer({
     locale: 'en',
     catalogs: [messageCatalogFromLocalizationCatalog('en', defaultLocaleEnCatalog)],
@@ -138,6 +138,24 @@ function mountInterface(app: HTMLElement): void {
 
   mountHud(app, {
     localizer,
+    // Without a worker there is no simulation and no session, so there is
+    // genuinely nothing to save -- a save panel here would be a prop. What
+    // the player is owed is being *told*, which the console message alone
+    // never did. The alerts region already exists for exactly this.
+    ...(simulationUnavailable
+      ? {
+          viewModel: {
+            ...EMPTY_HUD_VIEW_MODEL,
+            alerts: [
+              {
+                id: 'simulation-unavailable',
+                labelKey: 'hud.alerts.simulation-unavailable',
+                severity: 'danger',
+              },
+            ],
+          },
+        }
+      : {}),
     onIntent: (intent: HudIntent) => {
       // `select-tab` and `toggle-panel` are chrome: the HUD has already
       // applied them locally and there is nothing for a host to do.
@@ -159,8 +177,6 @@ function mountInterface(app: HTMLElement): void {
 async function bootPersistence(client: SimulationClient): Promise<void> {
   const app = document.getElementById('app');
   if (app === null) return;
-
-  mountInterface(app);
 
   let controller: SessionController;
   let panel: SavePanel;
@@ -189,5 +205,21 @@ async function bootPersistence(client: SimulationClient): Promise<void> {
 
   await panel.refresh();
 }
+
+/*
+ * Mounted unconditionally, and before the persistence boot.
+ *
+ * This call used to sit inside `bootPersistence`, which runs only when the
+ * worker started -- so a browser that could not start one got a canvas and
+ * nothing else: no HUD, no save panel, no way to be told why (issue #82). The
+ * comment on `mountInterface` already described the intended arrangement; only
+ * the placement disagreed with it, which is why no unit test caught it. Both
+ * functions behave correctly in a browser where everything works.
+ *
+ * The HUD is a view over whatever state exists, including none, and it holds
+ * no simulation state at all -- so there is nothing for it to wait on.
+ */
+const appRoot = document.getElementById('app');
+if (appRoot !== null) mountInterface(appRoot, simulation === undefined);
 
 if (simulation !== undefined) void bootPersistence(simulation);
