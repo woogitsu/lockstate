@@ -156,11 +156,14 @@ export class WorldRenderView {
    * The rule is not implemented here: it is `isTileOwnedBy`, in
    * `src/simulation/world`, and `SparseWorld.isTileOwned` calls that same
    * function -- so this cannot answer differently from the simulation that
-   * then accepts or refuses the build. It used to. The two had independent
-   * implementations that disagreed wherever parcels overlapped, which
-   * `registerParcel` permits, so the build overlay could highlight land
-   * `canBuildAt` went on to reject (issue #93). `AGENTS.md` boundary 1 is why
-   * the shared rule lives on the simulation side rather than here.
+   * then accepts or refuses a build. It used to be a second implementation of
+   * the rule, and the two differed for a tile whose lowest-id covering parcel
+   * was unowned while a higher-id parcel covering it was owned -- overlapping
+   * bounds being something `registerParcel` permits. They agreed on every
+   * other tile (issue #93). `AGENTS.md` boundary 1 is why the shared rule
+   * lives on the simulation side rather than here: a renderer answering an
+   * ownership question from logic of its own is a second source of truth for
+   * game state whether or not it agrees.
    */
   public isTileOwned(
     tileX: number,

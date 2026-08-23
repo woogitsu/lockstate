@@ -90,11 +90,12 @@ describe('world render view', () => {
 
   /**
    * Issue #93. `registerParcel` permits overlapping bounds, and the two sides
-   * used to answer "is this tile owned?" from independent implementations that
-   * only disagreed there: the simulation asked whether the *lowest-id* parcel
-   * containing the tile was owned, the renderer whether *any* owned parcel
-   * did. A tile under an unowned low-id parcel and an owned high-id one was
-   * therefore shown as buildable and then refused by `canBuildAt`.
+   * used to answer "is this tile owned?" from independent implementations: the
+   * simulation asked whether the *lowest-id* parcel containing the tile was
+   * owned, the renderer whether *any* owned parcel did. They agreed everywhere
+   * except one case -- a tile whose lowest-id covering parcel was unowned
+   * while a higher-id one was owned, which the simulation called unowned and
+   * the renderer called owned.
    *
    * Every assertion below compares the two sides rather than trusting either,
    * so the rule can change but the two cannot drift apart again. See ADR 0019.

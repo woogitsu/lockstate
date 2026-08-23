@@ -60,13 +60,16 @@ depend on which parcel comes "first" — see
 [ADR 0019](./adr/0019-tile-ownership-under-overlapping-parcels.md) for why this
 rule rather than "the lowest-id parcel decides".
 
-That rule has exactly one implementation, `isTileOwnedBy` in
-`src/simulation/world/tile-ownership.ts`. Both `SparseWorld.isTileOwned` and
-the renderer's `WorldRenderView.isTileOwned` call it, which is what stops the
-build overlay from highlighting land `canBuildAt` would then refuse (issue
-#93). The renderer must not answer this question from logic of its own —
-`AGENTS.md` boundary 1 — so a new consumer of tile ownership calls
-`isTileOwnedBy` instead of reimplementing it.
+The rule has exactly one implementation, `isTileOwnedBy` in
+`src/simulation/world/tile-ownership.ts`, and both `SparseWorld.isTileOwned` and
+the renderer's `WorldRenderView.isTileOwned` call it. The renderer must not
+answer this question from logic of its own — `AGENTS.md` boundary 1, rendering
+is not simulation — so a new consumer of tile ownership calls `isTileOwnedBy`
+instead of reimplementing it. Before issue #93 the two had separate
+implementations that did not always agree, and `WorldRenderView.isTileOwned`
+feeds `TileSample.owned` while `SparseWorld.isTileOwned` is what `canBuildAt`
+consults, so one question was being answered twice on either side of the same
+decision.
 
 Because the answer is order-independent it needs no canonical sort, and cannot
 be changed by registration order or by a snapshot round trip.

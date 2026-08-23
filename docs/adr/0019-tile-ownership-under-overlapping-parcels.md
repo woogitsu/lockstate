@@ -23,15 +23,15 @@ are permitted, and `getParcelAtTile`'s doc comment says so deliberately. So a
 tile can sit under more than one parcel, and "is this tile owned?" needs a rule
 for that case.
 
-The repository had two, in two places, and they disagreed.
+The repository had two, in two places, and they did not always agree.
 
 ### The simulation's rule
 
 `SparseWorld.isTileOwned` asked `getParcelAtTile` for the *first* parcel
 containing the tile in ascending-id order, and returned true only if **that
 one** was owned; otherwise it fell through to chunk ownership. A tile under an
-unowned `a-marsh` and an owned `z-estate` was therefore **not owned**, and
-`canBuildAt` refused to build on it.
+unowned `a-marsh` and an owned `z-estate` was therefore **not owned**, so
+`canBuildAt` answers `unowned_land` for it.
 
 ### The renderer's rule
 
@@ -43,10 +43,27 @@ covers the tile at all.
 
 ### Why the disagreement matters
 
-`WorldRenderView.isTileOwned` feeds `TileSample.owned` in `readTile`, and
-`tile-layer.ts` draws both the unowned shading and the owned-land outline from
-it. So the build overlay presented land as owned that `canBuildAt` then
-refused: the player saw an ownership highlight and got a rejection.
+Not because a player has seen it. Nothing in `src/` registers a parcel and
+nothing in `src/` calls `canBuildAt`, so the two answers have never been
+compared in a running game — see *Reachability* below.
+
+It matters because one game rule had two implementations, and one of them lived
+in the renderer. `AGENTS.md` boundary 1 says rendering is not simulation and
+that Phaser must never become the source of truth for game state; a renderer
+that decides an ownership question from logic of its own is that, whether or
+not it happens to agree. Here it did not agree, which is the demonstration
+rather than the harm: `WorldRenderView.isTileOwned` feeds `TileSample.owned` in
+`readTile`, and `tile-layer.ts` draws both the unowned shading and the
+owned-land outline from it, while `SparseWorld.isTileOwned` is what `canBuildAt`
+consults. One question, asked on either side of the same player-facing
+decision, answered by two bodies of code that had drifted apart with no test
+able to notice.
+
+The drift was narrow, which is part of why nothing noticed. The two agreed on
+every tile in an owned chunk, on every tile covered by a single parcel, and on
+every overlapping tile whose lowest-id covering parcel was owned. They differed
+in exactly one case: a tile whose lowest-id covering parcel was unowned while a
+higher-id parcel covering it was owned.
 
 ### What is *not* the reason to pick one over the other
 
@@ -109,9 +126,15 @@ what needs approval. Three things argue for it over the first-match rule:
 
 - **It is the rule already written down.** `docs/WORLD.md` ("Parcels and land
   ownership") says ownership "returns true if the tile falls within any owned
-  parcel or directly owned chunk", and ADR 0004 §2.3 says `isTileOwned`
-  queries "parcel ownership or direct chunk ownership". The renderer
-  implemented the documented contract; the simulation did not.
+  parcel or directly owned chunk". The renderer implemented that sentence; the
+  simulation did not. It is the only prose statement of the rule in the
+  repository: [ADR-0004](./0004-chunk-size-selection.md) §2.3 says `isTileOwned`
+  queries "parcel ownership or direct chunk ownership without assuming 1:1
+  chunk alignment", which is about parcels not being chunk-aligned and says
+  nothing about overlap. And that sentence is itself the subject of issue #120,
+  which observes that the documentation had silently taken the renderer's side.
+  So this says the disjunction is the *documented* rule — not that it has been
+  ratified.
 - **The first-match rule was not coherent as a rule.** It did not treat the
   lowest-id parcel as authoritative — when that parcel was unowned it did not
   answer "unowned", it *ignored parcels entirely* and fell through to chunk

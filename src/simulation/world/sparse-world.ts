@@ -543,10 +543,12 @@ export class SparseWorld {
    *
    * This is a *which parcel is here* lookup -- for pricing, selection and
    * UI -- and deliberately not the ownership test. `isTileOwned` used to be
-   * built on it, which is how the renderer and the simulation came to
-   * disagree about overlapping parcels (issue #93); ownership now goes
-   * through `isTileOwnedBy`, where an unowned parcel with a low id cannot
-   * mask an owned one.
+   * built on it, which is how a lookup that names one parcel came to decide
+   * ownership, and how the simulation's answer came to differ from the
+   * renderer's for a tile whose lowest-id covering parcel was unowned while a
+   * higher-id one was owned (issue #93). Ownership now goes through
+   * `isTileOwnedBy`, where an unowned parcel with a low id cannot mask an
+   * owned one.
    */
   public getParcelAtTile(tile: TilePosition): ParcelDefinition | undefined {
     for (const parcel of this.getAllParcels()) {
