@@ -148,7 +148,7 @@ Two consequences follow, and the second is a trap:
 
 Staging deploys cannot damage the arrangement: `routes` appears only under `env.production` in `wrangler.jsonc`, never at the top level, so the staging environment neither inherits it nor manages any route. Wrangler leaves routes it was not told about alone.
 
-The domain is therefore **not reproducible from this repository** — it exists because someone clicked "Add Domain". Moving it into configuration is the right fix when production and staging stop being the same thing.
+The domain is therefore **not reproducible from this repository** — it exists because someone clicked "Add Domain". Nothing here can confirm that binding either: this document and `deploy.yml`'s comments record it, but only Cloudflare → Workers → `lockstate-staging` → Settings → Domains & Routes shows the live state, so re-check it there before acting on anything below that depends on it. Moving it into configuration is the right fix when production and staging stop being the same thing.
 
 The production job re-runs `pnpm verify` against the exact commit being shipped. CI having passed on `main` earlier is a statement about a different moment.
 
@@ -210,25 +210,30 @@ Before the first production deployment:
 
 1. The `lockstate.io` zone must be active in the Cloudflare account used by Wrangler.
 2. The deployment token must be permitted to update the Worker and its Custom Domain.
-3. Confirm that `lockstate.io` is not already attached to a conflicting Worker, origin or CNAME.
+3. `lockstate.io` is already attached — as a Custom Domain on the `lockstate-staging` Worker (see "What currently serves lockstate.io"). Detaching it from that Worker is the first step of the cutover, not a precondition to confirm absent. What still needs confirming is that no *other* conflicting origin or CNAME claims the hostname.
 4. Run `pnpm deploy:dry-run:production` before authenticated deployment.
 5. After deployment, verify HTTPS, `/`, a deep route and one fingerprinted asset.
 
 Custom Domains match exact hostnames. This foundation intentionally declares only the canonical root hostname `lockstate.io`. Do not attach `www.lockstate.io` to a second Worker. When the canonical-host policy is accepted, create an appropriate proxied DNS record and Cloudflare Redirect Rule from `www` to the root hostname, then document it here.
 
-Staging remains on `workers.dev`; protect it with Cloudflare Access before it contains non-public functionality or user data.
+The `lockstate-staging` Worker keeps its `workers.dev` URL, but it is also the Worker serving the public `lockstate.io` site today, so **Cloudflare Access must not be placed in front of it** while that is true — doing so would gate the public site. Once the `production` Worker has taken the domain over, staging stops being public and should be protected with Cloudflare Access before it holds non-public functionality or user data.
 
 ## Cache policy
 
 Cloudflare Static Assets normally sends revalidation-safe HTML and asset headers (`Cache-Control: public, max-age=0, must-revalidate` with an `ETag`). Lockstate preserves revalidation for HTML and SPA fallback responses so new deployments are discovered promptly.
 
-Vite emits content-hashed files below `/assets/`. `public/_headers` gives those fingerprinted files:
+Vite emits content-hashed files directly into `/assets/`. `public/_headers` gives those fingerprinted files:
 
 ```text
-Cache-Control: public, max-age=31536000, immutable
+/assets/:file
+  Cache-Control: public, max-age=31536000, immutable
 ```
 
-Do not place mutable stable-name files under `/assets/`. Future large game-content manifests, localization bundles or downloadable data packs require their own versioned URL and cache contract.
+`:file` matches a single path segment, so that rule deliberately does **not** cover `/assets/actors/*`. Runtime art is published from `public/`, which Vite copies verbatim without fingerprinting, so re-rendering an atlas reuses its URL; that subtree therefore revalidates (`max-age=300, must-revalidate`) rather than inheriting the immutable rule. The sheets under `/game-content/source-art/*` are immutable because their filenames are content-hashed, so their URL changes with their bytes. This is the policy [ADR-0014](./adr/0014-art-storage-and-runtime-asset-delivery.md) records and [ART_PIPELINE.md](./ART_PIPELINE.md) describes.
+
+Overlapping `_headers` rules **concatenate** into a single `Cache-Control` instead of overriding each other, which is why every rule here has to be exclusive of the others. A mutable stable-name file under `/assets/` therefore needs either its own exclusive rule or its own versioned URL and cache contract — that applies to future large game-content manifests, localization bundles and downloadable data packs.
+
+`pnpm verify:deployment` asserts both directions against the workerd preview: `/assets/actors/asset-registry.json` must not be `immutable` and must be `must-revalidate`, a content-hashed `/game-content/source-art/` sheet must be `immutable`, and each must carry exactly one `max-age` (the concatenation bug produced two).
 
 ## Release checklist
 
