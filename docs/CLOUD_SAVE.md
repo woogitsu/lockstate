@@ -11,14 +11,15 @@ so every file under `supabase/` was shipped as reviewed-by-inspection
 design. That gap is now partly closed:
 
 - **Executed:** every migration in `supabase/migrations/` and
-  `supabase/tests/001_rls_and_save_version_rpc.test.sql` (16/16
-  assertions), against PostgreSQL 16.13 + pgTAP 1.3.2 via
-  `pnpm verify:sql`. Running them for the first time found three defects
-  in this design — see "Defects found by executing this schema" below.
-  The same suites are green on PostgreSQL 18.6 + pgTAP 1.3.4, and
-  `pnpm verify:sql` now runs in CI after `scripts/provision-postgres.sh`,
-  so a change to this schema cannot reach `main` unexecuted again. See
-  `docs/TESTING.md` for the provisioning contract.
+  `supabase/tests/001_rls_and_save_version_rpc.test.sql` (19/19
+  assertions) via `pnpm verify:sql`, against PostgreSQL 16.13 + pgTAP
+  1.3.2 and, since the idempotency-key change below, also against
+  PostgreSQL 18.6 + pgTAP 1.3.4. Running them for the first time found
+  three defects in this design — see "Defects found by executing this
+  schema" below. `pnpm verify:sql` now also runs in CI, after
+  `scripts/provision-postgres.sh`, so a change to this schema cannot
+  reach `main` unexecuted again — see `docs/TESTING.md` for the
+  provisioning contract.
 - **Still not executed:** anything against the real Supabase stack.
   `pnpm verify:sql` prepares a plain Postgres with
   `scripts/sql/supabase-compat-harness.sql`, which supplies only the
@@ -62,10 +63,13 @@ All three were invisible while the SQL was never run:
 3. **The pgTAP suite asserted a contract the schema cannot implement.**
    One case expected a stale-checksum resubmission to be reported as a
    conflict, while the function's own header documents it as an idempotent
-   replay; `save_versions_prison_checksum_unique` makes the test's version
+   replay; `save_versions_prison_checksum_unique` made the test's version
    unimplementable without changing what the checksum identifies. The test
-   now asserts the documented behaviour, and the consequence for
-   `PrisonSyncEngine` is recorded as an open question in the suite.
+   was corrected to the documented behaviour, and the consequence for
+   `PrisonSyncEngine` was recorded as an open question rather than
+   silently redesigned inside a defect fix. **That open question is now
+   resolved** — see "Why a save attempt is identified by revision *and*
+   checksum" below.
 
 Several assertions in that suite were also passing or failing for the
 wrong reason: pgTAP's two-argument `throws_ok` compares the error
@@ -78,7 +82,7 @@ wrong reason: pgTAP's two-argument `throws_ok` compares the error
 | --- | --- | --- |
 | `profiles` | One row per `auth.users` identity (anonymous or upgraded). Created lazily, not by an on-signup trigger. | `id = auth.uid()` |
 | `prisons` | One row per cloud save slot. `current_version_id`/`current_revision` are the only mutable pointer, advanced exclusively by `create_save_version()`. Multiple prisons per owner from the start — never a one-per-user table. | `owner_id = auth.uid()` |
-| `save_versions` | Immutable generations, mirroring the local repository's generation model (#19). Never updated after insert; `unique (prison_id, revision)` and `unique (prison_id, checksum)`. | indirect, via `prisons.owner_id` |
+| `save_versions` | Immutable generations, mirroring the local repository's generation model (#19). Never updated after insert; `unique (prison_id, revision)`. Content is deliberately not unique on its own — see below. | indirect, via `prisons.owner_id` |
 | `user_settings` | Cloud-synced input/accessibility preferences (`src/input/storage.ts`), deliberately outside any prison payload. | `user_id = auth.uid()` |
 | `entitlements` | Paid save-slot expansion etc. Client-readable, never client-writable — see "Trusted mutations" below. | `user_id = auth.uid()`, SELECT only |
 
@@ -115,10 +119,10 @@ cloud save:
 2. Checks `auth.uid() = owner_id` itself — `SECURITY DEFINER` bypasses RLS,
    so this explicit check is the only thing standing between an
    authenticated caller and any prison row.
-3. If a `save_versions` row already exists for `(prison_id, checksum)`,
-   returns it as `idempotent_replay` — retrying an upload whose response
-   was lost, but which actually committed, is always safe and never
-   creates a duplicate version.
+3. If a `save_versions` row already exists for
+   `(prison_id, revision, checksum)`, returns it as `idempotent_replay` —
+   retrying an upload whose response was lost, but which actually
+   committed, is always safe and never creates a duplicate version.
 4. Otherwise, accepts the new version only if `p_new_revision = current_revision + 1`
    ("N → N+1 only when N remains current"); anything else — behind or
    ahead — is reported as `conflict`, never silently applied.
@@ -126,6 +130,38 @@ cloud save:
 `envelope.revision` (#18) *is* this revision counter: the client always
 sends its own envelope's `revision` as `p_new_revision`, so there is no
 second, parallel revision concept to keep in sync.
+
+### Why a save attempt is identified by revision *and* checksum
+
+Idempotency was originally keyed on content alone: `unique (prison_id,
+checksum)` plus a lookup on `(prison_id, checksum)`. That conflates two
+different events.
+
+A **retry** is one save attempt sent twice because the first response was
+lost. A **revert** is a *new* save attempt whose content happens to match
+an earlier one, because the player undid a build. Under content-only
+identity the two are indistinguishable, and the RPC answered the revert
+with a replay of the *older* revision: the prison pointer never advanced,
+`PrisonSyncEngine.push` reported `already-synced` at a revision the cloud
+had never reached, and the client's next push arrived at `current + 2` and
+was rejected as a conflict it had no way to explain.
+
+Identity therefore includes the revision. `save_versions_prison_checksum_unique`
+is gone — content legitimately recurs in a save history — and the lookup
+matches `(prison_id, revision, checksum)`. Three consequences:
+
+- A replay returns `p_new_revision` **by construction**, so client and
+  cloud can no longer disagree about which revision committed.
+- Recurring content at a new revision is a new version, and the pointer
+  advances normally.
+- *Different* content at an already-occupied revision is not a replay; it
+  falls through to the conflict branch, which is the correct answer, since
+  another device's save already holds that revision.
+
+It also narrows the accepted 64-bit collision risk documented in the RPC
+header: two colliding payloads must now collide *at the same revision
+number*, which a client produces at most once, rather than anywhere in a
+prison's entire history.
 
 ## Sync policy (`src/persistence/cloud/`)
 

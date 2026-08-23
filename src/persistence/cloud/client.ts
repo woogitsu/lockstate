@@ -14,6 +14,7 @@ export interface CloudPrisonState {
 
 export type UploadOutcome =
   | { readonly status: 'created'; readonly version: CloudSaveVersionSummary }
+  /** This exact revision already holds this exact content — the caller's own attempt committed. `version.revision` always equals the requested `newRevision`, so a replay can never report a revision the caller did not ask for. */
   | { readonly status: 'idempotent-replay'; readonly version: CloudSaveVersionSummary }
   | { readonly status: 'conflict'; readonly cloudCurrent: CloudSaveVersionSummary | undefined }
   | { readonly status: 'not-registered' }

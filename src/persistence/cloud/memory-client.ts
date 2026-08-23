@@ -16,11 +16,12 @@ let versionSequence = 0;
 
 /**
  * In-memory stand-in for the Supabase `create_save_version` RPC
- * (supabase/migrations/20260822190300_create_save_version_rpc.sql):
- * same conflict/idempotency-by-checksum semantics, no auth/RLS (this
- * layer is already scoped to "my own" calls by the time client code
- * reaches it — RLS is tested at the SQL layer, see supabase/tests/).
- * Used to unit-test `PrisonSyncEngine` without a real Supabase project.
+ * (supabase/migrations/20260822190300_create_save_version_rpc.sql): same
+ * conflict semantics and the same `(prison, revision, checksum)` attempt
+ * identity, no auth/RLS (this layer is already scoped to "my own" calls by
+ * the time client code reaches it — RLS is tested at the SQL layer, see
+ * supabase/tests/). Used to unit-test `PrisonSyncEngine` without a real
+ * Supabase project.
  */
 export class MemoryCloudSaveClient implements CloudSaveClient {
   private readonly prisons = new Map<string, StoredPrison>();
@@ -39,7 +40,15 @@ export class MemoryCloudSaveClient implements CloudSaveClient {
     const prison = this.prisons.get(prisonId);
     if (prison === undefined) return { status: 'not-registered' };
 
-    const existing = prison.versions.find((version) => version.checksum === envelope.checksum);
+    // Matched on revision as well as checksum: a replay is the caller's own
+    // earlier attempt at this exact revision, so the revision reported back
+    // always equals the one requested. Matching on content alone would
+    // answer a revert (old content, new revision) with a replay of the older
+    // revision, leaving the caller synced ahead of the cloud — see the RPC
+    // migration's header.
+    const existing = prison.versions.find(
+      (version) => version.revision === newRevision && version.checksum === envelope.checksum,
+    );
     if (existing !== undefined) {
       return { status: 'idempotent-replay', version: { versionId: existing.versionId, revision: existing.revision, checksum: existing.checksum } };
     }
