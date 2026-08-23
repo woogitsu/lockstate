@@ -241,7 +241,7 @@ function requireSimulation(commands: SimulationCommandSender | undefined): Simul
   return commands;
 }
 
-function mountInterface(app: HTMLElement, host: InterfaceHost = {}): void {
+function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   const { client, commands, tool } = host;
   const simulationUnavailable = client === undefined;
   const localizer = new Localizer({
@@ -335,12 +335,19 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): void {
   });
 
   tool?.attachReadout((target) => hud?.setBuildTarget(target));
+  return hud;
 }
 
-async function bootPersistence(client: SimulationClient): Promise<void> {
-  const app = document.getElementById('app');
-  if (app === null) return;
-
+/**
+ * `savePanelHost` is the HUD's aside slot, not `#app`.
+ *
+ * The save panel used to be appended to `#app` as a sibling of the HUD and
+ * positioned by its own `position: fixed` rule, which is exactly how it ended
+ * up underneath the Build panel with no layout relating the two (issue #88).
+ * Mounting it into the slot puts it in the HUD's grid, so the HUD's own
+ * layout decides where it goes and the collision cannot recur.
+ */
+async function bootPersistence(client: SimulationClient, savePanelHost: HTMLElement): Promise<void> {
   let controller: SessionController;
   let panel: SavePanel;
   try {
@@ -356,7 +363,7 @@ async function bootPersistence(client: SimulationClient): Promise<void> {
       gameVersion: GAME_VERSION,
       onSaveResult: (_prisonId: string, result: SaveResult) => panel.reportBackgroundSave(result),
     });
-    panel = new SavePanel(controller, app);
+    panel = new SavePanel(controller, savePanelHost);
   } catch (error) {
     console.warn('Local save storage is unavailable; continuing without persistence.', error);
     return;
@@ -383,12 +390,18 @@ async function bootPersistence(client: SimulationClient): Promise<void> {
  * no simulation state at all -- so there is nothing for it to wait on.
  */
 const appRoot = document.getElementById('app');
-if (appRoot !== null) {
-  mountInterface(appRoot, {
-    ...(simulation === undefined ? {} : { client: simulation }),
-    ...(commandSender === undefined ? {} : { commands: commandSender }),
-    ...(buildTool === undefined ? {} : { tool: buildTool }),
-  });
-}
+const mountedHud =
+  appRoot === null
+    ? undefined
+    : mountInterface(appRoot, {
+        ...(simulation === undefined ? {} : { client: simulation }),
+        ...(commandSender === undefined ? {} : { commands: commandSender }),
+        ...(buildTool === undefined ? {} : { tool: buildTool }),
+      });
 
-if (simulation !== undefined) void bootPersistence(simulation);
+// The save panel is laid out by the HUD, so there is nowhere to put it until
+// the HUD is mounted. That is not a new dependency in disguise: with no
+// interface there is no screen for a save panel to be on.
+if (simulation !== undefined && mountedHud !== undefined) {
+  void bootPersistence(simulation, mountedHud.asideSlot);
+}

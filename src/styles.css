@@ -31,26 +31,48 @@ canvas {
   display: block;
 }
 
-/* Save/load panel (issue #19) — plain DOM browser UI beside the Phaser
-   canvas, never inside the renderer's scene graph. It now sits below the HUD
-   status strip rather than under it, positioned from the shared token so the
-   two cannot drift apart. */
+/*
+ * Save/load panel (issue #19) — plain DOM browser UI beside the Phaser
+ * canvas, never inside the renderer's scene graph.
+ *
+ * It is *laid out by the HUD* (issue #88). It used to be its own
+ * `position: fixed` layer pinned under the status strip at `z-index: 10`,
+ * which meant it had no spatial relationship to anything in the HUD at all:
+ * on the Build tab the Build panel — a `z-index: 20` layer with
+ * `pointer-events: auto` — covered it and swallowed every click on all five
+ * of its buttons, silently. `src/main.ts` now mounts it into
+ * `HudHandle.asideSlot`, the top of the HUD's right rail, so it is a normal
+ * block in the same flex column as the Build panel and the two cannot
+ * overlap at any viewport size.
+ *
+ * It stays its own component rather than becoming a `ui-panel`: it
+ * type-imports from `src/persistence/**` and `src/simulation/runtime/**`, and
+ * `AGENTS.md` boundary 1 keeps both out of `src/ui/hud/`. A slot is what lets
+ * the HUD own the geometry without owning the panel.
+ */
 .save-panel {
-  position: fixed;
-  top: var(--hud-strip-height);
-  right: 0;
-  z-index: 10;
-  width: min(20rem, 90vw);
-  max-height: calc(100vh - var(--hud-strip-height));
+  width: 264px;
+  max-width: 100%;
+  box-sizing: border-box;
+  /* The rail scrolls as a whole; this only stops one very long prison list
+     from pushing the Build panel out of reach on its own. */
+  max-height: 60vh;
   overflow-y: auto;
   padding: var(--space-3);
-  box-sizing: border-box;
   background: var(--surface-raised);
-  border-left: var(--hairline) solid var(--border);
-  border-bottom: var(--hairline) solid var(--border);
-  border-bottom-left-radius: var(--radius-md);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-md);
   font-size: var(--text-size-body);
   touch-action: auto;
+}
+
+/* The same breakpoint the HUD's rail uses: the rail stops being a fixed-width
+   column, so its contents stop being one too. */
+@media (max-width: 720px) {
+  .save-panel {
+    width: 100%;
+    max-height: 45vh;
+  }
 }
 
 .save-panel__heading {

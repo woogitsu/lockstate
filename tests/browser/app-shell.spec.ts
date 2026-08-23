@@ -9,7 +9,7 @@ import { expect, test, type Page } from '@playwright/test';
  *
  * Every other spec in this directory drives a purpose-built harness page.
  * That is the right shape for a module under test, but it means nothing so
- * far has ever loaded the page a player loads. Five claims only exist once
+ * far has ever loaded the page a player loads. Six claims only exist once
  * the pieces are assembled in a browser, and none of them can be settled a
  * layer down:
  *
@@ -36,6 +36,14 @@ import { expect, test, type Page } from '@playwright/test';
  *    this layer has already found once, by measuring. `--tap-target` is
  *    applied by CSS convention and nothing pins the rendered box; a token
  *    test cannot, because a token is not a layout.
+ * 6. **Every control on the page can actually be pressed.** Presence is not
+ *    reachability, and until issue #88 this file only ever asserted the
+ *    first. The save panel and the HUD were two independently-positioned
+ *    `fixed` layers that had never been laid out relative to each other, so
+ *    on the Build tab the Build panel covered the save panel and all five of
+ *    its buttons did nothing — silently, with this suite green. Only a
+ *    browser answers `elementFromPoint`, and only the assembled page has
+ *    both regions in it at once.
  *
  * Deliberately NOT here, because a headless test already proves it and a
  * browser test that repeats one costs a minute of CI and adds no evidence:
@@ -126,15 +134,82 @@ async function canvasMetrics(page: Page): Promise<CanvasMetrics | null> {
  * Loads the real application entry and waits for the renderer to have put a
  * canvas on the page.
  *
- * `src/main.ts` mounts the HUD and the save panel from `bootPersistence`,
- * one turn after the Phaser game is constructed, so waiting for all three is
- * what "the app is up" means here.
+ * `src/main.ts` mounts the HUD synchronously and then boots persistence,
+ * which mounts the save panel into the HUD's aside slot a turn later, so
+ * waiting for all three is what "the app is up" means here.
  */
 async function openApp(page: Page): Promise<void> {
   await page.goto(APP_URL);
   await page.waitForSelector('#game-root canvas');
   await page.waitForSelector('.hud');
   await page.waitForSelector('.save-panel');
+}
+
+/**
+ * Every element a player can press, anywhere on the assembled page.
+ *
+ * Deliberately not scoped to `.hud`: the collision issue #88 reported was
+ * *between* two independently-positioned regions, so a check that only ever
+ * looks inside one of them cannot see it.
+ */
+const INTERACTIVE_SELECTOR =
+  'button, [role="button"], a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+
+interface UnreachableControl {
+  readonly control: string;
+  readonly hit: string;
+}
+
+/**
+ * Which controls are covered by something else.
+ *
+ * For every laid-out interactive element, `document.elementFromPoint` at the
+ * centre of its own box must resolve to that element or to something inside
+ * it. Anything else means the topmost thing at those pixels belongs to a
+ * different control, and the press lands there instead.
+ *
+ * Three deliberate details:
+ *
+ * - **Scrolled into view first.** A control inside a scroll container may
+ *   legitimately be out of view; that is not a collision, and the player
+ *   reaches it by scrolling. Scrolling it into view and re-measuring asks the
+ *   real question — "once it is on screen, can it be pressed" — instead of
+ *   flagging every list that is longer than its box.
+ * - **A `null` hit is a failure, not a skip.** `elementFromPoint` returns
+ *   `null` for a point outside the viewport, so a control pushed off the
+ *   edge by an overflowing layout reports here rather than silently passing.
+ * - **Zero-area elements are skipped.** An inactive tab's panel and the
+ *   corners the responsive rules drop are not laid out at all; "is it
+ *   displayed" is a different question, asserted separately.
+ */
+async function unreachableControls(page: Page): Promise<readonly UnreachableControl[]> {
+  return page.evaluate((selector: string) => {
+    const describe = (node: Element): string => {
+      const label =
+        node.getAttribute('aria-label') ?? node.getAttribute('title') ?? node.textContent?.trim().slice(0, 32) ?? '';
+      const classes = typeof node.className === 'string' && node.className !== '' ? `.${node.className}` : '';
+      return `${node.tagName.toLowerCase()}${classes}${label === '' ? '' : ` "${label}"`}`;
+    };
+
+    const unreachable: { control: string; hit: string }[] = [];
+    for (const control of document.querySelectorAll<HTMLElement>(selector)) {
+      if (control.getBoundingClientRect().width === 0) continue;
+      if (control.getBoundingClientRect().height === 0) continue;
+
+      control.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+
+      // Re-read after the scroll: that is where the control now is.
+      const rect = control.getBoundingClientRect();
+      const hit = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
+      if (hit !== null && control.contains(hit)) continue;
+
+      unreachable.push({
+        control: describe(control),
+        hit: hit === null ? '(outside the viewport)' : describe(hit),
+      });
+    }
+    return unreachable;
+  }, INTERACTIVE_SELECTOR);
 }
 
 test.describe('the assembled application', () => {
@@ -264,6 +339,92 @@ test.describe('the assembled application', () => {
           .filter((box) => box.width < minimum || box.height < minimum);
       }, 44);
       expect(undersized, `HUD controls below the 44px tap target at ${width}x${height}`).toEqual([]);
+    }
+  });
+
+  /**
+   * Issue #88: presence is not reachability.
+   *
+   * The save panel and the Build panel were two independently-positioned
+   * `fixed` layers that had never been laid out relative to each other. On
+   * the Build tab the Build panel covered the save panel and swallowed every
+   * click on it, so **New prison, Save now, Export, Load and Delete all did
+   * nothing** — with no error, no console message and no status change. The
+   * suite was green throughout, because every assertion it had asked whether
+   * an element *existed*.
+   *
+   * This is deliberately not an assertion about those two panels. It is the
+   * general property: on the assembled page, at every viewport this suite
+   * visits and on every tab, the topmost element at the centre of each
+   * control is that control. It costs one `elementFromPoint` per control and
+   * it catches the whole class — any future region that lands on top of
+   * another one fails here, whichever two they are.
+   *
+   * The Build tab's numeric fallback is expanded as its own case: it is the
+   * tallest the Build panel gets, it is one tap away, and it is the state the
+   * issue was measured in.
+   */
+  test('every control can actually be pressed, on every tab and at every viewport (#88)', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await openApp(page);
+
+    // A prison in the list is the state a player reaches with the first thing
+    // they do, and it is the only thing that puts the per-row Load and Delete
+    // buttons on the page at all.
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.save-panel__item-label').first()).toContainText('New Prison');
+
+    for (const [width, height] of [
+      // The viewport the issue was measured at, a wide desktop, a small
+      // laptop, a short window and a phone. The collision is a layout
+      // collision, so which sizes are checked is the whole question: it was
+      // invisible at 1440x900 and fatal at 1280x720.
+      [1280, 720],
+      [1440, 900],
+      [1024, 768],
+      [900, 600],
+      [375, 812],
+    ] as const) {
+      await page.setViewportSize({ width, height });
+      await expect
+        .poll(async () => (await canvasMetrics(page))?.cssWidth, { message: `canvas did not follow ${width}px` })
+        .toBe(width);
+
+      for (const tab of ['overview', 'build', 'security', 'regime'] as const) {
+        await page.locator(`.ui-tab[data-tab="${tab}"]`).click();
+        expect(
+          await unreachableControls(page),
+          `controls covered by something else on the ${tab} tab at ${width}x${height}`,
+        ).toEqual([]);
+      }
+
+      // Saving is not a Build-tab activity, and the Build tab is where the
+      // player spends their time. Named separately so a regression says so.
+      await page.locator('.ui-tab[data-tab="build"]').click();
+      expect(
+        await page.evaluate(() =>
+          [...document.querySelectorAll<HTMLElement>('.save-panel__button')]
+            .map((button) => {
+              button.scrollIntoView({ block: 'nearest' });
+              const rect = button.getBoundingClientRect();
+              const hit = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
+              return hit !== null && button.contains(hit) ? null : (button.textContent?.trim() ?? '');
+            })
+            .filter((label) => label !== null),
+        ),
+        `save-panel buttons unreachable from the Build tab at ${width}x${height}`,
+      ).toEqual([]);
+
+      // The numeric fallback expanded: the tallest the Build panel gets, and
+      // the state issue #88 was measured in.
+      const coordinates = page.locator('.hud-build .ui-section__header').last();
+      if ((await coordinates.getAttribute('aria-expanded')) === 'false') await coordinates.click();
+      expect(
+        await unreachableControls(page),
+        `controls covered by something else with the Build coordinates expanded at ${width}x${height}`,
+      ).toEqual([]);
+      // Folded away again, so the next viewport starts from the same state.
+      if ((await coordinates.getAttribute('aria-expanded')) === 'true') await coordinates.click();
     }
   });
 

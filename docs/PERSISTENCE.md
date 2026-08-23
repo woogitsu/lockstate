@@ -940,6 +940,22 @@ as separate concerns, and save/load is browser UI over persistence with no
 business in the renderer's scene graph. It reads only controller
 projections.
 
+**It is laid out by the HUD, and owned by neither.** `main.ts` mounts it into
+`HudHandle.asideSlot` — a slot at the top of the HUD's right rail that the HUD
+positions and never renders into. The panel predates the HUD shell and used to
+be a `position: fixed` layer of its own at `z-index: 10`, with no layout
+relating it to anything in the HUD; issue #88 is what that cost. On the Build
+tab the Build panel — inside a `z-index: 20` layer, with `pointer-events: auto`
+— covered 90 % of it and swallowed every click on all five of its buttons,
+silently and with no console message. Sharing one flex column with the Build
+panel makes the overlap impossible rather than merely corrected.
+
+The slot exists instead of folding the panel into `src/ui/hud/` because this
+module type-imports `SaveResult`, `PrisonSlotMetadata`, `SaveEnvelope` and
+`RestoredScope` from `src/persistence/**` and `src/simulation/runtime/**`, and
+the HUD may import neither (`AGENTS.md` boundary 1). The HUD supplies a box;
+the composition root supplies the panel.
+
 `describeSaveResult` maps each failure code to its **own** state and
 advice, satisfying "quota, private-mode and transaction-abort errors are
 distinct recoverable states" — quota tells the player to free space,

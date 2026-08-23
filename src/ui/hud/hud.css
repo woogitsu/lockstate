@@ -20,7 +20,21 @@
      than the viewport and carry the centred tab bar off the right edge with
      it. Observed at 375px before this was pinned. */
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto 1fr auto;
+  /* `minmax(0, 1fr)` on the middle row for the same reason as the column
+     above, in the other axis: a bare `1fr` row is floored at its items'
+     min-content, so a middle-row item taller than the space available grows
+     the whole grid and carries the tab bar off the *bottom* of the viewport.
+     Measured at 1280x720 with the Build panel's numeric fallback expanded:
+     all four tabs sat below the fold and `elementFromPoint` at their centres
+     returned null.
+
+     `.hud__rail` is a scroll container, and a scroll container's automatic
+     minimum size is already 0, so today the rail alone is enough -- reverting
+     this row to `1fr` leaves the reachability test green. It is written out
+     anyway because the floor is a property of *the grid*, not of whichever
+     items happen to occupy the middle row: `.hud__corner` sits there too and
+     does not scroll. */
+  grid-template-rows: auto minmax(0, 1fr) auto;
   grid-template-areas:
     'strip'
     'middle'
@@ -33,6 +47,7 @@
 /* Every interactive island opts back in. */
 .hud-strip,
 .hud__corner > *,
+.hud__aside > *,
 .hud__side > *,
 .hud-tabs__inner {
   pointer-events: auto;
@@ -145,16 +160,59 @@
 .hud-alerts__list { display: flex; flex-direction: column; }
 
 /* ------------------------------------------------------------------ */
-/* Bottom-right build panel                                            */
+/* Right rail: the host's aside slot, then the build panel              */
 /* ------------------------------------------------------------------ */
 
-/* The mirror of `.hud__corner`: same row, opposite edge. Sharing the middle
-   row keeps both clear of the centred tab bar at every width, and keeps the
-   centre of the screen -- the prison -- empty. */
-.hud__side {
+/*
+ * The mirror of `.hud__corner`: same row, opposite edge. Sharing the middle
+ * row keeps both clear of the centred tab bar at every width, and keeps the
+ * centre of the screen -- the prison -- empty.
+ *
+ * Everything down the right-hand edge lives in this one column, and that is
+ * the whole point of it (issue #88). The save panel used to be a separate
+ * `position: fixed` layer that had never been laid out against the HUD at
+ * all; on the Build tab the Build panel landed on top of it and ate every
+ * click. Two boxes in one flex column cannot do that at any viewport size,
+ * so the defect is gone rather than tuned away -- raising the save panel's
+ * `z-index` would have restored the clicks and left the two drawn on top of
+ * one another, which is the same bug with the symptom moved.
+ *
+ * `align-self: stretch` and `min-height: 0` make the rail exactly as tall as
+ * the middle row and no taller; `overflow-y: auto` is where the excess goes
+ * when the two panels together do not fit a short window. Scrolling a rail is
+ * a thing a player can do. A tab bar pushed off the bottom of the screen is
+ * not.
+ */
+.hud__rail {
   grid-area: middle;
   justify-self: end;
-  align-self: end;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+/* The host's slot (see `HudHandle.asideSlot`). Empty it is zero-height, so a
+   page that mounts nothing here looks exactly as it did before. */
+.hud__aside {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-3) var(--space-3) 0;
+  box-sizing: border-box;
+}
+
+.hud__aside:empty { display: none; }
+
+/* Pushed to the foot of the rail, which is where it was before: the eye goes
+   to the bottom-right corner for the tool it is holding. `margin-top: auto`
+   rather than `justify-content: space-between`, so with an empty aside slot
+   the panel is still at the bottom and not centred. */
+.hud__side {
+  margin-top: auto;
   max-width: 100%;
   padding: var(--space-3);
   box-sizing: border-box;
@@ -251,8 +309,7 @@
 
 @media (max-width: 720px) {
   :root {
-    /* The strip wraps to two rows here. The save panel positions itself from
-       this token rather than from a duplicated number, so it moves with it. */
+    /* The strip wraps to two rows here. */
     --hud-strip-height: 88px;
   }
 
@@ -260,12 +317,14 @@
      how the game is operated. */
   .hud__corner { display: none; }
 
-  /* The build panel stays -- it is the only way to build -- but it stops
-     being a fixed-width column and clears the tab bar instead. */
-  .hud__side {
-    justify-self: stretch;
-    padding: var(--space-2) var(--space-2) var(--space-6);
-  }
+  /* The rail stays -- it is the only way to build, and the only way to save
+     -- but it stops being a fixed-width column and clears the tab bar
+     instead. */
+  .hud__rail { justify-self: stretch; }
+
+  .hud__aside { padding: var(--space-2) var(--space-2) 0; }
+
+  .hud__side { padding: var(--space-2) var(--space-2) var(--space-6); }
 
   .hud-build { width: 100%; }
 

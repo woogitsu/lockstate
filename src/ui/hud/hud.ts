@@ -128,6 +128,22 @@ export interface MountHudOptions {
 
 export interface HudHandle {
   readonly element: HTMLElement;
+  /**
+   * A slot at the top of the HUD's right rail for a panel the **host** owns.
+   *
+   * The HUD lays it out and nothing more: it never renders into it, never
+   * reads it, and does not know what goes there. That separation is not
+   * fussiness -- the save panel that occupies it in the running app type-imports
+   * from `src/persistence/**` and `src/simulation/runtime/**`, and the HUD may
+   * import neither (`AGENTS.md` boundary 1). So the host mounts its own panel
+   * here and the HUD supplies only a box that participates in the HUD's grid.
+   *
+   * The slot is *not* tab-scoped. What sits here is available on every tab,
+   * which is the point: saving is not a Build-tab activity (issue #88).
+   *
+   * Empty, it collapses to nothing and the rail is exactly what it was before.
+   */
+  readonly asideSlot: HTMLElement;
   update(viewModel: HudViewModel): void;
   /**
    * Live feedback from the world pointer into the Build panel's readout.
@@ -254,6 +270,22 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   });
   const side = element('div', { className: 'hud__side', children: [buildPanel.element] });
 
+  /**
+   * The right rail: one column, holding the host's aside slot at the top and
+   * the Build panel at the bottom.
+   *
+   * It exists because two panels down the right-hand edge have to be laid out
+   * *relative to each other*, and before issue #88 they were not: the save
+   * panel was its own `position: fixed` layer at `z-index: 10` and the HUD was
+   * another at `z-index: 20`, so on the Build tab the Build panel sat on top
+   * of the save panel and swallowed every click on it. Sharing one flow column
+   * makes that impossible rather than merely fixed -- two boxes stacked in a
+   * flex column cannot overlap at any viewport size, and nothing has to
+   * remember to check.
+   */
+  const aside = element('div', { className: 'hud__aside' });
+  const rail = element('div', { className: 'hud__rail', children: [aside, side] });
+
   // ---- bottom-centre tab bar ---------------------------------------
   const tabs: TabButton[] = HUD_TABS.map((definition) =>
     createTabButton({
@@ -276,7 +308,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
 
   const hud = element('div', {
     className: 'hud',
-    children: [strip.element, corner, side, tabBar],
+    children: [strip.element, corner, rail, tabBar],
   });
 
   // Only the controls that issue a *command* are disabled while one is in
@@ -361,6 +393,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
 
   return {
     element: hud,
+    asideSlot: aside,
     update,
     setBuildTarget: (target) => buildPanel.setTarget(target),
     getState: () => state,
