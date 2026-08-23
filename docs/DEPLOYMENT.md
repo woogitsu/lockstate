@@ -122,6 +122,19 @@ Ordinary CI (`.github/workflows/ci.yml`) validates packages but does not publish
 
 Migrations live in their own workflow (`migrate-database.yml`) on purpose: `supabase db push` is irreversible, and attaching it to a merge would let any pull request alter a database as a side effect of being merged.
 
+### What currently serves lockstate.io
+
+**One Worker, not two.** `lockstate.io` is served by **`lockstate-staging`** — the Worker the `staging` job deploys — through a Custom Domain attached by hand in the Cloudflare dashboard. Production and staging are the same thing for now, by the owner's decision.
+
+Two consequences follow, and the second is a trap:
+
+- **A merge to `main` already updates the public site.** The `staging` job runs on every push to `main`, so `lockstate.io` tracks `main` with no further configuration. Nothing needs to be enabled for that to happen; it is happening.
+- **Dispatching the `production` job would silently take the domain away.** A Workers Custom Domain is an account-scoped record with exactly one owner. `wrangler.jsonc` declares `lockstate.io` under `env.production`, whose Worker is named `lockstate` — a Worker that has never been deployed. Running that job transfers the live domain onto it, and wrangler does not warn. Do not dispatch it until production is genuinely meant to take over, and expect a few seconds of the site serving a freshly-created Worker when you do.
+
+Staging deploys cannot damage the arrangement: `routes` appears only under `env.production` in `wrangler.jsonc`, never at the top level, so the staging environment neither inherits it nor manages any route. Wrangler leaves routes it was not told about alone.
+
+The domain is therefore **not reproducible from this repository** — it exists because someone clicked "Add Domain". Moving it into configuration is the right fix when production and staging stop being the same thing.
+
 The production job re-runs `pnpm verify` against the exact commit being shipped. CI having passed on `main` earlier is a statement about a different moment.
 
 ### Credentials
@@ -130,7 +143,21 @@ Put every value into **GitHub Environment secrets** directly, under Settings →
 
 Create environments `staging` and `production`, and give `production` **required reviewers**. That approval, not the workflow's `if:` condition, is what actually stops an unattended production deploy.
 
-Both environments take the same secret names with different values:
+The two environments do **not** take the same set. `deploy.yml` reads four values; `migrate-database.yml` reads three others:
+
+| Secret | `staging` | `production` |
+| --- | --- | --- |
+| `CLOUDFLARE_API_TOKEN` | yes | yes |
+| `CLOUDFLARE_ACCOUNT_ID` | yes | yes |
+| `VITE_SUPABASE_URL` | yes | yes |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | yes | yes |
+| `SUPABASE_PROJECT_REF` | yes | **deliberately absent** |
+| `SUPABASE_ACCESS_TOKEN` | yes | **deliberately absent** |
+| `SUPABASE_DB_PASSWORD` | yes | **deliberately absent** |
+
+The three migration secrets stay out of `production` until a distinct production Supabase project exists (ADR 0016 §2). Copying the staging values across would be worse than omitting them: `migrate-database.yml` compares the project ref you type against that secret, so a confirmation you believe means "yes, production" would compare true against the *staging* ref and apply the migration there. With the secret absent the workflow fails instead, which is the right answer to "migrate production" while no production database exists.
+
+Where the values come from:
 
 | Secret | What it is | Where |
 | --- | --- | --- |

@@ -77,13 +77,36 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+        # The deployed URL carries the account's workers.dev subdomain, which
+        # this workflow cannot know. It used to be hard-coded without one, so
+        # the environment link on every deployment pointed at a hostname that
+        # does not exist. Read it back from what wrangler actually printed.
         run: |
-          node scripts/cloudflare-task.mjs deploy staging
-          echo "url=https://lockstate-staging.workers.dev" >> "$GITHUB_OUTPUT"
+          log="$(mktemp)"
+          node scripts/cloudflare-task.mjs deploy staging | tee "$log"
+          # `|| true` is load-bearing: this step runs under `set -eo pipefail`,
+          # so a grep that matches nothing would abort here rather than reach
+          # the fallback below -- turning a cosmetic missing link into a failed
+          # deployment of a Worker that had already been published.
+          url="$(grep -oE 'https://[A-Za-z0-9.-]+\.workers\.dev' "$log" | tail -n 1 || true)"
+          if [ -z "$url" ]; then
+            echo "::warning::Could not read the deployed URL from wrangler output."
+            url="https://dash.cloudflare.com/${CLOUDFLARE_ACCOUNT_ID}/workers/services/view/lockstate-staging"
+          fi
+          echo "url=$url" >> "$GITHUB_OUTPUT"
 
   production:
     # Manual only. The `production` environment should carry required
     # reviewers, which is what actually blocks this — the `if` alone would not.
+    #
+    # DO NOT DISPATCH THIS UNTIL PRODUCTION IS MEANT TO TAKE OVER THE DOMAIN.
+    # lockstate.io is currently served by the *staging* Worker, through a custom
+    # domain attached by hand in the dashboard. A Workers custom domain is an
+    # account-scoped record with exactly one owner, and this job's wrangler
+    # environment declares `lockstate.io` on a different Worker (`lockstate`).
+    # Running it therefore moves the live domain onto a Worker that has never
+    # been deployed, and wrangler does so without warning. See docs/DEPLOYMENT.md,
+    # "What currently serves lockstate.io".
     if: github.event_name == 'workflow_dispatch' && inputs.target == 'production'
     runs-on: [self-hosted, Linux, X64, wsl2]
     timeout-minutes: 30
