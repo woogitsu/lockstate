@@ -1,3 +1,5 @@
+import { STARTER_SCENARIO } from '../../content/scenario-catalog';
+import { applyScenario } from '../../simulation/runtime/apply-scenario';
 import { captureSessionSnapshot, restoreSimulationRuntime, type SessionSnapshotBundle } from '../../simulation/runtime/restore-session';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../simulation/runtime/new-session';
 
@@ -50,10 +52,18 @@ export class InProcessSessionHost implements SessionRuntimeHost {
   }
 
   public async startNew(masterSeed: number): Promise<void> {
-    this.runtime = createNewSimulationRuntime(masterSeed);
+    const runtime = createNewSimulationRuntime(masterSeed);
+    // What makes this a playable prison rather than an empty one (ADR
+    // 0018). It mirrors `WorkerStateMachine.handleInitialize`'s `'new'`
+    // branch exactly, which is the point: a test driving this host is
+    // driving the same session a player gets.
+    applyScenario(runtime, STARTER_SCENARIO);
+    this.runtime = runtime;
   }
 
   public async startFromSnapshot(bundle: SessionSnapshotBundle): Promise<void> {
+    // No scenario is applied here: a restored session's stock is whatever
+    // the save carried. See `applyScenario`.
     this.runtime = restoreSimulationRuntime(bundle).runtime;
   }
 

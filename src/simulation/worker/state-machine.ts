@@ -1,4 +1,6 @@
+import { STARTER_SCENARIO } from '../../content/scenario-catalog';
 import { Kernel } from '../kernel/kernel';
+import { applyScenario } from '../runtime/apply-scenario';
 import {
   createNewSimulationRuntime,
   type SimulationRuntime,
@@ -164,7 +166,14 @@ export class SimulationWorkerStateMachine {
     }
 
     if (msg.payload.source.kind === 'new') {
-      this._runtime = createNewSimulationRuntime(msg.payload.source.masterSeed);
+      const runtime = createNewSimulationRuntime(msg.payload.source.masterSeed);
+      // A new prison opens with the starter scenario's declared stock (ADR
+      // 0018). `createNewSimulationRuntime` still fabricates nothing; this
+      // is the session layer choosing what the session starts with. The
+      // protocol carries no scenario id because there is exactly one
+      // scenario -- issue #33 is where a choice belongs.
+      applyScenario(runtime, STARTER_SCENARIO);
+      this._runtime = runtime;
       this._kernel = this._runtime.kernel;
     } else {
       // Restore from a persisted snapshot (ADR 0003: "Initialization

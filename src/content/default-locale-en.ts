@@ -74,6 +74,8 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'item.clean-linen.name': 'Clean Linen',
   'item.waste.name': 'Waste',
 
+  'scenario.starter.name': 'New Prison',
+
   'grade.general.name': 'General',
   'grade.medical.name': 'Medical',
   'grade.high-security.name': 'High Security',

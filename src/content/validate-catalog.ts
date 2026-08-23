@@ -1,12 +1,20 @@
+import type { ItemDefinition } from './item-catalog';
 import type { ObjectDefinition } from './object-catalog';
 import type { ContentRegistry } from './registry';
 import type { RoomCatalogDefinition } from './room-catalog';
+import type { ScenarioDefinition } from './scenario-catalog';
 import type { SimulationEnumForm, SimulationEnumGroup } from './simulation-message-keys';
 
 export type CatalogCrossReferenceError = {
   readonly kind: 'missing-object-reference';
   readonly roomId: string;
   readonly objectId: string;
+};
+
+export type ScenarioCrossReferenceError = {
+  readonly kind: 'missing-item-reference';
+  readonly scenarioId: string;
+  readonly itemId: string;
 };
 
 /**
@@ -27,6 +35,34 @@ export function validateRoomObjectReferences(
       if (requirement.type !== 'object') continue;
       if (!objects.has(requirement.objectId)) {
         errors.push({ kind: 'missing-object-reference', roomId: room.id, objectId: requirement.objectId });
+      }
+    }
+  }
+
+  return errors;
+}
+
+/**
+ * Every item a scenario proposes to stock must be a real item definition
+ * (ADR 0018).
+ *
+ * This is the check that makes a supply route trustworthy rather than
+ * merely present. A scenario naming an item id nothing declares deposits
+ * stock nobody can spend, and the only symptom is a build order that waits
+ * in `'materials-pending'` forever -- indistinguishable, from the outside,
+ * from having declared no stock at all. Startup is the last moment that
+ * failure is still legible, so it fails here.
+ */
+export function validateScenarioItemReferences(
+  scenarios: readonly ScenarioDefinition[],
+  items: ContentRegistry<ItemDefinition>,
+): readonly ScenarioCrossReferenceError[] {
+  const errors: ScenarioCrossReferenceError[] = [];
+
+  for (const scenario of scenarios) {
+    for (const stock of scenario.startingStock) {
+      if (!items.has(stock.itemId)) {
+        errors.push({ kind: 'missing-item-reference', scenarioId: scenario.id, itemId: stock.itemId });
       }
     }
   }
