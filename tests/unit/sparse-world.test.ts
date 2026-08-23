@@ -125,7 +125,8 @@ describe('parcels in sparse world', () => {
    * Issue #93. `registerParcel` permits overlapping bounds, so a tile can sit
    * under several parcels; each owned one is sufficient on its own. An unowned
    * parcel is not a veto -- it never was one against chunk ownership, and it
-   * is not one against another parcel either (ADR 0019).
+   * is not one against another parcel either. That second half is ADR 0019,
+   * which is Proposed rather than Accepted.
    *
    * `getParcelAtTile` keeps its own, different job: "which parcel is here",
    * first match in ascending-id order, for pricing and selection.

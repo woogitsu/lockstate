@@ -56,11 +56,20 @@ Parcels are gameplay/economy ownership regions that are decoupled from chunk bou
 overlap and a tile may sit under several parcels. **Any** owned parcel
 containing the tile is sufficient; an unowned parcel covering the same tile
 takes nothing away. Ownership is a disjunction, not a lookup, so it does not
-depend on which parcel comes "first" — see
-[ADR 0019](./adr/0019-tile-ownership-under-overlapping-parcels.md) for why this
-rule rather than "the lowest-id parcel decides".
+depend on which parcel comes "first".
 
-The rule has exactly one implementation, `isTileOwnedBy` in
+**That half of the rule is not settled.**
+[ADR 0019](./adr/0019-tile-ownership-under-overlapping-parcels.md) records it and
+is *Proposed — pending human approval*, so the ownership bullet above and the
+paragraph above describe what the code does today, not a ratified decision.
+`SparseWorld.isTileOwned` used to answer differently in exactly one case: a tile
+whose lowest-id covering parcel was unowned while a higher-id parcel covering it
+was owned was unowned to the simulation. If ADR 0019 is rejected, that case
+returns to the old answer and this section is rewritten; issue #120 records the
+replacement wording for the bullet above.
+
+What does *not* depend on that decision: the rule has exactly one
+implementation, `isTileOwnedBy` in
 `src/simulation/world/tile-ownership.ts`, and both `SparseWorld.isTileOwned` and
 the renderer's `WorldRenderView.isTileOwned` call it. The renderer must not
 answer this question from logic of its own — `AGENTS.md` boundary 1, rendering

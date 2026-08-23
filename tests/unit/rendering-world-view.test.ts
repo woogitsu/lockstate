@@ -98,7 +98,10 @@ describe('world render view', () => {
    * the renderer called owned.
    *
    * Every assertion below compares the two sides rather than trusting either,
-   * so the rule can change but the two cannot drift apart again. See ADR 0019.
+   * so the rule can change but the two cannot drift apart again. Which answer
+   * wins in that one case is ADR 0019, which is Proposed rather than Accepted;
+   * if it is decided the other way these expectations change while the
+   * compare-both-sides shape of them does not.
    */
   describe('overlapping parcels', () => {
     // `a-marsh` sorts before `z-estate` in code-unit order, which is the order

@@ -16,6 +16,15 @@ A reviewer is being asked to sign off on one thing: **an owned parcel makes the
 tiles inside it owned, and an unowned parcel overlapping the same tiles does
 not take that away.**
 
+If that goes the other way, §1 still stands: the rule keeps one implementation,
+on the simulation side. `isTileOwnedBy` would then have to take every parcel
+with its ownership rather than only the owned bounds, `WorldRenderView` would
+have to be given the unowned parcels too, and `docs/WORLD.md`'s ownership
+sentence would be rewritten — issue #120 records the replacement wording.
+
+Until this ADR is accepted, `docs/WORLD.md` marks the disjunction as pending
+rather than settled.
+
 ## Context
 
 `registerParcel` rejects a duplicate id and nothing else. Overlapping bounds

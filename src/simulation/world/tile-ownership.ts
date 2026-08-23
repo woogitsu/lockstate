@@ -24,8 +24,9 @@ import { rectContainsTileXY } from './parcel';
  * contain a tile; each owned one is sufficient on its own, and an unowned one
  * covering the same tile changes nothing. `docs/WORLD.md`
  * ("Parcels and land ownership") already stated the rule this way, and ADR
- * 0019 records why it is this rule rather than "the lowest-id parcel
- * decides".
+ * 0019 records why it is this rule rather than "the lowest-id parcel decides"
+ * -- as a proposal, not an accepted decision, so this half of the rule is
+ * pending the owner's sign-off.
  *
  * Order-independence is the property that makes this safe for a deterministic
  * simulation: disjunction over a set has the same answer whatever order the
