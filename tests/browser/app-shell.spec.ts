@@ -105,6 +105,59 @@ function expectedAtlasSizes(): ReadonlyMap<string, readonly [number, number]> {
   return sizes;
 }
 
+/**
+ * What the tee installed by the counts test exposes on `window`.
+ *
+ * A recorder and an injector, both test-only. The recorder is an extra
+ * `message` listener on the app's own `Worker`, so it observes what the
+ * worker really posted without intercepting anything; the injector dispatches
+ * a message event at the same port, which is the only way to hand the
+ * assembled page a count the running simulation cannot produce yet.
+ */
+interface WorkerTeeWindow extends Window {
+  lockstateWorkerMessages?: readonly unknown[];
+  lockstateInjectWorkerMessage?: (data: unknown) => boolean;
+}
+
+interface StatusCountsPublication {
+  readonly kind: string;
+  readonly payload: {
+    readonly tick: number;
+    readonly schemaVersion: number;
+    readonly counts: Record<string, number>;
+  };
+}
+
+/**
+ * A `simulation/status-counts` publication with a population in it.
+ *
+ * Every field is what the worker's own schema requires -- it goes through the
+ * real decoder, so a wrong shape would be dropped rather than drawn -- and
+ * the values are deliberately unlike any default: a hardcoded strip cannot
+ * produce a 37.
+ */
+const INJECTED_STATUS_COUNTS = {
+  protocolVersion: 1,
+  messageId: 'injected-status-counts-1',
+  kind: 'simulation/status-counts',
+  payload: {
+    tick: 1_234,
+    schemaVersion: 1,
+    counts: {
+      prisoners: 37,
+      prisonersInIntake: 4,
+      prisonersHighRisk: 9,
+      staff: 6,
+      staffUnassigned: 1,
+      rooms: 12,
+      roomCapacity: 48,
+      roomOccupants: 30,
+      activeIncidents: 2,
+      contrabandDiscovered: 5,
+    },
+  },
+} as const;
+
 interface CanvasMetrics {
   readonly cssWidth: number;
   readonly cssHeight: number;
@@ -909,6 +962,143 @@ test.describe('the assembled application', () => {
     const atPause = await progress.textContent();
     await page.waitForTimeout(3_000);
     expect(await progress.textContent()).toBe(atPause);
+  });
+
+  /**
+   * The HUD's counts, end to end, in the page a player loads.
+   *
+   * The strip's five metrics were literal zeros for the whole of a session
+   * until now: `src/simulation/presentation/` computed them and no
+   * worker-to-main message carried them (issue #104). Three of the four
+   * layers are proven headlessly -- the worker publishes them
+   * (`tests/unit/worker-status-counts.test.ts`), the main thread translates
+   * them (`tests/unit/ui-simulation-counts.test.ts`), and publishing them
+   * disturbs nothing
+   * (`tests/determinism/status-counts-publication.test.ts`).
+   *
+   * What no headless test can settle is that the layers are *connected*: that
+   * a real Worker's `postMessage` reaches this page's `SimulationClient`,
+   * survives its decoder and lands on the DOM the player is looking at. That
+   * is exactly the situation the transport controls were in before #94 --
+   * every layer separately proven, and pressing the button did nothing.
+   *
+   * Two halves, because a new prison has nothing in it. Nothing in the
+   * running app admits a prisoner, hires a guard or completes a room yet
+   * (`docs/HUD_PROJECTIONS.md` gap 32a, and #104's own sequencing note), so
+   * the counts a real session publishes here are honestly all zero:
+   *
+   * 1. The **worker half** is observed as it happens. A tee over `Worker`
+   *    records what the real worker actually posted, so the assertions are
+   *    about a genuine publication -- that one arrives at all, that it is
+   *    tick-stamped, and that running the simulation for seconds afterwards
+   *    produces no further one, because nothing it reports changed. That last
+   *    part is the per-tick-firehose guard, measured in a real browser.
+   * 2. The **main-thread half** is driven with a publication injected into
+   *    the same real `onmessage` the worker posts to, carrying numbers no
+   *    hardcoded zero could produce. It goes through the real decoder, the
+   *    real listener in `src/main.ts` and the real strip, so what it proves
+   *    is that a count the simulation reports reaches the screen. It does not
+   *    prove the worker can produce those numbers; the headless tests above
+   *    do that, from real simulation state.
+   */
+  test('the HUD counts come from the worker rather than from zeros baked into the page', async ({ page }) => {
+    await page.addInitScript(() => {
+      const RealWorker = Worker;
+      const received: unknown[] = [];
+      const workers: Worker[] = [];
+
+      class TeeWorker extends RealWorker {
+        public constructor(scriptURL: string | URL, options?: WorkerOptions) {
+          super(scriptURL, options);
+          workers.push(this);
+          // An extra listener, not a replacement: `SimulationClient` assigns
+          // `onmessage`, and both fire. Nothing the app does is intercepted.
+          this.addEventListener('message', (event: MessageEvent) => {
+            received.push(event.data);
+          });
+        }
+      }
+
+      Object.defineProperty(window, 'Worker', { configurable: true, value: TeeWorker });
+      const tee = window as unknown as WorkerTeeWindow;
+      tee.lockstateWorkerMessages = received;
+      tee.lockstateInjectWorkerMessage = (data: unknown): boolean => {
+        const worker = workers[workers.length - 1];
+        if (worker === undefined) return false;
+        // A real event on the real port the real client is listening to, so
+        // the message passes through `decodeWorkerToMainMessage` like any
+        // other. An invalid one would be dropped, not rendered.
+        worker.dispatchEvent(new MessageEvent('message', { data }));
+        return true;
+      };
+    });
+
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+
+    const metric = (id: string) => page.locator(`[data-metric="${id}"] .ui-stat__value`);
+    const publications = async (): Promise<readonly StatusCountsPublication[]> =>
+      page.evaluate(() => {
+        const tee = window as unknown as WorkerTeeWindow;
+        return (tee.lockstateWorkerMessages ?? [])
+          .filter((message): message is StatusCountsPublication => {
+            return (message as StatusCountsPublication).kind === 'simulation/status-counts';
+          })
+          .map((message) => ({ kind: message.kind, payload: message.payload }));
+      });
+
+    // No session, so nothing has been published and the strip shows an empty
+    // prison.
+    expect(await publications()).toEqual([]);
+    await expect(metric('prisoners')).toHaveText('0');
+
+    // A session exists from the moment a prison is created, and the worker
+    // publishes its counts without being asked.
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect
+      .poll(async () => (await publications()).length, {
+        message: 'the worker never published simulation/status-counts for the new session',
+        timeout: 15_000,
+      })
+      .toBeGreaterThan(0);
+
+    const first = (await publications())[0];
+    expect(first?.payload.schemaVersion).toBe(1);
+    expect(Number.isInteger(first?.payload.tick)).toBe(true);
+    // A brand-new prison is empty, and the strip agrees with what the worker
+    // reported rather than with a constant of its own.
+    expect(first?.payload.counts.prisoners).toBe(0);
+    await expect(metric('prisoners')).toHaveText('0');
+
+    // Run the simulation. The clock keeps moving -- so ticks are genuinely
+    // executing and the loop is waking ~66 times a second -- and the counts
+    // channel stays silent, because nothing it reports has changed. A
+    // per-tick firehose would show up here as hundreds of messages.
+    const publishedBeforePlay = (await publications()).length;
+    await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
+    await expect
+      .poll(async () => page.locator('.hud-clock__day-progress').textContent(), {
+        message: 'the simulation never advanced, so the quiet counts channel proves nothing',
+        timeout: 15_000,
+      })
+      .not.toBe('0%');
+    expect(await publications()).toHaveLength(publishedBeforePlay);
+
+    // And the main-thread half, with numbers no hardcoded zero could
+    // produce, delivered over the real message path.
+    const delivered = await page.evaluate((message) => {
+      const tee = window as unknown as WorkerTeeWindow;
+      return tee.lockstateInjectWorkerMessage?.(message) ?? false;
+    }, INJECTED_STATUS_COUNTS);
+    expect(delivered).toBe(true);
+
+    await expect(metric('prisoners')).toHaveText('37');
+    await expect(metric('staff')).toHaveText('6');
+    await expect(metric('rooms')).toHaveText('12');
+    await expect(metric('incidents')).toHaveText('2');
+    await expect(metric('contraband')).toHaveText('5');
+    // The badge follows the count, so the colour is never the only signal.
+    await expect(page.locator('[data-metric="incidents"] .ui-badge')).toHaveText('Active');
   });
 
   test('still mounts the interface when the simulation worker cannot start (#82)', async ({ page }) => {
