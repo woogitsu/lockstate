@@ -1028,6 +1028,24 @@ returns an explicit `RestoredScope`, and the UI displays it, because a save
 still carries less than the live runtime holds — though since V3 the
 difference is derived and in-flight state rather than whole subsystems:
 
+**The scope is derived from the bundle, not from the save version.** It used to
+be a module constant returned on every path, including the legacy one, so a
+migrated V1/V2 save that carried no prisoners at all was still described to the
+player as having restored "prisoners, needs, actions and cell assignments"
+(issue #109). `restoredScopeFor(bundle)` reads which of the three optional
+sections — `entities`, `simulation`, `identity` — actually arrived and moves the
+entries the absent ones carry into the right-hand column.
+
+Both call sites derive it, and that matters: `restoreSimulationRuntime` returns
+it, and `SessionController.loadPrison` computes its own from the payload it
+holds, because `startFromSnapshot` returns `void` so the controller cannot read
+the restore call's answer. Fixing only the first leaves the sentence the player
+reads unchanged, which is why `tests/unit/restored-scope.test.ts` asserts at
+both.
+
+This is also why the migration's refusal to fabricate an empty section is safe:
+absence is now reported rather than silently reinterpreted as presence.
+
 | Restored | Rebuilt from scratch |
 | --- | --- |
 | kernel tick and command queue | room and topology caches (recomputed from the world) |

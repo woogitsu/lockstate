@@ -95,12 +95,27 @@ export const SESSION_SNAPSHOT_SCHEMA_VERSION = 3;
  * player-facing UI -- can be honest about what came back.
  */
 export interface RestoredScope {
-  /** Always restored by a current-version snapshot. */
+  /** Restored by the bundle this scope describes. */
   readonly restored: readonly string[];
-  /** Rebuilt from scratch, because it is derived state or in-flight work rather than authoritative state. */
+  /**
+   * Not restored, for either of two reasons: it is derived state or in-flight
+   * work rather than authoritative state, or the bundle simply does not carry
+   * the section that holds it because it was written by an older save version.
+   *
+   * Both belong here, because the player-facing question is the same one --
+   * "is this in my prison or not" -- and the answer is no either way. Which of
+   * the two applies is a distinction for `docs/PERSISTENCE.md`, not for a
+   * status line.
+   */
   readonly notCarriedByThisSaveVersion: readonly string[];
 }
 
+/**
+ * The scope a bundle carrying every section restores.
+ *
+ * `restoredScopeFor` derives from this rather than from a second list, so the
+ * two cannot disagree about what a complete save contains.
+ */
 export const CURRENT_SAVE_RESTORED_SCOPE: RestoredScope = {
   restored: [
     'kernel tick and command queue',
@@ -117,6 +132,70 @@ export const CURRENT_SAVE_RESTORED_SCOPE: RestoredScope = {
   ],
   notCarriedByThisSaveVersion: ['room and topology caches (recomputed from the world)', 'navigation caches and in-flight path requests (re-issued on the next tick)'],
 };
+
+/**
+ * The three sections a V3 payload may omit, and what each one carries.
+ *
+ * `entities`, `simulation` and `identity` are `.optional()` in
+ * `savePayloadV3Schema`, and a migrated V1/V2 save really does arrive without
+ * them -- the migration deliberately does not fabricate an empty section. So
+ * the entries below are the ones whose presence in `restored` depends on the
+ * bundle rather than on the save version alone.
+ *
+ * Every `entries` string must appear in `CURRENT_SAVE_RESTORED_SCOPE.restored`,
+ * which `tests/unit/restored-scope.test.ts` asserts -- otherwise a rename here
+ * would silently stop moving anything.
+ */
+const OPTIONAL_SECTION_SCOPE: readonly {
+  readonly section: string;
+  readonly carries: (bundle: SessionSnapshotBundle) => boolean;
+  readonly entries: readonly string[];
+}[] = [
+  { section: 'entities', carries: (bundle) => bundle.entities !== undefined, entries: ['entity id liveness'] },
+  {
+    section: 'simulation',
+    carries: (bundle) => bundle.simulation !== undefined,
+    entries: [
+      'prisoners, needs, actions and cell assignments',
+      'jobs, containers and utility networks',
+      'doors, security sectors, guards and patrols',
+      'contraband, intelligence and searches',
+      'incidents, gangs and tunnels',
+    ],
+  },
+  { section: 'identity', carries: (bundle) => bundle.identity !== undefined, entries: ['prisoner and staff names'] },
+];
+
+/**
+ * What a *particular* bundle restores.
+ *
+ * This exists because the scope used to be a module constant returned on every
+ * path, including the legacy one thirteen lines below it -- so a V2 save that
+ * carried no prisoners at all was reported to the player as having restored
+ * "prisoners, needs, actions and cell assignments" (issue #109). The absent-
+ * rather-than-empty migration design is deliberate and well argued in
+ * `docs/PERSISTENCE.md`; what was missing is the part that reads which
+ * sections actually arrived.
+ *
+ * Order is preserved from `CURRENT_SAVE_RESTORED_SCOPE`, so the sentence the
+ * save panel builds reads the same way whichever sections are present.
+ */
+export function restoredScopeFor(bundle: SessionSnapshotBundle): RestoredScope {
+  const absent = new Set<string>();
+  for (const section of OPTIONAL_SECTION_SCOPE) {
+    if (section.carries(bundle)) continue;
+    for (const entry of section.entries) absent.add(entry);
+  }
+  if (absent.size === 0) return CURRENT_SAVE_RESTORED_SCOPE;
+
+  return {
+    restored: CURRENT_SAVE_RESTORED_SCOPE.restored.filter((entry) => !absent.has(entry)),
+    notCarriedByThisSaveVersion: [
+      ...CURRENT_SAVE_RESTORED_SCOPE.notCarriedByThisSaveVersion,
+      ...CURRENT_SAVE_RESTORED_SCOPE.restored.filter((entry) => absent.has(entry)),
+    ],
+  };
+}
 
 export interface RestoreResult {
   readonly runtime: SimulationRuntime;
@@ -210,5 +289,5 @@ export function restoreSimulationRuntime(bundle: SessionSnapshotBundle, masterSe
     runtime.actorIdentity.loadSnapshot(bundle.identity);
   }
 
-  return { runtime, scope: CURRENT_SAVE_RESTORED_SCOPE };
+  return { runtime, scope: restoredScopeFor(bundle) };
 }
