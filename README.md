@@ -55,7 +55,9 @@ pnpm verify:assets
 ```
 
 See [`docs/ART_PIPELINE.md`](./docs/ART_PIPELINE.md) and
-[ADR-0014](./docs/adr/0014-art-storage-and-runtime-asset-delivery.md).
+[ADR-0014](./docs/adr/0014-art-storage-and-runtime-asset-delivery.md), whose `Status`
+is `Proposed` — it describes the pipeline the repository implements, but the
+decision has not been approved.
 
 Production-like local preview:
 
@@ -72,7 +74,7 @@ Before making changes, read:
 1. [`AGENTS.md`](./AGENTS.md) — canonical rules for all coding agents
 2. [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) — runtime architecture
 3. [`docs/ROADMAP.md`](./docs/ROADMAP.md) — development order
-4. [`docs/adr/`](./docs/adr/) — accepted architectural decisions
+4. [`docs/adr/`](./docs/adr/) — architectural decision records. Read the `Status` line of any ADR before treating it as settled: several are `Proposed`, which means the decision is still awaiting the owner's approval and is not binding, whether or not code already implements it.
 
 Claude Code uses `CLAUDE.md`. Google Antigravity uses `.agents/rules/`. Both defer to `AGENTS.md` so agent-specific instructions cannot drift apart.
 
