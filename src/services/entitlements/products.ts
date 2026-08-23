@@ -7,7 +7,20 @@ import { type DeepReadonly, identifierSchema } from '../../simulation/protocol/t
  * a prison save, and no simulation system may read it.
  */
 
-/** Free tier, per README ("five free save slots is the current product direction"). */
+/**
+ * Free tier, per README ("five free save slots is the current product
+ * direction").
+ *
+ * MIRRORED IN SQL, and the SQL is the authoritative copy: this module runs
+ * in zone Z0/Z1, which ADR 0008 trusts with identity and nothing else, so
+ * the number here bounds a UI and not a right. `public.base_save_slot_capacity()`
+ * (supabase/migrations/20260823100000_bound_free_tier_capacity.sql) is what
+ * actually refuses a sixth slot, and `MAX_TOTAL_SAVE_SLOTS` below is
+ * mirrored by `public.max_save_slot_capacity()`. Changing either value here
+ * without changing it there makes the client's arithmetic disagree with the
+ * server's, which surfaces as a slot that looks available and is not.
+ * See docs/adr/0013-free-tier-cloud-save-capacity.md.
+ */
 export const BASE_SAVE_SLOTS = 5 as const;
 
 /**

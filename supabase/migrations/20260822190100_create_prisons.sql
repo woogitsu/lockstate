@@ -15,9 +15,11 @@ create table if not exists public.prisons (
   updated_at timestamptz not null default now(),
   constraint prisons_slot_index_positive check (slot_index >= 0),
   constraint prisons_current_revision_non_negative check (current_revision >= 0),
-  -- Product direction (README.md): five free save slots per account. This
-  -- is an application-tier default, not hard-coded here; the constraint
-  -- only prevents duplicate slot indices per owner, whatever the limit is.
+  -- Prevents duplicate slot indices per owner, and nothing else: a CHECK
+  -- constraint cannot count sibling rows, so it cannot express "at most N
+  -- slots per owner" whatever N is. That bound is enforced by the
+  -- `prisons_enforce_slot_capacity` trigger in
+  -- 20260823100000_bound_free_tier_capacity.sql (issue #57, ADR 0013).
   constraint prisons_owner_slot_unique unique (owner_id, slot_index)
 );
 
@@ -33,17 +35,21 @@ create policy "prisons_select_own"
 -- first version is created through create_save_version(), never by
 -- inserting a non-default pointer/revision directly.
 --
--- OPEN QUESTION (issue #57), recorded and deliberately not decided here.
--- See docs/CLOUD_SAVE.md, "Open question: no database-tier bound on
--- free-tier storage". This policy caps *who* may insert, never *how many*. With
+-- This policy caps *who* may insert, never *how many* -- and with
 -- `enable_anonymous_sign_ins = true` the `authenticated` role is
--- effectively anyone, and a fresh identity costs one signup call, so
--- nothing at this tier bounds how many slots one free account creates; the
--- five-free-slots product rule lives in the application tier only. Same
--- shape as the absent bound on `p_byte_size` in create_save_version(). It
--- is a capacity/abuse concern, not a confidentiality one -- no data crosses
--- an ownership boundary -- and closing it is a product decision plus a
--- schema change, not something to invent inside a privilege fix.
+-- effectively anyone, since a fresh identity costs one signup call. The
+-- "how many" half is now answered (issue #57, ADR 0013) by the
+-- `prisons_enforce_slot_capacity` trigger in
+-- 20260823100000_bound_free_tier_capacity.sql, which counts an owner's
+-- existing prisons against the capacity derived from the server-authoritative
+-- `entitlements` projection and refuses with SQLSTATE LS001.
+--
+-- The INSERT grant below is deliberately NOT revoked in favour of that
+-- migration's create_prison() RPC: ADR 0013 argues that the cap is a count
+-- invariant of this table, so it belongs on every write path into it rather
+-- than on one blessed door whose exclusivity depends on a grant staying
+-- revoked. create_prison() exists alongside it as the front door that
+-- answers with a discriminated status instead of an exception.
 create policy "prisons_insert_own"
   on public.prisons for insert
   with check (

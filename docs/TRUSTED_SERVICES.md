@@ -17,7 +17,7 @@ and threat model) and [ADR 0009](./adr/0009-challenge-verification-strategy.md)
   and localization runtime are all exercised in Node
   (`tests/unit/services-*.test.ts`).
 - **Executed against the real Supabase local stack:** every migration in
-  `supabase/migrations/` and all three pgTAP suites in `supabase/tests/`,
+  `supabase/migrations/` and all four pgTAP suites in `supabase/tests/`,
   under Supabase CLI 2.115.0 with GoTrue, PostgREST, Storage and Realtime
   running. Reproduce with:
   ```bash
@@ -278,17 +278,43 @@ The projection is advisory in any case: a forged local cache is meant to
 buy a misleading UI, not a right, because the point of effect re-checks
 capacity.
 
-**That re-check does not exist yet, and the security review made the gap
-explicit.** Slot creation today is a plain `INSERT` into `prisons` under
-`prisons_insert_own`, which enforces ownership and nothing about capacity;
-`create_save_version()` likewise places no bound on payload size. So an
-account that is over capacity is currently stopped by the client alone. It
-is a capacity/abuse gap rather than a confidentiality one — no data crosses
-an ownership boundary — but it is the reason this paragraph used to
-overclaim. Recorded as an open question in
-[CLOUD_SAVE.md](./CLOUD_SAVE.md), "Open question: no database-tier bound on
-free-tier storage", tracked as issue #57, and deliberately not designed
-inside a privilege fix.
+**That re-check now exists** (issue #57,
+[ADR 0013](./adr/0013-free-tier-cloud-save-capacity.md)). It did not when
+this paragraph was first written, which is why it used to overclaim: slot
+creation was a plain `INSERT` into `prisons` under `prisons_insert_own`,
+which enforces ownership and nothing about capacity, and
+`create_save_version()` placed no bound on payload size — so an
+over-capacity account was stopped by the client alone.
+
+Two triggers and one RPC close it, and capacity is read from the
+`entitlements` projection above rather than from anything the client sends:
+
+- `prisons_enforce_slot_capacity` counts an owner's prisons under a
+  per-owner advisory lock and refuses with SQLSTATE `LS001`. It is a
+  trigger rather than only an RPC because the invariant belongs to the
+  table, not to one caller — the same reasoning as
+  `entitlement_events_no_update` above.
+- `public.create_prison()` is the front door and returns a discriminated
+  `status` (`created` / `at_slot_limit` / `slot_taken`) with `used_slots`
+  and `capacity`, so "you are at your slot limit" is never confused with
+  "something broke".
+- `save_versions_enforce_size` measures the stored payload, overwrites the
+  caller's `byte_size` claim with the measurement, and refuses anything over
+  `public.max_save_payload_bytes()` with `LS002`.
+
+The degradation shape this section promises is what the schema now does:
+the triggers fire on *creation* and on nothing else, so an over-capacity
+account keeps every prison, keeps listing and pulling them, and keeps saving
+to them. `supabase/tests/004_free_tier_capacity.test.sql` asserts exactly
+that, including after a revocation leaves an account holding seven prisons
+with an entitlement to five.
+
+**The 4 MiB per-save figure is proposed, not accepted** — ADR 0013 is in
+`Proposed` status and names the three numbers a reviewer is being asked to
+sign off on. Revision-history depth and a total-bytes-per-account cap are
+proposed and deliberately unimplemented, and anonymous-identity churn stays
+a separate lever (GoTrue rate limits, cleanup of abandoned anonymous
+accounts) that #57 names and ADR 0013 records rather than closes.
 
 ## Data retention and account deletion
 
@@ -306,6 +332,7 @@ inside a privilege fix.
 
 Choose a payment provider or ship checkout; publish a leaderboard;
 implement the replay runner; deploy any server function; build a
-telemetry ingestion endpoint; translate the game; or enforce save-slot
-capacity at the database tier (see the open question referenced under
-"Offline degradation").
+telemetry ingestion endpoint; or translate the game.
+
+Save-slot capacity at the database tier *was* on this list and no longer is:
+issue #57 and ADR 0013 close it, as described under "Offline degradation".
