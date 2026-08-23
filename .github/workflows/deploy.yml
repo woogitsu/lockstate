@@ -9,17 +9,30 @@ name: Deploy
 # project stay in migrate-database.yml, manual and gated, because they are
 # irreversible and rollback is not automated.
 #
-# Staging deploys itself on every merge to `main`. The production job never
-# does: it runs only from a manual dispatch, through the `production` GitHub
-# Environment.
+# Staging deploys on a merge to `main`, but only after CI has passed on that
+# exact commit -- see the `workflow_run` trigger below. The production job
+# never deploys automatically: it runs only from a manual dispatch, through
+# the `production` GitHub Environment.
 #
 # That does NOT mean a merge cannot reach lockstate.io. It already does: the
 # domain is attached by hand to the *staging* Worker, so the `staging` job
 # below updates the public site on every merge. See the production job's own
 # comment, and docs/DEPLOYMENT.md, "What currently serves lockstate.io".
 
+# `workflow_run` rather than `push`, so a merge cannot publish the site before
+# the gates that judge it have returned.
+#
+# Both workflows used to trigger on `push` with independent concurrency groups
+# and no ordering between them, and there is one self-hosted runner: whichever
+# job claimed it first ran first, and the deploy is much the shorter of the two.
+# Measured on the commit that merged #90 -- deploy run 32661466050 finished at
+# 19:31:15 while CI run 32661466069's `browser` job was still going at 19:32:04.
+# The public site was updated 49 seconds before the suite that judges the commit
+# had finished.
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches: [main]
   workflow_dispatch:
     inputs:
@@ -44,17 +57,28 @@ env:
 
 jobs:
   staging:
-    if: github.event_name == 'push' || inputs.target == 'staging'
+    # `conclusion` must be tested explicitly. `types: [completed]` fires for a
+    # failed, cancelled and timed-out run too -- "completed" is not "passed",
+    # and without this a red CI would still deploy.
+    if: >-
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+      || (github.event_name == 'workflow_dispatch' && inputs.target == 'staging')
     runs-on: [self-hosted, Linux, X64, wsl2]
     timeout-minutes: 30
     environment:
       name: staging
       url: ${{ steps.deploy.outputs.url }}
     steps:
+      # A `workflow_run` run is NOT checked out at the commit that triggered it.
+      # It defaults to the head of the default branch, so with two merges close
+      # together this job would build a commit CI never judged -- reintroducing
+      # the same defect through a different door. `head_sha` is the commit the
+      # triggering CI run tested.
       - name: Checkout
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.ref }}
 
       - name: Setup Node
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6

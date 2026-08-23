@@ -11,7 +11,13 @@ permissions:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Cancel superseded PR runs, never a run on `main`. For a push to `main` the
+  # ref is constant, so `true` meant two merges landing close together
+  # cancelled the earlier commit's CI -- while that commit was already live,
+  # since a merge deploys. It left a shipped commit with no completed gate
+  # result and nothing reporting the hole. A merge queue of one is worth the
+  # extra minutes.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   CI: true
