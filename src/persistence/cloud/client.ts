@@ -1,4 +1,4 @@
-import type { SaveEnvelopeV1 } from '../save-schema';
+import type { SaveEnvelope } from '../save-schema';
 
 export interface CloudSaveVersionSummary {
   readonly versionId: string;
@@ -31,7 +31,7 @@ export interface CloudSaveClient {
   getPrisonState(prisonId: string): Promise<CloudPrisonState | undefined>;
   registerPrison(prisonId: string, gameVersion: string, slotIndex: number): Promise<void>;
   /** `newRevision` must be the envelope's own `revision` (see save-schema.ts): the server enforces it is exactly `current + 1`. */
-  uploadVersion(prisonId: string, newRevision: number, envelope: SaveEnvelopeV1): Promise<UploadOutcome>;
+  uploadVersion(prisonId: string, newRevision: number, envelope: SaveEnvelope): Promise<UploadOutcome>;
   /** Raw payload; the caller validates it through `decodeSaveEnvelope` (#18) before trusting it. */
   downloadVersion(prisonId: string, versionId: string): Promise<unknown | undefined>;
 }

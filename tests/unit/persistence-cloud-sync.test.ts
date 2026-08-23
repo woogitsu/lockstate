@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { PrisonSyncEngine, resolveSyncConflict } from '../../src/persistence/cloud/sync-engine';
 import { MemoryCloudSaveClient } from '../../src/persistence/cloud/memory-client';
-import { createSaveEnvelope, type SaveEnvelopeV1 } from '../../src/persistence/save-schema';
+import { createSaveEnvelope, type SaveEnvelope } from '../../src/persistence/save-schema';
 import { Kernel } from '../../src/simulation/kernel/kernel';
 import { SparseWorld } from '../../src/simulation/world/sparse-world';
 import { ConstructionSystem } from '../../src/simulation/construction/system';
 import { chunkCoordinate } from '../../src/simulation/world/coordinates';
 
-function buildEnvelope(revision: number): SaveEnvelopeV1 {
+function buildEnvelope(revision: number): SaveEnvelope {
   const world = new SparseWorld(32);
   world.setOwned({ x: chunkCoordinate(0), y: chunkCoordinate(0) }, true);
   const construction = new ConstructionSystem(world);
@@ -63,7 +63,7 @@ describe('PrisonSyncEngine: push', () => {
     // with a replay of revision 1: the cloud pointer never advanced while the
     // client recorded itself as synced, and its next push conflicted for no
     // reason. A revert is a new revision, not a retry of an old one.
-    const revertedToRevisionOne = { ...buildEnvelope(2), checksum: revisionOne.checksum } as SaveEnvelopeV1;
+    const revertedToRevisionOne = { ...buildEnvelope(2), checksum: revisionOne.checksum } as SaveEnvelope;
     expect(await engine.push('prison-1', revertedToRevisionOne)).toEqual({
       ok: true,
       outcome: 'uploaded',
@@ -72,7 +72,7 @@ describe('PrisonSyncEngine: push', () => {
 
     // The pointer really advanced, so the next correctly-sequenced push is
     // accepted rather than reported as a spurious conflict.
-    const revisionThree = { ...buildEnvelope(3), checksum: 'checksum-rev-3' } as SaveEnvelopeV1;
+    const revisionThree = { ...buildEnvelope(3), checksum: 'checksum-rev-3' } as SaveEnvelope;
     expect(await engine.push('prison-1', revisionThree)).toEqual({ ok: true, outcome: 'uploaded', revision: 3 });
   });
 
@@ -85,7 +85,7 @@ describe('PrisonSyncEngine: push', () => {
     await engine.push('prison-1', buildEnvelope(2));
 
     // A third device that only ever saw revision 1 built its own, different revision 2.
-    const divergentRevisionTwo = { ...buildEnvelope(2), checksum: 'third-device-checksum' } as SaveEnvelopeV1;
+    const divergentRevisionTwo = { ...buildEnvelope(2), checksum: 'third-device-checksum' } as SaveEnvelope;
     const staleResult = await engine.push('prison-1', divergentRevisionTwo);
     expect(staleResult).toMatchObject({ ok: false, reason: 'conflict', cloudCurrent: { revision: 2 } });
   });
@@ -99,8 +99,8 @@ describe('PrisonSyncEngine: two-client concurrency', () => {
 
     await engine.push('prison-1', buildEnvelope(1)); // both devices start from revision 1
 
-    const deviceA = engine.push('prison-1', { ...buildEnvelope(2), checksum: 'device-a-checksum' } as SaveEnvelopeV1);
-    const deviceB = engine.push('prison-1', { ...buildEnvelope(2), checksum: 'device-b-checksum' } as SaveEnvelopeV1);
+    const deviceA = engine.push('prison-1', { ...buildEnvelope(2), checksum: 'device-a-checksum' } as SaveEnvelope);
+    const deviceB = engine.push('prison-1', { ...buildEnvelope(2), checksum: 'device-b-checksum' } as SaveEnvelope);
     const [resultA, resultB] = await Promise.all([deviceA, deviceB]);
 
     const results = [resultA, resultB];
@@ -116,14 +116,14 @@ describe('PrisonSyncEngine: two-client concurrency', () => {
     const engine = new PrisonSyncEngine(client);
     await engine.push('prison-1', buildEnvelope(1));
 
-    await engine.push('prison-1', { ...buildEnvelope(2), checksum: 'device-a-checksum' } as SaveEnvelopeV1);
-    const conflict = await engine.push('prison-1', { ...buildEnvelope(2), checksum: 'device-b-checksum' } as SaveEnvelopeV1);
+    await engine.push('prison-1', { ...buildEnvelope(2), checksum: 'device-a-checksum' } as SaveEnvelope);
+    const conflict = await engine.push('prison-1', { ...buildEnvelope(2), checksum: 'device-b-checksum' } as SaveEnvelope);
     expect(conflict).toMatchObject({ ok: false, reason: 'conflict' });
 
     const action = conflict.ok ? undefined : resolveSyncConflict('keep-local', conflict.reason === 'conflict' ? conflict.cloudCurrent : undefined);
     expect(action).toEqual({ kind: 'retry-push', newRevision: 3 });
 
-    const retried = await engine.push('prison-1', { ...buildEnvelope(3), checksum: 'device-b-checksum-retry' } as SaveEnvelopeV1);
+    const retried = await engine.push('prison-1', { ...buildEnvelope(3), checksum: 'device-b-checksum-retry' } as SaveEnvelope);
     expect(retried).toEqual({ ok: true, outcome: 'uploaded', revision: 3 });
   });
 });

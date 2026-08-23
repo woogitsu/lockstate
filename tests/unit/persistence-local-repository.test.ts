@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { PrisonSaveRepository } from '../../src/persistence/local/repository';
 import { MemoryLocalSaveStore } from '../../src/persistence/local/memory-store';
-import { createSaveEnvelope, type SaveEnvelopeV1 } from '../../src/persistence/save-schema';
+import { createSaveEnvelope, type SaveEnvelope } from '../../src/persistence/save-schema';
 import { Kernel } from '../../src/simulation/kernel/kernel';
 import { SparseWorld } from '../../src/simulation/world/sparse-world';
 import { ConstructionSystem } from '../../src/simulation/construction/system';
 import { chunkCoordinate } from '../../src/simulation/world/coordinates';
 
-function buildEnvelope(revision: number, tick = revision): SaveEnvelopeV1 {
+function buildEnvelope(revision: number, tick = revision): SaveEnvelope {
   const world = new SparseWorld(32);
   world.setOwned({ x: chunkCoordinate(0), y: chunkCoordinate(0) }, true);
   const construction = new ConstructionSystem(world);
@@ -91,7 +91,7 @@ describe('PrisonSaveRepository: save() and generation retention', () => {
     const repo = new PrisonSaveRepository(new MemoryLocalSaveStore());
     await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0' });
 
-    const tampered: SaveEnvelopeV1 = { ...buildEnvelope(1), checksum: '0000000000000000' };
+    const tampered: SaveEnvelope = { ...buildEnvelope(1), checksum: '0000000000000000' };
     const result = await repo.save('prison-1', tampered);
     expect(result.ok).toBe(false);
 
@@ -113,7 +113,7 @@ describe('PrisonSaveRepository: save() and generation retention', () => {
     const storedTrusted = await store.runTransaction('readonly', (tx) => tx.getGeneration('prison-1', 'gen-1'));
     expect(storedTrusted).toBe(trusted);
 
-    const untrusted = JSON.parse(JSON.stringify(buildEnvelope(2))) as SaveEnvelopeV1;
+    const untrusted = JSON.parse(JSON.stringify(buildEnvelope(2))) as SaveEnvelope;
     expect(await repo.save('prison-1', untrusted)).toEqual({ ok: true, generationId: 'gen-2' });
     const storedUntrusted = await store.runTransaction('readonly', (tx) => tx.getGeneration('prison-1', 'gen-2'));
     expect(storedUntrusted).not.toBe(untrusted);
@@ -127,7 +127,7 @@ describe('PrisonSaveRepository: save() and generation retention', () => {
     const tampered = JSON.parse(JSON.stringify(buildEnvelope(1))) as { payload: { kernel: { tick: number } } };
     tampered.payload.kernel.tick += 1; // checksum now covers a payload that no longer exists
 
-    const result = await repo.save('prison-1', tampered as unknown as SaveEnvelopeV1);
+    const result = await repo.save('prison-1', tampered as unknown as SaveEnvelope);
     expect(result.ok).toBe(false);
 
     const [metadata] = await repo.list();

@@ -10,7 +10,7 @@ import { createNewSimulationRuntime, type SimulationRuntime } from './new-sessio
  * The simulation state a session snapshot carries across the worker
  * protocol boundary and into a save.
  *
- * This is the *simulation's* view of a snapshot; `SavePayloadV1`
+ * This is the *simulation's* view of a snapshot; `SavePayload`
  * (`src/persistence/save-schema.ts`) is the persistence layer's Zod-validated
  * mirror of the same shape. They are deliberately separate declarations:
  * the worker must not depend on `src/persistence`, and the save schema
@@ -31,10 +31,18 @@ export interface SessionSnapshotBundle {
 
 /** `schemaId` this bundle travels under in the worker protocol's `versionedPayload`. */
 export const SESSION_SNAPSHOT_SCHEMA_ID = 'simulation-save-payload';
-export const SESSION_SNAPSHOT_SCHEMA_VERSION = 1;
+/**
+ * Bumped to 2 by #50: `entities` changed from capacity-shaped arrays to
+ * population-shaped run-length encoding. ADR 0003 gives a snapshot its own
+ * `schemaVersion` precisely so a payload shape change can be declared here
+ * without dragging the protocol version with it -- and declaring it matters,
+ * because a build that received the other shape silently would restore a
+ * corrupt liveness ledger instead of faulting `snapshot-incompatible`.
+ */
+export const SESSION_SNAPSHOT_SCHEMA_VERSION = 2;
 
 /**
- * What a V1 session snapshot actually restores, stated explicitly rather
+ * What a session snapshot actually restores, stated explicitly rather
  * than implied.
  *
  * The bundle above carries the kernel (tick, command queue, RNG stream
@@ -46,20 +54,22 @@ export const SESSION_SNAPSHOT_SCHEMA_VERSION = 1;
  * session rebuilds those subsystems *empty*, exactly as a new session does.
  *
  * That is a real, bounded limitation, not an oversight to paper over:
- * extending it is a save-schema change (a V2 plus a migration, per
+ * extending it is a save-schema change (a new version plus a migration, per
  * `AGENTS.md`'s "every persistent format must have a version and migration
  * strategy"), which is its own issue rather than something to smuggle in
- * here. `restoreSimulationRuntime` returns this summary so a caller -- and
- * the player-facing UI -- can be honest about what came back.
+ * here. V2 (#50) changed only how entity liveness is *written down*, not
+ * which subsystems are carried, so this list is unchanged by it.
+ * `restoreSimulationRuntime` returns this summary so a caller -- and the
+ * player-facing UI -- can be honest about what came back.
  */
 export interface RestoredScope {
-  /** Always restored by a V1 snapshot. */
+  /** Always restored by a current-version snapshot. */
   readonly restored: readonly string[];
-  /** Rebuilt empty because the V1 payload does not carry them yet. */
+  /** Rebuilt empty because the payload does not carry them yet. */
   readonly notCarriedByThisSaveVersion: readonly string[];
 }
 
-export const V1_RESTORED_SCOPE: RestoredScope = {
+export const CURRENT_SAVE_RESTORED_SCOPE: RestoredScope = {
   restored: ['kernel tick and command queue', 'RNG stream states', 'world terrain and ownership', 'construction orders and undo/redo', 'entity id liveness'],
   notCarriedByThisSaveVersion: ['prisoner needs and actions', 'jobs and inventory', 'security sectors, guards and patrols', 'contraband and intelligence', 'incidents and gangs'],
 };
@@ -133,5 +143,5 @@ export function restoreSimulationRuntime(bundle: SessionSnapshotBundle, masterSe
     runtime.prisoners.entityStore.loadSnapshot(decodeEntityStoreSnapshot(bundle.entities));
   }
 
-  return { runtime, scope: V1_RESTORED_SCOPE };
+  return { runtime, scope: CURRENT_SAVE_RESTORED_SCOPE };
 }

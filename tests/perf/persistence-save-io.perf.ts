@@ -7,8 +7,9 @@ import { IndexedDbLocalSaveStore, openLockstateDatabase } from '../../src/persis
 import { MemoryLocalSaveStore } from '../../src/persistence/local/memory-store';
 import { PrisonSaveRepository } from '../../src/persistence/local/repository';
 import type { LocalSaveStore } from '../../src/persistence/local/store';
+import { encodeEntityStoreSnapshot } from '../../src/persistence/entity-codec';
 import { decodeSaveEnvelope, createSaveEnvelope } from '../../src/persistence/save-schema';
-import type { SaveEnvelopeV1 } from '../../src/persistence/save-schema';
+import type { SaveEnvelope } from '../../src/persistence/save-schema';
 import { estimateSaveEnvelopeByteSize } from '../../src/persistence/size';
 import {
   buildPrisonFixture,
@@ -93,6 +94,9 @@ interface SizeReport {
   readonly worldBytes: number;
   readonly constructionBytes: number;
   readonly entitiesBytes: number;
+  /** The same store written in the pre-#50 capacity-shaped V1 form, for the before/after comparison. */
+  readonly entitiesCapacityShapedBytes: number;
+  readonly entityCapacity: number;
   readonly retainedWindowBytes: number;
   readonly retainedGenerations: number;
 }
@@ -154,6 +158,25 @@ async function corruptCurrentGeneration(store: LocalSaveStore, repository: Priso
   });
 }
 
+/**
+ * The pre-#50 encoding of the same store: `generations`, `freeIndices` and
+ * `alive` written across the full allocated capacity. Reconstructed here (not
+ * imported) because it is a retired on-disk shape, not production code -- the
+ * harness only needs it to report what the change actually removed.
+ */
+function capacityShapedEntities(fixture: PrisonFixture): unknown {
+  const snapshot = fixture.runtime.prisoners.entityStore.getSnapshot();
+  return {
+    capacity: snapshot.capacity,
+    nextAvailableIndex: snapshot.nextAvailableIndex,
+    maxActiveIndex: snapshot.maxActiveIndex,
+    freeCount: snapshot.freeCount,
+    generations: Array.from(snapshot.generations),
+    freeIndices: Array.from(snapshot.freeIndices),
+    alive: Array.from(snapshot.alive),
+  };
+}
+
 interface StoreMeasurement {
   readonly timing: TimingReport;
   readonly retainedWindowBytes: number;
@@ -182,7 +205,7 @@ async function measureStore(fixture: PrisonFixture, kind: StoreKind): Promise<St
     // envelope of unknown provenance (here, the same content after a
     // serialization round trip) still pays full schema + checksum validation
     // inside `save()`. Serialized once, outside the measured section.
-    const untrustedEnvelope = JSON.parse(JSON.stringify(fixture.envelope)) as SaveEnvelopeV1;
+    const untrustedEnvelope = JSON.parse(JSON.stringify(fixture.envelope)) as SaveEnvelope;
     const untrustedWrite = await measureAsync(WARMUP_ITERATIONS, fixture.tier.samples, async () => {
       const result = await repository.save(PRISON_ID, untrustedEnvelope);
       if (!result.ok) throw new Error(`untrusted save() failed: ${result.error.code}`);
@@ -338,6 +361,8 @@ describe.each(PRISON_SIZE_TIERS.map((tier) => [tier.id, tier] as const))(
         worldBytes: jsonByteSize(fixture.envelope.payload.world),
         constructionBytes: jsonByteSize(fixture.envelope.payload.construction),
         entitiesBytes: jsonByteSize(fixture.envelope.payload.entities),
+        entitiesCapacityShapedBytes: jsonByteSize(capacityShapedEntities(fixture)),
+        entityCapacity: fixture.runtime.prisoners.entityStore.capacity,
         retainedWindowBytes,
         retainedGenerations,
       });
@@ -359,9 +384,9 @@ describe.each(PRISON_SIZE_TIERS.map((tier) => [tier.id, tier] as const))(
       const kernel = fixture.runtime.kernel.snapshot();
       const world = fixture.runtime.world.snapshot();
       const construction = fixture.runtime.construction.snapshot();
-      const entities = fixture.runtime.prisoners.entityStore.getSnapshot();
+      const entities = encodeEntityStoreSnapshot(fixture.runtime.prisoners.entityStore.getSnapshot());
 
-      let built: SaveEnvelopeV1 | undefined;
+      let built: SaveEnvelope | undefined;
       const envelopeBuild = measureSync(WARMUP_ITERATIONS, tier.samples, (index) => {
         built = createSaveEnvelope({
           gameVersion: GAME_VERSION,
@@ -490,6 +515,23 @@ afterAll(() => {
         formatBytes(row.entitiesBytes),
         formatBytes(row.kernelBytes),
         formatBytes(row.retainedWindowBytes),
+      ]),
+    ),
+  );
+
+  lines.push('');
+  lines.push('Entity liveness ledger: capacity-shaped (pre-#50) vs. population-shaped (current)');
+  lines.push(
+    renderTable(
+      ['tier', 'prisoners', 'allocated capacity', 'entities (pre-#50)', 'entities (now)', 'share of envelope (pre-#50)', 'share of envelope (now)'],
+      sizeReports.map((row) => [
+        row.tierId,
+        String(row.prisoners),
+        String(row.entityCapacity),
+        formatBytes(row.entitiesCapacityShapedBytes),
+        formatBytes(row.entitiesBytes),
+        `${((row.entitiesCapacityShapedBytes / (row.envelopeBytes - row.entitiesBytes + row.entitiesCapacityShapedBytes)) * 100).toFixed(1)}%`,
+        `${((row.entitiesBytes / row.envelopeBytes) * 100).toFixed(1)}%`,
       ]),
     ),
   );

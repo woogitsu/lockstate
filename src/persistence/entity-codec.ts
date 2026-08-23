@@ -8,5 +8,7 @@
 export {
   decodeEntityStoreSnapshot,
   encodeEntityStoreSnapshot,
+  encodeRunLengths,
   type EncodedEntityStoreSnapshot,
+  type EntityLivenessRun,
 } from '../simulation/entity/entity-codec';
