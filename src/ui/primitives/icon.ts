@@ -1,0 +1,91 @@
+/**
+ * Flat, single-weight line glyphs.
+ *
+ * Every icon is one 24x24 viewBox drawn with strokes only -- no fills, no
+ * two-tone shapes, no gradients -- rendered in `currentColor` at 16-20px and
+ * set inline with text. An icon is never decorative and never the only
+ * carrier of a meaning: it always sits beside a label or, where the control
+ * is glyph-only, beside screen-reader text.
+ *
+ * Paths are data, not code. Adding an icon is a new entry in `ICON_PATHS`.
+ */
+
+export const ICON_IDS = [
+  'prisoners',
+  'staff',
+  'rooms',
+  'incident',
+  'contraband',
+  'clock',
+  'pause',
+  'play',
+  'fast-forward',
+  'chevron',
+  'minimap',
+  'overview',
+  'build',
+  'security',
+  'regime',
+  'check',
+] as const;
+
+export type IconId = (typeof ICON_IDS)[number];
+
+export type IconSize = 'sm' | 'md' | 'lg';
+
+const ICON_PATHS: Readonly<Record<IconId, readonly string[]>> = {
+  prisoners: ['M12 4.75a3.25 3.25 0 1 1 0 6.5 3.25 3.25 0 0 1 0-6.5Z', 'M4.75 19.75a7.25 7.25 0 0 1 14.5 0'],
+  staff: [
+    'M9.25 5a3 3 0 1 1 0 6 3 3 0 0 1 0-6Z',
+    'M3.25 19.25a6 6 0 0 1 12 0',
+    'M15.75 5.75a2.75 2.75 0 0 1 0 5.5',
+    'M17 19.25a6 6 0 0 0-2.75-5.05',
+  ],
+  rooms: ['M3.75 4.75h16.5v14.5H3.75z', 'M3.75 12h6.75', 'M10.5 12v7.25'],
+  incident: ['M12 4.5 20.75 19.5H3.25z', 'M12 10v3.75', 'M12 16.75h.01'],
+  contraband: ['M8.25 8.25V6.5a3.75 3.75 0 0 1 7.5 0v1.75', 'M4.75 8.25h14.5v11h-14.5z'],
+  clock: ['M12 4.25a7.75 7.75 0 1 1 0 15.5 7.75 7.75 0 0 1 0-15.5Z', 'M12 7.75V12l2.75 1.75'],
+  pause: ['M9.5 5.75v12.5', 'M14.5 5.75v12.5'],
+  play: ['M8.25 5.5 18.25 12l-10 6.5z'],
+  'fast-forward': ['M4.25 5.75 11 12l-6.75 6.25z', 'M13 5.75 19.75 12 13 18.25z'],
+  chevron: ['M6.5 9.75 12 15.25l5.5-5.5'],
+  minimap: ['M9 4.75 3.75 7v12.25L9 17l6 2.25 5.25-2.25V4.75L15 7z', 'M9 4.75V17', 'M15 7v12.25'],
+  overview: ['M4.25 4.25h6v6h-6z', 'M13.75 4.25h6v6h-6z', 'M4.25 13.75h6v6h-6z', 'M13.75 13.75h6v6h-6z'],
+  build: ['M3.75 5.75h16.5v12.5H3.75z', 'M3.75 12h16.5', 'M9.25 5.75V12', 'M14.75 12v6.25'],
+  security: ['M12 3.75 19.75 6.5v5.75c0 4-3.1 6.9-7.75 8.1-4.65-1.2-7.75-4.1-7.75-8.1V6.5z'],
+  regime: ['M3.75 6.25h16.5v13.5H3.75z', 'M3.75 10.5h16.5', 'M8.5 3.75v4.5', 'M15.5 3.75v4.5'],
+  check: ['M5.25 12.5 10 17.25 18.75 6.75'],
+};
+
+const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
+
+/**
+ * Builds an icon.
+ *
+ * The result is `aria-hidden` by default: the accessible name belongs to the
+ * label or the screen-reader text beside it, so exposing the glyph as well
+ * would make every control announce itself twice.
+ */
+export function createIcon(id: IconId, size: IconSize = 'sm'): SVGSVGElement {
+  const svg = document.createElementNS(SVG_NAMESPACE, 'svg');
+  svg.setAttribute('class', `ui-icon ui-icon--${size}`);
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('fill', 'none');
+  svg.setAttribute('stroke', 'currentColor');
+  svg.setAttribute('stroke-linecap', 'round');
+  svg.setAttribute('stroke-linejoin', 'round');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('focusable', 'false');
+  svg.dataset['icon'] = id;
+
+  for (const definition of ICON_PATHS[id]) {
+    const path = document.createElementNS(SVG_NAMESPACE, 'path');
+    path.setAttribute('d', definition);
+    svg.append(path);
+  }
+  return svg;
+}
+
+export function isIconId(value: string): value is IconId {
+  return (ICON_IDS as readonly string[]).includes(value);
+}

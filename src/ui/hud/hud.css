@@ -1,0 +1,205 @@
+/*
+ * The persistent HUD shell.
+ *
+ * It frames the world and never covers it: a strip along the top, a tab bar
+ * centred along the bottom, a minimap frame in the bottom-left corner, and
+ * an empty middle. The root is `pointer-events: none`, so the only pixels
+ * that swallow a click are the controls themselves -- everything else falls
+ * through to the renderer's canvas.
+ *
+ * Semantic tokens only. See `src/ui/tokens.css`.
+ */
+
+.hud {
+  position: fixed;
+  inset: 0;
+  z-index: var(--hud-layer);
+  display: grid;
+  /* `minmax(0, 1fr)`, not the default `auto`: an auto column is sized by its
+     items' min-content, so the dense strip would push the whole grid wider
+     than the viewport and carry the centred tab bar off the right edge with
+     it. Observed at 375px before this was pinned. */
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    'strip'
+    'middle'
+    'tabs';
+  pointer-events: none;
+  font-family: var(--font-ui);
+  color: var(--text-body);
+}
+
+/* Every interactive island opts back in. */
+.hud-strip,
+.hud__corner > *,
+.hud-tabs__inner {
+  pointer-events: auto;
+  /* The page sets `touch-action: none` for the world; HUD surfaces need
+     normal touch behaviour so a control can be tapped and a list scrolled. */
+  touch-action: auto;
+}
+
+/* ------------------------------------------------------------------ */
+/* Top status strip                                                    */
+/* ------------------------------------------------------------------ */
+
+.hud-strip {
+  grid-area: strip;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  height: var(--hud-strip-height);
+  padding: 0 var(--space-3);
+  box-sizing: border-box;
+  min-width: 0;
+  background: var(--surface-raised);
+  border-bottom: var(--hairline) solid var(--border);
+}
+
+.hud-strip__metrics {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.hud-strip__metrics::-webkit-scrollbar { display: none; }
+
+.hud-metric__trailing {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.hud-strip__clock {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-3);
+  border-left: var(--hairline) solid var(--border-hairline);
+  border-right: var(--hairline) solid var(--border-hairline);
+  color: var(--text-subtle);
+}
+
+.hud-clock__time { font-size: var(--text-size-value); color: var(--text-heading); }
+.hud-clock__day-label { margin-left: var(--space-2); }
+
+.hud-strip__transport {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.hud-clock__speed-group {
+  display: inline-flex;
+  align-items: center;
+  min-width: var(--space-6);
+  justify-content: flex-end;
+  padding-left: var(--space-1);
+}
+
+.hud-clock__speed { color: var(--text-subtle); }
+
+/* ------------------------------------------------------------------ */
+/* Bottom-left minimap frame                                           */
+/* ------------------------------------------------------------------ */
+
+.hud__corner {
+  /* The row *above* the tab bar, not the same one. Sharing a row put the
+     minimap's right edge 16px inside the centred tab bar at 768px wide --
+     measured, not theorised. Stacking the rows makes a collision impossible
+     at any width instead of at the widths someone remembered to check. */
+  grid-area: middle;
+  justify-self: start;
+  align-self: end;
+  padding: var(--space-3);
+}
+
+.hud-minimap { width: 224px; background: var(--surface-raised); }
+
+.hud-minimap__surface {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  /* Square: the renderer will draw a square region of the world here. */
+  aspect-ratio: 1 / 1;
+  padding: var(--space-3);
+  box-sizing: border-box;
+  text-align: center;
+  background: var(--surface-sunken);
+  border: var(--hairline) solid var(--border-hairline);
+  border-radius: var(--radius-sm);
+}
+
+/* The placeholder says so in words. An empty dark square is indistinguishable
+   from a rendering failure, and a label that only exists for a screen reader
+   leaves a sighted player guessing. */
+.hud-minimap__placeholder { white-space: normal; }
+
+.hud-alerts__list { display: flex; flex-direction: column; }
+
+/* ------------------------------------------------------------------ */
+/* Bottom-centre tab bar                                               */
+/* ------------------------------------------------------------------ */
+
+.hud__tabs {
+  grid-area: tabs;
+  justify-self: center;
+  align-self: end;
+  padding: 0 var(--space-3) var(--space-3);
+}
+
+.hud-tabs__inner {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  background: var(--surface-raised);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.hud-tabs__inner > .ui-tab + .ui-tab {
+  border-left: var(--hairline) solid var(--border-hairline);
+}
+
+/* ------------------------------------------------------------------ */
+/* Narrow viewports                                                    */
+/* ------------------------------------------------------------------ */
+
+@media (max-width: 720px) {
+  :root {
+    /* The strip wraps to two rows here. The save panel positions itself from
+       this token rather than from a duplicated number, so it moves with it. */
+    --hud-strip-height: 88px;
+  }
+
+  /* The minimap would collide with the tab bar; the bar wins, because it is
+     how the game is operated. */
+  .hud__corner { display: none; }
+
+  .hud-strip {
+    flex-wrap: wrap;
+    align-content: center;
+    gap: var(--space-1) var(--space-2);
+    padding: 0 var(--space-2);
+  }
+
+  /* Metrics take the first row whole and scroll sideways within it; the
+     clock and transport share the second. Squeezing all three onto one line
+     left the metrics about 50px wide, which is not a readout. */
+  .hud-strip__metrics { flex: 1 0 100%; }
+
+  .hud-strip__clock {
+    flex: 1;
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .ui-tab { min-width: 64px; padding: var(--space-2); }
+}

@@ -1,6 +1,13 @@
 import { buildLocalizationCatalog } from './localization';
 
-/** Default (`en`) resolved labels for every `nameKey` in the default room/object/staff-role catalogs. Not a real i18n pipeline -- see localization.ts. */
+/**
+ * Default (`en`) resolved labels for every `nameKey` in the default
+ * room/object/staff-role catalogs, plus the HUD's own message keys. This is
+ * the bundled default locale (ADR 0011): it must be complete, because the
+ * game has to have text offline and every other locale falls back to it per
+ * key. Not a real i18n pipeline on its own -- see localization.ts, and
+ * `src/services/localization/` for the runtime that consumes this.
+ */
 export const defaultLocaleEnCatalog = buildLocalizationCatalog({
   'room.cell.name': 'Cell',
   'room.holding-cell.name': 'Holding Cell',
@@ -69,4 +76,47 @@ export const defaultLocaleEnCatalog = buildLocalizationCatalog({
   'contraband.phone.name': 'Phone',
   'contraband.currency.name': 'Currency',
   'contraband.tool.name': 'Tool',
+
+  // ---------------------------------------------------------------
+  // HUD shell. Keys, never source text: `hud.status.prisoners` stays
+  // stable while "Prisoners" is free to change per locale and release
+  // (ADR 0011). No money, funds or cost keys exist -- there is no economy
+  // system yet, and a string is where a fake number starts.
+  // ---------------------------------------------------------------
+  'hud.status.title': 'Prison status',
+  'hud.status.prisoners': 'Prisoners',
+  'hud.status.staff': 'Staff',
+  'hud.status.rooms': 'Rooms',
+  'hud.status.incidents': 'Incidents',
+  'hud.status.contraband': 'Contraband',
+  'hud.status.occupancy': 'Cell occupancy',
+  'hud.status.occupancy-value': '{value} of {capacity}',
+  'hud.status.incidents-clear': 'Clear',
+  'hud.status.incidents-active': 'Active',
+
+  'hud.clock.title': 'Time controls',
+  'hud.clock.time': 'Time',
+  'hud.clock.day': 'Day',
+  'hud.clock.speed': 'Speed {speed}x',
+  'hud.transport.pause': 'Pause',
+  'hud.transport.play': 'Play at normal speed',
+  'hud.transport.fast-forward': 'Fast forward',
+
+  'hud.tabs.title': 'Prison sections',
+  'hud.tab.overview': 'Overview',
+  'hud.tab.build': 'Build',
+  'hud.tab.security': 'Security',
+  'hud.tab.regime': 'Regime',
+
+  'hud.minimap.title': 'Minimap',
+  'hud.minimap.placeholder': 'Minimap is not available yet',
+  'hud.alerts.title': 'Alerts',
+  'hud.alerts.empty': 'No active alerts',
+
+  'hud.panel.collapse': 'Collapse',
+  'hud.panel.expand': 'Expand',
+
+  'hud.severity.info': 'Info',
+  'hud.severity.warning': 'Warning',
+  'hud.severity.danger': 'Critical',
 });
