@@ -1,7 +1,8 @@
 -- pgTAP tests for RLS ownership boundaries and the create_save_version()
 -- optimistic-concurrency/idempotency RPC.
 --
--- EXECUTED against PostgreSQL 16.13 + pgTAP 1.3.2 via `pnpm verify:sql`
+-- EXECUTED against PostgreSQL 16.13 + pgTAP 1.3.2 and PostgreSQL 18.6 +
+-- pgTAP 1.3.4 via `pnpm verify:sql`
 -- (scripts/verify-supabase-sql.mjs), which prepares a scratch database
 -- with scripts/sql/supabase-compat-harness.sql. That harness supplies only
 -- the roles, default grants and `auth` slice this SQL references -- it is
@@ -10,7 +11,7 @@
 -- stack remains the stronger check and has not been run.
 
 begin;
-select plan(16);
+select plan(19);
 
 -- Two auth.users rows to test cross-owner isolation. Supabase's local
 -- stack ships pgTAP plus a populated auth schema; inserting directly into
@@ -128,49 +129,65 @@ select results_eq(
   'skipping ahead to revision 3 when current is 1 is reported as a conflict, not applied'
 );
 
--- This assertion previously expected `conflict`, contradicting the
--- contract the function's own header documents ("a resubmission of a
--- checksum already recorded for this prison is treated as a successful
--- idempotent replay"). The function is the side that is implementable:
--- `save_versions_prison_checksum_unique` means identical content cannot
--- exist twice under one prison, so falling through to the create path
--- would raise a unique violation rather than produce a second row. The
--- test was never run, so the disagreement went unnoticed.
---
--- OPEN QUESTION for #20, deliberately not decided here: a client that
--- pushes unchanged content at revision N+1 is told `idempotent_replay` at
--- revision N, so `PrisonSyncEngine` records itself as synced one revision
--- ahead of the cloud and hits a spurious conflict on its next push.
--- Resolving that means changing what the checksum identifies, not fixing
--- this test.
-select results_eq(
-  $$ select status, revision from public.create_save_version(
-       'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 2, 1, 'checksum-rev-1', '{}'::jsonb, null, 2
-     ) $$,
-  $$ values ('idempotent_replay'::text, 1) $$,
-  'resubmitting already-stored content at a different revision replays it rather than duplicating the row'
-);
-
+-- The genuine retry-after-lost-response case: same revision, same content.
 select results_eq(
   $$ select status, revision from public.create_save_version(
        'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 1, 1, 'checksum-rev-1', '{"tick": 0}'::jsonb, null, 10
      ) $$,
   $$ values ('idempotent_replay'::text, 1) $$,
-  'resubmitting the exact same accepted content is an idempotent replay, not a conflict or a duplicate row'
+  'resubmitting the exact same accepted content at the same revision is an idempotent replay, not a conflict or a duplicate row'
+);
+
+-- Regression pin for the defect this suite previously only documented: an
+-- earlier design keyed idempotency on the checksum alone, so a prison that
+-- legitimately returned to an earlier state (a player undoing a build)
+-- resubmitted an old checksum at a NEW revision and was answered with a
+-- replay of the OLD one. The pointer never advanced, the client recorded
+-- itself as synced at a revision the cloud had never reached, and its next
+-- push conflicted for no reason. Recurring content is a new revision.
+select results_eq(
+  $$ select status, revision from public.create_save_version(
+       'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 2, 1, 'checksum-rev-1', '{"tick": 0}'::jsonb, null, 10
+     ) $$,
+  $$ values ('created'::text, 2) $$,
+  'content matching an earlier revision is a new revision, not a replay of that earlier one'
+);
+
+select is(
+  (select current_revision from public.prisons where id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
+  2,
+  'the pointer advances for recurring content too -- the client is never told it is synced ahead of the cloud'
+);
+
+select is(
+  (select count(*)::int from public.save_versions
+    where prison_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' and checksum = 'checksum-rev-1'),
+  2,
+  'the same content can occupy two revisions: identity is (prison, revision, checksum), not content alone'
+);
+
+-- Different content at a revision that is already taken is not a replay
+-- either; the caller is told the cloud's real head so it can rebase.
+select results_eq(
+  $$ select status, revision from public.create_save_version(
+       'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 2, 1, 'checksum-other-device', '{"tick": 9}'::jsonb, null, 12
+     ) $$,
+  $$ values ('conflict'::text, 2) $$,
+  'different content at an already-occupied revision is a conflict, never a replay and never a duplicate'
 );
 
 select results_eq(
   $$ select status, revision from public.create_save_version(
-       'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 2, 1, 'checksum-rev-2', '{"tick": 1}'::jsonb, null, 12
+       'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 3, 1, 'checksum-rev-3', '{"tick": 1}'::jsonb, null, 12
      ) $$,
-  $$ values ('created'::text, 2) $$,
+  $$ values ('created'::text, 3) $$,
   'a correctly-sequenced N -> N+1 save succeeds after a conflict was reported'
 );
 
 select is(
   (select count(*)::int from public.save_versions where prison_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
-  2,
-  'exactly two versions exist: the conflict/replay attempts never inserted extra rows'
+  3,
+  'exactly three versions exist: the conflict/replay attempts never inserted extra rows'
 );
 
 select throws_ok(
