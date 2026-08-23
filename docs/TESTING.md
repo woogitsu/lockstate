@@ -16,9 +16,24 @@ pnpm verify:sql
 
 `pnpm test` runs the complete Vitest suite once and fails when no test is discovered. `pnpm verify` typechecks test and production sources, runs the test suite and builds the production Cloudflare package.
 
-`pnpm verify:sql` is separate because it needs a PostgreSQL server: it applies every migration in `supabase/migrations/` and runs every pgTAP suite in `supabase/tests/` against a scratch database, using the compatibility harness in `scripts/sql/`. It is the check that can run when the Supabase local stack's container images are unreachable; it proves the SQL, not the hosted platform around it (see `docs/CLOUD_SAVE.md` for the cloud-save schema and `docs/TRUSTED_SERVICES.md` for the entitlement/challenge schema). `pnpm test:browser` runs the opt-in Chromium project (`tests/browser/`) and is deliberately **not** part of `pnpm test` or `pnpm verify`.
+`pnpm verify:sql` is separate from `pnpm verify` because it needs a PostgreSQL server: it applies every migration in `supabase/migrations/` and runs every pgTAP suite in `supabase/tests/` against a scratch database, using the compatibility harness in `scripts/sql/`. It is the check that can run when the Supabase local stack's container images are unreachable; it proves the SQL, not the hosted platform around it (see `docs/CLOUD_SAVE.md` for the cloud-save schema and `docs/TRUSTED_SERVICES.md` for the entitlement/challenge schema). Separate from `pnpm verify` does **not** mean optional: it is a required CI step (see "Database provisioning" below). `pnpm test:browser` runs the opt-in Chromium project (`tests/browser/`) and is deliberately **not** part of `pnpm test` or `pnpm verify`.
 
 The persistence measurement harness is likewise opt-in: `pnpm exec vitest run --config tests/perf/vitest.perf.config.ts`. Its files are named `*.perf.ts` so the default suite never collects them, and it asserts only correctness invariants — never elapsed time (see `docs/BENCHMARKING.md`).
+
+## Database provisioning for `pnpm verify:sql`
+
+`scripts/provision-postgres.sh` installs and starts what `pnpm verify:sql` needs on a Debian/Ubuntu machine and is safe to re-run:
+
+```bash
+scripts/provision-postgres.sh   # needs root or passwordless sudo
+pnpm verify:sql                 # 36 pgTAP assertions
+```
+
+It is deliberately **version-agnostic**. It uses whichever PostgreSQL major version is already installed, or failing that whichever one the distribution ships, and installs the matching `postgresql-<major>-pgtap`. No third-party apt repository is added and no major version is pinned anywhere: the schema is executed and green on **PostgreSQL 16.13 + pgTAP 1.3.2** and on **18.6 + pgTAP 1.3.4**, and Ubuntu 26.04 does not package 16 at all. It then ensures the cluster is running and that the invoking user has a login role with SUPERUSER — the compatibility harness creates extensions and roles, so CREATEDB alone is insufficient. Set `DATABASE_URL` to point `pnpm verify:sql` at an existing server instead; the role step then does nothing.
+
+CI runs that script and then `pnpm verify:sql` on the self-hosted runner, so the SQL is executed on every pull request. The same script is what `.claude/hooks/session-start.sh` uses for remote containers, so the two environments cannot drift into provisioning different databases.
+
+A service container was rejected: `scripts/verify-supabase-sql.mjs` shells out to a local `psql` client that would have to be installed regardless, no published PostgreSQL image ships pgTAP, and the reason this check exists at all is to keep working where container images cannot be pulled.
 
 ## Default environment
 
@@ -101,7 +116,7 @@ pnpm test
 pnpm build
 ```
 
-Deployment-sensitive work also requires `pnpm verify:deployment`. Performance-sensitive work requires a benchmark scenario and result evidence under the benchmark contract; elapsed-time assertions do not belong in unit tests.
+Deployment-sensitive work also requires `pnpm verify:deployment`. Work touching `supabase/` or `scripts/sql/` requires `pnpm verify:sql` locally as well — CI runs it, but reviewing SQL that has never been executed is what produced the defects recorded in `docs/CLOUD_SAVE.md`. Performance-sensitive work requires a benchmark scenario and result evidence under the benchmark contract; elapsed-time assertions do not belong in unit tests.
 
 ## Coverage policy
 

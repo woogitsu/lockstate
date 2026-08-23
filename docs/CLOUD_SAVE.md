@@ -15,6 +15,10 @@ design. That gap is now partly closed:
   assertions), against PostgreSQL 16.13 + pgTAP 1.3.2 via
   `pnpm verify:sql`. Running them for the first time found three defects
   in this design — see "Defects found by executing this schema" below.
+  The same suites are green on PostgreSQL 18.6 + pgTAP 1.3.4, and
+  `pnpm verify:sql` now runs in CI after `scripts/provision-postgres.sh`,
+  so a change to this schema cannot reach `main` unexecuted again. See
+  `docs/TESTING.md` for the provisioning contract.
 - **Still not executed:** anything against the real Supabase stack.
   `pnpm verify:sql` prepares a plain Postgres with
   `scripts/sql/supabase-compat-harness.sql`, which supplies only the

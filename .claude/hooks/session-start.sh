@@ -8,10 +8,11 @@
 #     asserts `process.version`, and remote containers start on Node 22, so
 #     the suite fails on an untouched container for an unrelated reason.
 #   * pnpm via corepack at the version package.json pins.
-#   * PostgreSQL 16 + pgTAP, because supabase/ carries migrations and pgTAP
+#   * PostgreSQL + pgTAP, because supabase/ carries migrations and pgTAP
 #     suites that the Supabase local stack cannot run here (its container
 #     images are blocked by network policy). A plain Postgres runs the SQL
 #     itself -- see docs/CLOUD_SAVE.md for what that does and does not prove.
+#     That step lives in scripts/provision-postgres.sh, shared with CI.
 #
 # Idempotent: every step checks before it acts, so `resume` and `clear`
 # re-runs are cheap.
@@ -82,34 +83,14 @@ cd "$PROJECT_DIR"
 log "installing project dependencies"
 pnpm install --frozen-lockfile
 
-# --- PostgreSQL 16 + pgTAP (for pnpm verify:sql) ----------------------
-if ! [ -x /usr/lib/postgresql/16/bin/postgres ] || ! ls /usr/share/postgresql/16/extension/pgtap.control >/dev/null 2>&1; then
-  if command -v apt-get >/dev/null 2>&1 && [ "$(id -u)" -eq 0 ]; then
-    log "installing postgresql-16 and pgTAP"
-    export DEBIAN_FRONTEND=noninteractive
-    apt-get update -qq -o DPkg::Lock::Timeout=120 >/dev/null 2>&1 || true
-    apt-get install -y -qq -o DPkg::Lock::Timeout=120 \
-      postgresql-16 postgresql-16-pgtap postgresql-client-16 >/dev/null 2>&1 \
-      || log "WARNING: postgres install failed; pnpm verify:sql will not run"
-  else
-    log "WARNING: cannot install postgres (needs apt-get as root); pnpm verify:sql will not run"
-  fi
-fi
-
-if command -v pg_ctlcluster >/dev/null 2>&1; then
-  pg_isready -q 2>/dev/null || pg_ctlcluster 16 main start >/dev/null 2>&1 || true
-
-  if pg_isready -q 2>/dev/null; then
-    # A superuser role named after the current user lets psql connect over
-    # peer auth with no password and no DATABASE_URL, which is what
-    # scripts/verify-supabase-sql.mjs assumes by default.
-    CURRENT_USER="$(id -un)"
-    su postgres -c "psql -tAc \"select 1 from pg_roles where rolname = '${CURRENT_USER}'\"" 2>/dev/null | grep -q 1 \
-      || su postgres -c "psql -q -c \"create role \\\"${CURRENT_USER}\\\" login superuser\"" >/dev/null 2>&1 || true
-    log "postgres ready ($(su postgres -c 'psql -tAc "show server_version"' 2>/dev/null || echo unknown))"
-  else
-    log "WARNING: postgres did not start; pnpm verify:sql will not run"
-  fi
+# --- PostgreSQL + pgTAP (for pnpm verify:sql) -------------------------
+# Delegated to scripts/provision-postgres.sh, which CI runs too, so the two
+# environments cannot drift into provisioning different databases. A failure
+# here is a warning rather than a hook failure: a container without a
+# database can still do everything except `pnpm verify:sql`, and CI is where
+# missing SQL provisioning must be fatal.
+if ! bash "${PROJECT_DIR}/scripts/provision-postgres.sh"; then
+  log "WARNING: postgres provisioning failed; pnpm verify:sql will not run"
 fi
 
 log "done"

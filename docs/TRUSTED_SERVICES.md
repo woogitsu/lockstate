@@ -16,16 +16,19 @@ and threat model) and [ADR 0009](./adr/0009-challenge-verification-strategy.md)
   ledger fold, webhook processing, projection policy, telemetry controls
   and localization runtime are all exercised in Node
   (`tests/unit/services-*.test.ts`).
-- **Executed against a real PostgreSQL 16 + pgTAP:** every migration in
+- **Executed against a real PostgreSQL + pgTAP:** every migration in
   `supabase/migrations/` and both pgTAP suites in `supabase/tests/`
-  (33 assertions, 17 of them this issue's). Reproduce with:
+  (33 assertions, 17 of them this issue's; 36 in total once the suites
+  grew). First run on 16.13 + pgTAP 1.3.2, since also on 18.6 + pgTAP
+  1.3.4 — no major version is required or pinned. Reproduce with:
   ```bash
-  # Debian/Ubuntu: apt-get install postgresql-16 postgresql-16-pgtap
+  scripts/provision-postgres.sh # installs whichever major the distro ships
   pnpm verify:sql               # as a superuser role, or set DATABASE_URL
   ```
   `scripts/verify-supabase-sql.mjs` applies every migration in order and
   runs every pgTAP suite against a scratch database prepared by
-  `scripts/sql/supabase-compat-harness.sql`.
+  `scripts/sql/supabase-compat-harness.sql`. CI runs both commands on every
+  pull request, so this SQL can no longer ship unexecuted.
 - **Still NOT executed:** anything against the real Supabase stack. The
   harness emulates only the roles, default grants and the slice of the
   `auth` schema our SQL references. It reproduces no GoTrue behaviour, no
