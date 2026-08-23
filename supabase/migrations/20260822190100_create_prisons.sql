@@ -49,11 +49,22 @@ create policy "prisons_delete_own"
   on public.prisons for delete
   using (auth.uid() = owner_id);
 
+-- Data API grants. A policy decides *which rows* a role may touch; it never
+-- grants the privilege to touch the table at all. Supabase used to hand
+-- `anon`/`authenticated` table-level ALL on every new `public` table, so
+-- relying on that default worked -- but it no longer does: the CLI (and
+-- Studio at cloud project creation) revokes the Data API roles' default
+-- SELECT/INSERT/UPDATE/DELETE in `public`, leaving `Dxtm` only. Without
+-- these grants the policies above are unreachable code and every request
+-- returns `42501 permission denied for table prisons`.
+--
+-- UPDATE is deliberately not in this list; it is granted per column below.
+grant select, insert, delete on public.prisons to authenticated;
+
 -- RLS alone only checks row ownership, not which columns an UPDATE
--- touches. Supabase grants table-level UPDATE on every new public table to
--- `authenticated` by default (project-level `ALTER DEFAULT PRIVILEGES`),
--- so without this, an authenticated owner could bypass optimistic
--- concurrency entirely with a direct PostgREST PATCH.
+-- touches, so an owner-scoped UPDATE policy on its own would let a normal
+-- PostgREST PATCH bypass optimistic concurrency entirely by writing
+-- `current_revision` directly.
 --
 -- It has to be revoke-then-grant, not a column-level REVOKE. PostgreSQL
 -- cannot subtract a single column's privilege out of a table-level grant:
@@ -62,6 +73,12 @@ create policy "prisons_delete_own"
 -- 'UPDATE')` stays true and the PATCH still succeeds. Revoking the
 -- table-level privilege first and granting back only the editable columns
 -- is what actually closes it.
+--
+-- The REVOKE is a no-op while Supabase's current default withholds
+-- table-level UPDATE anyway, and is kept precisely because that is a
+-- default: it must stay closed on a project that sets
+-- `[api] auto_expose_new_tables = true`, and on any existing project
+-- created before the default changed.
 --
 -- public.create_save_version() (added in a later migration) is SECURITY
 -- DEFINER, so it runs as the migration role that owns this table rather

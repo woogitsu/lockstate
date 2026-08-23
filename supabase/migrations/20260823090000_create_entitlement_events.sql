@@ -7,12 +7,11 @@
 -- the source of truth, with entitlements demoted to a derived projection
 -- that is never written independently.
 --
--- EXECUTED against PostgreSQL 16.13 via `pnpm verify:sql` (see
--- scripts/verify-supabase-sql.mjs), covered by
--- supabase/tests/002_entitlement_ledger_and_challenges.test.sql. That runs
--- against a plain Postgres prepared with a Supabase compatibility harness,
--- not the real stack -- see docs/TRUSTED_SERVICES.md for what that does and
--- does not prove.
+-- EXECUTED against the real Supabase local stack (`supabase db reset &&
+-- supabase test db`) and against plain PostgreSQL via `pnpm verify:sql`,
+-- covered by supabase/tests/002_entitlement_ledger_and_challenges.test.sql
+-- and supabase/tests/003_data_api_grants.test.sql. See
+-- docs/TRUSTED_SERVICES.md for what each of those does and does not prove.
 
 create table if not exists public.entitlement_events (
   event_id uuid primary key default gen_random_uuid(),
@@ -61,8 +60,16 @@ create policy "entitlement_events_select_own"
   on public.entitlement_events for select
   using (auth.uid() = user_id);
 
--- No client write path of any kind: no policy, and the default table
--- grants Supabase applies are revoked so there is nothing to close later.
+-- That read has to be granted explicitly: Supabase no longer auto-exposes
+-- new `public` tables to the Data API roles (see the prisons migration), so
+-- without this the policy above is unreachable code and a player asking why
+-- they have a slot gets `42501 permission denied for table
+-- entitlement_events` instead of their audit trail.
+grant select on public.entitlement_events to authenticated;
+
+-- No client write path of any kind: no policy, and any table-level write
+-- grant a legacy auto-exposing project would have applied is revoked so
+-- there is nothing to close later.
 revoke insert, update, delete on public.entitlement_events from authenticated, anon;
 
 -- Append-only in the strong sense: even a privileged connection cannot

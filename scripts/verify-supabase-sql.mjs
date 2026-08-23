@@ -15,8 +15,12 @@
  * RLS policies evaluate as intended for the emulated roles.
  *
  * What it does not prove: anything about GoTrue, JWT issuance, PostgREST,
- * Storage or Realtime. `supabase test db` against the real stack stays the
- * stronger check -- see docs/TRUSTED_SERVICES.md.
+ * Storage or Realtime. `supabase test db` stays the stronger check, and
+ * `pnpm verify:stack` stronger still. This is not academic -- the harness
+ * once modelled Supabase's *old* default table grants, was therefore more
+ * permissive than the platform, and passed 36/36 assertions on a schema no
+ * real project could have served a single request from. See
+ * docs/CLOUD_SAVE.md, "Defects found by executing this schema" (defect 4).
  *
  * Usage:
  *   sudo -u postgres node scripts/verify-supabase-sql.mjs

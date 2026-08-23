@@ -27,3 +27,8 @@ create policy "user_settings_update_own"
 create policy "user_settings_delete_own"
   on public.user_settings for delete
   using (auth.uid() = user_id);
+
+-- Data API grants: the four policies above are unreachable without them,
+-- because Supabase no longer auto-exposes new `public` tables to the Data
+-- API roles (see the prisons migration for the full explanation).
+grant select, insert, update, delete on public.user_settings to authenticated;

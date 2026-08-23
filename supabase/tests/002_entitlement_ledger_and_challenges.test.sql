@@ -2,13 +2,20 @@
 -- the append-only entitlement ledger, its derived projection, and the
 -- challenge definition/submission tables.
 --
--- EXECUTED against PostgreSQL 16.13 + pgTAP 1.3.2 (17/17 assertions) via
--- `pnpm verify:sql`, which prepares a scratch database with
--- scripts/sql/supabase-compat-harness.sql. That harness emulates only the
--- roles, default grants and `auth` slice our SQL references -- it is not
--- Supabase, so these results prove the SQL and not the hosted platform's
--- identity layer. Running the same file under `supabase test db` against
--- the real local stack is still the stronger check.
+-- EXECUTED two ways, 17/17 assertions each: `supabase test db` against the
+-- REAL Supabase local stack (CLI 2.115.0), and `pnpm verify:sql` against
+-- plain PostgreSQL 16.13 + pgTAP 1.3.2 and 18.6 + pgTAP 1.3.4 via
+-- scripts/sql/supabase-compat-harness.sql.
+--
+-- The first real-stack run failed here at "a different account cannot read
+-- someone else's audit trail" with `42501 permission denied for table
+-- entitlement_events` -- not because isolation was broken, but because the
+-- table had no SELECT grant at all, so the entitlement UI could never have
+-- worked. See docs/CLOUD_SAVE.md and supabase/tests/003_data_api_grants.test.sql.
+--
+-- The harness is still not Supabase, and neither run proves that GoTrue
+-- mints the identity these policies read; `auth.uid()` is fed here by
+-- `set_config`. See scripts/verify-supabase-stack.mjs for that step.
 
 begin;
 select plan(17);

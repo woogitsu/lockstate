@@ -16,26 +16,35 @@ and threat model) and [ADR 0009](./adr/0009-challenge-verification-strategy.md)
   ledger fold, webhook processing, projection policy, telemetry controls
   and localization runtime are all exercised in Node
   (`tests/unit/services-*.test.ts`).
-- **Executed against a real PostgreSQL 16 + pgTAP:** every migration in
-  `supabase/migrations/` and both pgTAP suites in `supabase/tests/`
-  (33 assertions, 17 of them this issue's). Reproduce with:
+- **Executed against the real Supabase local stack:** every migration in
+  `supabase/migrations/` and all three pgTAP suites in `supabase/tests/`
+  (49 assertions, 17 of them this issue's), under Supabase CLI 2.115.0 with
+  GoTrue, PostgREST, Storage and Realtime running. Reproduce with:
+  ```bash
+  supabase start && supabase db reset && supabase test db
+  ```
+  The first such run found a defect that had been invisible to every earlier
+  check — see "Defects this tooling found" below.
+- **Also executed against a plain PostgreSQL 16/18 + pgTAP:** the same
+  migrations and suites, with:
   ```bash
   # Debian/Ubuntu: apt-get install postgresql-16 postgresql-16-pgtap
   pnpm verify:sql               # as a superuser role, or set DATABASE_URL
   ```
   `scripts/verify-supabase-sql.mjs` applies every migration in order and
   runs every pgTAP suite against a scratch database prepared by
-  `scripts/sql/supabase-compat-harness.sql`.
-- **Still NOT executed:** anything against the real Supabase stack. The
-  harness emulates only the roles, default grants and the slice of the
-  `auth` schema our SQL references. It reproduces no GoTrue behaviour, no
-  JWT verification, no PostgREST, no Storage and no Realtime, so it proves
-  the SQL and proves nothing about how the hosted platform issues the
-  identity those policies read. `supabase start && supabase db reset &&
-  supabase test db` remains the stronger check and has never been run:
-  the Docker daemon starts fine in the environments used so far, but image
-  layers cannot be pulled (the registry CDN is blocked by network policy),
-  so the local stack cannot come up.
+  `scripts/sql/supabase-compat-harness.sql`. This path needs no Docker and
+  stays the fast check; it is not a substitute for the one above.
+- **Executed through the platform's own front doors:** `pnpm verify:stack`
+  (`scripts/verify-supabase-stack.mjs`, 17 checks) drives a running local
+  stack over HTTP — anonymous sign-in via `/auth/v1`, then the cloud-save
+  contract and its ownership boundaries via `/rest/v1`. This is the only
+  check that proves GoTrue actually mints the identity `auth.uid()` reads;
+  the pgTAP suites fake it with `set_config`.
+- **Still NOT executed:** anything against a hosted Supabase *project*. The
+  local stack runs the same GoTrue/PostgREST/Storage images, but nothing
+  here has exercised a real project's networking, quotas or connection
+  pooling.
 - **Deliberately not built:** the deployed server functions themselves (the
   Edge Function/Worker handlers), a payment provider integration, a replay
   runner and a telemetry ingestion endpoint. Each is either out of scope
@@ -49,12 +58,19 @@ raised `42702 column reference "revision" is ambiguous` on every call, and
 the column-level `REVOKE` on `prisons` could not narrow Supabase's
 table-level grant, leaving optimistic concurrency bypassable by a direct
 `PATCH`. Both are fixed on `main` (PR #52) and documented in
-[CLOUD_SAVE.md](./CLOUD_SAVE.md); `pnpm verify:sql` now passes both suites,
-33 assertions in total.
+[CLOUD_SAVE.md](./CLOUD_SAVE.md).
 
-The general lesson is worth keeping: every one of those defects was
-invisible for as long as the SQL was only reviewed, and none of them needed
-the Supabase stack to find.
+Running it on the real Supabase stack then found a fourth defect that the
+harness had actively hidden, and that affected this issue's tables too:
+`entitlement_events`, `entitlements`, `challenge_definitions` and
+`challenge_submissions` had no Data API `SELECT` grant, so every policy
+above them was unreachable code. See CLOUD_SAVE.md for the full account and
+`supabase/tests/003_data_api_grants.test.sql` for the regression pin.
+
+The general lesson is worth keeping, in both directions: every one of those
+defects was invisible for as long as the SQL was only reviewed — and an
+emulator that is *more* permissive than the thing it emulates does not just
+fail to catch a defect, it certifies one.
 
 ## Trust zones
 

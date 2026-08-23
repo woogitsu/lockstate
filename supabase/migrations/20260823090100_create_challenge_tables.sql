@@ -3,12 +3,11 @@
 -- submit evidence; it can never mark its own result verified, never write
 -- a score, and never see another account's submission.
 --
--- EXECUTED against PostgreSQL 16.13 via `pnpm verify:sql` (see
--- scripts/verify-supabase-sql.mjs), covered by
--- supabase/tests/002_entitlement_ledger_and_challenges.test.sql. That runs
--- against a plain Postgres prepared with a Supabase compatibility harness,
--- not the real stack -- see docs/TRUSTED_SERVICES.md for what that does and
--- does not prove.
+-- EXECUTED against the real Supabase local stack (`supabase db reset &&
+-- supabase test db`) and against plain PostgreSQL via `pnpm verify:sql`,
+-- covered by supabase/tests/002_entitlement_ledger_and_challenges.test.sql
+-- and supabase/tests/003_data_api_grants.test.sql. See
+-- docs/TRUSTED_SERVICES.md for what each of those does and does not prove.
 
 -- Published, signed definitions. Public read: the definition is meant to
 -- be verifiable offline by anyone, which is precisely why it is signed.
@@ -33,6 +32,11 @@ alter table public.challenge_definitions enable row level security;
 create policy "challenge_definitions_public_read"
   on public.challenge_definitions for select
   using (true);
+
+-- "Public read" means both Data API roles, and it has to be granted: since
+-- Supabase stopped auto-exposing new `public` tables (see the prisons
+-- migration), a `using (true)` policy on its own reaches nobody.
+grant select on public.challenge_definitions to anon, authenticated;
 
 revoke insert, update, delete on public.challenge_definitions from authenticated, anon;
 
@@ -75,6 +79,10 @@ alter table public.challenge_submissions enable row level security;
 create policy "challenge_submissions_select_own"
   on public.challenge_submissions for select
   using (auth.uid() = user_id);
+
+-- A player may read their own submissions; that read needs the grant for
+-- the same reason as every other table here.
+grant select on public.challenge_submissions to authenticated;
 
 revoke insert, update, delete on public.challenge_submissions from authenticated, anon;
 
@@ -165,6 +173,16 @@ begin
   return query select 'submitted'::text, v_submission_id;
 end;
 $$;
+
+-- Explicit revoke-then-grant, matching create_save_version(): a function's
+-- default PUBLIC EXECUTE is not something to rely on for a write path.
+-- Supabase's `alter default privileges ... revoke execute on functions`
+-- only drops the roles' *own* grant and leaves PUBLIC's built-in EXECUTE
+-- intact, so without this `anon` can call this RPC too -- it fails on the
+-- `auth.uid() is null` check above rather than on a privilege check, which
+-- is a weaker place for the boundary to sit.
+revoke all on function public.submit_challenge_evidence(text, int, text, jsonb, jsonb) from public, anon;
+grant execute on function public.submit_challenge_evidence(text, int, text, jsonb, jsonb) to authenticated;
 
 -- Public ranking surface. Deliberately exposes no account identity: what a
 -- leaderboard row may reveal about a player is a privacy decision, not a

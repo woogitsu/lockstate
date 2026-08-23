@@ -17,7 +17,12 @@ create policy "entitlements_select_own"
   on public.entitlements for select
   using (auth.uid() = user_id);
 
--- No insert/update/delete policy exists for `authenticated`/`anon`, and
--- the table-level grants Supabase applies by default to new tables are
--- revoked outright so there is no ambient write path to close later.
+-- SELECT is granted explicitly: Supabase no longer auto-exposes new
+-- `public` tables to the Data API roles (see the prisons migration), so
+-- without this the policy above is unreachable code.
+grant select on public.entitlements to authenticated;
+
+-- No insert/update/delete policy exists for `authenticated`/`anon`, and any
+-- table-level write grant a legacy auto-exposing project would have applied
+-- is revoked outright so there is no ambient write path to close later.
 revoke insert, update, delete on public.entitlements from authenticated, anon;
