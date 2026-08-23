@@ -72,3 +72,43 @@ jobs:
 
       - name: Verify generated output did not modify tracked files
         run: test -z "$(git status --porcelain)"
+
+  # Issue #32 requires that missing, inconsistent or oversized assets fail
+  # validation before build/release. `tooling/validate-runtime-atlas.mjs` reads
+  # the PNGs themselves, and the runtime art is stored in Git LFS, so this is
+  # the one check that needs `lfs: true`.
+  #
+  # It is a separate job on purpose. LFS bandwidth is metered and this repository
+  # will keep growing, so the `verify` job above stays on a pointer-only checkout
+  # and never pays for it. That also keeps a pointer-only run honest rather than
+  # vacuous: the validator recognises a pointer file and fails with that message
+  # instead of treating it as valid art.
+  #
+  # Separate does not mean optional -- same precedent as `verify:sql`
+  # (docs/TESTING.md), which found three real defects the first time it was run.
+  assets:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, Linux, X64, wsl2]
+    timeout-minutes: 20
+    steps:
+      - name: Checkout with LFS art
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+          lfs: true
+
+      - name: Setup Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: '.node-version'
+          package-manager-cache: false
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Activate pnpm
+        run: corepack prepare pnpm@11.22.0 --activate
+
+      # Uses no dependencies, so it deliberately runs without pnpm install.
+      - name: Validate runtime atlases against the authored contract
+        run: pnpm verify:assets
