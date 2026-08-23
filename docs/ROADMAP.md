@@ -3,12 +3,12 @@
 This roadmap defines execution order. Epics may be refined, but lower layers must be stabilized before upper-layer content depends on them.
 
 ## Phase 0 — Repository and engineering foundation
-- toolchain, strict typing, lint/format/test/build CI
+- toolchain, strict typing, test/build CI (there is no linter or formatter in this repository)
 - architecture contracts and ADR process
 - benchmark harness skeleton
 - Cloudflare deployment configuration
 - environment/secrets policy
-- issue and PR templates
+- issue templates
 
 ## Phase 1 — Rendering shell and input
 - Phaser boot scene
