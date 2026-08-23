@@ -110,6 +110,17 @@ const protocolFaultCodeSchema = z.enum([
   'internal-error',
 ]);
 
+/**
+ * The closed set of reasons the worker may refuse or abandon a request.
+ *
+ * Exported as a type because `SimulationWorkerStateMachine.fault` used to take
+ * `code: string` and cast it into this enum, so a typo'd code compiled, shipped
+ * and failed only at runtime -- as an `invalid-payload` rejection of the very
+ * message that was reporting the original failure, with the real cause gone
+ * (issue #139). The cast is gone; this is what replaced it.
+ */
+export type ProtocolFaultCode = z.infer<typeof protocolFaultCodeSchema>;
+
 export const protocolFaultSchema = z
   .object({
     code: protocolFaultCodeSchema,
