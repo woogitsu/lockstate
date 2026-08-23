@@ -121,6 +121,8 @@ Input actions are abstract commands, not hard-coded characters. Keyboard default
 ### Rendering and assets
 Source art may be authored in Blender. Runtime game assets are pre-rendered 2D sprites/atlases. Characters target eight directional views. Assets must be atlas-packed, versioned and budgeted for CDN/static-asset limits.
 
+How the world and its actors are actually drawn — layer ownership, depth rules for a top-down view with visible object sides, the sprite pooling/culling budget, and where render frames come from — is defined in [RENDERING.md](./RENDERING.md).
+
 ## Performance philosophy
 Performance budgets are contracts, not cleanup tasks. Every subsystem capable of scaling with actor count, tile count or path requests requires synthetic benchmarks before content growth hides architectural problems.
 
