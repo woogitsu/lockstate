@@ -1,6 +1,8 @@
+import { defaultLocaleEnCatalog, defaultRoomContentRegistry, resolveLocalizationKey, type RoomCatalogDefinition } from '../../content';
+
 export interface RoomRequirement {
   readonly type: 'minimum-size' | 'enclosed' | 'object' | 'outdoors';
-  
+
   // For 'minimum-size'
   readonly minWidth?: number;
   readonly minHeight?: number;
@@ -42,29 +44,35 @@ export class RoomRegistry {
   }
 }
 
-// Built-in basic rooms
-export const defaultRoomRegistry = new RoomRegistry();
+/**
+ * Converts issue #23's validated, versioned, localization-key-carrying
+ * `RoomCatalogDefinition` into #17's simpler runtime-facing `RoomDefinition`
+ * -- same requirement shape, name resolved from `nameKey` against a
+ * locale catalog (defaulting to `en`) since no bundler-loaded translation
+ * pipeline exists yet (see `src/content/localization.ts`).
+ */
+export function roomDefinitionFromCatalog(
+  entry: RoomCatalogDefinition,
+  locale: ReadonlyMap<string, string> = defaultLocaleEnCatalog,
+): RoomDefinition {
+  return {
+    id: entry.id,
+    name: resolveLocalizationKey(locale, entry.nameKey),
+    numericId: entry.numericId,
+    requirements: entry.requirements,
+  };
+}
 
-defaultRoomRegistry.register({
-  id: 'office',
-  name: 'Office',
-  numericId: 1,
-  requirements: [
-    { type: 'enclosed' },
-    { type: 'minimum-size', minWidth: 4, minHeight: 4, minTiles: 16 },
-    { type: 'object', objectId: 'desk', minQuantity: 1 },
-    { type: 'object', objectId: 'chair', minQuantity: 1 }
-  ]
-});
+export function buildRoomRegistryFromCatalog(
+  entries: readonly RoomCatalogDefinition[] = defaultRoomContentRegistry.all(),
+  locale?: ReadonlyMap<string, string>,
+): RoomRegistry {
+  const registry = new RoomRegistry();
+  for (const entry of entries) {
+    registry.register(roomDefinitionFromCatalog(entry, locale));
+  }
+  return registry;
+}
 
-defaultRoomRegistry.register({
-  id: 'cell',
-  name: 'Cell',
-  numericId: 2,
-  requirements: [
-    { type: 'enclosed' },
-    { type: 'minimum-size', minWidth: 2, minHeight: 3, minTiles: 6 },
-    { type: 'object', objectId: 'bed', minQuantity: 1 },
-    { type: 'object', objectId: 'toilet', minQuantity: 1 }
-  ]
-});
+/** Built from issue #23's validated content catalog -- see src/content/room-catalog.ts. */
+export const defaultRoomRegistry = buildRoomRegistryFromCatalog();
