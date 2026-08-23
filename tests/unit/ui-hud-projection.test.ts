@@ -10,16 +10,25 @@ import {
   severityTone,
   transportPressedStates,
 } from '../../src/ui/hud/projection';
-import type { HudClockViewModel, HudCountsViewModel, HudSpeed } from '../../src/ui/hud/view-model';
+import {
+  EMPTY_HUD_VIEW_MODEL,
+  UNKNOWN_HUD_CLOCK,
+  type HudClockViewModel,
+  type HudCountsViewModel,
+  type HudSpeed,
+} from '../../src/ui/hud/view-model';
 import { DEFAULT_BAR_SEGMENTS, filledSegments } from '../../src/ui/primitives/segmented-bar';
 
 /**
  * The view-model → display mapping that decides what the HUD says.
  *
  * `status-strip.ts` builds its DOM by walking `projectStatusMetrics` and
- * these formatters and does nothing else, so proving the mapping here proves
- * what reaches the screen -- headlessly, in the default `node` environment,
- * exactly as `ui-save-panel-status.test.ts` does for the save panel.
+ * these formatters and does nothing else, so proving the mapping here pins
+ * everything the strip is told to show -- headlessly, in the default `node`
+ * environment, exactly as `ui-save-panel-status.test.ts` does for the save
+ * panel. It does not prove the DOM it builds: there is no DOM in this
+ * environment and nothing here imports `status-strip.ts`, so the rendered
+ * output is asserted in `tests/browser/ui-shell.spec.ts` instead.
  */
 
 function clock(overrides: Partial<HudClockViewModel> = {}): HudClockViewModel {
@@ -204,6 +213,27 @@ describe('clock readout', () => {
     expect(displayDay(0)).toBeUndefined();
     expect(displayDay(-4)).toBeUndefined();
     expect(displayDay(Number.NaN)).toBeUndefined();
+  });
+
+  it('maps the no-session clock itself to nothing, day and position both', () => {
+    // Deliberately fed from `UNKNOWN_HUD_CLOCK` rather than from literal
+    // zeroes. The assertions above pin what the formatters do with `0`; this
+    // one pins that the sentinel the HUD actually paints before any session
+    // exists *is* one of those values. Asserting the sentinel against itself
+    // would be tautological, and a sentinel changed to `day: 1` would then
+    // reach the screen as "Day 1" for a prison that is not running, with the
+    // browser suite as the only guard.
+    expect(displayDay(UNKNOWN_HUD_CLOCK.day)).toBeUndefined();
+    expect(dayProgressPercent(UNKNOWN_HUD_CLOCK.tickOfDay, UNKNOWN_HUD_CLOCK.dayLengthTicks)).toBeUndefined();
+
+    // And the same for the view model a first paint uses, which is what
+    // `src/main.ts` hands the HUD before the worker has answered.
+    const empty = EMPTY_HUD_VIEW_MODEL.clock;
+    expect(displayDay(empty.day)).toBeUndefined();
+    expect(dayProgressPercent(empty.tickOfDay, empty.dayLengthTicks)).toBeUndefined();
+    // And it reads as paused, so the transport does not show a simulation
+    // that is running when none exists.
+    expect(transportPressedStates(empty).pause).toBe(true);
   });
 });
 

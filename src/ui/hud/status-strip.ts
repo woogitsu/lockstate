@@ -111,7 +111,7 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
     className: 'hud-strip__clock',
     children: [
       createIcon('clock', 'sm'),
-      eyebrowText(t(HUD_MESSAGE_KEY.clockDay), 'hud-clock__day-label'),
+      eyebrowText(t(HUD_MESSAGE_KEY.clockDay)),
       day,
       screenReaderText(t(HUD_MESSAGE_KEY.clockDayProgress)),
       dayProgress,

@@ -46,7 +46,13 @@ export function isHudSpeed(value: number): value is HudSpeed {
  * would keep counting after the worker died.
  */
 export interface HudClockViewModel {
-  /** 1-based in-game day, or `0` when no session has reported one yet. */
+  /**
+   * The in-game day, counting from `1`.
+   *
+   * `0` is the sentinel for *unknown* -- no session has reported a clock yet
+   * -- and is deliberately not a day number: it is rendered as unknown rather
+   * than as day one. See `UNKNOWN_HUD_CLOCK`.
+   */
   readonly day: number;
   /** `0 .. dayLengthTicks - 1`. */
   readonly tickOfDay: number;
@@ -56,8 +62,9 @@ export interface HudClockViewModel {
    * `0` means *unknown* -- no session has reported a clock -- and the day
    * position is then shown as unknown rather than as the start of day one.
    * The HUD is handed this instead of holding a constant of its own: the
-   * value belongs to the simulation (`AGENTS.md` boundary 1) and a copy here
-   * would silently disagree the day balance changed it.
+   * value belongs to the simulation (`AGENTS.md` boundary 1), and a copy on
+   * this side of the boundary would silently disagree with it the day the
+   * balance changed.
    */
   readonly dayLengthTicks: number;
   readonly mode: HudClockMode;

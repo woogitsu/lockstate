@@ -56,10 +56,20 @@ through a full snapshot request, so the HUD's day counter either stood still
 while the simulation ran or had to be extrapolated from wall time on the main
 thread, which is a second clock on the wrong side of the boundary.
 
-`replyTo` is therefore **optional** on this message and on this message only.
-It keeps decision 2 rather than weakening it: a published clock state carries
-no `replyTo`, because an unsolicited message must not present itself as a
-request response and must not resolve a pending request that happens to share
+`replyTo` is therefore **optional** on this message. The rule this states is
+not "one exception": `replyTo` is optional on exactly those worker-to-main
+messages that the worker may emit with no request behind them, and required on
+every message that is only ever a reply. Two schemas are built from
+`optionallyCorrelatedEnvelopeFields` today: `simulation/clock-state`, and
+`protocol/error`, which decision 2 above already places in that set ("a
+protocol fault may optionally identify the rejected request"). What this
+amendment records is `simulation/clock-state` joining it — not that it is
+alone in it. A fault that *was* prompted by a request is free to carry the
+`replyTo` its schema already permits.
+
+It keeps decision 2 rather than weakening it: an unsolicited clock state
+carries no `replyTo`, because an unsolicited message must not present itself as
+a request response and must not resolve a pending request that happens to share
 an id. The payload is unchanged and identical in both forms, so a reader does
 not have to know which prompted it.
 

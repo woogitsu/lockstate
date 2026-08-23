@@ -308,8 +308,10 @@ const readyMessageSchema = z
 /**
  * The clock, as the worker sees it.
  *
- * Sent in two situations, which is why `replyTo` is optional here and
- * required on every other reply:
+ * Sent in two situations, which is why `replyTo` is optional here. It is
+ * optional on `protocol/error` for the same reason -- a fault need not have
+ * been prompted by a request -- and required on every message that is only
+ * ever a reply:
  *
  * - **Correlated** (`replyTo` present) -- the acknowledgement of a
  *   `simulation/set-clock`. The main thread asked; this is the answer.

@@ -352,15 +352,21 @@ test.describe('the assembled application', () => {
   /**
    * The transport controls, end to end, in the page a player loads.
    *
-   * Every layer of this is proven headlessly — the worker publishes the tick
-   * (`tests/unit/worker-state-machine.test.ts`), the main thread translates it
-   * (`tests/unit/ui-simulation-clock.test.ts`), the strip renders it
-   * (`tests/unit/ui-hud-projection.test.ts`) and none of it disturbs the
-   * simulation (`tests/determinism/clock-transport.test.ts`). What no headless
-   * test can settle is that the four are *connected*: that a real click on a
-   * real button reaches a real Worker over `postMessage` and comes back as a
-   * number that changes on screen. That was the whole defect — the controls
-   * were visible, and pressing one did nothing.
+   * Three of the four layers are proven headlessly — the worker publishes the
+   * tick (`tests/unit/worker-state-machine.test.ts`), the main thread
+   * translates it (`tests/unit/ui-simulation-clock.test.ts`), and none of it
+   * disturbs the simulation (`tests/determinism/clock-transport.test.ts`).
+   * `tests/unit/ui-hud-projection.test.ts` proves the *mapping* the strip
+   * walks — including that an unreported clock maps to nothing rather than to
+   * day one — but not the rendering: Vitest runs in the `node` environment
+   * with no DOM, so nothing headless ever executes `status-strip.ts`. That is
+   * why the rendered `--` has its own guard in
+   * `tests/browser/ui-shell.spec.ts`.
+   *
+   * What no headless test can settle is that the layers are *connected*: that
+   * a real click on a real button reaches a real Worker over `postMessage` and
+   * comes back as a number that changes on screen. That was the whole defect —
+   * the controls were visible, and pressing one did nothing.
    */
   test('pressing play makes the HUD clock advance with the simulation', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });

@@ -10,9 +10,11 @@ import type { HudClockViewModel, HudCountsViewModel, HudSeverity, HudSpeed } fro
  * This is the layer that decides *what the HUD says*: which metrics exist,
  * in what order, with which icon, which message key and which tone. The DOM
  * builders in `status-strip.ts` and `hud.ts` do nothing but walk these
- * descriptors, so proving the mapping here proves what reaches the screen --
- * and it does so in the default `node` Vitest environment, with no DOM, as
+ * descriptors, so proving the mapping here pins everything the strip is told
+ * to show -- in the default `node` Vitest environment, with no DOM, as
  * `tests/unit/ui-save-panel-status.test.ts` already does for the save panel.
+ * The builders themselves are never executed there, which is why what they
+ * put in the DOM is asserted in `tests/browser/ui-shell.spec.ts`.
  */
 
 /**
