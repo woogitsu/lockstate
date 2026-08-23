@@ -36,15 +36,16 @@ import { expect, test, type Page } from '@playwright/test';
  *    this layer has already found once, by measuring. `--tap-target` is
  *    applied by CSS convention and nothing pins the rendered box; a token
  *    test cannot, because a token is not a layout.
- * 6. **Every control on the page can actually be pressed.** Presence is not
- *    reachability, and until issue #88 this file only ever asserted the
- *    first. The save panel and the HUD were two independently-positioned
- *    `fixed` layers that had never been laid out relative to each other, so
- *    on the Build tab with its numeric fallback expanded the Build panel
- *    covered 91 % of the save panel and all five of its buttons did nothing —
- *    silently, with this suite green. Only a browser answers
- *    `elementFromPoint`, and only the assembled page has both regions in it at
- *    once.
+ * 6. **Every control on the page can actually be pressed**, and every panel
+ *    in the HUD's right rail is whole, on screen, and scrollable by the
+ *    player if it does not fit. Presence is not reachability, and until issue
+ *    #88 this file only ever asserted the first. The save panel and the HUD
+ *    were two independently-positioned `fixed` layers that had never been
+ *    laid out relative to each other, so on the Build tab with its numeric
+ *    fallback expanded the Build panel covered 91 % of the save panel and all
+ *    five of its buttons did nothing — silently, with this suite green. Only
+ *    a browser answers `elementFromPoint`, and only the assembled page has
+ *    both regions in it at once.
  *
  * Deliberately NOT here, because a headless test already proves it and a
  * browser test that repeats one costs a minute of CI and adds no evidence:
@@ -166,10 +167,20 @@ const INTERACTIVE_SELECTOR =
  * a control that has quietly collapsed to nothing, and the second is the shape
  * of the defect this test exists for. Anything appearing here that is not on
  * this list fails; anything on this list that becomes reachable fails too.
+ *
+ * Both claims need the entry to name exactly one control, which is why these
+ * strings carry the ancestor chain and not just the control. `Collapse` on a
+ * `ui-panel__toggle` is not unique on this page -- the minimap panel and the
+ * Build panel each have one, and the two are indistinguishable by tag, class
+ * and label. Naming only the control would have made the first entry here
+ * match either of them, so a minimap toggle that came back at 375px while a
+ * Build panel toggle vanished would have gone through as a pass.
  */
 const NEVER_LAID_OUT_BELOW_720 = [
-  'button.ui-icon-button ui-icon-button--quiet ui-panel__toggle "Collapse"',
-  'button.ui-section__header "Alerts"',
+  'hud > hud__corner > ui-panel hud-minimap > ui-panel__header > ' +
+    'button.ui-icon-button ui-icon-button--quiet ui-panel__toggle "Collapse"',
+  'hud > hud__corner > ui-panel hud-minimap > ui-panel__body > ui-section > ' +
+    'button.ui-section__header "Alerts"',
 ] as const;
 
 interface UnreachableControl {
@@ -179,10 +190,16 @@ interface UnreachableControl {
 
 interface ControlReachability {
   /**
-   * Every control the selector matched, in document order, described. The
-   * index into this list is the control's identity for the run: tab switching
-   * and resizing hide and show controls but never add or remove them, so
-   * index `n` is the same element in every state the test visits.
+   * Every control the selector matched, in document order, named. The index
+   * into this list is the control's identity for the run: tab switching and
+   * resizing hide and show controls but never add or remove them, so index
+   * `n` is the same element in every state the test visits.
+   *
+   * The *names* are unique too, which the accounting assertion below depends
+   * on: each is the control's chain of classed ancestors followed by the
+   * control itself, and a numeric suffix breaks the remaining ties (the two
+   * `ui-number__input` boxes in the Build panel's coordinate grid are
+   * identical all the way up). See `NEVER_LAID_OUT_BELOW_720`.
    */
   readonly controls: readonly string[];
   /** Indices of the controls that were laid out, and so actually measured. */
@@ -235,7 +252,39 @@ async function controlReachability(page: Page): Promise<ControlReachability> {
       return `${node.tagName.toLowerCase()}${classes}${label === '' ? '' : ` "${label}"`}`;
     };
 
+    /**
+     * `describe`, prefixed by the control's chain of classed ancestors up to
+     * `body`. `describe` alone is ambiguous on this page and the accounting
+     * assertion cannot be written against an ambiguous name.
+     */
+    const locate = (node: Element): string => {
+      const chain: string[] = [];
+      for (let ancestor = node.parentElement; ancestor !== null && ancestor !== document.body; ancestor = ancestor.parentElement) {
+        const className = typeof ancestor.className === 'string' ? ancestor.className.trim() : '';
+        if (className !== '') chain.unshift(className);
+      }
+      return [...chain, describe(node)].join(' > ');
+    };
+
     const controls = [...document.querySelectorAll<HTMLElement>(selector)];
+
+    // Two controls can still share a chain -- the Tile X and Tile Y number
+    // inputs do -- so the duplicates are numbered. Only duplicates get a
+    // suffix, so a name stays readable whenever it is already unique.
+    const seen = new Map<string, number>();
+    const totals = new Map<string, number>();
+    for (const control of controls) {
+      const name = locate(control);
+      totals.set(name, (totals.get(name) ?? 0) + 1);
+    }
+    const names = controls.map((control) => {
+      const name = locate(control);
+      if ((totals.get(name) ?? 0) < 2) return name;
+      const ordinal = (seen.get(name) ?? 0) + 1;
+      seen.set(name, ordinal);
+      return `${name} #${ordinal}`;
+    });
+
     const measured: number[] = [];
     const unreachable: { control: string; hit: string }[] = [];
 
@@ -260,15 +309,124 @@ async function controlReachability(page: Page): Promise<ControlReachability> {
         const hit = document.elementFromPoint(x, y);
         if (hit !== null && control.contains(hit)) continue;
         unreachable.push({
-          control: describe(control),
+          control: names[index] ?? describe(control),
           hit: hit === null ? '(outside the viewport)' : describe(hit),
         });
         return;
       }
     });
 
-    return { controls: controls.map(describe), measured, unreachable };
+    return { controls: names, measured, unreachable };
   }, INTERACTIVE_SELECTOR);
+}
+
+/**
+ * Everything the HUD's right rail holds, top to bottom. Both boxes are the
+ * host's or the HUD's own panels, not controls, so the reachability sweep
+ * above never looks at them directly.
+ */
+const RAIL_PANELS = ['.save-panel', '.hud-build'] as const;
+
+interface RailIntegrity {
+  /**
+   * `scrollHeight - clientHeight` on `.hud__rail`. Must be 0: the rail is not
+   * the scroll container, its panels are.
+   */
+  readonly railOverflow: number;
+  /** Rail panels whose border box is not wholly inside the viewport. */
+  readonly offScreen: readonly string[];
+  /** Rail panels with more content than box that the pointer cannot scroll. */
+  readonly stuck: readonly string[];
+  /** Whether `.hud-build` has more content than box, i.e. is scrolling. */
+  readonly buildPanelScrolls: boolean;
+  /**
+   * The rendered width of each rail panel. They must all be equal: the rail is
+   * meant to read as one column, and both panels take their width from
+   * `--hud-rail-panel-width` for exactly that reason.
+   */
+  readonly widths: readonly number[];
+}
+
+/**
+ * The rail as a layout, rather than as a bag of controls.
+ *
+ * The reachability sweep above is scroll-aware on purpose: it calls
+ * `scrollIntoView` before hit-testing, because a list longer than its box is
+ * not a defect. That makes it blind to *how* a control got on screen, and
+ * `scrollIntoView` will happily scroll a container the player has no direct
+ * way to scroll — an `overflow: hidden` box, or a scroll container whose own
+ * scrollbar gutter lies in the `pointer-events: none` HUD root, where no
+ * pointer can land on it. The first attempt at fixing issue #88 left exactly
+ * that: a rail 81px over its budget at 1280x720 in the *default* state, whose
+ * gutter hit-tested to the world canvas, its clipped content reachable only
+ * because a wheel event over a panel chain-scrolled the panel's ancestor.
+ *
+ * So three separate claims, none of which the sweep can make:
+ *
+ * - the rail itself never scrolls, because its panels absorb their own
+ *   excess (`hud.css`);
+ * - every rail panel is wholly inside the viewport, so nothing is reached by
+ *   scrolling the *page* to a panel hanging off an edge;
+ * - a rail panel with more content than box is one the player can scroll —
+ *   `overflow-y` really is `auto`, and `elementFromPoint` just inside its
+ *   right edge lands on the panel rather than falling through to the canvas.
+ */
+async function railIntegrity(page: Page): Promise<RailIntegrity> {
+  return page.evaluate((selectors: readonly string[]) => {
+    const rail = document.querySelector('.hud__rail');
+    const offScreen: string[] = [];
+    const stuck: string[] = [];
+
+    for (const selector of selectors) {
+      const panel = document.querySelector<HTMLElement>(selector);
+      if (panel === null) continue;
+      const rect = panel.getBoundingClientRect();
+      if (rect.top < -0.5 || rect.bottom > window.innerHeight + 0.5) {
+        offScreen.push(
+          `${selector} spans y=${Math.round(rect.top)}..${Math.round(rect.bottom)} of ${window.innerHeight}`,
+        );
+      }
+      if (panel.scrollHeight <= panel.clientHeight) continue;
+      const scrollable = ['auto', 'scroll'].includes(getComputedStyle(panel).overflowY);
+      const edge = document.elementFromPoint(rect.right - 3, rect.top + rect.height / 2);
+      const ownsItsEdge = edge !== null && panel.contains(edge);
+      if (!scrollable || !ownsItsEdge) {
+        stuck.push(`${selector} (overflow-y scrollable: ${scrollable}, owns its right edge: ${ownsItsEdge})`);
+      }
+    }
+
+    const build = document.querySelector<HTMLElement>('.hud-build');
+    const widths = selectors
+      .map((selector) => document.querySelector<HTMLElement>(selector))
+      .filter((panel): panel is HTMLElement => panel !== null)
+      .map((panel) => Math.round(panel.getBoundingClientRect().width));
+
+    return {
+      railOverflow: rail === null ? 0 : rail.scrollHeight - rail.clientHeight,
+      offScreen,
+      stuck,
+      buildPanelScrolls: build !== null && build.scrollHeight > build.clientHeight,
+      widths,
+    };
+  }, RAIL_PANELS);
+}
+
+/**
+ * The one viewport in the sweep below where the Build panel does not get its
+ * whole content height in the *default* state, and so scrolls on arrival.
+ *
+ * Named rather than tolerated. The rail there is 483px and the Build panel
+ * wants 398px of it, which leaves less than the save panel's floor, so
+ * something has to scroll and the tool the player is holding is the thing
+ * that keeps the space it can. Everywhere else the default state fits, and
+ * that is the property this constant makes assertable: the first #88 fix
+ * clipped the Build panel at 1280x720 too, on arrival, and nothing said so.
+ */
+const BUILD_PANEL_SCROLLS_BY_DEFAULT_AT = '900x600';
+
+/** Only the fields that must hold in every state, at every viewport. */
+function railInvariants(integrity: RailIntegrity): Pick<RailIntegrity, 'railOverflow' | 'offScreen' | 'stuck'> {
+  return { railOverflow: integrity.railOverflow, offScreen: integrity.offScreen, stuck: integrity.stuck };
 }
 
 test.describe('the assembled application', () => {
@@ -423,10 +581,13 @@ test.describe('the assembled application', () => {
    * The Build tab's numeric fallback is expanded as its own case, and it is
    * load-bearing rather than thorough-for-its-own-sake. Measured against the
    * pre-#88 layout, the folded Build panel covers the save panel enough to
-   * take a control centre only at 900x600; expanded it buries the save panel
-   * at *every* viewport here (91 % at 1280x720, 89 % at 1024x768, 83 % at
-   * 375x812, 37 % at 1440x900). Drop this case and the guard keeps almost none
-   * of its teeth.
+   * take a control centre only at 900x600. Expanded it covers the save panel
+   * at all five viewports here, and buries it at four of them: 91 % at
+   * 1280x720, 91 % at 900x600, 89 % at 1024x768 and 83 % at 375x812, each
+   * taking all five save-panel buttons. The fifth, 1440x900, is the one that
+   * is merely overlapped -- 37 %, taking the per-prison Load and Delete and
+   * leaving New prison, Save now and Export clickable. Drop this case and the
+   * guard keeps almost none of its teeth.
    *
    * Every control is accounted for rather than merely visited. A control that
    * is not laid out cannot be hit-tested, so the sweep skips it — but a
@@ -435,16 +596,24 @@ test.describe('the assembled application', () => {
    * named list of the ones that legitimately do. Anything else appearing there
    * fails: it is how a control that quietly collapses to nothing shows up as a
    * defect instead of as a pass.
+   *
+   * `railIntegrity` runs alongside the sweep at every viewport, in both the
+   * default and the expanded state, because the sweep alone passed the first
+   * #88 fix — a right rail 81px over its budget at 1280x720 *by default*, with
+   * the Build panel's last section header below the fold and the rail's own
+   * scrollbar gutter hit-testing to the world canvas. `scrollIntoView` reached
+   * the controls anyway, so every assertion here stayed green. Reachable by a
+   * scroll the player cannot perform is not reachable.
    */
   test('every control can actually be pressed, on every tab and at every viewport (#88)', async ({ page }) => {
     // The most expensive test in the suite by a wide margin, and the only one
-    // that needs more than the 60 s default: five viewports x six states, each
-    // a real relayout of the whole page followed by a hit-test sweep over
-    // every control. Measured between 29 s and 53 s on this machine against
-    // that 60 s -- close enough that a slower CI runner would fail it for
-    // being slow rather than for finding anything, which is the worst kind of
-    // red. `test.slow()` triples the budget; it does not make the test do
-    // less.
+    // that needs more than the 60 s default: five viewports x five layout
+    // states, each a real relayout of the whole page followed by a hit-test
+    // sweep over every control and a check on the rail. Measured between 14 s
+    // and 28 s on this machine against that 60 s -- close enough that a slower
+    // CI runner would fail it for being slow rather than for finding anything,
+    // which is the worst kind of red. `test.slow()` triples the budget; it
+    // does not make the test do less.
     test.slow();
 
     await page.setViewportSize({ width: 1280, height: 720 });
@@ -507,6 +676,23 @@ test.describe('the assembled application', () => {
         `save-panel buttons unreachable from the Build tab at ${width}x${height}`,
       ).toEqual([]);
 
+      // The rail in its default state, which is the state the first #88 fix
+      // got wrong: it clipped the Build panel at 1280x720 on arrival.
+      const foldedRail = await railIntegrity(page);
+      expect(railInvariants(foldedRail), `the rail in its default state at ${width}x${height}`).toEqual({
+        railOverflow: 0,
+        offScreen: [],
+        stuck: [],
+      });
+      expect(
+        [...new Set(foldedRail.widths)],
+        `the rail's panels are not all one width at ${width}x${height}`,
+      ).toHaveLength(1);
+      expect(
+        foldedRail.buildPanelScrolls,
+        `the Build panel scrolls on arrival at ${width}x${height}`,
+      ).toBe(`${width}x${height}` === BUILD_PANEL_SCROLLS_BY_DEFAULT_AT);
+
       // The numeric fallback expanded: the tallest the Build panel gets, and
       // the state issue #88 was measured in.
       const coordinates = page.locator('.hud-build .ui-section__header').last();
@@ -517,6 +703,48 @@ test.describe('the assembled application', () => {
         expanded.unreachable,
         `controls covered by something else with the Build coordinates expanded at ${width}x${height}`,
       ).toEqual([]);
+      const expandedRail = await railIntegrity(page);
+      expect(
+        railInvariants(expandedRail),
+        `the rail with the Build coordinates expanded at ${width}x${height}`,
+      ).toEqual({ railOverflow: 0, offScreen: [], stuck: [] });
+      expect(
+        [...new Set(expandedRail.widths)],
+        `the rail's panels are not all one width with the coordinates expanded at ${width}x${height}`,
+      ).toHaveLength(1);
+
+      // A real wheel gesture, because "the panel is a scroll container" and
+      // "rolling the wheel over the panel scrolls it" are different claims and
+      // only the second is what a player does. Expanded, the Build panel has
+      // more content than box at every viewport here, so this state is where
+      // the gesture can be demanded rather than merely offered.
+      const buildBox = await page.locator('.hud-build').boundingBox();
+      expect(buildBox, `the Build panel has no box at ${width}x${height}`).not.toBeNull();
+      if (buildBox !== null) {
+        await page.mouse.move(buildBox.x + buildBox.width / 2, buildBox.y + buildBox.height / 2);
+        const scrolled = await page.evaluate(() => {
+          const panel = document.querySelector<HTMLElement>('.hud-build');
+          const rail = document.querySelector<HTMLElement>('.hud__rail');
+          if (panel === null || rail === null) return null;
+          panel.scrollTop = 0;
+          rail.scrollTop = 0;
+          return { overflow: panel.scrollHeight - panel.clientHeight };
+        });
+        expect(scrolled?.overflow ?? 0, `the expanded Build panel fits its box at ${width}x${height}`).toBeGreaterThan(
+          0,
+        );
+        await page.mouse.wheel(0, 200);
+        await expect
+          .poll(async () => page.evaluate(() => document.querySelector('.hud-build')?.scrollTop ?? 0), {
+            message: `the wheel did not scroll the Build panel at ${width}x${height}`,
+          })
+          .toBeGreaterThan(0);
+        expect(
+          await page.evaluate(() => document.querySelector('.hud__rail')?.scrollTop ?? -1),
+          `the wheel scrolled the rail rather than the panel at ${width}x${height}`,
+        ).toBe(0);
+      }
+
       // Folded away again, so the next viewport starts from the same state.
       if ((await coordinates.getAttribute('aria-expanded')) === 'true') await coordinates.click();
 
