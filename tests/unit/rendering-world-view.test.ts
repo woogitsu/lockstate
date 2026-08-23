@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ConstructionSnapshot } from '../../src/simulation/construction/system';
+import { canBuildAt } from '../../src/simulation/world/buildability';
 import { chunkCoordinate, tileCoordinate } from '../../src/simulation/world/coordinates';
 import { createParcelRect } from '../../src/simulation/world/parcel';
 import { SparseWorld } from '../../src/simulation/world/sparse-world';
@@ -85,6 +86,93 @@ describe('world render view', () => {
     // The parcel covers land north of the owned chunk; the chunk covers its own.
     expect(view.isTileOwned(3, -4)).toBe(true);
     expect(view.isTileOwned(9, 9)).toBe(false);
+  });
+
+  /**
+   * Issue #93. `registerParcel` permits overlapping bounds, and the two sides
+   * used to answer "is this tile owned?" from independent implementations: the
+   * simulation asked whether the *lowest-id* parcel containing the tile was
+   * owned, the renderer whether *any* owned parcel did. They agreed everywhere
+   * except one case -- a tile whose lowest-id covering parcel was unowned
+   * while a higher-id one was owned, which the simulation called unowned and
+   * the renderer called owned.
+   *
+   * Every assertion below compares the two sides rather than trusting either,
+   * so the rule can change but the two cannot drift apart again. Which answer
+   * wins in that one case is ADR 0019, which is Proposed rather than Accepted;
+   * if it is decided the other way these expectations change while the
+   * compare-both-sides shape of them does not.
+   */
+  describe('overlapping parcels', () => {
+    // `a-marsh` sorts before `z-estate` in code-unit order, which is the order
+    // `getAllParcels` (and therefore the old rule) walked.
+    const OVERLAP_TILES = [
+      // Both parcels: only the owned one counts, so this is owned. Under the
+      // old simulation rule the unowned `a-marsh` masked it.
+      { x: 2, y: -5, owned: true },
+      { x: 7, y: -3, owned: true },
+      // `a-marsh` alone, unowned, in an unowned chunk.
+      { x: 2, y: -7, owned: false },
+      // `z-estate` alone, owned.
+      { x: 2, y: -2, owned: true },
+      // Neither parcel, unowned chunk.
+      { x: 12, y: -5, owned: false },
+    ] as const;
+
+    function overlappingWorld(): SparseWorld {
+      const world = new SparseWorld(8);
+      // Loaded but deliberately NOT owned, so the parcels alone decide.
+      world.load({ x: chunkCoordinate(0), y: chunkCoordinate(-1) });
+      world.registerParcel({ id: 'a-marsh', bounds: createParcelRect(0, -8, 8, 6), basePrice: 50 });
+      world.registerParcel({ id: 'z-estate', bounds: createParcelRect(0, -6, 8, 6), basePrice: 900 });
+      world.setParcelOwned('z-estate', true);
+      return world;
+    }
+
+    it('answers ownership identically in the simulation and in the render view', () => {
+      const world = overlappingWorld();
+      const view = WorldRenderView.fromSnapshot(world.snapshot());
+      const sample = createTileSample();
+
+      for (const { x, y, owned } of OVERLAP_TILES) {
+        const simulation = world.isTileOwned(tile(x, y));
+        expect(simulation, `simulation, tile ${x},${y}`).toBe(owned);
+        expect(view.isTileOwned(x, y), `render view, tile ${x},${y}`).toBe(simulation);
+
+        // The overlay reads `owned` off `readTile`, not off `isTileOwned`.
+        view.readTile(x, y, sample);
+        expect(sample.owned, `readTile, tile ${x},${y}`).toBe(simulation);
+      }
+    });
+
+    it('never highlights land the simulation then refuses to build on', () => {
+      const world = overlappingWorld();
+      const view = WorldRenderView.fromSnapshot(world.snapshot());
+
+      for (const { x, y } of OVERLAP_TILES) {
+        const buildable = canBuildAt(world, tile(x, y)).reason !== 'unowned_land';
+        expect(view.isTileOwned(x, y), `tile ${x},${y}`).toBe(buildable);
+      }
+    });
+
+    it('keeps that answer across a snapshot round trip, in either registration order', () => {
+      const forwards = overlappingWorld();
+      const restored = SparseWorld.fromSnapshot(JSON.parse(JSON.stringify(forwards.snapshot())));
+
+      // Registered high-id first: "any owned parcel" is order-independent, so
+      // insertion order cannot change the answer either.
+      const backwards = new SparseWorld(8);
+      backwards.load({ x: chunkCoordinate(0), y: chunkCoordinate(-1) });
+      backwards.registerParcel({ id: 'z-estate', bounds: createParcelRect(0, -6, 8, 6), basePrice: 900 });
+      backwards.registerParcel({ id: 'a-marsh', bounds: createParcelRect(0, -8, 8, 6), basePrice: 50 });
+      backwards.setParcelOwned('z-estate', true);
+
+      for (const { x, y, owned } of OVERLAP_TILES) {
+        expect(restored.isTileOwned(tile(x, y)), `restored, tile ${x},${y}`).toBe(owned);
+        expect(backwards.isTileOwned(tile(x, y)), `reordered, tile ${x},${y}`).toBe(owned);
+        expect(WorldRenderView.fromSnapshot(backwards.snapshot()).isTileOwned(x, y), `reordered view, tile ${x},${y}`).toBe(owned);
+      }
+    });
   });
 
   it('reports the tile bounds of everything materialised, for framing the camera', () => {

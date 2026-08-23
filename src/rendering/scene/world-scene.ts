@@ -6,7 +6,7 @@ import {
 } from '../../input';
 import { AtlasFrameIndex } from '../assets/atlas-frame-index';
 import { AtlasLibrary } from '../assets/atlas-library';
-import { screenToWorld, visibleWorldBounds, zoomAtScreenPoint } from '../camera';
+import { type CameraState, screenToWorld, visibleWorldBounds, zoomAtScreenPoint } from '../camera';
 import {
   type BuildToolPort,
   type EdgeTarget,
@@ -138,7 +138,7 @@ export class WorldScene extends Phaser.Scene {
       (pointer: Phaser.Input.Pointer, _objects: Phaser.GameObjects.GameObject[], _deltaX: number, deltaY: number) => {
         const camera = this.cameras.main;
         const next = zoomAtScreenPoint(
-          { scroll: { x: camera.scrollX, y: camera.scrollY }, zoom: camera.zoom },
+          this.cameraState(),
           { x: pointer.x, y: pointer.y },
           camera.zoom * (deltaY > 0 ? 0.9 : 1.1),
           ZOOM_BOUNDS,
@@ -183,8 +183,15 @@ export class WorldScene extends Phaser.Scene {
           // committing a wall the player was actually trying to scroll past.
           this.cancelBuild();
           const camera = this.cameras.main;
+          const panned = this.cameraState();
           const next = zoomAtScreenPoint(
-            { scroll: { x: camera.scrollX - gesture.deltaX / camera.zoom, y: camera.scrollY - gesture.deltaY / camera.zoom }, zoom: camera.zoom },
+            {
+              ...panned,
+              scroll: {
+                x: panned.scroll.x - gesture.deltaX / camera.zoom,
+                y: panned.scroll.y - gesture.deltaY / camera.zoom,
+              },
+            },
             { x: gesture.centerX, y: gesture.centerY },
             camera.zoom * gesture.scale,
             ZOOM_BOUNDS,
@@ -287,12 +294,34 @@ export class WorldScene extends Phaser.Scene {
     return this.input.manager.pointers.filter((pointer) => pointer.isDown && pointer.wasTouch).length;
   }
 
-  private worldPointOf(pointer: Phaser.Input.Pointer): { readonly x: number; readonly y: number } {
+  /**
+   * The live camera, in the shape `src/rendering/camera/` transforms.
+   *
+   * One reader for all four call sites (wheel zoom, pinch zoom, pointer-to-
+   * world and culling) so none of them can be left behind holding a stale
+   * shape -- `viewport` became mandatory in #115 precisely because a
+   * conversion that does not know the viewport size is wrong at every zoom
+   * except 1.
+   */
+  private cameraState(): CameraState {
     const camera = this.cameras.main;
-    return screenToWorld(
-      { x: pointer.x, y: pointer.y },
-      { scroll: { x: camera.scrollX, y: camera.scrollY }, zoom: camera.zoom },
-    );
+    return {
+      scroll: { x: camera.scrollX, y: camera.scrollY },
+      zoom: camera.zoom,
+      viewport: { width: camera.width, height: camera.height },
+    };
+  }
+
+  /**
+   * The world point under a pointer.
+   *
+   * `pointer.x`/`pointer.y` are logical CSS pixels in canvas space, and the
+   * main camera's viewport is the whole canvas, so they need no adjustment
+   * before the transform. `tests/browser/camera-coordinates.spec.ts` drives a
+   * real mouse at a real camera to check both halves of that sentence.
+   */
+  private worldPointOf(pointer: Phaser.Input.Pointer): { readonly x: number; readonly y: number } {
+    return screenToWorld({ x: pointer.x, y: pointer.y }, this.cameraState());
   }
 
   private beginBuild(pointer: Phaser.Input.Pointer): void {
@@ -362,14 +391,7 @@ export class WorldScene extends Phaser.Scene {
   }
 
   private visibleTiles(): TileRange {
-    const camera = this.cameras.main;
-    return visibleTileRange(
-      visibleWorldBounds(
-        { scroll: { x: camera.scrollX, y: camera.scrollY }, zoom: camera.zoom },
-        { width: camera.width, height: camera.height },
-      ),
-      1,
-    );
+    return visibleTileRange(visibleWorldBounds(this.cameraState()), 1);
   }
 
   /** Points the camera at the prison the first time one exists, then never again. */

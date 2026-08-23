@@ -95,8 +95,35 @@ jobs:
       - name: Verify Supabase SQL (migrations + pgTAP)
         run: pnpm verify:sql
 
+      # A bare `test -z` exits 1 and says nothing, so a failure here is
+      # undiagnosable from the log -- which is exactly what happened on pull
+      # requests #98 and #101, where the same verification chain leaves the
+      # tree clean locally. The gate is unchanged; it now prints the evidence.
+      #
+      # The extra probes are for the most likely cause on this runner: a
+      # self-hosted workspace is reused between jobs, and the `assets` job
+      # materialises Git LFS content into it. Whether `git status` then sees
+      # those PNGs as modified depends on git-lfs being configured in *this*
+      # job, which provisions no LFS. If that is what is happening, the
+      # output below names it instead of leaving the next reader to guess.
       - name: Verify generated output did not modify tracked files
-        run: test -z "$(git status --porcelain)"
+        run: |
+          set -uo pipefail
+          changed="$(git status --porcelain)"
+          if [ -z "$changed" ]; then
+            echo "Working tree is clean."
+            exit 0
+          fi
+          echo "::error::Verification modified tracked files, or the workspace was not clean to begin with."
+          echo "--- git status --porcelain ---"
+          echo "$changed"
+          echo "--- git diff --stat ---"
+          git diff --stat || true
+          echo "--- is git-lfs available in this job? ---"
+          git lfs version || echo "git-lfs is NOT installed for this job"
+          echo "--- what filter do the runtime atlases declare? ---"
+          git check-attr filter -- public/assets/actors/actor.cook.base.idle.png || true
+          exit 1
 
   # Issue #32 requires that missing, inconsistent or oversized assets fail
   # validation before build/release. `tooling/validate-runtime-atlas.mjs` reads
