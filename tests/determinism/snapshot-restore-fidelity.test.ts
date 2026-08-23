@@ -67,7 +67,7 @@ function buildCarriedScopeSession(): SimulationRuntime {
  * stock the build orders draw from.
  */
 function reapplySessionSetup(runtime: SimulationRuntime): void {
-  runtime.containers.require('construction-materials').deposit('brick', 500);
+  runtime.containers.require('construction-materials').deposit('item.brick', 500);
 }
 
 const CARRIED_SCOPE_COMMANDS: readonly { readonly id: string; readonly executeAtTick: number; readonly payload: ReturnType<typeof packCommand> }[] = [

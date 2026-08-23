@@ -102,7 +102,7 @@ export function buildDeterminismScenario(masterSeed: number = SCENARIO_SEED, opt
 
   // -- operations: real stock, a real delivery container and two carry jobs.
   const store = new Container('store');
-  store.deposit('brick', 40);
+  store.deposit('item.brick', 40);
   runtime.containers.register(store);
   // Registered in descending entity id, so a job system that trusted
   // registration order instead of `idleWorkers()`'s sort would diverge.
@@ -110,8 +110,8 @@ export function buildDeterminismScenario(masterSeed: number = SCENARIO_SEED, opt
   runtime.searchContainerLocations.set('store', TILE(2, 6));
   runtime.searchContainerLocations.set('construction-materials', TILE(3, 6));
   for (const job of incidental([
-    { id: 'job-b', priority: 1, itemId: 'brick', quantity: 8, sourceContainerId: 'store', sourceTile: TILE(2, 6), destinationContainerId: 'construction-materials', destinationTile: TILE(3, 6) },
-    { id: 'job-a', priority: 1, itemId: 'brick', quantity: 8, sourceContainerId: 'store', sourceTile: TILE(2, 6), destinationContainerId: 'construction-materials', destinationTile: TILE(3, 6) },
+    { id: 'job-b', priority: 1, itemId: 'item.brick', quantity: 8, sourceContainerId: 'store', sourceTile: TILE(2, 6), destinationContainerId: 'construction-materials', destinationTile: TILE(3, 6) },
+    { id: 'job-a', priority: 1, itemId: 'item.brick', quantity: 8, sourceContainerId: 'store', sourceTile: TILE(2, 6), destinationContainerId: 'construction-materials', destinationTile: TILE(3, 6) },
   ])) {
     runtime.jobs.submitCarryItem(job, 0);
   }
