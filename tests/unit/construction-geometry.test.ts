@@ -59,6 +59,22 @@ function runToCompletion(kernel: Kernel, ticks = 200): void {
   for (let i = 0; i < ticks; i += 1) kernel.step();
 }
 
+/** The envelope fields a construction-only save needs, so a test only supplies the construction snapshot it cares about. */
+const envelopeInput = (construction: ConstructionSnapshot, world: SparseWorld = loadedWorld()) => ({
+  gameVersion: 'test',
+  prisonId: 'prison-1',
+  revision: 1,
+  createdAt: 1,
+  updatedAt: 1,
+  kernel: { tick: 0, expectedSequence: 0, rngStates: [], commands: [] },
+  // The *same* world the orders were built in -- the wall lives in its edge
+  // layer, not in the order, so snapshotting a fresh world would prove
+  // nothing about whether the geometry survives.
+  world: world.snapshot(),
+  construction,
+});
+
+
 describe('a build order carries the tile edge it occupies', () => {
   it('names only the two edges the world actually stores', () => {
     // `SparseWorld` has `topEdge` and `leftEdge` and nothing else: the south
@@ -494,20 +510,6 @@ describe('a build order with an edge survives the save envelope', () => {
    * optional `edge` was declared there, finishing a wall made the game
    * unsaveable, which a headless construction test could never notice.
    */
-  const envelopeInput = (construction: ConstructionSnapshot, world: SparseWorld = loadedWorld()) => ({
-    gameVersion: 'test',
-    prisonId: 'prison-1',
-    revision: 1,
-    createdAt: 1,
-    updatedAt: 1,
-    kernel: { tick: 0, expectedSequence: 0, rngStates: [], commands: [] },
-    // The *same* world the orders were built in -- the wall lives in its edge
-    // layer, not in the order, so snapshotting a fresh world would prove
-    // nothing about whether the geometry survives.
-    world: world.snapshot(),
-    construction,
-  });
-
   it('writes and reads back a finished wall on the current schema version', () => {
     const world = loadedWorld();
     const construction = new ConstructionSystem(world);
@@ -599,5 +601,123 @@ describe('a save written before the edge field still loads', () => {
     expect(construction.getOrder('legacy-wall')?.state).toBe('completed');
     expect(resolveBuildEdge(construction.getOrder('legacy-wall')!)).toBe(DEFAULT_BUILD_EDGE);
     expect(world.getTopEdge(tile(9, 9))).toBe(WALL_EDGE_NUMERIC_ID);
+  });
+});
+
+describe('the build gesture that is still open survives the save envelope', () => {
+  /**
+   * #108. `ConstructionSystem` keeps the newest gesture in a buffer until the
+   * next one arrives, so after any build the buffer is non-empty -- and until
+   * `snapshot()` emitted it, every save was written without its newest
+   * gesture. `constructionSnapshotSchema` is `.strict()`, so the two keys had
+   * to be named there as well or the save carrying them would be rejected
+   * outright rather than quietly trimmed.
+   */
+  function place(construction: ConstructionSystem, orderId: string, x: number, transactionId?: string): void {
+    construction.submitOrder(createBuildOrder(orderId, 'wall-brick', tile(x, 2)));
+    construction.registerTransactionOrder(orderId, transactionId);
+  }
+
+  it('writes the open gesture and reads it back on the current schema version', () => {
+    const world = loadedWorld();
+    const construction = new ConstructionSystem(world);
+    place(construction, 'wall-a', 1, 'gesture-a');
+    place(construction, 'wall-b1', 2, 'gesture-b');
+    place(construction, 'wall-b2', 3, 'gesture-b');
+
+    const envelope = createSaveEnvelope(envelopeInput(construction.snapshot(), world));
+    expect(envelope.saveSchemaVersion).toBe(SAVE_SCHEMA_VERSION);
+
+    const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)) as unknown);
+    expect(decoded.ok, decoded.ok ? '' : decoded.error.message).toBe(true);
+    if (!decoded.ok) return;
+
+    expect(decoded.migrated).toBe(false);
+    expect(decoded.value.payload.construction.undoStack).toEqual([['wall-a']]);
+    expect(decoded.value.payload.construction.currentTransaction).toEqual(['wall-b1', 'wall-b2']);
+    expect(decoded.value.payload.construction.currentTransactionId).toBe('gesture-b');
+
+    // The payload is only worth carrying if a load acts on it: the first undo
+    // after this save takes back the gesture the player made last.
+    const reloaded = new ConstructionSystem(loadedWorld());
+    // The schema validates tile coordinates as plain integers, so a decoded
+    // payload has lost the `TileCoordinate` brand -- the same re-narrowing
+    // `restoreSimulationRuntime` does on the way back in.
+    reloaded.restore(decoded.value.payload.construction as unknown as ConstructionSnapshot);
+    reloaded.undo();
+    expect(reloaded.getOrder('wall-b1')?.state).toBe('cancelled');
+    expect(reloaded.getOrder('wall-b2')?.state).toBe('cancelled');
+    expect(reloaded.getOrder('wall-a')?.state).toBe('approved');
+  });
+
+  it('omits both keys when no gesture is open, so a save with no pending build is unchanged', () => {
+    const construction = new ConstructionSystem(loadedWorld());
+    place(construction, 'wall-a', 1, 'gesture-a');
+    construction.undo(); // flushes and pops the buffer: nothing is left open
+
+    const snapshot = construction.snapshot();
+    expect(snapshot).not.toHaveProperty('currentTransaction');
+    expect(snapshot).not.toHaveProperty('currentTransactionId');
+
+    const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(createSaveEnvelope(envelopeInput(snapshot)))) as unknown);
+    expect(decoded.ok).toBe(true);
+  });
+
+  it('emits the buffer with no id when the gesture has none, rather than a key holding undefined', () => {
+    // `registerTransactionOrder(id, undefined)` is a real state -- the command
+    // carries no transaction id -- and an explicit `currentTransactionId:
+    // undefined` would be checksummed and then dropped by `JSON.stringify` on
+    // the way into storage, so the reloaded payload would no longer match its
+    // own checksum.
+    const construction = new ConstructionSystem(loadedWorld());
+    place(construction, 'wall-a', 1);
+
+    const snapshot = construction.snapshot();
+    expect(snapshot.currentTransaction).toEqual(['wall-a']);
+    expect(snapshot).not.toHaveProperty('currentTransactionId');
+
+    const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(createSaveEnvelope(envelopeInput(snapshot)))) as unknown);
+    expect(decoded.ok, decoded.ok ? '' : decoded.error.message).toBe(true);
+  });
+
+  it('still loads a save written before the open gesture was persisted, with no migration step', () => {
+    // Exactly the shape every save written by the buggy build has: both stacks
+    // present, no `currentTransaction` key anywhere, and the newest gesture
+    // already absent -- it was never written. Loading one must behave as it
+    // did before the fix (the gesture is simply not in the history), not fail
+    // and not invent an entry for it.
+    const construction = new ConstructionSystem(loadedWorld());
+    construction.restore({
+      orders: [
+        {
+          id: 'wall-a',
+          definitionId: 'wall-brick',
+          location: tile(1, 2),
+          state: 'approved',
+          progress: 0,
+          materialsAllocated: [],
+        },
+        {
+          id: 'wall-b',
+          definitionId: 'wall-brick',
+          location: tile(2, 2),
+          state: 'approved',
+          progress: 0,
+          materialsAllocated: [],
+        },
+      ],
+      undoStack: [['wall-a']],
+      redoStack: [],
+    });
+
+    construction.undo();
+    expect(construction.getOrder('wall-a')?.state).toBe('cancelled');
+    // `wall-b`'s gesture is not in the history, because the build that wrote
+    // this save never put it there. The fix stops new saves losing it; it
+    // cannot recover one an older save never recorded.
+    expect(construction.getOrder('wall-b')?.state).toBe('approved');
+
+    const envelope = createSaveEnvelope(envelopeInput(construction.snapshot()));
+    expect(decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)) as unknown).ok).toBe(true);
   });
 });

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createSaveEnvelope, decodeSaveEnvelope, SAVE_SCHEMA_VERSION } from '../../src/persistence/save-schema';
-import type { SimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { packCommand } from '../../src/simulation/protocol/commands';
 import {
   captureSessionSnapshot,
   restoreSimulationRuntime,
@@ -375,5 +376,70 @@ describe('a populated prison survives save -> load', () => {
     // The world and construction halves still come back, exactly as V2 did.
     expect(restored.world.snapshot()).toEqual(runtime.world.snapshot());
     expect(scope.restored.length).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * #108, stated as the thing a player does: build a wall, save, load, undo.
+ *
+ * This is separate from the populated-prison block above because it needs a
+ * session whose *only* interesting state is the build history, and because it
+ * has to drive `Undo` as a real command through the kernel rather than
+ * calling `ConstructionSystem.undo()` directly -- the restored runtime has to
+ * wire the construction command handler for the undo to reach anything at
+ * all.
+ */
+describe('a build history survives save -> load', () => {
+  it('undoes the gesture the player made last, not the one before it', () => {
+    const runtime = createNewSimulationRuntime(SCENARIO_SEED);
+
+    // Two gestures, the newest of two orders. The newest one is the case that
+    // was silently dropped: it is still in `ConstructionSystem`'s open buffer
+    // at save time, and nothing flushes that buffer except the next gesture
+    // or an undo.
+    const placements: readonly { readonly id: string; readonly y: number; readonly transactionId: string }[] = [
+      { id: 'wall-a1', y: 3, transactionId: 'gesture-a' },
+      { id: 'wall-b1', y: 4, transactionId: 'gesture-b' },
+      { id: 'wall-b2', y: 5, transactionId: 'gesture-b' },
+    ];
+    placements.forEach((placement, sequence) => {
+      runtime.kernel.submitCommand(
+        `place-${sequence}`,
+        sequence,
+        0,
+        packCommand({ type: 'PlaceBuildOrder', orderId: placement.id, definitionId: 'wall-brick', x: 3, y: placement.y, transactionId: placement.transactionId }),
+      );
+    });
+    step(runtime, 1);
+    for (const placement of placements) {
+      expect(runtime.construction.getOrder(placement.id)?.state).not.toBe('cancelled');
+    }
+
+    const restored = saveAndLoad(runtime);
+    for (const placement of placements) {
+      expect(restored.construction.getOrder(placement.id), placement.id).toBeDefined();
+    }
+
+    // `Undo` through the kernel, at the restored session's own tick and
+    // sequence -- the same path a keybinding or an undo button would take.
+    restored.kernel.submitCommand('undo-1', placements.length, restored.kernel.tick, packCommand({ type: 'Undo' }));
+    step(restored, 1);
+
+    expect(restored.construction.getOrder('wall-b1')?.state).toBe('cancelled');
+    expect(restored.construction.getOrder('wall-b2')?.state).toBe('cancelled');
+    expect(restored.construction.getOrder('wall-a1')?.state).not.toBe('cancelled');
+
+    // The older gesture is still there to be taken back next, rather than
+    // having been consumed by the first undo.
+    restored.kernel.submitCommand('undo-2', placements.length + 1, restored.kernel.tick, packCommand({ type: 'Undo' }));
+    step(restored, 1);
+    expect(restored.construction.getOrder('wall-a1')?.state).toBe('cancelled');
+
+    // ...and redo brings them back in the reverse order, so the save carried
+    // a working stack and not just a list.
+    restored.kernel.submitCommand('redo-1', placements.length + 2, restored.kernel.tick, packCommand({ type: 'Redo' }));
+    step(restored, 1);
+    expect(restored.construction.getOrder('wall-a1')?.state).toBe('approved');
+    expect(restored.construction.getOrder('wall-b1')?.state).toBe('cancelled');
   });
 });
