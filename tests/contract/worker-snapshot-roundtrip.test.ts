@@ -120,6 +120,64 @@ describe('worker snapshot protocol: the only way persisted state leaves the simu
     expect(future.machine.state).not.toBe('paused');
   });
 
+  /**
+   * Issue #103: a fault raised while handling a specific request is a
+   * response to that request, and the main thread resolves pending requests
+   * by `replyTo` alone (`WorkerSessionHost.handleMessage` discards a
+   * `protocol/error` without one). An uncorrelated fault therefore left the
+   * `initialize` promise pending until its 15 s timeout, and the player was
+   * told the worker had not replied rather than that their save was bad.
+   *
+   * ADR 0003 decision 2 already permits this -- "A protocol fault may
+   * optionally identify the rejected request" -- and its 2026-08-23
+   * amendment states the rule: "A fault that *was* prompted by a request is
+   * free to carry the `replyTo` its schema already permits", while an
+   * unsolicited message must not present itself as a request response.
+   */
+  it('correlates a refused snapshot to the initialize that carried it', () => {
+    const { port, machine } = startWorker();
+    const snapshot = requestSnapshot(port, machine);
+
+    const corrupt = startWorker({
+      kind: 'snapshot',
+      snapshot: { ...snapshot, data: { ...snapshot.data, world: { ...snapshot.data.world, chunks: 'not-an-array' } } },
+    });
+
+    const fault = corrupt.port.ofKind('protocol/error')[0];
+    // `startWorker` sends its initialize with messageId 'init'.
+    expect(fault.replyTo).toBe('init');
+    expect(fault.payload.code).toBe('snapshot-incompatible');
+  });
+
+  it('stays usable after refusing a snapshot, so the next generation can be tried on the same worker', () => {
+    const { port, machine } = startWorker();
+    const snapshot = requestSnapshot(port, machine);
+
+    const corrupt = startWorker({
+      kind: 'snapshot',
+      snapshot: { ...snapshot, data: { ...snapshot.data, world: { ...snapshot.data.world, chunks: 'not-an-array' } } },
+    });
+
+    // Refusing a snapshot installs no runtime, so the worker is still
+    // uninitialized in substance. Reporting it as `faulted` made one bad save
+    // cost the whole tab: `handleInitialize` accepts only `uninitialized`, so
+    // every later load -- including one from a good generation -- came back as
+    // `already-initialized`.
+    expect(corrupt.machine.state).toBe('uninitialized');
+    expect(corrupt.port.ofKind('protocol/error')[0].payload.recoverable).toBe(true);
+
+    corrupt.machine.handleMessage({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: 'init-again',
+      kind: 'simulation/initialize',
+      payload: { sessionId: 'session-2', source: { kind: 'snapshot', snapshot } },
+    } as never);
+
+    expect(corrupt.machine.state).toBe('paused');
+    expect(corrupt.port.ofKind('simulation/ready')).toHaveLength(1);
+    expect(corrupt.port.ofKind('protocol/error')).toHaveLength(1);
+  });
+
   it('faults rather than restoring a structurally corrupt snapshot', () => {
     const { port, machine } = startWorker();
     const snapshot = requestSnapshot(port, machine);

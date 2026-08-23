@@ -1,4 +1,24 @@
-export type ClockControl = { readonly mode: 'paused' } | { readonly mode: 'running'; readonly speed: 1 | 2 | 4 };
+/**
+ * The speed ladder, declared once.
+ *
+ * It used to be spelled in four places across three layers -- here, the
+ * protocol's `speedSchema`, the HUD's `HUD_SPEEDS`, and three inline
+ * `1 | 2 | 4` annotations in `src/ui/simulation-commands.ts` -- so adding a
+ * speed meant finding all of them, and a missed one failed as a Zod rejection
+ * at the worker boundary rather than as a type error.
+ *
+ * This is the authority. Everything that can import the type does; the two
+ * that cannot are pinned to it by `tests/unit/clock-speed-vocabulary.test.ts`:
+ * the protocol schema needs Zod literals, and the HUD may not import
+ * `src/simulation/**` at all (`AGENTS.md` boundary 1, enforced by
+ * `tests/unit/ui-hud-messages.test.ts`). That is the same shape as
+ * `HUD_BUILD_EDGES`, which is a deliberate re-declaration with a pin.
+ */
+export const SIMULATION_SPEEDS = [1, 2, 4] as const;
+
+export type SimulationSpeed = (typeof SIMULATION_SPEEDS)[number];
+
+export type ClockControl = { readonly mode: 'paused' } | { readonly mode: 'running'; readonly speed: SimulationSpeed };
 
 export class FixedStepClock {
   private lastMilliseconds: number | undefined;

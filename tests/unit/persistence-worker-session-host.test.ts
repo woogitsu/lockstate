@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { WorkerSessionHost } from '../../src/persistence/session/worker-session-host';
+import { WorkerFaultError, WorkerSessionHost } from '../../src/persistence/session/worker-session-host';
+import { SnapshotRestoreRejectedError } from '../../src/persistence/session/runtime-host';
 import type { SimulationClient } from '../../src/simulation/worker/client';
 import { SIMULATION_PROTOCOL_VERSION } from '../../src/simulation/protocol/types';
 import { SESSION_SNAPSHOT_SCHEMA_ID, SESSION_SNAPSHOT_SCHEMA_VERSION } from '../../src/simulation/runtime/restore-session';
@@ -146,6 +147,44 @@ describe('WorkerSessionHost: failures surface as errors, never as unsettled prom
     const { client, host } = buildHost();
     client.sendShouldThrow = new Error('worker is gone');
     await expect(host.startNew(0)).rejects.toThrow(/worker is gone/);
+  });
+
+  /**
+   * Issue #103: only a `snapshot-incompatible` fault may cost the session
+   * layer a generation. `SessionController.loadPrison` demotes on
+   * `SnapshotRestoreRejectedError`, and demoting deletes -- so a timeout or a
+   * dead worker must not produce that error, or one broken worker would
+   * delete the player's newest good saves one load at a time.
+   */
+  it('re-raises a refused snapshot as SnapshotRestoreRejectedError, keeping the fault detail', async () => {
+    const { client, host } = buildHost();
+    const started = host.startFromSnapshot(BUNDLE as never);
+    client.reply('protocol/error', { code: 'snapshot-incompatible', message: 'Snapshot could not be restored: bad world', recoverable: true });
+
+    await expect(started).rejects.toThrow(SnapshotRestoreRejectedError);
+    await expect(started).rejects.toThrow(/Snapshot could not be restored: bad world/);
+  });
+
+  it('does not blame the snapshot for a worker that never replied', async () => {
+    vi.useFakeTimers();
+    try {
+      const { host } = buildHost({ replyTimeoutMs: 1_000 });
+      const started = host.startFromSnapshot(BUNDLE as never);
+      const assertion = expect(started).rejects.not.toBeInstanceOf(SnapshotRestoreRejectedError);
+      await vi.advanceTimersByTimeAsync(1_000);
+      await assertion;
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('does not blame the snapshot for a fault about something else', async () => {
+    const { client, host } = buildHost();
+    const started = host.startFromSnapshot(BUNDLE as never);
+    client.reply('protocol/error', { code: 'already-initialized', message: 'Kernel is already initialized.', recoverable: false });
+
+    await expect(started).rejects.toThrow(WorkerFaultError);
+    await expect(started).rejects.not.toBeInstanceOf(SnapshotRestoreRejectedError);
   });
 
   it('stop rejects any still-pending request so nothing is left dangling', async () => {

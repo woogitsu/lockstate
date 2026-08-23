@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryLocalSaveStore } from '../../src/persistence/local/memory-store';
 import { PrisonSaveRepository } from '../../src/persistence/local/repository';
 import { InProcessSessionHost, type SessionRuntimeHost } from '../../src/persistence/session/runtime-host';
+import { computeSaveChecksum } from '../../src/persistence/checksum';
+import type { SaveEnvelope } from '../../src/persistence/save-schema';
 import { SessionController } from '../../src/persistence/session/session-controller';
 import { packCommand } from '../../src/simulation/protocol/commands';
 
@@ -368,5 +370,140 @@ describe('SessionController: a failed createPrison leaves no slot behind (#65)',
     expect((await controller.createPrison('prison-1')).ok).toBe(true);
     expect((await repository.list()).map((prison) => prison.prisonId)).toEqual(['prison-1']);
     expect((await repository.list())[0]!.generationIds).toHaveLength(1);
+  });
+});
+
+/**
+ * Issue #103, defect 1: generation rollback only ever covered *decode*
+ * failures. A save that passes schema, migration and checksum and then fails
+ * semantic restore was returned as `{ ok: true, outcome: 'current' }`, so it
+ * stayed current for ever and every later load in that tab retried it —
+ * exactly the situation `PrisonSaveRepository`'s rollback exists to recover
+ * from.
+ *
+ * Such saves are not hypothetical: `save-schema.ts` deliberately does not
+ * duplicate `SparseWorld.fromSnapshot`'s semantic checks, so every one of
+ * those checks describes a save that decodes and cannot be restored.
+ */
+describe('SessionController: a save that decodes but cannot be restored is demoted (#103)', () => {
+  /**
+   * Structurally valid, semantically impossible: the terrain RLE covers 5
+   * tiles of a 32x32 chunk. The save schema accepts it (it validates the RLE
+   * as pairs of integers, not against the chunk's size), and
+   * `SparseWorld.fromSnapshot` rejects it with a `WorldSnapshotError`.
+   */
+  const UNRESTORABLE_WORLD = {
+    version: 1,
+    chunkSize: 32,
+    ownedChunks: [],
+    chunks: [
+      { x: 0, y: 0, lifecycle: 'loaded', geometryRevision: 0, contentRevision: 0, dirty: false, terrain: [[1, 5]] },
+    ],
+  };
+
+  /** Writes a newest generation whose envelope is valid and whose payload cannot be restored. */
+  async function saveUnrestorableGeneration(repository: PrisonSaveRepository, prisonId: string): Promise<void> {
+    const current = await repository.loadCurrent(prisonId);
+    if (!current.ok) throw new Error('this fixture needs one good generation first');
+
+    const broken = JSON.parse(JSON.stringify(current.envelope)) as {
+      revision: number;
+      updatedAt: number;
+      checksum: string;
+      payload: { world: unknown };
+    };
+    broken.payload.world = UNRESTORABLE_WORLD;
+    broken.revision += 1;
+    broken.updatedAt += 1;
+    broken.checksum = computeSaveChecksum(broken.payload as never);
+
+    // Through the ordinary write path, so the save is stored only if it is
+    // genuinely schema- and checksum-valid.
+    const written = await repository.save(prisonId, broken as unknown as SaveEnvelope);
+    expect(written.ok).toBe(true);
+  }
+
+  it('demotes the unrestorable generation, loads the previous one and reports the load as recovered', async () => {
+    const { controller, repository, host } = buildController();
+    await controller.createPrison('prison-1');
+    const runtime = host.getRuntime()!;
+    for (let i = 0; i < 7; i += 1) runtime.kernel.step();
+    await controller.saveNow(); // a good generation carrying tick 7
+    await saveUnrestorableGeneration(repository, 'prison-1');
+
+    const outcome = await controller.loadPrison('prison-1');
+
+    expect(outcome).toMatchObject({ ok: true, recovered: true });
+    expect(host.getRuntime()!.kernel.tick).toBe(7);
+  });
+
+  it('leaves nothing behind for the next load to pick', async () => {
+    const { controller, repository } = buildController();
+    await controller.createPrison('prison-1');
+    await controller.saveNow();
+    await saveUnrestorableGeneration(repository, 'prison-1');
+
+    await controller.loadPrison('prison-1');
+
+    // The demoted generation is gone from the window and from storage, so the
+    // next load is an ordinary `current` load rather than a repeat of the
+    // failure.
+    const reloaded = await controller.loadPrison('prison-1');
+    expect(reloaded).toMatchObject({ ok: true, recovered: false });
+
+    // Three generations were written (create, save, the unrestorable one) and
+    // the third is gone from the window, with the pointer on its predecessor.
+    const [metadata] = await repository.list();
+    expect(metadata!.generationIds).toHaveLength(2);
+    expect(metadata!.currentGenerationId).toBe(metadata!.generationIds[1]);
+
+    const loaded = await repository.loadCurrent('prison-1');
+    expect(loaded.ok && loaded.outcome).toBe('current');
+    expect(loaded.ok && JSON.stringify(loaded.envelope.payload.world)).not.toBe(JSON.stringify(UNRESTORABLE_WORLD));
+  });
+
+  it('reports no-valid-generation when every generation fails to restore', async () => {
+    const { controller, repository } = buildController();
+    await controller.createPrison('prison-1');
+    await saveUnrestorableGeneration(repository, 'prison-1');
+    // Demote the good generation too, leaving only unrestorable ones.
+    const metadataBefore = (await repository.list())[0]!;
+    await repository.demoteGeneration('prison-1', metadataBefore.generationIds[0]!);
+
+    expect(await controller.loadPrison('prison-1')).toEqual({ ok: false, reason: 'no-valid-generation' });
+    // The slot survives: the player still sees the prison, and is told its
+    // saves are unreadable rather than finding it silently deleted.
+    expect(await repository.list()).toHaveLength(1);
+  });
+
+  it('demotes nothing when the host itself failed rather than the save', async () => {
+    const store = new MemoryLocalSaveStore();
+    const repository = new PrisonSaveRepository(store);
+    const inner = new InProcessSessionHost();
+    let failNextRestore = false;
+    const host: SessionRuntimeHost = {
+      startNew: (seed) => inner.startNew(seed),
+      startFromSnapshot: async (bundle) => {
+        if (failNextRestore) throw new Error('The simulation worker did not reply within 15000ms.');
+        return inner.startFromSnapshot(bundle);
+      },
+      capture: () => inner.capture(),
+      stop: () => inner.stop(),
+    };
+    const controller = new SessionController(repository, host, { gameVersion: 'test-version' });
+
+    await controller.createPrison('prison-1');
+    await controller.saveNow();
+    const before = (await repository.list())[0]!;
+
+    failNextRestore = true;
+    // A timeout is not evidence about the save. It propagates, and the
+    // generation window is untouched -- deleting the newest good save because
+    // the worker was busy would be the more expensive mistake.
+    await expect(controller.loadPrison('prison-1')).rejects.toThrow(/did not reply/);
+
+    const after = (await repository.list())[0]!;
+    expect(after.generationIds).toEqual(before.generationIds);
+    expect(after.currentGenerationId).toBe(before.currentGenerationId);
   });
 });

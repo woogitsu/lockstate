@@ -63,7 +63,7 @@ export interface ClockViewModel {
   /** How far through the current in-game day. */
   readonly dayProgress: BoundedValue;
   readonly paused: boolean;
-  /** `1 | 2 | 4` while running; `0` while paused or when no clock control was supplied. */
+  /** A `SimulationSpeed` while running; `0` while paused or when no clock control was supplied. */
   readonly speed: number;
   /** `false` when no clock control was supplied -- the HUD should not render a speed selector it cannot trust. */
   readonly speedKnown: boolean;

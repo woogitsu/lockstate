@@ -3,7 +3,7 @@ import { AutosaveScheduler } from '../local/autosave';
 import type { PrisonSaveRepository, SaveResult } from '../local/repository';
 import type { PrisonSlotMetadata } from '../local/store';
 import { createSaveEnvelope, type SaveEnvelope, type TrustedSaveEnvelope } from '../save-schema';
-import type { SessionRuntimeHost } from './runtime-host';
+import { SnapshotRestoreRejectedError, type SessionRuntimeHost } from './runtime-host';
 
 /** Directional default: the informal probe in `docs/PERSISTENCE.md` puts a representative save well under a second, so a 30s trailing-edge cadence costs little while bounding worst-case loss. Not a tuned figure -- see `docs/BENCHMARKING.md`. */
 export const DEFAULT_AUTOSAVE_INTERVAL_MS = 30_000;
@@ -154,19 +154,60 @@ export class SessionController {
     }
   }
 
-  /** Loads a prison and makes it the active session. Reports whether recovery fell back to a previous generation, and what the current save version actually restores (`CURRENT_SAVE_RESTORED_SCOPE`). */
+  /**
+   * Loads a prison and makes it the active session. Reports whether recovery
+   * fell back to a previous generation, and what the current save version
+   * actually restores (`CURRENT_SAVE_RESTORED_SCOPE`).
+   *
+   * The generation walk covers restore failures, not only decode failures
+   * (#103). `loadCurrent` can only judge a generation by schema, migration
+   * and checksum; a save that passes all three and still cannot be restored
+   * — `save-schema.ts` deliberately does not duplicate
+   * `SparseWorld.fromSnapshot`'s semantic checks — used to be returned as
+   * `current` and stay current for ever, leaving the prison permanently
+   * unloadable by the very mechanism the repository's rollback exists to
+   * provide. So a snapshot the host *rejects* demotes that generation and
+   * the next-newest one is tried, until one restores or none is left.
+   *
+   * Only `SnapshotRestoreRejectedError` demotes anything. A host that timed
+   * out, was never started or has gone away propagates unchanged and costs
+   * no generation: the save may be perfectly good and deleting it would be
+   * the more expensive mistake.
+   */
   public async loadPrison(prisonId: string): Promise<SessionLoadOutcome> {
-    const result = await this.repository.loadCurrent(prisonId);
-    if (!result.ok) return { ok: false, reason: result.reason };
+    const demoted = new Set<string>();
 
-    // The envelope's payload is structurally the session snapshot bundle;
-    // it has already passed schema, migration and checksum validation in
-    // `loadCurrent`, so the host receives verified state at the current
-    // save-schema version -- an older save was migrated on the way through.
-    await this.host.startFromSnapshot(result.envelope.payload as unknown as SessionSnapshotBundle);
-    this.adoptSession(prisonId, result.envelope.revision, result.envelope.createdAt);
+    for (;;) {
+      const result = await this.repository.loadCurrent(prisonId);
+      if (!result.ok) return { ok: false, reason: result.reason };
+      if (demoted.has(result.generationId)) {
+        // Demotion is what makes this walk terminate. If a generation comes
+        // back after being demoted the repository did not retire it, and
+        // looping again would spin for ever inside a click handler.
+        throw new Error(`Save generation "${result.generationId}" was demoted and offered again; the prison cannot be loaded.`);
+      }
 
-    return { ok: true, recovered: result.outcome === 'recovered-previous', scope: CURRENT_SAVE_RESTORED_SCOPE };
+      try {
+        // The envelope's payload is structurally the session snapshot bundle;
+        // it has already passed schema, migration and checksum validation in
+        // `loadCurrent`, so the host receives verified state at the current
+        // save-schema version -- an older save was migrated on the way through.
+        await this.host.startFromSnapshot(result.envelope.payload as unknown as SessionSnapshotBundle);
+      } catch (error) {
+        if (!(error instanceof SnapshotRestoreRejectedError)) throw error;
+        await this.repository.demoteGeneration(prisonId, result.generationId);
+        demoted.add(result.generationId);
+        continue;
+      }
+
+      this.adoptSession(prisonId, result.envelope.revision, result.envelope.createdAt);
+
+      return {
+        ok: true,
+        recovered: demoted.size > 0 || result.outcome === 'recovered-previous',
+        scope: CURRENT_SAVE_RESTORED_SCOPE,
+      };
+    }
   }
 
   private adoptSession(prisonId: string, revision = 0, createdAt = this.now()): void {

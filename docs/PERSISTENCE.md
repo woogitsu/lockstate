@@ -94,6 +94,59 @@ it, so the newest gesture at the time of that save stays outside the undo
 history. The fix stops the loss; it does not reconstruct it, and a migration
 that invented an entry would be asserting a gesture the save never recorded.
 
+### Chunk size is bounded, and why that is a format decision
+
+`payload.world.chunkSize` is validated as `positive().max(WORLD_CHUNK_SIZE_LIMIT)`
+rather than merely `positive()`. The limit is `64`, and it is not a number
+picked for this schema: [ADR-0004](./adr/0004-chunk-size-selection.md) selects
+`32×32` for production after benchmarking `16`, `32` and `64`, so `64` is the
+largest chunk size the architecture has actually reasoned about. The same
+limit is enforced a second time by `coordinates.chunkSize()`, which
+`SparseWorld.fromSnapshot` calls before it allocates anything — so neither
+gate is decorative: this one rejects the value before a restore is attempted,
+that one before the first byte is allocated.
+
+The bound exists because this field *sizes allocations*. A loaded chunk owns
+four `chunkSize * chunkSize` byte planes, so a 453-byte envelope declaring
+`chunkSize: 20000` used to pass Zod **and** checksum and then allocate
+1,526 MiB during restore (measured here); at `500000` a single plane is 250 GB
+and the allocation throws a bare `RangeError: Array buffer allocation failed`.
+No payload-size cap helps: the amplification happens after the bytes are read. And the checksum is no
+obstacle to producing such a save — it is an integrity check, not a signature
+(see "Checksum") — but no attacker is needed either, because one corrupted
+byte in a stored `chunkSize` has the same effect. Issue #102.
+
+**This narrows what counts as a valid save, at every version.**
+`worldSnapshotSchema` is shared by the V1, V2 and V3 payload schemas, so a
+save declaring `chunkSize: 65` or more is now rejected as `invalid-shape`
+wherever it appears, and `SparseWorld.fromSnapshot` rejects the same value as
+a `WorldSnapshotError`. Under `AGENTS.md` boundary 7 that is a format
+decision, so it is recorded here rather than left in a schema line:
+
+- **No migration step is added and `SAVE_SCHEMA_VERSION` stays at 3**, because
+  there is no save in the field to migrate. `chunkSize` is always written from
+  a live `SparseWorld`, and the only production construction site is
+  `createNewSimulationRuntime`, which uses `32`; the widest value anywhere in
+  this repository, tests included, is `32`, and both checked-in V1 fixtures
+  carry `32`. The set of saves this codebase has ever written is therefore
+  unaffected — the narrowing removes only values no writer could produce.
+- **A hand-written, corrupt or synthesised save above the limit now fails at
+  the decode boundary** with `invalid-shape`, where before it decoded and
+  failed (or stalled) during restore. That is the intended change: it fails
+  where the repository's generation rollback can act on it, and since #103
+  a restore failure is recoverable too.
+- **Raising the limit later is a schema widening, not a migration**: older
+  saves stay valid, and `tests/unit/persistence-save-schema.test.ts` pins the
+  current value so the change has to be deliberate.
+
+What this does **not** bound is the *number* of chunks. `worldSnapshotSchema.chunks`
+and `ownedChunks` are still unbounded arrays, so a large-but-honest save still
+allocates in proportion to its own size (issue #102 measured 648 MB from a
+3.7 MB save with 40,000 loaded chunks). That is a cap on how big a prison may
+be — a gameplay and world-extent question with no ADR behind it yet — rather
+than a bound on a field that lies about its own cost, so it is deliberately
+not decided here.
+
 ### What is deliberately excluded from the payload
 
 Every entry here is an exclusion with a stated reason, not a gap. The rule
@@ -609,7 +662,7 @@ single generic failure:
 
 | Code | Meaning |
 | --- | --- |
-| `invalid-shape` | Not an object, missing/non-numeric `saveSchemaVersion`, or fails its declared version's schema (includes malformed/truncated saves and `updatedAt < createdAt`). |
+| `invalid-shape` | Not an object, missing/non-numeric `saveSchemaVersion`, or fails its declared version's schema (includes malformed/truncated saves, `updatedAt < createdAt`, and a `world.chunkSize` above `WORLD_CHUNK_SIZE_LIMIT`). |
 | `unsupported-version` | `saveSchemaVersion` is newer than the latest version this build knows about. |
 | `no-migration-path` | A declared or intermediate version has no registered schema/migration (e.g. version `0`, or a gap in the chain). |
 | `migration-produced-invalid-output` | A migration step ran but its output failed the destination version's schema — a bug in the migration, not the input. |
@@ -773,6 +826,34 @@ dropping the confirmed-corrupt generation(s) so the pointer does not force
 the same recovery scan on every subsequent load. `no-valid-generation` is
 returned only when nothing in the retained window validates.
 
+#### Demotion also covers saves that decode and cannot be restored (#103)
+
+`loadCurrent` can only judge a generation by schema, migration and checksum.
+A save that passes all three and then fails *semantic* restore was returned as
+`{ ok: true, outcome: 'current' }`, so `recoverToGeneration` never ran and the
+bad generation stayed current for ever — every subsequent load in that tab
+repeated it. Such saves are not hypothetical: this schema deliberately does
+not duplicate `SparseWorld.fromSnapshot`'s semantic checks (see the note above
+`worldSnapshotSchema`), so each of those checks describes a save that decodes
+and cannot be restored.
+
+`demoteGeneration(prisonId, generationId)` is the primitive that closes it. It
+drops one generation from the retained window, deletes the record and — when
+that generation was the current one — repoints `currentGenerationId` at the
+newest survivor. Deleting rather than merely un-pointing, for the same reason
+the decode path already deletes: a generation outside `generationIds` is
+unreachable by every read path and would not be cleaned up by `delete()`
+either. A prison whose every generation is demoted keeps its metadata row with
+an empty window, which `loadCurrent` reports as `no-valid-generation` — the
+player still sees the prison and is told its saves are unreadable rather than
+finding it silently gone.
+
+Who calls it is deliberately narrow: `SessionController.loadPrison` demotes
+**only** on a `SnapshotRestoreRejectedError`, the error a host raises when the
+*snapshot* was refused. A host that timed out, was never started or has gone
+away propagates unchanged and costs no generation — demoting a good save
+because the worker was busy would be the more expensive mistake.
+
 ### Autosave
 
 `AutosaveScheduler` schedules a trailing-edge save `intervalMs` after
@@ -853,6 +934,25 @@ Two implementations satisfy it:
   and every request has a timeout, so a worker that faults or hangs
   mid-save surfaces as a **failed save with evidence** rather than a
   promise that never settles.
+
+  That correlation only works if the worker actually sends the `replyTo`, and
+  until #103 no fault did. The pending `initialize` therefore sat until its
+  15 s timeout and reported "the simulation worker did not reply" for a save
+  that was simply bad. Faults raised while handling a request now carry the
+  request's id, which ADR 0003 has always permitted ("A protocol fault may
+  optionally identify the rejected request", decision 2; "A fault that *was*
+  prompted by a request is free to carry the `replyTo` its schema already
+  permits", amendment). A fault with no request behind it — the tick loop, an
+  undecodable message — still carries none, because it must not resolve a
+  pending request that happens to share an id.
+
+  The fault's code reaches the caller too (`WorkerFaultError`), because
+  `snapshot-incompatible` is the one answer that may cost a generation: it
+  becomes a `SnapshotRestoreRejectedError`, and everything else stays an
+  ordinary error. Refusing a snapshot also leaves the worker usable rather
+  than `faulted` — it installed no runtime, and `handleInitialize` accepts
+  only `uninitialized`, so faulting it would make one bad save cost every
+  later load in the tab.
 - **`InProcessSessionHost`** (tests, headless tooling) runs the same
   simulation in-process. This is not a bypass of the boundary — it is the
   same boundary honoured through the same interface, for contexts where a
@@ -909,7 +1009,12 @@ pending command queue intact, seed determinism, and both fault paths.
   dirty marker arriving during capture still coalesces into one follow-up
   rather than starting an overlapping save.
 - `loadPrison` sends the validated envelope payload to the host and reports
-  whether recovery fell back to an earlier generation.
+  whether recovery fell back to an earlier generation. When the host *rejects*
+  the snapshot it demotes that generation and tries the next-newest one, so
+  the newest-first walk covers restore failures and not only decode failures
+  (#103, and "Demotion also covers saves that decode and cannot be restored"
+  above). A generation offered again after being demoted throws rather than
+  looping: demotion is what makes the walk terminate.
 
 Default autosave cadence is `DEFAULT_AUTOSAVE_INTERVAL_MS` (30s),
 justified by the measurements below rather than picked by feel — issue
