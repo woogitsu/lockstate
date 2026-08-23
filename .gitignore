@@ -16,3 +16,6 @@ Thumbs.db
 supabase/.temp/
 assets/intermediate/
 assets/runtime/
+# Blender imports tooling/blender/pipeline_common.py, which makes CPython write
+# bytecode next to it.
+tooling/blender/__pycache__/

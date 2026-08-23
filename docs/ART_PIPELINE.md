@@ -91,6 +91,12 @@ runtime atlases instead of every LFS object in the repository.
 implementation against tiny synthetic fixtures to prove each rejection mode
 actually rejects. Those fixtures need no LFS content, so they run in `pnpm test`.
 
+That gate answers "is this batch valid?". It does not answer "does building it
+twice give the same bytes?", which is a separate check —
+`tooling/verify-pipeline-determinism.mjs`, described under
+[Reproducibility](#reproducibility). It needs Blender, so it is not part of
+`pnpm verify`.
+
 ## Runtime access
 
 `src/rendering/assets/` is the runtime half of the contract. `AtlasLibrary`
@@ -133,56 +139,138 @@ not treated as finished animated character frames: their role is to guide the
 Blender model, lighting, materials and directional silhouette. A source `.blend`
 per role is required before a production character atlas can be rendered.
 
-## Reproducibility status
+## Reproducibility
 
-The committed runtime assets under `public/assets/actors/` were authored with
-**Blender 5.2 on Windows**; the `.blend` headers record `v0502`. Nothing in the
-repository pins that version: `build-prisoner-base.ps1` only *defaults* its
-`-Blender` parameter to a 5.2 install path, and no script asserts
-`bpy.app.version`. The pipeline is therefore reproducible only in the sense
-described below, and a version pin is still outstanding.
+Issue #32's acceptance criterion is a "deterministic generation/hash test on
+representative fixture". Issue #64 measured that it could not be met: two
+independent runs of the same commit, on the same machine and the same Blender,
+produced different atlases. It now holds, and
+`tooling/verify-pipeline-determinism.mjs` is the executable check.
 
-The full chain was executed end to end on 2026-08-23 with **Blender 5.0.1** on
-Linux (WSL, Mesa software GL — no GPU device was available), starting from
-`create-prisoner-base.py`, which needs no input `.blend`. Every step ran
-unmodified and exited zero, and `tooling/validate-runtime-atlas.mjs` plus
-`tooling/build-asset-registry.mjs` accept the regenerated output. Measured
-against the committed 5.2 atlases for `actor.prisoner.base`:
+### Pinned toolchain
 
-- **Structure reproduces exactly.** Atlas dimensions (`260x3104` idle,
-  `2080x3104` walk), the eight-direction row order, frame counts, per-frame
-  rectangles, the two-pixel gutter stride and the foot pivot are identical. The
-  clip manifest JSON is byte-identical apart from line endings: the committed
-  file uses CRLF because `pathlib.Path.write_text` applies platform newline
-  translation, so the same 534-line document is 534 bytes larger on Windows.
-- **Pixels do not reproduce byte-for-byte.** 13.2% of idle-atlas pixels differ,
-  but 96% of the differing channel bytes differ by exactly one 8-bit step and
-  only 28 of 3.2M bytes differ by more than 32. Alpha differs in 2 of 807,040
-  bytes, so the silhouette is effectively identical. Blender's default
-  `dither_intensity` of 1.0, which the pipeline never sets, alone perturbs 17.4%
-  of pixels by one step, and the 5.2 atlases additionally carry `sRGB`/`gAMA`/
-  `cHRM` chunks that 5.0.1 does not write. Rendering the committed 5.2 `.blend`
-  under 5.0.1 gives the same result as rendering a locally regenerated one, so
-  the difference is in the render/encode step, not in scene construction.
-- **The pipeline is not bit-deterministic even on one version.** Two runs of the
-  same commit on the same machine produced different walk atlases:
-  `bpy.ops.mesh.primitive_uv_sphere_add` emits identical vertex coordinates and
-  an identical face set but a **different face and loop ordering on every call**,
-  which shifts a handful of silhouette pixels on the sphere primitives (head,
-  hair and hands). 68 of 72 rendered frames were pixel-identical; the remaining
-  four differed by 9 to 14 channel bytes each. The cube- and cylinder-only
-  `create-environment-catalog.py` is unaffected and produced semantically
-  identical scenes across runs.
-- **Intermediate frames are never byte-stable.** Blender embeds `Date`,
-  `RenderTime` and the absolute source `.blend` path as PNG `tEXt` chunks, so
-  frames under `assets/intermediate/` must not be hashed as pipeline outputs.
-  The packer itself is a lossless, byte-exact copy: all 72 frame regions in the
-  atlases match their source frames exactly, so it contributes no drift.
+`tooling/blender/pipeline_common.py` declares `SUPPORTED_BLENDER_VERSION`, and
+every Blender script asserts `bpy.app.version` against it before doing any work.
+The pin is enforced rather than documented because a mismatched toolchain does
+not fail on its own: it renders, it validates, and it produces subtly different
+pixels. `LOCKSTATE_ALLOW_BLENDER_MISMATCH=1` downgrades the assertion to a
+warning for deliberate investigation on another build; output produced that way
+must not be committed. Blender is always invoked `--background
+--factory-startup`, so user preferences, enabled add-ons and startup files
+cannot reach a render.
 
-Consequently the acceptance criterion "a clean documented process reproduces
-representative runtime sprites/atlases from source" holds **structurally and
-visually**, not bit-exactly, and any hash-equality test must compare structure
-or a tolerance-bounded pixel metric rather than file digests. Closing the gap
-requires pinning a Blender version in the repository, setting
-`dither_intensity = 0` and the PNG newline explicitly in the scripts, and
-replacing the UV-sphere primitives with topology-stable geometry.
+The pin is **Blender 5.2** — the version that authored the committed atlases
+under `public/assets/actors/`, whose `.blend` headers record `v0502`.
+
+The measurements below were taken with **Blender 5.0.1 on Linux** under Mesa
+software GL, because 5.2 was not available in that environment; those runs used
+the override flag and none of their output was committed. That is a real
+limitation of the evidence and it is stated rather than papered over — but it
+does not weaken the claim being made. Run-to-run determinism is a property of a
+single version on a single machine, and that is exactly the configuration in
+which it was both broken and fixed.
+
+### What is reproducible
+
+Two independent full runs of the chain — source scene, 72-frame render, pack,
+registry — from the same inputs produce byte-identical outputs:
+
+| Artefact | Before (run 1 / run 2) | After (run 1 / run 2) |
+| --- | --- | --- |
+| `actor.prisoner.base.idle.png` | `bb2f9bd8…` / `5fea58ad…` ✗ | `0d5ffb28…` / `0d5ffb28…` ✓ |
+| `actor.prisoner.base.walk.png` | `b4593067…` / `75ae6508…` ✗ | `accae706…` / `accae706…` ✓ |
+| `actor.prisoner.base.atlas-manifests.json` | `e5c40a8f…` / `e5c40a8f…` ✓ | `e5c40a8f…` / `e5c40a8f…` ✓ |
+| `asset-registry.json` | — | `011700a9…` / `011700a9…` ✓ |
+| scene fingerprint | differs on every run ✗ | `40569836…` on every run ✓ |
+
+The "before" column is the state issue #64 described, re-measured on this
+machine; note that *both* atlases differed, not only the walk atlas. The full
+digests are printed by the verifier.
+
+`tooling/validate-runtime-atlas.mjs` and `tooling/build-asset-registry.mjs`
+accept the regenerated batch; the verifier runs both inside each run, so two
+identically invalid runs cannot pass by agreeing with each other.
+
+### The four fixes
+
+1. **Order-unstable sphere geometry.**
+   `bpy.ops.mesh.primitive_uv_sphere_add` returns identical vertex coordinates
+   and an identical face *set* in a different face and loop *order* on nearly
+   every call — four distinct polygon orders in six consecutive calls when
+   measured directly. Rasterising a re-ordered mesh moves a few silhouette
+   pixels, which is why `Head`, `Hair` and both `Hand` objects drifted.
+   `pipeline_common.uv_sphere_mesh()` builds the same sphere with
+   `from_pydata`, which writes the vertex, loop and polygon arrays in exactly
+   the order given. An icosphere would **not** have fixed this: it is produced
+   through the same BMesh path and carries the same instability. Vertex
+   positions are unchanged — longitude is measured from `+Y` towards `+X`, as
+   the operator does — and the winding is asserted to point outwards at build
+   time.
+2. **Dither.** `scene.render.dither_intensity` defaults to 1.0 and the pipeline
+   never set it; issue #64's probe showed it perturbing 17.4% of pixels by
+   exactly one 8-bit step. It is now 0, along with the other byte-visible encode
+   settings (`file_format`, `color_mode`, `color_depth`, `compression`).
+3. **Newline translation.** `pathlib.Path.write_text` opens in text mode, so on
+   Windows every `\n` becomes `\r\n` and the same 534-line manifest is 534 bytes
+   larger. All generated text now goes through `pipeline_common.write_text`,
+   which pins `newline="\n"`. Note that the committed manifest *blob* is already
+   LF — Git normalises it on commit — so this is about files on disk, which is
+   what a digest comparison actually reads.
+4. **Unpinned Blender.** Described above.
+
+Removing dither also made the idle atlas compress from 459 KB to 237 KB, because
+±1 noise across 17% of pixels is close to incompressible.
+
+### What the determinism test compares, and what it must not
+
+```bash
+node tooling/verify-pipeline-determinism.mjs --mode scene   # ~1s per run
+node tooling/verify-pipeline-determinism.mjs --mode full    # ~3min per run
+```
+
+It compares SHA-256 digests of the **packed atlas PNGs**, the **atlas
+manifest**, **`asset-registry.json`** and a **canonical fingerprint of the
+generated `.blend`** (`tooling/blender/scene-fingerprint.py`, which serialises
+the object graph, transforms, mesh arrays *in stored order*, modifiers,
+materials, keyframes and render settings).
+
+It deliberately does **not** compare:
+
+- **Rendered frames under `assets/intermediate/`.** Blender writes `Date`,
+  `RenderTime` and the absolute source `.blend` path into every PNG as `tEXt`
+  chunks, so they can never be byte-stable. A test asserting equality of
+  something that can never be equal would be worse than no test. The atlas is
+  safe because the packer copies frame *pixels* into a freshly created image, so
+  none of that metadata survives; issue #64 confirmed the copy is byte-exact for
+  all 72 frame regions.
+- **The `.blend` itself.** It embeds absolute paths and a save timestamp. The
+  scene fingerprint exists to replace it.
+
+`--mode scene` stops after source-scene construction. That is not a weaker
+check of a different thing: it is where the nondeterminism lived, and it detects
+the old bug in about three seconds — reverting `sphere()` to the operator
+produces three different fingerprints in three runs. `--mode full` carries the
+same comparison through the render and the packer.
+
+`tests/determinism/art-pipeline-determinism.test.ts` runs `--mode scene` when
+Blender is available and otherwise asserts statically that each of the four
+fixes is still present, so a CI run without Blender still fails if one is
+reverted.
+
+### Still open
+
+- **The committed atlases were not regenerated.** They remain the reviewed
+  Blender 5.2 output. Regenerating them here would have replaced them with
+  5.0.1 software-GL pixels and destroyed the baseline #64 measured against.
+  Re-rendering them under the pinned 5.2 is a separate, reviewable change.
+- **Cross-version equality is not claimed and is not achievable.** Against the
+  committed 5.2 atlases, structure reproduces exactly — atlas dimensions
+  (`260x3104` idle, `2080x3104` walk), row order, frame counts, per-frame
+  rectangles, the two-pixel gutter stride and the foot pivot are identical — but
+  pixels do not, and 5.2 additionally writes `sRGB`/`gAMA`/`cHRM` chunks that
+  5.0.1 does not.
+- **`.gitattributes` does not pin the working-tree newline of generated
+  manifests.** The committed blob is LF, but a Windows checkout with
+  `core.autocrlf=true` produces a CRLF working copy, so comparing a freshly
+  generated manifest against the checked-out one on Windows shows a whole-file
+  difference that is not a pipeline difference.

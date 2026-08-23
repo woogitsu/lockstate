@@ -4,9 +4,13 @@ Every collection maps one-to-one to an owner-supplied source-art ID. Geometry is
 deliberately modular, at one Blender unit per logical tile, so it can later be
 replaced or refined without changing IDs, origins, or footprints.
 """
+import sys
 from pathlib import Path
 
 import bpy
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import pipeline_common  # noqa: E402  (Blender does not add the script directory to sys.path)
 
 ROOT = Path(__file__).resolve().parents[2]
 OUTPUT = ROOT / "assets/source/blender/environment.mvp.catalog.blend"
@@ -185,6 +189,8 @@ def create_model(asset_id, footprint, index):
 
 
 def main():
+    pipeline_common.require_blender_version()
+    pipeline_common.apply_deterministic_render_settings(bpy.context.scene)
     bpy.ops.object.select_all(action="SELECT")
     bpy.ops.object.delete(use_global=False)
     for collection in list(bpy.data.collections):
