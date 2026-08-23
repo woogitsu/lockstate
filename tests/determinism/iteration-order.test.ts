@@ -46,8 +46,10 @@ describe('parcel lookup is ordered by state, not by registration history', () =>
 
   it('resolves an overlapped tile to the same parcel regardless of registration order', () => {
     // `registerParcel` does not reject overlaps, so "first match wins" is a
-    // real decision -- and it decides `isTileOwned`, and through it
-    // `canBuildAt`.
+    // real decision -- it decides which parcel `getParcelAtTile` names, for
+    // pricing, selection and UI. It no longer decides `isTileOwned`, which
+    // asks whether any owned parcel contains the tile and so cannot depend on
+    // the order at all (issue #93, ADR 0019).
     const forwards = worldWith(parcels);
     const backwards = worldWith([...parcels].reverse());
 

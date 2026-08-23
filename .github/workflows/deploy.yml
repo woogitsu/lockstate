@@ -89,6 +89,18 @@ jobs:
       - name: Enable Corepack
         run: corepack enable && corepack prepare pnpm@11.22.0 --activate
 
+      # Same workspace fault as the `verify` job guards against; see the comment
+      # there. A self-hosted runner reuses its checkout, so every job that
+      # installs needs this, not just the first one.
+      - name: Clear a node_modules the runner left unusable
+        run: |
+          set -euo pipefail
+          if [ -L node_modules ] || { [ -e node_modules ] && [ ! -d node_modules ]; }; then
+            echo "node_modules is not a plain directory; removing it:"
+            ls -ld node_modules
+            rm -rf node_modules
+          fi
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -172,6 +184,18 @@ jobs:
 
       - name: Enable Corepack
         run: corepack enable && corepack prepare pnpm@11.22.0 --activate
+
+      # Same workspace fault as the `verify` job guards against; see the comment
+      # there. A self-hosted runner reuses its checkout, so every job that
+      # installs needs this, not just the first one.
+      - name: Clear a node_modules the runner left unusable
+        run: |
+          set -euo pipefail
+          if [ -L node_modules ] || { [ -e node_modules ] && [ ! -d node_modules ]; }; then
+            echo "node_modules is not a plain directory; removing it:"
+            ls -ld node_modules
+            rm -rf node_modules
+          fi
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

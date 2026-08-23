@@ -69,6 +69,39 @@ jobs:
         with:
           persist-credentials: false
 
+      # Verify the SQL against a local PostgreSQL BEFORE anything reaches a
+      # hosted project -- before the CLI is even provisioned, so a broken
+      # migration set stops here rather than after `supabase link`.
+      #
+      # The asymmetry this closes: deploy.yml re-runs the whole gate before a
+      # Worker deploy, which `wrangler rollback` can undo. This workflow ran no
+      # verification at all before `supabase db push`, which cannot be undone --
+      # docs/DEPLOYMENT.md states that rollback of a migration is not
+      # automated. The irreversible operation was the unguarded one.
+      #
+      # `verify:sql` is the only thing in this repository that executes the SQL
+      # under supabase/: it applies all nine migrations in order and runs the
+      # pgTAP suite. It found three real defects the first time it was run
+      # (docs/CLOUD_SAVE.md). It runs for a dry run too -- a dry run whose SQL
+      # does not apply locally is worth failing.
+      - name: Setup Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: '.node-version'
+          package-manager-cache: false
+
+      - name: Enable Corepack
+        run: corepack enable && corepack prepare pnpm@11.22.0 --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Provision PostgreSQL and pgTAP
+        run: bash scripts/provision-postgres.sh
+
+      - name: Verify the migrations apply and pass pgTAP locally
+        run: pnpm verify:sql
+
       - name: Provision the Supabase CLI
         run: bash scripts/provision-supabase-cli.sh
 

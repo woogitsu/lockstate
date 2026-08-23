@@ -99,8 +99,11 @@ test.describe('HUD shell', () => {
     expect(probe.metricIds).toEqual(['prisoners', 'staff', 'rooms', 'incidents', 'contraband']);
     expect(probe.metricValues).toEqual(['142', '27', '61', '0', '4']);
     expect(probe.activeTab).toBe('overview');
-    // Paused at 07:45 on day 3: exactly one transport control is pressed.
+    // Paused on day 3, a quarter of the way through it: exactly one transport
+    // control is pressed, and the clock reads the simulation's own units.
     expect(probe.pressedTransport).toEqual(['Pause']);
+    expect(probe.clockDay).toBe('3');
+    expect(probe.clockDayProgress).toBe('25%');
 
     // The HUD frames the world; it does not cover it.
     expect(probe.centreIsClickThrough).toBe(true);
@@ -147,13 +150,28 @@ test.describe('HUD shell', () => {
     await page.evaluate(() =>
       window.lockstateUiHarness.setHudViewModel({
         counts: { prisoners: 179, prisonerCapacity: 180, staff: 27, rooms: 61, activeIncidents: 2, contrabandFound: 4 },
-        clock: { day: 3, minuteOfDay: 8 * 60, mode: 'running', speed: 2 },
+        clock: { day: 3, tickOfDay: 1_800, dayLengthTicks: 2_400, mode: 'running', speed: 2 },
         alerts: [],
       }),
     );
     const updated = await page.evaluate(() => window.lockstateUiHarness.hudProbe());
     expect(updated.pressedTransport).toEqual(['Fast forward']);
     expect(updated.metricValues[0]).toBe('179');
+    // The clock moved with the view model, not with wall time.
+    expect(updated.clockDayProgress).toBe('75%');
+  });
+
+  test('shows the clock as unknown until a session reports one', async ({ page }) => {
+    // `EMPTY_HUD_VIEW_MODEL` is what the real app paints before a session
+    // exists, and what a browser that cannot start the worker keeps painting.
+    // A confident "Day 1, 0%" there would be a readout of a simulation that
+    // is not running.
+    await page.evaluate(() => window.lockstateUiHarness.mountHudShell({ empty: true }));
+    const probe = await page.evaluate(() => window.lockstateUiHarness.hudProbe());
+
+    expect(probe.clockDay).toBe('--');
+    expect(probe.clockDayProgress).toBe('--');
+    expect(probe.pressedTransport).toEqual(['Pause']);
   });
 
   test('a slow host blocks a second clock command but never blocks the chrome', async ({ page }) => {

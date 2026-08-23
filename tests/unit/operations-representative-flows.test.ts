@@ -83,10 +83,10 @@ describe('representative operations flow: delivery -> storage -> kitchen, sharin
       0,
     );
     board.submitCarryItem(
-      { id: 'deliver-bricks', priority: 3, itemId: 'brick', quantity: 2, sourceContainerId: 'delivery-bay-0', sourceTile: cellBlock.cellTiles[0]!, destinationContainerId: 'construction-site-0', destinationTile: cellBlock.cellTiles[3]! },
+      { id: 'deliver-bricks', priority: 3, itemId: 'item.brick', quantity: 2, sourceContainerId: 'delivery-bay-0', sourceTile: cellBlock.cellTiles[0]!, destinationContainerId: 'construction-site-0', destinationTile: cellBlock.cellTiles[3]! },
       0,
     );
-    deliveryBay.deposit('brick', 2);
+    deliveryBay.deposit('item.brick', 2);
 
     // Must land within the fixture's loaded chunk area (a narrow 3-row band, y=0..2 -- see
     // buildCellBlockFixture) or ConstructionSystem.submitOrder fails the order immediately as out-of-bounds.
@@ -106,9 +106,9 @@ describe('representative operations flow: delivery -> storage -> kitchen, sharin
     expect(storage.quantityOf('item.food-ration')).toBe(0); // passed through, not accumulated
     expect(deliveryBay.quantityOf('item.food-ration')).toBe(0);
 
-    expect(constructionSite.quantityOf('brick')).toBe(0); // consumed by the construction order
+    expect(constructionSite.quantityOf('item.brick')).toBe(0); // consumed by the construction order
     expect(construction.getOrder('wall-1')?.state).not.toBe('materials-pending');
-    expect(construction.getOrder('wall-1')?.materialsAllocated).toEqual([{ itemId: 'brick', quantity: 2 }]);
+    expect(construction.getOrder('wall-1')?.materialsAllocated).toEqual([{ itemId: 'item.brick', quantity: 2 }]);
   });
 });
 

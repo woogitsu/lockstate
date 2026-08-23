@@ -19,6 +19,10 @@ export interface HudProbe {
   readonly metricValues: readonly string[];
   /** `title` of each transport control currently showing `aria-pressed="true"`. */
   readonly pressedTransport: readonly string[];
+  /** The rendered day number, or `--` when no session has reported a clock. */
+  readonly clockDay: string;
+  /** The rendered position within the in-game day, or `--` when unknown. */
+  readonly clockDayProgress: string;
   readonly valueCount: number;
   /** Numbers whose *computed* style is not monospace with tabular figures. */
   readonly nonMonospaceValues: readonly string[];
@@ -84,7 +88,7 @@ export interface LockstateUiHarness {
   releaseCreate(outcome: 'ok' | 'worker-timeout'): void;
   settleSavePanel(): Promise<void>;
 
-  mountHudShell(): void;
+  mountHudShell(options?: { readonly empty?: boolean }): void;
   hudProbe(): HudProbe;
   clickTab(tab: string): boolean;
   clickTransport(label: string): boolean;

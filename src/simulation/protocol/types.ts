@@ -305,9 +305,30 @@ const readyMessageSchema = z
   })
   .strict();
 
+/**
+ * The clock, as the worker sees it.
+ *
+ * Sent in two situations, which is why `replyTo` is optional here. It is
+ * optional on `protocol/error` for the same reason -- a fault need not have
+ * been prompted by a request -- and required on every message that is only
+ * ever a reply:
+ *
+ * - **Correlated** (`replyTo` present) -- the acknowledgement of a
+ *   `simulation/set-clock`. The main thread asked; this is the answer.
+ * - **Unsolicited** (`replyTo` absent) -- the worker publishing that the
+ *   tick has moved on while the clock runs. ADR 0003: "Unsolicited deltas
+ *   and domain events do not pretend to be request responses", so a
+ *   published clock state carries no `replyTo` rather than a fabricated one.
+ *
+ * Without the second form the main thread can only learn the tick by asking
+ * for a full session bundle, so the HUD's day counter either stands still
+ * or is guessed from wall time on the wrong side of the boundary. The
+ * payload is identical in both cases: whoever reads it does not need to
+ * care which prompted it.
+ */
 const clockStateMessageSchema = z
   .object({
-    ...correlatedResponseEnvelopeFields,
+    ...optionallyCorrelatedEnvelopeFields,
     kind: z.literal('simulation/clock-state'),
     payload: z
       .object({

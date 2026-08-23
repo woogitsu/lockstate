@@ -927,6 +927,20 @@ is out of scope). `LifecycleSaveHandler` therefore:
   `unload`/`beforeunload`, which do not fire on modern mobile browsers and
   block bfcache where they do. A test asserts no listener is ever attached
   to them.
+- registers those two events on **two different targets**: `visibilitychange`
+  on `document` and `pagehide` on `window`. The DOM dispatches `pagehide` at
+  `Window`, and a window event does not propagate down to the document, so a
+  shared `document` target cannot receive both. Issue #92 was exactly that:
+  one resolved target carried both registrations and defaulted to `document`,
+  so the `pagehide` listener never fired. A shared `window` target *would*
+  receive both, since `visibilitychange` is dispatched at `document` with
+  `bubbles: true` and reaches `window` on the way up; the pair is kept for
+  explicitness rather than out of necessity, so that each listener sits on
+  the object its own event is specified to be dispatched at and neither
+  registration depends on the event path. `LifecycleSaveOptions.targets`
+  takes a named pair (`visibility`, `pageTransition`), both required, and
+  defaults to the two globals; `src/main.ts` passes nothing and gets that
+  pair.
 - fires a save attempt **without awaiting it**, because a lifecycle
   handler cannot hold the page open for an async IndexedDB transaction.
 - swallows failures rather than throwing out of a page event handler,
@@ -935,6 +949,37 @@ is out of scope). `LifecycleSaveHandler` therefore:
 Correctness never depends on these events firing; they only narrow the
 window of lost play between interval autosaves. The interval autosave
 remains the actual durability mechanism.
+
+What #92 cost, on that reading, was a notice rather than the safety net.
+`pagehide` is the one specified to cover navigating away, closing the tab and
+entering the bfcache while the page is still visible, and in Chromium it
+arrives before the `visibilitychange` that reports the tab hidden — but on the
+transition actually observed in a real browser here, a same-tab navigation,
+that `visibilitychange` still arrived, so a save was still attempted even with
+the `pagehide` listener sitting where it never fired. That is measured, not
+reasoned: with both listeners put back on `document`,
+`tests/browser/lifecycle-save.spec.ts` records `['visibility-hidden']` where
+the fixed wiring records `['pagehide', 'visibility-hidden']`. Whether some
+other transition delivers a `pagehide` with no `visibilitychange` behind it
+has not been established here, and no test covers one; the deficit that *is*
+demonstrated is the earlier notice, not an unsaved transition.
+
+Whether each event actually reaches the handler is settled in
+`tests/browser/lifecycle-save.spec.ts`, not in the unit tests. A fake event
+target receives whatever a test dispatches at it, so it agrees with the
+browser regardless of what the browser actually does — the unit tests passed
+throughout #92, and still pass if the *default* target pair is broken. The
+browser spec drives a real navigation and requires both real,
+browser-generated events to arrive, in the order the browser delivered them:
+`pagehide`, then the `visibilitychange` that reports the tab hidden.
+
+It deliberately stops there and does not assert which object each listener is
+registered on. Since `visibilitychange` bubbles to `window`, an
+implementation that registered both listeners on `window` would be correct in
+production, and a browser test that failed it would be pinning the wiring's
+shape rather than its contract. Which *injected* target each listener lands
+on is a statement about `LifecycleSaveOptions.targets`, and that is where the
+unit tests make it.
 
 ### Save/load UI (`src/ui/save-panel.ts`)
 
