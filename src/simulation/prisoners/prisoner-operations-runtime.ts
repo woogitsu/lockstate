@@ -1,6 +1,7 @@
 import { EntityStore, type EntityId } from '../entity/entity-store';
 import { ComponentBitset } from '../entity/component';
 import { EntityQuery } from '../entity/query';
+import type { ActorIdentityMinter } from '../identity/actor-identity';
 import type { Kernel } from '../kernel/kernel';
 import type { NavigationSystem } from '../navigation/navigation-system';
 import { ActionSystem, type PrisonerRouteContextResolver } from './action-system';
@@ -20,6 +21,16 @@ export interface PrisonerOperationsRuntimeOptions {
   readonly regimeSchedules?: readonly RegimeSchedule[];
   readonly accommodationPolicy?: AccommodationPolicy;
   readonly routeContextResolver?: PrisonerRouteContextResolver;
+  /**
+   * Actor-identity minting (`src/simulation/identity/`). The registry is
+   * *not* owned here: it spans prisoners and staff, which live in two
+   * separate `EntityStore`s, so it belongs to the session. Passing it in
+   * only tells `IntakeSystem` to name an arrival at reception. Omitted, no
+   * prisoner is named and no draw is made.
+   */
+  readonly identity?: ActorIdentityMinter;
+  /** Overrides the stream identity draws from. Defaults to `ACTOR_IDENTITY_RNG_STREAM`; a session must have registered whichever name is used. */
+  readonly identityRngStreamName?: string;
 }
 
 /**
@@ -58,7 +69,17 @@ export class PrisonerOperationsRuntime {
     this.currentAction = new CurrentActionComponent(options.capacity);
     this.position = new PositionComponent(options.capacity);
 
-    this.intakeSystem = new IntakeSystem(this.entityStore, this.query, this.records, this.coldState, this.roomInstances, options.accommodationPolicy);
+    this.intakeSystem = new IntakeSystem(
+      this.entityStore,
+      this.query,
+      this.records,
+      this.coldState,
+      this.roomInstances,
+      options.accommodationPolicy,
+      undefined,
+      options.identity,
+      options.identityRngStreamName,
+    );
     this.needsDecaySystem = new NeedsDecaySystem(this.entityStore, this.query, this.needs);
     this.actionSystem = new ActionSystem(
       this.entityStore,

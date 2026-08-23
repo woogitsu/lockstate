@@ -4,7 +4,7 @@ import { CONSTRUCTION_MATERIALS_CONTAINER_ID, createNewSimulationRuntime } from 
 import type { SimulationRuntime } from '../../../src/simulation/runtime/new-session';
 import { chunkCoordinate, tileCoordinate } from '../../../src/simulation/world/coordinates';
 import type { ChunkPosition, TilePosition } from '../../../src/simulation/world/coordinates';
-import { encodeEntityStoreSnapshot } from '../../../src/persistence/entity-codec';
+import { captureSessionSnapshot } from '../../../src/simulation/runtime/restore-session';
 import { createSaveEnvelope } from '../../../src/persistence/save-schema';
 import type { SaveEnvelope } from '../../../src/persistence/save-schema';
 
@@ -251,18 +251,26 @@ export function buildPrisonRuntime(tier: PrisonSizeTier): {
   return { runtime, loadedChunks, buildOrders, alivePrisoners };
 }
 
-/** Composes the checksummed, schema-valid envelope for `runtime`'s current state. */
+/**
+ * Composes the checksummed, schema-valid envelope for `runtime`'s current
+ * state, through `captureSessionSnapshot` -- the same call the worker answers
+ * a snapshot request with -- so the measured bytes are the shipping payload
+ * including #70's `simulation` section, not a subset the harness assembled.
+ */
 export function snapshotEnvelope(runtime: SimulationRuntime, revision: number): SaveEnvelope {
+  const bundle = captureSessionSnapshot(runtime);
   return createSaveEnvelope({
     gameVersion: 'lockstate-0.0.0',
     prisonId: 'perf-prison',
     revision,
     createdAt: FIXTURE_CREATED_AT,
     updatedAt: FIXTURE_CREATED_AT + revision,
-    kernel: runtime.kernel.snapshot(),
-    world: runtime.world.snapshot(),
-    construction: runtime.construction.snapshot(),
-    entities: encodeEntityStoreSnapshot(runtime.prisoners.entityStore.getSnapshot()),
+    kernel: bundle.kernel,
+    world: bundle.world,
+    construction: bundle.construction,
+    ...(bundle.entities === undefined ? {} : { entities: bundle.entities }),
+    ...(bundle.simulation === undefined ? {} : { simulation: bundle.simulation }),
+    ...(bundle.identity === undefined ? {} : { identity: bundle.identity }),
   });
 }
 

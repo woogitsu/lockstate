@@ -80,11 +80,15 @@ describe('refresh supersession guard', () => {
   });
 });
 
-describe('describeRestoredScope: honest about what a V1 save carries', () => {
+describe('describeRestoredScope: honest about what a save carries', () => {
   it('names both what was restored and what this save version does not carry', () => {
     const text = describeRestoredScope(CURRENT_SAVE_RESTORED_SCOPE);
     expect(text).toContain('world terrain and ownership');
+    expect(text).toContain('incidents, gangs and tunnels');
     expect(text).toContain('Not carried by this save version');
-    expect(text).toContain('incidents and gangs');
+    // The right-hand list must never go empty and quietly stop being shown:
+    // a save still leaves derived and in-flight state behind, and the panel
+    // is where the player is told so.
+    expect(text).toContain('navigation caches');
   });
 });

@@ -134,6 +134,20 @@ export class SecuritySectorRegistry {
     }
   }
 
+  /**
+   * Each governed door's baseline state — what `'normal'` restores it to.
+   *
+   * Exposed read-only for the save payload (issue #70). A door saved while
+   * its sector is `'restricted'`/`'lockdown'` is not at its baseline, and the
+   * transition is not invertible (`'restricted'` maps both `'open'` and
+   * `'closed'` onto `'closed'`), so a save that wrote the live state would
+   * make the lockdown permanent: re-registering the sector would adopt
+   * `'locked'` as the new baseline. Deterministic: sorted by door id.
+   */
+  public getBaselineDoorStates(): readonly (readonly [string, DoorState])[] {
+    return [...this.normalDoorStates.keys()].sort().map((doorId) => [doorId, this.normalDoorStates.get(doorId)!] as const);
+  }
+
   public getSnapshot(): readonly (readonly [string, SectorControlState])[] {
     return [...this.controlStates.keys()].sort().map((id) => [id, this.controlStates.get(id)!] as const);
   }

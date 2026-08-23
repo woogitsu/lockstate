@@ -56,16 +56,22 @@ export function toJsonValue(value: unknown, path = '$'): JsonValue {
 }
 
 /**
- * Exactly the state a session snapshot claims to carry across a
- * save/restore boundary (`CURRENT_SAVE_RESTORED_SCOPE` in
- * `src/simulation/runtime/restore-session.ts`): kernel tick, command
- * queue and RNG streams, world terrain/ownership, construction orders and
- * undo/redo, and entity-id liveness.
+ * The subset of a session snapshot that is comparable *tick for tick* across
+ * a save/restore boundary: kernel tick, command queue and RNG streams, world
+ * terrain/ownership, construction orders and undo/redo, and entity-id
+ * liveness.
  *
- * Kept separate from `fullRuntimeState` on purpose. The subsystems a save
- * does not carry are rebuilt *empty* by design, so comparing them across a
- * restore would assert a limitation the save schema already documents,
- * not a determinism property.
+ * Kept separate from `fullRuntimeState` on purpose, and narrower than
+ * `CURRENT_SAVE_RESTORED_SCOPE` since save-schema V3 (#70) — the payload now
+ * carries prisoners, operations, security, contraband and incidents too, but
+ * several of those deliberately restart in-flight navigation work on restore
+ * (a path request belongs to the previous `NavigationSystem` instance). A
+ * restored session therefore reaches the same *state* and not always at the
+ * same tick, so comparing those subsystems after continuing would assert a
+ * documented, bounded loss rather than a determinism property.
+ * `tests/determinism/snapshot-restore-fidelity.test.ts` covers them instead
+ * by exactness-or-idempotence, and
+ * `tests/integration/session-save-round-trip.test.ts` by behaviour.
  */
 export function carriedScopeState(runtime: SimulationRuntime): JsonValue {
   return toJsonValue({

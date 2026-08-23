@@ -1,4 +1,5 @@
 import { buildLocalizationCatalog } from './localization';
+import { simulationEnumMessages } from './simulation-message-keys';
 
 /**
  * Default (`en`) resolved labels for every `nameKey` in the default
@@ -7,8 +8,16 @@ import { buildLocalizationCatalog } from './localization';
  * game has to have text offline and every other locale falls back to it per
  * key. Not a real i18n pipeline on its own -- see localization.ts, and
  * `src/services/localization/` for the runtime that consumes this.
+ *
+ * The keys authored below all belong to values that own a definition object
+ * (a room, an object, a staff role) or to the HUD's own chrome. The
+ * simulation's *enumerations* have no definition object, so their keys are
+ * derived rather than written: `simulationEnumMessages()` computes them from
+ * the id, and they are merged in below. Authoring them here as literals
+ * would put the id in one file and the key in another, which is exactly the
+ * drift `simulation-message-keys.ts` exists to make impossible.
  */
-export const defaultLocaleEnCatalog = buildLocalizationCatalog({
+const authoredMessages: Readonly<Record<string, string>> = {
   'room.cell.name': 'Cell',
   'room.holding-cell.name': 'Holding Cell',
   'room.solitary-cell.name': 'Solitary Cell',
@@ -136,4 +145,20 @@ export const defaultLocaleEnCatalog = buildLocalizationCatalog({
   'hud.severity.info': 'Info',
   'hud.severity.warning': 'Warning',
   'hud.severity.danger': 'Critical',
-});
+};
+
+/**
+ * A derived enum key colliding with an authored one would silently replace a
+ * label with another value's text -- the kind of failure that reads as a
+ * translation mistake rather than as a bug. Both namespaces are flat, so the
+ * only defence is checking, and checking at import time makes it a startup
+ * error exactly like the catalogs' own duplicate checks.
+ */
+const derivedMessages = simulationEnumMessages();
+const collidingKeys = Object.keys(derivedMessages).filter((key) => Object.hasOwn(authoredMessages, key));
+
+if (collidingKeys.length > 0) {
+  throw new Error(`Derived simulation enum message keys collide with authored default-locale keys: ${collidingKeys.join(', ')}`);
+}
+
+export const defaultLocaleEnCatalog = buildLocalizationCatalog({ ...authoredMessages, ...derivedMessages });

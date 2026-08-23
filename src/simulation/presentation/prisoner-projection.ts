@@ -2,6 +2,7 @@ import type { ContentRegistry } from '../../content/registry';
 import type { RoomCatalogDefinition } from '../../content/room-catalog';
 import { defaultRoomContentRegistry } from '../../content/room-catalog';
 import type { EntityId } from '../entity/entity-store';
+import type { ActorIdentitySource } from '../identity/actor-identity';
 import { DEFAULT_ACTIONS } from '../prisoners/actions';
 import {
   ACTION_PHASES,
@@ -20,8 +21,10 @@ import type { RoomInstanceRegistry } from '../prisoners/room-instance-registry';
 import {
   HUD_VIEW_MODEL_SCHEMA_VERSION,
   resolvePageRequest,
+  toActorNameViewModel,
   toBoundedValue,
   toTileViewModel,
+  type ActorNameViewModel,
   type BoundedValue,
   type HudViewModelSchemaVersion,
   type PageRequest,
@@ -66,6 +69,14 @@ export interface PrisonerProjectionOptions {
   /** Room catalog used to resolve a room instance's `nameKey`. Defaults to the shipped catalog. */
   readonly rooms?: ContentRegistry<RoomCatalogDefinition>;
   readonly gangs?: PrisonerGangSource;
+  /**
+   * Actor names (`src/simulation/identity/`). Optional because identity is
+   * a session-level registry rather than part of the prisoner runtime, so
+   * a caller that has not been handed one projects rows without a name
+   * rather than inventing a placeholder. `name` is then simply absent --
+   * the same convention every other unavailable field here follows.
+   */
+  readonly identity?: ActorIdentitySource;
 }
 
 /**
@@ -104,6 +115,8 @@ export interface PrisonerRoomRefViewModel {
 
 export interface PrisonerRosterRowViewModel {
   readonly entityId: EntityId;
+  /** Absent when no identity source was supplied, or the prisoner has not reached the intake stage that mints one. */
+  readonly name?: ActorNameViewModel;
   readonly intakeStage: IntakeStage;
   readonly classified: boolean;
   /** Only once classification has run: `'general-population'` or `'high-risk'`. */
@@ -124,6 +137,8 @@ export interface PrisonerRosterRowViewModel {
 export interface PrisonerDetailViewModel {
   readonly schemaVersion: HudViewModelSchemaVersion;
   readonly entityId: EntityId;
+  /** Absent when no identity source was supplied, or the prisoner has not reached the intake stage that mints one. */
+  readonly name?: ActorNameViewModel;
   readonly intakeStage: IntakeStage;
   readonly classified: boolean;
   readonly classificationGroupId?: string;
@@ -196,13 +211,21 @@ function isClassified(stage: IntakeStage): boolean {
   return CLASSIFIED_STAGES.includes(stage);
 }
 
+/** Rebuilt as a plain object rather than handed through, so no view model shares a reference with registry state (contract 1). */
+function actorName(identity: ActorIdentitySource | undefined, entityId: EntityId): ActorNameViewModel | undefined {
+  const name = identity?.getName('prisoner', entityId);
+  return name === undefined ? undefined : toActorNameViewModel(name);
+}
+
 function projectRosterRow(
   source: PrisonerProjectionSource,
   rooms: ContentRegistry<RoomCatalogDefinition>,
   gangs: PrisonerGangSource | undefined,
+  identity: ActorIdentitySource | undefined,
   index: number,
 ): PrisonerRosterRowViewModel {
   const entityId = source.entityStore.getIdByIndex(index);
+  const name = actorName(identity, entityId);
   const stage = intakeStageFromIndex(source.records.intakeStage[index]!);
   const classified = isClassified(stage);
   const actionIndex = source.currentAction.actionIndex[index]!;
@@ -212,6 +235,7 @@ function projectRosterRow(
 
   return {
     entityId,
+    ...(name !== undefined ? { name } : {}),
     intakeStage: stage,
     classified,
     ...(classified
@@ -263,7 +287,7 @@ export function projectPrisonerRoster(
     total += 1;
     if (positionInList < offset) continue;
     if (rows.length >= limit) continue;
-    rows.push(projectRosterRow(source, rooms, options.gangs, index));
+    rows.push(projectRosterRow(source, rooms, options.gangs, options.identity, index));
   }
 
   return { total, offset, limit, rows };
@@ -344,9 +368,12 @@ export function projectPrisonerDetail(
           ...(targetInstanceId !== undefined ? { targetRoomInstanceId: targetInstanceId } : {}),
         };
 
+  const name = actorName(options.identity, entityId);
+
   return {
     schemaVersion: HUD_VIEW_MODEL_SCHEMA_VERSION,
     entityId,
+    ...(name !== undefined ? { name } : {}),
     intakeStage: stage,
     classified,
     ...(classified
