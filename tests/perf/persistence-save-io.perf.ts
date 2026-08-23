@@ -8,6 +8,8 @@ import { MemoryLocalSaveStore } from '../../src/persistence/local/memory-store';
 import { PrisonSaveRepository } from '../../src/persistence/local/repository';
 import type { LocalSaveStore } from '../../src/persistence/local/store';
 import { encodeEntityStoreSnapshot } from '../../src/persistence/entity-codec';
+import { captureSessionSystems } from '../../src/simulation/runtime/session-systems';
+import { NEED_IDS } from '../../src/simulation/prisoners/needs';
 import { decodeSaveEnvelope, createSaveEnvelope } from '../../src/persistence/save-schema';
 import type { SaveEnvelope } from '../../src/persistence/save-schema';
 import { estimateSaveEnvelopeByteSize } from '../../src/persistence/size';
@@ -97,6 +99,24 @@ interface SizeReport {
   /** The same store written in the pre-#50 capacity-shaped V1 form, for the before/after comparison. */
   readonly entitiesCapacityShapedBytes: number;
   readonly entityCapacity: number;
+  /** #70's `simulation` section in total, and split by subsystem family. */
+  readonly simulationBytes: number;
+  readonly simulationPrisonersBytes: number;
+  readonly simulationOperationsBytes: number;
+  readonly simulationNavigationBytes: number;
+  readonly simulationSecurityBytes: number;
+  readonly simulationContrabandBytes: number;
+  readonly simulationIncidentsBytes: number;
+  /**
+   * What the same per-prisoner component state would cost written across the
+   * store's full allocated `capacity` instead of its allocated prefix -- the
+   * capacity-shaped mistake #50 removed from `entities`, measured here so
+   * #70 cannot quietly reintroduce it at eighteen times the size.
+   */
+  readonly simulationPrisonersCapacityShapedBytes: number;
+  /** #75/ADR 0015's session-level `identity` section: two short strings plus a key per named actor. */
+  readonly identityBytes: number;
+  readonly namedActors: number;
   readonly retainedWindowBytes: number;
   readonly retainedGenerations: number;
 }
@@ -174,6 +194,33 @@ function capacityShapedEntities(fixture: PrisonFixture): unknown {
     generations: Array.from(snapshot.generations),
     freeIndices: Array.from(snapshot.freeIndices),
     alive: Array.from(snapshot.alive),
+  };
+}
+
+/**
+ * The prisoner component block written at the store's full allocated
+ * capacity rather than its allocated prefix. Reconstructed here (never
+ * imported) because it is a shape production deliberately does not write --
+ * the harness only needs it to report what population-shaping saved.
+ */
+function capacityShapedPrisonerComponents(fixture: PrisonFixture): unknown {
+  const capacity = fixture.runtime.prisoners.entityStore.capacity;
+  const pad = (values: ArrayLike<number>): number[] => Array.from({ length: capacity }, (_, index) => values[index] ?? 0);
+  const components = fixture.runtime.prisoners;
+  return {
+    sentenceLengthTicks: pad(components.records.sentenceLengthTicks),
+    priorIncidentsAtIntake: pad(components.records.priorIncidentsAtIntake),
+    sentenceEndTick: pad(components.records.sentenceEndTick),
+    riskTier: pad(components.records.riskTier),
+    classificationGroupIndex: pad(components.records.classificationGroupIndex),
+    intakeStage: pad(components.records.intakeStage),
+    needs: Object.fromEntries(NEED_IDS.map((needId) => [needId, pad(components.needs.levels[needId])])),
+    actionIndex: pad(components.currentAction.actionIndex),
+    actionPhase: pad(components.currentAction.phase),
+    phaseStartedAtTick: pad(components.currentAction.phaseStartedAtTick),
+    needFulfilledLastTick: pad(components.currentAction.needFulfilledLastTick),
+    tileX: pad(components.position.tileX),
+    tileY: pad(components.position.tileY),
   };
 }
 
@@ -324,6 +371,10 @@ describe.each(PRISON_SIZE_TIERS.map((tier) => [tier.id, tier] as const))(
       expect(fixture.envelope.payload.world.chunks.length).toBeGreaterThan(0);
       expect(fixture.envelope.payload.construction.orders.length).toBe(tier.buildOrders);
       expect(fixture.envelope.payload.entities?.capacity).toBeGreaterThan(0);
+      // The section this harness exists to size (#70) is really present and
+      // really describes this tier's prisoners, so the bytes below are not a
+      // measurement of an empty object.
+      expect(fixture.envelope.payload.simulation?.prisoners.components.activeLength).toBe(tier.prisoners);
     });
 
     it('measures serialized storage size per snapshot and across the retained window', async () => {
@@ -363,6 +414,16 @@ describe.each(PRISON_SIZE_TIERS.map((tier) => [tier.id, tier] as const))(
         entitiesBytes: jsonByteSize(fixture.envelope.payload.entities),
         entitiesCapacityShapedBytes: jsonByteSize(capacityShapedEntities(fixture)),
         entityCapacity: fixture.runtime.prisoners.entityStore.capacity,
+        simulationBytes: jsonByteSize(fixture.envelope.payload.simulation),
+        simulationPrisonersBytes: jsonByteSize(fixture.envelope.payload.simulation?.prisoners),
+        simulationOperationsBytes: jsonByteSize(fixture.envelope.payload.simulation?.operations),
+        simulationNavigationBytes: jsonByteSize(fixture.envelope.payload.simulation?.navigation),
+        simulationSecurityBytes: jsonByteSize(fixture.envelope.payload.simulation?.security),
+        simulationContrabandBytes: jsonByteSize(fixture.envelope.payload.simulation?.contraband),
+        simulationIncidentsBytes: jsonByteSize(fixture.envelope.payload.simulation?.incidents),
+        simulationPrisonersCapacityShapedBytes: jsonByteSize(capacityShapedPrisonerComponents(fixture)),
+        identityBytes: jsonByteSize(fixture.envelope.payload.identity),
+        namedActors: fixture.envelope.payload.identity?.entries.length ?? 0,
         retainedWindowBytes,
         retainedGenerations,
       });
@@ -379,12 +440,16 @@ describe.each(PRISON_SIZE_TIERS.map((tier) => [tier.id, tier] as const))(
         fixture.runtime.world.snapshot();
         fixture.runtime.construction.snapshot();
         fixture.runtime.prisoners.entityStore.getSnapshot();
+        // Since #70 this is part of every snapshot the worker answers with,
+        // so leaving it out would under-report the cost the sim thread pays.
+        captureSessionSystems(fixture.runtime);
       });
 
       const kernel = fixture.runtime.kernel.snapshot();
       const world = fixture.runtime.world.snapshot();
       const construction = fixture.runtime.construction.snapshot();
       const entities = encodeEntityStoreSnapshot(fixture.runtime.prisoners.entityStore.getSnapshot());
+      const simulation = captureSessionSystems(fixture.runtime);
 
       let built: SaveEnvelope | undefined;
       const envelopeBuild = measureSync(WARMUP_ITERATIONS, tier.samples, (index) => {
@@ -398,6 +463,7 @@ describe.each(PRISON_SIZE_TIERS.map((tier) => [tier.id, tier] as const))(
           world,
           construction,
           entities,
+          simulation,
         });
       });
 
@@ -501,7 +567,7 @@ afterAll(() => {
   lines.push('Serialized storage size per snapshot');
   lines.push(
     renderTable(
-      ['tier', 'loaded chunks', 'chunks', 'orders', 'prisoners', 'envelope', 'gzip', 'world', 'construction', 'entities', 'kernel', `retained (${DEFAULT_KEEP_GENERATIONS} gens)`],
+      ['tier', 'loaded chunks', 'chunks', 'orders', 'prisoners', 'envelope', 'gzip', 'world', 'construction', 'simulation', 'identity', 'entities', 'kernel', `retained (${DEFAULT_KEEP_GENERATIONS} gens)`],
       sizeReports.map((row) => [
         row.tierId,
         String(row.loadedChunks),
@@ -512,9 +578,63 @@ afterAll(() => {
         formatBytes(row.gzippedBytes),
         formatBytes(row.worldBytes),
         formatBytes(row.constructionBytes),
+        formatBytes(row.simulationBytes),
+        formatBytes(row.identityBytes),
         formatBytes(row.entitiesBytes),
         formatBytes(row.kernelBytes),
         formatBytes(row.retainedWindowBytes),
+      ]),
+    ),
+  );
+
+  lines.push('');
+  lines.push('#70 `simulation` section, by subsystem family. These tiers populate prisoners and construction only,');
+  lines.push('so security/contraband/incidents are near-empty here by construction, not by encoding.');
+  lines.push(
+    renderTable(
+      ['tier', 'prisoners', 'simulation', 'prisoners', 'operations', 'navigation', 'security', 'contraband', 'incidents', 'share of envelope'],
+      sizeReports.map((row) => [
+        row.tierId,
+        String(row.prisoners),
+        formatBytes(row.simulationBytes),
+        formatBytes(row.simulationPrisonersBytes),
+        formatBytes(row.simulationOperationsBytes),
+        formatBytes(row.simulationNavigationBytes),
+        formatBytes(row.simulationSecurityBytes),
+        formatBytes(row.simulationContrabandBytes),
+        formatBytes(row.simulationIncidentsBytes),
+        `${((row.simulationBytes / row.envelopeBytes) * 100).toFixed(1)}%`,
+      ]),
+    ),
+  );
+
+  lines.push('');
+  lines.push('#75/ADR 0015 `identity` section: one entry per named actor (prisoners named at reception, staff at hire).');
+  lines.push(
+    renderTable(
+      ['tier', 'named actors', 'identity', 'bytes per actor', 'share of envelope'],
+      sizeReports.map((row) => [
+        row.tierId,
+        String(row.namedActors),
+        formatBytes(row.identityBytes),
+        row.namedActors === 0 ? 'n/a' : `${Math.round(row.identityBytes / row.namedActors)} B`,
+        `${((row.identityBytes / row.envelopeBytes) * 100).toFixed(1)}%`,
+      ]),
+    ),
+  );
+
+  lines.push('');
+  lines.push('Prisoner components: capacity-shaped (the mistake #50 removed from `entities`) vs. the allocated-prefix form #70 writes');
+  lines.push(
+    renderTable(
+      ['tier', 'prisoners', 'allocated capacity', 'components if capacity-shaped', 'components as written', 'ratio'],
+      sizeReports.map((row) => [
+        row.tierId,
+        String(row.prisoners),
+        String(row.entityCapacity),
+        formatBytes(row.simulationPrisonersCapacityShapedBytes),
+        formatBytes(row.simulationPrisonersBytes),
+        `${(row.simulationPrisonersCapacityShapedBytes / Math.max(1, row.simulationPrisonersBytes)).toFixed(1)}x`,
       ]),
     ),
   );

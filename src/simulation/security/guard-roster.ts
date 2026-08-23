@@ -1,4 +1,6 @@
 import { EntityStore, type EntityId, type EntityStoreSnapshot } from '../entity/entity-store';
+import type { ActorIdentityMinter } from '../identity/actor-identity';
+import type { Xoshiro128StarStar } from '../rng/xoshiro128starstar';
 import { tileCoordinate, type TilePosition } from '../world/coordinates';
 
 /**
@@ -15,7 +17,8 @@ import { tileCoordinate, type TilePosition } from '../world/coordinates';
  */
 export type DeploymentPhase = 'unassigned' | 'travelling' | 'on-post' | 'on-search';
 
-interface GuardRecord {
+/** Exported so the save payload (#70) can name this shape instead of re-declaring it and letting the two drift. */
+export interface GuardRecord {
   staffRoleId: string;
   tileX: number;
   tileY: number;
@@ -43,12 +46,40 @@ export class GuardRoster {
   public readonly entityStore: EntityStore;
   private readonly records = new Map<EntityId, GuardRecord>();
 
-  public constructor(capacity: number) {
+  public constructor(
+    capacity: number,
+    /**
+     * Optional actor-identity minting (ADR 0015), the staff counterpart to
+     * the seam `IntakeSystem` already has for prisoners. Left out, `hire`
+     * behaves exactly as before and draws nothing — which matters, because
+     * `NamedRngStreams.get` throws for a stream the session never
+     * registered, and a roster built without a session (most unit tests)
+     * has no streams at all.
+     */
+    private readonly identity?: ActorIdentityMinter,
+    /**
+     * Supplies the stream `identity` draws from. A resolver rather than the
+     * stream itself, because `hire` is a session/scenario call outside any
+     * tick — there is no `SimulationContext` to read one from — and because
+     * resolving lazily keeps a roster constructed with a minter but never
+     * hired from off the stream entirely.
+     */
+    private readonly identityRng?: () => Xoshiro128StarStar,
+  ) {
     this.entityStore = new EntityStore(capacity);
+    if (identity !== undefined && identityRng === undefined) {
+      throw new RangeError('A GuardRoster given an identity minter must also be given the RNG stream it draws from.');
+    }
   }
 
   public hire(staffRoleId: string, originTile: TilePosition): EntityId {
     const entityId = this.entityStore.spawn();
+    // Named at hire, the staff equivalent of naming a prisoner at reception.
+    // `assign` is idempotent and draws nothing for an entity that already
+    // has a name, so a recycled id that somehow kept its entry cannot shift
+    // the stream (`release` on destroy is what actually prevents that; see
+    // ADR 0015's "a destroy path must release").
+    this.identity?.assign('staff', entityId, this.identityRng!());
     this.records.set(entityId, {
       staffRoleId,
       tileX: originTile.x,

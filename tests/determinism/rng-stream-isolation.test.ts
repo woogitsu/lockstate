@@ -3,6 +3,7 @@ import { Kernel } from '../../src/simulation/kernel/kernel';
 import type { SimulationContext, SystemRegistration } from '../../src/simulation/kernel/system';
 import { deriveXoshiroState } from '../../src/simulation/rng/seed';
 import { NamedRngStreams } from '../../src/simulation/rng/streams';
+import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from '../helpers/determinism-scenario';
 import { hashFullRuntime } from '../helpers/determinism-state';
 
@@ -181,9 +182,22 @@ describe('named RNG stream isolation in the real session runtime', () => {
     const runtime = buildDeterminismScenario(SCENARIO_SEED);
     const names = runtime.kernel.snapshot().rngStates.map((entry) => entry.name);
 
-    expect(names).toEqual(['contraband.detection', 'contraband.intelligence', 'prisoners.classification']);
+    // `identity.actor-name` joined the list when #70 wired ADR 0015's
+    // registry into `new-session.ts`. Adding a stream changes what a recorded
+    // command stream reproduces, so this pin must move deliberately.
+    expect(names).toEqual(['contraband.detection', 'contraband.intelligence', 'identity.actor-name', 'prisoners.classification']);
+
+    // Seeding is checked against a session that has not been *used* yet.
+    // `buildDeterminismScenario` hires five guards, and since #70 wired ADR
+    // 0015's registry a hire mints a name -- so `identity.actor-name` has
+    // legitimately advanced before the scenario returns. Reading the seeded
+    // words off a fresh session keeps the property this asserts ("every
+    // stream is derived from `(masterSeed, name)`, never created implicitly")
+    // independent of whether setup happens to draw.
+    const fresh = createNewSimulationRuntime(SCENARIO_SEED);
+    expect(fresh.kernel.snapshot().rngStates.map((entry) => entry.name)).toEqual(names);
     for (const name of names) {
-      expect(runtime.kernel.rng.get(name).snapshot().words).toEqual(deriveXoshiroState(SCENARIO_SEED, name).words);
+      expect(fresh.kernel.rng.get(name).snapshot().words).toEqual(deriveXoshiroState(SCENARIO_SEED, name).words);
     }
 
     // Two sessions on the same seed hash identically; on different seeds

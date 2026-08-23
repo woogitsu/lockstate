@@ -53,6 +53,21 @@ export class DeploymentSystem implements SystemRegistration {
     return { deploymentFailures: this.deploymentFailures };
   }
 
+  /**
+   * The one counter this system owns, added for the save payload in issue
+   * #70. Everything else it reads is state on `SecuritySectorRegistry`,
+   * `GuardRoster` or the shared schedule array, each snapshotted where it
+   * lives; `requestSequence` is excluded for the same reason as
+   * `PatrolSystem`'s.
+   */
+  public getSnapshot(): { readonly metrics: { readonly deploymentFailures: number } } {
+    return { metrics: this.getMetrics() };
+  }
+
+  public loadSnapshot(snapshot: { readonly metrics: { readonly deploymentFailures: number } }): void {
+    this.deploymentFailures = snapshot.metrics.deploymentFailures;
+  }
+
   /** Per-sector required/assigned/shortage at the given tick -- issue #26's "coverage/staffing metrics expose shortages without fabricating security." Deterministic: sorted by sector id. */
   public getCoverageReport(tick: number): readonly CoverageReportEntry[] {
     return this.sectors.all().map((sector) => {

@@ -1,7 +1,7 @@
 import { computeSaveChecksum } from './checksum';
 import { encodeEntityStoreSnapshot, type EncodedEntityStoreSnapshot } from './entity-codec';
 import type { JsonValue } from '../shared/json';
-import type { SaveEnvelopeV1, SaveEnvelopeV2, SavePayloadV1 } from './save-schema';
+import type { SaveEnvelopeV1, SaveEnvelopeV2, SaveEnvelopeV3, SavePayloadV1 } from './save-schema';
 
 /**
  * Forward migrations between save-schema versions.
@@ -83,4 +83,52 @@ export function migrateSaveEnvelopeV1ToV2(input: SaveEnvelopeV1): SaveEnvelopeV2
     checksum: computeSaveChecksum(migratedPayload as unknown as JsonValue),
     payload: migratedPayload,
   } as SaveEnvelopeV2;
+}
+
+/**
+ * V2 -> V3: the payload gains a `simulation` section carrying the twenty-odd
+ * subsystems that hold authoritative state and were never persisted (#70).
+ *
+ * V3 also adds a session-level `identity` section (ADR 0015): the names
+ * prisoners and staff are known by.
+ *
+ * **The payload crosses unchanged.** Both sections were added *beside*
+ * `kernel`/`world`/`construction`/`entities` rather than folded into them,
+ * and both are optional, so there is nothing in a V2 save to reshape — and
+ * nothing this function may invent. A save written by a V2 build genuinely
+ * does not contain that prison's prisoners, guards, incidents, contraband or
+ * names; fabricating an empty section would assert the opposite (an empty
+ * section says "this prison has none", an absent one says "this save does not
+ * know"). `restoreSimulationRuntime` treats an absent section exactly as V2
+ * behaved — those subsystems rebuild empty, and every roster row simply
+ * projects no name — and `RestoredScope` is what tells the player which of
+ * the two happened.
+ *
+ * The checksum is recomputed for the same reason V1 -> V2 recomputes it: a
+ * migrated envelope must be indistinguishable from a natively-written one.
+ * Since the payload is unchanged the recomputed value necessarily equals the
+ * stored one, which is a property worth a test rather than a reason to skip
+ * the call — skipping it would make this the one step whose output was not
+ * self-consistent by construction. As with V1 -> V2, `decodeSaveEnvelope` has
+ * already verified the stored checksum against the payload as written, at V2,
+ * before this function runs.
+ *
+ * Pure: builds new objects and never mutates `input`.
+ */
+export function migrateSaveEnvelopeV2ToV3(input: SaveEnvelopeV2): SaveEnvelopeV3 {
+  const { saveSchemaVersion: _version, checksum: _checksum, payload, ...metadata } = input;
+
+  const migratedPayload = {
+    kernel: payload.kernel,
+    world: payload.world,
+    construction: payload.construction,
+    ...(payload.entities === undefined ? {} : { entities: payload.entities }),
+  };
+
+  return {
+    saveSchemaVersion: 3,
+    ...metadata,
+    checksum: computeSaveChecksum(migratedPayload as unknown as JsonValue),
+    payload: migratedPayload,
+  } as SaveEnvelopeV3;
 }

@@ -79,7 +79,7 @@ describe('SessionController: create/save/load a prison entirely offline', () => 
     expect(host.getRuntime()!.construction.getOrder('wall-1')).toBeDefined();
   });
 
-  it('reports what a V1 save does and does not carry, rather than implying a full restore', async () => {
+  it('reports what a save does and does not carry, rather than implying a full restore', async () => {
     const { controller } = buildController();
     await controller.createPrison('prison-1');
     await controller.saveNow();
@@ -90,8 +90,12 @@ describe('SessionController: create/save/load a prison entirely offline', () => 
     if (!outcome.ok) return;
 
     expect(outcome.scope.restored).toContain('world terrain and ownership');
+    expect(outcome.scope.restored).toContain('incidents, gangs and tunnels');
+    // Still a non-empty list, and still shown: what a save leaves behind is
+    // now derived/in-flight state rather than whole subsystems, but the UI
+    // must keep saying so rather than implying a perfect restore.
     expect(outcome.scope.notCarriedByThisSaveVersion.length).toBeGreaterThan(0);
-    expect(outcome.scope.notCarriedByThisSaveVersion).toContain('incidents and gangs');
+    expect(outcome.scope.notCarriedByThisSaveVersion.join(' ')).toContain('navigation caches');
   });
 
   it('increments revision on each successful save', async () => {
