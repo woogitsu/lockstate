@@ -85,7 +85,38 @@ describe('semantic input', () => {
     gestures.begin({ id: 1, x: 10, y: 10 });
     expect(gestures.move({ id: 1, x: 14, y: 7 })).toEqual({ kind: 'pan', deltaX: 4, deltaY: -3 });
     gestures.begin({ id: 2, x: 34, y: 7 });
-    expect(gestures.move({ id: 2, x: 54, y: 7 })).toEqual({ kind: 'pinch', centerX: 34, centerY: 7, scale: 2 });
+    // The midpoint moved by half the moving finger's travel, which is the
+    // translation a two-finger drag asks for. It is the only way to pan on
+    // touch while the build tool owns the one-finger drag (#74).
+    expect(gestures.move({ id: 2, x: 54, y: 7 })).toEqual({
+      kind: 'pinch',
+      centerX: 34,
+      centerY: 7,
+      scale: 2,
+      deltaX: 10,
+      deltaY: 0,
+    });
+  });
+
+  it('translates by the midpoint over a two-finger drag, and comes back to the same zoom', () => {
+    // A pointer event moves one finger at a time, so each individual move
+    // *does* change the finger distance; what must hold over the pair is that
+    // the translations add up to the midpoint's travel and the scales cancel.
+    // Without this, a touch player with the build tool armed could zoom but
+    // never pan (#74).
+    const gestures = new TouchGestureTracker();
+    gestures.begin({ id: 1, x: 0, y: 0 });
+    gestures.begin({ id: 2, x: 20, y: 0 });
+
+    const first = gestures.move({ id: 1, x: 6, y: 0 });
+    const second = gestures.move({ id: 2, x: 26, y: 0 });
+    expect(first?.kind).toBe('pinch');
+    expect(second?.kind).toBe('pinch');
+    if (first?.kind !== 'pinch' || second?.kind !== 'pinch') return;
+
+    expect(first.deltaX + second.deltaX).toBeCloseTo(6); // both fingers moved +6
+    expect(first.deltaY + second.deltaY).toBeCloseTo(0);
+    expect(first.scale * second.scale).toBeCloseTo(1);
   });
 
   it('keeps accessibility preferences versioned and outside prison state', () => {

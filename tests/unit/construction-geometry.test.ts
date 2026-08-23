@@ -12,7 +12,7 @@ import {
 } from '../../src/simulation/construction';
 import type { ConstructionSnapshot } from '../../src/simulation/construction/system';
 import { Kernel } from '../../src/simulation/kernel/kernel';
-import { createSaveEnvelope } from '../../src/persistence/save-schema';
+import { SAVE_SCHEMA_VERSION, createSaveEnvelope, decodeSaveEnvelope } from '../../src/persistence/save-schema';
 import { packCommand, unpackCommand } from '../../src/simulation/protocol/commands';
 import { defaultRoomRegistry } from '../../src/simulation/rooms/definition';
 import { RoomSystem } from '../../src/simulation/rooms/system';
@@ -494,27 +494,49 @@ describe('a build order with an edge survives the save envelope', () => {
    * optional `edge` was declared there, finishing a wall made the game
    * unsaveable, which a headless construction test could never notice.
    */
-  const envelopeInput = (construction: ConstructionSnapshot) => ({
+  const envelopeInput = (construction: ConstructionSnapshot, world: SparseWorld = loadedWorld()) => ({
     gameVersion: 'test',
     prisonId: 'prison-1',
     revision: 1,
     createdAt: 1,
     updatedAt: 1,
     kernel: { tick: 0, expectedSequence: 0, rngStates: [], commands: [] },
-    world: loadedWorld().snapshot(),
+    // The *same* world the orders were built in -- the wall lives in its edge
+    // layer, not in the order, so snapshotting a fresh world would prove
+    // nothing about whether the geometry survives.
+    world: world.snapshot(),
     construction,
   });
 
-  it('accepts an order carrying an edge', () => {
+  it('writes and reads back a finished wall on the current schema version', () => {
     const world = loadedWorld();
     const construction = new ConstructionSystem(world);
     const kernel = new Kernel();
     kernel.registerSystem(construction);
     construction.submitOrder(createBuildOrder('wall-0', 'wall-brick', tile(4, 6), 'west'));
     runToCompletion(kernel);
+    expect(construction.getOrder('wall-0')?.state).toBe('completed');
+    expect(world.getLeftEdge(tile(4, 6))).toBe(WALL_EDGE_NUMERIC_ID);
 
-    const envelope = createSaveEnvelope(envelopeInput(construction.snapshot()));
-    expect(envelope.payload.construction.orders[0]).toMatchObject({ id: 'wall-0', edge: 'west' });
+    const envelope = createSaveEnvelope(envelopeInput(construction.snapshot(), world));
+    expect(envelope.saveSchemaVersion).toBe(SAVE_SCHEMA_VERSION);
+
+    // Writing is only half of it: the same envelope has to survive the
+    // checksum and come back through `decodeSaveEnvelope`, which is the path
+    // a load actually takes. Round-tripped through JSON first, because that
+    // is what IndexedDB gives back.
+    const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)) as unknown);
+    expect(decoded.ok, decoded.ok ? '' : decoded.error.message).toBe(true);
+    if (!decoded.ok) return;
+
+    expect(decoded.value.saveSchemaVersion).toBe(SAVE_SCHEMA_VERSION);
+    expect(decoded.migrated).toBe(false); // written at the current version, so nothing had to be upgraded
+    expect(decoded.value.payload.construction.orders[0]).toMatchObject({ id: 'wall-0', edge: 'west' });
+    // The geometry itself rides in the world's own edge layer, so a restored
+    // world still has the wall even though nothing re-runs the order.
+    const restored = SparseWorld.fromSnapshot(decoded.value.payload.world);
+    expect(restored.getLeftEdge(tile(4, 6))).toBe(WALL_EDGE_NUMERIC_ID);
+    expect(restored.getTopEdge(tile(4, 6))).toBe(0);
   });
 
   it('still accepts one that carries none, so no migration is needed', () => {
@@ -523,6 +545,9 @@ describe('a build order with an edge survives the save envelope', () => {
 
     const envelope = createSaveEnvelope(envelopeInput(construction.snapshot()));
     expect(envelope.payload.construction.orders[0]).not.toHaveProperty('edge');
+
+    const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)) as unknown);
+    expect(decoded.ok).toBe(true);
   });
 
   it('rejects an edge the world has no slot for', () => {

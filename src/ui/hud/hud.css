@@ -175,15 +175,46 @@
   margin-bottom: var(--space-2);
 }
 
-.hud-build__footer {
+/* The primary route: arm the map, then point at it. It sits between the
+   catalogue and the folded-away numeric fallback, and it is the only block
+   with a primary-tone control. */
+.hud-build__map {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  padding: var(--space-2) var(--space-1) 0;
+  padding: var(--space-2) var(--space-1);
   border-top: var(--hairline) solid var(--border-hairline);
 }
 
-.hud-build__footer > .ui-action { width: 100%; }
+.hud-build__map > .ui-action { width: 100%; }
+
+/* Armed is a state, not a moment: the control has to keep saying so while the
+   player's attention is out on the world. */
+.hud-build .ui-action[data-armed='true'] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.hud-build .ui-action[data-armed='true']:hover {
+  background: var(--surface-active);
+  color: var(--text-heading);
+}
+
+/* A readout of where the wall will land -- never an input. */
+.hud-build__target {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: var(--space-5);
+}
+
+.hud-build__target-value { color: var(--text-subtle); }
+.hud-build__target[data-target] .hud-build__target-value { color: var(--text-heading); }
+
+.hud-build__coords + .ui-choice { margin-bottom: var(--space-2); }
+.hud-build .ui-section__body > .ui-action { width: 100%; }
 
 /* The one place the panel explains itself. Wraps, because a single line
    would be truncated at the panel's width and say nothing. */

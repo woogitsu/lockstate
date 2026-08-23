@@ -12,7 +12,7 @@ import { type CollapsibleSection, createCollapsibleSection } from '../primitives
 import { type ListRow, createListRow } from '../primitives/list-row';
 import { type Panel, createPanel } from '../primitives/panel';
 import { type TabButton, createTabButton } from '../primitives/tab-button';
-import { type BuildPanel, createBuildPanel } from './build-panel';
+import { type BuildPanel, type BuildPanelTarget, createBuildPanel } from './build-panel';
 import {
   HUD_PANEL_IDS,
   type HudPanelId,
@@ -81,6 +81,19 @@ export type HudIntent =
       readonly x: number;
       readonly y: number;
       readonly edge: HudBuildEdge;
+    }
+  /**
+   * The player handed the world pointer to the build tool, or took it back.
+   *
+   * *Chrome*, not a command: it changes what a click on the world means and
+   * asks the simulation for nothing, so it is never gated -- blocking it
+   * while a build order was in flight would leave the player unable to put
+   * the pointer down.
+   */
+  | {
+      readonly kind: 'arm-build-tool';
+      readonly armed: boolean;
+      readonly definitionId: string | undefined;
     };
 
 export interface MountHudOptions {
@@ -116,6 +129,14 @@ export interface MountHudOptions {
 export interface HudHandle {
   readonly element: HTMLElement;
   update(viewModel: HudViewModel): void;
+  /**
+   * Live feedback from the world pointer into the Build panel's readout.
+   *
+   * Deliberately not part of `HudViewModel`: it changes on every pointer
+   * move, and folding it into the snapshot-shaped view model would make a
+   * mouse wiggle look like a simulation update.
+   */
+  setBuildTarget(target: BuildPanelTarget | undefined): void;
   getState(): HudShellState;
   /** Applies a shell action programmatically -- restoring a saved UI state, or a test. */
   dispatch(action: HudShellAction): void;
@@ -226,6 +247,9 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     model: options.build ?? { buildables: [], origin: { x: 0, y: 0 } },
     onPlace: (intent) => {
       dispatchCommand({ kind: 'place-build-order', ...intent });
+    },
+    onArm: (armed, definitionId) => {
+      runReported('arm-build-tool', () => options.onIntent?.({ kind: 'arm-build-tool', armed, definitionId }), reportError);
     },
   });
   const side = element('div', { className: 'hud__side', children: [buildPanel.element] });
@@ -338,6 +362,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   return {
     element: hud,
     update,
+    setBuildTarget: (target) => buildPanel.setTarget(target),
     getState: () => state,
     dispatch: (action: HudShellAction) => {
       applyState(hudShellReducer(state, action));

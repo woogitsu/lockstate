@@ -26,6 +26,7 @@ import {
   type HudViewModel,
 } from './ui/hud';
 import { SimulationCommandSender } from './ui/simulation-commands';
+import { BuildTool } from './ui/build-tool';
 import { BUILDABLE_REGISTRY } from './simulation/construction';
 import type { LocalizationKey } from './content/localization';
 import { defaultLocaleEnCatalog } from './content/default-locale-en';
@@ -70,9 +71,30 @@ const atlasLibrary = AtlasLibrary.load();
 // stops the shared promise from looking unhandled before they attach.
 atlasLibrary.catch(() => undefined);
 
+/**
+ * The main thread's command channel, and the build tool that uses it.
+ *
+ * Both are built here, before the scene, because the scene needs the tool:
+ * `AGENTS.md` boundary 3 puts input orchestration on this thread, and the
+ * renderer may not submit a command of its own. So the scene reports the tile
+ * edges a gesture covered, and this pair turns them into `PlaceBuildOrder`s.
+ *
+ * With no worker there is no tool: an armed pointer that could never place
+ * anything would take the camera away and give nothing back.
+ */
+const commandSender = simulation === undefined ? undefined : new SimulationCommandSender(simulation);
+const buildTool =
+  commandSender === undefined
+    ? undefined
+    : new BuildTool({
+        submit: (command) => commandSender.submit(command),
+        onError: (error) => console.warn('Build order refused:', error.message),
+      });
+
 const worldScene = new WorldScene({
   feed: renderFeed,
   loadAtlasLibrary: () => atlasLibrary,
+  ...(buildTool === undefined ? {} : { buildTool }),
 });
 
 const gameConfig: Phaser.Types.Core.GameConfig = {
@@ -192,13 +214,16 @@ function buildCatalogue(): HudBuildViewModel {
   return { buildables, origin: { x: 16, y: 16 } };
 }
 
-function mountInterface(app: HTMLElement, client: SimulationClient): void {
+function mountInterface(
+  app: HTMLElement,
+  client: SimulationClient,
+  commands: SimulationCommandSender,
+  tool: BuildTool | undefined,
+): void {
   const localizer = new Localizer({
     locale: 'en',
     catalogs: [messageCatalogFromLocalizationCatalog('en', defaultLocaleEnCatalog)],
   });
-
-  const commands = new SimulationCommandSender(client);
 
   let hud: HudHandle | undefined;
   let viewModel: HudViewModel = EMPTY_HUD_VIEW_MODEL;
@@ -234,6 +259,12 @@ function mountInterface(app: HTMLElement, client: SimulationClient): void {
         case 'toggle-panel':
           return;
 
+        case 'arm-build-tool':
+          // Also chrome, but it has a second half outside the HUD: it decides
+          // whether a click on the *world* builds or moves the camera.
+          tool?.setArmed(intent.armed, intent.definitionId);
+          return;
+
         case 'set-clock':
           // Throwing when there is no session surfaces on the transport
           // control through the HUD's own error path. Silently returning
@@ -258,13 +289,15 @@ function mountInterface(app: HTMLElement, client: SimulationClient): void {
     },
     onError: (failure) => console.warn('HUD action failed', failure),
   });
+
+  tool?.attachReadout((target) => hud?.setBuildTarget(target));
 }
 
 async function bootPersistence(client: SimulationClient): Promise<void> {
   const app = document.getElementById('app');
   if (app === null) return;
 
-  mountInterface(app, client);
+  mountInterface(app, client, commandSender ?? new SimulationCommandSender(client), buildTool);
 
   let controller: SessionController;
   let panel: SavePanel;

@@ -58,10 +58,17 @@ export const HUD_MESSAGE_KEY = {
   buildStepDown: 'hud.build.step-down',
   buildStepUp: 'hud.build.step-up',
   buildEdge: 'hud.build.edge',
-  buildEdgeNorth: 'hud.build.edge-north',
-  buildEdgeWest: 'hud.build.edge-west',
   buildSubmit: 'hud.build.submit',
   buildNote: 'hud.build.note',
+
+  buildArm: 'hud.build.arm',
+  buildDisarm: 'hud.build.disarm',
+  buildArmHint: 'hud.build.arm-hint',
+  buildTargetNone: 'hud.build.target-none',
+  buildTargetValue: 'hud.build.target-value',
+  buildTargetRun: 'hud.build.target-run',
+  buildCoordinates: 'hud.build.coordinates',
+  buildCoordinatesHint: 'hud.build.coordinates-hint',
 
   /**
    * Labels for the two entries `BUILDABLE_REGISTRY` holds.

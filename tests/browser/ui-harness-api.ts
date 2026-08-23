@@ -48,6 +48,15 @@ export interface BuildProbe {
   /** True when the edge chooser is showing at all -- it is hidden for a non-edge buildable. */
   readonly edgeChooserVisible: boolean;
   readonly submitDisabled: boolean;
+  /** The map route's toggle: label, pressed state, and whether it is the panel's primary control. */
+  readonly armLabel: string;
+  readonly armed: boolean;
+  readonly armIsPrimary: boolean;
+  /** True while the numeric fallback section is folded away. */
+  readonly coordinatesCollapsed: boolean;
+  /** The `data-target` readout, or null when nothing is aimed at. */
+  readonly targetReadout: string | null;
+  readonly targetText: string;
   /** Every visible label in the panel, so an unresolved `hud.*` key is caught. */
   readonly texts: readonly string[];
 }
@@ -89,6 +98,8 @@ export interface LockstateUiHarness {
   layoutProbe(): LayoutProbe;
 
   buildProbe(): BuildProbe;
+  clickArmBuild(): boolean;
+  expandBuildCoordinates(): boolean;
   clickBuildable(definitionId: string): boolean;
   stepBuildCoordinate(axis: 'x' | 'y', direction: 'up' | 'down'): boolean;
   clickBuildEdge(edge: string): boolean;

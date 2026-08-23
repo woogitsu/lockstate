@@ -324,7 +324,12 @@ window.lockstateUiHarness = {
     const rows = [...document.querySelectorAll<HTMLElement>('.hud-build__list [data-buildable]')];
     const inputs = [...document.querySelectorAll<HTMLInputElement>('.hud-build__coords .ui-number__input')];
     const edgeChooser = document.querySelector<HTMLElement>('.hud-build .ui-choice');
-    const submit = document.querySelector<HTMLButtonElement>('.hud-build .ui-action');
+    const arm = document.querySelector<HTMLButtonElement>('.hud-build__map .ui-action');
+    const submit = document.querySelector<HTMLButtonElement>('.hud-build .ui-section__body .ui-action');
+    const target = document.querySelector<HTMLElement>('.hud-build__target');
+    const coordinates = [...document.querySelectorAll<HTMLElement>('.hud-build .ui-section')].find((section) =>
+      section.querySelector('.hud-build__coords'),
+    );
 
     return {
       // `hidden` is inherited through the DOM, so `offsetParent` is what the
@@ -339,10 +344,38 @@ window.lockstateUiHarness = {
         null,
       edgeChooserVisible: edgeChooser !== null && edgeChooser.offsetParent !== null,
       submitDisabled: submit?.disabled ?? true,
+      armLabel: arm?.textContent?.trim() ?? '',
+      armed: arm?.getAttribute('aria-pressed') === 'true',
+      // The map route has to be the panel's one primary-tone control; the
+      // numeric route must not compete with it for the eye.
+      armIsPrimary:
+        arm?.dataset['tone'] === 'primary' &&
+        [...document.querySelectorAll<HTMLElement>('.hud-build .ui-action')].filter(
+          (button) => button.dataset['tone'] === 'primary',
+        ).length === 1,
+      coordinatesCollapsed: coordinates?.dataset['collapsed'] === 'true',
+      targetReadout: target?.dataset['target'] ?? null,
+      targetText: target?.querySelector('.hud-build__target-value')?.textContent?.trim() ?? '',
       texts: [...(panel?.querySelectorAll<HTMLElement>('button, label, span, h2') ?? [])]
         .map((node) => (node.textContent ?? '').trim())
         .filter((text) => text.length > 0),
     };
+  },
+
+  clickArmBuild(): boolean {
+    const arm = document.querySelector<HTMLButtonElement>('.hud-build__map .ui-action');
+    if (arm === null) return false;
+    arm.click();
+    return true;
+  },
+
+  expandBuildCoordinates(): boolean {
+    const header = [...document.querySelectorAll<HTMLElement>('.hud-build .ui-section')]
+      .find((section) => section.querySelector('.hud-build__coords'))
+      ?.querySelector<HTMLButtonElement>('.ui-section__header');
+    if (header === undefined || header === null) return false;
+    header.click();
+    return true;
   },
 
   clickBuildable(definitionId: string): boolean {
@@ -370,7 +403,9 @@ window.lockstateUiHarness = {
   },
 
   clickPlaceOrder(): boolean {
-    const submit = document.querySelector<HTMLButtonElement>('.hud-build .ui-action');
+    // The numeric route's button, inside the folded section -- not the arm
+    // toggle, which is now the panel's first `.ui-action`.
+    const submit = document.querySelector<HTMLButtonElement>('.hud-build .ui-section__body .ui-action');
     if (submit === null) return false;
     // A real click, so a disabled button genuinely does not fire.
     submit.click();

@@ -1,30 +1,40 @@
 import type { LocalizationKey } from '../../content/localization';
+import { deriveSimulationMessageKey } from '../../content/simulation-message-keys';
 import type { MessageParameters } from '../../services/localization/format';
-import { createActionButton } from '../primitives/action-button';
+import { createActionButton, type ActionButton } from '../primitives/action-button';
 import { createChoiceGroup, type ChoiceGroup } from '../primitives/choice-group';
-import { createCollapsibleSection } from '../primitives/collapsible-section';
-import { element, eyebrowText } from '../primitives/dom';
+import { createCollapsibleSection, type CollapsibleSection } from '../primitives/collapsible-section';
+import { element, eyebrowText, valueText } from '../primitives/dom';
 import { createListRow, type ListRow } from '../primitives/list-row';
 import { createNumberField, type NumberField } from '../primitives/number-field';
 import { createPanel } from '../primitives/panel';
 import { HUD_MESSAGE_KEY } from './messages';
-import type { HudBuildEdge, HudBuildViewModel, HudLocalizer } from './view-model';
+import { HUD_BUILD_EDGES, type HudBuildEdge, type HudBuildViewModel, type HudLocalizer } from './view-model';
 
 /**
- * The Build panel: the surface that makes building reachable.
+ * The Build panel.
  *
- * It is a *composer*, not a source of truth. It holds three pieces of local
- * chrome state -- which buildable is selected, which tile, which edge -- and
- * turns a tap on "Place order" into one `place-build-order` intent for the
- * host. It never touches the world, never inspects a snapshot and imports
- * nothing from `src/simulation/**`.
+ * ### Pointing is the interaction; the panel is the context around it
  *
- * Placement is by coordinate rather than by clicking the world. Picking a
- * tile off the canvas is renderer and input work (camera projection, pointer
- * capture, remapping -- `docs/INPUT.md`), and wiring it here would put input
- * orchestration inside a view. Two number fields make the feature reachable
- * today with controls that already work on touch, and leave the eventual
- * pick-on-map path free to feed the same intent.
+ * You do not build by dialling in a coordinate. You point at where the thing
+ * goes. So the panel's primary control **arms the map**, and the placement
+ * itself happens out in the world: click an edge, or drag along it to lay a
+ * run. The panel says *what* you are placing and, as feedback, *where* the
+ * pointer is about to put it -- a readout, never the input.
+ *
+ * The numeric fields are still here, deliberately, and deliberately
+ * demoted: folded away in a secondary section, below the map affordance and
+ * labelled as the other route. A pointer-only build tool would lock out
+ * anybody navigating by keyboard, and `AGENTS.md` boundary 10 is not
+ * satisfied by "it works with a mouse". Deleting them would have been the
+ * easy half of this change and the wrong half.
+ *
+ * ### Boundaries
+ *
+ * It is a *composer*, not a source of truth. It holds which buildable is
+ * selected, which tile the numeric route names, and whether the map is armed;
+ * it turns those into intents. It never touches the world, never inspects a
+ * snapshot, and imports nothing from `src/simulation/**`.
  */
 
 export interface BuildPanelIntent {
@@ -34,36 +44,64 @@ export interface BuildPanelIntent {
   readonly edge: HudBuildEdge;
 }
 
+/** Where the pointer is currently aimed, for the panel's readout. */
+export interface BuildPanelTarget {
+  readonly x: number;
+  readonly y: number;
+  readonly edge: HudBuildEdge;
+  /** How many edges the pending gesture covers. `1` for a tap. */
+  readonly segments: number;
+}
+
 export interface BuildPanelOptions {
   readonly localizer: HudLocalizer;
   readonly model: HudBuildViewModel;
+  /** The numeric route: place exactly one order at the coordinates shown. */
   readonly onPlace: (intent: BuildPanelIntent) => void;
+  /** The map route: hand the pointer to the build tool, or take it back. */
+  readonly onArm: (armed: boolean, definitionId: string | undefined) => void;
 }
 
 export interface BuildPanel {
   readonly element: HTMLElement;
   /**
-   * The controls to disable while a command is in flight — the submit button,
-   * and nothing else.
+   * The controls to disable while a command is in flight — the numeric
+   * route's submit button, and nothing else.
    *
-   * Choosing a buildable, nudging a coordinate and picking an edge are
-   * *chrome*: they change what the next order would say and ask the host for
-   * nothing. Disabling them alongside the command would drop interactions
-   * that have nothing to do with the host, which is the same mistake
-   * `dispatchShell` exists to avoid for tabs and panels. Observed while
-   * driving the real panel: three taps issued in one turn after "Place order"
-   * were all swallowed.
+   * Choosing a buildable, nudging a coordinate, picking an edge and arming
+   * the map are *chrome*: they change what the next order would say and ask
+   * the host for nothing. Disabling them alongside the command would drop
+   * interactions that have nothing to do with the host, which is the same
+   * mistake `dispatchShell` exists to avoid for tabs and panels. Observed
+   * while driving the real panel: three taps issued in one turn after "Place
+   * order" were all swallowed.
    */
   readonly controls: readonly (HTMLButtonElement | HTMLInputElement)[];
-  /** Current selection, exposed so a test can assert it without reading the DOM. */
+  /** Current numeric-route selection, exposed so a test can assert it without reading the DOM. */
   getSelection(): BuildPanelIntent | undefined;
+  isArmed(): boolean;
+  /** Live feedback from the world. `undefined` clears the readout. */
+  setTarget(target: BuildPanelTarget | undefined): void;
   setVisible(visible: boolean): void;
 }
 
-const EDGE_LABEL_KEY: Readonly<Record<HudBuildEdge, LocalizationKey>> = {
-  north: HUD_MESSAGE_KEY.buildEdgeNorth,
-  west: HUD_MESSAGE_KEY.buildEdgeWest,
-};
+/**
+ * The edge options are labelled from the simulation enum's own catalog group
+ * rather than from a pair of `hud.build.edge-*` keys of the panel's own.
+ *
+ * `BUILD_EDGES` is player-facing precisely *because* this panel exists, so it
+ * carries labels in `src/content/simulation-message-keys.ts` like every other
+ * projected enum, and the key is derived from the id rather than written out
+ * (ADR 0011). A second hand-authored pair here would be the same two labels
+ * maintained twice, and adding a third edge slot would silently leave it
+ * unlabelled on screen while the catalog said otherwise.
+ *
+ * This imports from `src/content/`, never from `src/simulation/**` -- the
+ * HUD boundary is intact.
+ */
+function edgeLabelKey(edge: HudBuildEdge): LocalizationKey {
+  return deriveSimulationMessageKey('build-edge', edge);
+}
 
 export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   const { localizer, model } = options;
@@ -74,6 +112,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   let tileX = Math.trunc(model.origin.x);
   let tileY = Math.trunc(model.origin.y);
   let edge: HudBuildEdge = 'north';
+  let armed = false;
 
   const selectedBuildable = () => model.buildables.find((entry) => entry.definitionId === selectedId);
 
@@ -96,6 +135,9 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
         selectedId = buildable.definitionId;
         paintCatalogue();
         paintPlacement();
+        // The armed tool has to follow the selection, or the map would keep
+        // placing whatever was chosen when it was armed.
+        options.onArm(armed, selectedId);
       },
     });
     row.element.dataset['buildable'] = buildable.definitionId;
@@ -111,13 +153,45 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     );
   }
 
-  const catalogue = createCollapsibleSection({
+  const catalogue: CollapsibleSection = createCollapsibleSection({
     eyebrow: t(HUD_MESSAGE_KEY.buildCatalogue),
     onToggle: (collapsed) => catalogue.setCollapsed(collapsed),
   });
   catalogue.body.append(catalogueList);
 
-  // ---- where --------------------------------------------------------
+  // ---- the map route (primary) --------------------------------------
+  const armButton: ActionButton = createActionButton({
+    label: t(HUD_MESSAGE_KEY.buildArm),
+    tone: 'primary',
+    icon: 'build',
+    disabled: selectedId === undefined,
+    onActivate: () => {
+      armed = !armed && selectedId !== undefined;
+      paintArmed();
+      options.onArm(armed, selectedId);
+    },
+  });
+  armButton.element.dataset['armed'] = 'false';
+
+  const targetValue = valueText(t(HUD_MESSAGE_KEY.buildTargetNone), 'hud-build__target-value');
+  const targetBlock = element('div', {
+    className: 'hud-build__target',
+    children: [eyebrowText(t(HUD_MESSAGE_KEY.buildPlacement)), targetValue],
+  });
+
+  const armHint = eyebrowText(t(HUD_MESSAGE_KEY.buildArmHint), 'hud-build__note');
+
+  function paintArmed(): void {
+    armButton.setLabel(t(armed ? HUD_MESSAGE_KEY.buildDisarm : HUD_MESSAGE_KEY.buildArm));
+    armButton.element.dataset['armed'] = armed ? 'true' : 'false';
+    // `aria-pressed` says it is a toggle, not a one-shot action; without it a
+    // screen reader announces "Stop placing" with no way to tell that the
+    // mode is currently on.
+    armButton.element.setAttribute('aria-pressed', armed ? 'true' : 'false');
+    if (!armed) setTarget(undefined);
+  }
+
+  // ---- the numeric route (secondary) --------------------------------
   const xField: NumberField = createNumberField({
     label: t(HUD_MESSAGE_KEY.buildTileX),
     value: tileX,
@@ -142,10 +216,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
 
   const edgeChoice: ChoiceGroup = createChoiceGroup({
     legend: t(HUD_MESSAGE_KEY.buildEdge),
-    options: (Object.keys(EDGE_LABEL_KEY) as HudBuildEdge[]).map((id) => ({
-      id,
-      label: t(EDGE_LABEL_KEY[id]),
-    })),
+    options: HUD_BUILD_EDGES.map((id) => ({ id, label: t(edgeLabelKey(id)) })),
     selectedId: edge,
     onSelect: (id) => {
       edge = id as HudBuildEdge;
@@ -153,13 +224,28 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     },
   });
 
-  const placement = createCollapsibleSection({
-    eyebrow: t(HUD_MESSAGE_KEY.buildPlacement),
-    onToggle: (collapsed) => placement.setCollapsed(collapsed),
+  const submit: ActionButton = createActionButton({
+    label: t(HUD_MESSAGE_KEY.buildSubmit),
+    disabled: selectedId === undefined,
+    onActivate: () => {
+      const intent = readSelection();
+      if (intent === undefined) return;
+      options.onPlace(intent);
+    },
   });
-  placement.body.append(
+
+  // Folded by default: it is the fallback route, and an open panel of number
+  // fields would read as the way you are meant to build.
+  const coordinates: CollapsibleSection = createCollapsibleSection({
+    eyebrow: t(HUD_MESSAGE_KEY.buildCoordinates),
+    collapsed: true,
+    onToggle: (collapsed) => coordinates.setCollapsed(collapsed),
+  });
+  coordinates.body.append(
+    eyebrowText(t(HUD_MESSAGE_KEY.buildCoordinatesHint), 'hud-build__note'),
     element('div', { className: 'hud-build__coords', children: [xField.element, yField.element] }),
     edgeChoice.element,
+    submit.element,
   );
 
   function paintPlacement(): void {
@@ -169,31 +255,18 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   }
   paintPlacement();
 
-  // ---- submit -------------------------------------------------------
-  const submit = createActionButton({
-    label: t(HUD_MESSAGE_KEY.buildSubmit),
-    tone: 'primary',
-    icon: 'build',
-    disabled: selectedId === undefined,
-    onActivate: () => {
-      const intent = readSelection();
-      if (intent === undefined) return;
-      options.onPlace(intent);
-    },
-  });
-
-  const footer = element('div', {
-    className: 'hud-build__footer',
-    children: [submit.element, eyebrowText(t(HUD_MESSAGE_KEY.buildNote), 'hud-build__note')],
-  });
-
   const panel = createPanel({
     title: t(HUD_MESSAGE_KEY.buildTitle),
     icon: 'build',
     className: 'hud-build',
   });
-  panel.body.append(catalogue.element, placement.element, footer);
+  panel.body.append(
+    catalogue.element,
+    element('div', { className: 'hud-build__map', children: [armButton.element, targetBlock, armHint] }),
+    coordinates.element,
+  );
   paintCatalogue();
+  paintArmed();
 
   function readSelection(): BuildPanelIntent | undefined {
     const buildable = selectedBuildable();
@@ -209,12 +282,40 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     };
   }
 
+  function setTarget(target: BuildPanelTarget | undefined): void {
+    if (target === undefined) {
+      targetValue.textContent = t(HUD_MESSAGE_KEY.buildTargetNone);
+      delete targetBlock.dataset['target'];
+      return;
+    }
+    targetValue.textContent =
+      target.segments > 1
+        ? t(HUD_MESSAGE_KEY.buildTargetRun, {
+            x: target.x,
+            y: target.y,
+            edge: t(edgeLabelKey(target.edge)),
+            count: target.segments,
+          })
+        : t(HUD_MESSAGE_KEY.buildTargetValue, { x: target.x, y: target.y, edge: t(edgeLabelKey(target.edge)) });
+    targetBlock.dataset['target'] = `${target.x},${target.y},${target.edge},${target.segments}`;
+  }
+
   return {
     element: panel.element,
     controls: [submit.element],
     getSelection: readSelection,
+    isArmed: () => armed,
+    setTarget,
     setVisible(visible: boolean): void {
       panel.element.hidden = !visible;
+      // Leaving the tab must hand the pointer back to the camera. A tool that
+      // stayed armed behind a hidden panel would swallow every click on a
+      // world the player thought they were only looking at.
+      if (!visible && armed) {
+        armed = false;
+        paintArmed();
+        options.onArm(false, selectedId);
+      }
     },
   };
 }
