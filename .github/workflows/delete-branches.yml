@@ -1,0 +1,38 @@
+name: Delete Merged Branches
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  delete-branches:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Fetch branches
+        run: git fetch --prune
+
+      - name: Verify branches to delete
+        run: |
+          echo "Branches that will be deleted:"
+          git branch -r --merged origin/main | grep -E "(claude|codex|foundation)" || echo "No branches found"
+
+      - name: Run delete script
+        run: bash deletebranches.sh
+
+      - name: Verify deletion
+        run: |
+          echo "Remaining branches with claude/codex/foundation:"
+          git fetch --prune
+          git branch -r | grep -E "(claude|codex|foundation)" | wc -l

@@ -3,17 +3,37 @@ export type ClockControl = { readonly mode: 'paused' } | { readonly mode: 'runni
 export class FixedStepClock {
   private lastMilliseconds: number | undefined;
   private accumulator = 0;
+  private currentControl: ClockControl;
 
   public constructor(
     public readonly stepMilliseconds = 50,
-    private control: ClockControl = { mode: 'paused' },
+    control: ClockControl = { mode: 'paused' },
   ) {
     if (!Number.isFinite(stepMilliseconds) || stepMilliseconds <= 0) throw new RangeError('Step duration must be positive.');
+    this.currentControl = control;
+  }
+
+  /**
+   * What the clock is doing right now.
+   *
+   * Read-only, and the reason it exists: the worker shell has to *report*
+   * the clock state over the protocol (`simulation/clock-state`) and the
+   * HUD's status-strip projection has to be handed it. Without a getter both
+   * callers had to keep their own copy of the last value they set, which is
+   * duplicated state that can silently disagree with the clock actually
+   * driving the kernel. `docs/HUD_PROJECTIONS.md` recorded the absence as a
+   * gap; this closes it.
+   *
+   * It exposes no way to *change* the control: `setControl` remains the only
+   * mutator, so the accumulator can never be advanced behind the clock's back.
+   */
+  public get control(): ClockControl {
+    return this.currentControl;
   }
 
   public setControl(control: ClockControl, nowMilliseconds: number): void {
     this.pump(nowMilliseconds, 0);
-    this.control = control;
+    this.currentControl = control;
   }
 
   public pump(nowMilliseconds: number, budget: number): number {
@@ -25,8 +45,8 @@ export class FixedStepClock {
     const elapsed = nowMilliseconds - this.lastMilliseconds;
     if (elapsed < 0) throw new RangeError('Clock input must be monotonic.');
     this.lastMilliseconds = nowMilliseconds;
-    if (this.control.mode === 'paused') return 0;
-    this.accumulator += elapsed * this.control.speed;
+    if (this.currentControl.mode === 'paused') return 0;
+    this.accumulator += elapsed * this.currentControl.speed;
     const available = Math.floor(this.accumulator / this.stepMilliseconds);
     const executed = Math.min(available, budget);
     this.accumulator -= executed * this.stepMilliseconds;

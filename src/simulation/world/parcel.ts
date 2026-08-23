@@ -41,13 +41,26 @@ export function createParcelRect(x: number, y: number, width: number, height: nu
   };
 }
 
-export function rectContainsTile(rect: ParcelRect, tile: TilePosition): boolean {
+/**
+ * Containment by loose tile coordinates, for callers that hold the numbers but
+ * no `TilePosition` object -- `isTileOwnedBy` runs this for every tile of every
+ * repainted chunk, and this signature lets it do so without allocating a
+ * position per tile. Avoiding the allocation is the reason for the overload;
+ * nothing here is measured, and no benchmark scenario exercises that path.
+ * `rectContainsTile` is the same test on a position, so there is still only one
+ * containment implementation.
+ */
+export function rectContainsTileXY(rect: ParcelRect, tileX: number, tileY: number): boolean {
   return (
-    tile.x >= rect.x &&
-    tile.x < rect.x + rect.width &&
-    tile.y >= rect.y &&
-    tile.y < rect.y + rect.height
+    tileX >= rect.x &&
+    tileX < rect.x + rect.width &&
+    tileY >= rect.y &&
+    tileY < rect.y + rect.height
   );
+}
+
+export function rectContainsTile(rect: ParcelRect, tile: TilePosition): boolean {
+  return rectContainsTileXY(rect, tile.x, tile.y);
 }
 
 export function isTileInParcel(tile: TilePosition, parcel: ParcelDefinition): boolean {

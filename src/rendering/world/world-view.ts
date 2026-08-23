@@ -1,8 +1,8 @@
 import type { ParcelRect } from '../../simulation/world/parcel';
-import { createParcelRect, rectContainsTile } from '../../simulation/world/parcel';
-import { tileCoordinate } from '../../simulation/world/coordinates';
+import { createParcelRect } from '../../simulation/world/parcel';
 import type { WorldSnapshotV1 } from '../../simulation/world/sparse-world';
 import { decodeTerrainRle } from '../../simulation/world/sparse-world';
+import { isTileOwnedBy } from '../../simulation/world/tile-ownership';
 import type { TileBounds } from '../tile-metrics';
 
 /**
@@ -141,7 +141,7 @@ export class WorldRenderView {
     out.topEdge = layers?.topEdge?.[index] ?? 0;
     out.leftEdge = layers?.leftEdge?.[index] ?? 0;
     out.zoning = layers?.zoning?.[index] ?? 0;
-    out.owned = this.isTileOwned(tileX, tileY, chunkX, chunkY);
+    out.owned = this.isTileOwnedInChunk(tileX, tileY, key);
   }
 
   public isChunkLoaded(chunkX: number, chunkY: number): boolean {
@@ -149,17 +149,32 @@ export class WorldRenderView {
   }
 
   /**
-   * A tile is owned when it belongs to an owned parcel or to a directly owned
-   * chunk, read from the same snapshot fields the simulation owns rather than
-   * from any renderer state.
+   * A tile is owned when any owned parcel contains it or its chunk is owned
+   * outright, read from the same snapshot fields the simulation owns rather
+   * than from any renderer state.
    *
-   * It is *not* an exact mirror of `SparseWorld.isTileOwned`, and the
-   * difference is visible only where parcels overlap -- which
-   * `registerParcel` permits. The simulation takes the first parcel
-   * containing the tile in ascending-id order and asks whether *that one* is
-   * owned; this asks whether *any* owned parcel contains the tile. A tile
-   * covered by an unowned low-id parcel and an owned high-id one is therefore
-   * unowned to the simulation and owned here.
+   * The rule is not implemented here: it is `isTileOwnedBy`, in
+   * `src/simulation/world`, and `SparseWorld.isTileOwned` calls that same
+   * function -- so this cannot answer differently from the simulation, which is
+   * what `canBuildAt` consults. It used to be a second implementation of
+   * the rule, and the two differed for a tile whose lowest-id covering parcel
+   * was unowned while a higher-id parcel covering it was owned -- overlapping
+   * bounds being something `registerParcel` permits. They agreed on every
+   * other tile (issue #93). `AGENTS.md` boundary 1 is why the shared rule
+   * lives on the simulation side rather than here: a renderer answering an
+   * ownership question from logic of its own is a second source of truth for
+   * game state whether or not it agrees.
+   *
+   * Coordinates are plain numbers, not `TileCoordinate`. Until issue #93 this
+   * method branded them with `tileCoordinate`, which throws `RangeError` for a
+   * fractional or unsafe integer -- but it did so only while the view held at
+   * least one owned parcel, so it was never a contract a caller could rely on,
+   * and `readTile` answers every other field for such an input silently (a
+   * fractional tile index misses the layer arrays and reads as 0). Every call
+   * site in `src/` derives its coordinates from integer loops over chunk
+   * bounds (`rendering/phaser/tile-layer.ts`, `rendering/world/row-index.ts`).
+   * The branded, validating entry point for tile ownership is
+   * `SparseWorld.isTileOwned`, which takes a `TilePosition`.
    */
   public isTileOwned(
     tileX: number,
@@ -167,13 +182,18 @@ export class WorldRenderView {
     chunkX = Math.floor(tileX / this.chunkSize),
     chunkY = Math.floor(tileY / this.chunkSize),
   ): boolean {
-    if (this.ownedParcels.length > 0) {
-      const tile = { x: tileCoordinate(tileX), y: tileCoordinate(tileY) };
-      for (const rect of this.ownedParcels) {
-        if (rectContainsTile(rect, tile)) return true;
-      }
-    }
-    return this.ownedChunkKeys.has(layerKey(chunkX, chunkY));
+    return this.isTileOwnedInChunk(tileX, tileY, layerKey(chunkX, chunkY));
+  }
+
+  /**
+   * `isTileOwned` for a caller that already holds the chunk key. `readTile`
+   * does, so taking the key as a parameter keeps that loop from rebuilding the
+   * same string once per tile. Like the layer memo above, that is a shape
+   * choice to avoid the work, not a measured optimisation -- no benchmark
+   * scenario exercises the render view.
+   */
+  private isTileOwnedInChunk(tileX: number, tileY: number, chunkKey: string): boolean {
+    return isTileOwnedBy(tileX, tileY, this.ownedParcels, this.ownedChunkKeys.has(chunkKey));
   }
 
   public get loadedChunkCount(): number {

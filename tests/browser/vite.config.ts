@@ -27,7 +27,12 @@ export default defineConfig({
   // Phaser, so leaving it out made the first app-shell test pay for an
   // optimizer run and the page reload that follows it.
   optimizeDeps: {
-    entries: ['tests/browser/harness.html', 'tests/browser/ui-harness.html', 'index.html'],
+    entries: [
+      'tests/browser/harness.html',
+      'tests/browser/ui-harness.html',
+      'tests/browser/camera-harness.html',
+      'index.html',
+    ],
   },
   server: {
     host: '127.0.0.1',

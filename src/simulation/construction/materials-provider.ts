@@ -9,6 +9,19 @@ import type { MaterialRequirement } from './definition';
  */
 export interface ConstructionMaterialsProvider {
   tryAllocate(requirements: readonly MaterialRequirement[]): boolean;
+  /**
+   * Returns materials a cancelled order had already allocated.
+   *
+   * Required, not optional. While materials were infinite this was
+   * invisible, which is why `ConstructionSystem.cancelOrder` carried a
+   * `// TODO: release materials` for as long as it did. Against a finite
+   * stock an order that consumes two bricks and is then undone
+   * -- an ordinary thing a player does, since `undo()` delegates here --
+   * destroys them permanently, so a prison walks itself into an unbuildable
+   * state through normal play with no feedback. A provider that cannot say
+   * what it does on cancellation is therefore not a usable provider.
+   */
+  release(allocations: readonly MaterialRequirement[]): void;
 }
 
 /**
@@ -21,4 +34,6 @@ export interface ConstructionMaterialsProvider {
  */
 export const UNLIMITED_MATERIALS_PROVIDER: ConstructionMaterialsProvider = {
   tryAllocate: () => true,
+  /** Nothing was ever taken from anywhere, so there is nothing to give back. */
+  release: () => {},
 };
