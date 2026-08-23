@@ -5,6 +5,11 @@ import {
 } from './scenarios/world-chunk-size.mjs';
 import { entitySoaScenario } from './scenarios/entity-soa.mjs';
 import { kernelThroughputScenario } from './scenarios/kernel-throughput.mjs';
+import {
+  navigationLockdownReturnScenario,
+  navigationMealRushScenario,
+  navigationMixedDestinationScenario,
+} from './scenarios/navigation-actor-tiers.mjs';
 
 export const benchmarkScenarios = Object.freeze([
   foundationSmokeScenario,
@@ -12,6 +17,9 @@ export const benchmarkScenarios = Object.freeze([
   worldChunkSizeDensePrisonScenario,
   entitySoaScenario,
   kernelThroughputScenario,
+  navigationMealRushScenario,
+  navigationLockdownReturnScenario,
+  navigationMixedDestinationScenario,
 ]);
 
 export function findBenchmarkScenario(id) {

@@ -2,9 +2,15 @@
 
 This document covers `src/simulation/navigation/`: issue #21's correctness
 foundation for hierarchical, permission-aware routing over the chunked
-world. It implements the *shape* of a route and the rules for what makes
-one valid — not actor movement/rendering, crowd steering, flow fields, or
-CPU budgets (all explicitly out of scope; the last three are issue #22).
+world, and issue #22's scheduling layer on top of it — a per-tick work
+budget, priority/age-fair request queuing, and shared flow fields for
+common-destination scenarios. #21 implements the *shape* of a route and
+the rules for what makes one valid; #22 (see its own section below and
+`docs/adr/0007-navigation-work-budgets-and-flow-fields.md`) bounds and
+schedules *how much of that* runs per tick, and shares it where many
+actors converge on one destination. Actor movement/rendering, crowd
+steering, door animations and teleporting-on-failure remain out of scope
+for both.
 
 ## Why hierarchical, not one flat search
 
@@ -135,20 +141,100 @@ single viable door per actor), and reachability agreement more generally,
 per the issue's "reference comparison against a small flat search" test
 requirement. Closing this gap (if it ever needs closing) belongs to #22.
 
+## Work budgets, request fairness and flow fields (issue #22)
+
+`path-request-queue.ts`, `flow-field.ts`, `region-dijkstra.ts` and
+`navigation-system.ts` add a scheduling layer on top of #21's `findRoute`,
+without changing its behavior for any caller that doesn't opt in. Full
+rationale lives in
+`docs/adr/0007-navigation-work-budgets-and-flow-fields.md`; summary:
+
+- **Work-unit budget.** An optional `SearchStats` counter (`{ expansions }`)
+  threads through `boundedLocalSearch` and the shared region/portal
+  Dijkstra core (`runRegionDijkstra`) — one expansion per tile/region
+  dequeued from the search frontier. `PathRequestQueue.processTick` sums
+  each *fully resolved* request's expansions against a configured
+  `workBudget` and defers the rest once spent, always processing at least
+  one request per tick so an unusually expensive request can't stall the
+  queue forever.
+- **Priority + age-based fairness.** Requests are ordered by
+  `priority + floor(waitedTicks / agingIntervalTicks)`, then enqueue tick,
+  then request id — never Map iteration order. Aging guarantees any
+  request's effective priority eventually exceeds any fixed tier, so
+  nothing waits forever under sustained higher-priority load.
+- **Flow fields share the region-graph layer only.** A `RegionFlowField`
+  is one destination-rooted Dijkstra pass over the portal graph (the same
+  algorithm #21's `findRoute` already runs per-request, just single-source
+  instead of single-target), reused by every request sharing a
+  `(destinationRegion, RouteContext fingerprint)` once a tick's pending
+  count for that pair reaches `flowFieldActivationThreshold`. The
+  per-actor bounded local A* still runs once per actor — there is nothing
+  to share there, since each starts from a different tile. A field that
+  can't answer a request (wrong destination, stale geometry, unreachable
+  region) returns `undefined`, and the caller falls back to #21's full
+  `findRoute` for an accurate diagnosis — the shared fast path never
+  fabricates a `permission-denied` reason.
+- **Cache metrics.** `RouteCache` and the new `FlowFieldCache` both expose
+  cumulative `hits`/`misses`/`evictions` (a specific door's access-version
+  change) and `geometryInvalidations` (a whole-graph rebuild) via
+  `getMetrics()`.
+- **`NavigationSystem`** is a real `SystemRegistration` registered on
+  `SimulationRuntime`'s `Kernel` (`createNewSimulationRuntime`, order 150,
+  every tick) — generic over request identity (`id: string`), so it knows
+  nothing about what a prisoner or staff member is; #23/#24 own that.
+  Chunk loading is still driven externally via `setLoadedChunks`, matching
+  `TopologyManager`'s existing "no enumeration" convention (see above).
+- **Minimal stub actors, not gameplay.** Per the owner's explicit decision
+  for this issue, `tests/helpers/navigation-actor-stub.ts` spawns synthetic
+  actors through the real `EntityStore` (id + origin/destination/
+  `RouteContext`, nothing else) to drive `NavigationSystem` at
+  representative scale before #23/#24's real entity model exists. It is
+  test/benchmark scaffolding, not exported from `src/`.
+
 ## Performance
 
-Directional-only measurement (not a committed benchmark or threshold, same
-caveat as `docs/PERSISTENCE.md`/`docs/CLOUD_SAVE.md` — `docs/BENCHMARKING.md`
-defers real navigation budgets to #22's dedicated actor-tier scenarios): on
-a 128×128-tile, 4×4-chunk synthetic cell-block layout (1,024 4×4 cells,
-1,984 doors), building the region/portal graph took ~99 ms and a
-corner-to-corner route (63 region crossings) took ~16 ms on this
-development container.
+Directional-only measurement, not a committed benchmark or threshold (same
+caveat as `docs/PERSISTENCE.md`/`docs/CLOUD_SAVE.md`); see
+`docs/BENCHMARKING.md`'s "no hard timing threshold" policy for what would
+be required before any of this becomes a regression gate.
+
+**#21 correctness-path cost** (unchanged by #22): on a 128×128-tile,
+4×4-chunk synthetic cell-block layout (1,024 4×4 cells, 1,984 doors),
+building the region/portal graph took ~99 ms and a corner-to-corner route
+(63 region crossings) took ~16 ms on this development container.
+
+**#22 actor-tier evidence**, from `pnpm benchmark`'s
+`navigation.meal-rush`/`navigation.lockdown-return`/
+`navigation.mixed-destination` scenarios (250/5,000-actor smoke/full
+tiers) and `node --expose-gc scripts/run-navigation-actor-tier-report.mjs`
+(all four tiers — 250/1,000/2,500/5,000 — this script is not part of
+`pnpm benchmark` and never gates CI; see
+`docs/adr/0007-navigation-work-budgets-and-flow-fields.md`), on a
+synthetic 64-cell cell-block-plus-canteen layout, `workBudgetPerTick=400`,
+`agingIntervalTicks=15`, `flowFieldActivationThreshold=6`, this development
+container:
+
+| Scenario | Actors | Ticks | Work units | Flow-field activations | Cache hit/miss | Latency (ticks) mean/p95/max |
+| --- | --- | --- | --- | --- | --- | --- |
+| meal-rush | 250 | 12 | 4,780 | 78 | 4 / 42 | 5.2 / 11 / 11 |
+| meal-rush | 5,000 | 1,471 | 754,014 | 4,308 | 0 / 60 | 731.7 / 1,393 / 1,470 |
+| lockdown-return | 250 | 10 | 3,875 | 0 | 81 / 169 | 4.7 / 9 / 9 |
+| lockdown-return | 5,000 | 1,107 | 566,910 | 1 | 1,681 / 3,318 | 629.9 / 1,071 / 1,106 |
+| mixed-destination | 250 | 19 | 8,006 | 0 | 2 / 248 | 8.8 / 17 / 18 |
+| mixed-destination | 5,000 | 1,754 | 902,510 | 5 | 3 / 4,992 | 879.4 / 1,667 / 1,753 |
+
+The full four-tier table (250/1,000/2,500/5,000, all three scenarios) is
+reproducible with the command above. The directionally interesting result:
+**meal-rush activates flow-field sharing heavily (many actors, one shared
+destination region) while lockdown-return and mixed-destination — distinct
+destinations per actor — almost never do**, exactly the "evidence-driven,
+not used for every destination" requirement; this is the intended,
+observed crossover, not a coincidence of these particular seeds.
 
 ## What is out of scope here
 
-Crowd steering/local collision avoidance; flow fields and shared-route
-optimization (#22); final path-request CPU budgets (#22); door animations
-or full security gameplay; teleporting actors when a route fails (a
-`RouteResult` failure is just information — the caller decides what an
-actor does next, e.g. wait, idle, or request a new route later).
+Crowd steering/local collision avoidance; door animations or full security
+gameplay; teleporting actors when a route fails (a `RouteResult` failure is
+just information — the caller decides what an actor does next, e.g. wait,
+idle, or request a new route later); per-tile (rather than per-region)
+flow fields; real gameplay entities consuming this system (#23/#24).

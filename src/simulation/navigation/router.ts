@@ -1,17 +1,22 @@
 import type { SparseWorld } from '../world/sparse-world';
 import { tileKey, type TilePosition } from '../world/coordinates';
 import { DoorRegistry } from './door';
-import { boundedLocalSearch } from './local-search';
+import { boundedLocalSearch, type SearchStats } from './local-search';
 import { type NavigationGraph, type Portal, type RegionId, resolveEdge } from './region-graph';
-import { checkDoorAccess, doorTraversalCost, type DoorAccessDenialReason, type RouteContext } from './route-context';
+import { runRegionDijkstra } from './region-dijkstra';
+import { checkDoorAccess, type DoorAccessDenialReason, type RouteContext } from './route-context';
 import type { Route, RouteResult, RouteSegment } from './route';
+
+export type { SearchStats } from './local-search';
 
 /**
  * Dijkstra over the region/portal graph. `isPortalAllowed` is the only
  * thing that differs between the permission-aware search and the
  * physical-only fallback used to produce a `permission-denied` diagnosis
  * (see `findRoute`) -- both walk the identical graph and tie-break
- * identically, so results stay deterministic and comparable.
+ * identically, so results stay deterministic and comparable. Delegates its
+ * search core to `region-dijkstra.ts`'s `runRegionDijkstra`, shared with
+ * `flow-field.ts`'s all-targets variant.
  */
 function dijkstraRegionPath(
   graph: NavigationGraph,
@@ -19,45 +24,11 @@ function dijkstraRegionPath(
   origin: RegionId,
   destination: RegionId,
   isPortalAllowed: (portal: Portal) => boolean,
+  stats?: SearchStats,
 ): readonly Portal[] | undefined {
   if (origin === destination) return [];
 
-  const dist = new Map<RegionId, number>([[origin, 0]]);
-  const prevPortal = new Map<RegionId, Portal>();
-  const visited = new Set<RegionId>();
-  const frontier = new Map<RegionId, number>([[origin, 0]]);
-
-  while (frontier.size > 0) {
-    let currentRegion: RegionId | undefined;
-    let bestDist = Number.POSITIVE_INFINITY;
-    for (const [region, distance] of frontier) {
-      if (distance < bestDist || (distance === bestDist && (currentRegion === undefined || region < currentRegion))) {
-        bestDist = distance;
-        currentRegion = region;
-      }
-    }
-    if (currentRegion === undefined) break;
-    frontier.delete(currentRegion);
-    if (visited.has(currentRegion)) continue;
-    visited.add(currentRegion);
-    if (currentRegion === destination) break;
-
-    for (const portal of graph.regionPortals.get(currentRegion) ?? []) {
-      if (!isPortalAllowed(portal)) continue;
-      const otherRegion = portal.regionA === currentRegion ? portal.regionB : portal.regionA;
-      if (visited.has(otherRegion)) continue;
-
-      const door = doors.getById(portal.doorId);
-      const cost = door === undefined ? 1 : doorTraversalCost(door);
-      const tentative = bestDist + cost;
-      if (tentative < (dist.get(otherRegion) ?? Number.POSITIVE_INFINITY)) {
-        dist.set(otherRegion, tentative);
-        prevPortal.set(otherRegion, portal);
-        frontier.set(otherRegion, tentative);
-      }
-    }
-  }
-
+  const { dist, prevPortal } = runRegionDijkstra(graph, doors, origin, isPortalAllowed, stats, destination);
   if (!dist.has(destination)) return undefined;
 
   const path: Portal[] = [];
@@ -86,7 +57,8 @@ function findBlockingDoor(
   return undefined;
 }
 
-function sliceIntoSegments(
+/** Exported for `flow-field.ts`, which slices its own bounded-search waypoints into the same segment shape. */
+export function sliceIntoSegments(
   world: SparseWorld,
   doors: DoorRegistry,
   graph: NavigationGraph,
@@ -152,6 +124,7 @@ export function findRoute(
   origin: TilePosition,
   destination: TilePosition,
   context: RouteContext,
+  stats?: SearchStats,
 ): RouteResult {
   const originRegion = graph.tileToRegion.get(tileKey(origin));
   if (originRegion === undefined) return { ok: false, failure: { reason: 'invalid-origin' } };
@@ -165,13 +138,20 @@ export function findRoute(
     allowedRegions = new Set([originRegion]);
     allowedDoorIds = new Set();
   } else {
-    const permissionAwarePath = dijkstraRegionPath(graph, doors, originRegion, destinationRegion, (portal) => {
-      const door = doors.getById(portal.doorId);
-      return door !== undefined && checkDoorAccess(door, context).allowed;
-    });
+    const permissionAwarePath = dijkstraRegionPath(
+      graph,
+      doors,
+      originRegion,
+      destinationRegion,
+      (portal) => {
+        const door = doors.getById(portal.doorId);
+        return door !== undefined && checkDoorAccess(door, context).allowed;
+      },
+      stats,
+    );
 
     if (permissionAwarePath === undefined) {
-      const physicalPath = dijkstraRegionPath(graph, doors, originRegion, destinationRegion, () => true);
+      const physicalPath = dijkstraRegionPath(graph, doors, originRegion, destinationRegion, () => true, stats);
       if (physicalPath === undefined) return { ok: false, failure: { reason: 'unreachable' } };
 
       const blockedBy = findBlockingDoor(physicalPath, doors, context);
@@ -189,7 +169,7 @@ export function findRoute(
     allowedDoorIds = doorIds;
   }
 
-  const localResult = boundedLocalSearch(world, doors, graph, origin, destination, { allowedRegions, allowedDoorIds });
+  const localResult = boundedLocalSearch(world, doors, graph, origin, destination, { allowedRegions, allowedDoorIds }, stats);
   if (localResult === undefined) return { ok: false, failure: { reason: 'unreachable' } };
 
   const route: Route = {

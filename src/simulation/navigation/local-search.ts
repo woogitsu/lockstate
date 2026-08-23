@@ -11,6 +11,16 @@ export interface LocalSearchOptions {
   readonly allowedDoorIds: ReadonlySet<string>;
 }
 
+/**
+ * Optional, purely additive work-unit counter for issue #22's per-tick
+ * budget. A tile "expansion" is one tile dequeued from `open` and having
+ * its neighbors examined. Passing no `SearchStats` costs nothing and
+ * changes no return value.
+ */
+export interface SearchStats {
+  expansions: number;
+}
+
 export interface LocalSearchResult {
   readonly waypoints: readonly TilePosition[]; // origin..destination inclusive
   readonly cost: number;
@@ -65,6 +75,7 @@ export function boundedLocalSearch(
   origin: TilePosition,
   destination: TilePosition,
   options: LocalSearchOptions,
+  stats?: SearchStats,
 ): LocalSearchResult | undefined {
   const originKey = tileKey(origin);
   const destinationKey = tileKey(destination);
@@ -92,6 +103,7 @@ export function boundedLocalSearch(
       }
     }
     if (currentKey === undefined || currentTile === undefined) break;
+    if (stats !== undefined) stats.expansions += 1;
 
     if (currentKey === destinationKey) {
       const waypoints: TilePosition[] = [currentTile];

@@ -78,6 +78,21 @@ function normalizeChecksum(value) {
   throw new TypeError('A benchmark scenario must return a non-empty string or finite number checksum.');
 }
 
+/**
+ * A scenario's `run()` returns either the original bare string/number
+ * checksum contract, or `{ checksum, metrics }` where `metrics` is an
+ * arbitrary JSON-serializable object of scenario-specific structured
+ * evidence (e.g. work units, cache hit rate, queue latency) alongside the
+ * harness's own wall-clock timing -- additive, fully backward compatible
+ * with every scenario written before this existed.
+ */
+export function normalizeRunResult(value) {
+  if (value !== null && typeof value === 'object' && 'checksum' in value) {
+    return { checksum: normalizeChecksum(value.checksum), metrics: value.metrics ?? null };
+  }
+  return { checksum: normalizeChecksum(value), metrics: null };
+}
+
 export async function runBenchmarkScenario(scenario, profileName) {
   const profile = scenario.profiles[profileName];
 
@@ -95,19 +110,21 @@ export async function runBenchmarkScenario(scenario, profileName) {
   });
 
   for (let index = 0; index < profile.warmupIterations; index += 1) {
-    normalizeChecksum(await scenario.run(context));
+    normalizeRunResult(await scenario.run(context));
   }
 
   const samplesMs = [];
   const checksums = [];
+  let lastMetrics = null;
 
   for (let index = 0; index < profile.measuredIterations; index += 1) {
     const startedAt = performance.now();
-    const checksum = normalizeChecksum(await scenario.run(context));
+    const { checksum, metrics } = normalizeRunResult(await scenario.run(context));
     const durationMs = performance.now() - startedAt;
 
     samplesMs.push(round(durationMs));
     checksums.push(checksum);
+    lastMetrics = metrics;
   }
 
   const uniqueChecksums = new Set(checksums);
@@ -131,5 +148,6 @@ export async function runBenchmarkScenario(scenario, profileName) {
     uniqueChecksumCount: uniqueChecksums.size,
     samplesMs,
     summary: summarizeSamples(samplesMs, profile.operationsPerIteration),
+    ...(lastMetrics !== null ? { metrics: lastMetrics } : {}),
   };
 }

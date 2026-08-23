@@ -40,3 +40,15 @@ export function doorTraversalCost(door: DoorDefinition): number {
   if (door.state === 'closed') return door.costMultiplier * 1.5;
   return door.costMultiplier * 2; // locked, crossed only via emergencyOverride
 }
+
+/**
+ * Stable string identity for a `RouteContext`'s permission-relevant fields
+ * -- two actors with the same role/clearance/permissions/override are
+ * interchangeable for caching and route/flow-field sharing purposes.
+ * Shared by `route-cache.ts` and `flow-field.ts` so both key on identically
+ * defined "same context" semantics.
+ */
+export function routeContextFingerprint(context: RouteContext): string {
+  const permissions = [...(context.permissions ?? [])].sort().join(',');
+  return `${context.role}|${context.securityClearance}|${permissions}|${context.emergencyOverride === true ? '1' : '0'}`;
+}

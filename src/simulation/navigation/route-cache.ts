@@ -1,16 +1,11 @@
 import { tileKey, type TilePosition } from '../world/coordinates';
 import type { DoorRegistry } from './door';
 import type { NavigationGraph } from './region-graph';
-import type { RouteContext } from './route-context';
+import { routeContextFingerprint, type RouteContext } from './route-context';
 import type { RouteResult } from './route';
 
-function contextFingerprint(context: RouteContext): string {
-  const permissions = [...(context.permissions ?? [])].sort().join(',');
-  return `${context.role}|${context.securityClearance}|${permissions}|${context.emergencyOverride === true ? '1' : '0'}`;
-}
-
 function cacheKey(origin: TilePosition, destination: TilePosition, context: RouteContext): string {
-  return `${tileKey(origin)}->${tileKey(destination)}#${contextFingerprint(context)}`;
+  return `${tileKey(origin)}->${tileKey(destination)}#${routeContextFingerprint(context)}`;
 }
 
 function collectReferencedDoorIds(result: RouteResult): readonly string[] {
@@ -30,6 +25,22 @@ interface CacheEntry {
 }
 
 /**
+ * Cumulative counters for issue #22's "cache hit/miss/eviction/invalidation
+ * metrics" requirement. `evictions` counts entries removed by a specific
+ * door's access-version change (the targeted case NAVIGATION.md documents);
+ * `geometryInvalidations` counts entries removed because the whole graph's
+ * geometry changed under them -- kept separate because the two have very
+ * different blast radii and callers/benchmarks want to see them apart.
+ */
+export interface RouteCacheMetrics {
+  readonly hits: number;
+  readonly misses: number;
+  readonly evictions: number;
+  readonly geometryInvalidations: number;
+  readonly size: number;
+}
+
+/**
  * Caches `findRoute` results keyed by origin/destination/route-context.
  * Invalidation is deliberately two-tiered, matching the issue's
  * requirement that "a closed/locked door can invalidate connectivity
@@ -44,6 +55,10 @@ interface CacheEntry {
  */
 export class RouteCache {
   private readonly entries = new Map<string, CacheEntry>();
+  private hits = 0;
+  private misses = 0;
+  private evictions = 0;
+  private geometryInvalidations = 0;
 
   public get(
     origin: TilePosition,
@@ -54,18 +69,26 @@ export class RouteCache {
   ): RouteResult | undefined {
     const key = cacheKey(origin, destination, context);
     const entry = this.entries.get(key);
-    if (entry === undefined) return undefined;
+    if (entry === undefined) {
+      this.misses += 1;
+      return undefined;
+    }
 
     if (entry.geometrySignature !== graph.geometrySignature) {
       this.entries.delete(key);
+      this.geometryInvalidations += 1;
+      this.misses += 1;
       return undefined;
     }
     for (const [doorId, version] of entry.doorVersions) {
       if (doors.getAccessVersion(doorId) !== version) {
         this.entries.delete(key);
+        this.evictions += 1;
+        this.misses += 1;
         return undefined;
       }
     }
+    this.hits += 1;
     return entry.result;
   }
 
@@ -87,6 +110,16 @@ export class RouteCache {
 
   public size(): number {
     return this.entries.size;
+  }
+
+  public getMetrics(): RouteCacheMetrics {
+    return {
+      hits: this.hits,
+      misses: this.misses,
+      evictions: this.evictions,
+      geometryInvalidations: this.geometryInvalidations,
+      size: this.entries.size,
+    };
   }
 }
 
