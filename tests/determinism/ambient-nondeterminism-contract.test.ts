@@ -6,10 +6,12 @@ import { describe, expect, it } from 'vitest';
  * A static contract, in the spirit of `tests/unit/navigation-no-phaser.test.ts`,
  * over *everything the simulation can reach*.
  *
- * `docs/DETERMINISM.md` and ADR 0004 state the rule plainly: simulation
- * logic must never use `Math.random()`, `Date.now()`, `performance.now()`
- * or any other ambient environment source, and must not touch Phaser or
- * the DOM. ADR 0009 turns that from an engineering preference into a
+ * `docs/DETERMINISM.md` and
+ * [ADR 0020](../../docs/adr/0020-deterministic-kernel.md) state the rule
+ * plainly: simulation logic must never use `Math.random()`, `Date.now()`,
+ * `performance.now()` or any other ambient environment source, and must not
+ * touch Phaser or the DOM. ADR 0009 turns that from an engineering
+ * preference into a
  * product guarantee -- a single reintroduced `Math.random()` invalidates
  * every stored challenge replay, and it would do so silently, because the
  * runtime would keep working perfectly on the machine that wrote the
