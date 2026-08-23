@@ -213,5 +213,8 @@ Full violence/gangs/contraband/rehabilitation systems (#27/#28/#30); final
 personality/trait depth (#39); advanced crowd steering; tile-by-tile
 locomotion/rendering; the complete final need/action catalog and balance;
 real object-placement tracking (the reason `RoomInstanceRegistry` exists
-as an explicit, minimal bridge instead); UI/save-file integration (no
-session UI exists yet, matching #19/#22's precedent).
+as an explicit, minimal bridge instead); UI/save-file integration (a session
+UI does now exist -- the HUD and save panel mounted by `src/main.ts` -- but
+nothing in it surfaces prisoner state, matching #19/#22's precedent of
+shipping the system before the surface; the save-file half was closed later,
+by #70).

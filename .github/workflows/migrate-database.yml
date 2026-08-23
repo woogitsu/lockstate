@@ -9,8 +9,10 @@ name: Database migrations
 # project ref back as confirmation.
 #
 # The schema in supabase/migrations/ has been executed against a local
-# PostgreSQL and against the local Supabase stack, never against a hosted
-# project. Target a disposable project first.
+# PostgreSQL, against the local Supabase stack, and -- since 2026-08-23 --
+# against the hosted staging project, where all nine migrations
+# (20260822190000 through 20260823100000) are applied. Target a disposable
+# project first.
 
 on:
   workflow_dispatch:

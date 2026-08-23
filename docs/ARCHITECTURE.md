@@ -64,7 +64,7 @@ The current protocol is intentionally strict during pre-alpha. Wire-contract cha
 ### Chunked world
 The world is sparse and chunk-addressed. Land ownership determines buildable regions. Unpurchased land can exist as cheap metadata without fully materializing all gameplay layers.
 
-A candidate chunk size is 32x32 logical tiles, but this is not final until benchmarked against 16x16 and 64x64 workloads. The final choice requires an ADR backed by measurements.
+The production default chunk size is 32x32 logical tiles. That was a candidate until it was benchmarked against 16x16 and 64x64 workloads (`world.chunk-size-sparse-edge`, `world.chunk-size-dense-prison`) and settled by [ADR-0004](./adr/0004-chunk-size-selection.md), which carries the measurements. Changing it requires what settled it: an ADR backed by measurements.
 
 ### Entity representation
 Public domain concepts may expose typed objects, but hot-path simulation data should avoid thousands of allocation-heavy class instances. Prefer stable numeric/entity IDs, dense component storage where useful, pooled transient structures and explicit ownership.
@@ -77,7 +77,7 @@ Navigation is hierarchical and budgeted:
 4. path cache with geometry-version invalidation,
 5. flow fields or shared route structures for high-volume common destinations where benchmarks justify them.
 
-A full-map A* per actor per frame is forbidden. The region/portal graph, door/permission model, route format and cache invalidation are defined in [NAVIGATION.md](./NAVIGATION.md); flow fields, shared-route optimization and CPU budgets are separate, not-yet-implemented work (#22).
+A full-map A* per actor per frame is forbidden. The region/portal graph, door/permission model, route format and cache invalidation are defined in [NAVIGATION.md](./NAVIGATION.md); flow fields, shared-route optimization and CPU budgets are separate work (#22), decided by [ADR-0007](./adr/0007-navigation-work-budgets-and-flow-fields.md) and implemented in `src/simulation/navigation/` (`flow-field.ts`, `path-request-queue.ts`) — see NAVIGATION.md's own section on them.
 
 ### Saves
 Local-first persistence uses IndexedDB. Cloud persistence uses Supabase Auth + Postgres metadata and, when snapshots become large enough, Supabase Storage for compressed payloads. The versioned save envelope, its runtime schema, checksum and forward-migration framework are defined in [PERSISTENCE.md](./PERSISTENCE.md) independently of which storage backend consumes it.
@@ -108,7 +108,7 @@ Only the Supabase anon/publishable client key may appear in frontend configurati
 ### Trusted services layer
 `src/services/` is a separate layer from the simulation, holding the contracts and pure logic for product features that cross a trust boundary or leave the device: verified challenges ([ADR-0009](./adr/0009-challenge-verification-strategy.md)), account entitlements, privacy-controlled telemetry ([ADR-0010](./adr/0010-telemetry-and-diagnostics-privacy.md)) and the localization runtime ([ADR-0011](./adr/0011-localization-architecture.md)). See [TRUSTED_SERVICES.md](./TRUSTED_SERVICES.md), [TELEMETRY.md](./TELEMETRY.md) and [LOCALIZATION.md](./LOCALIZATION.md).
 
-Boundary rules, enforced by `tests/unit/services-layer-boundaries.test.ts`:
+Boundary rules. The first two are statically enforced by `tests/unit/services-layer-boundaries.test.ts`; the last two are design constraints that no static check can express, and are asserted only where a concrete behaviour makes them testable (the projection's expiry and clamping, in `tests/unit/services-entitlements.test.ts`):
 - no module under `src/simulation/` or `src/persistence/` may import this layer;
 - the layer imports no Phaser and touches no DOM globals, so the same modules run in a tab, a worker and a trusted server function;
 - nothing in it runs on the tick or frame path; every call is asynchronous, failable and optional;

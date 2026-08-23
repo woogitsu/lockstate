@@ -108,7 +108,7 @@ $env:LOCKSTATE_PRODUCTION_DEPLOY = '1'
 pnpm deploy:production
 ```
 
-Wrangler credentials must be supplied by the operator or a future protected release workflow, normally through `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. Use a least-privileged token. Never store Cloudflare tokens, Supabase service-role keys or production secrets in the repository, frontend bundle, issue text or logs.
+Wrangler credentials must be supplied by the operator or by the protected release workflow `.github/workflows/deploy.yml`, which reads them from GitHub Environment secrets — normally through `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. Use a least-privileged token. Never store Cloudflare tokens, Supabase service-role keys or production secrets in the repository, frontend bundle, issue text or logs.
 
 Ordinary CI (`.github/workflows/ci.yml`) validates packages but does not publish. Publishing is `.github/workflows/deploy.yml` — see "Automated deployment" below.
 
@@ -181,7 +181,7 @@ It is catastrophic for a secret / service-role key. `AGENTS.md` forbids service-
 
 ## Database migrations
 
-The SQL under `supabase/migrations/` has been executed against a local PostgreSQL (`pnpm verify:sql`) and against the local Supabase stack (`supabase test db`, plus `pnpm verify:stack` over real HTTP). **It has never been applied to a hosted project.** Target a disposable project first.
+The SQL under `supabase/migrations/` has been executed against a local PostgreSQL (`pnpm verify:sql`) and against the local Supabase stack (`supabase test db`, plus `pnpm verify:stack` over real HTTP). **It has also been applied to a hosted project**: as of 2026-08-23 all nine migrations, `20260822190000` through `20260823100000`, are applied, confirmed by `supabase migration list` through a dry-run of `migrate-database.yml` reporting the same timestamps local and remote. That was the `staging` environment — it is the only one carrying `SUPABASE_PROJECT_REF` (see "Credentials" above). Target a disposable project first.
 
 Run `migrate-database.yml` with **dry run left checked**: it links the project and prints `supabase migration list` without applying anything. Read that list, then re-run with dry run unchecked.
 

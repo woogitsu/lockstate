@@ -41,8 +41,10 @@ export class BuildTool implements BuildToolPort {
   private readonly onError: ((error: Error) => void) | undefined;
   /**
    * Set after mounting, because the tool exists before the HUD does: the
-   * renderer is constructed at boot and the interface only once persistence
-   * has an element to mount into.
+   * renderer and this tool are constructed at boot, and `mountInterface`
+   * runs after them (`src/main.ts`). Since #82 that mount is unconditional
+   * and ahead of the persistence boot, so it no longer waits on persistence
+   * -- but it still cannot precede the tool it is handed.
    */
   private readout: ((target: BuildPanelTarget | undefined) => void) | undefined;
 

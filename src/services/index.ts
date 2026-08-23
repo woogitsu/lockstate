@@ -7,7 +7,9 @@
  * device (telemetry), plus the localization runtime that keeps translated
  * text out of simulation and persistence.
  *
- * Boundary rules, enforced by tests:
+ * Boundary rules. The first two are enforced by
+ * `tests/unit/services-layer-boundaries.test.ts`; the third is a design
+ * constraint with no static check behind it:
  * - nothing under `src/simulation/` may import this layer;
  * - this layer imports no Phaser and touches no DOM globals, so the same
  *   modules run in a browser, a worker and a trusted server function;
