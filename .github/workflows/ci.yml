@@ -45,25 +45,33 @@ jobs:
           test "$(node --version)" = "v$(cat .node-version)"
           test "$(pnpm --version)" = "11.22.0"
 
-      # A self-hosted runner keeps its workspace between jobs, so `node_modules`
-      # arrives as whatever the previous job left behind. When that is a symlink
-      # (a worktree sharing one install) or anything other than a plain
-      # directory, `pnpm install` dies with
+      # Three pull requests -- #98, #100 and #101 -- committed `node_modules`
+      # as a tracked symlink (mode 120000) pointing at a path that exists only
+      # on the machine they were authored on. On checkout git recreates the
+      # symlink, and `pnpm install` then dies with
       # `ENOTDIR: not a directory, mkdir .../node_modules` before one line of
-      # project code runs -- and the pull request reads as failing its own
-      # verification when nothing is wrong with it.
+      # project code runs, so the pull request wears a failure that has nothing
+      # to do with its diff. Runs 32663976393, 32665157556, 32665179804.
       #
-      # Observed, not theorised: runs 32663976393, 32665157556 and 32665179804
-      # (pull requests #98, #100 and #101) all died here on runners 3 and 4,
-      # identically on a re-run, while the same base commit passed on another
-      # runner. Three unrelated diffs, one workspace fault.
+      # `.gitignore` did not stop it, and that is the root cause: it listed
+      # `node_modules/`, with a trailing slash, which matches a *directory*. A
+      # symlink named `node_modules` is a file, so it was never ignored and
+      # `git add node_modules` succeeded. The slash is gone now, which is the
+      # real fix; this step is the safety net for a ref that predates it, and
+      # for a reused self-hosted workspace left holding one.
       #
-      # Narrow on purpose. It removes a `node_modules` that is not a plain
-      # directory and nothing else, so a real install failure still fails and a
-      # healthy `node_modules` is left for pnpm to reuse.
-      - name: Clear a node_modules the runner left unusable
+      # A *tracked* node_modules is reported rather than removed: deleting it
+      # would let the install succeed and then fail the clean-tree gate at the
+      # end of this job as an unexplained deleted file, five steps away from
+      # the cause. Fail here, and say why.
+      - name: Reject or clear a node_modules that is not a real install
         run: |
-          set -euo pipefail
+          set -uo pipefail
+          if git ls-files --error-unmatch node_modules >/dev/null 2>&1; then
+            echo "::error::node_modules is committed to git on this ref. It must not be: see .gitignore."
+            git ls-files -s node_modules
+            exit 1
+          fi
           if [ -L node_modules ] || { [ -e node_modules ] && [ ! -d node_modules ]; }; then
             echo "node_modules is not a plain directory; removing it:"
             ls -ld node_modules
@@ -325,12 +333,18 @@ jobs:
       - name: Activate pnpm
         run: corepack prepare pnpm@11.22.0 --activate
 
-      # Same workspace fault as the `verify` job guards against; see the comment
-      # there. A self-hosted runner reuses its checkout, so every job that
-      # installs needs this, not just the first one.
-      - name: Clear a node_modules the runner left unusable
+      # Same guard as the `verify` job; see the comment there for why a
+      # committed `node_modules` symlink broke three pull requests. Every job
+      # that installs needs it, because a self-hosted runner reuses its
+      # checkout between jobs.
+      - name: Reject or clear a node_modules that is not a real install
         run: |
-          set -euo pipefail
+          set -uo pipefail
+          if git ls-files --error-unmatch node_modules >/dev/null 2>&1; then
+            echo "::error::node_modules is committed to git on this ref. It must not be: see .gitignore."
+            git ls-files -s node_modules
+            exit 1
+          fi
           if [ -L node_modules ] || { [ -e node_modules ] && [ ! -d node_modules ]; }; then
             echo "node_modules is not a plain directory; removing it:"
             ls -ld node_modules
