@@ -12,7 +12,7 @@ design. That gap is now closed except where noted:
 
 - **Executed against the real Supabase local stack:** every migration in
   `supabase/migrations/` and all three pgTAP suites in `supabase/tests/`
-  — 49 assertions, all passing (19/19, 17/17, 13/13) — under Supabase CLI
+  — 63 assertions, all passing (19/19, 25/25, 19/19) — under Supabase CLI
   2.115.0, with GoTrue, PostgREST, Storage and Realtime running:
   ```bash
   supabase start && supabase db reset && supabase test db
@@ -21,7 +21,7 @@ design. That gap is now closed except where noted:
   carried, and it earned its keep immediately: the first run failed on the
   *first assertion* of suite 001 and exposed defect 4 below.
 - **Executed through GoTrue and PostgREST:** `pnpm verify:stack`
-  (`scripts/verify-supabase-stack.mjs`, 17/17 checks against a running
+  (`scripts/verify-supabase-stack.mjs`, 35/35 checks against a running
   stack). The pgTAP suites feed `auth.uid()` with `set_config`, so they
   cannot prove the step every policy here rests on — that GoTrue mints an
   identity and PostgREST turns its JWT into the `authenticated` role
@@ -29,7 +29,10 @@ design. That gap is now closed except where noted:
   drives the whole cloud-save contract over HTTP, including the ownership
   boundary between the two identities. It also settles what "Anonymous
   identity upgrade" below asks for — a CLI-level auth flow check rather
-  than a row-level SQL one.
+  than a row-level SQL one. Since the security review it additionally
+  drives the trusted (`service_role`) paths with the local stack's secret
+  key, which is the only place PostgREST's mapping of that credential onto
+  the role is exercised at all.
 - **Executed against plain PostgreSQL 16.13/18.6 + pgTAP:** the same
   migrations and suites via `pnpm verify:sql`, which prepares a scratch
   database with `scripts/sql/supabase-compat-harness.sql`. That harness
@@ -163,6 +166,73 @@ Several assertions in suite 001 were also passing or failing for the
 wrong reason: pgTAP's two-argument `throws_ok` compares the error
 *message* rather than taking a description, and RLS makes a foreign
 `UPDATE`/`DELETE` match zero rows instead of raising. Both are corrected.
+
+## What an adversarial review of that fix then found
+
+Defect 4 was fixed by granting `anon` and `authenticated` what their
+policies need. A security review of *that* change found the mirror image
+of the same mistake and four smaller ones. All are fixed here; the two
+trusted-service ones are described in full in
+[TRUSTED_SERVICES.md](./TRUSTED_SERVICES.md).
+
+5. **`service_role` was granted nothing either, so the trusted half of the
+   product was dead.** Supabase's revoke names `service_role` alongside
+   `anon` and `authenticated`, and `BYPASSRLS` confers no table or function
+   privilege — it decides which *rows* a role sees, never whether it may
+   touch the table. Queried on the running stack, `service_role` held no
+   DML on any of the eight tables and `EXECUTE` on none of the four
+   functions. A payment webhook calling `record_entitlement_event` would
+   have got `42501`; no challenge submission could ever have left
+   `'pending'`, so `challenge_leaderboard` would have been permanently
+   empty. Nothing failed, because no assertion had ever asked about
+   `service_role`.
+
+6. **`create_save_version`'s `REVOKE` was narrower than
+   `submit_challenge_evidence`'s.** One revoked from `public`, the other
+   from `public, anon`. Under today's defaults they are equivalent, which
+   is why suite 003 passed either way — but on a project created before
+   Supabase stopped auto-exposing new entities, a role keeps its *own*
+   default grant through a revoke from `PUBLIC`. An `anon` caller that
+   still reached `create_save_version` would fail closed on the
+   `auth.uid()` check, but only after taking a `SELECT … FOR UPDATE` row
+   lock, and the two distinct messages (`prison % does not exist` versus
+   `not authorized for prison %`) are an existence oracle for prison
+   UUIDs. Both now revoke from `public, anon, service_role`.
+
+7. **The harness still contained the exact anti-pattern this work exists to
+   remove.** `scripts/sql/supabase-compat-harness.sql` did `grant select on
+   auth.users to authenticated, service_role`. The real thing grants none
+   of the three Data API roles anything on `auth.users` (verified: the
+   table is owned by `supabase_auth_admin`, and its ACL names only
+   `supabase_auth_admin`, `dashboard_user` and `postgres`). Nothing
+   depended on it — foreign keys enforce themselves with the constraint's
+   rights, not the caller's — so it was latent, but it broke the rule the
+   harness header states, and being more permissive than the platform is
+   the one direction that certifies defects. Removed.
+
+8. **`search_path` was inconsistent across the `SECURITY DEFINER`
+   functions.** `create_save_version` set `public, pg_temp`; the other
+   three set only `public`. When `pg_temp` is not listed, PostgreSQL
+   searches it *first* for relation and type names — the classic
+   `SECURITY DEFINER` hijack, and what Supabase's own
+   `function_search_path_mutable` linter flags. No exploit was constructible
+   (every reference in all four is schema-qualified), but
+   `submit_challenge_evidence` is reachable by any anonymously-signed-in
+   user and runs as the table owner. All four now spell out
+   `search_path = public, pg_temp`.
+
+A fifth finding was a policy defect rather than a privilege one — the
+challenge read policy published unopened challenges — and is described in
+[TRUSTED_SERVICES.md](./TRUSTED_SERVICES.md).
+
+The regression pins that would have caught these are now in
+`supabase/tests/003_data_api_grants.test.sql`: schema-wide privilege sweeps
+for all three roles instead of `anon` alone, a schema-wide assertion that
+every `public` table has RLS enabled, and a `relkind` filter that no longer
+skips materialized views, partitioned tables and foreign tables. Suite 002
+additionally runs every trusted step under `set local role service_role`
+rather than as the privileged role the suite is invoked with, which is what
+makes those assertions load-bearing at all.
 
 ## Schema (`supabase/migrations/`)
 
@@ -343,8 +413,36 @@ repository, and `pnpm verify:stack` reads the publishable key from
 `supabase status` at runtime rather than holding one. No check in this
 repository uses the service-role key.
 
+## Open question: no database-tier bound on free-tier storage
+
+Recorded by the same security review, deliberately **not** fixed here.
+
+`[auth] enable_anonymous_sign_ins = true` is this project's identity model,
+so `authenticated` is effectively "anyone who can make an HTTP request" —
+a new identity costs one call to `/auth/v1/signup`. Against that:
+
+- `prisons_insert_own` enforces ownership and the `prisons_owner_slot_unique`
+  constraint prevents duplicate slot indices, but nothing caps how many
+  slots an owner may create. The five-free-slots product rule
+  (`README.md`, `src/services/entitlements/products.ts`) lives in the
+  application tier only.
+- `create_save_version` validates the revision sequence, the
+  payload/storage-path exclusivity and the idempotency key, but places no
+  bound on `p_byte_size` or on the length of `p_payload`.
+
+So the storage one free identity can consume is unbounded at the tier that
+is actually authoritative. This is a **capacity and abuse** concern, not a
+confidentiality one: no data crosses an ownership boundary, and the checks
+that protect *other players'* data are unaffected. Fixing it properly is a
+product decision (what the free tier is, what happens at the ceiling, how a
+rejection surfaces in the UI) plus a schema change, and both belong with
+the entitlement-enforcement work rather than inside a privilege fix. It is
+noted here so the next person to touch slot creation does not assume the
+database is already holding this line.
+
 ## What is out of scope here
 
 Payments/paid-slot checkout; trusting client-submitted values for
 leaderboards; realtime collaborative simulation; automatic destructive
-conflict resolution (every conflict requires the explicit choices above).
+conflict resolution (every conflict requires the explicit choices above);
+a database-tier cap on free-tier storage (see the open question above).

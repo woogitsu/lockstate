@@ -33,6 +33,14 @@
 -- acceptable, replace the checksum half with a client-generated attempt
 -- UUID rather than widening checksum's own hash width, since checksum's
 -- job (corruption detection, docs/PERSISTENCE.md) is unrelated to this one.
+--
+-- OPEN QUESTION, recorded and deliberately not decided here -- see
+-- docs/CLOUD_SAVE.md, "Open question: no database-tier bound on free-tier
+-- storage". `p_byte_size` is recorded, never bounded, and the length of
+-- `p_payload` is not checked either, so the storage one anonymous identity
+-- can consume is unbounded at the tier that is actually authoritative.
+-- Capacity/abuse rather than confidentiality: every ownership check below
+-- is unaffected.
 create or replace function public.create_save_version(
   p_prison_id uuid,
   p_new_revision int,
@@ -137,5 +145,24 @@ $$;
 
 -- Explicit revoke-then-grant: never rely on a function's default
 -- PUBLIC-executable privilege for something this sensitive.
-revoke all on function public.create_save_version(uuid, int, int, text, jsonb, text, int) from public;
+--
+-- `anon` and `service_role` are named as well as PUBLIC, matching
+-- submit_challenge_evidence(). Revoking from PUBLIC does not take away a
+-- role's *own* grant, and on a project created before Supabase stopped
+-- auto-exposing new entities in `public` both of them have one. Under
+-- today's default the two spellings are equivalent, which is exactly why
+-- the inconsistency was invisible -- and why it mattered: an `anon` caller
+-- who could still reach this function would fail closed on the
+-- `auth.uid()` check, but only after taking a `SELECT ... FOR UPDATE` row
+-- lock, and the two distinct messages ("prison % does not exist" versus
+-- "not authorized for prison %") would tell an unauthenticated prober
+-- whether a given prison UUID exists. The boundary belongs at the
+-- privilege check.
+--
+-- `service_role` gets nothing here for a different reason: a cloud save is
+-- client-authoritative state (ADR 0008's authority table), this RPC
+-- derives its authorization from auth.uid(), and no trusted path writes
+-- saves. supabase/tests/003_data_api_grants.test.sql pins that.
+revoke all on function public.create_save_version(uuid, int, int, text, jsonb, text, int)
+  from public, anon, service_role;
 grant execute on function public.create_save_version(uuid, int, int, text, jsonb, text, int) to authenticated;

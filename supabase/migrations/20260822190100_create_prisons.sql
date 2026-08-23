@@ -32,6 +32,18 @@ create policy "prisons_select_own"
 -- A freshly inserted prison must start with no cloud version yet; the
 -- first version is created through create_save_version(), never by
 -- inserting a non-default pointer/revision directly.
+--
+-- OPEN QUESTION, recorded and deliberately not decided here -- see
+-- docs/CLOUD_SAVE.md, "Open question: no database-tier bound on free-tier
+-- storage". This policy caps *who* may insert, never *how many*. With
+-- `enable_anonymous_sign_ins = true` the `authenticated` role is
+-- effectively anyone, and a fresh identity costs one signup call, so
+-- nothing at this tier bounds how many slots one free account creates; the
+-- five-free-slots product rule lives in the application tier only. Same
+-- shape as the absent bound on `p_byte_size` in create_save_version(). It
+-- is a capacity/abuse concern, not a confidentiality one -- no data crosses
+-- an ownership boundary -- and closing it is a product decision plus a
+-- schema change, not something to invent inside a privilege fix.
 create policy "prisons_insert_own"
   on public.prisons for insert
   with check (

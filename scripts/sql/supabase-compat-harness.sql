@@ -97,5 +97,21 @@ create or replace function auth.uid() returns uuid
 language sql stable
 as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
 
+-- USAGE on the schema, and deliberately NOTHING on the table.
+--
+-- Verified against the running local stack (CLI 2.115.0): `auth.users` is
+-- owned by `supabase_auth_admin` and its ACL is
+-- `{supabase_auth_admin=arwdDxtm, dashboard_user=arwdDxtm, postgres=ar*wdDxtm}`
+-- -- `anon`, `authenticated` and `service_role` all return false for
+-- SELECT/INSERT/UPDATE/DELETE. USAGE on the schema is granted to all three,
+-- which is what lets them call `auth.uid()`.
+--
+-- This file used to `grant select on auth.users to authenticated,
+-- service_role`, which is the exact anti-pattern the header rule names: an
+-- emulator may be stricter than the thing it emulates, never more
+-- permissive. Nothing depended on it -- the foreign keys here enforce
+-- themselves with the constraint's own rights, not the caller's -- so it
+-- was latent rather than harmful, but a future assertion or policy written
+-- against the harness could have relied on a read the platform does not
+-- allow. Removing it is the stricter direction, so it stays removed.
 grant usage on schema auth to anon, authenticated, service_role;
-grant select on auth.users to authenticated, service_role;

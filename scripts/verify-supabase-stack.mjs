@@ -18,10 +18,23 @@
  * this project's identity model -- a flow that is GoTrue behaviour, not
  * row-level SQL, so `supabase test db` structurally cannot cover it.
  *
- * No secret is needed or accepted: the publishable/anon key is read from
- * `supabase status` at runtime, which is the only key a browser ever holds
- * (AGENTS.md, docs/ARCHITECTURE.md "Security"). Nothing here uses the
- * service-role key.
+ * ON THE SERVICE-ROLE KEY. This script originally used only the
+ * publishable/anon key and said so. It now also drives the trusted server
+ * paths (ADR 0008 zone Z2) with the local stack's secret key, because a
+ * security audit found that no migration granted `service_role` anything
+ * and *nothing anywhere noticed*: the payment-webhook RPC and the challenge
+ * verifier were both unreachable on a real project. The pgTAP suites now
+ * run those steps under `set local role service_role`, but only this script
+ * can prove the other half -- that PostgREST maps a service-role
+ * credential onto that role at all.
+ *
+ * The rules that keep this safe are unchanged and enforced below:
+ * both keys are read from `supabase status` at runtime, so no credential
+ * is stored in this repository; the run aborts unless the API is on
+ * loopback, so a secret key can never be pointed at a hosted project by
+ * accident; and no key is ever printed. None of this reaches shipped code
+ * -- AGENTS.md's "no service-role key in client code" is about
+ * `src/`, and `src/` still has no path to one.
  *
  * Usage:
  *   supabase start
@@ -51,10 +64,22 @@ function readStackEnvironment() {
   // Prefer the publishable key; ANON_KEY is the legacy JWT form of the same
   // browser-safe credential and is what older CLI versions report.
   const publishableKey = values.get('PUBLISHABLE_KEY') ?? values.get('ANON_KEY');
-  if (apiUrl === undefined || publishableKey === undefined) {
-    throw new Error('`supabase status` reported no API_URL/PUBLISHABLE_KEY — is the stack running?');
+  // Same pairing on the trusted side: SECRET_KEY is current, SERVICE_ROLE_KEY
+  // the legacy JWT form.
+  const secretKey = values.get('SECRET_KEY') ?? values.get('SERVICE_ROLE_KEY');
+  if (apiUrl === undefined || publishableKey === undefined || secretKey === undefined) {
+    throw new Error('`supabase status` reported no API_URL/PUBLISHABLE_KEY/SECRET_KEY — is the stack running?');
   }
-  return { apiUrl, publishableKey };
+
+  // A secret key must never leave the machine that generated it. The local
+  // stack always publishes on loopback, so anything else means `supabase
+  // status` is describing a project this script must not touch.
+  const host = new URL(apiUrl).hostname;
+  if (host !== '127.0.0.1' && host !== 'localhost' && host !== '[::1]') {
+    throw new Error(`refusing to run against a non-local API (${host}); this script is for the local stack only.`);
+  }
+
+  return { apiUrl, publishableKey, secretKey };
 }
 
 const checks = [];
@@ -70,11 +95,16 @@ function subjectOf(accessToken) {
 }
 
 async function main() {
-  const { apiUrl, publishableKey } = readStackEnvironment();
+  const { apiUrl, publishableKey, secretKey } = readStackEnvironment();
   console.log(`Verifying the running stack at ${apiUrl}\n`);
 
   const anonymousHeaders = { apikey: publishableKey, 'Content-Type': 'application/json' };
   const asUser = (session) => ({ ...anonymousHeaders, Authorization: `Bearer ${session.access_token}` });
+  // What a Supabase Edge Function or Cloudflare Worker would hold. PostgREST
+  // reads the key's role claim and does the equivalent of `set role
+  // service_role`, so every request made this way is subject to exactly the
+  // grants supabase/tests/003_data_api_grants.test.sql pins.
+  const trustedHeaders = { apikey: secretKey, Authorization: `Bearer ${secretKey}`, 'Content-Type': 'application/json' };
 
   async function signInAnonymously() {
     const response = await fetch(`${apiUrl}/auth/v1/signup`, {
@@ -89,11 +119,16 @@ async function main() {
     return session;
   }
 
-  async function rest(path, { session, method = 'GET', body, prefer } = {}) {
+  function headersFor(session, trusted) {
+    if (trusted === true) return trustedHeaders;
+    return session === undefined ? anonymousHeaders : asUser(session);
+  }
+
+  async function rest(path, { session, trusted, method = 'GET', body, prefer } = {}) {
     const response = await fetch(`${apiUrl}/rest/v1/${path}`, {
       method,
       headers: {
-        ...(session === undefined ? anonymousHeaders : asUser(session)),
+        ...headersFor(session, trusted),
         ...(prefer === undefined ? {} : { Prefer: prefer }),
       },
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
@@ -252,11 +287,255 @@ async function main() {
     `${signedOutPrisons.status} ${JSON.stringify(signedOutPrisons.body)}`,
   );
 
-  const signedOutDefinitions = await rest('challenge_definitions?select=challenge_id');
+  const signedOutRpc = await rest('rpc/create_save_version', {
+    method: 'POST',
+    body: {
+      p_prison_id: prisonId,
+      p_new_revision: 2,
+      p_save_schema_version: 1,
+      p_checksum: 'signed-out',
+      p_payload: { tick: 1 },
+      p_storage_path: null,
+      p_byte_size: 10,
+    },
+  });
+  check(
+    'a signed-out visitor cannot reach create_save_version at all',
+    signedOutRpc.status === 401 || signedOutRpc.status === 403 || signedOutRpc.status === 404,
+    `${signedOutRpc.status} ${JSON.stringify(signedOutRpc.body)}`,
+  );
+
+  // --- The trusted server role (ADR 0008 zone Z2) -----------------------
+  //
+  // Everything below runs with the secret key, the way an Edge Function or
+  // a Cloudflare Worker would. None of it was exercised anywhere before: no
+  // migration granted `service_role` a single privilege, and `BYPASSRLS`
+  // grants none, so the whole zone was dead on a real project while every
+  // check here passed.
+  console.log('\nPostgREST: the trusted server role publishes challenges');
+  const openChallenge = {
+    challenge_id: `challenge.open-${Date.now()}`,
+    version: 1,
+    definition: { id: 'open', seed: 'visible' },
+    definition_hash: '0123456789abcdef',
+    signature: { algorithm: 'ed25519', keyId: 'key.local', value: 'AAAA' },
+    opens_at: new Date(Date.now() - 3_600_000).toISOString(),
+    closes_at: new Date(Date.now() + 3_600_000).toISOString(),
+  };
+  const sealedChallenge = {
+    challenge_id: `challenge.sealed-${Date.now()}`,
+    version: 1,
+    // The thing the read policy exists to protect: an unopened seed.
+    definition: { id: 'sealed', seed: 'the-secret-seed' },
+    definition_hash: 'fedcba9876543210',
+    signature: { algorithm: 'ed25519', keyId: 'key.local', value: 'BBBB' },
+    opens_at: new Date(Date.now() + 86_400_000).toISOString(),
+    closes_at: new Date(Date.now() + 172_800_000).toISOString(),
+    published_at: new Date(Date.now() + 86_400_000).toISOString(),
+  };
+
+  const publishedOpen = await rest('challenge_definitions', {
+    trusted: true,
+    method: 'POST',
+    body: openChallenge,
+  });
+  check(
+    'the trusted role can publish a challenge definition',
+    publishedOpen.status === 201,
+    `${publishedOpen.status} ${JSON.stringify(publishedOpen.body)}`,
+  );
+
+  const publishedSealed = await rest('challenge_definitions', {
+    trusted: true,
+    method: 'POST',
+    body: sealedChallenge,
+  });
+  check(
+    'the trusted role can stage a challenge that has not opened yet',
+    publishedSealed.status === 201,
+    `${publishedSealed.status} ${JSON.stringify(publishedSealed.body)}`,
+  );
+
+  const clientPublish = await rest('challenge_definitions', {
+    session: playerA,
+    method: 'POST',
+    body: { ...openChallenge, challenge_id: `challenge.forged-${Date.now()}` },
+  });
+  check(
+    'a player cannot publish a challenge definition',
+    clientPublish.status === 401 || clientPublish.status === 403,
+    `${clientPublish.status} ${JSON.stringify(clientPublish.body)}`,
+  );
+
+  console.log('\nPostgREST: an unopened challenge is not public');
+  const signedOutDefinitions = await rest('challenge_definitions?select=challenge_id,definition');
   check(
     'a signed-out visitor can read the signed challenge definitions',
     signedOutDefinitions.status === 200,
     `${signedOutDefinitions.status} ${JSON.stringify(signedOutDefinitions.body)}`,
+  );
+  const visibleToAnon = (signedOutDefinitions.body ?? []).map((row) => row.challenge_id);
+  check(
+    'the open challenge is among them',
+    visibleToAnon.includes(openChallenge.challenge_id),
+    JSON.stringify(visibleToAnon),
+  );
+  check(
+    'the unopened challenge is NOT — its seed cannot be solved ahead of everyone else',
+    !visibleToAnon.includes(sealedChallenge.challenge_id),
+    JSON.stringify(signedOutDefinitions.body),
+  );
+
+  const sealedForPlayer = await rest(
+    `challenge_definitions?select=challenge_id&challenge_id=eq.${sealedChallenge.challenge_id}`,
+    { session: playerA },
+  );
+  check(
+    'signing in does not reveal it either — authenticated is anyone, with anonymous sign-in on',
+    sealedForPlayer.status === 200 && sealedForPlayer.body?.length === 0,
+    `${sealedForPlayer.status} ${JSON.stringify(sealedForPlayer.body)}`,
+  );
+
+  const sealedForVerifier = await rest(
+    `challenge_definitions?select=challenge_id&challenge_id=eq.${sealedChallenge.challenge_id}`,
+    { trusted: true },
+  );
+  check(
+    'the trusted role still sees it, so the verifier can replay against it',
+    sealedForVerifier.body?.length === 1,
+    `${sealedForVerifier.status} ${JSON.stringify(sealedForVerifier.body)}`,
+  );
+
+  console.log('\nPostgREST: the challenge verifier advances a submission');
+  const submitted = await rest('rpc/submit_challenge_evidence', {
+    session: playerA,
+    method: 'POST',
+    body: {
+      p_challenge_id: openChallenge.challenge_id,
+      p_challenge_version: 1,
+      p_evidence_hash: 'abcdef0123456789',
+      p_evidence: { commands: [] },
+      p_claimed_metrics: { score: 10 },
+    },
+  });
+  check(
+    'a player submits evidence through the RPC',
+    submitted.body?.[0]?.status === 'submitted',
+    `${submitted.status} ${JSON.stringify(submitted.body)}`,
+  );
+  const submissionId = submitted.body?.[0]?.submission_id;
+
+  const verified = await rest(`challenge_submissions?submission_id=eq.${submissionId}`, {
+    trusted: true,
+    method: 'PATCH',
+    body: { verification_status: 'verified', ranked_score: 10, verified_at: new Date().toISOString() },
+  });
+  check(
+    'the trusted verifier records a verdict — the path that was completely dead before',
+    verified.status === 204,
+    `${verified.status} ${JSON.stringify(verified.body)}`,
+  );
+
+  const reassign = await rest(`challenge_submissions?submission_id=eq.${submissionId}`, {
+    trusted: true,
+    method: 'PATCH',
+    body: { user_id: subjectB },
+  });
+  check(
+    'the trusted verifier cannot reassign a submission to another account',
+    reassign.status === 401 || reassign.status === 403,
+    `${reassign.status} ${JSON.stringify(reassign.body)}`,
+  );
+
+  console.log('\nPostgREST: the entitlement webhook path');
+  const webhookArguments = {
+    p_user_id: subjectA,
+    p_product_id: 'product.save-slots.plus-5',
+    p_capability: 'save-slots',
+    p_event_type: 'grant',
+    p_source: 'payment-webhook',
+    p_quantity: 5,
+    p_provider: 'provider.local',
+    p_provider_event_id: `evt-${Date.now()}`,
+    p_occurred_at: new Date(Date.now() - 60_000).toISOString(),
+    p_actor_kind: 'provider',
+    p_actor_id: 'provider.local',
+    p_reason: 'purchase-completed via provider.local',
+    p_expires_at: null,
+  };
+
+  const applied = await rest('rpc/record_entitlement_event', {
+    trusted: true,
+    method: 'POST',
+    body: webhookArguments,
+  });
+  check(
+    'the trusted role can record an entitlement event — 42501 before this fix',
+    applied.body?.[0]?.status === 'applied',
+    `${applied.status} ${JSON.stringify(applied.body)}`,
+  );
+
+  const redelivered = await rest('rpc/record_entitlement_event', {
+    trusted: true,
+    method: 'POST',
+    body: webhookArguments,
+  });
+  check(
+    'a redelivered provider event writes nothing new',
+    redelivered.body?.[0]?.status === 'duplicate',
+    `${redelivered.status} ${JSON.stringify(redelivered.body)}`,
+  );
+
+  const projection = await rest(`entitlements?select=value&key=eq.save-slots`, { session: playerA });
+  check(
+    'the player reads the projection the webhook produced',
+    projection.body?.[0]?.value?.grantedSaveSlots === 5,
+    `${projection.status} ${JSON.stringify(projection.body)}`,
+  );
+
+  const clientWebhook = await rest('rpc/record_entitlement_event', {
+    session: playerA,
+    method: 'POST',
+    body: { ...webhookArguments, p_provider_event_id: `evt-forged-${Date.now()}` },
+  });
+  check(
+    'a player cannot call the webhook RPC',
+    clientWebhook.status === 401 || clientWebhook.status === 403 || clientWebhook.status === 404,
+    `${clientWebhook.status} ${JSON.stringify(clientWebhook.body)}`,
+  );
+
+  console.log('\nPostgREST: what the trusted role is deliberately NOT given');
+  const trustedProjectionRead = await rest('entitlements?select=value', { trusted: true });
+  check(
+    'the trusted role cannot read the entitlement projection directly',
+    trustedProjectionRead.status === 401 || trustedProjectionRead.status === 403,
+    `${trustedProjectionRead.status} ${JSON.stringify(trustedProjectionRead.body)}`,
+  );
+
+  const trustedPrisonRead = await rest('prisons?select=id', { trusted: true });
+  check(
+    'the trusted role cannot read cloud saves: they are client-authoritative state',
+    trustedPrisonRead.status === 401 || trustedPrisonRead.status === 403,
+    `${trustedPrisonRead.status} ${JSON.stringify(trustedPrisonRead.body)}`,
+  );
+
+  const trustedSaveRpc = await rest('rpc/create_save_version', {
+    trusted: true,
+    method: 'POST',
+    body: {
+      p_prison_id: prisonId,
+      p_new_revision: 2,
+      p_save_schema_version: 1,
+      p_checksum: 'trusted',
+      p_payload: { tick: 1 },
+      p_storage_path: null,
+      p_byte_size: 10,
+    },
+  });
+  check(
+    'the trusted role cannot call create_save_version either',
+    trustedSaveRpc.status === 401 || trustedSaveRpc.status === 403 || trustedSaveRpc.status === 404,
+    `${trustedSaveRpc.status} ${JSON.stringify(trustedSaveRpc.body)}`,
   );
 
   const failed = checks.filter((entry) => entry.ok === false);
