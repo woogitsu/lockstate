@@ -563,7 +563,8 @@ export class SparseWorld {
    * Whether the tile is owned: any owned parcel contains it, or its chunk is
    * owned outright. The rule itself lives in `isTileOwnedBy`, which
    * `WorldRenderView.isTileOwned` also calls, so the authoritative answer and
-   * the one the build overlay draws cannot diverge (issue #93). See ADR 0019.
+   * the one `tile-layer.ts` shades and outlines from cannot diverge (issue
+   * #93). See ADR 0019, which is Proposed rather than Accepted.
    */
   public isTileOwned(tile: TilePosition): boolean {
     const { chunk } = tileToChunk(tile, this.tileChunkSize);
