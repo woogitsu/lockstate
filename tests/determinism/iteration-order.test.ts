@@ -133,6 +133,23 @@ describe('search jobs and room instances are ordered canonically, not by registr
     expect(runtime.prisoners.roomInstances.findAvailable('room.cell', 'sleep-surface')?.instanceId).toBe('cell-1');
   });
 
+  it('plays out identically when every incidental registration order is reversed', () => {
+    // Rooms, doors, sectors, schedules, containers, job workers, carry jobs
+    // and gangs are all read through canonically ordered accessors, so the
+    // order they were registered in is not part of the run. If any of those
+    // accessors fell back to `Map`/`Set` order, this diverges -- and so
+    // would a snapshot-restored session, which re-registers them sorted.
+    const asBuilt = buildDeterminismScenario(SCENARIO_SEED);
+    submitScenarioCommands(asBuilt);
+    for (let tick = 0; tick < 250; tick += 1) asBuilt.kernel.step();
+
+    const reversed = buildDeterminismScenario(SCENARIO_SEED, { reverseIncidentalRegistrationOrder: true });
+    submitScenarioCommands(reversed);
+    for (let tick = 0; tick < 250; tick += 1) reversed.kernel.step();
+
+    expect(fullRuntimeState(reversed)).toEqual(fullRuntimeState(asBuilt));
+  });
+
   it('runs a full session to identical state twice, covering every ordered iteration above at once', () => {
     const first = buildDeterminismScenario(SCENARIO_SEED);
     submitScenarioCommands(first);
