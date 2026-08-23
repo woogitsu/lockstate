@@ -13,10 +13,12 @@ import { rectContainsTileXY } from './parcel';
  * parcel was unowned while a higher-id parcel covering it was owned. They
  * agreed everywhere else -- on every tile in an owned chunk, on every tile
  * under a single parcel, and on every overlapping tile whose lowest-id
- * covering parcel was owned. Nothing in `src/` registers a parcel or calls
- * `canBuildAt`, so the two answers have never been compared in a running
- * game; the defect is one game rule with two implementations, one of them in
- * the renderer, not an observed wrong highlight.
+ * covering parcel was owned. And no world in `src/` has overlapping parcels to
+ * differ over: the only `registerParcel` call site there is
+ * `SparseWorld.fromSnapshot` re-registering what a save carried, and nothing in
+ * `src/` calls `canBuildAt` at all. So the two answers have never been compared
+ * in a running game. The defect is one game rule with two implementations, one
+ * of them in the renderer -- not an observed wrong highlight.
  *
  * The rule: **a tile is owned when any owned parcel contains it, or when the
  * chunk holding it is owned outright.** Parcels do not veto each other.
@@ -32,8 +34,11 @@ import { rectContainsTileXY } from './parcel';
  * simulation: disjunction over a set has the same answer whatever order the
  * set is walked in, so the answer survives a snapshot round trip -- which
  * re-registers parcels sorted by id rather than in their original insertion
- * order -- without needing any canonical sort here. A rule that picked *one*
- * parcel would need that sort to be stable at all (see
+ * order -- whatever order the caller collected the bounds in.
+ * `SparseWorld.isTileOwned` collects them in canonical ascending-id order even
+ * so, because `docs/DETERMINISM.md` states that rule for anything feeding
+ * simulation state without an exception, not because the answer needs it. A
+ * rule that picked *one* parcel would need the sort to be correct at all (see
  * `SparseWorld.getParcelAtTile`, which still needs it, and
  * `tests/determinism/iteration-order.test.ts`).
  *

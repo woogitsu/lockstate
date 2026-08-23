@@ -155,8 +155,8 @@ export class WorldRenderView {
    *
    * The rule is not implemented here: it is `isTileOwnedBy`, in
    * `src/simulation/world`, and `SparseWorld.isTileOwned` calls that same
-   * function -- so this cannot answer differently from the simulation that
-   * then accepts or refuses a build. It used to be a second implementation of
+   * function -- so this cannot answer differently from the simulation, which is
+   * what `canBuildAt` consults. It used to be a second implementation of
    * the rule, and the two differed for a tile whose lowest-id covering parcel
    * was unowned while a higher-id parcel covering it was owned -- overlapping
    * bounds being something `registerParcel` permits. They agreed on every

@@ -9,8 +9,9 @@ needs a decision.
 
 Removing the renderer's private copy of the ownership rule does not: it is a
 straight `AGENTS.md` boundary-1 defect fix, and no reviewer needs to weigh it.
-But the two copies disagreed, so unifying them requires choosing *which* answer
-survives — and the answer chosen here is not the one `SparseWorld` gave.
+But the two copies did not agree in every case, so unifying them requires
+choosing *which* answer survives — and the answer chosen here is not the one
+`SparseWorld` gave.
 
 A reviewer is being asked to sign off on one thing: **an owned parcel makes the
 tiles inside it owned, and an unowned parcel overlapping the same tiles does
@@ -40,7 +41,7 @@ The repository had two, in two places, and they did not always agree.
 containing the tile in ascending-id order, and returned true only if **that
 one** was owned; otherwise it fell through to chunk ownership. A tile under an
 unowned `a-marsh` and an owned `z-estate` was therefore **not owned**, so
-`canBuildAt` answers `unowned_land` for it.
+`canBuildAt` would have answered `unowned_land` for it.
 
 ### The renderer's rule
 
@@ -215,8 +216,9 @@ way), and nothing yet says they should be impossible.
   That is now correct by construction rather than by coincidence: unowned
   parcels genuinely cannot affect the answer.
 - `docs/WORLD.md` becomes accurate about the simulation rather than only about
-  the renderer, and states the overlap case explicitly instead of leaving it
-  to be inferred.
+  the renderer, and states the overlap case explicitly instead of leaving it to
+  be inferred. It also marks the half of the rule this ADR proposes as pending
+  rather than settled, so a rejection does not make the document false.
 - The doc comment on `WorldRenderView.isTileOwned`, which PR #90 rewrote to
   *state* the divergence, is replaced: it now says where the rule lives.
 - `WorldRenderView.isTileOwned` no longer brands its coordinates with
