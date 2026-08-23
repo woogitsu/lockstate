@@ -98,10 +98,22 @@ Save migrations are forward-only, explicit and tested against fixture saves.
 Cloud writes use optimistic concurrency. A client may only advance revision N to N+1 if N is still current. If another client has advanced the save, the user receives a conflict workflow instead of silent last-write-wins data loss. The schema, RPC and client-side sync/conflict policy implementing this are defined in [CLOUD_SAVE.md](./CLOUD_SAVE.md).
 
 ### Authentication
-Players may start without registration. Anonymous/local play can later be upgraded to a durable Supabase identity using supported linking flows. Entitlements such as additional save slots belong to account metadata, not the simulation save payload.
+Players may start without registration. Anonymous/local play can later be upgraded to a durable Supabase identity using supported linking flows. Entitlements such as additional save slots belong to account metadata, not the simulation save payload. The entitlement ledger, its derived projection and the offline degradation policy are defined in [TRUSTED_SERVICES.md](./TRUSTED_SERVICES.md).
 
 ### Security
-Only the Supabase anon/publishable client key may appear in frontend configuration. RLS is mandatory for user data. Service-role credentials are never shipped to the browser. Trusted future features (payments, verified leaderboards, entitlement mutation, anti-abuse checks) may use Supabase Edge Functions or Cloudflare Workers server logic without moving the simulation server-side.
+Only the Supabase anon/publishable client key may appear in frontend configuration. RLS is mandatory for user data. Service-role credentials are never shipped to the browser. Trusted features (payments, verified leaderboards, entitlement mutation, anti-abuse checks) use Supabase Edge Functions or Cloudflare Workers server logic without moving the simulation server-side. The trust zones, the required shape of every trusted entry point and the threat model are defined by [ADR-0008](./adr/0008-trusted-service-boundary.md).
+
+### Trusted services layer
+`src/services/` is a separate layer from the simulation, holding the contracts and pure logic for product features that cross a trust boundary or leave the device: verified challenges ([ADR-0009](./adr/0009-challenge-verification-strategy.md)), account entitlements, privacy-controlled telemetry ([ADR-0010](./adr/0010-telemetry-and-diagnostics-privacy.md)) and the localization runtime ([ADR-0011](./adr/0011-localization-architecture.md)). See [TRUSTED_SERVICES.md](./TRUSTED_SERVICES.md), [TELEMETRY.md](./TELEMETRY.md) and [LOCALIZATION.md](./LOCALIZATION.md).
+
+Boundary rules, enforced by `tests/unit/services-layer-boundaries.test.ts`:
+- no module under `src/simulation/` or `src/persistence/` may import this layer;
+- the layer imports no Phaser and touches no DOM globals, so the same modules run in a tab, a worker and a trusted server function;
+- nothing in it runs on the tick or frame path; every call is asynchronous, failable and optional;
+- a client cache of server-authoritative state is a projection that expires and may only ever reduce what the client believes it may do.
+
+### Localization
+Stable content/simulation identifiers, message keys and translated text are three separate namespaces. Simulation code may branch on a stable id; it may never read translated text, and no translated string may be persisted, hashed, checksummed or compared. Locale catalogs are versioned data with a per-key fallback chain; the default locale is bundled and must be complete.
 
 ### Input
 Input actions are abstract commands, not hard-coded characters. Keyboard defaults use physical `KeyboardEvent.code` semantics, with user-visible labels adapted where browser layout APIs are available. All actions are remappable. Touch/pointer interactions have first-class equivalents.

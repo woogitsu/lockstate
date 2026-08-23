@@ -5,11 +5,13 @@
  * logic or persisted IDs (AGENTS.md: "content definitions belong in data
  * modules"; issue #23: "localization keys separate from logic IDs").
  *
- * There is no bundler-loaded translation system yet -- that belongs to a
- * future UI/localization issue. `resolveLocalizationKey` below resolves
- * against an in-memory default-locale catalog only, enough for headless
- * tests and any current dev UI to show a real label without inventing a
- * translation pipeline prematurely.
+ * This module stays the stable-ID-side primitive: the key type plus a
+ * dependency-free flat lookup, enough for headless tests and any dev UI to
+ * show a real label. The actual localization runtime -- fallback chains,
+ * plurals, `Intl` formatting, catalog loading and the pseudo-locale --
+ * lives in `src/services/localization/` (issue #36, ADR 0011) and consumes
+ * these keys. Content modules deliberately do not depend on it, so the
+ * catalogs stay importable from anywhere.
  */
 export type LocalizationKey = string;
 

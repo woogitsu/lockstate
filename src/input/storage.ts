@@ -1,3 +1,4 @@
+import type { KeyValueStore } from '../shared/key-value-store';
 import {
   type AccessibilitySettings,
   DEFAULT_ACCESSIBILITY_SETTINGS,
@@ -16,11 +17,13 @@ import {
  * User-settings persistence is a separate concern from prison save snapshots
  * (AGENTS.md: persistence consumes explicit snapshots). Any key/value store
  * satisfies this, so tests can inject an in-memory store instead of the DOM.
+ *
+ * The interface itself now lives in `src/shared/key-value-store.ts` because
+ * the trusted-services layer (#36) needs the same boundary for entitlement
+ * projections and telemetry consent; it is re-exported here so input
+ * consumers keep importing it from where they always did.
  */
-export interface KeyValueStore {
-  getItem(key: string): string | null;
-  setItem(key: string, value: string): void;
-}
+export type { KeyValueStore };
 
 export const DEFAULT_INPUT_SETTINGS: InputSettings = {
   version: INPUT_SETTINGS_VERSION,
