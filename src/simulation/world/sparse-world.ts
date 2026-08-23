@@ -497,8 +497,18 @@ export class SparseWorld {
     return this.parcels.get(id);
   }
 
+  /**
+   * Code-unit ordering, never `localeCompare`: collation depends on the
+   * runtime's default locale and on the ICU data the engine was built
+   * with, so two clients could order the same parcels differently. That
+   * order is not cosmetic here -- it decides `getParcelAtTile`'s first
+   * match, what `canPurchaseParcel`/`getParcelPrice` hooks see, and the
+   * order parcels are written into a world snapshot (and therefore into
+   * the save checksum). See
+   * `tests/determinism/ambient-nondeterminism-contract.test.ts`.
+   */
   public getAllParcels(): readonly ParcelDefinition[] {
-    return [...this.parcels.values()].sort((a, b) => a.id.localeCompare(b.id));
+    return [...this.parcels.values()].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   }
 
   public isParcelOwned(id: string): boolean {
@@ -516,8 +526,21 @@ export class SparseWorld {
     }
   }
 
+  /**
+   * First matching parcel in canonical order (ascending parcel id), never
+   * `Map` insertion order.
+   *
+   * `registerParcel` does not reject overlapping bounds, so more than one
+   * parcel can contain a tile; "first match wins" then decides
+   * `isTileOwned`, and through it `canBuildAt`. Insertion order is a
+   * property of *how a world was built*, while `snapshot()`/`fromSnapshot`
+   * emit and re-register parcels sorted by id -- so a snapshot -> restore
+   * round trip could flip which of two overlapping parcels owned a tile.
+   * Sorting here makes the answer a function of world state alone, which
+   * is what `tests/determinism/iteration-order.test.ts` pins.
+   */
   public getParcelAtTile(tile: TilePosition): ParcelDefinition | undefined {
-    for (const parcel of this.parcels.values()) {
+    for (const parcel of this.getAllParcels()) {
       if (isTileInParcel(tile, parcel)) {
         return parcel;
       }
@@ -590,8 +613,7 @@ export class SparseWorld {
         };
       });
 
-    const sortedParcels: SerializedParcelDefinition[] = [...this.parcels.values()]
-      .sort((a, b) => a.id.localeCompare(b.id))
+    const sortedParcels: SerializedParcelDefinition[] = this.getAllParcels()
       .map((p) => ({
         id: p.id,
         x: p.bounds.x,

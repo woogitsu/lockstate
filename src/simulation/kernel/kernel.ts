@@ -41,6 +41,23 @@ export class Kernel {
   public get expectedSequence(): number { return this._expectedSequence; }
   public get rng(): NamedRngStreams { return this._rng; }
 
+  /**
+   * The resolved execution order of every registered system, as
+   * `{ id, order }` pairs in the exact sequence `step()` runs them.
+   *
+   * Read-only diagnostic surface. ADR 0004 makes "systems run in a declared
+   * integer order" part of the determinism contract, and ADR 0009 turns
+   * that contract into a *product* guarantee -- inserting a system into the
+   * middle of the order changes every stored challenge replay. That is only
+   * reviewable if the resolved order can be asserted from outside the
+   * kernel, which is what `tests/determinism/kernel-system-order.test.ts`
+   * does. It exposes no mutable state: the array and its entries are fresh
+   * copies, so a caller cannot reorder or re-register systems through it.
+   */
+  public get systemExecutionOrder(): readonly { readonly id: string; readonly order: number }[] {
+    return this._systems.map((system) => ({ id: system.id, order: system.order }));
+  }
+
   public setCommandHandler(handler: CommandHandler): void {
     this._commandHandler = handler;
   }

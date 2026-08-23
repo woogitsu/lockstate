@@ -2,21 +2,71 @@
 
 Lockstate strictly relies on fully deterministic logic within its simulation core. The game state must be capable of being perfectly recreated on any hardware given identical initial state and an identical command log.
 
+Since [ADR 0009](./adr/0009-challenge-verification-strategy.md) this is a **product** guarantee, not only an engineering preference: challenge verification works by deterministic replay, so a simulation that is not bit-reproducible silently invalidates every piece of stored challenge evidence. A determinism regression does not look like a crash — it looks like a correct-seeming session whose replay disagrees.
+
 ## Kernel Pacing and Time
 - The `Kernel` operates on a strict **50ms tick interval** (20 Hz).
 - Systems and state mutations rely solely on integer `tick` increments, never on floating-point time deltas or elapsed milliseconds.
 - Functions like `Date.now()`, `performance.now()`, or other ambient environment timers must NEVER be used in the simulation logic.
 
+`FixedStepClock` is the one legitimate reader of real time, and only as *pacing*: it converts elapsed wall-clock milliseconds into a whole number of 50 ms ticks to run. The number of ticks is a scheduling decision; nothing about the value reaches a system, a command payload or any simulation state.
+
 ## Command Ordering
 - All external input is enqueued as a discrete `QueuedCommand` with a designated `executeAtTick` and a strict, contiguous `sequence` number.
 - Commands are explicitly ordered and validated by the Kernel.
 - Gaps and duplicates in the sequence are aggressively rejected by the Kernel to prevent desynchronization.
+- The pending queue is sorted by `(executeAtTick, sequence)` — a total order — both on submission and on restore, so a restored queue dispatches identically to a live one.
+
+## System Ordering
+- Every system declares an explicit integer `order` and a stable string `id`; the kernel sorts by `order`, then by `id`. Both keys together are a total order, so registration order can never influence execution order.
+- `Kernel.systemExecutionOrder` exposes the resolved order read-only, and `tests/determinism/kernel-system-order.test.ts` pins the declared order of a real session. Adding, removing or renumbering a system changes what a recorded command stream produces, so that pin must be updated deliberately — and, per ADR 0009, accompanied by retiring incompatible challenge submissions through the definition allow-lists.
+- Declared `order` values in a real session are kept **distinct**. The id tie-break makes a collision deterministic, not obvious: two systems sharing an order would silently swap places the day one of them was renamed.
 
 ## RNG Ownership
 - The simulation forbids the use of `Math.random()`.
 - Instead, Lockstate uses isolated, named RNG streams powered by `Xoshiro128**` algorithms, which are explicitly seeded and fully serializable.
-- Systems must claim specific named RNG streams (e.g., `ai-pathfinding`, `loot-drops`) to ensure that generating a random number in one system does not perturb the sequence of random numbers in an unrelated system.
+- Systems must claim specific named RNG streams (e.g. `prisoners.classification`, `contraband.detection`) to ensure that generating a random number in one system does not perturb the sequence of random numbers in an unrelated system.
+- Streams are never created on demand: `NamedRngStreams.get` throws for an unknown name, so a typo is an error rather than an unseeded, unsnapshotted stream.
+- Every stream's seed is a pure function of `(masterSeed, streamName)` via `deriveXoshiroState`, and `snapshot()` emits streams sorted by name, so the order streams were registered in cannot change a save.
+
+## Canonical iteration order
+
+Deriving simulation state by iterating a `Map` or `Set` is the most common way this guarantee breaks, and the hardest to notice. Insertion order is a property of *how a session happened to be built*, not of its state — and almost every `getSnapshot()` in this codebase emits sorted entries, so a snapshot-restored session re-inserts in a different order than the live one it came from. The two then diverge with no visible cause.
+
+Rules:
+
+- Anything that feeds simulation state must iterate in a **canonical order derived from state** — ascending id, ascending entity id, ascending tile index — never `Map`/`Set` insertion order and never `Object.keys()` of a runtime-built object.
+- `EntityQuery.execute()` walks indices `0..maxActiveIndex`, which is why it is the only supported way to iterate entities ([ADR 0005](./adr/0005-entity-storage-model.md)).
+- **Never `localeCompare`.** Collation depends on the runtime's default locale and on the ICU data the engine was built with, so the same ids can sort differently on two clients. Compare strings with `(a < b ? -1 : a > b ? 1 : 0)` — code-unit ordering is spec-defined and identical everywhere.
+- A tie-break must be *total*. A comparator that leaves two elements equal falls back to whatever order the input array happened to be in.
+
+## Floating point
+
+JavaScript numbers are IEEE-754 doubles and are deterministic **for a fixed sequence of operations**. The risk is therefore never the arithmetic itself; it is accumulation whose *order* can vary. Wherever simulation state sums floats over a collection (needs effects, risk sampling, utility scoring), the collection must be iterated in canonical order for the same reason as above.
 
 ## Snapshots and Overload
 - By removing non-determinism, a full snapshot becomes a simple data dump of the RNG state, active systems, and kernel tick/sequence index.
 - Heavy simulation lag must be handled by the worker queue preserving backlog, executing up to a tick budget without altering the 50ms semantic interval.
+- `snapshot() → restore() → run N ticks` must land on exactly the state `run N ticks` lands on. Where a subsystem *deliberately* drops in-flight state on restore (a mid-leg path request belongs to the previous `NavigationSystem` instance's queue), the reset must at least be **idempotent**: restoring an already-restored snapshot must produce the same result, or a save written by a restored session would drift further every time it was loaded.
+- What a V1 session snapshot does and does not carry is stated in `V1_RESTORED_SCOPE` (`src/simulation/runtime/restore-session.ts`) and pinned in `tests/determinism/snapshot-restore-fidelity.test.ts`.
+
+## How this is enforced
+
+`tests/determinism/` holds the executable form of everything above:
+
+| File | Guards |
+| --- | --- |
+| `ambient-nondeterminism-contract.test.ts` | Walks the real transitive import graph from `src/simulation/` outwards and rejects `Math.random`, `Date.now`, `new Date`, `performance.now`, `crypto` randomness, `Intl`, `toLocale*`, `localeCompare`, `navigator`, DOM globals, storage, `process.env` and Phaser. Exceptions live in one explicit per-file allow-list with a stated reason, and a stale entry fails the test. |
+| `kernel-system-order.test.ts` | Registration-order independence, tie-break by id, multi-rate schedules, command dispatch order, and the pinned declared system order of a real session. |
+| `rng-stream-isolation.test.ts` | Draws in one subsystem cannot shift another's sequence, through the real kernel and through a real session. |
+| `session-replay.test.ts` | Same seed plus same command stream reproduces an identical canonical state hash, at every checkpoint and not only at the end. |
+| `snapshot-restore-fidelity.test.ts` | Restore-and-continue equals never-restoring, at several restore points; bundle round-trip fidelity; per-subsystem exactness or idempotence. |
+| `iteration-order.test.ts` | The canonical orders above, stated as concrete expected sequences. |
+
+The allow-list in the first of these is the mechanism that stops a future contributor reintroducing an ambient source quietly: doing so requires editing a reviewable list, not just a system.
+
+## Known limitations, recorded rather than silently fixed
+
+- **Global topology ids are not reproducible from world state.** `TopologyManager` hands out `GlobalTopologyId`s from a counter that is never reset, so the ids a world ends up with depend on how many times geometry changed, not on the geometry itself. Nothing consumes them beyond `topologyId === 0` today and they are in no save, so this is latent — but whether a topology id is a stable identity or a derived value is a real architectural decision, proposed as [ADR 0012](./adr/0012-derived-identifier-reproducibility.md). Seed order within one recompute *is* canonical.
+- **`JobSystem.performingSince` is not snapshotted.** A restored `'performing'` carry job restarts its pickup/drop-off timer, so a restored session finishes that job later than a continuous one. This matches the deliberate "restart rather than assume arrival" convention `JobBoard.loadSnapshot` documents for travel, but unlike travel it is not stated anywhere; extending the job snapshot is a save-schema change (see `docs/PERSISTENCE.md`).
+- **Per-system counters are partly outside snapshots.** `IncidentTriggerSystem` snapshots its `sequence`; `SearchSystem`, `DeploymentSystem`, `PatrolSystem` and `ActionSystem` do not snapshot their `requestSequence`, and several systems' metrics are not carried. Request sequences only name path requests against a `NavigationSystem` that a restored session rebuilds empty, so nothing diverges today — but any future use of those counters in state would.
