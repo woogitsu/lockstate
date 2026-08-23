@@ -27,7 +27,15 @@ export const HUD_MESSAGE_KEY = {
   incidentsActive: 'hud.status.incidents-active',
 
   clockRegion: 'hud.clock.title',
-  clockTime: 'hud.clock.time',
+  /**
+   * Names the value beside the day number for a screen reader.
+   *
+   * It replaced `hud.clock.time`, which labelled an `HH:MM` readout the
+   * simulation never produced: there is no hour-of-day in Lockstate
+   * (`docs/HUD_PROJECTIONS.md`, gap 5), so what the strip shows is the
+   * position within the in-game day and the label has to say so.
+   */
+  clockDayProgress: 'hud.clock.day-progress',
   clockDay: 'hud.clock.day',
   clockSpeed: 'hud.clock.speed',
   transportPause: 'hud.transport.pause',

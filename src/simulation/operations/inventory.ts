@@ -148,4 +148,21 @@ export class ContainerMaterialsProvider implements ConstructionMaterialsProvider
     }
     return true;
   }
+
+  /**
+   * Puts a cancelled order's materials back into the same container they
+   * were spent from.
+   *
+   * `deposit` rather than a reservation reversal, because `tryAllocate`
+   * already committed the withdrawal -- the reservation it made lived for
+   * two statements and no longer exists. This is the drop-off half of the
+   * same one-container exception `tryAllocate` is: nothing moves between
+   * containers, so the no-teleport rule (`docs/OPERATIONS.md`) is untouched.
+   */
+  public release(allocations: readonly MaterialRequirement[]): void {
+    for (const allocation of allocations) {
+      if (allocation.quantity <= 0) continue;
+      this.container.deposit(allocation.itemId, allocation.quantity);
+    }
+  }
 }

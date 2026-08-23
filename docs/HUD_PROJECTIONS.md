@@ -119,6 +119,40 @@ Two projections deliberately drop state they can see:
   them from `IncidentAlert`. The timeline is not hidden: it records what
   visibly happened.
 
+### 7. The clock, and why it is the exception that proves the rule
+
+Everything else in this document is a projection captured inside a session
+snapshot. The clock is not, because a snapshot is expensive: the render feed
+polls one every two seconds while the simulation runs, and each poll makes
+the worker capture the full session bundle. A day counter cannot be worth
+that, and a day counter that only moved every two seconds would be worse
+than none.
+
+So the clock has its own route, and it is still a route the worker owns:
+
+1. A transport control emits a `set-clock` **intent**. The HUD changes
+   nothing locally — it does not know whether the simulation accepted.
+2. The composition root turns it into `simulation/set-clock`
+   (`src/ui/simulation-commands.ts`).
+3. The worker sets `FixedStepClock` and answers with a **correlated**
+   `simulation/clock-state` carrying the tick and the clock's own control.
+4. While the clock runs, the worker **publishes** an uncorrelated
+   `simulation/clock-state` at most every 250 ms and only when the tick has
+   moved. ADR 0003 requires an unsolicited message to carry no `replyTo`,
+   so it does not.
+5. `hudClockFromWorkerMessage` (`src/ui/simulation-clock.ts`) turns either
+   form into a `HudClockViewModel`. It is a pure function with no timer:
+   nothing on the main thread counts ticks, and nothing extrapolates from
+   `performance.now()`.
+
+The property this preserves is the one ADR 0009 turns into a product
+guarantee. Pausing, resuming and changing speed decide **when** ticks
+happen; they never touch what a tick computes, and the publication is a
+read. `tests/determinism/clock-transport.test.ts` drives the real worker
+state machine twice from one snapshot — once straight through, once paused
+and resumed at three speeds — and requires a byte-identical session at the
+same tick.
+
 ## Gaps: fields a panel plausibly wants that the simulation does not have
 
 Nothing below is implemented, faked or defaulted. Each is a product
@@ -159,10 +193,21 @@ decision about what to build next.
    budget that `regime.ts` explicitly calls a candidate value, not a
    24-hour mapping. The projection reports day number, tick-of-day, day
    progress and the active regime block instead of inventing a clock face.
-6. **`FixedStepClock` exposes no getter for its current `ClockControl`** —
-   only `setControl`. The status-strip projection has to be handed the
-   speed by whoever owns the clock, and reports `speedKnown: false` when it
-   is not.
+
+   **The HUD does not invent one either.** The status strip used to carry a
+   `minuteOfDay` and render `07:45`, which is a time no system produces. It
+   now shows the day number and how far through that day the simulation is
+   — the same two facts `projectClockPosition` publishes — and shows `--`
+   for both when no session has reported a clock. Whether a prison day
+   should map onto a 24-hour dial is a balance decision, not a formatting
+   one, and it stays open.
+6. ~~**`FixedStepClock` exposes no getter for its current `ClockControl`**~~
+   **Closed.** `FixedStepClock.control` reports what the clock is running
+   under. `StatusStripSource.clockControl` is still *passed in* — a
+   projection takes state and does not reach for the live scheduler — but
+   the worker now reads it off the clock instead of remembering what it
+   last set, so the two can no longer disagree. `speedKnown: false` remains
+   for a caller that supplies no control at all.
 
 ### Prisoners
 
