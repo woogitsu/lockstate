@@ -42,7 +42,18 @@ export interface BuildPanelOptions {
 
 export interface BuildPanel {
   readonly element: HTMLElement;
-  /** Controls to disable while a command is in flight. */
+  /**
+   * The controls to disable while a command is in flight — the submit button,
+   * and nothing else.
+   *
+   * Choosing a buildable, nudging a coordinate and picking an edge are
+   * *chrome*: they change what the next order would say and ask the host for
+   * nothing. Disabling them alongside the command would drop interactions
+   * that have nothing to do with the host, which is the same mistake
+   * `dispatchShell` exists to avoid for tabs and panels. Observed while
+   * driving the real panel: three taps issued in one turn after "Place order"
+   * were all swallowed.
+   */
   readonly controls: readonly (HTMLButtonElement | HTMLInputElement)[];
   /** Current selection, exposed so a test can assert it without reading the DOM. */
   getSelection(): BuildPanelIntent | undefined;
@@ -200,13 +211,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
 
   return {
     element: panel.element,
-    controls: [
-      submit.element,
-      ...xField.controls,
-      ...yField.controls,
-      ...edgeChoice.controls,
-      ...[...rows.values()].map((row) => row.element).filter((node): node is HTMLButtonElement => node instanceof HTMLButtonElement),
-    ],
+    controls: [submit.element],
     getSelection: readSelection,
     setVisible(visible: boolean): void {
       panel.element.hidden = !visible;

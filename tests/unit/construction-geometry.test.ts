@@ -10,7 +10,9 @@ import {
   resolveBuildEdge,
   type BuildEdge,
 } from '../../src/simulation/construction';
+import type { ConstructionSnapshot } from '../../src/simulation/construction/system';
 import { Kernel } from '../../src/simulation/kernel/kernel';
+import { createSaveEnvelope } from '../../src/persistence/save-schema';
 import { packCommand, unpackCommand } from '../../src/simulation/protocol/commands';
 import { defaultRoomRegistry } from '../../src/simulation/rooms/definition';
 import { RoomSystem } from '../../src/simulation/rooms/system';
@@ -482,6 +484,64 @@ describe('construction iterates its orders in a canonical order', () => {
     expect(reversed.getTopEdge(tile(2, 3))).toBe(live.getTopEdge(tile(2, 3)));
     expect(reversed.getLeftEdge(tile(2, 3))).toBe(live.getLeftEdge(tile(2, 3)));
     expect(reversed.snapshot()).toEqual(live.snapshot());
+  });
+});
+
+describe('a build order with an edge survives the save envelope', () => {
+  /**
+   * The envelope's `buildOrderSchema` is `.strict()`, so a key it does not
+   * name is not merely dropped -- the whole save is rejected. Before the
+   * optional `edge` was declared there, finishing a wall made the game
+   * unsaveable, which a headless construction test could never notice.
+   */
+  const envelopeInput = (construction: ConstructionSnapshot) => ({
+    gameVersion: 'test',
+    prisonId: 'prison-1',
+    revision: 1,
+    createdAt: 1,
+    updatedAt: 1,
+    kernel: { tick: 0, expectedSequence: 0, rngStates: [], commands: [] },
+    world: loadedWorld().snapshot(),
+    construction,
+  });
+
+  it('accepts an order carrying an edge', () => {
+    const world = loadedWorld();
+    const construction = new ConstructionSystem(world);
+    const kernel = new Kernel();
+    kernel.registerSystem(construction);
+    construction.submitOrder(createBuildOrder('wall-0', 'wall-brick', tile(4, 6), 'west'));
+    runToCompletion(kernel);
+
+    const envelope = createSaveEnvelope(envelopeInput(construction.snapshot()));
+    expect(envelope.payload.construction.orders[0]).toMatchObject({ id: 'wall-0', edge: 'west' });
+  });
+
+  it('still accepts one that carries none, so no migration is needed', () => {
+    const construction = new ConstructionSystem(loadedWorld());
+    construction.submitOrder(createBuildOrder('wall-0', 'wall-brick', tile(4, 6)));
+
+    const envelope = createSaveEnvelope(envelopeInput(construction.snapshot()));
+    expect(envelope.payload.construction.orders[0]).not.toHaveProperty('edge');
+  });
+
+  it('rejects an edge the world has no slot for', () => {
+    const construction: ConstructionSnapshot = {
+      orders: [
+        {
+          id: 'wall-0',
+          definitionId: 'wall-brick',
+          location: tile(4, 6),
+          edge: 'south' as never,
+          state: 'planned',
+          progress: 0,
+          materialsAllocated: [],
+        },
+      ],
+      undoStack: [],
+      redoStack: [],
+    };
+    expect(() => createSaveEnvelope(envelopeInput(construction))).toThrow();
   });
 });
 

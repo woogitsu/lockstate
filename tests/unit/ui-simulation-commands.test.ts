@@ -94,13 +94,29 @@ const PLACE_WALL = {
 
 let transport: FakeTransport;
 let sender: SimulationCommandSender;
+/** A clock the test moves by hand, so nothing here depends on real elapsed time. */
+let nowMs: number;
+
+function executeTicks(): readonly number[] {
+  return transport.sent
+    .filter((message) => message.kind === 'simulation/submit-command')
+    .map((message) => (message.kind === 'simulation/submit-command' ? message.payload.executeAtTick : -1));
+}
+
+function sequences(): readonly number[] {
+  return transport.sent
+    .filter((message) => message.kind === 'simulation/submit-command')
+    .map((message) => (message.kind === 'simulation/submit-command' ? message.payload.sequence : -1));
+}
 
 beforeEach(() => {
+  nowMs = 1_000;
   transport = new FakeTransport();
   sender = new SimulationCommandSender(transport, {
     generateMessageId: () => 'msg',
     generateCommandId: () => 'cmd',
-    runningLeadTicks: 60,
+    leadTicks: 20,
+    now: () => nowMs,
   });
 });
 
@@ -128,34 +144,61 @@ describe('SimulationCommandSender gets the two numbers right', () => {
     sender.submit(PLACE_WALL);
     sender.submit(PLACE_WALL);
 
-    const sequences = transport.sent.map((message) =>
-      message.kind === 'simulation/submit-command' ? message.payload.sequence : -1,
-    );
-    expect(sequences).toEqual([7, 8]);
+    expect(sequences()).toEqual([7, 8]);
   });
 
-  it('schedules at the current tick while the clock is paused', () => {
+  it('schedules at the current tick while the clock is paused, however long ago it was reported', () => {
     transport.emit(ready(120));
     transport.emit(snapshot(120, 0));
+    nowMs += 60_000; // a minute of the player thinking about it
 
     sender.submit(PLACE_WALL);
 
-    const [message] = transport.sent;
-    expect(message?.kind).toBe('simulation/submit-command');
     // A paused worker cannot have moved past the tick it reported, so no lead
-    // is needed and the order runs on the first step after play.
-    if (message?.kind === 'simulation/submit-command') expect(message.payload.executeAtTick).toBe(120);
+    // is needed and the order runs on the very first step after play.
+    expect(executeTicks()).toEqual([120]);
   });
 
-  it('leads the tick while the clock is running, because the reported tick is already stale', () => {
+  it('carries the tick forward by elapsed real time while the clock runs', () => {
     transport.emit(ready(0, true));
     transport.emit(snapshot(500, 0));
+    nowMs += 2_000; // 2s at 50ms/tick, speed 1 -> 40 ticks
 
     sender.submit(PLACE_WALL);
 
-    const [message] = transport.sent;
-    if (message?.kind === 'simulation/submit-command') expect(message.payload.executeAtTick).toBe(560);
-    else expect.unreachable('expected a submit-command');
+    expect(executeTicks()).toEqual([500 + 40 + 20]);
+  });
+
+  it('scales the projection by the clock speed', () => {
+    transport.emit(ready(0, true));
+    transport.emit(snapshot(500, 0));
+    transport.emit({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: 'm-clock',
+      replyTo: 'r-5',
+      kind: 'simulation/clock-state',
+      payload: { tick: 500, clock: { mode: 'running', speed: 4 } },
+    });
+    nowMs += 2_000; // 2s at x4 -> 160 ticks
+
+    sender.submit(PLACE_WALL);
+
+    expect(executeTicks()).toEqual([500 + 160 + 20]);
+  });
+
+  it('survives a tick report that has gone badly stale', () => {
+    // Observed for real: a non-compositing or backgrounded tab stops the
+    // render feed's polling, the last tick report ages by tens of seconds,
+    // and a fixed lead sends every order into the worker's past --
+    // "Cannot schedule command in the past: tick 1168 < current 1595".
+    transport.emit(ready(0, true));
+    transport.emit(snapshot(1_100, 0));
+    nowMs += 25_000; // 25s unobserved -> 500 ticks
+
+    sender.submit(PLACE_WALL);
+
+    const [executeAt] = executeTicks();
+    expect(executeAt).toBeGreaterThanOrEqual(1_100 + 500);
   });
 
   it('never lets a stale snapshot pull the sequence backwards', () => {
@@ -169,10 +212,7 @@ describe('SimulationCommandSender gets the two numbers right', () => {
     transport.emit(snapshot(0, 0));
     sender.submit(PLACE_WALL);
 
-    const sequences = transport.sent.map((message) =>
-      message.kind === 'simulation/submit-command' ? message.payload.sequence : -1,
-    );
-    expect(sequences).toEqual([0, 1]);
+    expect(sequences()).toEqual([0, 1]);
   });
 
   it('re-baselines downward after a rejection, which is the one case going back is right', () => {
@@ -185,10 +225,7 @@ describe('SimulationCommandSender gets the two numbers right', () => {
     transport.emit(snapshot(0, 5)); // the worker never accepted it
     sender.submit(PLACE_WALL);
 
-    const sequences = transport.sent.map((message) =>
-      message.kind === 'simulation/submit-command' ? message.payload.sequence : -1,
-    );
-    expect(sequences).toEqual([5, 5]);
+    expect(sequences()).toEqual([5, 5]);
   });
 
   it('carries the edge through into the packed command payload', () => {

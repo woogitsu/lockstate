@@ -45,30 +45,39 @@ export interface SimulationCommandSenderOptions {
   readonly generateMessageId?: () => string;
   readonly generateCommandId?: () => string;
   /**
-   * How far ahead of the last tick we heard about to schedule a command while
-   * the clock is running.
+   * A small safety margin on top of the projected tick, for the message's own
+   * trip to the worker.
    *
-   * Zero would be wrong: the last tick we know of is as old as the last
-   * snapshot (the render feed polls every couple of seconds), so the worker
-   * has already moved past it and would reject the command as scheduled in
-   * the past. While the clock is *paused* the tick cannot have moved, so no
-   * lead is added and the order runs on the first step after play.
+   * It is a margin, not the estimate: the estimate comes from elapsed real
+   * time (see `projectExecuteTick`). A fixed lead alone was tried and is
+   * wrong -- it silently assumes the last tick report is fresh, and a
+   * throttled or non-compositing tab stops the render feed polling, at which
+   * point the report is tens of seconds stale and every order is rejected as
+   * "scheduled in the past".
    */
-  readonly runningLeadTicks?: number;
+  readonly leadTicks?: number;
+  /** Injected so a test is not tied to a real clock. */
+  readonly now?: () => number;
 }
 
-const DEFAULT_RUNNING_LEAD_TICKS = 60; // 3 seconds at the kernel's 20 Hz.
+const DEFAULT_LEAD_TICKS = 20; // 1 second at the kernel's 20 Hz.
+/** `FixedStepClock`'s step. The worker converts `elapsed * speed` into whole steps of this size. */
+const TICK_MILLISECONDS = 50;
 
 export class SimulationCommandSender {
   private ready = false;
   private clockRunning = false;
+  private clockSpeed: 1 | 2 | 4 = 1;
   private lastTick = 0;
+  /** When `lastTick` was reported, so elapsed real time can carry it forward. */
+  private lastTickAt = 0;
   private nextSequence = 0;
   private sequenceSynced = false;
 
   private readonly generateMessageId: () => string;
   private readonly generateCommandId: () => string;
-  private readonly runningLeadTicks: number;
+  private readonly leadTicks: number;
+  private readonly now: () => number;
 
   public constructor(
     private readonly transport: SimulationCommandTransport,
@@ -76,8 +85,35 @@ export class SimulationCommandSender {
   ) {
     this.generateMessageId = options.generateMessageId ?? (() => `command-${crypto.randomUUID()}`);
     this.generateCommandId = options.generateCommandId ?? (() => `player-${crypto.randomUUID()}`);
-    this.runningLeadTicks = options.runningLeadTicks ?? DEFAULT_RUNNING_LEAD_TICKS;
+    this.leadTicks = options.leadTicks ?? DEFAULT_LEAD_TICKS;
+    this.now = options.now ?? (() => performance.now());
     this.transport.addListener((message) => this.observe(message));
+  }
+
+  /**
+   * Where the worker's tick has most likely got to by now.
+   *
+   * A paused clock cannot have moved, so the last reported tick is exact and
+   * the order runs on the very first step after play -- no lead, no wait.
+   *
+   * A running clock advances at a fixed 50 ms per tick scaled by its speed
+   * (`FixedStepClock`), so elapsed real time is a sound estimate of how far
+   * past the last report it has got. Reading the wall clock is legitimate
+   * *here* and nowhere near the simulation: this thread owns input
+   * orchestration, the number never enters simulation state, and being wrong
+   * is not a correctness failure -- overshooting only makes the order start a
+   * fraction of a second later, while undershooting is the one that gets the
+   * command rejected. Hence the estimate plus a margin, and `ceil`.
+   */
+  private projectExecuteTick(): number {
+    if (!this.clockRunning) return this.lastTick;
+    const elapsed = Math.max(0, this.now() - this.lastTickAt);
+    return this.lastTick + Math.ceil((elapsed * this.clockSpeed) / TICK_MILLISECONDS) + this.leadTicks;
+  }
+
+  private noteTick(tick: number): void {
+    this.lastTick = tick;
+    this.lastTickAt = this.now();
   }
 
   /** True once a session exists and the command sequence has been baselined. */
@@ -112,7 +148,7 @@ export class SimulationCommandSender {
       payload: {
         commandId: this.generateCommandId(),
         sequence,
-        executeAtTick: this.lastTick + (this.clockRunning ? this.runningLeadTicks : 0),
+        executeAtTick: this.projectExecuteTick(),
         command: packCommand(command),
       },
     });
@@ -136,8 +172,8 @@ export class SimulationCommandSender {
     switch (message.kind) {
       case 'simulation/ready':
         this.ready = true;
-        this.lastTick = message.payload.tick;
-        this.clockRunning = message.payload.clock.mode === 'running';
+        this.noteTick(message.payload.tick);
+        this.noteClock(message.payload.clock);
         // A *restored* session does not start at sequence zero -- it resumes
         // the count its save was written with. So the baseline is never
         // assumed here; it is read from the first snapshot that arrives.
@@ -145,8 +181,8 @@ export class SimulationCommandSender {
         break;
 
       case 'simulation/clock-state':
-        this.lastTick = message.payload.tick;
-        this.clockRunning = message.payload.clock.mode === 'running';
+        this.noteTick(message.payload.tick);
+        this.noteClock(message.payload.clock);
         break;
 
       case 'simulation/snapshot':
@@ -178,8 +214,13 @@ export class SimulationCommandSender {
     const expected = bundle.kernel?.expectedSequence;
     if (typeof expected !== 'number' || !Number.isSafeInteger(expected) || expected < 0) return;
 
-    this.lastTick = Math.max(this.lastTick, payload.tick);
+    if (payload.tick >= this.lastTick) this.noteTick(payload.tick);
     if (!this.sequenceSynced || expected > this.nextSequence) this.nextSequence = expected;
     this.sequenceSynced = true;
+  }
+
+  private noteClock(clock: { readonly mode: 'paused' } | { readonly mode: 'running'; readonly speed: 1 | 2 | 4 }): void {
+    this.clockRunning = clock.mode === 'running';
+    if (clock.mode === 'running') this.clockSpeed = clock.speed;
   }
 }

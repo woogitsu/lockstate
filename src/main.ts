@@ -158,17 +158,26 @@ const BUILDABLE_LABEL_KEY: Readonly<Record<string, LocalizationKey>> = {
   'door-wooden': HUD_MESSAGE_KEY.buildableDoorWooden,
 };
 
+/** Walls first, then everything else: the first row is also the default selection. */
+const CATEGORY_RANK: Readonly<Record<string, number>> = { wall: 0, object: 1, utility: 2 };
+
 /**
  * What the Build panel may offer, projected from the buildable registry.
  *
- * Sorted by id rather than taken in `Map` insertion order: this is a list a
- * player reads and taps, and an order that depended on module evaluation
- * would be an order nobody chose (`docs/DETERMINISM.md`). An id with no
- * authored label is omitted rather than rendered as a raw identifier.
+ * Ordered by `(category rank, id)` rather than taken in `Map` insertion
+ * order: this is a list a player reads and taps, and an order that depended
+ * on module evaluation would be an order nobody chose
+ * (`docs/DETERMINISM.md`). Both keys come from the definition, so the list is
+ * a function of content and not of history. An id with no authored label is
+ * omitted rather than rendered as a raw identifier.
  */
 function buildCatalogue(): HudBuildViewModel {
   const buildables: HudBuildableViewModel[] = [];
-  for (const definition of [...BUILDABLE_REGISTRY.values()].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))) {
+  const rank = (category: string): number => CATEGORY_RANK[category] ?? Number.MAX_SAFE_INTEGER;
+  const ordered = [...BUILDABLE_REGISTRY.values()].sort(
+    (a, b) => rank(a.category) - rank(b.category) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
+  );
+  for (const definition of ordered) {
     const labelKey = BUILDABLE_LABEL_KEY[definition.id];
     if (labelKey === undefined) continue;
     buildables.push({
