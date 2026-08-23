@@ -35,7 +35,7 @@ import { TopologyManager } from '../rooms/topology';
 import { deriveXoshiroState } from '../rng/seed';
 import { NamedRngStreams } from '../rng/streams';
 import { DeploymentSystem, GuardRoster, PatrolSystem, SecuritySectorRegistry, type DeploymentSchedule } from '../security';
-import { chunkCoordinate, tileCoordinate, type TilePosition } from '../world/coordinates';
+import { chunkCoordinate, tileCoordinate, type ChunkPosition, type TilePosition } from '../world/coordinates';
 import { SparseWorld } from '../world/sparse-world';
 
 /** Well-known container id every session's `ConstructionSystem` draws build materials from -- session/scenario setup deposits into it (directly, or via delivery jobs from other containers) to make construction orders actually wait for and consume real materials (issue #25). */
@@ -104,27 +104,46 @@ const DEFAULT_PRISONER_CAPACITY = 5_000;
 /** Realistic guard headcounts are tens, not thousands (see `tests/unit/security-scale.test.ts`) -- generous headroom, not a scale target. */
 const DEFAULT_GUARD_CAPACITY = 500;
 
+export interface SimulationRuntimeOptions {
+  /**
+   * A pre-built world to wire the system graph around, instead of the
+   * default single-owned-chunk starter world -- used by
+   * `restoreSimulationRuntime` (`restore-session.ts`) to rebuild a session
+   * around a world deserialized from a save. The system graph, kernel
+   * construction and RNG stream registration are identical either way, so
+   * a restored session is wired exactly like a fresh one.
+   */
+  readonly world?: SparseWorld;
+  /** Chunks to mark loaded for navigation. Defaults to the world's own owned chunks, or the starter chunk for a fresh world. */
+  readonly loadedChunks?: readonly ChunkPosition[];
+}
+
 /**
  * Creates the deterministic authoritative state for a new prison session.
  * Phaser and all browser-facing code receive only derived projections.
  * `masterSeed` seeds every named RNG stream this runtime's systems claim
- * (currently only `PRISONER_CLASSIFICATION_RNG_STREAM`) via
- * `deriveXoshiroState` -- pass the same seed to reproduce an identical
+ * via `deriveXoshiroState` -- pass the same seed to reproduce an identical
  * session deterministically.
  */
-export function createNewSimulationRuntime(masterSeed: number = 0): SimulationRuntime {
-  const world = new SparseWorld(32);
+export function createNewSimulationRuntime(masterSeed: number = 0, options: SimulationRuntimeOptions = {}): SimulationRuntime {
   const initialChunk = {
     x: chunkCoordinate(0),
     y: chunkCoordinate(0),
   };
-  world.load(initialChunk);
-  world.setOwned(initialChunk, true);
+
+  let world: SparseWorld;
+  if (options.world !== undefined) {
+    world = options.world;
+  } else {
+    world = new SparseWorld(32);
+    world.load(initialChunk);
+    world.setOwned(initialChunk, true);
+  }
 
   const topology = new TopologyManager(world);
   const rooms = new RoomSystem(world, topology, defaultRoomRegistry);
   const navigation = new NavigationSystem(world, DEFAULT_NAVIGATION_SYSTEM_OPTIONS);
-  navigation.setLoadedChunks([initialChunk]);
+  navigation.setLoadedChunks(options.loadedChunks ?? (options.world === undefined ? [initialChunk] : world.snapshot().ownedChunks.map((position) => ({ x: chunkCoordinate(position.x), y: chunkCoordinate(position.y) }))));
 
   const rng = new NamedRngStreams([
     { name: PRISONER_CLASSIFICATION_RNG_STREAM, state: deriveXoshiroState(masterSeed, PRISONER_CLASSIFICATION_RNG_STREAM) },

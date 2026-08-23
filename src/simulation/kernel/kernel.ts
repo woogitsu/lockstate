@@ -116,6 +116,33 @@ export class Kernel {
     };
   }
 
+  /**
+   * Restores tick, sequence, RNG streams and the pending command queue
+   * onto an *already-wired* kernel, leaving its registered systems and
+   * command handler untouched.
+   *
+   * `Kernel.restore` (below) builds a kernel and its system list together,
+   * which suits a caller that owns both. A session restore
+   * (`src/simulation/runtime/restore-session.ts`) is the opposite shape:
+   * the runtime factory has already assembled the full system graph and
+   * command handler, and only the serialized kernel state needs to land on
+   * it. Doing that through this method keeps exactly one definition of how
+   * a session's systems are wired, instead of a second list that could
+   * drift from the factory's.
+   */
+  public restoreState(snapshot: KernelSnapshot): void {
+    if (!Number.isInteger(snapshot.tick) || snapshot.tick < 0) throw new RangeError('Tick must be a non-negative integer.');
+    if (!Number.isInteger(snapshot.expectedSequence) || snapshot.expectedSequence < 0) throw new RangeError('Sequence must be a non-negative integer.');
+    this._tick = snapshot.tick;
+    this._expectedSequence = snapshot.expectedSequence;
+    this._rng = new NamedRngStreams(snapshot.rngStates);
+    this._commands = snapshot.commands.map((command) => ({ ...command }));
+    this._commands.sort((a, b) => {
+      if (a.executeAtTick !== b.executeAtTick) return a.executeAtTick - b.executeAtTick;
+      return a.sequence - b.sequence;
+    });
+  }
+
   public static restore(snapshot: KernelSnapshot, systems: SystemRegistration[], commandHandler?: CommandHandler): Kernel {
     const rng = new NamedRngStreams(snapshot.rngStates);
     const kernel = new Kernel(snapshot.tick, snapshot.expectedSequence, rng);

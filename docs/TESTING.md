@@ -8,17 +8,28 @@ Lockstate treats tests as executable architecture. A feature is not complete bec
 pnpm typecheck
 pnpm test
 pnpm test:watch
+pnpm test:browser
 pnpm verify
 pnpm verify:deployment
 ```
 
-`pnpm test` runs the complete Vitest suite once and fails when no test is discovered. `pnpm verify` typechecks test and production sources, runs the test suite and builds the production Cloudflare package.
+`pnpm test` runs the complete Vitest suite once and fails when no test is discovered. `pnpm verify` typechecks test and production sources, runs the test suite and builds the production Cloudflare package. `pnpm test:browser` runs the opt-in Chromium project (`tests/browser/`) and is deliberately **not** part of `pnpm test` or `pnpm verify`.
+
+The persistence measurement harness is likewise opt-in: `pnpm exec vitest run --config tests/perf/vitest.perf.config.ts`. Its files are named `*.perf.ts` so the default suite never collects them, and it asserts only correctness invariants — never elapsed time (see `docs/BENCHMARKING.md`).
 
 ## Default environment
 
 Vitest runs in the Node environment by default. Pure simulation, protocol, serialization, migration, economy, navigation and deterministic scheduling tests must not import Phaser, touch the DOM or require browser globals.
 
-A future browser/E2E project may use Playwright or Vitest Browser Mode after a dedicated dependency and architecture review. Browser setup must remain explicit rather than silently changing the environment for every test.
+A browser/E2E project may use Playwright or Vitest Browser Mode after a dedicated dependency and architecture review. Browser setup must remain explicit rather than silently changing the environment for every test.
+
+**Approved browser project (issue #19).** `@playwright/test` (exact-pinned devDependency) drives Chromium against `tests/browser/`, run **only** via `pnpm test:browser` — never as part of `pnpm test` or `pnpm verify`. It stays explicit in exactly the way this section requires:
+
+- Its specs are named `*.spec.ts`, and the root Vitest config collects only `*.test.ts`, so no browser file can be picked up by the default suite by accident.
+- It uses its own Vite config and dev server (`tests/browser/vite.config.ts`), not the production Cloudflare build.
+- It is devDependency-only and outside the production build graph — verified by building `HEAD` and `HEAD + browser project` side by side and confirming a byte-identical bundle (1,384.01 kB, gzip 360.73 kB).
+
+It exists because `fake-indexeddb` structurally cannot prove three things: durability across a real page navigation, what a real browser's `DOMException`s are actually named, and behavior under a genuinely exhausted storage quota (driven here through CDP `Storage.overrideQuotaForOrigin`, asserted via `navigator.storage.estimate()` so an ineffective override fails the test rather than passing vacuously). It found one real adapter defect — see `docs/PERSISTENCE.md`.
 
 A single non-DOM Web API can be reviewed and approved narrower than a full browser/E2E environment: `fake-indexeddb` (a pure-JS, dependency-free `indexedDB` implementation, devDependency-only) is approved for testing `src/persistence/local/indexeddb-store.ts` specifically — see `docs/PERSISTENCE.md`. Tests using it import a fresh `IDBFactory` instance explicitly per test rather than the `/auto` global-polluting entry point, so the default Vitest environment stays `node` and unaffected for every other test.
 
@@ -31,7 +42,8 @@ A single non-DOM Web API can be reviewed and approved narrower than a full brows
 | Integration | Two or more real project modules wired together | `tests/integration/` |
 | Determinism | Same initial state and command stream produce identical state/hash | `tests/determinism/` |
 | Migration | Versioned fixture upgrades and forward-only save compatibility | `tests/migrations/` |
-| Browser E2E | Real browser input, rendering shell, deep navigation and accessibility | Future explicit browser test project |
+| Browser E2E | Real browser storage/durability, real `DOMException` names, real quota exhaustion | `tests/browser/`, opt-in via `pnpm test:browser` |
+| Measurement | Reported size/timing evidence with no timing assertions | `tests/perf/`, opt-in via its own Vitest config |
 | Benchmark | Repeatable performance evidence, never correctness by elapsed time | `benchmarks/` and `docs/BENCHMARKING.md` |
 
 Use the lowest layer that proves the behavior. Do not use a browser test to cover logic that can be proven by a fast headless unit or contract test.
