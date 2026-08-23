@@ -72,3 +72,37 @@ test('new-session runtime wires contraband, intelligence and search through the 
   expect(runtime.contraband.get('item-1')?.state).toBe('confiscated');
   expect(runtime.confiscations.all()).toHaveLength(1);
 });
+
+test('new-session runtime wires the incident pipeline through real sectors, guards and navigation', () => {
+  const runtime = createNewSimulationRuntime();
+
+  const doorPosition = { x: tileCoordinate(2), y: tileCoordinate(1) };
+  runtime.navigation.doors.register(createGradedDoor('door-1', doorPosition, 'left', 'open', 'grade.general'));
+  const postTile = { x: tileCoordinate(3), y: tileCoordinate(1) };
+  runtime.securitySectors.register({ id: 'sector-1', gradeId: 'grade.general', doorIds: ['door-1'], postTile });
+  runtime.incidentSectorIds.push('sector-1');
+
+  runtime.securityGuards.hire('staff-role.guard', { x: tileCoordinate(0), y: tileCoordinate(0) });
+
+  // An incident opened directly on the runtime's own log is driven to resolution by the wired response system.
+  runtime.incidents.open({ id: 'incident-1', type: 'assault', sectorId: 'sector-1', participantIds: [1], severity: 2, causeFactors: [] }, 0);
+
+  for (let i = 0; i < 1_000 && runtime.incidentResponseSystem.getMetrics().incidentsResolved < 1; i += 1) runtime.kernel.step();
+
+  expect(runtime.incidents.get('incident-1')!.state).toBe('resolved');
+  expect(runtime.incidentResponseSystem.getMetrics().incidentsResolved).toBe(1);
+  expect(runtime.securitySectors.getControlState('sector-1')).toBe('normal');
+});
+
+test('new-session runtime starts with no fabricated incident, gang or contraband content', () => {
+  const runtime = createNewSimulationRuntime();
+
+  expect(runtime.incidents.all()).toEqual([]);
+  expect(runtime.gangs.all()).toEqual([]);
+  expect(runtime.tunnels.all()).toEqual([]);
+  expect(runtime.incidentSectorIds).toEqual([]);
+  expect(runtime.contraband.all()).toEqual([]);
+  expect(runtime.intelligence.all()).toEqual([]);
+  expect(runtime.searchPolicies).toEqual([]);
+  expect(runtime.securitySchedules).toEqual([]);
+});

@@ -15,10 +15,20 @@ import {
   ConstructionSystem,
   createConstructionCommandHandler,
 } from '../construction';
+import {
+  GangRegistry,
+  IncidentLog,
+  IncidentResponseSystem,
+  IncidentTriggerSystem,
+  SectorRiskTracker,
+  TunnelRegistry,
+  type SectorOccupantResolver,
+  type SectorRiskSampler,
+} from '../incidents';
 import { Kernel } from '../kernel';
 import { NavigationSystem, type NavigationSystemOptions } from '../navigation';
 import { Container, ContainerMaterialsProvider, ContainerRegistry, JobBoard, JobSystem, JobWorkerPool, UtilityNetwork } from '../operations';
-import { PrisonerJobWorkerAdapter, PrisonerOperationsRuntime } from '../prisoners';
+import { NEED_MAX, PrisonerJobWorkerAdapter, PrisonerOperationsRuntime } from '../prisoners';
 import { defaultRoomRegistry } from '../rooms/definition';
 import { RoomSystem } from '../rooms/system';
 import { TopologyManager } from '../rooms/topology';
@@ -80,6 +90,14 @@ export interface SimulationRuntime {
   readonly searchSystem: SearchSystem;
   /** `'container'`-holder search targets (the `'delivery'` scope) have no inherent position -- `Container` itself carries none. Empty until session/scenario registers a real delivery-bay tile per container id; `locateSearchTarget` (the default `TargetLocationResolver` wired into `searchSystem`) reads this map for `'container'` targets only. */
   readonly searchContainerLocations: Map<string, TilePosition>;
+  readonly incidents: IncidentLog;
+  readonly sectorRisk: SectorRiskTracker;
+  readonly gangs: GangRegistry;
+  readonly tunnels: TunnelRegistry;
+  /** Mutable and empty until session/scenario setup pushes sector ids -- `IncidentTriggerSystem` reads this array live, same convention as `securitySchedules`/`searchPolicies`. */
+  readonly incidentSectorIds: string[];
+  readonly incidentTriggerSystem: IncidentTriggerSystem;
+  readonly incidentResponseSystem: IncidentResponseSystem;
 }
 
 const DEFAULT_PRISONER_CAPACITY = 5_000;
@@ -192,6 +210,59 @@ export function createNewSimulationRuntime(masterSeed: number = 0): SimulationRu
 
   const searchSystem = new SearchSystem(securityGuards, navigation, contraband, intelligence, confiscations, searchPolicies, categoryConcealment, locateSearchTarget);
 
+  // Issue #28's incident pipeline: no sectors watched, no gangs, no
+  // tunnels and no incidents until a session/scenario registers them --
+  // same "no fabricated default content" convention as everything above.
+  // The default risk sampler derives real inputs from the systems already
+  // constructed (deployment coverage shortfall, prisoner needs deficits,
+  // contraband intelligence pressure) rather than a parallel state model;
+  // a scenario can pass richer sampling by constructing its own
+  // IncidentTriggerSystem, exactly like #27's TargetLocationResolver seam.
+  const incidents = new IncidentLog();
+  const sectorRisk = new SectorRiskTracker();
+  const gangs = new GangRegistry();
+  const tunnels = new TunnelRegistry();
+  const incidentSectorIds: string[] = [];
+
+  const resolveSectorOccupants: SectorOccupantResolver = (sectorId) => {
+    const sector = securitySectors.getDefinition(sectorId);
+    if (sector === undefined) return [];
+    // Occupancy by the sector's own post tile: prisoners standing on it.
+    // A richer sector-membership model is scenario knowledge (see docs/INCIDENTS.md).
+    const occupants: number[] = [];
+    for (let index = 0; index <= prisoners.entityStore.maxActiveIndex; index += 1) {
+      if (!prisoners.entityStore.isIndexAlive(index)) continue;
+      if (prisoners.position.tileX[index] === sector.postTile.x && prisoners.position.tileY[index] === sector.postTile.y) {
+        occupants.push(prisoners.entityStore.getIdByIndex(index));
+      }
+    }
+    return occupants.sort((a, b) => a - b);
+  };
+
+  const sampleSectorRisk: SectorRiskSampler = (sectorId, tick) => {
+    const coverage = deploymentSystem.getCoverageReport(tick).find((entry) => entry.sectorId === sectorId);
+    const staffingShortfall = coverage === undefined || coverage.required === 0 ? 0 : coverage.shortage / coverage.required;
+
+    const occupants = resolveSectorOccupants(sectorId);
+    let needsPressure = 0;
+    if (occupants.length > 0) {
+      let deficitSum = 0;
+      for (const entityId of occupants) {
+        const index = prisoners.entityStore.getIndex(entityId);
+        deficitSum += (NEED_MAX - prisoners.needs.get(index, 'safety')) / NEED_MAX;
+      }
+      needsPressure = deficitSum / occupants.length;
+    }
+
+    let contrabandPressure = 0;
+    for (const record of intelligence.forTarget('sector', sectorId)) contrabandPressure = Math.max(contrabandPressure, record.confidence);
+
+    return { needsPressure, staffingShortfall, contrabandPressure };
+  };
+
+  const incidentTriggerSystem = new IncidentTriggerSystem(incidents, sectorRisk, gangs, incidentSectorIds, sampleSectorRisk, resolveSectorOccupants);
+  const incidentResponseSystem = new IncidentResponseSystem(incidents, securitySectors, securityGuards, navigation);
+
   kernel.registerSystem(construction);
   kernel.registerSystem(navigation);
   prisoners.registerOn(kernel);
@@ -199,7 +270,9 @@ export function createNewSimulationRuntime(masterSeed: number = 0): SimulationRu
   kernel.registerSystem(intelligenceSystem);
   kernel.registerSystem(deploymentSystem);
   kernel.registerSystem(patrolSystem);
+  kernel.registerSystem(incidentTriggerSystem);
   kernel.registerSystem(searchSystem);
+  kernel.registerSystem(incidentResponseSystem);
   kernel.setCommandHandler(createConstructionCommandHandler(construction));
 
   return {
@@ -228,5 +301,12 @@ export function createNewSimulationRuntime(masterSeed: number = 0): SimulationRu
     searchPolicies,
     searchSystem,
     searchContainerLocations,
+    incidents,
+    sectorRisk,
+    gangs,
+    tunnels,
+    incidentSectorIds,
+    incidentTriggerSystem,
+    incidentResponseSystem,
   };
 }
