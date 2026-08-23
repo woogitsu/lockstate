@@ -16,9 +16,9 @@ and threat model) and [ADR 0009](./adr/0009-challenge-verification-strategy.md)
   ledger fold, webhook processing, projection policy, telemetry controls
   and localization runtime are all exercised in Node
   (`tests/unit/services-*.test.ts`).
-- **Executed against a real PostgreSQL 16 + pgTAP:** the migrations in
-  `supabase/migrations/` and `supabase/tests/002_entitlement_ledger_and_challenges.test.sql`
-  (17/17 assertions). Reproduce with:
+- **Executed against a real PostgreSQL 16 + pgTAP:** every migration in
+  `supabase/migrations/` and both pgTAP suites in `supabase/tests/`
+  (33 assertions, 17 of them this issue's). Reproduce with:
   ```bash
   # Debian/Ubuntu: apt-get install postgresql-16 postgresql-16-pgtap
   pnpm verify:sql               # as a superuser role, or set DATABASE_URL
@@ -41,39 +41,20 @@ and threat model) and [ADR 0009](./adr/0009-challenge-verification-strategy.md)
   runner and a telemetry ingestion endpoint. Each is either out of scope
   for #36 or gated on a decision this issue does not make.
 
-## Known failing suite: `001_rls_and_save_version_rpc.test.sql` (issue #20)
+## Defects this tooling found in the cloud-save schema (#20)
 
-`pnpm verify:sql` currently exits non-zero, and **not because of anything
-in issue #36**. Running #20's SQL for the first time surfaced two defects
-in the already-merged cloud-save schema. They are recorded here because the
-command is red until someone fixes them; the fix belongs to #20, not to
-this issue.
+Running #20's SQL for the first time — with the runner added here — showed
+that the schema merged for issue #20 did not work: `create_save_version()`
+raised `42702 column reference "revision" is ambiguous` on every call, and
+the column-level `REVOKE` on `prisons` could not narrow Supabase's
+table-level grant, leaving optimistic concurrency bypassable by a direct
+`PATCH`. Both are fixed on `main` (PR #52) and documented in
+[CLOUD_SAVE.md](./CLOUD_SAVE.md); `pnpm verify:sql` now passes both suites,
+33 assertions in total.
 
-1. **`create_save_version()` fails on every call.** Its `returns table
-   (... revision int, checksum text)` declares OUT parameters whose names
-   collide with the columns used in
-   `select id, revision ... where prison_id = p_prison_id and checksum = p_checksum`.
-   PostgreSQL raises `42702 column reference "revision" is ambiguous`
-   before any branch is taken, so the only write path for a cloud save
-   cannot succeed. Fix: alias the table (`from public.save_versions sv`)
-   and qualify the references, or declare `#variable_conflict use_column`.
-
-2. **The column-level `REVOKE` on `prisons` does not do what the migration
-   says.** `has_table_privilege('authenticated','public.prisons','UPDATE')`
-   is `true` after the migration: Supabase's default grant is table-level
-   `ALL`, and PostgreSQL cannot subtract a single column's privilege from a
-   table-level grant. An authenticated owner can therefore `PATCH` their own
-   `current_revision`/`current_version_id` directly and bypass the
-   optimistic-concurrency check that #20 exists to enforce — the exact
-   multi-device data-loss scenario `docs/CLOUD_SAVE.md` claims is closed.
-   Fix: `revoke update on public.prisons from authenticated, anon;` first,
-   then `grant update (<allowed columns>) ...`.
-
-Three further assertions in that suite (5, 6 and 7) are test-authoring
-mistakes rather than schema defects: RLS makes a non-matching `UPDATE`/
-`DELETE` affect zero rows instead of raising, and `throws_ok`'s two-argument
-form compares the *message* rather than acting as a description — the same
-mistake #36's own suite made and corrected.
+The general lesson is worth keeping: every one of those defects was
+invisible for as long as the SQL was only reviewed, and none of them needed
+the Supabase stack to find.
 
 ## Trust zones
 
