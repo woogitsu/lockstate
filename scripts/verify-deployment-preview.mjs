@@ -9,6 +9,31 @@ import process from 'node:process';
 import { setTimeout as delay } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 
+/**
+ * The security headers a deployed response must carry, and their exact values.
+ *
+ * Declared here rather than read out of `public/_headers`, deliberately: a
+ * check derived from that file would pass after a header was deleted from it,
+ * because the assertion would vanish with the declaration. This list is the
+ * requirement; `public/_headers` is the implementation of it.
+ *
+ * Before this existed only `X-Content-Type-Options` was asserted, so deleting
+ * the other three from `public/_headers` left `pnpm verify`,
+ * `pnpm verify:deployment` and all three CI jobs green -- shipping the site
+ * clickjackable, with a full referrer and no permissions policy, and nothing
+ * saying a word (issue #138).
+ *
+ * Note what this does NOT cover: there is no Content-Security-Policy at all,
+ * which matters because the bundle carries ~1.6 MB of Phaser. Adding one has a
+ * real chance of breaking the renderer, so it is its own change; see #105.
+ */
+const SECURITY_HEADER_BASELINE = [
+  ['x-content-type-options', 'nosniff'],
+  ['x-frame-options', 'DENY'],
+  ['referrer-policy', 'strict-origin-when-cross-origin'],
+  ['permissions-policy', 'camera=(), geolocation=(), microphone=(), usb=()'],
+];
+
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const viteEntry = path.resolve(repositoryRoot, 'node_modules', 'vite', 'bin', 'vite.js');
 const readinessTimeoutMs = 30_000;
@@ -205,11 +230,13 @@ async function main() {
     const htmlCacheControl = root.response.headers.get('cache-control') ?? '';
     assert.match(htmlCacheControl, /max-age=0/i, 'HTML must require revalidation.');
     assert.doesNotMatch(htmlCacheControl, /immutable/i, 'HTML must never be cached as immutable.');
-    assert.equal(
-      root.response.headers.get('x-content-type-options'),
-      'nosniff',
-      'Static responses must include the security header baseline.',
-    );
+    for (const [header, expected] of SECURITY_HEADER_BASELINE) {
+      assert.equal(
+        root.response.headers.get(header),
+        expected,
+        `Static responses must send ${header}: ${expected}. public/_headers declares it on /*; if it has been removed or changed there, this is the gate that says so.`,
+      );
+    }
 
     const assetMatch = root.body.match(/(?:src|href)="([^"?]*\/assets\/[^"?]+)"/u);
     assert.ok(assetMatch?.[1], 'The shell must reference a fingerprinted Vite asset.');
