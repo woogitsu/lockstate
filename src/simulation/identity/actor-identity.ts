@@ -43,7 +43,11 @@ import { assertValidActorNamePool, PLACEHOLDER_ACTOR_NAME_POOL, type ActorNamePo
  * Deriving would also make player renaming structurally impossible, since
  * the name would be recomputed on every read.
  *
- * ## Determinism (ADR 0004, ADR 0009, `docs/DETERMINISM.md`)
+ * ## Determinism
+ *
+ * See [ADR 0020](../../../docs/adr/0020-deterministic-kernel.md),
+ * [ADR 0009](../../../docs/adr/0009-challenge-verification-strategy.md) and
+ * `docs/DETERMINISM.md`.
  *
  * Storing a name does not weaken the product guarantee, because the
  * guarantee is that the same seed and command stream produce the same

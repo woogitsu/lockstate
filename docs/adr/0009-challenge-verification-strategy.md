@@ -12,7 +12,7 @@ what replaces it.
 Lockstate has one large advantage here and one large constraint.
 
 The advantage: the simulation is already deterministic by contract
-(`docs/DETERMINISM.md`, [ADR 0004](./0004-deterministic-kernel.md)) — fixed
+(`docs/DETERMINISM.md`, [ADR 0020](./0020-deterministic-kernel.md)) — fixed
 50 ms ticks, explicit system order, seeded named RNG streams, canonical
 state hashing (`deterministicStateHash`). A recorded command stream plus a
 seed *is* the run; re-executing it must reproduce the same state hash, or
