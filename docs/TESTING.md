@@ -100,7 +100,7 @@ A single non-DOM Web API can be reviewed and approved narrower than a full brows
 
 ```bash
 scripts/provision-playwright-browsers.sh   # no root, no apt, no third-party repository
-pnpm test:browser                          # 54 tests
+pnpm test:browser                          # 55 tests
 ```
 
 The suite starts its own dev server on port 5183 and **never reuses one that is already listening**. It used to reuse outside CI, which meant a run could attach to a server started from a different checkout of this repository — the suite then loaded that tree's `src/**` and reported on code the developer was not editing. That was observed, not theorised: a deliberately broken design token came back green because the page under test came from another worktree. Refusing to reuse turns that into a loud "port is already used"; set `LOCKSTATE_BROWSER_TEST_PORT` to run a second checkout alongside the first. The CI job sets it to a port the kernel just handed out, because the self-hosted runner shares its host with active development and 5183 is regularly taken there — the first run of that job died on exactly this.
