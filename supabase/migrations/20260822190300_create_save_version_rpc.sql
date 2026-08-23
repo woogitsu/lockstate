@@ -34,13 +34,22 @@
 -- UUID rather than widening checksum's own hash width, since checksum's
 -- job (corruption detection, docs/PERSISTENCE.md) is unrelated to this one.
 --
--- OPEN QUESTION (issue #57), recorded and deliberately not decided here.
--- See docs/CLOUD_SAVE.md, "Open question: no database-tier bound on
--- free-tier storage". `p_byte_size` is recorded, never bounded, and the length of
--- `p_payload` is not checked either, so the storage one anonymous identity
--- can consume is unbounded at the tier that is actually authoritative.
--- Capacity/abuse rather than confidentiality: every ownership check below
--- is unaffected.
+-- ON `p_byte_size` (issue #57, ADR 0012). It used to be recorded and never
+-- bounded, and the length of `p_payload` was not checked either, so the two
+-- need not have agreed and the storage one anonymous identity could consume
+-- was unbounded at the tier that is actually authoritative. Both are now
+-- handled by the `save_versions_enforce_size` trigger in
+-- 20260823100000_bound_free_tier_capacity.sql, which *measures* the stored
+-- payload, overwrites the caller's claim with the measurement, and refuses
+-- anything over public.max_save_payload_bytes() with SQLSTATE LS002.
+--
+-- The bound lives on the table rather than in this function on purpose:
+-- it is a property of the row, so it holds for any future writer, and this
+-- function's `returns table (status ...)` union stays at three values,
+-- which matters because SupabaseCloudSaveClient.uploadVersion switches over
+-- them exhaustively with no default. Adding a fourth status and the client
+-- branch that handles it is the correct follow-up; adding the status alone
+-- would be a silent `undefined`.
 create or replace function public.create_save_version(
   p_prison_id uuid,
   p_new_revision int,

@@ -18,6 +18,13 @@
  * this project's identity model -- a flow that is GoTrue behaviour, not
  * row-level SQL, so `supabase test db` structurally cannot cover it.
  *
+ * ON THE FREE-TIER CAPACITY BOUND (issue #57, ADR 0012). The pgTAP suite
+ * proves the cap in SQL. Only this script can prove the two things a client
+ * depends on: that a DIRECT PostgREST insert into `prisons` -- not merely
+ * the create_prison() RPC -- is refused, and that PostgREST turns the
+ * refusal into an HTTP 400 carrying `code: "LS001"` rather than a 500 that
+ * a browser would have to treat as "something broke".
+ *
  * ON THE SERVICE-ROLE KEY. This script originally used only the
  * publishable/anon key and said so. It now also drives the trusted server
  * paths (ADR 0008 zone Z2) with the local stack's secret key, because a
@@ -504,6 +511,138 @@ async function main() {
     `${clientWebhook.status} ${JSON.stringify(clientWebhook.body)}`,
   );
 
+  // --- The free-tier capacity bound (issue #57, ADR 0012) ---------------
+  //
+  // The pgTAP suite proves this in SQL; only this script can prove the two
+  // things a client actually depends on: that a direct PostgREST insert --
+  // not merely the blessed RPC -- is refused, and that PostgREST turns the
+  // refusal into something a browser can act on rather than a 500.
+  //
+  // playerB is used because playerA has just been granted five extra slots
+  // above, and the point here is the FREE tier.
+  console.log('\nPostgREST: the free-tier slot cap is enforced by the database');
+  const playerBPrisons = [];
+  let freeSlotInsertsAccepted = 0;
+  for (let slotIndex = 0; slotIndex < 5; slotIndex += 1) {
+    const slot = await rest('prisons', {
+      session: playerB,
+      method: 'POST',
+      prefer: 'return=representation',
+      body: { owner_id: subjectB, game_version: 'lockstate-0.0.0', slot_index: slotIndex },
+    });
+    if (slot.status === 201) freeSlotInsertsAccepted += 1;
+    if (slot.body?.[0]?.id !== undefined) playerBPrisons.push(slot.body[0].id);
+  }
+  check('a free account creates its five slots unhindered', freeSlotInsertsAccepted === 5, `${freeSlotInsertsAccepted}/5 accepted`);
+
+  // The bypass check. `create_prison()` is the front door, but the INSERT
+  // grant on `prisons` is deliberately still there (ADR 0012), so this is
+  // the path an attacker would actually use and the one that must refuse.
+  const sixthDirect = await rest('prisons', {
+    session: playerB,
+    method: 'POST',
+    body: { owner_id: subjectB, game_version: 'lockstate-0.0.0', slot_index: 5 },
+  });
+  check(
+    'a sixth slot via a DIRECT PostgREST insert is refused — the cap is not merely a property of the RPC',
+    sixthDirect.status === 400 && sixthDirect.body?.code === 'LS001',
+    `${sixthDirect.status} ${JSON.stringify(sixthDirect.body)}`,
+  );
+  check(
+    'the refusal is distinguishable and actionable, not an opaque constraint violation',
+    typeof sixthDirect.body?.details === 'string' && sixthDirect.body.details.includes('capacity=5'),
+    JSON.stringify(sixthDirect.body),
+  );
+
+  const sixthRpc = await rest('rpc/create_prison', {
+    session: playerB,
+    method: 'POST',
+    body: { p_prison_id: null, p_game_version: 'lockstate-0.0.0', p_slot_index: 5 },
+  });
+  check(
+    'the same refusal through create_prison() is a discriminated status carrying used/capacity',
+    sixthRpc.body?.[0]?.status === 'at_slot_limit' && sixthRpc.body[0].used_slots === 5 && sixthRpc.body[0].capacity === 5,
+    `${sixthRpc.status} ${JSON.stringify(sixthRpc.body)}`,
+  );
+
+  console.log('\nPostgREST: at the ceiling, everything except creating still works');
+  const cappedList = await rest('prisons?select=id,slot_index', { session: playerB });
+  check('an account at its ceiling still lists every prison it has', cappedList.body?.length === 5, JSON.stringify(cappedList.body?.length));
+
+  const cappedSave = await rest('rpc/create_save_version', {
+    session: playerB,
+    method: 'POST',
+    body: {
+      p_prison_id: playerBPrisons[0],
+      p_new_revision: 1,
+      p_save_schema_version: 1,
+      p_checksum: 'checksum-at-ceiling',
+      p_payload: { tick: 0 },
+      p_storage_path: null,
+      // A deliberate lie: the payload is 11 bytes. It used to be recorded verbatim.
+      p_byte_size: 999_999,
+    },
+  });
+  check('an account at its ceiling can still save an existing prison', cappedSave.body?.[0]?.status === 'created', JSON.stringify(cappedSave.body));
+
+  const cappedPull = await rest(`save_versions?select=revision,byte_size,payload&prison_id=eq.${playerBPrisons[0]}`, { session: playerB });
+  check(
+    'and can still pull it back — over-capacity degrades read-only, it never destroys data',
+    cappedPull.body?.[0]?.payload?.tick === 0,
+    `${cappedPull.status} ${JSON.stringify(cappedPull.body)}`,
+  );
+  check(
+    'byte_size is the measured payload size, not the 999999 the caller claimed',
+    cappedPull.body?.[0]?.byte_size === 11,
+    JSON.stringify(cappedPull.body?.[0]?.byte_size),
+  );
+
+  console.log('\nPostgREST: the per-save payload bound');
+  const payloadLimit = await rest('rpc/max_save_payload_bytes', { session: playerB, method: 'POST', body: {} });
+  check('a client can ask the server what the payload limit is', typeof payloadLimit.body === 'number', JSON.stringify(payloadLimit.body));
+
+  const oversized = await rest('rpc/create_save_version', {
+    session: playerB,
+    method: 'POST',
+    body: {
+      p_prison_id: playerBPrisons[1],
+      p_new_revision: 1,
+      p_save_schema_version: 1,
+      p_checksum: 'checksum-oversized',
+      p_payload: { blob: 'x'.repeat((payloadLimit.body ?? 4_194_304) + 1) },
+      p_storage_path: null,
+      p_byte_size: 10,
+    },
+  });
+  check(
+    'a payload over the limit is refused with its own code, distinct from the slot cap',
+    oversized.status === 400 && oversized.body?.code === 'LS002',
+    `${oversized.status} ${JSON.stringify(oversized.body?.code)} ${JSON.stringify(oversized.body?.details)}`,
+  );
+
+  console.log('\nPostgREST: paid capacity raises the cap, and only the server can grant it');
+  // playerA holds the +5 grant recorded through the webhook path above.
+  const paidCreate = await rest('rpc/create_prison', {
+    session: playerA,
+    method: 'POST',
+    body: { p_prison_id: null, p_game_version: 'lockstate-0.0.0', p_slot_index: 1, p_display_name: 'Annexe' },
+  });
+  check(
+    'the cap reads the entitlements projection: a purchased account is allowed ten',
+    paidCreate.body?.[0]?.status === 'created' && paidCreate.body[0].capacity === 10,
+    `${paidCreate.status} ${JSON.stringify(paidCreate.body)}`,
+  );
+
+  const signedOutCreatePrison = await rest('rpc/create_prison', {
+    method: 'POST',
+    body: { p_prison_id: null, p_game_version: 'lockstate-0.0.0', p_slot_index: 0 },
+  });
+  check(
+    'a signed-out visitor cannot reach create_prison at all',
+    signedOutCreatePrison.status === 401 || signedOutCreatePrison.status === 403 || signedOutCreatePrison.status === 404,
+    `${signedOutCreatePrison.status} ${JSON.stringify(signedOutCreatePrison.body)}`,
+  );
+
   console.log('\nPostgREST: what the trusted role is deliberately NOT given');
   const trustedProjectionRead = await rest('entitlements?select=value', { trusted: true });
   check(
@@ -536,6 +675,17 @@ async function main() {
     'the trusted role cannot call create_save_version either',
     trustedSaveRpc.status === 401 || trustedSaveRpc.status === 403 || trustedSaveRpc.status === 404,
     `${trustedSaveRpc.status} ${JSON.stringify(trustedSaveRpc.body)}`,
+  );
+
+  const trustedCreatePrison = await rest('rpc/create_prison', {
+    trusted: true,
+    method: 'POST',
+    body: { p_prison_id: null, p_game_version: 'lockstate-0.0.0', p_slot_index: 0 },
+  });
+  check(
+    'nor create_prison: slot creation derives its authorization from auth.uid(), which a trusted caller has none of',
+    trustedCreatePrison.status === 401 || trustedCreatePrison.status === 403 || trustedCreatePrison.status === 404,
+    `${trustedCreatePrison.status} ${JSON.stringify(trustedCreatePrison.body)}`,
   );
 
   const failed = checks.filter((entry) => entry.ok === false);

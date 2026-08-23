@@ -11,9 +11,9 @@ so every file under `supabase/` was shipped as reviewed-by-inspection
 design. That gap is now closed except where noted:
 
 - **Executed against the real Supabase local stack:** every migration in
-  `supabase/migrations/` and all three pgTAP suites in `supabase/tests/`
-  — 63 assertions, all passing (19/19, 25/25, 19/19) — under Supabase CLI
-  2.115.0, with GoTrue, PostgREST, Storage and Realtime running:
+  `supabase/migrations/` and all four pgTAP suites in `supabase/tests/`
+  — 89 assertions, all passing (19/19, 25/25, 19/19, 26/26) — under Supabase
+  CLI 2.115.0, with GoTrue, PostgREST, Storage and Realtime running:
   ```bash
   supabase start && supabase db reset && supabase test db
   ```
@@ -21,7 +21,7 @@ design. That gap is now closed except where noted:
   carried, and it earned its keep immediately: the first run failed on the
   *first assertion* of suite 001 and exposed defect 4 below.
 - **Executed through GoTrue and PostgREST:** `pnpm verify:stack`
-  (`scripts/verify-supabase-stack.mjs`, 35/35 checks against a running
+  (`scripts/verify-supabase-stack.mjs`, 48/48 checks against a running
   stack). The pgTAP suites feed `auth.uid()` with `set_config`, so they
   cannot prove the step every policy here rests on — that GoTrue mints an
   identity and PostgREST turns its JWT into the `authenticated` role
@@ -413,37 +413,76 @@ repository, and `pnpm verify:stack` reads the publishable key from
 `supabase status` at runtime rather than holding one. No check in this
 repository uses the service-role key.
 
-## Open question: no database-tier bound on free-tier storage
+## Free-tier capacity is bounded at the database tier (issue #57)
 
-Recorded by the same security review, deliberately **not** fixed here.
-Tracked as issue #57.
+This used to be an open question here, recorded by the security review and
+deliberately not fixed inside a privilege change. It is now answered by
+[ADR 0012](./adr/0012-free-tier-cloud-save-capacity.md), and the answer is
+partly decided and partly proposed -- **the ADR is `Proposed`, not
+`Accepted`**, and the split matters.
 
-`[auth] enable_anonymous_sign_ins = true` is this project's identity model,
-so `authenticated` is effectively "anyone who can make an HTTP request" —
-a new identity costs one call to `/auth/v1/signup`. Against that:
+The problem it closes. `[auth] enable_anonymous_sign_ins = true` is this
+project's identity model, so `authenticated` is effectively "anyone who can
+make an HTTP request" — a new identity costs one call to `/auth/v1/signup`.
+Against that, `prisons_insert_own` capped *who* may insert and never *how
+many*, and `create_save_version` recorded `p_byte_size` without ever
+checking it or the length of `p_payload`, so the two need not have agreed at
+all. It is a **capacity and abuse** concern, not a confidentiality one: no
+data crosses an ownership boundary, and every check that protects one
+player's data from another is untouched.
 
-- `prisons_insert_own` enforces ownership and the `prisons_owner_slot_unique`
-  constraint prevents duplicate slot indices, but nothing caps how many
-  slots an owner may create. The five-free-slots product rule
-  (`README.md`, `src/services/entitlements/products.ts`) lives in the
-  application tier only.
-- `create_save_version` validates the revision sequence, the
-  payload/storage-path exclusivity and the idempotency key, but places no
-  bound on `p_byte_size` or on the length of `p_payload`.
+| Limit | State | Where the number lives |
+| --- | --- | --- |
+| 5 free slots, ceiling 50 total | **Decided already** — an existing product rule (`README.md`, `BASE_SAVE_SLOTS`/`MAX_TOTAL_SAVE_SLOTS`). #57 only makes it authoritative. | `public.base_save_slot_capacity()`, `public.max_save_slot_capacity()` |
+| 4 MiB per stored save version | **Proposed, pending approval.** Implemented with the proposed figure. | `public.max_save_payload_bytes()` |
+| 20 retained revisions per prison | **Proposed. Not implemented** — needs a pruner. | — |
+| 256 MiB of payload per account | **Proposed. Not implemented** — depends on the two above. | — |
 
-So the storage one free identity can consume is unbounded at the tier that
-is actually authoritative. This is a **capacity and abuse** concern, not a
-confidentiality one: no data crosses an ownership boundary, and the checks
-that protect *other players'* data are unaffected. Fixing it properly is a
-product decision (what the free tier is, what happens at the ceiling, how a
-rejection surfaces in the UI) plus a schema change, and both belong with
-the entitlement-enforcement work rather than inside a privilege fix. It is
-noted here so the next person to touch slot creation does not assume the
-database is already holding this line.
+How it is enforced:
+
+- **`prisons_enforce_slot_capacity`**, a `BEFORE INSERT OR UPDATE OF
+  owner_id` trigger, counts an owner's prisons under a per-owner advisory
+  lock (a plain count-then-insert is a race) and refuses with SQLSTATE
+  `LS001`. Capacity comes from `public.entitlements` — the projection the
+  client may read and may not write — via
+  `public.account_save_slot_capacity()`, never from anything the client
+  sends.
+- **`public.create_prison()`** is the front door: `SECURITY DEFINER`, owner
+  taken from `auth.uid()` with no parameter to forge, returning a
+  discriminated `status` of `created` / `at_slot_limit` / `slot_taken` plus
+  `used_slots` and `capacity` — the same shape `create_save_version()`
+  already uses for `conflict`, and what a "4 of 5 slots used" surface needs.
+  The trigger still fires underneath it; that redundancy is the point, and
+  it is why `INSERT` on `prisons` is deliberately still granted.
+- **`save_versions_enforce_size`**, a `BEFORE INSERT` trigger, measures the
+  stored payload, **overwrites the caller's `byte_size` claim with the
+  measurement**, and refuses anything over the limit with `LS002`.
+  `byte_size` is a fact now rather than an assertion.
+
+Both refusals are distinguishable rather than opaque. Measured against the
+running stack, PostgREST maps these user-defined SQLSTATEs to **HTTP 400**
+and returns `{"code":"LS001","details":"used_slots=5 capacity=5", …}`.
+
+**Over-capacity degrades read-only.** The triggers fire on creation and on
+nothing else, so an account that loses capacity — refund, chargeback,
+expiry — keeps every prison it has, keeps listing them, keeps pulling them
+and keeps saving to them. Only creating another slot is refused. That is the
+same commitment [TRUSTED_SERVICES.md](./TRUSTED_SERVICES.md) makes for the
+client-side projection, asserted in
+`supabase/tests/004_free_tier_capacity.test.sql` and over HTTP in
+`pnpm verify:stack`.
+
+Two things are explicitly **not** closed. Revision history is still
+unbounded within a bounded slot (ADR 0012 §5–§6), and anonymous-identity
+churn — GoTrue signup rate limits, cleanup of abandoned anonymous accounts
+— is a separate lever that #57 names and this work records rather than
+implements (ADR 0012 §7).
 
 ## What is out of scope here
 
 Payments/paid-slot checkout; trusting client-submitted values for
 leaderboards; realtime collaborative simulation; automatic destructive
 conflict resolution (every conflict requires the explicit choices above);
-a database-tier cap on free-tier storage (see the open question above).
+revision-history depth, a total-bytes-per-account cap and
+anonymous-identity churn (all three proposed but deliberately not
+implemented — see ADR 0012 §5–§7).
