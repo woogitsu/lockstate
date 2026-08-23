@@ -41,6 +41,30 @@ export interface MessagePortLike {
  */
 export const CLOCK_STATE_PUBLISH_INTERVAL_MS = 250;
 
+/**
+ * How `handleInitialize` reports a snapshot it refuses to restore: correlated
+ * to the `simulation/initialize` that carried it, and leaving the worker
+ * usable.
+ *
+ * Refusing a snapshot installs nothing -- `_runtime` and `_kernel` are only
+ * assigned once `restoreSimulationRuntime` has returned -- so the worker is
+ * still `uninitialized` in substance, and reporting it as `faulted` would
+ * make one bad save cost the whole tab: `handleInitialize` accepts only
+ * `uninitialized`, so every later load, including one from a generation that
+ * is perfectly good, would be refused as `already-initialized`. The session
+ * layer's recovery walk (`SessionController.loadPrison`) depends on being
+ * able to hand this same worker the previous generation.
+ *
+ * This agrees with ADR 0006's own definition of the state rather than
+ * stretching it: `faulted` is "reached when an unhandled exception or protocol
+ * decode error occurs", and a snapshot this build declines to restore is
+ * neither -- it is a request rejected with its reason, which is what
+ * `protocol/error` is for.
+ */
+function rejectedSnapshotFault(requestMessageId: string): { readonly replyTo: string; readonly recoverable: boolean } {
+  return { replyTo: requestMessageId, recoverable: true };
+}
+
 export class SimulationWorkerStateMachine {
   private _state: WorkerState = 'uninitialized';
   private _kernel: Kernel | null = null;
@@ -144,16 +168,49 @@ export class SimulationWorkerStateMachine {
     this._publishedAtMs = nowMilliseconds;
   }
 
-  public fault(code: string, message: string): void {
-    this.transition('faulted');
+  /**
+   * Raises a structured protocol fault.
+   *
+   * `replyTo` is the id of the request that provoked the fault, and every
+   * caller handling a specific message passes it. ADR 0003 decision 2: "A
+   * protocol fault may optionally identify the rejected request", and its
+   * 2026-08-23 amendment states the rule the two forms follow -- "A fault
+   * that *was* prompted by a request is free to carry the `replyTo` its
+   * schema already permits", while an unsolicited one must not present
+   * itself as a request response. So a fault raised inside the tick loop or
+   * by an undecodable message (whose `messageId` this worker never
+   * validated) stays uncorrelated rather than naming a request id it cannot
+   * know: `WorkerSessionHost` resolves pending requests by `replyTo`, so a
+   * fabricated one would settle whichever request happened to share the id.
+   *
+   * Correlating the ones that *are* answers matters because the main thread
+   * discards an uncorrelated `protocol/error`: without a `replyTo` the
+   * request it rejected stayed pending until its 15 s timeout and the player
+   * was told the worker had not replied, rather than what was actually
+   * wrong.
+   *
+   * `recoverable` says whether this worker can still be used. It is false by
+   * default and the worker transitions to `faulted`; a caller passes true
+   * only where the fault rejected a request *without* touching simulation
+   * state, so leaving the worker unusable would strand the session for a
+   * failure it did not cause.
+   */
+  public fault(
+    code: string,
+    message: string,
+    options: { readonly replyTo?: string; readonly recoverable?: boolean } = {},
+  ): void {
+    const recoverable = options.recoverable ?? false;
+    if (!recoverable) this.transition('faulted');
     this.post({
       protocolVersion: SIMULATION_PROTOCOL_VERSION,
       messageId: crypto.randomUUID(),
+      ...(options.replyTo === undefined ? {} : { replyTo: options.replyTo }),
       kind: 'protocol/error',
       payload: {
         code: code as any, // mapping code to protocol fault code
         message,
-        recoverable: false,
+        recoverable,
       }
     });
   }
@@ -184,13 +241,13 @@ export class SimulationWorkerStateMachine {
           break;
       }
     } catch (e) {
-      this.fault('internal-error', e instanceof Error ? e.message : String(e));
+      this.fault('internal-error', e instanceof Error ? e.message : String(e), { replyTo: msg.messageId });
     }
   }
 
   private handleHandshake(msg: Extract<MainToWorkerMessage, { kind: 'protocol/handshake' }>): void {
     if (this._state !== 'uninitialized') {
-      return this.fault('already-initialized', 'Worker is already past handshake.');
+      return this.fault('already-initialized', 'Worker is already past handshake.', { replyTo: msg.messageId });
     }
     
     this.post({
@@ -218,7 +275,7 @@ export class SimulationWorkerStateMachine {
 
   private handleInitialize(msg: Extract<MainToWorkerMessage, { kind: 'simulation/initialize' }>): void {
     if (this._state !== 'uninitialized') {
-      return this.fault('already-initialized', 'Kernel is already initialized.');
+      return this.fault('already-initialized', 'Kernel is already initialized.', { replyTo: msg.messageId });
     }
 
     if (msg.payload.source.kind === 'new') {
@@ -236,16 +293,17 @@ export class SimulationWorkerStateMachine {
         return this.fault(
           'snapshot-incompatible',
           `Cannot restore snapshot "${snapshot.schemaId}" v${snapshot.schemaVersion}; this build understands "${SESSION_SNAPSHOT_SCHEMA_ID}" v${SESSION_SNAPSHOT_SCHEMA_VERSION}.`,
+          rejectedSnapshotFault(msg.messageId),
         );
       }
       if (snapshot.transport !== 'structured-clone') {
-        return this.fault('snapshot-incompatible', `Session snapshots must use the structured-clone transport, got "${snapshot.transport}".`);
+        return this.fault('snapshot-incompatible', `Session snapshots must use the structured-clone transport, got "${snapshot.transport}".`, rejectedSnapshotFault(msg.messageId));
       }
 
       try {
         this._runtime = restoreSimulationRuntime(snapshot.data as unknown as SessionSnapshotBundle).runtime;
       } catch (error) {
-        return this.fault('snapshot-incompatible', `Snapshot could not be restored: ${error instanceof Error ? error.message : String(error)}`);
+        return this.fault('snapshot-incompatible', `Snapshot could not be restored: ${error instanceof Error ? error.message : String(error)}`, rejectedSnapshotFault(msg.messageId));
       }
       this._kernel = this._runtime.kernel;
     }
@@ -273,7 +331,7 @@ export class SimulationWorkerStateMachine {
 
   private handleSetClock(msg: Extract<MainToWorkerMessage, { kind: 'simulation/set-clock' }>): void {
     if (this._state !== 'paused' && this._state !== 'running') {
-      return this.fault('invalid-state', 'Cannot set clock in current state.');
+      return this.fault('invalid-state', 'Cannot set clock in current state.', { replyTo: msg.messageId });
     }
 
     const now = this.performanceNow();
@@ -297,7 +355,7 @@ export class SimulationWorkerStateMachine {
 
   private handleSubmitCommand(msg: Extract<MainToWorkerMessage, { kind: 'simulation/submit-command' }>): void {
     if (!this._kernel) {
-      return this.fault('not-initialized', 'Kernel is not initialized.');
+      return this.fault('not-initialized', 'Kernel is not initialized.', { replyTo: msg.messageId });
     }
     if (this._state === 'shutting-down' || this._state === 'faulted') {
       return; // Ignore commands during shutdown
@@ -356,7 +414,7 @@ export class SimulationWorkerStateMachine {
    */
   private handleRequestSnapshot(msg: Extract<MainToWorkerMessage, { kind: 'simulation/request-snapshot' }>): void {
     if (!this._kernel || !this._runtime) {
-      return this.fault('not-initialized', 'Kernel is not initialized.');
+      return this.fault('not-initialized', 'Kernel is not initialized.', { replyTo: msg.messageId });
     }
 
     const bundle = captureSessionSnapshot(this._runtime);

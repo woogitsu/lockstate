@@ -2,7 +2,7 @@ import type { SimulationClient } from '../../simulation/worker/client';
 import type { WorkerToMainMessage } from '../../simulation/protocol/types';
 import { SIMULATION_PROTOCOL_VERSION } from '../../simulation/protocol/types';
 import { SESSION_SNAPSHOT_SCHEMA_ID, SESSION_SNAPSHOT_SCHEMA_VERSION, type SessionSnapshotBundle } from '../../simulation/runtime/restore-session';
-import type { SessionRuntimeHost } from './runtime-host';
+import { SnapshotRestoreRejectedError, type SessionRuntimeHost } from './runtime-host';
 
 /** Injectable so tests are not tied to `crypto.randomUUID` availability. */
 export interface WorkerSessionHostOptions {
@@ -13,6 +13,26 @@ export interface WorkerSessionHostOptions {
 }
 
 const DEFAULT_REPLY_TIMEOUT_MS = 15_000;
+
+/**
+ * A `protocol/error` the worker sent in answer to one of our requests, with
+ * its fault code preserved.
+ *
+ * The code is kept because callers act on it: `startFromSnapshot` turns
+ * `snapshot-incompatible` into a `SnapshotRestoreRejectedError`, which is
+ * what tells the session layer the *save* was refused rather than the worker
+ * being unreachable. Flattening every fault into a bare `Error` would leave
+ * that distinction to string matching on a message.
+ */
+export class WorkerFaultError extends Error {
+  public constructor(
+    public readonly code: string,
+    detail: string,
+  ) {
+    super(`Simulation worker fault (${code}): ${detail}`);
+    this.name = 'WorkerFaultError';
+  }
+}
 
 /**
  * Drives the real simulation worker over the protocol, so the main thread
@@ -51,7 +71,7 @@ export class WorkerSessionHost implements SessionRuntimeHost {
 
     if (message.kind === 'protocol/error') {
       const payload = message.payload as { code?: string; message?: string };
-      entry.reject(new Error(`Simulation worker fault (${payload.code ?? 'unknown'}): ${payload.message ?? 'no detail'}`));
+      entry.reject(new WorkerFaultError(payload.code ?? 'unknown', payload.message ?? 'no detail'));
       return;
     }
     entry.resolve(message);
@@ -79,16 +99,35 @@ export class WorkerSessionHost implements SessionRuntimeHost {
     await this.initialize({ kind: 'new', masterSeed });
   }
 
+  /**
+   * A `snapshot-incompatible` fault is re-raised as
+   * `SnapshotRestoreRejectedError`, because that code is the worker saying
+   * this payload cannot be restored — and only that answer may cost the
+   * session layer a generation. A timeout, a dead worker or any other fault
+   * code propagates unchanged, so an unreachable worker never gets a good
+   * save demoted (see `SnapshotRestoreRejectedError`).
+   *
+   * The worker also stays usable after refusing a snapshot: the fault is
+   * raised as recoverable, so the next generation can be handed to the same
+   * worker rather than needing a new one.
+   */
   public async startFromSnapshot(bundle: SessionSnapshotBundle): Promise<void> {
-    await this.initialize({
-      kind: 'snapshot',
-      snapshot: {
-        transport: 'structured-clone',
-        schemaId: SESSION_SNAPSHOT_SCHEMA_ID,
-        schemaVersion: SESSION_SNAPSHOT_SCHEMA_VERSION,
-        data: bundle,
-      },
-    });
+    try {
+      await this.initialize({
+        kind: 'snapshot',
+        snapshot: {
+          transport: 'structured-clone',
+          schemaId: SESSION_SNAPSHOT_SCHEMA_ID,
+          schemaVersion: SESSION_SNAPSHOT_SCHEMA_VERSION,
+          data: bundle,
+        },
+      });
+    } catch (error) {
+      if (error instanceof WorkerFaultError && error.code === 'snapshot-incompatible') {
+        throw new SnapshotRestoreRejectedError(error.message, { cause: error });
+      }
+      throw error;
+    }
   }
 
   private async initialize(source: unknown): Promise<void> {
