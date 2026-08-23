@@ -22,7 +22,8 @@ and client-side sync/conflict policy (`src/persistence/cloud/`) are covered in
   payload: {
     kernel: { tick, expectedSequence, rngStates, commands },  // Kernel.snapshot()
     world: { ... },                                           // SparseWorld.snapshot()
-    construction: { orders, undoStack, redoStack },           // ConstructionSystem.snapshot()
+    construction: { orders, undoStack, redoStack,              // ConstructionSystem.snapshot()
+                    currentTransaction?, currentTransactionId? },  // the open build gesture, #108
     entities?: { capacity, nextAvailableIndex, maxActiveIndex,
                  generations: [[value, length], ...],         // run-length encoded
                  freeIndices: [ ... ],                        // the live free-list prefix only
@@ -61,6 +62,37 @@ use for "the current version"; `SaveEnvelopeV1`…`V3` name specific historical
 shapes and should appear only in `save-schema.ts` and `save-migrations.ts`.
 V2 exists because #50 changed the entity section; V3 because #70 added
 `simulation` — see the two version sections below.
+
+### Adding an optional field without a version bump
+
+Three payload fields have been added since their section was first written --
+`construction.orders[].edge` (#74) and `construction.currentTransaction` /
+`currentTransactionId` (#108) -- and none of them bumped the schema version.
+The conditions that make that correct, rather than merely convenient, are:
+
+- **The field is optional, and absent means what the older build already
+  did.** An order with no `edge` resolves to `DEFAULT_BUILD_EDGE`; a
+  construction snapshot with no `currentTransaction` means "no build gesture
+  is open", which is exactly what every restore assumed before the field
+  existed. So an older save needs no migration step and none is added -- the
+  same reasoning `migrateSaveEnvelopeV2ToV3` uses for its two optional
+  sections, applied to a field instead of a section.
+- **The key still has to be declared.** `buildOrderSchema` and
+  `constructionSnapshotSchema` are `.strict()`, as every object in this schema
+  is, so an undeclared key is not trimmed -- it fails the whole save. Both
+  additions existed in `ConstructionSystem` before they were nameable in the
+  schema, and until they were declared a snapshot carrying one could not be
+  saved at all.
+- **A version bump would be required instead if absence were ambiguous** --
+  if the reader could not tell "this save predates the field" from a real
+  value -- or if an existing field changed shape or meaning. That is the line
+  V2 (#50) and V3 (#70) crossed and these did not.
+
+What #108 could *not* do is repair saves already written without the field: a
+save from a build that never recorded the open gesture simply has no entry for
+it, so the newest gesture at the time of that save stays outside the undo
+history. The fix stops the loss; it does not reconstruct it, and a migration
+that invented an entry would be asserting a gesture the save never recorded.
 
 ### What is deliberately excluded from the payload
 

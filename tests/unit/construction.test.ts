@@ -115,3 +115,32 @@ test('CancelBuildOrder command stops construction', () => {
   const order = construction.getOrder('order-cancel');
   expect(order?.state).toBe('cancelled');
 });
+
+test('restore copies the snapshot it is given, so a restored session cannot write back into a stored save', () => {
+  // A snapshot is not scratch space: the same object is what
+  // `createSaveEnvelope` checksums and what a pending cloud sync still holds
+  // after the restore. A restored order that shared its `materialsAllocated`
+  // array with the snapshot would let the live session edit a save that has
+  // already been checksummed, so the payload written to storage would no
+  // longer match the hash taken over it.
+  const world = new SparseWorld(32);
+  world.ensureMetadata({ x: chunkCoordinate(0), y: chunkCoordinate(0) });
+  const construction = new ConstructionSystem(world);
+
+  const order = createBuildOrder('order-alias', 'wall-brick', { x: tileCoordinate(0), y: tileCoordinate(0) });
+  construction.submitOrder(order);
+  order.materialsAllocated.push({ itemId: 'item.brick', quantity: 2 });
+
+  const snapshot = construction.snapshot();
+
+  const restored = new ConstructionSystem(new SparseWorld(32));
+  restored.restore(snapshot);
+
+  const restoredOrder = restored.getOrder('order-alias');
+  expect(restoredOrder?.materialsAllocated).toEqual([{ itemId: 'item.brick', quantity: 2 }]);
+
+  // The live session now consumes more material against that order.
+  restoredOrder?.materialsAllocated.push({ itemId: 'item.steel', quantity: 1 });
+
+  expect(snapshot.orders[0]?.materialsAllocated).toEqual([{ itemId: 'item.brick', quantity: 2 }]);
+});

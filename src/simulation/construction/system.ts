@@ -9,6 +9,30 @@ export interface ConstructionSnapshot {
   readonly orders: readonly BuildOrder[];
   readonly undoStack: readonly (readonly string[])[];
   readonly redoStack: readonly (readonly string[])[];
+  /**
+   * The gesture that has not been closed off yet -- the top of the undo
+   * history, even though it is not on `undoStack` yet (#108).
+   *
+   * `registerTransactionOrder` keeps the newest gesture in a buffer and only
+   * pushes it onto `undoStack` when a *different* transaction id arrives, or
+   * when `undo()` itself flushes it. Nothing else flushes it: there is no
+   * tick- or time-based commit. So after any build gesture the buffer is
+   * non-empty, and a snapshot that omitted it lost that gesture -- the first
+   * `undo()` after a restore then reached past it and cancelled the
+   * *previous* gesture instead.
+   *
+   * Both fields are optional and absent when there is no open gesture, which
+   * is also exactly what a save written before they existed looks like; see
+   * `restore()`.
+   */
+  readonly currentTransaction?: readonly string[];
+  /**
+   * The transaction id the open gesture belongs to, so a further segment of
+   * the same gesture arriving after a restore rejoins it instead of opening a
+   * second one. Absent when the open gesture carries no id, which is what
+   * `registerTransactionOrder(id, undefined)` produces.
+   */
+  readonly currentTransactionId?: string;
 }
 
 /**
@@ -333,6 +357,20 @@ export class ConstructionSystem implements SystemRegistration {
       orders,
       undoStack: this.undoStack.map((transaction) => [...transaction]),
       redoStack: this.redoStack.map((transaction) => [...transaction]),
+      // The open gesture is emitted, not committed: capture reads state and
+      // never changes it (`captureSessionSnapshot`, "Reads only the runtime's
+      // own snapshot methods"), so pushing the buffer onto `undoStack` here
+      // would make *saving* change the live session's undo granularity.
+      //
+      // Spread rather than an explicit `undefined`, for the same reason
+      // `createBuildOrder` spreads `edge`: `exactOptionalPropertyTypes` is
+      // on, and a key holding `undefined` reaches `computeSaveChecksum` but
+      // does not survive the JSON round trip into storage, so the reloaded
+      // payload would hash differently from the one that was checksummed.
+      // A session with no open gesture therefore emits exactly the object it
+      // emitted before this field existed.
+      ...(this.currentTransaction.length === 0 ? {} : { currentTransaction: [...this.currentTransaction] }),
+      ...(this.currentTransactionId === undefined ? {} : { currentTransactionId: this.currentTransactionId }),
     };
   }
 
@@ -343,7 +381,11 @@ export class ConstructionSystem implements SystemRegistration {
     }
     this.undoStack = data.undoStack.map((transaction) => [...transaction]);
     this.redoStack = data.redoStack.map((transaction) => [...transaction]);
-    this.currentTransaction = [];
-    this.currentTransactionId = undefined;
+    // A save written before `currentTransaction` existed has neither key, and
+    // an absent buffer means "no gesture is open" -- which is what every
+    // restore used to assume unconditionally. So the old behaviour is the
+    // default here rather than a migration step (#108).
+    this.currentTransaction = data.currentTransaction === undefined ? [] : [...data.currentTransaction];
+    this.currentTransactionId = data.currentTransactionId;
   }
 }
