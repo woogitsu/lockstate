@@ -66,12 +66,19 @@ describe('why a name cannot be derived from an entity id', () => {
     const registry = new ActorIdentityRegistry();
     const rng = loneStream(7);
 
-    const prisoner = registry.assign('prisoner', 0, rng);
-    const staff = registry.assign('staff', 0, rng);
+    registry.assign('prisoner', 0, rng);
+    registry.assign('staff', 0, rng);
+    // Named explicitly, so "the two entries are the same entry" cannot hide
+    // behind two draws that happen to be distinct.
+    registry.rename('prisoner', 0, { givenName: 'Prisoner', familyName: 'Zero' });
+    registry.rename('staff', 0, { givenName: 'Staff', familyName: 'Zero' });
 
-    expect(registry.getName('prisoner', 0)).toEqual(prisoner);
-    expect(registry.getName('staff', 0)).toEqual(staff);
-    expect(registry.size).toBe(2);
+    expect(registry.getName('prisoner', 0)).toEqual({ givenName: 'Prisoner', familyName: 'Zero' });
+    expect(registry.getName('staff', 0)).toEqual({ givenName: 'Staff', familyName: 'Zero' });
+    expect(registry.entries()).toEqual([
+      { kind: 'prisoner', entityId: 0, givenName: 'Prisoner', familyName: 'Zero' },
+      { kind: 'staff', entityId: 0, givenName: 'Staff', familyName: 'Zero' },
+    ]);
   });
 
   it('lets a name be replaced, which a recomputed one could not be', () => {
@@ -368,11 +375,13 @@ describe('identity reaches the HUD through the projections', () => {
     const named = projectPrisonerRoster(fixture.prisoners, { limit: 50 }, { identity: registry });
     expect(named.rows).toHaveLength(PRISONER_COUNT);
     for (const row of named.rows) {
+      expect(row.name).toBeDefined();
       expect(row.name).toEqual(registry.getName('prisoner', row.entityId));
     }
 
     const entityId = named.rows[0]!.entityId;
     const detail = projectPrisonerDetail(fixture.prisoners, entityId, { identity: registry })!;
+    expect(detail.name).toBeDefined();
     expect(detail.name).toEqual(registry.getName('prisoner', entityId));
     expect(projectPrisonerDetail(fixture.prisoners, entityId)!.name).toBeUndefined();
   });

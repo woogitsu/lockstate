@@ -1,7 +1,9 @@
 # ADR 0012: Reproducibility of Derived Simulation Identifiers
 
 ## Status
-Proposed
+Proposed. Extended by
+[ADR 0015](./0015-actor-identity-allocation.md), which applies the taxonomy
+below to actor names and works the category-1 case through in detail.
 
 ## Context
 

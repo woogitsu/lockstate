@@ -148,12 +148,6 @@ function assertEntityId(entityId: EntityId): void {
   }
 }
 
-function actorKindIndex(kind: ActorKind): number {
-  const index = ACTOR_KINDS.indexOf(kind);
-  if (index < 0) throw new RangeError(`Unknown actor kind: ${String(kind)}.`);
-  return index;
-}
-
 /**
  * The name RNG stream. Claimed by this module and drawn from by nothing
  * else: `prisoners.classification`, `contraband.detection` and
@@ -314,13 +308,15 @@ export class ActorIdentityRegistry implements ActorIdentitySource {
     for (const kind of ACTOR_KINDS) this.namesOf(kind).clear();
     this.fullNameCounts.clear();
 
-    // Sorted rather than trusted: a snapshot that arrived out of order must
-    // restore to the same registry a canonical one does, or two restores of
-    // equivalent saves would disagree on nothing but order.
-    const entries = [...snapshot.entries].sort(
-      (left, right) => actorKindIndex(left.kind) - actorKindIndex(right.kind) || left.entityId - right.entityId,
-    );
-    for (const entry of entries) {
+    // Deliberately *not* re-sorted first. Restoring in whatever order the
+    // snapshot arrived in is safe here because the entries are keyed, not
+    // positional: `entries()` is the only ordered read and it sorts every
+    // time, and the uniqueness bookkeeping is a count. Sorting here as well
+    // would be a defensive line no test could ever fail -- and
+    // `docs/DETERMINISM.md`'s point is that order matters where it *feeds
+    // state*, not everywhere. A duplicate is rejected below, so which of two
+    // conflicting entries would have won is never a question either.
+    for (const entry of snapshot.entries) {
       assertEntityId(entry.entityId);
       const names = this.namesOf(entry.kind);
       if (names.has(entry.entityId)) throw new RangeError(`Actor identity snapshot repeats ${entry.kind} ${entry.entityId}.`);

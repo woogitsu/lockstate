@@ -40,6 +40,15 @@ catalog defines one, its `nameKey`. Resolving a key to a translated string
 is the HUD's job. A test walks every projection and fails if any string
 value equals a translation from the default `en` catalog.
 
+An **actor name** is the one player-facing string this layer emits, and it
+is not an exception to the rule — it is outside the rule's three
+namespaces. A person's name is never authored into a catalog, never
+translated and identical in every locale; it is state that happens to be a
+string ([ADR 0015](./adr/0015-actor-identity-allocation.md)). The
+boundary test is unchanged, and `tests/unit/actor-identity.test.ts` asserts
+the whole name pool is disjoint from the `en` catalog so it stays passing
+as either side grows.
+
 ### 4. Bounded values
 
 `BoundedValue` is how a quantity stored on an internal scale reaches a
@@ -117,10 +126,23 @@ decision about what to build next.
 
 ### Identity and labelling
 
-1. **No prisoner name, portrait, age, or offence.** A prisoner is an entity
-   id, a classification, a risk tier and a `priorIncidentsAtIntake`
-   integer. A roster panel has nothing to label a row with.
-2. **No staff name.** Same for `GuardRoster`.
+1. ~~**No prisoner name.**~~ **Closed** by
+   `src/simulation/identity/` ([ADR 0015](./adr/0015-actor-identity-allocation.md)):
+   a name is an allocated identity, minted once at the intake pipeline's
+   `reception` stage from the `identity.actor-name` RNG stream and carried
+   as state — not a value derived from the entity id, which `EntityStore`
+   recycles behind a wrapping generation counter. `projectPrisonerRoster`
+   and `projectPrisonerDetail` take an optional `identity` source and emit
+   `name: { givenName, familyName }`; the row simply has no `name` when no
+   source is supplied. **Still missing: portrait, age and offence.** A
+   prisoner remains a classification, a risk tier and a
+   `priorIncidentsAtIntake` integer beyond the name.
+2. ~~**No staff name.**~~ **Closed** the same way — `projectStaff` takes the
+   same optional source. Note the lookup is keyed `(kind, entityId)`:
+   `GuardRoster` owns its own `EntityStore`, so a staff id and a prisoner id
+   collide numerically and a name cannot be looked up by id alone. Minting
+   for a hire is the caller's call, since `GuardRoster.hire` has no tick
+   context to draw from.
 3. **No message keys for any simulation enum.** The default locale catalog
    covers room, object, staff-role, item, security-grade and
    contraband-category names only. Needs, action ids, action categories,
