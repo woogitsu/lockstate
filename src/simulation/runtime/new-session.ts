@@ -11,6 +11,7 @@ import { RoomSystem } from '../rooms/system';
 import { TopologyManager } from '../rooms/topology';
 import { deriveXoshiroState } from '../rng/seed';
 import { NamedRngStreams } from '../rng/streams';
+import { DeploymentSystem, GuardRoster, PatrolSystem, SecuritySectorRegistry, type DeploymentSchedule } from '../security';
 import { chunkCoordinate } from '../world/coordinates';
 import { SparseWorld } from '../world/sparse-world';
 
@@ -46,9 +47,17 @@ export interface SimulationRuntime {
   readonly jobSystem: JobSystem;
   readonly electricity: UtilityNetwork;
   readonly water: UtilityNetwork;
+  readonly securitySectors: SecuritySectorRegistry;
+  readonly securityGuards: GuardRoster;
+  /** Mutable and empty until session/scenario setup pushes entries -- the same "no fabricated content" convention `containers`/`jobs`/`electricity`/`water` follow. `DeploymentSystem` reads this array live, so pushing into it after construction is how a scenario adds staffing requirements. */
+  readonly securitySchedules: DeploymentSchedule[];
+  readonly deploymentSystem: DeploymentSystem;
+  readonly patrolSystem: PatrolSystem;
 }
 
 const DEFAULT_PRISONER_CAPACITY = 5_000;
+/** Realistic guard headcounts are tens, not thousands (see `tests/unit/security-scale.test.ts`) -- generous headroom, not a scale target. */
+const DEFAULT_GUARD_CAPACITY = 500;
 
 /**
  * Creates the deterministic authoritative state for a new prison session.
@@ -96,10 +105,25 @@ export function createNewSimulationRuntime(masterSeed: number = 0): SimulationRu
   const electricity = new UtilityNetwork('electricity');
   const water = new UtilityNetwork('water');
 
+  // Issue #26's security substrate: no sectors, no hired guards and no
+  // deployment schedules until a session/scenario registers them (the same
+  // "no fabricated default content" convention as `containers`/`jobs`/
+  // `electricity`/`water` above). `securitySectors` cascades onto the
+  // navigation system's own `DoorRegistry` -- the only door mutation entry
+  // point #21/#22 expose -- so sector control-state changes are never a
+  // parallel/bypassing door model.
+  const securitySectors = new SecuritySectorRegistry(navigation.doors);
+  const securityGuards = new GuardRoster(DEFAULT_GUARD_CAPACITY);
+  const securitySchedules: DeploymentSchedule[] = [];
+  const deploymentSystem = new DeploymentSystem(securitySectors, securityGuards, navigation, securitySchedules);
+  const patrolSystem = new PatrolSystem(securitySectors, securityGuards, navigation);
+
   kernel.registerSystem(construction);
   kernel.registerSystem(navigation);
   prisoners.registerOn(kernel);
   kernel.registerSystem(jobSystem);
+  kernel.registerSystem(deploymentSystem);
+  kernel.registerSystem(patrolSystem);
   kernel.setCommandHandler(createConstructionCommandHandler(construction));
 
   return {
@@ -116,5 +140,10 @@ export function createNewSimulationRuntime(masterSeed: number = 0): SimulationRu
     jobSystem,
     electricity,
     water,
+    securitySectors,
+    securityGuards,
+    securitySchedules,
+    deploymentSystem,
+    patrolSystem,
   };
 }
