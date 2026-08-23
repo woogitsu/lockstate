@@ -9,11 +9,12 @@ import {
   type SaveEnvelopeV1,
   type TrustedSaveEnvelope,
 } from '../../src/persistence/save-schema';
+import { computeSaveChecksum } from '../../src/persistence/checksum';
 import { estimateSaveEnvelopeByteSize } from '../../src/persistence/size';
 import { Kernel } from '../../src/simulation/kernel/kernel';
 import { SparseWorld } from '../../src/simulation/world/sparse-world';
 import { ConstructionSystem } from '../../src/simulation/construction/system';
-import { chunkCoordinate } from '../../src/simulation/world/coordinates';
+import { chunkCoordinate, WORLD_CHUNK_SIZE_LIMIT } from '../../src/simulation/world/coordinates';
 import freshPrisonFixture from '../fixtures/persistence/save-v1-fresh-prison.json';
 import inProgressFixture from '../fixtures/persistence/save-v1-in-progress.json';
 
@@ -239,5 +240,71 @@ describe('trusted save envelopes', () => {
       (envelope as unknown as { checksum: string }).checksum = '0'.repeat(16);
     }).toThrow(TypeError);
     expect(decodeSaveEnvelope(envelope).ok).toBe(true);
+  });
+});
+
+/**
+ * Issue #102: the save schema bounds no field that an allocation is sized
+ * from except by accident. `chunkSize` was the gap — validated as any
+ * positive safe integer, and then used by `SparseWorld` to size four
+ * `size * size` byte planes per loaded chunk, so a 453-byte envelope
+ * declaring `chunkSize: 20000` decoded cleanly (Zod *and* checksum) and then
+ * allocated 1,526 MiB during restore.
+ *
+ * The checksum is no obstacle to constructing one: it is
+ * `deterministicStateHash`, an integrity check rather than a signature, so
+ * every save here carries a checksum that matches its own hostile payload.
+ */
+describe('save envelope: chunkSize is bounded at the schema, before any restore is attempted', () => {
+  const HOSTILE_CHUNK_SIZE = 20_000;
+
+  /**
+   * Built by hand rather than through `createSaveEnvelope`, which validates
+   * the payload with this very schema and so cannot produce an out-of-range
+   * one. This is the shape a corrupt record or a hand-written file has: a
+   * plain object, checksummed to match its own payload, arriving through
+   * `decodeSaveEnvelope` like any save of unknown provenance.
+   */
+  function envelopeWithChunkSize(size: number): unknown {
+    const world = new SparseWorld(32);
+    world.setOwned({ x: chunkCoordinate(0), y: chunkCoordinate(0) }, true);
+    const valid = JSON.parse(JSON.stringify(buildTestEnvelope())) as {
+      checksum: string;
+      payload: { world: { chunkSize: number } };
+    };
+    valid.payload.world.chunkSize = size;
+    valid.checksum = computeSaveChecksum(valid.payload as never);
+    return valid;
+  }
+
+  it('pins the limit, so widening it is a visible change rather than a silent one', () => {
+    // ADR 0004 selects 32x32 after benchmarking 16, 32 and 64; 64 is the
+    // largest size that decision examined.
+    expect(WORLD_CHUNK_SIZE_LIMIT).toBe(64);
+    expect(decodeSaveEnvelope(envelopeWithChunkSize(WORLD_CHUNK_SIZE_LIMIT))).toMatchObject({ ok: true });
+  });
+
+  it('rejects a chunk size above the limit as an invalid shape', () => {
+    expect(decodeSaveEnvelope(envelopeWithChunkSize(WORLD_CHUNK_SIZE_LIMIT + 1))).toMatchObject({
+      ok: false,
+      error: { code: 'invalid-shape' },
+    });
+  });
+
+  it('rejects a hostile chunk size before it can be decoded into an allocation', () => {
+    const hostile = envelopeWithChunkSize(HOSTILE_CHUNK_SIZE);
+    // Small enough to be nothing but a shape problem: the amplification all
+    // happens after the bytes are read, so no payload-size cap can catch it.
+    expect(new TextEncoder().encode(JSON.stringify(hostile)).length).toBeLessThan(1_000);
+
+    const before = process.memoryUsage().arrayBuffers;
+    expect(decodeSaveEnvelope(hostile)).toMatchObject({ ok: false, error: { code: 'invalid-shape' } });
+    expect(process.memoryUsage().arrayBuffers - before).toBeLessThan(32 * 1024 * 1024);
+  });
+
+  it('still accepts every chunk size this codebase has ever written', () => {
+    for (const size of [4, 8, 16, 32]) {
+      expect(decodeSaveEnvelope(envelopeWithChunkSize(size))).toMatchObject({ ok: true });
+    }
   });
 });

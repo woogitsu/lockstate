@@ -62,6 +62,59 @@ shapes and should appear only in `save-schema.ts` and `save-migrations.ts`.
 V2 exists because #50 changed the entity section; V3 because #70 added
 `simulation` — see the two version sections below.
 
+### Chunk size is bounded, and why that is a format decision
+
+`payload.world.chunkSize` is validated as `positive().max(WORLD_CHUNK_SIZE_LIMIT)`
+rather than merely `positive()`. The limit is `64`, and it is not a number
+picked for this schema: [ADR-0004](./adr/0004-chunk-size-selection.md) selects
+`32×32` for production after benchmarking `16`, `32` and `64`, so `64` is the
+largest chunk size the architecture has actually reasoned about. The same
+limit is enforced a second time by `coordinates.chunkSize()`, which
+`SparseWorld.fromSnapshot` calls before it allocates anything — so neither
+gate is decorative: this one rejects the value before a restore is attempted,
+that one before the first byte is allocated.
+
+The bound exists because this field *sizes allocations*. A loaded chunk owns
+four `chunkSize * chunkSize` byte planes, so a 453-byte envelope declaring
+`chunkSize: 20000` used to pass Zod **and** checksum and then allocate
+1,526 MiB during restore (measured here); at `500000` a single plane is 250 GB
+and the allocation throws a bare `RangeError: Array buffer allocation failed`.
+No payload-size cap helps: the amplification happens after the bytes are read. And the checksum is no
+obstacle to producing such a save — it is an integrity check, not a signature
+(see "Checksum") — but no attacker is needed either, because one corrupted
+byte in a stored `chunkSize` has the same effect. Issue #102.
+
+**This narrows what counts as a valid save, at every version.**
+`worldSnapshotSchema` is shared by the V1, V2 and V3 payload schemas, so a
+save declaring `chunkSize: 65` or more is now rejected as `invalid-shape`
+wherever it appears, and `SparseWorld.fromSnapshot` rejects the same value as
+a `WorldSnapshotError`. Under `AGENTS.md` boundary 7 that is a format
+decision, so it is recorded here rather than left in a schema line:
+
+- **No migration step is added and `SAVE_SCHEMA_VERSION` stays at 3**, because
+  there is no save in the field to migrate. `chunkSize` is always written from
+  a live `SparseWorld`, and the only production construction site is
+  `createNewSimulationRuntime`, which uses `32`; the widest value anywhere in
+  this repository, tests included, is `32`, and both checked-in V1 fixtures
+  carry `32`. The set of saves this codebase has ever written is therefore
+  unaffected — the narrowing removes only values no writer could produce.
+- **A hand-written, corrupt or synthesised save above the limit now fails at
+  the decode boundary** with `invalid-shape`, where before it decoded and
+  failed (or stalled) during restore. That is the intended change: it fails
+  where the repository's generation rollback can act on it, and since #103
+  a restore failure is recoverable too.
+- **Raising the limit later is a schema widening, not a migration**: older
+  saves stay valid, and `tests/unit/persistence-save-schema.test.ts` pins the
+  current value so the change has to be deliberate.
+
+What this does **not** bound is the *number* of chunks. `worldSnapshotSchema.chunks`
+and `ownedChunks` are still unbounded arrays, so a large-but-honest save still
+allocates in proportion to its own size (issue #102 measured 648 MB from a
+3.7 MB save with 40,000 loaded chunks). That is a cap on how big a prison may
+be — a gameplay and world-extent question with no ADR behind it yet — rather
+than a bound on a field that lies about its own cost, so it is deliberately
+not decided here.
+
 ### What is deliberately excluded from the payload
 
 Every entry here is an exclusion with a stated reason, not a gap. The rule
@@ -569,7 +622,7 @@ single generic failure:
 
 | Code | Meaning |
 | --- | --- |
-| `invalid-shape` | Not an object, missing/non-numeric `saveSchemaVersion`, or fails its declared version's schema (includes malformed/truncated saves and `updatedAt < createdAt`). |
+| `invalid-shape` | Not an object, missing/non-numeric `saveSchemaVersion`, or fails its declared version's schema (includes malformed/truncated saves, `updatedAt < createdAt`, and a `world.chunkSize` above `WORLD_CHUNK_SIZE_LIMIT`). |
 | `unsupported-version` | `saveSchemaVersion` is newer than the latest version this build knows about. |
 | `no-migration-path` | A declared or intermediate version has no registered schema/migration (e.g. version `0`, or a gap in the chain). |
 | `migration-produced-invalid-output` | A migration step ran but its output failed the destination version's schema — a bug in the migration, not the input. |

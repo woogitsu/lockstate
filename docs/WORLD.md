@@ -8,6 +8,8 @@ Tile and chunk coordinates are safe integers. Tile-to-chunk conversion uses math
 
 Per [ADR-0004](./adr/0004-chunk-size-selection.md), `32×32` logical tiles (`1024` tiles) is the default production chunk size, backed by benchmarks comparing `16×16`, `32×32` and `64×64` candidates across sparse-edge and dense workloads.
 
+Chunk size is also **bounded above**, at `WORLD_CHUNK_SIZE_LIMIT` (`64`, ADR-0004's largest benchmarked candidate). `chunkSize()` rejects anything larger, and both the `SparseWorld` constructor and `SparseWorld.fromSnapshot` call it, so a live world and a restored one pass through the same limit. The bound exists because the value sizes allocations rather than merely describing them: a loaded chunk owns four `size * size` byte planes, so an unbounded `chunkSize` let a few hundred bytes of snapshot ask for gigabytes (issue #102: a 453-byte save envelope declaring `chunkSize: 20000` decoded cleanly and then allocated 1,526 MiB of `ArrayBuffer`, measured here; at `chunkSize: 500000` the plane is 250 GB and the allocation itself throws a bare `RangeError: Array buffer allocation failed`). At `64` the worst case is 16 KiB per loaded chunk. See "Chunk size is bounded, and why that is a format decision" in [PERSISTENCE.md](./PERSISTENCE.md) for what this means for saves.
+
 ## Terrain layers
 
 Terrain definitions are data-driven records with stable string IDs, packed numeric IDs (0..255), and gameplay properties (`buildable`, `walkable`, `movementCost`, `isWater`).
@@ -99,7 +101,7 @@ pricing, selection and UI; it is not the ownership test.
 
 `WorldSnapshotV1` contains:
 - `version`: snapshot format version (`1`),
-- `chunkSize`: chunk dimension (default `32`),
+- `chunkSize`: chunk dimension (default `32`, at most `WORLD_CHUNK_SIZE_LIMIT`),
 - `ownedChunks`: sorted list of owned chunk positions,
 - `chunks`: sorted chunk records with revisions and optional RLE terrain,
 - `parcels`: sorted registered parcel definitions,

@@ -4,8 +4,10 @@ import {
   decodeTerrainRle,
   encodeTerrainRle,
   SparseWorld,
+  WORLD_CHUNK_SIZE_LIMIT,
   WorldSnapshotError,
   chunkCoordinate,
+  chunkSize,
   chunkLocalToTile,
   localTileCoordinate,
   tileCoordinate,
@@ -229,5 +231,94 @@ describe('sparse world snapshots', () => {
         extra: true,
       }),
     ).toThrow(WorldSnapshotError);
+  });
+});
+
+/**
+ * Issue #102: `chunkSize` used to be validated as any "positive safe
+ * integer", and `SparseWorld` sizes four `size * size` byte planes per loaded
+ * chunk from it — so a snapshot of a few hundred bytes declaring
+ * `chunkSize: 20000` allocated 1,526 MiB before anything questioned the value.
+ *
+ * These tests assert the bound rejects such a snapshot *before* the
+ * allocation, not after it: they measure `arrayBuffers` across the call, so a
+ * fix that threw only once the planes existed would fail them.
+ */
+describe('chunk size is bounded, and the bound is checked before anything is allocated', () => {
+  const HOSTILE_CHUNK_SIZE = 20_000;
+  /** 1,526 MiB is what the unbounded version allocated here; 32 MiB is generous headroom for the rest of the call. */
+  const ALLOCATION_HEADROOM_BYTES = 32 * 1024 * 1024;
+
+  function allocatedDuring(work: () => void): { readonly bytes: number; readonly error: unknown } {
+    const before = process.memoryUsage().arrayBuffers;
+    let error: unknown;
+    try {
+      work();
+    } catch (thrown) {
+      error = thrown;
+    }
+    return { bytes: process.memoryUsage().arrayBuffers - before, error };
+  }
+
+  it('pins the limit to ADR 0004\'s largest benchmarked chunk size', () => {
+    expect(WORLD_CHUNK_SIZE_LIMIT).toBe(64);
+    // Every size the ADR examined stays constructible, and 32 is what
+    // `createNewSimulationRuntime` actually uses.
+    for (const size of [1, 4, 8, 16, 32, 64]) {
+      expect(new SparseWorld(size).tileChunkSize).toBe(size);
+    }
+  });
+
+  it('rejects a chunk size above the limit instead of sizing an allocation from it', () => {
+    expect(() => chunkSize(HOSTILE_CHUNK_SIZE)).toThrow(RangeError);
+    expect(() => chunkSize(WORLD_CHUNK_SIZE_LIMIT + 1)).toThrow(RangeError);
+    expect(() => new SparseWorld(HOSTILE_CHUNK_SIZE)).toThrow(RangeError);
+  });
+
+  it('refuses a hostile snapshot without allocating from its chunk size', () => {
+    const hostile = {
+      version: 1,
+      chunkSize: HOSTILE_CHUNK_SIZE,
+      ownedChunks: [],
+      // One loaded chunk with no terrain arrays at all: the whole cost comes
+      // from `ensureStorage` sizing four planes from `chunkSize`.
+      chunks: [{ x: 0, y: 0, lifecycle: 'loaded', geometryRevision: 0, contentRevision: 0, dirty: false }],
+    };
+
+    const { bytes, error } = allocatedDuring(() => {
+      SparseWorld.fromSnapshot(hostile);
+    });
+
+    expect(error).toBeInstanceOf(WorldSnapshotError);
+    expect(bytes).toBeLessThan(ALLOCATION_HEADROOM_BYTES);
+  });
+
+  it('refuses a hostile chunk size carried by an RLE-encoded chunk too', () => {
+    // `decodeTerrainRle` allocates `expectedLength` up front, and
+    // `fromSnapshot` derives that from `chunkSize` — so the bound has to be
+    // checked before the RLE path as well, not only before `ensureStorage`.
+    const hostile = {
+      version: 1,
+      chunkSize: HOSTILE_CHUNK_SIZE,
+      ownedChunks: [],
+      chunks: [
+        {
+          x: 0,
+          y: 0,
+          lifecycle: 'loaded',
+          geometryRevision: 0,
+          contentRevision: 0,
+          dirty: false,
+          terrain: [[0, HOSTILE_CHUNK_SIZE * HOSTILE_CHUNK_SIZE]],
+        },
+      ],
+    };
+
+    const { bytes, error } = allocatedDuring(() => {
+      SparseWorld.fromSnapshot(hostile);
+    });
+
+    expect(error).toBeInstanceOf(WorldSnapshotError);
+    expect(bytes).toBeLessThan(ALLOCATION_HEADROOM_BYTES);
   });
 });

@@ -8,6 +8,7 @@ import {
   tickSchema,
   uint32Schema,
 } from '../simulation/protocol/types';
+import { WORLD_CHUNK_SIZE_LIMIT } from '../simulation/world/coordinates';
 import { WORLD_SNAPSHOT_VERSION } from '../simulation/world/sparse-world';
 import { MigrationChain, type MigrationError, type MigrationErrorCode } from './migration';
 import { zodVersionSchema } from './zod-version-schema';
@@ -98,7 +99,16 @@ const serializedParcelSchema = z
 const worldSnapshotSchema = z
   .object({
     version: z.literal(WORLD_SNAPSHOT_VERSION),
-    chunkSize: z.number().int().positive(),
+    /**
+     * Bounded, not merely positive, because `SparseWorld` allocates from this
+     * number: four `chunkSize * chunkSize` byte planes per loaded chunk. The
+     * limit is `WORLD_CHUNK_SIZE_LIMIT` (ADR 0004's largest benchmarked size),
+     * and the same limit is enforced by `coordinates.chunkSize()` inside
+     * `SparseWorld.fromSnapshot`, so neither gate is decorative -- this one
+     * rejects the value before a restore is ever attempted, that one rejects
+     * it before the first allocation.
+     */
+    chunkSize: z.number().int().positive().max(WORLD_CHUNK_SIZE_LIMIT),
     ownedChunks: z.array(chunkPositionSchema),
     chunks: z.array(serializedChunkStateSchema),
     parcels: z.array(serializedParcelSchema).optional(),
