@@ -7,9 +7,12 @@
 -- the source of truth, with entitlements demoted to a derived projection
 -- that is never written independently.
 --
--- NOT EXECUTED in this session (no Docker/Supabase CLI available, same
--- constraint documented in docs/CLOUD_SAVE.md). Apply with
--- `supabase db reset` and run `supabase test db` before trusting it.
+-- EXECUTED against PostgreSQL 16.13 via `pnpm verify:sql` (see
+-- scripts/verify-supabase-sql.mjs), covered by
+-- supabase/tests/002_entitlement_ledger_and_challenges.test.sql. That runs
+-- against a plain Postgres prepared with a Supabase compatibility harness,
+-- not the real stack -- see docs/TRUSTED_SERVICES.md for what that does and
+-- does not prove.
 
 create table if not exists public.entitlement_events (
   event_id uuid primary key default gen_random_uuid(),

@@ -24,6 +24,7 @@
     "verify:benchmark": "pnpm benchmark:smoke && node scripts/verify-benchmark-result.mjs benchmark-results/smoke.json",
     "smoke:deployment": "node scripts/cloudflare-task.mjs build production && node scripts/verify-deployment-preview.mjs",
     "verify": "pnpm typecheck && pnpm test && node scripts/cloudflare-task.mjs build production",
+    "verify:sql": "node scripts/verify-supabase-sql.mjs",
     "verify:deployment": "node scripts/verify-cloudflare-deployment.mjs",
     "deploy": "pnpm deploy:production",
     "deploy:staging": "node scripts/cloudflare-task.mjs deploy staging",

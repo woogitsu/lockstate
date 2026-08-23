@@ -2,22 +2,29 @@
 -- the append-only entitlement ledger, its derived projection, and the
 -- challenge definition/submission tables.
 --
--- NOT EXECUTED in this session: no Docker daemon and no Supabase CLI are
--- available here (the same constraint documented in docs/CLOUD_SAVE.md for
--- the #20 schema). Run with:
---   supabase start
---   supabase db reset
---   supabase test db
--- Treat this file as reviewed-by-inspection design, not verified evidence,
--- until it has actually been run once against a local Supabase stack.
+-- EXECUTED against PostgreSQL 16.13 + pgTAP 1.3.2 (17/17 assertions) via
+-- `pnpm verify:sql`, which prepares a scratch database with
+-- scripts/sql/supabase-compat-harness.sql. That harness emulates only the
+-- roles, default grants and `auth` slice our SQL references -- it is not
+-- Supabase, so these results prove the SQL and not the hosted platform's
+-- identity layer. Running the same file under `supabase test db` against
+-- the real local stack is still the stronger check.
+
 begin;
-select plan(16);
+select plan(17);
 
 insert into auth.users (id, email) values
   ('33333333-3333-3333-3333-333333333333', 'entitled@example.test'),
   ('44444444-4444-4444-4444-444444444444', 'other@example.test');
 
 -- --- Entitlement ledger: client write paths do not exist ---
+--
+-- `throws_ok` is used in its four-argument form throughout: assert the
+-- SQLSTATE (42501 = insufficient_privilege, P0001 = raise_exception from
+-- our own triggers) and leave the message free, so a Postgres wording
+-- change cannot break the suite while the security property stays
+-- asserted. The two-argument form would compare the *message*, not act as
+-- a description.
 
 select set_config('request.jwt.claim.sub', '33333333-3333-3333-3333-333333333333', true);
 set local role authenticated;
@@ -27,6 +34,8 @@ select throws_ok(
        (user_id, product_id, capability, event_type, source, quantity, occurred_at, actor_kind, actor_id, reason)
      values ('33333333-3333-3333-3333-333333333333', 'product.save-slots.plus-5', 'save-slots',
              'grant', 'promotional', 5, now(), 'system', 'self', 'self-granted') $$,
+  '42501',
+  null,
   'an authenticated client cannot append to the entitlement ledger'
 );
 
@@ -34,12 +43,16 @@ select throws_ok(
   $$ select public.record_entitlement_event(
        '33333333-3333-3333-3333-333333333333', 'product.save-slots.plus-5', 'save-slots', 'grant',
        'promotional', 5, null, null, now(), 'system', 'self', 'self-granted', null) $$,
+  '42501',
+  null,
   'an authenticated client cannot execute record_entitlement_event'
 );
 
 select throws_ok(
   $$ update public.entitlements set value = '{"grantedSaveSlots": 45, "ledgerRevision": 1}'::jsonb
      where user_id = '33333333-3333-3333-3333-333333333333' $$,
+  '42501',
+  null,
   'an authenticated client cannot write its own entitlement projection'
 );
 
@@ -81,6 +94,8 @@ select is(
 select throws_ok(
   $$ update public.entitlement_events set quantity = 45
      where user_id = '33333333-3333-3333-3333-333333333333' $$,
+  'P0001',
+  null,
   'the ledger is append-only even for a privileged connection'
 );
 
@@ -141,6 +156,8 @@ select throws_ok(
         verification_status, ranked_score)
      values ('33333333-3333-3333-3333-333333333333', 'challenge.first-intake', 1, 'fedcba9876543210',
              '{}'::jsonb, '{"score":9999}'::jsonb, 'verified', 9999) $$,
+  '42501',
+  null,
   'a client cannot insert an already-verified submission'
 );
 
@@ -174,6 +191,8 @@ update public.challenge_submissions
 select throws_ok(
   $$ update public.challenge_submissions set verification_status = 'rejected', rejection_code = 'metrics-mismatch'
      where evidence_hash = 'fedcba9876543210' $$,
+  'P0001',
+  null,
   'a settled submission cannot be re-verified'
 );
 

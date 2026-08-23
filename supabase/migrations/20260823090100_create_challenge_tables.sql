@@ -3,9 +3,12 @@
 -- submit evidence; it can never mark its own result verified, never write
 -- a score, and never see another account's submission.
 --
--- NOT EXECUTED in this session (no Docker/Supabase CLI available -- same
--- constraint as docs/CLOUD_SAVE.md). Apply with `supabase db reset` and
--- run `supabase test db` before relying on it.
+-- EXECUTED against PostgreSQL 16.13 via `pnpm verify:sql` (see
+-- scripts/verify-supabase-sql.mjs), covered by
+-- supabase/tests/002_entitlement_ledger_and_challenges.test.sql. That runs
+-- against a plain Postgres prepared with a Supabase compatibility harness,
+-- not the real stack -- see docs/TRUSTED_SERVICES.md for what that does and
+-- does not prove.
 
 -- Published, signed definitions. Public read: the definition is meant to
 -- be verifiable offline by anyone, which is precisely why it is signed.

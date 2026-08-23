@@ -9,27 +9,71 @@ and threat model) and [ADR 0009](./adr/0009-challenge-verification-strategy.md)
 [TELEMETRY.md](./TELEMETRY.md); localization has
 [LOCALIZATION.md](./LOCALIZATION.md).
 
-## What could and could not be executed in this environment
-
-Same constraint as [CLOUD_SAVE.md](./CLOUD_SAVE.md), stated again because
-it decides what counts as evidence here:
+## What was and was not executed
 
 - **Fully implemented and unit-tested:** everything under `src/services/`.
   It is pure TypeScript with injected ports, so the verification pipeline,
   ledger fold, webhook processing, projection policy, telemetry controls
   and localization runtime are all exercised in Node
   (`tests/unit/services-*.test.ts`).
-- **Not executed, reviewed by inspection only:**
-  `supabase/migrations/20260823090000_create_entitlement_events.sql`,
-  `supabase/migrations/20260823090100_create_challenge_tables.sql` and
-  `supabase/tests/002_entitlement_ledger_and_challenges.test.sql`. There is
-  no Docker daemon or Supabase CLI in this environment. Run them with
-  `supabase start && supabase db reset && supabase test db` before relying
-  on the schema.
+- **Executed against a real PostgreSQL 16 + pgTAP:** the migrations in
+  `supabase/migrations/` and `supabase/tests/002_entitlement_ledger_and_challenges.test.sql`
+  (17/17 assertions). Reproduce with:
+  ```bash
+  # Debian/Ubuntu: apt-get install postgresql-16 postgresql-16-pgtap
+  pnpm verify:sql               # as a superuser role, or set DATABASE_URL
+  ```
+  `scripts/verify-supabase-sql.mjs` applies every migration in order and
+  runs every pgTAP suite against a scratch database prepared by
+  `scripts/sql/supabase-compat-harness.sql`.
+- **Still NOT executed:** anything against the real Supabase stack. The
+  harness emulates only the roles, default grants and the slice of the
+  `auth` schema our SQL references. It reproduces no GoTrue behaviour, no
+  JWT verification, no PostgREST, no Storage and no Realtime, so it proves
+  the SQL and proves nothing about how the hosted platform issues the
+  identity those policies read. `supabase start && supabase db reset &&
+  supabase test db` remains the stronger check and has never been run:
+  the Docker daemon starts fine in the environments used so far, but image
+  layers cannot be pulled (the registry CDN is blocked by network policy),
+  so the local stack cannot come up.
 - **Deliberately not built:** the deployed server functions themselves (the
   Edge Function/Worker handlers), a payment provider integration, a replay
   runner and a telemetry ingestion endpoint. Each is either out of scope
   for #36 or gated on a decision this issue does not make.
+
+## Known failing suite: `001_rls_and_save_version_rpc.test.sql` (issue #20)
+
+`pnpm verify:sql` currently exits non-zero, and **not because of anything
+in issue #36**. Running #20's SQL for the first time surfaced two defects
+in the already-merged cloud-save schema. They are recorded here because the
+command is red until someone fixes them; the fix belongs to #20, not to
+this issue.
+
+1. **`create_save_version()` fails on every call.** Its `returns table
+   (... revision int, checksum text)` declares OUT parameters whose names
+   collide with the columns used in
+   `select id, revision ... where prison_id = p_prison_id and checksum = p_checksum`.
+   PostgreSQL raises `42702 column reference "revision" is ambiguous`
+   before any branch is taken, so the only write path for a cloud save
+   cannot succeed. Fix: alias the table (`from public.save_versions sv`)
+   and qualify the references, or declare `#variable_conflict use_column`.
+
+2. **The column-level `REVOKE` on `prisons` does not do what the migration
+   says.** `has_table_privilege('authenticated','public.prisons','UPDATE')`
+   is `true` after the migration: Supabase's default grant is table-level
+   `ALL`, and PostgreSQL cannot subtract a single column's privilege from a
+   table-level grant. An authenticated owner can therefore `PATCH` their own
+   `current_revision`/`current_version_id` directly and bypass the
+   optimistic-concurrency check that #20 exists to enforce — the exact
+   multi-device data-loss scenario `docs/CLOUD_SAVE.md` claims is closed.
+   Fix: `revoke update on public.prisons from authenticated, anon;` first,
+   then `grant update (<allowed columns>) ...`.
+
+Three further assertions in that suite (5, 6 and 7) are test-authoring
+mistakes rather than schema defects: RLS makes a non-matching `UPDATE`/
+`DELETE` affect zero rows instead of raising, and `throws_ok`'s two-argument
+form compares the *message* rather than acting as a description — the same
+mistake #36's own suite made and corrected.
 
 ## Trust zones
 

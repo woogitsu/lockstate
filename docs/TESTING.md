@@ -10,9 +10,12 @@ pnpm test
 pnpm test:watch
 pnpm verify
 pnpm verify:deployment
+pnpm verify:sql
 ```
 
 `pnpm test` runs the complete Vitest suite once and fails when no test is discovered. `pnpm verify` typechecks test and production sources, runs the test suite and builds the production Cloudflare package.
+
+`pnpm verify:sql` is separate because it needs a PostgreSQL server: it applies every migration in `supabase/migrations/` and runs every pgTAP suite in `supabase/tests/` against a scratch database, using the compatibility harness in `scripts/sql/`. It is the check that can run when the Supabase local stack's container images are unreachable; it proves the SQL, not the hosted platform around it (see `docs/TRUSTED_SERVICES.md`).
 
 ## Default environment
 
