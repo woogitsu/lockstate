@@ -102,6 +102,28 @@ export interface SimulationEnumGroup {
 }
 
 export const SIMULATION_ENUM_GROUPS = [
+  // -- Actors -------------------------------------------------------------
+  {
+    // Labelled rather than exempted. No projection emits `ActorKind` as a
+    // field *yet* -- the prisoner roster and the staff roster are each
+    // single-kind, so the distinction is currently carried by which panel
+    // you are looking at. But it is a player-facing distinction, not
+    // transport or diagnostic vocabulary: the moment any list mixes the two
+    // populations it needs the word, and `contraband-holder-kind`,
+    // `intelligence-target` and `informant-holder-kind` already label
+    // exactly this distinction for their own value sets. An exemption here
+    // would have to claim prisoner-vs-staff is never displayed, which is
+    // not true. Its own namespace, so a key still says which enum it came
+    // from -- the identity registry keys names by `(kind, entityId)`
+    // because the two populations have separate `EntityStore`s that both
+    // hand out id `0` (ADR 0015).
+    namespace: 'actor-kind',
+    sourceFile: 'src/simulation/identity/actor-identity.ts',
+    declaration: 'ACTOR_KINDS',
+    form: 'const-array',
+    labels: { prisoner: 'Prisoner', staff: 'Staff' },
+  },
+
   // -- Prisoners ----------------------------------------------------------
   {
     namespace: 'need',

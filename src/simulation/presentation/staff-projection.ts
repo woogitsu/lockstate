@@ -2,6 +2,7 @@ import type { ContentRegistry } from '../../content/registry';
 import type { StaffDepartment, StaffRoleDefinition } from '../../content/staff-role-catalog';
 import { defaultStaffRoleRegistry } from '../../content/staff-role-catalog';
 import type { EntityId } from '../entity/entity-store';
+import type { ActorIdentitySource } from '../identity/actor-identity';
 import type { DeploymentPhase } from '../security/guard-roster';
 import type { CoverageReportEntry } from '../security/deployment-system';
 import type { TilePosition } from '../world/coordinates';
@@ -9,7 +10,9 @@ import {
   compareStableIds,
   HUD_VIEW_MODEL_SCHEMA_VERSION,
   pageOf,
+  toActorNameViewModel,
   toTileViewModel,
+  type ActorNameViewModel,
   type HudViewModelSchemaVersion,
   type PageRequest,
   type TileViewModel,
@@ -54,6 +57,14 @@ export interface StaffProjectionSource {
 
 export interface StaffProjectionOptions {
   readonly staffRoles?: ContentRegistry<StaffRoleDefinition>;
+  /**
+   * Actor names (`src/simulation/identity/`). Optional for the same reason
+   * as on the prisoner projection: identity is a session-level registry,
+   * not part of `GuardRoster`. A staff entity id and a prisoner entity id
+   * come from two different `EntityStore`s and collide numerically, which
+   * is why the lookup is by `('staff', entityId)` and not by id alone.
+   */
+  readonly identity?: ActorIdentitySource;
 }
 
 export interface StaffAssignmentViewModel {
@@ -66,6 +77,8 @@ export interface StaffAssignmentViewModel {
 
 export interface StaffRosterRowViewModel {
   readonly entityId: EntityId;
+  /** Absent when no identity source was supplied, or this staff member was hired without one being minted. */
+  readonly name?: ActorNameViewModel;
   readonly staffRoleId: string;
   /** Absent when hired with a role id the catalog does not define. */
   readonly staffRoleNameKey?: string;
@@ -120,7 +133,9 @@ function projectRow(
   source: StaffRosterSource,
   entityId: EntityId,
   staffRoles: ContentRegistry<StaffRoleDefinition>,
+  identity: ActorIdentitySource | undefined,
 ): StaffRosterRowViewModel {
+  const name = identity?.getName('staff', entityId);
   const staffRoleId = source.getStaffRoleId(entityId);
   const role = staffRoles.getById(staffRoleId);
   const sectorId = source.getSectorId(entityId);
@@ -129,6 +144,7 @@ function projectRow(
 
   return {
     entityId,
+    ...(name !== undefined ? { name: toActorNameViewModel(name) } : {}),
     staffRoleId,
     ...(role !== undefined
       ? {
@@ -171,7 +187,7 @@ export function projectStaff(
 ): StaffViewModel {
   const staffRoles = options.staffRoles ?? defaultStaffRoleRegistry;
   const entityIds = source.staff.allGuardIds();
-  const rows = entityIds.map((entityId) => projectRow(source.staff, entityId, staffRoles));
+  const rows = entityIds.map((entityId) => projectRow(source.staff, entityId, staffRoles, options.identity));
 
   const countsByRoleId = new Map<string, number>();
   const countsByPhase = new Map<DeploymentPhase, number>();

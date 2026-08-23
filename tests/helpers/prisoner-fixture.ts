@@ -1,3 +1,4 @@
+import type { ActorIdentityMinter } from '../../src/simulation/identity/actor-identity';
 import type { Kernel } from '../../src/simulation/kernel/kernel';
 import { NavigationSystem } from '../../src/simulation/navigation/navigation-system';
 import { PrisonerOperationsRuntime } from '../../src/simulation/prisoners/prisoner-operations-runtime';
@@ -31,6 +32,8 @@ export function buildPrisonerScenarioFixture(options: {
   readonly workBudgetPerTick?: number;
   readonly agingIntervalTicks?: number;
   readonly flowFieldActivationThreshold?: number;
+  /** Optional actor-identity minting; omitted, intake names nobody and draws nothing (`src/simulation/identity/`). */
+  readonly identity?: ActorIdentityMinter;
 }): PrisonerScenarioFixture {
   const cellBlock = buildCellBlockFixture(options.cellCount);
   const navigation = new NavigationSystem(
@@ -44,7 +47,11 @@ export function buildPrisonerScenarioFixture(options: {
   );
   navigation.setLoadedChunks(cellBlock.chunkPositions);
 
-  const prisoners = new PrisonerOperationsRuntime({ capacity: options.capacity, navigation });
+  const prisoners = new PrisonerOperationsRuntime({
+    capacity: options.capacity,
+    navigation,
+    ...(options.identity !== undefined ? { identity: options.identity } : {}),
+  });
 
   // classifyPrisoner's scoring (classification.ts) puts a sizeable minority
   // of a synthetic, uniformly-random test population at riskTier>=3 -- a

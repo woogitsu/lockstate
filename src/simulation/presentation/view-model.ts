@@ -156,6 +156,41 @@ export function pageOf<TRow>(rows: readonly TRow[], request: PageRequest = {}): 
 }
 
 // ---------------------------------------------------------------------------
+// Actor names
+// ---------------------------------------------------------------------------
+
+/**
+ * A prisoner's or staff member's name.
+ *
+ * This is the one player-facing *string* a projection here emits, and it
+ * does not break rule 3 above. ADR 0011 separates three namespaces --
+ * stable id, message key, translated text -- and forbids simulation code
+ * from producing the third. A proper name is none of them: it is never
+ * authored into a content catalog, never translated, and identical in
+ * every locale. It is state that happens to be a string, like a room
+ * instance id, and it reaches the HUD for the same reason an id does.
+ *
+ * The distinction is exactly the one the localization-boundary test
+ * asserts: that test fails a projected string that *equals a translation*
+ * in the default `en` catalog. A name never does, and
+ * `tests/unit/actor-identity.test.ts` pins that the whole name pool is
+ * disjoint from the catalog so it stays true when either side grows.
+ * Weakening the test to make room for names would have been the wrong fix.
+ *
+ * Given and family parts stay separate: which order they read in, and
+ * whether a roster shows both, is a presentation choice, and composing
+ * them here would bake one convention into the simulation.
+ */
+export interface ActorNameViewModel {
+  readonly givenName: string;
+  readonly familyName: string;
+}
+
+export function toActorNameViewModel(name: { readonly givenName: string; readonly familyName: string }): ActorNameViewModel {
+  return { givenName: name.givenName, familyName: name.familyName };
+}
+
+// ---------------------------------------------------------------------------
 // Ordering
 // ---------------------------------------------------------------------------
 
