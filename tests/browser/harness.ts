@@ -51,12 +51,10 @@ let repository: PrisonSaveRepository | undefined;
  * write is synchronous and survives into the next load.
  */
 const LIFECYCLE_TRIGGERS_KEY = 'lockstate-harness/lifecycle-triggers';
-const LIFECYCLE_VISIBILITY_KEY = 'lockstate-harness/lifecycle-visibility';
 
 function recordLifecycleTrigger(trigger: string): void {
   const existing = sessionStorage.getItem(LIFECYCLE_TRIGGERS_KEY);
   sessionStorage.setItem(LIFECYCLE_TRIGGERS_KEY, existing === null || existing === '' ? trigger : `${existing},${trigger}`);
-  sessionStorage.setItem(LIFECYCLE_VISIBILITY_KEY, document.visibilityState);
 }
 
 const unhandledRejections: string[] = [];
@@ -585,32 +583,17 @@ const harness: LockstateBrowserHarness = {
     return { rejectionMessage, stagedWriteSurvived: readBack !== undefined };
   },
 
-  async attachLifecycleSaveHandler(prisonId: string, forceHiddenVisibility = false): Promise<void> {
+  async attachLifecycleSaveHandler(prisonId: string): Promise<void> {
     sessionStorage.removeItem(LIFECYCLE_TRIGGERS_KEY);
-    sessionStorage.removeItem(LIFECYCLE_VISIBILITY_KEY);
     const controller = new SessionController(requireRepository(), new InProcessSessionHost(), { gameVersion: GAME_VERSION });
     await controller.createPrison(prisonId);
     // No `targets` option: this is the production default from src/main.ts.
-    new LifecycleSaveHandler(controller, {
-      onAttempt: (trigger) => recordLifecycleTrigger(trigger),
-      ...(forceHiddenVisibility ? { visibilityState: (): DocumentVisibilityState => 'hidden' } : {}),
-    }).attach();
-  },
-
-  dispatchAtDocument(type: string): void {
-    document.dispatchEvent(new Event(type, { bubbles: false }));
-  },
-
-  dispatchAtWindow(type: string): void {
-    window.dispatchEvent(new Event(type, { bubbles: false }));
+    new LifecycleSaveHandler(controller, { onAttempt: (trigger) => recordLifecycleTrigger(trigger) }).attach();
   },
 
   readLifecycleObservation(): HarnessLifecycleObservation {
     const raw = sessionStorage.getItem(LIFECYCLE_TRIGGERS_KEY);
-    return {
-      triggers: raw === null || raw === '' ? [] : raw.split(','),
-      lastVisibilityState: sessionStorage.getItem(LIFECYCLE_VISIBILITY_KEY),
-    };
+    return { triggers: raw === null || raw === '' ? [] : raw.split(',') };
   },
 
   takeUnhandledRejections(): readonly string[] {

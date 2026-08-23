@@ -126,8 +126,6 @@ export interface HarnessQuotaEstimate {
 export interface HarnessLifecycleObservation {
   /** Triggers seen, in order, since `attachLifecycleSaveHandler` was called -- across navigations. */
   readonly triggers: readonly string[];
-  /** `document.visibilityState` at the moment of the last recorded trigger, or `null` if none. */
-  readonly lastVisibilityState: string | null;
 }
 
 export interface LockstateBrowserHarness {
@@ -185,31 +183,22 @@ export interface LockstateBrowserHarness {
   estimateQuota(): Promise<HarnessQuotaEstimate>;
 
   /**
-   * Drains every `unhandledrejection` seen since the last call. A storage
-   * failure must surface through the awaited promise, never as a stray
-   * rejection the page cannot handle.
-   */
-  /**
    * Builds a real `SessionController` over the real IndexedDB repository,
    * creates a session, and attaches a real `LifecycleSaveHandler` with **no**
    * `targets` option -- i.e. exactly the production wiring `src/main.ts`
    * constructs. Only `onAttempt` is supplied, purely to observe; it cannot
    * influence which target a listener lands on.
-   *
-   * `forceHiddenVisibility` additionally injects `visibilityState`, for the
-   * one case that needs a `visibilitychange` listener to act while the real
-   * page is still visible. It leaves `targets` alone.
    */
-  attachLifecycleSaveHandler(prisonId: string, forceHiddenVisibility?: boolean): Promise<void>;
-
-  /** Dispatches a non-bubbling event at `document`, so only listeners on `document` itself can see it. */
-  dispatchAtDocument(type: string): void;
-  /** Dispatches a non-bubbling event at `window`, so only listeners on `window` itself can see it. */
-  dispatchAtWindow(type: string): void;
+  attachLifecycleSaveHandler(prisonId: string): Promise<void>;
 
   /** Reads back everything the attached handler recorded, including across a navigation. */
   readLifecycleObservation(): HarnessLifecycleObservation;
 
+  /**
+   * Drains every `unhandledrejection` seen since the last call. A storage
+   * failure must surface through the awaited promise, never as a stray
+   * rejection the page cannot handle.
+   */
   takeUnhandledRejections(): readonly string[];
 }
 
