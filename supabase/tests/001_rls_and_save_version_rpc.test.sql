@@ -1,16 +1,16 @@
 -- pgTAP tests for RLS ownership boundaries and the create_save_version()
 -- optimistic-concurrency/idempotency RPC.
 --
--- NOT EXECUTED in this session: there is no Docker/Supabase CLI available
--- in this sandbox (starting the Docker daemon was blocked by the
--- environment's own safety policy). Run with:
---   supabase start
---   supabase test db
--- See docs/CLOUD_SAVE.md for the full picture; treat this file as
--- reviewed-by-inspection design, not verified evidence, until it has
--- actually been run once against a local Supabase stack.
+-- EXECUTED against PostgreSQL 16.13 + pgTAP 1.3.2 via `pnpm verify:sql`
+-- (scripts/verify-supabase-sql.mjs), which prepares a scratch database
+-- with scripts/sql/supabase-compat-harness.sql. That harness supplies only
+-- the roles, default grants and `auth` slice this SQL references -- it is
+-- not Supabase, so these results prove the SQL and not the hosted
+-- platform's identity layer. `supabase test db` against the real local
+-- stack remains the stronger check and has not been run.
+
 begin;
-select plan(15);
+select plan(16);
 
 -- Two auth.users rows to test cross-owner isolation. Supabase's local
 -- stack ships pgTAP plus a populated auth schema; inserting directly into
@@ -37,14 +37,23 @@ select is(
   'owner can select their own prison'
 );
 
+-- `throws_ok` is used in its four-argument form throughout: pgTAP's
+-- two-argument form compares the *error message*, it does not take a
+-- description, so `throws_ok(sql, 'some prose')` asserts something nobody
+-- intended. Assert the SQLSTATE (42501 = insufficient_privilege) and leave
+-- the message free.
 select throws_ok(
   $$ update public.prisons set current_revision = 999 where id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' $$,
-  'even the owner cannot write current_revision directly (column-level REVOKE)'
+  '42501',
+  null,
+  'even the owner cannot write current_revision directly'
 );
 
 select throws_ok(
   $$ update public.prisons set current_version_id = gen_random_uuid() where id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' $$,
-  'even the owner cannot write current_version_id directly (column-level REVOKE)'
+  '42501',
+  null,
+  'even the owner cannot write current_version_id directly'
 );
 
 reset role;
@@ -60,24 +69,37 @@ select is(
   'a different user cannot select another owner''s prison (row hidden by RLS, not an error)'
 );
 
-select throws_ok(
+-- RLS hides the row rather than rejecting the statement, so a foreign
+-- UPDATE/DELETE succeeds while matching nothing. Asserting an exception
+-- here would assert the wrong behaviour; what matters is that no row moved.
+select lives_ok(
   $$ update public.prisons set display_name = 'hijacked' where id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' $$,
-  'a different user cannot update another owner''s prison'
+  'a foreign UPDATE is not an error -- RLS simply matches no row'
 );
 
-select throws_ok(
+select lives_ok(
   $$ delete from public.prisons where id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' $$,
-  'a different user cannot delete another owner''s prison'
+  'a foreign DELETE is not an error -- RLS simply matches no row'
 );
 
 select throws_ok(
   $$ select * from public.create_save_version(
        'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 1, 1, 'deadbeefdeadbeef', '{}'::jsonb, null, 2
      ) $$,
+  '42501',
+  null,
   'a different user cannot advance another owner''s prison through the RPC either'
 );
 
 reset role;
+
+-- Neither statement above touched anything: checked as a role that can see
+-- the row, since user B cannot select it to prove that for itself.
+select is(
+  (select display_name is null and current_revision = 0 from public.prisons where id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
+  true,
+  'the foreign UPDATE/DELETE left the owner''s prison untouched'
+);
 
 -- --- create_save_version(): the trusted path for advancing current_* ---
 
@@ -106,12 +128,27 @@ select results_eq(
   'skipping ahead to revision 3 when current is 1 is reported as a conflict, not applied'
 );
 
+-- This assertion previously expected `conflict`, contradicting the
+-- contract the function's own header documents ("a resubmission of a
+-- checksum already recorded for this prison is treated as a successful
+-- idempotent replay"). The function is the side that is implementable:
+-- `save_versions_prison_checksum_unique` means identical content cannot
+-- exist twice under one prison, so falling through to the create path
+-- would raise a unique violation rather than produce a second row. The
+-- test was never run, so the disagreement went unnoticed.
+--
+-- OPEN QUESTION for #20, deliberately not decided here: a client that
+-- pushes unchanged content at revision N+1 is told `idempotent_replay` at
+-- revision N, so `PrisonSyncEngine` records itself as synced one revision
+-- ahead of the cloud and hits a spurious conflict on its next push.
+-- Resolving that means changing what the checksum identifies, not fixing
+-- this test.
 select results_eq(
   $$ select status, revision from public.create_save_version(
        'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 2, 1, 'checksum-rev-1', '{}'::jsonb, null, 2
      ) $$,
-  $$ values ('conflict'::text, 1) $$,
-  'reusing a checksum from a different (stale) revision attempt is still a conflict, not silently accepted as that older revision'
+  $$ values ('idempotent_replay'::text, 1) $$,
+  'resubmitting already-stored content at a different revision replays it rather than duplicating the row'
 );
 
 select results_eq(
@@ -139,6 +176,8 @@ select is(
 select throws_ok(
   $$ insert into public.save_versions (prison_id, revision, save_schema_version, checksum, payload, byte_size)
      values ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 5, 1, 'direct-insert', '{}'::jsonb, 2) $$,
+  '42501',
+  null,
   'save_versions has no direct client-facing insert path, only create_save_version()'
 );
 
