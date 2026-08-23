@@ -10,6 +10,7 @@ pnpm test
 pnpm test:watch
 pnpm test:browser
 pnpm verify
+pnpm verify:assets
 pnpm verify:deployment
 pnpm verify:sql
 ```
@@ -19,6 +20,38 @@ pnpm verify:sql
 `pnpm verify:sql` is separate from `pnpm verify` because it needs a PostgreSQL server: it applies every migration in `supabase/migrations/` and runs every pgTAP suite in `supabase/tests/` against a scratch database, using the compatibility harness in `scripts/sql/`. It is the check that can run when the Supabase local stack's container images are unreachable; it proves the SQL, not the hosted platform around it (see `docs/CLOUD_SAVE.md` for the cloud-save schema and `docs/TRUSTED_SERVICES.md` for the entitlement/challenge schema). Separate from `pnpm verify` does **not** mean optional: it is a required CI step (see "Database provisioning" below). `pnpm test:browser` runs the opt-in Chromium project (`tests/browser/`) and is deliberately **not** part of `pnpm test` or `pnpm verify`.
 
 The persistence measurement harness is likewise opt-in: `pnpm exec vitest run --config tests/perf/vitest.perf.config.ts`. Its files are named `*.perf.ts` so the default suite never collects them, and it asserts only correctness invariants — never elapsed time (see `docs/BENCHMARKING.md`).
+
+`pnpm verify:assets` is separate from `pnpm verify` for the same reason and by
+the same rule: it reads the runtime atlas PNGs, which live in Git LFS, so it is
+the only check that needs LFS content. CI runs it as a required `assets` job, so
+ordinary runs stay on a cheap pointer-only checkout (see
+[ADR-0014](./adr/0014-art-storage-and-runtime-asset-delivery.md)). Only `*.png`
+is LFS-tracked; the atlas manifests and `asset-registry.json` are plain files, so
+nothing in `pnpm verify` needs LFS content at all.
+
+Separate does **not** mean optional, and a pointer-only checkout cannot pass it
+silently. The validator recognises a Git LFS pointer and fails naming it rather
+than treating an unfetched file as valid art, and the job asserts the PNG
+signature and a size floor on every atlas before it even runs the validator. That
+assertion is not belt-and-braces theatre: it is what caught `actions/checkout`
+with `lfs: true` leaving pointers in place on this runner.
+
+The `assets` job provisions `git-lfs` with `scripts/provision-git-lfs.sh` and
+then fetches content with an explicit, path-scoped `git lfs pull` rather than
+using `lfs: true`. On a self-hosted runner the workspace is already at the target
+commit from the previous job, so checkout is a no-op, the LFS smudge filter never
+runs, and `lfs: true` downloads objects that never reach the working tree. An
+explicit pull materialises regardless, and takes a path filter so the job fetches
+only the ~17 MB it reads instead of all 55 MB. Provisioning lives in the job that
+uses it, idempotent and with no third-party apt repository, exactly as
+`scripts/provision-postgres.sh` does for `verify:sql`.
+
+The rejection modes themselves are proven in the ordinary suite.
+`tests/contract/runtime-atlas-validation.test.ts` drives the same validator
+against tiny synthetic fixtures — a missing direction, a short frame list, a
+duplicate logical id, a drifting pivot, an oversized atlas, an out-of-bounds
+rectangle, a stale registry — so a validator that stopped rejecting anything
+fails `pnpm test` without needing any art at all.
 
 ## Database provisioning for `pnpm verify:sql`
 

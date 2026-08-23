@@ -44,6 +44,19 @@ pnpm verify:deployment
 pnpm dev
 ```
 
+`pnpm verify:assets` validates the generated runtime atlases against the
+authored art contract. It reads the PNGs, which live in Git LFS, so it needs the
+`git-lfs` client and the content itself:
+
+```bash
+scripts/provision-git-lfs.sh   # installs git-lfs if missing; no-op if present
+git lfs pull
+pnpm verify:assets
+```
+
+See [`docs/ART_PIPELINE.md`](./docs/ART_PIPELINE.md) and
+[ADR-0014](./docs/adr/0014-art-storage-and-runtime-asset-delivery.md).
+
 Production-like local preview:
 
 ```bash

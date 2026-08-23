@@ -57,6 +57,65 @@ a bottom-left origin; the packer converts between them explicitly.
 asset ID to its manifest and clip names, so runtime code can discover content
 without embedding a list of authored roles.
 
+## Validation gate
+
+`tooling/validate-runtime-atlas.mjs` validates a generated batch against
+`assets/contracts/character-8-direction.contract.json` — not against numbers
+repeated inside the validator. It checks direction order and completeness, frame
+counts per clip, frame size, extrusion, foot-pivot agreement with the contract
+and across an asset's own clips, atlas dimensions against the contract limit,
+frame rectangles against the real PNG on disk, duplicate logical asset IDs
+across manifests, and `asset-registry.json` cross-references. It reports every
+failure in one pass.
+
+```bash
+pnpm verify:assets
+```
+
+CI runs it as a required `assets` job, the only check that reads image bytes; see
+[ADR-0014](./adr/0014-art-storage-and-runtime-asset-delivery.md). A checkout
+without LFS content leaves 130-byte pointer files in place of PNGs, so the
+validator detects a pointer and fails naming it rather than passing vacuously,
+and the job asserts the PNG signature and a size floor on every atlas before
+validating.
+
+That job provisions `git-lfs` with `scripts/provision-git-lfs.sh` and fetches
+with an explicit `git lfs pull --include="public/assets/actors"`, rather than
+`actions/checkout` with `lfs: true`. On a self-hosted runner whose workspace is
+already at the target commit, checkout is a no-op, so the LFS smudge filter never
+runs and `lfs: true` downloads objects that never reach the working tree. The
+explicit pull materialises regardless, and its path filter fetches only the
+runtime atlases instead of every LFS object in the repository.
+
+`tests/contract/runtime-atlas-validation.test.ts` drives that same
+implementation against tiny synthetic fixtures to prove each rejection mode
+actually rejects. Those fixtures need no LFS content, so they run in `pnpm test`.
+
+## Runtime access
+
+`src/rendering/assets/` is the runtime half of the contract. `AtlasLibrary`
+loads `asset-registry.json`, parses every manifest through Zod, and resolves
+`(assetId, clip, direction, frame)` to an image URL, source rectangle and foot
+pivot. Renderer code addresses art by logical ID only; the registry names the
+manifests and the manifests name the images, so a re-rendered atlas needs no
+renderer change. `directionFromMovement` is the single place the contract's
+"direction describes world movement, `+x` east and `+y` south" rule is encoded.
+
+Frames, pivots and direction are presentation metadata shared by the renderer
+and placement previews. They are never simulation authority.
+
+## Delivery and caching
+
+Runtime art is published from `public/`, which Vite copies verbatim without
+fingerprinting, so `/assets/actors/*` — atlases, atlas manifests and
+`asset-registry.json` alike — revalidates rather than being cached as
+`immutable`. The content-hashed sheets under `/game-content/source-art/*` are
+cached immutably because their URL changes with their bytes. `public/_headers`
+rules are exclusive, because overlapping rules concatenate into a single
+`Cache-Control` instead of overriding each other.
+`scripts/verify-deployment-preview.mjs` asserts all of this against the workerd
+preview. See [ADR-0014](./adr/0014-art-storage-and-runtime-asset-delivery.md).
+
 The supplied object sheets are built by `tooling/build-source-art-catalog.mjs`
 into `public/game-content/source-art.v1.json`. Their immutable content-hashed
 PNG filenames, SHA-256 digests, source rectangles, anchors and owner-supplied

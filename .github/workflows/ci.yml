@@ -72,3 +72,125 @@ jobs:
 
       - name: Verify generated output did not modify tracked files
         run: test -z "$(git status --porcelain)"
+
+  # Issue #32 requires that missing, inconsistent or oversized assets fail
+  # validation before build/release. `tooling/validate-runtime-atlas.mjs` reads
+  # the PNGs themselves, and `.gitattributes` routes every one of them through
+  # Git LFS, so this is the one job that needs LFS content.
+  #
+  # It is a separate job on purpose. LFS bandwidth is metered and this repository
+  # will keep growing, so the `verify` job above stays on a pointer-only checkout
+  # and never pays for it. That also keeps a pointer-only run honest rather than
+  # vacuous: the validator recognises a pointer file and fails with that message
+  # instead of treating it as valid art.
+  #
+  # Separate does not mean optional -- same precedent as `verify:sql`
+  # (docs/TESTING.md), which found three real defects the first time it was run.
+  assets:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    # Only so a failing build does not spend metered LFS bandwidth. Nothing in
+    # this job depends on `verify` having provisioned anything.
+    needs: verify
+    runs-on: [self-hosted, Linux, X64, wsl2]
+    timeout-minutes: 20
+    steps:
+      # Deliberately NOT `lfs: true`, for two measured reasons.
+      #
+      # 1. It does not work on a reused workspace. `actions/checkout` runs
+      #    `git lfs fetch` and then relies on the following `git checkout` to
+      #    smudge pointers into real files. This is a self-hosted runner, so the
+      #    workspace is already at the target commit from the `verify` job; the
+      #    checkout is a no-op, the smudge filter never runs, and the objects sit
+      #    downloaded-but-unused while the working tree keeps 130-byte pointers.
+      #    Observed in run 32637895668: LFS fetch succeeded, every atlas was
+      #    still a pointer.
+      # 2. It fetches every LFS object for the ref -- all 55 MB, including the
+      #    source sheets this gate never reads.
+      #
+      # An explicit `git lfs pull` below fixes both: it materialises regardless
+      # of whether the checkout moved anything, and it takes a path filter.
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Provision Git LFS
+        run: bash scripts/provision-git-lfs.sh
+
+      # Only the runtime atlases (~17 MB), not the ~36 MB of source sheets under
+      # public/game-content/ that this gate never opens.
+      #
+      # The credential is supplied for this command alone and removed on exit,
+      # rather than by relaxing `persist-credentials` above: this is a private
+      # repository so the transfer needs auth, but a self-hosted runner keeps its
+      # workspace between jobs and a token left in .git/config would outlive this
+      # one. This is the same config key `actions/checkout` sets for its own
+      # `git lfs fetch`, which is why git-lfs honours it.
+      - name: Fetch runtime art from Git LFS
+        env:
+          LFS_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cleanup() {
+            git config --local --unset-all 'http.https://github.com/.extraheader' 2>/dev/null || true
+          }
+          trap cleanup EXIT
+          git config --local 'http.https://github.com/.extraheader' \
+            "AUTHORIZATION: basic $(printf 'x-access-token:%s' "$LFS_TOKEN" | base64 -w0)"
+          git lfs pull --include="public/assets/actors"
+
+      # A green run must mean the validator saw pixels. `pnpm verify:assets`
+      # already refuses a pointer file, but this asserts it up front and prints
+      # the evidence, so the log answers "did LFS actually materialise?" without
+      # anyone having to trust that the later step would have caught it. A job
+      # that silently validates 3-line text stubs is worse than no job, because
+      # it manufactures confidence.
+      - name: Confirm the runtime art is image data, not LFS pointers
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          count=0
+          total=0
+          for file in public/assets/actors/*.png; do
+            count=$((count + 1))
+            if head -c 64 "$file" | grep -q 'git-lfs.github.com'; then
+              echo "::error::$file is still a Git LFS pointer; LFS content did not materialise"
+              exit 1
+            fi
+            signature="$(head -c 8 "$file" | od -An -tx1 | tr -d ' \n')"
+            if [ "$signature" != "89504e470d0a1a0a" ]; then
+              echo "::error::$file does not start with the PNG signature (got $signature)"
+              exit 1
+            fi
+            size="$(stat -c%s "$file")"
+            # An LFS pointer is ~130 bytes. Any real atlas is orders of magnitude
+            # larger; this is a floor, not a pinned size, so re-rendered art does
+            # not have to update CI.
+            if [ "$size" -lt 4096 ]; then
+              echo "::error::$file is only $size bytes, too small to be a real atlas"
+              exit 1
+            fi
+            total=$((total + size))
+            printf '%10s bytes  %s\n' "$size" "$file"
+          done
+          if [ "$count" -eq 0 ]; then
+            echo "::error::no runtime atlases were found to validate"
+            exit 1
+          fi
+          echo "OK: $count atlases, $total bytes of real image data"
+
+      - name: Setup Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: '.node-version'
+          package-manager-cache: false
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Activate pnpm
+        run: corepack prepare pnpm@11.22.0 --activate
+
+      # Uses no dependencies, so it deliberately runs without pnpm install.
+      - name: Validate runtime atlases against the authored contract
+        run: pnpm verify:assets

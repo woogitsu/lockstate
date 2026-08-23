@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
+import { existsSync } from 'node:fs';
+import { readdir } from 'node:fs/promises';
 import { createServer } from 'node:net';
 import path from 'node:path';
 import process from 'node:process';
@@ -119,6 +121,61 @@ async function stopPreview(previewProcess) {
   }
 }
 
+/**
+ * Runtime art (issue #32) is published from `public/`, so Vite never
+ * fingerprints it: `/assets/actors/actor.<role>.base.walk.png` keeps that URL
+ * across re-renders, and the atlas manifest beside it is the version pointer
+ * that tells a client the art changed. ADR-0002 grants immutable caching to
+ * fingerprinted names only, so this subtree must revalidate.
+ *
+ * Overlapping `_headers` rules concatenate into a single Cache-Control rather
+ * than overriding one another, which silently produced
+ * `max-age=31536000, immutable, max-age=300, must-revalidate`. Asserting that a
+ * directive appears exactly once is what stops that shape coming back.
+ */
+async function assertRuntimeArtCachePolicy(origin) {
+  const distDirectory = path.join(repositoryRoot, 'dist');
+
+  const checks = [
+    { file: path.join(distDirectory, 'assets', 'actors', 'asset-registry.json'), pathname: '/assets/actors/asset-registry.json', immutable: false },
+  ];
+
+  const sourceArtDirectory = path.join(distDirectory, 'game-content', 'source-art');
+  const sourceArt = existsSync(sourceArtDirectory)
+    ? (await readdir(sourceArtDirectory)).filter((name) => name.endsWith('.png')).sort()[0]
+    : undefined;
+  if (sourceArt !== undefined) {
+    // Content-hashed filename: its URL changes whenever its bytes do.
+    checks.push({ file: path.join(sourceArtDirectory, sourceArt), pathname: `/game-content/source-art/${sourceArt}`, immutable: true });
+  }
+
+  for (const check of checks) {
+    if (!existsSync(check.file)) continue;
+
+    const response = await fetchWithTimeout(new URL(check.pathname, origin));
+    await response.arrayBuffer();
+    assert.equal(response.status, 200, `${check.pathname} must be served.`);
+
+    const cacheControl = response.headers.get('cache-control') ?? '';
+    assert.equal(
+      cacheControl.match(/max-age=/gi)?.length ?? 0,
+      1,
+      `${check.pathname} must receive exactly one cache lifetime, received "${cacheControl}".`,
+    );
+
+    if (check.immutable) {
+      assert.match(cacheControl, /immutable/i, `${check.pathname} has a content-hashed name and must be cached immutably.`);
+    } else {
+      assert.doesNotMatch(
+        cacheControl,
+        /immutable/i,
+        `${check.pathname} is not fingerprinted, so it must never be cached as immutable.`,
+      );
+      assert.match(cacheControl, /must-revalidate/i, `${check.pathname} must stay update-safe.`);
+    }
+  }
+}
+
 async function main() {
   const port = await reservePort();
   const origin = new URL(`http://127.0.0.1:${port}`);
@@ -168,6 +225,8 @@ async function main() {
       'Fingerprint assets must receive a one-year cache lifetime.',
     );
     assert.match(assetCacheControl, /immutable/i, 'Fingerprint assets must be immutable.');
+
+    await assertRuntimeArtCachePolicy(origin);
 
     console.log(`Cloudflare deployment preview smoke test passed on ${origin.origin}.`);
   } finally {
