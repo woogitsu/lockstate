@@ -1,4 +1,4 @@
-import { decodeSaveEnvelope, type SaveDecodeError, type SaveEnvelopeV1 } from '../save-schema';
+import { decodeSaveEnvelope, type SaveDecodeError, type SaveEnvelope } from '../save-schema';
 import type { CloudSaveClient, CloudSaveVersionSummary } from './client';
 
 export type PushResult =
@@ -7,7 +7,7 @@ export type PushResult =
   | { readonly ok: false; readonly reason: 'not-registered' | 'error'; readonly message: string };
 
 export type PullResult =
-  | { readonly ok: true; readonly envelope: SaveEnvelopeV1 }
+  | { readonly ok: true; readonly envelope: SaveEnvelope }
   | { readonly ok: false; readonly reason: 'no-cloud-version' }
   | { readonly ok: false; readonly reason: 'invalid-payload'; readonly error: SaveDecodeError };
 
@@ -20,7 +20,7 @@ export type PullResult =
 export class PrisonSyncEngine {
   public constructor(private readonly client: CloudSaveClient) {}
 
-  public async push(prisonId: string, envelope: SaveEnvelopeV1): Promise<PushResult> {
+  public async push(prisonId: string, envelope: SaveEnvelope): Promise<PushResult> {
     const result = await this.client.uploadVersion(prisonId, envelope.revision, envelope);
     switch (result.status) {
       case 'created':

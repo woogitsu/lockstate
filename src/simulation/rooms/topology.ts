@@ -175,9 +175,17 @@ export class TopologyManager {
     this.tileToGlobalId.clear();
     const visited = new Set<string>();
     
-    for (const node of allNodes) {
+    // Canonical seed order (sorted `chunkKey:localRegionId`), never `Set`
+    // insertion order. `allNodes` is populated by walking
+    // `this.chunkTopologies`, whose insertion order is the order chunks
+    // happened to be processed -- so without this sort the *values* handed
+    // out by `nextGlobalId++` depend on chunk-processing history rather
+    // than on world geometry, and two managers built over an identical
+    // world could disagree. Pinned by
+    // `tests/determinism/iteration-order.test.ts`.
+    for (const node of [...allNodes].sort()) {
       if (visited.has(node)) continue;
-      
+
       const globalId = this.nextGlobalId++;
       const stack = [node];
       

@@ -5,8 +5,9 @@ import {
   decodeSaveEnvelope,
   decodeSaveEnvelopeUnlessTrusted,
   isTrustedSaveEnvelope,
+  type SaveEnvelope,
   type SaveEnvelopeV1,
-  type TrustedSaveEnvelopeV1,
+  type TrustedSaveEnvelope,
 } from '../../src/persistence/save-schema';
 import { estimateSaveEnvelopeByteSize } from '../../src/persistence/size';
 import { Kernel } from '../../src/simulation/kernel/kernel';
@@ -21,20 +22,33 @@ const FIXTURES = [
   { name: 'in-progress prison', fixture: inProgressFixture },
 ];
 
-describe('save envelope V1: fixtures', () => {
+describe('save envelope: checked-in V1 fixtures', () => {
   for (const { name, fixture } of FIXTURES) {
-    it(`decodes the checked-in "${name}" fixture without migration`, () => {
+    it(`decodes the checked-in "${name}" fixture, migrating it forward`, () => {
       const result = decodeSaveEnvelope(fixture);
-      expect(result).toMatchObject({ ok: true, migrated: false });
+      expect(result).toMatchObject({ ok: true, migrated: true });
       if (result.ok) {
         expect(result.value.saveSchemaVersion).toBe(SAVE_SCHEMA_VERSION);
       }
     });
 
-    it(`round-trips the "${name}" fixture through JSON without change`, () => {
-      const roundTripped = JSON.parse(JSON.stringify(fixture)) as unknown;
-      const result = decodeSaveEnvelope(roundTripped);
-      expect(result).toMatchObject({ ok: true, value: fixture });
+    it(`decodes the "${name}" fixture identically before and after a JSON round trip`, () => {
+      const direct = decodeSaveEnvelope(fixture);
+      const roundTripped = decodeSaveEnvelope(JSON.parse(JSON.stringify(fixture)) as unknown);
+      expect(direct.ok).toBe(true);
+      expect(roundTripped.ok).toBe(true);
+      if (!direct.ok || !roundTripped.ok) return;
+      expect(roundTripped.value).toStrictEqual(direct.value);
+    });
+
+    it(`leaves the checked-in "${name}" fixture object untouched while decoding it`, () => {
+      // The fixture files are the migration contract's evidence; decoding one
+      // must never rewrite it in place, or a later test would be asserting
+      // against a fixture this test had already upgraded.
+      const before = JSON.stringify(fixture);
+      expect(decodeSaveEnvelope(fixture).ok).toBe(true);
+      expect(JSON.stringify(fixture)).toBe(before);
+      expect(fixture.saveSchemaVersion).toBe(1);
     });
 
     it(`reports a representative byte size for the "${name}" fixture`, () => {
@@ -42,7 +56,7 @@ describe('save envelope V1: fixtures', () => {
       if (!result.ok) throw new Error('fixture must decode for this test to be meaningful');
       const size = estimateSaveEnvelopeByteSize(result.value);
       expect(size).toBeGreaterThan(0);
-      expect(size).toBe(new TextEncoder().encode(JSON.stringify(fixture)).length);
+      expect(size).toBe(new TextEncoder().encode(JSON.stringify(result.value)).length);
     });
   }
 });
@@ -116,8 +130,11 @@ describe('save envelope V1: error taxonomy', () => {
   });
 
   it('rejects a future/unknown saveSchemaVersion as unsupported, not a generic shape error', () => {
-    const future = { ...freshPrisonFixture, saveSchemaVersion: 2 };
-    expect(decodeSaveEnvelope(future)).toMatchObject({ ok: false, error: { code: 'unsupported-version', atVersion: 2 } });
+    const future = { ...freshPrisonFixture, saveSchemaVersion: SAVE_SCHEMA_VERSION + 1 };
+    expect(decodeSaveEnvelope(future)).toMatchObject({
+      ok: false,
+      error: { code: 'unsupported-version', atVersion: SAVE_SCHEMA_VERSION + 1 },
+    });
   });
 
   it('rejects saveSchemaVersion 0 (no historical schema registered) with a distinct error', () => {
@@ -131,7 +148,7 @@ describe('save envelope V1: error taxonomy', () => {
   });
 });
 
-function buildTestEnvelope(overrides: Partial<Parameters<typeof createSaveEnvelope>[0]> = {}): TrustedSaveEnvelopeV1 {
+function buildTestEnvelope(overrides: Partial<Parameters<typeof createSaveEnvelope>[0]> = {}): TrustedSaveEnvelope {
   const world = new SparseWorld(32);
   world.setOwned({ x: chunkCoordinate(0), y: chunkCoordinate(0) }, true);
   const construction = new ConstructionSystem(world);
@@ -190,27 +207,27 @@ describe('trusted save envelopes', () => {
     if (!decoded.ok) return;
     expect(decoded.value).not.toBe(input);
     expect(isTrustedSaveEnvelope(decoded.value)).toBe(true);
-    expect(isTrustedSaveEnvelope(input)).toBe(false);
+    expect(isTrustedSaveEnvelope(input as unknown as SaveEnvelope)).toBe(false);
   });
 
   it('trusts no copy of a trusted envelope, however it was copied', () => {
     const envelope = buildTestEnvelope();
     // Every ordinary way a value leaves and re-enters this process.
-    expect(isTrustedSaveEnvelope(JSON.parse(JSON.stringify(envelope)) as SaveEnvelopeV1)).toBe(false);
-    expect(isTrustedSaveEnvelope(structuredClone(envelope) as SaveEnvelopeV1)).toBe(false);
+    expect(isTrustedSaveEnvelope(JSON.parse(JSON.stringify(envelope)) as SaveEnvelope)).toBe(false);
+    expect(isTrustedSaveEnvelope(structuredClone(envelope) as SaveEnvelope)).toBe(false);
     expect(isTrustedSaveEnvelope({ ...envelope })).toBe(false);
     expect(isTrustedSaveEnvelope({ ...envelope, revision: 9 })).toBe(false);
   });
 
   it('trusts nothing merely cast to the trusted type, and validates it in full instead', () => {
-    const forged = { ...buildTestEnvelope(), checksum: '0'.repeat(16) } as TrustedSaveEnvelopeV1;
+    const forged = { ...buildTestEnvelope(), checksum: '0'.repeat(16) } as TrustedSaveEnvelope;
     expect(isTrustedSaveEnvelope(forged)).toBe(false);
     expect(decodeSaveEnvelopeUnlessTrusted(forged)).toMatchObject({
       ok: false,
       error: { code: 'checksum-mismatch' },
     });
 
-    const garbage = { saveSchemaVersion: 1, nonsense: true } as unknown as TrustedSaveEnvelopeV1;
+    const garbage = { saveSchemaVersion: 1, nonsense: true } as unknown as TrustedSaveEnvelope;
     expect(isTrustedSaveEnvelope(garbage)).toBe(false);
     expect(decodeSaveEnvelopeUnlessTrusted(garbage)).toMatchObject({ ok: false, error: { code: 'invalid-shape' } });
   });

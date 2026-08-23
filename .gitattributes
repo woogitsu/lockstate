@@ -2,3 +2,21 @@ assets/source/**/*.png filter=lfs diff=lfs merge=lfs -text
 assets/source/**/*.blend filter=lfs diff=lfs merge=lfs -text
 public/assets/**/*.png filter=lfs diff=lfs merge=lfs -text
 public/game-content/**/*.png filter=lfs diff=lfs merge=lfs -text
+
+# Line endings. These files are consumed by Linux tooling -- psql, bash, the
+# self-hosted runner -- and must stay LF in the working tree even when checked
+# out on Windows with core.autocrlf=true. This is not cosmetic:
+#
+#   * A CRLF .sql file changes the *contents* of a dollar-quoted literal. The
+#     pgTAP suite supabase/tests/003_data_api_grants.test.sql compares a
+#     multi-line expected string against `string_agg(..., e'\n')`; with CRLF
+#     the literal carries \r and the aggregate does not, so two assertions
+#     failed on Windows while passing in CI, printing a have/want diff whose
+#     two sides look identical.
+#   * A CRLF .sh file fails on Linux with a bad-interpreter error, which would
+#     break scripts/provision-postgres.sh and .claude/hooks/session-start.sh
+#     if either were ever run from a Windows working tree.
+#
+# The committed blobs are already LF; this only pins what lands on disk.
+*.sql text eol=lf
+*.sh text eol=lf

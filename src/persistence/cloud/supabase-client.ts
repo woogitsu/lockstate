@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { SaveEnvelopeV1 } from '../save-schema';
+import type { SaveEnvelope } from '../save-schema';
 import type { CloudPrisonState, CloudSaveClient, CloudSaveVersionSummary, UploadOutcome } from './client';
 
 interface CreateSaveVersionRow {
@@ -59,7 +59,7 @@ export class SupabaseCloudSaveClient implements CloudSaveClient {
     if (error !== null) throw new Error(`Failed to register the cloud prison: ${error.message}`);
   }
 
-  public async uploadVersion(prisonId: string, newRevision: number, envelope: SaveEnvelopeV1): Promise<UploadOutcome> {
+  public async uploadVersion(prisonId: string, newRevision: number, envelope: SaveEnvelope): Promise<UploadOutcome> {
     const byteSize = new TextEncoder().encode(JSON.stringify(envelope.payload)).length;
     const { data, error } = await this.supabase.rpc('create_save_version', {
       p_prison_id: prisonId,

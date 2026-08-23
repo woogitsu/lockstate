@@ -1,18 +1,23 @@
+import { decodeEntityStoreSnapshot, type EncodedEntityStoreSnapshot } from '../../src/persistence/entity-codec';
 import { classifyStoreError } from '../../src/persistence/local/errors';
 import { IndexedDbLocalSaveStore, openLockstateDatabase } from '../../src/persistence/local/indexeddb-store';
 import { PrisonSaveRepository } from '../../src/persistence/local/repository';
-import { createSaveEnvelope, type SaveEnvelopeV1 } from '../../src/persistence/save-schema';
+import { createSaveEnvelope, type SaveEnvelope } from '../../src/persistence/save-schema';
 import { ConstructionSystem } from '../../src/simulation/construction/system';
 import { Kernel } from '../../src/simulation/kernel/kernel';
 import { chunkCoordinate } from '../../src/simulation/world/coordinates';
 import { SparseWorld } from '../../src/simulation/world/sparse-world';
+import legacyV1Save from '../fixtures/persistence/save-v1-in-progress.json';
 import type {
+  HarnessEntityLiveness,
   HarnessErrorProbe,
   HarnessFillResult,
+  HarnessLegacyGeneration,
   HarnessLoadSummary,
   HarnessQuotaEstimate,
   HarnessSaveSummary,
   HarnessSlotSummary,
+  HarnessStoredGeneration,
   HarnessThrowProbe,
   LockstateBrowserHarness,
 } from './harness-api';
@@ -53,7 +58,7 @@ function requireRepository(): PrisonSaveRepository {
   return repository;
 }
 
-function buildEnvelope(prisonId: string, revision: number, padBytes: number): SaveEnvelopeV1 {
+function buildEnvelope(prisonId: string, revision: number, padBytes: number): SaveEnvelope {
   const world = new SparseWorld(32);
   world.setOwned({ x: chunkCoordinate(0), y: chunkCoordinate(0) }, true);
   const construction = new ConstructionSystem(world);
@@ -80,6 +85,7 @@ function describeError(scenario: string, error: unknown, note: string): HarnessE
   const errorName = typeof candidate?.name === 'string' ? candidate.name : null;
   const errorMessage = typeof candidate?.message === 'string' ? candidate.message : String(error);
   const constructorName = typeof candidate?.constructor?.name === 'string' ? candidate.constructor.name : String(error);
+  const classified = classifyStoreError(error);
   return {
     scenario,
     errorName,
@@ -87,9 +93,42 @@ function describeError(scenario: string, error: unknown, note: string): HarnessE
     constructorName,
     isError: error instanceof Error,
     isDomException: typeof DOMException !== 'undefined' && error instanceof DOMException,
-    classifiedAs: classifyStoreError(error).code,
+    classifiedAs: classified.code,
+    classifiedMessage: classified.message,
     note,
   };
+}
+
+/**
+ * Expands an encoded (V2, run-length) entity ledger through the production
+ * decoder so it can be compared field-for-field with the V1 fixture's flat
+ * per-slot arrays.
+ */
+function describeLiveness(encoded: EncodedEntityStoreSnapshot | undefined): HarnessEntityLiveness | null {
+  if (encoded === undefined) return null;
+  const decoded = decodeEntityStoreSnapshot(encoded);
+  return {
+    capacity: decoded.capacity,
+    nextAvailableIndex: decoded.nextAvailableIndex,
+    maxActiveIndex: decoded.maxActiveIndex,
+    freeCount: decoded.freeCount,
+    generations: Array.from(decoded.generations),
+    freeIndices: Array.from(decoded.freeIndices.subarray(0, decoded.freeCount)),
+    alive: Array.from(decoded.alive),
+  };
+}
+
+/**
+ * Builds one V1 record from the checked-in fixture. `prisonId` and `revision`
+ * are envelope metadata, not payload, so overriding them leaves the fixture's
+ * checksum valid — which is the point: only `tampered` may invalidate it.
+ */
+function buildLegacyV1Envelope(prisonId: string, revision: number, tampered: boolean): typeof legacyV1Save {
+  const envelope = structuredClone(legacyV1Save);
+  envelope.prisonId = prisonId;
+  envelope.revision = revision;
+  if (tampered) envelope.payload.kernel.tick += 1;
+  return envelope;
 }
 
 function toSaveSummary(result: Awaited<ReturnType<PrisonSaveRepository['save']>>): HarnessSaveSummary {
@@ -350,8 +389,33 @@ const harness: LockstateBrowserHarness = {
   async loadCurrent(prisonId: string): Promise<HarnessLoadSummary> {
     const result = await requireRepository().loadCurrent(prisonId);
     return result.ok
-      ? { ok: true, outcome: result.outcome, generationId: result.generationId, revision: result.envelope.revision, reason: null }
-      : { ok: false, outcome: null, generationId: null, revision: null, reason: result.reason };
+      ? {
+          ok: true,
+          outcome: result.outcome,
+          generationId: result.generationId,
+          revision: result.envelope.revision,
+          reason: null,
+          saveSchemaVersion: result.envelope.saveSchemaVersion,
+          entities: describeLiveness(result.envelope.payload.entities as EncodedEntityStoreSnapshot | undefined),
+        }
+      : {
+          ok: false,
+          outcome: null,
+          generationId: null,
+          revision: null,
+          reason: result.reason,
+          saveSchemaVersion: null,
+          entities: null,
+        };
+  },
+
+  async resaveCurrent(prisonId: string): Promise<HarnessSaveSummary> {
+    const repository = requireRepository();
+    const loaded = await repository.loadCurrent(prisonId);
+    if (!loaded.ok) {
+      return { ok: false, generationId: null, errorCode: 'unknown-error', errorMessage: `load failed: ${loaded.reason}` };
+    }
+    return toSaveSummary(await repository.save(prisonId, loaded.envelope));
   },
 
   async listPrisons(): Promise<readonly HarnessSlotSummary[]> {
@@ -375,6 +439,75 @@ const harness: LockstateBrowserHarness = {
     const store = new IndexedDbLocalSaveStore(requireDatabase());
     const value = await store.runTransaction('readonly', (tx) => tx.getGeneration(prisonId, generationId));
     return value !== undefined;
+  },
+
+  async readStoredGeneration(prisonId: string, generationId: string): Promise<HarnessStoredGeneration> {
+    const store = new IndexedDbLocalSaveStore(requireDatabase());
+    const value = await store.runTransaction('readonly', (tx) => tx.getGeneration(prisonId, generationId));
+    const absent: HarnessStoredGeneration = {
+      exists: value !== undefined,
+      saveSchemaVersion: null,
+      checksum: null,
+      entityFields: null,
+      rawGenerations: null,
+      rawFreeIndices: null,
+    };
+    if (typeof value !== 'object' || value === null) return absent;
+
+    const record = value as {
+      readonly saveSchemaVersion?: unknown;
+      readonly checksum?: unknown;
+      readonly payload?: { readonly entities?: Record<string, unknown> };
+    };
+    const entities = record.payload?.entities;
+    return {
+      exists: true,
+      saveSchemaVersion: typeof record.saveSchemaVersion === 'number' ? record.saveSchemaVersion : null,
+      checksum: typeof record.checksum === 'string' ? record.checksum : null,
+      entityFields: entities === undefined ? null : Object.keys(entities).sort(),
+      rawGenerations: entities?.['generations'] ?? null,
+      rawFreeIndices: entities?.['freeIndices'] ?? null,
+    };
+  },
+
+  async seedLegacyV1Prison(prisonId: string, generations: readonly HarnessLegacyGeneration[]): Promise<void> {
+    const store = new IndexedDbLocalSaveStore(requireDatabase());
+    await store.runTransaction('readwrite', async (tx) => {
+      for (const generation of generations) {
+        // eslint-disable-next-line no-await-in-loop -- same transaction; the requests are sequential by design
+        await tx.putGeneration(
+          prisonId,
+          generation.generationId,
+          buildLegacyV1Envelope(prisonId, generation.revision, generation.tampered === true),
+        );
+      }
+      await tx.putMetadata({
+        prisonId,
+        gameVersion: legacyV1Save.gameVersion,
+        displayName: 'Legacy Block',
+        // Oldest first, matching the repository's own retention window order.
+        currentGenerationId: generations.at(-1)?.generationId,
+        generationIds: generations.map((generation) => generation.generationId),
+        createdAt: legacyV1Save.createdAt,
+        updatedAt: legacyV1Save.updatedAt,
+      });
+    });
+  },
+
+  legacyV1Liveness(): HarnessEntityLiveness {
+    const v1 = legacyV1Save.payload.entities;
+    return {
+      capacity: v1.capacity,
+      nextAvailableIndex: v1.nextAvailableIndex,
+      maxActiveIndex: v1.maxActiveIndex,
+      freeCount: v1.freeCount,
+      generations: [...v1.generations],
+      // V1 wrote the whole free-list array including the stack residue above
+      // `freeCount`; only the live prefix carries meaning, and only it is
+      // expected to survive into V2.
+      freeIndices: v1.freeIndices.slice(0, v1.freeCount),
+      alive: [...v1.alive],
+    };
   },
 
   async fillUntilWriteFails(chunkBytes: number, maxChunks: number): Promise<HarnessFillResult> {

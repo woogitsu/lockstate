@@ -37,7 +37,22 @@ export interface MigrationError {
 }
 
 export type MigrationResult<T = unknown> =
-  | { readonly ok: true; readonly value: T; readonly fromVersion: number; readonly stepsApplied: number }
+  | {
+      readonly ok: true;
+      readonly value: T;
+      readonly fromVersion: number;
+      readonly stepsApplied: number;
+      /**
+       * `input` as validated against its **declared** version, before any
+       * migration step ran. Exposed because some integrity checks are only
+       * meaningful against the value as it was written: a save's checksum
+       * covers its own version's payload, so a migration that rewrites the
+       * payload would make that checksum unverifiable if only the migrated
+       * value were available. When `stepsApplied` is 0 this is the same
+       * object as `value`.
+       */
+      readonly declaredValue: unknown;
+    }
   | { readonly ok: false; readonly error: MigrationError };
 
 /**
@@ -115,8 +130,9 @@ export class MigrationChain {
       };
     }
 
+    const declaredValue: unknown = initialParse.value;
     let currentVersion = declaredVersion;
-    let currentValue: unknown = initialParse.value;
+    let currentValue: unknown = declaredValue;
     let stepsApplied = 0;
 
     while (currentVersion !== this.latestVersion) {
@@ -155,6 +171,6 @@ export class MigrationChain {
       stepsApplied += 1;
     }
 
-    return { ok: true, value: currentValue as T, fromVersion: declaredVersion, stepsApplied };
+    return { ok: true, value: currentValue as T, fromVersion: declaredVersion, stepsApplied, declaredValue };
   }
 }

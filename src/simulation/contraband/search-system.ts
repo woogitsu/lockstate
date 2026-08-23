@@ -116,9 +116,31 @@ export class SearchSystem implements SystemRegistration {
     return policy;
   }
 
+  /**
+   * Active jobs in canonical order (ascending order id), never `Map`
+   * insertion order.
+   *
+   * `advanceJob` -> `runDetectionForCurrentTarget` draws from the shared
+   * `contraband.detection` RNG stream, so the order jobs are advanced in
+   * decides *which* draw each concealed item is checked against. Insertion
+   * order is a property of this instance's history (the order orders were
+   * submitted and staffed); `getSnapshot` emits jobs sorted by id and
+   * `loadSnapshot` re-inserts them in that sorted order, so a
+   * snapshot -> restore round trip silently re-ordered the draws and
+   * changed which items a search discovered. Under ADR 0009 that is not a
+   * cosmetic difference: replay verification compares state hashes, so a
+   * restored session would disagree with a continuous one and invalidate
+   * its own evidence. Sorting here makes iteration order a function of
+   * *state* rather than of history, which is what makes the round trip
+   * lossless. Pinned by `tests/determinism/iteration-order.test.ts`.
+   */
+  private activeJobsInCanonicalOrder(): readonly SearchJobRecord[] {
+    return [...this.active.keys()].sort().map((id) => this.active.get(id)!);
+  }
+
   public update(context: SimulationContext): void {
     this.assignQueuedOrders(context.tick);
-    for (const job of [...this.active.values()]) this.advanceJob(job, context);
+    for (const job of this.activeJobsInCanonicalOrder()) this.advanceJob(job, context);
   }
 
   private assignQueuedOrders(tick: number): void {
@@ -259,10 +281,7 @@ export class SearchSystem implements SystemRegistration {
   } {
     return {
       queue: this.queue.map((order) => ({ ...order })),
-      active: [...this.active.keys()].sort().map((id) => {
-        const job = this.active.get(id)!;
-        return [id, { scope: job.scope, targets: job.targets, guardIds: job.guardIds, currentTargetIndex: job.currentTargetIndex }] as const;
-      }),
+      active: this.activeJobsInCanonicalOrder().map((job) => [job.id, { scope: job.scope, targets: job.targets, guardIds: job.guardIds, currentTargetIndex: job.currentTargetIndex }] as const),
       metrics: { itemsDiscovered: this.itemsDiscovered, itemsMissed: this.itemsMissed, searchesCompleted: this.searchesCompleted, searchesCancelled: this.searchesCancelled },
     };
   }

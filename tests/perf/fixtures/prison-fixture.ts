@@ -4,8 +4,9 @@ import { CONSTRUCTION_MATERIALS_CONTAINER_ID, createNewSimulationRuntime } from 
 import type { SimulationRuntime } from '../../../src/simulation/runtime/new-session';
 import { chunkCoordinate, tileCoordinate } from '../../../src/simulation/world/coordinates';
 import type { ChunkPosition, TilePosition } from '../../../src/simulation/world/coordinates';
+import { encodeEntityStoreSnapshot } from '../../../src/persistence/entity-codec';
 import { createSaveEnvelope } from '../../../src/persistence/save-schema';
-import type { SaveEnvelopeV1 } from '../../../src/persistence/save-schema';
+import type { SaveEnvelope } from '../../../src/persistence/save-schema';
 
 /**
  * Representative prison fixtures for the persistence measurement harness
@@ -101,7 +102,7 @@ export const PRISON_SIZE_TIERS: readonly PrisonSizeTier[] = Object.freeze([
 export interface PrisonFixture {
   readonly tier: PrisonSizeTier;
   readonly runtime: SimulationRuntime;
-  readonly envelope: SaveEnvelopeV1;
+  readonly envelope: SaveEnvelope;
   readonly loadedChunks: number;
   readonly totalChunks: number;
   readonly buildOrders: number;
@@ -251,7 +252,7 @@ export function buildPrisonRuntime(tier: PrisonSizeTier): {
 }
 
 /** Composes the checksummed, schema-valid envelope for `runtime`'s current state. */
-export function snapshotEnvelope(runtime: SimulationRuntime, revision: number): SaveEnvelopeV1 {
+export function snapshotEnvelope(runtime: SimulationRuntime, revision: number): SaveEnvelope {
   return createSaveEnvelope({
     gameVersion: 'lockstate-0.0.0',
     prisonId: 'perf-prison',
@@ -261,7 +262,7 @@ export function snapshotEnvelope(runtime: SimulationRuntime, revision: number): 
     kernel: runtime.kernel.snapshot(),
     world: runtime.world.snapshot(),
     construction: runtime.construction.snapshot(),
-    entities: runtime.prisoners.entityStore.getSnapshot(),
+    entities: encodeEntityStoreSnapshot(runtime.prisoners.entityStore.getSnapshot()),
   });
 }
 

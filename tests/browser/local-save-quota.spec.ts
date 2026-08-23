@@ -39,6 +39,17 @@ test.describe('quota exhaustion', () => {
     expect(fill.failure?.isError).toBe(true);
     expect(fill.failure?.isDomException).toBe(true);
     expect(fill.failure?.classifiedAs).toBe('quota-exceeded');
+
+    // `errors.ts` cites this spec for the observation that a real
+    // QuotaExceededError carries an **empty** message, which is the sole
+    // reason its name fallback exists. Assert both halves, so neither the
+    // observation nor the fallback it justifies can go stale unnoticed: if a
+    // future Chromium starts supplying a message, this fails and the fallback
+    // should be re-examined rather than quietly becoming dead code.
+    expect(fill.failure?.errorMessage, 'Chromium no longer reports an empty QuotaExceededError message').toBe('');
+    expect(fill.failure?.classifiedMessage, 'the single failure a player is most likely to hit reported blank evidence').toBe(
+      'QuotaExceededError',
+    );
   });
 
   test('a save that exceeds the quota fails without destroying the last good generation', async ({ page }) => {

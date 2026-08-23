@@ -49,6 +49,21 @@ A browser/E2E project may use Playwright or Vitest Browser Mode after a dedicate
 
 It exists because `fake-indexeddb` structurally cannot prove three things: durability across a real page navigation, what a real browser's `DOMException`s are actually named, and behavior under a genuinely exhausted storage quota (driven here through CDP `Storage.overrideQuotaForOrigin`, asserted via `navigator.storage.estimate()` so an ineffective override fails the test rather than passing vacuously). It found one real adapter defect — see `docs/PERSISTENCE.md`.
 
+The same three reasons apply to a **save-format migration**, which is why `tests/browser/local-save-migration.spec.ts` covers V1 → V2 (#50) here as well as in-process: a migration bites in production on a record an *older build* left in real origin storage, transported by structured clone rather than JSON and read back in a later page load by a build that only knows the new version. Its V1 records are built from the same checked-in `tests/fixtures/persistence/save-v1-in-progress.json` the in-process `tests/migrations/save-v1-to-v2.test.ts` uses, so the two layers cannot drift into disagreeing about what a V1 save looked like. This is an addition to the browser layer, not a replacement: the in-process migration tests remain the fast, primary proof, per "use the lowest layer that proves the behavior" above.
+
+**Provisioning the browser.** `@playwright/test` is pinned but its browser binaries are not checked in, so a fresh machine needs one command before `pnpm test:browser` will run:
+
+```bash
+pnpm exec playwright install chromium   # ~278 MiB: chromium + chromium-headless-shell
+```
+
+Chromium only — `playwright.config.ts` pins `browserName: 'chromium'` and nothing here launches a second engine. It runs headless (the config never sets `headless: false`), so no display, xvfb or `DISPLAY` is required.
+
+Two environment-specific notes, both observed on Ubuntu 26.04 under WSL2:
+
+- Playwright 1.56.1 has no build listing for Ubuntu 26.04 and refuses outright (`ERROR: Playwright does not support chromium on ubuntu26.04-x64`). `PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu24.04-x64 pnpm exec playwright install chromium` downloads the 24.04 build, which runs correctly. Drop the override on a release Playwright supports natively.
+- `playwright install --with-deps` fails for the same reason. It is only needed when the shared libraries Chromium links against are missing; check with `ldd ~/.cache/ms-playwright/chromium-*/chrome-linux/chrome | grep 'not found'` and install what it names, rather than assuming the `--with-deps` step is required.
+
 A single non-DOM Web API can be reviewed and approved narrower than a full browser/E2E environment: `fake-indexeddb` (a pure-JS, dependency-free `indexedDB` implementation, devDependency-only) is approved for testing `src/persistence/local/indexeddb-store.ts` specifically — see `docs/PERSISTENCE.md`. Tests using it import a fresh `IDBFactory` instance explicitly per test rather than the `/auto` global-polluting entry point, so the default Vitest environment stays `node` and unaffected for every other test.
 
 ## Test layers
@@ -60,7 +75,7 @@ A single non-DOM Web API can be reviewed and approved narrower than a full brows
 | Integration | Two or more real project modules wired together | `tests/integration/` |
 | Determinism | Same initial state and command stream produce identical state/hash | `tests/determinism/` |
 | Migration | Versioned fixture upgrades and forward-only save compatibility | `tests/migrations/` |
-| Browser E2E | Real browser storage/durability, real `DOMException` names, real quota exhaustion | `tests/browser/`, opt-in via `pnpm test:browser` |
+| Browser E2E | Real browser storage/durability, real `DOMException` names, real quota exhaustion, save migration off real storage | `tests/browser/`, opt-in via `pnpm test:browser` |
 | Measurement | Reported size/timing evidence with no timing assertions | `tests/perf/`, opt-in via its own Vitest config |
 | Benchmark | Repeatable performance evidence, never correctness by elapsed time | `benchmarks/` and `docs/BENCHMARKING.md` |
 
@@ -125,3 +140,5 @@ There is no arbitrary repository-wide percentage threshold during the pre-alpha 
 ## Current executable baseline
 
 `tests/foundation/repository-contract.test.ts` guards the pinned Node/pnpm metadata, strict compiler options, test-source inclusion and the rule that an empty suite cannot pass. It is a foundation contract, not a substitute for system-specific tests.
+
+`tests/determinism/` is the executable form of `docs/DETERMINISM.md` and, through [ADR 0009](./adr/0009-challenge-verification-strategy.md), of the challenge-verification guarantee: same seed plus same command stream reproduces an identical state hash, `snapshot() → restore() → run N ticks` equals running those ticks straight through, named RNG streams cannot perturb each other, and system order is a property of the declarations rather than of registration order. `ambient-nondeterminism-contract.test.ts` is a static contract in the spirit of `navigation-no-phaser.test.ts`: it walks the real transitive import graph out of `src/simulation/` and rejects clock, locale, DOM, storage and randomness sources, with a single per-file allow-list that fails when an entry goes stale. A determinism test that cannot fail is worse than none, so every test there is written against a break that was actually demonstrated — see that directory's table in `docs/DETERMINISM.md`.

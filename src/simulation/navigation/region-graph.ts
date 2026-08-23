@@ -150,7 +150,14 @@ export function buildNavigationGraph(
       portals.push({ doorId: door.id, regionA, regionB, tileA: tile, tileB: neighbor });
     }
   }
-  portals.sort((a, b) => a.doorId.localeCompare(b.doorId));
+  // Code-unit ordering, never `localeCompare`: collation is locale- and
+  // ICU-dependent, so the same door ids can sort differently on two clients
+  // (or two Node builds). Portal order decides which portal the router and
+  // the flow-field builder expand first among equals, so a locale-dependent
+  // sort here is a locale-dependent route -- exactly the ambient input
+  // docs/DETERMINISM.md forbids. See
+  // `tests/determinism/ambient-nondeterminism-contract.test.ts`.
+  portals.sort((a, b) => (a.doorId < b.doorId ? -1 : a.doorId > b.doorId ? 1 : 0));
 
   const regionPortals = new Map<RegionId, Portal[]>();
   for (const portal of portals) {

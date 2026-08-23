@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { IDBFactory } from 'fake-indexeddb';
 import { openLockstateDatabase, IndexedDbLocalSaveStore } from '../../src/persistence/local/indexeddb-store';
 import { PrisonSaveRepository } from '../../src/persistence/local/repository';
-import { createSaveEnvelope, type SaveEnvelopeV1 } from '../../src/persistence/save-schema';
+import { createSaveEnvelope, type SaveEnvelope } from '../../src/persistence/save-schema';
 import { Kernel } from '../../src/simulation/kernel/kernel';
 import { SparseWorld } from '../../src/simulation/world/sparse-world';
 import { ConstructionSystem } from '../../src/simulation/construction/system';
@@ -22,7 +22,7 @@ function openFreshDatabase() {
   return openLockstateDatabase(new IDBFactory());
 }
 
-function buildEnvelope(revision: number): SaveEnvelopeV1 {
+function buildEnvelope(revision: number): SaveEnvelope {
   const world = new SparseWorld(32);
   world.setOwned({ x: chunkCoordinate(0), y: chunkCoordinate(0) }, true);
   const construction = new ConstructionSystem(world);

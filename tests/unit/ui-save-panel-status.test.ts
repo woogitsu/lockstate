@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { describeRestoredScope, describeSaveResult } from '../../src/ui/save-panel';
-import { V1_RESTORED_SCOPE } from '../../src/simulation/runtime/restore-session';
+import { CURRENT_SAVE_RESTORED_SCOPE } from '../../src/simulation/runtime/restore-session';
 
 /**
  * Issue #19: "quota, private-mode and transaction-abort errors are
@@ -82,7 +82,7 @@ describe('refresh supersession guard', () => {
 
 describe('describeRestoredScope: honest about what a V1 save carries', () => {
   it('names both what was restored and what this save version does not carry', () => {
-    const text = describeRestoredScope(V1_RESTORED_SCOPE);
+    const text = describeRestoredScope(CURRENT_SAVE_RESTORED_SCOPE);
     expect(text).toContain('world terrain and ownership');
     expect(text).toContain('Not carried by this save version');
     expect(text).toContain('incidents and gangs');

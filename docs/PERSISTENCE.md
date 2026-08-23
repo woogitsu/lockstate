@@ -5,11 +5,11 @@ runtime validation, checksum and forward-migration framework, and (in
 "Local persistence" below) the IndexedDB-backed repository that consumes it.
 Supabase sync (#20) is a separate, not-yet-implemented issue.
 
-## Envelope shape (`SaveEnvelopeV1`)
+## Envelope shape (`SaveEnvelope`, currently V2)
 
 ```
 {
-  saveSchemaVersion: 1,
+  saveSchemaVersion: 2,
   gameVersion: string,     // build/version identifier, e.g. "lockstate-0.0.0"
   prisonId: string,
   revision: number,        // caller-managed monotonic counter; optimistic-concurrency
@@ -21,7 +21,10 @@ Supabase sync (#20) is a separate, not-yet-implemented issue.
     kernel: { tick, expectedSequence, rngStates, commands },  // Kernel.snapshot()
     world: { ... },                                           // SparseWorld.snapshot()
     construction: { orders, undoStack, redoStack },           // ConstructionSystem.snapshot()
-    entities?: { capacity, nextAvailableIndex, maxActiveIndex, freeCount, generations, freeIndices, alive },
+    entities?: { capacity, nextAvailableIndex, maxActiveIndex,
+                 generations: [[value, length], ...],         // run-length encoded
+                 freeIndices: [ ... ],                        // the live free-list prefix only
+                 alive: [[0|1, length], ...] },               // run-length encoded
   },
 }
 ```
@@ -31,15 +34,22 @@ contracts (Issues #5, #12, #16/#17), re-validated at the save boundary with
 Zod (`src/persistence/save-schema.ts`), not a new shape invented for this
 issue.
 
-### What is deliberately excluded from V1
+`SaveEnvelope`/`SavePayload`/`TrustedSaveEnvelope` are the names call sites
+use for "the current version"; `SaveEnvelopeV1` and `SaveEnvelopeV2` name
+specific historical shapes and should appear only in `save-schema.ts` and
+`save-migrations.ts`. V2 exists because #50 changed the entity section — see
+"V2: the entity ledger follows population, not capacity" below.
+
+### What is deliberately excluded from the payload
 
 - **Per-component entity state** (`ComponentBitset`, `TransformComponent`,
   future components). `entities` covers only `EntityStore`'s own ID-liveness
-  ledger. No runtime currently attaches components to an `EntityStore` — the
-  first real consumer (prisoner/staff entities, Phase 7) should introduce a
-  component registry and extend the payload deliberately, rather than this
-  issue inventing an open-ended generic serialization format nothing yet
-  needs. `entities` is optional for the same reason: a fresh prison has none.
+  ledger, in V1 and V2 alike. No runtime currently attaches components to an
+  `EntityStore` — the first real consumer (prisoner/staff entities, Phase 7)
+  should introduce a component registry and extend the payload deliberately,
+  rather than this issue inventing an open-ended generic serialization format
+  nothing yet needs. `entities` is optional for the same reason: a fresh
+  prison has none.
 - **Room/topology state.** `TopologyManager` and `RoomSystem` hold no
   independent state — they are pure caches recomputed from `SparseWorld`
   geometry (`TopologyManager.update`) — so nothing to persist exists there.
@@ -55,6 +65,19 @@ diagnostics — rather than a new algorithm. Canonicalization sorts object keys,
 so the checksum is stable across equivalent key insertion order. It detects
 corruption/accidental mismatch; it is **not** a cryptographic signature.
 
+**It is verified at the version the save was written at.** A checksum covers
+a payload, and a migration may rewrite that payload (V1 → V2 re-encodes the
+entity ledger), so `decodeSaveEnvelope` checks the stored checksum against
+`MigrationChain`'s `declaredValue` — the input as validated against its own
+declared version, before any step ran — and reports `checksum-mismatch` with
+`atVersion` set to that version. The alternative orderings are both wrong:
+verifying after migration would report every older save as corrupt, and
+verifying after a migration that had recomputed the checksum would report
+every older save as intact whether or not it was. A migration therefore
+recomputes the checksum for its output (so a migrated envelope is
+self-consistent and indistinguishable from a natively-written one) without
+that recomputation ever masking corruption in the input.
+
 ## Trusted envelopes: validating once, without weakening the boundary
 
 Validation, not I/O, is the dominant cost of a save (`JSON.stringify` is ~2%
@@ -67,18 +90,19 @@ is a genuine correctness boundary and is still paid by every envelope of
 unknown provenance.
 
 **The envelope's fields and its payload are now validated separately.**
-`saveEnvelopeMetadataShape` holds the seven scalar fields an envelope carries
-around its payload. `saveEnvelopeV1Schema` (metadata + `payload`) is what the
-migration chain registers and what `decodeSaveEnvelope` therefore still runs
-in full; `saveEnvelopeMetadataV1Schema` (metadata alone) is what
+`saveEnvelopeMetadataShape(version)` builds the seven scalar fields an
+envelope carries around its payload. `saveEnvelopeV2Schema` (metadata +
+`payload`) is what the migration chain registers for the current version and
+what `decodeSaveEnvelope` therefore still runs in full;
+`saveEnvelopeMetadataV2Schema` (metadata alone) is what
 `createSaveEnvelope` runs, because it has just parsed the payload itself and
 re-walking a multi-megabyte payload to check seven numbers is waste. Both
 carry the same `updatedAt >= createdAt` refinement, so no rule is enforced on
 one path and not the other.
 
 **`save()` decides by provenance, not by a caller-supplied flag.**
-`createSaveEnvelope` and `decodeSaveEnvelope` return `TrustedSaveEnvelopeV1`
-— `SaveEnvelopeV1` branded with a `unique symbol` that is declared but never
+`createSaveEnvelope` and `decodeSaveEnvelope` return `TrustedSaveEnvelope`
+— `SaveEnvelope` branded with a `unique symbol` that is declared but never
 exported, so no other module can even name the brand, let alone produce the
 type. `PrisonSaveRepository.save` routes through
 `decodeSaveEnvelopeUnlessTrusted`, which writes a trusted envelope as-is and
@@ -88,7 +112,7 @@ The brand is what the *type system* checks; it is backed at runtime by a
 module-private `WeakSet` keyed on object identity, and that is what makes it
 unforgeable:
 
-- A caller who defeats the type with `as TrustedSaveEnvelopeV1` still fails
+- A caller who defeats the type with `as TrustedSaveEnvelope` still fails
   the identity check and gets full validation. The failure mode of every
   bypass attempt is "validate anyway", never "trust anyway".
 - Identity is destroyed by every ordinary way a value leaves and re-enters
@@ -130,24 +154,115 @@ edited by #49.
   A step never receives or returns the caller's original object reference in
   a way that lets it mutate the source fixture.
 
-Only V1 exists today, so `saveMigrationChain` has zero registered migrations
-— `decodeSaveEnvelope` still routes through the same dispatcher a future V2
-will use. The chain-walking, per-step validation and immutability guarantees
-are exercised against a synthetic multi-version fixture in
-`tests/unit/persistence-migration.test.ts`, independent of whether a second
-real save-schema version exists yet.
+`saveMigrationChain` registers V1 and V2 schemas and one `1 -> 2` step. The
+chain-walking, per-step validation and immutability guarantees are also
+exercised against a synthetic multi-version fixture in
+`tests/unit/persistence-migration.test.ts`, independent of the real save
+versions, and the real V1 → V2 upgrade is covered in
+`tests/migrations/save-v1-to-v2.test.ts`.
 
-### Adding a V2 later
+### Adding a V3 later
 
 1. Add the new interface/type and a `.strict()` Zod schema for it, alongside
-   V1's — never edit the V1 schema to match new code.
-2. `saveMigrationChain.registerSchema(zodVersionSchema(2, v2Schema))`.
-3. `saveMigrationChain.registerMigration({ fromVersion: 1, toVersion: 2, migrate })`,
-   pure and side-effect-free.
-4. Bump `SAVE_SCHEMA_VERSION` to `2` and update `SaveEnvelopeV1`-typed call
-   sites to the new type.
-5. Keep the V1 fixtures in `tests/fixtures/persistence/` checked in unchanged,
-   and add a test asserting they migrate to the new shape correctly.
+   the existing ones — never edit a historical schema to match new code.
+2. `saveMigrationChain.registerSchema(zodVersionSchema(3, v3Schema))`.
+3. `saveMigrationChain.registerMigration({ fromVersion: 2, toVersion: 3, migrate })`,
+   pure and side-effect-free, in `src/persistence/save-migrations.ts`. If it
+   changes the payload, recompute `checksum` in the step (see "Checksum").
+4. Bump `SAVE_SCHEMA_VERSION` to `3`. Call sites use the version-neutral
+   `SaveEnvelope`/`SavePayload`/`TrustedSaveEnvelope` aliases, so this step no
+   longer sweeps a rename through the repository the way V2 did.
+5. Keep every older fixture in `tests/fixtures/persistence/` checked in
+   unchanged, and add a test asserting they migrate to the new shape
+   correctly.
+
+## V2: the entity ledger follows population, not capacity (#50)
+
+V1 wrote `EntityStore`'s three parallel arrays — `generations`, `freeIndices`
+and `alive` — across the store's **full allocated capacity**. Since
+`createNewSimulationRuntime` allocates `DEFAULT_PRISONER_CAPACITY` (5,000)
+slots up front, the `entities` section cost a constant 29.4 KiB whether the
+prison held 25 prisoners or 3,000: 45% of a small envelope, entirely padding,
+and growing with the capacity constant rather than with play.
+
+**The live store is unchanged.** ADR 0005's SoA layout is deliberate and out
+of scope here; only the serialized form moved.
+
+**The encoding.** `generations` and `alive` are run-length encoded as
+`[value, length]` pairs — the same convention the world snapshot already uses
+for terrain planes. That was chosen over the two alternatives the issue
+listed:
+
+- *Truncate at `maxActiveIndex`* would still write one array entry per live
+  slot (≈12 KiB at 3,000 prisoners) and needs an explicit pad-on-restore step.
+  RLE subsumes it: the unallocated tail is one run, so no truncation logic
+  exists at all and `capacity` needs no reconstruction from a padded length.
+- *Store live ids explicitly* is **larger**, not smaller, for a dense store —
+  a packed id is a 6–7 digit number, so 3,000 of them cost more than the dense
+  arrays did — and it forces the restore path to *infer* `nextAvailableIndex`
+  and the generation of every freed slot from the id list, replacing a copy
+  with an inference. Generation counters are what make stale-reference
+  detection work; inferring them is exactly the wrong trade.
+
+`freeIndices` is **not** run-length encoded — a free list is a stack of
+arbitrary indices with no run structure — but only its live prefix is written.
+Everything above `freeCount` is stack residue that `EntityStore.spawn`
+structurally cannot read, so `freeCount` is not stored either: it *is*
+`freeIndices.length`, and the two can no longer disagree. `capacity` stays an
+explicit field, and the schema cross-checks that the run lengths sum to
+exactly it, so a restored store allocates the same number of slots.
+
+The encoding stays JSON-safe (plain numbers and arrays), which it must: the
+same shape crosses the worker protocol boundary, whose `structured-clone`
+payload is declared as `jsonValue`. `SESSION_SNAPSHOT_SCHEMA_VERSION` is
+bumped to 2 alongside it — ADR 0003 gives a snapshot its own version for
+exactly this, and a build handed the other shape now faults
+`snapshot-incompatible` instead of restoring a corrupt ledger.
+
+**Cost is now proportional to the structure of liveness** — the number of
+live/dead runs, bounded by the live population — rather than to the
+allocation. A store with no destroys is two runs; churn adds runs. Worst case
+(alternating live/dead slots) is bounded by the live population, never by
+capacity.
+
+Measured with the harness below, on the same fixtures:
+
+| tier | prisoners | `entities` before | after | envelope before | after |
+| --- | --- | --- | --- | --- | --- |
+| small | 25 | 29.4 KiB | 129 B | 66.0 KiB | 36.7 KiB |
+| medium | 250 | 29.4 KiB | 132 B | 280.3 KiB | 251.0 KiB |
+| large | 1,000 | 29.4 KiB | 134 B | 1.00 MiB | 997.0 KiB |
+| x-large | 3,000 | 29.4 KiB | 135 B | 2.49 MiB | 2.46 MiB |
+
+These fixtures admit prisoners and never release any, so their ledgers are
+two or three runs and the figures are close to a floor rather than a curve;
+`tests/unit/entity-liveness-codec.test.ts` covers the churned case, where run
+count — and therefore size — grows with the population rather than with
+`DEFAULT_PRISONER_CAPACITY`.
+
+**Migration.** `migrateSaveEnvelopeV1ToV2`
+(`src/persistence/save-migrations.ts`) re-encodes a V1 entity section by
+routing it through the *same* `encodeEntityStoreSnapshot` a live store uses,
+so a migrated save and a freshly captured one cannot drift into two
+encodings. V1's schema never constrained the three arrays to be exactly
+`capacity` long, so the migration normalises them (truncate/zero-pad) first;
+for every save this codebase actually wrote, that normalisation is the
+identity. The checksum is recomputed for the V2 payload, which is safe
+because the V1 checksum is verified against the V1 payload first — see
+"Checksum".
+
+The two V1 fixtures in `tests/fixtures/persistence/` are checked in
+**unchanged** and still load; `tests/migrations/save-v1-to-v2.test.ts` proves
+they migrate, that the migrated ledger reproduces V1's generations, free list
+and capacity exactly, that a tampered V1 save is still rejected as
+`checksum-mismatch`, and that decoding a fixture does not mutate it.
+
+`tests/browser/local-save-migration.spec.ts` re-proves the same upgrade from
+the *other* side of a real storage boundary, off the same fixture: a V1 record
+transported by structured clone rather than JSON, read back after a real page
+navigation, and migrated inside the repository's own recovery scan rather than
+by calling the chain directly. See `docs/TESTING.md` for why a format
+migration belongs in that layer as well as in-process.
 
 ## Error taxonomy
 
@@ -238,7 +353,19 @@ project established:
 - **A real `QuotaExceededError` carries an empty `message`.**
   `classifyStoreError` therefore falls back to the error's name, so the
   single failure a player is most likely to see never produces blank
-  evidence.
+  evidence. Both halves are asserted — the empty raw message *and* the
+  non-blank classified one — so neither the observation nor the fallback it
+  justifies can go stale unnoticed.
+- **A V1 save left in real origin storage still loads under a V2 build.**
+  A V1 record planted directly in real IndexedDB (bypassing `save()`, which
+  can only write the current version) survives a page navigation, migrates on
+  read, and reproduces the V1 ledger exactly. `loadCurrent` migrates in
+  memory only — the V1 record stays on disk until the next save, which then
+  writes the population-shaped V2 form durably. And a *tampered* V1 record
+  read back off real storage is still rejected as `checksum-mismatch` at V1,
+  with recovery falling back to the previous good V1 generation: the proof
+  that recomputing the checksum during migration did not cost corruption
+  detection, on the storage path where it would actually matter.
 - **`IDBTransaction.error` is `null` after an explicit `abort()`**, so the
   adapter's `?? new DOMException(..., 'AbortError')` fallback is
   load-bearing, not defensive padding. And when an unhandled *request*
@@ -287,7 +414,7 @@ Database `lockstate-saves`, version 1, two object stores:
   (oldest-first) `generationIds` window, timestamps, optional
   `pendingSync`.
 - `generations` (out-of-line key `` `${prisonId}:${generationId}` ``) — one
-  validated `SaveEnvelopeV1` per generation.
+  validated `SaveEnvelope` per generation.
 
 ### Generation retention and recovery
 
@@ -395,8 +522,10 @@ Two implementations satisfy it:
 No protocol schema change was needed: ADR 0003 already gives snapshots an
 independent `schemaId`/`schemaVersion` whose evolution "does not
 automatically require an envelope-version change". The session bundle
-therefore travels as `simulation-save-payload` v1 over the existing
-`structured-clone` transport. What *did* change on the worker side:
+therefore travels as `simulation-save-payload` over the existing
+`structured-clone` transport — at v2 since #50 changed the shape of its
+`entities` field, which is exactly the change that independent version exists
+to declare. What *did* change on the worker side:
 
 - `simulation/request-snapshot` now returns the **full** session bundle
   (kernel + world + construction + entities), not the kernel alone. A
@@ -424,7 +553,9 @@ pending command queue intact, seed determinism, and both fault paths.
   so a crash right after "New prison" cannot leave a slot whose
   `loadCurrent` reports `no-valid-generation`.
 - `buildEnvelope` captures from the host and wraps the result in a
-  checksummed `SaveEnvelopeV1`.
+  checksummed `SaveEnvelope`. The bundle's `entities` field is already in
+  the JSON-safe encoded form, and `createSaveEnvelope` takes it as such —
+  it does not re-encode what the worker already encoded.
 - `saveNow` returns the repository's `SaveResult` unchanged, giving the UI
   durable success/failure evidence, and records `markPendingSync`
   bookkeeping for #20 to act on later. It never contacts the network. A
@@ -443,11 +574,11 @@ justified by the measurements below rather than picked by feel — issue
 #19 requires that "dirty tracking/cadence must be justified by
 measurements before tuning."
 
-### What a V1 restore actually carries
+### What a restore actually carries
 
 `restoreSimulationRuntime` (`src/simulation/runtime/restore-session.ts`)
-returns an explicit `RestoredScope`, and the UI displays it, because a V1
-save carries **less than the current simulation contains**:
+returns an explicit `RestoredScope`, and the UI displays it, because a save
+carries **less than the current simulation contains**:
 
 | Restored | Rebuilt empty |
 | --- | --- |
@@ -457,13 +588,15 @@ save carries **less than the current simulation contains**:
 | construction orders and undo/redo | contraband and intelligence |
 | entity id liveness | incidents and gangs |
 
-The right-hand column is a real, bounded limitation, not an oversight:
-`SaveEnvelopeV1` was defined in #18, before the systems in that column
-existed. Extending the payload is a save-schema change — a V2 plus a
+The right-hand column is a real, bounded limitation, not an oversight: the
+envelope was defined in #18, before the systems in that column existed.
+Extending the payload is a save-schema change — a new version plus a
 migration, per `AGENTS.md`'s "every persistent format must have a version
 and migration strategy before release" — so it belongs in its own issue
-rather than being smuggled in here. Stating the gap in the type, in the
-UI and in this table is the honest interim contract.
+rather than being smuggled in here. V2 (#50) changed only *how* entity
+liveness is written down, not which subsystems are carried, so this table is
+unchanged by it. Stating the gap in the type, in the UI and in this table is
+the honest interim contract.
 
 Restore reuses `createNewSimulationRuntime`'s `world` option rather than
 duplicating the system graph, so there is exactly one definition of how a
@@ -570,11 +703,24 @@ At the large tier the full autosave cycle is now ~0.34% of a 30 s interval
 tuned; changing `DEFAULT_AUTOSAVE_INTERVAL_MS` is still a separate decision
 and is not made here.
 
-### 2. Entity snapshot serialized at capacity, not population (#50)
+### 2. Entity snapshot serialized at capacity, not population (#50) — resolved
 
-The `entities` section of a save is a constant 29.4 KiB at every tier, because
-`EntityStoreSnapshot` serializes `generations`, `freeIndices` and `alive`
-across the store's full allocated capacity (`DEFAULT_PRISONER_CAPACITY`,
-5,000) rather than its live population. That is 45% of a small prison's
-66.0 KiB envelope and pure padding. Open; see issue #50, which owns the
-encoding change and the save-schema version bump it requires.
+The `entities` section used to be a constant 29.4 KiB at every tier, because
+`EntityStoreSnapshot` was serialized across the store's full allocated
+capacity (`DEFAULT_PRISONER_CAPACITY`, 5,000) rather than its live
+population — 45% of a small prison's 66.0 KiB envelope, and pure padding.
+
+"V2: the entity ledger follows population, not capacity" above describes the
+fix: `generations` and `alive` are run-length encoded and `freeIndices`
+carries only its live prefix, behind a save-schema V2 and a V1 → V2
+migration. `entities` fell to 129–135 B across all four tiers, taking a small
+prison's envelope from 66.0 KiB to 36.7 KiB (−44%) and its three-generation
+retained window from 198.1 KiB to 110.2 KiB. The live `EntityStore` layout
+(ADR 0005) was not touched, and the V1 fixtures still load unmodified.
+
+Two things this deliberately did **not** do, both still open if they ever
+matter: per-component entity state is still excluded from the payload (see
+"What is deliberately excluded" above), and general save compression remains a
+storage-backend concern with `estimateSaveEnvelopeByteSize` as its hook. With
+`entities` now negligible, the world and construction sections are what a
+future size issue would have to address.

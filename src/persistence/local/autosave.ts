@@ -1,4 +1,4 @@
-import type { SaveEnvelopeV1 } from '../save-schema';
+import type { SaveEnvelope } from '../save-schema';
 import type { SaveResult } from './repository';
 
 export interface AutosaveDependencies {
@@ -11,8 +11,8 @@ export interface AutosaveDependencies {
    * simulation worker (see `SessionRuntimeHost`). A synchronous
    * implementation remains valid and is what the unit tests use.
    */
-  readonly buildEnvelope: (prisonId: string) => Promise<SaveEnvelopeV1 | undefined> | SaveEnvelopeV1 | undefined;
-  readonly save: (prisonId: string, envelope: SaveEnvelopeV1) => Promise<SaveResult>;
+  readonly buildEnvelope: (prisonId: string) => Promise<SaveEnvelope | undefined> | SaveEnvelope | undefined;
+  readonly save: (prisonId: string, envelope: SaveEnvelope) => Promise<SaveResult>;
   readonly onResult?: (prisonId: string, result: SaveResult) => void;
 }
 
