@@ -426,6 +426,26 @@ export const SIMULATION_ENUM_GROUPS = [
     labels: { wall: 'Wall', object: 'Object', utility: 'Utility' },
   },
   {
+    // Labelled rather than exempted, and not marginally so: the HUD's Build
+    // panel makes the player *choose* one of these before placing a wall
+    // (#74), so an exemption would have to claim the value is never
+    // displayed while a shipped panel displays it.
+    //
+    // Only two members, because only two exist to store: `SparseWorld` keeps
+    // wall geometry in a `topEdge` and a `leftEdge` layer, and the other two
+    // sides of a tile are already covered -- the south edge of `(x, y)` *is*
+    // the north edge of `(x, y + 1)`. `door-side` above labels the same
+    // geometry from the navigation side under its own storage names (`top`,
+    // `left`); this group names it as a player picks it, by compass
+    // direction. Both are correct for their caller, which is why they are
+    // separate namespaces rather than one shared list.
+    namespace: 'build-edge',
+    sourceFile: 'src/simulation/construction/build-order.ts',
+    declaration: 'BUILD_EDGES',
+    form: 'const-array',
+    labels: { north: 'North', west: 'West' },
+  },
+  {
     namespace: 'utility-type',
     sourceFile: 'src/simulation/operations/utility-network.ts',
     declaration: 'UtilityType',

@@ -189,7 +189,9 @@ test.describe('HUD shell', () => {
 
     await page.evaluate(() => window.lockstateUiHarness.toggleAlerts());
     expect((await page.evaluate(() => window.lockstateUiHarness.hudProbe())).alertsCollapsed).toBe('false');
-    expect(await page.locator('.ui-section__header').getAttribute('aria-expanded')).toBe('true');
+    // Scoped to the minimap frame the alerts live in: the Build panel uses
+    // the same primitive, so a bare `.ui-section__header` now matches three.
+    expect(await page.locator('.hud-minimap .ui-section__header').getAttribute('aria-expanded')).toBe('true');
 
     await page.evaluate(() => window.lockstateUiHarness.toggleAlerts());
     expect((await page.evaluate(() => window.lockstateUiHarness.hudProbe())).alertsCollapsed).toBe('true');
@@ -231,6 +233,140 @@ test.describe('HUD shell', () => {
         expect(layout.minimapOverlapsTabs, `minimap overlaps the tab bar at ${width}px`).toBe(false);
         expect(layout.tabs?.right, `tab bar overflows at ${width}px`).toBeLessThanOrEqual(width);
       }
+    });
+  });
+
+  /**
+   * Issue #74's UI half: building has to be reachable from the running app.
+   *
+   * The panel is DOM, and Vitest runs in the `node` environment with no DOM
+   * and no DOM library as a dependency, so a real browser is the lowest layer
+   * that can prove any of this. What matters is that a real tap sequence --
+   * pick a buildable, move a coordinate, choose an edge, press the one
+   * primary action -- produces exactly one intent carrying exactly what was
+   * on screen.
+   */
+  test.describe('build panel (issue #74)', () => {
+    test('is reachable from the Build tab and hidden from every other one', async ({ page }) => {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+
+      expect((await page.evaluate(() => window.lockstateUiHarness.buildProbe())).visible).toBe(false);
+
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+      const probe = await page.evaluate(() => window.lockstateUiHarness.buildProbe());
+
+      expect(probe.visible).toBe(true);
+      expect(probe.options).toEqual(['wall-brick', 'door-wooden']);
+      expect(probe.selected).toBe('wall-brick');
+      expect(probe.submitDisabled).toBe(false);
+      // ADR 0011: an unresolved key renders as itself. Nothing on this panel
+      // may be a raw `hud.*` identifier.
+      expect(probe.texts.filter((text) => text.startsWith('hud.'))).toEqual([]);
+      expect(probe.texts).toContain('Brick wall');
+
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
+      expect((await page.evaluate(() => window.lockstateUiHarness.buildProbe())).visible).toBe(false);
+    });
+
+    test('leads with the map, and folds the numeric route away as the fallback', async ({ page }) => {
+      // Pointing is the interaction. The numeric fields still exist, because a
+      // pointer-only build tool locks out anyone on a keyboard -- but they are
+      // not what the panel offers first, and they do not compete for the eye.
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+      const probe = await page.evaluate(() => window.lockstateUiHarness.buildProbe());
+
+      expect(probe.armLabel).toBe('Place on map');
+      expect(probe.armIsPrimary).toBe(true);
+      expect(probe.armed).toBe(false);
+      expect(probe.coordinatesCollapsed).toBe(true);
+      expect(probe.targetText).toBe('Point at the world');
+    });
+
+    test('arming the map is a toggle that reports itself, and is reversible', async ({ page }) => {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+
+      await page.evaluate(() => window.lockstateUiHarness.clickArmBuild());
+      const armedProbe = await page.evaluate(() => window.lockstateUiHarness.buildProbe());
+      expect(armedProbe.armed).toBe(true);
+      expect(armedProbe.armLabel).toBe('Stop placing');
+
+      await page.evaluate(() => window.lockstateUiHarness.clickArmBuild());
+      const disarmedProbe = await page.evaluate(() => window.lockstateUiHarness.buildProbe());
+      expect(disarmedProbe.armed).toBe(false);
+
+      expect(await page.evaluate(() => window.lockstateUiHarness.hudIntents())).toEqual([
+        JSON.stringify({ kind: 'select-tab', tab: 'build' }),
+        JSON.stringify({ kind: 'arm-build-tool', armed: true, definitionId: 'wall-brick' }),
+        JSON.stringify({ kind: 'arm-build-tool', armed: false, definitionId: 'wall-brick' }),
+      ]);
+    });
+
+    test('leaving the Build tab hands the pointer back to the camera', async ({ page }) => {
+      // A tool left armed behind a hidden panel would swallow every click on a
+      // world the player thought they were only looking at.
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+      await page.evaluate(() => window.lockstateUiHarness.clickArmBuild());
+      expect((await page.evaluate(() => window.lockstateUiHarness.buildProbe())).armed).toBe(true);
+
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
+      const intents = await page.evaluate(() => window.lockstateUiHarness.hudIntents());
+      // The disarm rides out with the tab change itself, so the host never
+      // sees a window where the panel is hidden and the pointer is still ours.
+      expect(intents).toContain(JSON.stringify({ kind: 'arm-build-tool', armed: false, definitionId: 'wall-brick' }));
+      expect((await page.evaluate(() => window.lockstateUiHarness.buildProbe())).armed).toBe(false);
+    });
+
+    test('the numeric fallback still works, and is reachable by keyboard alone', async ({ page }) => {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+      await page.evaluate(() => window.lockstateUiHarness.expandBuildCoordinates());
+      expect((await page.evaluate(() => window.lockstateUiHarness.buildProbe())).coordinatesCollapsed).toBe(false);
+
+      // Origin is (16, 16); two steps up on X and one down on Y.
+      await page.evaluate(() => window.lockstateUiHarness.stepBuildCoordinate('x', 'up'));
+      await page.evaluate(() => window.lockstateUiHarness.stepBuildCoordinate('x', 'up'));
+      await page.evaluate(() => window.lockstateUiHarness.stepBuildCoordinate('y', 'down'));
+      await page.evaluate(() => window.lockstateUiHarness.clickBuildEdge('west'));
+
+      const probe = await page.evaluate(() => window.lockstateUiHarness.buildProbe());
+      expect(probe.tileX).toBe('18');
+      expect(probe.tileY).toBe('15');
+      expect(probe.edge).toBe('west');
+
+      await page.evaluate(() => window.lockstateUiHarness.clickPlaceOrder());
+      const intents = await page.evaluate(() => window.lockstateUiHarness.hudIntents());
+
+      expect(intents.filter((intent) => intent.includes('place-build-order'))).toEqual([
+        JSON.stringify({ kind: 'place-build-order', definitionId: 'wall-brick', x: 18, y: 15, edge: 'west' }),
+      ]);
+
+      // Every control in the fallback is a real focusable element, so the
+      // route it exists for actually works.
+      const focusable = await page.evaluate(() =>
+        [...document.querySelectorAll('.hud-build button, .hud-build input')].filter(
+          (node) => (node as HTMLElement).tabIndex >= 0,
+        ).length,
+      );
+      expect(focusable).toBeGreaterThanOrEqual(8);
+    });
+
+    test('hides the edge chooser for a buildable that does not sit on an edge', async ({ page }) => {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+      // The chooser lives in the numeric fallback: the map route reads the
+      // edge off the gesture instead of asking for it twice.
+      await page.evaluate(() => window.lockstateUiHarness.expandBuildCoordinates());
+      expect((await page.evaluate(() => window.lockstateUiHarness.buildProbe())).edgeChooserVisible).toBe(true);
+
+      // A door is an object, not edge geometry. A disabled chooser would still
+      // claim the setting exists; it is hidden instead.
+      await page.evaluate(() => window.lockstateUiHarness.clickBuildable('door-wooden'));
+      const probe = await page.evaluate(() => window.lockstateUiHarness.buildProbe());
+      expect(probe.selected).toBe('door-wooden');
+      expect(probe.edgeChooserVisible).toBe(false);
     });
   });
 

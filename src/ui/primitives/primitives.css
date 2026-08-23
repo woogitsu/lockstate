@@ -34,6 +34,20 @@
   white-space: nowrap;
 }
 
+/* `hidden` must actually hide.
+   The UA rule is `[hidden] { display: none }`, and *any* author `display`
+   declaration outranks it -- so a component that sets its own display stays
+   on screen with the attribute set, still focusable and still clickable.
+   Restating it at author level, with the attribute in the selector so it
+   outranks the component's own rule, is the whole fix. */
+.ui-panel[hidden],
+.ui-choice[hidden],
+.ui-number[hidden],
+.ui-action[hidden],
+.ui-row[hidden] {
+  display: none;
+}
+
 .ui-sr-only {
   position: absolute;
   width: 1px;
@@ -62,9 +76,21 @@
 .ui-icon-button:focus-visible,
 .ui-tab:focus-visible,
 .ui-row--interactive:focus-visible,
-.ui-section__header:focus-visible {
+.ui-section__header:focus-visible,
+.ui-action:focus-visible,
+.ui-number__step:focus-visible,
+.ui-number__input:focus-visible,
+.ui-choice__option:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+/* An outline drawn outside a control that sits flush inside a bordered group
+   would be clipped by the group's `overflow: hidden`; these draw inside. */
+.ui-number__step:focus-visible,
+.ui-number__input:focus-visible,
+.ui-choice__option:focus-visible {
+  outline-offset: -2px;
 }
 
 /* ------------------------------------------------------------------ */
@@ -338,4 +364,149 @@
   .ui-panel__toggle .ui-icon {
     transition: none;
   }
+}
+
+/* ------------------------------------------------------------------ */
+/* Action button                                                       */
+/* ------------------------------------------------------------------ */
+
+.ui-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--tap-target);
+  padding: 0 var(--space-4);
+  box-sizing: border-box;
+  background: var(--surface-overlay);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-ui);
+  font-size: var(--text-size-body);
+  color: var(--text-body);
+  cursor: pointer;
+}
+
+.ui-action:hover { background: var(--surface-active); color: var(--text-heading); }
+
+.ui-action[data-tone='primary'] {
+  background: var(--accent-deep);
+  border-color: var(--accent);
+  color: var(--text-heading);
+}
+
+.ui-action[data-tone='primary']:hover { background: var(--accent); color: var(--accent-contrast); }
+
+.ui-action:disabled { cursor: not-allowed; opacity: 0.5; }
+
+.ui-action__label { white-space: nowrap; }
+
+/* ------------------------------------------------------------------ */
+/* Number field                                                        */
+/* ------------------------------------------------------------------ */
+
+.ui-number {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.ui-number__label { color: var(--text-muted); }
+
+.ui-number__controls {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.ui-number__step {
+  flex: none;
+  width: var(--tap-target);
+  min-height: var(--tap-target);
+  background: var(--surface-overlay);
+  border: 0;
+  color: var(--text-subtle);
+  font-family: var(--font-mono);
+  font-size: var(--text-size-value);
+  cursor: pointer;
+}
+
+.ui-number__step:hover { background: var(--surface-active); color: var(--text-heading); }
+
+.ui-number__input {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  padding: 0 var(--space-2);
+  background: var(--surface-sunken);
+  border: 0;
+  border-left: var(--hairline) solid var(--border-hairline);
+  border-right: var(--hairline) solid var(--border-hairline);
+  font-family: var(--font-mono);
+  font-size: var(--text-size-value);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-heading);
+  text-align: center;
+  /* The engine's own spinners are the affordance the step buttons replace;
+     keeping both would give one field two controls of different sizes, and
+     on a touch screen only the larger pair is usable at all. */
+  appearance: textfield;
+}
+
+.ui-number__input::-webkit-outer-spin-button,
+.ui-number__input::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* Choice group                                                        */
+/* ------------------------------------------------------------------ */
+
+.ui-choice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.ui-choice__legend { color: var(--text-muted); }
+
+.ui-choice__options {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.ui-choice__option {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--tap-target);
+  padding: 0 var(--space-2);
+  background: var(--surface-overlay);
+  border: 0;
+  font-family: var(--font-ui);
+  font-size: var(--text-size-body);
+  color: var(--text-subtle);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.ui-choice__option + .ui-choice__option { border-left: var(--hairline) solid var(--border-hairline); }
+.ui-choice__option:hover { background: var(--surface-active); color: var(--text-heading); }
+
+/* Selected is a background step *and* a colour change, so the state survives
+   a display that renders the accent hue poorly. */
+.ui-choice__option[data-active='true'] {
+  background: var(--accent-soft);
+  color: var(--accent);
 }

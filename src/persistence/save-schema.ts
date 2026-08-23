@@ -115,6 +115,19 @@ const buildOrderSchema = z
     id: z.string().min(1),
     definitionId: z.string().min(1),
     location: z.object({ x: z.number().int(), y: z.number().int() }).strict(),
+    /**
+     * Which tile edge the order occupies (#74). `'north'`/`'west'` are the two
+     * edge slots `SparseWorld` stores; see
+     * `src/simulation/construction/build-order.ts`.
+     *
+     * Optional, and **not** a version bump. The schema is `.strict()`, so a
+     * key it does not name is rejected outright — an order carrying an edge
+     * could not be saved at all until this line existed. Because it is
+     * optional it is equally valid in the V1 and V2 payload shapes above: an
+     * older save simply never has it and resolves to the documented default,
+     * so no migration step is needed and none is added.
+     */
+    edge: z.enum(['north', 'west']).optional(),
     state: z.enum([
       'planned',
       'approved',

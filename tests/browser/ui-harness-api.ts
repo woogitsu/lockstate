@@ -36,6 +36,31 @@ export interface LayoutBox {
   readonly bottom: number;
 }
 
+export interface BuildProbe {
+  /** False while the Build tab is not the active one. */
+  readonly visible: boolean;
+  /** `data-buildable` of every offered row, in the order they are drawn. */
+  readonly options: readonly string[];
+  readonly selected: string | null;
+  readonly tileX: string;
+  readonly tileY: string;
+  readonly edge: string | null;
+  /** True when the edge chooser is showing at all -- it is hidden for a non-edge buildable. */
+  readonly edgeChooserVisible: boolean;
+  readonly submitDisabled: boolean;
+  /** The map route's toggle: label, pressed state, and whether it is the panel's primary control. */
+  readonly armLabel: string;
+  readonly armed: boolean;
+  readonly armIsPrimary: boolean;
+  /** True while the numeric fallback section is folded away. */
+  readonly coordinatesCollapsed: boolean;
+  /** The `data-target` readout, or null when nothing is aimed at. */
+  readonly targetReadout: string | null;
+  readonly targetText: string;
+  /** Every visible label in the panel, so an unresolved `hud.*` key is caught. */
+  readonly texts: readonly string[];
+}
+
 export interface LayoutProbe {
   readonly viewport: readonly [number, number];
   readonly strip: LayoutBox | null;
@@ -71,6 +96,14 @@ export interface LockstateUiHarness {
   releaseClockIntent(): void;
   transportDisabled(): boolean;
   layoutProbe(): LayoutProbe;
+
+  buildProbe(): BuildProbe;
+  clickArmBuild(): boolean;
+  expandBuildCoordinates(): boolean;
+  clickBuildable(definitionId: string): boolean;
+  stepBuildCoordinate(axis: 'x' | 'y', direction: 'up' | 'down'): boolean;
+  clickBuildEdge(edge: string): boolean;
+  clickPlaceOrder(): boolean;
 
   takeUnhandledRejections(): readonly string[];
 }

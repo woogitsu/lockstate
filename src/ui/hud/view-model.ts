@@ -66,6 +66,45 @@ export interface HudAlertViewModel {
   readonly severity: HudSeverity;
 }
 
+/**
+ * Which edge of a tile a wall order occupies.
+ *
+ * Deliberately re-declared here rather than imported: the HUD may not import
+ * `src/simulation/**` (`AGENTS.md` boundary 1, checked by
+ * `tests/unit/ui-design-tokens.test.ts`). The simulation's `BuildEdge` is the
+ * authority; this is the wire shape the host translates to and from, and
+ * `tests/unit/ui-hud-build-panel.test.ts` pins the two to the same members so
+ * they cannot drift silently.
+ */
+export const HUD_BUILD_EDGES = ['north', 'west'] as const;
+export type HudBuildEdge = (typeof HUD_BUILD_EDGES)[number];
+
+export interface HudBuildableViewModel {
+  /** Stable simulation id. Travels back out unchanged in the intent. */
+  readonly definitionId: string;
+  /** A message key, never text. */
+  readonly labelKey: LocalizationKey;
+  /**
+   * Whether this buildable sits on a tile edge and therefore needs an
+   * orientation. False hides the edge chooser rather than showing a control
+   * whose value would be ignored.
+   */
+  readonly occupiesEdge: boolean;
+}
+
+/**
+ * What the Build panel can offer.
+ *
+ * Supplied once at mount rather than per snapshot: the buildable catalog is
+ * content, not session state, and rebuilding the option list on every frame
+ * would drop focus out of the panel while somebody was typing a coordinate.
+ */
+export interface HudBuildViewModel {
+  readonly buildables: readonly HudBuildableViewModel[];
+  /** Where the placement fields start -- typically the middle of owned land. */
+  readonly origin: { readonly x: number; readonly y: number };
+}
+
 export interface HudViewModel {
   readonly counts: HudCountsViewModel;
   readonly clock: HudClockViewModel;

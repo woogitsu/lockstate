@@ -4,9 +4,28 @@ export interface TouchPoint {
   readonly y: number;
 }
 
+/**
+ * `pinch` carries a translation as well as a scale.
+ *
+ * Two fingers on a map mean "move and scale this", not "scale it in place" --
+ * and the distinction stopped being cosmetic when the build tool claimed the
+ * one-finger drag (#74). While a tool is armed, two fingers are the *only*
+ * way to pan on touch, so a pinch that could not translate would leave a
+ * touch player able to zoom and never to move.
+ *
+ * The translation is the movement of the midpoint between the two fingers,
+ * which is what a hand actually does when it drags a pinched map.
+ */
 export type Gesture =
   | { readonly kind: 'pan'; readonly deltaX: number; readonly deltaY: number }
-  | { readonly kind: 'pinch'; readonly centerX: number; readonly centerY: number; readonly scale: number };
+  | {
+      readonly kind: 'pinch';
+      readonly centerX: number;
+      readonly centerY: number;
+      readonly scale: number;
+      readonly deltaX: number;
+      readonly deltaY: number;
+    };
 
 export class TouchGestureTracker {
   private readonly points = new Map<number, TouchPoint>();
@@ -37,6 +56,8 @@ export class TouchGestureTracker {
       centerX: (point.x + peer.x) / 2,
       centerY: (point.y + peer.y) / 2,
       scale: distance / previousDistance,
+      deltaX: (point.x - previous.x) / 2,
+      deltaY: (point.y - previous.y) / 2,
     };
   }
 }

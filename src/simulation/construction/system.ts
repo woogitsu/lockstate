@@ -1,14 +1,25 @@
 import { type SystemRegistration, type SimulationContext } from '../kernel/system';
-import { type BuildOrder } from './build-order';
-import { getBuildableDefinition } from './definition';
+import { type BuildEdge, type BuildOrder, resolveBuildEdge } from './build-order';
+import { edgeNumericIdFor, getBuildableDefinition } from './definition';
 import { type ConstructionMaterialsProvider, UNLIMITED_MATERIALS_PROVIDER } from './materials-provider';
 import { SparseWorld } from '../world/sparse-world';
-import { tileToChunk } from '../world/coordinates';
+import { type TilePosition, tileToChunk } from '../world/coordinates';
 
 export interface ConstructionSnapshot {
   readonly orders: readonly BuildOrder[];
   readonly undoStack: readonly (readonly string[])[];
   readonly redoStack: readonly (readonly string[])[];
+}
+
+/**
+ * States an order can still be taken back from.
+ *
+ * `completed` is in the set: completing now writes world geometry, and
+ * geometry that cannot be removed would make the first wall a player places
+ * permanent. `cancelled` and `failed` are terminal.
+ */
+function isCancellable(state: BuildOrder['state']): boolean {
+  return state !== 'cancelled' && state !== 'failed';
 }
 
 export class ConstructionSystem implements SystemRegistration {
@@ -37,7 +48,6 @@ export class ConstructionSystem implements SystemRegistration {
     }
     
     // Validation hooks would run here: check ownership, terrain, occupancy
-    const { x, y } = order.location;
     const { chunk } = tileToChunk(order.location, this.world.tileChunkSize);
     const chunkState = this.world.getChunk(chunk);
     if (!chunkState) {
@@ -79,12 +89,18 @@ export class ConstructionSystem implements SystemRegistration {
     for (const orderId of transaction) {
       const order = this.orders.get(orderId);
       if (!order) continue;
-      
-      // Only undo if uncommitted (or just pending materials)
-      if (order.state === 'planned' || order.state === 'approved' || order.state === 'materials-pending') {
-        order.state = 'cancelled';
-        redoTransaction.push(orderId);
-      }
+
+      // Undo is exactly "cancel every order in this transaction", including a
+      // `completed` one -- which is why it goes through `cancelOrder` rather
+      // than assigning the state here. A completed order has written a wall
+      // into the world's edge layers; leaving that wall standing while the
+      // order reads `cancelled` would make the undo stack a lie, and would
+      // leave geometry nothing can ever remove. `cancelOrder` reverses the
+      // write, so undo means the same thing for a finished order as for a
+      // pending one.
+      if (!isCancellable(order.state)) continue;
+      this.cancelOrder(orderId);
+      redoTransaction.push(orderId);
     }
 
     if (redoTransaction.length > 0) {
@@ -114,14 +130,29 @@ export class ConstructionSystem implements SystemRegistration {
     }
   }
 
+  /**
+   * Cancels an order, undoing the world geometry it wrote if it had already
+   * finished.
+   *
+   * `completed` is cancellable *because* completing now changes the world. A
+   * finished wall that could not be taken down would be permanent the moment
+   * it was placed -- and `undo()` delegates here, so refusing a completed
+   * order would leave the undo stack claiming to have reversed something it
+   * had not.
+   *
+   * `cancelled` and `failed` still throw: they are terminal, and there is no
+   * geometry behind them to reverse.
+   */
   public cancelOrder(id: string): void {
     const order = this.orders.get(id);
     if (!order) throw new Error(`BuildOrder ${id} not found`);
-    if (order.state === 'completed' || order.state === 'failed' || order.state === 'cancelled') {
+    if (!isCancellable(order.state)) {
       throw new Error(`Cannot cancel order in state ${order.state}`);
     }
-    
+
+    const hadGeometry = order.state === 'completed';
     order.state = 'cancelled';
+    if (hadGeometry) this.revertConstruction(order);
     // TODO: release materials
   }
 
@@ -129,8 +160,27 @@ export class ConstructionSystem implements SystemRegistration {
     return this.orders.get(id);
   }
 
+  /**
+   * Every order, in ascending id (code-unit order), never `Map` insertion
+   * order.
+   *
+   * This stopped being cosmetic the moment `finalizeConstruction` began
+   * writing world geometry: two orders that finish on the same scheduled tick
+   * and claim the same tile edge are resolved by whichever is processed last,
+   * so insertion order would decide what the world looks like. Insertion
+   * order is a property of how a session happened to be built, and
+   * `restore()` re-inserts from a snapshot rather than replaying that
+   * history -- so a restored session could disagree with the live one it came
+   * from. See `docs/DETERMINISM.md`, "Canonical iteration order".
+   */
+  private orderedOrders(): readonly BuildOrder[] {
+    return [...this.orders.values()].sort((left, right) =>
+      left.id < right.id ? -1 : left.id > right.id ? 1 : 0,
+    );
+  }
+
   public update(context: SimulationContext): void {
-    for (const order of this.orders.values()) {
+    for (const order of this.orderedOrders()) {
       const def = getBuildableDefinition(order.definitionId);
       
       switch (order.state) {
@@ -178,20 +228,96 @@ export class ConstructionSystem implements SystemRegistration {
     }
   }
 
+  /**
+   * Writes what the finished order actually built into the world.
+   *
+   * For a wall that is a value in the chunk's `topEdge` / `leftEdge` layer at
+   * the order's tile, on the edge the order names. `setTopEdge`/`setLeftEdge`
+   * bump the chunk's geometry revision themselves, which is what makes
+   * `TopologyManager` recompute -- so the revision still moves, it is simply
+   * no longer the *only* thing that moves.
+   *
+   * A buildable that is not edge geometry (an object, a utility) has nothing
+   * to write yet; it still bumps the revision, exactly as before, so a future
+   * object placement model changes this function rather than its callers.
+   */
   private finalizeConstruction(order: BuildOrder): void {
-    // Actually mutate the world geometry
-    const { x, y } = order.location;
-    const { chunk } = tileToChunk(order.location, this.world.tileChunkSize);
-    const chunkState = this.world.getChunk(chunk);
-    if (chunkState) {
-      // In a full implementation, we'd add entities or mutate cell data.
-      // For now, bump the geometry revision to signal a topological change.
-      this.world.markGeometryChanged(chunk);
+    const definition = getBuildableDefinition(order.definitionId);
+    const edgeValue = edgeNumericIdFor(definition);
+    if (edgeValue === 0) {
+      this.markGeometryChanged(order.location);
+      return;
     }
+
+    this.writeEdge(order.location, resolveBuildEdge(order), edgeValue);
+  }
+
+  /**
+   * Removes the geometry a completed order wrote.
+   *
+   * The edge does not simply go back to `0`: another completed order may
+   * occupy the same edge (nothing rejects a second wall on an edge that
+   * already has one), and clearing it would delete a wall this order never
+   * built. So the edge is rewritten from whatever *other* completed order
+   * still claims it, and only falls to `0` when none does.
+   *
+   * The scan is over `orderedOrders()` rather than the raw map, so which of
+   * two remaining claimants wins is a function of their ids and not of the
+   * order the session happened to create them in.
+   */
+  private revertConstruction(order: BuildOrder): void {
+    const definition = getBuildableDefinition(order.definitionId);
+    const edgeValue = edgeNumericIdFor(definition);
+    if (edgeValue === 0) {
+      this.markGeometryChanged(order.location);
+      return;
+    }
+
+    const edge = resolveBuildEdge(order);
+    this.writeEdge(order.location, edge, this.remainingEdgeValue(order, edge));
+  }
+
+  private remainingEdgeValue(cancelled: BuildOrder, edge: BuildEdge): number {
+    let value = 0;
+    for (const other of this.orderedOrders()) {
+      if (other.id === cancelled.id) continue;
+      if (other.state !== 'completed') continue;
+      if (other.location.x !== cancelled.location.x || other.location.y !== cancelled.location.y) continue;
+      if (resolveBuildEdge(other) !== edge) continue;
+      const otherValue = edgeNumericIdFor(getBuildableDefinition(other.definitionId));
+      if (otherValue !== 0) value = otherValue;
+    }
+    return value;
+  }
+
+  private writeEdge(location: TilePosition, edge: BuildEdge, value: number): void {
+    if (edge === 'north') this.world.setTopEdge(location, value);
+    else this.world.setLeftEdge(location, value);
+  }
+
+  /**
+   * Signals a topological change on the tile's chunk without writing a layer.
+   *
+   * `markGeometryChanged` throws on a chunk that is only metadata, so the
+   * chunk is materialised first -- the same thing `setTopEdge`/`setLeftEdge`
+   * do on the path above. Before this, finishing an order in a
+   * metadata-only chunk threw out of a scheduled system update and faulted
+   * the worker.
+   */
+  private markGeometryChanged(location: TilePosition): void {
+    const { chunk } = tileToChunk(location, this.world.tileChunkSize);
+    const chunkState = this.world.getChunk(chunk);
+    if (chunkState === undefined) return;
+    if (chunkState.lifecycle !== 'loaded') this.world.load(chunk);
+    this.world.markGeometryChanged(chunk);
   }
 
   public snapshot(): ConstructionSnapshot {
-    const orders = Array.from(this.orders.values()).map((o) => ({
+    // Ascending id, matching `orderedOrders()`. Emitting insertion order here
+    // and re-inserting it in `restore()` would reproduce the *previous*
+    // session's build history as the new session's iteration order, which is
+    // exactly the coupling `docs/DETERMINISM.md` rules out.
+    const orders = this.orderedOrders().map((o) => ({
       ...o,
       materialsAllocated: o.materialsAllocated.map((m) => ({ ...m })),
     }));

@@ -151,8 +151,31 @@ the feed drop polling entirely without the renderer changing at all.
   decision. Nothing loads them. Ground, walls and objects are drawn as shaded
   geometry from the appearance tables in `src/rendering/world/appearance.ts`.
 
-- **Wall geometry from construction.** `ConstructionSystem.finalizeConstruction`
-  bumps a chunk's geometry revision without writing the world's `topEdge` /
-  `leftEdge` layers, so a completed wall order is drawn from the order itself.
-  The renderer draws both sources; when construction starts writing edges, the
-  picture stays correct.
+- **Build input.** The scene owns one non-camera gesture: while the HUD's build
+  tool is armed, a press on the world reports the tile edge it landed nearest
+  and a drag reports the run it covers, drawn as a ghost by `BuildOverlay`
+  until the gesture ends. The scene reports **edges**, never commands --
+  `tests/unit/rendering-module-boundaries.test.ts` forbids the renderer
+  submitting one, and `src/ui/build-tool.ts` is where a gesture becomes a
+  `PlaceBuildOrder`. The picking rule is pure geometry in
+  `src/rendering/build/edge-picking.ts` and is unit-tested without a canvas.
+
+  The interaction is **modal** rather than threshold-discriminated: laying a
+  run *is* a drag, so no travel threshold can separate it from a pan without
+  guessing. Arming is one visible toggle; while it is off every gesture keeps
+  its old meaning. Middle-drag, the wheel and the keyboard always pan, and two
+  fingers always pan and pinch -- which is why `TouchGestureTracker`'s pinch
+  carries a translation, and why the scene calls `input.addPointer(2)` (Phaser
+  tracks one touch pointer by default, so the second finger was previously
+  never delivered at all).
+
+- **Objects have no placement model.** Issue #74 made
+  `ConstructionSystem.finalizeConstruction` write the world's `topEdge` /
+  `leftEdge` layers, so a completed **wall** order is now real geometry and the
+  renderer draws it from the world like any other edge — the order-derived
+  structure it also draws simply agrees. A completed order for anything that is
+  *not* edge geometry (the wooden door, and every future object) still only
+  bumps the chunk's geometry revision: nothing in the simulation records which
+  objects stand on which tile (`docs/HUD_PROJECTIONS.md`, gap 13), so those are
+  still drawn from the build order itself and vanish if the order is ever
+  cleaned out of the construction snapshot.

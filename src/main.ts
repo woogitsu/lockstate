@@ -15,7 +15,20 @@ import { EMPTY_RENDER_FRAME, type RenderFeed } from './rendering/feed/render-fee
 import { SimulationSnapshotFeed } from './rendering/feed/simulation-snapshot-feed';
 import { WorldScene } from './rendering/scene/world-scene';
 import { SavePanel } from './ui/save-panel';
-import { EMPTY_HUD_VIEW_MODEL, mountHud, type HudIntent } from './ui/hud';
+import {
+  EMPTY_HUD_VIEW_MODEL,
+  HUD_MESSAGE_KEY,
+  mountHud,
+  type HudBuildViewModel,
+  type HudBuildableViewModel,
+  type HudHandle,
+  type HudIntent,
+  type HudViewModel,
+} from './ui/hud';
+import { SimulationCommandSender } from './ui/simulation-commands';
+import { BuildTool } from './ui/build-tool';
+import { BUILDABLE_REGISTRY } from './simulation/construction';
+import type { LocalizationKey } from './content/localization';
 import { defaultLocaleEnCatalog } from './content/default-locale-en';
 import { messageCatalogFromLocalizationCatalog } from './services/localization/catalog';
 import { Localizer } from './services/localization/localizer';
@@ -58,9 +71,30 @@ const atlasLibrary = AtlasLibrary.load();
 // stops the shared promise from looking unhandled before they attach.
 atlasLibrary.catch(() => undefined);
 
+/**
+ * The main thread's command channel, and the build tool that uses it.
+ *
+ * Both are built here, before the scene, because the scene needs the tool:
+ * `AGENTS.md` boundary 3 puts input orchestration on this thread, and the
+ * renderer may not submit a command of its own. So the scene reports the tile
+ * edges a gesture covered, and this pair turns them into `PlaceBuildOrder`s.
+ *
+ * With no worker there is no tool: an armed pointer that could never place
+ * anything would take the camera away and give nothing back.
+ */
+const commandSender = simulation === undefined ? undefined : new SimulationCommandSender(simulation);
+const buildTool =
+  commandSender === undefined
+    ? undefined
+    : new BuildTool({
+        submit: (command) => commandSender.submit(command),
+        onError: (error) => console.warn('Build order refused:', error.message),
+      });
+
 const worldScene = new WorldScene({
   feed: renderFeed,
   loadAtlasLibrary: () => atlasLibrary,
+  ...(buildTool === undefined ? {} : { buildTool }),
 });
 
 const gameConfig: Phaser.Types.Core.GameConfig = {
@@ -130,48 +164,177 @@ if (isDemoActorsRequested(window.location.search)) {
  * feed supplies a real view model it paints its empty-prison default, which is
  * the honest picture of a session with nothing in it.
  */
-function mountInterface(app: HTMLElement, simulationUnavailable = false): void {
+/**
+ * Player-facing labels for the two entries in `BUILDABLE_REGISTRY`.
+ *
+ * The registry carries a hard-coded English `name` and no `nameKey`, which
+ * bypasses ADR 0011 and is recorded as a content gap in issue #74 and
+ * `docs/HUD_PROJECTIONS.md` (gap 32). Until it gains a real content key, the
+ * mapping lives here at the composition root -- the one layer that already
+ * knows both the simulation's ids and the HUD's keys. The registry's own
+ * `name` is deliberately never read: translated text may not come out of
+ * `src/simulation/`.
+ */
+const BUILDABLE_LABEL_KEY: Readonly<Record<string, LocalizationKey>> = {
+  'wall-brick': HUD_MESSAGE_KEY.buildableWallBrick,
+  'door-wooden': HUD_MESSAGE_KEY.buildableDoorWooden,
+};
+
+/** Walls first, then everything else: the first row is also the default selection. */
+const CATEGORY_RANK: Readonly<Record<string, number>> = { wall: 0, object: 1, utility: 2 };
+
+/**
+ * What the Build panel may offer, projected from the buildable registry.
+ *
+ * Ordered by `(category rank, id)` rather than taken in `Map` insertion
+ * order: this is a list a player reads and taps, and an order that depended
+ * on module evaluation would be an order nobody chose
+ * (`docs/DETERMINISM.md`). Both keys come from the definition, so the list is
+ * a function of content and not of history. An id with no authored label is
+ * omitted rather than rendered as a raw identifier.
+ */
+function buildCatalogue(): HudBuildViewModel {
+  const buildables: HudBuildableViewModel[] = [];
+  const rank = (category: string): number => CATEGORY_RANK[category] ?? Number.MAX_SAFE_INTEGER;
+  const ordered = [...BUILDABLE_REGISTRY.values()].sort(
+    (a, b) => rank(a.category) - rank(b.category) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
+  );
+  for (const definition of ordered) {
+    const labelKey = BUILDABLE_LABEL_KEY[definition.id];
+    if (labelKey === undefined) continue;
+    buildables.push({
+      definitionId: definition.id,
+      labelKey,
+      occupiesEdge: definition.category === 'wall',
+    });
+  }
+
+  // A new session owns exactly chunk (0,0) of a 32-tile world, so the middle
+  // of owned land is the least surprising place for the fields to start.
+  return { buildables, origin: { x: 16, y: 16 } };
+}
+
+interface InterfaceHost {
+  /**
+   * Absent when no worker started. Every control that would reach the
+   * simulation then *throws*, which the HUD reports on the control that was
+   * pressed -- a pause button that silently does nothing is a lie the player
+   * has no way to detect (issue #82's point, applied to the build controls
+   * too).
+   */
+  readonly client?: SimulationClient;
+  readonly commands?: SimulationCommandSender;
+  readonly tool?: BuildTool;
+}
+
+/**
+ * A control that reaches the simulation, when there is no simulation to reach.
+ *
+ * Throwing rather than returning: the HUD reports a rejection on the control
+ * that was pressed, and a build button that quietly does nothing is exactly
+ * the failure issue #82 was about.
+ */
+function requireSimulation(commands: SimulationCommandSender | undefined): SimulationCommandSender {
+  if (commands === undefined) {
+    throw new Error('The simulation worker could not be started, so nothing can be sent to it.');
+  }
+  return commands;
+}
+
+function mountInterface(app: HTMLElement, host: InterfaceHost = {}): void {
+  const { client, commands, tool } = host;
+  const simulationUnavailable = client === undefined;
   const localizer = new Localizer({
     locale: 'en',
     catalogs: [messageCatalogFromLocalizationCatalog('en', defaultLocaleEnCatalog)],
   });
 
-  mountHud(app, {
-    localizer,
-    // Without a worker there is no simulation and no session, so there is
-    // genuinely nothing to save -- a save panel here would be a prop. What
-    // the player is owed is being *told*, which the console message alone
-    // never did. The alerts region already exists for exactly this.
-    ...(simulationUnavailable
-      ? {
-          viewModel: {
-            ...EMPTY_HUD_VIEW_MODEL,
-            alerts: [
-              {
-                id: 'simulation-unavailable',
-                labelKey: 'hud.alerts.simulation-unavailable',
-                severity: 'danger',
-              },
-            ],
-          },
-        }
-      : {}),
-    onIntent: (intent: HudIntent) => {
-      // `select-tab` and `toggle-panel` are chrome: the HUD has already
-      // applied them locally and there is nothing for a host to do.
-      if (intent.kind !== 'set-clock') return;
+  let hud: HudHandle | undefined;
 
-      // `set-clock` is a command, and there is no one to send it to yet:
-      // `FixedStepClock` exposes no accessor for its `ClockControl`, so the
-      // main thread cannot reach the worker's clock (recorded in
-      // docs/HUD_PROJECTIONS.md). Rejecting surfaces that on the transport
-      // controls through the HUD's own error path. Silently returning would
-      // be worse -- a pause button that reports success and does nothing is
-      // a lie the player has no way to detect.
-      throw new Error('Simulation transport control is not wired to the worker yet.');
+  /**
+   * Without a worker there is no simulation and no session, so there is
+   * genuinely nothing to save -- a save panel here would be a prop. What the
+   * player is owed is being *told*, which the console message alone never did.
+   * The alerts region already exists for exactly this (issue #82).
+   */
+  let viewModel: HudViewModel = simulationUnavailable
+    ? {
+        ...EMPTY_HUD_VIEW_MODEL,
+        alerts: [
+          { id: 'simulation-unavailable', labelKey: 'hud.alerts.simulation-unavailable', severity: 'danger' },
+        ],
+      }
+    : EMPTY_HUD_VIEW_MODEL;
+
+  /**
+   * Repaints the clock from what the worker last said, and from nothing else.
+   *
+   * Only `mode` and `speed` move. Day and minute-of-day stay at their
+   * defaults because no simulation mapping from ticks to a wall clock exists
+   * (`docs/HUD_PROJECTIONS.md`, gap 5) -- inventing one here would put a
+   * number on screen that no system produces.
+   */
+  const applyClock = (mode: 'paused' | 'running', speed: 1 | 2 | 4): void => {
+    viewModel = { ...viewModel, clock: { ...viewModel.clock, mode, speed } };
+    hud?.update(viewModel);
+  };
+
+  client?.addListener((message) => {
+    if (message.kind === 'simulation/ready' || message.kind === 'simulation/clock-state') {
+      const { clock } = message.payload;
+      applyClock(clock.mode, clock.mode === 'running' ? clock.speed : viewModel.clock.speed);
+    }
+  });
+
+  hud = mountHud(app, {
+    localizer,
+    // Passed at mount, not left to the first `update`: with no worker there
+    // is no snapshot coming, so an alert the HUD only learns about on the
+    // next repaint would never be painted at all (issue #82).
+    viewModel,
+    build: buildCatalogue(),
+    onIntent: (intent: HudIntent) => {
+      switch (intent.kind) {
+        // Chrome: the HUD has already applied it locally and there is nothing
+        // for a host to do.
+        case 'select-tab':
+        case 'toggle-panel':
+          return;
+
+        case 'arm-build-tool':
+          // Also chrome, but it has a second half outside the HUD: it decides
+          // whether a click on the *world* builds or moves the camera.
+          tool?.setArmed(intent.armed, intent.definitionId);
+          return;
+
+        case 'set-clock':
+          // Throwing when there is no session surfaces on the transport
+          // control through the HUD's own error path. Silently returning
+          // would be worse -- a pause button that reports success and does
+          // nothing is a lie the player has no way to detect.
+          requireSimulation(commands).setClock(
+            intent.mode === 'paused' ? { mode: 'paused' } : { mode: 'running', speed: intent.speed },
+          );
+          return;
+
+        case 'place-build-order':
+          requireSimulation(commands).submit({
+            type: 'PlaceBuildOrder',
+            // A fresh id per order: the kernel refuses a duplicate, and a
+            // stable one would make the second wall a no-op.
+            orderId: `order-${crypto.randomUUID()}`,
+            definitionId: intent.definitionId,
+            x: intent.x,
+            y: intent.y,
+            edge: intent.edge,
+          });
+          return;
+      }
     },
     onError: (failure) => console.warn('HUD action failed', failure),
   });
+
+  tool?.attachReadout((target) => hud?.setBuildTarget(target));
 }
 
 async function bootPersistence(client: SimulationClient): Promise<void> {
@@ -220,6 +383,12 @@ async function bootPersistence(client: SimulationClient): Promise<void> {
  * no simulation state at all -- so there is nothing for it to wait on.
  */
 const appRoot = document.getElementById('app');
-if (appRoot !== null) mountInterface(appRoot, simulation === undefined);
+if (appRoot !== null) {
+  mountInterface(appRoot, {
+    ...(simulation === undefined ? {} : { client: simulation }),
+    ...(commandSender === undefined ? {} : { commands: commandSender }),
+    ...(buildTool === undefined ? {} : { tool: buildTool }),
+  });
+}
 
 if (simulation !== undefined) void bootPersistence(simulation);

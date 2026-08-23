@@ -6,10 +6,19 @@ import {
 } from '../../input';
 import { AtlasFrameIndex } from '../assets/atlas-frame-index';
 import { AtlasLibrary } from '../assets/atlas-library';
-import { visibleWorldBounds, zoomAtScreenPoint } from '../camera';
+import { screenToWorld, visibleWorldBounds, zoomAtScreenPoint } from '../camera';
+import {
+  type BuildToolPort,
+  type EdgeTarget,
+  type WorldPoint,
+  edgeRunFromDrag,
+  edgeTargetsEqual,
+  pickEdgeAtWorld,
+} from '../build/edge-picking';
 import type { RenderFeed } from '../feed/render-feed';
 import { ActorLayer } from '../phaser/actor-layer';
 import { registerAtlasTextures } from '../phaser/atlas-textures';
+import { BuildOverlay } from '../phaser/build-overlay';
 import { TileLayer } from '../phaser/tile-layer';
 import { TILE_SIZE_PX, visibleTileRange, type TileRange } from '../tile-metrics';
 
@@ -42,6 +51,15 @@ export interface WorldSceneOptions {
   /** Injectable so a test or a preview can supply a batch without the network. */
   readonly loadAtlasLibrary?: () => Promise<AtlasLibrary>;
   readonly onError?: (error: Error) => void;
+  /**
+   * Where a build gesture goes. Absent, the world is view-only and every
+   * pointer gesture keeps its old camera meaning exactly.
+   *
+   * The scene reports *edges*, never commands: `src/rendering/**` may not
+   * submit one (pinned by `tests/unit/rendering-module-boundaries.test.ts`),
+   * and the renderer must not become the thing that decides a build happened.
+   */
+  readonly buildTool?: BuildToolPort;
 }
 
 export class WorldScene extends Phaser.Scene {
@@ -57,13 +75,22 @@ export class WorldScene extends Phaser.Scene {
   private panPointerId: number | undefined;
   private lastPanScreenPoint: { readonly x: number; readonly y: number } | undefined;
 
+  private readonly buildTool: BuildToolPort | undefined;
+  /** The pointer currently drawing a wall run, and the world point it pressed. */
+  private buildPointerId: number | undefined;
+  private buildPress: WorldPoint | undefined;
+  private buildSegments: readonly EdgeTarget[] = [];
+  private hoveredEdge: EdgeTarget | undefined;
+
   private tiles: TileLayer | undefined;
   private actors: ActorLayer | undefined;
+  private buildOverlay: BuildOverlay | undefined;
   private framedOnWorld = false;
 
   public constructor(options: WorldSceneOptions) {
     super('WorldScene');
     this.feed = options.feed;
+    this.buildTool = options.buildTool;
     this.loadAtlasLibrary = options.loadAtlasLibrary ?? (() => AtlasLibrary.load());
     this.onError =
       options.onError ??
@@ -88,6 +115,14 @@ export class WorldScene extends Phaser.Scene {
   public create(): void {
     this.cameras.main.setBackgroundColor('#0b0e12');
     this.tiles = new TileLayer(this);
+    this.buildOverlay = new BuildOverlay(this);
+
+    // Phaser tracks exactly one touch pointer unless told otherwise, so a
+    // second finger was never delivered and `TouchGestureTracker` could not
+    // see a pinch at all: two-finger zoom has been dead since the scene was
+    // written, silently, because nothing exercised it in a real browser.
+    // Three is one spare beyond the two the gestures use.
+    this.input.addPointer(2);
 
     const keyDown = (event: KeyboardEvent): void => {
       this.keyboard.keyDown(event);
@@ -116,6 +151,14 @@ export class WorldScene extends Phaser.Scene {
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       if (pointer.wasTouch) {
         this.touchGestures.begin({ id: pointer.id, x: pointer.x, y: pointer.y });
+        // One finger builds only while a tool is armed *and* it is the only
+        // finger down; a second finger arriving hands the gesture back to the
+        // camera (see `pointermove`).
+        if (this.isBuildArmed() && this.activeTouchCount() === 1) this.beginBuild(pointer);
+        return;
+      }
+      if (pointer.button === 0 && this.isBuildArmed()) {
+        this.beginBuild(pointer);
         return;
       }
       if (pointer.button !== 1) return;
@@ -126,13 +169,22 @@ export class WorldScene extends Phaser.Scene {
       if (pointer.wasTouch) {
         const gesture = this.touchGestures.move({ id: pointer.id, x: pointer.x, y: pointer.y });
         if (gesture?.kind === 'pan') {
+          // A one-finger drag builds while armed, and pans otherwise. Both
+          // cannot be true at once, which is the whole reason arming is
+          // explicit rather than inferred from a drag threshold.
+          if (this.extendBuild(pointer)) return;
           const camera = this.cameras.main;
           camera.scrollX -= gesture.deltaX / camera.zoom;
           camera.scrollY -= gesture.deltaY / camera.zoom;
         } else if (gesture?.kind === 'pinch') {
+          // Two fingers are always the camera, armed or not -- so a touch
+          // player never loses the ability to move around while building.
+          // A second finger abandons any run in progress rather than
+          // committing a wall the player was actually trying to scroll past.
+          this.cancelBuild();
           const camera = this.cameras.main;
           const next = zoomAtScreenPoint(
-            { scroll: { x: camera.scrollX, y: camera.scrollY }, zoom: camera.zoom },
+            { scroll: { x: camera.scrollX - gesture.deltaX / camera.zoom, y: camera.scrollY - gesture.deltaY / camera.zoom }, zoom: camera.zoom },
             { x: gesture.centerX, y: gesture.centerY },
             camera.zoom * gesture.scale,
             ZOOM_BOUNDS,
@@ -142,6 +194,11 @@ export class WorldScene extends Phaser.Scene {
         }
         return;
       }
+      if (this.extendBuild(pointer)) return;
+      // Nothing is being built and no button is down: keep the ghost under
+      // the cursor so the edge rule is legible before the first click. Touch
+      // never reaches here, which is why the drag preview exists as well.
+      if (this.panPointerId === undefined && this.isBuildArmed()) this.previewHover(pointer);
       if (this.panPointerId !== pointer.id || this.lastPanScreenPoint === undefined) return;
       const camera = this.cameras.main;
       camera.scrollX -= (pointer.x - this.lastPanScreenPoint.x) / camera.zoom;
@@ -149,10 +206,9 @@ export class WorldScene extends Phaser.Scene {
       this.lastPanScreenPoint = { x: pointer.x, y: pointer.y };
     });
     const finishPointer = (pointer: Phaser.Input.Pointer): void => {
-      if (pointer.wasTouch) {
-        this.touchGestures.end(pointer.id);
-        return;
-      }
+      if (pointer.wasTouch) this.touchGestures.end(pointer.id);
+      if (this.commitBuild(pointer)) return;
+      if (pointer.wasTouch) return;
       if (this.panPointerId !== pointer.id) return;
       this.panPointerId = undefined;
       this.lastPanScreenPoint = undefined;
@@ -165,8 +221,10 @@ export class WorldScene extends Phaser.Scene {
       window.removeEventListener('keyup', keyUp);
       this.tiles?.destroy();
       this.actors?.destroy();
+      this.buildOverlay?.destroy();
       this.tiles = undefined;
       this.actors = undefined;
+      this.buildOverlay = undefined;
     });
 
     // Art is not correctness: a batch that fails to load must leave a playable,
@@ -184,6 +242,16 @@ export class WorldScene extends Phaser.Scene {
       camera.scrollY += vertical * speed;
     }
 
+    // Disarming while a run is in progress, or while a ghost is showing,
+    // must take the ghost away -- otherwise the panel says the tool is off
+    // and the world still shows a wall about to appear.
+    if (!this.isBuildArmed() && (this.buildPointerId !== undefined || this.buildSegments.length > 0)) {
+      this.cancelBuild();
+      this.buildSegments = [];
+      this.hoveredEdge = undefined;
+      this.buildOverlay?.clear();
+    }
+
     const nowSeconds = time / 1000;
     const frame = this.feed.readFrame(nowSeconds);
     const range = this.visibleTiles();
@@ -191,6 +259,96 @@ export class WorldScene extends Phaser.Scene {
     this.frameCameraOnFirstWorld(frame.world.loadedBounds);
     this.tiles?.update(frame, range);
     this.actors?.update(frame.actors, range, nowSeconds);
+  }
+
+
+  // ---- build tool ---------------------------------------------------
+  //
+  // The interaction is **modal**, and deliberately so. The alternative --
+  // discriminating a build from a pan by how far the pointer travelled --
+  // fails on the gesture that matters most here: laying a wall run *is* a
+  // drag, so a threshold cannot tell the two apart without guessing, and a
+  // guess that goes wrong either scrolls the world when you meant to build or
+  // builds a wall when you meant to look around. Arming is one visible,
+  // reversible toggle in the Build panel, and while it is off every gesture
+  // keeps exactly the meaning it had before.
+  //
+  // Nothing that used to pan stops panning: the middle-drag, the keyboard and
+  // the wheel are untouched at all times, and on touch the two-finger drag
+  // pans and pinches whether or not a tool is armed. Only the one-finger
+  // touch drag and the desktop left-drag change meaning, and only while
+  // armed.
+
+  private isBuildArmed(): boolean {
+    return this.buildTool?.isArmed() === true;
+  }
+
+  private activeTouchCount(): number {
+    return this.input.manager.pointers.filter((pointer) => pointer.isDown && pointer.wasTouch).length;
+  }
+
+  private worldPointOf(pointer: Phaser.Input.Pointer): { readonly x: number; readonly y: number } {
+    const camera = this.cameras.main;
+    return screenToWorld(
+      { x: pointer.x, y: pointer.y },
+      { scroll: { x: camera.scrollX, y: camera.scrollY }, zoom: camera.zoom },
+    );
+  }
+
+  private beginBuild(pointer: Phaser.Input.Pointer): void {
+    // The *press point* is kept, not the edge it resolved to: a drag can still
+    // change which axis the run lies on, and re-deriving from the original
+    // point is what lets it do that without moving the tile the player aimed
+    // at. See `edgeRunFromDrag`.
+    this.buildPointerId = pointer.id;
+    this.buildPress = this.worldPointOf(pointer);
+    this.buildSegments = [pickEdgeAtWorld(this.buildPress)];
+    this.paintBuildPreview();
+  }
+
+  /** True when the move belonged to a run in progress and the camera must not act on it. */
+  private extendBuild(pointer: Phaser.Input.Pointer): boolean {
+    if (this.buildPointerId !== pointer.id || this.buildPress === undefined) return false;
+    this.buildSegments = edgeRunFromDrag(this.buildPress, this.worldPointOf(pointer));
+    this.paintBuildPreview();
+    return true;
+  }
+
+  /** True when the release completed a run. */
+  private commitBuild(pointer: Phaser.Input.Pointer): boolean {
+    if (this.buildPointerId !== pointer.id) return false;
+    const segments = this.buildSegments;
+    this.buildPointerId = undefined;
+    this.buildPress = undefined;
+    this.buildSegments = [];
+    this.hoveredEdge = undefined;
+    this.buildOverlay?.clear();
+    this.buildTool?.target?.(undefined);
+    if (segments.length > 0) this.buildTool?.place(segments);
+    return true;
+  }
+
+  /** Abandons a run without placing anything -- a second finger, or disarming mid-gesture. */
+  private cancelBuild(): void {
+    if (this.buildPointerId === undefined) return;
+    this.buildPointerId = undefined;
+    this.buildPress = undefined;
+    this.buildSegments = [];
+    this.buildOverlay?.clear();
+    this.buildTool?.target?.(undefined);
+  }
+
+  private previewHover(pointer: Phaser.Input.Pointer): void {
+    const edge = pickEdgeAtWorld(this.worldPointOf(pointer));
+    if (edgeTargetsEqual(edge, this.hoveredEdge)) return;
+    this.hoveredEdge = edge;
+    this.buildSegments = [edge];
+    this.paintBuildPreview();
+  }
+
+  private paintBuildPreview(): void {
+    this.buildOverlay?.update(this.buildSegments);
+    this.buildTool?.target?.(this.buildSegments);
   }
 
   /** Sprite and layer counts, for a diagnostics overlay or a manual budget check. */

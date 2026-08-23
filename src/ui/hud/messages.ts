@@ -48,6 +48,41 @@ export const HUD_MESSAGE_KEY = {
   panelCollapse: 'hud.panel.collapse',
   panelExpand: 'hud.panel.expand',
 
+  buildTitle: 'hud.build.title',
+  buildCatalogue: 'hud.build.catalogue',
+  buildCatalogueEmpty: 'hud.build.catalogue-empty',
+  buildSelected: 'hud.build.selected',
+  buildPlacement: 'hud.build.placement',
+  buildTileX: 'hud.build.tile-x',
+  buildTileY: 'hud.build.tile-y',
+  buildStepDown: 'hud.build.step-down',
+  buildStepUp: 'hud.build.step-up',
+  buildEdge: 'hud.build.edge',
+  buildSubmit: 'hud.build.submit',
+  buildNote: 'hud.build.note',
+
+  buildArm: 'hud.build.arm',
+  buildDisarm: 'hud.build.disarm',
+  buildArmHint: 'hud.build.arm-hint',
+  buildTargetNone: 'hud.build.target-none',
+  buildTargetValue: 'hud.build.target-value',
+  buildTargetRun: 'hud.build.target-run',
+  buildCoordinates: 'hud.build.coordinates',
+  buildCoordinatesHint: 'hud.build.coordinates-hint',
+
+  /**
+   * Labels for the two entries `BUILDABLE_REGISTRY` holds.
+   *
+   * They live here, in the HUD's own namespace, because that registry carries
+   * a hard-coded English `name` and no `nameKey` -- an ADR 0011 gap issue #74
+   * records and leaves to the content layer (`docs/HUD_PROJECTIONS.md`, gap
+   * 32). When a buildable gains a real `content.*` key these two go away and
+   * the host passes the catalog's key through instead; nothing else changes,
+   * because the panel already renders whatever key it is handed.
+   */
+  buildableWallBrick: 'hud.build.buildable.wall-brick',
+  buildableDoorWooden: 'hud.build.buildable.door-wooden',
+
   severityInfo: 'hud.severity.info',
   severityWarning: 'hud.severity.warning',
   severityDanger: 'hud.severity.danger',
