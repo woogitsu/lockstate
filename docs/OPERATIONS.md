@@ -107,7 +107,7 @@ interface ConstructionMaterialsProvider { tryAllocate(requirements): boolean; }
 const UNLIMITED_MATERIALS_PROVIDER: ConstructionMaterialsProvider = { tryAllocate: () => true };
 ```
 
-`ConstructionSystem`'s constructor now takes an optional provider
+`ConstructionSystem`'s constructor takes an optional provider
 (defaulting to `UNLIMITED_MATERIALS_PROVIDER`, so #16's original behavior
 is unchanged for any caller that doesn't pass one). `inventory.ts`'s
 `ContainerMaterialsProvider` implements the interface against a real
@@ -119,6 +119,57 @@ proves the all-or-nothing property directly). A build order genuinely
 session/scenario (typically ordinary carry jobs delivering into the site
 container) satisfies it -- issue #25's "construction orders can wait for
 and consume delivered materials."
+
+Requirements are named in **item-catalog ids** (`item.brick`), the same
+vocabulary a scenario and a carry job use (ADR 0018 §3).
+`validateBuildableItemReferences` (`construction/definition.ts`) and
+`validateScenarioItemReferences` (`content/validate-catalog.ts`) check both
+directions at import time, because a mismatch produces no error at all --
+only an order that waits forever, which is indistinguishable from having no
+stock.
+
+**Cancelling an order returns what it consumed.** `cancelOrder` calls
+`materialsProvider.release(order.materialsAllocated)` and clears the field;
+`ContainerMaterialsProvider.release` deposits back into the same container
+`tryAllocate` withdrew from, and `UNLIMITED_MATERIALS_PROVIDER.release` is a
+no-op. `undo()` cancels through the same path, so undoing a build refunds
+it. While materials were infinite this was invisible; against a finite
+stock, the `// TODO: release materials` it replaces was a permanent,
+unsignalled loss reachable by ordinary play.
+
+## Where the first unit comes from: scenario starting stock
+
+Everything above moves and spends materials that already exist. **Nothing in
+it supplies any.** Until ADR 0018 nothing did, anywhere, so a build order
+placed in a real session could never leave `'materials-pending'`.
+
+A `ScenarioDefinition` (`src/content/scenario-catalog.ts`) declares
+`startingStock` as data -- `{ containerId, itemId, quantity }` -- and
+`applyScenario` (`src/simulation/runtime/apply-scenario.ts`) deposits it,
+registering any container the scenario names that the runtime does not
+already have. One scenario ships: `scenario.starter`.
+
+Three properties are load-bearing:
+
+- **`createNewSimulationRuntime` is unchanged** and still fabricates
+  nothing. Seeding is a separate call, made by the two places a new session
+  actually starts: `WorkerStateMachine.handleInitialize`'s `'new'` branch
+  and `InProcessSessionHost.startNew`.
+- **A restore never applies a scenario.** Scenario stock is ordinary
+  container state, captured by `ContainerRegistry.getSnapshot` and rebuilt
+  by `session-systems.ts`. Re-applying on load would hand the player a
+  second copy of whatever they had not spent, every time they loaded.
+- **`deposit` is the sanctioned mechanism, not an exception.** The
+  no-teleport rule governs transfers *between* containers; scenario seeding
+  is already one of `deposit`'s documented uses, and nothing moves from
+  anywhere.
+
+The stock is **finite and nothing replenishes it**. A delivery mechanism
+needs something able to refuse a shipment, and that is issue #29's economy;
+a supply order that always succeeds would be `UNLIMITED_MATERIALS_PROVIDER`
+with a delay in front of it. Nothing surfaces the remaining quantity to the
+player yet either. Both limitations are recorded in ADR 0018's consequences
+rather than papered over.
 
 ## Utility networks: capacity, not simulation
 
@@ -187,6 +238,11 @@ session's `PrisonerOperationsRuntime`), and empty `electricity`/`water`
 default content. No stock, no non-construction containers, no registered
 job workers and no utility nodes exist until an actual session/scenario
 creates them.
+
+That convention is intact, and it is also why a build order could never
+complete: the container was empty and nothing ever filled it. See "Where the
+first unit comes from" below for the scenario layer that does, outside
+`createNewSimulationRuntime`.
 
 ## Representative flows
 

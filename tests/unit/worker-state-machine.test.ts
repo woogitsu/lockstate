@@ -129,3 +129,41 @@ test('StateMachine queues valid commands', () => {
   expect(response.kind).toBe('simulation/command-result');
   expect(response.payload.status).toBe('queued');
 });
+
+/**
+ * ADR 0018: the worker is the *production* new-session entry point --
+ * `InProcessSessionHost` is the one tests and headless tooling use -- so the
+ * scenario has to be applied on both, and the one a player actually gets
+ * needs its own coverage. Observed through `simulation/request-snapshot`,
+ * because the runtime is private to the machine and the snapshot is what
+ * crosses the boundary anyway.
+ */
+test('a new simulation started through the worker opens with the starter scenario stock', () => {
+  const port = new MockPort();
+  const machine = new SimulationWorkerStateMachine(port, 'test-build', () => 0);
+
+  machine.handleMessage({
+    protocolVersion: SIMULATION_PROTOCOL_VERSION,
+    messageId: 'msg-init',
+    kind: 'simulation/initialize',
+    payload: { sessionId: 's1', source: { kind: 'new', masterSeed: 99 } },
+  });
+
+  machine.handleMessage({
+    protocolVersion: SIMULATION_PROTOCOL_VERSION,
+    messageId: 'msg-snap',
+    kind: 'simulation/request-snapshot',
+    payload: { reason: 'consistency-check' },
+  });
+
+  const snapshot = port.messages[port.messages.length - 1];
+  expect(snapshot.kind).toBe('simulation/snapshot');
+
+  const containers: [string, [string, number, number][]][] = snapshot.payload.snapshot.data.simulation.operations.containers;
+  const materials = containers.find(([id]) => id === 'construction-materials');
+  expect(materials).toBeDefined();
+  expect(materials![1]).toEqual([
+    ['item.brick', 600, 0],
+    ['item.wood-plank', 120, 0],
+  ]);
+});
