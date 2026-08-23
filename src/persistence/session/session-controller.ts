@@ -106,9 +106,52 @@ export class SessionController {
       ...(displayName === undefined ? {} : { displayName }),
     });
 
-    await this.host.startNew(this.masterSeed);
-    this.adoptSession(prisonId);
-    return this.saveNow();
+    let adopted = false;
+    let result: SaveResult;
+    try {
+      await this.host.startNew(this.masterSeed);
+      this.adoptSession(prisonId);
+      adopted = true;
+      result = await this.saveNow();
+    } catch (error) {
+      await this.discardFailedCreation(prisonId, adopted);
+      throw error;
+    }
+
+    // `saveNow` reports failure as a *value*, deliberately (see its comment:
+    // a faulted worker must never throw into a click handler). So the catch
+    // above cannot see it, and without this branch a failed save would leave
+    // exactly the slot this method promises not to leave.
+    if (!result.ok) await this.discardFailedCreation(prisonId, adopted);
+    return result;
+  }
+
+  /**
+   * Undoes a `createPrison` that got as far as writing the slot but never
+   * produced generation 1.
+   *
+   * Such a slot is worse than no slot: `loadCurrent` reports it as
+   * `no-valid-generation`, so it survives in the prison list as a row the
+   * player can see, select and never load. Issue #65 saw one appear from a
+   * double-click, where the second creation wrote its row and then waited 15s
+   * for a worker already busy with the first.
+   *
+   * Deletion failure is swallowed on purpose: the caller is already being told
+   * that creation failed, and replacing that with a cleanup error would hide
+   * the cause the player actually needs.
+   */
+  private async discardFailedCreation(prisonId: string, adopted: boolean): Promise<void> {
+    // `adoptSession` disposes the previous session's autosave, so once it has
+    // run there is no previous session to fall back to -- restoring it would
+    // leave the player with a prison they believe is autosaving and is not.
+    // Before adoption the previous session is untouched, so leave it alone.
+    if (adopted) this.session = undefined;
+
+    try {
+      await this.repository.delete(prisonId);
+    } catch {
+      // Intentionally ignored -- see the doc comment above.
+    }
   }
 
   /** Loads a prison and makes it the active session. Reports whether recovery fell back to a previous generation, and what a V1 save actually restores. */
