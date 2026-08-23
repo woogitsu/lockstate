@@ -39,6 +39,8 @@ Persistence layer
 ### Simulation is authoritative in-session
 Phaser objects are views. Their position, animation and visual state are derived from simulation data. A sprite must never become authoritative game state.
 
+The same rule applies to the browser UI: HUD panels read *projections* of authoritative state from `src/simulation/presentation/`, never simulation internals. The view-model, ordering, localization, bounded-value and paging contracts those projections guarantee — and the list of fields a panel would want that the simulation does not yet have — are defined in [HUD_PROJECTIONS.md](./HUD_PROJECTIONS.md).
+
 ### Fixed-step simulation
 Simulation time advances in deterministic fixed ticks independent of rendering FPS. Systems run at explicit frequencies; expensive low-frequency systems must not run every tick merely for convenience.
 The `Kernel` orchestrates this logic using a strict 50ms tick interval and deterministic system ordering. See [DETERMINISM.md](./DETERMINISM.md) for full details on tick semantics, command ordering, and RNG ownership.
