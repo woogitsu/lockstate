@@ -68,6 +68,23 @@ CI runs that script and then `pnpm verify:sql` on the self-hosted runner, so the
 
 A service container was rejected: `scripts/verify-supabase-sql.mjs` shells out to a local `psql` client that would have to be installed regardless, no published PostgreSQL image ships pgTAP, and the reason this check exists at all is to keep working where container images cannot be pulled.
 
+## Remote container provisioning
+
+`.claude/hooks/session-start.sh` brings a fresh Claude Code on the web container to the same place, by running the same repository scripts CI does rather than a second, divergent recipe of its own: Node 24.19.0 and pnpm at the pinned versions, `pnpm install --frozen-lockfile`, then `scripts/provision-postgres.sh`, `scripts/provision-git-lfs.sh` and `scripts/provision-playwright-browsers.sh`. Each provisioning step warns rather than failing the hook — a container missing one of them can still do everything else, and CI is where a missing step must be fatal.
+
+Two things are deliberately left to the caller.
+
+The **LFS content** is not pulled, only the client installed. The pull is metered and most sessions never open a PNG, which is the same reason the `verify` job stays on a pointer-only checkout. When a session does need the art:
+
+```bash
+git lfs pull --include="public/assets/actors"   # ~17 MB
+pnpm verify:assets
+```
+
+`tests/browser/app-shell.spec.ts` needs it too; the rest of the browser suite runs on a pointer-only tree.
+
+The **Supabase local stack** behind `pnpm verify:stack` cannot run in a remote container at all, and no script would change that: `supabase start` pulls container images, and the container registry is refused by the environment's egress policy (`403` on the registry's blob host). Docker itself is present and its daemon can be started; there is simply nothing to pull into it. That check stays what `docs/CLOUD_SAVE.md` already calls it — a local, manual gate — and `pnpm verify:sql` is what covers the same SQL here.
+
 ## Default environment
 
 Vitest runs in the Node environment by default. Pure simulation, protocol, serialization, migration, economy, navigation and deterministic scheduling tests must not import Phaser, touch the DOM or require browser globals.

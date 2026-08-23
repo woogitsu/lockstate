@@ -1,8 +1,8 @@
 #!/bin/bash
 # SessionStart hook for Claude Code on the web.
 #
-# Brings a fresh remote container to the point where `pnpm verify` and
-# `pnpm verify:sql` both run without manual setup:
+# Brings a fresh remote container to the point where every check this
+# repository can run here does so without manual setup:
 #
 #   * Node 24.19.0 exactly -- tests/foundation/repository-contract.test.ts
 #     asserts `process.version`, and remote containers start on Node 22, so
@@ -13,6 +13,22 @@
 #     images are blocked by network policy). A plain Postgres runs the SQL
 #     itself -- see docs/CLOUD_SAVE.md for what that does and does not prove.
 #     That step lives in scripts/provision-postgres.sh, shared with CI.
+#   * The Git LFS client, so `git lfs pull` is available for the runtime
+#     atlases `pnpm verify:assets` and tests/browser/app-shell.spec.ts read.
+#     The client only -- the pull itself is left to whoever needs the art,
+#     for the same reason the `verify` CI job stays on a pointer-only
+#     checkout: LFS bandwidth is metered and most sessions never open a PNG.
+#   * Playwright's Chromium, so `pnpm test:browser` runs. The script probes
+#     by launching the browser, so a container that already ships one (this
+#     image has it under PLAYWRIGHT_BROWSERS_PATH) downloads nothing.
+#
+# Every provisioning step is a repository script that CI runs too, so the two
+# environments cannot drift into provisioning different things.
+#
+# NOT PROVISIONED, deliberately: the Supabase local stack behind
+# `pnpm verify:stack`. It needs Docker images, and the container registry is
+# refused by this environment's egress policy, so there is nothing to install
+# that would make that check run -- see docs/TESTING.md.
 #
 # Idempotent: every step checks before it acts, so `resume` and `clear`
 # re-runs are cheap.
@@ -91,6 +107,22 @@ pnpm install --frozen-lockfile
 # missing SQL provisioning must be fatal.
 if ! bash "${PROJECT_DIR}/scripts/provision-postgres.sh"; then
   log "WARNING: postgres provisioning failed; pnpm verify:sql will not run"
+fi
+
+# --- Git LFS client (for pnpm verify:assets) --------------------------
+# Same shape as the database step: the shared script, and a warning rather
+# than a hook failure, because a container without it can still do
+# everything except read the art.
+if ! bash "${PROJECT_DIR}/scripts/provision-git-lfs.sh"; then
+  log "WARNING: git-lfs provisioning failed; the runtime atlases stay pointers"
+fi
+
+# --- Playwright's Chromium (for pnpm test:browser) --------------------
+# Note that the browser suite's app-shell spec also needs the atlases as real
+# pixels, which is a `git lfs pull --include="public/assets/actors"` away;
+# the rest of the suite runs on a pointer-only tree.
+if ! bash "${PROJECT_DIR}/scripts/provision-playwright-browsers.sh"; then
+  log "WARNING: Chromium provisioning failed; pnpm test:browser will not run"
 fi
 
 log "done"
