@@ -104,7 +104,9 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.status.incidents-active': 'Active',
 
   'hud.clock.title': 'Time controls',
-  'hud.clock.time': 'Time',
+  // Not "Time": the simulation has no hour-of-day, so the strip reports how
+  // far through the in-game day it is (docs/HUD_PROJECTIONS.md, gap 5).
+  'hud.clock.day-progress': 'Through the day',
   'hud.clock.day': 'Day',
   'hud.clock.speed': 'Speed {speed}x',
   'hud.transport.pause': 'Pause',

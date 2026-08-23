@@ -9,6 +9,7 @@ import {
   type ActionCategory,
   type RegimeSchedule,
 } from '../prisoners/regime';
+import { projectClockPosition } from './clock-projection';
 import type { ContrabandSearchSource } from './contraband-projection';
 import { projectPrisonerPopulationCounts, type PrisonerProjectionSource } from './prisoner-projection';
 import { collectRoomInstances, type RoomProjectionSource } from './room-projection';
@@ -31,12 +32,13 @@ export interface StatusStripSource {
   /**
    * The clock's current control.
    *
-   * Passed in rather than read from a `FixedStepClock`, because
-   * `FixedStepClock` exposes no getter for its control -- only
-   * `setControl`. The worker shell that owns the clock already knows what
-   * it last set, so it supplies it here. Absent means "speed unknown",
-   * which the view model reports as `speed: 0, paused: false` rather than
-   * guessing a speed.
+   * Passed in rather than read from a `FixedStepClock` because this layer is
+   * pure: a projection takes state and returns a value, and reaching for the
+   * live clock that drives the kernel would make it a reader of the
+   * scheduler. The worker shell that owns the clock supplies
+   * `FixedStepClock.control` here. Absent means "speed unknown", which the
+   * view model reports as `speed: 0, paused: false` rather than guessing a
+   * speed.
    */
   readonly clockControl?: ClockControl;
   readonly prisoners: PrisonerProjectionSource;
@@ -107,13 +109,10 @@ export interface StatusStripViewModel {
 }
 
 function clockViewModel(tick: number, control: ClockControl | undefined): ClockViewModel {
-  const tickOfDay = ((tick % DAY_LENGTH_TICKS) + DAY_LENGTH_TICKS) % DAY_LENGTH_TICKS;
+  const position = projectClockPosition(tick);
   return {
-    tick,
-    dayNumber: Math.floor(tick / DAY_LENGTH_TICKS) + 1,
-    tickOfDay,
-    dayLengthTicks: DAY_LENGTH_TICKS,
-    dayProgress: toBoundedValue(tickOfDay, DAY_LENGTH_TICKS),
+    ...position,
+    dayProgress: toBoundedValue(position.tickOfDay, position.dayLengthTicks),
     paused: control?.mode === 'paused',
     speed: control !== undefined && control.mode === 'running' ? control.speed : 0,
     speedKnown: control !== undefined,

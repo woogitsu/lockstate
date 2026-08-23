@@ -86,8 +86,10 @@
   color: var(--text-subtle);
 }
 
-.hud-clock__time { font-size: var(--text-size-value); color: var(--text-heading); }
-.hud-clock__day-label { margin-left: var(--space-2); }
+.hud-clock__day { font-size: var(--text-size-value); color: var(--text-heading); }
+/* Subordinate to the day number: the day is what a player navigates by, the
+   position within it is context. */
+.hud-clock__day-progress { color: var(--text-subtle); margin-left: var(--space-2); }
 
 .hud-strip__transport {
   display: flex;

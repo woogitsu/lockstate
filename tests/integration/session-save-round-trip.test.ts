@@ -273,14 +273,14 @@ describe('a populated prison survives save -> load', () => {
   it('keeps its operations running: container stock, carry jobs and job workers', () => {
     const runtime = buildPopulatedPrison();
 
-    const storeBefore = runtime.containers.require('store').quantityOf('brick');
+    const storeBefore = runtime.containers.require('store').quantityOf('item.brick');
     const jobsBefore = runtime.jobs.allSorted().map((job) => ({ id: job.id, state: job.state }));
     expect(jobsBefore.length).toBeGreaterThan(0);
     expect(runtime.jobWorkers.getSnapshot().workers.length).toBeGreaterThan(0);
 
     const restored = saveAndLoad(runtime);
 
-    expect(restored.containers.require('store').quantityOf('brick')).toBe(storeBefore);
+    expect(restored.containers.require('store').quantityOf('item.brick')).toBe(storeBefore);
     expect(restored.jobWorkers.getSnapshot().workers).toEqual(runtime.jobWorkers.getSnapshot().workers);
     // Travel is deliberately restarted (a path request belonged to the old
     // navigation queue), so job identity and progress are what must survive,

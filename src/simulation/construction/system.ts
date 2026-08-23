@@ -153,7 +153,15 @@ export class ConstructionSystem implements SystemRegistration {
     const hadGeometry = order.state === 'completed';
     order.state = 'cancelled';
     if (hadGeometry) this.revertConstruction(order);
-    // TODO: release materials
+
+    // The materials this order actually consumed go back where they came
+    // from. `materialsAllocated` is emptied in the same step,
+    // so a `redo()` -- which returns the order to `'approved'` and lets it
+    // allocate again -- cannot refund a second time from a stale record.
+    if (order.materialsAllocated.length > 0) {
+      this.materialsProvider.release(order.materialsAllocated);
+      order.materialsAllocated = [];
+    }
   }
 
   public getOrder(id: string): BuildOrder | undefined {

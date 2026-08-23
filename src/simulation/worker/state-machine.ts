@@ -29,12 +29,27 @@ export interface MessagePortLike {
   postMessage(message: any, transfer?: Transferable[]): void;
 }
 
+/**
+ * How often, at most, a running clock publishes an unsolicited
+ * `simulation/clock-state`.
+ *
+ * The tick loop wakes every 15 ms; publishing on every wake would put ~66
+ * messages a second on the boundary to move a day counter and a progress
+ * figure. This is a readout cadence, not a simulation cadence: it changes
+ * only how often the main thread is *told* the tick, never which ticks run
+ * or what they compute.
+ */
+export const CLOCK_STATE_PUBLISH_INTERVAL_MS = 250;
+
 export class SimulationWorkerStateMachine {
   private _state: WorkerState = 'uninitialized';
   private _kernel: Kernel | null = null;
   private _runtime: SimulationRuntime | null = null;
   private _clock: FixedStepClock = new FixedStepClock(50, { mode: 'paused' });
   private _tickTimerId: any | null = null;
+  /** The tick the main thread was last told about, so an unchanged clock says nothing. */
+  private _publishedTick: number | null = null;
+  private _publishedAtMs = Number.NEGATIVE_INFINITY;
 
   public constructor(
     private readonly port: MessagePortLike,
@@ -71,19 +86,62 @@ export class SimulationWorkerStateMachine {
 
   private onTickLoop(): void {
     if (this._state !== 'running' && this._state !== 'paused') return;
-    
+
     try {
+      const now = this.performanceNow();
       const budget = 5; // Handle up to 5 ticks per 15ms wake to avoid locking worker thread
-      const executed = this._clock.pump(this.performanceNow(), budget);
-      
+      const executed = this._clock.pump(now, budget);
+
       if (this._kernel && executed > 0) {
         for (let i = 0; i < executed; i++) {
           this._kernel.step();
         }
       }
+
+      this.publishClockState(now);
     } catch (e) {
       this.fault('internal-error', e instanceof Error ? e.message : String(e));
     }
+  }
+
+  /**
+   * Tells the main thread where the clock has got to, unprompted.
+   *
+   * Strictly a *report*. It reads `Kernel.tick` and the clock's own control
+   * and posts them; it calls nothing on the kernel, advances nothing and
+   * cannot be reached from inside a tick. Rate-limiting it therefore changes
+   * how often the HUD's day counter refreshes and nothing else -- which is
+   * what keeps ADR 0009's guarantee intact while the transport controls work
+   * (`tests/determinism/clock-transport.test.ts`).
+   *
+   * Silent when the tick has not moved: a clock state nobody asked for and
+   * that says nothing new is noise. A *control* change is reported by the
+   * correlated reply in `handleSetClock` instead, so pausing is never missed
+   * just because the tick stood still.
+   */
+  private publishClockState(nowMilliseconds: number): void {
+    if (this._kernel === null) return;
+    const tick = this._kernel.tick;
+    if (tick === this._publishedTick) return;
+    if (nowMilliseconds - this._publishedAtMs < CLOCK_STATE_PUBLISH_INTERVAL_MS) return;
+
+    this.notePublished(tick, nowMilliseconds);
+    this.post({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: crypto.randomUUID(),
+      kind: 'simulation/clock-state',
+      // No `replyTo`: nobody asked for this one. ADR 0003 forbids an
+      // unsolicited message from presenting itself as a request response.
+      payload: {
+        tick,
+        clock: this._clock.control,
+      },
+    });
+  }
+
+  private notePublished(tick: number, nowMilliseconds: number): void {
+    this._publishedTick = tick;
+    this._publishedAtMs = nowMilliseconds;
   }
 
   public fault(code: string, message: string): void {
@@ -194,6 +252,7 @@ export class SimulationWorkerStateMachine {
 
     this._clock = new FixedStepClock(50, { mode: 'paused' });
     this.transition('paused');
+    this.notePublished(this._kernel.tick, this.performanceNow());
 
     this.post({
       protocolVersion: SIMULATION_PROTOCOL_VERSION,
@@ -203,7 +262,11 @@ export class SimulationWorkerStateMachine {
       payload: {
         sessionId: msg.payload.sessionId,
         tick: this._kernel.tick,
-        clock: { mode: 'paused' },
+        // Read back from the clock rather than restated as a literal: this
+        // message is what the main thread paints its transport controls
+        // from, so it must report the clock that will actually drive the
+        // kernel, not a second opinion about it.
+        clock: this._clock.control,
       }
     });
   }
@@ -213,8 +276,10 @@ export class SimulationWorkerStateMachine {
       return this.fault('invalid-state', 'Cannot set clock in current state.');
     }
 
-    this._clock.setControl(msg.payload, this.performanceNow());
-    this.transition(msg.payload.mode === 'paused' ? 'paused' : 'running');
+    const now = this.performanceNow();
+    this._clock.setControl(msg.payload, now);
+    this.transition(this._clock.control.mode === 'paused' ? 'paused' : 'running');
+    this.notePublished(this._kernel!.tick, now);
 
     this.post({
       protocolVersion: SIMULATION_PROTOCOL_VERSION,
@@ -223,7 +288,9 @@ export class SimulationWorkerStateMachine {
       replyTo: msg.messageId,
       payload: {
         tick: this._kernel!.tick,
-        clock: msg.payload,
+        // The clock's own control, not the request echoed back. An echo
+        // would report success for a control the clock never took.
+        clock: this._clock.control,
       }
     });
   }

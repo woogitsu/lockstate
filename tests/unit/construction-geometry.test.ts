@@ -225,7 +225,7 @@ describe('a room becomes enclosed because walls were built', () => {
     // The role `new-session.ts` documents for session/scenario setup: stock
     // the well-known construction container so orders can consume real
     // materials. 12 walls x 2 bricks, with headroom.
-    runtime.containers.require(CONSTRUCTION_MATERIALS_CONTAINER_ID).deposit('brick', 100);
+    runtime.containers.require(CONSTRUCTION_MATERIALS_CONTAINER_ID).deposit('item.brick', 100);
     return runtime;
   }
 
@@ -310,7 +310,7 @@ describe('a room becomes enclosed because walls were built', () => {
     // 12 walls x 2 bricks out of the 100 deposited. If the orders had stalled
     // in materials-pending the assertions above could never have passed, and
     // this says so in one number.
-    expect(runtime.containers.require(CONSTRUCTION_MATERIALS_CONTAINER_ID).quantityOf('brick')).toBe(100 - 24);
+    expect(runtime.containers.require(CONSTRUCTION_MATERIALS_CONTAINER_ID).quantityOf('item.brick')).toBe(100 - 24);
   });
 
   it('RoomSystem stops reporting the enclosure requirement as missing', () => {
@@ -585,7 +585,7 @@ describe('a save written before the edge field still loads', () => {
           location: tile(9, 9),
           state: 'in-progress',
           progress: 40,
-          materialsAllocated: [{ itemId: 'brick', quantity: 2 }],
+          materialsAllocated: [{ itemId: 'item.brick', quantity: 2 }],
         },
       ],
       undoStack: [],

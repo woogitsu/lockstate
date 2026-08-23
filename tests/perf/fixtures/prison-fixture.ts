@@ -178,8 +178,8 @@ function populateConstruction(runtime: SimulationRuntime, tier: PrisonSizeTier):
   // realistic mix of lifecycle states (completed/in-progress/assigned vs.
   // materials-pending) instead of every order sitting in one state.
   const materials = runtime.containers.getById(CONSTRUCTION_MATERIALS_CONTAINER_ID);
-  materials?.deposit('brick', tier.buildOrders);
-  materials?.deposit('wood-plank', Math.ceil(tier.buildOrders / 2));
+  materials?.deposit('item.brick', tier.buildOrders);
+  materials?.deposit('item.wood-plank', Math.ceil(tier.buildOrders / 2));
 
   for (let index = 0; index < tier.buildOrders; index += 1) {
     const x = (index * 17) % tilesPerSide;
