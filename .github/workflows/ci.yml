@@ -199,8 +199,9 @@ jobs:
   # durability across a real page navigation, what a real browser's
   # `DOMException`s are actually named, behaviour under a genuinely exhausted
   # quota, and what a *computed* style, `elementFromPoint` or a decoded PNG
-  # really is. It has earned its keep: one real adapter defect (#19) and three
-  # real HUD layout/accessibility defects (docs/TESTING.md).
+  # really is. It has earned its keep: a real adapter defect (#19,
+  # docs/PERSISTENCE.md) and two real HUD layout defects that no unit test
+  # could have found (docs/TESTING.md).
   #
   # And until this job it did not run in CI. `pnpm test:browser` was opt-in, so
   # the layer that keeps finding real defects only ran when a human remembered
@@ -291,13 +292,25 @@ jobs:
       # Headless: `tests/browser/playwright.config.ts` never sets
       # `headless: false`, so no display, xvfb or DISPLAY is involved.
       #
+      # A FREE PORT, ASKED FOR RATHER THAN ASSUMED. This runner shares its host
+      # with active development, so the suite's default 5183 is regularly taken
+      # by a developer's harness server or by another checkout running the same
+      # suite -- observed on the first run of this job, which died with
+      # "127.0.0.1:5183 is already used". The suite deliberately refuses to
+      # reuse a server it did not start, because attaching to one from a
+      # different working tree means testing that tree's sources; so the fix is
+      # a port nothing else holds, not a reuse flag.
+      #
       # The suite must not be able to pass vacuously. `playwright test` already
-      # fails when no test matches, and `forbidOnly` is on under CI; this adds
-      # the case neither covers -- a suite that ran but skipped its way to green.
+      # fails when no test matches, and `forbidOnly` is on under CI; the second
+      # guard adds the case neither covers -- a suite that ran but skipped its
+      # way to green.
       - name: Run the real-browser suite
         run: |
           set -euo pipefail
-          pnpm test:browser 2>&1 | tee browser-suite.log
+          port="$(node -e 'const s = require("net").createServer(); s.listen(0, "127.0.0.1", () => { process.stdout.write(String(s.address().port)); s.close(); });')"
+          echo "harness dev server port: $port"
+          LOCKSTATE_BROWSER_TEST_PORT="$port" pnpm test:browser 2>&1 | tee browser-suite.log
           if ! grep -qE '[0-9]+ passed' browser-suite.log; then
             echo "::error::the browser suite reported no passing tests"
             exit 1

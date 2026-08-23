@@ -5,8 +5,8 @@
 # are not in the package and are not checked in, so `playwright test` on a
 # machine that has never run it fails with "Executable doesn't exist". That is
 # how the browser layer -- the one that has already found a real adapter defect
-# (#19) and three real HUD layout/accessibility defects -- ended up running only
-# when a human remembered to run it.
+# (#19) and two real HUD layout defects no unit test could have -- ended up
+# running only when a human remembered to run it.
 #
 # WHY A SCRIPT RATHER THAN AN ASSUMED RUNNER PREREQUISITE.
 # Same reasoning as `scripts/provision-postgres.sh` (PR #54) and
