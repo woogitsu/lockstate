@@ -92,13 +92,17 @@ Nothing in `src/` registers a parcel. The only `registerParcel` call site in
 production code is inside `SparseWorld.fromSnapshot`, re-registering what a
 save already contained; `createNewSimulationRuntime` creates a world with one
 owned chunk and no parcels, and there is no content or scenario module that
-defines any. Every other call site is a test.
+defines any. `canBuildAt` has no caller in `src/` either. Every other call site
+of both is a test.
 
-So no player can reach the divergence today, and the two overlapping-parcel
-worlds that exist anywhere in the repository are both in
-`tests/determinism/iteration-order.test.ts` — where all four parcels share
-identical bounds and the owned one happens to have the lowest id, which is
-exactly the case where the two rules agree.
+So no player can reach the divergence today. Overlapping parcels exist only in
+tests. Before this change there was one such file,
+`tests/determinism/iteration-order.test.ts`, where all four parcels share
+identical bounds and the only one it ever owns is the lowest-id one — exactly
+the case where the two rules agree, which is why it never exposed the split.
+This change adds two more overlapping-parcel worlds, in
+`tests/unit/sparse-world.test.ts` and `tests/unit/rendering-world-view.test.ts`,
+and those do build the case where the two rules differed.
 
 That is why this is a defect to fix rather than an incident, and it is also
 why the choice can be made cleanly: no save, no scenario and no player
