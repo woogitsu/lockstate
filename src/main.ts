@@ -15,6 +15,10 @@ import { EMPTY_RENDER_FRAME, type RenderFeed } from './rendering/feed/render-fee
 import { SimulationSnapshotFeed } from './rendering/feed/simulation-snapshot-feed';
 import { WorldScene } from './rendering/scene/world-scene';
 import { SavePanel } from './ui/save-panel';
+import { mountHud, type HudIntent } from './ui/hud';
+import { defaultLocaleEnCatalog } from './content/default-locale-en';
+import { messageCatalogFromLocalizationCatalog } from './services/localization/catalog';
+import { Localizer } from './services/localization/localizer';
 import './styles.css';
 
 const GAME_VERSION = 'lockstate-dev';
@@ -112,9 +116,51 @@ if (isDemoActorsRequested(window.location.search)) {
  * blocked (private mode, hardened settings) must still boot into a
  * playable, unsaveable session rather than a blank screen.
  */
+/**
+ * Mounts the HUD shell.
+ *
+ * Deliberately separate from, and ahead of, `bootPersistence`: a browser with
+ * IndexedDB blocked must still get an interface, and folding this into the
+ * persistence path would make the HUD a casualty of a storage failure it has
+ * nothing to do with.
+ *
+ * The HUD is a view. It renders from a `HudViewModel` -- plain data -- and
+ * reports player actions as intents; it holds no simulation state and imports
+ * nothing from `src/simulation` (`AGENTS.md` boundary 1). Until a snapshot
+ * feed supplies a real view model it paints its empty-prison default, which is
+ * the honest picture of a session with nothing in it.
+ */
+function mountInterface(app: HTMLElement): void {
+  const localizer = new Localizer({
+    locale: 'en',
+    catalogs: [messageCatalogFromLocalizationCatalog('en', defaultLocaleEnCatalog)],
+  });
+
+  mountHud(app, {
+    localizer,
+    onIntent: (intent: HudIntent) => {
+      // `select-tab` and `toggle-panel` are chrome: the HUD has already
+      // applied them locally and there is nothing for a host to do.
+      if (intent.kind !== 'set-clock') return;
+
+      // `set-clock` is a command, and there is no one to send it to yet:
+      // `FixedStepClock` exposes no accessor for its `ClockControl`, so the
+      // main thread cannot reach the worker's clock (recorded in
+      // docs/HUD_PROJECTIONS.md). Rejecting surfaces that on the transport
+      // controls through the HUD's own error path. Silently returning would
+      // be worse -- a pause button that reports success and does nothing is
+      // a lie the player has no way to detect.
+      throw new Error('Simulation transport control is not wired to the worker yet.');
+    },
+    onError: (failure) => console.warn('HUD action failed', failure),
+  });
+}
+
 async function bootPersistence(client: SimulationClient): Promise<void> {
   const app = document.getElementById('app');
   if (app === null) return;
+
+  mountInterface(app);
 
   let controller: SessionController;
   let panel: SavePanel;
