@@ -1,5 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_ACCESSIBILITY_SETTINGS, DEFAULT_KEYBOARD_BINDINGS, KeyboardInputAdapter, PointerInputAdapter, TouchGestureTracker, decodeAccessibilitySettings, decodeInputSettings, findBindingConflicts, remapKeyboardBinding, resolveKeyboardLabel, validateInputSettings } from '../../src/input';
+import { DEFAULT_ACCESSIBILITY_SETTINGS, DEFAULT_INPUT_SETTINGS, DEFAULT_KEYBOARD_BINDINGS, KeyboardInputAdapter, type KeyValueStore, PointerInputAdapter, TouchGestureTracker, decodeAccessibilitySettings, decodeInputSettings, findBindingConflicts, loadAccessibilitySettings, loadInputSettings, remapAndPersistKeyboardBinding, remapKeyboardBinding, resolveKeyboardLabel, saveAccessibilitySettings, saveInputSettings, validateInputSettings } from '../../src/input';
+
+class MemoryStore implements KeyValueStore {
+  private readonly values = new Map<string, string>();
+
+  public getItem(key: string): string | null {
+    return this.values.get(key) ?? null;
+  }
+
+  public setItem(key: string, value: string): void {
+    this.values.set(key, value);
+  }
+}
 
 describe('semantic input', () => {
   it('uses physical movement keys, independently of the keyboard layout', () => {
@@ -79,5 +91,39 @@ describe('semantic input', () => {
   it('keeps accessibility preferences versioned and outside prison state', () => {
     expect(decodeAccessibilitySettings(DEFAULT_ACCESSIBILITY_SETTINGS)).toEqual(DEFAULT_ACCESSIBILITY_SETTINGS);
     expect(decodeAccessibilitySettings({ version: 1, reducedMotion: true, uiScale: 2.1 })).toBeUndefined();
+  });
+
+  it('falls back to defaults when no settings, or corrupted settings, are stored', () => {
+    const empty = new MemoryStore();
+    expect(loadInputSettings(empty)).toEqual(DEFAULT_INPUT_SETTINGS);
+    expect(loadAccessibilitySettings(empty)).toEqual(DEFAULT_ACCESSIBILITY_SETTINGS);
+
+    const corrupted = new MemoryStore();
+    corrupted.setItem('lockstate.settings.input', '{not json');
+    expect(loadInputSettings(corrupted)).toEqual(DEFAULT_INPUT_SETTINGS);
+  });
+
+  it('round-trips settings through an injectable store, independent of prison saves', () => {
+    const store = new MemoryStore();
+    const settings = { version: 1 as const, keyboardBindings: DEFAULT_KEYBOARD_BINDINGS };
+    saveInputSettings(store, settings);
+    expect(loadInputSettings(store)).toEqual(settings);
+
+    const accessibility = { ...DEFAULT_ACCESSIBILITY_SETTINGS, reducedMotion: true };
+    saveAccessibilitySettings(store, accessibility);
+    expect(loadAccessibilitySettings(store)).toEqual(accessibility);
+  });
+
+  it('only persists a remap once it is conflict-free', () => {
+    const store = new MemoryStore();
+    saveInputSettings(store, DEFAULT_INPUT_SETTINGS);
+
+    const rejected = remapAndPersistKeyboardBinding(store, DEFAULT_INPUT_SETTINGS, 1, 'KeyW');
+    expect(rejected).toMatchObject({ ok: false, reason: 'binding-conflict' });
+    expect(loadInputSettings(store)).toEqual(DEFAULT_INPUT_SETTINGS);
+
+    const accepted = remapAndPersistKeyboardBinding(store, DEFAULT_INPUT_SETTINGS, 1, 'KeyJ');
+    expect(accepted.ok).toBe(true);
+    expect(loadInputSettings(store).keyboardBindings[1]).toMatchObject({ action: 'camera.down', code: 'KeyJ' });
   });
 });

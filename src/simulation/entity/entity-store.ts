@@ -1,5 +1,15 @@
 export type EntityId = number;
 
+export interface EntityStoreSnapshot {
+  readonly capacity: number;
+  readonly nextAvailableIndex: number;
+  readonly maxActiveIndex: number;
+  readonly freeCount: number;
+  readonly generations: Uint16Array;
+  readonly freeIndices: Uint32Array;
+  readonly alive: Uint8Array;
+}
+
 export const INDEX_MASK = 0x000FFFFF; // 20 bits
 export const GENERATION_MASK = 0xFFF00000; // 12 bits
 export const GENERATION_SHIFT = 20;
@@ -118,15 +128,7 @@ export class EntityStore {
     return (index & INDEX_MASK) | ((generation << GENERATION_SHIFT) & GENERATION_MASK);
   }
   
-  public getSnapshot(): {
-    capacity: number;
-    nextAvailableIndex: number;
-    maxActiveIndex: number;
-    freeCount: number;
-    generations: Uint16Array;
-    freeIndices: Uint32Array;
-    alive: Uint8Array;
-  } {
+  public getSnapshot(): EntityStoreSnapshot {
     return {
       capacity: this.capacity,
       nextAvailableIndex: this.nextAvailableIndex,
@@ -138,7 +140,7 @@ export class EntityStore {
     };
   }
 
-  public loadSnapshot(snapshot: ReturnType<typeof this.getSnapshot>): void {
+  public loadSnapshot(snapshot: EntityStoreSnapshot): void {
     if (snapshot.capacity !== this.capacity) {
       throw new Error('Cannot load snapshot with different capacity');
     }

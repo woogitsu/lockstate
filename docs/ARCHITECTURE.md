@@ -75,10 +75,10 @@ Navigation is hierarchical and budgeted:
 4. path cache with geometry-version invalidation,
 5. flow fields or shared route structures for high-volume common destinations where benchmarks justify them.
 
-A full-map A* per actor per frame is forbidden.
+A full-map A* per actor per frame is forbidden. The region/portal graph, door/permission model, route format and cache invalidation are defined in [NAVIGATION.md](./NAVIGATION.md); flow fields, shared-route optimization and CPU budgets are separate, not-yet-implemented work (#22).
 
 ### Saves
-Local-first persistence uses IndexedDB. Cloud persistence uses Supabase Auth + Postgres metadata and, when snapshots become large enough, Supabase Storage for compressed payloads.
+Local-first persistence uses IndexedDB. Cloud persistence uses Supabase Auth + Postgres metadata and, when snapshots become large enough, Supabase Storage for compressed payloads. The versioned save envelope, its runtime schema, checksum and forward-migration framework are defined in [PERSISTENCE.md](./PERSISTENCE.md) independently of which storage backend consumes it.
 
 Every save contains at minimum:
 - save schema version,
@@ -95,7 +95,7 @@ Every save contains at minimum:
 Save migrations are forward-only, explicit and tested against fixture saves.
 
 ### Multi-device conflicts
-Cloud writes use optimistic concurrency. A client may only advance revision N to N+1 if N is still current. If another client has advanced the save, the user receives a conflict workflow instead of silent last-write-wins data loss.
+Cloud writes use optimistic concurrency. A client may only advance revision N to N+1 if N is still current. If another client has advanced the save, the user receives a conflict workflow instead of silent last-write-wins data loss. The schema, RPC and client-side sync/conflict policy implementing this are defined in [CLOUD_SAVE.md](./CLOUD_SAVE.md).
 
 ### Authentication
 Players may start without registration. Anonymous/local play can later be upgraded to a durable Supabase identity using supported linking flows. Entitlements such as additional save slots belong to account metadata, not the simulation save payload.

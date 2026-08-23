@@ -11,3 +11,5 @@ Input is a renderer-agnostic, user-settings concern. Gameplay and camera consume
 - Accessibility preferences are a separate versioned user-settings record. `reducedMotion` and `uiScale` are validated integration points; neither belongs in authoritative prison state.
 - Input settings have their own versioned serialization and must not be embedded in a prison simulation snapshot.
 - Pointer, touch, and accessibility adapters will emit this same action contract in Issue #11; camera consumers arrive in Issue #10.
+- Settings persistence goes through an injectable `KeyValueStore` (`getItem`/`setItem`), not a hard-coded browser global, so tests stay headless. The browser `main.ts` entry point supplies `window.localStorage`; this is a separate store from the IndexedDB prison-save path. Keys are `lockstate.settings.input` and `lockstate.settings.accessibility`; corrupted or missing entries fall back to defaults rather than failing boot.
+- `remapAndPersistKeyboardBinding` composes validation with persistence so a conflicting or invalid remap is never written to storage.

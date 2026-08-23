@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import {
   BENCHMARK_HARNESS_VERSION,
   BENCHMARK_RESULT_SCHEMA_VERSION,
+  normalizeRunResult,
   summarizeSamples,
 } from '../benchmarks/harness.mjs';
 import { findBenchmarkScenario } from '../benchmarks/registry.mjs';
@@ -57,13 +58,19 @@ async function verifyScenario(resultScenario, profile) {
   assert.equal(resultScenario.version, registeredScenario.version);
   assert.equal(resultScenario.seed, registeredScenario.seed);
 
-  const expectedChecksum = String(
+  const expected = normalizeRunResult(
     await registeredScenario.run({
       seed: resultScenario.seed,
       operationsPerIteration: resultScenario.operationsPerIteration,
     }),
   );
-  assert.equal(resultScenario.checksum, expectedChecksum);
+  assert.equal(resultScenario.checksum, expected.checksum);
+
+  if (expected.metrics !== null) {
+    assert.deepEqual(resultScenario.metrics, expected.metrics, `${resultScenario.id} metrics must be deterministic.`);
+  } else {
+    assert.equal(resultScenario.metrics, undefined);
+  }
 
   for (const sample of resultScenario.samplesMs) {
     assertFiniteNumber(sample, `${resultScenario.id} sample`);

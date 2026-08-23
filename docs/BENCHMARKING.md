@@ -33,9 +33,23 @@ Every JSON result contains:
 - operations per measured iteration;
 - one deterministic checksum and the number of unique measured checksums;
 - raw duration samples;
-- min, max, mean, median, p95, population standard deviation and throughput.
+- min, max, mean, median, p95, population standard deviation and throughput;
+- an optional `metrics` object of scenario-specific structured evidence.
 
 The validator recomputes the scenario checksum and statistical summary from the stored samples. A scenario that produces different checksums across measured iterations fails before a result is written.
+
+## Optional structured metrics
+
+A scenario's `run()` may return either the original bare string/number
+checksum, or `{ checksum, metrics }` where `metrics` is any
+JSON-serializable object of scenario-specific evidence the summary
+statistics don't capture -- issue #22's navigation scenarios use it for
+work units (expanded search nodes), cache hit/miss/eviction counts, queue
+latency distribution and flow-field activation counts. `metrics` must be
+exactly as deterministic as the checksum: the validator recomputes it and
+requires a deep match, the same guarantee the checksum already gets.
+Scenarios that only return a bare checksum are unaffected -- `metrics` is
+absent from their result, not `null` or `{}`.
 
 ## Scenario rules
 
@@ -78,15 +92,17 @@ Correctness and deterministic checksum failures are hard gates immediately.
 
 `foundation.integer-mix@1` is a deterministic CPU workload used only to exercise the harness, result schema and checksum validation. It is deliberately not the simulation RNG, not an entity model and not a performance target for gameplay code. Its throughput must never be presented as Lockstate simulation capacity.
 
+## Delivered: navigation work-budget/queue/flow-field scenarios (issue #22)
+
+`navigation.meal-rush`, `navigation.lockdown-return` and `navigation.mixed-destination` (`benchmarks/scenarios/navigation-actor-tiers.mjs`) measure `src/simulation/navigation/`'s path-request queue, work budget and flow-field sharing at the 250 (smoke) and 5,000 (full) actor tiers, each returning `{ checksum, metrics }` — `metrics` carries work units (expanded search nodes), cache hit/miss, flow-field activation counts and per-tick latency distribution, deterministically re-verified by `scripts/verify-benchmark-result.mjs` exactly like the checksum. The remaining two tiers (1,000/2,500) and a memory reading are covered by the separate, non-CI-gating `scripts/run-navigation-actor-tier-report.mjs` — see `docs/NAVIGATION.md`'s Performance section and `docs/adr/0007-navigation-work-budgets-and-flow-fields.md` for evidence, rationale and why these are a hand-rolled mirror rather than an import of the production modules.
+
 ## Planned scenario families
 
 These are inputs to future measurement work, not accepted implementation decisions or budgets:
 
 - chunk storage/culling candidates: 16×16, 32×32 and 64×64 logical tiles;
-- active actor tiers: 250, 1,000, 2,500 and 5,000;
 - fixed-step simulation throughput and backlog behavior;
 - worker snapshot/delta encode, transfer and decode cost;
-- local and hierarchical path request throughput and cache invalidation;
 - save serialization, compression, checksum and migration cost;
 - IndexedDB read/write and recovery behavior;
 - renderer submission/culling and browser frame-time percentiles in a future browser harness.

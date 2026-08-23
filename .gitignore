@@ -13,3 +13,4 @@ benchmark-results/
 .DS_Store
 Thumbs.db
 *.log
+supabase/.temp/
