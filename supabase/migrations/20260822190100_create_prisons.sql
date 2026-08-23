@@ -53,12 +53,27 @@ create policy "prisons_delete_own"
 -- touches. Supabase grants table-level UPDATE on every new public table to
 -- `authenticated` by default (project-level `ALTER DEFAULT PRIVILEGES`),
 -- so without this, an authenticated owner could bypass optimistic
--- concurrency entirely with a direct PostgREST PATCH. Column-level REVOKE
--- narrows that table-level grant; public.create_save_version() (added in
--- a later migration) is SECURITY DEFINER, so it runs as the migration
--- role that owns this table rather than as `authenticated`, and is
--- therefore unaffected by this REVOKE -- it becomes the sole path able to
--- advance these two columns, and it performs its own `auth.uid() =
--- owner_id` check internally since SECURITY DEFINER does not imply RLS
--- is re-evaluated for the definer's own privileges.
-revoke update (current_version_id, current_revision, owner_id) on public.prisons from authenticated;
+-- concurrency entirely with a direct PostgREST PATCH.
+--
+-- It has to be revoke-then-grant, not a column-level REVOKE. PostgreSQL
+-- cannot subtract a single column's privilege out of a table-level grant:
+-- `revoke update (col) ... from authenticated` leaves the table-level
+-- UPDATE in place, so `has_table_privilege('authenticated', 'prisons',
+-- 'UPDATE')` stays true and the PATCH still succeeds. Revoking the
+-- table-level privilege first and granting back only the editable columns
+-- is what actually closes it.
+--
+-- public.create_save_version() (added in a later migration) is SECURITY
+-- DEFINER, so it runs as the migration role that owns this table rather
+-- than as `authenticated`, and is unaffected by this -- it becomes the
+-- sole path able to advance the pointer columns, and it performs its own
+-- `auth.uid() = owner_id` check internally since SECURITY DEFINER does
+-- not imply RLS is re-evaluated for the definer's own privileges.
+revoke update on public.prisons from authenticated, anon;
+
+-- Editable prison metadata only. `id`, `owner_id`, `created_at` and the
+-- two pointer columns are deliberately absent: a client has no reason to
+-- rewrite an identity, an owner, a creation timestamp, or a revision
+-- pointer that exists to be advanced transactionally.
+grant update (display_name, game_version, slot_index, updated_at)
+  on public.prisons to authenticated;

@@ -17,7 +17,13 @@ const ABORT_ERROR_NAMES = new Set(['AbortError', 'TransactionInactiveError', 'In
 
 export function classifyStoreError(error: unknown): SaveWriteError {
   const name = error instanceof Error ? error.name : undefined;
-  const message = error instanceof Error ? error.message : String(error);
+  // Real Chromium raises `QuotaExceededError` with an **empty** `message`
+  // (verified in tests/browser/local-save-quota.spec.ts), which would
+  // otherwise leave `SaveWriteError.message` blank for the single failure
+  // a player is most likely to hit. Fall back to the name so the evidence
+  // is never empty.
+  const rawMessage = error instanceof Error ? error.message : String(error);
+  const message = rawMessage === '' ? (name ?? 'Unknown storage error.') : rawMessage;
 
   if (name !== undefined && QUOTA_ERROR_NAMES.has(name)) {
     return { code: 'quota-exceeded', message };

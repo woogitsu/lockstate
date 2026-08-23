@@ -3,8 +3,15 @@ import type { SaveResult } from './repository';
 
 export interface AutosaveDependencies {
   readonly intervalMs: number;
-  /** Builds the envelope to persist right now, or `undefined` if there is nothing worth saving. */
-  readonly buildEnvelope: (prisonId: string) => SaveEnvelopeV1 | undefined;
+  /**
+   * Builds the envelope to persist right now, or `undefined` if there is
+   * nothing worth saving.
+   *
+   * May be async: capturing authoritative state means a round trip to the
+   * simulation worker (see `SessionRuntimeHost`). A synchronous
+   * implementation remains valid and is what the unit tests use.
+   */
+  readonly buildEnvelope: (prisonId: string) => Promise<SaveEnvelopeV1 | undefined> | SaveEnvelopeV1 | undefined;
   readonly save: (prisonId: string, envelope: SaveEnvelopeV1) => Promise<SaveResult>;
   readonly onResult?: (prisonId: string, result: SaveResult) => void;
 }
@@ -49,25 +56,38 @@ export class AutosaveScheduler {
     const entry = this.perPrison.get(prisonId);
     if (entry === undefined) return;
 
-    const envelope = this.deps.buildEnvelope(prisonId);
-    if (envelope === undefined) {
-      this.perPrison.delete(prisonId);
-      return;
-    }
-
+    // Claim the slot *before* any await. `buildEnvelope` may now be async
+    // (a worker round trip), and a dirty marker arriving during capture
+    // must coalesce into the follow-up rather than starting a second,
+    // overlapping save.
     entry.state = 'saving';
     entry.timeoutHandle = undefined;
 
-    void this.deps.save(prisonId, envelope).then((result) => {
-      this.deps.onResult?.(prisonId, result);
-      const current = this.perPrison.get(prisonId);
-      if (current?.state === 'saving-with-pending-dirty') {
-        const timeoutHandle = setTimeout(() => this.runSave(prisonId), this.deps.intervalMs);
-        this.perPrison.set(prisonId, { state: 'timer-pending', timeoutHandle });
-      } else {
-        this.perPrison.delete(prisonId);
-      }
-    });
+    void this.performSave(prisonId);
+  }
+
+  private async performSave(prisonId: string): Promise<void> {
+    const envelope = await this.deps.buildEnvelope(prisonId);
+    if (envelope === undefined) {
+      this.settle(prisonId);
+      return;
+    }
+
+    const result = await this.deps.save(prisonId, envelope);
+    this.deps.onResult?.(prisonId, result);
+    this.settle(prisonId);
+  }
+
+  /** Schedules exactly one follow-up if the prison was dirtied while this save ran, otherwise goes idle. */
+  private settle(prisonId: string): void {
+    const current = this.perPrison.get(prisonId);
+    if (current === undefined) return; // disposed mid-flight
+    if (current.state === 'saving-with-pending-dirty') {
+      const timeoutHandle = setTimeout(() => this.runSave(prisonId), this.deps.intervalMs);
+      this.perPrison.set(prisonId, { state: 'timer-pending', timeoutHandle });
+    } else {
+      this.perPrison.delete(prisonId);
+    }
   }
 
   /** Cancels every pending timer without waiting for in-flight saves. Call on session teardown. */

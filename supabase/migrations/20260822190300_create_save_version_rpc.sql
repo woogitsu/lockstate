@@ -78,9 +78,15 @@ begin
     raise exception 'not authorized for prison %', p_prison_id using errcode = '42501';
   end if;
 
-  select id, revision into v_existing_id, v_existing_revision
-  from public.save_versions
-  where prison_id = p_prison_id and checksum = p_checksum;
+  -- Table-qualified on purpose: `revision` and `checksum` are also OUT
+  -- parameter names from this function's `returns table (...)`, and
+  -- PL/pgSQL resolves an unqualified reference to the variable, raising
+  -- `42702 column reference "revision" is ambiguous` at runtime. Without
+  -- the alias this statement -- which runs on every call, before any
+  -- branch -- makes the function fail outright.
+  select sv.id, sv.revision into v_existing_id, v_existing_revision
+  from public.save_versions sv
+  where sv.prison_id = p_prison_id and sv.checksum = p_checksum;
 
   if found then
     return query select 'idempotent_replay'::text, v_existing_id, v_existing_revision, p_checksum;
