@@ -2,7 +2,7 @@ import { V1_RESTORED_SCOPE, type RestoredScope, type SessionSnapshotBundle } fro
 import { AutosaveScheduler } from '../local/autosave';
 import type { PrisonSaveRepository, SaveResult } from '../local/repository';
 import type { PrisonSlotMetadata } from '../local/store';
-import { createSaveEnvelope, type SaveEnvelopeV1 } from '../save-schema';
+import { createSaveEnvelope, type SaveEnvelopeV1, type TrustedSaveEnvelopeV1 } from '../save-schema';
 import type { SessionRuntimeHost } from './runtime-host';
 
 /** Directional default: the informal probe in `docs/PERSISTENCE.md` puts a representative save well under a second, so a 30s trailing-edge cadence costs little while bounding worst-case loss. Not a tuned figure -- see `docs/BENCHMARKING.md`. */
@@ -140,8 +140,15 @@ export class SessionController {
    * Builds a checksummed envelope from an explicit snapshot captured from
    * the authoritative simulation -- never from renderer state, and never
    * from a runtime this thread owns.
+   *
+   * The return type is deliberately the branded `TrustedSaveEnvelopeV1`
+   * (#49): it records in the type system that this envelope was composed and
+   * validated in-process, so a future refactor that fed `saveNow` an envelope
+   * of unknown provenance would fail to typecheck rather than silently take
+   * the fast write path. Provenance is additionally enforced at runtime by
+   * object identity, so a cast could not bypass validation either.
    */
-  public async buildEnvelope(): Promise<SaveEnvelopeV1 | undefined> {
+  public async buildEnvelope(): Promise<TrustedSaveEnvelopeV1 | undefined> {
     const session = this.session;
     if (session === undefined) return undefined;
 
@@ -167,7 +174,7 @@ export class SessionController {
       return { ok: false, error: { code: 'unknown-error', message: 'No active session to save.' } };
     }
 
-    let envelope: SaveEnvelopeV1 | undefined;
+    let envelope: TrustedSaveEnvelopeV1 | undefined;
     try {
       envelope = await this.buildEnvelope();
     } catch (error) {

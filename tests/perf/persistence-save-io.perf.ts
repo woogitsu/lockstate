@@ -100,7 +100,10 @@ interface SizeReport {
 interface TimingReport {
   readonly tierId: string;
   readonly store: StoreKind;
+  /** The production autosave path: an envelope this process just built (#49). */
   readonly write: DurationStats;
+  /** The import/untrusted path: the same envelope after a serialization round trip, so `save()` re-validates it in full. */
+  readonly untrustedWrite: DurationStats;
   readonly read: DurationStats;
   /** Only measured for the IndexedDB store; see `measureRecoveryOnly`. */
   readonly recoveryRead?: DurationStats;
@@ -163,13 +166,26 @@ async function measureStore(fixture: PrisonFixture, kind: StoreKind): Promise<St
     const repository = new PrisonSaveRepository(handle.store, { keepGenerations: DEFAULT_KEEP_GENERATIONS });
     await repository.create({ prisonId: PRISON_ID, gameVersion: GAME_VERSION });
 
-    // `save()` re-validates the envelope (schema + checksum) before writing,
-    // so these samples are the full production write path, not just the
-    // storage call. Warm-ups also carry the window into steady state, where
-    // every save prunes an old generation.
+    // These samples are the full production write path, not just the storage
+    // call. Since #49 that path no longer re-validates an envelope this
+    // process built moments earlier -- `fixture.envelope` came from
+    // `createSaveEnvelope`, so `save()` writes it without a redundant third
+    // walk of the payload. Warm-ups also carry the window into steady state,
+    // where every save prunes an old generation.
     const write = await measureAsync(WARMUP_ITERATIONS, fixture.tier.samples, async () => {
       const result = await repository.save(PRISON_ID, fixture.envelope);
       if (!result.ok) throw new Error(`save() failed: ${result.error.code}`);
+    });
+
+    // The other half of that boundary, measured so removing the redundant
+    // walk cannot quietly hide the cost of the validation that remains: an
+    // envelope of unknown provenance (here, the same content after a
+    // serialization round trip) still pays full schema + checksum validation
+    // inside `save()`. Serialized once, outside the measured section.
+    const untrustedEnvelope = JSON.parse(JSON.stringify(fixture.envelope)) as SaveEnvelopeV1;
+    const untrustedWrite = await measureAsync(WARMUP_ITERATIONS, fixture.tier.samples, async () => {
+      const result = await repository.save(PRISON_ID, untrustedEnvelope);
+      if (!result.ok) throw new Error(`untrusted save() failed: ${result.error.code}`);
     });
 
     const read = await measureAsync(WARMUP_ITERATIONS, fixture.tier.samples, async () => {
@@ -183,7 +199,7 @@ async function measureStore(fixture: PrisonFixture, kind: StoreKind): Promise<St
     const retainedWindowBytes = await sumRetainedGenerationBytes(handle.store, generationIds);
 
     return {
-      timing: { tierId: fixture.tier.id, store: kind, write, read },
+      timing: { tierId: fixture.tier.id, store: kind, write, untrustedWrite, read },
       retainedWindowBytes,
       retainedGenerations: generationIds.length,
     };
@@ -479,15 +495,21 @@ afterAll(() => {
   );
 
   lines.push('');
-  lines.push('Write / read time (ms; median, with p95 and sample count)');
+  lines.push(
+    'Write / read time (ms; median, with p95 and sample count). "save" is the production autosave path (an',
+  );
+  lines.push(
+    'envelope this process just built); "untrusted save" is the import path, still fully re-validated (#49).',
+  );
   lines.push(
     renderTable(
-      ['tier', 'store', 'save median', 'save p95', 'load median', 'load p95', 'recovery load median', 'n'],
+      ['tier', 'store', 'save median', 'save p95', 'untrusted save median', 'load median', 'load p95', 'recovery load median', 'n'],
       timingReports.map((row) => [
         row.tierId,
         row.store,
         formatMs(row.write.median),
         formatMs(row.write.p95),
+        formatMs(row.untrustedWrite.median),
         formatMs(row.read.median),
         formatMs(row.read.p95),
         row.recoveryRead === undefined ? 'n/a' : formatMs(row.recoveryRead.median),

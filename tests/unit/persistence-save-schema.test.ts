@@ -3,7 +3,10 @@ import {
   SAVE_SCHEMA_VERSION,
   createSaveEnvelope,
   decodeSaveEnvelope,
+  decodeSaveEnvelopeUnlessTrusted,
+  isTrustedSaveEnvelope,
   type SaveEnvelopeV1,
+  type TrustedSaveEnvelopeV1,
 } from '../../src/persistence/save-schema';
 import { estimateSaveEnvelopeByteSize } from '../../src/persistence/size';
 import { Kernel } from '../../src/simulation/kernel/kernel';
@@ -128,27 +131,96 @@ describe('save envelope V1: error taxonomy', () => {
   });
 });
 
+function buildTestEnvelope(overrides: Partial<Parameters<typeof createSaveEnvelope>[0]> = {}): TrustedSaveEnvelopeV1 {
+  const world = new SparseWorld(32);
+  world.setOwned({ x: chunkCoordinate(0), y: chunkCoordinate(0) }, true);
+  const construction = new ConstructionSystem(world);
+  const kernel = new Kernel();
+  kernel.registerSystem(construction);
+
+  return createSaveEnvelope({
+    gameVersion: 'lockstate-0.0.0',
+    prisonId: 'prison-xyz',
+    revision: 0,
+    createdAt: 1,
+    updatedAt: 1,
+    kernel: kernel.snapshot(),
+    world: world.snapshot(),
+    construction: construction.snapshot(),
+    ...overrides,
+  });
+}
+
 describe('createSaveEnvelope', () => {
   it('produces an envelope that decodes cleanly and excludes entities when none are provided', () => {
-    const world = new SparseWorld(32);
-    world.setOwned({ x: chunkCoordinate(0), y: chunkCoordinate(0) }, true);
-    const construction = new ConstructionSystem(world);
-    const kernel = new Kernel();
-    kernel.registerSystem(construction);
-
-    const envelope = createSaveEnvelope({
-      gameVersion: 'lockstate-0.0.0',
-      prisonId: 'prison-xyz',
-      revision: 0,
-      createdAt: 1,
-      updatedAt: 1,
-      kernel: kernel.snapshot(),
-      world: world.snapshot(),
-      construction: construction.snapshot(),
-    });
+    const envelope = buildTestEnvelope();
 
     expect(envelope.payload.entities).toBeUndefined();
     const decoded = decodeSaveEnvelope(envelope);
     expect(decoded).toMatchObject({ ok: true, value: envelope });
+  });
+
+  // The envelope schema no longer re-walks the payload it was just handed
+  // (#49), so the envelope's own fields need their own proof of validation.
+  it('still rejects envelope metadata the payload schema does not cover', () => {
+    expect(() => buildTestEnvelope({ createdAt: 100, updatedAt: 50 })).toThrow();
+    expect(() => buildTestEnvelope({ revision: -1 })).toThrow();
+    expect(() => buildTestEnvelope({ prisonId: '' })).toThrow();
+    expect(() => buildTestEnvelope({ gameVersion: 'not a valid identifier!' })).toThrow();
+  });
+
+  it('still rejects a structurally invalid payload', () => {
+    expect(() =>
+      buildTestEnvelope({ kernel: { tick: -1, expectedSequence: 0, rngStates: [], commands: [] } as never }),
+    ).toThrow();
+  });
+});
+
+describe('trusted save envelopes', () => {
+  it('trusts an envelope this process composed', () => {
+    const envelope = buildTestEnvelope();
+    expect(isTrustedSaveEnvelope(envelope)).toBe(true);
+    expect(decodeSaveEnvelopeUnlessTrusted(envelope)).toMatchObject({ ok: true, value: envelope });
+  });
+
+  it('trusts the output of decodeSaveEnvelope, which is a fresh value rather than the caller’s object', () => {
+    const input = JSON.parse(JSON.stringify(freshPrisonFixture)) as SaveEnvelopeV1;
+    const decoded = decodeSaveEnvelope(input);
+    expect(decoded.ok).toBe(true);
+    if (!decoded.ok) return;
+    expect(decoded.value).not.toBe(input);
+    expect(isTrustedSaveEnvelope(decoded.value)).toBe(true);
+    expect(isTrustedSaveEnvelope(input)).toBe(false);
+  });
+
+  it('trusts no copy of a trusted envelope, however it was copied', () => {
+    const envelope = buildTestEnvelope();
+    // Every ordinary way a value leaves and re-enters this process.
+    expect(isTrustedSaveEnvelope(JSON.parse(JSON.stringify(envelope)) as SaveEnvelopeV1)).toBe(false);
+    expect(isTrustedSaveEnvelope(structuredClone(envelope) as SaveEnvelopeV1)).toBe(false);
+    expect(isTrustedSaveEnvelope({ ...envelope })).toBe(false);
+    expect(isTrustedSaveEnvelope({ ...envelope, revision: 9 })).toBe(false);
+  });
+
+  it('trusts nothing merely cast to the trusted type, and validates it in full instead', () => {
+    const forged = { ...buildTestEnvelope(), checksum: '0'.repeat(16) } as TrustedSaveEnvelopeV1;
+    expect(isTrustedSaveEnvelope(forged)).toBe(false);
+    expect(decodeSaveEnvelopeUnlessTrusted(forged)).toMatchObject({
+      ok: false,
+      error: { code: 'checksum-mismatch' },
+    });
+
+    const garbage = { saveSchemaVersion: 1, nonsense: true } as unknown as TrustedSaveEnvelopeV1;
+    expect(isTrustedSaveEnvelope(garbage)).toBe(false);
+    expect(decodeSaveEnvelopeUnlessTrusted(garbage)).toMatchObject({ ok: false, error: { code: 'invalid-shape' } });
+  });
+
+  it('freezes a trusted envelope so its checksum cannot be swapped after this module vouched for it', () => {
+    const envelope = buildTestEnvelope();
+    expect(Object.isFrozen(envelope)).toBe(true);
+    expect(() => {
+      (envelope as unknown as { checksum: string }).checksum = '0'.repeat(16);
+    }).toThrow(TypeError);
+    expect(decodeSaveEnvelope(envelope).ok).toBe(true);
   });
 });
