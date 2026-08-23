@@ -25,7 +25,7 @@ The persistence measurement harness is likewise opt-in: `pnpm exec vitest run --
 the same rule: it reads the runtime atlas PNGs, which live in Git LFS, so it is
 the only check that needs LFS content. CI runs it as a required `assets` job, so
 ordinary runs stay on a cheap pointer-only checkout (see
-[ADR-0012](./adr/0012-art-storage-and-runtime-asset-delivery.md)). Only `*.png`
+[ADR-0014](./adr/0014-art-storage-and-runtime-asset-delivery.md)). Only `*.png`
 is LFS-tracked; the atlas manifests and `asset-registry.json` are plain files, so
 nothing in `pnpm verify` needs LFS content at all.
 

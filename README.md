@@ -55,7 +55,7 @@ pnpm verify:assets
 ```
 
 See [`docs/ART_PIPELINE.md`](./docs/ART_PIPELINE.md) and
-[ADR-0012](./docs/adr/0012-art-storage-and-runtime-asset-delivery.md).
+[ADR-0014](./docs/adr/0014-art-storage-and-runtime-asset-delivery.md).
 
 Production-like local preview:
 

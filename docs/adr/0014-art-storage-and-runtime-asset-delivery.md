@@ -1,4 +1,4 @@
-# ADR-0012: Art storage, generated-versus-source policy and runtime asset delivery
+# ADR-0014: Art storage, generated-versus-source policy and runtime asset delivery
 
 - Status: Proposed
 - Date: 2026-08-23

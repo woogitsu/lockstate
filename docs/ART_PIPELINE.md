@@ -73,7 +73,7 @@ pnpm verify:assets
 ```
 
 CI runs it as a required `assets` job, the only check that reads image bytes; see
-[ADR-0012](./adr/0012-art-storage-and-runtime-asset-delivery.md). A checkout
+[ADR-0014](./adr/0014-art-storage-and-runtime-asset-delivery.md). A checkout
 without LFS content leaves 130-byte pointer files in place of PNGs, so the
 validator detects a pointer and fails naming it rather than passing vacuously,
 and the job asserts the PNG signature and a size floor on every atlas before
@@ -114,7 +114,7 @@ cached immutably because their URL changes with their bytes. `public/_headers`
 rules are exclusive, because overlapping rules concatenate into a single
 `Cache-Control` instead of overriding each other.
 `scripts/verify-deployment-preview.mjs` asserts all of this against the workerd
-preview. See [ADR-0012](./adr/0012-art-storage-and-runtime-asset-delivery.md).
+preview. See [ADR-0014](./adr/0014-art-storage-and-runtime-asset-delivery.md).
 
 The supplied object sheets are built by `tooling/build-source-art-catalog.mjs`
 into `public/game-content/source-art.v1.json`. Their immutable content-hashed
