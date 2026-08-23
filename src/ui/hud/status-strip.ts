@@ -8,9 +8,10 @@ import { type StatChip, createStatChip } from '../primitives/stat-chip';
 import { type StatusBadge, createStatusBadge } from '../primitives/status-badge';
 import { HUD_MESSAGE_KEY } from './messages';
 import {
+  CLOCK_UNKNOWN_TEXT,
   type HudMetricId,
-  formatClockTime,
-  normalizeDay,
+  dayProgressPercent,
+  displayDay,
   projectStatusMetrics,
   transportPressedStates,
 } from './projection';
@@ -78,8 +79,10 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
   }
 
   // ---- clock and transport -----------------------------------------
-  const time = valueText(formatClockTime(0), 'hud-clock__time');
-  const day = valueText('1', 'hud-clock__day');
+  // Both start unknown, because at first paint they are: no session has
+  // reported a clock yet, and `--` says so.
+  const dayProgress = valueText(CLOCK_UNKNOWN_TEXT, 'hud-clock__day-progress');
+  const day = valueText(CLOCK_UNKNOWN_TEXT, 'hud-clock__day');
   const speed = valueText('×1', 'hud-clock__speed');
   const speedLabel = screenReaderText('');
 
@@ -108,10 +111,10 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
     className: 'hud-strip__clock',
     children: [
       createIcon('clock', 'sm'),
-      screenReaderText(t(HUD_MESSAGE_KEY.clockTime)),
-      time,
       eyebrowText(t(HUD_MESSAGE_KEY.clockDay), 'hud-clock__day-label'),
       day,
+      screenReaderText(t(HUD_MESSAGE_KEY.clockDayProgress)),
+      dayProgress,
     ],
   });
 
@@ -173,8 +176,19 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
       }
     }
 
-    time.textContent = formatClockTime(viewModel.clock.minuteOfDay);
-    day.textContent = localizer.formatNumber(normalizeDay(viewModel.clock.day));
+    // A clock nobody has reported renders as unknown rather than as the
+    // start of day one: the strip may not invent a simulation clock.
+    const dayNumber = displayDay(viewModel.clock.day);
+    day.textContent = dayNumber === undefined ? CLOCK_UNKNOWN_TEXT : localizer.formatNumber(dayNumber);
+
+    const percent = dayProgressPercent(viewModel.clock.tickOfDay, viewModel.clock.dayLengthTicks);
+    dayProgress.textContent =
+      percent === undefined
+        ? CLOCK_UNKNOWN_TEXT
+        : // Through the localizer, so the percent sign and grouping follow the
+          // player's locale. The *value* is already floored to a whole
+          // percent, so this only formats it.
+          localizer.formatNumber(percent / 100, { style: 'percent', maximumFractionDigits: 0 });
     speed.textContent = `×${localizer.formatNumber(viewModel.clock.speed)}`;
     speedLabel.textContent = t(HUD_MESSAGE_KEY.clockSpeed, { speed: viewModel.clock.speed });
 

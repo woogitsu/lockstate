@@ -48,6 +48,33 @@ Worker to main thread:
 
 The concrete union is the source of truth. This ADR defines the compatibility and ownership rules rather than duplicating every field.
 
+## Amendment, 2026-08-23: `simulation/clock-state` may be unsolicited
+
+`simulation/clock-state` was originally correlated only — the acknowledgement
+of a `simulation/set-clock`. That left the advancing tick unobservable except
+through a full snapshot request, so the HUD's day counter either stood still
+while the simulation ran or had to be extrapolated from wall time on the main
+thread, which is a second clock on the wrong side of the boundary.
+
+`replyTo` is therefore **optional** on this message and on this message only.
+It keeps decision 2 rather than weakening it: a published clock state carries
+no `replyTo`, because an unsolicited message must not present itself as a
+request response and must not resolve a pending request that happens to share
+an id. The payload is unchanged and identical in both forms, so a reader does
+not have to know which prompted it.
+
+The envelope version stays at `1`. Both peers are emitted from one build (the
+worker is a Vite worker chunk of the same bundle), so no old peer exists to
+misread the new form; a peer that did would reject it as `invalid-payload`
+and drop a readout, not corrupt state.
+
+Publication is a **read**: the worker posts `Kernel.tick` and
+`FixedStepClock.control` after the tick loop has finished stepping, at most
+every 250 ms and only when the tick has moved. It calls nothing on the kernel.
+This is what keeps clock control compatible with ADR 0009's determinism
+guarantee, and `tests/determinism/clock-transport.test.ts` is the executable
+form of that claim.
+
 ## Compatibility strategy
 
 Envelope protocol version 1 is the only accepted version initially. Adding an optional domain field may remain compatible if old peers can ignore it through an explicitly versioned domain payload. Adding or changing an envelope message in a way an old peer cannot safely interpret requires either a compatibility path or an envelope-version increment with fixtures covering both sides.

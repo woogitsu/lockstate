@@ -1,17 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { HUD_MESSAGE_KEY } from '../../src/ui/hud/messages';
 import {
-  MINUTES_PER_DAY,
-  formatClockTime,
+  dayProgressPercent,
+  displayDay,
   nextFastForwardSpeed,
-  normalizeDay,
   occupancyTone,
   projectStatusMetrics,
   severityLabelKey,
   severityTone,
   transportPressedStates,
 } from '../../src/ui/hud/projection';
-import type { HudCountsViewModel, HudSpeed } from '../../src/ui/hud/view-model';
+import type { HudClockViewModel, HudCountsViewModel, HudSpeed } from '../../src/ui/hud/view-model';
 import { DEFAULT_BAR_SEGMENTS, filledSegments } from '../../src/ui/primitives/segmented-bar';
 
 /**
@@ -22,6 +21,10 @@ import { DEFAULT_BAR_SEGMENTS, filledSegments } from '../../src/ui/primitives/se
  * what reaches the screen -- headlessly, in the default `node` environment,
  * exactly as `ui-save-panel-status.test.ts` does for the save panel.
  */
+
+function clock(overrides: Partial<HudClockViewModel> = {}): HudClockViewModel {
+  return { day: 1, tickOfDay: 0, dayLengthTicks: 2_400, mode: 'paused', speed: 1, ...overrides };
+}
 
 function counts(overrides: Partial<HudCountsViewModel> = {}): HudCountsViewModel {
   return {
@@ -148,41 +151,59 @@ describe('filledSegments', () => {
 });
 
 describe('clock readout', () => {
+  // `DAY_LENGTH_TICKS` at the time of writing. Spelled out rather than
+  // imported: the HUD may not import the simulation, and the point of the
+  // view model carrying `dayLengthTicks` is that this number is *not* baked
+  // into the display layer. The cases below therefore use several lengths.
+  const DAY = 2_400;
+
   it.each([
-    [0, '00:00'],
-    [59, '00:59'],
-    [60, '01:00'],
-    [7 * 60 + 45, '07:45'],
-    [MINUTES_PER_DAY - 1, '23:59'],
-  ])('minute %i renders as %s', (minute, expected) => {
-    expect(formatClockTime(minute)).toBe(expected);
+    [0, DAY, 0],
+    [1, DAY, 0],
+    [DAY / 4, DAY, 25],
+    [DAY / 2, DAY, 50],
+    [DAY - 1, DAY, 99],
+    [50, 100, 50],
+    [3, 8, 37],
+  ])('tick %i of a %i-tick day is %i%% through it', (tickOfDay, dayLengthTicks, expected) => {
+    expect(dayProgressPercent(tickOfDay, dayLengthTicks)).toBe(expected);
   });
 
-  it('is fixed-width 24-hour, never the host locale', () => {
-    // A simulation clock has no date, no time zone and no AM/PM. Rendering
-    // it through Intl would give one player `7:45 AM` and another `07:45`,
-    // and docs/TESTING.md forbids depending on the developer's locale.
-    for (let minute = 0; minute < MINUTES_PER_DAY; minute += 37) {
-      expect(formatClockTime(minute)).toMatch(/^\d{2}:\d{2}$/);
-    }
+  it('floors, so a day is never reported as over before it is', () => {
+    // The same rule `BoundedValue.filled` follows: rounding would report
+    // 99.6% of the way through day 3 as day 3 being finished, which is a
+    // thing a player would act on.
+    expect(dayProgressPercent(999, 1_000)).toBe(99);
+    expect(dayProgressPercent(996, 1_000)).toBe(99);
   });
 
-  it('wraps rather than throwing on an out-of-range minute', () => {
-    expect(formatClockTime(MINUTES_PER_DAY)).toBe('00:00');
-    expect(formatClockTime(MINUTES_PER_DAY + 90)).toBe('01:30');
-    expect(formatClockTime(-1)).toBe('23:59');
+  it('reports the position as unknown when the day length is', () => {
+    // `0` is what `UNKNOWN_HUD_CLOCK` carries: no session has reported a
+    // clock, so there is no day to be part of the way through.
+    expect(dayProgressPercent(0, 0)).toBeUndefined();
+    expect(dayProgressPercent(120, 0)).toBeUndefined();
+    expect(dayProgressPercent(120, -5)).toBeUndefined();
+    expect(dayProgressPercent(Number.NaN, DAY)).toBeUndefined();
+    expect(dayProgressPercent(0, Number.POSITIVE_INFINITY)).toBeUndefined();
   });
 
-  it('degrades visibly rather than printing NaN', () => {
-    expect(formatClockTime(Number.NaN)).toBe('--:--');
+  it('wraps rather than throwing on a position outside the day', () => {
+    // A readout that lands one tick either side of the day boundary must
+    // still render something.
+    expect(dayProgressPercent(DAY, DAY)).toBe(0);
+    expect(dayProgressPercent(DAY + DAY / 2, DAY)).toBe(50);
+    expect(dayProgressPercent(-1, DAY)).toBe(99);
   });
 
-  it('keeps days 1-based whatever arrives', () => {
-    expect(normalizeDay(1)).toBe(1);
-    expect(normalizeDay(0)).toBe(1);
-    expect(normalizeDay(-4)).toBe(1);
-    expect(normalizeDay(12.7)).toBe(12);
-    expect(normalizeDay(Number.NaN)).toBe(1);
+  it('never claims a day number the simulation has not reported', () => {
+    expect(displayDay(1)).toBe(1);
+    expect(displayDay(12.7)).toBe(12);
+    // `0` is the "no session" value, and it must not become "day 1": a
+    // confident day counter for a prison that is not running is exactly the
+    // kind of state-shaped decoration the HUD may not show.
+    expect(displayDay(0)).toBeUndefined();
+    expect(displayDay(-4)).toBeUndefined();
+    expect(displayDay(Number.NaN)).toBeUndefined();
   });
 });
 
@@ -196,15 +217,15 @@ describe('transport controls', () => {
       { mode: 'running', speed: 4 },
     ];
     for (const { mode, speed } of cases) {
-      const pressed = transportPressedStates({ day: 1, minuteOfDay: 0, mode, speed });
+      const pressed = transportPressedStates(clock({ mode, speed }));
       expect(Object.values(pressed).filter(Boolean)).toHaveLength(1);
     }
   });
 
   it('pauses regardless of speed, and distinguishes normal speed from fast', () => {
-    expect(transportPressedStates({ day: 1, minuteOfDay: 0, mode: 'paused', speed: 4 }).pause).toBe(true);
-    expect(transportPressedStates({ day: 1, minuteOfDay: 0, mode: 'running', speed: 1 }).play).toBe(true);
-    expect(transportPressedStates({ day: 1, minuteOfDay: 0, mode: 'running', speed: 2 }).fastForward).toBe(true);
+    expect(transportPressedStates(clock({ mode: 'paused', speed: 4 })).pause).toBe(true);
+    expect(transportPressedStates(clock({ mode: 'running', speed: 1 })).play).toBe(true);
+    expect(transportPressedStates(clock({ mode: 'running', speed: 2 })).fastForward).toBe(true);
   });
 
   it('cycles fast-forward between the two fast speeds instead of dead-ending', () => {
