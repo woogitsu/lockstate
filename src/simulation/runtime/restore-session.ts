@@ -5,6 +5,7 @@ import type { NamedRngStreamState } from '../rng/streams';
 import type { WorldSnapshotV1 } from '../world/sparse-world';
 import { SparseWorld } from '../world/sparse-world';
 import { createNewSimulationRuntime, type SimulationRuntime } from './new-session';
+import { captureSessionSystems, restoreSessionSystems, type EncodedSessionSystems } from './session-systems';
 
 /**
  * The simulation state a session snapshot carries across the worker
@@ -27,51 +28,75 @@ export interface SessionSnapshotBundle {
    * could ever reach a save.
    */
   readonly entities?: EncodedEntityStoreSnapshot;
+  /**
+   * Every other subsystem that holds authoritative state (issue #70):
+   * prisoner components, operations, navigation doors, security, contraband
+   * and incidents. See `session-systems.ts` for the encoding and
+   * `docs/PERSISTENCE.md` for what is excluded and why.
+   *
+   * Optional because a V2 save (and a V2 worker message) does not carry it;
+   * a bundle without it restores exactly as V2 did, with those subsystems
+   * rebuilt empty, rather than failing.
+   */
+  readonly simulation?: EncodedSessionSystems;
 }
 
 /** `schemaId` this bundle travels under in the worker protocol's `versionedPayload`. */
 export const SESSION_SNAPSHOT_SCHEMA_ID = 'simulation-save-payload';
 /**
  * Bumped to 2 by #50: `entities` changed from capacity-shaped arrays to
- * population-shaped run-length encoding. ADR 0003 gives a snapshot its own
+ * population-shaped run-length encoding. Bumped to 3 by #70: the bundle
+ * gained `simulation`, carrying the twenty-odd subsystems that held real
+ * state and were never persisted. ADR 0003 gives a snapshot its own
  * `schemaVersion` precisely so a payload shape change can be declared here
  * without dragging the protocol version with it -- and declaring it matters,
  * because a build that received the other shape silently would restore a
  * corrupt liveness ledger instead of faulting `snapshot-incompatible`.
  */
-export const SESSION_SNAPSHOT_SCHEMA_VERSION = 2;
+export const SESSION_SNAPSHOT_SCHEMA_VERSION = 3;
 
 /**
  * What a session snapshot actually restores, stated explicitly rather
  * than implied.
  *
- * The bundle above carries the kernel (tick, command queue, RNG stream
- * states), the world, the construction system and entity-id liveness --
- * and deliberately nothing else. The simulation systems shipped after #18
- * defined that shape (navigation caches, prisoner needs/actions,
- * jobs/inventory, security sectors/guards, contraband/intelligence,
- * incidents) each own snapshot state it does not yet carry, so a restored
- * session rebuilds those subsystems *empty*, exactly as a new session does.
+ * Until V3 (#70) the bundle carried the kernel, the world, construction and
+ * entity-id liveness and nothing else, so a prison round-tripped through
+ * save/load as terrain and walls. V3 adds every subsystem that holds
+ * authoritative state; what remains in the right-hand column is state that is
+ * genuinely *derived* or genuinely *in flight*, not state that was forgotten:
  *
- * That is a real, bounded limitation, not an oversight to paper over:
- * extending it is a save-schema change (a new version plus a migration, per
- * `AGENTS.md`'s "every persistent format must have a version and migration
- * strategy"), which is its own issue rather than something to smuggle in
- * here. V2 (#50) changed only how entity liveness is *written down*, not
- * which subsystems are carried, so this list is unchanged by it.
+ * - Room/topology geometry is a pure cache recomputed from `SparseWorld`.
+ * - Navigation's route/flow-field caches and its pending path-request queue
+ *   belong to a `NavigationSystem` instance a restored session rebuilds; the
+ *   subsystems that referenced one (prisoners mid-travel, guards mid-leg,
+ *   carry jobs, search legs, incident responses) each reset that reference on
+ *   restore, idempotently, and re-request on their next scheduled tick.
+ *
+ * `docs/PERSISTENCE.md` records the reason for every exclusion.
  * `restoreSimulationRuntime` returns this summary so a caller -- and the
  * player-facing UI -- can be honest about what came back.
  */
 export interface RestoredScope {
   /** Always restored by a current-version snapshot. */
   readonly restored: readonly string[];
-  /** Rebuilt empty because the payload does not carry them yet. */
+  /** Rebuilt from scratch, because it is derived state or in-flight work rather than authoritative state. */
   readonly notCarriedByThisSaveVersion: readonly string[];
 }
 
 export const CURRENT_SAVE_RESTORED_SCOPE: RestoredScope = {
-  restored: ['kernel tick and command queue', 'RNG stream states', 'world terrain and ownership', 'construction orders and undo/redo', 'entity id liveness'],
-  notCarriedByThisSaveVersion: ['prisoner needs and actions', 'jobs and inventory', 'security sectors, guards and patrols', 'contraband and intelligence', 'incidents and gangs'],
+  restored: [
+    'kernel tick and command queue',
+    'RNG stream states',
+    'world terrain and ownership',
+    'construction orders and undo/redo',
+    'entity id liveness',
+    'prisoners, needs, actions and cell assignments',
+    'jobs, containers and utility networks',
+    'doors, security sectors, guards and patrols',
+    'contraband, intelligence and searches',
+    'incidents, gangs and tunnels',
+  ],
+  notCarriedByThisSaveVersion: ['room and topology caches (recomputed from the world)', 'navigation caches and in-flight path requests (re-issued on the next tick)'],
 };
 
 export interface RestoreResult {
@@ -122,6 +147,7 @@ export function captureSessionSnapshot(runtime: SimulationRuntime): SessionSnaps
     world: runtime.world.snapshot(),
     construction: runtime.construction.snapshot(),
     entities: encodeEntityStoreSnapshot(runtime.prisoners.entityStore.getSnapshot()),
+    simulation: captureSessionSystems(runtime),
   };
 }
 
@@ -139,8 +165,21 @@ export function restoreSimulationRuntime(bundle: SessionSnapshotBundle, masterSe
 
   runtime.construction.restore(bundle.construction);
   runtime.kernel.restoreState(toKernelSnapshot(bundle.kernel));
-  if (bundle.entities !== undefined) {
-    runtime.prisoners.entityStore.loadSnapshot(decodeEntityStoreSnapshot(bundle.entities));
+
+  const entityStore = bundle.entities === undefined ? undefined : decodeEntityStoreSnapshot(bundle.entities);
+  if (bundle.simulation !== undefined) {
+    // Prisoner components are meaningless without the liveness ledger that
+    // says which slots they describe, and `PrisonerOperationsRuntime` loads
+    // both in one call so its query bitset is re-derived from the restored
+    // store. A `simulation` section without `entities` is therefore a
+    // malformed bundle, not a partial one.
+    if (entityStore === undefined) {
+      throw new RangeError('A session bundle carrying `simulation` must also carry `entities`: prisoner components describe entity slots.');
+    }
+    restoreSessionSystems(runtime, bundle.simulation, entityStore);
+  } else if (entityStore !== undefined) {
+    // V2 shape: liveness only, every other subsystem rebuilt empty.
+    runtime.prisoners.entityStore.loadSnapshot(entityStore);
   }
 
   return { runtime, scope: CURRENT_SAVE_RESTORED_SCOPE };

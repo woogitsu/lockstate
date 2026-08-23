@@ -47,6 +47,27 @@ export class PatrolSystem implements SystemRegistration {
     return { loopsCompletedOnTime: this.loopsCompletedOnTime, loopsCompletedLate: this.loopsCompletedLate, loopsMissed: this.loopsMissed };
   }
 
+  /**
+   * Completion/missed-patrol counters (issue #26's stated output of this
+   * system), added for the save payload in issue #70.
+   *
+   * Live per-guard patrol bookkeeping is deliberately absent: it lives on
+   * `GuardRoster` (waypoint index, loop start tick, path request id), which
+   * has its own snapshot and its own documented mid-leg reset.
+   * `requestSequence` is likewise excluded — it only names path requests
+   * against a `NavigationSystem` a restored session rebuilds empty, so no
+   * restored state can reference an old name.
+   */
+  public getSnapshot(): { readonly metrics: PatrolMetrics } {
+    return { metrics: this.getMetrics() };
+  }
+
+  public loadSnapshot(snapshot: { readonly metrics: PatrolMetrics }): void {
+    this.loopsCompletedOnTime = snapshot.metrics.loopsCompletedOnTime;
+    this.loopsCompletedLate = snapshot.metrics.loopsCompletedLate;
+    this.loopsMissed = snapshot.metrics.loopsMissed;
+  }
+
   public update(context: SimulationContext): void {
     for (const guardId of this.guards.allGuardIds()) {
       const sectorId = this.guards.getSectorId(guardId);

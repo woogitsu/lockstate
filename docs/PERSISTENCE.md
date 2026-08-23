@@ -5,11 +5,11 @@ runtime validation, checksum and forward-migration framework, and (in
 "Local persistence" below) the IndexedDB-backed repository that consumes it.
 Supabase sync (#20) is a separate, not-yet-implemented issue.
 
-## Envelope shape (`SaveEnvelope`, currently V2)
+## Envelope shape (`SaveEnvelope`, currently V3)
 
 ```
 {
-  saveSchemaVersion: 2,
+  saveSchemaVersion: 3,
   gameVersion: string,     // build/version identifier, e.g. "lockstate-0.0.0"
   prisonId: string,
   revision: number,        // caller-managed monotonic counter; optimistic-concurrency
@@ -25,36 +25,94 @@ Supabase sync (#20) is a separate, not-yet-implemented issue.
                  generations: [[value, length], ...],         // run-length encoded
                  freeIndices: [ ... ],                        // the live free-list prefix only
                  alive: [[0|1, length], ...] },               // run-length encoded
+    simulation?: {                                            // V3, issue #70
+      prisoners:  { components, coldState,
+                    roomInstanceDefinitions, roomInstanceOccupancy },
+      operations: { containers, jobs, jobWorkers, electricity, water },
+      navigation: { doors },
+      security:   { sectorDefinitions, sectorControlStates,
+                    guards, schedules, deployment, patrol },
+      contraband: { items, intelligence, informants, confiscations,
+                    searchPolicies, searchContainerLocations, search },
+      incidents:  { log, sectorRisk, gangs, tunnels,
+                    watchedSectorIds, trigger, response },
+    },
   },
 }
 ```
 
 `payload` is exactly the union of the existing per-subsystem snapshot
-contracts (Issues #5, #12, #16/#17), re-validated at the save boundary with
-Zod (`src/persistence/save-schema.ts`), not a new shape invented for this
-issue.
+contracts (Issues #5, #12, #16/#17 and, since V3, #24–#28), re-validated at
+the save boundary with Zod (`src/persistence/save-schema.ts`), not a new shape
+invented for this issue. The simulation-side declaration of the same thing is
+`EncodedSessionSystems` (`src/simulation/runtime/session-systems.ts`); the two
+are deliberately separate, because the simulation may not import
+`src/persistence` and a historical schema here is frozen while the simulation
+keeps evolving.
 
 `SaveEnvelope`/`SavePayload`/`TrustedSaveEnvelope` are the names call sites
-use for "the current version"; `SaveEnvelopeV1` and `SaveEnvelopeV2` name
-specific historical shapes and should appear only in `save-schema.ts` and
-`save-migrations.ts`. V2 exists because #50 changed the entity section — see
-"V2: the entity ledger follows population, not capacity" below.
+use for "the current version"; `SaveEnvelopeV1`…`V3` name specific historical
+shapes and should appear only in `save-schema.ts` and `save-migrations.ts`.
+V2 exists because #50 changed the entity section; V3 because #70 added
+`simulation` — see the two version sections below.
 
 ### What is deliberately excluded from the payload
 
-- **Per-component entity state** (`ComponentBitset`, `TransformComponent`,
-  future components). `entities` covers only `EntityStore`'s own ID-liveness
-  ledger, in V1 and V2 alike. No runtime currently attaches components to an
-  `EntityStore` — the first real consumer (prisoner/staff entities, Phase 7)
-  should introduce a component registry and extend the payload deliberately,
-  rather than this issue inventing an open-ended generic serialization format
-  nothing yet needs. `entities` is optional for the same reason: a fresh
-  prison has none.
-- **Room/topology state.** `TopologyManager` and `RoomSystem` hold no
-  independent state — they are pure caches recomputed from `SparseWorld`
-  geometry (`TopologyManager.update`) — so nothing to persist exists there.
+Every entry here is an exclusion with a stated reason, not a gap. The rule
+V3 applies is: **authoritative state is persisted; derived state and in-flight
+work are not.**
+
+- **Room and topology geometry** (`TopologyManager`, `RoomSystem`). Pure
+  caches recomputed from `SparseWorld` geometry by `TopologyManager.update`,
+  so there is no independent state to persist. Restoring the world restores
+  them. (Placed *room instances* — `RoomInstanceRegistry` — are a different
+  thing and **are** persisted; see V3 below.)
+- **Navigation caches and the pending path-request queue** (`RouteCache`,
+  flow fields, `PathRequestQueue`). ADR 0007 defines these as a budgeted
+  caching layer over the world and the door registry, both of which are
+  persisted; a restored session rebuilds them from the same inputs. The
+  pending queue is not a cache but it is not *state* either — it is work in
+  flight, owned by a `NavigationSystem` instance that no longer exists after a
+  restore. Every subsystem that holds a request id (`PrisonerOperationsRuntime`,
+  `GuardRoster`, `JobBoard`, `SearchSystem`, `IncidentResponseSystem`) drops it
+  on restore and re-requests on its next scheduled tick, and each of those
+  resets is proven idempotent in `tests/determinism/snapshot-restore-fidelity.test.ts`.
+  The visible cost is a bounded delay, not lost progress; the alternative —
+  persisting request ids into a queue that never received them — leaves actors
+  stuck forever.
+- **Per-system `requestSequence` counters** (`SearchSystem`,
+  `DeploymentSystem`, `PatrolSystem`, `ActionSystem`). These only mint names
+  for path requests against the queue above. Since no restored state can
+  reference an old name, a restored counter and a reset one are
+  indistinguishable. `IncidentTriggerSystem.sequence` is the exception and
+  *is* persisted, because it names incident records that outlive the tick.
+- **`JobSystem.performingSince`.** A restored `'performing'` carry job
+  restarts its pickup/drop-off timer. This is the same "restart rather than
+  assume arrival" convention as travel, and is a real (small) loss rather than
+  a derivation — it is listed here rather than fixed because the field is
+  private to `JobSystem` and exposing it is a job-system change, not a
+  persistence one. Also recorded in `docs/DETERMINISM.md`.
+- **`EntityQuery`'s `ComponentBitset`.** A pure function of "is this index
+  alive", which the entity ledger already carries;
+  `PrisonerOperationsRuntime.loadSnapshot` re-derives it. Persisting it would
+  create a second source of truth for the same fact.
+- **Generic per-component entity state** (`ComponentBitset`,
+  `TransformComponent`, the `src/simulation/entity/prototype.ts` components).
+  `entities` still covers only `EntityStore`'s own ID-liveness ledger.
+  V3 persists prisoner and guard component state *explicitly*, by name, rather
+  than through a generic component registry: no runtime attaches prototype
+  components to an `EntityStore`, and inventing an open-ended generic
+  serialization format for something nothing uses would be an unreviewed
+  architecture decision. When a real generic consumer appears, that registry
+  is the change to make — and it is a V4.
 - **Storage backend, compression algorithm, encryption.** Out of scope per
-  the issue; see "Size hook" below for the one hook this schema does provide.
+  issue #18; see "Size hook" below for the one hook this schema does provide.
+
+One further limitation, inherited rather than introduced: `entities.capacity`
+must equal the restoring runtime's `DEFAULT_PRISONER_CAPACITY`, because
+`EntityStore.loadSnapshot` refuses a differing capacity. Every save this
+codebase writes satisfies that; a hand-written fixture with a smaller store
+does not, and fails the restore rather than silently resizing.
 
 ## Checksum
 
@@ -91,10 +149,10 @@ unknown provenance.
 
 **The envelope's fields and its payload are now validated separately.**
 `saveEnvelopeMetadataShape(version)` builds the seven scalar fields an
-envelope carries around its payload. `saveEnvelopeV2Schema` (metadata +
+envelope carries around its payload. `saveEnvelopeV3Schema` (metadata +
 `payload`) is what the migration chain registers for the current version and
 what `decodeSaveEnvelope` therefore still runs in full;
-`saveEnvelopeMetadataV2Schema` (metadata alone) is what
+`saveEnvelopeMetadataV3Schema` (metadata alone) is what
 `createSaveEnvelope` runs, because it has just parsed the payload itself and
 re-walking a multi-megabyte payload to check seven numbers is waste. Both
 carry the same `updatedAt >= createdAt` refinement, so no rule is enforced on
@@ -154,27 +212,200 @@ edited by #49.
   A step never receives or returns the caller's original object reference in
   a way that lets it mutate the source fixture.
 
-`saveMigrationChain` registers V1 and V2 schemas and one `1 -> 2` step. The
-chain-walking, per-step validation and immutability guarantees are also
-exercised against a synthetic multi-version fixture in
+`saveMigrationChain` registers the V1, V2 and V3 schemas and the `1 -> 2` and
+`2 -> 3` steps. The chain-walking, per-step validation and immutability
+guarantees are also exercised against a synthetic multi-version fixture in
 `tests/unit/persistence-migration.test.ts`, independent of the real save
-versions, and the real V1 → V2 upgrade is covered in
-`tests/migrations/save-v1-to-v2.test.ts`.
+versions; the real upgrades are covered in
+`tests/migrations/save-v1-to-v2.test.ts` and
+`tests/migrations/save-v2-to-v3.test.ts`, the latter including the two-hop
+V1 → V2 → V3 walk a save from the first release actually takes.
 
-### Adding a V3 later
+### Adding a V4 later
 
 1. Add the new interface/type and a `.strict()` Zod schema for it, alongside
    the existing ones — never edit a historical schema to match new code.
-2. `saveMigrationChain.registerSchema(zodVersionSchema(3, v3Schema))`.
-3. `saveMigrationChain.registerMigration({ fromVersion: 2, toVersion: 3, migrate })`,
+2. `saveMigrationChain.registerSchema(zodVersionSchema(4, v4Schema))`.
+3. `saveMigrationChain.registerMigration({ fromVersion: 3, toVersion: 4, migrate })`,
    pure and side-effect-free, in `src/persistence/save-migrations.ts`. If it
    changes the payload, recompute `checksum` in the step (see "Checksum").
-4. Bump `SAVE_SCHEMA_VERSION` to `3`. Call sites use the version-neutral
+4. Bump `SAVE_SCHEMA_VERSION` to `4`. Call sites use the version-neutral
    `SaveEnvelope`/`SavePayload`/`TrustedSaveEnvelope` aliases, so this step no
    longer sweeps a rename through the repository the way V2 did.
 5. Keep every older fixture in `tests/fixtures/persistence/` checked in
    unchanged, and add a test asserting they migrate to the new shape
-   correctly.
+   correctly. `tests/fixtures/persistence/` holds V1 saves only; V2 and V3
+   test inputs are *derived* from those frozen V1 files by running the frozen
+   migrations over them (see `save-v2-to-v3.test.ts`), which keeps
+   `git diff -- tests/fixtures/` empty and keeps the inputs independent of the
+   code under test. Follow that pattern rather than checking in a fixture
+   generated by the build you are changing.
+6. If the new version adds *simulation* state, extend `EncodedSessionSystems`
+   and its Zod mirror together, and decide per subsystem whether the state is
+   authoritative or derived — recording the answer under "What is deliberately
+   excluded from the payload" above. An undecided subsystem is the failure
+   mode #70 existed to fix.
+
+## V3: the save carries the prison, not just the plot (#70)
+
+Until V3, `SessionSnapshotBundle` carried four fields — `kernel`, `world`,
+`construction`, `entities` — while `createNewSimulationRuntime` built about
+thirty subsystems. A player could build a prison, admit prisoners, run
+patrols, trigger incidents and confiscate contraband, save, reload, and get
+back terrain and walls. Nothing warned them, because by its own contract the
+save had succeeded.
+
+**This was wiring, not new serialization.** Twenty-one of those subsystems
+already implemented `getSnapshot`/`loadSnapshot`; they were built
+snapshot-capable and never connected to a payload. V3 connects them.
+
+### What is persisted, and why
+
+| Section | Subsystems | Why it is authoritative |
+| --- | --- | --- |
+| `prisoners` | `PrisonerRecordComponent`, `NeedsComponent`, `CurrentActionComponent`, `PositionComponent`, `PrisonerColdState`, `RoomInstanceRegistry` | Nothing derives a prisoner's sentence, needs, risk tier, position or cell assignment from anything else. |
+| `operations` | `Container`/`ContainerRegistry`, `JobBoard`, `JobWorkerPool`, both `UtilityNetwork`s | Stock, reservations, carry jobs and utility topology are player-caused state. |
+| `navigation` | `DoorRegistry` | A door is placed, not derived: the world's edge planes say a boundary exists, the registry says it is a gated opening and how it is locked. |
+| `security` | `SecuritySectorRegistry`, `GuardRoster`, `DeploymentSchedule[]`, `DeploymentSystem`, `PatrolSystem` | Hired staff, their posts, sector control state and the schedules that drive them. |
+| `contraband` | `ContrabandRegistry`, `IntelligenceLedger`, `InformantRegistry`, `ConfiscationLedger`, `SearchPolicyDefinition[]`, `SearchSystem` | Concealed items, their provenance and movement history, decayed suspicion, and the evidence chain a confiscation produced. |
+| `incidents` | `IncidentLog`, `SectorRiskTracker`, `GangRegistry`, `TunnelRegistry`, `IncidentTriggerSystem`, `IncidentResponseSystem` | Incident records are explicitly "simulation entities and domain events, not transient UI popups" (#28). |
+
+Everything not in that table is excluded deliberately; the reason for each is
+under "What is deliberately excluded from the payload" above.
+
+### Definitions, not only mutable state
+
+Three registries snapshot *only* their mutable half, on the documented
+assumption that "session/scenario setup re-registers the definitions
+identically before `loadSnapshot` runs": `RoomInstanceRegistry` (occupancy
+only), `SecuritySectorRegistry` (control state only) and `ContainerRegistry`
+(stock only, and it *throws* on an unknown container id).
+
+That assumption is correct for a scenario and false for a save. A save **is**
+the thing doing the re-establishing; there is no scenario behind it. So the
+payload carries the definitions too — room instances, sector definitions,
+container ids and doors — and `restoreSessionSystems` registers them before
+calling the subsystem `loadSnapshot` that references them by id. Without this,
+the first prison with an occupied cell fails its restore outright.
+
+### A lockdown must stay liftable
+
+`SecuritySectorRegistry` records each governed door's state at `register` time
+as the baseline `'normal'` restores to, and computes every transition from
+that baseline rather than from the door's just-prior state. Writing the
+*live* door state into the save would therefore make a lockdown permanent: on
+restore, `'locked'` would become the new baseline and lifting the lockdown
+would lock the door again. The baseline is not recoverable from the live state
+either — `'restricted'` maps both `'open'` and `'closed'` onto `'closed'`, and
+`'lockdown'` maps everything onto `'locked'`.
+
+So `SecuritySectorRegistry` gained one read-only accessor,
+`getBaselineDoorStates()`, doors are written at their baseline, and the live
+state is reproduced by re-applying the sector control states after
+registration. `tests/integration/session-save-round-trip.test.ts` saves a
+prison mid-lockdown, restores it, and lifts the lockdown back to the door's
+original `'open'`.
+
+### Prisoner components: allocated prefix, not capacity, and not RLE
+
+`DEFAULT_PRISONER_CAPACITY` is 5,000 slots and there are eighteen per-prisoner
+arrays. Writing them at capacity would cost ~240 KiB in every save regardless
+of population — the same mistake #50 removed from `entities`, at eighteen
+times the size. They are written across the store's **allocated prefix**
+(`maxActiveIndex + 1`) instead.
+
+The prefix, not just the live indices, because `admitPrisoner` does not reset
+every field when a freed index is recycled (it sets position, sentence length,
+prior incidents and intake stage; needs, risk tier, classification group and
+action state carry over). A dead slot's residue is therefore readable state in
+a continuous run, and dropping it would make a restored session diverge the
+moment an index was recycled. Slots *above* the prefix were never allocated
+and hold exactly their component-constructor defaults, which
+`decodePrisonerComponents` reproduces — so the restore is exact, not merely
+equivalent.
+
+Plain arrays rather than run-length encoding, which is the opposite of the
+choice `entities` makes, because the data is the opposite shape: needs levels,
+positions and tick stamps differ per prisoner, so RLE would spend two numbers
+per prisoner where a plain array spends one. Measured at the x-large tier, RLE
+came out larger overall — it wins only on the two or three uniform arrays
+(`intakeStage`, `riskTier`) and loses on the twelve that are not. `entities`'
+three arrays are uniform runs by construction, which is why RLE is right
+there.
+
+### Determinism
+
+Every collection in the payload is written in a canonical order derived from
+state, never `Map`/`Set` iteration order. Most subsystem `getSnapshot` methods
+already sorted themselves; what V3 newly writes and therefore newly had to
+sort is the set of registries and mutable configuration arrays a session
+*pushes* into — doors, sector definitions, room-instance definitions,
+deployment schedules, search policies, watched incident sectors and search
+container locations. `tests/determinism/snapshot-restore-fidelity.test.ts`
+builds the same prison with every incidental registration reversed and asserts
+a byte-identical payload; before the sorts were added, it did not.
+
+One encoding detail is load-bearing for the checksum: several subsystem
+snapshots spread a record whose optional field is declared `T | undefined`, so
+the key is *present* with an `undefined` value. `isJsonValue` rejects that (the
+worker protocol declares its payload as `jsonValue`), `canonicalJson` throws on
+it, and a `JSON.stringify`/`parse` round trip silently drops it — meaning an
+envelope checksummed before storage would no longer match itself after.
+`captureSessionSystems` prunes undefined-valued keys once, at the end, so the
+encoded form is identical in and out of storage.
+
+### Migration
+
+`migrateSaveEnvelopeV2ToV3` carries the payload across **unchanged**. The
+section was added beside `kernel`/`world`/`construction`/`entities` rather than
+folded into them, and it is optional, so there is nothing in a V2 save to
+reshape — and nothing the migration may invent. An empty `simulation` section
+would assert "this prison had no prisoners, guards or incidents"; an absent one
+says "this save predates that state", which is the truth.
+`restoreSimulationRuntime` treats an absent section exactly as V2 behaved
+(those subsystems rebuild empty) and `RestoredScope` reports which of the two
+happened. The checksum is recomputed anyway, so a migrated envelope is
+self-consistent by construction like every other; since the payload is
+unchanged the recomputed value necessarily equals the stored one, and a test
+pins that so a future edit cannot start rewriting the payload unnoticed.
+
+The V1 fixtures in `tests/fixtures/persistence/` are checked in **unchanged**
+and now migrate two hops to V3.
+
+### Measured size impact
+
+Same four tiers and the same harness as #50's table, so the numbers are
+directly comparable. These tiers populate prisoners and construction only, so
+the security/contraband/incident sections are near-empty *by construction*,
+not by encoding — a prison with guards and incidents pays for them
+proportionally.
+
+| tier | prisoners | envelope before (V2) | after (V3) | `simulation` | of which `prisoners` |
+| --- | --- | --- | --- | --- | --- |
+| small | 25 | 36.7 KiB | 40.0 KiB | 3.2 KiB (8.1%) | 1.9 KiB |
+| medium | 250 | 251.0 KiB | 267.9 KiB | 16.9 KiB (6.3%) | 15.6 KiB |
+| large | 1,000 | 997.0 KiB | 1.03 MiB | 62.7 KiB (5.9%) | 61.4 KiB |
+| x-large | 3,000 | 2.46 MiB | 2.64 MiB | 185.1 KiB (6.8%) | 183.8 KiB |
+
+The non-prisoner sections are flat across every tier at this content level:
+operations 283–285 B, navigation 12 B, security 358 B, contraband 241 B,
+incidents 345 B. Cost is therefore proportional to population, which is the
+property that matters; the world section remains the dominant term at every
+tier.
+
+What population-shaping bought, measured the same way #50's table measured its
+own:
+
+| tier | prisoners | components if capacity-shaped | as written | ratio |
+| --- | --- | --- | --- | --- |
+| small | 25 | 239.8 KiB | 1.9 KiB | 123.2× |
+| medium | 250 | 242.7 KiB | 15.6 KiB | 15.6× |
+| large | 1,000 | 252.6 KiB | 61.4 KiB | 4.1× |
+| x-large | 3,000 | 279.3 KiB | 183.8 KiB | 1.5× |
+
+Measurement only — `tests/perf/` asserts no size and no duration, per
+`docs/BENCHMARKING.md`. Reproduce with
+`pnpm exec vitest run --config tests/perf/vitest.perf.config.ts`.
 
 ## V2: the entity ledger follows population, not capacity (#50)
 
@@ -524,13 +755,15 @@ independent `schemaId`/`schemaVersion` whose evolution "does not
 automatically require an envelope-version change". The session bundle
 therefore travels as `simulation-save-payload` over the existing
 `structured-clone` transport — at v2 since #50 changed the shape of its
-`entities` field, which is exactly the change that independent version exists
-to declare. What *did* change on the worker side:
+`entities` field and at v3 since #70 added `simulation`, which is exactly the
+change that independent version exists to declare. What *did* change on the
+worker side:
 
 - `simulation/request-snapshot` now returns the **full** session bundle
-  (kernel + world + construction + entities), not the kernel alone. A
-  kernel-only snapshot is not a save — the world and construction are what
-  make a restored prison a prison.
+  (kernel + world + construction + entities, and since #70 `simulation`), not
+  the kernel alone. A kernel-only snapshot is not a save — the world and
+  construction are what make a restored prison a prison, and `simulation` is
+  what makes it a populated one.
 - `simulation/initialize` with `source.kind === 'snapshot'` is implemented
   (it previously threw `'Snapshot restore not yet implemented'`), and
   faults with `snapshot-incompatible` on an unknown `schemaId`/version or
@@ -578,25 +811,34 @@ measurements before tuning."
 
 `restoreSimulationRuntime` (`src/simulation/runtime/restore-session.ts`)
 returns an explicit `RestoredScope`, and the UI displays it, because a save
-carries **less than the current simulation contains**:
+still carries less than the live runtime holds — though since V3 the
+difference is derived and in-flight state rather than whole subsystems:
 
-| Restored | Rebuilt empty |
+| Restored | Rebuilt from scratch |
 | --- | --- |
-| kernel tick and command queue | prisoner needs and actions |
-| RNG stream states | jobs and inventory |
-| world terrain and ownership | security sectors, guards, patrols |
-| construction orders and undo/redo | contraband and intelligence |
-| entity id liveness | incidents and gangs |
+| kernel tick and command queue | room and topology caches (recomputed from the world) |
+| RNG stream states | navigation caches and in-flight path requests (re-issued on the next tick) |
+| world terrain and ownership | |
+| construction orders and undo/redo | |
+| entity id liveness | |
+| prisoners, needs, actions and cell assignments | |
+| jobs, containers and utility networks | |
+| doors, security sectors, guards and patrols | |
+| contraband, intelligence and searches | |
+| incidents, gangs and tunnels | |
 
-The right-hand column is a real, bounded limitation, not an oversight: the
-envelope was defined in #18, before the systems in that column existed.
-Extending the payload is a save-schema change — a new version plus a
-migration, per `AGENTS.md`'s "every persistent format must have a version
-and migration strategy before release" — so it belongs in its own issue
-rather than being smuggled in here. V2 (#50) changed only *how* entity
-liveness is written down, not which subsystems are carried, so this table is
-unchanged by it. Stating the gap in the type, in the UI and in this table is
-the honest interim contract.
+Until V3 the right-hand column held five whole subsystem families, because the
+envelope was defined in #18 before those systems existed — a real, bounded
+limitation that #70 closed. What remains is deliberate: see "What is
+deliberately excluded from the payload" for the reason attached to each entry.
+The right-hand column must never go empty and quietly stop being shown; the
+save panel says what a restore does *not* bring back, and a test pins that it
+still does.
+
+A save that predates V3 restores with its `simulation` section absent, and
+therefore behaves exactly as V2 did — those subsystems rebuild empty. That is
+reported through the same `RestoredScope`, which is why the migration does not
+fabricate an empty section.
 
 Restore reuses `createNewSimulationRuntime`'s `world` option rather than
 duplicating the system graph, so there is exactly one definition of how a

@@ -208,6 +208,7 @@ export class SessionController {
       world: bundle.world,
       construction: bundle.construction,
       ...(bundle.entities === undefined ? {} : { entities: bundle.entities }),
+      ...(bundle.simulation === undefined ? {} : { simulation: bundle.simulation }),
     });
   }
 

@@ -15,7 +15,8 @@ import { tileCoordinate, type TilePosition } from '../world/coordinates';
  */
 export type DeploymentPhase = 'unassigned' | 'travelling' | 'on-post' | 'on-search';
 
-interface GuardRecord {
+/** Exported so the save payload (#70) can name this shape instead of re-declaring it and letting the two drift. */
+export interface GuardRecord {
   staffRoleId: string;
   tileX: number;
   tileY: number;

@@ -28,25 +28,33 @@ const SEED = 7;
 const TOTAL_TICKS = 300;
 
 /**
- * A scenario whose entire *live* state sits inside `CURRENT_SAVE_RESTORED_SCOPE`, so
- * "restore then continue" and "just continue" are comparable without
- * asserting anything the save schema never promised.
+ * A scenario with no in-flight navigation work, so "restore then continue"
+ * and "just continue" are comparable tick for tick: the one loss a restore
+ * still takes is a path request belonging to the previous `NavigationSystem`
+ * instance, and a session with no travelling actor has none.
  *
- * Entities are spawned straight on the `EntityStore` rather than through
- * `admitPrisoner`: the save carries entity-id liveness (indices, generations,
- * free list) but no prisoner components, and `restoreSimulationRuntime`
- * loads the store without re-deriving the query bitset -- so a prisoner
- * admitted through the runtime would legitimately not resume. Spawning
- * directly exercises exactly the liveness bookkeeping the save does carry,
- * including recycled indices and bumped generations.
+ * Prisoners are admitted through `admitPrisoner`, the real entry point.
+ * Before #70 this scenario spawned entities straight on the `EntityStore`,
+ * because the save carried liveness but no prisoner components and a real
+ * prisoner therefore could not resume. It now can, so the artificial spawn
+ * would test a state production never produces. One index is destroyed and
+ * recycled so the liveness bookkeeping (free list, bumped generation) is
+ * still exercised.
  */
 function buildCarriedScopeSession(): SimulationRuntime {
   const runtime = createNewSimulationRuntime(SEED);
   reapplySessionSetup(runtime);
 
-  const ids = [runtime.prisoners.entityStore.spawn(), runtime.prisoners.entityStore.spawn(), runtime.prisoners.entityStore.spawn()];
+  runtime.prisoners.roomInstances.register({ instanceId: 'cell-1', roomCatalogId: 'room.cell', anchorTile: { x: tileCoordinate(6), y: tileCoordinate(6) }, capacity: 4, objectCapabilities: ['sleep-surface', 'sanitation'] });
+
+  const ids = [
+    runtime.prisoners.admitPrisoner({ sentenceLengthTicks: 900, priorIncidents: 0 }, { x: tileCoordinate(1), y: tileCoordinate(1) }),
+    runtime.prisoners.admitPrisoner({ sentenceLengthTicks: 4_000, priorIncidents: 6 }, { x: tileCoordinate(2), y: tileCoordinate(1) }),
+    runtime.prisoners.admitPrisoner({ sentenceLengthTicks: 2_200, priorIncidents: 2 }, { x: tileCoordinate(3), y: tileCoordinate(1) }),
+  ];
   runtime.prisoners.entityStore.destroy(ids[1]!);
-  runtime.prisoners.entityStore.spawn(); // recycles index 1 with a bumped generation
+  // Recycles index 1 with a bumped generation.
+  runtime.prisoners.admitPrisoner({ sentenceLengthTicks: 600, priorIncidents: 9 }, { x: tileCoordinate(1), y: tileCoordinate(2) });
 
   return runtime;
 }
@@ -141,7 +149,7 @@ describe('session snapshot / restore fidelity', () => {
     expect(liveness.freeIndices[0]).toBe(1);
   });
 
-  it('a captured bundle survives a restore byte-identically, including pending commands and RNG stream states', () => {
+  it('a captured bundle survives a restore with only the documented in-flight travel reset, and that reset is a fixed point', () => {
     const runtime = buildDeterminismScenario(SCENARIO_SEED);
     submitScenarioCommands(runtime);
     step(runtime, 55); // stops with the tick-70 command still queued
@@ -150,7 +158,30 @@ describe('session snapshot / restore fidelity', () => {
     expect(bundle.kernel.commands.length).toBeGreaterThan(0);
 
     const { runtime: restored } = restoreSimulationRuntime(bundle, SCENARIO_SEED);
-    expect(toJsonValue(captureSessionSnapshot(restored))).toEqual(toJsonValue(bundle));
+    const afterFirst = captureSessionSnapshot(restored);
+
+    // Everything except the subsystems that deliberately drop a path request
+    // belonging to the previous `NavigationSystem` instance crosses
+    // unchanged. Before #70 the whole bundle did, because it carried none of
+    // those subsystems at all.
+    expect(toJsonValue(afterFirst.kernel)).toEqual(toJsonValue(bundle.kernel));
+    expect(toJsonValue(afterFirst.world)).toEqual(toJsonValue(bundle.world));
+    expect(toJsonValue(afterFirst.construction)).toEqual(toJsonValue(bundle.construction));
+    expect(toJsonValue(afterFirst.entities)).toEqual(toJsonValue(bundle.entities));
+    expect(toJsonValue(afterFirst.simulation?.incidents)).toEqual(toJsonValue(bundle.simulation?.incidents));
+    expect(toJsonValue(afterFirst.simulation?.navigation)).toEqual(toJsonValue(bundle.simulation?.navigation));
+    expect(toJsonValue(afterFirst.simulation?.security.sectorDefinitions)).toEqual(toJsonValue(bundle.simulation?.security.sectorDefinitions));
+    expect(toJsonValue(afterFirst.simulation?.contraband.items)).toEqual(toJsonValue(bundle.simulation?.contraband.items));
+
+    // The reset really fired here, so the idempotence check below is not
+    // trivially satisfied by a session with nothing in flight.
+    expect(toJsonValue(afterFirst.simulation?.security.guards)).not.toEqual(toJsonValue(bundle.simulation?.security.guards));
+
+    // And it is a fixed point: restoring the restored bundle changes nothing
+    // more. Without this a save written by an already-restored session would
+    // drift further from the run it came from on every load.
+    const { runtime: twice } = restoreSimulationRuntime(afterFirst, SCENARIO_SEED);
+    expect(toJsonValue(captureSessionSnapshot(twice))).toEqual(toJsonValue(afterFirst));
   });
 
   it('a restored session re-runs a pending command at its original tick, not at the restore tick', () => {
@@ -173,23 +204,25 @@ describe('session snapshot / restore fidelity', () => {
     expect(restored.construction.getOrder('late-wall')?.state).toBe('approved');
   });
 
-  it('states plainly which subsystems the current save version cannot resume, so a schema bump must update this pin deliberately', () => {
-    // Not a wish list: this is the executable form of the limitation
-    // `restore-session.ts` documents. A replay verifier (ADR 0009) may not
-    // assume any of these resume from a save payload.
+  it('states plainly what the current save version does and does not resume, so a schema bump must update this pin deliberately', () => {
+    // Not a wish list: this is the executable form of what
+    // `restore-session.ts` documents. A replay verifier (ADR 0009) may rely
+    // on the left-hand list and may not rely on the right-hand one.
     expect([...CURRENT_SAVE_RESTORED_SCOPE.restored].sort()).toEqual([
       'RNG stream states',
       'construction orders and undo/redo',
+      'contraband, intelligence and searches',
+      'doors, security sectors, guards and patrols',
       'entity id liveness',
+      'incidents, gangs and tunnels',
+      'jobs, containers and utility networks',
       'kernel tick and command queue',
+      'prisoners, needs, actions and cell assignments',
       'world terrain and ownership',
     ]);
     expect([...CURRENT_SAVE_RESTORED_SCOPE.notCarriedByThisSaveVersion].sort()).toEqual([
-      'contraband and intelligence',
-      'incidents and gangs',
-      'jobs and inventory',
-      'prisoner needs and actions',
-      'security sectors, guards and patrols',
+      'navigation caches and in-flight path requests (re-issued on the next tick)',
+      'room and topology caches (recomputed from the world)',
     ]);
 
     const runtime = buildDeterminismScenario(SCENARIO_SEED);
@@ -198,9 +231,57 @@ describe('session snapshot / restore fidelity', () => {
     expect(runtime.searchSystem.getMetrics().searchesCompleted).toBeGreaterThan(0);
 
     const { runtime: restored } = restoreSimulationRuntime(captureSessionSnapshot(runtime), SCENARIO_SEED);
-    expect(restored.searchSystem.getMetrics()).toEqual({ itemsDiscovered: 0, itemsMissed: 0, searchesCompleted: 0, searchesCancelled: 0, searchesQueued: 0 });
-    expect(restored.contraband.all()).toEqual([]);
-    expect(restored.securityGuards.allGuardIds()).toEqual([]);
+    // The left-hand list, proven rather than asserted: before #70 every one
+    // of these came back empty.
+    expect(restored.searchSystem.getMetrics().searchesCompleted).toBe(runtime.searchSystem.getMetrics().searchesCompleted);
+    expect(restored.contraband.all()).toEqual(runtime.contraband.all());
+    expect(restored.securityGuards.allGuardIds()).toEqual(runtime.securityGuards.allGuardIds());
+
+    // The right-hand list, likewise: a restored session's navigation is a
+    // fresh instance, not the one the save was taken against, so its queue
+    // and caches start from zero.
+    expect(runtime.navigation.getQueueMetrics().resolvedCount).toBeGreaterThan(0);
+    expect(restored.navigation.getQueueMetrics().resolvedCount).toBe(0);
+  });
+});
+
+describe('the save payload is written in canonical order, not registration order', () => {
+  /**
+   * `docs/DETERMINISM.md`: "anything that feeds simulation state must iterate
+   * in a canonical order derived from state -- never `Map`/`Set` insertion
+   * order." A save payload feeds simulation state by definition: it is
+   * re-inserted on the other side of a restore.
+   *
+   * Most subsystem snapshots already sorted themselves and are covered by
+   * `iteration-order.test.ts` through `fullRuntimeState`. What that helper
+   * does *not* read -- and what #70's payload newly carries -- is the set of
+   * registries and mutable configuration arrays a session pushes into:
+   * doors, sector definitions, room-instance definitions, deployment
+   * schedules, search policies, watched incident sectors and search container
+   * locations. Building the same prison with those registrations reversed
+   * must produce a byte-identical payload; if any of them were written in
+   * push order it would not.
+   */
+  it('produces an identical payload when every incidental registration happens in the opposite order', () => {
+    const asBuilt = buildDeterminismScenario(SCENARIO_SEED);
+    submitScenarioCommands(asBuilt);
+    step(asBuilt, 250);
+
+    const reversed = buildDeterminismScenario(SCENARIO_SEED, { reverseIncidentalRegistrationOrder: true });
+    submitScenarioCommands(reversed);
+    step(reversed, 250);
+
+    const built = captureSessionSnapshot(asBuilt);
+    // Not vacuous: the sections whose ordering this guards are actually
+    // populated by this scenario.
+    expect(built.simulation?.navigation.doors.length).toBeGreaterThan(1);
+    expect(built.simulation?.security.sectorDefinitions.length).toBeGreaterThan(1);
+    expect(built.simulation?.security.schedules.length).toBeGreaterThan(1);
+    expect(built.simulation?.prisoners.roomInstanceDefinitions.length).toBeGreaterThan(1);
+    expect(built.simulation?.incidents.watchedSectorIds.length).toBeGreaterThan(1);
+    expect(built.simulation?.contraband.searchContainerLocations.length).toBeGreaterThan(1);
+
+    expect(toJsonValue(captureSessionSnapshot(reversed))).toEqual(toJsonValue(built));
   });
 });
 
