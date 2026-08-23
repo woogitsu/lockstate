@@ -32,7 +32,7 @@ export interface LocalSaveTransaction {
   listMetadata(): Promise<readonly PrisonSlotMetadata[]>;
   putMetadata(metadata: PrisonSlotMetadata): Promise<void>;
   deleteMetadata(prisonId: string): Promise<void>;
-  /** Generations are stored as validated, JSON-safe values (a decoded `SaveEnvelopeV1`, structurally). */
+  /** Generations are stored as validated, JSON-safe values (a decoded `SaveEnvelope`, structurally). */
   getGeneration(prisonId: string, generationId: string): Promise<unknown | undefined>;
   putGeneration(prisonId: string, generationId: string, value: unknown): Promise<void>;
   deleteGeneration(prisonId: string, generationId: string): Promise<void>;

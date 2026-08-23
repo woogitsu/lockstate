@@ -1,7 +1,7 @@
 import { classifyStoreError } from '../../src/persistence/local/errors';
 import { IndexedDbLocalSaveStore, openLockstateDatabase } from '../../src/persistence/local/indexeddb-store';
 import { PrisonSaveRepository } from '../../src/persistence/local/repository';
-import { createSaveEnvelope, type SaveEnvelopeV1 } from '../../src/persistence/save-schema';
+import { createSaveEnvelope, type SaveEnvelope } from '../../src/persistence/save-schema';
 import { ConstructionSystem } from '../../src/simulation/construction/system';
 import { Kernel } from '../../src/simulation/kernel/kernel';
 import { chunkCoordinate } from '../../src/simulation/world/coordinates';
@@ -53,7 +53,7 @@ function requireRepository(): PrisonSaveRepository {
   return repository;
 }
 
-function buildEnvelope(prisonId: string, revision: number, padBytes: number): SaveEnvelopeV1 {
+function buildEnvelope(prisonId: string, revision: number, padBytes: number): SaveEnvelope {
   const world = new SparseWorld(32);
   world.setOwned({ x: chunkCoordinate(0), y: chunkCoordinate(0) }, true);
   const construction = new ConstructionSystem(world);

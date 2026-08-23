@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AutosaveScheduler } from '../../src/persistence/local/autosave';
-import type { SaveEnvelopeV1 } from '../../src/persistence/save-schema';
+import type { SaveEnvelope } from '../../src/persistence/save-schema';
 import type { SaveResult } from '../../src/persistence/local/repository';
 
-const FAKE_ENVELOPE = {} as SaveEnvelopeV1;
+const FAKE_ENVELOPE = {} as SaveEnvelope;
 
 function deferred<T>(): { promise: Promise<T>; resolve: (value: T) => void } {
   let resolve!: (value: T) => void;

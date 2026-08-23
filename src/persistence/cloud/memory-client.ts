@@ -1,4 +1,4 @@
-import type { SaveEnvelopeV1 } from '../save-schema';
+import type { SaveEnvelope } from '../save-schema';
 import type { CloudPrisonState, CloudSaveClient, CloudSaveVersionSummary, UploadOutcome } from './client';
 
 interface StoredVersion extends CloudSaveVersionSummary {
@@ -36,7 +36,7 @@ export class MemoryCloudSaveClient implements CloudSaveClient {
     this.prisons.set(prisonId, { gameVersion, slotIndex, currentVersion: undefined, versions: [] });
   }
 
-  public async uploadVersion(prisonId: string, newRevision: number, envelope: SaveEnvelopeV1): Promise<UploadOutcome> {
+  public async uploadVersion(prisonId: string, newRevision: number, envelope: SaveEnvelope): Promise<UploadOutcome> {
     const prison = this.prisons.get(prisonId);
     if (prison === undefined) return { status: 'not-registered' };
 

@@ -1,4 +1,4 @@
-import { decodeSaveEnvelope, decodeSaveEnvelopeUnlessTrusted, type SaveEnvelopeV1 } from '../save-schema';
+import { decodeSaveEnvelope, decodeSaveEnvelopeUnlessTrusted, type SaveEnvelope } from '../save-schema';
 import { applyGenerationRetention } from './generation-policy';
 import { classifyStoreError, type SaveWriteError } from './errors';
 import type { LocalSaveStore, PendingSyncState, PrisonSlotMetadata } from './store';
@@ -10,7 +10,7 @@ export type SaveResult =
 export type LoadRecoveryOutcome = 'current' | 'recovered-previous';
 
 export type LoadResult =
-  | { readonly ok: true; readonly envelope: SaveEnvelopeV1; readonly generationId: string; readonly outcome: LoadRecoveryOutcome }
+  | { readonly ok: true; readonly envelope: SaveEnvelope; readonly generationId: string; readonly outcome: LoadRecoveryOutcome }
   | { readonly ok: false; readonly reason: 'not-found' | 'no-valid-generation' };
 
 export interface CreatePrisonInput {
@@ -105,7 +105,7 @@ export class PrisonSaveRepository {
    * or serialization boundary, and anything merely *cast* to the trusted type
    * — is still fully validated here before it can reach storage.
    */
-  public async save(prisonId: string, envelope: SaveEnvelopeV1): Promise<SaveResult> {
+  public async save(prisonId: string, envelope: SaveEnvelope): Promise<SaveResult> {
     const decoded = decodeSaveEnvelopeUnlessTrusted(envelope);
     if (!decoded.ok) {
       return { ok: false, error: { code: 'unknown-error', message: `Refusing to persist an invalid envelope: ${decoded.error.message}` } };
@@ -197,7 +197,7 @@ export class PrisonSaveRepository {
     });
   }
 
-  public async exportSave(prisonId: string): Promise<SaveEnvelopeV1 | undefined> {
+  public async exportSave(prisonId: string): Promise<SaveEnvelope | undefined> {
     const result = await this.loadCurrent(prisonId);
     return result.ok ? result.envelope : undefined;
   }
