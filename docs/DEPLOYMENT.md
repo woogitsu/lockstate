@@ -200,6 +200,8 @@ The SQL under `supabase/migrations/` has been executed against a local PostgreSQ
 
 Run `migrate-database.yml` with **dry run left checked**: it links the project and prints `supabase migration list` without applying anything. Read that list, then re-run with dry run unchecked.
 
+Before it provisions the Supabase CLI or links anything, the workflow runs `pnpm verify:sql` against a PostgreSQL it provisions locally — applying all nine migrations in order and running the pgTAP suite. A migration set that does not apply locally fails the run before it can reach a hosted project. This gate runs for a dry run too: a dry run whose SQL does not apply locally is worth failing. It closes an asymmetry that stood until then, where `deploy.yml` re-ran the whole gate before a *reversible* Worker deploy while this workflow ran no verification at all before an *irreversible* `supabase db push`.
+
 A fresh Supabase project is not empty — its own bootstrap runs before these migrations. That is precisely how issue #20's real-stack verification discovered the platform no longer grants the Data API roles table privileges by default, which had left every RLS policy in this schema unreachable.
 
 Rollback of a migration is **not** automated, and the Worker rollback below does not touch it — see "Rollback".
