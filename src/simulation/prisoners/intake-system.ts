@@ -1,6 +1,7 @@
 import type { SimulationContext, SystemRegistration } from '../kernel/system';
 import type { EntityId, EntityStore } from '../entity/entity-store';
 import { EntityQuery } from '../entity/query';
+import { ACTOR_IDENTITY_RNG_STREAM, type ActorIdentityMinter } from '../identity/actor-identity';
 import { classifyPrisoner, type ClassificationInput } from './classification';
 import {
   classificationGroupIndex,
@@ -58,6 +59,15 @@ export class IntakeSystem implements SystemRegistration {
     private readonly roomInstances: RoomInstanceRegistry,
     private readonly accommodationPolicy: AccommodationPolicy = DEFAULT_ACCOMMODATION_POLICY,
     private readonly rngStreamName = 'prisoners.classification',
+    /**
+     * Optional actor-identity minting (`src/simulation/identity/`). Left
+     * out entirely, intake behaves exactly as before and draws nothing --
+     * which matters, because `NamedRngStreams.get` throws for a stream the
+     * session never registered, and a session that does not want names
+     * should not have to register one.
+     */
+    private readonly identity?: ActorIdentityMinter,
+    private readonly identityRngStreamName: string = ACTOR_IDENTITY_RNG_STREAM,
   ) {}
 
   public submitIntake(entityId: EntityId, input: ClassificationInput): void {
@@ -82,6 +92,15 @@ export class IntakeSystem implements SystemRegistration {
       }
 
       if (stage === 'reception') {
+        // Reception is where a real intake records who someone is, and it
+        // is inside `EntityQuery.execute()`'s canonical ascending-entity-id
+        // walk -- so the order names are minted in is a function of state,
+        // not of the order prisoners happened to be admitted in a session.
+        // `assign` is idempotent and draws nothing for an entity that
+        // already has a name, so a replayed tick cannot shift the stream.
+        if (this.identity !== undefined) {
+          this.identity.assign('prisoner', entityId, context.rng.get(this.identityRngStreamName));
+        }
         this.records.intakeStage[index] = intakeStageIndex('classification');
         continue;
       }
