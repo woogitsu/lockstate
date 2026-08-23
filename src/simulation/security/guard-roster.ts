@@ -1,7 +1,19 @@
 import { EntityStore, type EntityId, type EntityStoreSnapshot } from '../entity/entity-store';
 import { tileCoordinate, type TilePosition } from '../world/coordinates';
 
-export type DeploymentPhase = 'unassigned' | 'travelling' | 'on-post';
+/**
+ * `'on-search'` (issue #27) is a guard temporarily pulled onto search duty
+ * -- entirely `contraband/search-system.ts`'s own bookkeeping via the
+ * existing `setDeploymentPhase`/`unassign`. Neither `DeploymentSystem` nor
+ * `PatrolSystem` ever assigns, reads meaning into, or transitions a guard
+ * out of this phase: `DeploymentSystem.assignUnassignedGuards` only pulls
+ * from `unassignedGuardIds()` (`'unassigned'` only) and its travel-
+ * continuation loop only touches guards whose phase is exactly
+ * `'travelling'`, so an `'on-search'` guard is invisible to both --
+ * exactly like `'on-post'` already is. This is why search duty needed no
+ * changes to `sector.ts`/`deployment-system.ts`/`patrol-system.ts`.
+ */
+export type DeploymentPhase = 'unassigned' | 'travelling' | 'on-post' | 'on-search';
 
 interface GuardRecord {
   staffRoleId: string;

@@ -56,3 +56,19 @@ test('new-session runtime wires security sectors, guard deployment and patrol', 
     { sectorId: 'sector-1', required: 1, assigned: 1, shortage: 0 },
   ]);
 });
+
+test('new-session runtime wires contraband, intelligence and search through the real prisoner room-instance registry', () => {
+  const runtime = createNewSimulationRuntime();
+
+  runtime.prisoners.roomInstances.register({ instanceId: 'cell-1', roomCatalogId: 'room.cell', anchorTile: { x: tileCoordinate(5), y: tileCoordinate(5) }, capacity: 1, objectCapabilities: [] });
+  runtime.contraband.introduce('item-1', 'contraband.phone', { kind: 'cell', id: 'cell-1' }, { sourceType: 'room-object', sourceId: 'workshop', introducedAtTick: 0 });
+  runtime.searchPolicies.push({ scope: 'cell', requiredGuardCount: 1, dwellTicksPerTarget: 5, baseDetectionProbability: 1, concealmentPenaltyPerPoint: 0, intelligenceConfidenceBonus: 0 });
+  runtime.securityGuards.hire('staff-role.guard', { x: tileCoordinate(0), y: tileCoordinate(0) });
+  runtime.searchSystem.submitOrder({ id: 'search-1', scope: 'cell', targets: [{ holderKind: 'cell', holderId: 'cell-1' }] });
+
+  for (let i = 0; i < 500 && runtime.searchSystem.getMetrics().searchesCompleted < 1; i += 1) runtime.kernel.step();
+
+  expect(runtime.searchSystem.getMetrics()).toEqual({ itemsDiscovered: 1, itemsMissed: 0, searchesCompleted: 1, searchesCancelled: 0, searchesQueued: 0 });
+  expect(runtime.contraband.get('item-1')?.state).toBe('confiscated');
+  expect(runtime.confiscations.all()).toHaveLength(1);
+});

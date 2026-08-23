@@ -63,4 +63,10 @@ export const defaultLocaleEnCatalog = buildLocalizationCatalog({
   'grade.high-security.name': 'High Security',
   'grade.staff-only.name': 'Staff Only',
   'grade.administrative.name': 'Administrative',
+
+  'contraband.weapon.name': 'Weapon',
+  'contraband.drug.name': 'Drugs',
+  'contraband.phone.name': 'Phone',
+  'contraband.currency.name': 'Currency',
+  'contraband.tool.name': 'Tool',
 });
