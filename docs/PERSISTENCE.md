@@ -3,7 +3,9 @@
 This document covers `src/persistence/`: the canonical save envelope, its
 runtime validation, checksum and forward-migration framework, and (in
 "Local persistence" below) the IndexedDB-backed repository that consumes it.
-Supabase sync (#20) is a separate, not-yet-implemented issue.
+Supabase sync (#20) is a separate issue with its own document: its schema, RPC
+and client-side sync/conflict policy (`src/persistence/cloud/`) are covered in
+[CLOUD_SAVE.md](./CLOUD_SAVE.md), not here.
 
 ## Envelope shape (`SaveEnvelope`, currently V3)
 
@@ -632,8 +634,10 @@ its own fresh `IDBFactory` instance rather than any shared/global one, so
 this stays an explicit, narrowly-scoped addition rather than a silent
 environment change for the rest of the suite (the global Vitest environment
 is still `node`; nothing here introduces jsdom/happy-dom/DOM globals).
-Real-browser behavior is covered separately by the opt-in Chromium project
-(`tests/browser/`, `pnpm test:browser` — see `docs/TESTING.md`), which
+Real-browser behavior is covered separately by the Chromium project
+(`tests/browser/`, `pnpm test:browser` — its own command, and since the
+`browser` job in `.github/workflows/ci.yml` its own CI job rather than an
+opt-in one; see `docs/TESTING.md`), which
 proves the three things `fake-indexeddb` structurally cannot. What that
 project established:
 

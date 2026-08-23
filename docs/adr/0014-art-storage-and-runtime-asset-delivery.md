@@ -50,10 +50,14 @@ consequences, so they belong in an ADR rather than in a `_headers` file and a
 - Runtime atlases are validated against the authored contract in
   `assets/contracts/` by `tooling/validate-runtime-atlas.mjs`, exposed as
   `pnpm verify:assets` and run in CI as a required `assets` job.
-- That job is the only one that materialises LFS content. The main `verify` job
+- That job materialises LFS content; the main `verify` job does not. `verify`
   stays on a pointer-only checkout so ordinary runs do not consume metered LFS
   bandwidth, which is safe because only `*.png` is LFS-tracked: the atlas
-  manifests and `asset-registry.json` are plain files.
+  manifests and `asset-registry.json` are plain files. (The later `browser` job
+  pulls the same path-scoped subset, for the same reason `assets` does: the
+  assembled page asks a real browser to decode the art. It reuses the objects
+  `assets` already fetched into the shared workspace, so the second pull
+  transfers nothing.)
 - Because a pointer-only checkout is the normal case, the validator recognises a
   Git LFS pointer and fails naming it, rather than treating an unfetched file as
   valid art. A gate that cannot tell the difference is worse than no gate. The

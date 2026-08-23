@@ -149,9 +149,17 @@ export class WorldRenderView {
   }
 
   /**
-   * Mirrors `SparseWorld.isTileOwned`: a tile is owned when it belongs to an
-   * owned parcel or to a directly owned chunk. Kept as a read of the same
-   * snapshot fields rather than a second ownership rule.
+   * A tile is owned when it belongs to an owned parcel or to a directly owned
+   * chunk, read from the same snapshot fields the simulation owns rather than
+   * from any renderer state.
+   *
+   * It is *not* an exact mirror of `SparseWorld.isTileOwned`, and the
+   * difference is visible only where parcels overlap -- which
+   * `registerParcel` permits. The simulation takes the first parcel
+   * containing the tile in ascending-id order and asks whether *that one* is
+   * owned; this asks whether *any* owned parcel contains the tile. A tile
+   * covered by an unowned low-id parcel and an owned high-id one is therefore
+   * unowned to the simulation and owned here.
    */
   public isTileOwned(
     tileX: number,

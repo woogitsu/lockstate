@@ -174,7 +174,9 @@ Every public accessor on `SecuritySectorRegistry`, `GuardRoster` and both
 systems' metrics/coverage-report methods returns primitives, readonly
 arrays or plain data objects -- there is no method that hands out a mutable
 internal `Map`/array reference. A future security-overview UI (none exists
-yet, matching #19/#22/#24/#25's precedent of no session UI) reads sector
+yet: the HUD has a `security` tab, but only the `build` tab renders a panel
+behind it -- matching #19/#22/#24/#25's precedent of shipping the system
+before the surface) reads sector
 control state, coverage reports and patrol metrics through these read-only
 views without needing write access to touch simulation state, consistent
 with the architecture boundary that rendering never becomes a source of
@@ -196,5 +198,6 @@ for violence, escapes, riots and gangs (#28); automatic escort scheduling
 (deciding when a prisoner needs an escort and pairing them with an
 available guard -- the access-policy *resolver* for an already-decided
 escort ships here, the scheduling decision does not); final UI/visual
-effects (no session UI exists yet); alarms, cameras or any detection
+effects (a session UI exists -- the HUD and save panel -- but nothing in it
+surfaces sectors, guards or patrols); alarms, cameras or any detection
 mechanic beyond the access-control/patrol substrate itself.

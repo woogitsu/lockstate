@@ -225,8 +225,9 @@ allocation and revision-cached evaluation stay correct at that scale.
 Full economy/pricing; final vehicle traffic, exports, farming or workshop
 production chains; detailed HVAC/CFD or electrical engineering simulation
 (the utility model is capacity-graph only); advanced staff morale/skills;
-final UI/visual effects (no session UI exists yet, matching #19/#22/#24's
-precedent); a fully generic job-kind registry (this issue ships one
+final UI/visual effects (a session UI does now exist -- the HUD and save
+panel mounted by `src/main.ts` -- but nothing in it surfaces any of this,
+matching #19/#22/#24's precedent of shipping the system before the surface); a fully generic job-kind registry (this issue ships one
 concrete job kind -- `CarryItemJob` -- plus the reusable lifecycle/
 assignment machinery around it, per "representative flows prove
 extensibility").
