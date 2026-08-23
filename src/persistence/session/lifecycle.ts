@@ -1,13 +1,47 @@
 import type { SessionController } from './session-controller';
 
+/** Anything that can carry a lifecycle listener. Narrowed to the two methods this module uses so a test double stays trivial. */
+export type LifecycleEventTarget = Pick<EventTarget, 'addEventListener' | 'removeEventListener'>;
+
+/**
+ * The two objects the two lifecycle events are dispatched at.
+ *
+ * The DOM dispatches them at different objects: `visibilitychange` at
+ * `document`, `pagehide` at `Window`. `document` alone therefore cannot
+ * receive both -- a window event does not propagate down to the document,
+ * which is why registering `pagehide` on `document` never fired (issue #92).
+ *
+ * `window` alone *would* receive both, because `visibilitychange` is
+ * dispatched at `document` with `bubbles: true` and so reaches `window` on
+ * the way up; that was checked in a real browser, not assumed. The pair is
+ * kept anyway, for explicitness rather than necessity: each listener sits on
+ * the object its own event is specified to be dispatched at, so neither
+ * registration depends on the event path, and "these two events are not
+ * interchangeable" is stated in the type rather than in a comment. Requiring
+ * both halves keeps a caller from injecting one fake target and inheriting a
+ * real global for the other.
+ */
+export interface LifecycleSaveTargets {
+  /** Receives `visibilitychange`. In a browser this is `document`. */
+  readonly visibility: LifecycleEventTarget;
+  /** Receives `pagehide`. In a browser this is `window`. */
+  readonly pageTransition: LifecycleEventTarget;
+}
+
 export interface LifecycleSaveOptions {
-  /** One target for both events. Defaults to the global `document`; injectable so this is testable without a DOM environment. */
-  readonly target?: Pick<EventTarget, 'addEventListener' | 'removeEventListener'>;
+  /** One target per event -- see `LifecycleSaveTargets` for why each event gets its own. Defaults to the globals `document` and `window`; injectable so this is testable without a DOM environment. */
+  readonly targets?: LifecycleSaveTargets;
   readonly visibilityState?: () => DocumentVisibilityState;
   readonly onAttempt?: (trigger: LifecycleSaveTrigger) => void;
 }
 
 export type LifecycleSaveTrigger = 'visibility-hidden' | 'pagehide';
+
+/** The production wiring: `visibilitychange` from `document`, `pagehide` from `window`. `undefined` outside a DOM. */
+function globalTargets(): LifecycleSaveTargets | undefined {
+  if (typeof document === 'undefined' || typeof window === 'undefined') return undefined;
+  return { visibility: document, pageTransition: window };
+}
 
 /**
  * Best-effort saves on browser lifecycle transitions.
@@ -21,7 +55,15 @@ export type LifecycleSaveTrigger = 'visibility-hidden' | 'pagehide';
  * - It listens to `visibilitychange` (fired reliably when a tab is
  *   backgrounded, including on mobile app-switching) and `pagehide`, not
  *   `unload` -- `unload` is not fired at all on modern mobile browsers and
- *   blocks bfcache where it is.
+ *   blocks bfcache where it is. The two come from *different* targets
+ *   (`document` and `window` respectively); see `LifecycleSaveTargets`.
+ *   `pagehide` is the one specified to cover navigating away, closing the
+ *   tab and entering the bfcache while the page is still visible, and it is
+ *   the earlier notice, so registering it where it never fired (issue #92)
+ *   cost that notice. It did not necessarily cost the save: on the one
+ *   transition observed here in a real browser -- a same-tab navigation --
+ *   Chromium also fired `visibilitychange` -> hidden, and that listener was
+ *   on the right object throughout. See `docs/PERSISTENCE.md`.
  * - It fires a save *attempt* and does not await it. A lifecycle handler
  *   cannot hold the page open for an async IndexedDB transaction, so the
  *   write may simply not complete. That is expected and safe: the previous
@@ -39,8 +81,8 @@ export class LifecycleSaveHandler {
   ) {}
 
   public attach(): void {
-    const target = this.options.target ?? (typeof document === 'undefined' ? undefined : document);
-    if (target === undefined) return;
+    const targets = this.options.targets ?? globalTargets();
+    if (targets === undefined) return;
 
     const visibilityState = this.options.visibilityState ?? (() => (typeof document === 'undefined' ? 'visible' : document.visibilityState));
 
@@ -52,11 +94,11 @@ export class LifecycleSaveHandler {
       this.attempt('pagehide');
     };
 
-    target.addEventListener('visibilitychange', onVisibilityChange);
-    target.addEventListener('pagehide', onPageHide);
+    targets.visibility.addEventListener('visibilitychange', onVisibilityChange);
+    targets.pageTransition.addEventListener('pagehide', onPageHide);
     this.detachers.push(
-      () => target.removeEventListener('visibilitychange', onVisibilityChange),
-      () => target.removeEventListener('pagehide', onPageHide),
+      () => targets.visibility.removeEventListener('visibilitychange', onVisibilityChange),
+      () => targets.pageTransition.removeEventListener('pagehide', onPageHide),
     );
   }
 
