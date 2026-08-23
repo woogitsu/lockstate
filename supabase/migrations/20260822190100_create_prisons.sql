@@ -33,9 +33,9 @@ create policy "prisons_select_own"
 -- first version is created through create_save_version(), never by
 -- inserting a non-default pointer/revision directly.
 --
--- OPEN QUESTION, recorded and deliberately not decided here -- see
--- docs/CLOUD_SAVE.md, "Open question: no database-tier bound on free-tier
--- storage". This policy caps *who* may insert, never *how many*. With
+-- OPEN QUESTION (issue #57), recorded and deliberately not decided here.
+-- See docs/CLOUD_SAVE.md, "Open question: no database-tier bound on
+-- free-tier storage". This policy caps *who* may insert, never *how many*. With
 -- `enable_anonymous_sign_ins = true` the `authenticated` role is
 -- effectively anyone, and a fresh identity costs one signup call, so
 -- nothing at this tier bounds how many slots one free account creates; the

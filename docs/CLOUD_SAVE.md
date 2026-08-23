@@ -416,6 +416,7 @@ repository uses the service-role key.
 ## Open question: no database-tier bound on free-tier storage
 
 Recorded by the same security review, deliberately **not** fixed here.
+Tracked as issue #57.
 
 `[auth] enable_anonymous_sign_ins = true` is this project's identity model,
 so `authenticated` is effectively "anyone who can make an HTTP request" —

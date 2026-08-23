@@ -34,9 +34,9 @@
 -- UUID rather than widening checksum's own hash width, since checksum's
 -- job (corruption detection, docs/PERSISTENCE.md) is unrelated to this one.
 --
--- OPEN QUESTION, recorded and deliberately not decided here -- see
--- docs/CLOUD_SAVE.md, "Open question: no database-tier bound on free-tier
--- storage". `p_byte_size` is recorded, never bounded, and the length of
+-- OPEN QUESTION (issue #57), recorded and deliberately not decided here.
+-- See docs/CLOUD_SAVE.md, "Open question: no database-tier bound on
+-- free-tier storage". `p_byte_size` is recorded, never bounded, and the length of
 -- `p_payload` is not checked either, so the storage one anonymous identity
 -- can consume is unbounded at the tier that is actually authoritative.
 -- Capacity/abuse rather than confidentiality: every ownership check below

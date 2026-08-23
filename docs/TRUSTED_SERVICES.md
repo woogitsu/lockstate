@@ -287,7 +287,8 @@ is a capacity/abuse gap rather than a confidentiality one — no data crosses
 an ownership boundary — but it is the reason this paragraph used to
 overclaim. Recorded as an open question in
 [CLOUD_SAVE.md](./CLOUD_SAVE.md), "Open question: no database-tier bound on
-free-tier storage", and deliberately not designed inside a privilege fix.
+free-tier storage", tracked as issue #57, and deliberately not designed
+inside a privilege fix.
 
 ## Data retention and account deletion
 
