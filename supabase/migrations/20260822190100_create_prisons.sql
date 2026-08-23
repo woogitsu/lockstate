@@ -32,6 +32,18 @@ create policy "prisons_select_own"
 -- A freshly inserted prison must start with no cloud version yet; the
 -- first version is created through create_save_version(), never by
 -- inserting a non-default pointer/revision directly.
+--
+-- OPEN QUESTION (issue #57), recorded and deliberately not decided here.
+-- See docs/CLOUD_SAVE.md, "Open question: no database-tier bound on
+-- free-tier storage". This policy caps *who* may insert, never *how many*. With
+-- `enable_anonymous_sign_ins = true` the `authenticated` role is
+-- effectively anyone, and a fresh identity costs one signup call, so
+-- nothing at this tier bounds how many slots one free account creates; the
+-- five-free-slots product rule lives in the application tier only. Same
+-- shape as the absent bound on `p_byte_size` in create_save_version(). It
+-- is a capacity/abuse concern, not a confidentiality one -- no data crosses
+-- an ownership boundary -- and closing it is a product decision plus a
+-- schema change, not something to invent inside a privilege fix.
 create policy "prisons_insert_own"
   on public.prisons for insert
   with check (
@@ -49,11 +61,22 @@ create policy "prisons_delete_own"
   on public.prisons for delete
   using (auth.uid() = owner_id);
 
+-- Data API grants. A policy decides *which rows* a role may touch; it never
+-- grants the privilege to touch the table at all. Supabase used to hand
+-- `anon`/`authenticated` table-level ALL on every new `public` table, so
+-- relying on that default worked -- but it no longer does: the CLI (and
+-- Studio at cloud project creation) revokes the Data API roles' default
+-- SELECT/INSERT/UPDATE/DELETE in `public`, leaving `Dxtm` only. Without
+-- these grants the policies above are unreachable code and every request
+-- returns `42501 permission denied for table prisons`.
+--
+-- UPDATE is deliberately not in this list; it is granted per column below.
+grant select, insert, delete on public.prisons to authenticated;
+
 -- RLS alone only checks row ownership, not which columns an UPDATE
--- touches. Supabase grants table-level UPDATE on every new public table to
--- `authenticated` by default (project-level `ALTER DEFAULT PRIVILEGES`),
--- so without this, an authenticated owner could bypass optimistic
--- concurrency entirely with a direct PostgREST PATCH.
+-- touches, so an owner-scoped UPDATE policy on its own would let a normal
+-- PostgREST PATCH bypass optimistic concurrency entirely by writing
+-- `current_revision` directly.
 --
 -- It has to be revoke-then-grant, not a column-level REVOKE. PostgreSQL
 -- cannot subtract a single column's privilege out of a table-level grant:
@@ -62,6 +85,12 @@ create policy "prisons_delete_own"
 -- 'UPDATE')` stays true and the PATCH still succeeds. Revoking the
 -- table-level privilege first and granting back only the editable columns
 -- is what actually closes it.
+--
+-- The REVOKE is a no-op while Supabase's current default withholds
+-- table-level UPDATE anyway, and is kept precisely because that is a
+-- default: it must stay closed on a project that sets
+-- `[api] auto_expose_new_tables = true`, and on any existing project
+-- created before the default changed.
 --
 -- public.create_save_version() (added in a later migration) is SECURITY
 -- DEFINER, so it runs as the migration role that owns this table rather

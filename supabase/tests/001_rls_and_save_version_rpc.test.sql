@@ -1,23 +1,36 @@
 -- pgTAP tests for RLS ownership boundaries and the create_save_version()
 -- optimistic-concurrency/idempotency RPC.
 --
--- EXECUTED against PostgreSQL 16.13 + pgTAP 1.3.2 and PostgreSQL 18.6 +
--- pgTAP 1.3.4 via `pnpm verify:sql`
--- (scripts/verify-supabase-sql.mjs), which prepares a scratch database
--- with scripts/sql/supabase-compat-harness.sql. That harness supplies only
--- the roles, default grants and `auth` slice this SQL references -- it is
--- not Supabase, so these results prove the SQL and not the hosted
--- platform's identity layer. `supabase test db` against the real local
--- stack remains the stronger check and has not been run.
+-- EXECUTED two ways, 19/19 assertions each:
+--
+--   * `supabase test db` against the REAL Supabase local stack (CLI 2.115.0,
+--     PostgreSQL 17 + pgTAP, with GoTrue, PostgREST, Storage and Realtime
+--     running). Running it there for the first time found that no migration
+--     in this repository ever granted the Data API roles the privileges its
+--     RLS policies presuppose -- the first assertion below failed with
+--     `42501 permission denied for table prisons`. See docs/CLOUD_SAVE.md.
+--   * `pnpm verify:sql` (scripts/verify-supabase-sql.mjs) against plain
+--     PostgreSQL 16.13 + pgTAP 1.3.2 and 18.6 + pgTAP 1.3.4, via
+--     scripts/sql/supabase-compat-harness.sql.
+--
+-- The harness is still not Supabase: it emulates the roles, default
+-- privileges and `auth` slice this SQL references, and nothing else. What
+-- neither run can prove is that GoTrue mints the identity these policies
+-- read -- `auth.uid()` is fed here by `set_config`, not by a JWT. That step
+-- is covered by `pnpm verify:stack` (scripts/verify-supabase-stack.mjs),
+-- which drives the same contract through /auth/v1 and /rest/v1.
 
 begin;
 select plan(19);
 
--- Two auth.users rows to test cross-owner isolation. Supabase's local
--- stack ships pgTAP plus a populated auth schema; inserting directly into
--- auth.users is the standard way to seed fixtures for RLS pgTAP tests.
--- Unverified assumption (see file header): if the local stack's auth.users
--- has additional NOT NULL columns without defaults, add them here.
+-- Two auth.users rows to test cross-owner isolation. Inserting directly
+-- into auth.users is the standard way to seed fixtures for RLS pgTAP tests.
+--
+-- VERIFIED against the real stack, resolving what used to be an unverified
+-- assumption here: GoTrue's auth.users has 35 columns, and the only two
+-- besides `id` that are NOT NULL -- `is_sso_user` and `is_anonymous` -- both
+-- default to false. `(id, email)` is therefore sufficient, and no additional
+-- columns need adding.
 insert into auth.users (id, email) values
   ('11111111-1111-1111-1111-111111111111', 'user-a@example.test'),
   ('22222222-2222-2222-2222-222222222222', 'user-b@example.test');

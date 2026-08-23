@@ -26,6 +26,7 @@
     "smoke:deployment": "node scripts/cloudflare-task.mjs build production && node scripts/verify-deployment-preview.mjs",
     "verify": "pnpm typecheck && pnpm test && node scripts/cloudflare-task.mjs build production",
     "verify:sql": "node scripts/verify-supabase-sql.mjs",
+    "verify:stack": "node scripts/verify-supabase-stack.mjs",
     "verify:deployment": "node scripts/verify-cloudflare-deployment.mjs",
     "deploy": "pnpm deploy:production",
     "deploy:staging": "node scripts/cloudflare-task.mjs deploy staging",

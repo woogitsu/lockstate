@@ -57,10 +57,18 @@ create policy "save_versions_select_own"
     )
   );
 
+-- Read-only for the client. The SELECT grant is explicit because Supabase
+-- no longer auto-exposes new `public` tables to the Data API roles (see
+-- the prisons migration); without it the policy above is unreachable code
+-- and a pull returns `42501 permission denied for table save_versions`.
+grant select on public.save_versions to authenticated;
+
 -- No insert/update/delete policy is granted to `authenticated` at all:
 -- every write to this table goes through create_save_version() (SECURITY
 -- DEFINER), which is the only way new versions are created and the only
 -- way this table is ever written -- see the RPC migration. Immutability
 -- is therefore enforced by the absence of a client-facing write path, not
--- by a trigger the client could reason its way around.
+-- by a trigger the client could reason its way around. The REVOKE is
+-- redundant under the current default and kept for projects where the
+-- legacy auto-expose behaviour is still in effect.
 revoke insert, update, delete on public.save_versions from authenticated, anon;

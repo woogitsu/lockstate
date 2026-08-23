@@ -7,12 +7,11 @@
 -- the source of truth, with entitlements demoted to a derived projection
 -- that is never written independently.
 --
--- EXECUTED against PostgreSQL 16.13 via `pnpm verify:sql` (see
--- scripts/verify-supabase-sql.mjs), covered by
--- supabase/tests/002_entitlement_ledger_and_challenges.test.sql. That runs
--- against a plain Postgres prepared with a Supabase compatibility harness,
--- not the real stack -- see docs/TRUSTED_SERVICES.md for what that does and
--- does not prove.
+-- EXECUTED against the real Supabase local stack (`supabase db reset &&
+-- supabase test db`) and against plain PostgreSQL via `pnpm verify:sql`,
+-- covered by supabase/tests/002_entitlement_ledger_and_challenges.test.sql
+-- and supabase/tests/003_data_api_grants.test.sql. See
+-- docs/TRUSTED_SERVICES.md for what each of those does and does not prove.
 
 create table if not exists public.entitlement_events (
   event_id uuid primary key default gen_random_uuid(),
@@ -61,9 +60,35 @@ create policy "entitlement_events_select_own"
   on public.entitlement_events for select
   using (auth.uid() = user_id);
 
--- No client write path of any kind: no policy, and the default table
--- grants Supabase applies are revoked so there is nothing to close later.
+-- That read has to be granted explicitly: Supabase no longer auto-exposes
+-- new `public` tables to the Data API roles (see the prisons migration), so
+-- without this the policy above is unreachable code and a player asking why
+-- they have a slot gets `42501 permission denied for table
+-- entitlement_events` instead of their audit trail.
+grant select on public.entitlement_events to authenticated;
+
+-- No client write path of any kind: no policy, and any table-level write
+-- grant a legacy auto-exposing project would have applied is revoked so
+-- there is nothing to close later.
 revoke insert, update, delete on public.entitlement_events from authenticated, anon;
+
+-- Trusted server surface (ADR 0008 zone Z2/Z3).
+--
+-- `service_role` has no table privilege by default -- Supabase revokes it
+-- along with the two client roles, and BYPASSRLS grants none -- so the
+-- webhook handler's dedup pre-check (`findByProviderEvent` in
+-- src/services/entitlements/webhook.ts) and any staff audit of the ledger
+-- need this grant to run at all.
+--
+-- SELECT only. No INSERT: appends go through record_entitlement_event()
+-- below, which is SECURITY DEFINER and writes as the table owner. Granting
+-- the trusted role INSERT here would create a second append path that
+-- skips the projection recompute, which is exactly the "derived
+-- projections are computed from the log, never written independently"
+-- rule in ADR 0008 §3. No UPDATE: the append-only trigger rejects it for
+-- every role anyway, so a grant would be a lie about the contract. No
+-- DELETE: history is corrected by appending a compensating event.
+grant select on public.entitlement_events to service_role;
 
 -- Append-only in the strong sense: even a privileged connection cannot
 -- edit history, because correcting a mistake means appending a
@@ -105,7 +130,9 @@ create or replace function public.recompute_entitlement_projection(p_user_id uui
 returns void
 language plpgsql
 security definer
-set search_path = public
+-- `pg_temp` explicitly last; see submit_challenge_evidence() for why every
+-- SECURITY DEFINER function in this schema spells it out.
+set search_path = public, pg_temp
 as $$
 declare
   v_event record;
@@ -195,7 +222,9 @@ create or replace function public.record_entitlement_event(
 )
 language plpgsql
 security definer
-set search_path = public
+-- `pg_temp` explicitly last; see submit_challenge_evidence() for why every
+-- SECURITY DEFINER function in this schema spells it out.
+set search_path = public, pg_temp
 as $$
 declare
   v_existing uuid;
@@ -228,7 +257,37 @@ begin
 end;
 $$;
 
-revoke execute on function public.recompute_entitlement_projection(uuid) from public, anon, authenticated;
+-- Function privileges, stated in full for all four roles.
+--
+-- recompute_entitlement_projection() is an *internal step* of
+-- record_entitlement_event(), not an entry point. Nothing calls it from
+-- outside: SECURITY DEFINER means the nested call runs as the table owner,
+-- so the trusted role does not need EXECUTE to reach it, and granting it
+-- would create a second way to write the projection that is not paired
+-- with a ledger append. `service_role` is named alongside the client roles
+-- because on a legacy auto-exposing project it holds its own default
+-- EXECUTE; a rebuild that ever becomes necessary is an operator task for
+-- the owning role, not a Data API surface.
+revoke execute on function public.recompute_entitlement_projection(uuid)
+  from public, anon, authenticated, service_role;
+
 revoke execute on function public.record_entitlement_event(
   uuid, text, text, text, text, int, text, text, timestamptz, text, text, text, timestamptz
 ) from public, anon, authenticated;
+
+-- ...and then granted back to exactly one role. This is the Z3 -> Z2
+-- payment-webhook write path (src/services/entitlements/webhook.ts, ADR
+-- 0008 threat T6): the signature-verifying handler runs with the service
+-- role and calls this to append the ledger event and refresh the
+-- projection in one transaction.
+--
+-- Without it the whole trusted half of #36 is dead code. It was: no
+-- migration granted `service_role` anything, BYPASSRLS confers no table or
+-- function privilege, and a security audit of the first real-stack run
+-- found that a webhook calling this would get `42501` and that no
+-- submission could ever leave 'pending' -- so `challenge_leaderboard`
+-- would have been permanently empty. Nothing failed, because nothing
+-- asked; supabase/tests/003_data_api_grants.test.sql now does.
+grant execute on function public.record_entitlement_event(
+  uuid, text, text, text, text, int, text, text, timestamptz, text, text, text, timestamptz
+) to service_role;

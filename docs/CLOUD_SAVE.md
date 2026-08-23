@@ -8,41 +8,79 @@ model built on top of `docs/PERSISTENCE.md`'s save envelope (#18) and
 
 This work was originally produced in a sandbox with no working database,
 so every file under `supabase/` was shipped as reviewed-by-inspection
-design. That gap is now partly closed:
+design. That gap is now closed except where noted:
 
-- **Executed:** every migration in `supabase/migrations/` and
-  `supabase/tests/001_rls_and_save_version_rpc.test.sql` (19/19
-  assertions) via `pnpm verify:sql`, against PostgreSQL 16.13 + pgTAP
-  1.3.2 and, since the idempotency-key change below, also against
-  PostgreSQL 18.6 + pgTAP 1.3.4. Running them for the first time found
-  three defects in this design — see "Defects found by executing this
-  schema" below. `pnpm verify:sql` now also runs in CI, after
-  `scripts/provision-postgres.sh`, so a change to this schema cannot
-  reach `main` unexecuted again — see `docs/TESTING.md` for the
-  provisioning contract.
-- **Still not executed:** anything against the real Supabase stack.
-  `pnpm verify:sql` prepares a plain Postgres with
-  `scripts/sql/supabase-compat-harness.sql`, which supplies only the
-  client roles, Supabase's default table grants and the slice of the
-  `auth` schema this SQL references. It emulates no GoTrue, JWT
-  verification, PostgREST, Storage or Realtime, so a green run proves the
-  SQL and proves nothing about how the hosted platform issues the identity
-  these policies read. Run `supabase start && supabase db reset &&
-  supabase test db` before treating the platform behaviour as verified.
+- **Executed against the real Supabase local stack:** every migration in
+  `supabase/migrations/` and all three pgTAP suites in `supabase/tests/`
+  — 63 assertions, all passing (19/19, 25/25, 19/19) — under Supabase CLI
+  2.115.0, with GoTrue, PostgREST, Storage and Realtime running:
+  ```bash
+  supabase start && supabase db reset && supabase test db
+  ```
+  This closes the outstanding verification item that #20 and #36 both
+  carried, and it earned its keep immediately: the first run failed on the
+  *first assertion* of suite 001 and exposed defect 4 below.
+- **Executed through GoTrue and PostgREST:** `pnpm verify:stack`
+  (`scripts/verify-supabase-stack.mjs`, 35/35 checks against a running
+  stack). The pgTAP suites feed `auth.uid()` with `set_config`, so they
+  cannot prove the step every policy here rests on — that GoTrue mints an
+  identity and PostgREST turns its JWT into the `authenticated` role
+  carrying that `sub`. This script does: it signs in anonymously twice and
+  drives the whole cloud-save contract over HTTP, including the ownership
+  boundary between the two identities. It also settles what "Anonymous
+  identity upgrade" below asks for — a CLI-level auth flow check rather
+  than a row-level SQL one. Since the security review it additionally
+  drives the trusted (`service_role`) paths with the local stack's secret
+  key, which is the only place PostgREST's mapping of that credential onto
+  the role is exercised at all.
+- **Executed against plain PostgreSQL 16.13/18.6 + pgTAP:** the same
+  migrations and suites via `pnpm verify:sql`, which prepares a scratch
+  database with `scripts/sql/supabase-compat-harness.sql`. That harness
+  supplies only the client roles, Supabase's default privileges and the
+  slice of the `auth` schema this SQL references; it emulates no GoTrue,
+  JWT verification, PostgREST, Storage or Realtime. It needs no Docker and
+  stays the fast check, but it is not a substitute for the stack run — see
+  defect 4 for what an emulator that is *more* permissive than the platform
+  costs. It is also the check that runs in CI, after
+  `scripts/provision-postgres.sh`, so a change to this schema cannot reach
+  `main` unexecuted again — see `docs/TESTING.md` for the provisioning
+  contract. The stack run needs Docker and stays a local, manual gate.
 - **Not executed:** `SupabaseCloudSaveClient` (`src/persistence/cloud/
   supabase-client.ts`) still has no automated test; a pure-JS fake would
-  test the fake, not the contract.
+  test the fake, not the contract. `verify:stack` at least exercises the
+  same HTTP contract that client speaks.
 - **Not attempted:** the JSONB-vs-Storage payload benchmark and any real
-  upload/download/restore timing. Both need an actual Supabase project.
-  See "Storage placement" below.
+  upload/download/restore timing. The local stack makes this newly
+  possible, but it is a benchmark of its own rather than a by-product of
+  this verification. See "Storage placement" below.
+- **Still not executed:** anything against a *hosted* Supabase project. The
+  local stack runs the same images, but nothing here has exercised a real
+  project's networking, quotas or connection pooling.
 - **Fully implemented and unit-tested:** `PrisonSyncEngine`,
   `resolveSyncConflict` and `MemoryCloudSaveClient`
   (`src/persistence/cloud/`) — the client-side sync/conflict policy is
   pure TypeScript, including a two-concurrent-pushes test.
 
+### Running the local stack
+
+`supabase/config.toml` is committed. It holds no secrets: every provider
+credential in it is an `env(...)` reference, and the local stack's keys are
+generated by the CLI at `supabase start`, never stored in the repository.
+Two settings in it are deliberate rather than left at their defaults —
+`project_id = "lockstate"` (the default is the working directory name,
+which is not stable across worktrees), and
+`[auth] enable_anonymous_sign_ins = true`, because anonymous auth is this
+project's identity model rather than an optional extra.
+
+The Supabase CLI is installed as a standalone binary and deliberately *not*
+as a devDependency: `AGENTS.md` forbids adding a dependency for something
+that is not one. The local stack's PostgreSQL listens on 54322, so it does
+not collide with a system PostgreSQL on 5432.
+
 ## Defects found by executing this schema
 
-All three were invisible while the SQL was never run:
+The first three were invisible while the SQL was never run; the fourth was
+invisible until it was run on the real thing.
 
 1. **`create_save_version()` failed on every call.** Its `returns table
    (... revision int, checksum text)` declares OUT parameters whose names
@@ -53,7 +91,7 @@ All three were invisible while the SQL was never run:
 
 2. **The column-level `REVOKE` on `prisons` did nothing.** PostgreSQL
    cannot subtract a single column's privilege out of a table-level
-   grant, and Supabase's default grant is table-level `ALL`, so
+   grant, and Supabase's default grant was table-level `ALL`, so
    `has_table_privilege('authenticated', 'prisons', 'UPDATE')` stayed
    true: an owner could `PATCH` `current_revision` directly and bypass
    optimistic concurrency entirely — exactly the multi-device data-loss
@@ -71,10 +109,130 @@ All three were invisible while the SQL was never run:
    resolved** — see "Why a save attempt is identified by revision *and*
    checksum" below.
 
-Several assertions in that suite were also passing or failing for the
+4. **No table in this schema was reachable through the Data API at all.**
+   Every migration here only ever *revoked*; not one granted the
+   `SELECT`/`INSERT`/`UPDATE`/`DELETE` its RLS policies presuppose, because
+   Supabase used to hand `anon`/`authenticated` table-level `ALL` on every
+   new `public` table. It no longer does. The CLI (and Studio, at cloud
+   project creation) now runs
+
+   ```sql
+   alter default privileges for role postgres in schema public
+     revoke select, insert, update, delete on tables
+     from anon, authenticated, service_role;
+   ```
+
+   leaving those roles `TRUNCATE, REFERENCES, TRIGGER, MAINTAIN` and nothing
+   useful. `supabase/config.toml` documents the escape hatch
+   (`[api] auto_expose_new_tables = true`) as deprecated, with the field
+   removed on 2026-10-30 — so this is not a local-stack quirk to work
+   around but the permanent behaviour.
+
+   The effect was total: `supabase test db` failed on the very first
+   assertion of suite 001 with `42501 permission denied for table prisons`,
+   and again in 002 with `permission denied for table entitlement_events`.
+   A player could not have listed their own prisons, pulled a save, read
+   their settings, seen their entitlements or read a challenge definition.
+   Every policy in `supabase/migrations/` was unreachable code.
+
+   Fixed by granting each table exactly the privileges its policies need,
+   next to those policies. The existing `REVOKE`s are kept — they are no-ops
+   under the current default and are what keeps the boundary closed on a
+   project that sets `auto_expose_new_tables = true` or predates the change.
+   `supabase/tests/003_data_api_grants.test.sql` pins the resulting matrix
+   exactly, so an over-grant fails as loudly as a missing one.
+
+   **The compatibility harness had been certifying the defect.** It
+   reproduced Supabase's old `grant all` default and not the newer revoke,
+   which made it *more* permissive than the platform — the one direction in
+   which an emulator is actively dangerous. 36/36 assertions passed against
+   something no real project could run. The harness now copies the CLI's
+   revoke statements verbatim, and installs pgTAP into an `extensions`
+   schema the way Supabase does, so `public` contains only this schema's own
+   objects.
+
+   Two smaller things fell out of the same investigation:
+   `submit_challenge_evidence` relied on a function's default `PUBLIC`
+   `EXECUTE` — which Supabase's `revoke execute on functions` does *not*
+   remove — so `anon` could call it and be stopped only by the function's
+   own `auth.uid() is null` check; it now uses the same explicit
+   revoke-then-grant as `create_save_version`. And the suite's long-standing
+   note that inserting into `auth.users` with just `(id, email)` was an
+   unverified assumption is resolved: GoTrue's `auth.users` has 35 columns,
+   of which only `id`, `is_sso_user` and `is_anonymous` are `NOT NULL`, and
+   the latter two default to false.
+
+Several assertions in suite 001 were also passing or failing for the
 wrong reason: pgTAP's two-argument `throws_ok` compares the error
 *message* rather than taking a description, and RLS makes a foreign
 `UPDATE`/`DELETE` match zero rows instead of raising. Both are corrected.
+
+## What an adversarial review of that fix then found
+
+Defect 4 was fixed by granting `anon` and `authenticated` what their
+policies need. A security review of *that* change found the mirror image
+of the same mistake and four smaller ones. All are fixed here; the two
+trusted-service ones are described in full in
+[TRUSTED_SERVICES.md](./TRUSTED_SERVICES.md).
+
+5. **`service_role` was granted nothing either, so the trusted half of the
+   product was dead.** Supabase's revoke names `service_role` alongside
+   `anon` and `authenticated`, and `BYPASSRLS` confers no table or function
+   privilege — it decides which *rows* a role sees, never whether it may
+   touch the table. Queried on the running stack, `service_role` held no
+   DML on any of the eight tables and `EXECUTE` on none of the four
+   functions. A payment webhook calling `record_entitlement_event` would
+   have got `42501`; no challenge submission could ever have left
+   `'pending'`, so `challenge_leaderboard` would have been permanently
+   empty. Nothing failed, because no assertion had ever asked about
+   `service_role`.
+
+6. **`create_save_version`'s `REVOKE` was narrower than
+   `submit_challenge_evidence`'s.** One revoked from `public`, the other
+   from `public, anon`. Under today's defaults they are equivalent, which
+   is why suite 003 passed either way — but on a project created before
+   Supabase stopped auto-exposing new entities, a role keeps its *own*
+   default grant through a revoke from `PUBLIC`. An `anon` caller that
+   still reached `create_save_version` would fail closed on the
+   `auth.uid()` check, but only after taking a `SELECT … FOR UPDATE` row
+   lock, and the two distinct messages (`prison % does not exist` versus
+   `not authorized for prison %`) are an existence oracle for prison
+   UUIDs. Both now revoke from `public, anon, service_role`.
+
+7. **The harness still contained the exact anti-pattern this work exists to
+   remove.** `scripts/sql/supabase-compat-harness.sql` did `grant select on
+   auth.users to authenticated, service_role`. The real thing grants none
+   of the three Data API roles anything on `auth.users` (verified: the
+   table is owned by `supabase_auth_admin`, and its ACL names only
+   `supabase_auth_admin`, `dashboard_user` and `postgres`). Nothing
+   depended on it — foreign keys enforce themselves with the constraint's
+   rights, not the caller's — so it was latent, but it broke the rule the
+   harness header states, and being more permissive than the platform is
+   the one direction that certifies defects. Removed.
+
+8. **`search_path` was inconsistent across the `SECURITY DEFINER`
+   functions.** `create_save_version` set `public, pg_temp`; the other
+   three set only `public`. When `pg_temp` is not listed, PostgreSQL
+   searches it *first* for relation and type names — the classic
+   `SECURITY DEFINER` hijack, and what Supabase's own
+   `function_search_path_mutable` linter flags. No exploit was constructible
+   (every reference in all four is schema-qualified), but
+   `submit_challenge_evidence` is reachable by any anonymously-signed-in
+   user and runs as the table owner. All four now spell out
+   `search_path = public, pg_temp`.
+
+A fifth finding was a policy defect rather than a privilege one — the
+challenge read policy published unopened challenges — and is described in
+[TRUSTED_SERVICES.md](./TRUSTED_SERVICES.md).
+
+The regression pins that would have caught these are now in
+`supabase/tests/003_data_api_grants.test.sql`: schema-wide privilege sweeps
+for all three roles instead of `anon` alone, a schema-wide assertion that
+every `public` table has RLS enabled, and a `relkind` filter that no longer
+skips materialized views, partitioned tables and foreign tables. Suite 002
+additionally runs every trusted step under `set local role service_role`
+rather than as the privileged role the suite is invoked with, which is what
+makes those assertions load-bearing at all.
 
 ## Schema (`supabase/migrations/`)
 
@@ -94,19 +252,25 @@ would otherwise let a normal PostgREST `PATCH` bypass optimistic
 concurrency entirely by writing `current_revision` directly.
 
 The fix is **revoke-then-grant**, not a column-level `REVOKE`. PostgreSQL
-cannot subtract one column's privilege out of a table-level grant, and
-Supabase grants table-level `ALL` by default, so
-`revoke update (current_revision) on prisons from authenticated` leaves the
-table-level `UPDATE` intact and changes nothing. `prisons` therefore
-revokes `UPDATE` outright and grants back only
-`(display_name, game_version, slot_index, updated_at)`, leaving
-`create_save_version()` — `SECURITY DEFINER`, with its own `auth.uid()`
-check inside — as the only path able to advance the pointer columns.
+cannot subtract one column's privilege out of a table-level grant, so on any
+project where `authenticated` holds table-level `UPDATE`,
+`revoke update (current_revision) on prisons from authenticated` leaves it
+intact and changes nothing. `prisons` therefore revokes `UPDATE` outright
+and grants back only `(display_name, game_version, slot_index, updated_at)`,
+leaving `create_save_version()` — `SECURITY DEFINER`, with its own
+`auth.uid()` check inside — as the only path able to advance the pointer
+columns.
 
-`save_versions` goes further: `authenticated`/`anon` get no
-insert/update/delete grant on it at all, so immutability doesn't depend on
-a trigger the client could reason its way around. That table-level revoke
-was always effective; only the column-level one on `prisons` was not.
+Since defect 4, that `REVOKE` is a no-op on a current project, which never
+granted table-level `UPDATE` in the first place. It stays because the thing
+it closes is a *default*: it must remain closed on a project that sets
+`[api] auto_expose_new_tables = true`, and on any project created before the
+default changed. The grant of the four editable columns is what does the
+positive work in both cases.
+
+`save_versions` goes further: `authenticated`/`anon` get `SELECT` and no
+insert/update/delete grant at all, so immutability doesn't depend on a
+trigger the client could reason its way around.
 
 ## Optimistic concurrency and idempotent resume (`create_save_version`)
 
@@ -205,8 +369,16 @@ requires no data migration or extra step here — existing prisons simply
 continue to belong to the same, now-permanent, identity. This is a
 property of Supabase's anonymous-auth design, not something this schema
 implements itself; it is not exercised by a pgTAP test here because it is
-a GoTrue-level auth flow, not a row-level SQL behavior — verify it with a
-manual or CLI-level auth flow test, not `supabase test db`.
+a GoTrue-level auth flow, not a row-level SQL behavior.
+
+`pnpm verify:stack` is that CLI-level auth flow check. Against the real
+local stack it confirms that `signInAnonymously` issues a session whose
+`sub` claim reaches `auth.uid()` unchanged, that two anonymous sign-ins are
+two genuinely isolated identities, and that a prison created by one is
+invisible to the other. What it does **not** yet cover is the upgrade step
+itself (`linkIdentity`/`updateUser` preserving the `id`); that needs an
+email or OAuth provider configured locally and is the obvious next
+extension of the script.
 
 ## Storage placement (JSONB vs. Supabase Storage): candidate, not decided
 
@@ -231,13 +403,47 @@ publishable/anon key, never a service-role key (`AGENTS.md`,
 `docs/ARCHITECTURE.md` "Security"). Nothing in this issue's code reads a
 service-role key or any other secret; `create_save_version` runs
 server-side as `SECURITY DEFINER`, which is how privileged writes happen
-without a service-role key ever reaching the client. To actually run the
-migrations/tests locally: install the Supabase CLI, run `supabase init`
-(if `supabase/config.toml` does not already exist) to generate a
-CLI-version-correct config, then `supabase start`.
+without a service-role key ever reaching the client.
+
+`supabase/config.toml` is now committed, so running the stack locally is
+just: install the Supabase CLI (standalone binary — not a devDependency),
+then `supabase start`. The CLI generates the local keys itself on each
+start; they are dev-only shared defaults, they are not stored in this
+repository, and `pnpm verify:stack` reads the publishable key from
+`supabase status` at runtime rather than holding one. No check in this
+repository uses the service-role key.
+
+## Open question: no database-tier bound on free-tier storage
+
+Recorded by the same security review, deliberately **not** fixed here.
+Tracked as issue #57.
+
+`[auth] enable_anonymous_sign_ins = true` is this project's identity model,
+so `authenticated` is effectively "anyone who can make an HTTP request" —
+a new identity costs one call to `/auth/v1/signup`. Against that:
+
+- `prisons_insert_own` enforces ownership and the `prisons_owner_slot_unique`
+  constraint prevents duplicate slot indices, but nothing caps how many
+  slots an owner may create. The five-free-slots product rule
+  (`README.md`, `src/services/entitlements/products.ts`) lives in the
+  application tier only.
+- `create_save_version` validates the revision sequence, the
+  payload/storage-path exclusivity and the idempotency key, but places no
+  bound on `p_byte_size` or on the length of `p_payload`.
+
+So the storage one free identity can consume is unbounded at the tier that
+is actually authoritative. This is a **capacity and abuse** concern, not a
+confidentiality one: no data crosses an ownership boundary, and the checks
+that protect *other players'* data are unaffected. Fixing it properly is a
+product decision (what the free tier is, what happens at the ceiling, how a
+rejection surfaces in the UI) plus a schema change, and both belong with
+the entitlement-enforcement work rather than inside a privilege fix. It is
+noted here so the next person to touch slot creation does not assume the
+database is already holding this line.
 
 ## What is out of scope here
 
 Payments/paid-slot checkout; trusting client-submitted values for
 leaderboards; realtime collaborative simulation; automatic destructive
-conflict resolution (every conflict requires the explicit choices above).
+conflict resolution (every conflict requires the explicit choices above);
+a database-tier cap on free-tier storage (see the open question above).

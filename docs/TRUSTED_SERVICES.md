@@ -16,29 +16,39 @@ and threat model) and [ADR 0009](./adr/0009-challenge-verification-strategy.md)
   ledger fold, webhook processing, projection policy, telemetry controls
   and localization runtime are all exercised in Node
   (`tests/unit/services-*.test.ts`).
-- **Executed against a real PostgreSQL + pgTAP:** every migration in
-  `supabase/migrations/` and both pgTAP suites in `supabase/tests/`
-  (33 assertions, 17 of them this issue's; 36 in total once the suites
-  grew). First run on 16.13 + pgTAP 1.3.2, since also on 18.6 + pgTAP
-  1.3.4 — no major version is required or pinned. Reproduce with:
+- **Executed against the real Supabase local stack:** every migration in
+  `supabase/migrations/` and all three pgTAP suites in `supabase/tests/`,
+  under Supabase CLI 2.115.0 with GoTrue, PostgREST, Storage and Realtime
+  running. Reproduce with:
+  ```bash
+  supabase start && supabase db reset && supabase test db
+  ```
+  The first such run found a defect that had been invisible to every earlier
+  check, and the security audit of that run found a second — see "Defects
+  this tooling found" below.
+- **Also executed against a plain PostgreSQL 16/18 + pgTAP:** the same
+  migrations and suites. First run on 16.13 + pgTAP 1.3.2, since also on
+  18.6 + pgTAP 1.3.4 — no major version is required or pinned. Reproduce
+  with:
   ```bash
   scripts/provision-postgres.sh # installs whichever major the distro ships
   pnpm verify:sql               # as a superuser role, or set DATABASE_URL
   ```
   `scripts/verify-supabase-sql.mjs` applies every migration in order and
   runs every pgTAP suite against a scratch database prepared by
-  `scripts/sql/supabase-compat-harness.sql`. CI runs both commands on every
-  pull request, so this SQL can no longer ship unexecuted.
-- **Still NOT executed:** anything against the real Supabase stack. The
-  harness emulates only the roles, default grants and the slice of the
-  `auth` schema our SQL references. It reproduces no GoTrue behaviour, no
-  JWT verification, no PostgREST, no Storage and no Realtime, so it proves
-  the SQL and proves nothing about how the hosted platform issues the
-  identity those policies read. `supabase start && supabase db reset &&
-  supabase test db` remains the stronger check and has never been run:
-  the Docker daemon starts fine in the environments used so far, but image
-  layers cannot be pulled (the registry CDN is blocked by network policy),
-  so the local stack cannot come up.
+  `scripts/sql/supabase-compat-harness.sql`. This path needs no Docker, so
+  it is what CI runs on every pull request; it stays the fast check and is
+  not a substitute for the stack run above, which is a local manual gate.
+- **Executed through the platform's own front doors:** `pnpm verify:stack`
+  (`scripts/verify-supabase-stack.mjs`) drives a running local stack over
+  HTTP — anonymous sign-in via `/auth/v1`, then the cloud-save contract, its
+  ownership boundaries and the signed-out read surface via `/rest/v1`. This
+  is the only check that proves GoTrue actually mints the identity
+  `auth.uid()` reads; the pgTAP suites fake it with `set_config`.
+- **Still NOT executed:** anything against a hosted Supabase *project*. The
+  local stack runs the same GoTrue/PostgREST/Storage images, but nothing
+  here has exercised a real project's networking, quotas or connection
+  pooling.
 - **Deliberately not built:** the deployed server functions themselves (the
   Edge Function/Worker handlers), a payment provider integration, a replay
   runner and a telemetry ingestion endpoint. Each is either out of scope
@@ -52,12 +62,78 @@ raised `42702 column reference "revision" is ambiguous` on every call, and
 the column-level `REVOKE` on `prisons` could not narrow Supabase's
 table-level grant, leaving optimistic concurrency bypassable by a direct
 `PATCH`. Both are fixed on `main` (PR #52) and documented in
-[CLOUD_SAVE.md](./CLOUD_SAVE.md); `pnpm verify:sql` now passes both suites,
-33 assertions in total.
+[CLOUD_SAVE.md](./CLOUD_SAVE.md).
 
-The general lesson is worth keeping: every one of those defects was
-invisible for as long as the SQL was only reviewed, and none of them needed
-the Supabase stack to find.
+Running it on the real Supabase stack then found a fourth defect that the
+harness had actively hidden, and that affected this issue's tables too:
+`entitlement_events`, `entitlements`, `challenge_definitions` and
+`challenge_submissions` had no Data API `SELECT` grant, so every policy
+above them was unreachable code. See CLOUD_SAVE.md for the full account and
+`supabase/tests/003_data_api_grants.test.sql` for the regression pin.
+
+The general lesson is worth keeping, in both directions: every one of those
+defects was invisible for as long as the SQL was only reviewed — and an
+emulator that is *more* permissive than the thing it emulates does not just
+fail to catch a defect, it certifies one.
+
+## Defects the security review of that fix found
+
+Granting `anon` and `authenticated` what their policies need left the
+mirror-image hole open. Two of the findings were this issue's own; the
+others are in [CLOUD_SAVE.md](./CLOUD_SAVE.md).
+
+**The entire Z2 write path was dead.** No migration granted `service_role`
+anything. Supabase's revoke names it alongside the two client roles, and
+`BYPASSRLS` — which the trusted role does have — decides which *rows* a
+role sees, never whether it may touch the table at all. Queried on the
+running stack, `service_role` held no DML on any of the eight tables and
+`EXECUTE` on none of the four functions. Concretely: a signature-verified
+payment webhook calling `record_entitlement_event` would have got `42501`,
+so no purchase could ever have been honoured; and no challenge submission
+could have been advanced out of `'pending'`, so `challenge_leaderboard`
+was structurally guaranteed to stay empty. Every assertion passed, because
+none of them had ever mentioned `service_role`, and the pgTAP suite ran the
+trusted steps as the privileged role that invokes it — which succeeds
+regardless of what `service_role` holds.
+
+The fix grants the minimum each trusted path actually performs, per table
+and per function, next to the client grants:
+
+| Object | `service_role` | Why |
+| --- | --- | --- |
+| `challenge_definitions` | `SELECT`, `INSERT` | publish a signed definition; read the one being replayed against, including a staged one the client policy hides |
+| `challenge_submissions` | `SELECT`, `UPDATE (verification_status, rejection_code, ranked_score, verified_at)` | read pending evidence; record the verdict. Column-scoped so a compromised verifier cannot reassign a submission or rewrite the evidence |
+| `entitlement_events` | `SELECT` | the webhook's `findByProviderEvent` dedup pre-check, and staff audit |
+| `record_entitlement_event()` | `EXECUTE` | the Z3 → Z2 write path itself |
+| everything else | *nothing* | cloud saves are client-authoritative (ADR 0008); `entitlements` is a projection written only inside the RPC as the table owner; `recompute_entitlement_projection` is an internal step of that RPC, not an entry point |
+
+**`challenge_definitions` published unopened challenges.** The read policy
+was `using (true)` while the table carries `opens_at`, `closes_at` and
+`published_at`. `submit_challenge_evidence` enforces the submission window;
+a *read* is not a submission, so anyone holding the publishable key could
+`GET /rest/v1/challenge_definitions?select=*` and take the full signed
+`definition` — seed, objectives, scoring — for a challenge that had not
+opened, solve it offline at leisure and submit the moment it did. The
+policy is now `published_at <= now() and opens_at <= now()`:
+`published_at` is the staging switch, `opens_at` is the fairness one, and
+`closes_at` is deliberately *not* a bound so past results stay
+independently verifiable against the bytes that were signed.
+
+The visibility rule this implements — **nobody sees a seed before everybody
+does** — costs the client the ability to pre-download a definition ahead of
+its opening moment. That is the intended trade and is stated here rather
+than left implicit, because a future "prefetch tomorrow's challenge"
+feature would have to reopen it deliberately, with the head start it
+implies made explicit.
+
+Both are now pinned. `supabase/tests/003_data_api_grants.test.sql` sweeps
+all three roles schema-wide instead of `anon` alone, asserts that every
+`public` table has RLS enabled, and covers materialized views, partitioned
+tables and foreign tables. `supabase/tests/002_…` runs every trusted step
+under `set local role service_role`. `scripts/verify-supabase-stack.mjs`
+drives the trusted paths over HTTP with the local stack's secret key, which
+is the only place PostgREST's mapping of that credential onto the role is
+exercised at all.
 
 ## Trust zones
 
@@ -153,8 +229,17 @@ including events that did **not** apply and why.
 ### Only the server can grant
 - `entitlements` and `entitlement_events`: SELECT-own policies only, and
   the default INSERT/UPDATE/DELETE grants are revoked outright.
-- `record_entitlement_event()` and `recompute_entitlement_projection()`:
-  `EXECUTE` revoked from `public`, `anon` and `authenticated`.
+- `record_entitlement_event()`: `EXECUTE` revoked from `public`, `anon` and
+  `authenticated`, then granted to `service_role` and to nothing else. That
+  grant is not a formality — without it the function is unreachable by the
+  only caller it has, which is exactly the state this schema shipped in
+  until the security review; see "Defects the security review of that fix
+  found" above.
+- `recompute_entitlement_projection()`: `EXECUTE` revoked from all four
+  roles including `service_role`. It is an internal step of the function
+  above, reached as the table owner through `SECURITY DEFINER`, never an
+  entry point; a separate grant would only add a way to rewrite the
+  projection with no ledger append behind it.
 - A trigger rejects any UPDATE to the ledger; corrections are appended as
   compensating events. DELETE is left only to the `auth.users` cascade, so
   account deletion still works.
@@ -189,9 +274,21 @@ over; existing prisons stay playable
 player's prisons because a cache expired would be a far worse failure than
 briefly showing an over-capacity account.
 
-The projection is advisory in any case: the trusted function that creates a
-cloud slot re-checks capacity server-side, so a forged local cache buys a
-misleading UI, not a right.
+The projection is advisory in any case: a forged local cache is meant to
+buy a misleading UI, not a right, because the point of effect re-checks
+capacity.
+
+**That re-check does not exist yet, and the security review made the gap
+explicit.** Slot creation today is a plain `INSERT` into `prisons` under
+`prisons_insert_own`, which enforces ownership and nothing about capacity;
+`create_save_version()` likewise places no bound on payload size. So an
+account that is over capacity is currently stopped by the client alone. It
+is a capacity/abuse gap rather than a confidentiality one — no data crosses
+an ownership boundary — but it is the reason this paragraph used to
+overclaim. Recorded as an open question in
+[CLOUD_SAVE.md](./CLOUD_SAVE.md), "Open question: no database-tier bound on
+free-tier storage", tracked as issue #57, and deliberately not designed
+inside a privilege fix.
 
 ## Data retention and account deletion
 
@@ -209,4 +306,6 @@ misleading UI, not a right.
 
 Choose a payment provider or ship checkout; publish a leaderboard;
 implement the replay runner; deploy any server function; build a
-telemetry ingestion endpoint; or translate the game.
+telemetry ingestion endpoint; translate the game; or enforce save-slot
+capacity at the database tier (see the open question referenced under
+"Offline degradation").

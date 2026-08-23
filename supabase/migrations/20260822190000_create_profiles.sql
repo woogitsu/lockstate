@@ -27,3 +27,15 @@ create policy "profiles_update_own"
 
 -- Profiles are never deleted by the client; account deletion is a trusted
 -- server-side operation (cascades from auth.users on delete).
+
+-- Data API grants. A policy decides *which rows* a role may touch; it never
+-- grants the privilege to touch the table at all. Supabase used to hand
+-- `anon`/`authenticated` table-level ALL on every new `public` table, so
+-- relying on that default worked -- but it no longer does: the CLI (and
+-- Studio at cloud project creation) revokes the Data API roles' default
+-- SELECT/INSERT/UPDATE/DELETE in `public`, leaving `Dxtm` only. Without an
+-- explicit grant the policies below are unreachable code and every request
+-- returns `42501 permission denied for table profiles`.
+--
+-- No DELETE: matching the comment above, there is no delete policy either.
+grant select, insert, update on public.profiles to authenticated;
