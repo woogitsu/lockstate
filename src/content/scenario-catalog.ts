@@ -63,8 +63,9 @@ export type ScenarioDefinition = z.infer<typeof scenarioDefinitionSchema>;
  * Duplicated as a literal rather than imported from
  * `src/simulation/runtime/new-session.ts`: `src/content/` is imported *by*
  * the simulation and must not import the session runtime back, and the
- * value is a stable persisted id in any case. `tests/unit/scenario-catalog.test.ts`
- * asserts the two agree, so the duplication cannot drift silently.
+ * value is a stable persisted id in any case.
+ * `tests/unit/scenario-starting-stock.test.ts` asserts the two agree, so the
+ * duplication cannot drift silently.
  */
 const CONSTRUCTION_MATERIALS_CONTAINER_ID = 'construction-materials';
 
