@@ -1,3 +1,4 @@
+import type { SimulationSpeed } from '../simulation/clock/fixed-step-clock';
 import type { SimulationCommand } from '../simulation/protocol/commands';
 import { packCommand } from '../simulation/protocol/commands';
 import type { MainToWorkerMessage, WorkerToMainMessage } from '../simulation/protocol/types';
@@ -67,7 +68,7 @@ const TICK_MILLISECONDS = 50;
 export class SimulationCommandSender {
   private ready = false;
   private clockRunning = false;
-  private clockSpeed: 1 | 2 | 4 = 1;
+  private clockSpeed: SimulationSpeed = 1;
   private lastTick = 0;
   /** When `lastTick` was reported, so elapsed real time can carry it forward. */
   private lastTickAt = 0;
@@ -156,7 +157,7 @@ export class SimulationCommandSender {
   }
 
   /** Asks the worker to pause or run. The worker owns the clock; this only asks. */
-  public setClock(control: { readonly mode: 'paused' } | { readonly mode: 'running'; readonly speed: 1 | 2 | 4 }): void {
+  public setClock(control: { readonly mode: 'paused' } | { readonly mode: 'running'; readonly speed: SimulationSpeed }): void {
     if (!this.ready) {
       throw new Error('No simulation session is running yet, so the clock cannot be changed.');
     }
@@ -219,7 +220,7 @@ export class SimulationCommandSender {
     this.sequenceSynced = true;
   }
 
-  private noteClock(clock: { readonly mode: 'paused' } | { readonly mode: 'running'; readonly speed: 1 | 2 | 4 }): void {
+  private noteClock(clock: { readonly mode: 'paused' } | { readonly mode: 'running'; readonly speed: SimulationSpeed }): void {
     this.clockRunning = clock.mode === 'running';
     if (clock.mode === 'running') this.clockSpeed = clock.speed;
   }
