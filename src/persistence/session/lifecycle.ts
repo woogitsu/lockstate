@@ -6,14 +6,20 @@ export type LifecycleEventTarget = Pick<EventTarget, 'addEventListener' | 'remov
 /**
  * The two objects the two lifecycle events are dispatched at.
  *
- * They are deliberately separate, and both are required, because the events
- * are *not* interchangeable in the DOM: `visibilitychange` is dispatched at
- * `document`, while `pagehide` is dispatched at `Window`. A window event does
- * not propagate down to the document, so a single shared target cannot
- * receive both -- registering `pagehide` on `document` silently never fires
- * (issue #92). Naming a target per event makes that constraint part of the
- * type rather than a comment, and requiring both keeps a caller from
- * injecting one fake target and inheriting a real global for the other.
+ * The DOM dispatches them at different objects: `visibilitychange` at
+ * `document`, `pagehide` at `Window`. `document` alone therefore cannot
+ * receive both -- a window event does not propagate down to the document,
+ * which is why registering `pagehide` on `document` never fired (issue #92).
+ *
+ * `window` alone *would* receive both, because `visibilitychange` is
+ * dispatched at `document` with `bubbles: true` and so reaches `window` on
+ * the way up; that was checked in a real browser, not assumed. The pair is
+ * kept anyway, for explicitness rather than necessity: each listener sits on
+ * the object its own event is specified to be dispatched at, so neither
+ * registration depends on the event path, and "these two events are not
+ * interchangeable" is stated in the type rather than in a comment. Requiring
+ * both halves keeps a caller from injecting one fake target and inheriting a
+ * real global for the other.
  */
 export interface LifecycleSaveTargets {
   /** Receives `visibilitychange`. In a browser this is `document`. */
@@ -23,7 +29,7 @@ export interface LifecycleSaveTargets {
 }
 
 export interface LifecycleSaveOptions {
-  /** One target per event -- see `LifecycleSaveTargets` for why they cannot be the same object. Defaults to the globals `document` and `window`; injectable so this is testable without a DOM environment. */
+  /** One target per event -- see `LifecycleSaveTargets` for why each event gets its own. Defaults to the globals `document` and `window`; injectable so this is testable without a DOM environment. */
   readonly targets?: LifecycleSaveTargets;
   readonly visibilityState?: () => DocumentVisibilityState;
   readonly onAttempt?: (trigger: LifecycleSaveTrigger) => void;
@@ -51,9 +57,13 @@ function globalTargets(): LifecycleSaveTargets | undefined {
  *   `unload` -- `unload` is not fired at all on modern mobile browsers and
  *   blocks bfcache where it is. The two come from *different* targets
  *   (`document` and `window` respectively); see `LifecycleSaveTargets`.
- *   `pagehide` is the one that covers navigating away, closing the tab and
- *   entering the bfcache while the page is still visible, so losing it
- *   (issue #92) left those transitions to the interval autosave alone.
+ *   `pagehide` is the one specified to cover navigating away, closing the
+ *   tab and entering the bfcache while the page is still visible, and it is
+ *   the earlier notice, so registering it where it never fired (issue #92)
+ *   cost that notice. It did not necessarily cost the save: on the one
+ *   transition observed here in a real browser -- a same-tab navigation --
+ *   Chromium also fired `visibilitychange` -> hidden, and that listener was
+ *   on the right object throughout. See `docs/PERSISTENCE.md`.
  * - It fires a save *attempt* and does not await it. A lifecycle handler
  *   cannot hold the page open for an async IndexedDB transaction, so the
  *   write may simply not complete. That is expected and safe: the previous
