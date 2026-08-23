@@ -40,27 +40,25 @@ this index's. Nothing here changes a status; this table only reports them.
 | [0014](./0014-art-storage-and-runtime-asset-delivery.md) | Art storage, generated-versus-source policy and runtime asset delivery | Proposed |
 | [0015](./0015-actor-identity-allocation.md) | Actor Identity Is Allocated, Not Derived | Proposed |
 | [0016](./0016-migration-delivery-mechanism.md) | Which mechanism applies migrations, and to which project | Proposed — pending human approval |
-| 0017 | *Claimed by open PR #137 — not in this directory* | not merged |
+| [0017](./0017-money-primary-resource-model.md) | Money Is the Primary Resource; Materials Are Procured | Proposed — pending human approval |
 | 0018 | *Reserved by open PR #91 — not in this directory* | not merged, PR held |
 | [0019](./0019-tile-ownership-under-overlapping-parcels.md) | What "owned" means for a tile under overlapping parcels | Proposed — pending human approval |
 | [0020](./0020-deterministic-kernel.md) | Deterministic Kernel and Scheduler | Accepted |
 
 **Next free number: 0021.**
 
-## Numbers claimed by work that has not merged
+## 0018, claimed by work that has not merged
 
-0017 and 0018 have no file in this directory. They are listed above because
-computing the next free number from `ls docs/adr/` alone would hand both of
-them out a second time:
+0018 is the one number with no file in this directory. It is listed above
+because computing the next free number from `ls docs/adr/` alone would hand it
+out a second time: open PR #91 adds `docs/adr/0018-construction-material-supply.md`.
 
-- **0017** — open PR #137 adds `docs/adr/0017-money-primary-resource-model.md`.
-- **0018** — open PR #91 adds `docs/adr/0018-construction-material-supply.md`.
-  That PR is held by an explicit owner decision. Because it is held, its number
-  may go stale: if it ever lands, its ADR should be renumbered to whatever the
-  next free number is at that time, and this table updated to match.
+That PR is held by an explicit owner decision. Because it is held, its number
+may go stale: if it ever lands, its ADR should be renumbered to whatever the
+next free number is at that time, and this table updated to match.
 
-Do not reuse either number while those PRs are open. If a PR is closed without
-merging, release its number by editing this table in the same commit.
+Do not reuse 0018 while #91 is open. If it is closed without merging, release
+the number by editing this table in the same commit.
 
 ## Why 0004 appears once and the kernel ADR is 0020
 
@@ -72,6 +70,7 @@ were written.
 
 The later-authored ADR moved, following the precedent set by `2edb75c`
 ("Renumber the art-storage ADR to 0014 after 0012 and 0013 were taken"). The
-kernel ADR became 0020 rather than 0017 or 0018 because both of those are
-claimed by the open PRs above; 0020 was the lowest number free without
+kernel ADR became 0020 rather than 0017 or 0018 because both were already
+claimed: 0017 by PR #137 (open when the rename was made, merged since) and
+0018 by PR #91, which is held. 0020 was the lowest number free without
 coordinating with unmerged or held work. `0004` now means chunk-size only.
