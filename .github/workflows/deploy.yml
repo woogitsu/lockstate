@@ -1,0 +1,134 @@
+name: Deploy
+
+# Frontend delivery only. Database migrations are a separate, manual workflow
+# (migrate-database.yml) because they are irreversible and must never ride
+# along with a routine merge.
+#
+# Staging deploys itself on every merge to `main`. Production never does: it
+# runs only from a manual dispatch, through the `production` GitHub Environment,
+# so a merged pull request cannot reach lockstate.io on its own.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Which environment to deploy
+        type: choice
+        options: [staging, production]
+        default: staging
+
+permissions:
+  contents: read
+
+concurrency:
+  # Never let two deployments of the same environment overlap; a later commit
+  # cancels an in-flight earlier one rather than racing it onto the same worker.
+  group: deploy-${{ github.event_name == 'workflow_dispatch' && inputs.target || 'staging' }}
+  cancel-in-progress: true
+
+env:
+  CI: true
+  COREPACK_ENABLE_DOWNLOAD_PROMPT: 0
+
+jobs:
+  staging:
+    if: github.event_name == 'push' || inputs.target == 'staging'
+    runs-on: [self-hosted, Linux, X64, wsl2]
+    timeout-minutes: 30
+    environment:
+      name: staging
+      url: ${{ steps.deploy.outputs.url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: '.node-version'
+          package-manager-cache: false
+
+      - name: Enable Corepack
+        run: corepack enable && corepack prepare pnpm@11.22.0 --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Fail on a missing secret rather than deploying a build whose Supabase
+      # configuration is silently empty. `VITE_`-prefixed values are inlined
+      # into the browser bundle, so only the publishable key belongs here --
+      # see docs/DEPLOYMENT.md.
+      - name: Check required configuration is present
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+        run: bash scripts/check-deploy-secrets.sh
+
+      - name: Deploy to Cloudflare (staging)
+        id: deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          node scripts/cloudflare-task.mjs deploy staging
+          echo "url=https://lockstate-staging.workers.dev" >> "$GITHUB_OUTPUT"
+
+  production:
+    # Manual only. The `production` environment should carry required
+    # reviewers, which is what actually blocks this — the `if` alone would not.
+    if: github.event_name == 'workflow_dispatch' && inputs.target == 'production'
+    runs-on: [self-hosted, Linux, X64, wsl2]
+    timeout-minutes: 30
+    environment:
+      name: production
+      url: https://lockstate.io
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: '.node-version'
+          package-manager-cache: false
+
+      - name: Enable Corepack
+        run: corepack enable && corepack prepare pnpm@11.22.0 --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check required configuration is present
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+        run: bash scripts/check-deploy-secrets.sh
+
+      # Re-run the full gate against the exact commit being shipped. CI having
+      # passed on `main` earlier is not the same statement.
+      - name: Verify before shipping
+        run: pnpm verify
+
+      - name: Deploy to Cloudflare (production)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          # scripts/cloudflare-task.mjs refuses a production deploy without
+          # this. Setting it here is deliberate and explicit, not a bypass:
+          # the approval gate is the `production` environment above.
+          LOCKSTATE_PRODUCTION_DEPLOY: '1'
+        run: node scripts/cloudflare-task.mjs deploy production
