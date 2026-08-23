@@ -69,14 +69,14 @@ returns to the old answer and this section is rewritten; issue #120 records the
 replacement wording for the bullet above.
 
 What does *not* depend on that decision: the rule has exactly one
-implementation, `isTileOwnedBy` in
-`src/simulation/world/tile-ownership.ts`, and both `SparseWorld.isTileOwned` and
-the renderer's `WorldRenderView.isTileOwned` call it. The renderer must not
-answer this question from logic of its own — `AGENTS.md` boundary 1, rendering
-is not simulation — so a new consumer of tile ownership calls `isTileOwnedBy`
-instead of reimplementing it. Before issue #93 the two had separate
-implementations that did not always agree, and `WorldRenderView.isTileOwned`
-feeds `TileSample.owned` while `SparseWorld.isTileOwned` is what `canBuildAt`
+implementation, `isTileOwnedBy` in `src/simulation/world/tile-ownership.ts`,
+and both `SparseWorld.isTileOwned` and the renderer's
+`WorldRenderView.isTileOwned` call it. The renderer must not answer this
+question from logic of its own — `AGENTS.md` boundary 1, rendering is not
+simulation — so a new consumer of tile ownership calls `isTileOwnedBy` instead
+of reimplementing it. Before issue #93 the two had separate implementations
+that did not always agree, and `WorldRenderView.isTileOwned` feeds
+`TileSample.owned` while `SparseWorld.isTileOwned` is what `canBuildAt`
 consults, so one question was being answered twice on either side of the same
 decision.
 

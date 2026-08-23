@@ -22,11 +22,11 @@ import { rectContainsTileXY } from './parcel';
  * chunk holding it is owned outright.** Parcels do not veto each other.
  * `registerParcel` permits overlapping bounds, so more than one parcel can
  * contain a tile; each owned one is sufficient on its own, and an unowned one
- * covering the same tile changes nothing. `docs/WORLD.md`
- * ("Parcels and land ownership") already stated the rule this way, and ADR
- * 0019 records why it is this rule rather than "the lowest-id parcel decides"
- * -- as a proposal, not an accepted decision, so this half of the rule is
- * pending the owner's sign-off.
+ * covering the same tile changes nothing. `docs/WORLD.md` ("Parcels and land
+ * ownership") already stated the rule this way, and ADR 0019 records why it is
+ * this rule rather than "the lowest-id parcel decides" -- as a proposal, not an
+ * accepted decision, so this half of the rule is pending the owner's
+ * sign-off.
  *
  * Order-independence is the property that makes this safe for a deterministic
  * simulation: disjunction over a set has the same answer whatever order the
@@ -38,9 +38,11 @@ import { rectContainsTileXY } from './parcel';
  * `tests/determinism/iteration-order.test.ts`).
  *
  * Plain numbers rather than a `TilePosition`, and a pre-resolved
- * `chunkIsOwned` rather than a callback: `WorldRenderView.readTile` calls
- * this for every tile of every repainted chunk, and neither a per-tile
- * position object nor a per-tile closure is a cost that hot path should pay.
+ * `chunkIsOwned` rather than a callback: `WorldRenderView.readTile` calls this
+ * once per tile of every repainted chunk, and this signature lets it do so
+ * without building a position object or a closure per tile. That is a shape
+ * choice to avoid the allocation, not a measured optimisation -- no benchmark
+ * scenario exercises the render view (see ADR 0019, Consequences).
  *
  * @param ownedParcelBounds Bounds of the owned parcels only. Unowned parcels
  *   are irrelevant to the answer and callers need not collect them.

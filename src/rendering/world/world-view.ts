@@ -164,6 +164,17 @@ export class WorldRenderView {
    * lives on the simulation side rather than here: a renderer answering an
    * ownership question from logic of its own is a second source of truth for
    * game state whether or not it agrees.
+   *
+   * Coordinates are plain numbers, not `TileCoordinate`. Until issue #93 this
+   * method branded them with `tileCoordinate`, which throws `RangeError` for a
+   * fractional or unsafe integer -- but it did so only while the view held at
+   * least one owned parcel, so it was never a contract a caller could rely on,
+   * and `readTile` answers every other field for such an input silently (a
+   * fractional tile index misses the layer arrays and reads as 0). Every call
+   * site in `src/` derives its coordinates from integer loops over chunk
+   * bounds (`rendering/phaser/tile-layer.ts`, `rendering/world/row-index.ts`).
+   * The branded, validating entry point for tile ownership is
+   * `SparseWorld.isTileOwned`, which takes a `TilePosition`.
    */
   public isTileOwned(
     tileX: number,
@@ -176,8 +187,10 @@ export class WorldRenderView {
 
   /**
    * `isTileOwned` for a caller that already holds the chunk key. `readTile`
-   * does, and rebuilding that string per tile is the kind of inner-loop cost
-   * the lookup memo above exists to remove.
+   * does, so taking the key as a parameter keeps that loop from rebuilding the
+   * same string once per tile. Like the layer memo above, that is a shape
+   * choice to avoid the work, not a measured optimisation -- no benchmark
+   * scenario exercises the render view.
    */
   private isTileOwnedInChunk(tileX: number, tileY: number, chunkKey: string): boolean {
     return isTileOwnedBy(tileX, tileY, this.ownedParcels, this.ownedChunkKeys.has(chunkKey));

@@ -44,9 +44,11 @@ export function createParcelRect(x: number, y: number, width: number, height: nu
 /**
  * Containment by loose tile coordinates, for callers that hold the numbers but
  * no `TilePosition` object -- `isTileOwnedBy` runs this for every tile of every
- * repainted chunk, and allocating a position per tile there is exactly the
- * kind of cost `TileSample` exists to avoid. `rectContainsTile` is the same
- * test on a position, so there is still only one containment implementation.
+ * repainted chunk, and this signature lets it do so without allocating a
+ * position per tile. Avoiding the allocation is the reason for the overload;
+ * nothing here is measured, and no benchmark scenario exercises that path.
+ * `rectContainsTile` is the same test on a position, so there is still only one
+ * containment implementation.
  */
 export function rectContainsTileXY(rect: ParcelRect, tileX: number, tileY: number): boolean {
   return (

@@ -188,10 +188,10 @@ way), and nothing yet says they should be impossible.
 - **Make the renderer follow "first parcel by id".** Rejected. It preserves
   current simulation behaviour, which is the one virtue it has, but it keeps a
   second implementation of a game rule inside the renderer, against boundary
-  1; it requires shipping *all* parcels to the view rather than the owned ones
-  (more snapshot projection, and a per-tile scan over every parcel in the
-  world rather than only the owned ones, in `readTile`'s inner loop); and it
-  makes the incoherent rule of §2 permanent and load-bearing.
+  1; it requires shipping *all* parcels to the view rather than the owned ones,
+  and makes `readTile`'s per-tile lookup scan every parcel in the world rather
+  than only the owned ones; and it makes the incoherent rule of §2 permanent
+  and load-bearing.
 - **Keep both implementations, add a cross-checking test.** Rejected as the
   fix, per §1. The regression test in
   `tests/unit/rendering-world-view.test.ts` is worth having and has been
@@ -219,6 +219,22 @@ way), and nothing yet says they should be impossible.
   to be inferred.
 - The doc comment on `WorldRenderView.isTileOwned`, which PR #90 rewrote to
   *state* the divergence, is replaced: it now says where the rule lives.
+- `WorldRenderView.isTileOwned` no longer brands its coordinates with
+  `tileCoordinate`, so it no longer throws `RangeError` for a fractional or
+  unsafe-integer coordinate. It only ever threw while the view held at least
+  one owned parcel, so that was never a guarantee a caller could rely on, and
+  `readTile` answers every other field for such an input silently. The branded,
+  validating entry point for tile ownership is `SparseWorld.isTileOwned`, which
+  takes a `TilePosition`; the reason is recorded on the renderer method.
+- No performance claim in this change is measured, and none is made. The
+  benchmark harness (`benchmarks/scenarios/`) has no scenario that exercises
+  `SparseWorld`, `WorldRenderView` or `readTile` — the two `world.chunk-size-*`
+  scenarios are standalone models that do not import the simulation — so the
+  signatures chosen here (loose coordinates rather than a `TilePosition`, a
+  pre-resolved `chunkIsOwned` rather than a callback, a chunk key passed in by
+  `readTile`) are recorded as allocation-avoiding shape choices and nothing
+  more. A benchmark scenario for the render view's tile loop would be the way
+  to say more than that, and it is not part of this change.
 - `SparseWorld.isTileOwned` collects the owned parcels in canonical
   (ascending-id) order, even though a disjunction cannot depend on the order it
   is walked in. `docs/DETERMINISM.md` ("Canonical iteration order") states the
