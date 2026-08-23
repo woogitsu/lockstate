@@ -1,3 +1,4 @@
+export * from './contraband-catalog';
 export * from './default-locale-en';
 export * from './item-catalog';
 export * from './localization';
