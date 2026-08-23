@@ -4,7 +4,8 @@ import type { ActiveSession, SessionLoadOutcome } from '../../src/persistence/se
 import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
 import { type HudIntent, type HudViewModel, mountHud } from '../../src/ui/hud';
 import { SavePanel, type SavePanelSessions } from '../../src/ui/save-panel';
-import type { ButtonState, HudProbe, LayoutBox, LayoutProbe, LockstateUiHarness } from './ui-harness-api';
+import type { BuildProbe, ButtonState, HudProbe, LayoutBox, LayoutProbe, LockstateUiHarness } from './ui-harness-api';
+import { HUD_MESSAGE_KEY, type HudBuildViewModel } from '../../src/ui/hud';
 import '../../src/styles.css';
 
 /**
@@ -108,6 +109,19 @@ const BASE_VIEW_MODEL: HudViewModel = {
   alerts: [],
 };
 
+/**
+ * The same two entries `src/main.ts` projects out of `BUILDABLE_REGISTRY`,
+ * as plain view-model data. Kept here rather than imported from the registry
+ * so the spec exercises the *panel*, not the catalog.
+ */
+const BUILD_MODEL: HudBuildViewModel = {
+  buildables: [
+    { definitionId: 'wall-brick', labelKey: HUD_MESSAGE_KEY.buildableWallBrick, occupiesEdge: true },
+    { definitionId: 'door-wooden', labelKey: HUD_MESSAGE_KEY.buildableDoorWooden, occupiesEdge: false },
+  ],
+  origin: { x: 16, y: 16 },
+};
+
 const root = document.getElementById('ui-root');
 if (root === null) throw new Error('ui-harness: #ui-root is missing');
 
@@ -173,6 +187,7 @@ window.lockstateUiHarness = {
     hud = mountHud(root, {
       localizer,
       viewModel: BASE_VIEW_MODEL,
+      build: BUILD_MODEL,
       onIntent: (intent: HudIntent) => {
         intents.push(JSON.stringify(intent));
         // Stands in for a slow or wedged host, which is the condition the
@@ -212,7 +227,9 @@ window.lockstateUiHarness = {
       ),
       valueCount: values.length,
       nonMonospaceValues: nonMonospace.map((node) => node.textContent ?? ''),
-      alertsCollapsed: document.querySelector('.ui-section')?.getAttribute('data-collapsed') ?? null,
+      // Scoped to the minimap frame: the Build panel uses the same section
+      // primitive, so an unscoped selector would depend on document order.
+      alertsCollapsed: document.querySelector('.hud-minimap .ui-section')?.getAttribute('data-collapsed') ?? null,
       centreIsClickThrough: centre === null || !(hudRoot?.contains(centre) ?? false),
     };
   },
@@ -232,7 +249,7 @@ window.lockstateUiHarness = {
   },
 
   toggleAlerts(): boolean {
-    const header = document.querySelector<HTMLButtonElement>('.ui-section__header');
+    const header = document.querySelector<HTMLButtonElement>('.hud-minimap .ui-section__header');
     if (header === null) return false;
     header.click();
     return true;
@@ -300,6 +317,64 @@ window.lockstateUiHarness = {
   transportDisabled(): boolean {
     const buttons = [...document.querySelectorAll<HTMLButtonElement>('.hud-strip__transport button')];
     return buttons.length > 0 && buttons.every((button) => button.disabled);
+  },
+
+  buildProbe(): BuildProbe {
+    const panel = document.querySelector<HTMLElement>('.hud-build');
+    const rows = [...document.querySelectorAll<HTMLElement>('.hud-build__list [data-buildable]')];
+    const inputs = [...document.querySelectorAll<HTMLInputElement>('.hud-build__coords .ui-number__input')];
+    const edgeChooser = document.querySelector<HTMLElement>('.hud-build .ui-choice');
+    const submit = document.querySelector<HTMLButtonElement>('.hud-build .ui-action');
+
+    return {
+      // `hidden` is inherited through the DOM, so `offsetParent` is what the
+      // browser actually decided -- not what the attribute claims.
+      visible: panel !== null && panel.offsetParent !== null,
+      options: rows.map((row) => row.dataset['buildable'] ?? ''),
+      selected: rows.find((row) => row.dataset['selected'] === 'true')?.dataset['buildable'] ?? null,
+      tileX: inputs[0]?.value ?? '',
+      tileY: inputs[1]?.value ?? '',
+      edge:
+        document.querySelector<HTMLElement>('.hud-build .ui-choice__option[data-active="true"]')?.dataset['choice'] ??
+        null,
+      edgeChooserVisible: edgeChooser !== null && edgeChooser.offsetParent !== null,
+      submitDisabled: submit?.disabled ?? true,
+      texts: [...(panel?.querySelectorAll<HTMLElement>('button, label, span, h2') ?? [])]
+        .map((node) => (node.textContent ?? '').trim())
+        .filter((text) => text.length > 0),
+    };
+  },
+
+  clickBuildable(definitionId: string): boolean {
+    const row = document.querySelector<HTMLButtonElement>(`.hud-build__list [data-buildable="${definitionId}"]`);
+    if (row === null) return false;
+    row.click();
+    return true;
+  },
+
+  stepBuildCoordinate(axis: 'x' | 'y', direction: 'up' | 'down'): boolean {
+    const field = document.querySelectorAll<HTMLElement>('.hud-build__coords .ui-number')[axis === 'x' ? 0 : 1];
+    if (field === undefined) return false;
+    const steps = field.querySelectorAll<HTMLButtonElement>('.ui-number__step');
+    const button = direction === 'down' ? steps[0] : steps[1];
+    if (button === undefined) return false;
+    button.click();
+    return true;
+  },
+
+  clickBuildEdge(edge: string): boolean {
+    const option = document.querySelector<HTMLButtonElement>(`.hud-build .ui-choice__option[data-choice="${edge}"]`);
+    if (option === null) return false;
+    option.click();
+    return true;
+  },
+
+  clickPlaceOrder(): boolean {
+    const submit = document.querySelector<HTMLButtonElement>('.hud-build .ui-action');
+    if (submit === null) return false;
+    // A real click, so a disabled button genuinely does not fire.
+    submit.click();
+    return true;
   },
 
   takeUnhandledRejections(): readonly string[] {

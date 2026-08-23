@@ -6,6 +6,7 @@
  * translated text travelling back out -- and reports player actions as
  * `HudIntent`s for the host to act on.
  */
+export * from './build-panel';
 export * from './hud';
 export * from './hud-state';
 export * from './messages';

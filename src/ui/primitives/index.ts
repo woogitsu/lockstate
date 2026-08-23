@@ -8,9 +8,12 @@
  * job, which is what keeps the primitives reusable for any panel and keeps
  * translated text out of anything that could become a source of truth.
  */
+export * from './action-button';
 export * from './async-action';
+export * from './choice-group';
 export * from './collapsible-section';
 export * from './dom';
+export * from './number-field';
 export * from './icon';
 export * from './icon-button';
 export * from './list-row';

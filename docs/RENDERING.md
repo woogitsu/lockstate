@@ -151,8 +151,13 @@ the feed drop polling entirely without the renderer changing at all.
   decision. Nothing loads them. Ground, walls and objects are drawn as shaded
   geometry from the appearance tables in `src/rendering/world/appearance.ts`.
 
-- **Wall geometry from construction.** `ConstructionSystem.finalizeConstruction`
-  bumps a chunk's geometry revision without writing the world's `topEdge` /
-  `leftEdge` layers, so a completed wall order is drawn from the order itself.
-  The renderer draws both sources; when construction starts writing edges, the
-  picture stays correct.
+- **Objects have no placement model.** Issue #74 made
+  `ConstructionSystem.finalizeConstruction` write the world's `topEdge` /
+  `leftEdge` layers, so a completed **wall** order is now real geometry and the
+  renderer draws it from the world like any other edge — the order-derived
+  structure it also draws simply agrees. A completed order for anything that is
+  *not* edge geometry (the wooden door, and every future object) still only
+  bumps the chunk's geometry revision: nothing in the simulation records which
+  objects stand on which tile (`docs/HUD_PROJECTIONS.md`, gap 13), so those are
+  still drawn from the build order itself and vanish if the order is ever
+  cleaned out of the construction snapshot.

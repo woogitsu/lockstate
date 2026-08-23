@@ -12,6 +12,7 @@ import { type CollapsibleSection, createCollapsibleSection } from '../primitives
 import { type ListRow, createListRow } from '../primitives/list-row';
 import { type Panel, createPanel } from '../primitives/panel';
 import { type TabButton, createTabButton } from '../primitives/tab-button';
+import { type BuildPanel, createBuildPanel } from './build-panel';
 import {
   HUD_PANEL_IDS,
   type HudPanelId,
@@ -27,6 +28,8 @@ import { nextFastForwardSpeed, severityLabelKey, severityTone } from './projecti
 import { type TransportIntentKind, createStatusStrip } from './status-strip';
 import {
   EMPTY_HUD_VIEW_MODEL,
+  type HudBuildEdge,
+  type HudBuildViewModel,
   type HudClockMode,
   type HudLocalizer,
   type HudSpeed,
@@ -66,13 +69,35 @@ export const HUD_TABS: readonly HudTabDefinition[] = [
 export type HudIntent =
   | { readonly kind: 'select-tab'; readonly tab: HudTabId }
   | { readonly kind: 'set-clock'; readonly mode: HudClockMode; readonly speed: HudSpeed }
-  | { readonly kind: 'toggle-panel'; readonly panel: HudPanelId; readonly collapsed: boolean };
+  | { readonly kind: 'toggle-panel'; readonly panel: HudPanelId; readonly collapsed: boolean }
+  /**
+   * The player asked for something to be built. Ids and numbers only -- the
+   * host turns this into a `PlaceBuildOrder` command; the HUD does not know
+   * that such a command exists.
+   */
+  | {
+      readonly kind: 'place-build-order';
+      readonly definitionId: string;
+      readonly x: number;
+      readonly y: number;
+      readonly edge: HudBuildEdge;
+    };
 
 export interface MountHudOptions {
   readonly localizer: HudLocalizer;
   /** First paint. Defaults to an empty prison so the shell renders before any snapshot arrives. */
   readonly viewModel?: HudViewModel;
   readonly initialState?: HudShellState;
+  /**
+   * What the Build panel may offer.
+   *
+   * Omitted, the panel still renders and says there is nothing to build,
+   * which is the honest picture of a host that has published no catalog. It
+   * is deliberately not part of `HudViewModel`: the buildable catalog is
+   * content, and rebuilding the panel on every snapshot would take focus off
+   * a coordinate field mid-edit.
+   */
+  readonly build?: HudBuildViewModel;
   /**
    * Receives every player action, and may be async.
    *
@@ -191,6 +216,20 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
 
   const corner = element('div', { className: 'hud__corner', children: [minimapPanel.element] });
 
+  // ---- bottom-right build panel ------------------------------------
+  // Placing an order is a *command*: it asks the host to change the
+  // simulation, so it goes through the same gate as the transport controls
+  // and a rejection is reported rather than dropped. Nothing changes locally
+  // -- the wall appears when a snapshot says it was built.
+  const buildPanel: BuildPanel = createBuildPanel({
+    localizer,
+    model: options.build ?? { buildables: [], origin: { x: 0, y: 0 } },
+    onPlace: (intent) => {
+      dispatchCommand({ kind: 'place-build-order', ...intent });
+    },
+  });
+  const side = element('div', { className: 'hud__side', children: [buildPanel.element] });
+
   // ---- bottom-centre tab bar ---------------------------------------
   const tabs: TabButton[] = HUD_TABS.map((definition) =>
     createTabButton({
@@ -213,7 +252,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
 
   const hud = element('div', {
     className: 'hud',
-    children: [strip.element, corner, tabBar],
+    children: [strip.element, corner, side, tabBar],
   });
 
   // Only the controls that issue a *command* are disabled while one is in
@@ -221,6 +260,10 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   // disagree about whether the clock is being changed. Chrome controls are
   // deliberately absent: see `dispatchShell`.
   for (const control of strip.controls) busy.add(control);
+  // The Build panel's controls join the same group: its "Place order" is a
+  // command too, so a second tap while one is in flight must not queue a
+  // duplicate build order.
+  for (const control of buildPanel.controls) busy.add(control);
 
   // ---- state application -------------------------------------------
   function applyState(next: HudShellState): void {
@@ -232,6 +275,9 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   function paintState(): void {
     hud.dataset['activeTab'] = state.activeTab;
     for (const tab of tabs) tab.setActive(tab.id === state.activeTab);
+    // Hidden, not merely unstyled: a panel that is off-screen but still in the
+    // tab order is a control a keyboard can reach and a player cannot see.
+    buildPanel.setVisible(state.activeTab === 'build');
     for (const panel of HUD_PANEL_IDS) {
       const collapsed = isPanelCollapsed(state, panel);
       if (panel === 'minimap') minimapPanel.setCollapsed(collapsed);

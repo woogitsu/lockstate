@@ -16,6 +16,33 @@ Terrain definitions are data-driven records with stable string IDs, packed numer
 - Terrain mutations advance the chunk's `contentRevision` and mark the chunk `dirty`.
 - Serialization uses deterministic Run-Length Encoding (RLE) tuples `[numericId, count]` to minimize snapshot size for uniform regions.
 
+## Wall geometry lives on tile edges
+
+A wall is not a tile. Each loaded chunk carries two more packed
+`Uint8Array(chunkSize * chunkSize)` layers beside terrain — `topEdge` and
+`leftEdge` — where a non-zero value means "a wall segment runs along this
+tile's north (respectively west) boundary". Only two of the four edges are
+stored per tile, because the other two already have a home: the south edge of
+`(x, y)` *is* the north edge of `(x, y + 1)`, and the east edge of `(x, y)`
+*is* the west edge of `(x + 1, y)`. One edge, one slot, so a wall can never be
+recorded twice or half-erased.
+
+`setTopEdge` / `setLeftEdge` advance the chunk's **`geometryRevision`** (not
+`contentRevision`), which is the signal `TopologyManager` watches to recompute
+enclosure. The flood fill crosses any zero edge and stops at any non-zero one,
+and the renderer draws an edge wall wherever the value is non-zero; nothing
+else reads the value today, so `1` currently means "a wall segment" rather
+than a material id.
+
+Writing those layers is `ConstructionSystem`'s job, and only on an order that
+completes. A `BuildOrder` therefore carries an optional `edge` (`'north'` or
+`'west'`, defaulting to `'north'` — see
+`src/simulation/construction/build-order.ts`), and `PlaceBuildOrder` carries
+the same field. The field is optional so a session snapshot written before it
+existed still restores without a schema bump: no such save can disagree with
+the default, because before that change completing an order wrote no geometry
+at all.
+
 ## Parcels and land ownership
 
 Parcels are gameplay/economy ownership regions that are decoupled from chunk boundaries:

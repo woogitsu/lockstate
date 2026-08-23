@@ -238,6 +238,20 @@ decision about what to build next.
 
 ### Construction
 
+32a. **Nothing stocks a new session's construction container.**
+    `createNewSimulationRuntime` wires `ConstructionSystem` to a
+    `ContainerMaterialsProvider` over the well-known
+    `construction-materials` container and then leaves that container
+    **empty**, following the runtime's "no fabricated default content"
+    convention. Nothing else deposits into it either — no starter stock, no
+    delivery job, no scenario. So in the running app every build order
+    reaches `materials-pending` and stays there: the ghost appears, and the
+    wall never does. Tests and fixtures deposit directly
+    (`tests/determinism/snapshot-restore-fidelity.test.ts`,
+    `tests/perf/fixtures/prison-fixture.ts`), which is why this has never
+    shown up as a failure. Whether a fresh prison starts with materials, or
+    earns them, is a session/economy decision, not a construction one.
+
 32. **Build costs are material quantities, and that part is real**:
     `BuildableDefinition.materialsRequired` is `{itemId, quantity}` and
     `ContainerMaterialsProvider` genuinely consumes them from a
@@ -248,6 +262,15 @@ decision about what to build next.
     `assignedWorkerId` is `'mock-worker-1'` and progress advances a fixed
     `+10` per scheduled tick regardless of workers. No construction
     projection was written for this reason.
+
+    Issue #74 added a Build **panel** without closing this. The panel is
+    handed its option list as view-model data — `{definitionId, labelKey,
+    occupiesEdge}` — and the id→key mapping lives at the composition root
+    (`src/main.ts`) against HUD-namespaced keys, because the registry has no
+    `nameKey` to pass through. The registry's own English `name` is never
+    read. When a buildable gains a real content key the mapping goes away and
+    nothing else changes. There is still **no projection of order state**:
+    the panel submits orders and cannot show what happened to them.
 
 ### Cross-cutting
 

@@ -15,7 +15,19 @@ import { EMPTY_RENDER_FRAME, type RenderFeed } from './rendering/feed/render-fee
 import { SimulationSnapshotFeed } from './rendering/feed/simulation-snapshot-feed';
 import { WorldScene } from './rendering/scene/world-scene';
 import { SavePanel } from './ui/save-panel';
-import { mountHud, type HudIntent } from './ui/hud';
+import {
+  EMPTY_HUD_VIEW_MODEL,
+  HUD_MESSAGE_KEY,
+  mountHud,
+  type HudBuildViewModel,
+  type HudBuildableViewModel,
+  type HudHandle,
+  type HudIntent,
+  type HudViewModel,
+} from './ui/hud';
+import { SimulationCommandSender } from './ui/simulation-commands';
+import { BUILDABLE_REGISTRY } from './simulation/construction';
+import type { LocalizationKey } from './content/localization';
 import { defaultLocaleEnCatalog } from './content/default-locale-en';
 import { messageCatalogFromLocalizationCatalog } from './services/localization/catalog';
 import { Localizer } from './services/localization/localizer';
@@ -130,27 +142,110 @@ if (isDemoActorsRequested(window.location.search)) {
  * feed supplies a real view model it paints its empty-prison default, which is
  * the honest picture of a session with nothing in it.
  */
-function mountInterface(app: HTMLElement): void {
+/**
+ * Player-facing labels for the two entries in `BUILDABLE_REGISTRY`.
+ *
+ * The registry carries a hard-coded English `name` and no `nameKey`, which
+ * bypasses ADR 0011 and is recorded as a content gap in issue #74 and
+ * `docs/HUD_PROJECTIONS.md` (gap 32). Until it gains a real content key, the
+ * mapping lives here at the composition root -- the one layer that already
+ * knows both the simulation's ids and the HUD's keys. The registry's own
+ * `name` is deliberately never read: translated text may not come out of
+ * `src/simulation/`.
+ */
+const BUILDABLE_LABEL_KEY: Readonly<Record<string, LocalizationKey>> = {
+  'wall-brick': HUD_MESSAGE_KEY.buildableWallBrick,
+  'door-wooden': HUD_MESSAGE_KEY.buildableDoorWooden,
+};
+
+/**
+ * What the Build panel may offer, projected from the buildable registry.
+ *
+ * Sorted by id rather than taken in `Map` insertion order: this is a list a
+ * player reads and taps, and an order that depended on module evaluation
+ * would be an order nobody chose (`docs/DETERMINISM.md`). An id with no
+ * authored label is omitted rather than rendered as a raw identifier.
+ */
+function buildCatalogue(): HudBuildViewModel {
+  const buildables: HudBuildableViewModel[] = [];
+  for (const definition of [...BUILDABLE_REGISTRY.values()].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))) {
+    const labelKey = BUILDABLE_LABEL_KEY[definition.id];
+    if (labelKey === undefined) continue;
+    buildables.push({
+      definitionId: definition.id,
+      labelKey,
+      occupiesEdge: definition.category === 'wall',
+    });
+  }
+
+  // A new session owns exactly chunk (0,0) of a 32-tile world, so the middle
+  // of owned land is the least surprising place for the fields to start.
+  return { buildables, origin: { x: 16, y: 16 } };
+}
+
+function mountInterface(app: HTMLElement, client: SimulationClient): void {
   const localizer = new Localizer({
     locale: 'en',
     catalogs: [messageCatalogFromLocalizationCatalog('en', defaultLocaleEnCatalog)],
   });
 
-  mountHud(app, {
-    localizer,
-    onIntent: (intent: HudIntent) => {
-      // `select-tab` and `toggle-panel` are chrome: the HUD has already
-      // applied them locally and there is nothing for a host to do.
-      if (intent.kind !== 'set-clock') return;
+  const commands = new SimulationCommandSender(client);
 
-      // `set-clock` is a command, and there is no one to send it to yet:
-      // `FixedStepClock` exposes no accessor for its `ClockControl`, so the
-      // main thread cannot reach the worker's clock (recorded in
-      // docs/HUD_PROJECTIONS.md). Rejecting surfaces that on the transport
-      // controls through the HUD's own error path. Silently returning would
-      // be worse -- a pause button that reports success and does nothing is
-      // a lie the player has no way to detect.
-      throw new Error('Simulation transport control is not wired to the worker yet.');
+  let hud: HudHandle | undefined;
+  let viewModel: HudViewModel = EMPTY_HUD_VIEW_MODEL;
+
+  /**
+   * Repaints the clock from what the worker last said, and from nothing else.
+   *
+   * Only `mode` and `speed` move. Day and minute-of-day stay at their
+   * defaults because no simulation mapping from ticks to a wall clock exists
+   * (`docs/HUD_PROJECTIONS.md`, gap 5) -- inventing one here would put a
+   * number on screen that no system produces.
+   */
+  const applyClock = (mode: 'paused' | 'running', speed: 1 | 2 | 4): void => {
+    viewModel = { ...viewModel, clock: { ...viewModel.clock, mode, speed } };
+    hud?.update(viewModel);
+  };
+
+  client.addListener((message) => {
+    if (message.kind === 'simulation/ready' || message.kind === 'simulation/clock-state') {
+      const { clock } = message.payload;
+      applyClock(clock.mode, clock.mode === 'running' ? clock.speed : viewModel.clock.speed);
+    }
+  });
+
+  hud = mountHud(app, {
+    localizer,
+    build: buildCatalogue(),
+    onIntent: (intent: HudIntent) => {
+      switch (intent.kind) {
+        // Chrome: the HUD has already applied it locally and there is nothing
+        // for a host to do.
+        case 'select-tab':
+        case 'toggle-panel':
+          return;
+
+        case 'set-clock':
+          // Throwing when there is no session surfaces on the transport
+          // control through the HUD's own error path. Silently returning
+          // would be worse -- a pause button that reports success and does
+          // nothing is a lie the player has no way to detect.
+          commands.setClock(intent.mode === 'paused' ? { mode: 'paused' } : { mode: 'running', speed: intent.speed });
+          return;
+
+        case 'place-build-order':
+          commands.submit({
+            type: 'PlaceBuildOrder',
+            // A fresh id per order: the kernel refuses a duplicate, and a
+            // stable one would make the second wall a no-op.
+            orderId: `order-${crypto.randomUUID()}`,
+            definitionId: intent.definitionId,
+            x: intent.x,
+            y: intent.y,
+            edge: intent.edge,
+          });
+          return;
+      }
     },
     onError: (failure) => console.warn('HUD action failed', failure),
   });
@@ -160,7 +255,7 @@ async function bootPersistence(client: SimulationClient): Promise<void> {
   const app = document.getElementById('app');
   if (app === null) return;
 
-  mountInterface(app);
+  mountInterface(app, client);
 
   let controller: SessionController;
   let panel: SavePanel;

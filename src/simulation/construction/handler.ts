@@ -13,6 +13,10 @@ export function createConstructionCommandHandler(
 
     switch (simCommand.type) {
       case 'PlaceBuildOrder': {
+        // `edge` is passed straight through, including when it is absent: an
+        // order that carries no edge resolves to `DEFAULT_BUILD_EDGE` at the
+        // point of use, so the command, the order and the world all agree
+        // without this layer inventing a value.
         const order = createBuildOrder(
           simCommand.orderId,
           simCommand.definitionId,
@@ -20,6 +24,7 @@ export function createConstructionCommandHandler(
             x: tileCoordinate(simCommand.x),
             y: tileCoordinate(simCommand.y),
           },
+          simCommand.edge,
         );
         constructionSystem.submitOrder(order);
         constructionSystem.registerTransactionOrder(order.id, simCommand.transactionId);

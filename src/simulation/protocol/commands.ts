@@ -1,13 +1,30 @@
 import { z } from 'zod';
 import type { JsonValue } from '../../shared/json';
+import { BUILD_EDGES } from '../construction/build-order';
 import type { VersionedPayload } from './types';
 
+/**
+ * `edge` is optional, and stays optional.
+ *
+ * Two reasons, and both are about not breaking something already written
+ * down. A pending `PlaceBuildOrder` is part of the kernel's command queue,
+ * which a session snapshot carries verbatim -- so a save taken before this
+ * field existed can hold a queued command without it, and a required field
+ * would make that save unrestorable. And the field is read through
+ * `resolveBuildEdge`, whose default is documented on `DEFAULT_BUILD_EDGE`.
+ *
+ * Optional is not lax: `z.enum` rejects any value that is not one of the two
+ * canonical edges, so a malformed orientation fails
+ * `simulationCommandSchema` and `unpackCommand` returns `null` rather than
+ * letting a nonsense string reach the construction system.
+ */
 export const placeBuildOrderSchema = z.object({
   type: z.literal('PlaceBuildOrder'),
   orderId: z.string(),
   definitionId: z.string(),
   x: z.number().int(),
   y: z.number().int(),
+  edge: z.enum(BUILD_EDGES).optional(),
   transactionId: z.string().optional(),
 }).strict();
 
@@ -53,6 +70,7 @@ function commandJson(command: SimulationCommand): JsonValue {
         definitionId: command.definitionId,
         x: command.x,
         y: command.y,
+        ...(command.edge === undefined ? {} : { edge: command.edge }),
         ...(command.transactionId === undefined
           ? {}
           : { transactionId: command.transactionId }),
