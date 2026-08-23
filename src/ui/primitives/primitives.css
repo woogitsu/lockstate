@@ -1,0 +1,341 @@
+/*
+ * Styling for the UI primitive vocabulary.
+ *
+ * Every colour, length, radius and type token here is a *semantic* alias
+ * from `src/ui/tokens.css`. No raw ramp values, no literal colours -- see
+ * that file's header for why, and `tests/unit/ui-design-tokens.test.ts` for
+ * the check that keeps it true.
+ */
+
+/* ------------------------------------------------------------------ */
+/* Shared atoms                                                        */
+/* ------------------------------------------------------------------ */
+
+.ui-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-size-value);
+  /* Tabular figures are the whole point: without them a ticking counter
+     changes width and the strip twitches. */
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+  color: var(--text-heading);
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.ui-eyebrow {
+  font-family: var(--font-ui);
+  font-size: var(--text-size-label);
+  font-weight: 500;
+  letter-spacing: var(--label-tracking);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.ui-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.ui-icon {
+  display: block;
+  flex: none;
+  stroke-width: var(--icon-stroke);
+  color: inherit;
+}
+
+.ui-icon--sm { width: var(--icon-size-sm); height: var(--icon-size-sm); }
+.ui-icon--md { width: var(--icon-size-md); height: var(--icon-size-md); }
+.ui-icon--lg { width: var(--icon-size-lg); height: var(--icon-size-lg); }
+
+/* One focus treatment for the whole UI. Keyboard only -- a pointer tap must
+   not leave a ring behind. */
+.ui-icon-button:focus-visible,
+.ui-tab:focus-visible,
+.ui-row--interactive:focus-visible,
+.ui-section__header:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Status badge                                                        */
+/* ------------------------------------------------------------------ */
+
+.ui-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0 var(--space-2);
+  height: var(--space-5);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-ui);
+  font-size: var(--text-size-label);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  background: var(--badge-neutral-bg);
+  color: var(--badge-neutral-fg);
+}
+
+.ui-badge[data-tone='success'] { background: var(--badge-success-bg); color: var(--badge-success-fg); }
+.ui-badge[data-tone='warning'] { background: var(--badge-warning-bg); color: var(--badge-warning-fg); }
+.ui-badge[data-tone='danger']  { background: var(--badge-danger-bg);  color: var(--badge-danger-fg); }
+.ui-badge[data-tone='info']    { background: var(--badge-info-bg);    color: var(--badge-info-fg); }
+
+/* ------------------------------------------------------------------ */
+/* Segmented bar                                                       */
+/* ------------------------------------------------------------------ */
+
+.ui-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.ui-bar__segment {
+  display: block;
+  width: var(--space-1);
+  height: var(--space-3);
+  background: var(--border);
+}
+
+.ui-bar__segment[data-filled='true'] { background: var(--accent); }
+.ui-bar[data-tone='success'] .ui-bar__segment[data-filled='true'] { background: var(--status-success); }
+.ui-bar[data-tone='warning'] .ui-bar__segment[data-filled='true'] { background: var(--status-warning); }
+.ui-bar[data-tone='danger']  .ui-bar__segment[data-filled='true'] { background: var(--status-danger); }
+
+/* ------------------------------------------------------------------ */
+/* Stat chip                                                           */
+/* ------------------------------------------------------------------ */
+
+.ui-stat {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-1);
+  color: var(--text-subtle);
+}
+
+.ui-stat__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ui-stat[data-tone='success'] { color: var(--status-success); }
+.ui-stat[data-tone='warning'] { color: var(--status-warning); }
+.ui-stat[data-tone='danger']  { color: var(--status-danger); }
+.ui-stat[data-tone='info']    { color: var(--status-info); }
+
+.ui-stat[data-tone='danger'] .ui-stat__value { color: var(--status-danger); }
+.ui-stat[data-tone='warning'] .ui-stat__value { color: var(--status-warning); }
+
+/* ------------------------------------------------------------------ */
+/* List row                                                            */
+/* ------------------------------------------------------------------ */
+
+.ui-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: var(--space-6);
+  padding: var(--space-2);
+  box-sizing: border-box;
+  border-bottom: var(--hairline) solid var(--border-hairline);
+  color: var(--text-body);
+  font-family: var(--font-ui);
+  font-size: var(--text-size-body);
+  text-align: left;
+}
+
+.ui-row:last-child { border-bottom: 0; }
+
+.ui-row__label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-row--interactive {
+  background: transparent;
+  border-top: 0;
+  border-right: 0;
+  border-left: 0;
+  min-height: var(--tap-target);
+  cursor: pointer;
+}
+
+.ui-row--interactive:hover { background: var(--surface-overlay); }
+.ui-row--interactive:active { background: var(--surface-active); }
+
+/* ------------------------------------------------------------------ */
+/* Icon button                                                         */
+/* ------------------------------------------------------------------ */
+
+.ui-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Every control is tap-reachable, whatever the glyph inside measures. */
+  min-width: var(--tap-target);
+  min-height: var(--tap-target);
+  padding: 0;
+  background: transparent;
+  border: var(--hairline) solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-subtle);
+  cursor: pointer;
+}
+
+.ui-icon-button--bordered {
+  border-color: var(--border);
+  background: var(--surface-raised);
+}
+
+.ui-icon-button:hover { color: var(--text-heading); background: var(--surface-overlay); }
+.ui-icon-button:active { background: var(--surface-active); }
+
+.ui-icon-button[aria-pressed='true'] {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: var(--accent-deep);
+}
+
+.ui-icon-button:disabled {
+  color: var(--text-muted);
+  background: transparent;
+  cursor: default;
+}
+
+/* ------------------------------------------------------------------ */
+/* Tab button                                                          */
+/* ------------------------------------------------------------------ */
+
+.ui-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  min-width: 72px;
+  min-height: var(--tap-target);
+  padding: var(--space-2) var(--space-3);
+  background: transparent;
+  border: 0;
+  /* The active rule lives on the top edge; a transparent one at rest keeps
+     the label from shifting by a pixel when a tab is selected. */
+  border-top: 2px solid transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.ui-tab__label {
+  font-family: var(--font-ui);
+  font-size: var(--text-size-label);
+  font-weight: 500;
+  letter-spacing: var(--label-tracking);
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.ui-tab:hover { color: var(--text-body); background: var(--surface-overlay); }
+
+.ui-tab[data-active='true'] {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-top-color: var(--accent);
+}
+
+.ui-tab:disabled { color: var(--text-muted); cursor: default; }
+
+/* ------------------------------------------------------------------ */
+/* Panel                                                               */
+/* ------------------------------------------------------------------ */
+
+.ui-panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-raised);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-md);
+  /* Separation is the hairline and the background step. No shadow. */
+  overflow: hidden;
+}
+
+.ui-panel__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-1) 0 var(--space-3);
+  /* Tall enough that the collapse control inside it is a real tap target;
+     a 24px chevron is not hittable on a touch screen. */
+  min-height: var(--tap-target);
+  border-bottom: var(--hairline) solid var(--border-hairline);
+  color: var(--text-subtle);
+}
+
+.ui-panel[data-collapsed='true'] .ui-panel__header { border-bottom-color: transparent; }
+
+.ui-panel__title {
+  flex: 1;
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--text-size-label);
+  font-weight: 500;
+  letter-spacing: var(--label-tracking);
+  text-transform: uppercase;
+  color: var(--text-subtle);
+}
+
+.ui-panel__toggle .ui-icon { transition: transform 120ms linear; }
+.ui-panel[data-collapsed='true'] .ui-panel__toggle .ui-icon { transform: rotate(-90deg); }
+
+.ui-panel__body { padding: var(--space-2); }
+
+/* ------------------------------------------------------------------ */
+/* Collapsible section                                                 */
+/* ------------------------------------------------------------------ */
+
+.ui-section { border-top: var(--hairline) solid var(--border-hairline); }
+.ui-section:first-child { border-top: 0; }
+
+.ui-section__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: var(--tap-target);
+  padding: 0 var(--space-2);
+  box-sizing: border-box;
+  background: transparent;
+  border: 0;
+  color: var(--text-muted);
+  text-align: left;
+  cursor: pointer;
+}
+
+.ui-section__header:hover { color: var(--text-subtle); }
+.ui-section__eyebrow { flex: 1; color: inherit; }
+.ui-section__chevron { transition: transform 120ms linear; }
+.ui-section[data-collapsed='true'] .ui-section__chevron { transform: rotate(-90deg); }
+.ui-section__body { padding: 0 var(--space-1) var(--space-2); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-section__chevron,
+  .ui-panel__toggle .ui-icon {
+    transition: none;
+  }
+}
