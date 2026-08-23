@@ -30,6 +30,36 @@ export function intakeStageFromIndex(index: number): IntakeStage {
 }
 
 /**
+ * The subset of the typed-array surface these components need: write one
+ * slot, or fill every slot. Every `Uint8Array`/`Uint32Array`/`Int32Array`/
+ * `Int16Array` below satisfies it structurally.
+ */
+interface SlotArray {
+  fill(value: number): unknown;
+  [index: number]: number;
+}
+
+/** One component array paired with the value a slot holds while it is unoccupied. */
+type SlotDefault = readonly [target: SlotArray, initial: number];
+
+/**
+ * A component states each of its defaults exactly once, in a `SlotDefault`
+ * list, and drives *both* its initial allocation and its per-slot `reset`
+ * from that one list. The alternative -- a `.fill()` in the constructor and
+ * a separate hand-written `reset` body -- is what produced #111: an array
+ * initialised in one place and forgotten in the other is silently correct
+ * until an index is recycled. `tests/unit/prisoner-slot-recycling.test.ts`
+ * fails if an array is added to a component and not to its list.
+ */
+function fillEverySlot(defaults: readonly SlotDefault[]): void {
+  for (const [target, initial] of defaults) target.fill(initial);
+}
+
+function resetOneSlot(defaults: readonly SlotDefault[], index: number): void {
+  for (const [target, initial] of defaults) target[index] = initial;
+}
+
+/**
  * Hot, frequently-queried per-prisoner fields as flat typed arrays (ADR
  * 0005: "separate hot typed-array component data from cold/rare
  * metadata"). Everything here is small, fixed-width and numeric.
@@ -43,13 +73,40 @@ export class PrisonerRecordComponent {
   public readonly classificationGroupIndex: Uint8Array;
   public readonly intakeStage: Uint8Array;
 
+  private readonly slotDefaults: readonly SlotDefault[];
+
   public constructor(public readonly capacity: number) {
     this.sentenceLengthTicks = new Uint32Array(capacity);
     this.priorIncidentsAtIntake = new Uint8Array(capacity);
     this.sentenceEndTick = new Uint32Array(capacity);
     this.riskTier = new Uint8Array(capacity);
     this.classificationGroupIndex = new Uint8Array(capacity);
-    this.intakeStage = new Uint8Array(capacity).fill(intakeStageIndex('queued'));
+    this.intakeStage = new Uint8Array(capacity);
+    this.slotDefaults = [
+      // Overwritten by `submitIntake` from the admission input.
+      [this.sentenceLengthTicks, 0],
+      [this.priorIncidentsAtIntake, 0],
+      // Computed at the 'classification' stage, ~15 ticks after admission.
+      // Until then the HUD projection emits this end tick unconditionally, so
+      // 0 ("no sentence end computed yet") is what a fresh slot has always
+      // shown and a recycled one now shows too.
+      [this.sentenceEndTick, 0],
+      // `RiskTier` 0 is 'minimal' -- the least-alarming tier, and the one a
+      // never-occupied slot already reads as. Also recomputed at
+      // classification, and gated behind `classified` in the projection.
+      [this.riskTier, 0],
+      // CLASSIFICATION_GROUP_IDS[0] === 'general-population'. Recomputed at
+      // classification and likewise projection-gated.
+      [this.classificationGroupIndex, 0],
+      // The stage every admission starts at; `submitIntake` writes it too.
+      [this.intakeStage, intakeStageIndex('queued')],
+    ];
+    fillEverySlot(this.slotDefaults);
+  }
+
+  /** Restores one slot to the values a never-occupied slot holds. Called when an index is allocated, so a recycled index cannot inherit its previous occupant's record. */
+  public reset(index: number): void {
+    resetOneSlot(this.slotDefaults, index);
   }
 
   public getRiskTier(index: number): RiskTier {
@@ -88,9 +145,33 @@ export class PositionComponent {
   public readonly tileX: Int32Array;
   public readonly tileY: Int32Array;
 
+  private readonly slotDefaults: readonly SlotDefault[];
+
   public constructor(public readonly capacity: number) {
     this.tileX = new Int32Array(capacity);
     this.tileY = new Int32Array(capacity);
+    // Tile 0,0 is a valid tile, not a sentinel; it is simply what a
+    // never-occupied slot reads as, and every caller of `reset` writes a real
+    // origin immediately afterwards.
+    this.slotDefaults = [
+      [this.tileX, 0],
+      [this.tileY, 0],
+    ];
+    fillEverySlot(this.slotDefaults);
+  }
+
+  /**
+   * Restores one slot to the values a never-occupied slot holds.
+   *
+   * Not independently observable today: `admitPrisoner` overwrites both of
+   * this component's arrays with the origin tile straight after calling
+   * this, so removing the call would change nothing. It is here so that a
+   * third field added to this component is reset by construction rather than
+   * by remembering to extend the admission path -- which is the failure that
+   * left thirteen arrays uninitialised in the first place.
+   */
+  public reset(index: number): void {
+    resetOneSlot(this.slotDefaults, index);
   }
 
   public getSnapshot() {
@@ -117,11 +198,37 @@ export class CurrentActionComponent {
   public readonly phaseStartedAtTick: Uint32Array;
   public readonly needFulfilledLastTick: Uint32Array;
 
+  private readonly slotDefaults: readonly SlotDefault[];
+
   public constructor(public readonly capacity: number) {
-    this.actionIndex = new Int16Array(capacity).fill(-1);
+    this.actionIndex = new Int16Array(capacity);
     this.phase = new Uint8Array(capacity);
     this.phaseStartedAtTick = new Uint32Array(capacity);
     this.needFulfilledLastTick = new Uint32Array(capacity);
+    this.slotDefaults = [
+      // -1 is this component's documented "no action selected" sentinel; a
+      // non-negative value indexes DEFAULT_ACTIONS.
+      [this.actionIndex, -1],
+      // ACTION_PHASES[0] === 'idle', the phase that pairs with "no action
+      // selected": 'travelling' and 'performing' both describe progress
+      // through an action this slot does not have.
+      [this.phase, 0],
+      // Both tick stamps are 0 in a never-occupied slot. `phaseStartedAtTick`
+      // is the one that is read rather than only projected -- `ActionSystem`
+      // compares `tick - phaseStartedAtTick` against the current action's
+      // minimum duration -- so a value left by a previous occupant would
+      // change behaviour and not only display.
+      [this.phaseStartedAtTick, 0],
+      // Written and projected to the HUD, never compared: 0 reads as "no
+      // need fulfilled yet", which is true of a new arrival.
+      [this.needFulfilledLastTick, 0],
+    ];
+    fillEverySlot(this.slotDefaults);
+  }
+
+  /** Restores one slot to the values a never-occupied slot holds. Called when an index is allocated, so a recycled index cannot inherit its previous occupant's action plan. */
+  public reset(index: number): void {
+    resetOneSlot(this.slotDefaults, index);
   }
 
   public getSnapshot() {

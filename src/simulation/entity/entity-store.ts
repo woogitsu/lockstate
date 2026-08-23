@@ -63,6 +63,14 @@ export class EntityStore {
 
   /**
    * Destroys an entity by invalidating its ID.
+   *
+   * Destroying an id that does not name a live entity is a no-op, not an
+   * error: this store reports misuse of an *id* by ignoring it (the guards
+   * below) and reserves exceptions for structural faults it cannot continue
+   * past -- capacity exhaustion in `spawn`, a capacity mismatch in
+   * `loadSnapshot`. `tests/unit/entity.test.ts`'s "prevents double destroy"
+   * has pinned that tolerance since the store was written, and ADR 0005
+   * describes generation mismatches as "safely caught" rather than raised.
    */
   public destroy(id: EntityId): void {
     const index = id & INDEX_MASK;
@@ -72,8 +80,18 @@ export class EntityStore {
       return; // Never spawned
     }
 
+    // Slot liveness is checked *before* the generation, because the id that
+    // needs rejecting most is the one whose generation matches: after a
+    // destroy, `getIdByIndex` on the freed index rebuilds an id carrying the
+    // already-bumped generation, and accepting it would push the index onto
+    // the free list a second time and let two later spawns collide on one
+    // EntityId.
+    if (this.alive[index] !== 1) {
+      return; // Slot is already free
+    }
+
     if (this.generations[index] !== generation) {
-      return; // Already destroyed / generation mismatch
+      return; // Stale id: this slot has since been recycled
     }
 
     // Increment generation, wrapping at 12 bits
@@ -84,7 +102,19 @@ export class EntityStore {
   }
 
   /**
-   * Returns true if the entity ID is currently alive and valid.
+   * Returns true if the entity ID is currently alive and valid, meaning
+   * both of the records the store keeps agree: the slot the id names is
+   * occupied, and the id's generation is the generation that slot is
+   * currently issued under.
+   *
+   * The two ways that can fail are deliberately collapsed into one `false`
+   * rather than distinguished here. A stale id (right index, superseded
+   * generation) and an id naming a freed slot (current generation, but the
+   * index is on the free list) are both "not a live entity", which is the
+   * only question this method's name asks. A caller that does need to tell
+   * them apart already can, without a new method: `isIndexAlive(index)`
+   * answers slot occupancy on its own, and `getGeneration(id)` compared
+   * against `getGeneration(getIdByIndex(index))` answers staleness.
    */
   public isAlive(id: EntityId): boolean {
     const index = id & INDEX_MASK;
@@ -94,7 +124,7 @@ export class EntityStore {
       return false;
     }
     
-    return this.generations[index] === generation;
+    return this.alive[index] === 1 && this.generations[index] === generation;
   }
   
   /**
@@ -120,8 +150,20 @@ export class EntityStore {
   }
   
   /**
-   * Reconstructs an EntityId from an index, using its current generation.
-   * This is used internally during iterations.
+   * Reconstructs an EntityId from an index, using that index's current
+   * generation. Used during index walks such as `EntityQuery.execute()`.
+   *
+   * **Precondition: the index is alive.** This is a pure bit-shuffle and
+   * consults no liveness record, so for a freed index it returns an id that
+   * names a dead slot -- structurally well-formed, but not an entity. It
+   * stays unchecked on purpose: it sits inside the `0..maxActiveIndex` walk
+   * that ADR 0005 justifies precisely by how little it does per index, and no
+   * call site in `src/` is reached without an `isIndexAlive(index)` check --
+   * three have it on the immediately preceding line, and
+   * `projectRosterRow`'s comes from the index walk of its one caller -- so a
+   * check here would only repeat theirs.
+   * `isAlive` and `destroy` both reject the ids this can produce for a dead
+   * slot, so the unchecked reconstruction cannot be laundered into liveness.
    */
   public getIdByIndex(index: number): EntityId {
     const generation = this.generations[index]!;

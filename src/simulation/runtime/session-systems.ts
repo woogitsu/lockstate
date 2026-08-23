@@ -59,15 +59,22 @@ import type { SimulationRuntime } from './new-session';
  * Per-prisoner component state, written across the store's **allocated
  * prefix** (`maxActiveIndex + 1` slots) rather than its full capacity.
  *
- * Why the allocated prefix and not only the live indices: `admitPrisoner`
- * does not reset every component field when a freed index is recycled (it
- * sets position, sentence length, prior incidents and intake stage; needs,
- * risk tier, classification group and action state carry over). A dead slot's
- * residue is therefore *readable state* in a continuous run, so dropping it
- * would make a restored session diverge the moment an index was recycled.
- * Writing the prefix keeps the restore exact while still costing nothing for
- * slots that were never allocated — those hold exactly their component
- * constructor defaults, which `decodePrisonerComponents` reproduces.
+ * Why the allocated prefix and not only the live indices: nothing clears a
+ * component array when an entity is destroyed, so a freed index inside the
+ * prefix keeps whatever its previous occupant left there until it is
+ * recycled. Writing those slots is what makes a restored session's arrays
+ * *identical* to a continuous one's rather than merely equivalent. Slots
+ * *above* the prefix were never allocated and hold exactly their component
+ * constructor defaults, which `decodePrisonerComponents` reproduces, so the
+ * prefix costs nothing for them.
+ *
+ * Until #111 that residue was also future behaviour: `admitPrisoner` reset
+ * five of the eighteen arrays, so recycling a freed index handed the next
+ * prisoner the previous one's needs, classification and action state. It now
+ * resets all eighteen, so a dead slot's contents can no longer become a live
+ * prisoner's starting state. Whether the payload could therefore shrink to
+ * the live indices only is a save-format change and a decision of its own;
+ * writing the prefix is correct either way, and is what this codec does.
  *
  * Why plain arrays and not run-length encoding (which `entities` uses):
  * needs levels, positions and tick stamps differ per prisoner, so RLE would

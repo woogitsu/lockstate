@@ -32,6 +32,19 @@ export class NeedsComponent {
     this.levels = levels as Record<NeedId, Uint8Array>;
   }
 
+  /**
+   * Restores every need for one slot to `NEED_MAX`, the level a
+   * never-occupied slot holds -- a new arrival is fully satisfied and decays
+   * from there, rather than inheriting the previous occupant of the index.
+   * Driven off `NEED_IDS`, so a need added to that list is covered here with
+   * no second edit.
+   */
+  public reset(index: number): void {
+    for (const needId of NEED_IDS) {
+      this.levels[needId][index] = NEED_MAX;
+    }
+  }
+
   public get(index: number, needId: NeedId): number {
     return this.levels[needId][index]!;
   }
