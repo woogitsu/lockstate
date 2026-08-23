@@ -1,8 +1,8 @@
 import type { ParcelRect } from '../../simulation/world/parcel';
-import { createParcelRect, rectContainsTile } from '../../simulation/world/parcel';
-import { tileCoordinate } from '../../simulation/world/coordinates';
+import { createParcelRect } from '../../simulation/world/parcel';
 import type { WorldSnapshotV1 } from '../../simulation/world/sparse-world';
 import { decodeTerrainRle } from '../../simulation/world/sparse-world';
+import { isTileOwnedBy } from '../../simulation/world/tile-ownership';
 import type { TileBounds } from '../tile-metrics';
 
 /**
@@ -141,7 +141,7 @@ export class WorldRenderView {
     out.topEdge = layers?.topEdge?.[index] ?? 0;
     out.leftEdge = layers?.leftEdge?.[index] ?? 0;
     out.zoning = layers?.zoning?.[index] ?? 0;
-    out.owned = this.isTileOwned(tileX, tileY, chunkX, chunkY);
+    out.owned = this.isTileOwnedInChunk(tileX, tileY, key);
   }
 
   public isChunkLoaded(chunkX: number, chunkY: number): boolean {
@@ -149,17 +149,18 @@ export class WorldRenderView {
   }
 
   /**
-   * A tile is owned when it belongs to an owned parcel or to a directly owned
-   * chunk, read from the same snapshot fields the simulation owns rather than
-   * from any renderer state.
+   * A tile is owned when any owned parcel contains it or its chunk is owned
+   * outright, read from the same snapshot fields the simulation owns rather
+   * than from any renderer state.
    *
-   * It is *not* an exact mirror of `SparseWorld.isTileOwned`, and the
-   * difference is visible only where parcels overlap -- which
-   * `registerParcel` permits. The simulation takes the first parcel
-   * containing the tile in ascending-id order and asks whether *that one* is
-   * owned; this asks whether *any* owned parcel contains the tile. A tile
-   * covered by an unowned low-id parcel and an owned high-id one is therefore
-   * unowned to the simulation and owned here.
+   * The rule is not implemented here: it is `isTileOwnedBy`, in
+   * `src/simulation/world`, and `SparseWorld.isTileOwned` calls that same
+   * function -- so this cannot answer differently from the simulation that
+   * then accepts or refuses the build. It used to. The two had independent
+   * implementations that disagreed wherever parcels overlapped, which
+   * `registerParcel` permits, so the build overlay could highlight land
+   * `canBuildAt` went on to reject (issue #93). `AGENTS.md` boundary 1 is why
+   * the shared rule lives on the simulation side rather than here.
    */
   public isTileOwned(
     tileX: number,
@@ -167,13 +168,16 @@ export class WorldRenderView {
     chunkX = Math.floor(tileX / this.chunkSize),
     chunkY = Math.floor(tileY / this.chunkSize),
   ): boolean {
-    if (this.ownedParcels.length > 0) {
-      const tile = { x: tileCoordinate(tileX), y: tileCoordinate(tileY) };
-      for (const rect of this.ownedParcels) {
-        if (rectContainsTile(rect, tile)) return true;
-      }
-    }
-    return this.ownedChunkKeys.has(layerKey(chunkX, chunkY));
+    return this.isTileOwnedInChunk(tileX, tileY, layerKey(chunkX, chunkY));
+  }
+
+  /**
+   * `isTileOwned` for a caller that already holds the chunk key. `readTile`
+   * does, and rebuilding that string per tile is the kind of inner-loop cost
+   * the lookup memo above exists to remove.
+   */
+  private isTileOwnedInChunk(tileX: number, tileY: number, chunkKey: string): boolean {
+    return isTileOwnedBy(tileX, tileY, this.ownedParcels, this.ownedChunkKeys.has(chunkKey));
   }
 
   public get loadedChunkCount(): number {

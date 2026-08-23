@@ -50,6 +50,30 @@ Parcels are gameplay/economy ownership regions that are decoupled from chunk bou
 - Tile ownership (`world.isTileOwned(tile)`) returns true if the tile falls within any owned parcel or directly owned chunk.
 - Purchase eligibility (`canPurchaseParcel`) and pricing (`getParcelPrice`) are decoupled through pure hooks (`defaultParcelEligibilityHook`, `defaultParcelPricingHook`).
 
+### Overlapping parcels, and the one ownership rule
+
+`registerParcel` rejects a duplicate id and nothing else, so parcel bounds may
+overlap and a tile may sit under several parcels. **Any** owned parcel
+containing the tile is sufficient; an unowned parcel covering the same tile
+takes nothing away. Ownership is a disjunction, not a lookup, so it does not
+depend on which parcel comes "first" — see
+[ADR 0019](./adr/0019-tile-ownership-under-overlapping-parcels.md) for why this
+rule rather than "the lowest-id parcel decides".
+
+That rule has exactly one implementation, `isTileOwnedBy` in
+`src/simulation/world/tile-ownership.ts`. Both `SparseWorld.isTileOwned` and
+the renderer's `WorldRenderView.isTileOwned` call it, which is what stops the
+build overlay from highlighting land `canBuildAt` would then refuse (issue
+#93). The renderer must not answer this question from logic of its own —
+`AGENTS.md` boundary 1 — so a new consumer of tile ownership calls
+`isTileOwnedBy` instead of reimplementing it.
+
+Because the answer is order-independent it needs no canonical sort, and cannot
+be changed by registration order or by a snapshot round trip.
+`getParcelAtTile` answers a different question — *which* parcel is here, first
+match in ascending-id order — and does need that sort to stay stable across a
+round trip. It serves pricing, selection and UI; it is not the ownership test.
+
 ## Buildability
 
 `canBuildAt(world, tile, requirement)` validates construction suitability:

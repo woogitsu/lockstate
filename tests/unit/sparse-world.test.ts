@@ -121,6 +121,40 @@ describe('parcels in sparse world', () => {
     expect(world.isTileOwned({ x: tileCoordinate(15), y: tileCoordinate(15) })).toBe(false);
   });
 
+  /**
+   * Issue #93. `registerParcel` permits overlapping bounds, so a tile can sit
+   * under several parcels; each owned one is sufficient on its own. An unowned
+   * parcel is not a veto -- it never was one against chunk ownership, and it
+   * is not one against another parcel either (ADR 0019).
+   *
+   * `getParcelAtTile` keeps its own, different job: "which parcel is here",
+   * first match in ascending-id order, for pricing and selection.
+   */
+  it('does not let an unowned overlapping parcel mask an owned one', () => {
+    const world = new SparseWorld(32);
+    // `a-marsh` sorts first in code-unit order, so it is the parcel
+    // `getParcelAtTile` resolves the shared tile to.
+    world.registerParcel({ id: 'a-marsh', bounds: createParcelRect(0, 0, 16, 16), basePrice: 50 });
+    world.registerParcel({ id: 'z-estate', bounds: createParcelRect(8, 0, 16, 16), basePrice: 900 });
+    world.setParcelOwned('z-estate', true);
+
+    const shared = { x: tileCoordinate(10), y: tileCoordinate(4) };
+    const marshOnly = { x: tileCoordinate(2), y: tileCoordinate(4) };
+    const estateOnly = { x: tileCoordinate(20), y: tileCoordinate(4) };
+
+    expect(world.getParcelAtTile(shared)?.id).toBe('a-marsh');
+    expect(world.isTileOwned(shared)).toBe(true);
+    expect(world.isTileOwned(marshOnly)).toBe(false);
+    expect(world.isTileOwned(estateOnly)).toBe(true);
+
+    // Symmetric: owning the low-id parcel instead is just as sufficient.
+    world.setParcelOwned('z-estate', false);
+    world.setParcelOwned('a-marsh', true);
+    expect(world.isTileOwned(shared)).toBe(true);
+    expect(world.isTileOwned(marshOnly)).toBe(true);
+    expect(world.isTileOwned(estateOnly)).toBe(false);
+  });
+
   it('uses purchase eligibility and pricing hooks', () => {
     const world = new SparseWorld(32);
     world.registerParcel({
