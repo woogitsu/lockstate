@@ -1,4 +1,4 @@
-import { decodeSaveEnvelope, type SaveEnvelopeV1 } from '../save-schema';
+import { decodeSaveEnvelope, decodeSaveEnvelopeUnlessTrusted, type SaveEnvelopeV1 } from '../save-schema';
 import { applyGenerationRetention } from './generation-policy';
 import { classifyStoreError, type SaveWriteError } from './errors';
 import type { LocalSaveStore, PendingSyncState, PrisonSlotMetadata } from './store';
@@ -95,9 +95,18 @@ export class PrisonSaveRepository {
    * pointer. A prior good generation is only deleted after the new one and
    * the updated pointer are staged in the same transaction, so a failed
    * write can never destroy the last known-good generation.
+   *
+   * Validation is provenance-based, not caller-declared (#49): an envelope
+   * this process itself built (`createSaveEnvelope`) or already decoded
+   * (`decodeSaveEnvelope`, i.e. the import/load paths) is written as-is,
+   * because re-walking a payload this process validated moments ago was
+   * measured as roughly a third of an autosave. Every other envelope — an
+   * import, a value read back from storage, anything that crossed a process
+   * or serialization boundary, and anything merely *cast* to the trusted type
+   * — is still fully validated here before it can reach storage.
    */
   public async save(prisonId: string, envelope: SaveEnvelopeV1): Promise<SaveResult> {
-    const decoded = decodeSaveEnvelope(envelope);
+    const decoded = decodeSaveEnvelopeUnlessTrusted(envelope);
     if (!decoded.ok) {
       return { ok: false, error: { code: 'unknown-error', message: `Refusing to persist an invalid envelope: ${decoded.error.message}` } };
     }

@@ -99,6 +99,41 @@ describe('PrisonSaveRepository: save() and generation retention', () => {
     expect(metadata?.currentGenerationId).toBeUndefined();
   });
 
+  // #49: the write path validates by provenance, not by a caller-supplied
+  // flag. An envelope this process built is written as-is; anything that
+  // crossed a serialization boundary is re-decoded, which is observable
+  // because a full decode necessarily produces a fresh parsed value.
+  it('writes an in-process envelope as-is and re-validates one that crossed a serialization boundary', async () => {
+    const store = new MemoryLocalSaveStore();
+    const repo = new PrisonSaveRepository(store, { generateGenerationId: idSequence('gen') });
+    await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0' });
+
+    const trusted = buildEnvelope(1);
+    expect(await repo.save('prison-1', trusted)).toEqual({ ok: true, generationId: 'gen-1' });
+    const storedTrusted = await store.runTransaction('readonly', (tx) => tx.getGeneration('prison-1', 'gen-1'));
+    expect(storedTrusted).toBe(trusted);
+
+    const untrusted = JSON.parse(JSON.stringify(buildEnvelope(2))) as SaveEnvelopeV1;
+    expect(await repo.save('prison-1', untrusted)).toEqual({ ok: true, generationId: 'gen-2' });
+    const storedUntrusted = await store.runTransaction('readonly', (tx) => tx.getGeneration('prison-1', 'gen-2'));
+    expect(storedUntrusted).not.toBe(untrusted);
+    expect(storedUntrusted).toEqual(untrusted);
+  });
+
+  it('refuses an envelope tampered with after it left this process', async () => {
+    const repo = new PrisonSaveRepository(new MemoryLocalSaveStore());
+    await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0' });
+
+    const tampered = JSON.parse(JSON.stringify(buildEnvelope(1))) as { payload: { kernel: { tick: number } } };
+    tampered.payload.kernel.tick += 1; // checksum now covers a payload that no longer exists
+
+    const result = await repo.save('prison-1', tampered as unknown as SaveEnvelopeV1);
+    expect(result.ok).toBe(false);
+
+    const [metadata] = await repo.list();
+    expect(metadata?.currentGenerationId).toBeUndefined();
+  });
+
   it('reports a classified, durable failure without corrupting existing state when the store write fails', async () => {
     const store = new MemoryLocalSaveStore();
     const repo = new PrisonSaveRepository(store, { generateGenerationId: idSequence('gen') });

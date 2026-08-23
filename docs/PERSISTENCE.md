@@ -55,6 +55,67 @@ diagnostics — rather than a new algorithm. Canonicalization sorts object keys,
 so the checksum is stable across equivalent key insertion order. It detects
 corruption/accidental mismatch; it is **not** a cryptographic signature.
 
+## Trusted envelopes: validating once, without weakening the boundary
+
+Validation, not I/O, is the dominant cost of a save (`JSON.stringify` is ~2%
+of one). The payload used to be walked three times per save: once by
+`savePayloadV1Schema`, again by `saveEnvelopeV1Schema` re-walking it as a
+nested field, and a third time by `PrisonSaveRepository.save` re-decoding an
+envelope this same process had just built and checksummed. Issue #49 removed
+the second and third walks. Two of the three were pure repetition; the third
+is a genuine correctness boundary and is still paid by every envelope of
+unknown provenance.
+
+**The envelope's fields and its payload are now validated separately.**
+`saveEnvelopeMetadataShape` holds the seven scalar fields an envelope carries
+around its payload. `saveEnvelopeV1Schema` (metadata + `payload`) is what the
+migration chain registers and what `decodeSaveEnvelope` therefore still runs
+in full; `saveEnvelopeMetadataV1Schema` (metadata alone) is what
+`createSaveEnvelope` runs, because it has just parsed the payload itself and
+re-walking a multi-megabyte payload to check seven numbers is waste. Both
+carry the same `updatedAt >= createdAt` refinement, so no rule is enforced on
+one path and not the other.
+
+**`save()` decides by provenance, not by a caller-supplied flag.**
+`createSaveEnvelope` and `decodeSaveEnvelope` return `TrustedSaveEnvelopeV1`
+— `SaveEnvelopeV1` branded with a `unique symbol` that is declared but never
+exported, so no other module can even name the brand, let alone produce the
+type. `PrisonSaveRepository.save` routes through
+`decodeSaveEnvelopeUnlessTrusted`, which writes a trusted envelope as-is and
+fully decodes everything else.
+
+The brand is what the *type system* checks; it is backed at runtime by a
+module-private `WeakSet` keyed on object identity, and that is what makes it
+unforgeable:
+
+- A caller who defeats the type with `as TrustedSaveEnvelopeV1` still fails
+  the identity check and gets full validation. The failure mode of every
+  bypass attempt is "validate anyway", never "trust anyway".
+- Identity is destroyed by every ordinary way a value leaves and re-enters
+  this process — a JSON round trip, a structured clone (which is exactly what
+  the IndexedDB write path performs), or a spread that rewrites one field. So
+  an envelope read back from storage, imported from a file, or received from
+  Supabase is structurally incapable of arriving trusted.
+- A trusted envelope is shallow-frozen, so its `checksum`, `saveSchemaVersion`
+  and `payload` reference cannot be swapped after this module vouched for
+  them. Freezing stops at the top level deliberately: a deep freeze would
+  reintroduce the per-node walk this change exists to remove, and the payload
+  interior is already a fresh Zod-parsed value detached from live runtime
+  state.
+
+`decodeSaveEnvelope`'s output is trusted for the same reason and with the same
+safety: it is the migration chain's own freshly parsed value, never the
+caller's object, so trust is never granted to something an untrusted caller
+still holds a mutable reference to. That is also why `importSave` now costs
+one validation rather than two — it decodes, then hands `save()` the value it
+decoded.
+
+**What is unchanged:** `importSave`, `loadCurrent`, the recovery scan and
+`PrisonSyncEngine` (cloud) all still run `decodeSaveEnvelope` in full. The
+rejection tests in `tests/unit/persistence-save-schema.test.ts` and
+`tests/unit/persistence-local-repository.test.ts` that prove it were not
+edited by #49.
+
 ## Migration framework
 
 `src/persistence/migration.ts` exports a generic `MigrationChain`:
@@ -120,6 +181,11 @@ decode/validate on this development container; `JSON.stringify`/`parse`
 themselves were a few milliseconds. Zod validation cost scales with world
 size, so it should be profiled against representative content before it
 gates a pull request, per the referenced benchmark policy.
+
+Those figures predate #49, which cut `createSaveEnvelope` by roughly a third
+and a repository `save()` by roughly two thirds; "Two known costs worth their
+own issue" at the end of this document carries the current, tiered numbers
+from `tests/perf/`.
 
 ## Local persistence (`src/persistence/local/`)
 
@@ -225,10 +291,11 @@ Database `lockstate-saves`, version 1, two object stores:
 
 ### Generation retention and recovery
 
-`save()` writes the new generation, advances `currentGenerationId`, and only
-then deletes whatever `applyGenerationRetention` prunes — all inside one
-`readwrite` transaction, so a failed write can never destroy the last
-known-good generation. The default window keeps the current generation plus
+`save()` validates by provenance (see "Trusted envelopes" above), then writes
+the new generation, advances `currentGenerationId`, and only then deletes
+whatever `applyGenerationRetention` prunes — all inside one `readwrite`
+transaction, so a failed write can never destroy the last known-good
+generation. The default window keeps the current generation plus
 two previous ones (`keepGenerations: 3`), matching the issue's minimum.
 
 `loadCurrent()` tries the current generation first (schema + checksum via
@@ -274,7 +341,9 @@ above): five sequential `save()` calls against `IndexedDbLocalSaveStore`
 ~15–24 ms each (schema/checksum validation plus the transaction itself),
 and `loadCurrent()` ~14 ms. `fake-indexeddb`'s in-process cost is not the
 same as a real browser's disk-backed IndexedDB, so this is a lower bound,
-not a production estimate.
+not a production estimate. The validation share of that figure is what #49
+removed from the in-process write path; see the tiered measurements at the
+end of this document.
 
 ### What is out of scope here
 
@@ -448,3 +517,64 @@ every prior issue (#14–#28) shipped code that nothing imported yet, which
 is why the bundle had stayed flat. The increase is real product code, not
 accidental inclusion; code-splitting it is a presentation-layer concern
 (#33/#34), not a persistence one.
+
+## Two known costs worth their own issue
+
+Profiling a representative save while closing #19 turned up two costs large
+enough to own their own issues rather than be tuned in passing. Reproduce
+either with the measurement harness (report-only, no timing assertions — see
+`docs/BENCHMARKING.md` and `docs/TESTING.md`):
+
+```bash
+pnpm exec vitest run --config tests/perf/vitest.perf.config.ts
+```
+
+### 1. Redundant save-payload re-validation (#49) — resolved
+
+Every save used to validate its payload three times: `savePayloadV1Schema`
+inside `createSaveEnvelope`, then `saveEnvelopeV1Schema` re-walking the same
+payload as a nested field, then `PrisonSaveRepository.save` re-decoding an
+envelope this same process had built and checksummed moments earlier. Two
+thirds of an autosave was re-proving something already proven.
+
+"Trusted envelopes" above describes the fix: the envelope's own fields are
+validated separately from its payload, and `save()` decides whether to
+re-validate by *provenance* — a branded, identity-backed type — rather than
+by a flag a caller could pass wrongly. Untrusted envelopes are unaffected and
+still pay full validation.
+
+Measured medians, `tests/perf/` at `4b361e3` vs. the same harness after the
+change, on one developer machine (Node 24.19.0, WSL2). `fake-indexeddb` is an
+in-process implementation with no disk and no quota, so these are a **CPU
+lower bound**, not a production estimate — a real browser adds storage latency
+on top. Absolute values are hardware-specific; the ratios are the evidence.
+
+| tier | `createSaveEnvelope` | `save()` | autosave cycle |
+| --- | --- | --- | --- |
+| small | 8.19 → 5.58 ms | 7.25 → 1.26 ms | 15.6 → 7.03 ms |
+| medium | 29.4 → 19.6 ms | 25.9 → 6.84 ms | 55.6 → 27.5 ms |
+| large | 105 → 70.8 ms | 86.8 → 28.3 ms | 193 → 101 ms |
+| x-large | 256 → 177 ms | 227 → 75.1 ms | 490 → 256 ms |
+
+The `save()` column is the production autosave path. The harness reports an
+`untrusted save` column beside it — the same envelope after a serialization
+round trip, i.e. the import path — precisely so the remaining boundary cannot
+be quietly lost: it measured 6.68 / 24.4 / 86.3 / 242 ms across the four
+tiers, unchanged from the pre-#49 `save()` figures. `decodeSaveEnvelope`
+itself is untouched and unchanged. Against the in-memory store a trusted
+`save()` falls to ~0.01 ms at every tier, which is the clearest statement of
+what the third walk actually cost: essentially all of it.
+
+At the large tier the full autosave cycle is now ~0.34% of a 30 s interval
+(was ~0.64%). This is the measurement #19 asked for before the cadence is
+tuned; changing `DEFAULT_AUTOSAVE_INTERVAL_MS` is still a separate decision
+and is not made here.
+
+### 2. Entity snapshot serialized at capacity, not population (#50)
+
+The `entities` section of a save is a constant 29.4 KiB at every tier, because
+`EntityStoreSnapshot` serializes `generations`, `freeIndices` and `alive`
+across the store's full allocated capacity (`DEFAULT_PRISONER_CAPACITY`,
+5,000) rather than its live population. That is 45% of a small prison's
+66.0 KiB envelope and pure padding. Open; see issue #50, which owns the
+encoding change and the save-schema version bump it requires.

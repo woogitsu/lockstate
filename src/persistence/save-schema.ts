@@ -166,25 +166,43 @@ const savePayloadV1Schema = z
 
 export type SavePayloadV1 = DeepReadonly<z.infer<typeof savePayloadV1Schema>>;
 
-const saveEnvelopeV1Schema = z
-  .object({
-    saveSchemaVersion: z.literal(SAVE_SCHEMA_VERSION),
-    gameVersion: identifierSchema,
-    prisonId: identifierSchema,
-    revision: z.number().int().min(0),
-    createdAt: z.number().int().min(0),
-    updatedAt: z.number().int().min(0),
-    checksum: z.string().regex(/^[0-9a-f]{16}$/),
-    payload: savePayloadV1Schema,
-  })
-  .strict()
-  .superRefine((envelope, ctx) => {
-    if (envelope.updatedAt < envelope.createdAt) {
+/**
+ * The envelope's own fields, without `payload`. Kept separate so the two
+ * halves of an envelope can be validated independently: composing a save
+ * in-process already knows its payload is schema-valid (it just parsed it),
+ * and re-walking a multi-megabyte payload only to check seven scalar
+ * metadata fields was measured as roughly a third of a save (#49).
+ */
+const saveEnvelopeMetadataShape = {
+  saveSchemaVersion: z.literal(SAVE_SCHEMA_VERSION),
+  gameVersion: identifierSchema,
+  prisonId: identifierSchema,
+  revision: z.number().int().min(0),
+  createdAt: z.number().int().min(0),
+  updatedAt: z.number().int().min(0),
+  checksum: z.string().regex(/^[0-9a-f]{16}$/),
+} as const;
+
+function withOrderedTimestamps<T extends { readonly createdAt: number; readonly updatedAt: number }>(
+  schema: z.ZodType<T>,
+): z.ZodType<T> {
+  return schema.superRefine((value, ctx) => {
+    if (value.updatedAt < value.createdAt) {
       ctx.addIssue({ code: 'custom', message: 'updatedAt must not precede createdAt.', path: ['updatedAt'] });
     }
   });
+}
 
-export type SaveEnvelopeV1 = DeepReadonly<z.infer<typeof saveEnvelopeV1Schema>>;
+const saveEnvelopeV1ObjectSchema = z
+  .object({ ...saveEnvelopeMetadataShape, payload: savePayloadV1Schema })
+  .strict();
+
+const saveEnvelopeV1Schema = withOrderedTimestamps(saveEnvelopeV1ObjectSchema);
+
+/** Validates only the envelope's own fields; `payload` is validated separately by `savePayloadV1Schema`. */
+const saveEnvelopeMetadataV1Schema = withOrderedTimestamps(z.object(saveEnvelopeMetadataShape).strict());
+
+export type SaveEnvelopeV1 = DeepReadonly<z.infer<typeof saveEnvelopeV1ObjectSchema>>;
 
 // --- Migration chain ---
 // Only V1 exists today, so the chain currently has zero registered
@@ -202,8 +220,83 @@ export interface SaveDecodeError extends Omit<MigrationError, 'code'> {
 }
 
 export type SaveDecodeResult =
-  | { readonly ok: true; readonly value: SaveEnvelopeV1; readonly migrated: boolean }
+  | { readonly ok: true; readonly value: TrustedSaveEnvelopeV1; readonly migrated: boolean }
   | { readonly ok: false; readonly error: SaveDecodeError };
+
+// --- Trusted envelopes (#49) ---
+//
+// Validating a save payload is the dominant cost of saving (Zod, not I/O:
+// `JSON.stringify` is ~2% of a save). The payload used to be walked three
+// times per save -- once by `savePayloadV1Schema`, again by the envelope
+// schema that nests it, and a third time by `PrisonSaveRepository.save`
+// re-decoding an envelope this same process had just built and checksummed.
+//
+// That third walk is nonetheless a real correctness boundary for envelopes of
+// unknown provenance (imports, restored files, anything read back from
+// storage), so it is not removed -- it is made conditional on *provenance*,
+// which is established here and nowhere else:
+//
+//   * `TrustedSaveEnvelopeV1` is a branded type whose brand key is a
+//     module-private `unique symbol`. No other module can name it, so no
+//     other module can produce that type except by receiving one from this
+//     module's `createSaveEnvelope`/`decodeSaveEnvelope`. Trust is therefore
+//     carried by the type, not by a boolean a caller could wrongly pass.
+//
+//   * The brand is backed at runtime by `trustedEnvelopes`, a module-private
+//     `WeakSet` keyed on object identity. A caller who defeats the type with
+//     `as TrustedSaveEnvelopeV1` still fails the runtime membership check and
+//     gets full validation: the type is the contract, the WeakSet is what
+//     makes it unforgeable, and the failure mode is "validate anyway".
+//
+//   * Membership is identity-based, so every ordinary way a value can leave
+//     this process and come back -- JSON round trip, structured clone (the
+//     IndexedDB write path), a spread that rewrites a field -- yields a
+//     *different* object that is not in the set and is fully validated. The
+//     trusted path cannot be entered by accident from untrusted input.
+//
+//   * A trusted envelope is shallow-frozen, so its checksum, its version and
+//     its `payload` reference cannot be swapped after this module vouched for
+//     them.
+
+declare const trustedSaveEnvelopeBrand: unique symbol;
+
+/**
+ * A `SaveEnvelopeV1` whose payload **this process** has already validated and
+ * checksum-verified: either freshly composed by `createSaveEnvelope`, or
+ * decoded from an untrusted source by `decodeSaveEnvelope`. Only this module
+ * can produce one; see the note above for why that cannot be forged.
+ */
+export type TrustedSaveEnvelopeV1 = SaveEnvelopeV1 & {
+  readonly [trustedSaveEnvelopeBrand]: 'validated-in-process';
+};
+
+const trustedEnvelopes = new WeakSet<object>();
+
+function markTrusted(envelope: SaveEnvelopeV1): TrustedSaveEnvelopeV1 {
+  // Shallow: the payload's interior is already detached from live runtime
+  // state (Zod's parse returns a fresh value), and deep-freezing a
+  // multi-megabyte payload would reintroduce exactly the per-node walk this
+  // change exists to remove.
+  const frozen = Object.freeze(envelope);
+  trustedEnvelopes.add(frozen);
+  return frozen as TrustedSaveEnvelopeV1;
+}
+
+/** True only for an envelope object this process itself validated. Identity-based; a copy of a trusted envelope is not trusted. */
+export function isTrustedSaveEnvelope(envelope: SaveEnvelopeV1): envelope is TrustedSaveEnvelopeV1 {
+  return trustedEnvelopes.has(envelope);
+}
+
+/**
+ * The write-path validation gate. An envelope this process vouched for is
+ * accepted as-is; anything else -- including a value merely *typed* as
+ * trusted -- is fully decoded (schema, migration and checksum) exactly as
+ * before.
+ */
+export function decodeSaveEnvelopeUnlessTrusted(envelope: SaveEnvelopeV1): SaveDecodeResult {
+  if (isTrustedSaveEnvelope(envelope)) return { ok: true, value: envelope, migrated: false };
+  return decodeSaveEnvelope(envelope);
+}
 
 function extractDeclaredVersion(input: unknown): number | undefined {
   if (typeof input !== 'object' || input === null || Array.isArray(input)) return undefined;
@@ -242,7 +335,10 @@ export function decodeSaveEnvelope(input: unknown): SaveDecodeResult {
     };
   }
 
-  return { ok: true, value: envelope, migrated: migrationResult.stepsApplied > 0 };
+  // `envelope` is the migration chain's own freshly parsed value, never the
+  // caller's object, so marking it trusted cannot hand out trust for a value
+  // an untrusted caller still holds a mutable reference to.
+  return { ok: true, value: markTrusted(envelope), migrated: migrationResult.stepsApplied > 0 };
 }
 
 export interface CreateSaveEnvelopeInput {
@@ -257,8 +353,19 @@ export interface CreateSaveEnvelopeInput {
   readonly entities?: EntityStoreSnapshot;
 }
 
-/** Composes a fresh, checksummed, schema-valid V1 envelope from live runtime snapshots. */
-export function createSaveEnvelope(input: CreateSaveEnvelopeInput): SaveEnvelopeV1 {
+/**
+ * Composes a fresh, checksummed, schema-valid V1 envelope from live runtime
+ * snapshots.
+ *
+ * The payload is validated **exactly once** here. The envelope's own fields
+ * are validated separately by `saveEnvelopeMetadataV1Schema`, which does not
+ * re-walk the payload it was just handed; the composed result is then marked
+ * trusted so `PrisonSaveRepository.save` does not walk it a third time (#49).
+ *
+ * Throws (Zod) on an invalid payload or invalid envelope metadata, exactly as
+ * before — validity is still proven, just not proven repeatedly.
+ */
+export function createSaveEnvelope(input: CreateSaveEnvelopeInput): TrustedSaveEnvelopeV1 {
   const encodedEntities: EncodedEntityStoreSnapshot | undefined =
     input.entities === undefined ? undefined : encodeEntityStoreSnapshot(input.entities);
 
@@ -269,7 +376,7 @@ export function createSaveEnvelope(input: CreateSaveEnvelopeInput): SaveEnvelope
     ...(encodedEntities === undefined ? {} : { entities: encodedEntities }),
   });
 
-  const envelope = {
+  const metadata = saveEnvelopeMetadataV1Schema.parse({
     saveSchemaVersion: SAVE_SCHEMA_VERSION,
     gameVersion: input.gameVersion,
     prisonId: input.prisonId,
@@ -277,8 +384,7 @@ export function createSaveEnvelope(input: CreateSaveEnvelopeInput): SaveEnvelope
     createdAt: input.createdAt,
     updatedAt: input.updatedAt,
     checksum: computeSaveChecksum(payload as JsonValue),
-    payload,
-  };
+  });
 
-  return saveEnvelopeV1Schema.parse(envelope) as SaveEnvelopeV1;
+  return markTrusted({ ...metadata, payload } as SaveEnvelopeV1);
 }
