@@ -404,15 +404,21 @@ of population — the same mistake #50 removed from `entities`, at eighteen
 times the size. They are written across the store's **allocated prefix**
 (`maxActiveIndex + 1`) instead.
 
-The prefix, not just the live indices, because `admitPrisoner` does not reset
-every field when a freed index is recycled (it sets position, sentence length,
-prior incidents and intake stage; needs, risk tier, classification group and
-action state carry over). A dead slot's residue is therefore readable state in
-a continuous run, and dropping it would make a restored session diverge the
-moment an index was recycled. Slots *above* the prefix were never allocated
-and hold exactly their component-constructor defaults, which
-`decodePrisonerComponents` reproduces — so the restore is exact, not merely
-equivalent.
+The prefix, not just the live indices, because nothing clears a component
+array when an entity is destroyed: a freed index inside the prefix keeps
+whatever its previous occupant left there until it is recycled. Writing those
+slots is what makes a restored session's arrays *identical* to a continuous
+one's rather than merely equivalent. Slots *above* the prefix were never
+allocated and hold exactly their component-constructor defaults, which
+`decodePrisonerComponents` reproduces — so the restore is exact either way.
+
+Until #111 that residue was also future behaviour: `admitPrisoner` reset five
+of the eighteen arrays, so recycling a freed index handed the next prisoner
+the previous one's needs, classification and action state. It now resets all
+eighteen, so a dead slot's contents can no longer become a live prisoner's
+starting state. Whether the payload could therefore shrink to the live indices
+only is a save-format change and a decision of its own; it has not been taken,
+and writing the prefix is correct either way.
 
 Plain arrays rather than run-length encoding, which is the opposite of the
 choice `entities` makes, because the data is the opposite shape: needs levels,

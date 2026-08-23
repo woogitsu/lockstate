@@ -163,6 +163,23 @@ export class PrisonerOperationsRuntime {
   public admitPrisoner(input: ClassificationInput, originTile: { readonly x: number; readonly y: number }): EntityId {
     const entityId = this.entityStore.spawn();
     const index = this.entityStore.getIndex(entityId);
+    // `EntityStore.spawn` recycles freed indices, and nothing clears a
+    // component array when an entity is destroyed, so an index can arrive
+    // here still holding the previous occupant's needs, classification and
+    // action plan (#111). Every index-keyed component is reset to the values
+    // a never-occupied slot holds, so an admission into a recycled index is
+    // indistinguishable from one into a fresh index.
+    //
+    // Only the index-keyed SoA components need this. `coldState` and the
+    // actor-identity registry key off `EntityId`, whose generation `destroy`
+    // bumps, so the new occupant's lookups miss rather than inherit -- and
+    // this is emphatically not the release path: dropping a destroyed
+    // prisoner's cold state, room occupancy, gang membership and component
+    // bit is still unimplemented (#31).
+    this.records.reset(index);
+    this.needs.reset(index);
+    this.currentAction.reset(index);
+    this.position.reset(index);
     this.bitset.add(index, PRISONER_COMPONENT_ID);
     this.position.tileX[index] = originTile.x;
     this.position.tileY[index] = originTile.y;
