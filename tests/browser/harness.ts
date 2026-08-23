@@ -3,6 +3,9 @@ import { classifyStoreError } from '../../src/persistence/local/errors';
 import { IndexedDbLocalSaveStore, openLockstateDatabase } from '../../src/persistence/local/indexeddb-store';
 import { PrisonSaveRepository } from '../../src/persistence/local/repository';
 import { createSaveEnvelope, type SaveEnvelope } from '../../src/persistence/save-schema';
+import { LifecycleSaveHandler } from '../../src/persistence/session/lifecycle';
+import { InProcessSessionHost } from '../../src/persistence/session/runtime-host';
+import { SessionController } from '../../src/persistence/session/session-controller';
 import { ConstructionSystem } from '../../src/simulation/construction/system';
 import { Kernel } from '../../src/simulation/kernel/kernel';
 import { chunkCoordinate } from '../../src/simulation/world/coordinates';
@@ -13,6 +16,7 @@ import type {
   HarnessErrorProbe,
   HarnessFillResult,
   HarnessLegacyGeneration,
+  HarnessLifecycleObservation,
   HarnessLoadSummary,
   HarnessQuotaEstimate,
   HarnessSaveSummary,
@@ -39,6 +43,19 @@ const GENERATIONS_STORE = 'generations';
 
 let database: IDBDatabase | undefined;
 let repository: PrisonSaveRepository | undefined;
+
+/**
+ * `sessionStorage`, not a module variable, because the whole point of the
+ * lifecycle probe is to read a record written while the page was being torn
+ * down. A module variable dies with the realm; a same-tab `sessionStorage`
+ * write is synchronous and survives into the next load.
+ */
+const LIFECYCLE_TRIGGERS_KEY = 'lockstate-harness/lifecycle-triggers';
+
+function recordLifecycleTrigger(trigger: string): void {
+  const existing = sessionStorage.getItem(LIFECYCLE_TRIGGERS_KEY);
+  sessionStorage.setItem(LIFECYCLE_TRIGGERS_KEY, existing === null || existing === '' ? trigger : `${existing},${trigger}`);
+}
 
 const unhandledRejections: string[] = [];
 window.addEventListener('unhandledrejection', (event) => {
@@ -564,6 +581,19 @@ const harness: LockstateBrowserHarness = {
     await nextMacrotask();
     const readBack = await store.runTransaction('readonly', (tx) => tx.getMetadata(prisonId));
     return { rejectionMessage, stagedWriteSurvived: readBack !== undefined };
+  },
+
+  async attachLifecycleSaveHandler(prisonId: string): Promise<void> {
+    sessionStorage.removeItem(LIFECYCLE_TRIGGERS_KEY);
+    const controller = new SessionController(requireRepository(), new InProcessSessionHost(), { gameVersion: GAME_VERSION });
+    await controller.createPrison(prisonId);
+    // No `targets` option: this is the production default from src/main.ts.
+    new LifecycleSaveHandler(controller, { onAttempt: (trigger) => recordLifecycleTrigger(trigger) }).attach();
+  },
+
+  readLifecycleObservation(): HarnessLifecycleObservation {
+    const raw = sessionStorage.getItem(LIFECYCLE_TRIGGERS_KEY);
+    return { triggers: raw === null || raw === '' ? [] : raw.split(',') };
   },
 
   takeUnhandledRejections(): readonly string[] {

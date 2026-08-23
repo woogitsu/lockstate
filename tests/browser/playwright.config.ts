@@ -13,16 +13,21 @@ const port = Number(process.env['LOCKSTATE_BROWSER_TEST_PORT'] ?? 5183);
 const baseURL = `http://127.0.0.1:${port}`;
 
 /**
- * Real-browser verification for `src/persistence/local/`, `src/ui/` and the
- * assembled application page.
+ * Real-browser verification for `src/persistence/local/`,
+ * `src/persistence/session/`'s DOM event wiring, `src/ui/`,
+ * `src/rendering/camera/` and the assembled application page.
  *
- * All three are here for the same reason: a claim that only a real browser
- * can settle. For persistence that is durability across a navigation, real
- * `DOMException` names and a genuinely exhausted quota; for the UI it is that
- * a real click on a real disabled button does nothing, that no
+ * Every one of them is here for the same reason: a claim that only a real
+ * browser can settle. For persistence that is durability across a navigation,
+ * real `DOMException` names and a genuinely exhausted quota; for the UI it is
+ * that a real click on a real disabled button does nothing, that no
  * `unhandledrejection` fires, and what a *computed* font stack and
- * `getBoundingClientRect` actually are; for the assembled page it is canvas
- * sizing, hit-testing the centre pixel and decoding a real PNG.
+ * `getBoundingClientRect` actually are; for the lifecycle handler it is
+ * whether a real, browser-generated `pagehide` reaches it at all (#92); for
+ * the camera it is what a real Phaser camera answers for a real mouse
+ * position, which is the only thing that can catch a pure transform that has
+ * drifted from the engine drawing the frame (#115); for the assembled page it
+ * is canvas sizing, hit-testing the centre pixel and decoding a real PNG.
  * Everything else stays headless.
  *
  * `docs/TESTING.md` gates browser test environments behind explicit review,

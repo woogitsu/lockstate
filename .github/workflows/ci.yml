@@ -11,7 +11,13 @@ permissions:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Cancel superseded PR runs, never a run on `main`. For a push to `main` the
+  # ref is constant, so `true` meant two merges landing close together
+  # cancelled the earlier commit's CI -- while that commit was already live,
+  # since a merge deploys. It left a shipped commit with no completed gate
+  # result and nothing reporting the hole. A merge queue of one is worth the
+  # extra minutes.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   CI: true
@@ -45,6 +51,39 @@ jobs:
           test "$(node --version)" = "v$(cat .node-version)"
           test "$(pnpm --version)" = "11.22.0"
 
+      # Three pull requests -- #98, #100 and #101 -- committed `node_modules`
+      # as a tracked symlink (mode 120000) pointing at a path that exists only
+      # on the machine they were authored on. On checkout git recreates the
+      # symlink, and `pnpm install` then dies with
+      # `ENOTDIR: not a directory, mkdir .../node_modules` before one line of
+      # project code runs, so the pull request wears a failure that has nothing
+      # to do with its diff. Runs 32663976393, 32665157556, 32665179804.
+      #
+      # `.gitignore` did not stop it, and that is the root cause: it listed
+      # `node_modules/`, with a trailing slash, which matches a *directory*. A
+      # symlink named `node_modules` is a file, so it was never ignored and
+      # `git add node_modules` succeeded. The slash is gone now, which is the
+      # real fix; this step is the safety net for a ref that predates it, and
+      # for a reused self-hosted workspace left holding one.
+      #
+      # A *tracked* node_modules is reported rather than removed: deleting it
+      # would let the install succeed and then fail the clean-tree gate at the
+      # end of this job as an unexplained deleted file, five steps away from
+      # the cause. Fail here, and say why.
+      - name: Reject or clear a node_modules that is not a real install
+        run: |
+          set -uo pipefail
+          if git ls-files --error-unmatch node_modules >/dev/null 2>&1; then
+            echo "::error::node_modules is committed to git on this ref. It must not be: see .gitignore."
+            git ls-files -s node_modules
+            exit 1
+          fi
+          if [ -L node_modules ] || { [ -e node_modules ] && [ ! -d node_modules ]; }; then
+            echo "node_modules is not a plain directory; removing it:"
+            ls -ld node_modules
+            rm -rf node_modules
+          fi
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -70,8 +109,35 @@ jobs:
       - name: Verify Supabase SQL (migrations + pgTAP)
         run: pnpm verify:sql
 
+      # A bare `test -z` exits 1 and says nothing, so a failure here is
+      # undiagnosable from the log -- which is exactly what happened on pull
+      # requests #98 and #101, where the same verification chain leaves the
+      # tree clean locally. The gate is unchanged; it now prints the evidence.
+      #
+      # The extra probes are for the most likely cause on this runner: a
+      # self-hosted workspace is reused between jobs, and the `assets` job
+      # materialises Git LFS content into it. Whether `git status` then sees
+      # those PNGs as modified depends on git-lfs being configured in *this*
+      # job, which provisions no LFS. If that is what is happening, the
+      # output below names it instead of leaving the next reader to guess.
       - name: Verify generated output did not modify tracked files
-        run: test -z "$(git status --porcelain)"
+        run: |
+          set -uo pipefail
+          changed="$(git status --porcelain)"
+          if [ -z "$changed" ]; then
+            echo "Working tree is clean."
+            exit 0
+          fi
+          echo "::error::Verification modified tracked files, or the workspace was not clean to begin with."
+          echo "--- git status --porcelain ---"
+          echo "$changed"
+          echo "--- git diff --stat ---"
+          git diff --stat || true
+          echo "--- is git-lfs available in this job? ---"
+          git lfs version || echo "git-lfs is NOT installed for this job"
+          echo "--- what filter do the runtime atlases declare? ---"
+          git check-attr filter -- public/assets/actors/actor.cook.base.idle.png || true
+          exit 1
 
   # Issue #32 requires that missing, inconsistent or oversized assets fail
   # validation before build/release. `tooling/validate-runtime-atlas.mjs` reads
@@ -272,6 +338,24 @@ jobs:
 
       - name: Activate pnpm
         run: corepack prepare pnpm@11.22.0 --activate
+
+      # Same guard as the `verify` job; see the comment there for why a
+      # committed `node_modules` symlink broke three pull requests. Every job
+      # that installs needs it, because a self-hosted runner reuses its
+      # checkout between jobs.
+      - name: Reject or clear a node_modules that is not a real install
+        run: |
+          set -uo pipefail
+          if git ls-files --error-unmatch node_modules >/dev/null 2>&1; then
+            echo "::error::node_modules is committed to git on this ref. It must not be: see .gitignore."
+            git ls-files -s node_modules
+            exit 1
+          fi
+          if [ -L node_modules ] || { [ -e node_modules ] && [ ! -d node_modules ]; }; then
+            echo "node_modules is not a plain directory; removing it:"
+            ls -ld node_modules
+            rm -rf node_modules
+          fi
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

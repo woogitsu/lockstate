@@ -73,7 +73,7 @@ test('ConstructionSystem snapshot restores orders correctly', () => {
   // Override state after submitOrder (which sets it to 'approved') for snapshot test
   order.state = 'in-progress';
   order.progress = 20;
-  order.materialsAllocated.push({ itemId: 'brick', quantity: 2 });
+  order.materialsAllocated.push({ itemId: 'item.brick', quantity: 2 });
   
   const snapshot = construction.snapshot();
   
@@ -84,7 +84,7 @@ test('ConstructionSystem snapshot restores orders correctly', () => {
   expect(restoredOrder).toBeDefined();
   expect(restoredOrder?.state).toBe('in-progress');
   expect(restoredOrder?.progress).toBe(20);
-  expect(restoredOrder?.materialsAllocated).toEqual([{ itemId: 'brick', quantity: 2 }]);
+  expect(restoredOrder?.materialsAllocated).toEqual([{ itemId: 'item.brick', quantity: 2 }]);
 });
 
 test('CancelBuildOrder command stops construction', () => {

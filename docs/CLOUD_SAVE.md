@@ -414,10 +414,14 @@ without a service-role key ever reaching the client.
 `supabase/config.toml` is now committed, so running the stack locally is
 just: install the Supabase CLI (standalone binary — not a devDependency),
 then `supabase start`. The CLI generates the local keys itself on each
-start; they are dev-only shared defaults, they are not stored in this
-repository, and `pnpm verify:stack` reads the publishable key from
-`supabase status` at runtime rather than holding one. No check in this
-repository uses the service-role key.
+start; they are dev-only shared defaults and they are not stored in this
+repository. No service-role key is stored here and `src/` has no path to
+one. One check does handle a service-role credential: `pnpm verify:stack`
+drives the trusted (`service_role`) paths, and it reads both the
+publishable key and the local stack's secret key from `supabase status` at
+run time rather than holding either, aborts unless the API is on loopback
+so a secret key cannot be pointed at a hosted project, and never prints
+any part of a value — see "What has and has not been executed" above.
 
 ## Free-tier capacity is bounded at the database tier (issue #57)
 

@@ -50,6 +50,45 @@ Parcels are gameplay/economy ownership regions that are decoupled from chunk bou
 - Tile ownership (`world.isTileOwned(tile)`) returns true if the tile falls within any owned parcel or directly owned chunk.
 - Purchase eligibility (`canPurchaseParcel`) and pricing (`getParcelPrice`) are decoupled through pure hooks (`defaultParcelEligibilityHook`, `defaultParcelPricingHook`).
 
+### Overlapping parcels, and the one ownership rule
+
+`registerParcel` rejects a duplicate id and nothing else, so parcel bounds may
+overlap and a tile may sit under several parcels. **Any** owned parcel
+containing the tile is sufficient; an unowned parcel covering the same tile
+takes nothing away. Ownership is a disjunction, not a lookup, so it does not
+depend on which parcel comes "first".
+
+**That half of the rule is not settled.**
+[ADR 0019](./adr/0019-tile-ownership-under-overlapping-parcels.md) records it and
+is *Proposed — pending human approval*, so the ownership bullet above and the
+paragraph above describe what the code does today, not a ratified decision.
+`SparseWorld.isTileOwned` used to answer differently in exactly one case: a tile
+whose lowest-id covering parcel was unowned while a higher-id parcel covering it
+was owned was unowned to the simulation. If ADR 0019 is rejected, that case
+returns to the old answer and this section is rewritten; issue #120 records the
+replacement wording for the bullet above.
+
+What does *not* depend on that decision: the rule has exactly one
+implementation, `isTileOwnedBy` in `src/simulation/world/tile-ownership.ts`,
+and both `SparseWorld.isTileOwned` and the renderer's
+`WorldRenderView.isTileOwned` call it. The renderer must not answer this
+question from logic of its own — `AGENTS.md` boundary 1, rendering is not
+simulation — so a new consumer of tile ownership calls `isTileOwnedBy` instead
+of reimplementing it. Before issue #93 the two had separate implementations
+that did not always agree, and `WorldRenderView.isTileOwned` feeds
+`TileSample.owned` while `SparseWorld.isTileOwned` is what `canBuildAt`
+consults, so one question was being answered twice on either side of the same
+decision.
+
+Because ownership is a disjunction, no iteration order can change the answer —
+not registration order, not a snapshot round trip. `SparseWorld` still collects
+the owned parcels in canonical ascending-id order anyway, because
+[DETERMINISM.md](./DETERMINISM.md) states that rule for anything feeding
+simulation state without an exception. `getParcelAtTile` answers a different
+question — *which* parcel is here, first match in ascending-id order — and
+genuinely needs that order to stay stable across a round trip. It serves
+pricing, selection and UI; it is not the ownership test.
+
 ## Buildability
 
 `canBuildAt(world, tile, requirement)` validates construction suitability:

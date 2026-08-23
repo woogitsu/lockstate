@@ -25,6 +25,7 @@ import {
   type HudIntent,
   type HudViewModel,
 } from './ui/hud';
+import { hudClockFromWorkerMessage } from './ui/simulation-clock';
 import { SimulationCommandSender } from './ui/simulation-commands';
 import { BuildTool } from './ui/build-tool';
 import { BUILDABLE_REGISTRY } from './simulation/construction';
@@ -269,21 +270,19 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   /**
    * Repaints the clock from what the worker last said, and from nothing else.
    *
-   * Only `mode` and `speed` move. Day and minute-of-day stay at their
-   * defaults because no simulation mapping from ticks to a wall clock exists
-   * (`docs/HUD_PROJECTIONS.md`, gap 5) -- inventing one here would put a
-   * number on screen that no system produces.
+   * Day, position within the day, mode and speed all come out of a
+   * `simulation/ready` or `simulation/clock-state` message. The worker
+   * publishes the second one unprompted while the clock runs (ADR 0003's
+   * "unsolicited ... do not pretend to be request responses"), which is what
+   * makes the day counter move without this thread ever counting time of its
+   * own. With no worker, no session, or a stopped one, the clock reads
+   * unknown -- see `EMPTY_HUD_VIEW_MODEL`.
    */
-  const applyClock = (mode: 'paused' | 'running', speed: 1 | 2 | 4): void => {
-    viewModel = { ...viewModel, clock: { ...viewModel.clock, mode, speed } };
-    hud?.update(viewModel);
-  };
-
   client?.addListener((message) => {
-    if (message.kind === 'simulation/ready' || message.kind === 'simulation/clock-state') {
-      const { clock } = message.payload;
-      applyClock(clock.mode, clock.mode === 'running' ? clock.speed : viewModel.clock.speed);
-    }
+    const clock = hudClockFromWorkerMessage(message, viewModel.clock);
+    if (clock === undefined) return;
+    viewModel = { ...viewModel, clock };
+    hud?.update(viewModel);
   });
 
   hud = mountHud(app, {

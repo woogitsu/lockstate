@@ -848,6 +848,69 @@ test.describe('the assembled application', () => {
     await expect(page.locator('.save-panel__empty')).toHaveCount(0);
   });
 
+  /**
+   * The transport controls, end to end, in the page a player loads.
+   *
+   * Three of the four layers are proven headlessly — the worker publishes the
+   * tick (`tests/unit/worker-state-machine.test.ts`), the main thread
+   * translates it (`tests/unit/ui-simulation-clock.test.ts`), and none of it
+   * disturbs the simulation (`tests/determinism/clock-transport.test.ts`).
+   * `tests/unit/ui-hud-projection.test.ts` proves the *mapping* the strip
+   * walks — including that an unreported clock maps to nothing rather than to
+   * day one — but not the rendering: Vitest runs in the `node` environment
+   * with no DOM, so nothing headless ever executes `status-strip.ts`. That is
+   * why the rendered `--` has its own guard in
+   * `tests/browser/ui-shell.spec.ts`.
+   *
+   * What no headless test can settle is that the layers are *connected*: that
+   * a real click on a real button reaches a real Worker over `postMessage` and
+   * comes back as a number that changes on screen. That was the whole defect —
+   * the controls were visible, and pressing one did nothing.
+   */
+  test('pressing play makes the HUD clock advance with the simulation', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+
+    const day = page.locator('.hud-clock__day');
+    const progress = page.locator('.hud-clock__day-progress');
+
+    // No session yet, so the clock says it does not know. A "Day 1, 0%" here
+    // would be a readout of a simulation that is not running.
+    await expect(day).toHaveText('--');
+    await expect(progress).toHaveText('--');
+
+    // A session exists from the moment a prison is created, and the worker's
+    // `simulation/ready` reports its clock: day one, stopped, at the start.
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(day).toHaveText('1');
+    await expect(progress).toHaveText('0%');
+    await expect(page.locator('.hud-strip__transport [title="Pause"]')).toHaveAttribute('aria-pressed', 'true');
+
+    await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
+    // The button reflects the *worker's* answer, not the click.
+    await expect(page.locator('.hud-strip__transport [title="Play at normal speed"]')).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+
+    // And then the clock moves on its own, because the worker keeps
+    // publishing where the tick has got to. One in-game day is 2,400 ticks at
+    // 50ms, so ~1% per 1.2s at x1.
+    await expect
+      .poll(async () => progress.textContent(), {
+        message: 'the HUD clock never advanced after the simulation was started',
+        timeout: 15_000,
+      })
+      .not.toBe('0%');
+
+    // Pausing stops it, and the readout does not keep counting on its own.
+    await page.locator('.hud-strip__transport [title="Pause"]').click();
+    await expect(page.locator('.hud-strip__transport [title="Pause"]')).toHaveAttribute('aria-pressed', 'true');
+    const atPause = await progress.textContent();
+    await page.waitForTimeout(3_000);
+    expect(await progress.textContent()).toBe(atPause);
+  });
+
   test('still mounts the interface when the simulation worker cannot start (#82)', async ({ page }) => {
     // Break `Worker` before any module evaluates, which is the one failure
     // mode `src/main.ts` explicitly promises to survive: "a browser that

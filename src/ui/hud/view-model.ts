@@ -29,11 +29,44 @@ export function isHudSpeed(value: number): value is HudSpeed {
   return (HUD_SPEEDS as readonly number[]).includes(value);
 }
 
+/**
+ * Where the authoritative simulation clock has got to.
+ *
+ * In the simulation's own units, deliberately. There is **no hour-of-day
+ * anywhere in Lockstate**: a day is a budget of ticks, and the number of
+ * ticks in one is a candidate value rather than a balance decision
+ * (`docs/HUD_PROJECTIONS.md`, gap 5). So the boundary carries the tick
+ * position and the HUD draws how far through the day that is -- rather than
+ * a 24-hour readout that would put an `07:45` on screen that no system
+ * produces.
+ *
+ * Every field is what the worker last reported. Nothing here is extrapolated
+ * from wall time on this thread: a clock the main thread advanced by itself
+ * would drift away from the simulation the moment a tab was throttled, and
+ * would keep counting after the worker died.
+ */
 export interface HudClockViewModel {
-  /** 1-based in-game day. */
+  /**
+   * The in-game day, counting from `1`.
+   *
+   * `0` is the sentinel for *unknown* -- no session has reported a clock yet
+   * -- and is deliberately not a day number: it is rendered as unknown rather
+   * than as day one. See `UNKNOWN_HUD_CLOCK`.
+   */
   readonly day: number;
-  /** 0..1439. Values outside the range are normalized on the way to the screen. */
-  readonly minuteOfDay: number;
+  /** `0 .. dayLengthTicks - 1`. */
+  readonly tickOfDay: number;
+  /**
+   * How many ticks one in-game day lasts, as the simulation defines it.
+   *
+   * `0` means *unknown* -- no session has reported a clock -- and the day
+   * position is then shown as unknown rather than as the start of day one.
+   * The HUD is handed this instead of holding a constant of its own: the
+   * value belongs to the simulation (`AGENTS.md` boundary 1), and a copy on
+   * this side of the boundary would silently disagree with it the day the
+   * balance changed.
+   */
+  readonly dayLengthTicks: number;
   readonly mode: HudClockMode;
   readonly speed: HudSpeed;
 }
@@ -113,6 +146,22 @@ export interface HudViewModel {
 }
 
 /**
+ * No session has reported a clock.
+ *
+ * `day: 0` and `dayLengthTicks: 0` both mean "not known", and the strip
+ * renders them as such. `speed: 1` is not a claim about the simulation: it
+ * is what the *next* play command will ask for, and the transport controls
+ * read it for exactly that.
+ */
+export const UNKNOWN_HUD_CLOCK: HudClockViewModel = {
+  day: 0,
+  tickOfDay: 0,
+  dayLengthTicks: 0,
+  mode: 'paused',
+  speed: 1,
+};
+
+/**
  * The localization surface the HUD actually uses.
  *
  * A structural port rather than the concrete `Localizer` class: the HUD
@@ -125,7 +174,15 @@ export interface HudLocalizer {
   formatNumber(value: number, options?: Intl.NumberFormatOptions): string;
 }
 
-/** An empty prison, for a first paint before any snapshot has arrived. */
+/**
+ * An empty prison, for a first paint before any snapshot has arrived.
+ *
+ * The clock reads *unknown*, not "day 1, paused, at the start of the day".
+ * Before a session exists there is no simulation clock to report, and a
+ * confident readout of a clock that is not running is the exact failure the
+ * transport controls used to have: something on screen that looks like
+ * state and is not.
+ */
 export const EMPTY_HUD_VIEW_MODEL: HudViewModel = {
   counts: {
     prisoners: 0,
@@ -135,6 +192,6 @@ export const EMPTY_HUD_VIEW_MODEL: HudViewModel = {
     activeIncidents: 0,
     contrabandFound: 0,
   },
-  clock: { day: 1, minuteOfDay: 0, mode: 'paused', speed: 1 },
+  clock: UNKNOWN_HUD_CLOCK,
   alerts: [],
 };
