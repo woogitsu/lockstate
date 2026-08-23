@@ -989,6 +989,42 @@ as separate concerns, and save/load is browser UI over persistence with no
 business in the renderer's scene graph. It reads only controller
 projections.
 
+**It is laid out by the HUD, and owned by neither.** `main.ts` mounts it into
+`HudHandle.asideSlot` — a slot at the top of the HUD's right rail that the HUD
+positions and never renders into. The panel predates the HUD shell and used to
+be a `position: fixed` layer of its own at `z-index: 10`, with no layout
+relating it to anything in the HUD; issue #88 is what that cost. On the Build
+tab the Build panel — inside a `z-index: 20` layer, with `pointer-events: auto`
+— landed on top of it and swallowed the clicks, silently and with no console
+message. Measured on that layout, with the Build panel's numeric fallback
+expanded (one tap from the default, and the state the issue was reported in):
+it covered 91 % of the save panel at 1280x720, 91 % at 900x600, 89 % at
+1024x768, 83 % at 375x812 and 37 % at 1440x900, taking all five of New prison,
+Save now, Export, Load and Delete at four of those five sizes — at 1440x900 it
+took only the per-prison Load and Delete. Folded it was narrower but not
+harmless — 66 % and three of the five buttons at 900x600. Sharing one flex
+column with the Build panel makes the overlap impossible rather than merely
+corrected.
+
+**Its height comes from the rail, not from the viewport.** The slot asks the
+rail for no height of its own and takes what the Build panel does not need,
+with a floor of a quarter of the rail; the panel is a scroll container inside
+it, so a long prison list scrolls in place instead of pushing anything. That
+matters to this module in one concrete way: the panel is free to render as
+many prison rows as the player has, and none of them can move the Build
+panel. Measured on the Build tab at 1280x720 with one prison saved, the panel
+is 161px tall with New prison, Save now and Export fully in view and the
+per-prison Load and Delete row straddling its lower edge, which the panel
+scrolls to; at 1440x900 it gets its full height and does not scroll at all. The panel used to cap itself at `60vh`
+instead, which is a budget the rail never agreed to — 432px of a 603px rail
+that also has to hold the Build panel.
+
+The slot exists instead of folding the panel into `src/ui/hud/` because this
+module type-imports `SaveResult`, `PrisonSlotMetadata`, `SaveEnvelope` and
+`RestoredScope` from `src/persistence/**` and `src/simulation/runtime/**`, and
+the HUD may import neither (`AGENTS.md` boundary 1). The HUD supplies a box;
+the composition root supplies the panel.
+
 `describeSaveResult` maps each failure code to its **own** state and
 advice, satisfying "quota, private-mode and transaction-abort errors are
 distinct recoverable states" — quota tells the player to free space,
