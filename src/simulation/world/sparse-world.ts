@@ -12,6 +12,7 @@ import type {
   ParcelPricingHook,
   ParcelPurchaseEligibility,
   ParcelPurchaseEligibilityHook,
+  ParcelRect,
   SerializedParcelDefinition,
 } from './parcel';
 import {
@@ -22,6 +23,7 @@ import {
 } from './parcel';
 import type { TerrainDefinition } from './terrain';
 import { TerrainRegistry } from './terrain';
+import { isTileOwnedBy } from './tile-ownership';
 
 export const WORLD_SNAPSHOT_VERSION = 1;
 
@@ -531,13 +533,22 @@ export class SparseWorld {
    * `Map` insertion order.
    *
    * `registerParcel` does not reject overlapping bounds, so more than one
-   * parcel can contain a tile; "first match wins" then decides
-   * `isTileOwned`, and through it `canBuildAt`. Insertion order is a
-   * property of *how a world was built*, while `snapshot()`/`fromSnapshot`
-   * emit and re-register parcels sorted by id -- so a snapshot -> restore
-   * round trip could flip which of two overlapping parcels owned a tile.
-   * Sorting here makes the answer a function of world state alone, which
-   * is what `tests/determinism/iteration-order.test.ts` pins.
+   * parcel can contain a tile and "first match wins" is a real choice.
+   * Insertion order is a property of *how a world was built*, while
+   * `snapshot()`/`fromSnapshot` emit and re-register parcels sorted by id --
+   * so a snapshot -> restore round trip could otherwise flip which of two
+   * overlapping parcels this returns. Sorting here makes the answer a
+   * function of world state alone, which is what
+   * `tests/determinism/iteration-order.test.ts` pins.
+   *
+   * This is a *which parcel is here* lookup -- for pricing, selection and
+   * UI -- and deliberately not the ownership test. `isTileOwned` used to be
+   * built on it, which is how a lookup that names one parcel came to decide
+   * ownership, and how the simulation's answer came to differ from the
+   * renderer's for a tile whose lowest-id covering parcel was unowned while a
+   * higher-id one was owned (issue #93). Ownership now goes through
+   * `isTileOwnedBy`, where an unowned parcel with a low id cannot mask an
+   * owned one.
    */
   public getParcelAtTile(tile: TilePosition): ParcelDefinition | undefined {
     for (const parcel of this.getAllParcels()) {
@@ -549,16 +560,32 @@ export class SparseWorld {
   }
 
   /**
-   * Tile ownership is true if the tile belongs to an owned parcel OR directly owned chunk.
+   * Whether the tile is owned: any owned parcel contains it, or its chunk is
+   * owned outright. The rule itself lives in `isTileOwnedBy`, which
+   * `WorldRenderView.isTileOwned` also calls, so the authoritative answer and
+   * the one `tile-layer.ts` shades and outlines from cannot diverge (issue
+   * #93). See ADR 0019, which is Proposed rather than Accepted.
    */
   public isTileOwned(tile: TilePosition): boolean {
-    const parcel = this.getParcelAtTile(tile);
-    if (parcel !== undefined && this.isParcelOwned(parcel.id)) {
-      return true;
-    }
-
     const { chunk } = tileToChunk(tile, this.tileChunkSize);
-    return this.isOwned(chunk);
+    return isTileOwnedBy(tile.x, tile.y, this.ownedParcelBounds(), this.isOwned(chunk));
+  }
+
+  /**
+   * Bounds of the owned parcels, in the canonical order `getAllParcels`
+   * defines (ascending parcel id in code-unit order), never `Map` insertion
+   * order. `isTileOwnedBy` asks whether *any* of them contains the tile, so
+   * the answer is the same in any order -- but `docs/DETERMINISM.md`
+   * ("Canonical iteration order") states the rule for anything feeding
+   * simulation state with no exception, and simulation code should not be the
+   * place that quietly argues for one. ADR 0019 records the choice.
+   */
+  private ownedParcelBounds(): readonly ParcelRect[] {
+    const bounds: ParcelRect[] = [];
+    for (const parcel of this.getAllParcels()) {
+      if (this.ownedParcels.has(parcel.id)) bounds.push(parcel.bounds);
+    }
+    return bounds;
   }
 
   public canPurchaseParcel(
