@@ -81,15 +81,17 @@ describe('save-schema V2 -> V3 migration', () => {
     });
   }
 
-  it('does not invent a simulation section for a save that never had one', () => {
-    // The section is absent, not empty. An empty section would assert "this
-    // prison had no prisoners, no guards and no incidents"; an absent one
+  it('does not invent a simulation or identity section for a save that never had one', () => {
+    // Both sections are absent, not empty. An empty `simulation` would assert
+    // "this prison had no prisoners, no guards and no incidents"; an empty
+    // `identity` would assert "this prison had nobody named". An absent one
     // says "this save predates that state", which is the truth and is what
     // `RestoredScope` reports to the player.
     const result = decodeSaveEnvelope(throughStorage(v2EnvelopeFrom(inProgressFixture)));
     if (!result.ok) throw new Error('the V2 save must migrate for this test to be meaningful');
 
     expect('simulation' in result.value.payload).toBe(false);
+    expect('identity' in result.value.payload).toBe(false);
     expect(Object.keys(result.value.payload).sort()).toEqual(['construction', 'entities', 'kernel', 'world']);
   });
 
@@ -111,6 +113,9 @@ describe('save-schema V2 -> V3 migration', () => {
     expect(runtime.contraband.all()).toEqual([]);
     expect(runtime.incidents.openIncidents()).toEqual([]);
     expect(runtime.navigation.doors.all()).toEqual([]);
+    // ...including names: an empty registry, so every row projects no name,
+    // which is exactly the state a session that never minted one is in.
+    expect(runtime.actorIdentity.size).toBe(0);
     expect(scope.restored.length).toBeGreaterThan(0);
   });
 
@@ -245,6 +250,28 @@ describe('the V3 simulation section is validated, not trusted', () => {
     return { ...v3.value, payload, checksum: computeSaveChecksum(payload as unknown as JsonValue) };
   }
 
+  /**
+   * A minimal, structurally valid `identity` section on top of a migrated V2
+   * envelope, then mutated. Built by hand rather than captured from a
+   * runtime, so this tests the schema and not the registry that feeds it.
+   */
+  function v3WithIdentity(mutate: (identity: Record<string, unknown>) => unknown): unknown {
+    const v3 = decodeSaveEnvelope(throughStorage(v2EnvelopeFrom(inProgressFixture)));
+    if (!v3.ok) throw new Error('the V2 save must migrate for this test to be meaningful');
+
+    const identity = mutate({
+      version: 1,
+      poolId: 'placeholder',
+      entries: [
+        { kind: 'prisoner', entityId: 0, givenName: 'Ada', familyName: 'Okafor' },
+        { kind: 'staff', entityId: 0, givenName: 'Bo', familyName: 'Lindqvist' },
+      ],
+    });
+
+    const payload = { ...v3.value.payload, identity };
+    return { ...v3.value, payload, checksum: computeSaveChecksum(payload as unknown as JsonValue) };
+  }
+
   it('accepts a well-formed, empty simulation section', () => {
     expect(decodeSaveEnvelope(v3WithSimulation(() => undefined))).toMatchObject({ ok: true, migrated: false });
   });
@@ -274,6 +301,52 @@ describe('the V3 simulation section is validated, not trusted', () => {
       (simulation.security as Record<string, unknown>).sectorControlStates = [['sector-a', 'evacuated']];
     });
     expect(decodeSaveEnvelope(broken)).toMatchObject({ ok: false, error: { code: 'invalid-shape', atVersion: SAVE_SCHEMA_VERSION } });
+  });
+
+  it('accepts a well-formed identity section and carries its names through decoding', () => {
+    const envelope = v3WithIdentity((identity) => identity);
+    const result = decodeSaveEnvelope(envelope);
+    expect(result).toMatchObject({ ok: true, migrated: false });
+    if (!result.ok) return;
+    expect(result.value.payload.identity?.entries).toEqual([
+      { kind: 'prisoner', entityId: 0, givenName: 'Ada', familyName: 'Okafor' },
+      { kind: 'staff', entityId: 0, givenName: 'Bo', familyName: 'Lindqvist' },
+    ]);
+  });
+
+  it('accepts a poolId that no longer matches any configured pool, so replacing the pool renames nobody', () => {
+    // `ActorIdentityRegistry.loadSnapshot` tolerates this deliberately —
+    // stored names are authoritative. A schema check against the current
+    // pool would undo that guarantee at the save boundary instead.
+    const envelope = v3WithIdentity((identity) => ({ ...identity, poolId: 'retired-pool-from-an-older-build' }));
+    expect(decodeSaveEnvelope(envelope)).toMatchObject({ ok: true, migrated: false });
+  });
+
+  it('rejects an actor kind outside the declared vocabulary', () => {
+    // `kind` is half the registry's key — prisoners and staff live in
+    // separate entity stores that both hand out id 0 — so an unrecognised
+    // kind is not a value to ignore.
+    const envelope = v3WithIdentity((identity) => ({
+      ...identity,
+      entries: [{ kind: 'visitor', entityId: 0, givenName: 'Ada', familyName: 'Okafor' }],
+    }));
+    expect(decodeSaveEnvelope(envelope)).toMatchObject({ ok: false, error: { code: 'invalid-shape', atVersion: SAVE_SCHEMA_VERSION } });
+  });
+
+  it('rejects a registry snapshot version this build does not understand, rather than half-reading it', () => {
+    // The registry's `version` is its own and independent of
+    // `SAVE_SCHEMA_VERSION`; pinning it here means a future registry shape
+    // arriving inside a V3 envelope fails at the boundary.
+    const envelope = v3WithIdentity((identity) => ({ ...identity, version: 2 }));
+    expect(decodeSaveEnvelope(envelope)).toMatchObject({ ok: false, error: { code: 'invalid-shape', atVersion: SAVE_SCHEMA_VERSION } });
+  });
+
+  it('rejects an empty name rather than restoring an actor with a blank label', () => {
+    const envelope = v3WithIdentity((identity) => ({
+      ...identity,
+      entries: [{ kind: 'prisoner', entityId: 0, givenName: '', familyName: 'Okafor' }],
+    }));
+    expect(decodeSaveEnvelope(envelope)).toMatchObject({ ok: false, error: { code: 'invalid-shape', atVersion: SAVE_SCHEMA_VERSION } });
   });
 
   it('rejects a tampered simulation section as a checksum mismatch when the checksum is left alone', () => {

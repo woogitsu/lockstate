@@ -89,16 +89,20 @@ export function migrateSaveEnvelopeV1ToV2(input: SaveEnvelopeV1): SaveEnvelopeV2
  * V2 -> V3: the payload gains a `simulation` section carrying the twenty-odd
  * subsystems that hold authoritative state and were never persisted (#70).
  *
- * **The payload crosses unchanged.** The new section was added *beside*
+ * V3 also adds a session-level `identity` section (ADR 0015): the names
+ * prisoners and staff are known by.
+ *
+ * **The payload crosses unchanged.** Both sections were added *beside*
  * `kernel`/`world`/`construction`/`entities` rather than folded into them,
- * and it is optional, so there is nothing in a V2 save to reshape — and
+ * and both are optional, so there is nothing in a V2 save to reshape — and
  * nothing this function may invent. A save written by a V2 build genuinely
- * does not contain that prison's prisoners, guards, incidents or contraband;
- * fabricating an empty `simulation` section would assert the opposite (an
- * empty section says "this prison has none", an absent one says "this save
- * does not know"). `restoreSimulationRuntime` treats an absent section
- * exactly as V2 behaved — those subsystems rebuild empty — and
- * `RestoredScope` is what tells the player which of the two happened.
+ * does not contain that prison's prisoners, guards, incidents, contraband or
+ * names; fabricating an empty section would assert the opposite (an empty
+ * section says "this prison has none", an absent one says "this save does not
+ * know"). `restoreSimulationRuntime` treats an absent section exactly as V2
+ * behaved — those subsystems rebuild empty, and every roster row simply
+ * projects no name — and `RestoredScope` is what tells the player which of
+ * the two happened.
  *
  * The checksum is recomputed for the same reason V1 -> V2 recomputes it: a
  * migrated envelope must be indistinguishable from a natively-written one.

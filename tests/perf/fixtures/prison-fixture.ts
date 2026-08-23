@@ -270,6 +270,7 @@ export function snapshotEnvelope(runtime: SimulationRuntime, revision: number): 
     construction: bundle.construction,
     ...(bundle.entities === undefined ? {} : { entities: bundle.entities }),
     ...(bundle.simulation === undefined ? {} : { simulation: bundle.simulation }),
+    ...(bundle.identity === undefined ? {} : { identity: bundle.identity }),
   });
 }
 

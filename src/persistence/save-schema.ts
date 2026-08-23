@@ -18,6 +18,7 @@ import type { KernelSnapshot } from '../simulation/kernel/kernel';
 import type { WorldSnapshotV1 } from '../simulation/world/sparse-world';
 import type { ConstructionSnapshot } from '../simulation/construction/system';
 import type { EncodedSessionSystems } from '../simulation/runtime/session-systems';
+import { ACTOR_IDENTITY_SNAPSHOT_VERSION, ACTOR_KINDS, type ActorIdentitySnapshot } from '../simulation/identity/actor-identity';
 
 /** The version every newly written save carries. Older versions are still readable via `saveMigrationChain`. */
 export const SAVE_SCHEMA_VERSION = 3 as const;
@@ -609,6 +610,43 @@ const incidentsSectionSchema = z
   })
   .strict();
 
+// --- Actor identity (V3, issue #75 / ADR 0015) ---
+//
+// A **session-level** section, deliberately not nested under
+// `simulation.prisoners` or `simulation.security`: `ActorIdentityRegistry`
+// spans both `EntityStore`s, which each hand out id `0`, so `kind` is the
+// half of the key that disambiguates them and filing the section under
+// either population would misplace the other half.
+//
+// `version` is the registry's own snapshot version and is independent of
+// `SAVE_SCHEMA_VERSION` -- the registry may revise its shape without a save
+// bump, and vice versa, which is the same separation ADR 0003 gives the
+// worker snapshot. Pinned to a literal here so a future registry version
+// arriving in a V3 envelope is rejected as `invalid-shape` rather than being
+// half-read.
+//
+// `poolId` is validated as a string and nothing more. `loadSnapshot`
+// deliberately tolerates a `poolId` that disagrees with the configured pool,
+// so that replacing the placeholder name pool renames nobody; a schema check
+// against the current pool would undo exactly that guarantee.
+
+const actorIdentitySnapshotSchema = z
+  .object({
+    version: z.literal(ACTOR_IDENTITY_SNAPSHOT_VERSION),
+    poolId: z.string().min(1),
+    entries: z.array(
+      z
+        .object({
+          kind: z.enum(ACTOR_KINDS),
+          entityId: entityIdSchema,
+          givenName: z.string().min(1),
+          familyName: z.string().min(1),
+        })
+        .strict(),
+    ),
+  })
+  .strict();
+
 const sessionSystemsV3Schema = z
   .object({
     prisoners: prisonersSectionSchema,
@@ -657,6 +695,7 @@ const savePayloadV3Schema = z
     construction: constructionSnapshotSchema,
     entities: entityStoreSnapshotV2Schema.optional(),
     simulation: sessionSystemsV3Schema.optional(),
+    identity: actorIdentitySnapshotSchema.optional(),
   })
   .strict();
 
@@ -917,6 +956,8 @@ export interface CreateSaveEnvelopeInput {
    * by hand -- is not forced to fabricate one.
    */
   readonly simulation?: EncodedSessionSystems;
+  /** Prisoner and staff names (ADR 0015). Session-level, since the registry spans both entity stores. */
+  readonly identity?: ActorIdentitySnapshot;
 }
 
 /**
@@ -938,6 +979,7 @@ export function createSaveEnvelope(input: CreateSaveEnvelopeInput): TrustedSaveE
     construction: input.construction,
     ...(input.entities === undefined ? {} : { entities: input.entities }),
     ...(input.simulation === undefined ? {} : { simulation: input.simulation }),
+    ...(input.identity === undefined ? {} : { identity: input.identity }),
   });
 
   const metadata = saveEnvelopeMetadataV3Schema.parse({

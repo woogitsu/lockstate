@@ -25,6 +25,7 @@ import {
   type SectorOccupantResolver,
   type SectorRiskSampler,
 } from '../incidents';
+import { ACTOR_IDENTITY_RNG_STREAM, ActorIdentityRegistry } from '../identity';
 import { Kernel } from '../kernel';
 import { NavigationSystem, type NavigationSystemOptions } from '../navigation';
 import { Container, ContainerMaterialsProvider, ContainerRegistry, JobBoard, JobSystem, JobWorkerPool, UtilityNetwork } from '../operations';
@@ -65,6 +66,13 @@ export interface SimulationRuntime {
   readonly kernel: Kernel;
   readonly world: SparseWorld;
   readonly construction: ConstructionSystem;
+  /**
+   * Names for prisoners and staff (ADR 0015). Session-owned rather than
+   * owned by either population, because it spans both `EntityStore`s --
+   * `prisoners` and `securityGuards` each hand out id `0`, so `(kind,
+   * entityId)` is the only workable key.
+   */
+  readonly actorIdentity: ActorIdentityRegistry;
   readonly topology: TopologyManager;
   readonly rooms: RoomSystem;
   readonly navigation: NavigationSystem;
@@ -149,10 +157,18 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     { name: PRISONER_CLASSIFICATION_RNG_STREAM, state: deriveXoshiroState(masterSeed, PRISONER_CLASSIFICATION_RNG_STREAM) },
     { name: CONTRABAND_DETECTION_RNG_STREAM, state: deriveXoshiroState(masterSeed, CONTRABAND_DETECTION_RNG_STREAM) },
     { name: CONTRABAND_INTELLIGENCE_RNG_STREAM, state: deriveXoshiroState(masterSeed, CONTRABAND_INTELLIGENCE_RNG_STREAM) },
+    { name: ACTOR_IDENTITY_RNG_STREAM, state: deriveXoshiroState(masterSeed, ACTOR_IDENTITY_RNG_STREAM) },
   ]);
   const kernel = new Kernel(0, 0, rng);
 
-  const prisoners = new PrisonerOperationsRuntime({ capacity: DEFAULT_PRISONER_CAPACITY, navigation });
+  // ADR 0015's session wiring: the registry is constructed here, minted from
+  // by `IntakeSystem` at reception and by `GuardRoster.hire`, and snapshotted
+  // as its own session-level save field (#70). Its own draws come from
+  // `identity.actor-name` alone, so naming an arrival can never shift the
+  // sequence `prisoners.classification` hands the arrival after them.
+  const actorIdentity = new ActorIdentityRegistry();
+
+  const prisoners = new PrisonerOperationsRuntime({ capacity: DEFAULT_PRISONER_CAPACITY, navigation, identity: actorIdentity });
 
   // Issue #25's job/inventory substrate. Starts empty -- no default stock,
   // no default containers beyond the one construction draws from, no
@@ -181,7 +197,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   // point #21/#22 expose -- so sector control-state changes are never a
   // parallel/bypassing door model.
   const securitySectors = new SecuritySectorRegistry(navigation.doors);
-  const securityGuards = new GuardRoster(DEFAULT_GUARD_CAPACITY);
+  const securityGuards = new GuardRoster(DEFAULT_GUARD_CAPACITY, actorIdentity, () => rng.get(ACTOR_IDENTITY_RNG_STREAM));
   const securitySchedules: DeploymentSchedule[] = [];
   const deploymentSystem = new DeploymentSystem(securitySectors, securityGuards, navigation, securitySchedules);
   const patrolSystem = new PatrolSystem(securitySectors, securityGuards, navigation);
@@ -298,6 +314,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     kernel,
     world,
     construction,
+    actorIdentity,
     topology,
     rooms,
     navigation,

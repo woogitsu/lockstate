@@ -37,6 +37,10 @@ Supabase sync (#20) is a separate, not-yet-implemented issue.
       incidents:  { log, sectorRisk, gangs, tunnels,
                     watchedSectorIds, trigger, response },
     },
+    identity?: {                                              // V3, issue #75 / ADR 0015
+      version: 1, poolId,
+      entries: [{ kind, entityId, givenName, familyName }],
+    },
   },
 }
 ```
@@ -270,8 +274,60 @@ snapshot-capable and never connected to a payload. V3 connects them.
 | `contraband` | `ContrabandRegistry`, `IntelligenceLedger`, `InformantRegistry`, `ConfiscationLedger`, `SearchPolicyDefinition[]`, `SearchSystem` | Concealed items, their provenance and movement history, decayed suspicion, and the evidence chain a confiscation produced. |
 | `incidents` | `IncidentLog`, `SectorRiskTracker`, `GangRegistry`, `TunnelRegistry`, `IncidentTriggerSystem`, `IncidentResponseSystem` | Incident records are explicitly "simulation entities and domain events, not transient UI popups" (#28). |
 
+| `identity` *(session-level)* | `ActorIdentityRegistry` | ADR 0015: a name is an **allocated identity**, minted once and carried — never recomputable from an entity id. |
+
 Everything not in that table is excluded deliberately; the reason for each is
 under "What is deliberately excluded from the payload" above.
+
+### Why `identity` is session-level and not nested
+
+`identity` sits beside `simulation`, not inside `simulation.prisoners` or
+`simulation.security`, because `ActorIdentityRegistry` spans **both**
+`EntityStore`s. Prisoners live in `PrisonerOperationsRuntime`'s store and staff
+in `GuardRoster`'s own separate one, and both hand out entity id `0` — so the
+registry is keyed by `(kind, entityId)` and `kind` is load-bearing. Filing the
+section under either population would misplace the other half of it. That is
+not hypothetical: collapsing every entry's `kind` to `'prisoner'` makes
+`loadSnapshot` throw `Actor identity snapshot repeats prisoner 0` on the
+determinism scenario — the collision the nesting would have caused silently.
+
+Two properties the save boundary must not break, both from ADR 0015:
+
+- **A `poolId` that disagrees with the configured pool is not an error.**
+  Stored names are authoritative precisely so that replacing the placeholder
+  name pool renames nobody. The schema therefore validates `poolId` as a
+  non-empty string and nothing more; checking it against the current pool
+  would undo that guarantee at the boundary instead of honouring it.
+- **The registry's `version` is its own**, independent of
+  `SAVE_SCHEMA_VERSION` — the same separation ADR 0003 gives the worker
+  snapshot. It is pinned to a literal in the V3 schema, so a future registry
+  shape arriving inside a V3 envelope is rejected as `invalid-shape` rather
+  than half-read.
+
+### Session wiring for identity
+
+ADR 0015 shipped the registry **inert**: `IntakeSystem` and `GuardRoster` take
+an optional minter and draw nothing without one, because
+`NamedRngStreams.get` throws for a stream the session never registered. #70
+completes the wiring that ADR handed to `src/simulation/runtime/**` —
+`new-session.ts` registers `identity.actor-name` alongside the other three
+streams, constructs the registry as `SimulationRuntime.actorIdentity`, and
+passes it to `PrisonerOperationsRuntime` (which names an arrival at reception,
+inside `EntityQuery`'s canonical ascending-id walk) and to `GuardRoster`
+(which names a hire). Without that, `identity` would be a section that is
+always empty, and a save would still lose every name.
+
+`GuardRoster` gained the staff counterpart of the seam `IntakeSystem` already
+had: an optional `ActorIdentityMinter` plus a resolver for the stream it draws
+from. A resolver rather than the stream itself, because `hire` is a
+session/scenario call outside any tick and has no `SimulationContext` to read
+one from — the same reason `reportInformantTip` takes its stream as an
+argument.
+
+Adding a fourth RNG stream changes what a recorded command stream reproduces,
+so the stream-list pins in `tests/determinism/rng-stream-isolation.test.ts`
+and `session-replay.test.ts` were updated deliberately rather than
+incidentally.
 
 ### Definitions, not only mutable state
 
@@ -356,12 +412,13 @@ encoded form is identical in and out of storage.
 
 ### Migration
 
-`migrateSaveEnvelopeV2ToV3` carries the payload across **unchanged**. The
-section was added beside `kernel`/`world`/`construction`/`entities` rather than
-folded into them, and it is optional, so there is nothing in a V2 save to
-reshape — and nothing the migration may invent. An empty `simulation` section
-would assert "this prison had no prisoners, guards or incidents"; an absent one
-says "this save predates that state", which is the truth.
+`migrateSaveEnvelopeV2ToV3` carries the payload across **unchanged**. Both new
+sections were added beside `kernel`/`world`/`construction`/`entities` rather
+than folded into them, and both are optional, so there is nothing in a V2 save
+to reshape — and nothing the migration may invent. An empty `simulation`
+section would assert "this prison had no prisoners, guards or incidents", and
+an empty `identity` section "this prison had nobody named"; an absent one says
+"this save predates that state", which is the truth.
 `restoreSimulationRuntime` treats an absent section exactly as V2 behaved
 (those subsystems rebuild empty) and `RestoredScope` reports which of the two
 happened. The checksum is recomputed anyway, so a migrated envelope is
@@ -380,18 +437,26 @@ the security/contraband/incident sections are near-empty *by construction*,
 not by encoding — a prison with guards and incidents pays for them
 proportionally.
 
-| tier | prisoners | envelope before (V2) | after (V3) | `simulation` | of which `prisoners` |
-| --- | --- | --- | --- | --- | --- |
-| small | 25 | 36.7 KiB | 40.0 KiB | 3.2 KiB (8.1%) | 1.9 KiB |
-| medium | 250 | 251.0 KiB | 267.9 KiB | 16.9 KiB (6.3%) | 15.6 KiB |
-| large | 1,000 | 997.0 KiB | 1.03 MiB | 62.7 KiB (5.9%) | 61.4 KiB |
-| x-large | 3,000 | 2.46 MiB | 2.64 MiB | 185.1 KiB (6.8%) | 183.8 KiB |
+| tier | prisoners | envelope before (V2) | after (V3) | `simulation` | of which `prisoners` | `identity` |
+| --- | --- | --- | --- | --- | --- | --- |
+| small | 25 | 36.7 KiB | 42.0 KiB | 3.2 KiB (7.7%) | 1.9 KiB | 1.9 KiB (4.5%) |
+| medium | 250 | 251.0 KiB | 286.8 KiB | 16.9 KiB (5.9%) | 15.6 KiB | 18.7 KiB (6.5%) |
+| large | 1,000 | 997.0 KiB | 1.11 MiB | 62.7 KiB (5.5%) | 61.4 KiB | 74.9 KiB (6.6%) |
+| x-large | 3,000 | 2.46 MiB | 2.86 MiB | 185.1 KiB (6.3%) | 183.8 KiB | 226.8 KiB (7.7%) |
 
-The non-prisoner sections are flat across every tier at this content level:
-operations 283–285 B, navigation 12 B, security 358 B, contraband 241 B,
-incidents 345 B. Cost is therefore proportional to population, which is the
-property that matters; the world section remains the dominant term at every
-tier.
+The non-prisoner `simulation` sections are flat across every tier at this
+content level: operations 283–285 B, navigation 12 B, security 358 B,
+contraband 241 B, incidents 345 B. Cost is therefore proportional to
+population, which is the property that matters; the world section remains the
+dominant term at every tier.
+
+`identity` is exactly **77 B per named actor** at every tier — a key, a kind
+and two short strings, with no padding to shape away. These fixtures hire no
+guards, so every named actor is a prisoner; a prison with staff pays the same
+77 B for each of them. It is the one section of V3 whose size is irreducible
+without shortening or interning the names themselves, and interning them would
+trade a lookup table for the property that makes a name renameable state
+rather than a derived value (ADR 0015).
 
 What population-shaping bought, measured the same way #50's table measured its
 own:
@@ -821,6 +886,7 @@ difference is derived and in-flight state rather than whole subsystems:
 | world terrain and ownership | |
 | construction orders and undo/redo | |
 | entity id liveness | |
+| prisoner and staff names | |
 | prisoners, needs, actions and cell assignments | |
 | jobs, containers and utility networks | |
 | doors, security sectors, guards and patrols | |

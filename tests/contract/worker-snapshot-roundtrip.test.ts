@@ -66,7 +66,7 @@ describe('worker snapshot protocol: the only way persisted state leaves the simu
     // The kernel alone is not a save -- world and construction are what make
     // a restored prison an actual prison, and since #70 `simulation` is what
     // makes it a *populated* one.
-    expect(Object.keys(data).sort()).toEqual(['construction', 'entities', 'kernel', 'simulation', 'world']);
+    expect(Object.keys(data).sort()).toEqual(['construction', 'entities', 'identity', 'kernel', 'simulation', 'world']);
     expect(data.kernel.rngStates.length).toBeGreaterThan(0);
     expect(data.world.chunks.length).toBeGreaterThan(0);
     expect(data.construction).toHaveProperty('orders');

@@ -7,6 +7,8 @@ import {
   type SessionSnapshotBundle,
 } from '../../src/simulation/runtime/restore-session';
 import { NEED_IDS, NEED_MAX, type NeedId } from '../../src/simulation/prisoners/needs';
+import { ACTOR_IDENTITY_RNG_STREAM } from '../../src/simulation/identity';
+import { projectPrisonerRoster } from '../../src/simulation/presentation/prisoner-projection';
 import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from '../helpers/determinism-scenario';
 
 /**
@@ -50,6 +52,7 @@ function saveAndLoad(runtime: SimulationRuntime): SimulationRuntime {
     construction: bundle.construction,
     ...(bundle.entities === undefined ? {} : { entities: bundle.entities }),
     ...(bundle.simulation === undefined ? {} : { simulation: bundle.simulation }),
+    ...(bundle.identity === undefined ? {} : { identity: bundle.identity }),
   });
   expect(envelope.saveSchemaVersion).toBe(SAVE_SCHEMA_VERSION);
 
@@ -288,18 +291,87 @@ describe('a populated prison survives save -> load', () => {
     }
   });
 
+  it('keeps the names it minted, for prisoners and staff alike, and projects them after the restore', () => {
+    const runtime = buildPopulatedPrison();
+
+    // Non-vacuous: the session really did mint names, for both populations.
+    // If ADR 0015's registry were still unwired this would fail here rather
+    // than passing on an empty-vs-empty comparison.
+    const namedRows = projectPrisonerRoster(runtime.prisoners, { limit: 50 }, { identity: runtime.actorIdentity }).rows;
+    expect(namedRows.length).toBeGreaterThan(0);
+    expect(namedRows.every((row) => row.name !== undefined)).toBe(true);
+
+    const guardIds = runtime.securityGuards.allGuardIds();
+    expect(guardIds.length).toBeGreaterThan(0);
+    expect(guardIds.every((id) => runtime.actorIdentity.getName('staff', id) !== undefined)).toBe(true);
+
+    const before = runtime.actorIdentity.getSnapshot();
+    expect(before.entries.length).toBe(namedRows.length + guardIds.length);
+
+    const restored = saveAndLoad(runtime);
+
+    // Behavioural, and through the surface a player actually sees: the roster
+    // panel renders the same names against the same prisoners.
+    const restoredRows = projectPrisonerRoster(restored.prisoners, { limit: 50 }, { identity: restored.actorIdentity }).rows;
+    expect(restoredRows.map((row) => ({ id: row.entityId, name: row.name }))).toEqual(
+      namedRows.map((row) => ({ id: row.entityId, name: row.name })),
+    );
+
+    // Staff too -- the reason the section is session-level rather than nested
+    // under either population. Both stores hand out id 0, so a restore that
+    // lost `kind` would cross the two.
+    for (const id of guardIds) {
+      expect(restored.actorIdentity.getName('staff', id)).toEqual(runtime.actorIdentity.getName('staff', id));
+    }
+    expect(restored.actorIdentity.getSnapshot()).toEqual(before);
+
+    // The uniqueness bookkeeping is rebuilt, not just the map: `assign` for
+    // an actor that already has a name must return it *without drawing*, or
+    // the next actor named after a load would get a different name than in a
+    // session that was never saved.
+    const rngBefore = restored.kernel.snapshot().rngStates.find((stream) => stream.name === ACTOR_IDENTITY_RNG_STREAM);
+    const reassigned = restored.actorIdentity.assign('staff', guardIds[0]!, restored.kernel.rng.get(ACTOR_IDENTITY_RNG_STREAM));
+    expect(reassigned).toEqual(runtime.actorIdentity.getName('staff', guardIds[0]!));
+    expect(restored.kernel.snapshot().rngStates.find((stream) => stream.name === ACTOR_IDENTITY_RNG_STREAM)).toEqual(rngBefore);
+  });
+
+  it('restores names for a save whose pool no longer matches, rather than renaming the prison', () => {
+    // `ActorIdentityRegistry.loadSnapshot` tolerates a `poolId` that
+    // disagrees with the configured pool on purpose: stored names are
+    // authoritative, so replacing the placeholder pool must rename nobody.
+    // The save boundary must not undo that by validating `poolId` against
+    // the current pool.
+    const runtime = buildPopulatedPrison();
+    const bundle = captureSessionSnapshot(runtime);
+    const identity = bundle.identity;
+    if (identity === undefined) throw new Error('the session must have minted names for this test to mean anything');
+    expect(identity.entries.length).toBeGreaterThan(0);
+
+    const fromRetiredPool = { ...bundle, identity: { ...identity, poolId: 'retired-pool-from-an-older-build' } };
+    const { runtime: restored } = restoreSimulationRuntime(fromRetiredPool, SCENARIO_SEED);
+
+    expect(restored.actorIdentity.getSnapshot().entries).toEqual(identity.entries);
+    // The live registry reports its *own* pool; the snapshot's poolId is
+    // diagnostic, and the names it carried won.
+    expect(restored.actorIdentity.poolId).toBe(runtime.actorIdentity.poolId);
+  });
+
   it('does not fabricate a populated prison out of a save that never had one', () => {
     // The mirror image of every assertion above, and the reason `simulation`
     // is optional rather than defaulted: a payload without the section must
     // restore an empty prison, not an invented one.
     const runtime = buildPopulatedPrison();
     const bundle = captureSessionSnapshot(runtime);
-    const { simulation: _dropped, ...withoutSystems } = bundle;
+    const { simulation: _dropped, identity: _alsoDropped, ...withoutSystems } = bundle;
 
     const { runtime: restored, scope } = restoreSimulationRuntime(withoutSystems, SCENARIO_SEED);
     expect(restored.securityGuards.allGuardIds()).toEqual([]);
     expect(restored.contraband.all()).toEqual([]);
     expect(restored.incidents.openIncidents()).toEqual([]);
+    // An empty registry, not invented names: a pre-#75 save genuinely has
+    // none, and every row simply projects no name.
+    expect(restored.actorIdentity.size).toBe(0);
+    expect(restored.actorIdentity.getSnapshot().entries).toEqual([]);
     // The world and construction halves still come back, exactly as V2 did.
     expect(restored.world.snapshot()).toEqual(runtime.world.snapshot());
     expect(scope.restored.length).toBeGreaterThan(0);

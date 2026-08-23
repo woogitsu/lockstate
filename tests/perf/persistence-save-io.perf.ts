@@ -114,6 +114,9 @@ interface SizeReport {
    * #70 cannot quietly reintroduce it at eighteen times the size.
    */
   readonly simulationPrisonersCapacityShapedBytes: number;
+  /** #75/ADR 0015's session-level `identity` section: two short strings plus a key per named actor. */
+  readonly identityBytes: number;
+  readonly namedActors: number;
   readonly retainedWindowBytes: number;
   readonly retainedGenerations: number;
 }
@@ -419,6 +422,8 @@ describe.each(PRISON_SIZE_TIERS.map((tier) => [tier.id, tier] as const))(
         simulationContrabandBytes: jsonByteSize(fixture.envelope.payload.simulation?.contraband),
         simulationIncidentsBytes: jsonByteSize(fixture.envelope.payload.simulation?.incidents),
         simulationPrisonersCapacityShapedBytes: jsonByteSize(capacityShapedPrisonerComponents(fixture)),
+        identityBytes: jsonByteSize(fixture.envelope.payload.identity),
+        namedActors: fixture.envelope.payload.identity?.entries.length ?? 0,
         retainedWindowBytes,
         retainedGenerations,
       });
@@ -562,7 +567,7 @@ afterAll(() => {
   lines.push('Serialized storage size per snapshot');
   lines.push(
     renderTable(
-      ['tier', 'loaded chunks', 'chunks', 'orders', 'prisoners', 'envelope', 'gzip', 'world', 'construction', 'simulation', 'entities', 'kernel', `retained (${DEFAULT_KEEP_GENERATIONS} gens)`],
+      ['tier', 'loaded chunks', 'chunks', 'orders', 'prisoners', 'envelope', 'gzip', 'world', 'construction', 'simulation', 'identity', 'entities', 'kernel', `retained (${DEFAULT_KEEP_GENERATIONS} gens)`],
       sizeReports.map((row) => [
         row.tierId,
         String(row.loadedChunks),
@@ -574,6 +579,7 @@ afterAll(() => {
         formatBytes(row.worldBytes),
         formatBytes(row.constructionBytes),
         formatBytes(row.simulationBytes),
+        formatBytes(row.identityBytes),
         formatBytes(row.entitiesBytes),
         formatBytes(row.kernelBytes),
         formatBytes(row.retainedWindowBytes),
@@ -598,6 +604,21 @@ afterAll(() => {
         formatBytes(row.simulationContrabandBytes),
         formatBytes(row.simulationIncidentsBytes),
         `${((row.simulationBytes / row.envelopeBytes) * 100).toFixed(1)}%`,
+      ]),
+    ),
+  );
+
+  lines.push('');
+  lines.push('#75/ADR 0015 `identity` section: one entry per named actor (prisoners named at reception, staff at hire).');
+  lines.push(
+    renderTable(
+      ['tier', 'named actors', 'identity', 'bytes per actor', 'share of envelope'],
+      sizeReports.map((row) => [
+        row.tierId,
+        String(row.namedActors),
+        formatBytes(row.identityBytes),
+        row.namedActors === 0 ? 'n/a' : `${Math.round(row.identityBytes / row.namedActors)} B`,
+        `${((row.identityBytes / row.envelopeBytes) * 100).toFixed(1)}%`,
       ]),
     ),
   );

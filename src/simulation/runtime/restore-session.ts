@@ -1,4 +1,5 @@
 import type { ConstructionSnapshot } from '../construction/system';
+import type { ActorIdentitySnapshot } from '../identity';
 import { decodeEntityStoreSnapshot, encodeEntityStoreSnapshot, type EncodedEntityStoreSnapshot } from '../entity/entity-codec';
 import type { KernelSnapshot } from '../kernel/kernel';
 import type { NamedRngStreamState } from '../rng/streams';
@@ -39,6 +40,23 @@ export interface SessionSnapshotBundle {
    * rebuilt empty, rather than failing.
    */
   readonly simulation?: EncodedSessionSystems;
+  /**
+   * Names for prisoners and staff (ADR 0015, #75).
+   *
+   * A **session-level** field rather than part of `simulation.prisoners` or
+   * `simulation.security`, because `ActorIdentityRegistry` spans both
+   * `EntityStore`s: prisoners and guards each hand out id `0`, so `kind` is
+   * load-bearing and nesting it under either population would misfile half
+   * of it. Already JSON-safe and canonically ordered by the registry itself
+   * (declared kind order, then ascending entity id).
+   *
+   * Optional for the same reason `simulation` is: a V2 save genuinely
+   * predates naming, and restoring it leaves an empty registry where every
+   * row simply projects no name — the same state a session that never
+   * registered the RNG stream is in. Nothing throws, and no migration has
+   * to invent names.
+   */
+  readonly identity?: ActorIdentitySnapshot;
 }
 
 /** `schemaId` this bundle travels under in the worker protocol's `versionedPayload`. */
@@ -95,6 +113,7 @@ export const CURRENT_SAVE_RESTORED_SCOPE: RestoredScope = {
     'doors, security sectors, guards and patrols',
     'contraband, intelligence and searches',
     'incidents, gangs and tunnels',
+    'prisoner and staff names',
   ],
   notCarriedByThisSaveVersion: ['room and topology caches (recomputed from the world)', 'navigation caches and in-flight path requests (re-issued on the next tick)'],
 };
@@ -148,6 +167,7 @@ export function captureSessionSnapshot(runtime: SimulationRuntime): SessionSnaps
     construction: runtime.construction.snapshot(),
     entities: encodeEntityStoreSnapshot(runtime.prisoners.entityStore.getSnapshot()),
     simulation: captureSessionSystems(runtime),
+    identity: runtime.actorIdentity.getSnapshot(),
   };
 }
 
@@ -180,6 +200,14 @@ export function restoreSimulationRuntime(bundle: SessionSnapshotBundle, masterSe
   } else if (entityStore !== undefined) {
     // V2 shape: liveness only, every other subsystem rebuilt empty.
     runtime.prisoners.entityStore.loadSnapshot(entityStore);
+  }
+
+  // Independent of `simulation`: the registry is keyed by `(kind, entityId)`
+  // and validates its own entries, so it neither needs nor reads the
+  // subsystem sections. Absent (a pre-#75 save), the registry stays empty and
+  // rows project no name rather than being handed invented ones.
+  if (bundle.identity !== undefined) {
+    runtime.actorIdentity.loadSnapshot(bundle.identity);
   }
 
   return { runtime, scope: CURRENT_SAVE_RESTORED_SCOPE };

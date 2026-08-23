@@ -168,6 +168,7 @@ describe('session snapshot / restore fidelity', () => {
     expect(toJsonValue(afterFirst.world)).toEqual(toJsonValue(bundle.world));
     expect(toJsonValue(afterFirst.construction)).toEqual(toJsonValue(bundle.construction));
     expect(toJsonValue(afterFirst.entities)).toEqual(toJsonValue(bundle.entities));
+    expect(toJsonValue(afterFirst.identity)).toEqual(toJsonValue(bundle.identity));
     expect(toJsonValue(afterFirst.simulation?.incidents)).toEqual(toJsonValue(bundle.simulation?.incidents));
     expect(toJsonValue(afterFirst.simulation?.navigation)).toEqual(toJsonValue(bundle.simulation?.navigation));
     expect(toJsonValue(afterFirst.simulation?.security.sectorDefinitions)).toEqual(toJsonValue(bundle.simulation?.security.sectorDefinitions));
@@ -217,6 +218,7 @@ describe('session snapshot / restore fidelity', () => {
       'incidents, gangs and tunnels',
       'jobs, containers and utility networks',
       'kernel tick and command queue',
+      'prisoner and staff names',
       'prisoners, needs, actions and cell assignments',
       'world terrain and ownership',
     ]);
@@ -280,6 +282,10 @@ describe('the save payload is written in canonical order, not registration order
     expect(built.simulation?.prisoners.roomInstanceDefinitions.length).toBeGreaterThan(1);
     expect(built.simulation?.incidents.watchedSectorIds.length).toBeGreaterThan(1);
     expect(built.simulation?.contraband.searchContainerLocations.length).toBeGreaterThan(1);
+    // Identity spans both entity stores, so its canonical order (declared
+    // kind, then ascending id) has to hold across the two.
+    expect(built.identity?.entries.length).toBeGreaterThan(1);
+    expect(new Set(built.identity?.entries.map((entry) => entry.kind)).size).toBe(2);
 
     expect(toJsonValue(captureSessionSnapshot(reversed))).toEqual(toJsonValue(built));
   });
