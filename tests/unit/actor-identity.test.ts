@@ -70,14 +70,14 @@ describe('why a name cannot be derived from an entity id', () => {
     registry.assign('staff', 0, rng);
     // Named explicitly, so "the two entries are the same entry" cannot hide
     // behind two draws that happen to be distinct.
-    registry.rename('prisoner', 0, { givenName: 'Prisoner', familyName: 'Zero' });
-    registry.rename('staff', 0, { givenName: 'Staff', familyName: 'Zero' });
+    registry.rename('prisoner', 0, { givenName: 'Pia', familyName: 'Prisonside' });
+    registry.rename('staff', 0, { givenName: 'Stan', familyName: 'Staffside' });
 
-    expect(registry.getName('prisoner', 0)).toEqual({ givenName: 'Prisoner', familyName: 'Zero' });
-    expect(registry.getName('staff', 0)).toEqual({ givenName: 'Staff', familyName: 'Zero' });
+    expect(registry.getName('prisoner', 0)).toEqual({ givenName: 'Pia', familyName: 'Prisonside' });
+    expect(registry.getName('staff', 0)).toEqual({ givenName: 'Stan', familyName: 'Staffside' });
     expect(registry.entries()).toEqual([
-      { kind: 'prisoner', entityId: 0, givenName: 'Prisoner', familyName: 'Zero' },
-      { kind: 'staff', entityId: 0, givenName: 'Staff', familyName: 'Zero' },
+      { kind: 'prisoner', entityId: 0, givenName: 'Pia', familyName: 'Prisonside' },
+      { kind: 'staff', entityId: 0, givenName: 'Stan', familyName: 'Staffside' },
     ]);
   });
 
@@ -394,14 +394,14 @@ describe('identity reaches the HUD through the projections', () => {
     const guardId = roster.hire('staff-role.guard', { x: tileCoordinate(2), y: tileCoordinate(3) });
 
     registry.assign('prisoner', guardId, loneStream(1));
-    registry.rename('prisoner', guardId, { givenName: 'Prisoner', familyName: 'Zero' });
+    registry.rename('prisoner', guardId, { givenName: 'Pia', familyName: 'Prisonside' });
     registry.assign('staff', guardId, loneStream(1));
-    registry.rename('staff', guardId, { givenName: 'Guard', familyName: 'Zero' });
+    registry.rename('staff', guardId, { givenName: 'Stan', familyName: 'Staffside' });
 
     const staff = projectStaff({ staff: roster }, 0, {}, { identity: registry });
 
     expect(staff.roster.rows[0]?.entityId).toBe(guardId);
-    expect(staff.roster.rows[0]?.name).toEqual({ givenName: 'Guard', familyName: 'Zero' });
+    expect(staff.roster.rows[0]?.name).toEqual({ givenName: 'Stan', familyName: 'Staffside' });
     expect(projectStaff({ staff: roster }, 0).roster.rows[0]?.name).toBeUndefined();
   });
 
