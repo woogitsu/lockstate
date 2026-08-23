@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lockstate.io/schemas/runtime-atlas-manifest-v1.json",
+  "title": "Lockstate runtime atlas manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "assetId", "image", "widthPx", "heightPx", "frame", "directions", "clips"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "assetId": { "type": "string", "pattern": "^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$" },
+    "image": { "type": "string", "pattern": "^[a-z0-9][a-z0-9.-]*\\.png$" },
+    "widthPx": { "type": "integer", "minimum": 1 },
+    "heightPx": { "type": "integer", "minimum": 1 },
+    "frame": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["widthPx", "heightPx", "footPivotPx", "extrudePx"],
+      "properties": {
+        "widthPx": { "type": "integer", "minimum": 1 },
+        "heightPx": { "type": "integer", "minimum": 1 },
+        "footPivotPx": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["x", "y"],
+          "properties": { "x": { "type": "integer", "minimum": 0 }, "y": { "type": "integer", "minimum": 0 } }
+        },
+        "extrudePx": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "directions": { "type": "array", "minItems": 8, "maxItems": 8, "items": { "enum": ["south", "southWest", "west", "northWest", "north", "northEast", "east", "southEast"] } },
+    "clips": { "type": "object", "minProperties": 1, "additionalProperties": { "type": "object", "additionalProperties": false, "required": ["fps", "loop", "frames"], "properties": { "fps": { "type": "number", "exclusiveMinimum": 0 }, "loop": { "type": "boolean" }, "frames": { "type": "object", "additionalProperties": { "type": "array", "minItems": 1, "items": { "type": "object", "additionalProperties": false, "required": ["x", "y", "width", "height"], "properties": { "x": { "type": "integer", "minimum": 0 }, "y": { "type": "integer", "minimum": 0 }, "width": { "type": "integer", "minimum": 1 }, "height": { "type": "integer", "minimum": 1 } } } } } } }
+  }
+}

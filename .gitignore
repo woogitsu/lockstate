@@ -14,3 +14,5 @@ benchmark-results/
 Thumbs.db
 *.log
 supabase/.temp/
+assets/intermediate/
+assets/runtime/

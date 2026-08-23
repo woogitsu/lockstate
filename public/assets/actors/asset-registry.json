@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "assets": [
+    {
+      "assetId": "actor.cook.base",
+      "manifest": "actor.cook.base.atlas-manifests.json",
+      "clips": [
+        "idle",
+        "walk"
+      ]
+    },
+    {
+      "assetId": "actor.guard.base",
+      "manifest": "actor.guard.base.atlas-manifests.json",
+      "clips": [
+        "idle",
+        "walk"
+      ]
+    },
+    {
+      "assetId": "actor.medic.base",
+      "manifest": "actor.medic.base.atlas-manifests.json",
+      "clips": [
+        "idle",
+        "walk"
+      ]
+    },
+    {
+      "assetId": "actor.prisoner.base",
+      "manifest": "actor.prisoner.base.atlas-manifests.json",
+      "clips": [
+        "idle",
+        "walk"
+      ]
+    },
+    {
+      "assetId": "actor.staff.base",
+      "manifest": "actor.staff.base.atlas-manifests.json",
+      "clips": [
+        "idle",
+        "walk"
+      ]
+    }
+  ]
+}

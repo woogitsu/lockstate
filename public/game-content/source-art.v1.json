@@ -1,0 +1,581 @@
+{
+  "schemaVersion": 1,
+  "kind": "lockstate.source-art-catalog",
+  "entries": [
+    {
+      "assetId": "door.interior.variants",
+      "contentVersion": 1,
+      "image": "source-art/door.interior.variants.055fa92eae37.png",
+      "sha256": "055fa92eae3728317b3125c9ff00facd8c78682b7fecc6a51a73264033a5a6ca",
+      "dimensionsPx": {
+        "width": 1448,
+        "height": 1086
+      },
+      "sourceRectPx": {
+        "x": 0,
+        "y": 0,
+        "width": 1448,
+        "height": 1086
+      },
+      "pivotPx": {
+        "x": 724,
+        "y": 1085
+      },
+      "depthAnchor": "bottom-center",
+      "sourceAttribution": {
+        "license": "owner-supplied, project-internal",
+        "batchId": "owner-generated-2026-08-22"
+      }
+    },
+    {
+      "assetId": "door.security.variants",
+      "contentVersion": 1,
+      "image": "source-art/door.security.variants.268398c2b489.png",
+      "sha256": "268398c2b489be3acef2c930a37cc5ec71ca55469bd615eb3c19203faf495deb",
+      "dimensionsPx": {
+        "width": 1448,
+        "height": 1086
+      },
+      "sourceRectPx": {
+        "x": 0,
+        "y": 0,
+        "width": 1448,
+        "height": 1086
+      },
+      "pivotPx": {
+        "x": 724,
+        "y": 1085
+      },
+      "depthAnchor": "bottom-center",
+      "sourceAttribution": {
+        "license": "owner-supplied, project-internal",
+        "batchId": "owner-generated-2026-08-22"
+      }
+    },
+    {
+      "assetId": "fixture.ceiling_light.panel.variants",
+      "contentVersion": 1,
+      "image": "source-art/fixture.ceiling_light.panel.variants.30a39862f2f7.png",
+      "sha256": "30a39862f2f73907891481ab8f5029c995944e2cd2922b20d34519b44098ca0f",
+      "dimensionsPx": {
+        "width": 1448,
+        "height": 1086
+      },
+      "sourceRectPx": {
+        "x": 0,
+        "y": 0,
+        "width": 1448,
+        "height": 1086
+      },
+      "pivotPx": {
+        "x": 724,
+        "y": 1085
+      },
+      "depthAnchor": "bottom-center",
+      "sourceAttribution": {
+        "license": "owner-supplied, project-internal",
+        "batchId": "owner-generated-2026-08-22"
+      }
+    },
+    {
+      "assetId": "fixture.cell.toilet_sink",
+      "contentVersion": 1,
+      "image": "source-art/fixture.cell.toilet_sink.18b4c51aa610.png",
+      "sha256": "18b4c51aa610ad759b60cf3fe080ca7dc2daf28e700bfa114e084cc5d1c8bd13",
+      "dimensionsPx": {
+        "width": 1448,
+        "height": 1086
+      },
+      "sourceRectPx": {
+        "x": 0,
+        "y": 0,
+        "width": 1448,
+        "height": 1086
+      },
+      "pivotPx": {
+        "x": 724,
+        "y": 1085
+      },
+      "depthAnchor": "bottom-center",
+      "sourceAttribution": {
+        "license": "owner-supplied, project-internal",
+        "batchId": "owner-generated-2026-08-22"
+      }
+    },
+    {
+      "assetId": "floor.concrete.variants",
+      "contentVersion": 1,
+      "image": "source-art/floor.concrete.variants.9dac064f7757.png",
+      "sha256": "9dac064f77572c60a82a75e021c14223d1868260fb49eca08426e649d40a4e14",
+      "dimensionsPx": {
+        "width": 1448,
+        "height": 1086
+      },
+      "sourceRectPx": {
+        "x": 0,
+        "y": 0,
+        "width": 1448,
+        "height": 1086
+      },
+      "pivotPx": {
+        "x": 724,
+        "y": 1085
+      },
+      "depthAnchor": "bottom-center",
+      "sourceAttribution": {
+        "license": "owner-supplied, project-internal",
+        "batchId": "owner-generated-2026-08-22"
+      }
+    },
+    {
+      "assetId": "floor.linoleum.institutional",
+      "contentVersion": 1,
+      "image": "source-art/floor.linoleum.institutional.788e81d4e081.png",
+      "sha256": "788e81d4e0810dfb2a3611efcb41cf61ceacfdcf1975289b82f3193825b2c8e3",
+      "dimensionsPx": {
+        "width": 1448,
+        "height": 1086
+      },
+      "sourceRectPx": {
+        "x": 0,
+        "y": 0,
+        "width": 1448,
+        "height": 1086
+      },
+      "pivotPx": {
+        "x": 724,
+        "y": 1085
+      },
+      "depthAnchor": "bottom-center",
+      "sourceAttribution": {
+        "license": "owner-supplied, project-internal",
+        "batchId": "owner-generated-2026-08-22"
+      }
+    },
+    {
+      "assetId": "furniture.cell.bed.single.variants",
+      "contentVersion": 1,
+      "image": "source-art/furniture.cell.bed.single.variants.45bfa2e0ab8d.png",
+      "sha256": "45bfa2e0ab8d85fdeefc7e052057ee80efc2a2c837d32ffb3d9aa0230b0f7be7",
+      "dimensionsPx": {
+        "width": 1448,
+        "height": 1086
+      },
+      "sourceRectPx": {
+        "x": 0,
+        "y": 0,
+        "width": 1448,
+        "height": 1086
+      },
+      "pivotPx": {
+        "x": 724,
+        "y": 1085
+      },
+      "depthAnchor": "bottom-center",
+      "sourceAttribution": {
+        "license": "owner-supplied, project-internal",
+        "batchId": "owner-generated-2026-08-22"
+      }
+    },
+    {
+      "assetId": "furniture.cell.locker.variants",
+      "contentVersion": 1,
+      "image": "source-art/furniture.cell.locker.variants.89a3cfd67726.png",
+      "sha256": "89a3cfd677269fca9ffd2511dd4afd76ed468d98d83c474afea6ffc6deebd328",
+      "dimensionsPx": {
+        "width": 1448,
+        "height": 1086
+      },
+      "sourceRectPx": {
+        "x": 0,
+        "y": 0,
+        "width": 1448,
+        "height": 1086
+      },
+      "pivotPx": {
+        "x": 724,
+        "y": 1085
+      },
+      "depthAnchor": "bottom-center",
+      "sourceAttribution": {
+        "license": "owner-supplied, project-internal",
+        "batchId": "owner-generated-2026-08-22"
+      }
+    },
+    {
+      "assetId": "furniture.cell.table_stool",
+      "contentVersion": 1,
+      "image": "source-art/furniture.cell.table_stool.e23a5640a5f8.png",
+      "sha256": "e23a5640a5f8188419d5f536b05ed3d8658efec9569fcd6a16aa7a5ccc62209b",
+      "dimensionsPx": {
+        "width": 1448,
+        "height": 1086
+      },
+      "sourceRectPx": {
+        "x": 0,
+        "y": 0,
+        "width": 1448,
+        "height": 1086
+      },
+      "pivotPx": {
+        "x": 724,
+        "y": 1085
+      },
+      "depthAnchor": "bottom-center",
+      "sourceAttribution": {
+        "license": "owner-supplied, project-internal",
+        "batchId": "owner-generated-2026-08-22"
+      }
+    },
+    {
+      "assetId": "furniture.corridor.bench.variants",
+      "contentVersion": 1,
+      "image": "source-art/furniture.corridor.bench.variants.69c9da4e652f.png",
+      "sha256": "69c9da4e652f13dd17b5522ac4dc6f22317f302cd4de105b9a48d5f9d4204cb4",
+      "dimensionsPx": {
+        "width": 1448,
+        "height": 1086
+      },
+      "sourceRectPx": {
+        "x": 0,
+        "y": 0,
+        "width": 1448,
+        "height": 1086
+      },
+      "pivotPx": {
+        "x": 724,
+        "y": 1085
+      },
+      "depthAnchor": "bottom-center",
+      "sourceAttribution": {
+        "license": "owner-supplied, project-internal",
+        "batchId": "owner-generated-2026-08-22"
+      }
+    },
+    {
+      "assetId": "furniture.office.desk.employee.variants",
+      "contentVersion": 1,
+      "image": "source-art/furniture.office.desk.employee.variants.41a9bffd10f9.png",
+      "sha256": "41a9bffd10f953dc885326a11136407f97e4f5bd818d10ac89155ec4a2e727a5",
+      "dimensionsPx": {
+        "width": 1448,
+        "height": 1086
+      },
+      "sourceRectPx": {
+        "x": 0,
+        "y": 0,
+        "width": 1448,
+        "height": 1086
+      },
+      "pivotPx": {
+        "x": 724,
+        "y": 1085
+      },
+      "depthAnchor": "bottom-center",
+      "sourceAttribution": {
+        "license": "owner-supplied, project-internal",
+        "batchId": "owner-generated-2026-08-22"
+      }
+    },
+    {
+      "assetId": "furniture.reception.counter.variants",
+      "contentVersion": 1,
+      "image": "source-art/furniture.reception.counter.variants.3370df8a9146.png",
+      "sha256": "3370df8a9146bfe41cc32fcd6f6787084133c0cae78233a9f664ce57211962d0",
+      "dimensionsPx": {
+        "width": 1448,
+        "height": 1086
+      },
+      "sourceRectPx": {
+        "x": 0,
+        "y": 0,
+        "width": 1448,
+        "height": 1086
+      },
+      "pivotPx": {
+        "x": 724,
+        "y": 1085
+      },
+      "depthAnchor": "bottom-center",
+      "sourceAttribution": {
+        "license": "owner-supplied, project-internal",
+        "batchId": "owner-generated-2026-08-22"
+      }
+    },
+    {
+      "assetId": "furniture.visitor.chair.variants",
+      "contentVersion": 1,
+      "image": "source-art/furniture.visitor.chair.variants.f6953a35d33a.png",
+      "sha256": "f6953a35d33a8dcfd39c0dce257cb53f6ed7e224650cb464a1592ff3c2ac0d70",
+      "dimensionsPx": {
+        "width": 1448,
+        "height": 1086
+      },
+      "sourceRectPx": {
+        "x": 0,
+        "y": 0,
+        "width": 1448,
+        "height": 1086
+      },
+      "pivotPx": {
+        "x": 724,
+        "y": 1085
+      },
+      "depthAnchor": "bottom-center",
+      "sourceAttribution": {
+        "license": "owner-supplied, project-internal",
+        "batchId": "owner-generated-2026-08-22"
+      }
+    },
+    {
+      "assetId": "perimeter.fence.modules",
+      "contentVersion": 1,
+      "image": "source-art/perimeter.fence.modules.f0868866a6f0.png",
+      "sha256": "f0868866a6f0b3f6a398d9ab15c7f05e022eda036e661a45f695f02b3ce7fbe3",
+      "dimensionsPx": {
+        "width": 1448,
+        "height": 1086
+      },
+      "sourceRectPx": {
+        "x": 0,
+        "y": 0,
+        "width": 1448,
+        "height": 1086
+      },
+      "pivotPx": {
+        "x": 724,
+        "y": 1085
+      },
+      "depthAnchor": "bottom-center",
+      "sourceAttribution": {
+        "license": "owner-supplied, project-internal",
+        "batchId": "owner-generated-2026-08-22"
+      }
+    },
+    {
+      "assetId": "perimeter.light.pole.variants",
+      "contentVersion": 1,
+      "image": "source-art/perimeter.light.pole.variants.b6fad7d32bee.png",
+      "sha256": "b6fad7d32beee78ad908ac65b8cd90bdb35bf3056163519260207399448b2429",
+      "dimensionsPx": {
+        "width": 1448,
+        "height": 1086
+      },
+      "sourceRectPx": {
+        "x": 0,
+        "y": 0,
+        "width": 1448,
+        "height": 1086
+      },
+      "pivotPx": {
+        "x": 724,
+        "y": 1085
+      },
+      "depthAnchor": "bottom-center",
+      "sourceAttribution": {
+        "license": "owner-supplied, project-internal",
+        "batchId": "owner-generated-2026-08-22"
+      }
+    },
+    {
+      "assetId": "perimeter.vehicle_gate.sliding.variants",
+      "contentVersion": 1,
+      "image": "source-art/perimeter.vehicle_gate.sliding.variants.69d48f97caba.png",
+      "sha256": "69d48f97cabac15bcc425fa78a9c4026bd6d20dee932ea9910dfb0ae0e8634ed",
+      "dimensionsPx": {
+        "width": 1448,
+        "height": 1086
+      },
+      "sourceRectPx": {
+        "x": 0,
+        "y": 0,
+        "width": 1448,
+        "height": 1086
+      },
+      "pivotPx": {
+        "x": 724,
+        "y": 1085
+      },
+      "depthAnchor": "bottom-center",
+      "sourceAttribution": {
+        "license": "owner-supplied, project-internal",
+        "batchId": "owner-generated-2026-08-22"
+      }
+    },
+    {
+      "assetId": "perimeter.watchtower.variants",
+      "contentVersion": 1,
+      "image": "source-art/perimeter.watchtower.variants.b1f385fd3483.png",
+      "sha256": "b1f385fd3483fb7328c47d66e4a574a3d17f9c85fa158cbf9ebae7644296bc06",
+      "dimensionsPx": {
+        "width": 1448,
+        "height": 1086
+      },
+      "sourceRectPx": {
+        "x": 0,
+        "y": 0,
+        "width": 1448,
+        "height": 1086
+      },
+      "pivotPx": {
+        "x": 724,
+        "y": 1085
+      },
+      "depthAnchor": "bottom-center",
+      "sourceAttribution": {
+        "license": "owner-supplied, project-internal",
+        "batchId": "owner-generated-2026-08-22"
+      }
+    },
+    {
+      "assetId": "security.access_reader.variants",
+      "contentVersion": 1,
+      "image": "source-art/security.access_reader.variants.c971c5576914.png",
+      "sha256": "c971c5576914e0beb5eca81660741994148eb1614913f34c9b591ed446b226dd",
+      "dimensionsPx": {
+        "width": 1448,
+        "height": 1086
+      },
+      "sourceRectPx": {
+        "x": 0,
+        "y": 0,
+        "width": 1448,
+        "height": 1086
+      },
+      "pivotPx": {
+        "x": 724,
+        "y": 1085
+      },
+      "depthAnchor": "bottom-center",
+      "sourceAttribution": {
+        "license": "owner-supplied, project-internal",
+        "batchId": "owner-generated-2026-08-22"
+      }
+    },
+    {
+      "assetId": "security.camera.wall.variants",
+      "contentVersion": 1,
+      "image": "source-art/security.camera.wall.variants.4740d0037d18.png",
+      "sha256": "4740d0037d1832bc85ac117db35dc2dee3af54f1275519afb0effb904989441c",
+      "dimensionsPx": {
+        "width": 1448,
+        "height": 1086
+      },
+      "sourceRectPx": {
+        "x": 0,
+        "y": 0,
+        "width": 1448,
+        "height": 1086
+      },
+      "pivotPx": {
+        "x": 724,
+        "y": 1085
+      },
+      "depthAnchor": "bottom-center",
+      "sourceAttribution": {
+        "license": "owner-supplied, project-internal",
+        "batchId": "owner-generated-2026-08-22"
+      }
+    },
+    {
+      "assetId": "security.checkpoint.turnstile.variants",
+      "contentVersion": 1,
+      "image": "source-art/security.checkpoint.turnstile.variants.a3b3b0448201.png",
+      "sha256": "a3b3b0448201ff3d126e61362d25ec79f5e6d068f0415bc3a53171b5a7e67573",
+      "dimensionsPx": {
+        "width": 1448,
+        "height": 1086
+      },
+      "sourceRectPx": {
+        "x": 0,
+        "y": 0,
+        "width": 1448,
+        "height": 1086
+      },
+      "pivotPx": {
+        "x": 724,
+        "y": 1085
+      },
+      "depthAnchor": "bottom-center",
+      "sourceAttribution": {
+        "license": "owner-supplied, project-internal",
+        "batchId": "owner-generated-2026-08-22"
+      }
+    },
+    {
+      "assetId": "storage.container.variants",
+      "contentVersion": 1,
+      "image": "source-art/storage.container.variants.abf390520c18.png",
+      "sha256": "abf390520c188a129bbe7e8616e5c8065e3d1903a73081da6c64ec62bacec845",
+      "dimensionsPx": {
+        "width": 1448,
+        "height": 1086
+      },
+      "sourceRectPx": {
+        "x": 0,
+        "y": 0,
+        "width": 1448,
+        "height": 1086
+      },
+      "pivotPx": {
+        "x": 724,
+        "y": 1085
+      },
+      "depthAnchor": "bottom-center",
+      "sourceAttribution": {
+        "license": "owner-supplied, project-internal",
+        "batchId": "owner-generated-2026-08-22"
+      }
+    },
+    {
+      "assetId": "wall.exterior.modules",
+      "contentVersion": 1,
+      "image": "source-art/wall.exterior.modules.5d19a6ab0a49.png",
+      "sha256": "5d19a6ab0a494d89bab034bbbaf42095094ae47be564a7db4bfc47150be4241a",
+      "dimensionsPx": {
+        "width": 1448,
+        "height": 1086
+      },
+      "sourceRectPx": {
+        "x": 0,
+        "y": 0,
+        "width": 1448,
+        "height": 1086
+      },
+      "pivotPx": {
+        "x": 724,
+        "y": 1085
+      },
+      "depthAnchor": "bottom-center",
+      "sourceAttribution": {
+        "license": "owner-supplied, project-internal",
+        "batchId": "owner-generated-2026-08-22"
+      }
+    },
+    {
+      "assetId": "wall.interior.modules",
+      "contentVersion": 1,
+      "image": "source-art/wall.interior.modules.607eb7f59b6b.png",
+      "sha256": "607eb7f59b6bf92696fd0010d0746d770b64424bed237e5521e880b392b3c1ab",
+      "dimensionsPx": {
+        "width": 1448,
+        "height": 1086
+      },
+      "sourceRectPx": {
+        "x": 0,
+        "y": 0,
+        "width": 1448,
+        "height": 1086
+      },
+      "pivotPx": {
+        "x": 724,
+        "y": 1085
+      },
+      "depthAnchor": "bottom-center",
+      "sourceAttribution": {
+        "license": "owner-supplied, project-internal",
+        "batchId": "owner-generated-2026-08-22"
+      }
+    }
+  ]
+}

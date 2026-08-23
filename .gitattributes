@@ -1,1 +1,4 @@
 assets/source/**/*.png filter=lfs diff=lfs merge=lfs -text
+assets/source/**/*.blend filter=lfs diff=lfs merge=lfs -text
+public/assets/**/*.png filter=lfs diff=lfs merge=lfs -text
+public/game-content/**/*.png filter=lfs diff=lfs merge=lfs -text

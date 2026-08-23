@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "catalog": "environment.mvp.catalog.blend",
+  "scale": "1 Blender unit = 1 logical tile",
+  "origin": "bottom-center",
+  "sourceAttribution": {
+    "license": "owner-supplied, project-internal",
+    "referenceBatch": "owner-generated-2026-08-22"
+  },
+  "assetCount": 23,
+  "entries": "See collections in the catalog; collection names equal the generated source-art IDs in assets/source/generated/manifest.json."
+}
