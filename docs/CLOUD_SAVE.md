@@ -4,40 +4,69 @@ This document covers issue #20: the Supabase-backed cloud persistence
 model built on top of `docs/PERSISTENCE.md`'s save envelope (#18) and
 `src/persistence/local/`'s local-first repository (#19).
 
-## What could and could not be executed in this environment
+## What has and has not been executed
 
-This work was produced in a sandbox with no Docker daemon and no
-Supabase CLI available (starting the Docker daemon was blocked by the
-sandbox's own safety policy, and no live Supabase project/credentials
-exist here). That materially changes what counts as verified evidence
-for this issue specifically:
+This work was originally produced in a sandbox with no working database,
+so every file under `supabase/` was shipped as reviewed-by-inspection
+design. That gap is now partly closed:
 
-- **Not executed, reviewed by inspection only:** every file under
-  `supabase/migrations/` and `supabase/tests/`. They have never been
-  applied to a real or local Postgres instance. Run them with:
-  ```bash
-  supabase start
-  supabase db reset   # applies every migration in order
-  supabase test db    # runs supabase/tests/*.sql
-  ```
-  before trusting this schema/RLS/RPC design as verified, and before
-  closing any acceptance criterion that depends on it.
+- **Executed:** every migration in `supabase/migrations/` and
+  `supabase/tests/001_rls_and_save_version_rpc.test.sql` (16/16
+  assertions), against PostgreSQL 16.13 + pgTAP 1.3.2 via
+  `pnpm verify:sql`. Running them for the first time found three defects
+  in this design — see "Defects found by executing this schema" below.
+- **Still not executed:** anything against the real Supabase stack.
+  `pnpm verify:sql` prepares a plain Postgres with
+  `scripts/sql/supabase-compat-harness.sql`, which supplies only the
+  client roles, Supabase's default table grants and the slice of the
+  `auth` schema this SQL references. It emulates no GoTrue, JWT
+  verification, PostgREST, Storage or Realtime, so a green run proves the
+  SQL and proves nothing about how the hosted platform issues the identity
+  these policies read. Run `supabase start && supabase db reset &&
+  supabase test db` before treating the platform behaviour as verified.
 - **Not executed:** `SupabaseCloudSaveClient` (`src/persistence/cloud/
-  supabase-client.ts`) has no automated test, for the same reason
-  `IndexedDbLocalSaveStore` was untested before #19 added
-  `fake-indexeddb` — except there is no equivalent narrow, pure-JS way to
-  fake Postgres RLS/`SECURITY DEFINER` semantics; a fake here would test
-  the fake, not this contract.
-- **Not attempted at all:** the JSONB-vs-Storage payload benchmark and any
-  real upload/download/restore timing. Both require an actual Supabase
-  project. See "Storage placement" below.
-- **Fully implemented and unit-tested, no external dependency needed:**
-  `PrisonSyncEngine`, `resolveSyncConflict` and `MemoryCloudSaveClient`
+  supabase-client.ts`) still has no automated test; a pure-JS fake would
+  test the fake, not the contract.
+- **Not attempted:** the JSONB-vs-Storage payload benchmark and any real
+  upload/download/restore timing. Both need an actual Supabase project.
+  See "Storage placement" below.
+- **Fully implemented and unit-tested:** `PrisonSyncEngine`,
+  `resolveSyncConflict` and `MemoryCloudSaveClient`
   (`src/persistence/cloud/`) — the client-side sync/conflict policy is
-  pure TypeScript and is tested the same way #19's repository policy was,
-  including a two-concurrent-pushes test.
+  pure TypeScript, including a two-concurrent-pushes test.
 
-Treat this as a substantial design-and-code slice, not a closed issue.
+## Defects found by executing this schema
+
+All three were invisible while the SQL was never run:
+
+1. **`create_save_version()` failed on every call.** Its `returns table
+   (... revision int, checksum text)` declares OUT parameters whose names
+   collide with the columns in the idempotency lookup, so PostgreSQL
+   raised `42702 column reference "revision" is ambiguous` before any
+   branch was taken — the only write path for a cloud save could not
+   succeed. Fixed by table-qualifying the lookup.
+
+2. **The column-level `REVOKE` on `prisons` did nothing.** PostgreSQL
+   cannot subtract a single column's privilege out of a table-level
+   grant, and Supabase's default grant is table-level `ALL`, so
+   `has_table_privilege('authenticated', 'prisons', 'UPDATE')` stayed
+   true: an owner could `PATCH` `current_revision` directly and bypass
+   optimistic concurrency entirely — exactly the multi-device data-loss
+   scenario this design exists to prevent. Fixed by revoking the
+   table-level privilege and granting back only the editable columns.
+
+3. **The pgTAP suite asserted a contract the schema cannot implement.**
+   One case expected a stale-checksum resubmission to be reported as a
+   conflict, while the function's own header documents it as an idempotent
+   replay; `save_versions_prison_checksum_unique` makes the test's version
+   unimplementable without changing what the checksum identifies. The test
+   now asserts the documented behaviour, and the consequence for
+   `PrisonSyncEngine` is recorded as an open question in the suite.
+
+Several assertions in that suite were also passing or failing for the
+wrong reason: pgTAP's two-argument `throws_ok` compares the error
+*message* rather than taking a description, and RLS makes a foreign
+`UPDATE`/`DELETE` match zero rows instead of raising. Both are corrected.
 
 ## Schema (`supabase/migrations/`)
 
@@ -54,14 +83,22 @@ Treat this as a substantial design-and-code slice, not a closed issue.
 RLS `USING`/`WITH CHECK` clauses only ever check *row* ownership, not which
 *columns* an `UPDATE` touches. An owner-scoped `UPDATE` policy on `prisons`
 would otherwise let a normal PostgREST `PATCH` bypass optimistic
-concurrency entirely by writing `current_revision` directly. Each
-migration that needs this narrows Supabase's default per-table grant with
-an explicit column-level `REVOKE UPDATE (...) ... FROM authenticated`,
-leaving `create_save_version()` — `SECURITY DEFINER`, with its own
-`auth.uid()` check inside — as the only path able to advance those
-columns. `save_versions` goes further: `authenticated`/`anon` get no
+concurrency entirely by writing `current_revision` directly.
+
+The fix is **revoke-then-grant**, not a column-level `REVOKE`. PostgreSQL
+cannot subtract one column's privilege out of a table-level grant, and
+Supabase grants table-level `ALL` by default, so
+`revoke update (current_revision) on prisons from authenticated` leaves the
+table-level `UPDATE` intact and changes nothing. `prisons` therefore
+revokes `UPDATE` outright and grants back only
+`(display_name, game_version, slot_index, updated_at)`, leaving
+`create_save_version()` — `SECURITY DEFINER`, with its own `auth.uid()`
+check inside — as the only path able to advance the pointer columns.
+
+`save_versions` goes further: `authenticated`/`anon` get no
 insert/update/delete grant on it at all, so immutability doesn't depend on
-a trigger the client could reason its way around.
+a trigger the client could reason its way around. That table-level revoke
+was always effective; only the column-level one on `prisons` was not.
 
 ## Optimistic concurrency and idempotent resume (`create_save_version`)
 
