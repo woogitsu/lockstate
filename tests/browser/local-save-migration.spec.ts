@@ -1,23 +1,33 @@
 import { expect, test } from '@playwright/test';
+import { SAVE_SCHEMA_VERSION } from '../../src/persistence/save-schema';
 import { openHarness, reloadHarness } from './harness-fixture';
 
 /**
- * The save-schema V1 -> V2 upgrade (#50) against a real browser IndexedDB.
+ * The save-schema upgrade from V1 (#50) against a real browser IndexedDB.
  *
- * `tests/migrations/save-v1-to-v2.test.ts` already proves the migration
- * itself, in-process, from a JSON fixture. What it structurally cannot prove
- * is the situation a player is actually in: a V1 save that a *previous build*
- * left in real origin storage, read back in a later page load by a build that
- * only knows V2. That path differs from the in-process one in ways only a real
- * browser exercises — the record is transported by structured clone rather
- * than JSON, it survives a navigation that discards the realm that wrote it,
- * and the migration runs inside the repository's recovery scan rather than
- * being called directly.
+ * `tests/migrations/` already proves each migration step itself, in-process,
+ * from a JSON fixture. What that structurally cannot prove is the situation a
+ * player is actually in: a V1 save that a *previous build* left in real origin
+ * storage, read back in a later page load by a build that only knows the
+ * current version. That path differs from the in-process one in ways only a
+ * real browser exercises — the record is transported by structured clone
+ * rather than JSON, it survives a navigation that discards the realm that
+ * wrote it, and the migration runs inside the repository's recovery scan
+ * rather than being called directly.
  *
  * The V1 records here are built from the same checked-in fixture
  * (`tests/fixtures/persistence/save-v1-in-progress.json`) the in-process
  * migration test uses, so the two layers cannot drift into disagreeing about
  * what a V1 save looked like.
+ *
+ * **The target version is read from the source, not spelled out.** These
+ * assertions pinned the literal `2` until V3 landed (#70), and nothing
+ * noticed, because this suite did not run in CI. `SAVE_SCHEMA_VERSION` is the
+ * build's own answer to "how far does a legacy save migrate", which is the
+ * claim being made: whatever the current version is, a V1 record from an
+ * older build arrives at it. A new migration step therefore does not need to
+ * come back and edit this file — and cannot silently pass because someone
+ * did.
  */
 
 const PRISON = 'legacy-prison';
@@ -31,10 +41,14 @@ const V2_GENERATIONS_RUNS = [
 ];
 
 const V1_ENTITY_FIELDS = ['alive', 'capacity', 'freeCount', 'freeIndices', 'generations', 'maxActiveIndex', 'nextAvailableIndex'];
-/** V2 drops `freeCount`: it *is* `freeIndices.length`, so the two can no longer disagree. */
-const V2_ENTITY_FIELDS = ['alive', 'capacity', 'freeIndices', 'generations', 'maxActiveIndex', 'nextAvailableIndex'];
+/**
+ * The entity ledger as every version since V2 stores it: `freeCount` is gone,
+ * because it *is* `freeIndices.length` and the two could disagree. V3 changed
+ * what a save carries around the ledger, not the ledger itself.
+ */
+const MIGRATED_ENTITY_FIELDS = ['alive', 'capacity', 'freeIndices', 'generations', 'maxActiveIndex', 'nextAvailableIndex'];
 
-test.describe('V1 -> V2 migration against real IndexedDB', () => {
+test.describe('legacy V1 migration against real IndexedDB', () => {
   test('a V1 save left by an older build still loads, and migrates, after a real navigation', async ({ page }) => {
     await openHarness(page);
     await page.evaluate(
@@ -63,7 +77,7 @@ test.describe('V1 -> V2 migration against real IndexedDB', () => {
       outcome: 'current',
       generationId: 'legacy-gen-1',
       revision: 7,
-      saveSchemaVersion: 2,
+      saveSchemaVersion: SAVE_SCHEMA_VERSION,
     });
 
     // The migrated ledger reproduces the V1 one exactly — same capacity, same
@@ -81,7 +95,7 @@ test.describe('V1 -> V2 migration against real IndexedDB', () => {
     });
   });
 
-  test('loading migrates in memory only; the next save is what writes V2 to disk, durably', async ({ page }) => {
+  test('loading migrates in memory only; the next save is what writes the new version to disk, durably', async ({ page }) => {
     await openHarness(page);
     await page.evaluate(
       (prisonId) => window.lockstateHarness.seedLegacyV1Prison(prisonId, [{ generationId: 'legacy-gen-1', revision: 7 }]),
@@ -108,8 +122,8 @@ test.describe('V1 -> V2 migration against real IndexedDB', () => {
     );
     expect(stored).toMatchObject({
       exists: true,
-      saveSchemaVersion: 2,
-      entityFields: V2_ENTITY_FIELDS,
+      saveSchemaVersion: SAVE_SCHEMA_VERSION,
+      entityFields: MIGRATED_ENTITY_FIELDS,
       // Population-shaped on disk, not capacity-shaped: this is the whole
       // point of #50, asserted against bytes that survived a navigation.
       rawGenerations: V2_GENERATIONS_RUNS,
@@ -119,7 +133,7 @@ test.describe('V1 -> V2 migration against real IndexedDB', () => {
     // The upgraded save re-reads as a native current-version save with the
     // same liveness the V1 record carried — nothing was lost in the upgrade.
     const reloaded = await page.evaluate((prisonId) => window.lockstateHarness.loadCurrent(prisonId), PRISON);
-    expect(reloaded).toMatchObject({ ok: true, outcome: 'current', revision: 7, saveSchemaVersion: 2 });
+    expect(reloaded).toMatchObject({ ok: true, outcome: 'current', revision: 7, saveSchemaVersion: SAVE_SCHEMA_VERSION });
     expect(reloaded.entities).toEqual(await page.evaluate(() => window.lockstateHarness.legacyV1Liveness()));
   });
 
@@ -135,8 +149,9 @@ test.describe('V1 -> V2 migration against real IndexedDB', () => {
     );
     await reloadHarness(page);
 
-    // The V1 -> V2 step recomputes the checksum, so this is what proves that
-    // did not cost corruption detection: the stored checksum is verified
+    // The first step of the chain, V1 -> V2, recomputes the checksum, so this
+    // is what proves that did not cost corruption detection: the stored
+    // checksum is verified
     // against the payload as written, at V1, before any step runs — here
     // against a record that really came back off disk.
     const recovered = await page.evaluate((prisonId) => window.lockstateHarness.loadCurrent(prisonId), PRISON);
@@ -145,7 +160,7 @@ test.describe('V1 -> V2 migration against real IndexedDB', () => {
       outcome: 'recovered-previous',
       generationId: 'legacy-gen-1',
       revision: 5,
-      saveSchemaVersion: 2,
+      saveSchemaVersion: SAVE_SCHEMA_VERSION,
     });
     expect(recovered.entities).toEqual(await page.evaluate(() => window.lockstateHarness.legacyV1Liveness()));
 
