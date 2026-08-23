@@ -80,11 +80,14 @@ feeds `TileSample.owned` while `SparseWorld.isTileOwned` is what `canBuildAt`
 consults, so one question was being answered twice on either side of the same
 decision.
 
-Because the answer is order-independent it needs no canonical sort, and cannot
-be changed by registration order or by a snapshot round trip.
-`getParcelAtTile` answers a different question — *which* parcel is here, first
-match in ascending-id order — and does need that sort to stay stable across a
-round trip. It serves pricing, selection and UI; it is not the ownership test.
+Because ownership is a disjunction, no iteration order can change the answer —
+not registration order, not a snapshot round trip. `SparseWorld` still collects
+the owned parcels in canonical ascending-id order anyway, because
+[DETERMINISM.md](./DETERMINISM.md) states that rule for anything feeding
+simulation state without an exception. `getParcelAtTile` answers a different
+question — *which* parcel is here, first match in ascending-id order — and
+genuinely needs that order to stay stable across a round trip. It serves
+pricing, selection and UI; it is not the ownership test.
 
 ## Buildability
 

@@ -571,16 +571,17 @@ export class SparseWorld {
   }
 
   /**
-   * Bounds of the owned parcels, in `Map` insertion order and deliberately
-   * unsorted: `isTileOwnedBy` asks whether *any* of them contains the tile,
-   * so the answer does not depend on the order they arrive in. That is why
-   * this does not go through `getAllParcels` -- ownership needs no canonical
-   * sort, and paying for one on every `canBuildAt` would be worse than the
-   * per-call array this does allocate.
+   * Bounds of the owned parcels, in the canonical order `getAllParcels`
+   * defines (ascending parcel id in code-unit order), never `Map` insertion
+   * order. `isTileOwnedBy` asks whether *any* of them contains the tile, so
+   * the answer is the same in any order -- but `docs/DETERMINISM.md`
+   * ("Canonical iteration order") states the rule for anything feeding
+   * simulation state with no exception, and simulation code should not be the
+   * place that quietly argues for one. ADR 0019 records the choice.
    */
   private ownedParcelBounds(): readonly ParcelRect[] {
     const bounds: ParcelRect[] = [];
-    for (const parcel of this.parcels.values()) {
+    for (const parcel of this.getAllParcels()) {
       if (this.ownedParcels.has(parcel.id)) bounds.push(parcel.bounds);
     }
     return bounds;

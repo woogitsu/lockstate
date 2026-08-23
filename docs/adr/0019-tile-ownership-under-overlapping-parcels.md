@@ -219,6 +219,11 @@ way), and nothing yet says they should be impossible.
   to be inferred.
 - The doc comment on `WorldRenderView.isTileOwned`, which PR #90 rewrote to
   *state* the divergence, is replaced: it now says where the rule lives.
+- `SparseWorld.isTileOwned` collects the owned parcels in canonical
+  (ascending-id) order, even though a disjunction cannot depend on the order it
+  is walked in. `docs/DETERMINISM.md` ("Canonical iteration order") states the
+  rule for anything feeding simulation state with no exception, and this ADR
+  does not add one.
 - Nothing prevents a future change from reintroducing a private ownership rule
   in the renderer except the test that compares the two sides tile for tile.
   That test is the enforcement mechanism, and it should be treated as one.
