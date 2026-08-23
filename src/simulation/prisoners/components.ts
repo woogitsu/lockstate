@@ -206,18 +206,18 @@ export class CurrentActionComponent {
     this.phaseStartedAtTick = new Uint32Array(capacity);
     this.needFulfilledLastTick = new Uint32Array(capacity);
     this.slotDefaults = [
-      // -1 is this component's documented "no action selected" sentinel; any
-      // other value names a real entry in DEFAULT_ACTIONS.
+      // -1 is this component's documented "no action selected" sentinel; a
+      // non-negative value indexes DEFAULT_ACTIONS.
       [this.actionIndex, -1],
-      // ACTION_PHASES[0] === 'idle'. Paired with actionIndex -1 this is the
-      // only self-consistent starting state: a phase of 'travelling' or
-      // 'performing' with no action would have ActionSystem acting on a
-      // brand-new arrival's inherited plan.
+      // ACTION_PHASES[0] === 'idle', the phase that pairs with "no action
+      // selected": 'travelling' and 'performing' both describe progress
+      // through an action this slot does not have.
       [this.phase, 0],
-      // Tick stamps, meaningless while the phase is 'idle'; 0 is what a
-      // never-occupied slot holds. `phaseStartedAtTick` is *read* (as
-      // `tick - phaseStartedAtTick`), so a stale large value here is what
-      // made the inherited action state visible in play.
+      // Both tick stamps are 0 in a never-occupied slot. `phaseStartedAtTick`
+      // is the one that is read rather than only projected -- `ActionSystem`
+      // compares `tick - phaseStartedAtTick` against the current action's
+      // minimum duration -- so a value left by a previous occupant would
+      // change behaviour and not only display.
       [this.phaseStartedAtTick, 0],
       // Written and projected to the HUD, never compared: 0 reads as "no
       // need fulfilled yet", which is true of a new arrival.

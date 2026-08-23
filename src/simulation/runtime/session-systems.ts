@@ -63,8 +63,7 @@ import type { SimulationRuntime } from './new-session';
  * component array when an entity is destroyed, so a freed index inside the
  * prefix keeps whatever its previous occupant left there until it is
  * recycled. Writing those slots is what makes a restored session's arrays
- * *identical* to a continuous one's rather than merely equivalent, which is
- * what `tests/determinism/snapshot-restore-fidelity.test.ts` pins. Slots
+ * *identical* to a continuous one's rather than merely equivalent. Slots
  * *above* the prefix were never allocated and hold exactly their component
  * constructor defaults, which `decodePrisonerComponents` reproduces, so the
  * prefix costs nothing for them.

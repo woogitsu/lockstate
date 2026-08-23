@@ -408,7 +408,9 @@ The prefix, not just the live indices, because nothing clears a component
 array when an entity is destroyed: a freed index inside the prefix keeps
 whatever its previous occupant left there until it is recycled. Writing those
 slots is what makes a restored session's arrays *identical* to a continuous
-one's rather than merely equivalent. Slots *above* the prefix were never
+one's rather than merely equivalent. (No test currently leaves a slot dead
+across a save: `snapshot-restore-fidelity.test.ts` destroys an index and
+recycles it immediately.) Slots *above* the prefix were never
 allocated and hold exactly their component-constructor defaults, which
 `decodePrisonerComponents` reproduces — so the restore is exact either way.
 

@@ -65,9 +65,9 @@ export class EntityStore {
    * Destroys an entity by invalidating its ID.
    *
    * Destroying an id that does not name a live entity is a no-op, not an
-   * error: this store reports misuse of an *id* by ignoring it (the two
-   * guards below) and reserves exceptions for structural faults it cannot
-   * continue past -- capacity exhaustion in `spawn`, a capacity mismatch in
+   * error: this store reports misuse of an *id* by ignoring it (the guards
+   * below) and reserves exceptions for structural faults it cannot continue
+   * past -- capacity exhaustion in `spawn`, a capacity mismatch in
    * `loadSnapshot`. `tests/unit/entity.test.ts`'s "prevents double destroy"
    * has pinned that tolerance since the store was written, and ADR 0005
    * describes generation mismatches as "safely caught" rather than raised.
@@ -157,9 +157,11 @@ export class EntityStore {
    * consults no liveness record, so for a freed index it returns an id that
    * names a dead slot -- structurally well-formed, but not an entity. It
    * stays unchecked on purpose: it sits inside the `0..maxActiveIndex` walk
-   * that ADR 0005 justifies precisely by how little it does per index, and
-   * every caller in `src/` already gates on `isIndexAlive(index)` on the
-   * immediately preceding line, so a check here would only repeat theirs.
+   * that ADR 0005 justifies precisely by how little it does per index, and no
+   * call site in `src/` is reached without an `isIndexAlive(index)` check --
+   * three have it on the immediately preceding line, and
+   * `projectRosterRow`'s comes from the index walk of its one caller -- so a
+   * check here would only repeat theirs.
    * `isAlive` and `destroy` both reject the ids this can produce for a dead
    * slot, so the unchecked reconstruction cannot be laundered into liveness.
    */
