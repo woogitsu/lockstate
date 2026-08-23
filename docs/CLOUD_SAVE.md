@@ -16,7 +16,10 @@ design. That gap is now partly closed:
   1.3.2 and, since the idempotency-key change below, also against
   PostgreSQL 18.6 + pgTAP 1.3.4. Running them for the first time found
   three defects in this design — see "Defects found by executing this
-  schema" below.
+  schema" below. `pnpm verify:sql` now also runs in CI, after
+  `scripts/provision-postgres.sh`, so a change to this schema cannot
+  reach `main` unexecuted again — see `docs/TESTING.md` for the
+  provisioning contract.
 - **Still not executed:** anything against the real Supabase stack.
   `pnpm verify:sql` prepares a plain Postgres with
   `scripts/sql/supabase-compat-harness.sql`, which supplies only the
