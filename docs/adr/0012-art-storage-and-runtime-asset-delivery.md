@@ -55,7 +55,25 @@ consequences, so they belong in an ADR rather than in a `_headers` file and a
   metered LFS bandwidth.
 - Because a pointer-only checkout is the normal case, the validator recognises a
   Git LFS pointer and fails naming it, rather than treating an unfetched file as
-  valid art. A gate that cannot tell the difference is worse than no gate.
+  valid art. A gate that cannot tell the difference is worse than no gate. The
+  job additionally asserts the PNG signature and a size floor on every atlas
+  before validating, so the log carries positive evidence that image bytes
+  materialised rather than only the absence of a failure.
+- The `git-lfs` binary is provisioned by `scripts/provision-git-lfs.sh`, run in
+  the `verify` job, and `assets` declares `needs: verify`. This ordering is
+  forced: `actions/checkout` is the first step of its own job, so a job cannot
+  install the binary its own `lfs: true` checkout depends on. A runner missing
+  it fails the checkout in seconds before any other step can help. Provisioning
+  it in the job before is the only shape that both keeps the simple `lfs: true`
+  checkout and lets a from-scratch runner heal itself, and it mirrors
+  `scripts/provision-postgres.sh` (PR #54) rather than inventing a second
+  pattern. It also stops the asset job spending LFS bandwidth on a build that is
+  already failing.
+- Known limitation: this heals a rebuilt runner because the self-hosted pool is
+  a single machine, so `assets` lands where `verify` provisioned. If the pool
+  grows, `git-lfs` belongs in the runner image and the `needs:` edge becomes an
+  optimisation rather than a prerequisite. Until then the failure mode is loud
+  and names the missing binary, not silent.
 
 ### Delivery and caching
 

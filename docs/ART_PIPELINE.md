@@ -76,7 +76,12 @@ CI runs it as a required `assets` job. That job is the only one checked out with
 `lfs: true`, because it is the only check that reads image bytes; see
 [ADR-0012](./adr/0012-art-storage-and-runtime-asset-delivery.md). A checkout
 without LFS leaves 130-byte pointer files in place of PNGs, so the validator
-detects a pointer and fails naming it rather than passing vacuously.
+detects a pointer and fails naming it rather than passing vacuously, and the job
+asserts the PNG signature and a size floor on every atlas before validating.
+
+The job `needs: verify`, which runs `scripts/provision-git-lfs.sh`, because
+`actions/checkout` is the first step of its own job and so cannot install the
+`git-lfs` binary its own `lfs: true` checkout requires.
 
 `tests/contract/runtime-atlas-validation.test.ts` drives that same
 implementation against tiny synthetic fixtures to prove each rejection mode

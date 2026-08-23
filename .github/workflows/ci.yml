@@ -48,6 +48,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # Provisioned here, not in the `assets` job that needs it: `actions/checkout`
+      # is the first step of its own job, so a job cannot install the binary its
+      # own `lfs: true` checkout requires. `assets` therefore `needs: verify`,
+      # and a runner rebuilt from scratch heals itself on the first run.
+      - name: Provision Git LFS
+        run: bash scripts/provision-git-lfs.sh
+
       - name: Verify project
         run: pnpm verify
 
@@ -75,8 +82,8 @@ jobs:
 
   # Issue #32 requires that missing, inconsistent or oversized assets fail
   # validation before build/release. `tooling/validate-runtime-atlas.mjs` reads
-  # the PNGs themselves, and the runtime art is stored in Git LFS, so this is
-  # the one check that needs `lfs: true`.
+  # the PNGs themselves, and `.gitattributes` routes every one of them through
+  # Git LFS, so this is the one job that needs LFS content.
   #
   # It is a separate job on purpose. LFS bandwidth is metered and this repository
   # will keep growing, so the `verify` job above stays on a pointer-only checkout
@@ -88,6 +95,13 @@ jobs:
   # (docs/TESTING.md), which found three real defects the first time it was run.
   assets:
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    # `verify` provisions git-lfs. `actions/checkout` is the first step of its
+    # own job, so this job cannot install the binary its `lfs: true` checkout
+    # depends on; depending on `verify` is what makes a from-scratch runner heal
+    # itself instead of failing with "Unable to locate executable file: git-lfs".
+    # It also means this job never spends LFS bandwidth on a build that is
+    # already failing.
+    needs: verify
     runs-on: [self-hosted, Linux, X64, wsl2]
     timeout-minutes: 20
     steps:
@@ -96,6 +110,46 @@ jobs:
         with:
           persist-credentials: false
           lfs: true
+
+      # A green run must mean the validator saw pixels. `pnpm verify:assets`
+      # already refuses a pointer file, but this asserts it up front and prints
+      # the evidence, so the log answers "did LFS actually materialise?" without
+      # anyone having to trust that the later step would have caught it. A job
+      # that silently validates 3-line text stubs is worse than no job, because
+      # it manufactures confidence.
+      - name: Confirm the runtime art is image data, not LFS pointers
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          count=0
+          total=0
+          for file in public/assets/actors/*.png; do
+            count=$((count + 1))
+            if head -c 64 "$file" | grep -q 'git-lfs.github.com'; then
+              echo "::error::$file is still a Git LFS pointer; LFS content did not materialise"
+              exit 1
+            fi
+            signature="$(head -c 8 "$file" | od -An -tx1 | tr -d ' \n')"
+            if [ "$signature" != "89504e470d0a1a0a" ]; then
+              echo "::error::$file does not start with the PNG signature (got $signature)"
+              exit 1
+            fi
+            size="$(stat -c%s "$file")"
+            # An LFS pointer is ~130 bytes. Any real atlas is orders of magnitude
+            # larger; this is a floor, not a pinned size, so re-rendered art does
+            # not have to update CI.
+            if [ "$size" -lt 4096 ]; then
+              echo "::error::$file is only $size bytes, too small to be a real atlas"
+              exit 1
+            fi
+            total=$((total + size))
+            printf '%10s bytes  %s\n' "$size" "$file"
+          done
+          if [ "$count" -eq 0 ]; then
+            echo "::error::no runtime atlases were found to validate"
+            exit 1
+          fi
+          echo "OK: $count atlases, $total bytes of real image data"
 
       - name: Setup Node
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6

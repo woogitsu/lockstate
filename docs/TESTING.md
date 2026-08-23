@@ -28,7 +28,18 @@ the only job checked out with `lfs: true` — so ordinary runs stay on a cheap
 pointer-only checkout (see [ADR-0012](./adr/0012-art-storage-and-runtime-asset-delivery.md)).
 Separate does **not** mean optional. A pointer-only checkout cannot pass it
 silently: the validator recognises a Git LFS pointer and fails naming it, rather
-than treating an unfetched file as valid art.
+than treating an unfetched file as valid art, and the job asserts the PNG
+signature and a size floor on every atlas before it even runs the validator.
+
+The `assets` job `needs: verify`, and the `verify` job runs
+`scripts/provision-git-lfs.sh`. That ordering is forced rather than stylistic:
+`actions/checkout` is the first step of its own job, so a job cannot install the
+`git-lfs` binary that its own `lfs: true` checkout requires — on a runner
+without it the checkout fails in seconds with "Unable to locate executable file:
+git-lfs". Provisioning in the job before it is what lets a runner rebuilt from
+scratch go green with nobody remembering a manual step, exactly as
+`scripts/provision-postgres.sh` does for `verify:sql`. Both scripts are
+idempotent, check before acting, and add no third-party apt repository.
 
 The rejection modes themselves are proven in the ordinary suite.
 `tests/contract/runtime-atlas-validation.test.ts` drives the same validator
