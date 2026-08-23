@@ -61,9 +61,12 @@ function upgradeEntityLiveness(v1: EncodedEntityStoreSnapshotV1): EncodedEntityS
  * **The checksum is recomputed**, because it covers the payload and the
  * payload changed. That does not weaken corruption detection:
  * `decodeSaveEnvelope` verifies the *stored* checksum against the payload as
- * written, at its declared version, before any migration runs -- so a corrupt
- * V1 save is rejected before this function is ever reached, and this function
- * only ever re-checksums a payload already proven intact.
+ * written, at its declared version. It does so *after* running the whole
+ * migration chain, not before -- so this function is reached with a corrupt
+ * V1 save, and the value it produces is discarded a moment later when the
+ * as-written comparison fails. What matters for corruption detection is
+ * which bytes are compared, not when: the comparison never sees this
+ * function's output.
  *
  * Pure: builds new objects and never mutates `input`.
  */
@@ -109,9 +112,10 @@ export function migrateSaveEnvelopeV1ToV2(input: SaveEnvelopeV1): SaveEnvelopeV2
  * Since the payload is unchanged the recomputed value necessarily equals the
  * stored one, which is a property worth a test rather than a reason to skip
  * the call — skipping it would make this the one step whose output was not
- * self-consistent by construction. As with V1 -> V2, `decodeSaveEnvelope` has
- * already verified the stored checksum against the payload as written, at V2,
- * before this function runs.
+ * self-consistent by construction. As with V1 -> V2, `decodeSaveEnvelope`
+ * verifies the stored checksum against the payload as written, at V2 -- but
+ * only after the whole chain has run, so this function's output is never the
+ * value that comparison examines.
  *
  * Pure: builds new objects and never mutates `input`.
  */

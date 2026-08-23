@@ -111,10 +111,14 @@ export class RoomInstanceRegistry {
    * Snapshots only *occupancy* (which entities currently hold which
    * instance) -- dynamic simulation state. Instance definitions
    * (`register`ed id/roomCatalogId/anchorTile/capacity/capabilities) are
-   * scenario/session setup, established identically by the caller before
-   * `loadSnapshot`, exactly like `DoorRegistry`/`NavigationGraph` setup is
-   * not itself part of a save (see docs/adr/0007). Sorted by instance id
-   * then entity id for deterministic output.
+   * session setup, established by the caller before `loadSnapshot`. Since
+   * #70 that caller is the restore path itself: `session-systems.ts` writes
+   * the definitions into the save as `prisoners.roomInstanceDefinitions`
+   * (and `DoorRegistry`'s the same way) and re-`register`s them before
+   * handing the occupancy back here. So the split is still definitions
+   * first, occupancy second -- it is no longer a split between what is and
+   * is not saved. Sorted by instance id then entity id for deterministic
+   * output.
    */
   public getSnapshot(): readonly (readonly [string, readonly EntityId[]])[] {
     return [...this.occupants.entries()]

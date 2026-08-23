@@ -1,7 +1,7 @@
 import type { SessionController } from './session-controller';
 
 export interface LifecycleSaveOptions {
-  /** Defaults to the global `document`/`window` pair; injectable so this is testable without a DOM environment. */
+  /** One target for both events. Defaults to the global `document`; injectable so this is testable without a DOM environment. */
   readonly target?: Pick<EventTarget, 'addEventListener' | 'removeEventListener'>;
   readonly visibilityState?: () => DocumentVisibilityState;
   readonly onAttempt?: (trigger: LifecycleSaveTrigger) => void;

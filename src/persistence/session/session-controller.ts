@@ -154,7 +154,7 @@ export class SessionController {
     }
   }
 
-  /** Loads a prison and makes it the active session. Reports whether recovery fell back to a previous generation, and what a V1 save actually restores. */
+  /** Loads a prison and makes it the active session. Reports whether recovery fell back to a previous generation, and what the current save version actually restores (`CURRENT_SAVE_RESTORED_SCOPE`). */
   public async loadPrison(prisonId: string): Promise<SessionLoadOutcome> {
     const result = await this.repository.loadCurrent(prisonId);
     if (!result.ok) return { ok: false, reason: result.reason };
