@@ -12,6 +12,7 @@
  * the `BoundedValue` contract that segmented bars render.
  */
 
+export * from './clock-projection';
 export * from './contraband-projection';
 export * from './incident-projection';
 export * from './prisoner-projection';

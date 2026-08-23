@@ -11,6 +11,16 @@ Since [ADR 0009](./adr/0009-challenge-verification-strategy.md) this is a **prod
 
 `FixedStepClock` is the one legitimate reader of real time, and only as *pacing*: it converts elapsed wall-clock milliseconds into a whole number of 50 ms ticks to run. The number of ticks is a scheduling decision; nothing about the value reaches a system, a command payload or any simulation state.
 
+### The transport controls
+
+Pause, play and fast-forward reach that same clock, over `simulation/set-clock`. They are the most obvious way for a player to break the guarantee above, so the rule is stated rather than assumed: **they change when ticks happen and never what a tick computes, nor the sequence of ticks.**
+
+- Speed is a divisor on wall time inside `FixedStepClock` and nowhere else. `Kernel.step()` takes no argument and reads no clock, so a tick at ×4 is the same tick as at ×1.
+- `setControl` pumps before it swaps, so wall time that passed under the *old* control is accounted for under that control. A paused clock accrues nothing: the milliseconds it was paused for are never converted into ticks, so a pause is not a way to store up simulation time. It does not, and must not, *discard* a backlog that already existed when the pause began — time that had elapsed but that the per-wake tick budget had not yet spent survives the pause and is spent after the resume, which is the same overload catch-up `FixedStepClock` performs without a pause. Either way the sequence of ticks is identical; only when they happen moves. `tests/unit/fixed-step-clock.test.ts` pins both halves.
+- The worker's unsolicited `simulation/clock-state` publication is a read of `Kernel.tick` after the tick loop has finished stepping. Rate-limiting it changes how often the HUD is told the tick and nothing else.
+
+`tests/determinism/clock-transport.test.ts` drives the real `SimulationWorkerStateMachine` twice from one snapshot — once straight through at ×1, once paused, idled and resumed at ×1, ×2 and ×4 — and requires a byte-identical session bundle at the same tick.
+
 ## Command Ordering
 - All external input is enqueued as a discrete `QueuedCommand` with a designated `executeAtTick` and a strict, contiguous `sequence` number.
 - Commands are explicitly ordered and validated by the Kernel.
