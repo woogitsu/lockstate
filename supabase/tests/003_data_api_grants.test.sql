@@ -81,6 +81,13 @@ select is(
   'prisons: no table-level UPDATE -- the pointer columns are advanced only by create_save_version()'
 );
 
+-- INSERT above is deliberately retained rather than revoked in favour of
+-- create_prison(). ADR 0013 argues the case: the slot cap is a count
+-- invariant of this table, so it is enforced by a trigger that holds on
+-- every write path, and does not depend on this grant staying revoked.
+-- supabase/tests/004_free_tier_capacity.test.sql is what makes that
+-- load-bearing -- it drives the refusal through this very grant.
+
 select is(
   (select string_agg(a.attname, ',' order by a.attname)
      from pg_attribute a
@@ -184,6 +191,16 @@ select is(
   'anon reaches exactly one relation in public: the challenge definitions, and only the rows its policy publishes'
 );
 
+-- `replace(..., e'\r', '')` on the expectation, here and in the sweep
+-- below, is not cosmetic. These are the only two assertions in the
+-- repository whose expected value is a MULTI-LINE literal, and a Windows
+-- checkout with `core.autocrlf = true` stores this file with CRLF endings,
+-- which puts a carriage return inside the dollar-quoted string while
+-- `string_agg(..., e'\n')` produces none. Both assertions then fail on
+-- every platform-default Windows clone -- with a `have`/`want` diff that
+-- looks identical, because the stray CR is invisible in the terminal. The
+-- suite exists to assert privileges; it must not also assert the line
+-- endings of its own source file.
 select is(
   (select string_agg(c.relname || ':' || p, e'\n' order by c.relname, p)
      from pg_class c
@@ -192,7 +209,7 @@ select is(
     where n.nspname = 'public'
       and c.relkind in ('r', 'v', 'm', 'p', 'f')
       and has_table_privilege('authenticated', c.oid, p)),
-  $expected$challenge_definitions:SELECT
+  replace($expected$challenge_definitions:SELECT
 challenge_submissions:SELECT
 entitlement_events:SELECT
 entitlements:SELECT
@@ -206,7 +223,7 @@ save_versions:SELECT
 user_settings:DELETE
 user_settings:INSERT
 user_settings:SELECT
-user_settings:UPDATE$expected$,
+user_settings:UPDATE$expected$, e'\r', ''),
   'authenticated reaches exactly the relations the client half of this schema needs'
 );
 
@@ -224,10 +241,10 @@ select is(
     where n.nspname = 'public'
       and c.relkind in ('r', 'v', 'm', 'p', 'f')
       and has_table_privilege('service_role', c.oid, p)),
-  $expected$challenge_definitions:INSERT
+  replace($expected$challenge_definitions:INSERT
 challenge_definitions:SELECT
 challenge_submissions:SELECT
-entitlement_events:SELECT$expected$,
+entitlement_events:SELECT$expected$, e'\r', ''),
   'service_role reaches exactly the four trusted-path privileges, and holds no table-level UPDATE anywhere'
 );
 
@@ -266,6 +283,17 @@ select is(
 -- roles' own grant), but PL/pgSQL refuses to run one outside a trigger, so
 -- they are not a Data API surface. Everything else is.
 
+-- Three of these six are constant-returning helpers added by ADR 0013
+-- (`base_save_slot_capacity`, `max_save_slot_capacity`,
+-- `max_save_payload_bytes`). They are deliberately readable so a client can
+-- ask the server what the limits are and warn before spending a 4 MiB
+-- upload finding out; they publish nothing that README.md and
+-- src/services/entitlements/products.ts do not already state.
+--
+-- `account_save_slot_capacity(uuid)` is deliberately ABSENT: it takes an
+-- account id and would answer for somebody else's. It is SECURITY DEFINER
+-- and reached only from the capacity trigger and create_prison(), both of
+-- which run as the owning role.
 select is(
   (select string_agg(p.proname, ' ' order by p.proname)
      from pg_proc p
@@ -273,8 +301,8 @@ select is(
     where n.nspname = 'public'
       and p.prorettype <> 'pg_catalog.trigger'::regtype
       and has_function_privilege('authenticated', p.oid, 'EXECUTE')),
-  'create_save_version submit_challenge_evidence',
-  'authenticated may call exactly the two RPCs that check auth.uid() themselves'
+  'base_save_slot_capacity create_prison create_save_version max_save_payload_bytes max_save_slot_capacity submit_challenge_evidence',
+  'authenticated may call exactly the three RPCs that check auth.uid() themselves, plus the three published limit constants'
 );
 
 select is(

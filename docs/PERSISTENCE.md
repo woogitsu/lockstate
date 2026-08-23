@@ -257,6 +257,13 @@ they migrate, that the migrated ledger reproduces V1's generations, free list
 and capacity exactly, that a tampered V1 save is still rejected as
 `checksum-mismatch`, and that decoding a fixture does not mutate it.
 
+`tests/browser/local-save-migration.spec.ts` re-proves the same upgrade from
+the *other* side of a real storage boundary, off the same fixture: a V1 record
+transported by structured clone rather than JSON, read back after a real page
+navigation, and migrated inside the repository's own recovery scan rather than
+by calling the chain directly. See `docs/TESTING.md` for why a format
+migration belongs in that layer as well as in-process.
+
 ## Error taxonomy
 
 `decodeSaveEnvelope` returns a distinct, actionable error code rather than a
@@ -346,7 +353,19 @@ project established:
 - **A real `QuotaExceededError` carries an empty `message`.**
   `classifyStoreError` therefore falls back to the error's name, so the
   single failure a player is most likely to see never produces blank
-  evidence.
+  evidence. Both halves are asserted — the empty raw message *and* the
+  non-blank classified one — so neither the observation nor the fallback it
+  justifies can go stale unnoticed.
+- **A V1 save left in real origin storage still loads under a V2 build.**
+  A V1 record planted directly in real IndexedDB (bypassing `save()`, which
+  can only write the current version) survives a page navigation, migrates on
+  read, and reproduces the V1 ledger exactly. `loadCurrent` migrates in
+  memory only — the V1 record stays on disk until the next save, which then
+  writes the population-shaped V2 form durably. And a *tampered* V1 record
+  read back off real storage is still rejected as `checksum-mismatch` at V1,
+  with recovery falling back to the previous good V1 generation: the proof
+  that recomputing the checksum during migration did not cost corruption
+  detection, on the storage path where it would actually matter.
 - **`IDBTransaction.error` is `null` after an explicit `abort()`**, so the
   adapter's `?? new DOMException(..., 'AbortError')` fallback is
   load-bearing, not defensive padding. And when an unhandled *request*

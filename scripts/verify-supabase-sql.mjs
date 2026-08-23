@@ -45,7 +45,32 @@ const migrationsDirectory = join(repositoryRoot, 'supabase/migrations');
 const testsDirectory = join(repositoryRoot, 'supabase/tests');
 
 const databaseUrl = process.env.DATABASE_URL ?? '';
-const scratchDatabase = process.env.VERIFY_DATABASE_NAME ?? 'lockstate_sql_verify';
+
+// The scratch database is DROPPED and recreated on every run, so a fixed name
+// is only safe while exactly one run touches a given PostgreSQL server at a
+// time. That stops being true the moment the self-hosted runner has more than
+// one runner instance: two runs sharing one server drop each other's database
+// mid-suite, and the resulting failure reads as a schema defect rather than as
+// a collision. Verified: two concurrent runs pinned to one name fail with
+// `duplicate key value violates unique constraint "pg_database_datname_index"`.
+//
+// So the name is per-run unless the caller pins one. `VERIFY_DATABASE_NAME` is
+// honoured exactly as given and is never dropped afterwards, which keeps the
+// local debugging workflow -- run it, then inspect what was left behind --
+// working as before.
+const pinnedDatabase = process.env.VERIFY_DATABASE_NAME;
+
+/** A PostgreSQL identifier: `[A-Za-z0-9_]` only, inside the 63-byte limit. */
+function scratchDatabaseName() {
+  if (pinnedDatabase !== undefined) return pinnedDatabase;
+  const runToken = [process.env.GITHUB_RUN_ID, process.env.GITHUB_RUN_ATTEMPT, process.env.GITHUB_JOB]
+    .filter((part) => part !== undefined && part !== '')
+    .join('_');
+  const suffix = (runToken === '' ? String(process.pid) : runToken).replace(/[^A-Za-z0-9_]/g, '_');
+  return `lockstate_sql_verify_${suffix}`.slice(0, 63);
+}
+
+const scratchDatabase = scratchDatabaseName();
 
 function psql(args, { input, database } = {}) {
   const connection = databaseUrl === '' ? ['-d', database ?? scratchDatabase] : [databaseUrl];
@@ -80,8 +105,23 @@ function parseTap(output) {
   return { passed, failed, planned };
 }
 
+/**
+ * Only ever drops a database this script named itself. A caller-pinned
+ * `VERIFY_DATABASE_NAME` is left in place so it can be inspected after a
+ * failure, and an external `DATABASE_URL` is never ours to drop.
+ */
+function dropScratchDatabase() {
+  if (databaseUrl !== '' || pinnedDatabase !== undefined) return;
+  try {
+    execFileSync('psql', ['-X', '-q', '-d', 'postgres', '-c', `drop database if exists ${scratchDatabase}`], { encoding: 'utf8' });
+  } catch {
+    // A leaked scratch database is untidy; it is not a failure of the suite,
+    // and reporting it as one would turn a green run red for no reason.
+  }
+}
+
 function run() {
-  console.log('Preparing a scratch database…');
+  console.log(`Preparing a scratch database (${scratchDatabase})…`);
   if (databaseUrl === '') {
     execFileSync('psql', ['-X', '-q', '-d', 'postgres', '-c', `drop database if exists ${scratchDatabase}`], { encoding: 'utf8' });
     execFileSync('psql', ['-X', '-q', '-d', 'postgres', '-c', `create database ${scratchDatabase}`], { encoding: 'utf8' });
@@ -139,4 +179,11 @@ function run() {
   console.log(`\nAll pgTAP suites passed (${totalPassed} assertions).`);
 }
 
-run();
+// `finally` rather than a call at each exit: a per-run database that outlived
+// a crash would accumulate on a long-lived self-hosted runner until the server
+// filled up.
+try {
+  run();
+} finally {
+  dropScratchDatabase();
+}
