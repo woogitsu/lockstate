@@ -1,5 +1,6 @@
 import type { JsonValue } from '../../src/shared/json';
 import { canonicalJson, deterministicStateHash } from '../../src/simulation/determinism/canonical';
+import { encodeEntityStoreSnapshot } from '../../src/simulation/entity/entity-codec';
 import type { SimulationRuntime } from '../../src/simulation/runtime/new-session';
 
 /**
@@ -55,23 +56,32 @@ export function toJsonValue(value: unknown, path = '$'): JsonValue {
 }
 
 /**
- * Exactly the state a V1 session snapshot claims to carry across a
- * save/restore boundary (`V1_RESTORED_SCOPE` in
+ * Exactly the state a session snapshot claims to carry across a
+ * save/restore boundary (`CURRENT_SAVE_RESTORED_SCOPE` in
  * `src/simulation/runtime/restore-session.ts`): kernel tick, command
  * queue and RNG streams, world terrain/ownership, construction orders and
  * undo/redo, and entity-id liveness.
  *
- * Kept separate from `fullRuntimeState` on purpose. The subsystems V1 does
- * not carry are rebuilt *empty* by design, so comparing them across a
+ * Kept separate from `fullRuntimeState` on purpose. The subsystems a save
+ * does not carry are rebuilt *empty* by design, so comparing them across a
  * restore would assert a limitation the save schema already documents,
  * not a determinism property.
  */
-export function v1RestoredScopeState(runtime: SimulationRuntime): JsonValue {
+export function carriedScopeState(runtime: SimulationRuntime): JsonValue {
   return toJsonValue({
     kernel: runtime.kernel.snapshot(),
     world: runtime.world.snapshot(),
     construction: runtime.construction.snapshot(),
-    entityLiveness: runtime.prisoners.entityStore.getSnapshot(),
+    // The *encoded* liveness ledger, not `EntityStore.getSnapshot()`'s raw
+    // arrays. `freeIndices` is a stack whose entries above `freeCount` are
+    // never read, so the store leaves stale values there; the codec writes
+    // only the live prefix and `decodeEntityStoreSnapshot` restores the tail
+    // as zeroes (documented in `src/simulation/entity/entity-codec.ts`).
+    // The raw arrays therefore differ between a continuous and a restored
+    // run without the simulations differing at all -- which means a replay
+    // verifier (ADR 0009) must hash this canonical encoded form, never the
+    // store's in-memory arrays.
+    entityLiveness: encodeEntityStoreSnapshot(runtime.prisoners.entityStore.getSnapshot()),
   });
 }
 
@@ -109,8 +119,8 @@ export function fullRuntimeState(runtime: SimulationRuntime): JsonValue {
   });
 }
 
-export function hashV1RestoredScope(runtime: SimulationRuntime): string {
-  return deterministicStateHash(v1RestoredScopeState(runtime));
+export function hashCarriedScope(runtime: SimulationRuntime): string {
+  return deterministicStateHash(carriedScopeState(runtime));
 }
 
 export function hashFullRuntime(runtime: SimulationRuntime): string {

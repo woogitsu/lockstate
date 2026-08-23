@@ -3,12 +3,12 @@ import { packCommand } from '../../src/simulation/protocol/commands';
 import {
   captureSessionSnapshot,
   restoreSimulationRuntime,
-  V1_RESTORED_SCOPE,
+  CURRENT_SAVE_RESTORED_SCOPE,
 } from '../../src/simulation/runtime/restore-session';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from '../helpers/determinism-scenario';
-import { toJsonValue, v1RestoredScopeState } from '../helpers/determinism-state';
+import { toJsonValue, carriedScopeState } from '../helpers/determinism-state';
 
 /**
  * `snapshot() -> restore() -> run N ticks` must land on exactly the state
@@ -18,8 +18,8 @@ import { toJsonValue, v1RestoredScopeState } from '../helpers/determinism-state'
  * difference -- it silently invalidates stored evidence.
  *
  * These tests deliberately compare at the scope the save schema actually
- * claims (`V1_RESTORED_SCOPE`): kernel tick/command queue/RNG streams,
- * world, construction and entity-id liveness. The subsystems V1 does not
+ * claims (`CURRENT_SAVE_RESTORED_SCOPE`): kernel tick/command queue/RNG streams,
+ * world, construction and entity-id liveness. The subsystems the current save version does not
  * carry are rebuilt empty *by design*, and the last test in this file pins
  * that limitation so it cannot drift unnoticed.
  */
@@ -28,19 +28,19 @@ const SEED = 7;
 const TOTAL_TICKS = 300;
 
 /**
- * A scenario whose entire *live* state sits inside `V1_RESTORED_SCOPE`, so
+ * A scenario whose entire *live* state sits inside `CURRENT_SAVE_RESTORED_SCOPE`, so
  * "restore then continue" and "just continue" are comparable without
  * asserting anything the save schema never promised.
  *
  * Entities are spawned straight on the `EntityStore` rather than through
- * `admitPrisoner`: V1 carries entity-id liveness (indices, generations,
+ * `admitPrisoner`: the save carries entity-id liveness (indices, generations,
  * free list) but no prisoner components, and `restoreSimulationRuntime`
  * loads the store without re-deriving the query bitset -- so a prisoner
  * admitted through the runtime would legitimately not resume. Spawning
- * directly exercises exactly the liveness bookkeeping V1 does carry,
+ * directly exercises exactly the liveness bookkeeping the save does carry,
  * including recycled indices and bumped generations.
  */
-function buildV1ScopeSession(): SimulationRuntime {
+function buildCarriedScopeSession(): SimulationRuntime {
   const runtime = createNewSimulationRuntime(SEED);
   reapplySessionSetup(runtime);
 
@@ -62,7 +62,7 @@ function reapplySessionSetup(runtime: SimulationRuntime): void {
   runtime.containers.require('construction-materials').deposit('brick', 500);
 }
 
-const V1_COMMANDS: readonly { readonly id: string; readonly executeAtTick: number; readonly payload: ReturnType<typeof packCommand> }[] = [
+const CARRIED_SCOPE_COMMANDS: readonly { readonly id: string; readonly executeAtTick: number; readonly payload: ReturnType<typeof packCommand> }[] = [
   { id: 'b-0', executeAtTick: 0, payload: packCommand({ type: 'PlaceBuildOrder', orderId: 'wall-c', definitionId: 'wall-brick', x: 3, y: 3 }) },
   { id: 'b-1', executeAtTick: 0, payload: packCommand({ type: 'PlaceBuildOrder', orderId: 'wall-a', definitionId: 'wall-brick', x: 3, y: 4 }) },
   { id: 'b-2', executeAtTick: 40, payload: packCommand({ type: 'PlaceBuildOrder', orderId: 'wall-b', definitionId: 'wall-brick', x: 3, y: 5 }) },
@@ -70,8 +70,8 @@ const V1_COMMANDS: readonly { readonly id: string; readonly executeAtTick: numbe
   { id: 'b-4', executeAtTick: 220, payload: packCommand({ type: 'PlaceBuildOrder', orderId: 'wall-e', definitionId: 'wall-brick', x: 3, y: 7 }) },
 ];
 
-function submitV1Commands(runtime: SimulationRuntime): void {
-  V1_COMMANDS.forEach((command, sequence) => {
+function submitCarriedScopeCommands(runtime: SimulationRuntime): void {
+  CARRIED_SCOPE_COMMANDS.forEach((command, sequence) => {
     runtime.kernel.submitCommand(command.id, sequence, command.executeAtTick, command.payload);
   });
 }
@@ -82,13 +82,13 @@ function step(runtime: SimulationRuntime, count: number): void {
 
 describe('session snapshot / restore fidelity', () => {
   it('restoring mid-run and continuing lands on the same state as never restoring at all', () => {
-    const continuous = buildV1ScopeSession();
-    submitV1Commands(continuous);
+    const continuous = buildCarriedScopeSession();
+    submitCarriedScopeCommands(continuous);
     step(continuous, TOTAL_TICKS);
 
     for (const restoreAtTick of [1, 35, 100, 175, 260]) {
-      const interrupted = buildV1ScopeSession();
-      submitV1Commands(interrupted);
+      const interrupted = buildCarriedScopeSession();
+      submitCarriedScopeCommands(interrupted);
       step(interrupted, restoreAtTick);
 
       const bundle = captureSessionSnapshot(interrupted);
@@ -97,17 +97,17 @@ describe('session snapshot / restore fidelity', () => {
       step(restored, TOTAL_TICKS - restoreAtTick);
 
       expect(restored.kernel.tick, `restored at tick ${restoreAtTick}`).toBe(TOTAL_TICKS);
-      expect(v1RestoredScopeState(restored), `restored at tick ${restoreAtTick}`).toEqual(v1RestoredScopeState(continuous));
+      expect(carriedScopeState(restored), `restored at tick ${restoreAtTick}`).toEqual(carriedScopeState(continuous));
     }
   });
 
   it('restoring twice in a row still lands on the same state -- the round trip is idempotent', () => {
-    const continuous = buildV1ScopeSession();
-    submitV1Commands(continuous);
+    const continuous = buildCarriedScopeSession();
+    submitCarriedScopeCommands(continuous);
     step(continuous, TOTAL_TICKS);
 
-    let current = buildV1ScopeSession();
-    submitV1Commands(current);
+    let current = buildCarriedScopeSession();
+    submitCarriedScopeCommands(current);
     for (const segment of [60, 90, 70, 80]) {
       step(current, segment);
       const { runtime: restored } = restoreSimulationRuntime(captureSessionSnapshot(current), SEED);
@@ -116,18 +116,29 @@ describe('session snapshot / restore fidelity', () => {
     }
 
     expect(current.kernel.tick).toBe(TOTAL_TICKS);
-    expect(v1RestoredScopeState(current)).toEqual(v1RestoredScopeState(continuous));
+    expect(carriedScopeState(current)).toEqual(carriedScopeState(continuous));
   });
 
   it('the scenario really advances the state it compares -- not a comparison of two empty sessions', () => {
-    const runtime = buildV1ScopeSession();
-    submitV1Commands(runtime);
+    const runtime = buildCarriedScopeSession();
+    submitCarriedScopeCommands(runtime);
     step(runtime, TOTAL_TICKS);
 
     const orders = runtime.construction.snapshot().orders;
-    expect(orders).toHaveLength(V1_COMMANDS.length);
+    expect(orders).toHaveLength(CARRIED_SCOPE_COMMANDS.length);
     expect(orders.some((order) => order.state === 'completed')).toBe(true);
-    expect(runtime.prisoners.entityStore.getSnapshot().maxActiveIndex).toBeGreaterThanOrEqual(2);
+
+    // The liveness ledger really does carry a recycled index and a bumped
+    // generation, so the entity part of the comparison is not trivial.
+    const liveness = runtime.prisoners.entityStore.getSnapshot();
+    expect(liveness.maxActiveIndex).toBeGreaterThanOrEqual(2);
+    expect(liveness.generations[1]).toBe(1);
+    expect(liveness.freeCount).toBe(0);
+    // ...and the raw store keeps a stale free-list entry above `freeCount`
+    // that a restore normalises away. Nothing reads it, but it is exactly
+    // why the comparison hashes the encoded ledger and not these arrays --
+    // see `carriedScopeState`.
+    expect(liveness.freeIndices[0]).toBe(1);
   });
 
   it('a captured bundle survives a restore byte-identically, including pending commands and RNG stream states', () => {
@@ -162,18 +173,18 @@ describe('session snapshot / restore fidelity', () => {
     expect(restored.construction.getOrder('late-wall')?.state).toBe('approved');
   });
 
-  it('states plainly which subsystems a V1 save cannot resume, so a V2 must update this pin deliberately', () => {
+  it('states plainly which subsystems the current save version cannot resume, so a schema bump must update this pin deliberately', () => {
     // Not a wish list: this is the executable form of the limitation
     // `restore-session.ts` documents. A replay verifier (ADR 0009) may not
-    // assume any of these resume from a V1 payload.
-    expect([...V1_RESTORED_SCOPE.restored].sort()).toEqual([
+    // assume any of these resume from a save payload.
+    expect([...CURRENT_SAVE_RESTORED_SCOPE.restored].sort()).toEqual([
       'RNG stream states',
       'construction orders and undo/redo',
       'entity id liveness',
       'kernel tick and command queue',
       'world terrain and ownership',
     ]);
-    expect([...V1_RESTORED_SCOPE.notCarriedByThisSaveVersion].sort()).toEqual([
+    expect([...CURRENT_SAVE_RESTORED_SCOPE.notCarriedByThisSaveVersion].sort()).toEqual([
       'contraband and intelligence',
       'incidents and gangs',
       'jobs and inventory',
