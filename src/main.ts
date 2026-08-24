@@ -443,6 +443,27 @@ async function bootPersistence(client: SimulationClient, savePanelHost: HTMLElem
     return;
   }
 
+  /*
+   * The autosave, finally connected (issue #146).
+   *
+   * `AutosaveScheduler` is purely dirty-driven -- no `markDirty`, no timer, no
+   * save -- and **nothing in the application ever called it**, so the 30-second
+   * interval was configured, reached the scheduler, and did nothing. The only
+   * automatic save was the best-effort one on `pagehide` below, which meant an
+   * unclean end (a crash, a force-quit, an OS kill, a dead worker) wrote
+   * nothing since the last time the player pressed Save now.
+   *
+   * That also falsified the reasoning the lifecycle save rests on: #92 and
+   * `docs/PERSISTENCE.md` justify it being fire-and-forget on the grounds that
+   * the interval autosave is the durability mechanism. There was no interval
+   * autosave. Those passages become true with this line, which is the right
+   * order -- fix the code, and the documentation stops being aspirational.
+   *
+   * Wired here rather than at the sender's construction because the sender is
+   * built at module scope, before this function has a controller to give it.
+   */
+  commandSender?.onCommandAccepted(() => controller.markDirty());
+
   // Best-effort only -- see LifecycleSaveHandler's docs on why correctness
   // never depends on these events firing.
   new LifecycleSaveHandler(controller).attach();

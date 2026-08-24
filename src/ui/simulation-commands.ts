@@ -75,6 +75,24 @@ export class SimulationCommandSender {
   private nextSequence = 0;
   private sequenceSynced = false;
 
+  /**
+   * Told that the simulation has accepted a command, so the session can be
+   * marked dirty and the autosave timer can start.
+   *
+   * A callback and **not** a `SessionController`, for two reasons. The
+   * boundary one: `src/ui/**` may not depend on `src/persistence/**`, and
+   * `tests/unit/ui-orchestration-boundaries.test.ts` would fail this module
+   * for the import -- correctly, because this class orchestrates input, it
+   * does not own durability. The lifetime one: `src/main.ts` builds this
+   * sender before a `SessionController` exists at all, since the controller is
+   * created inside `bootPersistence` and only when a worker started.
+   *
+   * Attached afterwards, the same shape as `BuildTool.attachReadout`. Absent
+   * until then, and absent for ever in a browser that never got persistence --
+   * which is why every call site is optional rather than asserted.
+   */
+  private accepted: (() => void) | undefined;
+
   private readonly generateMessageId: () => string;
   private readonly generateCommandId: () => string;
   private readonly leadTicks: number;
@@ -118,6 +136,23 @@ export class SimulationCommandSender {
   }
 
   /** True once a session exists and the command sequence has been baselined. */
+  /**
+   * Registers the listener that marks the session dirty (#146).
+   *
+   * The 30-second autosave never fired, because `AutosaveScheduler` is purely
+   * dirty-driven and **nothing in the application called `markDirty`** -- so
+   * the only automatic save was the best-effort one on `pagehide`, and
+   * `docs/PERSISTENCE.md` justified that being best-effort by pointing at an
+   * interval autosave that did not exist. Twenty minutes of play followed by a
+   * crash, a force-quit or an OS kill wrote nothing.
+   *
+   * This is the seam that closes it. Called by the composition root once both
+   * ends exist.
+   */
+  public onCommandAccepted(listener: () => void): void {
+    this.accepted = listener;
+  }
+
   public get canSend(): boolean {
     return this.ready && this.sequenceSynced;
   }
@@ -204,6 +239,25 @@ export class SimulationCommandSender {
         // A rejection means our idea of the sequence is wrong in an unknown
         // direction. Drop the baseline and let the next snapshot restate it.
         if (message.payload.status === 'rejected') this.sequenceSynced = false;
+        // Acceptance is what marks the session dirty (#146). This branch is
+        // the main thread's only observation of "the simulation has taken
+        // something the player did", which is the semantics that issue calls
+        // the most obviously right of its three candidates -- and the one that
+        // does not tie durability to either the HUD's projection cadence or
+        // the simulation's speed.
+        //
+        // Deliberately on *acceptance* and not on execution. A queued command
+        // runs at a future tick, so a tab that dies in between marks a save
+        // for a command that never ran: a save slightly too early, which is
+        // the harmless direction. Hooking execution instead would reintroduce
+        // the speed coupling through the back door, because how soon a tick
+        // arrives depends on the clock.
+        //
+        // Chattiness is the scheduler's problem and it is already solved:
+        // `AutosaveScheduler` coalesces per prison into one trailing-edge save
+        // and holds an at-most-one-in-flight rule, so a thousand commands in
+        // thirty seconds produce one write.
+        if (message.payload.status === 'queued') this.accepted?.();
         break;
 
       case 'simulation/stopped':
