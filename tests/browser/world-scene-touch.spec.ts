@@ -213,10 +213,12 @@ test.describe('the world scene two-finger gestures', () => {
   const OFF_CENTRE = { x: 480, y: 300 } as const;
 
   test('moves the camera one-to-one when two fingers travel together, and does not zoom (#209)', async ({ page }) => {
-    // The positive control for everything below, and the execution of
-    // `docs/INPUT.md`'s "Two fingers ... still move the camera". If this does
-    // not move, `addPointer(2)` is not delivering a second finger and every
-    // pinch assertion here would be measuring a one-finger pan.
+    // The number: at zoom 1 the camera travels exactly as far as the fingers
+    // did, the other way, and the gap between them never changed so the zoom
+    // is untouched. What this spec deliberately does **not** claim is that two
+    // fingers were required -- one finger dragged the same way pans the same
+    // distance, and measured, this passes with `addPointer(0)`. The spec below
+    // is the one that discriminates.
     await openHarness(page);
     const client = await page.context().newCDPSession(page);
     const before = await read(page, OFF_CENTRE);
@@ -243,6 +245,47 @@ test.describe('the world scene two-finger gestures', () => {
     // asserted because the two fingers arrive one at a time, which means the
     // gap really does change between the two halves of every step.
     expect(after.zoom).toBeCloseTo(before.zoom, 10);
+  });
+
+  test('pans on two fingers while a build tool is armed, and abandons the run (#209)', async ({ page }) => {
+    /*
+     * The spec above cannot tell a two-finger pan from a one-finger one -- both
+     * move the camera by the travel of the finger, and neither zooms. Measured:
+     * with `addPointer(2)` cut back to `addPointer(0)`, so the second finger is
+     * never delivered, it still passed. This is the discriminator.
+     *
+     * It is also the exact claim `hud.build.arm-hint` makes, in the place it
+     * makes it. That string is painted in the **Build panel**, so "two fingers
+     * still move the camera" is a promise about a session with a tool armed --
+     * and while one is armed the one-finger drag builds (#74), which is what
+     * makes the second finger load-bearing rather than incidental. With one
+     * finger the same gesture places a wall and the camera does not move at all.
+     */
+    await openHarness(page);
+    await page.evaluate(() => window.lockstateWorldSceneHarness!.armBuildTool(true));
+    const client = await page.context().newCDPSession(page);
+    const before = await read(page, OFF_CENTRE);
+
+    await dispatch(client, 'touchStart', [
+      { id: 0, x: 400, y: 300 },
+      { id: 1, x: 500, y: 300 },
+    ]);
+    for (let step = 1; step <= STEPS; step += 1) {
+      await dispatch(client, 'touchMove', [
+        { id: 0, x: 400 + (120 * step) / STEPS, y: 300 + (78 * step) / STEPS },
+        { id: 1, x: 500 + (120 * step) / STEPS, y: 300 + (78 * step) / STEPS },
+      ]);
+    }
+    await dispatch(client, 'touchEnd', []);
+    const after = await read(page, OFF_CENTRE);
+
+    expect(after.scroll.x - before.scroll.x, 'the armed tool swallowed the pan').toBeCloseTo(-120, SCROLL_PRECISION);
+    expect(after.scroll.y - before.scroll.y, 'the armed tool swallowed the pan').toBeCloseTo(-78, SCROLL_PRECISION);
+    // The first finger down does arm a run -- `activeTouchCount()` is 1 at that
+    // instant -- and the second one has to abandon it rather than commit a wall
+    // the player was trying to scroll past.
+    expect(await page.evaluate(() => window.lockstateWorldSceneHarness!.placedRuns())).toEqual([]);
+    expect(await page.evaluate(() => window.lockstateWorldSceneHarness!.targetedRun())).toBeUndefined();
   });
 
   test('zooms in when the fingers separate, holding the world point under the midpoint (#209)', async ({ page }) => {
