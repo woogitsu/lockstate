@@ -18,8 +18,9 @@ export const REDACTED = '[redacted]';
 const SENSITIVE_KEY_PATTERN =
   /(token|secret|password|passwd|credential|authorization|auth|apikey|api_key|jwt|cookie|session|signature|email|phone|address|payload|savedata|save_data)/i;
 
-interface ValuePattern {
+export interface ValuePattern {
   readonly pattern: RegExp;
+  /** What the shape is, in one word. The name a test's sample is filed under. */
   readonly reason: string;
 }
 
@@ -27,8 +28,15 @@ interface ValuePattern {
  * Value shapes that must never leave the device even under an innocuous
  * key name. All are global so every occurrence in a string is replaced;
  * `String.prototype.replace` resets `lastIndex`, so reusing them is safe.
+ *
+ * Exported so the table can be *enumerated* by a test rather than sampled by
+ * hand. Six of the seven entries had a sample and `file-url` had none, so
+ * deleting that entry outright changed no test result (#264); the samples in
+ * `tests/unit/services-telemetry.test.ts` are now required to name every
+ * `reason` here, which is what makes the eighth omission impossible rather
+ * than merely unlikely.
  */
-const SENSITIVE_VALUE_PATTERNS: readonly ValuePattern[] = [
+export const SENSITIVE_VALUE_PATTERNS: readonly ValuePattern[] = [
   { pattern: /[\w.+-]+@[\w-]+\.[\w.-]+/g, reason: 'email' },
   { pattern: /\beyJ[\w-]{8,}\.[\w-]{8,}\.[\w-]*/g, reason: 'jwt' },
   { pattern: /\bbearer\s+\S+/gi, reason: 'bearer-token' },

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { KeyValueStore } from '../../src/shared/key-value-store';
+import { SENSITIVE_VALUE_PATTERNS } from '../../src/services/telemetry/redaction';
 import {
   BatchingTelemetrySink,
   MemoryTelemetryTransport,
@@ -129,6 +130,70 @@ describe('telemetry redaction', () => {
     const outcome = redactAttributes({ note: 'x'.repeat(1_000) });
     expect(String(outcome.attributes.note).length).toBeLessThanOrEqual(200);
   });
+
+  /**
+   * One sample per entry in the value-redaction table, keyed by its `reason`.
+   *
+   * `secret` is the part that must not survive; `text` wraps it in innocuous
+   * words, because redaction is supposed to keep a message's shape rather than
+   * blank it. Each sample must be a witness for **its own entry alone** -- the
+   * last test below rejects a sample that a second pattern also matches, since
+   * such a sample would keep passing after its entry was deleted.
+   *
+   * Six of the seven entries had a sample and `file-url` had none, so deleting
+   * that entry changed no test result at all (#264). The map is checked against
+   * the table itself rather than read down by hand, so a new pattern arrives
+   * with a sample or fails here.
+   */
+  const REDACTION_SAMPLES: Readonly<Record<string, { readonly text: string; readonly secret: string }>> = {
+    email: { text: 'contact player@example.test about the crash', secret: 'player@example.test' },
+    jwt: { text: 'rejected eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0.signature at boot', secret: 'eyJhbGciOiJIUzI1NiJ9' },
+    'bearer-token': { text: 'Authorization: Bearer abc.def failed', secret: 'Bearer abc.def' },
+    uuid: {
+      text: 'prison 123e4567-e89b-12d3-a456-426614174000 failed',
+      secret: '123e4567-e89b-12d3-a456-426614174000',
+    },
+    // A path a browser puts in a stack frame or a drag-and-drop error, and
+    // deliberately not under /home or /Users: those belong to
+    // `filesystem-path`, and a sample two entries match proves neither.
+    'file-url': { text: 'loading file:///opt/lockstate/prison.sav failed', secret: 'file:///opt/lockstate/prison.sav' },
+    'filesystem-path': { text: 'wrote /home/matt/prison.sav in 4ms', secret: '/home/matt/prison.sav' },
+    'url-query': { text: 'GET https://lockstate.io/app?token=secret returned 401', secret: '?token=secret' },
+  };
+
+  it('has a sample for every entry in the value-redaction table, and none for an entry that is gone', () => {
+    // The reachability shape used across tests/foundation/: enumerate the
+    // table, do not transcribe it. A seventh entry with no sample is exactly
+    // how `file-url` went unexercised.
+    expect(Object.keys(REDACTION_SAMPLES).sort()).toEqual(SENSITIVE_VALUE_PATTERNS.map(({ reason }) => reason).sort());
+  });
+
+  it.each(SENSITIVE_VALUE_PATTERNS.map(({ reason }) => reason))('redacts a %s out of free text', (reason) => {
+    const sample = REDACTION_SAMPLES[reason];
+    if (sample === undefined) throw new Error(`no sample named ${reason}; the coverage test above says which`);
+
+    const redacted = redactText(sample.text);
+    expect(redacted, `${reason} survived redaction`).not.toContain(sample.secret);
+    expect(redacted, `${reason} was dropped rather than redacted`).toContain(REDACTED);
+    // The shape is kept: the surrounding words are still there to read.
+    expect(redacted.length).toBeGreaterThan(REDACTED.length);
+  });
+
+  it.each(SENSITIVE_VALUE_PATTERNS.map(({ reason }) => reason))(
+    'is the only entry that matches its own %s sample, so deleting that entry fails',
+    (reason) => {
+      // `String.prototype.match` restarts a global pattern from zero, so the
+      // shared `lastIndex` on these RegExp objects cannot make this
+      // order-dependent.
+      const sample = REDACTION_SAMPLES[reason];
+      if (sample === undefined) throw new Error(`no sample named ${reason}`);
+
+      const matching = SENSITIVE_VALUE_PATTERNS.filter(({ pattern }) => sample.text.match(pattern) !== null).map(
+        (entry) => entry.reason,
+      );
+      expect(matching, `the ${reason} sample must be redacted by the ${reason} entry alone`).toEqual([reason]);
+    },
+  );
 
   it('caps attribute count deterministically, independent of key order', () => {
     const many = Object.fromEntries(Array.from({ length: 40 }, (_unused, index) => [`k${index}`, index]));

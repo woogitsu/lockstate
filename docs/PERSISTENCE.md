@@ -1136,6 +1136,15 @@ on `src/persistence/**` and the sender is constructed before a controller
 exists; `tests/foundation/composition-root-contract.test.ts` is what fails if
 that one wiring line is removed again.
 
+Removed, but not disabled: that gate matches the line as a substring, so issue
+#264 prefixed it with a never-true `if` and left `tsc` clean and every test
+green. The behavioural half is now
+`tests/browser/app-shell.spec.ts`, which creates a prison on the assembled
+page, lays a wall on the world, and requires a further generation to reach
+storage from the interval alone — with no `pagehide` and no hidden
+`visibilitychange` in between, so the write it observes cannot be the
+best-effort lifecycle save this section describes.
+
 ### Export/import
 
 `exportSave` returns the current generation's already-validated envelope.
