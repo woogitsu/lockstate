@@ -263,8 +263,9 @@ describe('row index', () => {
 
   /**
    * Issue #204. The walk used to iterate `loadedBounds`, so its cost was the
-   * area of the bounding box of the loaded chunks -- two chunks 40 apart read
-   * 1,721,344 tiles to index the 2,048 that exist. Correctness was already
+   * area of the bounding box of the loaded chunks -- two chunks 40 apart span
+   * 1,721,344 tile positions and hold 2,048 tiles, and the walk read all
+   * 1,721,344 of them. Correctness was already
    * guarded above and stayed green throughout, so nothing in the suite could
    * tell the two walks apart; what was guarded by nothing was the *volume*.
    *
