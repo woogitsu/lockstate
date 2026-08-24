@@ -78,6 +78,53 @@ export interface LayoutProbe {
   readonly metricsClientWidth: number;
 }
 
+/**
+ * The Build panel's vertical layout, for issue #143.
+ *
+ * Positions, not styles: the defect is that the panel's last section sits
+ * below the fold, and only a rectangle can say whether it does. Every value
+ * is in viewport coordinates so the spec can compare them directly.
+ */
+export interface BuildLayoutProbe {
+  readonly viewport: readonly [number, number];
+  /** How many catalogue rows the panel is currently drawing. */
+  readonly rows: number;
+  readonly panel: LayoutBox | null;
+  /**
+   * The bottom of the panel's *client* box -- where its content starts being
+   * clipped, which is the fold the issue is about. Below its border box's
+   * bottom by the border width, and unaffected by scrolling.
+   */
+  readonly panelVisibleBottom: number;
+  /** `scrollHeight - clientHeight` on the panel: 0 when the panel itself does not scroll. */
+  readonly panelOverflow: number;
+  readonly panelScrollTop: number;
+  readonly list: LayoutBox | null;
+  /** `scrollHeight - clientHeight` on the catalogue list. */
+  readonly listOverflow: number;
+  /** The list's *computed* `overflow-y`, so a declaration losing to source order shows up. */
+  readonly listOverflowY: string;
+  /**
+   * The header of the panel's last section -- "Enter coordinates". The thing
+   * #143 measured below the fold, and the thing that must be on screen.
+   */
+  readonly lastSectionHeader: LayoutBox | null;
+  readonly lastSectionHeaderText: string;
+}
+
+/**
+ * What one HUD repaint costs the localization runtime (issue #136).
+ *
+ * `formatNumberCalls` is counted by the harness's own `HudLocalizer`;
+ * `numberFormatConstructions` counts `new Intl.NumberFormat` through a
+ * `Proxy` construct trap for the duration of the repaint. Both are counts,
+ * never elapsed time -- `docs/BENCHMARKING.md` keeps timing out of assertions.
+ */
+export interface RepaintFormatterCost {
+  readonly formatNumberCalls: number;
+  readonly numberFormatConstructions: number;
+}
+
 export interface LockstateUiHarness {
   mountSavePanel(): void;
   clickSaveButton(label: string): boolean;
@@ -88,7 +135,7 @@ export interface LockstateUiHarness {
   releaseCreate(outcome: 'ok' | 'worker-timeout'): void;
   settleSavePanel(): Promise<void>;
 
-  mountHudShell(options?: { readonly empty?: boolean }): void;
+  mountHudShell(options?: { readonly empty?: boolean; readonly buildables?: number }): void;
   hudProbe(): HudProbe;
   clickTab(tab: string): boolean;
   clickTransport(label: string): boolean;
@@ -108,6 +155,9 @@ export interface LockstateUiHarness {
   stepBuildCoordinate(axis: 'x' | 'y', direction: 'up' | 'down'): boolean;
   clickBuildEdge(edge: string): boolean;
   clickPlaceOrder(): boolean;
+  buildLayoutProbe(): BuildLayoutProbe;
+  /** Repaints the HUD with a changed view model and reports what it cost the localizer. */
+  measureRepaintFormatterCost(): RepaintFormatterCost;
 
   takeUnhandledRejections(): readonly string[];
 }

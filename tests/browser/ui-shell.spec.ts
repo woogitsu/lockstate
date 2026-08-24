@@ -386,6 +386,107 @@ test.describe('HUD shell', () => {
       expect(probe.selected).toBe('door-wooden');
       expect(probe.edgeChooserVisible).toBe(false);
     });
+
+    /**
+     * Issue #143: the catalogue is the region that scrolls, so the panel's
+     * last section stays on screen however long the catalogue gets.
+     *
+     * The whole panel used to be the scroll container, which made its height
+     * budget a function of how many things exist to build. Reproduced here at
+     * 1280x720 with a twelve-entry catalogue: the panel had 579px of box for
+     * 838px of content and the "Enter coordinates" header sat at y=845..889,
+     * 207px below the panel's own fold at y=638.
+     *
+     * **Position, not style.** A `overflow-y: auto` assertion would have
+     * passed before this fix as well -- the panel had it. The defect was where
+     * the header *was*, so that is what is measured: its rectangle against the
+     * panel's client box, with the panel unscrolled.
+     *
+     * Twelve entries because `BUILDABLE_REGISTRY` has two and the app cannot
+     * yet show a third at all; the panel takes its catalogue as view-model
+     * data, so the harness hands the real panel a longer list. Twelve is well
+     * past the seven that first overflow the panel here, so the test states a
+     * property rather than sitting on a boundary.
+     */
+    const CATALOGUE_VIEWPORTS = [
+      [1280, 720],
+      [1440, 900],
+      [1024, 768],
+      [900, 600],
+      [375, 812],
+    ] as const;
+
+    test('keeps the last section on screen however long the catalogue gets (#143)', async ({ page }) => {
+      for (const [width, height] of CATALOGUE_VIEWPORTS) {
+        await page.setViewportSize({ width, height });
+        await page.evaluate(() => window.lockstateUiHarness.mountHudShell({ buildables: 12 }));
+        await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+
+        const probe = await page.evaluate(() => window.lockstateUiHarness.buildLayoutProbe());
+        expect(probe.rows, `catalogue rows at ${width}x${height}`).toBe(12);
+        expect(probe.lastSectionHeaderText, `the panel's last section at ${width}x${height}`).toBe(
+          'Enter coordinates',
+        );
+        const header = probe.lastSectionHeader;
+        expect(header, `the last section header has no box at ${width}x${height}`).not.toBeNull();
+        if (header === null) continue;
+
+        // Nothing has scrolled anything: this is the state the panel arrives in.
+        expect(probe.panelScrollTop, `the Build panel is pre-scrolled at ${width}x${height}`).toBe(0);
+        expect(
+          header.bottom,
+          `the "Enter coordinates" header is below the Build panel's fold at ${width}x${height}: it ends at y=${header.bottom} in a panel clipped at y=${probe.panelVisibleBottom}`,
+        ).toBeLessThanOrEqual(probe.panelVisibleBottom);
+        expect(header.bottom, `the last section header is off the bottom of the viewport at ${width}x${height}`)
+          .toBeLessThanOrEqual(height);
+
+        // And the excess went to the catalogue, which is the mechanism the
+        // section header staying put depends on.
+        expect(probe.listOverflow, `the catalogue list absorbed nothing at ${width}x${height}`).toBeGreaterThan(0);
+        expect(probe.listOverflowY, `the catalogue list is not scrollable at ${width}x${height}`).toBe('auto');
+      }
+    });
+
+    test('leaves the shipped two-entry catalogue exactly as it was (#143)', async ({ page }) => {
+      // The fix must be invisible at today's catalogue size. Two rows fit
+      // inside the list's own floor, so nothing scrolls anywhere.
+      await page.setViewportSize({ width: 1280, height: 720 });
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+
+      const probe = await page.evaluate(() => window.lockstateUiHarness.buildLayoutProbe());
+      expect(probe.rows).toBe(2);
+      expect(probe.listOverflow).toBe(0);
+      expect(probe.panelOverflow).toBe(0);
+      expect(probe.lastSectionHeader?.bottom ?? 0).toBeLessThanOrEqual(probe.panelVisibleBottom);
+    });
+  });
+
+  /**
+   * Issue #136: one repaint reuses its formatters instead of rebuilding them.
+   *
+   * The strip formats every metric, the day, the position in the day and the
+   * speed on each repaint, and the worker publishes a clock at most every
+   * 250 ms while the simulation runs (`docs/HUD_PROJECTIONS.md`, section 7),
+   * so this is the HUD's hot path rather than an interaction.
+   *
+   * A count, not a duration: `docs/BENCHMARKING.md` keeps elapsed time out of
+   * assertions, and how many `Intl.NumberFormat` instances a repaint builds is
+   * the defect itself rather than a proxy for it. The number of *calls* is
+   * reported for the same reason -- it is the multiplier on the saving, and
+   * counting it here beats counting call sites by eye.
+   */
+  test('a repaint builds no number formatter, however many values it formats (#136)', async ({ page }) => {
+    await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+    const cost = await page.evaluate(() => window.lockstateUiHarness.measureRepaintFormatterCost());
+
+    // Vacuous otherwise: a repaint that formatted nothing would construct
+    // nothing either.
+    expect(cost.formatNumberCalls, 'the repaint formatted no numbers at all').toBeGreaterThan(0);
+    expect(
+      cost.numberFormatConstructions,
+      `one repaint formatted ${cost.formatNumberCalls} values and built ${cost.numberFormatConstructions} Intl.NumberFormat instances`,
+    ).toBe(0);
   });
 
   test('the HUD leaks no unhandled rejection while being driven', async ({ page }) => {
