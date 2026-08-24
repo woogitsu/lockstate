@@ -98,6 +98,18 @@ create table if not exists public.challenge_submissions (
   verified_at timestamptz,
   foreign key (challenge_id, challenge_version)
     references public.challenge_definitions (challenge_id, version),
+  -- SUPERSEDED, and it did not do what this comment claimed. `evidence_hash`
+  -- is caller-asserted and nothing checked it, so lying about it produced a
+  -- second ranked row for the same run -- executed and demonstrated in issue
+  -- #105 finding 1 (three `submitted` rows holding byte-identical evidence
+  -- under three fabricated hashes).
+  -- 20260824100000_bind_challenge_evidence_to_payload.sql drops this
+  -- constraint and replaces it with
+  -- `challenge_submissions_unique_evidence_digest` over `evidence_digest`, a
+  -- stored generated column the server computes from the payload. The
+  -- original intent below is the intent that constraint implements; the
+  -- column it named was the wrong one.
+  --
   -- Resubmitting identical evidence, or replaying someone else's capture,
   -- cannot create a second ranked row (ADR 0008 threat T3).
   constraint challenge_submissions_unique_evidence unique (challenge_id, challenge_version, evidence_hash),
@@ -171,6 +183,15 @@ create trigger challenge_submissions_verification_transition
 -- authenticated caller. `SECURITY DEFINER` bypasses RLS, so the
 -- `auth.uid()` check below is the actual authorization control
 -- (same rule as create_save_version, docs/CLOUD_SAVE.md).
+--
+-- SUPERSEDED by 20260824100100_harden_submit_challenge_evidence.sql (issue
+-- #105 findings 1 and 2), which is the current definition: the version
+-- below validates nothing about the payload it files, dedups on the
+-- caller's claimed hash, raises `P0001` rather than `42501` when there is
+-- no identity, and answers a collision with another account's row by
+-- returning that row's `submission_id`. It is left here unedited because
+-- migrations are appended rather than rewritten; read the later file for
+-- what this function now does.
 create or replace function public.submit_challenge_evidence(
   p_challenge_id text,
   p_challenge_version int,
