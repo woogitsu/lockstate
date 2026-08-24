@@ -1304,7 +1304,7 @@ test.describe('the assembled application', () => {
      * layout, so on its own it cannot tell a visible version from a hidden one.
      * `brand.css` drops `.brand__build` at 720px and under -- the same
      * breakpoint `hud.css` drops the minimap at -- because the strip has to fit
-     * six metric chips and three transport buttons on a phone, and the wordmark
+     * five metric chips and three transport buttons on a phone, and the wordmark
      * is what makes the corner read as a product. Asserting only the desktop
      * half would leave a rule that could stop applying; asserting only the phone
      * half would pass if the line were hidden everywhere.

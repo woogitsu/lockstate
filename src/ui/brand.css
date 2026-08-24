@@ -79,7 +79,7 @@
 /*
  * Below the HUD's narrow breakpoint the build drops and the wordmark stays.
  *
- * The order is not arbitrary. At 720px and under the strip has to fit six
+ * The order is not arbitrary. At 720px and under the strip has to fit five
  * metric chips and three transport buttons, and of the three fragments here the
  * build is the one that is still recoverable when it is not painted: it is in
  * the DOM, in `data-build-id` on the badge, and in every save this build
