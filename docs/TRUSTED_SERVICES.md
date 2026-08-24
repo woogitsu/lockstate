@@ -398,13 +398,25 @@ including events that did **not** apply and why.
 - A trigger rejects any UPDATE to the ledger; corrections are appended as
   compensating events. DELETE is left only to the `auth.users` cascade, so
   account deletion still works. TRUNCATE would have gone round both — it
-  ignores RLS and fires no row trigger — and `anon`/`authenticated` held it
-  on every table from Supabase's default privileges until
-  `20260824090100_revoke_client_truncate.sql` (#105 finding 3, harness-only
-  observation; see `docs/CLOUD_SAVE.md`, "Declarations, not only
-  privileges"). `service_role` still holds it, so "append-only even for a
-  privileged connection" is a statement about UPDATE and DELETE, not about
-  TRUNCATE.
+  ignores RLS and fires no row trigger — and all three Data API roles held
+  it on every table in `public` from Supabase's default privileges.
+  `20260824090100_revoke_client_truncate.sql` revoked it from `anon` and
+  `authenticated` (#105 finding 3) and
+  `20260824150000_revoke_trusted_truncate.sql` revoked it from
+  `service_role` (#163, the ruling ADR 0008 §2 now records). Both are
+  harness-only observations; see `docs/CLOUD_SAVE.md`, "Declarations, not
+  only privileges".
+
+  So "append-only even for a privileged connection" now holds without a
+  qualification, and what stands behind it is precisely this: on
+  `entitlement_events`, `service_role` is granted `SELECT` and holds no
+  `INSERT`, `UPDATE`, `DELETE` or `TRUNCATE`; the append-only trigger
+  refuses an `UPDATE` even for the table owner; and appends reach the table
+  only through `record_entitlement_event()`, which is `SECURITY DEFINER` and
+  runs as the owner. The claim is about the trusted *role*, not about the
+  database owner — `postgres` on a hosted project can still drop or
+  truncate the table, and clearing one during an incident is now deliberately
+  an owner-role operation rather than a service-key one.
 - `processEntitlementWebhook()` verifies the provider signature over the
   **raw body before parsing it**, then validates, checks the product,
   bounds the quantity, rejects stale events, deduplicates on

@@ -1073,7 +1073,9 @@ select is(
 -- since 20260823090000: a size bound writes down an invariant the trusted
 -- tier's own TypeScript contract already satisfies, so a bug cannot silently
 -- violate it. That is a different act from `TRUNCATE` (#163), which would
--- *remove* an authority ADR 0008 may have meant the trusted tier to have.
+-- *remove* an authority ADR 0008 had not decided the trusted tier should have
+-- -- which is why it went to the ADR for a ruling, and why ADR 0008 section 2
+-- now states that the trusted tier holds none.
 --
 -- Both directions, as in suite 006: each bound refuses a value past the
 -- ceiling and admits one exactly at it. The admit half is what fails if a

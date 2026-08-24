@@ -29,15 +29,16 @@
 -- server-version difference instead of on a privilege change.
 --
 -- TRUNCATE used to be dismissed with them, and is not one of them (issue
--- #105 finding 3). Supabase's default privileges `grant all on tables` and
--- then revoke only the four DML privileges, so every table in `public`
--- started out TRUNCATE-able by `anon` and `authenticated` -- and TRUNCATE
--- ignores row level security completely and fires no row trigger, so it
--- reaches past every `auth.uid()` policy here *and* past the append-only
--- trigger that makes `entitlement_events` immutable. It gets its own
--- schema-wide sweep below rather than a place in the DML aggregates, which
--- keeps this suite portable across server versions while still asserting
--- the one residual privilege that means something.
+-- #105 finding 3, issue #163). Supabase's default privileges `grant all on
+-- tables` and then revoke only the four DML privileges, so every table in
+-- `public` started out TRUNCATE-able by all three of `anon`,
+-- `authenticated` and `service_role` -- and TRUNCATE ignores row level
+-- security completely and fires no row trigger, so it reaches past every
+-- `auth.uid()` policy here *and* past the append-only trigger that makes
+-- `entitlement_events` immutable. It gets its own schema-wide sweep below
+-- rather than a place in the DML aggregates, which keeps this suite
+-- portable across server versions while still asserting the one residual
+-- privilege that means something.
 --
 -- WHAT THE FIRST VERSION OF THIS SUITE MISSED, and why each gap is now a
 -- schema-wide sweep rather than another per-table case:
@@ -69,7 +70,8 @@
 -- finding 10 -- the TRUNCATE sweep and the PUBLIC function-grant sweep --
 -- have been executed only on plain PostgreSQL 16.13 + pgTAP 1.3.2 via
 -- `pnpm verify:sql`; the stack run needs container images that were not
--- reachable when they were written.
+-- reachable when they were written. The same is true of #163's widening of
+-- the TRUNCATE sweep to `service_role`.
 
 begin;
 select plan(28);
@@ -328,7 +330,7 @@ select is(
   'nothing in public is granted to PUBLIC, so the per-role sweeps above are the whole story'
 );
 
--- --- TRUNCATE (issue #105 finding 3) ---
+-- --- TRUNCATE (issue #105 finding 3, issue #163) ---
 --
 -- The privilege the DML aggregates above deliberately do not compare, and
 -- the reason it is asserted on its own is in this file's header: TRUNCATE
@@ -348,21 +350,27 @@ select is(
 -- then -- so this is what fails, rather than a per-table case somebody also
 -- has to remember to write.
 --
--- `service_role` is deliberately NOT in this sweep. It holds the same
--- ambient TRUNCATE, and whether the trusted role should be able to empty a
--- table it holds no DELETE grant on is a boundary question ADR 0008's
--- authority table does not answer; #105's follow-up carries it rather than
--- this assertion silently deciding it in either direction.
+-- All three roles, not only the two client-facing ones. This sweep covered
+-- `anon` and `authenticated` only, because #105 finding 3 named only them
+-- and the trusted tier's case was a boundary question rather than an
+-- oversight. #163 settled it: `20260824150000_revoke_trusted_truncate.sql`
+-- revokes the same ambient privilege from `service_role`, and ADR 0008
+-- section 2 records the ruling. The same observation was made of
+-- `service_role` on the harness before that migration -- `t | f | f` for
+-- TRUNCATE, DELETE, UPDATE on `entitlement_events`, and `truncate table
+-- public.entitlement_events` inside an explicit transaction block emptied a
+-- ledger the append-only trigger had just refused to let the table owner
+-- edit.
 select is(
   (select string_agg(r.role || ':' || c.relname, ' ' order by r.role, c.relname)
      from pg_class c
      join pg_namespace n on n.oid = c.relnamespace
-     cross join unnest(array['anon', 'authenticated']) as r(role)
+     cross join unnest(array['anon', 'authenticated', 'service_role']) as r(role)
     where n.nspname = 'public'
       and c.relkind in ('r', 'v', 'm', 'p', 'f')
       and has_table_privilege(r.role, c.oid, 'TRUNCATE')),
   null,
-  'no client-facing role may TRUNCATE anything in public: it would ignore RLS and fire no row trigger'
+  'no Data API role may TRUNCATE anything in public: it would ignore RLS and fire no row trigger'
 );
 
 -- --- Callable RPCs ---
