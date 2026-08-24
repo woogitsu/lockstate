@@ -52,6 +52,12 @@ function layerKey(chunkX: number, chunkY: number): string {
   return `${chunkX},${chunkY}`;
 }
 
+/** The position of one materialised chunk, for a walk that iterates contents rather than extent. */
+export interface LoadedChunkPosition {
+  readonly chunkX: number;
+  readonly chunkY: number;
+}
+
 export class WorldRenderView {
   /**
    * One-entry memo for the last chunk looked up. A repaint scans tiles in
@@ -69,6 +75,25 @@ export class WorldRenderView {
     private readonly ownedParcels: readonly ParcelRect[],
     /** Tile bounds of everything materialised, for framing the camera on first sight of a world. */
     public readonly loadedBounds: TileBounds | undefined,
+    /**
+     * Which chunks are materialised, ascending by `chunkY` then `chunkX`.
+     *
+     * `loadedBounds` answers "how big is the world" and this answers "what is
+     * in it" -- two different questions that coincide only when the loaded
+     * chunks happen to tile their own bounding box. A walk over every tile
+     * that exists must use this one, or it pays for the empty space between
+     * distant chunks: two chunks 40 apart share a box of 1,721,344 tiles and
+     * contain 2,048 (issue #204).
+     *
+     * The order is canonical rather than insertion order, and that is load
+     * bearing rather than tidiness. `buildRowIndex` groups by world row, and a
+     * row lies inside exactly one band of equal `chunkY`; visiting a band's
+     * chunks in ascending `chunkX` is what keeps a row's contributions
+     * ascending in tile X, which is the order `paintRow` walks them in. It is
+     * also what `docs/DETERMINISM.md`'s canonical-iteration rule asks of a
+     * `Map` walk, even though `src/rendering/` is outside that scanner's scope.
+     */
+    public readonly loadedChunkPositions: readonly LoadedChunkPosition[],
   ) {}
 
   public static fromSnapshot(snapshot: WorldSnapshotV1): WorldRenderView {
@@ -77,11 +102,13 @@ export class WorldRenderView {
 
     const tilesPerChunk = size * size;
     const chunks = new Map<string, ChunkLayers>();
+    const positions: LoadedChunkPosition[] = [];
     let bounds: TileBounds | undefined;
 
     for (const chunk of snapshot.chunks) {
       if (chunk.lifecycle !== 'loaded') continue;
       const key = layerKey(chunk.x, chunk.y);
+      if (!chunks.has(key)) positions.push({ chunkX: chunk.x, chunkY: chunk.y });
       chunks.set(key, {
         terrain: chunk.terrain === undefined ? undefined : decodeTerrainRle(chunk.terrain, tilesPerChunk),
         topEdge: chunk.topEdge === undefined ? undefined : decodeTerrainRle(chunk.topEdge, tilesPerChunk),
@@ -112,12 +139,17 @@ export class WorldRenderView {
       ownedParcels.push(createParcelRect(parcel.x, parcel.y, parcel.width, parcel.height));
     }
 
-    return new WorldRenderView(size, chunks, ownedChunkKeys, ownedParcels, bounds);
+    // Ascending by row band, then by column within the band. The snapshot's
+    // own chunk order is whatever the simulation emitted, so sorting here is
+    // what makes the order a property of the world rather than of the session.
+    positions.sort((left, right) => left.chunkY - right.chunkY || left.chunkX - right.chunkX);
+
+    return new WorldRenderView(size, chunks, ownedChunkKeys, ownedParcels, bounds, positions);
   }
 
   /** An empty world: nothing loaded, nothing owned. Used before the first snapshot arrives. */
   public static empty(chunkSize = 32): WorldRenderView {
-    return new WorldRenderView(chunkSize, new Map(), new Set(), [], undefined);
+    return new WorldRenderView(chunkSize, new Map(), new Set(), [], undefined, []);
   }
 
   public readTile(tileX: number, tileY: number, out: TileSample): void {
