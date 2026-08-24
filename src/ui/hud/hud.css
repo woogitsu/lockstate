@@ -1,12 +1,14 @@
 /*
  * The persistent HUD shell.
  *
- * It frames the world and never covers it: a strip along the top, a refusal
- * line under it that is `hidden` until a control's action is refused, a tab
- * bar centred along the bottom, a minimap frame in the bottom-left corner,
- * and an empty middle. The root is `pointer-events: none`, so the only
- * pixels that swallow a click are the controls themselves -- everything else
- * falls through to the renderer's canvas.
+ * It frames the world and never covers it: a strip along the top, an
+ * unavailable line under it that is `hidden` unless this page has no
+ * simulation behind it, a refusal line under that which is `hidden` until a
+ * control's action is refused, a tab bar centred along the bottom, a minimap
+ * frame in the bottom-left corner, and an empty middle. The root is
+ * `pointer-events: none`, so the only pixels that swallow a click are the
+ * controls themselves -- everything else falls through to the renderer's
+ * canvas.
  *
  * Semantic tokens only. See `src/ui/tokens.css`.
  */
@@ -34,15 +36,17 @@
      It is written out anyway because the floor is a property of *the grid*,
      not of whichever items happen to occupy the middle row: `.hud__corner`
      sits there too and has no such override. */
-  /* Four rows, not three: the refusal line (issue #207) is a row of its own
-     between the strip and the middle, and it is `auto` so it costs exactly
-     zero while it is `hidden`. A row rather than an overlay because an
-     absolutely-positioned notice would sit *on* the world, and this HUD's
-     rule is that it frames the world and never covers it -- as a row it
-     borrows its band from the middle instead. */
-  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  /* Five rows, not three: the unavailable line (issue #220) and the refusal
+     line (issue #207) are each a row of their own between the strip and the
+     middle, and both are `auto` so they cost exactly zero while they are
+     `hidden`. Rows rather than overlays because an absolutely-positioned
+     notice would sit *on* the world, and this HUD's rule is that it frames
+     the world and never covers it -- as rows they borrow their band from the
+     middle instead. */
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
   grid-template-areas:
     'strip'
+    'unavailable'
     'notice'
     'middle'
     'tabs';
@@ -186,6 +190,46 @@
 .hud-minimap__placeholder { white-space: normal; }
 
 .hud-alerts__list { display: flex; flex-direction: column; }
+
+/* ------------------------------------------------------------------ */
+/* The unavailable line: this page has no simulation (issue #220)      */
+/* ------------------------------------------------------------------ */
+
+/*
+ * The same shape as `.hud__refusal` below, one row higher, and for the first
+ * of the same reasons: it must reach a player whose browser cannot start a
+ * worker, and `.hud__corner` -- which holds the alerts list this sentence
+ * used to be routed to -- is `display: none` at 720px and below. The second
+ * reason is this file's own: the alerts *section* inside that corner starts
+ * folded, so a row in it was `offsetParent === null` with a 0x0 box at every
+ * viewport, not merely on a phone (measured in Chromium at 1280x800 and
+ * 375x812 with `Worker` blocked, #220).
+ *
+ * `pointer-events` stays `none` (inherited from `.hud`): the line carries no
+ * control, so a click on it belongs to the world underneath.
+ */
+.hud__unavailable {
+  grid-area: unavailable;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--badge-danger-bg);
+  border-bottom: var(--hairline) solid var(--status-danger);
+  color: var(--status-danger);
+  font-size: var(--text-size-body);
+}
+
+/* The same trap `.hud__refusal[hidden]` closes, for the same reason: the
+   author `display: flex` above beats the user agent's
+   `[hidden] { display: none }`, so without this an ordinary page -- one whose
+   browser started its worker perfectly well -- would paint an empty red band
+   across the top of the world from first paint. */
+.hud__unavailable[hidden] { display: none; }
+
+/* Wraps rather than truncates: this sentence is the only explanation on
+   screen for an empty world, and there is no hover on touch. */
+.hud-unavailable__text { white-space: normal; }
 
 /* ------------------------------------------------------------------ */
 /* The refusal line: what a control that was refused says (issue #207) */
