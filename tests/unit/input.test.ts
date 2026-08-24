@@ -119,6 +119,29 @@ describe('semantic input', () => {
     expect(first.scale * second.scale).toBeCloseTo(1);
   });
 
+  it('computes a gesture from two fingers, so a third one is a spare rather than a term', () => {
+    // The half of `world-scene.ts`'s `addPointer(2)` comment that is about
+    // this file: three touch pointers are "one spare beyond the two the
+    // gestures use" (issue #209). `move` pairs the finger that moved with a
+    // single peer, so a third finger already down must not change what the
+    // other two produce -- otherwise the spare would be a term in the
+    // arithmetic and three would be the number the gestures *use*.
+    const twoFingers = new TouchGestureTracker();
+    twoFingers.begin({ id: 1, x: 0, y: 0 });
+    twoFingers.begin({ id: 2, x: 20, y: 0 });
+
+    const threeFingers = new TouchGestureTracker();
+    threeFingers.begin({ id: 1, x: 0, y: 0 });
+    threeFingers.begin({ id: 2, x: 20, y: 0 });
+    threeFingers.begin({ id: 3, x: 100, y: 40 });
+
+    const withoutSpare = twoFingers.move({ id: 1, x: 6, y: 0 });
+    expect(withoutSpare?.kind).toBe('pinch');
+    // A third finger 80px away and 40px down would move a three-point centroid
+    // a long way. It moves this by nothing.
+    expect(threeFingers.move({ id: 1, x: 6, y: 0 })).toEqual(withoutSpare);
+  });
+
   it('keeps accessibility preferences versioned and outside prison state', () => {
     expect(decodeAccessibilitySettings(DEFAULT_ACCESSIBILITY_SETTINGS)).toEqual(DEFAULT_ACCESSIBILITY_SETTINGS);
     expect(decodeAccessibilitySettings({ version: 1, reducedMotion: true, uiScale: 2.1 })).toBeUndefined();

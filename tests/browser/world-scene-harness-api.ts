@@ -29,6 +29,43 @@ export interface HarnessEdge {
   readonly edge: string;
 }
 
+/**
+ * What Phaser's input manager is holding, for the `addPointer(2)` comment
+ * (issue #209).
+ *
+ * Every field is copied straight off `Phaser.Input.InputManager`; nothing here
+ * derives what the count *should* be, because a probe that re-applied
+ * `addPointer`'s arithmetic would agree with a scene that never called it. The
+ * spec does the arithmetic instead, from these readings.
+ */
+export interface PointerCensus {
+  /** `input.manager.pointers.length` -- every pointer object the manager owns. */
+  readonly entries: number;
+  /** `input.manager.pointersTotal` -- the number of *touch* objects it processes per update. */
+  readonly pointersTotal: number;
+  /** `pointer.id` of each entry, in `pointers` order. */
+  readonly ids: readonly number[];
+  /**
+   * Where `input.manager.mousePointer` sits in `pointers`, or `-1` if the
+   * manager has no mouse pointer at all.
+   *
+   * The reading the audit in #209 was missing: it measured four entries and
+   * could not say which one was the mouse, so "three touch pointers" stayed
+   * inferred. This is identity (`indexOf` on the manager's own reference), not
+   * a guess from an index.
+   */
+  readonly mouseIndex: number;
+  /**
+   * `input.manager.config.inputActivePointers` -- how many touch pointers the
+   * engine starts with.
+   *
+   * Neither `src/main.ts` nor this harness sets `input.activePointers`, so
+   * this is Phaser's own default, and it is what the comment's "unless told
+   * otherwise" is about.
+   */
+  readonly configuredActivePointers: number;
+}
+
 export interface LockstateWorldSceneHarness {
   /** Resolves once `WorldScene.create` has run and its listeners are registered. */
   readonly ready: Promise<void>;
@@ -68,6 +105,16 @@ export interface LockstateWorldSceneHarness {
    * `setZoom` and the next frame answers with the previous frame's matrix.
    */
   worldPointAt(screen: HarnessPoint): HarnessPoint;
+  /**
+   * The input manager's pointer inventory, read live.
+   *
+   * Not introspection into the scene: `input.manager` is public engine state,
+   * and the claim under test (`world-scene.ts`'s `addPointer(2)` comment) is a
+   * claim about the engine rather than about `WorldScene`'s own logic. It is
+   * the one thing #209 tried to measure through the harness and could not,
+   * because there was no handle to reach it through.
+   */
+  pointerCensus(): PointerCensus;
   /**
    * Arms the build tool, so a one-finger or left-button drag builds.
    *

@@ -413,3 +413,58 @@ test.describe('the world scene discrete keys', () => {
     expect(await zoom(page)).toBe(resting);
   });
 });
+
+/**
+ * The `addPointer(2)` pointer count (issue #209's other residual-risk note).
+ *
+ * `world-scene.ts` says, above `this.input.addPointer(2)`, that "Phaser tracks
+ * exactly one touch pointer unless told otherwise" and that three is "one
+ * spare beyond the two the gestures use". #209's audit read four pointer
+ * entries and could not say which of them was the mouse, so it recorded the
+ * comment as INFERRED; the follow-up tried to re-measure it through this
+ * harness and got `null`, because there was no handle on the input manager at
+ * all. `pointerCensus()` is that handle, and it settles the comment by
+ * measurement rather than by reading Phaser's source.
+ *
+ * The census is read, never computed: the spec below does the subtraction, so
+ * a harness that quietly re-applied `addPointer`'s own arithmetic could not
+ * make a scene that never called it pass.
+ */
+test.describe('the world scene pointer inventory (#209)', () => {
+  test('gives the gestures three touch pointers beside the mouse', async ({ page }) => {
+    await openHarness(page);
+    const census = await page.evaluate(() => window.lockstateWorldSceneHarness!.pointerCensus());
+
+    // Measured: `{ entries: 4, pointersTotal: 3, ids: [0, 1, 2, 3],
+    // mouseIndex: 0, configuredActivePointers: 1 }`.
+    //
+    // The audit's unanswered question was which entry is the mouse. The
+    // manager answers it about its own `mousePointer` reference: entry 0. So
+    // the four entries are one mouse and three touch pointers, which is what
+    // the comment claims, and the claim is now VERIFIED rather than INFERRED.
+    expect(census.mouseIndex).toBe(0);
+    expect(census.entries - 1).toBe(3);
+    // The same three counted the other way -- `pointersTotal` is the number of
+    // *touch* objects the manager processes per update, and it agreeing with
+    // the subtraction above is what rules out an off-by-one in either reading.
+    expect(census.pointersTotal).toBe(3);
+    expect(census.ids).toEqual([0, 1, 2, 3]);
+
+    // "unless told otherwise": neither `src/main.ts` nor this harness sets
+    // `input.activePointers`, so the game runs on Phaser's own default, and
+    // the default is one touch pointer. Without `addPointer(2)` the scene
+    // would therefore have exactly one -- which is the sentence the comment
+    // opens with, and it is true.
+    expect(census.configuredActivePointers).toBe(1);
+
+    // "one spare beyond the two the gestures use" is about
+    // `TouchGestureTracker`, which pairs a moving finger with exactly one peer
+    // (`src/input/gestures.ts`) and so never reads a third. Three delivered
+    // touch pointers is two used and one spare. That the second of them really
+    // arrives is not inferred either: a two-finger pan dispatched against this
+    // harness moved the camera by (-120, -78), recorded on #209. Left as prose
+    // rather than as an assertion, because "one spare" is a statement about
+    // `src/input/gestures.ts`, and the assertion that holds *it* belongs
+    // beside that file, not here.
+  });
+});

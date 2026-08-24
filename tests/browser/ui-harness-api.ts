@@ -31,6 +31,34 @@ export interface HudProbe {
   readonly centreIsClickThrough: boolean;
 }
 
+/**
+ * What the alerts list is actually showing (issue #209).
+ *
+ * Every field is read off the production DOM the HUD built. Nothing here
+ * re-derives what the order *should* be: the spec supplies the view model and
+ * compares it with what the browser laid out, so a probe that agreed with a
+ * wrong implementation is not possible.
+ */
+export interface AlertProbe {
+  /** `data-alert` of every alert row, in the order the rows appear in the DOM. */
+  readonly order: readonly string[];
+  /** The rendered text of each of those rows, in the same order. */
+  readonly texts: readonly string[];
+  /**
+   * `data-alert` of every listed row that is the *same DOM node* it was at the
+   * last `markAlertRows()`, in DOM order.
+   *
+   * Node identity, compared with `===` against references the harness kept --
+   * not a count, not a heuristic. It is here because the cheap way to make the
+   * order right is to empty the list and rebuild it every paint, and that
+   * would throw away the identity `HudAlertViewModel.id` exists to preserve
+   * ("a list update is not a full rebuild", `view-model.ts`). A rebuild drops
+   * focus and restarts any transition on a row the player is looking at, so
+   * the ordering fix has to *move* rows rather than replace them.
+   */
+  readonly reused: readonly string[];
+}
+
 export interface LayoutBox {
   readonly x: number;
   readonly y: number;
@@ -181,6 +209,9 @@ export interface LockstateUiHarness {
   clickTab(tab: string): boolean;
   clickTransport(label: string): boolean;
   toggleAlerts(): boolean;
+  /** Records the identity of the alert rows now on the page, for `alertProbe().reused`. */
+  markAlertRows(): void;
+  alertProbe(): AlertProbe;
   hudIntents(): readonly string[];
   setHudViewModel(viewModel: HudViewModel): void;
   /** Makes the host's handler for `set-clock` block until released. */

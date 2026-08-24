@@ -3,7 +3,13 @@ import type { KeyValueStore } from '../../src/shared/key-value-store';
 import { EMPTY_RENDER_FRAME, type RenderFeed } from '../../src/rendering/feed/render-feed';
 import { WorldScene } from '../../src/rendering/scene/world-scene';
 import type { BuildToolPort, EdgeTarget } from '../../src/rendering/build/edge-picking';
-import type { CameraScroll, HarnessEdge, HarnessPoint, LockstateWorldSceneHarness } from './world-scene-harness-api';
+import type {
+  CameraScroll,
+  HarnessEdge,
+  HarnessPoint,
+  LockstateWorldSceneHarness,
+  PointerCensus,
+} from './world-scene-harness-api';
 
 /**
  * The real `WorldScene`, in a real browser, for the claims no headless test can
@@ -153,6 +159,22 @@ const harness: LockstateWorldSceneHarness = {
   worldPointAt: (screen: HarnessPoint): HarnessPoint => {
     const point = scene.cameras.main.getWorldPoint(screen.x, screen.y);
     return { x: point.x, y: point.y };
+  },
+  pointerCensus: (): PointerCensus => {
+    // `scene.input.manager` is the game-wide `InputManager`, and every field
+    // below is copied off it unchanged. No cast: unlike the keyboard adapter
+    // above this is public engine state, and unlike the context set it is not
+    // a rule this repository implements, so reading it cannot turn into a
+    // second implementation of the thing under test.
+    const manager = scene.input.manager;
+    const mouse = manager.mousePointer;
+    return {
+      entries: manager.pointers.length,
+      pointersTotal: manager.pointersTotal,
+      ids: manager.pointers.map((pointer) => pointer.id),
+      mouseIndex: mouse === null ? -1 : manager.pointers.indexOf(mouse),
+      configuredActivePointers: manager.config.inputActivePointers,
+    };
   },
   armBuildTool: (armed) => {
     buildArmed = armed;

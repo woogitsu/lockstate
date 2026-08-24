@@ -128,11 +128,17 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.minimap.placeholder': 'Minimap is not available yet',
   'hud.alerts.title': 'Alerts',
   'hud.alerts.empty': 'No active alerts',
+
   // A browser that cannot start a Worker gets a page with no simulation
   // behind it. Saying so is the whole point: the failure was previously
   // reported to the console only, so the player saw an empty world and had
   // no way to learn why (issue #82).
-  'hud.alerts.simulation-unavailable': 'Simulation unavailable — this browser could not start it, so nothing can run or be saved',
+  //
+  // Namespaced `hud.unavailable.*` rather than `hud.alerts.*`, because it is
+  // not rendered in the alerts list: it goes to the HUD's own always-laid-out
+  // band, `.hud__unavailable` (issue #220). In the alerts list it was in the
+  // DOM and painted at no viewport, because that section starts folded.
+  'hud.unavailable.simulation': 'Simulation unavailable — this browser could not start it, so nothing can run or be saved',
 
   'hud.panel.collapse': 'Collapse',
   'hud.panel.expand': 'Expand',
