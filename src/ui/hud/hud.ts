@@ -132,9 +132,9 @@ export interface MountHudOptions {
    *
    * It is **not** how the player is told. The HUD reports a refused command
    * itself -- on the control that was pressed and in its own live region --
-   * because for four releases this callback was the only consumer of a
-   * failure and the one production handler wrote it to `console.warn`, so a
-   * "Place order" with no session left the HUD byte-identical (issue #207).
+   * because this callback used to be the only consumer of a failure and the
+   * one production handler wrote it to `console.warn`, so a "Place order"
+   * with no session left the HUD byte-identical (issue #207).
    * A host that omits this still shows the player a refusal; what it loses
    * is the thrown `Error`, which is diagnostic English and deliberately
    * never reaches the screen (ADR 0011).
@@ -226,15 +226,24 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   refusal.hidden = true;
 
   /**
-   * The control that asked for the command now in flight, so the report lands
-   * *on the control that was pressed* rather than merely somewhere on screen.
+   * The control that last asked for each command kind, so a report lands *on
+   * the control that was pressed* rather than merely somewhere on screen.
    *
-   * `AsyncActionFailure.actionId` is the intent kind, and the gate is
+   * `AsyncActionFailure.actionId` is the intent kind and the gate is
    * single-slot, so one entry per kind is enough to name the button. Both
    * controls registered here carry no `aria-describedby` of their own; one
    * that gained one would need this to merge rather than replace.
    */
   const commandControls = new Map<string, HTMLElement>();
+
+  /**
+   * One refusal at a time, because there is one line to say it in.
+   *
+   * A second refusal of a *different* command replaces the first and unmarks
+   * its control: the player pressed the second button, so the second is what
+   * the line is about, and leaving the first marked would point
+   * `aria-describedby` at a sentence about something else.
+   */
   let refusedAction: string | undefined;
 
   const markControl = (actionId: string, refused: boolean): void => {

@@ -32,17 +32,18 @@ export interface SavePanelLocalizer {
  * The bundled default locale, used when the host constructs the panel
  * without one.
  *
- * **This is a seam, not a design.** The panel's only production construction
- * site is `src/main.ts`, which already builds a `Localizer` of its own for
- * the HUD (`locale: 'en'`, the same catalog this returns) and should hand
- * that instance in -- one argument, at one call site. That change is not in
- * this commit because `src/main.ts` was being edited by concurrent work on
- * another branch, so the parameter is optional and defaults to an equivalent
- * localizer instead. It is equivalent *today*, when `en` is the only locale
- * that exists; the moment a second one ships, a panel that built its own
- * localizer would keep rendering English while the rest of the interface
- * changed language. Passing the host's localizer is what closes that, and
- * issue #208 records it.
+ * **A seam, not a design.** The panel's only production construction site is
+ * `src/main.ts`, which already builds a `Localizer` for the HUD -- `locale:
+ * 'en'` over exactly the catalog this returns -- and should hand that same
+ * instance in rather than let the panel build a second one. It does not yet,
+ * which is why this default exists at all.
+ *
+ * The two are equivalent *today*, when `en` is the only locale that exists.
+ * They stop being equivalent the moment a second locale ships: a panel
+ * holding its own default-locale localizer would keep rendering English while
+ * the rest of the interface changed language, and the player would meet that
+ * in the panel that protects their prison. So this is a temporary state with
+ * a known end, not the intended wiring (issue #208).
  */
 function bundledDefaultLocalizer(): SavePanelLocalizer {
   return new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
@@ -193,6 +194,13 @@ export interface SavePanelSessions {
  * simulation." Save/load is browser UI over persistence, so it has no
  * business inside the renderer's scene graph. It reads only the
  * controller's own projections and never reaches into simulation state.
+ *
+ * **Every string it renders is a message key** (issue #208, ADR 0011). The
+ * mapping functions above return a key and its parameters; this class
+ * resolves them through the injected localizer at the moment it writes to the
+ * DOM, and nothing resolved travels back out. Before that, all thirty-odd of
+ * them were English literals in this file, which is what made it the one
+ * player-facing UI module outside every localization gate.
  *
  * **Concurrency (issue #65).** Every action runs through one
  * `AsyncActionGate`. That is the single piece of panel state deciding
