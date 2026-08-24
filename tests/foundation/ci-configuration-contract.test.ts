@@ -1098,8 +1098,8 @@ describe('version bump workflow contract', () => {
    * longer does these things is a different workflow.
    */
   const REQUIRED_SETTINGS: Readonly<Record<string, string>> = {
-    'runs-on: ubuntu-latest':
-      'a hosted runner, so this job never commits, tags or leaves a rewritten package.json in the workspace the single self-hosted runner reuses between jobs -- which is the workspace ci.yml\'s "Verify generated output did not modify tracked files" step judges. Moving it onto [self-hosted, ...] puts a writer into that shared checkout.',
+    'runs-on: [self-hosted, Linux, X64, wsl2]':
+      'the only runner this repository has. `ubuntu-latest` was chosen first, to keep this job\'s commits out of the workspace the self-hosted runner reuses -- and it does not work here: this workflow\'s first real run failed after four seconds with no step recorded and no log, and delete-branches.yml, the only other workflow asking for `ubuntu-latest`, has one run and failed identically. Every workflow here that has ever succeeded runs on this label. The shared workspace is safe because every ci.yml job runs its own `actions/checkout`, which cleans and resets before anything else -- so moving this back to a hosted runner would not merely change a preference, it would stop the job running at all.',
     'persist-credentials: true':
       'the one checkout in this repository that keeps its token, because this is the one job that pushes. Every other checkout sets `false`, so a copy-paste from one of them leaves this job unable to push and every bump failing at its last step.',
     'git push --atomic':
