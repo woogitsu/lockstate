@@ -398,6 +398,98 @@ test.describe('the world scene discrete keys', () => {
     expect(await page.evaluate(() => window.lockstateWorldSceneHarness!.targetedRun())).toEqual(hovering);
   });
 
+  /** What the scene has asked the edit-history port for, in order (#261). */
+  async function historyRequests(page: Page): Promise<readonly string[]> {
+    return page.evaluate(() => window.lockstateWorldSceneHarness!.historyRequests());
+  }
+
+  test('reports one undo per press of Z and one redo per press of Y (#261)', async ({ page }) => {
+    /*
+     * The keys that reach `ConstructionSystem`'s undo stack, which had a
+     * complete transaction-grouped implementation and nothing that could
+     * produce an `Undo` command: no control, no binding, no intent.
+     *
+     * **One per press** is the assertion, not "something happened". A press
+     * produces a `'started'` event and the release produces an `'ended'` one
+     * carrying the same action, so a handler that acted on both would take
+     * back two transactions for one tap -- and `page.keyboard.press` does the
+     * down and the up, so a doubled report shows up here as a second entry.
+     */
+    await openHarness(page);
+    await press(page, 'KeyZ');
+    expect(await historyRequests(page)).toEqual(['undo']);
+
+    await press(page, 'KeyY');
+    expect(await historyRequests(page)).toEqual(['undo', 'redo']);
+
+    // Repeatable: the second press of the same key must land too, or undo
+    // would reverse exactly one gesture per page load.
+    await press(page, 'KeyZ');
+    expect(await historyRequests(page)).toEqual(['undo', 'redo', 'undo']);
+  });
+
+  test('reaches the same binding through Ctrl+Z, because a binding carries no modifier (#261)', async ({ page }) => {
+    /*
+     * Measured rather than reasoned about, because the comment in
+     * `src/input/bindings.ts` makes this claim: `KeyboardBinding` has no
+     * modifier field and `KeyboardEventLike` reads `code` and `repeat`, so the
+     * adapter cannot tell a chord from a bare key and the chord a player
+     * already has in their fingers therefore works.
+     *
+     * `Control` only. macOS's `Command` cannot be exercised from this runner,
+     * so what a `Cmd`+`Z` does is not claimed anywhere -- the bare key is the
+     * control the player is promised, and the chord scheme itself is an open
+     * question (#261) rather than something this binding implements.
+     */
+    await openHarness(page);
+
+    await page.keyboard.press('Control+KeyZ');
+    await settle(page);
+    expect(await historyRequests(page)).toEqual(['undo']);
+
+    // And it is the *same* binding, not a second one: pressing the bare key
+    // afterwards adds one more request rather than doing nothing, which is
+    // what a stuck `pressedCodes` entry from the chord would look like.
+    await press(page, 'KeyZ');
+    expect(await historyRequests(page)).toEqual(['undo', 'undo']);
+  });
+
+  test('undoes nothing while a text field owns the keyboard (#261, #201)', async ({ page }) => {
+    /*
+     * The Build panel's coordinate fields are the exposure this exists for:
+     * `z` and `y` are characters a player types into them, and an undo that
+     * fired mid-edit would take back a wall they were still describing. #201
+     * is the same defect measured on the camera -- a focused `<input>`
+     * received the character *and* the camera panned 249.6 world units.
+     *
+     * Both halves are asserted, because the guard must stop the undo without
+     * stopping the typing.
+     */
+    await openHarness(page);
+    await page.locator('#probe-text').click();
+    expect(await page.evaluate(() => document.activeElement?.id)).toBe('probe-text');
+
+    await press(page, 'KeyZ');
+    await press(page, 'KeyY');
+
+    expect(await historyRequests(page), 'a keystroke meant for a text field reversed the player\'s work').toEqual([]);
+    await expect(page.locator('#probe-text')).toBeVisible();
+    await expect(page.locator('#probe-text')).toHaveValue('zy');
+  });
+
+  test('undoes again once the field is blurred, so the guard is not a permanent mute (#261, #201)', async ({ page }) => {
+    // The other direction. A guard that silenced the keys and never restored
+    // them would satisfy the spec above and leave undo as unreachable as it
+    // was before it was wired.
+    await openHarness(page);
+    await page.locator('#probe-text').click();
+    await page.locator('#probe-text').blur();
+    expect(await page.evaluate(() => document.activeElement?.tagName.toLowerCase())).not.toBe('input');
+
+    await press(page, 'KeyZ');
+    expect(await historyRequests(page)).toEqual(['undo']);
+  });
+
   test('leaves the camera zoom alone while a text field owns the keyboard (#200, #201)', async ({ page }) => {
     // The context guard covers the received route as well as the polled one.
     // It is not automatic: `eventsFor` intersects contexts the same way

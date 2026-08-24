@@ -13,6 +13,7 @@ import { type CameraState, screenToWorld, visibleWorldBounds, zoomAtScreenPoint 
 import {
   type BuildToolPort,
   type EdgeTarget,
+  type EditHistoryPort,
   type WorldPoint,
   edgeRunFromDrag,
   edgeTargetsEqual,
@@ -39,7 +40,7 @@ import { VOID_COLOR } from '../world/appearance';
  * accident. Panning is **polled** -- `update()` asks `KeyboardInputAdapter`
  * which of the four `continuous` camera actions are held, because a held key
  * should move the camera in proportion to the frame it was held for. Discrete
- * actions -- keyboard zoom, cancelling a build run -- arrive as
+ * actions -- keyboard zoom, cancelling a build run, undo and redo -- arrive as
  * `SemanticActionEvent`s from `keyDown`/`keyUp` and are handled in
  * `handleActionEvents`. Middle-drag, wheel zoom and the touch pan/pinch are
  * Phaser pointer handlers and consult no action id at all.
@@ -87,6 +88,17 @@ export interface WorldSceneOptions {
   readonly buildTool?: BuildToolPort;
 
   /**
+   * Where an undo or redo request goes (#261).
+   *
+   * The scene recognises the key and reports what was asked for; it does not
+   * know that an `Undo` command exists, for the same reason it does not know
+   * what a build order is. Absent, the two keys do nothing at all -- which is
+   * the state of a page with no simulation worker, where `src/main.ts` builds
+   * no build tool either.
+   */
+  readonly editHistory?: EditHistoryPort;
+
+  /**
    * Where input settings are read from.
    *
    * The renderer used to reach for `window.localStorage` itself, in a class
@@ -99,8 +111,11 @@ export interface WorldSceneOptions {
    * **Required, not optional with a default**, and the reason is a correction to
    * this comment's first draft. It said a default was kept "because a harness
    * page that only wants a canvas should not have to name a storage strategy" --
-   * which invented a consumer: `new WorldScene(...)` appears exactly once in the
-   * repository, at `src/main.ts`, and no harness constructs one. With the option
+   * which invented a consumer: the only production `new WorldScene(...)` is
+   * `src/main.ts`'s, and when this was written no harness constructed one at
+   * all -- `tests/browser/world-scene-harness.ts` (#200, #209) does now, and it
+   * supplies a memory store rather than naming a storage strategy, which is
+   * the shape this paragraph predicted. With the option
    * optional, deleting `main.ts`'s `keyValueStore:` argument passed every test
    * (measured), so `docs/INPUT.md`'s claim that the entry point supplies the
    * store had nothing enforcing it. Making it required moves that guard into
@@ -131,6 +146,7 @@ export class WorldScene extends Phaser.Scene {
   private lastPanScreenPoint: { readonly x: number; readonly y: number } | undefined;
 
   private readonly buildTool: BuildToolPort | undefined;
+  private readonly editHistory: EditHistoryPort | undefined;
   /** The pointer currently drawing a wall run, and the world point it pressed. */
   private buildPointerId: number | undefined;
   private buildPress: WorldPoint | undefined;
@@ -146,6 +162,7 @@ export class WorldScene extends Phaser.Scene {
     super('WorldScene');
     this.feed = options.feed;
     this.buildTool = options.buildTool;
+    this.editHistory = options.editHistory;
     this.keyboard = new KeyboardInputAdapter(
       loadInputSettings(options.keyValueStore).keyboardBindings,
       // Answered from the document rather than by a literal. This was
@@ -412,6 +429,19 @@ export class WorldScene extends Phaser.Scene {
           break;
         case 'build.cancel':
           this.cancelBuild();
+          break;
+        /*
+         * Reported, not performed. Undo reverses a *simulation* transaction --
+         * the orders a gesture placed -- and `src/rendering/` may not submit a
+         * command (`tests/unit/rendering-module-boundaries.test.ts`). What
+         * belongs here is the half nothing else can do: recognising the key in
+         * the `world` context and not in `text-entry` (#261).
+         */
+        case 'edit.undo':
+          this.editHistory?.undo();
+          break;
+        case 'edit.redo':
+          this.editHistory?.redo();
           break;
         default:
           break;

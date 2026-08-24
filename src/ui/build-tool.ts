@@ -1,5 +1,11 @@
-import type { BuildToolPort, EdgeTarget } from '../rendering/build/edge-picking';
-import type { BuildPanelTarget, HudBuildOrder, HudWorldBuildSource } from './hud';
+import type { BuildToolPort, EdgeTarget, EditHistoryPort } from '../rendering/build/edge-picking';
+import type {
+  BuildPanelTarget,
+  HudBuildOrder,
+  HudEditHistorySource,
+  HudHistoryDirection,
+  HudWorldBuildSource,
+} from './hud';
 
 /**
  * The armed build tool: the thing that turns "the player dragged here" into
@@ -32,9 +38,28 @@ import type { BuildPanelTarget, HudBuildOrder, HudWorldBuildSource } from './hud
  * makes `ConstructionSystem.registerTransactionOrder` group it is generated
  * once per intent by the composition root, which is now the only place a
  * command is built.
+ *
+ * ### It carries the undo keys too (#261)
+ *
+ * The world's undo and redo keys leave the renderer through this same seam,
+ * and the class implements a port for each: `BuildToolPort` for the gesture,
+ * `EditHistoryPort` for a reversal. Two ports and one object, because the two
+ * are asked different questions -- undo works whether or not the tool is
+ * armed, and none of `armed`, `definitionId` or the segment buffer is
+ * consulted by it -- while the routing is identical, so a second class would
+ * duplicate `attachOrders` and the argument for it.
+ *
+ * What undo reverses is the simulation's last transaction, which may be an
+ * order this tool never saw: the Build panel's numeric route places one too.
+ * The tool routes the request; it does not claim to own the history.
+ *
+ * The keys arrive here rather than at the command sender for the reason the
+ * gesture does. A refusal raised on the renderer's key handler has nowhere to
+ * be reported -- it reaches no control, no line and no player -- which is the
+ * shape of the defect #225 removed from the drag.
  */
 
-export class BuildTool implements BuildToolPort, HudWorldBuildSource {
+export class BuildTool implements BuildToolPort, EditHistoryPort, HudWorldBuildSource, HudEditHistorySource {
   private armed = false;
   private definitionId: string | undefined;
 
@@ -59,9 +84,21 @@ export class BuildTool implements BuildToolPort, HudWorldBuildSource {
    */
   private readout: ((target: BuildPanelTarget | undefined) => void) | undefined;
 
+  /**
+   * Where an undo or redo request goes, attached after mounting exactly as
+   * `orders` is and for the same reason: the HUD does not exist yet when the
+   * tool is built.
+   */
+  private history: ((direction: HudHistoryDirection) => void) | undefined;
+
   /** Points finished gestures at the mounted HUD's intent path. */
   public attachOrders(place: (order: HudBuildOrder) => void): void {
     this.orders = place;
+  }
+
+  /** Points the world's undo and redo keys at the same path (#261). */
+  public attachHistory(request: (direction: HudHistoryDirection) => void): void {
+    this.history = request;
   }
 
   /** Points the live readout at the mounted panel. */
@@ -127,6 +164,24 @@ export class BuildTool implements BuildToolPort, HudWorldBuildSource {
       edge: segment.edge,
     }));
     this.orders?.({ definitionId, edges });
+  }
+
+  /**
+   * The player asked to take back the last thing they did.
+   *
+   * Unconditional, where `place` refuses a disarmed tool: what undo reverses
+   * is a transaction the simulation is holding, not a gesture in progress, so
+   * an armed check here would make the key work only while the tool happened
+   * to be armed -- which no player would connect to anything. Unattached, the
+   * request is dropped, the same honest behaviour a gesture gets on a page
+   * with a world and no interface.
+   */
+  public undo(): void {
+    this.history?.('undo');
+  }
+
+  public redo(): void {
+    this.history?.('redo');
   }
 
   /**

@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import type { KeyValueStore } from '../../src/shared/key-value-store';
 import { EMPTY_RENDER_FRAME, type RenderFeed } from '../../src/rendering/feed/render-feed';
 import { WorldScene } from '../../src/rendering/scene/world-scene';
-import type { BuildToolPort, EdgeTarget } from '../../src/rendering/build/edge-picking';
+import type { BuildToolPort, EdgeTarget, EditHistoryPort } from '../../src/rendering/build/edge-picking';
 import type {
   CameraScroll,
   HarnessEdge,
@@ -15,8 +15,8 @@ import type {
  * The real `WorldScene`, in a real browser, for the claims no headless test can
  * make: that the keyboard listeners the scene registers on `window` behave when
  * focus moves, that the context set it supplies is read from the document
- * rather than baked in, that -- since #200 -- pressing a key bound to a
- * `discrete` action actually does the thing, and that a **second finger**
+ * rather than baked in, that -- since #200 and #261 -- pressing a key bound to
+ * a `discrete` action actually does the thing, and that a **second finger**
  * reaches the scene at all, which is a property of `this.input.addPointer(2)`
  * and of a browser context created with `hasTouch` rather than of any code a
  * headless test could call (#209).
@@ -35,7 +35,8 @@ import type {
  * No atlases are loaded and the feed is empty. Nothing here draws anything worth
  * looking at, and it does not need to: the assertions are about where the camera
  * is pointing, how far it is zoomed, which world point it puts under a given
- * pixel, and what the build tool was asked to place -- none of which depends on
+ * pixel, what the build tool was asked to place and what the edit history was
+ * asked to reverse -- none of which depends on
  * there being art or a world. An empty world moves exactly as far per frame as a
  * full one.
  */
@@ -81,12 +82,33 @@ const buildTool: BuildToolPort = {
   },
 };
 
+/**
+ * An edit history that records instead of undoing (#261).
+ *
+ * The same shape as the build double above and for the same reason: what the
+ * scene owes is a *report*, made in the `world` context and not while a text
+ * field has focus, and the port is where that report can be observed. What
+ * happens to a real undo afterwards is the simulation's, and
+ * `tests/unit/undo-redo.test.ts` covers it.
+ */
+const historyRequests: string[] = [];
+
+const editHistory: EditHistoryPort = {
+  undo: () => {
+    historyRequests.push('undo');
+  },
+  redo: () => {
+    historyRequests.push('redo');
+  },
+};
+
 const toHarnessEdge = (edge: EdgeTarget): HarnessEdge => ({ tileX: edge.tileX, tileY: edge.tileY, edge: edge.edge });
 
 const scene = new WorldScene({
   feed: emptyFeed,
   keyValueStore: memoryStore(),
   buildTool,
+  editHistory,
   // No atlas library: the harness asserts nothing about art, and loading one
   // would make every spec here depend on the git-LFS baseline.
   loadAtlasLibrary: () => Promise.reject(new Error('the input harness loads no atlases')),
@@ -180,6 +202,10 @@ const harness: LockstateWorldSceneHarness = {
     buildArmed = armed;
   },
   placedRuns: () => placed.map((run) => run.map(toHarnessEdge)),
+  historyRequests: () => [...historyRequests],
+  clearHistoryRequests: () => {
+    historyRequests.length = 0;
+  },
   targetedRun: () => targeted?.map(toHarnessEdge),
 };
 

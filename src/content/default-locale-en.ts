@@ -176,13 +176,20 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // What a refused control says (issue #207). Four comments in `src/` claimed
   // the HUD reported a refusal "on the control that was pressed" while the
   // only consumer of the failure was a `console.warn`, so a "Place order" with
-  // no session left the HUD byte-identical. Neither sentence names a cause:
+  // no session left the HUD byte-identical. No sentence here names a cause:
   // the same refusal is raised for no worker, no session and a session whose
   // command sequence has not been reported yet, and only the outcome is
   // common to all three. The cause travels to the host as the thrown `Error`,
   // which is English diagnostic text and therefore must not reach the screen.
+  //
+  // One sentence per command and not one generic line, for the reason
+  // `HUD_MESSAGE_KEY` gives: each leaves the prison in a different state, and
+  // a player who is told "that was refused" without being told *what* was
+  // refused has to guess whether their wall is still queued.
   'hud.refusal.set-clock': 'The clock did not change — the request was refused.',
   'hud.refusal.place-build-order': 'The build order was not placed — the request was refused.',
+  'hud.refusal.undo': 'Nothing was undone — the request was refused.',
+  'hud.refusal.redo': 'Nothing was redone — the request was refused.',
 
   'hud.severity.info': 'Info',
   'hud.severity.warning': 'Warning',
@@ -294,9 +301,10 @@ const authoredMessages: Readonly<Record<string, string>> = {
 
   // Semantic input actions (`src/input/actions.ts`). `ActionDefinition.descriptionKey`
   // is typed `input.action.${ActionId}`, so the *shape* was guaranteed and the
-  // existence was not: all nine keys were declared and none was authored
-  // anywhere, which is what issue #139's wider completeness gate found. No
-  // keybinding or help UI reads them yet -- these are the labels it will read.
+  // existence was not: all nine keys that existed then were declared and none
+  // was authored anywhere, which is what issue #139's wider completeness gate
+  // found. No keybinding or help UI reads them yet -- these are the labels it
+  // will read.
   'input.action.camera.up': 'Pan camera up',
   'input.action.camera.down': 'Pan camera down',
   'input.action.camera.left': 'Pan camera left',
@@ -308,6 +316,11 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // Bound in the world, construction and modal contexts, so it is a general
   // cancel rather than a build-specific one.
   'input.action.build.cancel': 'Cancel',
+  // `Z` and `Y` (#261). The only handler of the commands these produce is
+  // `ConstructionSystem`, so what they reverse today is a build gesture -- but
+  // the label says what the key does, not which subsystem happens to answer.
+  'input.action.edit.undo': 'Undo',
+  'input.action.edit.redo': 'Redo',
 
   // The brand badge in the top-left corner (`src/ui/brand-badge.ts`). Page
   // chrome rather than a projection of prison state, which is why the namespace

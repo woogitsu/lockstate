@@ -125,3 +125,59 @@ describe('BuildTool', () => {
     expect(orders[0]?.definitionId).toBe('door-wooden');
   });
 });
+
+/**
+ * The undo half of the same seam (#261).
+ *
+ * `BuildTool` is where a world gesture becomes something the HUD can dispatch,
+ * and since #261 it is where the *reversal* of one does too: the scene reports
+ * `undo()` through `EditHistoryPort` and the tool reports a direction through
+ * `attachHistory`, which the HUD turns into its own gated intent. What is
+ * asserted here is the routing and the one rule that distinguishes it from
+ * `place` -- undo does not care whether the tool is armed.
+ */
+describe('BuildTool edit history', () => {
+  function historyTool(): { readonly tool: BuildTool; readonly requests: readonly string[] } {
+    const requests: string[] = [];
+    const tool = new BuildTool();
+    tool.attachHistory((direction) => requests.push(direction));
+    return { tool, requests };
+  }
+
+  it('reports undo and redo as distinct directions, one per call', () => {
+    const { tool, requests } = historyTool();
+
+    tool.undo();
+    tool.redo();
+    tool.undo();
+
+    // The order and the count both matter: `ConstructionSystem.undo()` pops
+    // one transaction per call, so a report that collapsed two presses into
+    // one would leave a wall standing that the player took back twice.
+    expect(requests).toEqual(['undo', 'redo', 'undo']);
+  });
+
+  it('reverses a gesture whether or not the tool is armed', () => {
+    // The rule that makes this a separate port rather than two more methods on
+    // `BuildToolPort`. `place` refuses a disarmed tool, correctly -- an
+    // unarmed pointer is a camera. Undo reverses a transaction the simulation
+    // is already holding, so an armed check would make the key work only while
+    // the player happened to have the build tool up, which nothing on screen
+    // would explain.
+    const { tool, requests } = historyTool();
+    expect(tool.isArmed()).toBe(false);
+
+    tool.undo();
+
+    expect(requests).toEqual(['undo']);
+  });
+
+  it('drops a request rather than throwing when nothing is attached yet', () => {
+    // The same real state `place` has: the tool is built at boot and the HUD
+    // attaches at mount. A throw here would take the scene's key handler down.
+    const tool = new BuildTool();
+
+    expect(() => tool.undo()).not.toThrow();
+    expect(() => tool.redo()).not.toThrow();
+  });
+});
