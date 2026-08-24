@@ -1,5 +1,5 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { join, relative, sep } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { stripComments } from '../helpers/canonical-iteration';
 import { defaultContrabandRegistry } from '../../src/content/contraband-catalog';
@@ -39,9 +39,13 @@ import { defaultStaffRoleRegistry } from '../../src/content/staff-role-catalog';
  *
  * Counting `tests/` is a deliberate weakening. The stricter measure -- no
  * consumer in `src/` outside the catalogs -- is the honest answer to "does
- * the game use this", and it covers 58 of the 62 declared ids. Gating that
- * would mean 58 allowlist entries whose reason is uniformly "the system that
+ * the game use this", and it covers 53 of the 62 declared ids. Gating that
+ * would mean 53 allowlist entries whose reason is uniformly "the system that
  * would use it is not wired yet", edited on every feature that wires one.
+ * (Both figures are computed and asserted in the first case below, because
+ * this sentence carried 58 for as long as it did without anything
+ * recomputing it -- nine ids already had a `src/` consumer when it was
+ * written.)
  * `src/content/validate-catalog.ts` already argues this trade-off for enum
  * discovery, and its conclusion applies here: "a list nobody reads enforces
  * nothing". So the gate is the narrower set, and the wider number is a
@@ -162,7 +166,42 @@ const consumerSources = [...collectTypeScriptFiles(join(ROOT, 'src')), ...collec
 const declaredIds = CATALOGS.flatMap((catalog) => catalog.registry.all().map((entry) => entry.id));
 const unconsumedIds = declaredIds.filter((id) => !consumerSources.some((source) => source.text.includes(`'${id}'`)));
 
+/**
+ * The stricter measure the docblock above declines to gate: ids with no
+ * consumer in `src/` at all, ignoring `tests/`.
+ *
+ * Computed rather than written down. The prose used to carry this as a hand
+ * counted figure and it was wrong by five from the day it was written -- the
+ * seven room ids `src/simulation/prisoners/actions.ts` and `intake-system.ts`
+ * name, plus the two `src/simulation/construction/definition.ts` requires,
+ * were already there when the sentence was typed (#141). A number in a comment
+ * that nothing recomputes is exactly the kind of claim this directory exists
+ * to stop.
+ */
+const unconsumedBySrcOnly = declaredIds.filter(
+  (id) => !consumerSources.some((source) => source.where.startsWith(`src${sep}`) && source.text.includes(`'${id}'`)),
+);
+
 describe('every unconsumed content id is accounted for', () => {
+  it('reports both measures, so the narrower gate below is read against a number', () => {
+    /*
+     * The denominator, exact in every direction. The docblock's argument for
+     * gating the narrower set only holds against real numbers, and it was
+     * made against a wrong one: it said the stricter measure "covers 58 of
+     * the 62 declared ids" when it covers 53, because nine ids already had a
+     * `src/` consumer when that sentence was written.
+     *
+     * Exact rather than `toBeGreaterThan`, because the failure mode this
+     * guards is a number drifting quietly. A catalog gaining an id, or an id
+     * gaining its first consumer, should be a visible change here.
+     */
+    expect({
+      declared: declaredIds.length,
+      unconsumedBySrcAndTests: unconsumedIds.length,
+      unconsumedBySrcOnly: unconsumedBySrcOnly.length,
+    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 34, unconsumedBySrcOnly: 53 });
+  });
+
   it('scans a non-trivial catalog and a non-trivial consumer set, so this cannot pass vacuously', () => {
     // Both halves can fail open: an empty consumer pool would make every id
     // unconsumed (loud), but a registry that silently returned nothing would
