@@ -157,4 +157,13 @@
      `src/styles.css`, the Build panel in `src/ui/hud/hud.css` -- so a literal
      in each is two numbers that nothing keeps equal. */
   --hud-rail-panel-width: 264px;
+  /* The floor under the Build panel's catalogue: the shortest the list of
+     buildables may be squeezed to before the panel goes back to scrolling as
+     a whole (issue #143). Two rows, because one row plus a scrollbar is not a
+     list you can choose from, and a region that may be shrunk without a limit
+     is one a tall enough panel squeezes out of existence. A token rather than
+     a literal because three rules in `hud.css` -- the catalogue section, its
+     body and the list itself -- each have to express the same floor, and they
+     are only correct while they agree. */
+  --hud-build-catalogue-floor: calc(2 * var(--tap-target));
 }

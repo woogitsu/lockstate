@@ -175,6 +175,176 @@ describe('localizer', () => {
   });
 });
 
+/**
+ * Issue #136: the formatters are cached per `(locale, options)`.
+ *
+ * A cache is hard to assert without asserting elapsed time, which
+ * `docs/BENCHMARKING.md` and `docs/TESTING.md` both forbid. So these tests
+ * assert the *observable* consequence instead -- how many times the platform
+ * constructor runs -- by counting constructions through a `Proxy` with a
+ * `construct` trap. The proxy forwards to the real `Intl` implementation, so
+ * every case also asserts the formatted output: a cache that returns the
+ * wrong formatter would pass a call-count assertion on its own.
+ *
+ * The caches are module-level and live for the whole file, so each case uses
+ * its own locale tag and warms the entry it is about to count. Anything else
+ * would make a case's result depend on which case ran before it.
+ */
+describe('formatter caching (#136)', () => {
+  interface IntlConstructionCounts {
+    numberFormat: number;
+    dateTimeFormat: number;
+    pluralRules: number;
+  }
+
+  function countingIntl<T>(run: () => T): { readonly value: T; readonly counts: IntlConstructionCounts } {
+    const counts: IntlConstructionCounts = { numberFormat: 0, dateTimeFormat: 0, pluralRules: 0 };
+    const originals = {
+      NumberFormat: Intl.NumberFormat,
+      DateTimeFormat: Intl.DateTimeFormat,
+      PluralRules: Intl.PluralRules,
+    };
+
+    // `defineProperty` rather than assignment: TypeScript's lib declares
+    // `Intl.PluralRules` read-only, while the specification makes every `Intl`
+    // constructor writable and configurable. The alternative would be a cast
+    // that hides which of the three is being replaced.
+    const install = (name: 'NumberFormat' | 'DateTimeFormat' | 'PluralRules', value: unknown): void => {
+      Object.defineProperty(Intl, name, { value, writable: true, configurable: true, enumerable: false });
+    };
+
+    install(
+      'NumberFormat',
+      new Proxy(originals.NumberFormat, {
+        construct: (target, args: readonly unknown[]) => {
+          counts.numberFormat += 1;
+          return Reflect.construct(target, args);
+        },
+      }),
+    );
+    install(
+      'DateTimeFormat',
+      new Proxy(originals.DateTimeFormat, {
+        construct: (target, args: readonly unknown[]) => {
+          counts.dateTimeFormat += 1;
+          return Reflect.construct(target, args);
+        },
+      }),
+    );
+    install(
+      'PluralRules',
+      new Proxy(originals.PluralRules, {
+        construct: (target, args: readonly unknown[]) => {
+          counts.pluralRules += 1;
+          return Reflect.construct(target, args);
+        },
+      }),
+    );
+
+    try {
+      return { value: run(), counts };
+    } finally {
+      install('NumberFormat', originals.NumberFormat);
+      install('DateTimeFormat', originals.DateTimeFormat);
+      install('PluralRules', originals.PluralRules);
+    }
+  }
+
+  it('counts a construction, so the counter itself is not vacuous', () => {
+    const { counts } = countingIntl(() => new Intl.NumberFormat('en').format(1));
+    expect(counts.numberFormat).toBe(1);
+  });
+
+  it('builds one number formatter for repeated calls with the same locale and options', () => {
+    formatNumber('en-GB', 1);
+    const { value, counts } = countingIntl(() => [
+      formatNumber('en-GB', 1_000),
+      formatNumber('en-GB', 2_000),
+      formatNumber('en-GB', 3_000),
+      formatNumber('en-GB', 4_000),
+    ]);
+    expect(value).toEqual(['1,000', '2,000', '3,000', '4,000']);
+    expect(counts.numberFormat).toBe(0);
+  });
+
+  it('keys on the options rather than on the options object, whatever order they were written in', () => {
+    // Two literals with the same options in the opposite order. `JSON.stringify`
+    // on the raw object would key these separately; the sorted key does not.
+    formatNumber('de-AT', 0.5, { style: 'percent', maximumFractionDigits: 0 });
+    const { value, counts } = countingIntl(() =>
+      [
+        formatNumber('de-AT', 0.5, { maximumFractionDigits: 0, style: 'percent' }),
+        formatNumber('de-AT', 0.25, { style: 'percent', maximumFractionDigits: 0 }),
+        // Normalizes the non-breaking space CLDR puts before the percent sign
+        // for `de-AT`, exactly as the `pl` grouping assertion above does.
+      ].map((text) => text.replace(/\s/g, ' ')),
+    );
+    expect(value).toEqual(['50 %', '25 %']);
+    expect(counts.numberFormat).toBe(0);
+  });
+
+  it('treats an explicitly-undefined option as an absent one, as Intl does', () => {
+    formatNumber('en-CA', 1);
+    const { value, counts } = countingIntl(() => formatNumber('en-CA', 1_500, { style: undefined }));
+    expect(value).toBe('1,500');
+    expect(counts.numberFormat).toBe(0);
+  });
+
+  it('keys different options separately, so a percent is never formatted as a plain number', () => {
+    const { value, counts } = countingIntl(() => [
+      formatNumber('en-IE', 0.5),
+      formatNumber('en-IE', 0.5, { style: 'percent', maximumFractionDigits: 0 }),
+    ]);
+    expect(value).toEqual(['0.5', '50%']);
+    expect(counts.numberFormat).toBe(2);
+  });
+
+  it('bounds the cache, so a caller with unbounded options cannot grow it without limit', () => {
+    // More distinct option sets than the cache holds. The earliest entries are
+    // therefore evicted, and formatting with the first one again has to build a
+    // formatter -- which is the observable difference between a bounded cache
+    // and a leak.
+    // 40 distinct option sets: `minimumIntegerDigits` alone is capped at 21 by
+    // the `Intl` specification, so the pair is what makes every key different.
+    const optionSets = Array.from({ length: 40 }, (_, index) => ({
+      minimumIntegerDigits: (index % 20) + 1,
+      maximumFractionDigits: index < 20 ? 0 : 1,
+    }));
+    for (const options of optionSets) formatNumber('en-NZ', 1, options);
+    const first = optionSets[0];
+    expect(first).toBeDefined();
+    const { value, counts } = countingIntl(() => formatNumber('en-NZ', 1, first));
+    expect(value).toBe('1');
+    expect(counts.numberFormat).toBe(1);
+  });
+
+  it('builds one date formatter per locale and options, and keeps the time zone part of the key', () => {
+    const instant = Date.UTC(2026, 7, 23, 0, 30);
+    formatDate('en-GB', instant, { dateStyle: 'short' });
+    formatDate('en-GB', instant, { timeZone: 'Pacific/Auckland', dateStyle: 'short' });
+    const { value, counts } = countingIntl(() => [
+      formatDate('en-GB', instant, { dateStyle: 'short' }),
+      formatDate('en-GB', instant, { timeZone: 'Pacific/Auckland', dateStyle: 'short' }),
+    ]);
+    // The same instant in two zones, which is also what proves the two keys did
+    // not collapse into one.
+    expect(value).toEqual(['23/08/2026', '23/08/2026']);
+    expect(counts.dateTimeFormat).toBe(0);
+  });
+
+  it('builds one plural-rules instance per locale', () => {
+    const forms = { one: 'one', few: 'few', many: 'many', other: 'other' } as const;
+    selectPluralForm('pl-PL', 1, forms);
+    const { value, counts } = countingIntl(() => [
+      selectPluralForm('pl-PL', 1, forms),
+      selectPluralForm('pl-PL', 3, forms),
+      selectPluralForm('pl-PL', 25, forms),
+    ]);
+    expect(value).toEqual(['one', 'few', 'many']);
+    expect(counts.pluralRules).toBe(0);
+  });
+});
+
 describe('pseudo-locale', () => {
   const pseudo = buildPseudoLocaleCatalog(englishCatalog);
 

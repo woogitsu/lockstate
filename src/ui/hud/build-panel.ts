@@ -157,6 +157,11 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     eyebrow: t(HUD_MESSAGE_KEY.buildCatalogue),
     onToggle: (collapsed) => catalogue.setCollapsed(collapsed),
   });
+  // The one section the panel's height budget is allowed to take space from,
+  // named so `hud.css` can say which one it is (issue #143). Every other block
+  // in the panel keeps its content height; the catalogue is the one that grows
+  // with the content catalogue, so it is the one that scrolls.
+  catalogue.element.classList.add('hud-build__catalogue');
   catalogue.body.append(catalogueList);
 
   // ---- the map route (primary) --------------------------------------
