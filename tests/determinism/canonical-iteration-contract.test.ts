@@ -268,6 +268,74 @@ describe('the canonical-iteration scanner recognises what it claims to', () => {
     expect(site(source)?.ordered).toBe(false);
   });
 
+  /*
+   * The override branch's own coverage, audited rather than assumed.
+   *
+   * #177's closing comment reported that this branch was guarded by **exactly
+   * one fixture** and that `tsc` did not object when it was removed. Measured,
+   * by deleting `!declaredCollection &&` from `findEnumerationSites`:
+   *
+   * | mutation on the scanner's own branch          | before | after |
+   * | --- | --- | --- |
+   * | drop `!declaredCollection &&` (the override)  | **1**, and `tsc` clean | 4 |
+   * | narrow the declaration regex to `= new Map`   | **1** | 2 |
+   * | treat any `const`/`private` name as a collection | 3 | 5 |
+   * | drop the `receiver === 'this'` guard          | 3 | 3 |
+   * | `hasArrayOnlyUsage` always false              | 6 | 6 |
+   *
+   * The "before" column was measured against the previous revision of this
+   * file, not inferred: the first three mutations were re-run with the old
+   * fixtures restored. So the branch that decides *which* of two conflicting
+   * signals wins was the thinnest-guarded part of the scanner, and the
+   * declaration regex's type-annotation alternative was one fixture deep too --
+   * a check whose own branches are single-fixture-deep, which is the shape this
+   * repository keeps finding one level up.
+   *
+   * The last two rows are unchanged and are here as the control: they were
+   * already covered, so this work adds nothing to them and does not pretend
+   * to. These four fixtures cover the declaration forms the regex actually
+   * recognises and the looseness it deliberately keeps.
+   */
+  it('overrides array evidence for a Map declared as a local, not only as a field', () => {
+    // `const byId = new Map<...>()` rather than `private byId = new Map()`.
+    // `findCollectionNames` matches both through one regex, so a change that
+    // narrowed it to class fields would pass the field fixture and fail here.
+    const source = 'function f() { const byId = new Map<string, number>(); use(byId.length); return [...byId.values()]; }';
+    expect(site(source)?.ordered).toBe(false);
+  });
+
+  it('overrides array evidence for a Map declared by type annotation alone', () => {
+    // The other half of the regex: `name: Map<...>` / `name: ReadonlyMap<...>`
+    // with no `new`, which is how a constructor parameter or an interface
+    // field declares one. Nothing else in this file exercises that alternative.
+    const source = 'class A { public constructor(private readonly ids: ReadonlyMap<string, number>) {} all() { use(this.ids.length); return [...this.ids.values()]; } }';
+    expect(site(source)?.ordered).toBe(false);
+  });
+
+  it('matches the declaration on the receiver\'s final name, and keeps that looseness on purpose', () => {
+    // `other.ids` is indexed like an array, and a `Map` named `ids` is declared
+    // elsewhere in the file -- so the override fires on the *final name* and
+    // the site is flagged even though this particular receiver may well be an
+    // array.
+    //
+    // That is deliberate and is pinned here so it is not "fixed" later: both
+    // directions of this rule err toward flagging, and a reviewer reading a
+    // false positive has a real choice, while a false negative on a real `Map`
+    // walk is silent and reaches a payload. Narrowing this to the whole
+    // expression would trade the loud failure for the silent one.
+    const source = 'class A { private ids = new Map<string, number>(); all(other: { ids: string[] }) { use(other.ids[0]); return [...other.ids.values()]; } }';
+    expect(site(source)?.ordered).toBe(false);
+  });
+
+  it('does not invent a declaration from a name that is merely assigned', () => {
+    // The negative control for the override, without which the three above
+    // could all pass on a branch that treated any mention as a declaration:
+    // `byId` here is assigned from a function call, not declared as a
+    // collection, so the array evidence stands and the site is skipped.
+    const source = 'function f() { const byId = load(); use(byId.length); return [...byId.values()]; }';
+    expect(site(source)).toBeUndefined();
+  });
+
   it('answers the array question on its own, for the receiver it was asked about', () => {
     expect(hasArrayOnlyUsage('value.freeIndices.length > 0', 'value.freeIndices')).toBe(true);
     expect(hasArrayOnlyUsage('value . freeIndices [ 0 ]', 'value.freeIndices')).toBe(true);
