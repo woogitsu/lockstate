@@ -11,7 +11,6 @@
   "scripts": {
     "dev": "vite",
     "build": "pnpm typecheck && node scripts/cloudflare-task.mjs build production",
-    "build:production": "pnpm build",
     "build:staging": "pnpm typecheck && node scripts/cloudflare-task.mjs build staging",
     "preview": "vite preview",
     "preview:production": "node scripts/cloudflare-task.mjs preview production",
@@ -23,7 +22,6 @@
     "benchmark": "node scripts/run-benchmarks.mjs --profile full",
     "benchmark:smoke": "node scripts/run-benchmarks.mjs --profile smoke --output benchmark-results/smoke.json",
     "verify:benchmark": "pnpm benchmark:smoke && node scripts/verify-benchmark-result.mjs benchmark-results/smoke.json",
-    "smoke:deployment": "node scripts/cloudflare-task.mjs build production && node scripts/verify-deployment-preview.mjs",
     "verify": "pnpm typecheck && pnpm test && node scripts/cloudflare-task.mjs build production",
     "verify:assets": "node tooling/validate-runtime-atlas.mjs public/assets/actors",
     "verify:sql": "node scripts/verify-supabase-sql.mjs",
