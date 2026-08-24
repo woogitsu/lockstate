@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { Kernel } from '../../src/simulation/kernel/kernel';
+import type { IntakeMetrics } from '../../src/simulation/prisoners/intake-system';
 import { deriveXoshiroState } from '../../src/simulation/rng/seed';
 import { NamedRngStreams } from '../../src/simulation/rng/streams';
 import { Xoshiro128StarStar } from '../../src/simulation/rng/xoshiro128starstar';
@@ -46,18 +47,71 @@ function runScenario(actorCount: number, seed: number, ticks: number): { fixture
 }
 
 describe('prisoner operations: representative headless scenario (250 actors, no Phaser)', () => {
+  const ACTOR_COUNT = 250;
+  const SCENARIO_SEED = 0xa11ce;
+  /** The bound in the intake test's name: every admitted prisoner must be through intake by this tick. */
+  const INTAKE_DEADLINE_TICKS = 2_000;
+  /** `DAY_LENGTH_TICKS` is 2,400 (`src/simulation/prisoners/regime.ts:10`), so this is just over one full regime day. */
+  const SCENARIO_TICKS = 3_000;
+
+  let scenario: PrisonerScenarioFixture;
+  let intakeMetricsAtDeadline: IntakeMetrics;
+
+  /**
+   * One shared run, not three.
+   *
+   * These three tests used to call `runScenario(250, 0xa11ce, ...)`
+   * separately with 2,000, 3,000 and 3,000 ticks -- the *same* fixture, the
+   * *same* seed, stepped 8,000 times in total to observe one 3,000-tick run
+   * from three angles. Two of those runs were byte-for-byte redundant: the
+   * 2,000-tick one is a strict prefix of the 3,000-tick one, and the two
+   * 3,000-tick ones were identical to each other.
+   *
+   * Nothing observed here is weakened by sharing. Both metrics accessors
+   * return fresh object literals (`intake-system.ts:80`,
+   * `action-system.ts:87`), so `intakeMetricsAtDeadline` is a genuine
+   * snapshot of tick 2,000 and continuing to 3,000 cannot retroactively
+   * change it; and all three tests only read the fixture, never mutate it.
+   *
+   * Cost: 3,000 ticks of the 250-actor scenario measured 1.6 s in the
+   * quietest run obtainable on this shared four-core container, 3.0 s in a
+   * busier one, and 8.7 s on an unmutated tree with twelve agents running
+   * concurrently. 88% of it is `NavigationSystem` -- 1,412 ms of the 1,599 ms
+   * the four registered systems spent between them, over 268,524 A*
+   * expansions serving 10,594 resolved route requests -- which is inherent
+   * to the fixture: its prison is a 523-column corridor, so routes are long.
+   * Building the fixture costs 27.7 ms, admitting 250 prisoners 6.4 ms and
+   * taking a fingerprint 0.6 ms, so the ticks are effectively the whole
+   * cost and none of it is import- or construction-bound.
+   *
+   * The 20 s hook timeout is therefore about 2.3x the worst figure measured
+   * under load and about twelve times the quietest one -- the same ratio the
+   * determinism test below already uses, and short enough that a genuine
+   * hang still fails rather than stalling the suite. It is a hook timeout
+   * rather than three per-test ones because after this change the tests
+   * themselves do no simulation at all: they measured 8 ms, 44 ms and 6 ms
+   * in a full-suite run. Issue #140.
+   */
+  beforeAll(() => {
+    const fixture = buildPrisonerScenarioFixture({ cellCount: cellCountFor(ACTOR_COUNT), capacity: ACTOR_COUNT + 10 });
+    const kernel = makeKernel(SCENARIO_SEED);
+    fixture.registerOn(kernel);
+    admitPopulation(fixture, ACTOR_COUNT, SCENARIO_SEED);
+    for (let i = 0; i < INTAKE_DEADLINE_TICKS; i += 1) kernel.step();
+    intakeMetricsAtDeadline = fixture.prisoners.intakeSystem.getMetrics();
+    for (let i = INTAKE_DEADLINE_TICKS; i < SCENARIO_TICKS; i += 1) kernel.step();
+    scenario = fixture;
+  }, 20_000);
+
   it('every admitted prisoner completes intake within a bounded number of ticks', () => {
-    const { fixture } = runScenario(250, 0xa11ce, 2_000);
-    const metrics = fixture.prisoners.intakeSystem.getMetrics();
-    expect(metrics.completedCount).toBe(250);
-    expect(metrics.failedCount).toBe(0);
+    expect(intakeMetricsAtDeadline.completedCount).toBe(ACTOR_COUNT);
+    expect(intakeMetricsAtDeadline.failedCount).toBe(0);
   });
 
   it('every need for every prisoner stays within [NEED_MIN, NEED_MAX] -- no overflow/underflow across a full run', () => {
-    const { fixture } = runScenario(250, 0xa11ce, 3_000);
-    for (let index = 0; index < 250; index += 1) {
+    for (let index = 0; index < ACTOR_COUNT; index += 1) {
       for (const needId of NEED_IDS) {
-        const level = fixture.prisoners.needs.get(index, needId);
+        const level = scenario.prisoners.needs.get(index, needId);
         expect(level).toBeGreaterThanOrEqual(NEED_MIN);
         expect(level).toBeLessThanOrEqual(NEED_MAX);
       }
@@ -65,9 +119,8 @@ describe('prisoner operations: representative headless scenario (250 actors, no 
   });
 
   it('the action system makes real progress: actions start and complete across the population', () => {
-    const { fixture } = runScenario(250, 0xa11ce, 3_000);
-    const metrics = fixture.prisoners.actionSystem.getMetrics();
-    expect(metrics.actionsStarted).toBeGreaterThan(250); // more than one action per prisoner over a multi-day run
+    const metrics = scenario.prisoners.actionSystem.getMetrics();
+    expect(metrics.actionsStarted).toBeGreaterThan(ACTOR_COUNT); // more than one action per prisoner over a multi-day run
     expect(metrics.actionsCompleted).toBeGreaterThan(0);
   });
 });
@@ -96,8 +149,15 @@ describe('prisoner operations: determinism', () => {
    *
    * 20 s is roughly twelve times the measured cost -- enough headroom for a
    * loaded machine, and still short enough that a genuine hang fails rather
-   * than stalling the suite. The three scenario tests above cost ~1 s each and
-   * are the next candidates if this reappears.
+   * than stalling the suite.
+   *
+   * The three scenario tests above no longer cost anything individually --
+   * they share one run built in a `beforeAll` with its own 20 s timeout, for
+   * the reasons documented there. This test is deliberately *not* folded into
+   * that shared run: it needs two independently constructed runs of the same
+   * seed compared against each other, and reading a fingerprint off a fixture
+   * that other tests also read would make the one failure in this file that
+   * must never be ambiguous depend on cross-test coupling.
    */
   it('an identical seed and scenario produce an identical fingerprint (needs, stages, positions, phases)', { timeout: 20_000 }, () => {
     const first = runScenario(250, 0x5eed5eed, 2_500);
