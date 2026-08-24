@@ -209,22 +209,29 @@ describe('session snapshot / restore fidelity', () => {
     // Not a wish list: this is the executable form of what
     // `restore-session.ts` documents. A replay verifier (ADR 0009) may rely
     // on the left-hand list and may not rely on the right-hand one.
-    expect([...CURRENT_SAVE_RESTORED_SCOPE.restored].sort()).toEqual([
-      'RNG stream states',
-      'construction orders and undo/redo',
-      'contraband, intelligence and searches',
-      'doors, security sectors, guards and patrols',
-      'entity id liveness',
-      'incidents, gangs and tunnels',
-      'jobs, containers and utility networks',
-      'kernel tick and command queue',
-      'prisoner and staff names',
-      'prisoners, needs, actions and cell assignments',
-      'world terrain and ownership',
+    //
+    // Pinned as message keys since #226, which moved the English into
+    // `src/content/default-locale-en.ts` (ADR 0011: the simulation tier is the
+    // one place translated text may never live). The pin is the same deliberate
+    // gate it was -- eleven entries and two, each named -- and the English half
+    // is pinned character for character in `tests/unit/restored-scope.test.ts`,
+    // resolved through the real bundled catalog.
+    expect(CURRENT_SAVE_RESTORED_SCOPE.restored.map((entry) => entry.labelKey).sort()).toEqual([
+      'save.scope.construction',
+      'save.scope.contraband',
+      'save.scope.entity-liveness',
+      'save.scope.incidents',
+      'save.scope.kernel',
+      'save.scope.names',
+      'save.scope.operations',
+      'save.scope.prisoners',
+      'save.scope.rng-streams',
+      'save.scope.security',
+      'save.scope.world',
     ]);
-    expect([...CURRENT_SAVE_RESTORED_SCOPE.notCarriedByThisSaveVersion].sort()).toEqual([
-      'navigation caches and in-flight path requests (re-issued on the next tick)',
-      'room and topology caches (recomputed from the world)',
+    expect(CURRENT_SAVE_RESTORED_SCOPE.notCarriedByThisSaveVersion.map((entry) => entry.labelKey).sort()).toEqual([
+      'save.scope.navigation-caches',
+      'save.scope.room-caches',
     ]);
 
     const runtime = buildDeterminismScenario(SCENARIO_SEED);

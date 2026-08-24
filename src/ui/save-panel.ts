@@ -4,7 +4,7 @@ import type { PrisonSlotMetadata } from '../persistence/local/store';
 import type { SaveEnvelope } from '../persistence/save-schema';
 import type { ActiveSession, SessionLoadOutcome } from '../persistence/session/session-controller';
 import type { MessageParameters } from '../services/localization/format';
-import type { RestoredScope } from '../simulation/runtime/restore-session';
+import type { RestoredScope, RestoredScopeEntry } from '../simulation/runtime/restore-session';
 import {
   type AsyncActionFailure,
   type AsyncActionOutcome,
@@ -38,13 +38,21 @@ export interface SavePanelLocalizer {
 export type SaveStatusKind = 'idle' | 'saving' | 'saved' | 'recovered' | 'quota-exceeded' | 'transaction-aborted' | 'storage-unavailable' | 'error';
 
 /**
- * A message key and its parameters -- never resolved text (ADR 0011).
+ * A message key and its parameters (ADR 0011).
  *
  * The panel's pure mapping functions produce these and the DOM resolves them
  * at the last possible moment, the same split `src/ui/hud/projection.ts` and
  * `src/ui/hud/hud.ts` already use. It is what makes the mappings provable in
  * the default `node` Vitest environment while the text they choose stays a
  * catalog entry rather than a literal in a module.
+ *
+ * The **key** is never text. A *parameter* may be, and two are: `{detail}`
+ * carries a thrown `Error.message`, which is diagnostic English from
+ * `src/persistence/**` travelling as data; and `{restored}`/`{notCarried}`
+ * carry scope labels already resolved through the same localizer (#226),
+ * because a list spliced into a sentence has to be resolved before it can be
+ * joined. Neither is a literal authored in this module, which is the property
+ * that matters.
  */
 export interface SaveMessage {
   readonly messageKey: LocalizationKey;
@@ -83,27 +91,40 @@ export function describeSaveResult(result: SaveResult): SaveStatus {
 }
 
 /**
+ * `', '` is the separator #208 shipped, and #226 keeps it deliberately:
+ * moving the entries into the catalog must not change a character of what the
+ * panel prints. A locale wanting a different list separator -- or
+ * `Intl.ListFormat`, which would also add "and" before the last item -- is a
+ * change to what the player reads and belongs to its own decision, not to a
+ * compliance fix.
+ */
+function joinScopeLabels(entries: readonly RestoredScopeEntry[], localizer: SavePanelLocalizer): string {
+  return entries.map((entry) => localizer.format(entry.labelKey)).join(', ');
+}
+
+/**
  * What a load restored, and what it did not carry.
  *
- * The sentence around the two lists is a catalog entry; **the lists inside it
- * are not localized**, and that is a deliberate boundary rather than an
- * oversight (issue #208). `RestoredScope.restored` holds English prose --
- * "world terrain and ownership", "navigation caches and in-flight path
- * requests (re-issued on the next tick)" -- authored in
- * `src/simulation/runtime/restore-session.ts`, which is the tier ADR 0011
- * says translated text may never live in. Giving those entries message keys
- * means changing a simulation-owned structure to carry keys and deriving the
- * labels the way `build-panel.ts` derives its edge labels; it is a change to
- * `src/simulation/**` and it belongs with #109, which owns that function.
- * Splicing them in as `{restored}` and `{notCarried}` keeps the panel honest
- * about which half is translatable in the meantime.
+ * Both lists arrive as message keys: since #226 `RestoredScope` carries
+ * `labelKey`s and never prose, because
+ * `src/simulation/runtime/restore-session.ts` is the tier ADR 0011 says
+ * translated text may never live in. This function is where they become text
+ * -- each key resolved through the panel's own localizer, the results joined
+ * into `{restored}` and `{notCarried}`. That is the same last-possible-moment
+ * resolution `docs/HUD_PROJECTIONS.md` contract 3 requires of every
+ * projection, applied to the one structure that used to be exempt.
+ *
+ * The localizer is a parameter rather than a module singleton, so this stays a
+ * pure function of `(scope, localizer)`, testable in the default `node`
+ * environment, and the panel keeps handing it the single instance `main.ts`
+ * built (#229) rather than a second one of its own.
  */
-export function describeRestoredScope(scope: RestoredScope): SaveMessage {
+export function describeRestoredScope(scope: RestoredScope, localizer: SavePanelLocalizer): SaveMessage {
   return {
     messageKey: SAVE_PANEL_MESSAGE_KEY.detailRestoredScope,
     messageParameters: {
-      restored: scope.restored.join(', '),
-      notCarried: scope.notCarriedByThisSaveVersion.join(', '),
+      restored: joinScopeLabels(scope.restored, localizer),
+      notCarried: joinScopeLabels(scope.notCarriedByThisSaveVersion, localizer),
     },
   };
 }
@@ -430,7 +451,7 @@ export class SavePanel {
           ? { kind: 'recovered', messageKey: SAVE_PANEL_MESSAGE_KEY.statusRecovered }
           : { kind: 'saved', messageKey: SAVE_PANEL_MESSAGE_KEY.statusLoaded },
       );
-      this.setDetail(describeRestoredScope(outcome.scope));
+      this.setDetail(describeRestoredScope(outcome.scope, this.localizer));
       await this.refresh();
     });
   }
