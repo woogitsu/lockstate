@@ -11,13 +11,15 @@ import {
  * The third member of the reachability family, after
  * `fault-code-reachability-contract.test.ts` (twelve fault codes) and
  * `challenge-rejection-code-reachability-contract.test.ts` (twenty-three
- * rejection codes), and the one those two kept pointing at: `tests/foundation/`
- * gates commands, content ids, input actions, fault codes and challenge
- * rejection codes, and has never gated the eighteen **protocol message kinds**
- * that carry all of them.
+ * rejection codes). `tests/foundation/` gates commands, content ids, input
+ * actions, fault codes and challenge rejection codes, and has never gated the
+ * eighteen **protocol message kinds** that carry all of them -- which #274 A2
+ * called *"the single highest-value test this audit found missing"*, asking
+ * for it as `unconsumed-message-kind-contract.test.ts`. It is named for the
+ * family it belongs to instead, because what it measures is reachability and
+ * its two nearest models are the two files above.
  *
- * Issue #274 finding A2 established that the gap is live, and this file is the
- * gate it asked for by name:
+ * Issue #274 finding A2 established that the gap is live:
  *
  * > **Nothing in `src/` has ever sent a `protocol/handshake`.** [...] Every one
  * > is the **receiver**, the kind list, or the schema. There is no sender. The
@@ -149,7 +151,7 @@ const UNSENT_WORKER_TO_MAIN_KINDS: Readonly<Record<string, string>> = {
   'simulation/delta':
     '#274 A1, the half of that finding which holds. The kind has a full schema with a `superRefine` enforcing `tick > baseTick` (`types.ts:400-421`), is a member of `workerToMainMessageSchema` (`:576`) and has a transfer-list case (`transferables.ts:24`), and no module constructs one: the worker publishes whole snapshots on request and `simulation/status-counts` unprompted. `SimulationSnapshotFeed` says so in its own header -- "Only the snapshot path is implemented today -- nothing emits a delta".',
   'simulation/event':
-    'Declared in the kind union with a schema (`types.ts:539`) and a transfer-list case that unwraps an `ArrayBuffer` payload (`transferables.ts:28`), and constructed by nothing. It has no main-thread reader either: all four modules that `switch (message.kind)` -- `simulation-snapshot-feed.ts:107`, `simulation-commands.ts:223`, `simulation-clock.ts:26` and `simulation-counts.ts:22` -- have a `default` and no case for it, so one that did arrive would be dropped. ADR 0003 lists "asynchronous domain events" among the families the protocol must support.',
+    'Declared in the kind union with a schema (`types.ts:539`) and a transfer-list case that unwraps an `ArrayBuffer` payload (`transferables.ts:28`), and constructed by nothing. It has no main-thread reader either: the four main-thread modules that `switch (message.kind)` -- `simulation-snapshot-feed.ts:107`, `simulation-commands.ts:223`, `simulation-clock.ts:26` and `simulation-counts.ts:22`, the complete set in `src/` outside `transferables.ts` -- each have a `default` and no case for it, so one that did arrive would be dropped. ADR 0003 lists "asynchronous domain events" among the families the protocol must support.',
 };
 
 /**
@@ -164,7 +166,7 @@ const UNREACHABLE_WORKER_TO_MAIN_KINDS: Readonly<Record<string, string>> = {
   'protocol/handshake-accepted':
     "Constructed at `state-machine.ts:402`, inside `handleHandshake`, which the dispatch switch reaches only on a `protocol/handshake` -- a kind nothing in `src/` sends (see UNSENT_MAIN_TO_WORKER_KINDS). So the message exists, is schema-checked and is unreachable in production; it carries `selectedProtocolVersion` and `capabilities: []`, which is the negotiation ADR 0003 decision 4 describes. Deleting this entry is part of whatever answer #274's open decision gets.",
   'protocol/pong':
-    'Constructed at `state-machine.ts:416`, inside `handlePing`, whose only trigger is a `protocol/ping` that nothing sends. The reply echoes the request nonce, so it can be provoked by nothing else: there is no unprompted path to it and no other call site for `handlePing` than the dispatch switch at `state-machine.ts:369`.',
+    'Constructed at `state-machine.ts:416`, inside `handlePing`, whose only trigger is a `protocol/ping` that nothing sends. The reply echoes the request nonce, so it can be provoked by nothing else: there is no unprompted path to it and no other call site for `handlePing` than the dispatch switch at `state-machine.ts:369-370`.',
 };
 
 /**
