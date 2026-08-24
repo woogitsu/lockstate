@@ -86,6 +86,18 @@ const UNLABELLED: readonly { readonly sourceFile: string; readonly declaration: 
       'Developer diagnostics for a malformed protocol envelope, reported to the main thread as protocol fault codes. A player-facing failure message is the UI layer\'s own string with its own key; surfacing "unsupported-protocol-version" verbatim would be a bug, not a missing translation.',
   },
   {
+    sourceFile: 'src/simulation/protocol/types.ts',
+    declaration: 'PROTOCOL_FAULT_CODES',
+    reason:
+      'The twelve reasons the worker may refuse or abandon a request, and the superset of `PROTOCOL_DECODE_ERROR_CODES` exempted just above for the same reason: developer diagnostics on the worker-to-main boundary. A player-facing failure message is the UI layer\'s own string with its own key -- `src/ui/hud/messages.ts`\'s `hud.refusal.*` names the outcome and deliberately carries neither the code nor the thrown `Error` text (#207) -- so rendering "snapshot-incompatible" verbatim would be a bug rather than a missing translation. Newly *discovered* by this scan rather than newly written: the vocabulary used to live inline inside `z.enum([...])`, where no scan could see it, and #187 exported it as a `const` tuple so `tests/foundation/fault-code-reachability-contract.test.ts` could enumerate it.',
+  },
+  {
+    sourceFile: 'src/simulation/kernel/kernel.ts',
+    declaration: 'CommandRejectionKind',
+    reason:
+      'Which of three refusals `Kernel.submitCommand` made -- a duplicate sequence, a sequence gap, or a tick already executed. It exists so the worker can map a refusal to a fault code instead of collapsing all three onto `invalid-state` (#187 finding 2), so it is one layer *below* a diagnostic that is itself exempt above. Nothing projects it: it never leaves the worker, and the main thread receives the mapped `ProtocolFaultCode` and never this discriminant.',
+  },
+  {
     sourceFile: 'src/content/simulation-message-keys.ts',
     declaration: 'SimulationEnumForm',
     reason:

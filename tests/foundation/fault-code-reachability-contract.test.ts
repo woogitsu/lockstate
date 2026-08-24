@@ -48,11 +48,18 @@ import { PROTOCOL_FAULT_CODES } from '../../src/simulation/protocol/types';
  *   `error.code === 'snapshot-incompatible'`, which is a **consumer** reading a
  *   fault, not a producer emitting one.
  *
- * A wide scan would count all three, and the consequence is specific: if the
- * worker ever stopped emitting `invalid-payload`, the gate would stay green on
- * the strength of an unrelated union in the persistence tree. That is the
- * "check that reads as protection and is wired to nothing" shape this file
- * exists to prevent, so it must not be this file's own shape.
+ * There is a fourth, and it is this change's own: `'sequence-gap'` is *also* a
+ * `CommandRejectionKind` discriminant in `src/simulation/kernel/kernel.ts`. Two
+ * vocabularies, one spelling, for the same real condition -- which is why the
+ * mapping in `state-machine.ts` looks like an identity for that one entry.
+ *
+ * A wide scan would count all four, and the consequence is specific: if the
+ * worker stopped emitting `invalid-payload`, the gate would stay green on the
+ * strength of an unrelated union in the persistence tree. That is the "check
+ * that reads as protection and is wired to nothing" shape this file exists to
+ * prevent, so it must not be this file's own shape -- and because a fully
+ * reachable vocabulary makes a widened scope harmlessly invisible, the scope is
+ * pinned by a **negative control** below rather than left as an argument.
  *
  * The gate deliberately does not assert that each code is *reachable at
  * runtime* -- only that something produces it. Driving every producer would
@@ -97,10 +104,14 @@ function collectTypeScriptFiles(target: string): readonly string[] {
 
 const producerSources = PRODUCER_PATHS.flatMap((target) => collectTypeScriptFiles(target)).map((path) => ({
   where: relative(ROOT, path).split(sep).join('/'),
-  // Stripped, because `state-machine.ts` and `decode.ts` both discuss these
-  // codes at length in prose -- including sentences saying which ones were
-  // unreachable. An unstripped scan would report a code as emitted by the
-  // comment explaining that nothing emits it, which is #188's shape exactly.
+  // Stripped with the shared stripper, and **precautionary here rather than
+  // load-bearing** -- said plainly because the difference matters. Measured
+  // across the producing surface: no fault code currently appears in a comment
+  // without also appearing in code, so replacing this with the identity
+  // function changes nothing the gate can see, and that mutation survives. It
+  // stays because these two files discuss the vocabulary at length, including
+  // sentences naming which codes were unreachable, and the first such sentence
+  // that outlives its code would otherwise read as an emission (#188).
   text: stripComments(readFileSync(path, 'utf8')),
 }));
 
@@ -154,6 +165,47 @@ describe('every protocol fault code can actually be emitted', () => {
       removed.map((code) => `${code}: ${UNEMITTED_CODES[code]}`),
       'a code this list accounts for is no longer in the vocabulary -- if that removal is deliberate, delete its entry in the same change',
     ).toEqual([]);
+  });
+
+  it('keeps the producing surface narrow, proven against the codes spelled the same elsewhere', () => {
+    /*
+     * The negative control, and the reason it exists rather than a comment.
+     *
+     * While every code is emitted, widening the scope to all of `src/` cannot
+     * make any assertion above fail -- more matches with everything already
+     * matched changes nothing. Measured: that mutation survives. So the scope
+     * is asserted directly, as the property that makes it necessary: these four
+     * codes occur outside the producing surface, under a *different*
+     * vocabulary each time, so a wide scan would report them emitted on
+     * evidence that has nothing to do with the worker.
+     *
+     * This fails in both useful directions. Widening PRODUCER_PATHS puts these
+     * files in `producerSources` and fails the second assertion; a foreign
+     * occurrence disappearing fails the first, and its entry should then go.
+     */
+    const FOREIGN_OCCURRENCES: Readonly<Record<string, string>> = {
+      'invalid-payload': 'src/persistence/cloud/sync-engine.ts',
+      'shutting-down': 'src/content/simulation-message-keys.ts',
+      'snapshot-incompatible': 'src/persistence/session/worker-session-host.ts',
+      'sequence-gap': 'src/simulation/kernel/kernel.ts',
+    };
+
+    for (const [code, file] of Object.entries(FOREIGN_OCCURRENCES)) {
+      const text = stripComments(readFileSync(join(ROOT, file), 'utf8'));
+      expect(
+        text.includes(`'${code}'`),
+        `${file} no longer spells '${code}' -- delete its FOREIGN_OCCURRENCES entry, since it is no longer evidence that a wide scan would be wrong`,
+      ).toBe(true);
+      expect(
+        producerSources.map((source) => source.where),
+        `${file} is inside the producing surface, so this gate would now count a foreign vocabulary as an emission`,
+      ).not.toContain(file);
+    }
+
+    // And the denominator for the control itself: four is the number measured,
+    // so a fifth foreign spelling appearing is something a reader should see
+    // rather than something that silently joins a list.
+    expect(Object.keys(FOREIGN_OCCURRENCES).length).toBe(4);
   });
 
   it('measures a fully reachable vocabulary, which is the number #187 changed', () => {
