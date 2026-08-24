@@ -319,11 +319,15 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'brand.stage': 'PRE-ALPHA',
   // `v{version}` and the commit, separated by a middle dot. Both, because the
   // version says what the build claims to be and the commit says which build it
-  // is -- and today `package.json` is at `0.0.0` with no tags in the
-  // repository, so the commit is the half that identifies anything.
+  // is. The version half moves now: `.github/workflows/version.yml` bumps the
+  // patch on every merge to `main` and tags the commit `v0.0.N`, which is why
+  // the `v` is here -- the tag list and this line spell it the same way, so a
+  // bug report can quote either. It did not always: `package.json` sat at
+  // `0.0.0` with no tags in the repository, and the commit was the only half
+  // that identified anything.
   'brand.build': 'v{version} · {commit}',
   // The whole badge as one sentence, for a screen reader. The visible fragments
-  // are `aria-hidden`, because "PRE-ALPHA", "v0.0.0" and seven hex characters
+  // are `aria-hidden`, because "PRE-ALPHA", "v0.0.7" and seven hex characters
   // read out in sequence name nothing.
   'brand.description': 'Lockstate, {stage} build, version {version}, commit {commit}.',
 };
