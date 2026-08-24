@@ -51,6 +51,78 @@ describe('trusted services layer boundaries', () => {
     }
   });
 
+  /**
+   * `docs/ARCHITECTURE.md`'s third boundary rule says that anything leaving the
+   * device from this layer "is asynchronous, failable and optional". Nothing
+   * enforced any part of it: the check above covers Phaser, the DOM and
+   * `localStorage`, and a telemetry send written as a bare `fetch(...)` passed
+   * every gate in this file.
+   *
+   * So this asserts the stronger fact that is actually true today, and which
+   * #141 measured from the other direction when it counted 4,871 lines of this
+   * layer as reachable only from its own tests: **nothing here performs I/O at
+   * all.** The layer is contracts and pure logic. Storage reaches it only
+   * through the injected `KeyValueStore`, and the network does not reach it.
+   *
+   * The allow-list is empty, and that is the point. Wiring the first telemetry
+   * send or entitlement read is a real milestone -- it is the moment the
+   * architecture document's claim starts having content -- and it should require
+   * writing down that the layer now leaves the device, not just adding a call.
+   */
+  const MODULES_PERFORMING_IO: Readonly<Record<string, string>> = {
+    // (empty; add `'relative/path.ts': 'why this module performs I/O'`)
+  };
+
+  /**
+   * Deliberately not asserted: that each I/O call sits inside an `async`
+   * function. Tying a call site to its enclosing function's declaration by
+   * pattern is not reliable, and a check that looked like it did that while
+   * really matching on file-level `async` would be exactly the theatre this
+   * file exists to remove. When `MODULES_PERFORMING_IO` gains an entry, the
+   * asynchronous/failable/optional half of the rule needs its own assertion
+   * against that specific function.
+   */
+  const IO_SOURCES: readonly (readonly [string, RegExp])[] = [
+    ['fetch', /(?:^|[^.\w])fetch\s*\(/],
+    ['XMLHttpRequest', /\bXMLHttpRequest\b/],
+    ['navigator.sendBeacon', /\bnavigator\s*\.\s*sendBeacon\b/],
+    ['WebSocket', /\bnew\s+WebSocket\b/],
+    ['EventSource', /\bnew\s+EventSource\b/],
+    ['indexedDB', /\bindexedDB\s*[.[]/],
+    ['sessionStorage', /\bsessionStorage\s*[.[]/],
+    ['caches', /\bcaches\s*\.\s*(?:open|match)\b/],
+  ];
+
+  it('performs no I/O, so nothing in it leaves the device yet', () => {
+    const offenders: string[] = [];
+
+    for (const { relative, source } of serviceFiles) {
+      // Comments stripped: this layer's whole job is to describe sends that a
+      // caller will one day make, so prose naming `fetch` is not a send.
+      const code = source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+      for (const [name, pattern] of IO_SOURCES) {
+        if (!pattern.test(code)) continue;
+        if (MODULES_PERFORMING_IO[relative] !== undefined) continue;
+        offenders.push(`${relative} uses ${name}`);
+      }
+    }
+
+    expect(
+      offenders,
+      'a module in the trusted-services layer now performs I/O. That is a milestone, not a mistake -- add it to MODULES_PERFORMING_IO with the reason, assert that its entry point is asynchronous and failable, and update docs/ARCHITECTURE.md, which currently states that nothing here leaves the device',
+    ).toEqual([]);
+  });
+
+  it('holds no stale entry in the I/O allow-list', () => {
+    // The "allow-list that fails when an entry goes stale" shape used by
+    // tests/determinism/ambient-nondeterminism-contract.test.ts: an entry for a
+    // module that no longer performs I/O would quietly grant permission
+    // nobody needs.
+    const known = new Set(serviceFiles.map(({ relative }) => relative));
+    const stale = Object.keys(MODULES_PERFORMING_IO).filter((relative) => !known.has(relative));
+    expect(stale, 'these files are no longer in src/services/: remove their entries').toEqual([]);
+  });
+
   it('is never imported by the simulation or persistence layers', () => {
     for (const { relative, source } of [...simulationFiles, ...persistenceFiles]) {
       expect(source, `${relative} must not depend on the services layer`).not.toMatch(
