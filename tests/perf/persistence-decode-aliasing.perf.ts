@@ -6,18 +6,28 @@ import { buildPrisonFixture, PRISON_SIZE_TIERS } from './fixtures/prison-fixture
 import { environmentSummary, formatBytes, formatMs, jsonByteSize, measureSync, renderTable } from './measure';
 
 /**
- * Evidence for one decision: `jsonValueSchema` is `z.custom`, so it validates
- * by predicate and returns its input **by reference** — a decoded envelope's
- * `payload.kernel.commands[].payload` really does alias the caller's object,
- * and `createSaveEnvelope` really does alias the live kernel's queued command
- * payloads (`Kernel.snapshot` shallow-copies each command). #105 offered two
- * fixes: correct the comment that claimed otherwise, or make the schema copy.
+ * Evidence for one decision, kept after the decision was made because it is
+ * what decided *where* the copy goes.
  *
- * This file measures what "make the schema copy" costs, so the choice rests
- * on numbers rather than taste. It REPORTS and never asserts a duration
- * (`docs/BENCHMARKING.md`); every `expect` here is a correctness invariant —
- * including the aliasing itself, which is pinned as behaviour in
- * `tests/unit/persistence-save-schema-aliasing.test.ts`.
+ * `jsonValueSchema` is `z.custom`, so it validates by predicate and returns
+ * its input **by reference**. A decoded envelope's
+ * `payload.kernel.commands[].payload` therefore aliased the caller's object,
+ * and `createSaveEnvelope` aliased the live kernel's queued command payloads
+ * (`Kernel.snapshot` shallow-copies each command). #105 offered two fixes —
+ * correct the comment that claimed otherwise, or make the schema copy — and
+ * #106 established that the copy is the one that closes the mechanism, in
+ * `save-schema.ts` rather than in `jsonValueSchema` itself. Both halves of
+ * that are priced here: the "copy command payloads" column is what the fix
+ * costs, and the "clone bundle" column is what putting it in the shared schema
+ * would have cost on the worker boundary instead.
+ *
+ * It REPORTS and never asserts a duration (`docs/BENCHMARKING.md`); every
+ * `expect` here is a correctness invariant. The detachment itself is pinned as
+ * behaviour in `tests/unit/persistence-save-schema-aliasing.test.ts`.
+ *
+ * The `decode` column moves by ~5 % between runs of identical code on shared
+ * hardware, so it is not a before/after measurement of the copy — the copy's
+ * own column is.
  *
  * Two scopes are measured, because `jsonValueSchema` is shared:
  *
@@ -48,7 +58,7 @@ interface Row {
   readonly copyBundleMedian: number;
 }
 
-describe('decode-path aliasing: what a copying jsonValueSchema would cost', () => {
+describe('decode-path detachment: what the copy costs, and what a shared-schema copy would have cost', () => {
   it('measures the aliased share of a payload and the cost of copying it', () => {
     const rows: Row[] = [];
 

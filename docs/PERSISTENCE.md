@@ -272,9 +272,10 @@ unforgeable:
 - A trusted envelope is shallow-frozen, so its `checksum`, `saveSchemaVersion`
   and `payload` reference cannot be swapped after this module vouched for
   them. Freezing stops at the top level deliberately: a deep freeze would
-  reintroduce the per-node walk this change exists to remove. **It does not
-  mean the payload interior is detached** — see "The payload interior is
-  aliased, not copied" below, which corrects exactly that claim.
+  reintroduce the per-node walk this change exists to remove. Freezing is not
+  what detaches the interior from live state — the schema is; and neither one
+  makes the interior immutable to whoever holds the envelope. See "The payload
+  interior is detached, and once was not" below.
 
 `decodeSaveEnvelope`'s output is trusted for the same reason and with the same
 safety: it is the migration chain's own freshly parsed value, never the
@@ -289,87 +290,122 @@ rejection tests in `tests/unit/persistence-save-schema.test.ts` and
 `tests/unit/persistence-local-repository.test.ts` that prove it were not
 edited by #49.
 
-### The payload interior is aliased, not copied
+### The payload interior is detached, and once was not
 
-This section exists because the sentence it replaces was false, and a false
-comment about a safety property is worse than none. Both `markTrusted` and
-this document used to say the payload interior was "a fresh Zod-parsed value
-detached from live runtime state". It is not, for `jsonValueSchema` fields.
+This section exists because the sentence it replaces was false for a while,
+and a false comment about a safety property is worse than none. Both
+`markTrusted` and this document claimed the payload interior was "a fresh
+Zod-parsed value detached from live runtime state" long before it was.
 
 `jsonValueSchema` (`src/simulation/protocol/types.ts`) is `z.custom`: it
 validates by predicate (`isJsonValue`) and returns **the input object
-itself**. Zod rebuilds every other node it parses, so the aliasing is exactly
-as wide as the `jsonValue` fields in the schema, which in the save payload is
-one: `payload.kernel.commands[].payload`. Two consequences follow, and both
-are now pinned as tests in
-`tests/unit/persistence-save-schema-aliasing.test.ts`:
+itself**. Zod rebuilds every other node it parses, so the aliasing was exactly
+as wide as the `jsonValue` fields in the schema — in the save payload, one:
+`payload.kernel.commands[].payload`. It had two consequences, both established
+by execution (#105 from the SQL side, #106 independently from the persistence
+side):
 
-- `decodeSaveEnvelope`'s result shares those objects with the value it was
-  given. A caller that keeps a reference to what it decoded can mutate the
-  interior of a *trusted* envelope afterwards, and `checksum !==
-  computeSaveChecksum(payload)` from then on. (Verified by execution in #105,
-  and again here.)
-- `createSaveEnvelope`'s result shares them with the **live kernel**:
+- `decodeSaveEnvelope`'s result shared those objects with the value it was
+  given, so a caller that kept a reference to what it decoded could mutate the
+  interior of a *trusted* envelope afterwards and leave `checksum !==
+  computeSaveChecksum(payload)`.
+- `createSaveEnvelope`'s result shared them with the **live kernel**:
   `Kernel.snapshot()` shallow-copies each queued command (`{ ...c }`), so the
-  payload object inside the snapshot is the one the command queue still holds.
+  payload object inside the snapshot was the one the command queue still held.
   This is the part the old wording denied most directly.
 
-**Honest severity: hardening, not a live defect — no exploiting caller
-exists.** Re-verified against the tree, not inherited from #105: the two
-paths that take external input are `PrisonSaveRepository.importSave` and
-`PrisonSyncEngine.pull`. `pull` decodes exactly what `downloadVersion`
-returns — PostgREST's own parse of a response, which nothing else holds — and
-`importSave` decodes whatever its caller passes, which today is only a test
-(`SessionController.importInto` has no production caller, and neither does
-the sync engine), and whose intended source is a `JSON.parse` of an exported
-file. `loadCurrent` decodes a value
-read back from the store, which a real IndexedDB returns as a fresh
-structured clone per read — `MemoryLocalSaveStore` does not, but it is
-test-only. `save()` decodes only an *untrusted* envelope, which production
-never produces. And everything that leaves for storage is structured-cloned
-(IndexedDB) or JSON-serialized (the Supabase RPC) on the way out, so the
-window is in-process only. What would change this is a caller that decodes a
-value it keeps and mutates, or one that mutates a queued command payload
-after composing a save.
+**It is now detached.** `save-schema.ts` declares
 
-**Why the comment was corrected rather than the schema made to copy.** #105
-offered both. The measurement is in `tests/perf/persistence-decode-aliasing.perf.ts`
+```ts
+const detachedJsonValueSchema = jsonValueSchema.transform((value) => structuredClone(value) as JsonValue);
+```
+
+and `queuedCommandSchema.payload` uses it. One line closes both trust entry
+points across all three payload versions and the V1 → V2 → V3 migration chain,
+because `kernelSnapshotSchema` is shared by all of them.
+
+`tests/unit/persistence-save-schema-aliasing.test.ts` pins the detachment from
+both entry points, and also pins a rule about the *module*: no object-literal
+field in `save-schema.ts` may use the pass-through `jsonValueSchema`. That
+second check is the one that matters over time — a new `jsonValue`-typed
+payload section would reopen the hole as an aliased subtree with the rest of
+the suite green, which is precisely how the original defect survived.
+
+Elsewhere the pass-through schema is correct and unchanged:
+`versionedPayloadSchema.data` and `src/services/challenges/evidence.ts` both
+use it, and neither is covered by a checksum this module vouches for.
+
+**What is still not guaranteed, and never was:** an envelope's interior is not
+immutable to whoever holds the envelope. Detachment is about the *caller's*
+objects and the live simulation, not a deep freeze — #49 rejected that on
+cost. So `checksum` remains a statement about the payload at the moment this
+module vouched for it. `tests/unit/persistence-save-schema.test.ts` pins that
+narrower promise.
+
+#### Why the copy, and where it goes
+
+The choice was made twice, and the second answer overrode the first, so both
+arguments are recorded.
+
+The measurement is in `tests/perf/persistence-decode-aliasing.perf.ts`
 (report-only, per `docs/BENCHMARKING.md`), on this container — Node 24.19.0,
-4× Xeon @ 2.10GHz:
+4× Xeon @ 2.10 GHz:
 
-| tier | payload | queued commands | aliased bytes | decode | copy just the aliased fields | copy the whole payload | protocol bundle: `isJsonValue` | + `structuredClone` |
+| tier | payload | queued commands | detached bytes | decode | copy just those fields | copy the whole payload | protocol bundle: `isJsonValue` | + `structuredClone` |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| small | 42.2 KiB | 4 | 908 B | 9.47 ms | 0.01 ms | 1.15 ms | 2.35 ms | 0.80 ms |
-| medium | 288.6 KiB | 16 | 3.6 KiB | 43.3 ms | 0.03 ms | 8.98 ms | 15.4 ms | 6.04 ms |
-| large | 1.12 MiB | 64 | 14.4 KiB | 162 ms | 0.17 ms | 35.5 ms | 61.4 ms | 27.5 ms |
-| x-large | 2.88 MiB | 128 | 28.8 KiB | 430 ms | 0.27 ms | 114 ms | 169 ms | 81.3 ms |
+| small | 42.2 KiB | 4 | 908 B | 9.0–10.3 ms | 0.01 ms | 1.2–1.3 ms | 2.3–2.7 ms | 0.80–0.85 ms |
+| medium | 288.6 KiB | 16 | 3.6 KiB | 47.8–50.0 ms | 0.03–0.04 ms | 7.8–9.4 ms | 13.2–17.3 ms | 4.7–6.9 ms |
+| large | 1.12 MiB | 64 | 14.4 KiB | 173–187 ms | 0.13–0.15 ms | 38.5–40.2 ms | 62.3–65.7 ms | 27.5–31.1 ms |
+| x-large | 2.88 MiB | 128 | 28.8 KiB | 460–484 ms | 0.21–0.29 ms | 114–117 ms | 137–171 ms | 66.5–85.6 ms |
 
-The numbers do **not** say "a copy is too expensive", and pretending they did
-would be the same kind of overclaim this section exists to remove. Copying
-only the aliased fields is 1–2 % of a payload and ≤ 0.1 % of a decode — cheap
-at every tier this project measures. Three other things decide it:
+Ranges are three consecutive runs, not a claimed precision. The `decode`
+column moves by 24 ms at the x-large tier between runs of *identical* code on
+this container, so **no before/after decode delta can be read off it** and none
+is claimed. The cost this change actually adds is the "copy just those fields"
+column, measured directly: **0.01–0.29 ms**, ≤ 0.1 % of a decode. It runs once
+per parse, so at most twice per `decodeSaveEnvelope` (the declared value and
+the migrated value).
 
-- **A copy inside `jsonValueSchema` itself is not cheap**, and that is the
-  only place a fix would be uniform. That schema also types
-  `versionedPayloadSchema.data`, which carries an entire
+**The first answer was to correct the comment and not copy**, on three grounds
+(#105 finding, implemented in #164). Two of the three survive and are why the
+copy is placed where it is:
+
+- **A copy inside `jsonValueSchema` itself is not cheap.** That schema also
+  types `versionedPayloadSchema.data`, which carries an entire
   `SessionSnapshotBundle` on every worker snapshot and every restore
   (`src/simulation/worker/state-machine.ts`,
-  `src/persistence/session/worker-session-host.ts`). Cloning there adds
-  0.80–81.3 ms per message — up to +48 % on top of the `isJsonValue` walk it
-  already performs — on a boundary `postMessage` has *already* structured-cloned.
-- **A narrow copy in `save-schema.ts` buys half a property the codebase
-  deliberately does not provide.** Detaching the interior from the *caller's
-  input* still leaves a trusted envelope's interior mutable by anyone holding
-  the envelope, so `checksum` is still not a guarantee about the payload's
-  present contents. The other half is a deep freeze, which #49 rejected on
-  cost and which this table prices at the same order as the whole-payload
-  copy. Paying for half a guarantee, on the save/load hot path, for a caller
-  that does not exist, is what #49 spent its effort removing.
-- **The defect that actually existed was the comment.** A reader who trusted
-  it could write precisely the caller that turns this into a real bug. The
-  correction states the contract a future caller must respect, and the test
-  pins the behaviour either way — so a later decision to make the schema copy
-  fails those tests and forces the comment to be updated in the same commit.
+  `src/persistence/session/worker-session-host.ts`). Cloning there costs
+  0.80–85.6 ms per message, on a boundary `postMessage` has *already*
+  structured-cloned. **Still true, and it is the reason
+  `detachedJsonValueSchema` lives in `save-schema.ts` rather than in the
+  protocol module.**
+- **The defect that existed was the comment.** Also still true — and the
+  comment is corrected either way.
+
+**The third ground did not survive** (#106): that a narrow save-local copy
+"buys half a property, because the interior stays mutable by whoever holds the
+envelope". Detachment and immutability are two different properties, not two
+halves of one. What `markTrusted` needs in order to mean anything is that a
+value it vouched for shares no state with the live simulation or with an
+untrusted caller — and that property is now complete, not half-held. Immutability
+to the envelope's own holder is a separate concern the module doc never claimed.
+
+Two further things decided it, both from #106:
+
+- **A comment cannot close a hole that widens.** The alias was reachable
+  through `kernelSnapshotSchema` from all three payload versions and the
+  migration chain, and any future `jsonValue`-typed payload section would have
+  widened one field into a subtree. That is a code hole, and it is now closed
+  by the module rule above.
+- **The cost is 0.01–0.29 ms.** A queued command payload is the *pending
+  queue*, not bulk state: 908 B of a 42 KiB save, 28.8 KiB of a 2.88 MiB one.
+
+No ADR is required for this, and #106 says so explicitly: it is a bug fix
+inside the contract #49's note already states. An ADR **would** be required for
+either alternative framing — deep-freezing trusted payloads, or re-verifying
+the checksum in `PrisonSaveRepository.save` — because both knowingly trade back
+the measured win #49 exists for, and `AGENTS.md` requires a persistence-format
+trade-off to be recorded rather than decided in implementation code.
 
 ## Migration framework
 
