@@ -20,9 +20,12 @@ import { createTileSample, type WorldRenderView } from './world-view';
  * `world.loadedChunkPositions` rather than `world.loadedBounds`. Until issue
  * #204 it scanned the bounding box of the loaded chunks, which is the same
  * thing only while those chunks tile their own box: two 32x32 chunks 40 apart
- * span a box of 1,721,344 tiles and contain 2,048, so the box walk read every
- * tile 840 times over on aggregate and grew as the square of the world's
- * extent. `AGENTS.md` boundary 8 says world storage is chunked and must not be
+ * span a box of 1,721,344 tile positions and contain 2,048 tiles, so the box
+ * walk issued 1,721,344 reads to index 2,048 tiles -- 840 times the necessary
+ * work, all but 2,048 of it on empty positions that read as unloaded and
+ * contribute nothing -- and it grew as the square of the world's extent
+ * rather than of its contents.
+ * `AGENTS.md` boundary 8 says world storage is chunked and must not be
  * treated as one dense matrix; a walk over a bounding box is that matrix,
  * built once per snapshot on the thread that draws.
  *

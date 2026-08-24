@@ -82,8 +82,8 @@ export class WorldRenderView {
      * in it" -- two different questions that coincide only when the loaded
      * chunks happen to tile their own bounding box. A walk over every tile
      * that exists must use this one, or it pays for the empty space between
-     * distant chunks: two chunks 40 apart share a box of 1,721,344 tiles and
-     * contain 2,048 (issue #204).
+     * distant chunks: two chunks 40 apart share a box of 1,721,344 tile
+     * positions and contain 2,048 tiles (issue #204).
      *
      * The order is canonical rather than insertion order, and that is load
      * bearing rather than tidiness. `buildRowIndex` groups by world row, and a
