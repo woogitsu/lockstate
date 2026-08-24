@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { access, readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -64,7 +65,28 @@ describe('art pipeline contract', () => {
     expect(registry.assets.every((asset) => asset.clips.join('|') === 'idle|walk')).toBe(true);
   });
 
-  it('publishes every owner-supplied object sheet with a content hash and attribution', async () => {
+  /**
+   * The declared hash is checked against the bytes it claims to describe.
+   *
+   * This test used to assert that `sha256` was 64 hex characters and that a
+   * file existed at the declared path -- it imported no hashing function at
+   * all (issue #140). So the catalog could declare **any** well-formed hash
+   * for **any** image, or the same hash for all 23, and it passed. The one
+   * thing a content hash exists for went unchecked.
+   *
+   * It is checkable in every checkout, including CI's, which is the part that
+   * makes this worth doing rather than skipping. `git-lfs` tracks these PNGs,
+   * and the `verify` job deliberately stays on a pointer-only checkout to keep
+   * off metered LFS bandwidth -- only the `assets` job pulls content, and it
+   * pulls `public/assets/actors` rather than this directory. So the bytes are
+   * usually absent here. But an LFS pointer file **states the sha256 of the
+   * content it stands for**, so the declared hash can be verified against the
+   * pointer's own `oid` without transferring anything.
+   *
+   * Both paths are therefore real checks, and neither is vacuous:
+   * pointer-only compares against the `oid`, a full checkout hashes the bytes.
+   */
+  it('declares a content hash that matches the bytes, in a full or a pointer-only checkout', async () => {
     const catalogPath = resolve(root, 'public/game-content/source-art.v1.json');
     const catalog = JSON.parse(await readFile(catalogPath, 'utf8')) as {
       schemaVersion: number;
@@ -72,10 +94,41 @@ describe('art pipeline contract', () => {
     };
     expect(catalog.schemaVersion).toBe(1);
     expect(catalog.entries).toHaveLength(23);
+
+    let pointerOnly = 0;
+    let hashedBytes = 0;
+
     for (const entry of catalog.entries) {
-      expect(entry.sha256).toMatch(/^[a-f0-9]{64}$/);
+      expect(entry.sha256, `${entry.assetId} must declare a sha256`).toMatch(/^[a-f0-9]{64}$/);
       expect(entry.sourceAttribution.license).toBe('owner-supplied, project-internal');
-      await access(resolve(root, 'public/game-content', entry.image));
+
+      // `readFile` rather than `access`: the bytes are the point, and a
+      // missing file fails here with its own path in the error.
+      const bytes = await readFile(resolve(root, 'public/game-content', entry.image));
+      const asText = bytes.subarray(0, 200).toString('utf8');
+
+      if (asText.startsWith('version https://git-lfs.github.com/spec/v1')) {
+        const oid = /oid sha256:([a-f0-9]{64})/u.exec(asText)?.[1];
+        expect(oid, `${entry.image} is an LFS pointer but declares no sha256 oid`).toBeDefined();
+        expect(oid, `${entry.image}: the catalog hash must match the LFS pointer's oid`).toBe(entry.sha256);
+        pointerOnly += 1;
+      } else {
+        const digest = createHash('sha256').update(bytes).digest('hex');
+        expect(digest, `${entry.image}: the catalog hash must match the image bytes`).toBe(entry.sha256);
+        hashedBytes += 1;
+      }
+
+      // The filename carries the first twelve characters of the same hash, so
+      // a re-render that updated one and not the other is caught here rather
+      // than by a reader noticing two different hashes for one file.
+      expect(entry.image, `${entry.image} must embed the first 12 characters of its hash`).toContain(
+        entry.sha256.slice(0, 12),
+      );
     }
+
+    // Every entry went down one branch or the other. Without this a future
+    // refactor could make both branches unreachable and leave the loop
+    // asserting nothing -- which is how the original defect read.
+    expect(pointerOnly + hashedBytes).toBe(catalog.entries.length);
   });
 });
