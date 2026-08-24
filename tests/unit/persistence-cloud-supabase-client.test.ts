@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { SupabaseCloudSaveClient } from '../../src/persistence/cloud/supabase-client';
+import { createSaveEnvelope, type SaveEnvelope } from '../../src/persistence/save-schema';
+import { Kernel } from '../../src/simulation/kernel/kernel';
+import { SparseWorld } from '../../src/simulation/world/sparse-world';
+import { ConstructionSystem } from '../../src/simulation/construction/system';
+import { chunkCoordinate } from '../../src/simulation/world/coordinates';
 
 /**
  * What this file does and does not prove.
@@ -194,5 +199,272 @@ describe('SupabaseCloudSaveClient: save-version reads are scoped to their prison
       checksum: 'checksum-b',
       payload: { belongs_to: 'prison-b' },
     });
+  });
+});
+
+/**
+ * The second thing a pure-JS fake can prove: **which outcome each RPC status
+ * maps to**.
+ *
+ * Like the query shape above, this is a property of the code in this file
+ * rather than of PostgreSQL, so it can be pinned here and nowhere cheaper.
+ * Nothing below says anything about RLS, grants, or whether the RPC actually
+ * returns the status the stub hands it -- `supabase/tests/` covers that half.
+ *
+ * It exists because #264 S7 measured the gap. `tests/foundation/
+ * rpc-status-vocabulary-contract.test.ts` asserts that the statuses the
+ * database can return are exactly the ones the client's row type names -- but
+ * it reads the **interface field**, not the `switch` body. So a *missing*
+ * case is caught by `tsc` (the switch is exhaustive over a union and the
+ * function has no fallthrough return), while a *wrong* case is caught by
+ * nothing:
+ *
+ *     case 'at_slot_limit':
+ *   -   return { status: 'at-slot-limit', used: ..., capacity: ... };
+ *   +   return { status: 'slot-taken', slotIndex: row.slot_index ?? slotIndex };
+ *
+ * That mutation left the whole suite green. A caller would then be told the
+ * slot was taken -- retry another slot -- when the account is actually out of
+ * slots, and every retry would fail the same way.
+ */
+
+interface RpcCall {
+  readonly name: string;
+  readonly args: Readonly<Record<string, unknown>>;
+}
+
+class RpcRecordingStub {
+  public readonly calls: RpcCall[] = [];
+
+  public constructor(private readonly result: { data: unknown; error: { message: string } | null }) {}
+
+  public rpc(name: string, args: Readonly<Record<string, unknown>>): Promise<{ data: unknown; error: { message: string } | null }> {
+    this.calls.push({ name, args });
+    return Promise.resolve(this.result);
+  }
+
+  public asSupabaseClient(): SupabaseClient {
+    return this as unknown as SupabaseClient;
+  }
+}
+
+/** A `create_prison` row, defaulting every nullable column to null. */
+function createPrisonRow(overrides: Readonly<Record<string, unknown>>): Readonly<Record<string, unknown>> {
+  return { status: 'created', prison_id: null, slot_index: null, used_slots: null, capacity: null, ...overrides };
+}
+
+async function registerWith(row: unknown, error: { message: string } | null = null) {
+  const stub = new RpcRecordingStub({ data: row, error });
+  const client = new SupabaseCloudSaveClient(stub.asSupabaseClient());
+  return { stub, outcome: await client.registerPrison('prison-1', 'lockstate-0.0.0', 2) };
+}
+
+describe('SupabaseCloudSaveClient: registerPrison maps every create_prison status', () => {
+  it('calls create_prison with the parameter names the migration declares', async () => {
+    const { stub } = await registerWith(createPrisonRow({ status: 'created', slot_index: 2 }));
+
+    // Pinned as literals rather than read back from the call: a renamed
+    // parameter is not a type error on either side of PostgREST, so it would
+    // surface only as a runtime failure against the real database.
+    expect(stub.calls).toEqual([
+      { name: 'create_prison', args: { p_prison_id: 'prison-1', p_game_version: 'lockstate-0.0.0', p_slot_index: 2 } },
+    ]);
+  });
+
+  it('created reports the slot the server used, not the slot that was asked for', async () => {
+    const { outcome } = await registerWith(createPrisonRow({ status: 'created', slot_index: 5 }));
+    expect(outcome).toEqual({ status: 'created', slotIndex: 5 });
+  });
+
+  it('created falls back to the requested slot when the server reports none', async () => {
+    const { outcome } = await registerWith(createPrisonRow({ status: 'created', slot_index: null }));
+    expect(outcome).toEqual({ status: 'created', slotIndex: 2 });
+  });
+
+  it('at_slot_limit reports usage against capacity -- it is not slot-taken', async () => {
+    const { outcome } = await registerWith(createPrisonRow({ status: 'at_slot_limit', used_slots: 3, capacity: 3 }));
+    expect(outcome).toEqual({ status: 'at-slot-limit', used: 3, capacity: 3 });
+  });
+
+  it('at_slot_limit defaults both counters to zero rather than reporting undefined usage', async () => {
+    const { outcome } = await registerWith(createPrisonRow({ status: 'at_slot_limit' }));
+    expect(outcome).toEqual({ status: 'at-slot-limit', used: 0, capacity: 0 });
+  });
+
+  it('slot_taken reports the contested slot', async () => {
+    const { outcome } = await registerWith(createPrisonRow({ status: 'slot_taken', slot_index: 2 }));
+    expect(outcome).toEqual({ status: 'slot-taken', slotIndex: 2 });
+  });
+
+  it('gives the three statuses three distinct outcomes', async () => {
+    // The assertion S7 needed. Each case above pins one mapping; this pins
+    // that no two of them collapse onto the same outcome, which is what a
+    // copy-pasted `return` produces and what no per-case assertion can see on
+    // its own.
+    const statuses = ['created', 'at_slot_limit', 'slot_taken'] as const;
+    const outcomes = await Promise.all(
+      statuses.map(async (status) => (await registerWith(createPrisonRow({ status, slot_index: 2 }))).outcome.status),
+    );
+
+    expect(outcomes).toEqual(['created', 'at-slot-limit', 'slot-taken']);
+    expect(new Set(outcomes).size).toBe(statuses.length);
+  });
+
+  it('reports an RPC error as an error carrying the database message', async () => {
+    const { outcome } = await registerWith(null, { message: 'permission denied for function create_prison' });
+    expect(outcome).toEqual({ status: 'error', message: 'permission denied for function create_prison' });
+  });
+
+  it('reports a missing row as an error rather than inventing a slot', async () => {
+    const { outcome } = await registerWith(undefined);
+    expect(outcome).toEqual({ status: 'error', message: 'create_prison returned no row.' });
+  });
+
+  it('unwraps a single-element array, which is how PostgREST returns a set-returning function', async () => {
+    const { outcome } = await registerWith([createPrisonRow({ status: 'created', slot_index: 9 })]);
+    expect(outcome).toEqual({ status: 'created', slotIndex: 9 });
+  });
+});
+
+/**
+ * `uploadVersion` has the same shape and the same gap, so it gets the same
+ * treatment. Its `conflict` case carries one extra decision worth pinning:
+ * `cloudCurrent` is omitted when the reported revision is 0, because there is
+ * no earlier version to point the caller at.
+ */
+function uploadEnvelope(revision: number): SaveEnvelope {
+  const world = new SparseWorld(32);
+  world.setOwned({ x: chunkCoordinate(0), y: chunkCoordinate(0) }, true);
+  const construction = new ConstructionSystem(world);
+  const kernel = new Kernel(revision, 0);
+  return createSaveEnvelope({
+    gameVersion: 'lockstate-0.0.0',
+    prisonId: 'prison-1',
+    revision,
+    createdAt: 0,
+    updatedAt: revision,
+    kernel: kernel.snapshot(),
+    world: world.snapshot(),
+    construction: construction.snapshot(),
+  });
+}
+
+/** A `create_save_version` row, defaulting every nullable column to null. */
+function createSaveVersionRow(overrides: Readonly<Record<string, unknown>>): Readonly<Record<string, unknown>> {
+  return { status: 'created', version_id: null, revision: null, checksum: null, ...overrides };
+}
+
+async function uploadWith(row: unknown, error: { message: string } | null = null) {
+  const stub = new RpcRecordingStub({ data: row, error });
+  const client = new SupabaseCloudSaveClient(stub.asSupabaseClient());
+  return { stub, outcome: await client.uploadVersion('prison-1', 1, uploadEnvelope(1)) };
+}
+
+describe('SupabaseCloudSaveClient: uploadVersion maps every create_save_version status', () => {
+  it('created returns the version the server recorded', async () => {
+    const { outcome } = await uploadWith(
+      createSaveVersionRow({ status: 'created', version_id: 'v-1', revision: 1, checksum: 'sum-1' }),
+    );
+    expect(outcome).toEqual({ status: 'created', version: { versionId: 'v-1', revision: 1, checksum: 'sum-1' } });
+  });
+
+  it('idempotent_replay returns the same version under the hyphenated status', async () => {
+    const { outcome } = await uploadWith(
+      createSaveVersionRow({ status: 'idempotent_replay', version_id: 'v-1', revision: 1, checksum: 'sum-1' }),
+    );
+    expect(outcome).toEqual({ status: 'idempotent-replay', version: { versionId: 'v-1', revision: 1, checksum: 'sum-1' } });
+  });
+
+  it('conflict points the caller at the cloud version it lost to', async () => {
+    const { outcome } = await uploadWith(
+      createSaveVersionRow({ status: 'conflict', version_id: 'v-9', revision: 9, checksum: 'sum-9' }),
+    );
+    expect(outcome).toEqual({ status: 'conflict', cloudCurrent: { versionId: 'v-9', revision: 9, checksum: 'sum-9' } });
+  });
+
+  it('conflict at revision 0 omits cloudCurrent, because there is no earlier version to point at', async () => {
+    const { outcome } = await uploadWith(
+      createSaveVersionRow({ status: 'conflict', version_id: 'v-0', revision: 0, checksum: 'sum-0' }),
+    );
+    expect(outcome).toEqual({ status: 'conflict', cloudCurrent: undefined });
+  });
+
+  it('gives the three statuses three distinct outcomes', async () => {
+    const statuses = ['created', 'idempotent_replay', 'conflict'] as const;
+    const outcomes = await Promise.all(
+      statuses.map(async (status) =>
+        (await uploadWith(createSaveVersionRow({ status, version_id: 'v-1', revision: 1, checksum: 'sum-1' }))).outcome.status,
+      ),
+    );
+
+    expect(outcomes).toEqual(['created', 'idempotent-replay', 'conflict']);
+    expect(new Set(outcomes).size).toBe(statuses.length);
+  });
+
+  it('treats a row missing any of the three version columns as an error rather than a partial version', async () => {
+    for (const missing of ['version_id', 'revision', 'checksum'] as const) {
+      const row = createSaveVersionRow({ status: 'created', version_id: 'v-1', revision: 1, checksum: 'sum-1', [missing]: null });
+      const { outcome } = await uploadWith(row);
+      expect(outcome, `a null ${missing} must not produce a version`).toEqual({
+        status: 'error',
+        message: 'create_save_version returned no row.',
+      });
+    }
+  });
+
+  it('reports an RPC error as an error carrying the database message', async () => {
+    const { outcome } = await uploadWith(null, { message: 'row-level security policy violation' });
+    expect(outcome).toEqual({ status: 'error', message: 'row-level security policy violation' });
+  });
+
+  it('sends the payload byte size the database bounds against, measured in UTF-8 bytes', async () => {
+    const envelope = uploadEnvelope(1);
+    const stub = new RpcRecordingStub({
+      data: createSaveVersionRow({ status: 'created', version_id: 'v-1', revision: 1, checksum: 'sum-1' }),
+      error: null,
+    });
+    await new SupabaseCloudSaveClient(stub.asSupabaseClient()).uploadVersion('prison-1', 1, envelope);
+
+    const args = stub.calls[0]!.args;
+    expect(args['p_byte_size']).toBe(new TextEncoder().encode(JSON.stringify(envelope.payload)).length);
+    expect(args['p_prison_id']).toBe('prison-1');
+    expect(args['p_new_revision']).toBe(1);
+    expect(args['p_storage_path']).toBeNull();
+  });
+
+  /**
+   * The assertion above recomputes the expression the production code uses,
+   * which makes it a comparison of a function against its own output -- it
+   * holds for `JSON.stringify(payload).length` just as well, because every
+   * character in a real envelope is ASCII and the two agree there. Measured:
+   * replacing the encoder with `JSON.stringify(...).length` left all 23 tests
+   * green.
+   *
+   * `JSON.stringify().length` counts UTF-16 code units. The bound the
+   * database enforces is on **bytes**, so under that mutation a payload of
+   * multi-byte characters is reported as far smaller than it is, and a save
+   * that should be refused for size is accepted. Pinning it needs a payload
+   * where the two numbers differ and a literal that is neither of the code
+   * paths' own output.
+   *
+   * The envelope is cast rather than built through `createSaveEnvelope`
+   * because this class is not the validator -- `uploadVersion` reads
+   * `payload`, `saveSchemaVersion` and `checksum` and nothing else, and a
+   * payload of non-ASCII text is not something the real builder produces
+   * from a world snapshot.
+   */
+  it('measures the payload in UTF-8 bytes, not UTF-16 code units', async () => {
+    // `{"note":"zażółć"}` -- 17 characters, and 6 of them ("zażółć") carry
+    // 4 two-byte characters, so the UTF-8 length is 17 + 4 = 21.
+    const envelope = { saveSchemaVersion: 3, checksum: 'sum-1', payload: { note: 'zażółć' } } as unknown as SaveEnvelope;
+    expect(JSON.stringify(envelope.payload)).toHaveLength(17);
+
+    const stub = new RpcRecordingStub({
+      data: createSaveVersionRow({ status: 'created', version_id: 'v-1', revision: 1, checksum: 'sum-1' }),
+      error: null,
+    });
+    await new SupabaseCloudSaveClient(stub.asSupabaseClient()).uploadVersion('prison-1', 1, envelope);
+
+    expect(stub.calls[0]!.args['p_byte_size']).toBe(21);
   });
 });
