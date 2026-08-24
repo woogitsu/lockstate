@@ -144,6 +144,22 @@ export type HudIntent =
    */
   | ({ readonly kind: 'place-build-order' } & HudBuildOrder)
   /**
+   * The player asked to buy materials (#89). Ids and numbers only -- the host
+   * turns this into a `PurchaseMaterials` command and mints the order id it
+   * needs; the HUD does not know that such a command exists, and could not
+   * mint an identifier the simulation's schema would accept without knowing
+   * the schema.
+   *
+   * A *command*, so it goes through the same gate as a build order: a second
+   * tap while one is in flight must not hand a busy host two purchases, and a
+   * refusal has to reach the player rather than being discarded. It is the
+   * first intent whose refusal can be about money -- the host refuses a total
+   * the balance it last heard about cannot cover -- and it needs no new
+   * reporting route for that, because the refusal line already says "this
+   * control's action did not happen" for every command (issue #207).
+   */
+  | { readonly kind: 'purchase-materials'; readonly itemId: string; readonly quantity: number }
+  /**
    * The player handed the world pointer to the build tool, or took it back.
    *
    * *Chrome*, not a command: it changes what a click on the world means and
@@ -594,6 +610,16 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     },
     onArm: (armed, definitionId) => {
       runReported('arm-build-tool', () => options.onIntent?.({ kind: 'arm-build-tool', armed, definitionId }), reportError);
+    },
+    // Buying is a *command* for the same reasons placing an order is: it asks
+    // the host to change the simulation, the money leaves immediately, and a
+    // second tap while one is in flight would buy twice. The button is passed
+    // so a refusal lands on it as well as on the refusal line (issue #207).
+    onPurchase: (intent) => {
+      dispatchCommand(
+        { kind: 'purchase-materials', itemId: intent.itemId, quantity: intent.quantity },
+        buildPanel.purchaseControl,
+      );
     },
   });
   const side = element('div', { className: 'hud__side', children: [buildPanel.element] });

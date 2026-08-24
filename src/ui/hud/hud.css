@@ -511,8 +511,13 @@
    *          `:first-child`, so `primitives.css` gives it no border-top.
    *    94.2  the map block, which never shrinks: its 1px `--hairline`
    *          border-top, four gutters (two padding edges and the two gaps
-   *          between its three children), the 44px arm button, the 20px
-   *          placement readout and one line of the arm hint.
+   *          between the three children it lays out in the arrival state),
+   *          the 44px arm row, the 20px placement readout and one line of the
+   *          arm hint. Its fourth child is the buy row (#89), `hidden` until
+   *          the player opens it and therefore laying out no box and creating
+   *          no gap -- which is why this sum is unchanged by it, and why the
+   *          arm row is 44px whether the buy disclosure sits beside the arm
+   *          button or not.
    *      45  the collapsed last section: 1px border-top plus its 44px header.
    *
    * `.ui-panel__body` is `content-box` (nothing in this UI resets
@@ -634,7 +639,58 @@
   border-top: var(--hairline) solid var(--border-hairline);
 }
 
-.hud-build__map > .ui-action { width: 100%; }
+/*
+ * The arm button and the buy disclosure share one row (#89).
+ *
+ * A row and not a second block, because the row is `--tap-target` tall
+ * whether it holds one control or two -- so the purchase surface joins the
+ * panel without spending any of the height budget issue #174 closed. Measured
+ * on the assembled page at 900x600 in the arrival state: the map block is
+ * 94.2px before and after, and the body 291px of content in a 291px box in
+ * both.
+ *
+ * The arm button grows and the disclosure does not, so the primary control
+ * keeps the width and "Buy" stays the size of its own word. At the rail's
+ * 264px the two of them and their gap come to about 170px of the 238px the
+ * block has, which is why this can be a row at all.
+ */
+.hud-build__actions {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-2);
+}
+
+.hud-build__actions > .hud-build__arm { flex: 1 1 auto; }
+.hud-build__actions > .hud-build__buy-toggle { flex: 0 0 auto; }
+
+/*
+ * What the disclosure reveals: the quantity stepper and the button that
+ * spends (#89).
+ *
+ * `hidden` in the arrival state, so it has no box at all there -- which is
+ * the whole reason it is allowed to exist. The panel's body had 3.9px of
+ * donatable slack at 900x600 with the two shipped buildables, and this row is
+ * about 108px; opened, the panel scrolls at that viewport exactly as it does
+ * with the numeric fallback expanded, and `overflow-y: auto` on
+ * `.ui-panel.hud-build` above is what makes that a scroll the player can
+ * perform rather than a clip.
+ */
+/*
+ * `:not([hidden])`, and it is the whole mechanism rather than a nicety: an
+ * author `display: flex` beats the `display: none` the user agent gives
+ * `[hidden]`, so an unguarded rule here lays the row out at all times and the
+ * panel arrives 121px over its box at 900x600 -- issue #174 re-opened by a
+ * declaration order. Measured exactly that way before this guard existed. It
+ * is the same trap `.hud-build__catalogue > .ui-section__body:not([hidden])`
+ * above exists to close.
+ */
+.hud-build__buy:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hud-build-map-gutter);
+}
+
+.hud-build__buy > .ui-action { width: 100%; }
 
 /* Armed is a state, not a moment: the control has to keep saying so while the
    player's attention is out on the world. */

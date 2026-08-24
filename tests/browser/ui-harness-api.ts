@@ -89,6 +89,15 @@ export interface BuildProbe {
   /** The `data-target` readout, or null when nothing is aimed at. */
   readonly targetReadout: string | null;
   readonly targetText: string;
+  /** The buy disclosure (#89): whether it is offered at all, and whether it is open. */
+  readonly buyToggleVisible: boolean;
+  readonly buyOpen: boolean;
+  /** True when the row the disclosure reveals is laid out -- `offsetParent`, not the attribute. */
+  readonly buyRowVisible: boolean;
+  /** The buy button's whole label, which states the quantity, the material and the total. */
+  readonly buyLabel: string;
+  /** What the quantity stepper currently shows. */
+  readonly buyQuantity: string;
   /** Every visible label in the panel, so an unresolved `hud.*` key is caught. */
   readonly texts: readonly string[];
 }
@@ -232,6 +241,14 @@ export interface LockstateUiHarness {
   stepBuildCoordinate(axis: 'x' | 'y', direction: 'up' | 'down'): boolean;
   clickBuildEdge(edge: string): boolean;
   clickPlaceOrder(): boolean;
+  /** Opens or closes the buy disclosure (#89). */
+  clickBuyToggle(): boolean;
+  /** One press of the quantity stepper. */
+  stepBuyQuantity(direction: 'up' | 'down'): boolean;
+  /** Types a quantity into the field the way a keyboard user does. */
+  typeBuyQuantity(value: string): boolean;
+  /** Presses the buy button. A real click, so a disabled button genuinely does nothing. */
+  clickBuy(): boolean;
   /**
    * The *world* route to the same command: one finished drag, however many
    * edges it covered (issue #225).

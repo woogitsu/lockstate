@@ -185,8 +185,36 @@ const BASE_VIEW_MODEL: HudViewModel = {
  */
 const BUILD_MODEL: HudBuildViewModel = {
   buildables: [
-    { definitionId: 'wall-brick', labelKey: HUD_MESSAGE_KEY.buildableWallBrick, occupiesEdge: true },
-    { definitionId: 'door-wooden', labelKey: HUD_MESSAGE_KEY.buildableDoorWooden, occupiesEdge: false },
+    {
+      definitionId: 'wall-brick',
+      labelKey: HUD_MESSAGE_KEY.buildableWallBrick,
+      occupiesEdge: true,
+      // The same figures `src/main.ts` projects for this buildable: two
+      // bricks per wall at 40 minor units each, bounded by the simulation's
+      // own `MAX_PURCHASE_QUANTITY`. Written out rather than imported for the
+      // reason above -- the spec exercises the panel, not the catalog -- and
+      // `tests/browser/app-shell.spec.ts` is where the real projection is
+      // driven.
+      material: {
+        itemId: 'item.brick',
+        labelKey: 'item.brick.name',
+        unitPriceMinorUnits: 40,
+        quantityPerPlacement: 2,
+        maxQuantity: 100_000,
+      },
+    },
+    {
+      definitionId: 'door-wooden',
+      labelKey: HUD_MESSAGE_KEY.buildableDoorWooden,
+      occupiesEdge: false,
+      material: {
+        itemId: 'item.wood-plank',
+        labelKey: 'item.wood-plank.name',
+        unitPriceMinorUnits: 65,
+        quantityPerPlacement: 1,
+        maxQuantity: 100_000,
+      },
+    },
   ],
   origin: { x: 16, y: 16 },
 };
@@ -212,6 +240,18 @@ function buildModelWithCatalogueOf(count: number): HudBuildViewModel {
       definitionId: index === 0 ? 'wall-brick' : index === 1 ? 'door-wooden' : `buildable-${index}`,
       labelKey: index % 2 === 0 ? HUD_MESSAGE_KEY.buildableWallBrick : HUD_MESSAGE_KEY.buildableDoorWooden,
       occupiesEdge: index % 2 === 0,
+      // The first two entries are the real ones and carry the real priced
+      // material, so the panel this measures has the controls the
+      // application's does -- the buy disclosure costs no height either way,
+      // sharing the arm button's row, and a list whose entries silently
+      // lacked one would be measuring a panel nobody ships.
+      //
+      // Everything past them is an invented `buildable-N` that no content
+      // module defines, so it gets **no** material: inventing a price for an
+      // id nothing sells is the same mistake as inventing a label for it, and
+      // the absence is itself a case worth having on screen (the panel must
+      // offer no purchase at all for a buildable nobody sells).
+      ...(index < 2 ? { material: BUILD_MODEL.buildables[index]!.material! } : {}),
     })),
     origin: { x: 16, y: 16 },
   };
@@ -537,8 +577,12 @@ window.lockstateUiHarness = {
     const rows = [...document.querySelectorAll<HTMLElement>('.hud-build__list [data-buildable]')];
     const inputs = [...document.querySelectorAll<HTMLInputElement>('.hud-build__coords .ui-number__input')];
     const edgeChooser = document.querySelector<HTMLElement>('.hud-build .ui-choice');
-    const arm = document.querySelector<HTMLButtonElement>('.hud-build__map .ui-action');
+    const arm = document.querySelector<HTMLButtonElement>('.hud-build__arm');
     const submit = document.querySelector<HTMLButtonElement>('.hud-build .ui-section__body .ui-action');
+    const buyToggle = document.querySelector<HTMLButtonElement>('.hud-build__buy-toggle');
+    const buyRow = document.querySelector<HTMLElement>('.hud-build__buy');
+    const buySubmit = document.querySelector<HTMLButtonElement>('.hud-build__buy-submit');
+    const buyQuantity = document.querySelector<HTMLInputElement>('.hud-build__buy .ui-number__input');
     const target = document.querySelector<HTMLElement>('.hud-build__target');
     const coordinates = [...document.querySelectorAll<HTMLElement>('.hud-build .ui-section')].find((section) =>
       section.querySelector('.hud-build__coords'),
@@ -569,6 +613,15 @@ window.lockstateUiHarness = {
       coordinatesCollapsed: coordinates?.dataset['collapsed'] === 'true',
       targetReadout: target?.dataset['target'] ?? null,
       targetText: target?.querySelector('.hud-build__target-value')?.textContent?.trim() ?? '',
+      // `offsetParent`, not the `hidden` attribute: an author `display` beats
+      // the user agent's `display: none`, and this row is laid out by a rule
+      // that has to opt out of that (`hud.css`). Reading the attribute would
+      // report the row as folded away while it was on screen.
+      buyToggleVisible: buyToggle !== null && buyToggle.offsetParent !== null,
+      buyOpen: buyToggle?.getAttribute('aria-expanded') === 'true',
+      buyRowVisible: buyRow !== null && buyRow.offsetParent !== null,
+      buyLabel: buySubmit?.textContent?.trim() ?? '',
+      buyQuantity: buyQuantity?.value ?? '',
       texts: [...(panel?.querySelectorAll<HTMLElement>('button, label, span, h2') ?? [])]
         .map((node) => (node.textContent ?? '').trim())
         .filter((text) => text.length > 0),
@@ -576,9 +629,39 @@ window.lockstateUiHarness = {
   },
 
   clickArmBuild(): boolean {
-    const arm = document.querySelector<HTMLButtonElement>('.hud-build__map .ui-action');
+    const arm = document.querySelector<HTMLButtonElement>('.hud-build__arm');
     if (arm === null) return false;
     arm.click();
+    return true;
+  },
+
+  clickBuyToggle(): boolean {
+    const toggle = document.querySelector<HTMLButtonElement>('.hud-build__buy-toggle');
+    if (toggle === null) return false;
+    toggle.click();
+    return true;
+  },
+
+  stepBuyQuantity(direction: 'up' | 'down'): boolean {
+    const steps = document.querySelectorAll<HTMLButtonElement>('.hud-build__buy .ui-number__step');
+    const button = direction === 'down' ? steps[0] : steps[1];
+    if (button === undefined) return false;
+    button.click();
+    return true;
+  },
+
+  typeBuyQuantity(value: string): boolean {
+    const input = document.querySelector<HTMLInputElement>('.hud-build__buy .ui-number__input');
+    if (input === null) return false;
+    input.value = value;
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+    return true;
+  },
+
+  clickBuy(): boolean {
+    const buy = document.querySelector<HTMLButtonElement>('.hud-build__buy-submit');
+    if (buy === null) return false;
+    buy.click();
     return true;
   },
 

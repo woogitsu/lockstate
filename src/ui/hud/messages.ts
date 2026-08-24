@@ -88,6 +88,27 @@ export const HUD_MESSAGE_KEY = {
   buildCoordinatesHint: 'hud.build.coordinates-hint',
 
   /**
+   * The purchase surface (#89).
+   *
+   * `buildBuy` labels the disclosure that sits beside "Place on map" and
+   * costs the panel no height of its own; the other three label the row it
+   * reveals. None of them names a currency, for the reason `funds` does not:
+   * #96 decided money is the primary resource and named no currency, so the
+   * figures are rendered as the plain minor units every price in
+   * `src/content/procurement-catalog.ts` is quoted in.
+   *
+   * `buildBuySubmit` states the quantity, the material and the total in one
+   * sentence, so the button says what pressing it will spend rather than
+   * leaving the player to multiply. The step buttons reuse `buildStepDown`
+   * and `buildStepUp` with the quantity field's own label -- a second pair
+   * saying "Decrease quantity" would be the same sentence maintained twice.
+   */
+  buildBuy: 'hud.build.buy',
+  buildBuyQuantity: 'hud.build.buy-quantity',
+  buildBuySubmit: 'hud.build.buy-submit',
+  buildBuyHint: 'hud.build.buy-hint',
+
+  /**
    * Labels for the two entries `BUILDABLE_REGISTRY` holds.
    *
    * They live here, in the HUD's own namespace, because that registry carries
@@ -104,10 +125,17 @@ export const HUD_MESSAGE_KEY = {
    * What the player is told when a control's action was refused (issue #207).
    *
    * One key per *command* intent rather than one generic sentence, because
-   * the two commands leave the prison in different states and a player acting
-   * on the message needs to know which: a refused clock change leaves the
-   * simulation running exactly as it was, a refused build order leaves
-   * nothing queued.
+   * the three commands leave the prison in different states and a player
+   * acting on the message needs to know which: a refused clock change leaves
+   * the simulation running exactly as it was, a refused build order leaves
+   * nothing queued, and a refused purchase leaves the money where it was.
+   *
+   * `refusalPurchaseMaterials` covers both ways a purchase is refused before
+   * it is sent -- no session at all, and a total the last published balance
+   * cannot cover -- because they leave the prison in the same state and there
+   * is nothing different for the player to do about them. What it does *not*
+   * cover is a refusal the worker makes after accepting the command; that has
+   * no route back at all (`src/simulation/runtime/session-commands.ts`).
    *
    * Deliberately no key for the thrown `Error`'s own text. Those messages are
    * hard-coded English raised on the main thread (`src/ui/simulation-commands.ts`,
@@ -118,6 +146,7 @@ export const HUD_MESSAGE_KEY = {
    */
   refusalSetClock: 'hud.refusal.set-clock',
   refusalPlaceBuildOrder: 'hud.refusal.place-build-order',
+  refusalPurchaseMaterials: 'hud.refusal.purchase-materials',
 
   severityInfo: 'hud.severity.info',
   severityWarning: 'hud.severity.warning',
