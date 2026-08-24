@@ -94,8 +94,35 @@ describe('every localization key declared in src/ resolves in the bundled defaul
     // The scan is a regex over source text. If a refactor changed how content
     // declares keys, this gate would silently start covering nothing -- which
     // is the failure mode it exists to prevent elsewhere.
-    expect(declarations.length).toBeGreaterThan(50);
-    expect(new Set(declarations.map((declaration) => declaration.field)).size).toBeGreaterThan(1);
+    //
+    // This was `toBeGreaterThan(50)` against 74 declarations, i.e. satisfied
+    // with **one** declaration of margin once anything reduced coverage: #193
+    // measured that an over-stripping scanner takes the count to 51, which the
+    // old guard admitted. 50 was a round number chosen when the scan found far
+    // fewer, not a threshold anyone reasoned about (#198).
+    //
+    // The three figures below are FLOORS at today's measured values, not pins.
+    // A floor is the right shape here: adding a localization key is routine and
+    // must stay free, while *losing* coverage must fail immediately -- and with
+    // the floor at the exact current value, any loss at all does. Raising them
+    // when the real numbers grow is optional; lowering one is a deliberate act
+    // that says coverage shrank.
+    expect(declarations.length, 'fewer declarations than the scan found when this floor was set -- coverage shrank').toBeGreaterThanOrEqual(74);
+    expect(
+      new Set(declarations.map((declaration) => declaration.where)).size,
+      'fewer source files contribute declarations than when this floor was set',
+    ).toBeGreaterThanOrEqual(9);
+
+    // The field set, by contrast, IS pinned exactly, because it is the
+    // structural input rather than a volume: a new `xKey:` field appearing is
+    // precisely the moment LOCALIZATION_KEY_FIELDS and
+    // NON_LOCALIZATION_KEY_FIELDS have to be revisited, and it is rare. A floor
+    // here would let a fourth shape arrive unclassified.
+    expect([...new Set(declarations.map((declaration) => declaration.field))].sort()).toEqual([
+      'descriptionKey',
+      'labelKey',
+      'nameKey',
+    ]);
   });
 
   it('reports the line the declaration is really on', () => {

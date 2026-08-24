@@ -45,6 +45,24 @@ async function collectSourceFiles(directory: string): Promise<readonly string[]>
   return files;
 }
 
+/**
+ * A pattern every real source tree matches, used as a positive control.
+ *
+ * Why this exists: every substantive assertion in this file is `toEqual([])`,
+ * so the whole gate is a set of "found nothing" claims -- and a gate like that
+ * is structurally unable to notice a scanner that finds nothing *for the wrong
+ * reason*. An over-stripping bug (one that blanks more than the comments) makes
+ * every assertion here pass more emphatically.
+ *
+ * The file-count guard inside `sourceFilesMatching` does not close that: it
+ * counts files **walked**, not content **surviving**, so a scanner that read all
+ * of `src/` and reduced each file to an empty string would satisfy it (#198).
+ *
+ * So this asserts the scanner still sees code. `export ` appears in essentially
+ * every module here; the mutation to run against it is `stripComments = () => ''`.
+ */
+const POSITIVE_CONTROL = /\bexport\b/u;
+
 async function sourceFilesMatching(pattern: RegExp): Promise<readonly string[]> {
   const files = await collectSourceFiles(path.join(repositoryRoot, 'src'));
 
@@ -63,6 +81,18 @@ async function sourceFilesMatching(pattern: RegExp): Promise<readonly string[]> 
 }
 
 describe('docs/ARCHITECTURE.md: what the persistence layer actually does', () => {
+  it('reads surviving code and not whitespace, so a scanner that strips too much cannot pass', async () => {
+    // The counterpart to every `toEqual([])` below. If this stops matching
+    // nearly everything, the scanner is not reading source any more and the
+    // rest of this file's green is meaningless.
+    const seeing = await sourceFilesMatching(POSITIVE_CONTROL);
+    const walked = await collectSourceFiles(path.join(repositoryRoot, 'src'));
+    expect(
+      seeing.length,
+      'the scanner no longer sees `export` in almost every module under src/ -- it is matching against stripped-away content, not code',
+    ).toBeGreaterThan(walked.length - 10);
+  });
+
   it('compresses nothing, as the topology and the persistence section both now say', async () => {
     // The claim being pinned: "immutable save versions (payloads are not
     // compressed)" and "no payload is compressed anywhere in `src/`".
