@@ -32,8 +32,8 @@ import { SimulationCommandSender } from './ui/simulation-commands';
 import { BuildTool } from './ui/build-tool';
 import { BUILDABLE_REGISTRY } from './simulation/construction';
 import type { LocalizationKey } from './content/localization';
-import { defaultLocaleEnCatalog } from './content/default-locale-en';
-import { messageCatalogFromLocalizationCatalog } from './services/localization/catalog';
+import { DEFAULT_LOCALE } from './content/localization';
+import { defaultMessageCatalogEn } from './services/localization';
 import { Localizer } from './services/localization/localizer';
 import { createBrandBadge } from './ui/brand-badge';
 import { BUILD_IDENTITY } from './shared/build-identity';
@@ -301,10 +301,26 @@ function requireSimulation(commands: SimulationCommandSender | undefined): Simul
  * while the rest of the interface changed language. Issue #208 recorded that as
  * a seam with a known end; this is the end.
  */
-const localizer = new Localizer({
-  locale: 'en',
-  catalogs: [messageCatalogFromLocalizationCatalog('en', defaultLocaleEnCatalog)],
-});
+/*
+ * `defaultMessageCatalogEn`, not a catalog built here from content alone.
+ *
+ * ADR 0011: "Only the default locale is bundled -- it must be **complete** so
+ * the game always has text offline." This localizer was not complete. It was
+ * built from `defaultLocaleEnCatalog`, which is `src/content/`'s half, and the
+ * trusted-services layer contributes twelve more strings of its own
+ * (`SERVICE_MESSAGES` in `src/services/localization/default-catalog.ts`:
+ * product names, save-slot counts, entitlement notices, challenge results and
+ * the telemetry consent prompt). None of them was in the running page's
+ * localizer, so any of them would have rendered as its own key.
+ *
+ * `defaultMessageCatalogEn` is content merged under those service strings, and
+ * it is what `tests/foundation/localization-key-completeness.test.ts` resolves
+ * every declared key against -- so the gate was proving completeness of a
+ * catalog the application did not use. `src/services/entitlements/products.ts`
+ * declares `nameKey: 'product.save-slots.plus-5.name'`; the gate says it
+ * resolves, and before this line it would have painted the raw key.
+ */
+const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
 
 function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   const { client, commands, tool } = host;
