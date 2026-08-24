@@ -8,7 +8,7 @@ import { deriveXoshiroState } from '../../src/simulation/rng/seed';
 import { NamedRngStreams } from '../../src/simulation/rng/streams';
 import { ActionSystem } from '../../src/simulation/prisoners/action-system';
 import { CurrentActionComponent, PositionComponent, PrisonerColdState, PrisonerRecordComponent, intakeStageIndex } from '../../src/simulation/prisoners/components';
-import { NEED_MAX, NeedsComponent } from '../../src/simulation/prisoners/needs';
+import { NEED_MAX, NEED_MAX_SCALED, NeedsComponent, type NeedId } from '../../src/simulation/prisoners/needs';
 import { DEFAULT_REGIME_SCHEDULES } from '../../src/simulation/prisoners/regime';
 import { RoomInstanceRegistry } from '../../src/simulation/prisoners/room-instance-registry';
 import { buildPrisonerScenarioFixture } from '../helpers/prisoner-fixture';
@@ -100,8 +100,13 @@ describe('needs at NEED_MAX are never exceeded even under repeated action perfor
 
     for (let i = 0; i < 3_000; i += 1) kernel.step();
 
-    for (const level of Object.values(fixture.prisoners.needs.getSnapshot())) {
-      expect(level[index]!).toBeLessThanOrEqual(NEED_MAX);
+    // `getSnapshot` hands back the component's own storage, which is scaled
+    // (#259); the whole-level ceiling is read through `get`, and the stored
+    // ceiling is asserted alongside it so a clamp that stopped applying to
+    // the raw array could not hide behind the rounding `get` does.
+    for (const [needId, level] of Object.entries(fixture.prisoners.needs.getSnapshot()) as [NeedId, Uint16Array][]) {
+      expect(level[index]!).toBeLessThanOrEqual(NEED_MAX_SCALED);
+      expect(fixture.prisoners.needs.get(index, needId)).toBeLessThanOrEqual(NEED_MAX);
     }
   });
 });
