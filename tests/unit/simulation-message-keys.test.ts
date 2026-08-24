@@ -81,9 +81,9 @@ const UNLABELLED: readonly { readonly sourceFile: string; readonly declaration: 
   },
   {
     sourceFile: 'src/simulation/protocol/decode.ts',
-    declaration: 'ProtocolDecodeErrorCode',
+    declaration: 'PROTOCOL_DECODE_ERROR_CODES',
     reason:
-      'Developer diagnostics for a malformed protocol envelope. A player-facing failure message is the UI layer\'s own string with its own key; surfacing "unsupported-protocol-version" verbatim would be a bug, not a missing translation.',
+      'Developer diagnostics for a malformed protocol envelope, reported to the main thread as protocol fault codes. A player-facing failure message is the UI layer\'s own string with its own key; surfacing "unsupported-protocol-version" verbatim would be a bug, not a missing translation.',
   },
   {
     sourceFile: 'src/content/simulation-message-keys.ts',

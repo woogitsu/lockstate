@@ -16,8 +16,17 @@ self.onmessage = (event: MessageEvent) => {
   if (result.ok) {
     stateMachine.handleMessage(result.value);
   } else {
-    // Decoding failed, post protocol error
-    stateMachine.fault('invalid-message', result.error.message);
+    // The decoder's own classification, not a single collapsed code. ADR 0003,
+    // "Runtime validation and failure behavior": "Decoders classify malformed
+    // envelopes, unsupported versions, unknown kinds and invalid payloads
+    // separately." This is the only place that classification leaves the
+    // worker, so reporting a hard-coded `invalid-message` here computed it and
+    // threw it away -- and `unsupported-protocol-version` and
+    // `unknown-message-kind` were then codes the worker could never emit.
+    // No cast: `ProtocolDecodeErrorCode` is declared as a subset of
+    // `ProtocolFaultCode`, so a code that drifted out of the fault enum would
+    // fail to compile at its declaration rather than at a player.
+    stateMachine.fault(result.error.code, result.error.message);
   }
 };
 
