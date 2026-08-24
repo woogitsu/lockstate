@@ -126,11 +126,31 @@ rules are exclusive, because overlapping rules concatenate into a single
 `scripts/verify-deployment-preview.mjs` asserts all of this against the workerd
 preview. See [ADR-0014](./adr/0014-art-storage-and-runtime-asset-delivery.md).
 
-The supplied object sheets are built by `tooling/build-source-art-catalog.mjs`
-into `public/game-content/source-art.v1.json`. Their immutable content-hashed
-PNG filenames, SHA-256 digests, source rectangles, anchors and owner-supplied
+The supplied object sheets are built by `pnpm content:source-art`
+(`tooling/build-source-art-catalog.mjs`) into
+`public/game-content/source-art.v1.json`. Their immutable content-hashed PNG
+filenames, SHA-256 digests, source rectangles, anchors and owner-supplied
 attribution are recorded there. They remain a whole-sheet atlas until a later
 reviewed extraction manifest selects individual variants.
+
+**It needs the LFS content and refuses without it.** The inputs under
+`assets/source/generated/` are git-lfs tracked, so in a checkout that has not
+pulled them each is a ~132-byte pointer file. The generator validates every
+input before writing anything and aborts with `run \`git lfs pull\` first` —
+without that check it hashes the pointer text, republishes 23 pointer files
+under content-addressed names, and `rm -rf`s the real output on the way
+(verified by execution; `tests/contract/art-pipeline-contract.test.ts` does
+then fail on the result, but the images are already gone).
+
+**Its output is committed and it runs on demand, not in CI.** Regenerating in
+CI would mean pulling `assets/source/generated` on every run, which is metered
+LFS bandwidth for inputs that change only when the owner supplies new sheets —
+and `verify` deliberately stays on a pointer-only checkout for the same reason.
+So editing an input does not regenerate the committed output automatically: run
+`pnpm content:source-art` in a checkout with LFS content and commit what it
+writes. `tests/contract/art-pipeline-contract.test.ts` is what catches a
+catalog that disagrees with the bytes it names, in either kind of checkout
+(issue #141).
 
 ## Intake status
 
