@@ -16,6 +16,7 @@ import {
 } from '../../src/ui/hud';
 import { SavePanel, type SavePanelSessions } from '../../src/ui/save-panel';
 import type {
+  AlertProbe,
   BuildLayoutProbe,
   BuildProbe,
   ButtonState,
@@ -116,6 +117,19 @@ class StubSessions implements SavePanelSessions {
     return this.prisons.length;
   }
 }
+
+/**
+ * The alert rows the page is showing right now, in DOM order.
+ *
+ * Scoped to the alerts list because `data-alert` is also on the empty-list
+ * row, which lives in the same list and is not an alert.
+ */
+const alertRowNodes = (): readonly HTMLElement[] => [
+  ...document.querySelectorAll<HTMLElement>('.hud-alerts__list [data-alert]:not([data-alert="empty"])'),
+];
+
+/** Live node references, so `alertProbe().reused` compares identity and not markup. */
+let markedAlertRows: readonly HTMLElement[] = [];
 
 const unhandledRejections: string[] = [];
 window.addEventListener('unhandledrejection', (event) => {
@@ -386,6 +400,23 @@ window.lockstateUiHarness = {
     if (header === null) return false;
     header.click();
     return true;
+  },
+
+  markAlertRows(): void {
+    markedAlertRows = alertRowNodes();
+  },
+
+  alertProbe(): AlertProbe {
+    const rows = alertRowNodes();
+    return {
+      order: rows.map((row) => row.dataset['alert'] ?? ''),
+      // `textContent` rather than `innerText`: the alerts section starts
+      // folded, so a row's rendered text can legitimately be empty while the
+      // row is exactly where it belongs. Whether the region is laid out is a
+      // separate question, asked separately.
+      texts: rows.map((row) => row.textContent ?? ''),
+      reused: rows.filter((row) => markedAlertRows.includes(row)).map((row) => row.dataset['alert'] ?? ''),
+    };
   },
 
   hudIntents(): readonly string[] {

@@ -187,6 +187,16 @@ export class WorldScene extends Phaser.Scene {
     // see a pinch at all: two-finger zoom has been dead since the scene was
     // written, silently, because nothing exercised it in a real browser.
     // Three is one spare beyond the two the gestures use.
+    //
+    // Every count above is now read from the engine rather than from its
+    // source. `tests/browser/world-scene-input.spec.ts` asks the live
+    // `input.manager` after this line has run and gets four pointer entries,
+    // `pointersTotal` 3 and `mousePointer` at index 0 -- one mouse, three
+    // touch pointers -- with `inputActivePointers` still at its default of 1,
+    // which is the "unless told otherwise" above. #209 recorded this comment
+    // as INFERRED twice, once because the audit could not tell which entry was
+    // the mouse and once because the harness had no handle on the manager at
+    // all; it is VERIFIED now, and that spec is what keeps it so.
     this.input.addPointer(2);
 
     const keyDown = (event: KeyboardEvent): void => {

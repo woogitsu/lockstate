@@ -1,4 +1,5 @@
 import { type Page, expect, test } from '@playwright/test';
+import type { HudViewModel } from '../../src/ui/hud';
 import './ui-harness-api'; // pulls in the `Window.lockstateUiHarness` global augmentation
 
 /**
@@ -439,6 +440,110 @@ test.describe('HUD shell', () => {
 
     await page.evaluate(() => window.lockstateUiHarness.toggleAlerts());
     expect((await page.evaluate(() => window.lockstateUiHarness.hudProbe())).alertsCollapsed).toBe('true');
+  });
+
+  /**
+   * The alerts list draws `viewModel.alerts` in the order the view model gives
+   * them (issue #209's residual-risk note).
+   *
+   * The note was recorded by reading and had a stated confirmation method:
+   * "mount the HUD with alerts `[A, B]`, update to `[C, A, B]`, and read the
+   * `[data-alert]` order". That is what the first test below does, and it is
+   * where the answer came from -- `paintAlerts` updated an existing row in
+   * place and *appended* a new one, so the list was in first-seen order and
+   * the browser laid out `[a, b, c]` for a view model that said `[c, a, b]`.
+   *
+   * Nothing in the shipped app could see it: after #220 the alerts list has no
+   * producer at all (`main.ts` sends the "simulation unavailable" sentence to
+   * `.hud__unavailable` instead), so this is LATENT, and it becomes visible
+   * the moment #104's channel gives the list a source that reports more than
+   * one row. It is the defect `main.ts` argues against for the buildable
+   * catalogue -- an order nobody chose -- and it is unfixable from the
+   * outside, because a caller cannot make its own output order survive a
+   * renderer that ignores it.
+   *
+   * The alert ids here are opaque strings and the label key repeats down the
+   * list on purpose: the message catalogue defines no per-alert key (only
+   * `hud.alerts.title` and `hud.alerts.empty`), and inventing one here would
+   * put a key with no translation on screen. What distinguishes the rows for
+   * the reader is the severity badge, which is real catalogue text.
+   */
+  test.describe('alerts list order (issue #209)', () => {
+    const ALERT_LABEL_KEY = 'hud.alerts.title';
+
+    const withAlerts = (ids: readonly string[]): HudViewModel => ({
+      counts: { prisoners: 142, prisonerCapacity: 180, staff: 27, rooms: 61, activeIncidents: 0, contrabandFound: 4 },
+      clock: { day: 3, tickOfDay: 600, dayLengthTicks: 2_400, mode: 'paused', speed: 1 },
+      alerts: ids.map((id, index) => ({
+        id,
+        labelKey: ALERT_LABEL_KEY,
+        severity: index === 0 ? 'danger' : index === 1 ? 'warning' : 'info',
+      })),
+    });
+
+    test('an alert inserted at the front is drawn at the front, not appended', async ({ page }) => {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withAlerts(['a', 'b']));
+      expect((await page.evaluate(() => window.lockstateUiHarness.alertProbe())).order).toEqual(['a', 'b']);
+
+      await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withAlerts(['c', 'a', 'b']));
+      const probe = await page.evaluate(() => window.lockstateUiHarness.alertProbe());
+
+      // The measurement issue #209 asked for. Before the fix this read
+      // `['a', 'b', 'c']`.
+      expect(probe.order).toEqual(['c', 'a', 'b']);
+    });
+
+    test('a reordered view model reorders the rows without rebuilding them', async ({ page }) => {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withAlerts(['a', 'b', 'c']));
+      await page.evaluate(() => window.lockstateUiHarness.markAlertRows());
+
+      await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withAlerts(['c', 'b', 'a']));
+      const probe = await page.evaluate(() => window.lockstateUiHarness.alertProbe());
+
+      expect(probe.order).toEqual(['c', 'b', 'a']);
+      // Every row is the same DOM node it was before the reorder: the fix
+      // moves rows, it does not empty the list and build three new ones. A
+      // rebuild would satisfy the order assertion above and quietly discard
+      // the identity `HudAlertViewModel.id` exists for.
+      expect(probe.reused).toEqual(['c', 'b', 'a']);
+      // The rows carry their own severity word with them rather than the one
+      // that used to be at that position: `c` was `info` when it was drawn
+      // third and is `danger` now that the view model puts it first.
+      // `textContent` runs the row's label and its badge together with no
+      // separator, which is what the concatenation below is.
+      expect(probe.texts).toEqual(['AlertsCritical', 'AlertsWarning', 'AlertsInfo']);
+    });
+
+    test('a removed alert leaves the survivors in view-model order', async ({ page }) => {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withAlerts(['a', 'b', 'c']));
+
+      await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withAlerts(['c', 'a']));
+      expect((await page.evaluate(() => window.lockstateUiHarness.alertProbe())).order).toEqual(['c', 'a']);
+
+      // And back to none: the empty-list row is not an alert row, so the
+      // probe reports an empty list rather than a list of one.
+      await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withAlerts([]));
+      expect((await page.evaluate(() => window.lockstateUiHarness.alertProbe())).order).toEqual([]);
+      await page.evaluate(() => window.lockstateUiHarness.toggleAlerts());
+      await expect(page.locator('.hud-alerts__list [data-alert="empty"]')).toBeVisible();
+    });
+
+    test('the rows are on screen once the section is open, not merely in the DOM', async ({ page }) => {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withAlerts(['c', 'a', 'b']));
+      // The section starts folded -- which is how #82's alert was asserted
+      // green while no player could see it (#220). An order assertion on rows
+      // nobody can see would repeat that mistake, so the order is read again
+      // with the section open and the rows laid out.
+      await page.evaluate(() => window.lockstateUiHarness.toggleAlerts());
+
+      expect((await page.evaluate(() => window.lockstateUiHarness.alertProbe())).order).toEqual(['c', 'a', 'b']);
+      await expectLaidOut(page, '.hud-alerts__list [data-alert]', 'the alert rows');
+      await expect(page.locator('.hud-alerts__list [data-alert="c"]')).toBeVisible();
+    });
   });
 
   /**

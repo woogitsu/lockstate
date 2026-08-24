@@ -560,20 +560,39 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
 
   function paintAlerts(): void {
     const seen = new Set<string>();
-    for (const alert of viewModel.alerts) {
+    for (const [index, alert] of viewModel.alerts.entries()) {
       seen.add(alert.id);
       const text = t(alert.labelKey, alert.labelParameters);
       const badge = { tone: severityTone(alert.severity), text: t(severityLabelKey(alert.severity)) };
       const existing = alertRows.get(alert.id);
-      if (existing === undefined) {
-        const row = createListRow({ icon: 'incident', label: text, badge });
+      let row = existing;
+      if (row === undefined) {
+        row = createListRow({ icon: 'incident', label: text, badge });
         row.element.dataset['alert'] = alert.id;
         alertRows.set(alert.id, row);
-        alertList.append(row.element);
       } else {
-        existing.setLabel(text);
-        existing.setBadge(badge);
+        row.setLabel(text);
+        row.setBadge(badge);
       }
+
+      // The drawn order is `viewModel.alerts`'s order, re-established on every
+      // paint. Appending a new row instead put the list in *first-seen* order,
+      // which is the same defect the buildable catalogue is ordered to avoid
+      // above (`src/main.ts`: "an order that depended on module evaluation
+      // would be an order nobody chose"). Measured, not reasoned about:
+      // mounting with `[a, b]` and updating to `[c, a, b]` laid out
+      // `a, b, c` -- issue #209's residual-risk note, and
+      // `ui-shell.spec.ts`'s "alerts list order" block is that measurement
+      // kept.
+      //
+      // Rows are moved rather than rebuilt: `HudAlertViewModel.id` exists so
+      // that "a list update is not a full rebuild", and emptying the list
+      // every paint would discard the focus and the transition state of a row
+      // the player is looking at. Stale rows and the empty-list row are still
+      // in the list at this point and are removed below; they only ever sit
+      // *after* the rows placed so far, so they cannot displace one.
+      const occupant = alertList.children.item(index);
+      if (occupant !== row.element) alertList.insertBefore(row.element, occupant);
     }
 
     for (const [id, row] of alertRows) {
