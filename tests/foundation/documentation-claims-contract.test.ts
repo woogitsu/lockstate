@@ -99,17 +99,45 @@ describe('docs/ARCHITECTURE.md: what the persistence layer actually does', () =>
     // `SemanticActionEvent` contract -- those two and nothing else." The bullet
     // used to include touch, which contradicted the gesture bullet two below it.
     //
-    // `actions.ts` is expected: it *declares* the type. What matters is which
-    // modules produce one, so a third producer appearing is the failure.
-    const producing = await sourceFilesMatching(/SemanticActionEvent/u);
+    // Producing is matched on the **construction site** rather than on the type
+    // name, and that distinction became load-bearing rather than pedantic when
+    // #200 wired a consumer: `world-scene.ts` now names the type, which the
+    // old `/SemanticActionEvent/` sweep counted as a third emitter. Naming a
+    // type is reading; writing `source: '...'` is emitting.
+    //
+    // The trailing `[,}\]]` is what separates a construction from the *type*
+    // declaration in `actions.ts`, which reads `source: 'keyboard' | 'pointer'`
+    // and would otherwise match on its first alternative. A pattern that
+    // quietly stops matching is the failure mode #206 paid for, and this one
+    // fails in the safe direction: the assertion is an exact list, so a
+    // producer the pattern can no longer see disappears from it and the test
+    // goes red rather than green.
+    const producing = await sourceFilesMatching(/source: '(?:keyboard|pointer)'\s*(?:as const)?\s*[,}\]]/u);
     expect(
       [...producing].sort(),
-      'a module outside src/input/ now produces or consumes SemanticActionEvent, or a third adapter emits one. Either is a real change -- docs/INPUT.md names keyboard and pointer only, and #200 owns the decision about whether that stream gets a consumer at all',
+      'a third module now constructs a SemanticActionEvent. docs/INPUT.md names keyboard and pointer only, and the touch tier deliberately emits `Gesture` instead (#203)',
+    ).toEqual([path.join('src', 'input', 'keyboard.ts'), path.join('src', 'input', 'pointer.ts')].sort());
+  });
+
+  it('keeps the SemanticActionEvent stream to its declared surface plus its one consumer', async () => {
+    // The other half of the same sentence, and the half that changed. Until
+    // #200 the stream had no consumer at all: `keyDown`/`keyUp` returned the
+    // events and the one production caller discarded them, so `docs/INPUT.md`
+    // line 5 described a mechanism nothing used. It has one now, and it is
+    // named here rather than left to a wildcard -- a *second* consumer
+    // appearing is exactly the change this file exists to make visible, since
+    // the polled and received routes are not interchangeable and which one an
+    // action may take is fixed by its `behavior`.
+    const naming = await sourceFilesMatching(/SemanticActionEvent/u);
+    expect(
+      [...naming].sort(),
+      'a module outside src/input/ now names SemanticActionEvent. docs/INPUT.md line 5 documents exactly one consumer (WorldScene.handleActionEvents); a second is a real change to the input contract, not a refactor',
     ).toEqual(
       [
         path.join('src', 'input', 'actions.ts'),
         path.join('src', 'input', 'keyboard.ts'),
         path.join('src', 'input', 'pointer.ts'),
+        path.join('src', 'rendering', 'scene', 'world-scene.ts'),
       ].sort(),
     );
   });

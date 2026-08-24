@@ -2,7 +2,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { stripComments } from '../helpers/canonical-iteration';
-import { ACTION_IDS } from '../../src/input/actions';
+import { ACTION_IDS, ACTION_REGISTRY } from '../../src/input/actions';
 
 /**
  * Issue #200, recommendation: *"Headless, `tests/unit/input.test.ts` could
@@ -11,19 +11,34 @@ import { ACTION_IDS } from '../../src/input/actions';
  * applies to content ids, and it would have caught five of these nine at
  * declaration time."*
  *
- * Nine actions are declared. Four are read. `src/rendering/scene/world-scene.ts`
- * calls `isActive` for `camera.right`/`camera.left`/`camera.down`/`camera.up`
- * and for nothing else, so `camera.zoom.in`, `camera.zoom.out`,
- * `selection.primary`, `build.confirm` and `build.cancel` are declared, given a
- * locale string apiece (`src/content/default-locale-en.ts`), and read by no
- * consumer. Three of them are bound to keys a player can press: measured in a
- * browser, `Equal` and `Minus` left the zoom at 1 across ten presses, and
- * `Escape` neither cleared a pending wall run nor stopped it committing.
+ * Nine actions are declared. Seven are read.
+ *
+ * When this gate was written it was four. `src/rendering/scene/world-scene.ts`
+ * called `isActive` for `camera.right`/`camera.left`/`camera.down`/`camera.up`
+ * and for nothing else, so five ids were declared, given a locale string apiece
+ * (`src/content/default-locale-en.ts`), and read by no consumer -- three of
+ * them bound to keys a player can press. Measured in a browser at the time:
+ * `Equal` and `Minus` left the zoom at 1 across ten presses, and `Escape`
+ * neither cleared a pending wall run nor stopped it committing.
  *
  * A dead key is worse than a missing one -- it is indistinguishable from a
  * broken build -- and the suite could not tell the difference: deleting the
  * `Equal` binding and deleting the `Escape` binding each survived the whole
- * suite (#200).
+ * suite (#200). #200 items 2 and 3 wired the three of them:
+ * `WorldScene.handleActionEvents` consumes the `SemanticActionEvent` array the
+ * adapter returns and switches on `action`. Their entries came out of the list
+ * below, which is the direction this file was built to force.
+ *
+ * ## The second rule, added with the consumer
+ *
+ * There are now two ways an action reaches the game -- a held-key poll and a
+ * discrete event -- and `ActionDefinition.behavior` says which one an action
+ * is for. It said so decoratively: nothing in `src/` read the field, and its
+ * one former reader was the tautological filter #200 item 4 deleted. So the
+ * pairing is asserted here, textually, in both directions: a `discrete` action
+ * cannot be served by a poll at all (that is exactly why the zoom keys were
+ * dead), and a `continuous` action handled in the event switch would fire once
+ * per press instead of once per frame.
  *
  * ## Why this file rather than `tests/unit/input.test.ts`
  *
@@ -66,32 +81,23 @@ const ROOT = join(__dirname, '../..');
 /**
  * Declared, and read by nothing outside `src/input/`.
  *
- * The reasons state what is verifiably true today. None of them proposes a
- * plan, because the plan is #200 item 3 and it is explicitly the owner's:
- * `AGENTS.md` boundary 10 requires input to support remapping and
- * QWERTY/AZERTY, and #141 already holds remapping and accessibility as an open
- * commitment. Wiring the event stream makes `ACTION_REGISTRY.behavior` and the
- * bindings mean something; deleting these five makes boundary 10 harder to
- * satisfy later. Choosing inside a test file would be the same mistake as
- * choosing inside `world-scene.ts`.
+ * It held five. Three came out when #200 items 2 and 3 were decided and the
+ * event stream gained its consumer, which is what this list is for: the stale
+ * check below failed on each of them until the entry was deleted, so the record
+ * could not outlive the fact.
  *
- * What the list buys is that **acting on that decision forces these entries
- * out**. Wiring a consumer fails the stale check below until the entry is
- * deleted; deleting an id fails the still-declared check. Either way the change
- * has to pass through this list, which is the difference between five facts
- * recorded in an issue body and five facts a gate holds.
+ * The two that remain are the two the decision did not reach, and the reasons
+ * say what is verifiably true today rather than proposing a plan. Both come
+ * from `PointerInputAdapter`, whose returned events are still discarded --
+ * `WorldScene` consumes the *keyboard* adapter's array and not the pointer
+ * one, because placement and panning already work through Phaser's own pointer
+ * handlers, which consult no action id.
  */
 const AWAITING_CONSUMER: Readonly<Record<string, string>> = {
-  'camera.zoom.in':
-    'Bound to `Equal` in DEFAULT_KEYBOARD_BINDINGS and read by nobody: measured in a browser, five presses of `Equal` left `camera.zoom` at 1. It is a `discrete` action, so a held-key poll cannot serve it at all -- it needs the `SemanticActionEvent` array `KeyboardInputAdapter.keyDown` returns and `world-scene.ts` discards. Whether that stream gains a consumer or the binding goes is #200 item 3, which is an owner decision against `AGENTS.md` boundary 10 and #141.',
-  'camera.zoom.out':
-    'Bound to `Minus` and read by nobody: measured in a browser, five presses left `camera.zoom` at 1. The camera does zoom -- on the wheel and on a pinch, both of which call `zoomAtScreenPoint` directly without going through an action id -- so this is a second, dead path to a behaviour that works, not a missing behaviour. Same `discrete`/poll mismatch and same open decision as `camera.zoom.in` (#200 item 3).',
   'selection.primary':
-    'Emitted by `PointerInputAdapter` when the `world` context is active, and read by nobody: the returned event array reaches `world-scene.ts` and is discarded. Nothing in the repository selects anything yet -- there is no selection state, no highlight and no inspector -- so unlike the zoom keys this one is not a dead path to a working behaviour but a declared control for a feature that does not exist (#141, #200).',
+    'Emitted by `PointerInputAdapter` when the `world` context is active, and read by nobody: the returned event array reaches `world-scene.ts` and is discarded. Nothing in the repository selects anything yet -- there is no selection state, no highlight and no inspector -- so unlike the zoom keys this one is not a dead path to a working behaviour but a declared control for a feature that does not exist (#141, #200). Note that no key is bound to it either, so no player can press it and find nothing happening.',
   'build.confirm':
-    'Emitted by `PointerInputAdapter` when the `construction` context is active, and read by nobody. Placement does work, through `WorldScene`\'s own Phaser pointer handlers, which never consult an action id -- so the action duplicates a live behaviour without participating in it. Note that the `construction` context is itself never active: `world-scene.ts` supplies `world` or `text-entry` (#201), so this branch of `primaryAction` cannot be reached in production today.',
-  'build.cancel':
-    'Bound to `Escape`, emitted by `PointerInputAdapter.pointerCancel`, and read by nobody. Measured with the build tool armed: `Escape` pressed mid-drag left the four targeted segments unchanged and the run committed anyway. `WorldScene.cancelBuild` exists and does the right thing; it is reachable only from a second finger arriving during a pinch and from the tool being disarmed mid-gesture. This is #200 item 2 -- a real defect with an unambiguous intent -- held open only because the honest fix consumes the event stream rather than polling a `discrete` action, which is item 3\'s decision.',
+    'Emitted by `PointerInputAdapter` when the `construction` context is active, and read by nobody. Placement does work, through `WorldScene`\'s own Phaser pointer handlers, which never consult an action id -- so the action duplicates a live behaviour without participating in it. Note that the `construction` context is itself never active: `world-scene.ts` supplies `world` or `text-entry` (#201), so this branch of `primaryAction` cannot be reached in production today. No key is bound to it.',
 };
 
 function collectTypeScriptFiles(directory: string): readonly string[] {
@@ -172,13 +178,59 @@ describe('every declared input action either has a reader or is accounted for', 
     ).toEqual([]);
   });
 
-  it('measures four consumed and five unread, which is the number #200 reported', () => {
+  it('measures seven consumed and two unread, which is what #200 items 2 and 3 changed', () => {
     // The denominator, stated so the gate reports a fact rather than only
     // guarding one. This is deliberately an exact number in both directions:
     // an action that quietly stopped being read would otherwise only have to
     // be added to the list above, and adding an entry is a smaller act than
-    // changing a count that says the control surface is half-built.
-    expect(unreadIds.length).toBe(5);
-    expect(ACTION_IDS.length - unreadIds.length).toBe(4);
+    // changing a count that says the control surface is half-built. It was
+    // four and five before the event stream gained a consumer.
+    expect(unreadIds.length).toBe(2);
+    expect(ACTION_IDS.length - unreadIds.length).toBe(7);
+  });
+
+  it('serves each action the way its declared behavior says it can be served', () => {
+    /*
+     * The invariant the consumer added, and the one that gives
+     * `ActionDefinition.behavior` a reader at all.
+     *
+     * Two routes exist and they are not interchangeable. `isActive` answers
+     * "is this key down right now", which `update()` asks four times a frame
+     * -- correct for a `continuous` action and incapable of serving a
+     * `discrete` one, because "zoom in" has no duration. That mismatch is
+     * exactly why `Equal` and `Minus` did nothing for as long as they were
+     * bound (#200). The event switch is the mirror: a `continuous` action
+     * handled there would fire once on the press instead of every frame the
+     * key is held, so the camera would jump one step and stop.
+     *
+     * Textual, and the bound is real -- it proves the shape of the call, not
+     * that the call works. `tests/browser/world-scene-input.spec.ts` drives
+     * real keys at a real camera for that. What this buys is that reaching
+     * for the wrong route fails here rather than in a browser nobody ran.
+     */
+    const scene = readerSources.find((source) => source.where === join('src', 'rendering', 'scene', 'world-scene.ts'));
+    expect(scene, 'the one production consumer of src/input/ is no longer where this gate looks for it').toBeDefined();
+
+    const polled = ACTION_IDS.filter((id) => scene!.text.includes(`isActive('${id}')`));
+    const switched = ACTION_IDS.filter((id) => scene!.text.includes(`case '${id}':`));
+
+    // Vacuity guard: both routes must actually be found, or the two loops
+    // below iterate over nothing and pass while saying nothing.
+    expect(polled.length).toBe(4);
+    expect(switched.length).toBe(3);
+    expect(polled.filter((id) => switched.includes(id)), 'an action served both ways would act twice').toEqual([]);
+
+    for (const id of polled) {
+      expect(
+        ACTION_REGISTRY[id].behavior,
+        `${id} is polled with isActive, which only answers "is the key down"; a discrete action cannot be served that way (#200)`,
+      ).toBe('continuous');
+    }
+    for (const id of switched) {
+      expect(
+        ACTION_REGISTRY[id].behavior,
+        `${id} is handled as a one-shot event; a continuous action handled there fires once per press instead of once per frame`,
+      ).toBe('discrete');
+    }
   });
 });
