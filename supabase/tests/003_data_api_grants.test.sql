@@ -72,7 +72,7 @@
 -- reachable when they were written.
 
 begin;
-select plan(21);
+select plan(28);
 
 -- Alphabetical because the aggregates below order by privilege name:
 -- DELETE, INSERT, SELECT, UPDATE.
@@ -85,24 +85,63 @@ $$;
 
 -- --- Cloud save (issue #20) ---
 
+-- No table-level INSERT or UPDATE: both are granted per column below, so a
+-- client cannot write `created_at`. 20260824140000 (#194) revoked them after
+-- finding that a client could set a profile's creation timestamp to 1970 and
+-- its `updated_at` to the year 4000, and walk `updated_at` backwards.
 select is(
   pg_temp.dml_privs('authenticated', 'public.profiles'),
-  'INSERT,SELECT,UPDATE',
-  'profiles: a client creates and edits its own profile, and never deletes one'
+  'SELECT',
+  'profiles: no table-level INSERT or UPDATE -- both are per column, so created_at is unreachable'
+);
+
+select is(
+  (select string_agg(a.attname, ',' order by a.attname)
+     from pg_attribute a
+    where a.attrelid = 'public.profiles'::regclass
+      and a.attnum > 0 and not a.attisdropped
+      and has_column_privilege('authenticated', a.attrelid, a.attnum, 'INSERT')),
+  'display_name,id,updated_at',
+  'profiles: the granted-back INSERT columns are exactly what a client supplies -- created_at absent'
+);
+
+select is(
+  (select string_agg(a.attname, ',' order by a.attname)
+     from pg_attribute a
+    where a.attrelid = 'public.profiles'::regclass
+      and a.attnum > 0 and not a.attisdropped
+      and has_column_privilege('authenticated', a.attrelid, a.attnum, 'UPDATE')),
+  'display_name,updated_at',
+  'profiles: the granted-back UPDATE columns are the editable metadata -- id and created_at absent'
 );
 
 select is(
   pg_temp.dml_privs('authenticated', 'public.prisons'),
-  'DELETE,INSERT,SELECT',
-  'prisons: no table-level UPDATE -- the pointer columns are advanced only by create_save_version()'
+  'DELETE,SELECT',
+  'prisons: no table-level INSERT or UPDATE -- both are per column'
 );
 
--- INSERT above is deliberately retained rather than revoked in favour of
+-- A client's INSERT is deliberately retained rather than revoked in favour of
 -- create_prison(). ADR 0013 argues the case: the slot cap is a count
 -- invariant of this table, so it is enforced by a trigger that holds on
 -- every write path, and does not depend on this grant staying revoked.
 -- supabase/tests/004_free_tier_capacity.test.sql is what makes that
 -- load-bearing -- it drives the refusal through this very grant.
+--
+-- What changed in 20260824140000 (#194) is its *granularity*, not its
+-- existence: it is now granted per column, because a table-level INSERT
+-- covers every column and so let a client set `created_at` -- the one thing
+-- the UPDATE grant below had already been written to prevent.
+
+select is(
+  (select string_agg(a.attname, ',' order by a.attname)
+     from pg_attribute a
+    where a.attrelid = 'public.prisons'::regclass
+      and a.attnum > 0 and not a.attisdropped
+      and has_column_privilege('authenticated', a.attrelid, a.attnum, 'INSERT')),
+  'display_name,game_version,id,owner_id,slot_index,updated_at',
+  'prisons: the granted-back INSERT columns match the UPDATE list plus identity -- created_at and both pointer columns absent'
+);
 
 select is(
   (select string_agg(a.attname, ',' order by a.attname)
@@ -230,11 +269,8 @@ challenge_submissions:SELECT
 entitlement_events:SELECT
 entitlements:SELECT
 prisons:DELETE
-prisons:INSERT
 prisons:SELECT
-profiles:INSERT
 profiles:SELECT
-profiles:UPDATE
 save_versions:SELECT
 user_settings:DELETE
 user_settings:INSERT
@@ -421,6 +457,86 @@ select is(
   null,
   'no function in public is executable by PUBLIC, including the ones that never had an explicit ACL'
 );
+
+-- --- Server-defaulted timestamps are the server's (issue #194) --------
+--
+-- Shaped as a rule, not a list, for the reason suites 005, 007 and 008 are:
+-- the four columns #194 found were client-writable were found by an inventory,
+-- not by a failing test, because this suite pins **what the grants are** rather
+-- than **what they ought to be**. That is the right thing for a grant suite to
+-- do, and it is why the next table created with a table-level grant would have
+-- re-opened this silently.
+--
+-- The rule: a column whose default is `now()` is the server's statement about
+-- when something happened, so no client role may write it -- unless this
+-- allow-list says otherwise, with a reason.
+--
+-- Both directions fail: a `default now()` column that becomes client-writable
+-- is caught unless it is listed, and a listed column that stops being
+-- client-writable is caught too, so acting on #194's open half forces the entry
+-- out rather than leaving it asserting something untrue.
+
+create temporary table client_writable_timestamps (tbl text, col text, reason text);
+
+insert into client_writable_timestamps (tbl, col, reason) values
+  ('prisons', 'updated_at',
+   'Granted on purpose by 20260822190100. Whether a client may stamp its own updated_at is #194''s open half; the alternative is a before-update trigger, and that choice decides whether anything may trust this column for ordering.'),
+  ('profiles', 'updated_at',
+   'Retained by 20260824140000, which scoped itself to created_at. Same open decision as prisons.updated_at, in #194.'),
+  ('user_settings', 'updated_at',
+   'Retained by 20260824140000. This table has no created_at, so updated_at was its only affected column and the migration deliberately changed nothing here. #194.');
+
+-- Vacuity guard: the sweep below is satisfied by an empty scan, so a query
+-- that stopped finding `default now()` columns would read as compliance.
+select cmp_ok(
+  (select count(*)::int
+     from pg_attribute a
+     join pg_class c on c.oid = a.attrelid
+     join pg_namespace n on n.oid = c.relnamespace and n.nspname = 'public'
+     join pg_attrdef d on d.adrelid = a.attrelid and d.adnum = a.attnum
+    where c.relkind = 'r' and a.attnum > 0 and not a.attisdropped
+      and pg_get_expr(d.adbin, d.adrelid) = 'now()'),
+  '>=',
+  10,
+  'the sweep found the server-defaulted timestamp columns it claims to cover'
+);
+
+select is_empty(
+  $$ select c.relname || '.' || a.attname
+       from pg_attribute a
+       join pg_class c on c.oid = a.attrelid
+       join pg_namespace n on n.oid = c.relnamespace and n.nspname = 'public'
+       join pg_attrdef d on d.adrelid = a.attrelid and d.adnum = a.attnum
+      where c.relkind = 'r' and a.attnum > 0 and not a.attisdropped
+        and pg_get_expr(d.adbin, d.adrelid) = 'now()'
+        and (has_column_privilege('authenticated', a.attrelid, a.attnum, 'INSERT')
+             or has_column_privilege('authenticated', a.attrelid, a.attnum, 'UPDATE')
+             or has_column_privilege('anon', a.attrelid, a.attnum, 'INSERT')
+             or has_column_privilege('anon', a.attrelid, a.attnum, 'UPDATE'))
+        and not exists (select 1 from client_writable_timestamps w
+                         where w.tbl = c.relname and w.col = a.attname) $$,
+  'no server-defaulted timestamp is writable by a client role without a recorded reason'
+);
+
+select is_empty(
+  $$ select w.tbl || '.' || w.col from client_writable_timestamps w
+      where not exists (
+        select 1
+          from pg_attribute a
+          join pg_class c on c.oid = a.attrelid
+          join pg_namespace n on n.oid = c.relnamespace and n.nspname = 'public'
+         where c.relname = w.tbl and a.attname = w.col
+           and a.attnum > 0 and not a.attisdropped
+           and (has_column_privilege('authenticated', a.attrelid, a.attnum, 'INSERT')
+                or has_column_privilege('authenticated', a.attrelid, a.attnum, 'UPDATE'))) $$,
+  'every allow-listed timestamp is still client-writable, so an entry cannot outlive the state it describes'
+);
+
+select is_empty(
+  $$ select tbl || '.' || col from client_writable_timestamps where char_length(reason) < 60 $$,
+  'every allow-listed timestamp carries a reason rather than a placeholder'
+);
+
 
 select * from finish();
 rollback;
