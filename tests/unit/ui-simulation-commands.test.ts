@@ -293,3 +293,82 @@ describe('SimulationCommandSender asks the worker to move the clock', () => {
     expect(sender.isClockRunning).toBe(true);
   });
 });
+
+/**
+ * Issue #146: the 30-second autosave never fired.
+ *
+ * `AutosaveScheduler` is purely dirty-driven -- no `markDirty`, no timer, no
+ * save -- and nothing in the application called it, so the interval was
+ * configured, reached the scheduler, and did nothing. The only automatic save
+ * was the best-effort one on `pagehide`, which meant a crash, a force-quit or
+ * an OS kill wrote nothing since the last manual save. It also falsified the
+ * reasoning the lifecycle save rests on: #92 and `docs/PERSISTENCE.md` justify
+ * that save being fire-and-forget *because* an interval autosave is the
+ * durability mechanism, and there was no interval autosave.
+ *
+ * The mechanism was thoroughly tested and the wiring was not, which is the
+ * shape #115 and #113 both had. So these assert the seam rather than the
+ * scheduler -- the scheduler's coalescing, its trailing edge and its
+ * at-most-one-in-flight rule are already proven in
+ * `tests/unit/persistence-local-autosave.test.ts` and are not re-tested here.
+ *
+ * The mutation the issue names -- *"delete `SessionController.markDirty()`
+ * entirely"* -- is now killed by `tsc` rather than by a test, which is
+ * stronger: `src/main.ts` calls it, so removing it is a compile error in the
+ * composition root as well as in the two unit files that always called it
+ * directly. Measured: 5 errors across `src/main.ts` and
+ * `tests/unit/persistence-session-controller.test.ts`.
+ */
+describe('an accepted command marks the session dirty (#146)', () => {
+  const queuedResult = (commandId: string): WorkerToMainMessage => ({
+    protocolVersion: SIMULATION_PROTOCOL_VERSION,
+    messageId: `m-${commandId}`,
+    replyTo: 'r-1',
+    kind: 'simulation/command-result',
+    payload: { commandId, sequence: 0, status: 'queued', scheduledForTick: 20 },
+  });
+
+  it('notifies its listener when the simulation accepts a command', () => {
+    let marks = 0;
+    const sender = new SimulationCommandSender(transport);
+    sender.onCommandAccepted(() => { marks += 1; });
+
+    transport.emit(queuedResult('c-1'));
+    expect(marks).toBe(1);
+  });
+
+  it('says nothing when the simulation refuses one', () => {
+    // The distinction the fix turns on: a refused command changed no
+    // simulation state, so there is nothing to save and marking the session
+    // dirty would schedule a write for a prison that did not move.
+    let marks = 0;
+    const sender = new SimulationCommandSender(transport);
+    sender.onCommandAccepted(() => { marks += 1; });
+
+    transport.emit(rejected());
+    expect(marks).toBe(0);
+  });
+
+  it('notifies once per acceptance, leaving coalescing to the scheduler', () => {
+    // Deliberately *not* de-duplicated here. `AutosaveScheduler` coalesces per
+    // prison into one trailing-edge save, so a chatty signal is exactly what it
+    // is built for -- and a sender that suppressed repeats would be a second,
+    // undocumented coalescing rule competing with the real one.
+    let marks = 0;
+    const sender = new SimulationCommandSender(transport);
+    sender.onCommandAccepted(() => { marks += 1; });
+
+    transport.emit(queuedResult('c-1'));
+    transport.emit(queuedResult('c-2'));
+    transport.emit(queuedResult('c-3'));
+    expect(marks).toBe(3);
+  });
+
+  it('is inert with no listener attached, which is a browser without persistence', () => {
+    // `src/main.ts` attaches this inside `bootPersistence`, which runs only
+    // when a worker started and local storage was reachable. A page that got
+    // neither must still send commands rather than throw on every result.
+    const sender = new SimulationCommandSender(transport);
+    expect(() => transport.emit(queuedResult('c-1'))).not.toThrow();
+  });
+});
