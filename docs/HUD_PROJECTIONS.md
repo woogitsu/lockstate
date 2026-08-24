@@ -341,9 +341,12 @@ decision about what to build next.
     `DeploymentSchedule`'s required headcount per sector.
 20. **No per-staff skill level or fatigue.** `staff-role-catalog` declares
     skill *requirements* per role, but no staff entity carries a skill.
-21. **`wageBand` exists in content, and there is no economy.** No payroll,
-    budget, funds or currency anywhere in `src/`. Nothing wage-related may
-    be rendered as a live figure; it is a content hook for a future issue.
+21. **`wageBand` exists in content, and there is no payroll.** There is a
+    treasury and a procurement system since #96/#89 — money buys materials —
+    but nothing pays anyone: no wage is ever debited, and nothing credits the
+    treasury at all, because what the state pays *for* is ADR 0017 question 1
+    and it is open. Nothing wage-related may be rendered as a live figure; it
+    is still a content hook for a future issue.
 22. **`'on-search'` conflates two duties.** A guard pulled onto a
     contraband search and a guard dispatched to an incident share one
     deployment phase, and neither `SearchSystem` nor

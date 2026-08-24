@@ -94,8 +94,10 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // ---------------------------------------------------------------
   // HUD shell. Keys, never source text: `hud.status.prisoners` stays
   // stable while "Prisoners" is free to change per locale and release
-  // (ADR 0011). No money, funds or cost keys exist -- there is no economy
-  // system yet, and a string is where a fake number starts.
+  // (ADR 0011). No money, funds or cost keys exist. There is a treasury now
+  // (#96) and nothing yet renders it: the purchase loop reached the
+  // simulation before it reached the interface, and a string is where a fake
+  // number starts -- so the keys arrive with the control that needs them.
   // ---------------------------------------------------------------
   'hud.status.title': 'Prison status',
   'hud.status.prisoners': 'Prisoners',

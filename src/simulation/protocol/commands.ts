@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { JsonValue } from '../../shared/json';
 import { BUILD_EDGES } from '../construction/build-order';
+import { MAX_PURCHASE_QUANTITY } from '../economy';
 import type { VersionedPayload } from './types';
 
 /**
@@ -43,6 +44,27 @@ export const zoneRoomSchema = z.object({
   transactionId: z.string().optional(),
 }).strict();
 
+/**
+ * Buy materials (#96, #89).
+ *
+ * `orderId` is the caller's, like `PlaceBuildOrder`'s: the main thread mints
+ * it so a refusal can be matched to the request that caused it, and so a
+ * command replayed from a restored queue cannot buy the same delivery twice --
+ * `ProcurementSystem.purchase` refuses a duplicate id.
+ *
+ * `quantity` is bounded here as well as in the system. The system's bound
+ * stops an overflow; this one stops a malformed message reaching it at all,
+ * which is the decode-side half `decode.ts` exists for. Neither is redundant:
+ * a command can arrive from a restored save's queue without passing through
+ * this schema again.
+ */
+export const purchaseMaterialsSchema = z.object({
+  type: z.literal('PurchaseMaterials'),
+  orderId: z.string(),
+  itemId: z.string(),
+  quantity: z.number().int().positive().max(MAX_PURCHASE_QUANTITY),
+}).strict();
+
 export const undoCommandSchema = z.object({
   type: z.literal('Undo'),
 }).strict();
@@ -55,6 +77,7 @@ export const simulationCommandSchema = z.discriminatedUnion('type', [
   placeBuildOrderSchema,
   cancelBuildOrderSchema,
   zoneRoomSchema,
+  purchaseMaterialsSchema,
   undoCommandSchema,
   redoCommandSchema,
 ]);
@@ -90,6 +113,14 @@ function commandJson(command: SimulationCommand): JsonValue {
         ...(command.transactionId === undefined
           ? {}
           : { transactionId: command.transactionId }),
+      };
+
+    case 'PurchaseMaterials':
+      return {
+        type: command.type,
+        orderId: command.orderId,
+        itemId: command.itemId,
+        quantity: command.quantity,
       };
 
     case 'Undo':

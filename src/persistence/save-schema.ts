@@ -8,6 +8,7 @@ import {
   tickSchema,
   uint32Schema,
 } from '../simulation/protocol/types';
+import { MAX_PURCHASE_QUANTITY } from '../simulation/economy';
 import { WORLD_CHUNK_SIZE_LIMIT } from '../simulation/world/coordinates';
 import { WORLD_SNAPSHOT_VERSION } from '../simulation/world/sparse-world';
 import { MigrationChain, type MigrationError, type MigrationErrorCode } from './migration';
@@ -711,6 +712,58 @@ const actorIdentitySnapshotSchema = z
   })
   .strict();
 
+/**
+ * How many deliveries a save may carry in flight.
+ *
+ * Not a gameplay limit -- nothing in the simulation enforces it, and a player
+ * cannot reach it: at the cheapest price a delivery costs 40 and the starting
+ * balance buys 625 of them, one purchase at a time. It bounds what a *decoder*
+ * will accept from a file, which is the #102 shape: a save is untrusted input
+ * and an unbounded array in it is an allocation an attacker chooses.
+ */
+const MAX_PENDING_DELIVERIES = 4_096;
+
+/**
+ * Money and the deliveries it has bought (#96, #89).
+ *
+ * The persistence layer's mirror of `EncodedEconomy`
+ * (`src/simulation/runtime/session-systems.ts`). Deliberately a separate
+ * declaration, like every other section here: the worker must not depend on
+ * `src/persistence`, and this schema evolves under its own version contract.
+ *
+ * **Bounded, because these are client-writable numbers.** A save is a file the
+ * player's browser produced and could have edited, and the same reasoning that
+ * bounds the trusted tier's columns (#105 finding 4, #191) applies to a
+ * balance and a delivery queue: `nonnegative().int()` on the money, a
+ * `max` on the queue so a hand-edited save cannot ask the runtime to hold
+ * a million pending deliveries, and `safe()` so an arithmetic overflow cannot
+ * be smuggled in as a starting condition.
+ */
+const economySectionSchema = z
+  .object({
+    treasury: z
+      .object({ balanceMinorUnits: z.number().int().nonnegative().safe() })
+      .strict(),
+    procurement: z
+      .object({
+        pending: z
+          .array(
+            z
+              .object({
+                orderId: identifierSchema,
+                itemId: identifierSchema,
+                quantity: z.number().int().positive().max(MAX_PURCHASE_QUANTITY),
+                arrivesAtTick: z.number().int().nonnegative().safe(),
+                paidMinorUnits: z.number().int().nonnegative().safe(),
+              })
+              .strict(),
+          )
+          .max(MAX_PENDING_DELIVERIES),
+      })
+      .strict(),
+  })
+  .strict();
+
 const sessionSystemsV3Schema = z
   .object({
     prisoners: prisonersSectionSchema,
@@ -719,6 +772,7 @@ const sessionSystemsV3Schema = z
     security: securitySectionSchema,
     contraband: contrabandSectionSchema,
     incidents: incidentsSectionSchema,
+    economy: economySectionSchema.optional(),
   })
   .strict();
 

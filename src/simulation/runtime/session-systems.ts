@@ -1,3 +1,4 @@
+import type { ProcurementSnapshot, TreasurySnapshot } from '../economy';
 import type { ConfiscationEvent } from '../contraband/confiscation';
 import type { InformantRecord } from '../contraband/informants';
 import type { IntelligenceLedger } from '../contraband/intelligence';
@@ -219,6 +220,26 @@ export interface EncodedSessionSystems {
   readonly security: EncodedSecurity;
   readonly contraband: EncodedContraband;
   readonly incidents: EncodedIncidents;
+  /**
+   * The treasury balance and the deliveries in flight (#96, #89).
+   *
+   * **Optional, for the same reason `SessionSnapshotBundle.simulation` is.**
+   * A save written before the economy existed carries no economy, and a
+   * required field would make every one of them unrestorable. Absent restores
+   * a treasury at its starting balance with nothing in flight, which is what
+   * a prison that predates money actually had.
+   *
+   * A pending delivery is carried rather than dropped because dropping it
+   * would take the player's money and never deliver: `purchase` spends
+   * immediately and the goods arrive later, so a save taken in between holds
+   * the only record that the money bought anything.
+   */
+  readonly economy?: EncodedEconomy;
+}
+
+export interface EncodedEconomy {
+  readonly treasury: TreasurySnapshot;
+  readonly procurement: ProcurementSnapshot;
 }
 
 // --- Prisoner component codec ------------------------------------------
@@ -427,6 +448,10 @@ export function captureSessionSystems(runtime: SimulationRuntime): EncodedSessio
       searchContainerLocations: sortedTileEntries(runtime.searchContainerLocations),
       search: runtime.searchSystem.getSnapshot(),
     },
+    economy: {
+      treasury: runtime.treasury.snapshot(),
+      procurement: runtime.procurement.snapshot(),
+    },
     incidents: {
       log: runtime.incidents.getSnapshot(),
       sectorRisk: runtime.sectorRisk.getSnapshot(),
@@ -514,6 +539,18 @@ export function restoreSessionSystems(
   runtime.securitySchedules.push(...systems.security.schedules.map((schedule) => ({ ...schedule })));
   runtime.deploymentSystem.loadSnapshot(systems.security.deployment);
   runtime.patrolSystem.loadSnapshot(systems.security.patrol);
+
+  // 5b. Money and deliveries in flight (#96).
+  //
+  //     Absent on every save written before the economy existed, and on those
+  //     the runtime keeps the treasury `createNewSimulationRuntime` gave it --
+  //     a starting balance and nothing in flight, which is what a prison that
+  //     predates money had. Restoring nothing is the correct answer, not a
+  //     fallback that papers over missing data.
+  if (systems.economy !== undefined) {
+    runtime.treasury.restore(systems.economy.treasury);
+    runtime.procurement.restore(systems.economy.procurement);
+  }
 
   // 6. Contraband, intelligence and searches.
   runtime.contraband.loadSnapshot(systems.contraband.items);

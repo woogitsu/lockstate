@@ -143,12 +143,33 @@ describe('kernel system ordering', () => {
    * and updating it must be a deliberate, reviewed edit -- accompanied,
    * per ADR 0009, by retiring incompatible challenge submissions through
    * the definition allow-lists.
+   *
+   * ## The one time this list has changed, and what the ADR 0009 step came to
+   *
+   * `procurement` (order 110) was added with the purchase loop (#96, #89).
+   * The retirement the sentence above requires was looked for and **there is
+   * nothing in this repository to retire**, which is worth recording so the
+   * next person does not go hunting for a list that does not exist:
+   *
+   * - `allowedGameVersions` and `allowedContentVersions`
+   *   (`src/services/challenges/challenge.ts:69-70`) are fields on a
+   *   *challenge definition*, and definitions live in the trusted tier's
+   *   `challenge_definitions` table. The repository ships none -- the
+   *   migrations create the table and grant on it, and insert no rows.
+   * - So no stored submission can exist to be invalidated, and no allow-list
+   *   in `src/` or `supabase/` names a version to remove.
+   *
+   * That changes the moment a definition is seeded. The obligation is real
+   * and it is simply not yet reachable, which is a different thing from being
+   * satisfied -- and it is the reason this comment says so rather than the
+   * edit passing silently.
    */
   it('pins the declared execution order of a real session', () => {
     expect(buildDeterminismScenario().kernel.systemExecutionOrder).toEqual([
       { id: 'prisoners.intake', order: 50 },
       { id: 'prisoners.needs-decay', order: 60 },
       { id: 'construction', order: 100 },
+      { id: 'procurement', order: 110 },
       { id: 'navigation', order: 150 },
       { id: 'prisoners.actions', order: 250 },
       { id: 'operations.jobs', order: 260 },
