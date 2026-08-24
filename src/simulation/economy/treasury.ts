@@ -8,19 +8,21 @@
  *
  * ## What this deliberately does not decide
  *
- * ADR 0017 is `Proposed — pending human approval` and asks three questions.
- * This class answers **none** of them, and the omissions are the point:
+ * ADR 0017 is Accepted, and its decisions 6 and 8 answer two things this class
+ * deliberately does not implement. The omissions are the point, and they are
+ * now omissions against a settled answer rather than against an open question:
  *
- * - **No income.** Nothing here credits the treasury on a schedule, per
- *   prisoner-day, per occupied place or per facility. `credit` exists because
- *   a refund needs it, not because anything pays. ADR 0017 question 1 is what
- *   an income line would need, and it is open.
+ * - **No income.** Nothing here credits the treasury on a schedule. `credit`
+ *   exists because a refund needs it, not because anything pays. Decision 6
+ *   settles the basis an income line would use -- per prisoner-day, accrued
+ *   per occupied place -- and building it is #29's, not this slice's.
  * - **No insolvency policy.** The balance cannot go negative: `spend` refuses
  *   rather than overdrawing, which is a validation answer and not a policy.
- *   Whether a negative balance should degrade the prison in a defined order
- *   rather than end the run is ADR 0017 question 3, and it is open — and
- *   unreachable while nothing pays in, which is why this slice does not need
- *   it.
+ *   Decision 8 settles that a negative balance should degrade the prison in a
+ *   defined order rather than end the run, and that ladder is unbuilt — and
+ *   unreachable, because with nothing paying in and `spend` refusing, no
+ *   negative balance can occur for it to respond to. That is why this slice
+ *   does not need it.
  *
  * ## Integer minor units, and why that is not a formatting choice
  *
@@ -88,8 +90,9 @@ export class Treasury {
    * Puts money back.
    *
    * Its only caller is a refund — a purchase whose delivery was cancelled.
-   * It is **not** an income line: nothing calls this on a schedule, and
-   * adding something that does is ADR 0017 question 1.
+   * It is **not** an income line: nothing calls this on a schedule. Adding
+   * something that does means implementing ADR 0017 decision 6's accrual, and
+   * belongs with #29's ledger rather than here.
    */
   public credit(amountMinorUnits: number): void {
     if (!Number.isSafeInteger(amountMinorUnits) || amountMinorUnits < 0) {
