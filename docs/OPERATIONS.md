@@ -88,24 +88,54 @@ mutates to `'cancelled'`, specifically to avoid that bug (found via
 
 ## The no-teleport rule
 
-Every unit of every item that moves does so through a `CarryItemJob`'s two
-navigation-backed legs -- `deposit` only ever happens at a job's actual
-dropoff tile, after `withdrawReserved` actually happened at its actual
-pickup tile. There is no direct container-to-container transfer method
-anywhere in `inventory.ts`. `ContainerMaterialsProvider` (below) is the one
-deliberate exception, and it does not move anything between containers --
-it only *consumes* stock already sitting in the one container it is bound
-to, exactly like a construction site consuming materials already delivered
-there by ordinary carry jobs.
+Every unit of every item that *moves between containers* does so through a
+`CarryItemJob`'s two navigation-backed legs -- `deposit` only ever happens at
+a job's actual dropoff tile, after `withdrawReserved` actually happened at
+its actual pickup tile. There is no direct container-to-container transfer
+method anywhere in `inventory.ts`.
+
+There are **two** deliberate exceptions, and neither is a transfer:
+
+- `ContainerMaterialsProvider` (below) does not move anything between
+  containers -- it only *consumes* stock already sitting in the one container
+  it is bound to, exactly like a construction site consuming materials
+  already delivered there by ordinary carry jobs.
+- **`ProcurementSystem.update` (`simulation/economy/procurement.ts`) calls
+  `deposit` at no tile at all**, when a purchased delivery's
+  `arrivesAtTick` comes due. It is not a transfer because there is no source
+  container: the goods are bought from outside the prison and materialise on
+  arrival, so there is nothing for a carry job's pickup leg to pick up from.
+  What it *is* missing is the physical route -- ADR 0017 §4 names
+  `room.delivery-bay` and `object.loading-dock-door` as the intended
+  destination, and until a delivery lands in a bay and a carry job takes it
+  to the site, the deposit is scaffolding. The construction container it
+  deposits into is the same object `ContainerMaterialsProvider` draws from
+  (`runtime/new-session.ts` wires both from one local), so the loop closes
+  today at the cost of being location-blind: a wall 400 tiles away spends the
+  same global stock as one next door.
+
+Anything else calling `deposit` outside `operations/` is a third exception
+and belongs in this list before it is written.
 
 ## Construction-material integration (#16)
 
 `construction/materials-provider.ts` defines the seam:
 
 ```ts
-interface ConstructionMaterialsProvider { tryAllocate(requirements): boolean; }
-const UNLIMITED_MATERIALS_PROVIDER: ConstructionMaterialsProvider = { tryAllocate: () => true };
+interface ConstructionMaterialsProvider {
+  tryAllocate(requirements): boolean;
+  release(allocations): void;
+}
+const UNLIMITED_MATERIALS_PROVIDER: ConstructionMaterialsProvider = {
+  tryAllocate: () => true,
+  release: () => {},
+};
 ```
+
+`release` is required, not optional: against a finite stock a cancelled order
+that had already allocated would destroy its materials permanently, and
+`undo()` goes through `cancelOrder`. A provider that cannot say what it does
+on cancellation is not a usable provider.
 
 `ConstructionSystem`'s constructor now takes an optional provider
 (defaulting to `UNLIMITED_MATERIALS_PROVIDER`, so #16's original behavior

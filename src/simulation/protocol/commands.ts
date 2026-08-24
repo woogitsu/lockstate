@@ -2,7 +2,7 @@ import { z } from 'zod';
 import type { JsonValue } from '../../shared/json';
 import { BUILD_EDGES } from '../construction/build-order';
 import { MAX_PURCHASE_QUANTITY } from '../economy';
-import type { VersionedPayload } from './types';
+import { identifierSchema, type VersionedPayload } from './types';
 
 /**
  * `edge` is optional, and stays optional.
@@ -57,11 +57,37 @@ export const zoneRoomSchema = z.object({
  * which is the decode-side half `decode.ts` exists for. Neither is redundant:
  * a command can arrive from a restored save's queue without passing through
  * this schema again.
+ *
+ * ## Why `orderId` and `itemId` are `identifierSchema` and not `z.string()`
+ *
+ * Because the *save* boundary already requires it of the same two values, and
+ * a disagreement between the two boundaries is not a stricter check -- it is a
+ * window. `save-schema.ts`'s `economySectionSchema` types a pending delivery's
+ * `orderId` and `itemId` as `identifierSchema`, and `createSaveEnvelope`
+ * parses and throws. So while these were `z.string()`, this sequence was
+ * reachable: a command carrying `orderId: '_bad id'` decoded cleanly, the
+ * kernel dispatched it, the delivery entered the procurement queue, and the
+ * next save attempt threw on a path the player has no way to connect to
+ * anything -- and then started working again by itself once the delivery
+ * landed and left the queue. An intermittent unreproducible save failure,
+ * from a validation gap.
+ *
+ * Refusing the id here means it never reaches the queue, which is the only
+ * place a fix can put the failure next to its cause. It also costs no
+ * existing save: no code in `src/` mints a purchase command at all yet
+ * (#89), and any session that had accepted a loose id could not have been
+ * saved anyway.
+ *
+ * `PlaceBuildOrder.orderId` is deliberately left as `z.string()`. Its
+ * save-side counterpart (`buildOrderSchema`) is `z.string().min(1)`, which is
+ * looser than this schema rather than stricter, so there is no disagreement
+ * there to close and tightening it would be a change with no defect behind
+ * it.
  */
 export const purchaseMaterialsSchema = z.object({
   type: z.literal('PurchaseMaterials'),
-  orderId: z.string(),
-  itemId: z.string(),
+  orderId: identifierSchema,
+  itemId: identifierSchema,
   quantity: z.number().int().positive().max(MAX_PURCHASE_QUANTITY),
 }).strict();
 
