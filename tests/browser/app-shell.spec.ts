@@ -1524,6 +1524,7 @@ test.describe('the assembled application', () => {
     await expect(page.locator('.hud__unavailable')).toBeHidden();
 
     await page.evaluate(() => {
+      (window as unknown as { __realWorker: unknown }).__realWorker = window.Worker;
       Object.defineProperty(window, 'Worker', {
         configurable: true,
         value: function BlockedWorker(): never {
@@ -1551,6 +1552,26 @@ test.describe('the assembled application', () => {
           (document.querySelector<HTMLElement>('.hud')?.innerText ?? '').toLowerCase().includes('simulation unavailable'),
       ),
     ).toBe(true);
+
+    // And it stops saying so once the page has a simulation again. The band is
+    // a standing statement about this page, so it has to be able to come down:
+    // that is the half of `setUnavailable` a raise-only setter would miss, and
+    // it is only reachable because the failure is.
+    await page.evaluate(() => {
+      Object.defineProperty(window, 'Worker', {
+        configurable: true,
+        value: (window as unknown as { __realWorker: unknown }).__realWorker,
+      });
+    });
+    await page.locator('.save-panel__item').first().getByRole('button', { name: 'Load' }).click();
+    await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
+    await expect(unavailable).toBeHidden();
+    expect(
+      await page.evaluate(
+        () =>
+          (document.querySelector<HTMLElement>('.hud')?.innerText ?? '').toLowerCase().includes('simulation unavailable'),
+      ),
+    ).toBe(false);
 
     expect(unhandled).toEqual([]);
   });
