@@ -33,8 +33,18 @@ if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ]; then
   exit 0
 fi
 
-REQUIRED_NODE="24.19.0"
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
+
+# Read from `.node-version` rather than repeating it. That file is the source
+# of truth CI reads at three points, and `tests/foundation/repository-contract.test.ts`
+# pins it deliberately so a bump fails the suite. A third literal here was not
+# deliberate (issue #124): it would have gone stale silently on the next bump,
+# and this hook is the one place whose disagreement nothing would catch.
+REQUIRED_NODE="$(tr -d '[:space:]' < "${PROJECT_DIR}/.node-version")"
+if [ -z "${REQUIRED_NODE}" ]; then
+  echo "[session-start] .node-version is missing or empty; cannot provision Node." >&2
+  exit 1
+fi
 
 log() { echo "[session-start] $*"; }
 
