@@ -16,6 +16,15 @@ import { openHarness } from './harness-fixture';
 const QUOTA_BYTES = 4 * 1024 * 1024;
 const PRISON = 'quota-prison';
 
+/**
+ * The payload of the save that must be refused, and the headroom bound below.
+ *
+ * Named because it is used twice and the two uses must agree: a save the fill
+ * left room for is a save that succeeds, and the test then reports the
+ * opposite of what it means.
+ */
+const OVERSIZED_SAVE_BYTES = 8 * 1024;
+
 async function capOriginQuota(page: import('@playwright/test').Page): Promise<void> {
   const client = await page.context().newCDPSession(page);
   await client.send('Storage.overrideQuotaForOrigin', {
@@ -65,7 +74,45 @@ test.describe('quota exhaustion', () => {
     expect((await page.evaluate(() => window.lockstateHarness.fillUntilWriteFails(1024 * 1024, 32))).failure).not.toBeNull();
     expect((await page.evaluate(() => window.lockstateHarness.fillUntilWriteFails(32 * 1024, 256))).failure).not.toBeNull();
 
-    const rejected = await page.evaluate((prisonId) => window.lockstateHarness.save(prisonId, 2, 8 * 1024), PRISON);
+    /*
+     * The precondition, asserted rather than assumed (#227).
+     *
+     * Everything below is sound only while the save genuinely does not fit.
+     * That is a property of the **machine**, not of the fixture: the cap is set
+     * over CDP, but the usage is reached by filling real storage until the
+     * browser refuses a write, and the two passes above are coarse-then-fine
+     * precisely because the boundary is approached rather than set. If they
+     * both report a failure while headroom remains -- accounting granularity,
+     * eviction between the fill and the save, another origin moving under the
+     * same quota -- the save succeeds and `expect(rejected.ok).toBe(false)`
+     * fails with a message about generation rotation, which is the wrong
+     * diagnosis for a test whose fill fell short.
+     *
+     * PR #218 hit exactly one such failure and spent an investigation on it;
+     * it has not reproduced since (#227), so this is not a fix for a known bug
+     * but a true statement about what the assertions below depend on. It adds
+     * nothing that can pass in place of them, weakens none of them, and turns
+     * a confusing failure into an actionable one.
+     *
+     * Measured on this container: the fill overshoots, `usage` landing about
+     * 17 KiB **past** the cap, so the margin here is wide. The bound is the
+     * save's own size rather than that observation, because the observation is
+     * a fact about one machine and the bound is the condition that has to hold
+     * on every machine.
+     */
+    const settled = await page.evaluate(() => window.lockstateHarness.estimateQuota());
+    expect(settled.quota, 'the quota override stopped being reported mid-test').toBe(QUOTA_BYTES);
+    expect(settled.usage, 'navigator.storage.estimate() reported no usage, so the headroom below cannot be computed').not.toBeNull();
+    const headroom = QUOTA_BYTES - settled.usage!;
+    expect(
+      headroom,
+      `the fill left ${headroom} bytes of headroom, which is room for the ${OVERSIZED_SAVE_BYTES}-byte save below. The fill did not reach the cap, so this run cannot test quota exhaustion -- nothing below is a real assertion about the save path. This is the precondition, not the behaviour (#227).`,
+    ).toBeLessThan(OVERSIZED_SAVE_BYTES);
+
+    const rejected = await page.evaluate(
+      ([prisonId, bytes]) => window.lockstateHarness.save(prisonId as string, 2, bytes as number),
+      [PRISON, OVERSIZED_SAVE_BYTES] as const,
+    );
     expect(rejected.ok).toBe(false);
     expect(rejected.errorCode).toBe('quota-exceeded');
 
