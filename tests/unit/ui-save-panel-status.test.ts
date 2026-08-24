@@ -3,7 +3,15 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_LOCALE } from '../../src/content/localization';
 import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
-import { type SaveMessage, describeActionFailure, describeRestoredScope, describeSaveResult } from '../../src/ui/save-panel';
+import {
+  type SaveMessage,
+  describeActionFailure,
+  describeImportResult,
+  describeLoadFailure,
+  describeRestoredScope,
+  describeSaveResult,
+  parseImportedSave,
+} from '../../src/ui/save-panel';
 import { SAVE_PANEL_MESSAGE_KEY, SAVE_PANEL_MESSAGE_KEYS } from '../../src/ui/save-panel-messages';
 import { CURRENT_SAVE_RESTORED_SCOPE } from '../../src/simulation/runtime/restore-session';
 
@@ -132,7 +140,7 @@ describe('save panel message keys (issue #208)', () => {
   });
 
   it('names one failure key per action, and a fallback for one it does not know', () => {
-    const keys = (['create', 'save', 'load', 'delete', 'export'] as const).map(
+    const keys = (['create', 'save', 'load', 'delete', 'export', 'import'] as const).map(
       (actionId) => describeActionFailure({ actionId, error: new Error('boom') }).messageKey,
     );
     expect(new Set(keys).size, 'each action must fail in its own words').toBe(keys.length);
@@ -243,6 +251,144 @@ describe('refresh supersession guard', () => {
     await first;
 
     expect(painted).toEqual(['fresh:new']); // the stale run discarded itself
+  });
+});
+
+/**
+ * Issue #287: importing a save file the player exported, and the four ways
+ * that can be refused.
+ *
+ * These are the same pure mappings as the block at the top of this file, and
+ * they are tested the same way -- through the real bundled catalog, so the
+ * sentence a player reads is pinned word for word and a key that stops
+ * existing fails here rather than rendering as itself.
+ *
+ * The property that matters is the *distinction*. A save from a newer build is
+ * not a corrupt save, and neither is a file that was never a save at all: one
+ * asks the player to update the game, one tells them this copy is damaged, and
+ * one tells them they picked the wrong file. `SaveImportResult.rejected`
+ * carries `decodeSaveEnvelope`'s own code precisely so the panel can say which,
+ * and a mapping that collapsed any two of them would pass every "an error is
+ * shown" assertion while telling the player something false.
+ */
+describe('describeImportResult: four refusals, four sentences (issue #287)', () => {
+  const rejections = {
+    notASave: describeImportResult({
+      ok: false,
+      error: { code: 'unknown-error', message: 'Import rejected: missing version' },
+      rejected: { code: 'invalid-shape', message: 'Save envelope is missing a numeric saveSchemaVersion.' },
+    }),
+    newerBuild: describeImportResult({
+      ok: false,
+      error: { code: 'unknown-error', message: 'Import rejected: newer' },
+      rejected: { code: 'unsupported-version', message: 'Version 99 is newer than the latest supported version 4.', atVersion: 99 },
+    }),
+    invalid: describeImportResult({
+      ok: false,
+      error: { code: 'unknown-error', message: 'Import rejected: invalid' },
+      rejected: { code: 'invalid-shape', message: 'Version 4 payload failed validation: kernel: Required', atVersion: 4 },
+    }),
+    corrupt: describeImportResult({
+      ok: false,
+      error: { code: 'unknown-error', message: 'Import rejected: checksum' },
+      rejected: { code: 'checksum-mismatch', message: 'Save checksum does not match its payload; the save is corrupt.', atVersion: 4 },
+    }),
+  } as const;
+
+  it('reports a completed import with the generation it wrote', () => {
+    const status = describeImportResult({ ok: true, generationId: 'gen-xyz', migrated: false });
+    expect(status.kind).toBe('saved');
+    expect(status.messageKey).toBe(SAVE_PANEL_MESSAGE_KEY.statusImported);
+    expect(resolve(status)).toBe('Imported the save file into this prison (generation gen-xyz).');
+  });
+
+  it('says so when the file it imported came from an older version', () => {
+    // The player-visible evidence that the migration chain ran. Nothing else
+    // in the interface can tell them.
+    const status = describeImportResult({ ok: true, generationId: 'gen-old', migrated: true });
+    expect(status.messageKey).toBe(SAVE_PANEL_MESSAGE_KEY.statusImportedMigrated);
+    expect(resolve(status)).toContain('older version');
+    expect(resolve(status)).toContain('gen-old');
+  });
+
+  it('tells the four refusals apart, in four sentences and four keys', () => {
+    const all = Object.values(rejections);
+    expect(new Set(all.map((status) => status.messageKey)).size, 'four keys').toBe(4);
+    expect(new Set(all.map(resolve)).size, 'four sentences').toBe(4);
+    for (const status of all) expect(status.kind).toBe('error');
+  });
+
+  it('says which of the four, in the player\'s terms rather than the decoder\'s', () => {
+    expect(rejections.notASave.messageKey).toBe(SAVE_PANEL_MESSAGE_KEY.statusImportNotASave);
+    expect(resolve(rejections.notASave)).toContain('not a Lockstate save');
+    // A newer save is not a broken save, and the advice differs: update the
+    // game rather than distrust the file.
+    expect(rejections.newerBuild.messageKey).toBe(SAVE_PANEL_MESSAGE_KEY.statusImportUnsupportedVersion);
+    expect(resolve(rejections.newerBuild)).toMatch(/newer version of Lockstate/i);
+    expect(resolve(rejections.newerBuild)).not.toMatch(/corrupt|damaged/i);
+    expect(rejections.corrupt.messageKey).toBe(SAVE_PANEL_MESSAGE_KEY.statusImportCorrupt);
+    expect(resolve(rejections.corrupt)).toMatch(/checksum/i);
+    // And the structural one carries the decoder's own diagnostic, as a
+    // parameter, the same way every other spliced detail in this panel does.
+    expect(rejections.invalid.messageKey).toBe(SAVE_PANEL_MESSAGE_KEY.statusImportInvalid);
+    expect(rejections.invalid.messageParameters).toEqual({ detail: 'Version 4 payload failed validation: kernel: Required' });
+    expect(resolve(rejections.invalid)).toContain('kernel: Required');
+  });
+
+  it('separates a file that is not a save from a save whose contents are invalid, by the version it declared', () => {
+    // Both are `invalid-shape`. The difference is `atVersion`: the
+    // missing-version refusal is raised before any schema runs, so it has no
+    // version, while a structural failure is raised *at* the version the file
+    // declared. Collapsing them would tell a player with a damaged save to go
+    // and find a different file.
+    expect(rejections.notASave.messageKey).not.toBe(rejections.invalid.messageKey);
+  });
+
+  it('hands a write failure back to the save vocabulary rather than inventing an import one', () => {
+    // No `rejected`: the envelope decoded and *storage* refused it, which is
+    // the state `describeSaveResult` already models with its own advice (#19).
+    const quota = describeImportResult({ ok: false, error: { code: 'quota-exceeded', message: 'full' } });
+    expect(quota.kind).toBe('quota-exceeded');
+    expect(quota.messageKey).toBe(SAVE_PANEL_MESSAGE_KEY.statusQuotaExceeded);
+    expect(resolve(quota)).toMatch(/previous save is intact/i);
+  });
+});
+
+describe('parseImportedSave: the interface layer turns bytes into a value and nothing more', () => {
+  it('hands over whatever JSON the file contained, without judging it', () => {
+    // Deliberately *not* a valid save: deciding that is
+    // `decodeSaveEnvelope`'s job, and a second opinion about the save format
+    // in `src/ui/` is the copy that would rot.
+    expect(parseImportedSave('{"saveSchemaVersion":4}')).toEqual({ ok: true, raw: { saveSchemaVersion: 4 } });
+  });
+
+  it('refuses a file that is not JSON at all as "not a Lockstate save"', () => {
+    const parsed = parseImportedSave('<html>not a save</html>');
+    expect(parsed.ok).toBe(false);
+    if (parsed.ok) return;
+    expect(parsed.status.messageKey).toBe(SAVE_PANEL_MESSAGE_KEY.statusImportNotASave);
+    // The `SyntaxError` is dropped on purpose: "Unexpected token < in JSON at
+    // position 0" describes the parser, not the player's mistake.
+    expect(resolve(parsed.status)).not.toMatch(/JSON|token/i);
+  });
+
+  it('never throws, whatever the file holds', () => {
+    for (const text of ['', '   ', 'null', '[1,2,3]', '{"a":', '\u0000']) {
+      expect(() => parseImportedSave(text)).not.toThrow();
+    }
+    // `null` and an array are valid JSON and are the importer's problem, not
+    // this function's.
+    expect(parseImportedSave('null')).toEqual({ ok: true, raw: null });
+  });
+});
+
+describe('describeLoadFailure: one vocabulary for both callers', () => {
+  it('names the two outcomes a load can fail with, distinctly', () => {
+    const missing = describeLoadFailure('not-found');
+    const unreadable = describeLoadFailure('no-valid-generation');
+    expect(missing.messageKey).toBe(SAVE_PANEL_MESSAGE_KEY.statusNotFound);
+    expect(unreadable.messageKey).toBe(SAVE_PANEL_MESSAGE_KEY.statusNoReadableGeneration);
+    expect(resolve(missing)).not.toBe(resolve(unreadable));
   });
 });
 

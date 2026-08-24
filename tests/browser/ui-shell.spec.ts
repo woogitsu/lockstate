@@ -119,6 +119,166 @@ test.describe('save panel concurrency (issue #65)', () => {
 });
 
 /**
+ * Issue #287: the player can load a save file they exported.
+ *
+ * `SessionController.importInto` existed, was exported, was reachable, and
+ * nothing called it -- so the application could write a save file it could not
+ * read back. What needs a browser here is the half no headless layer has:
+ * `tests/unit/ui-save-panel-status.test.ts` proves the mappings and
+ * `tests/unit/persistence-local-repository.test.ts` proves the import path,
+ * and both of them passed for as long as the control did not exist. A real
+ * `<input type="file">`, a real file chooser and a real `File.text()` are what
+ * this layer adds.
+ *
+ * The stub controller is what makes the four refusals drivable: each is a
+ * `SaveImportResult` the real persistence layer can produce (see
+ * `IMPORT_OUTCOMES` in `ui-harness.ts`), and reproducing a save from a *newer*
+ * schema version against the real repository would mean writing one this build
+ * cannot write. The round trip against the real thing -- export a session,
+ * import the bytes back -- is in `tests/browser/app-shell.spec.ts`, where there
+ * is a simulation worker and an IndexedDB to round-trip through.
+ */
+test.describe('importing a save file (issue #287)', () => {
+  /**
+   * Deliberately not a valid envelope. What the panel must do with the bytes
+   * is hand them to the importer unexamined: whether they are a save is
+   * `decodeSaveEnvelope`'s question, and a second opinion about the save
+   * format in `src/ui/` would be the copy that rots.
+   */
+  const SAVE_TEXT = '{"saveSchemaVersion":4,"prisonId":"prison-1","payload":{"tick":7}}';
+
+  /** Presses Import and answers the chooser with `text`, exactly as a player choosing a file does. */
+  async function chooseFile(page: Page, text: string, name = 'prison-1.lockstate.json'): Promise<void> {
+    const chooser = page.waitForEvent('filechooser');
+    // A real click on the real button, not a harness shortcut: the file
+    // chooser is opened by the control and that is half of what is under test.
+    await page.locator('.save-panel__button', { hasText: 'Import' }).click();
+    await (await chooser).setFiles({ name, mimeType: 'application/json', buffer: Buffer.from(text, 'utf8') });
+  }
+
+  const status = (page: Page) => page.locator('.save-panel__status');
+
+  test.beforeEach(async ({ page }) => {
+    await page.evaluate(() => window.lockstateUiHarness.mountSavePanel());
+    await page.evaluate(() => window.lockstateUiHarness.refreshSavePanel());
+    // A save file goes into a prison, and `importInto` needs one that exists.
+    await page.evaluate(() => window.lockstateUiHarness.activateSession('prison-1'));
+  });
+
+  test('the control is on screen beside Export, and offers a file chooser', async ({ page }) => {
+    await expect(page.locator('.save-panel__button', { hasText: 'Import' })).toBeVisible();
+    await expectLaidOut(page, '.save-panel__actions', 'the save panel actions row');
+
+    const chooser = page.waitForEvent('filechooser');
+    await page.locator('.save-panel__button', { hasText: 'Import' }).click();
+    expect((await chooser).isMultiple(), 'one save at a time').toBe(false);
+  });
+
+  test('the chosen file reaches the importer, and the import becomes the live session', async ({ page }) => {
+    await chooseFile(page, SAVE_TEXT);
+
+    await expect(status(page)).toHaveText('Imported the save file into this prison (generation imported-gen-1).');
+    await expectLaidOut(page, '.save-panel__status', 'the save panel status line');
+
+    // The assertion that fails if the control is inert. A button that opened a
+    // chooser, read the file and dropped it would leave this empty while every
+    // rendered-text assertion above still passed.
+    expect(await page.evaluate(() => window.lockstateUiHarness.importedRaw())).toEqual([
+      JSON.stringify(JSON.parse(SAVE_TEXT)),
+    ]);
+    // And a save that reached storage and was never loaded would leave the
+    // player looking at their old game. Import means the file becomes the game.
+    expect(await page.evaluate(() => window.lockstateUiHarness.loadedPrisons())).toEqual(['prison-1']);
+    await expect(page.locator('.save-panel__detail')).toContainText('Restored:');
+
+    // The input existed for the choice and does not outlive it. A permanently
+    // hidden file input would be a control that is never laid out, which
+    // `app-shell.spec.ts`'s reachability sweep accounts for and would fail on.
+    expect(await page.locator('.save-panel input').count()).toBe(0);
+    await page.waitForTimeout(100);
+    expect(await page.evaluate(() => window.lockstateUiHarness.takeUnhandledRejections())).toEqual([]);
+  });
+
+  test('a save from an older version reports that it was brought up to date', async ({ page }) => {
+    await page.evaluate(() => window.lockstateUiHarness.setImportOutcome('ok-migrated'));
+    await chooseFile(page, SAVE_TEXT);
+
+    // The player-visible evidence that the migration chain ran on the way in.
+    await expect(status(page)).toContainText('older version of Lockstate');
+    await expect(status(page)).toContainText('imported-gen-2');
+    expect(await page.evaluate(() => window.lockstateUiHarness.loadedPrisons())).toEqual(['prison-1']);
+  });
+
+  test('a file that is not JSON is refused here and never reaches persistence', async ({ page }) => {
+    await chooseFile(page, '<html>a web page, not a save</html>', 'not-a-save.json');
+
+    await expect(status(page)).toHaveText('That file is not a Lockstate save — choose a file exported from this game.');
+    await expectLaidOut(page, '.save-panel__status', 'the save panel status line');
+    expect(await page.evaluate(() => window.lockstateUiHarness.importedRaw())).toEqual([]);
+    expect(await page.evaluate(() => window.lockstateUiHarness.loadedPrisons())).toEqual([]);
+    expect(await page.evaluate(() => window.lockstateUiHarness.takeUnhandledRejections())).toEqual([]);
+  });
+
+  test('each refusal says something different, and none of them loads anything', async ({ page }) => {
+    const sentences: string[] = [];
+    for (const outcome of ['not-a-save', 'unsupported-version', 'invalid-shape', 'checksum-mismatch'] as const) {
+      await page.evaluate((name) => window.lockstateUiHarness.setImportOutcome(name), outcome);
+      await chooseFile(page, SAVE_TEXT);
+      // Each one is a rejection, so the panel is never left saying "reading".
+      await expect(status(page)).not.toHaveText('Reading the save file…');
+      sentences.push(await status(page).innerText());
+    }
+
+    // Four refusals, four sentences. One "import failed" for all four would
+    // pass every assertion above.
+    expect(new Set(sentences).size, sentences.join(' | ')).toBe(4);
+    expect(sentences[0]).toContain('not a Lockstate save');
+    expect(sentences[1]).toContain('newer version of Lockstate');
+    expect(sentences[2]).toContain('could not be read');
+    expect(sentences[3]).toContain('checksum');
+    // The file reached the importer every time -- these are the importer's own
+    // refusals -- and nothing was ever made live.
+    expect(await page.evaluate(() => window.lockstateUiHarness.importedRaw())).toHaveLength(4);
+    expect(await page.evaluate(() => window.lockstateUiHarness.loadedPrisons())).toEqual([]);
+  });
+
+  test('with no prison to import into, it says so and imports nothing', async ({ page }) => {
+    // A fresh panel: the stub has no active session again.
+    await page.evaluate(() => window.lockstateUiHarness.mountSavePanel());
+    await page.evaluate(() => window.lockstateUiHarness.refreshSavePanel());
+
+    await chooseFile(page, SAVE_TEXT);
+
+    await expect(status(page)).toHaveText('No active prison — create or load one first.');
+    expect(await page.evaluate(() => window.lockstateUiHarness.importedRaw())).toEqual([]);
+  });
+
+  test('the import is gated like every other action, and the panel comes back after it', async ({ page }) => {
+    await chooseFile(page, SAVE_TEXT);
+    await expect(status(page)).toContainText('Imported');
+
+    // The gate released: every control is live again, so one import does not
+    // wedge the panel (issue #65's property, for the new action).
+    for (const label of ['New prison', 'Save now', 'Export', 'Import']) {
+      expect(
+        await page.evaluate((name) => window.lockstateUiHarness.saveButtonState(name), label),
+        label,
+      ).toEqual({ found: true, disabled: false, ariaBusy: 'false' });
+    }
+
+    // And a second import works, which is what "comes back" means. Polled,
+    // because `setFiles` resolves when the chooser is answered and the panel's
+    // work starts on the `change` event after it.
+    await chooseFile(page, SAVE_TEXT);
+    await expect
+      .poll(async () => (await page.evaluate(() => window.lockstateUiHarness.importedRaw())).length, {
+        message: 'the second import never reached the importer',
+      })
+      .toBe(2);
+  });
+});
+
+/**
  * Issue #208: every player-facing string in the save panel comes from the
  * catalog.
  *
@@ -174,6 +334,7 @@ test.describe('save panel localization (issue #208)', () => {
       'New prison',
       'Save now',
       'Export',
+      'Import',
       'No prisons yet.',
       'Local saves only — no network required.',
     ]);

@@ -1,5 +1,5 @@
 import type { LocalizationKey } from '../content/localization';
-import type { SaveResult } from '../persistence/local/repository';
+import type { SaveImportResult, SaveResult } from '../persistence/local/repository';
 import type { PrisonSlotMetadata } from '../persistence/local/store';
 import type { SaveEnvelope } from '../persistence/save-schema';
 import type { ActiveSession, SessionLoadOutcome } from '../persistence/session/session-controller';
@@ -64,7 +64,7 @@ export interface SaveStatus extends SaveMessage {
 }
 
 /** The panel's actions, named so a failure can say which one failed. */
-export type SavePanelActionId = 'create' | 'save' | 'load' | 'delete' | 'export';
+export type SavePanelActionId = 'create' | 'save' | 'load' | 'delete' | 'export' | 'import';
 
 export function describeSaveResult(result: SaveResult): SaveStatus {
   if (result.ok) {
@@ -86,6 +86,117 @@ export function describeSaveResult(result: SaveResult): SaveStatus {
         kind: 'error',
         messageKey: SAVE_PANEL_MESSAGE_KEY.statusSaveFailed,
         messageParameters: { detail: result.error.message },
+      };
+  }
+}
+
+/**
+ * Why a load found nothing to load.
+ *
+ * Shared by the Load button and by the Import control, which loads the
+ * generation it has just written: two callers reporting the same two outcomes
+ * must not drift into two vocabularies for them.
+ */
+export function describeLoadFailure(reason: 'not-found' | 'no-valid-generation'): SaveStatus {
+  return {
+    kind: 'error',
+    messageKey:
+      reason === 'not-found'
+        ? SAVE_PANEL_MESSAGE_KEY.statusNotFound
+        : SAVE_PANEL_MESSAGE_KEY.statusNoReadableGeneration,
+  };
+}
+
+/** A chosen file's bytes, either as something to hand to the importer or as the reason not to. */
+export type ParsedImportFile =
+  | { readonly ok: true; readonly raw: unknown }
+  | { readonly ok: false; readonly status: SaveStatus };
+
+/**
+ * The one thing the interface layer does to an imported file before the
+ * persistence layer sees it: turn text into a value.
+ *
+ * A file that is not JSON at all is not a Lockstate save, and saying so here
+ * costs nothing and reaches the player in their own terms. Everything past
+ * that -- what the value *is* -- is `decodeSaveEnvelope`'s question and is
+ * deliberately not asked here: a second opinion about the save format living
+ * in `src/ui/` is the shape of defect ADR 0011 and `AGENTS.md` boundary 5
+ * both exist to prevent, and it would be the copy that rots.
+ *
+ * Pure, so it is provable in the default `node` Vitest environment while the
+ * DOM half of the control needs a browser.
+ */
+export function parseImportedSave(text: string): ParsedImportFile {
+  try {
+    return { ok: true, raw: JSON.parse(text) };
+  } catch {
+    // The `SyntaxError` is deliberately dropped rather than spliced in as a
+    // `{detail}`: "Unexpected token < in JSON at position 0" describes the
+    // parser's disappointment, not the player's mistake, which is that this is
+    // not a save file.
+    return { ok: false, status: { kind: 'error', messageKey: SAVE_PANEL_MESSAGE_KEY.statusImportNotASave } };
+  }
+}
+
+/**
+ * What an import did, or why it was refused (#287).
+ *
+ * Four refusals, four sentences, from the decode error the persistence layer
+ * hands up rather than from a string it built:
+ *
+ * - **`unsupported-version`** -- the save is fine and this build is too old.
+ * - **`checksum-mismatch`** -- the file was damaged or edited after export.
+ * - **`invalid-shape` with no `atVersion`** -- the value never declared a
+ *   numeric `saveSchemaVersion`, so nothing in it identifies it as a Lockstate
+ *   save at all. `atVersion` is what separates this from the case below:
+ *   `decodeSaveEnvelope` reports the missing-version refusal before any schema
+ *   runs and therefore without a version, while every structural failure is
+ *   raised *at* the version the file declared and carries it.
+ * - **`invalid-shape` at a version, `no-migration-path`,
+ *   `migration-produced-invalid-output`** -- it declares itself a save of a
+ *   version this build knows and its contents do not hold up. The decoder's
+ *   own message rides along as `{detail}`, the same convention every other
+ *   spliced diagnostic in this panel uses.
+ *
+ * A failure with no `rejected` at all is a *write* failure -- the envelope
+ * decoded and storage refused it -- so it goes to `describeSaveResult`, which
+ * already tells quota, abort and unknown apart (#19). Nothing about that
+ * mapping is duplicated here.
+ */
+export function describeImportResult(result: SaveImportResult): SaveStatus {
+  if (result.ok) {
+    return {
+      kind: 'saved',
+      messageKey: result.migrated
+        ? SAVE_PANEL_MESSAGE_KEY.statusImportedMigrated
+        : SAVE_PANEL_MESSAGE_KEY.statusImported,
+      messageParameters: { generation: result.generationId },
+    };
+  }
+
+  const rejected = result.rejected;
+  if (rejected === undefined) return describeSaveResult(result);
+
+  switch (rejected.code) {
+    case 'unsupported-version':
+      return { kind: 'error', messageKey: SAVE_PANEL_MESSAGE_KEY.statusImportUnsupportedVersion };
+    case 'checksum-mismatch':
+      return { kind: 'error', messageKey: SAVE_PANEL_MESSAGE_KEY.statusImportCorrupt };
+    case 'invalid-shape':
+      // No declared version at all: nothing in the value says it is a save.
+      if (rejected.atVersion === undefined) {
+        return { kind: 'error', messageKey: SAVE_PANEL_MESSAGE_KEY.statusImportNotASave };
+      }
+      return {
+        kind: 'error',
+        messageKey: SAVE_PANEL_MESSAGE_KEY.statusImportInvalid,
+        messageParameters: { detail: rejected.message },
+      };
+    default:
+      return {
+        kind: 'error',
+        messageKey: SAVE_PANEL_MESSAGE_KEY.statusImportInvalid,
+        messageParameters: { detail: rejected.message },
       };
   }
 }
@@ -140,6 +251,7 @@ const ACTION_FAILURE_KEYS: Readonly<Record<SavePanelActionId, LocalizationKey>> 
   load: SAVE_PANEL_MESSAGE_KEY.failureLoad,
   delete: SAVE_PANEL_MESSAGE_KEY.failureDelete,
   export: SAVE_PANEL_MESSAGE_KEY.failureExport,
+  import: SAVE_PANEL_MESSAGE_KEY.failureImport,
 };
 
 /**
@@ -180,6 +292,19 @@ export interface SavePanelSessions {
   loadPrison(prisonId: string): Promise<SessionLoadOutcome>;
   deletePrison(prisonId: string): Promise<void>;
   exportActive(): Promise<SaveEnvelope | undefined>;
+  importInto(prisonId: string, raw: unknown): Promise<SaveImportResult>;
+}
+
+/**
+ * The slice of `File` the import path reads.
+ *
+ * Structural, and one method, for the same reason `SavePanelSessions` is: it
+ * is what lets the parse-and-report half of an import be driven without a
+ * file picker, a `FileList` or a real `File`. A `File` satisfies it as
+ * written, so `requestImport` hands one straight over.
+ */
+export interface SavePanelImportFile {
+  text(): Promise<string>;
 }
 
 /**
@@ -260,6 +385,13 @@ export class SavePanel {
       this.button(this.busy, SAVE_PANEL_MESSAGE_KEY.actionCreate, () => this.requestCreate()),
       this.button(this.busy, SAVE_PANEL_MESSAGE_KEY.actionSave, () => this.requestSaveNow()),
       this.button(this.busy, SAVE_PANEL_MESSAGE_KEY.actionExport, () => this.requestExport()),
+      // Beside Export, in the same always-visible row and behind no
+      // disclosure: measured on the assembled page, the row wraps to a second
+      // line of `--tap-target` and the panel is a scroll container whose
+      // height the rail decides, so the fourth button costs the Build panel
+      // nothing at any of the five viewports the browser suite visits. See
+      // `docs/PERSISTENCE.md`.
+      this.button(this.busy, SAVE_PANEL_MESSAGE_KEY.actionImport, () => this.requestImport()),
     );
     this.root.append(actions);
 
@@ -435,13 +567,7 @@ export class SavePanel {
       const outcome = await this.controller.loadPrison(prisonId);
 
       if (!outcome.ok) {
-        this.setStatus({
-          kind: 'error',
-          messageKey:
-            outcome.reason === 'not-found'
-              ? SAVE_PANEL_MESSAGE_KEY.statusNotFound
-              : SAVE_PANEL_MESSAGE_KEY.statusNoReadableGeneration,
-        });
+        this.setStatus(describeLoadFailure(outcome.reason));
         await this.refresh();
         return;
       }
@@ -487,6 +613,140 @@ export class SavePanel {
       link.click();
       URL.revokeObjectURL(url);
       this.setStatus({ kind: 'saved', messageKey: SAVE_PANEL_MESSAGE_KEY.statusExported });
+    });
+  }
+
+  /**
+   * Asks the player for a file, and hands whatever they choose to
+   * `requestImportFile`.
+   *
+   * The other half of Export (#287), and the reason `importInto` existed with
+   * no caller: the application could write a save file it could not read
+   * back.
+   *
+   * **The `<input type="file">` is created for this one gesture and removed
+   * with it.** A file picker is a DOM affordance and belongs here rather than
+   * anywhere the simulation can see it, but a *permanent* hidden input would
+   * also be a permanent control that is never laid out, and
+   * `tests/browser/app-shell.spec.ts`'s reachability sweep requires every
+   * control on the page to be laid out in some state it visits -- an input
+   * matching `INTERACTIVE_SELECTOR` and never having a box would fail that
+   * accounting rather than pass it. Transient is also the honest shape: the
+   * element is a mechanism for one choice, not a part of the panel.
+   *
+   * **Deliberately outside the action gate.** A file dialog stays open for as
+   * long as the player likes and can be dismissed without producing any event
+   * at all in older engines, so gating the *choosing* would disable every
+   * control in the panel for an unbounded time and, on a cancel, until the
+   * page was reloaded. The gate opens when the bytes arrive, which is when
+   * work actually starts -- so this returns nothing to refuse.
+   */
+  public requestImport(): void {
+    const chooser = document.createElement('input');
+    chooser.type = 'file';
+    // A hint to the picker, never a gate: the player can still choose
+    // anything, and a wrong choice is reported rather than prevented -- which
+    // is the behaviour that has to work, since a save file copied off another
+    // machine may well arrive with no extension at all.
+    chooser.accept = 'application/json,.json';
+    chooser.hidden = true;
+    chooser.addEventListener(
+      'change',
+      () => {
+        const file = chooser.files?.[0];
+        chooser.remove();
+        if (file !== undefined) this.requestImportFile(file);
+      },
+      { once: true },
+    );
+    // Dismissing the dialog leaves nothing to do and nothing to say; the
+    // element still has to go.
+    chooser.addEventListener('cancel', () => chooser.remove(), { once: true });
+    this.root.append(chooser);
+    chooser.click();
+  }
+
+  /**
+   * Imports one chosen file into the active prison and makes it the live
+   * session.
+   *
+   * Public and taking a `SavePanelImportFile` rather than being buried in the
+   * picker's `change` handler, for the same reason every other action here is
+   * a public `request*`: it is the seam a test drives, and it returns the
+   * gate's decision so a refusal can be asserted rather than inferred.
+   *
+   * **Into the active prison, as a new generation.** That is the symmetry
+   * `exportActive` sets: the file the player exported came from the active
+   * prison and it goes back into one, and `importInto` requires an existing
+   * slot in any case (`PrisonSaveRepository.save` refuses a prison that was
+   * never created). Nothing is overwritten destructively -- the pre-import
+   * state stays in the retained generation window and the repository's
+   * recovery scan can still reach it -- and with no active prison the panel
+   * says so in the sentence it already has for that state.
+   *
+   * **Then it loads.** An import that only wrote a generation would leave the
+   * player looking at their old game with a new save on disk, which is not
+   * what pressing Import means. Writing and loading stay two calls
+   * (`SessionController.importInto` explains why) so that each half reports
+   * for itself: a save that reaches storage and then fails to restore says
+   * *that*, rather than reporting a clean import over a game that never
+   * changed.
+   */
+  public requestImportFile(file: SavePanelImportFile): AsyncActionOutcome {
+    return this.start('import', async () => {
+      const session = this.controller.getActiveSession();
+      if (session === undefined) {
+        this.setStatus({ kind: 'idle', messageKey: SAVE_PANEL_MESSAGE_KEY.statusNoActivePrison });
+        return;
+      }
+
+      this.setStatus({ kind: 'saving', messageKey: SAVE_PANEL_MESSAGE_KEY.statusImporting });
+      // A read that fails -- a file the player deleted between choosing it and
+      // this line, a permission the browser withdrew -- is the action's own
+      // failure sentence rather than an escape to the gate's backstop.
+      let text: string;
+      try {
+        text = await file.text();
+      } catch (error) {
+        this.setStatus({
+          kind: 'error',
+          messageKey: SAVE_PANEL_MESSAGE_KEY.failureImport,
+          messageParameters: { detail: describeActionError(error) },
+        });
+        return;
+      }
+
+      const parsed = parseImportedSave(text);
+      if (!parsed.ok) {
+        this.setStatus(parsed.status);
+        return;
+      }
+
+      // Schema, migration and checksum all happen behind this call
+      // (`PrisonSaveRepository.importSave`), so a save from an older version
+      // is migrated on the way in and an invalid one never reaches storage.
+      const result = await this.controller.importInto(session.prisonId, parsed.raw);
+      if (!result.ok) {
+        this.setStatus(describeImportResult(result));
+        await this.refresh();
+        return;
+      }
+
+      const outcome = await this.controller.loadPrison(session.prisonId);
+      if (!outcome.ok) {
+        this.setStatus(describeLoadFailure(outcome.reason));
+        this.setDetail(undefined);
+        await this.refresh();
+        return;
+      }
+
+      // The import sentence, not the load's: the player pressed Import, and
+      // whether the file was migrated on the way in is the part of the outcome
+      // they cannot see anywhere else. The detail line still reports what the
+      // restore actually carried, from the bundle that was restored.
+      this.setStatus(describeImportResult(result));
+      this.setDetail(describeRestoredScope(outcome.scope, this.localizer));
+      await this.refresh();
     });
   }
 

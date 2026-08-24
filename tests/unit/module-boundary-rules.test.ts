@@ -94,6 +94,19 @@ describe('the import scanner reads what it claims to', () => {
     expect(findImports("/* import { Kernel } from '../simulation/kernel/kernel'; */")).toEqual([]);
   });
 
+  it('does not read a quoted occurrence of the keyword as an import', () => {
+    // The defect this closes: an action id spelled `'import'`
+    // (`src/ui/save-panel.ts`, #287) matched the side-effect pattern and
+    // swallowed everything up to the next quote as a specifier, so the file
+    // was reported as importing a package it does not import.
+    expect(findImports("this.start('import', run);")).toEqual([]);
+    expect(findImports("type Id = 'save' | 'import';")).toEqual([]);
+    // And the real thing next to it still counts, whatever precedes it.
+    expect(findImports("const id = 'import';\nimport './register';")).toEqual([
+      { specifier: './register', line: 2, typeOnly: false },
+    ]);
+  });
+
   it('does not read an unrelated `from` call as an import', () => {
     // Without the statement-boundary rule the `export const` below would lend
     // its keyword to the `from(...)` call and invent a dependency.

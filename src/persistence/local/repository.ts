@@ -1,4 +1,4 @@
-import { decodeSaveEnvelope, decodeSaveEnvelopeUnlessTrusted, type SaveEnvelope } from '../save-schema';
+import { decodeSaveEnvelope, decodeSaveEnvelopeUnlessTrusted, type SaveDecodeError, type SaveEnvelope } from '../save-schema';
 import { applyGenerationRetention } from './generation-policy';
 import { classifyStoreError, type SaveWriteError } from './errors';
 import { decodePrisonSlotMetadata, encodePrisonSlotMetadata, requirePrisonSlotMetadata } from './slot-metadata-schema';
@@ -7,6 +7,33 @@ import type { LocalSaveStore, LocalSaveTransaction, PendingSyncState, PrisonSlot
 export type SaveResult =
   | { readonly ok: true; readonly generationId: string }
   | { readonly ok: false; readonly error: SaveWriteError };
+
+/**
+ * The outcome of an import, which has two things to report that a save does
+ * not (#287).
+ *
+ * `SaveResult` carries a `SaveWriteError`, and a `SaveWriteError` can only
+ * say `quota-exceeded`, `transaction-aborted` or `unknown-error` -- the three
+ * ways *storage* fails. An import can also be refused before storage is
+ * reached at all, and `decodeSaveEnvelope` already distinguishes those
+ * reasons: a file that never declared a save schema version, a save from a
+ * newer schema version than this build understands, a structurally invalid
+ * one and a checksum mismatch are four different facts about the file the
+ * player chose. Collapsing them into `unknown-error` -- which is what this
+ * method did while nothing called it -- leaves the UI with one sentence for
+ * all four, so the decode error travels beside the write error rather than
+ * being flattened into its message. `rejected` is absent exactly when the
+ * envelope decoded and the *write* is what failed, so a caller can still hand
+ * that arm to the existing `describeSaveResult` mapping unchanged.
+ *
+ * `migrated` on the success arm is the other half: a save written by an older
+ * build is migrated on the way in (`decodeSaveEnvelope` walks the chain), and
+ * whether that happened is a fact about the file worth telling the player and
+ * worth being able to assert in a test.
+ */
+export type SaveImportResult =
+  | { readonly ok: true; readonly generationId: string; readonly migrated: boolean }
+  | { readonly ok: false; readonly error: SaveWriteError; readonly rejected?: SaveDecodeError };
 
 export type LoadRecoveryOutcome = 'current' | 'recovered-previous';
 
@@ -268,13 +295,32 @@ export class PrisonSaveRepository {
     return result.ok ? result.envelope : undefined;
   }
 
-  /** Validates `raw` through schema/migration/checksum (#18) before it ever reaches storage. */
-  public async importSave(prisonId: string, raw: unknown): Promise<SaveResult> {
+  /**
+   * Validates `raw` through schema/migration/checksum (#18) before it ever
+   * reaches storage.
+   *
+   * `decodeSaveEnvelope` is the whole of the migration story here: an older
+   * save is walked V1 -> V2 -> V3 -> V4 by `saveMigrationChain` and its
+   * checksum is verified against the payload as it was *written*, so what
+   * reaches `save()` is always a current-version envelope. Nothing above this
+   * method has to know a migration happened -- only that one did, which is
+   * what `migrated` reports.
+   *
+   * The decode error is returned rather than folded into the message, so the
+   * caller can tell the four ways a file is refused apart. See
+   * `SaveImportResult`.
+   */
+  public async importSave(prisonId: string, raw: unknown): Promise<SaveImportResult> {
     const decoded = decodeSaveEnvelope(raw);
     if (!decoded.ok) {
-      return { ok: false, error: { code: 'unknown-error', message: `Import rejected: ${decoded.error.message}` } };
+      return {
+        ok: false,
+        error: { code: 'unknown-error', message: `Import rejected: ${decoded.error.message}` },
+        rejected: decoded.error,
+      };
     }
-    return this.save(prisonId, decoded.value);
+    const result = await this.save(prisonId, decoded.value);
+    return result.ok ? { ...result, migrated: decoded.migrated } : result;
   }
 
   public async markPendingSync(prisonId: string, pendingSync: PendingSyncState): Promise<void> {

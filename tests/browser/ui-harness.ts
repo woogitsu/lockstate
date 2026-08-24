@@ -1,4 +1,4 @@
-import type { SaveResult } from '../../src/persistence/local/repository';
+import type { SaveImportResult, SaveResult } from '../../src/persistence/local/repository';
 import type { PrisonSlotMetadata } from '../../src/persistence/local/store';
 import type { ActiveSession, SessionLoadOutcome } from '../../src/persistence/session/session-controller';
 import {
@@ -18,11 +18,13 @@ import {
   mountHud,
 } from '../../src/ui/hud';
 import { SavePanel, type SavePanelSessions } from '../../src/ui/save-panel';
+import { CURRENT_SAVE_RESTORED_SCOPE } from '../../src/simulation/runtime/restore-session';
 import type {
   AlertProbe,
   BuildLayoutProbe,
   BuildProbe,
   ButtonState,
+  ImportOutcomeName,
   HudProbe,
   LayoutBox,
   LayoutProbe,
@@ -55,18 +57,88 @@ interface Pending {
   reject(error: unknown): void;
 }
 
+/**
+ * One `SaveImportResult` per branch the panel's mapping has to tell apart.
+ *
+ * Built here from the real type rather than in a spec, so a change to
+ * `SaveImportResult` is a compile error in one place. The decode codes and the
+ * presence or absence of `atVersion` are the whole point: `invalid-shape`
+ * without a version is "not a Lockstate save" and with one is "a save whose
+ * contents do not hold up", and the panel is required to say two different
+ * things about them.
+ */
+const IMPORT_OUTCOMES: Readonly<Record<ImportOutcomeName, SaveImportResult>> = {
+  ok: { ok: true, generationId: 'imported-gen-1', migrated: false },
+  'ok-migrated': { ok: true, generationId: 'imported-gen-2', migrated: true },
+  'not-a-save': {
+    ok: false,
+    error: { code: 'unknown-error', message: 'Import rejected: Save envelope is missing a numeric saveSchemaVersion.' },
+    rejected: { code: 'invalid-shape', message: 'Save envelope is missing a numeric saveSchemaVersion.' },
+  },
+  'unsupported-version': {
+    ok: false,
+    error: { code: 'unknown-error', message: 'Import rejected: Version 99 is newer than the latest supported version 4.' },
+    rejected: {
+      code: 'unsupported-version',
+      message: 'Version 99 is newer than the latest supported version 4.',
+      atVersion: 99,
+    },
+  },
+  'invalid-shape': {
+    ok: false,
+    error: { code: 'unknown-error', message: 'Import rejected: Version 4 payload failed validation: kernel: Required' },
+    rejected: {
+      code: 'invalid-shape',
+      message: 'Version 4 payload failed validation: kernel: Required',
+      atVersion: 4,
+    },
+  },
+  'checksum-mismatch': {
+    ok: false,
+    error: { code: 'unknown-error', message: 'Import rejected: Save checksum does not match its payload; the save is corrupt.' },
+    rejected: {
+      code: 'checksum-mismatch',
+      message: 'Save checksum does not match its payload; the save is corrupt.',
+      atVersion: 4,
+    },
+  },
+  // A decoded envelope that storage refused: no `rejected`, so the panel must
+  // fall back to the save vocabulary (#19) rather than invent an import one.
+  'quota-exceeded': { ok: false, error: { code: 'quota-exceeded', message: '' } },
+};
+
 class StubSessions implements SavePanelSessions {
   public createCalls = 0;
   public saveCalls = 0;
+  public readonly importedRaw: string[] = [];
+  public readonly loadedPrisons: string[] = [];
   private readonly prisons: PrisonSlotMetadata[] = [];
   private pendingCreate: Pending | undefined;
+  private session: ActiveSession | undefined;
+  private importOutcome: ImportOutcomeName = 'ok';
 
   public async listPrisons(): Promise<readonly PrisonSlotMetadata[]> {
     return [...this.prisons];
   }
 
   public getActiveSession(): ActiveSession | undefined {
-    return undefined;
+    return this.session;
+  }
+
+  public activateSession(prisonId: string): void {
+    this.session = { prisonId, revision: 1, createdAt: Date.now() };
+  }
+
+  public setImportOutcome(outcome: ImportOutcomeName): void {
+    this.importOutcome = outcome;
+  }
+
+  public async importInto(prisonId: string, raw: unknown): Promise<SaveImportResult> {
+    // Recorded as JSON so a spec can assert that *this* file's contents
+    // arrived, not merely that something did.
+    this.importedRaw.push(JSON.stringify(raw));
+    void prisonId;
+    return IMPORT_OUTCOMES[this.importOutcome];
   }
 
   public createPrison(prisonId: string, displayName?: string): Promise<SaveResult> {
@@ -94,8 +166,13 @@ class StubSessions implements SavePanelSessions {
     return { ok: false, error: { code: 'unknown-error', message: 'No active session to save.' } };
   }
 
-  public async loadPrison(): Promise<SessionLoadOutcome> {
-    return { ok: false, reason: 'not-found' };
+  public async loadPrison(prisonId: string): Promise<SessionLoadOutcome> {
+    this.loadedPrisons.push(prisonId);
+    // A session is what an import has just written into, so a load of one
+    // succeeds here; the not-found path is the panel's own Load button and is
+    // covered by `describeLoadFailure`'s unit tests.
+    if (this.session?.prisonId !== prisonId) return { ok: false, reason: 'not-found' };
+    return { ok: true, recovered: false, scope: CURRENT_SAVE_RESTORED_SCOPE };
   }
 
   public async deletePrison(prisonId: string): Promise<void> {
@@ -364,6 +441,22 @@ window.lockstateUiHarness = {
 
   releaseCreate(outcome: 'ok' | 'worker-timeout'): void {
     sessions?.releaseCreate(outcome);
+  },
+
+  activateSession(prisonId: string): void {
+    sessions?.activateSession(prisonId);
+  },
+
+  setImportOutcome(outcome: ImportOutcomeName): void {
+    sessions?.setImportOutcome(outcome);
+  },
+
+  importedRaw(): readonly string[] {
+    return [...(sessions?.importedRaw ?? [])];
+  },
+
+  loadedPrisons(): readonly string[] {
+    return [...(sessions?.loadedPrisons ?? [])];
   },
 
   async refreshSavePanel(): Promise<void> {

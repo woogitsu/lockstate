@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { expect, test, type Page } from '@playwright/test';
+import { SAVE_SCHEMA_VERSION } from '../../src/persistence/save-schema';
 
 /**
  * Real-browser verification for the *assembled application* — `index.html`
@@ -9,7 +10,7 @@ import { expect, test, type Page } from '@playwright/test';
  *
  * Every other spec in this directory drives a purpose-built harness page.
  * That is the right shape for a module under test, but it means nothing so
- * far has ever loaded the page a player loads. Twelve claims only exist once
+ * far has ever loaded the page a player loads. Thirteen claims only exist once
  * the pieces are assembled in a browser, and none of them can be settled a
  * layer down (the count is this list's own length, and it read "six" while
  * the list held seven):
@@ -111,6 +112,17 @@ import { expect, test, type Page } from '@playwright/test';
  *    assembled page can settle it, because the seam joins a `SimulationCommandSender`
  *    built at module scope to a `SessionController` built inside
  *    `bootPersistence`, and only `src/main.ts` holds both ends.
+ *
+ * 13. **A save file the game exported can be imported back.** #287: the
+ *    application offered a download it could not read --
+ *    `SessionController.importInto` was exported, reachable and called by
+ *    nothing. The round trip is the assertion the feature exists for, and no
+ *    layer below this one can make it: it needs a real download, a real
+ *    `<input type="file">`, a real file chooser, real IndexedDB and a real
+ *    simulation worker to restore into and capture back out of.
+ *    `tests/browser/ui-shell.spec.ts` covers the control and its four
+ *    refusals against a stub; only here are the bytes the page produced the
+ *    same bytes it reads.
  *
  * Deliberately NOT here, because a headless test already proves it and a
  * browser test that repeats one costs a minute of CI and adds no evidence:
@@ -372,6 +384,20 @@ async function dragOnWorld(page: Page): Promise<void> {
  * *between* two independently-positioned regions, so a check that only ever
  * looks inside one of them cannot see it.
  */
+/**
+ * The parts of an exported save this file reads.
+ *
+ * Deliberately not `SaveEnvelope`: what comes back off the download is
+ * untrusted JSON, and typing it as the real envelope would claim a validation
+ * this test has not performed. `payload` is compared whole and structurally,
+ * so nothing here needs to know its shape.
+ */
+interface ExportedEnvelope {
+  readonly saveSchemaVersion: number;
+  readonly prisonId: string;
+  readonly payload: { readonly kernel: { readonly tick: number } };
+}
+
 const INTERACTIVE_SELECTOR =
   'button, [role="button"], a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
@@ -1204,6 +1230,136 @@ test.describe('the assembled application', () => {
 
     await expect(page.locator('.save-panel__item-label')).toHaveText('New Prison (1 gen)');
     await expect(page.locator('.save-panel__empty')).toHaveCount(0);
+  });
+
+  /**
+   * Issue #287, and the whole point of the Import control: a session the game
+   * exported comes back.
+   *
+   * The path is the player's, end to end and with no stub anywhere in it -- run
+   * the simulation for a while, pause, save, Export (a real download), New
+   * prison (a second, empty session in a worker of its own), Import the
+   * downloaded bytes back through a real file chooser, then Save now, which
+   * captures from the worker the import restored into, and Export again to read
+   * what that worker is actually holding.
+   *
+   * The last two steps are what make this more than a storage test. Export
+   * returns the *stored* generation, so exporting straight after an import
+   * would compare a file with itself; capturing first means the payload
+   * compared has been through `SparseWorld.fromSnapshot` and the rest of the
+   * restore, in a real worker, and come back out. `tests/determinism/snapshot-restore-fidelity.test.ts`
+   * proves that fidelity in-process; this proves the *player-reachable* path
+   * reaches it.
+   *
+   * Elapsed simulation time is what makes the comparison non-vacuous, and it is
+   * chosen because a player can produce it with one press. A run of ticks
+   * carries the kernel's tick, its command sequence and every RNG stream state,
+   * so the second prison -- day one, tick zero, in a worker of its own -- is
+   * genuinely a different session, and an Import that did nothing would leave
+   * the final payload equal to *that* rather than to the file. Laying a wall
+   * would not do: with no materials bought the order is refused, so the
+   * construction section of both saves is empty and the comparison would pass
+   * on two copies of nothing (measured while writing this test).
+   */
+  test('a save file the game exported can be imported back, and the session comes back with it (#287)', async ({ page }) => {
+    test.slow(); // three sessions, two downloads and a real worker restore
+
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+
+    /** The bytes behind the Export button, read from the real download. */
+    const exportSave = async (): Promise<{ readonly text: string; readonly envelope: ExportedEnvelope }> => {
+      const downloading = page.waitForEvent('download');
+      await page.getByRole('button', { name: 'Export' }).click();
+      const download = await downloading;
+      // The file name a player sees, and evidence the download is this app's.
+      expect(download.suggestedFilename()).toMatch(/\.lockstate\.json$/);
+      const stream = await download.createReadStream();
+      const chunks: Buffer[] = [];
+      for await (const chunk of stream) chunks.push(Buffer.from(chunk));
+      const text = Buffer.concat(chunks).toString('utf8');
+      return { text, envelope: JSON.parse(text) as ExportedEnvelope };
+    };
+
+    /** Answers the Import control's file chooser with `text`, as a player picking a file does. */
+    const importSave = async (text: string, name: string): Promise<void> => {
+      const chooser = page.waitForEvent('filechooser');
+      await page.getByRole('button', { name: 'Import' }).click();
+      await (await chooser).setFiles({ name, mimeType: 'application/json', buffer: Buffer.from(text, 'utf8') });
+    };
+
+    const progress = page.locator('.hud-clock__day-progress');
+    const pause = page.locator('.hud-strip__transport [title="Pause"]');
+
+    // --- a prison with a history: some of day one has been played ---
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.save-panel__item-label')).toHaveText('New Prison (1 gen)');
+    await expect(progress).toHaveText('0%');
+
+    await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
+    await expect
+      .poll(async () => progress.textContent(), {
+        message: 'the simulation never advanced, so there is no history to export',
+        timeout: 15_000,
+      })
+      .not.toBe('0%');
+    await pause.click();
+    await expect(pause).toHaveAttribute('aria-pressed', 'true');
+    const playedTo = await progress.textContent();
+
+    await page.getByRole('button', { name: 'Save now' }).click();
+    await expect(page.locator('.save-panel__status')).toContainText('Saved (generation ');
+
+    const exported = await exportSave();
+    await expect(page.locator('.save-panel__status')).toHaveText('Exported the current save.');
+    // A real save file at the version this build writes, holding a kernel that
+    // has actually run. Without the second half the comparison below could be
+    // two copies of a fresh prison.
+    expect(exported.envelope.saveSchemaVersion).toBe(SAVE_SCHEMA_VERSION);
+    expect(exported.envelope.payload.kernel.tick, 'nothing was simulated before the export').toBeGreaterThan(0);
+
+    // --- a second, empty prison: the session the file has to replace ---
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.save-panel__item-label')).toHaveCount(2);
+    await expect(page.locator('.save-panel__status')).toContainText('Saved (generation ');
+    await expect(progress).toHaveText('0%');
+    const emptyPrison = await exportSave();
+    expect(emptyPrison.envelope.prisonId).not.toBe(exported.envelope.prisonId);
+    expect(
+      emptyPrison.envelope.payload.kernel.tick,
+      'the two sessions are indistinguishable, so importing one over the other would prove nothing',
+    ).toBe(0);
+
+    // --- the import, through the control a player presses ---
+    await importSave(exported.text, `${exported.envelope.prisonId}.lockstate.json`);
+    await expect(page.locator('.save-panel__status')).toContainText('Imported the save file into this prison');
+    // The load half: the file became the live session, and the panel reports
+    // what that restore actually carried.
+    await expect(page.locator('.save-panel__detail')).toContainText('Restored:');
+    await expect(page.locator('.hud__unavailable')).toBeHidden();
+    // On screen, in the place a player would look first: the clock is back
+    // where the exported session left it, not at the start of day one.
+    await expect(progress).toHaveText(playedTo ?? '');
+    // Still paused, which the assertion below depends on: a session that
+    // resumed running would have moved on before it was captured.
+    await expect(pause).toHaveAttribute('aria-pressed', 'true');
+
+    // --- and out again, from the worker rather than from storage ---
+    await page.getByRole('button', { name: 'Save now' }).click();
+    await expect(page.locator('.save-panel__status')).toContainText('Saved (generation ');
+    const roundTripped = await exportSave();
+
+    // The whole simulation payload, captured out of the worker the import
+    // restored into, equal to the file that went in. Anything the restore
+    // dropped or the capture invented is a difference here.
+    expect(roundTripped.envelope.payload).toEqual(exported.envelope.payload);
+    // Named separately, because it is the fact a player would notice and it
+    // fails for its own reason: the tick the first session reached is the tick
+    // the second one is on.
+    expect(roundTripped.envelope.payload.kernel.tick).toBe(exported.envelope.payload.kernel.tick);
+    // The envelope is *not* the same file: it is a new generation of the prison
+    // that imported it, which is what "imported into this prison" means.
+    expect(roundTripped.envelope.prisonId).toBe(emptyPrison.envelope.prisonId);
   });
 
   /**

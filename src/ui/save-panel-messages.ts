@@ -29,6 +29,7 @@ export const SAVE_PANEL_MESSAGE_KEY = {
   actionCreate: 'save.action.create',
   actionSave: 'save.action.save',
   actionExport: 'save.action.export',
+  actionImport: 'save.action.import',
   actionLoad: 'save.action.load',
   actionDelete: 'save.action.delete',
 
@@ -67,6 +68,34 @@ export const SAVE_PANEL_MESSAGE_KEY = {
   statusExported: 'save.status.exported',
 
   /**
+   * The import side of export (#287), and deliberately five sentences rather
+   * than one.
+   *
+   * A file the player chose is refused for reasons that call for different
+   * actions: a file that is not a Lockstate save at all (they picked the
+   * wrong file), a save from a newer build (they need a newer game, and
+   * nothing is wrong with the save), a structurally invalid one and one whose
+   * checksum does not match its payload (it was damaged or edited after
+   * export). `PrisonSaveRepository.importSave` distinguishes all four --
+   * `SaveImportResult.rejected` carries `decodeSaveEnvelope`'s own code -- so
+   * collapsing them here would throw away a distinction the layer below
+   * already makes, exactly as issue #19 refused to collapse quota, abort and
+   * unknown into one "save failed".
+   *
+   * `imported-migrated` is separate for the same kind of reason: a save from
+   * an older schema version *did* load, and it was brought up to date on the
+   * way in. That is a different fact from an ordinary import and the one the
+   * player is most likely to be wondering about.
+   */
+  statusImporting: 'save.status.importing',
+  statusImported: 'save.status.imported',
+  statusImportedMigrated: 'save.status.imported-migrated',
+  statusImportNotASave: 'save.status.import-not-a-save',
+  statusImportUnsupportedVersion: 'save.status.import-unsupported-version',
+  statusImportCorrupt: 'save.status.import-corrupt',
+  statusImportInvalid: 'save.status.import-invalid',
+
+  /**
    * One whole sentence per action, not a translated prefix glued to `': '`.
    *
    * The prefix form (`'Saving failed'` + `': '` + detail) assumes English
@@ -79,6 +108,7 @@ export const SAVE_PANEL_MESSAGE_KEY = {
   failureLoad: 'save.failure.load',
   failureDelete: 'save.failure.delete',
   failureExport: 'save.failure.export',
+  failureImport: 'save.failure.import',
   failureUnknown: 'save.failure.unknown',
 
   detailRestoredScope: 'save.detail.restored-scope',

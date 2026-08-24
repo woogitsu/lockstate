@@ -140,7 +140,7 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
     tree: 'persistence',
     kind: 'type-only',
     reason:
-      'Type-only: `SaveResult`, `PrisonSlotMetadata`, `SaveEnvelope`, `ActiveSession` and `SessionLoadOutcome`. The save panel renders the outcomes the persistence layer reports and calls nothing itself -- the host wires the actions. This is the dependency the HUD proper keeps out by laying out the host panel through `asideSlot` and never rendering into or reading it (`HudHandle.asideSlot` in `src/ui/hud/hud.ts` states the rule and names both layers), which is exactly why the panel may type-import persistence while `src/ui/hud/**` may not.',
+      'Type-only: `SaveResult`, `SaveImportResult`, `PrisonSlotMetadata`, `SaveEnvelope`, `ActiveSession` and `SessionLoadOutcome`. The save panel renders the outcomes the persistence layer reports and calls nothing itself -- the host wires the actions. `SaveImportResult` arrived with the Import control (#287) and is the same kind of dependency as the rest: the panel names what an import reported, and the decoding, migration and checksum verification behind it all happen in `src/persistence/**`. This is the dependency the HUD proper keeps out by laying out the host panel through `asideSlot` and never rendering into or reading it (`HudHandle.asideSlot` in `src/ui/hud/hud.ts` states the rule and names both layers), which is exactly why the panel may type-import persistence while `src/ui/hud/**` may not.',
   },
   {
     file: 'src/ui/save-panel.ts',
