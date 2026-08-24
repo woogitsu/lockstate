@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_ACCESSIBILITY_SETTINGS, DEFAULT_INPUT_SETTINGS, DEFAULT_KEYBOARD_BINDINGS, KeyboardInputAdapter, type KeyValueStore, PointerInputAdapter, TouchGestureTracker, decodeAccessibilitySettings, decodeInputSettings, findBindingConflicts, loadAccessibilitySettings, loadInputSettings, remapAndPersistKeyboardBinding, remapKeyboardBinding, isTextEntryFocused, resolveBrowserKeyValueStore, resolveKeyboardLabel, saveAccessibilitySettings, saveInputSettings, validateInputSettings } from '../../src/input';
+import { ACTION_REGISTRY, DEFAULT_ACCESSIBILITY_SETTINGS, DEFAULT_INPUT_SETTINGS, DEFAULT_KEYBOARD_BINDINGS, KeyboardInputAdapter, type KeyValueStore, PointerInputAdapter, TouchGestureTracker, decodeAccessibilitySettings, decodeInputSettings, findBindingConflicts, loadAccessibilitySettings, loadInputSettings, remapAndPersistKeyboardBinding, remapKeyboardBinding, isTextEntryFocused, resolveBrowserKeyValueStore, resolveKeyboardLabel, saveAccessibilitySettings, saveInputSettings, validateInputSettings } from '../../src/input';
 
 class MemoryStore implements KeyValueStore {
   private readonly values = new Map<string, string>();
@@ -431,5 +431,61 @@ describe('the arrow keys reach the same camera controls as WASD', () => {
     // it, since adding four bindings to a set of seven is exactly the kind of
     // change a collision rule could reject.
     expect(findBindingConflicts(DEFAULT_KEYBOARD_BINDINGS)).toEqual([]);
+  });
+});
+
+/**
+ * The undo pair (#261), at the layer that decides *whether the key counts*.
+ *
+ * `ConstructionSystem` has had a transaction-grouped undo since #108 and
+ * nothing could reach it: no control, no binding, no intent. These assert the
+ * binding half -- that the two codes produce the actions they are supposed to,
+ * and that a focused text field silences them. The half that cannot be
+ * asserted here is that the scene *acts* on the event, which is
+ * `tests/browser/world-scene-input.spec.ts`'s.
+ */
+describe('the undo and redo keys', () => {
+  it('emits a discrete started event for KeyZ and KeyY in the world context', () => {
+    const adapter = new KeyboardInputAdapter(DEFAULT_KEYBOARD_BINDINGS, () => ['world']);
+    expect(adapter.keyDown({ code: 'KeyZ' })).toEqual([{ action: 'edit.undo', phase: 'started', source: 'keyboard' }]);
+    expect(adapter.keyDown({ code: 'KeyY' })).toEqual([{ action: 'edit.redo', phase: 'started', source: 'keyboard' }]);
+    // Distinct actions, not one control reached two ways: a redo key wired to
+    // `edit.undo` would pass an "it emitted something" check and reverse the
+    // player's work twice.
+    expect(ACTION_REGISTRY['edit.undo'].behavior).toBe('discrete');
+    expect(ACTION_REGISTRY['edit.redo'].behavior).toBe('discrete');
+  });
+
+  it('emits nothing while a text field owns the keyboard', () => {
+    // The Build panel's coordinate fields are the exposure, and `z` and `y`
+    // are characters a player types into them. #201 is this class of defect
+    // measured: a focused `<input>` received the character *and* the camera
+    // panned.
+    const adapter = new KeyboardInputAdapter(DEFAULT_KEYBOARD_BINDINGS, () => ['text-entry']);
+    expect(adapter.keyDown({ code: 'KeyZ' })).toEqual([]);
+    expect(adapter.keyDown({ code: 'KeyY' })).toEqual([]);
+  });
+
+  it('declares neither action in the text-entry context, which is what makes the guard possible', () => {
+    // The binding and the registry have to agree: `isActive` and `eventsFor`
+    // both intersect the *binding's* contexts, so a binding that listed
+    // `text-entry` would fire there however the registry described the action.
+    for (const code of ['KeyZ', 'KeyY'] as const) {
+      const binding = DEFAULT_KEYBOARD_BINDINGS.find((entry) => entry.code === code);
+      expect(binding, `${code} is not bound`).toBeDefined();
+      expect(binding!.contexts).not.toContain('text-entry');
+      expect(ACTION_REGISTRY[binding!.action].contexts).not.toContain('text-entry');
+    }
+  });
+
+  it('carries no modifier, so the chord and the bare key are the same binding', () => {
+    // Not a preference: `KeyboardBinding` has no modifier field and
+    // `KeyboardEventLike` reads `code` and `repeat`, so `Ctrl`+`Z` and a bare
+    // `Z` are indistinguishable here by construction. Asserted so that adding
+    // a modifier vocabulary -- which reaches the versioned settings format --
+    // has to face this test rather than silently changing what a player who
+    // presses `Z` alone gets.
+    const binding = DEFAULT_KEYBOARD_BINDINGS.find((entry) => entry.code === 'KeyZ');
+    expect(Object.keys(binding!).sort()).toEqual(['action', 'contexts', 'code', 'device'].sort());
   });
 });

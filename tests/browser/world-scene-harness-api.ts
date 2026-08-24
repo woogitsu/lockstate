@@ -124,6 +124,17 @@ export interface LockstateWorldSceneHarness {
   armBuildTool(armed: boolean): void;
   /** Runs the tool has been asked to place. `Escape` must leave this empty. */
   placedRuns(): readonly (readonly HarnessEdge[])[];
+  /**
+   * What the scene has reported to `EditHistoryPort`, in order (#261).
+   *
+   * Strings rather than a richer record because that is the whole payload: an
+   * `Undo` command carries nothing, so "which direction, how many times, in
+   * what order" is everything the scene can get wrong on its side of the
+   * boundary.
+   */
+  historyRequests(): readonly string[];
+  /** Empties the log, so one spec can measure a press against a known start. */
+  clearHistoryRequests(): void;
   /** What the panel readout would currently show: the run in progress, or `undefined`. */
   targetedRun(): readonly HarnessEdge[] | undefined;
 }
