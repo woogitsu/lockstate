@@ -6,6 +6,7 @@ import {
   nextFastForwardSpeed,
   occupancyTone,
   projectStatusMetrics,
+  refusalMessageKey,
   severityLabelKey,
   severityTone,
   transportPressedStates,
@@ -272,5 +273,42 @@ describe('severity', () => {
       expect(severityTone(severity)).toBeTruthy();
       expect(severityLabelKey(severity)).toMatch(/^hud\.severity\./);
     }
+  });
+});
+
+/**
+ * Issue #207: which refusals the player is told about, and which ones would
+ * be a false statement on screen.
+ *
+ * The mapping is the whole decision. Every intent the HUD can dispatch is
+ * enumerated here rather than only the two that produce a message, so an
+ * intent added later fails this test instead of silently landing in whichever
+ * half of the rule its `default` case happens to be.
+ */
+describe('refusalMessageKey: what a refused control says', () => {
+  it('names an outcome for each command, and two different ones', () => {
+    // A command changes nothing locally, so a refusal means the prison is
+    // exactly as it was and nothing on screen says so unless this does.
+    const clockKey = refusalMessageKey('set-clock');
+    const buildKey = refusalMessageKey('place-build-order');
+    expect(clockKey).toBe(HUD_MESSAGE_KEY.refusalSetClock);
+    expect(buildKey).toBe(HUD_MESSAGE_KEY.refusalPlaceBuildOrder);
+    // Not one generic sentence: a refused clock change and a refused build
+    // order leave the prison in different states.
+    expect(clockKey).not.toBe(buildKey);
+  });
+
+  it('says nothing about a chrome intent, which has already been applied', () => {
+    // Selecting a tab, folding a panel and arming the build tool all happen
+    // locally before the host is told. "That did not go through" about a tab
+    // that visibly did is a false statement, and the host still gets the
+    // failure through `onError`.
+    for (const actionId of ['select-tab', 'toggle-panel', 'arm-build-tool']) {
+      expect(refusalMessageKey(actionId), actionId).toBeUndefined();
+    }
+  });
+
+  it('says nothing about an action it has never heard of', () => {
+    expect(refusalMessageKey('teleport-prisoner')).toBeUndefined();
   });
 });

@@ -77,6 +77,16 @@ export interface BuildPanel {
    * order" were all swallowed.
    */
   readonly controls: readonly (HTMLButtonElement | HTMLInputElement)[];
+  /**
+   * The numeric route's submit button, so a refused order can be reported *on
+   * the control that was pressed* (issue #207).
+   *
+   * It is today the only member of `controls`, and is exposed separately
+   * anyway: `controls` answers "what must be disabled while a command is in
+   * flight" and may grow, while this answers "which control asked for this
+   * order", which is one button by definition.
+   */
+  readonly submitControl: HTMLButtonElement;
   /** Current numeric-route selection, exposed so a test can assert it without reading the DOM. */
   getSelection(): BuildPanelIntent | undefined;
   isArmed(): boolean;
@@ -323,6 +333,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   return {
     element: panel.element,
     controls: [submit.element],
+    submitControl: submit.element,
     getSelection: readSelection,
     isArmed: () => armed,
     setTarget,

@@ -1,5 +1,10 @@
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { describeRestoredScope, describeSaveResult } from '../../src/ui/save-panel';
+import { DEFAULT_LOCALE } from '../../src/content/localization';
+import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
+import { type SaveMessage, describeActionFailure, describeRestoredScope, describeSaveResult } from '../../src/ui/save-panel';
+import { SAVE_PANEL_MESSAGE_KEY, SAVE_PANEL_MESSAGE_KEYS } from '../../src/ui/save-panel-messages';
 import { CURRENT_SAVE_RESTORED_SCOPE } from '../../src/simulation/runtime/restore-session';
 
 /**
@@ -8,13 +13,26 @@ import { CURRENT_SAVE_RESTORED_SCOPE } from '../../src/simulation/runtime/restor
  * panel uses; testing them directly keeps this in the default `node`
  * Vitest environment (no DOM), per docs/TESTING.md's rule that a browser
  * environment stays an explicit, scoped exception.
+ *
+ * Since issue #208 they map to *message keys* rather than to English
+ * literals, so the assertions below resolve each key through the real
+ * bundled default catalog. That is deliberately not weaker than asserting
+ * the literal: the sentence a player reads is still pinned word for word,
+ * and it now also fails when the key stops existing in the catalog.
  */
+
+/** The real runtime over the real bundled catalog -- no stub, no fixture. */
+const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
+
+function resolve(message: SaveMessage): string {
+  return localizer.format(message.messageKey, message.messageParameters);
+}
 describe('describeSaveResult: distinct, actionable recovery states', () => {
   it('reports a successful save with its generation id', () => {
-    expect(describeSaveResult({ ok: true, generationId: 'gen-abc' })).toEqual({
-      kind: 'saved',
-      message: 'Saved (generation gen-abc).',
-    });
+    const status = describeSaveResult({ ok: true, generationId: 'gen-abc' });
+    expect(status.kind).toBe('saved');
+    expect(status.messageKey).toBe(SAVE_PANEL_MESSAGE_KEY.statusSaved);
+    expect(resolve(status)).toBe('Saved (generation gen-abc).');
   });
 
   it('maps each failure code to its own kind and distinct advice', () => {
@@ -27,18 +45,164 @@ describe('describeSaveResult: distinct, actionable recovery states', () => {
     expect(unknown.kind).toBe('error');
 
     // Three genuinely different messages -- not one generic "save failed".
-    expect(new Set([quota.message, aborted.message, unknown.message]).size).toBe(3);
+    expect(new Set([resolve(quota), resolve(aborted), resolve(unknown)]).size).toBe(3);
+    // And three different *keys*, so the distinction survives translation:
+    // one key with three tones would read identically in every locale.
+    expect(new Set([quota.messageKey, aborted.messageKey, unknown.messageKey]).size).toBe(3);
   });
 
   it('reassures the player that a failed write left the previous save intact', () => {
     // This is the actual guarantee PrisonSaveRepository.save provides, so the
     // UI is allowed to promise it -- see the repository's own retention test.
-    expect(describeSaveResult({ ok: false, error: { code: 'quota-exceeded', message: 'full' } }).message).toMatch(/previous save is intact/i);
-    expect(describeSaveResult({ ok: false, error: { code: 'transaction-aborted', message: 'x' } }).message).toMatch(/previous save is intact/i);
+    expect(resolve(describeSaveResult({ ok: false, error: { code: 'quota-exceeded', message: 'full' } }))).toMatch(/previous save is intact/i);
+    expect(resolve(describeSaveResult({ ok: false, error: { code: 'transaction-aborted', message: 'x' } }))).toMatch(/previous save is intact/i);
   });
 
   it('surfaces the underlying message for an unclassified failure rather than hiding it', () => {
-    expect(describeSaveResult({ ok: false, error: { code: 'unknown-error', message: 'disk on fire' } }).message).toContain('disk on fire');
+    expect(resolve(describeSaveResult({ ok: false, error: { code: 'unknown-error', message: 'disk on fire' } }))).toContain('disk on fire');
+  });
+
+  it('carries the diagnostic as a parameter, so the sentence stays translatable', () => {
+    // ADR 0011's separation, applied to a spliced `Error.message`: the text
+    // around it is a catalog entry, the fragment is data. A key whose value
+    // *was* the whole English sentence could not have both.
+    const status = describeSaveResult({ ok: false, error: { code: 'unknown-error', message: 'disk on fire' } });
+    expect(status.messageParameters).toEqual({ detail: 'disk on fire' });
+    expect(status.messageKey).toBe(SAVE_PANEL_MESSAGE_KEY.statusSaveFailed);
+  });
+});
+
+/**
+ * Issue #208: the panel's own ADR 0011 gate.
+ *
+ * `tests/unit/ui-hud-messages.test.ts` is the same gate for the HUD, and its
+ * collection roots are `src/ui/hud` and `src/ui/primitives` -- which is why
+ * `src/ui/save-panel.ts` sat outside every localization check while holding
+ * about thirty English literals. `tests/foundation/localization-key-completeness.test.ts`
+ * did not catch it either: it asks whether the keys a file *declares*
+ * resolve, and a file that declares none passes it trivially.
+ */
+describe('save panel message keys (issue #208)', () => {
+  it('collects a non-trivial number of keys, so this cannot pass vacuously', () => {
+    expect(SAVE_PANEL_MESSAGE_KEYS.length).toBeGreaterThan(25);
+    expect(new Set(SAVE_PANEL_MESSAGE_KEYS).size).toBe(SAVE_PANEL_MESSAGE_KEYS.length);
+  });
+
+  it('resolves every key to real text rather than to the key itself', () => {
+    const missingKeys: string[] = [];
+    const strict = new Localizer({
+      locale: DEFAULT_LOCALE,
+      catalogs: [defaultMessageCatalogEn],
+      // This pass calls every message without parameters, so a parameterized
+      // one legitimately reports an unfilled placeholder; only an unresolved
+      // key is a defect here.
+      onMissingKey: (report) => {
+        if (report.kind === 'missing-key') missingKeys.push(report.key);
+      },
+    });
+
+    for (const key of SAVE_PANEL_MESSAGE_KEYS) {
+      const text = strict.format(key);
+      // ADR 0011: an unresolved key renders as itself -- correct at runtime,
+      // wrong to ship.
+      expect(text, `${key} has no default-locale entry`).not.toBe(key);
+      expect(text.trim().length).toBeGreaterThan(0);
+    }
+    expect(missingKeys).toEqual([]);
+  });
+
+  it('fills every placeholder the parameterized messages declare', () => {
+    const missing: string[] = [];
+    const strict = new Localizer({
+      locale: DEFAULT_LOCALE,
+      catalogs: [defaultMessageCatalogEn],
+      onMissingKey: (report) => missing.push(`${report.kind}:${report.key}`),
+    });
+
+    expect(strict.format(SAVE_PANEL_MESSAGE_KEY.listItem, { name: 'Alcatraz', count: 3 })).toBe('Alcatraz (3 gen)');
+    expect(strict.format(SAVE_PANEL_MESSAGE_KEY.failureSave, { detail: 'boom' })).toBe('Saving failed: boom');
+    expect(
+      strict.format(SAVE_PANEL_MESSAGE_KEY.detailRestoredScope, { restored: 'a', notCarried: 'b' }),
+    ).toBe('Restored: a. Not carried by this save version: b.');
+    expect(missing).toEqual([]);
+  });
+
+  it('uses stable ASCII identifiers, never source text as a key', () => {
+    for (const key of SAVE_PANEL_MESSAGE_KEYS) expect(key).toMatch(/^save\.[a-z0-9]+(?:[.-][a-z0-9]+)*$/);
+  });
+
+  it('names one failure key per action, and a fallback for one it does not know', () => {
+    const keys = (['create', 'save', 'load', 'delete', 'export'] as const).map(
+      (actionId) => describeActionFailure({ actionId, error: new Error('boom') }).messageKey,
+    );
+    expect(new Set(keys).size, 'each action must fail in its own words').toBe(keys.length);
+    // `AsyncActionFailure.actionId` is a plain string, so an id this panel
+    // does not own can reach it. It must still say something.
+    const unknown = describeActionFailure({ actionId: 'not-an-action', error: new Error('boom') });
+    expect(unknown.messageKey).toBe(SAVE_PANEL_MESSAGE_KEY.failureUnknown);
+    expect(resolve(unknown)).toContain('boom');
+  });
+});
+
+/**
+ * The gate hole itself, closed for the five `src/ui/*.ts` modules that no
+ * other localization test collects (issue #208, and the same shape as #206
+ * part 2 asks for the import boundaries).
+ *
+ * A scan rather than a registry, because the defect was a file nobody had
+ * registered anywhere: the check has to be about *the directory*, or the
+ * next module added lands outside it exactly as this one did.
+ */
+describe('no module in src/ui/ renders a hard-coded sentence (issue #208)', () => {
+  const UI_ROOT = join(__dirname, '../../src/ui');
+
+  /**
+   * The modules directly under `src/ui/`. `hud/` and `primitives/` are
+   * excluded because `tests/unit/ui-hud-messages.test.ts` already holds them
+   * to the stricter registry rule; everything else here was ungated.
+   */
+  const MODULES = [
+    'build-tool.ts',
+    'save-panel.ts',
+    'save-panel-messages.ts',
+    'simulation-clock.ts',
+    'simulation-commands.ts',
+    'simulation-counts.ts',
+  ] as const;
+
+  /** Source with comments removed, so prose about a rule cannot trip the rule. */
+  function code(name: string): string {
+    return readFileSync(join(UI_ROOT, name), 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/^\s*\/\/.*$/gm, '');
+  }
+
+  it('covers every module in the directory, so a new one cannot land outside it', () => {
+    // The vacuity guard that matters most here: the defect was a file nobody
+    // had listed anywhere. Reading the directory means a module added to
+    // `src/ui/` fails this test until it is either checked or excluded with
+    // a reason, instead of quietly inheriting the hole `save-panel.ts` was in.
+    const found = readdirSync(UI_ROOT)
+      .filter((entry) => entry.endsWith('.ts'))
+      .sort();
+    expect(found).toEqual([...MODULES].sort());
+    // And the scanner really reads source, not whitespace: every one of them
+    // exports something.
+    for (const name of MODULES) expect(code(name), name).toContain('export');
+  });
+
+  it('writes no sentence into textContent and no literal message into a status', () => {
+    for (const name of MODULES) {
+      const source = code(name);
+      expect(
+        source.match(/textContent\s*=\s*['"`][A-Z]/g) ?? [],
+        `${name} writes a hard-coded sentence to the screen -- give it a message key (ADR 0011)`,
+      ).toEqual([]);
+      expect(
+        source.match(/message:\s*['"`][A-Z]/g) ?? [],
+        `${name} builds a status out of a literal -- give it a message key (ADR 0011)`,
+      ).toEqual([]);
+    }
   });
 });
 
@@ -82,7 +246,7 @@ describe('refresh supersession guard', () => {
 
 describe('describeRestoredScope: honest about what a save carries', () => {
   it('names both what was restored and what this save version does not carry', () => {
-    const text = describeRestoredScope(CURRENT_SAVE_RESTORED_SCOPE);
+    const text = resolve(describeRestoredScope(CURRENT_SAVE_RESTORED_SCOPE));
     expect(text).toContain('world terrain and ownership');
     expect(text).toContain('incidents, gangs and tunnels');
     expect(text).toContain('Not carried by this save version');

@@ -13,13 +13,17 @@ import {
 } from '../helpers/module-boundaries';
 
 /**
- * `src/ui/*.ts` -- the five top-level modules of the UI tree, 869 lines -- was
- * the second of the two trees under `src/` that no boundary test reached
- * (#206). `tests/unit/ui-hud-messages.test.ts` collects from `src/ui/hud/**`
- * and `src/ui/primitives/**` only, so `save-panel.ts`, `simulation-commands.ts`,
+ * `src/ui/*.ts` -- the top-level modules of the UI tree -- was the second of
+ * the two trees under `src/` that no boundary test reached (#206).
+ * `tests/unit/ui-hud-messages.test.ts` collects from `src/ui/hud/**` and
+ * `src/ui/primitives/**` only, so `save-panel.ts`, `simulation-commands.ts`,
  * `build-tool.ts`, `simulation-clock.ts` and `simulation-counts.ts` were
  * checked by nothing. `docs/TESTING.md` states that gate's scope precisely and
  * correctly; what no document said is that the rest of the tree was ungated.
+ *
+ * There were five such modules when this file was written (869 lines);
+ * `save-panel-messages.ts` (#208) made six, and the vacuity guard below is
+ * the list a new one has to be added to.
  *
  * ## Why this is a separate file, and not a widening of the HUD gate
  *
@@ -35,9 +39,11 @@ import {
  *
  * The top level is the composition layer `AGENTS.md` boundary 3 puts on the
  * main thread ("the main thread owns rendering, browser UI and input
- * orchestration"), and **all five** of these modules import `src/simulation/**`
- * -- legitimately. (#206 says "three of them"; measured, it is five: every one
- * of the five names at least one simulation type. Two of the five, `build-tool.ts`
+ * orchestration"), and **five of the six** import `src/simulation/**`
+ * -- legitimately. (#206 says "three of them"; measured, it was five of the
+ * five modules that existed then: every one named at least one simulation
+ * type. `save-panel-messages.ts` is the sixth and names none: it is a frozen
+ * registry of message keys. Two of the five, `build-tool.ts`
  * and `simulation-commands.ts`, are the orchestration modules the issue meant,
  * and `build-tool.ts:9-15` explains at length why it is the one module allowed
  * to know both halves.) So "must not import the simulation" would be false
@@ -101,11 +107,12 @@ const orchestrationFiles = allUiFiles.filter((entry) => subtreeOf(entry) === und
  * Every layer outside `src/ui/` that a top-level UI module is allowed to know,
  * and how.
  *
- * Seven entries, which is the whole cross-layer dependency surface of the
+ * Ten entries, which is the whole cross-layer dependency surface of the
  * composition tier. Written down rather than inferred, because the point of
  * the list is that it converts "we know `build-tool.ts` is special" from
- * folklore into a line CI reads -- and because a reviewer can audit seven
- * facts.
+ * folklore into a line CI reads -- and because a reviewer can audit ten
+ * facts. (Seven when this file was written; issue #208 added three by routing
+ * the save panel's strings through the localization runtime.)
  *
  * Each `kind` is measured, not chosen: `type-only` means every import of that
  * layer from that file is erased at compile time, so the module cannot run any
@@ -145,6 +152,27 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
       'Type-only: `RestoredScope` from `src/simulation/runtime/restore-session`, the record saying which subsystems a load actually restored, which the panel reports to the player. The same module exports `restoreSimulationRuntime`, so this is the entry whose `kind` is load-bearing: naming the scope type is a view concern, and calling the factory next to it would make the save panel the owner of a live simulation. The manifest fails on that change rather than after it.',
   },
   {
+    file: 'src/ui/save-panel.ts',
+    tree: 'content',
+    kind: 'value',
+    reason:
+      'Value, and only just: `LocalizationKey` is a type, but `DEFAULT_LOCALE` is a runtime constant read in exactly one place -- the localizer the panel falls back to when the host constructs it without one (issue #208). `src/content/localization.ts` is the stable-ID side of ADR 0011, is dependency-free by design and holds no state, so evaluating it is inert. The kind is `value` rather than `type-only` because that fallback exists at all, and it becomes `type-only` the moment `src/main.ts` passes in the `Localizer` it already builds for the HUD.',
+  },
+  {
+    file: 'src/ui/save-panel.ts',
+    tree: 'services',
+    kind: 'value',
+    reason:
+      'Value: `Localizer` and `defaultMessageCatalogEn` from `src/services/localization`, plus the `MessageParameters` type. The panel resolves its own message keys at the moment it writes to the DOM (ADR 0011, issue #208) -- the same synchronous localization call `src/ui/hud/status-strip.ts` makes, which `docs/ARCHITECTURE.md` records as the deliberate exception to this layer being asynchronous. The class itself depends only on the `SavePanelLocalizer` port, so these two values are used solely by the fallback described in the entry above; both go away with it.',
+  },
+  {
+    file: 'src/ui/save-panel-messages.ts',
+    tree: 'content',
+    kind: 'type-only',
+    reason:
+      'Type-only: `LocalizationKey` from `src/content/localization`. The module is a frozen registry of the save panel\'s message keys and nothing else -- the shape `src/ui/hud/messages.ts` already uses for the HUD -- and naming the key type is what lets `satisfies Readonly<Record<string, LocalizationKey>>` check every entry at compile time. Erased, so no content code runs because of it, and it names no other layer at all.',
+  },
+  {
     file: 'src/ui/simulation-clock.ts',
     tree: 'simulation',
     kind: 'value',
@@ -179,6 +207,7 @@ describe('UI orchestration boundaries', () => {
     // `ui-hud-messages.test.ts` both carry a guard for.
     expect(orchestrationFiles.map(({ file }) => file)).toEqual([
       'src/ui/build-tool.ts',
+      'src/ui/save-panel-messages.ts',
       'src/ui/save-panel.ts',
       'src/ui/simulation-clock.ts',
       'src/ui/simulation-commands.ts',

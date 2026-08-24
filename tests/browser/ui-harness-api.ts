@@ -120,19 +120,44 @@ export interface BuildLayoutProbe {
  * `Proxy` construct trap for the duration of the repaint. Both are counts,
  * never elapsed time -- `docs/BENCHMARKING.md` keeps timing out of assertions.
  */
+/**
+ * What the HUD shows after the host refused an action (issue #207).
+ *
+ * Every field is read from the production DOM: the refusal line is not a
+ * harness affordance, it is what `mountHud` builds.
+ */
+export interface RefusalProbe {
+  /** True when the refusal line is actually laid out, not merely present. */
+  readonly visible: boolean;
+  readonly text: string;
+  /** `data-action` of the line, i.e. which action it is about. */
+  readonly action: string | null;
+  /** `title` of every control the HUD has marked as having failed. */
+  readonly failedControls: readonly string[];
+  /** True when every marked control's `aria-describedby` is the refusal line's id. */
+  readonly describedByRefusal: boolean;
+  /** The line's `role` and `aria-live`, so "a live region says it" is asserted and not assumed. */
+  readonly role: string | null;
+  readonly ariaLive: string | null;
+}
+
 export interface RepaintFormatterCost {
   readonly formatNumberCalls: number;
   readonly numberFormatConstructions: number;
 }
 
 export interface LockstateUiHarness {
-  mountSavePanel(): void;
+  mountSavePanel(options?: { readonly pseudoLocale?: boolean }): void;
   clickSaveButton(label: string): boolean;
   saveButtonState(label: string): ButtonState;
   savePanelStatus(): string;
+  /** Every string the panel has actually rendered, for the ADR 0011 check (issue #208). */
+  savePanelText(): readonly string[];
   createCalls(): number;
   prisonRowCount(): number;
   releaseCreate(outcome: 'ok' | 'worker-timeout'): void;
+  /** Re-reads the slot list, which is what paints the list rows and the empty-list row. */
+  refreshSavePanel(): Promise<void>;
   settleSavePanel(): Promise<void>;
 
   mountHudShell(options?: { readonly empty?: boolean; readonly buildables?: number }): void;
@@ -145,6 +170,11 @@ export interface LockstateUiHarness {
   /** Makes the host's handler for `set-clock` block until released. */
   holdClockIntents(enabled: boolean): void;
   releaseClockIntent(): void;
+  /** Makes the host's handler reject every intent, which is what a refusal is. */
+  failIntents(enabled: boolean): void;
+  refusalProbe(): RefusalProbe;
+  /** The HUD's rendered text, for the before/after comparison issue #207 was filed on. */
+  hudText(): string;
   transportDisabled(): boolean;
   layoutProbe(): LayoutProbe;
 

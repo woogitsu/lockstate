@@ -1,7 +1,10 @@
+import { DEFAULT_LOCALE, type LocalizationKey } from '../content/localization';
 import type { SaveResult } from '../persistence/local/repository';
 import type { PrisonSlotMetadata } from '../persistence/local/store';
 import type { SaveEnvelope } from '../persistence/save-schema';
 import type { ActiveSession, SessionLoadOutcome } from '../persistence/session/session-controller';
+import { Localizer, defaultMessageCatalogEn } from '../services/localization';
+import type { MessageParameters } from '../services/localization/format';
 import type { RestoredScope } from '../simulation/runtime/restore-session';
 import {
   type AsyncActionFailure,
@@ -11,6 +14,40 @@ import {
   createBusyGroup,
   describeActionError,
 } from './primitives/async-action';
+import { SAVE_PANEL_MESSAGE_KEY } from './save-panel-messages';
+
+/**
+ * The localization surface this panel uses.
+ *
+ * A structural port rather than the concrete `Localizer`, exactly as
+ * `HudLocalizer` is: two methods, so the panel is drivable from a test stub,
+ * and `Localizer` satisfies it as written.
+ */
+export interface SavePanelLocalizer {
+  format(key: LocalizationKey, parameters?: MessageParameters): string;
+  formatNumber(value: number, options?: Intl.NumberFormatOptions): string;
+}
+
+/**
+ * The bundled default locale, used when the host constructs the panel
+ * without one.
+ *
+ * **A seam, not a design.** The panel's only production construction site is
+ * `src/main.ts`, which already builds a `Localizer` for the HUD -- `locale:
+ * 'en'` over exactly the catalog this returns -- and should hand that same
+ * instance in rather than let the panel build a second one. It does not yet,
+ * which is why this default exists at all.
+ *
+ * The two are equivalent *today*, when `en` is the only locale that exists.
+ * They stop being equivalent the moment a second locale ships: a panel
+ * holding its own default-locale localizer would keep rendering English while
+ * the rest of the interface changed language, and the player would meet that
+ * in the panel that protects their prison. So this is a temporary state with
+ * a known end, not the intended wiring (issue #208).
+ */
+function bundledDefaultLocalizer(): SavePanelLocalizer {
+  return new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
+}
 
 /**
  * Distinct user-facing recovery/failure states -- issue #19's "quota,
@@ -21,36 +58,88 @@ import {
  */
 export type SaveStatusKind = 'idle' | 'saving' | 'saved' | 'recovered' | 'quota-exceeded' | 'transaction-aborted' | 'storage-unavailable' | 'error';
 
-export interface SaveStatus {
+/**
+ * A message key and its parameters -- never resolved text (ADR 0011).
+ *
+ * The panel's pure mapping functions produce these and the DOM resolves them
+ * at the last possible moment, the same split `src/ui/hud/projection.ts` and
+ * `src/ui/hud/hud.ts` already use. It is what makes the mappings provable in
+ * the default `node` Vitest environment while the text they choose stays a
+ * catalog entry rather than a literal in a module.
+ */
+export interface SaveMessage {
+  readonly messageKey: LocalizationKey;
+  readonly messageParameters?: MessageParameters;
+}
+
+export interface SaveStatus extends SaveMessage {
   readonly kind: SaveStatusKind;
-  readonly message: string;
 }
 
 /** The panel's actions, named so a failure can say which one failed. */
 export type SavePanelActionId = 'create' | 'save' | 'load' | 'delete' | 'export';
 
 export function describeSaveResult(result: SaveResult): SaveStatus {
-  if (result.ok) return { kind: 'saved', message: `Saved (generation ${result.generationId}).` };
+  if (result.ok) {
+    return {
+      kind: 'saved',
+      messageKey: SAVE_PANEL_MESSAGE_KEY.statusSaved,
+      // A generation id is a stable identifier, not copy: it is shown so a
+      // player reporting a problem can name the exact save.
+      messageParameters: { generation: result.generationId },
+    };
+  }
   switch (result.error.code) {
     case 'quota-exceeded':
-      return { kind: 'quota-exceeded', message: 'Storage is full. Delete an old prison or export and remove saves to free space. Your previous save is intact.' };
+      return { kind: 'quota-exceeded', messageKey: SAVE_PANEL_MESSAGE_KEY.statusQuotaExceeded };
     case 'transaction-aborted':
-      return { kind: 'transaction-aborted', message: 'The browser interrupted the save. Your previous save is intact — try saving again.' };
+      return { kind: 'transaction-aborted', messageKey: SAVE_PANEL_MESSAGE_KEY.statusTransactionAborted };
     default:
-      return { kind: 'error', message: `Save failed: ${result.error.message}` };
+      return {
+        kind: 'error',
+        messageKey: SAVE_PANEL_MESSAGE_KEY.statusSaveFailed,
+        messageParameters: { detail: result.error.message },
+      };
   }
 }
 
-export function describeRestoredScope(scope: RestoredScope): string {
-  return `Restored: ${scope.restored.join(', ')}. Not carried by this save version: ${scope.notCarriedByThisSaveVersion.join(', ')}.`;
+/**
+ * What a load restored, and what it did not carry.
+ *
+ * The sentence around the two lists is a catalog entry; **the lists inside it
+ * are not localized**, and that is a deliberate boundary rather than an
+ * oversight (issue #208). `RestoredScope.restored` holds English prose --
+ * "world terrain and ownership", "navigation caches and in-flight path
+ * requests (re-issued on the next tick)" -- authored in
+ * `src/simulation/runtime/restore-session.ts`, which is the tier ADR 0011
+ * says translated text may never live in. Giving those entries message keys
+ * means changing a simulation-owned structure to carry keys and deriving the
+ * labels the way `build-panel.ts` derives its edge labels; it is a change to
+ * `src/simulation/**` and it belongs with #109, which owns that function.
+ * Splicing them in as `{restored}` and `{notCarried}` keeps the panel honest
+ * about which half is translatable in the meantime.
+ */
+export function describeRestoredScope(scope: RestoredScope): SaveMessage {
+  return {
+    messageKey: SAVE_PANEL_MESSAGE_KEY.detailRestoredScope,
+    messageParameters: {
+      restored: scope.restored.join(', '),
+      notCarried: scope.notCarriedByThisSaveVersion.join(', '),
+    },
+  };
 }
 
-const ACTION_DESCRIPTIONS: Readonly<Record<SavePanelActionId, string>> = {
-  create: 'Creating the prison failed',
-  save: 'Saving failed',
-  load: 'Loading failed',
-  delete: 'Deleting failed',
-  export: 'Exporting failed',
+/**
+ * One whole sentence per action, rather than a prefix concatenated with
+ * `': '`. A translated prefix glued to punctuation in code assumes English
+ * sentence structure in a place no translator can reach.
+ */
+const ACTION_FAILURE_KEYS: Readonly<Record<SavePanelActionId, LocalizationKey>> = {
+  create: SAVE_PANEL_MESSAGE_KEY.failureCreate,
+  save: SAVE_PANEL_MESSAGE_KEY.failureSave,
+  load: SAVE_PANEL_MESSAGE_KEY.failureLoad,
+  delete: SAVE_PANEL_MESSAGE_KEY.failureDelete,
+  export: SAVE_PANEL_MESSAGE_KEY.failureExport,
 };
 
 /**
@@ -64,8 +153,15 @@ const ACTION_DESCRIPTIONS: Readonly<Record<SavePanelActionId, string>> = {
  */
 export function describeActionFailure(failure: AsyncActionFailure): SaveStatus {
   const actionId = failure.actionId as SavePanelActionId;
-  const prefix = ACTION_DESCRIPTIONS[actionId] ?? 'The action failed';
-  return { kind: 'error', message: `${prefix}: ${describeActionError(failure.error)}` };
+  return {
+    kind: 'error',
+    messageKey: ACTION_FAILURE_KEYS[actionId] ?? SAVE_PANEL_MESSAGE_KEY.failureUnknown,
+    // The thrown message is diagnostic English from `src/persistence/**`, so
+    // it travels as a parameter rather than as part of the translatable
+    // sentence. Hiding it would cost the player the one detail that names
+    // what actually went wrong (issue #65's `did not reply within 15000ms`).
+    messageParameters: { detail: describeActionError(failure.error) },
+  };
 }
 
 /**
@@ -99,6 +195,13 @@ export interface SavePanelSessions {
  * business inside the renderer's scene graph. It reads only the
  * controller's own projections and never reaches into simulation state.
  *
+ * **Every string it renders is a message key** (issue #208, ADR 0011). The
+ * mapping functions above return a key and its parameters; this class
+ * resolves them through the injected localizer at the moment it writes to the
+ * DOM, and nothing resolved travels back out. Before that, all thirty-odd of
+ * them were English literals in this file, which is what made it the one
+ * player-facing UI module outside every localization gate.
+ *
  * **Concurrency (issue #65).** Every action runs through one
  * `AsyncActionGate`. That is the single piece of panel state deciding
  * whether the controls are live: while a request is outstanding the buttons
@@ -121,10 +224,14 @@ export class SavePanel {
   /** Monotonic guard so an older in-flight `refresh` can never repaint over a newer one. */
   private refreshToken = 0;
 
+  private readonly localizer: SavePanelLocalizer;
+
   public constructor(
     private readonly controller: SavePanelSessions,
     parent: HTMLElement,
+    localizer: SavePanelLocalizer = bundledDefaultLocalizer(),
   ) {
+    this.localizer = localizer;
     this.gate = new AsyncActionGate({
       onBusyChange: (busy) => {
         this.busy.setBusy(busy);
@@ -140,19 +247,19 @@ export class SavePanel {
 
     this.root = document.createElement('aside');
     this.root.className = 'save-panel';
-    this.root.setAttribute('aria-label', 'Prison saves');
+    this.root.setAttribute('aria-label', this.text(SAVE_PANEL_MESSAGE_KEY.panelRegion));
 
     const heading = document.createElement('h2');
     heading.className = 'save-panel__heading';
-    heading.textContent = 'Prisons';
+    heading.textContent = this.text(SAVE_PANEL_MESSAGE_KEY.panelTitle);
     this.root.append(heading);
 
     const actions = document.createElement('div');
     actions.className = 'save-panel__actions';
     actions.append(
-      this.button(this.busy, 'New prison', () => this.requestCreate()),
-      this.button(this.busy, 'Save now', () => this.requestSaveNow()),
-      this.button(this.busy, 'Export', () => this.requestExport()),
+      this.button(this.busy, SAVE_PANEL_MESSAGE_KEY.actionCreate, () => this.requestCreate()),
+      this.button(this.busy, SAVE_PANEL_MESSAGE_KEY.actionSave, () => this.requestSaveNow()),
+      this.button(this.busy, SAVE_PANEL_MESSAGE_KEY.actionExport, () => this.requestExport()),
     );
     this.root.append(actions);
 
@@ -171,7 +278,12 @@ export class SavePanel {
     this.root.append(this.detailElement);
 
     parent.append(this.root);
-    this.setStatus({ kind: 'idle', message: 'Local saves only — no network required.' });
+    this.setStatus({ kind: 'idle', messageKey: SAVE_PANEL_MESSAGE_KEY.statusIdle });
+  }
+
+  /** Resolves a key at the last possible moment; nothing resolved travels back out. */
+  private text(key: LocalizationKey, parameters?: MessageParameters): string {
+    return parameters === undefined ? this.localizer.format(key) : this.localizer.format(key, parameters);
   }
 
   /** True while a request is outstanding. The one signal the controls are driven from. */
@@ -190,12 +302,12 @@ export class SavePanel {
   }
 
   public setStatus(status: SaveStatus): void {
-    this.statusElement.textContent = status.message;
+    this.statusElement.textContent = this.text(status.messageKey, status.messageParameters);
     this.statusElement.dataset.kind = status.kind;
   }
 
-  private setDetail(text: string): void {
-    this.detailElement.textContent = text;
+  private setDetail(message: SaveMessage | undefined): void {
+    this.detailElement.textContent = message === undefined ? '' : this.text(message.messageKey, message.messageParameters);
   }
 
   /** Surfaces a background autosave outcome without stealing focus or clearing the detail line. */
@@ -230,7 +342,11 @@ export class SavePanel {
       // the whole list rather than hiding a prison. The wording names the
       // outcome the player has rather than asserting one of the two causes;
       // the appended detail says which it was.
-      this.setStatus({ kind: 'storage-unavailable', message: `Could not read the local prison list (private browsing or an unreadable slot record can cause this): ${describeActionError(error)}` });
+      this.setStatus({
+        kind: 'storage-unavailable',
+        messageKey: SAVE_PANEL_MESSAGE_KEY.statusListUnreadable,
+        messageParameters: { detail: describeActionError(error) },
+      });
       return;
     }
 
@@ -246,7 +362,7 @@ export class SavePanel {
     if (prisons.length === 0) {
       const empty = document.createElement('li');
       empty.className = 'save-panel__empty';
-      empty.textContent = 'No prisons yet.';
+      empty.textContent = this.text(SAVE_PANEL_MESSAGE_KEY.listEmpty);
       this.listElement.append(empty);
       return;
     }
@@ -258,12 +374,17 @@ export class SavePanel {
 
       const label = document.createElement('span');
       label.className = 'save-panel__item-label';
-      label.textContent = `${prison.displayName ?? prison.prisonId} (${prison.generationIds.length} gen)`;
+      label.textContent = this.text(SAVE_PANEL_MESSAGE_KEY.listItem, {
+        // A prison's display name is player-authored and a prison id is a
+        // stable identifier: neither is translatable, and both are data.
+        name: prison.displayName ?? prison.prisonId,
+        count: this.localizer.formatNumber(prison.generationIds.length),
+      });
       item.append(label);
 
       item.append(
-        this.button(this.rowBusy, 'Load', () => this.requestLoad(prison.prisonId)),
-        this.button(this.rowBusy, 'Delete', () => this.requestDelete(prison.prisonId)),
+        this.button(this.rowBusy, SAVE_PANEL_MESSAGE_KEY.actionLoad, () => this.requestLoad(prison.prisonId)),
+        this.button(this.rowBusy, SAVE_PANEL_MESSAGE_KEY.actionDelete, () => this.requestDelete(prison.prisonId)),
       );
       this.listElement.append(item);
     }
@@ -279,11 +400,15 @@ export class SavePanel {
   public requestCreate(): AsyncActionOutcome {
     return this.start('create', async () => {
       const prisonId = `prison-${Date.now().toString(36)}`;
-      this.setStatus({ kind: 'saving', message: 'Creating prison…' });
+      this.setStatus({ kind: 'saving', messageKey: SAVE_PANEL_MESSAGE_KEY.statusCreating });
       try {
         this.setStatus(describeSaveResult(await this.controller.createPrison(prisonId, 'New Prison')));
       } catch (error) {
-        this.setStatus({ kind: 'error', message: `Could not create a prison: ${describeActionError(error)}` });
+        this.setStatus({
+          kind: 'error',
+          messageKey: SAVE_PANEL_MESSAGE_KEY.statusCreateFailed,
+          messageParameters: { detail: describeActionError(error) },
+        });
       }
       // Inside the try/catch-protected action, so a failure here reaches the
       // player too. Issue #65: the old code left this call outside the
@@ -295,10 +420,10 @@ export class SavePanel {
   public requestSaveNow(): AsyncActionOutcome {
     return this.start('save', async () => {
       if (this.controller.getActiveSession() === undefined) {
-        this.setStatus({ kind: 'idle', message: 'No active prison — create or load one first.' });
+        this.setStatus({ kind: 'idle', messageKey: SAVE_PANEL_MESSAGE_KEY.statusNoActivePrison });
         return;
       }
-      this.setStatus({ kind: 'saving', message: 'Saving…' });
+      this.setStatus({ kind: 'saving', messageKey: SAVE_PANEL_MESSAGE_KEY.statusSaving });
       this.setStatus(describeSaveResult(await this.controller.saveNow()));
       await this.refresh();
     });
@@ -306,15 +431,16 @@ export class SavePanel {
 
   public requestLoad(prisonId: string): AsyncActionOutcome {
     return this.start('load', async () => {
-      this.setStatus({ kind: 'saving', message: 'Loading…' });
+      this.setStatus({ kind: 'saving', messageKey: SAVE_PANEL_MESSAGE_KEY.statusLoading });
       const outcome = await this.controller.loadPrison(prisonId);
 
       if (!outcome.ok) {
         this.setStatus({
           kind: 'error',
-          message: outcome.reason === 'not-found'
-            ? 'That prison no longer exists.'
-            : 'No readable save generation remains for this prison. Every retained copy failed validation.',
+          messageKey:
+            outcome.reason === 'not-found'
+              ? SAVE_PANEL_MESSAGE_KEY.statusNotFound
+              : SAVE_PANEL_MESSAGE_KEY.statusNoReadableGeneration,
         });
         await this.refresh();
         return;
@@ -322,8 +448,8 @@ export class SavePanel {
 
       this.setStatus(
         outcome.recovered
-          ? { kind: 'recovered', message: 'The most recent save was unreadable — recovered an earlier verified generation.' }
-          : { kind: 'saved', message: 'Loaded.' },
+          ? { kind: 'recovered', messageKey: SAVE_PANEL_MESSAGE_KEY.statusRecovered }
+          : { kind: 'saved', messageKey: SAVE_PANEL_MESSAGE_KEY.statusLoaded },
       );
       this.setDetail(describeRestoredScope(outcome.scope));
       await this.refresh();
@@ -333,8 +459,8 @@ export class SavePanel {
   public requestDelete(prisonId: string): AsyncActionOutcome {
     return this.start('delete', async () => {
       await this.controller.deletePrison(prisonId);
-      this.setStatus({ kind: 'idle', message: 'Prison deleted.' });
-      this.setDetail('');
+      this.setStatus({ kind: 'idle', messageKey: SAVE_PANEL_MESSAGE_KEY.statusDeleted });
+      this.setDetail(undefined);
       await this.refresh();
     });
   }
@@ -349,7 +475,7 @@ export class SavePanel {
     return this.start('export', async () => {
       const envelope = await this.controller.exportActive();
       if (envelope === undefined) {
-        this.setStatus({ kind: 'idle', message: 'Nothing to export — no valid active save.' });
+        this.setStatus({ kind: 'idle', messageKey: SAVE_PANEL_MESSAGE_KEY.statusNothingToExport });
         return;
       }
 
@@ -360,7 +486,7 @@ export class SavePanel {
       link.download = `${envelope.prisonId}.lockstate.json`;
       link.click();
       URL.revokeObjectURL(url);
-      this.setStatus({ kind: 'saved', message: 'Exported the current save.' });
+      this.setStatus({ kind: 'saved', messageKey: SAVE_PANEL_MESSAGE_KEY.statusExported });
     });
   }
 
@@ -368,10 +494,10 @@ export class SavePanel {
     return this.gate.run(actionId, action);
   }
 
-  private button(group: BusyGroup, label: string, onClick: () => void): HTMLButtonElement {
+  private button(group: BusyGroup, labelKey: LocalizationKey, onClick: () => void): HTMLButtonElement {
     const element = document.createElement('button');
     element.type = 'button';
-    element.textContent = label;
+    element.textContent = this.text(labelKey);
     element.className = 'save-panel__button';
     element.addEventListener('click', onClick);
     // Registered at creation, so a row rebuilt by `refresh` during a busy

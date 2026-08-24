@@ -160,9 +160,88 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.build.buildable.wall-brick': 'Brick wall',
   'hud.build.buildable.door-wooden': 'Wooden door',
 
+  // What a refused control says (issue #207). Four comments in `src/` claimed
+  // the HUD reported a refusal "on the control that was pressed" while the
+  // only consumer of the failure was a `console.warn`, so a "Place order" with
+  // no session left the HUD byte-identical. Neither sentence names a cause:
+  // the same refusal is raised for no worker, no session and a session whose
+  // command sequence has not been reported yet, and only the outcome is
+  // common to all three. The cause travels to the host as the thrown `Error`,
+  // which is English diagnostic text and therefore must not reach the screen.
+  'hud.refusal.set-clock': 'The clock did not change — the request was refused.',
+  'hud.refusal.place-build-order': 'The build order was not placed — the request was refused.',
+
   'hud.severity.info': 'Info',
   'hud.severity.warning': 'Warning',
   'hud.severity.danger': 'Critical',
+
+  // ---------------------------------------------------------------
+  // Save/load panel (`src/ui/save-panel.ts`, registry in
+  // `src/ui/save-panel-messages.ts`). Its own namespace rather than `hud.`:
+  // the HUD lays the panel out and owns none of it. Every one of these was a
+  // hard-coded English literal in the panel until issue #208 -- the one
+  // player-facing UI module that no localization gate collected.
+  //
+  // `{detail}` is a diagnostic, never player copy: it carries an `Error`
+  // message thrown in `src/persistence/**`, which is English and untranslated.
+  // ADR 0011's separation is what makes that honest -- the sentence around it
+  // is translatable, the spliced fragment is not, and a key with a
+  // placeholder says so instead of pretending the whole line is copy.
+  // ---------------------------------------------------------------
+  'save.panel.region': 'Prison saves',
+  'save.panel.title': 'Prisons',
+
+  'save.action.create': 'New prison',
+  'save.action.save': 'Save now',
+  'save.action.export': 'Export',
+  'save.action.load': 'Load',
+  'save.action.delete': 'Delete',
+
+  'save.list.empty': 'No prisons yet.',
+  'save.list.item': '{name} ({count} gen)',
+
+  'save.status.idle': 'Local saves only — no network required.',
+  'save.status.saved': 'Saved (generation {generation}).',
+  // Issue #19: quota, private-mode and transaction-abort are distinct
+  // recoverable states, so each gets its own advice and neither collapses
+  // into "save failed". Both promise that the previous save survived, which
+  // is a guarantee `PrisonSaveRepository.save` genuinely provides.
+  'save.status.quota-exceeded':
+    'Storage is full. Delete an old prison or export and remove saves to free space. Your previous save is intact.',
+  'save.status.transaction-aborted':
+    'The browser interrupted the save. Your previous save is intact — try saving again.',
+  'save.status.save-failed': 'Save failed: {detail}',
+  // Two different causes reach this line -- storage being unusable at all and
+  // a slot record that fails validation -- so the wording names the outcome
+  // the player has rather than asserting one of them.
+  'save.status.list-unreadable':
+    'Could not read the local prison list (private browsing or an unreadable slot record can cause this): {detail}',
+  'save.status.creating': 'Creating prison…',
+  'save.status.create-failed': 'Could not create a prison: {detail}',
+  'save.status.no-active-prison': 'No active prison — create or load one first.',
+  'save.status.saving': 'Saving…',
+  'save.status.loading': 'Loading…',
+  'save.status.not-found': 'That prison no longer exists.',
+  'save.status.no-readable-generation':
+    'No readable save generation remains for this prison. Every retained copy failed validation.',
+  'save.status.recovered': 'The most recent save was unreadable — recovered an earlier verified generation.',
+  'save.status.loaded': 'Loaded.',
+  'save.status.deleted': 'Prison deleted.',
+  'save.status.nothing-to-export': 'Nothing to export — no valid active save.',
+  'save.status.exported': 'Exported the current save.',
+
+  'save.failure.create': 'Creating the prison failed: {detail}',
+  'save.failure.save': 'Saving failed: {detail}',
+  'save.failure.load': 'Loading failed: {detail}',
+  'save.failure.delete': 'Deleting failed: {detail}',
+  'save.failure.export': 'Exporting failed: {detail}',
+  'save.failure.unknown': 'The action failed: {detail}',
+
+  // `{restored}` and `{notCarried}` are lists of scope identifiers joined by
+  // `src/ui/save-panel.ts`. They are English prose owned by
+  // `src/simulation/runtime/restore-session.ts` and are **not** localized --
+  // see `describeRestoredScope`, which records why that is a separate change.
+  'save.detail.restored-scope': 'Restored: {restored}. Not carried by this save version: {notCarried}.',
 
   // Semantic input actions (`src/input/actions.ts`). `ActionDefinition.descriptionKey`
   // is typed `input.action.${ActionId}`, so the *shape* was guaranteed and the

@@ -1,11 +1,12 @@
 /*
  * The persistent HUD shell.
  *
- * It frames the world and never covers it: a strip along the top, a tab bar
- * centred along the bottom, a minimap frame in the bottom-left corner, and
- * an empty middle. The root is `pointer-events: none`, so the only pixels
- * that swallow a click are the controls themselves -- everything else falls
- * through to the renderer's canvas.
+ * It frames the world and never covers it: a strip along the top, a refusal
+ * line under it that is `hidden` until a control's action is refused, a tab
+ * bar centred along the bottom, a minimap frame in the bottom-left corner,
+ * and an empty middle. The root is `pointer-events: none`, so the only
+ * pixels that swallow a click are the controls themselves -- everything else
+ * falls through to the renderer's canvas.
  *
  * Semantic tokens only. See `src/ui/tokens.css`.
  */
@@ -33,9 +34,16 @@
      It is written out anyway because the floor is a property of *the grid*,
      not of whichever items happen to occupy the middle row: `.hud__corner`
      sits there too and has no such override. */
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  /* Four rows, not three: the refusal line (issue #207) is a row of its own
+     between the strip and the middle, and it is `auto` so it costs exactly
+     zero while it is `hidden`. A row rather than an overlay because an
+     absolutely-positioned notice would sit *on* the world, and this HUD's
+     rule is that it frames the world and never covers it -- as a row it
+     borrows its band from the middle instead. */
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
   grid-template-areas:
     'strip'
+    'notice'
     'middle'
     'tabs';
   pointer-events: none;
@@ -159,6 +167,55 @@
 .hud-minimap__placeholder { white-space: normal; }
 
 .hud-alerts__list { display: flex; flex-direction: column; }
+
+/* ------------------------------------------------------------------ */
+/* The refusal line: what a control that was refused says (issue #207) */
+/* ------------------------------------------------------------------ */
+
+/*
+ * Deliberately *not* in `.hud__corner`: that region is `display: none` at
+ * 720px and below, and a refusal that only reaches wide screens is the defect
+ * with a narrower window. This row survives every breakpoint in this file.
+ *
+ * `pointer-events` stays `none` (inherited from `.hud`): the line carries no
+ * control, so a click on it belongs to the world underneath, exactly like the
+ * empty middle. It is `hidden` whenever it has nothing to say, which
+ * collapses its grid row to nothing.
+ */
+.hud__refusal {
+  grid-area: notice;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--badge-danger-bg);
+  border-bottom: var(--hairline) solid var(--status-danger);
+  color: var(--status-danger);
+  font-size: var(--text-size-body);
+}
+
+/* `display: flex` above beats the user agent's `[hidden] { display: none }`,
+   so without this the empty line is laid out as a visible band across the top
+   of the world from first paint -- measured in Chromium, where `offsetParent`
+   was non-null before anything had been refused. */
+.hud__refusal[hidden] { display: none; }
+
+/* Wraps rather than truncates: a refusal that ends in an ellipsis is a
+   refusal the player cannot act on, and there is no hover on touch. */
+.hud-refusal__text { white-space: normal; }
+
+/*
+ * The other half of the report, on the control that was pressed.
+ *
+ * An outline and not a colour change: the transport buttons already use
+ * colour for their pressed state, and colour is never the only signal here
+ * (`projection.ts`, on the incident badge) -- the words are in the line
+ * above, and `aria-describedby` ties the two together for a screen reader.
+ */
+.hud [data-action-failed='true'] {
+  outline: var(--hairline) solid var(--status-danger);
+  outline-offset: 1px;
+}
 
 /* ------------------------------------------------------------------ */
 /* Right rail: the host's aside slot, then the build panel              */
