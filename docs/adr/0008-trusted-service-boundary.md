@@ -54,10 +54,33 @@ Every piece of state gets exactly one authority:
 | Prison simulation state, saves, settings | Z0/Z1 (client-authoritative, RLS-scoped) | Single-player; forging it only affects the forger. `docs/CLOUD_SAVE.md`. |
 | Challenge *definitions* | Z2 published, Z0 verifies signature | Client must be able to detect a tampered definition offline. |
 | Challenge *submissions and rank* | Z2 | Public comparison; see [ADR 0009](./0009-challenge-verification-strategy.md). |
-| Entitlement grants/revocations | Z2 only | Commercial right. Client gets a read-only projection. |
+| Entitlement grants/revocations | Z2 only, and append-only even there | Commercial right. Client gets a read-only projection. A revocation is a further ledger *event*, never the removal of the grant it offsets. |
 | Payment/store facts | Z3 → Z2 | Only the provider knows whether money moved. |
 | Telemetry/diagnostic events | Z0 produced, Z2 gated | Client is the source but is never trusted with *retention* policy. |
 | Consent state | Z0 authoritative | A consent decision the user cannot change locally is not consent. |
+
+**Authority to write is not authority to erase.** Being the sole authority
+over a piece of state does not include the right to destroy the record of
+how that state came to be. Concretely, and settled in issue #163 after
+issue #105 finding 3 found the table silent on it: **the trusted tier holds
+no `TRUNCATE` on any table in `public`.** Supabase's default privileges
+granted it ambiently to all three Data API roles;
+`20260824090100_revoke_client_truncate.sql` revoked it from `anon` and
+`authenticated`, and `20260824150000_revoke_trusted_truncate.sql` revokes it
+from `service_role`. Clearing a table is an owner-role operation, not a
+service-key one.
+
+The rule exists because `TRUNCATE` is the one statement that reaches past
+every control this schema has against removal: it ignores row level security
+entirely, and it fires no row trigger, so the `entitlement_events_no_update`
+trigger — which refuses an `UPDATE` even for the table owner — does not run.
+Without the revoke, a role holding `SELECT` and neither `UPDATE` nor
+`DELETE` on the ledger could still empty it in one statement. The
+alternative ruling, that the trusted tier holds `TRUNCATE` deliberately for
+operational recovery, was considered and declined: §3 step 6 requires a
+trusted mutation to record actor, reason and prior value, and no audit trail
+on the trusted write path exists yet (#105 finding 8), so a truncated ledger
+would leave no record that it happened.
 
 ### 3. Mandatory shape of a Z2 entry point
 

@@ -103,6 +103,11 @@ design. That gap is now closed except where noted:
   `save_versions_storage_path_shape` CHECK if any row already carries a
   non-null `storage_path`. Neither deletes anything; both name the query
   that answers whether the condition holds.
+  `20260824150000_revoke_trusted_truncate.sql` (#163) is newer still and is
+  in the same position: a single `REVOKE`, applied to a scratch database
+  only, so whatever `TRUNCATE` the hosted project grants `service_role` is
+  untouched until it is pushed — and what that is remains unverified, since
+  every grant observed here is the harness's model of Supabase's defaults.
 - **Fully implemented and unit-tested:** `PrisonSyncEngine`,
   `resolveSyncConflict` and `MemoryCloudSaveClient`
   (`src/persistence/cloud/`) — the client-side sync/conflict policy is
@@ -417,10 +422,14 @@ the Z2 publisher ADR 0008 deliberately does not build does not exist, and
 **The ADR question, and why the answer differs from #163.** ADR 0008 treats
 `service_role` as trusted, so constraining it looks like an authority decision
 — which is exactly why #163 (`service_role` can `TRUNCATE` the append-only
-ledger) is filed for a ruling rather than fixed in a migration. The distinction
-that makes both positions coherent: `TRUNCATE` **removes an authority** ADR 0008
-may have meant the trusted tier to have, while a size bound **asserts an
-invariant the trusted tier's own contract already satisfies**. This schema has
+ledger) went to the ADR for a ruling rather than being fixed inside a
+migration. It has since been ruled on: ADR 0008 §2 now states that the trusted
+tier holds no `TRUNCATE`, and
+`20260824150000_revoke_trusted_truncate.sql` implements it. The distinction
+that made the two cases different survives the ruling: `TRUNCATE` **removes an
+authority** ADR 0008 had not decided the trusted tier should have, which is why
+it needed the ADR, while a size bound **asserts an invariant the trusted tier's
+own contract already satisfies**, which is why this one did not. This schema has
 done the latter since `20260823090000` — `entitlement_events` is written only by
 `record_entitlement_event()`, a `SECURITY DEFINER` function, and carries five
 `char_length` bounds. `20260824120000` follows that precedent rather than
@@ -767,10 +776,19 @@ transaction block, emptied the ledger. **Whether the hosted project's grants
 match is unverified**, and #105 asks the owner to run `\dp public.*` against
 it. The revoke landed anyway because it is harmless either way: nothing in
 this repository truncates anything, and PostgREST exposes no verb that
-reaches `TRUNCATE`. `service_role` holds the same ambient `TRUNCATE` and is
-deliberately untouched — whether the trusted role should be able to empty a
-table it holds no `DELETE` grant on is a boundary question ADR 0008's
-authority table does not answer.
+reaches `TRUNCATE`. `service_role` held the same ambient `TRUNCATE` and was
+deliberately untouched there, because whether the trusted role should be able
+to empty a table it holds no `DELETE` grant on was a boundary question ADR
+0008's authority table did not answer. #163 put it to the owner and it is
+now answered: the trusted tier holds no `TRUNCATE` either. ADR 0008 §2
+records the ruling, `20260824150000_revoke_trusted_truncate.sql` revokes it,
+and suite 003's sweep covers all three roles rather than the two client ones.
+The same harness-only caveat applies to that revoke, for the same reason and
+with the same consequence: `\dp public.*` there showed `D` for `service_role`
+on all eight tables (`Dxt` on five, `rDxt` on `challenge_submissions` and
+`entitlement_events`, `arDxt` on `challenge_definitions`), whether the hosted
+project matches is unverified, and a revoke of a privilege that is not held is
+a no-op.
 
 ## Schema (`supabase/migrations/`)
 

@@ -1,0 +1,86 @@
+-- Revoke TRUNCATE, on every table in `public`, from the trusted Data API
+-- role (issue #163).
+--
+-- EXECUTED against plain PostgreSQL 16.13 + pgTAP 1.3.2 via `pnpm
+-- verify:sql`, and pinned by the schema-wide sweep in
+-- supabase/tests/003_data_api_grants.test.sql -- which this migration folds
+-- `service_role` into, so the sweep now asserts the whole rule rather than
+-- two thirds of it. NOT executed against the real Supabase local stack or a
+-- hosted project; see docs/CLOUD_SAVE.md, "What has and has not been
+-- executed".
+--
+-- THE DECISION THIS SETTLES. 20260824090100_revoke_client_truncate.sql
+-- revoked the same ambient privilege from `anon` and `authenticated` and
+-- deliberately stopped there, because #105 finding 3 names only the two
+-- client roles and because whether the trusted tier should be able to empty
+-- a table it holds no DELETE grant on is a boundary question ADR 0008's
+-- authority table did not answer. #163 put both options to the owner and the
+-- answer is this one: revoke it, symmetric with the client revoke, across
+-- the whole schema. ADR 0008 section 2 now records the ruling, so the
+-- authority table answers the question rather than being silent on it.
+--
+-- WHY IT MATTERS HERE, and it is not the same argument as for the clients.
+-- The client roles were reaching past RLS. `service_role` has BYPASSRLS
+-- anyway, so RLS is not what was holding it back; three other controls were,
+-- and TRUNCATE goes round all three:
+--
+--   * `service_role` is granted SELECT on `entitlement_events` and holds
+--     neither UPDATE nor DELETE on it (20260823090000). Read back on the
+--     harness as `service_role`, inside an explicit transaction block:
+--     `holds_truncate | holds_delete | holds_update` was `t | f | f`.
+--   * `entitlement_events_no_update` refuses an UPDATE even for the table
+--     owner. Executed here as `root`:
+--       ERROR:  entitlement_events is append-only; append a compensating
+--               event instead of editing 90a16935-...
+--     TRUNCATE fires neither its event nor its level -- it is the only
+--     trigger on the table, and it is BEFORE UPDATE FOR EACH ROW.
+--   * docs/TRUSTED_SERVICES.md describes the ledger as append-only for a
+--     privileged connection. Until this migration that claim carried an
+--     explicit qualification: it was about UPDATE and DELETE, not TRUNCATE.
+--
+-- The consequence, executed on the harness as `service_role` inside an
+-- explicit `begin; ... commit;` with `select current_user` read back (a
+-- `set local role` outside a transaction block silently no-ops and leaves
+-- the session privileged, which is how an earlier audit here produced a
+-- false clean):
+--
+--   truncating_as | session_user          -->  service_role | root
+--   holds_truncate                        -->  t
+--   truncate table public.entitlement_events;
+--   still_as      | events_after_truncate -->  service_role | 0
+--   back_as       | events_after_commit   -->  root         | 0
+--
+-- one seeded ledger row, gone, by a role holding no DELETE on the table.
+--
+-- WHAT IT COSTS, stated because it is a real cost and the owner accepted it
+-- rather than overlooked it: clearing a table during an incident or a
+-- migration now needs the owner role (`postgres` on a hosted project) rather
+-- than the service key. Nothing in this repository truncates anything, and
+-- PostgREST exposes no verb that reaches TRUNCATE, so no code path loses a
+-- capability it was using -- only a human with the service key does.
+--
+-- The alternative was to amend ADR 0008 to say the trusted tier holds
+-- TRUNCATE deliberately. It was declined, and #163 records why the
+-- compensation it would have needed does not exist: there is no audit trail
+-- on the trusted write path at all (#105 finding 8), so a truncated ledger
+-- would leave no record that it happened.
+--
+-- WHAT IS AND IS NOT ESTABLISHED. Every grant observed above is on
+-- `scripts/sql/supabase-compat-harness.sql`, whose whole job is to model
+-- Supabase's default privileges. `\dp public.*` there shows `D` for
+-- `service_role` on all eight tables -- `Dxt/root` on `entitlements`,
+-- `prisons`, `profiles`, `save_versions` and `user_settings`, `rDxt/root` on
+-- `challenge_submissions` and `entitlement_events`, and `arDxt/root` on
+-- `challenge_definitions`, whose SELECT and INSERT grants this leaves
+-- untouched. #163 asks for `\dp public.*` against the hosted
+-- project before treating that as a fact there, and that is still unrun. The
+-- revoke lands regardless because it is harmless either way: revoking a
+-- privilege that is not held is a no-op.
+--
+-- `on all tables in schema public` expands at execution time, so it covers
+-- the nine relations that exist now and nothing added later. A table added
+-- afterwards inherits the ambient TRUNCATE again; the schema-wide sweep in
+-- supabase/tests/003_data_api_grants.test.sql is what fails when it does,
+-- which is why that sweep is schema-wide and role-parameterised rather than
+-- a per-table case somebody also has to remember to write.
+revoke truncate on all tables in schema public from service_role;
