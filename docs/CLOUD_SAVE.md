@@ -32,13 +32,13 @@ design. That gap is now closed except where noted:
   the server timestamps a client could stamp (see "The server's timestamps
   are the server's" below), `20260824110000`, `20260824110100` and
   `20260824110200` for findings 6, 7, 9 and 11, and `20260824150000` for
-  #163's trusted-role `TRUNCATE`. So do **suites 005 to 009 in their
+  #163's trusted-role `TRUNCATE`. So do **suites 005 to 010 in their
   entirety** and every change the first four suites have gained since. All of
   it has been executed only against plain PostgreSQL. The date is what
   defines the set here, not this list: the list stood at eleven while twelve
   postdated the run. The counts above are the stack-run counts, not today's.
-  `pnpm verify:sql` is at 258 assertions
-  (37/37, 88/88, 28/28, 26/26, 8/8, 23/23, 11/11, 12/12, 25/25), measured on the run that
+  `pnpm verify:sql` is at 268 assertions
+  (37/37, 88/88, 28/28, 26/26, 8/8, 23/23, 11/11, 12/12, 25/25, 10/10), measured on the run that
   produced this line; re-running `supabase test db` is what would raise the
   stack figure to match.
 - **Executed through GoTrue and PostgREST:** `pnpm verify:stack`
@@ -55,7 +55,7 @@ design. That gap is now closed except where noted:
   key, which is the only place PostgREST's mapping of that credential onto
   the role is exercised at all.
 - **Executed against plain PostgreSQL 16.13/18.6 + pgTAP:** every
-  migration and every suite via `pnpm verify:sql` — 258 assertions — which
+  migration and every suite via `pnpm verify:sql` — 268 assertions — which
   prepares a scratch database with
   `scripts/sql/supabase-compat-harness.sql`. This is the only path the
   #105 hardening has run on. That harness
@@ -876,6 +876,40 @@ every RLS-enabled table carries at least one policy, no policy expression is
 the literal `true`, every policy is permissive and applies to `PUBLIC`, and
 every policy except the deliberately identity-free
 `challenge_definitions_public_read` names `auth.uid()`.
+
+### The constraints that belong to no column
+
+The same audit found a second blind spot, and this one is a property of how
+suites 007 and 008 enumerate rather than of anyone forgetting a case. Both are
+coverage rules keyed **one row per column**. A constraint that relates *two*
+columns is the declared object for no row, so dropping it fails nothing.
+Measured the same way — every one of these six passed 233/233:
+
+| Constraint | What its absence would permit |
+| --- | --- |
+| `save_versions_exactly_one_location` | a version row with both a payload and a storage path, or neither — the hybrid split this document calls the model |
+| `entitlement_events_provider_pair` | a provider with no event id, so `record_entitlement_event()` takes its deduplicating branch and looks up against `NULL` |
+| `entitlement_events_webhook_requires_provider` | a `payment-webhook` row outside the partial idempotency index entirely — ADR 0008 threat T6's mitigation missing on the one source that must have it |
+| `challenge_submissions_verified_has_score` | a `verified` row with no `ranked_score` |
+| `challenge_submissions_rejected_has_code` | a `rejected` row with no `rejection_code` |
+| `prisons_owner_slot_unique` | two prisons at one slot index for one owner — reachable from a client, through the INSERT grant ADR 0013 deliberately retains |
+
+`supabase/tests/010_constraint_inventory.test.sql` closes it with an
+inventory of every `CHECK`, `UNIQUE`, `PRIMARY KEY` and `FOREIGN KEY` in
+`public` — name, type and the columns it covers — plus a behavioural probe
+for each of the six, and the paired admission that a *complete* verdict is
+still accepted so the two verdict constraints bound a shape rather than
+forbid one.
+
+It pins the catalog facts and deliberately **not** `pg_get_constraintdef`
+text: a rendered predicate is free to differ between PostgreSQL 16 and 18,
+and this schema is run on both, so pinning the text would trade one blind
+spot for a suite that fails on a server-version difference. `contype` is
+restricted to `c`/`u`/`p`/`f` for the same reason — PostgreSQL 17 added NOT
+NULL constraints to `pg_constraint` as `contype = 'n'`. What that leaves
+uncovered is a constraint rewritten in place under the same name over the
+same columns, which suites 006, 007 and 008 already hold for every column
+they declare.
 
 ## Schema (`supabase/migrations/`)
 

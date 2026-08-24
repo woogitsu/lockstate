@@ -21,7 +21,7 @@ and threat model) and [ADR 0009](./adr/0009-challenge-verification-strategy.md)
   `supabase/tests/`, under Supabase CLI 2.115.0 with GoTrue, PostgREST,
   Storage and Realtime running. Everything after those postdates that run and
   is not in it: **the twelve migrations dated `20260824`** and **suites 005 to
-  009 in their entirety**, together with every assertion the first four suites
+  010 in their entirety**, together with every assertion the first four suites
   have gained since — among them the twenty-two suite 002 gained for #105
   findings 1 and 2, the twenty-nine it gained for findings 6, 7 and 9, and the
   thirteen suite 001 gained for finding 11. Stated as a date range and a suite
@@ -35,7 +35,7 @@ and threat model) and [ADR 0009](./adr/0009-challenge-verification-strategy.md)
   check, and the security audit of that run found a second — see "Defects
   this tooling found" below.
 - **Also executed against a plain PostgreSQL 16/18 + pgTAP:** every
-  migration and every suite — 258 assertions, and the only path the #105
+  migration and every suite — 268 assertions, and the only path the #105
   hardening has run on. First run on 16.13 + pgTAP 1.3.2, since also on
   18.6 + pgTAP 1.3.4 — no major version is required or pinned. Reproduce
   with:
