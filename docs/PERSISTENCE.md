@@ -317,10 +317,12 @@ are now pinned as tests in
 **Honest severity: hardening, not a live defect — no exploiting caller
 exists.** Re-verified against the tree, not inherited from #105: the two
 paths that take external input are `PrisonSaveRepository.importSave` and
-`PrisonSyncEngine.pull`, and both are handed a freshly parsed value nobody
-else retains (a `JSON.parse` of a file, and PostgREST's parse of a response);
-neither has a production caller yet, since `SessionController.importInto` and
-the sync engine are both wired only in tests. `loadCurrent` decodes a value
+`PrisonSyncEngine.pull`. `pull` decodes exactly what `downloadVersion`
+returns — PostgREST's own parse of a response, which nothing else holds — and
+`importSave` decodes whatever its caller passes, which today is only a test
+(`SessionController.importInto` has no production caller, and neither does
+the sync engine), and whose intended source is a `JSON.parse` of an exported
+file. `loadCurrent` decodes a value
 read back from the store, which a real IndexedDB returns as a fresh
 structured clone per read — `MemoryLocalSaveStore` does not, but it is
 test-only. `save()` decodes only an *untrusted* envelope, which production

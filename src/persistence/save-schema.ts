@@ -922,9 +922,12 @@ function markTrusted(envelope: SaveEnvelope): TrustedSaveEnvelope {
   //
   // No caller exploits either today, which is why this is hardening rather
   // than a defect (re-verified against the tree in #105): `importSave` and
-  // `PrisonSyncEngine.pull` are the two paths taking external input, and both
-  // pass a freshly parsed value nobody else retains -- and neither has a
-  // production caller yet. `loadCurrent` decodes a value read back from the
+  // `PrisonSyncEngine.pull` are the two paths taking external input. `pull`
+  // decodes exactly what `downloadVersion` returned -- PostgREST's own parse
+  // of a response, which nothing else holds -- and `importSave` decodes
+  // whatever its caller passes, which today is only a test, since
+  // `SessionController.importInto` has no production caller (nor does the
+  // sync engine). `loadCurrent` decodes a value read back from the
   // store, which real IndexedDB returns as a per-read structured clone.
   // `save()` only decodes an *untrusted* envelope, which in production never
   // happens because `SessionController` always hands it a value this module

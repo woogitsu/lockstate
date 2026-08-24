@@ -28,11 +28,12 @@ export interface PrisonSaveRepositoryOptions {
 }
 
 /**
- * Every read of a stored slot record goes through here, so validation cannot
- * be forgotten at one of the eight call sites below. `undefined` means "no
- * such slot"; a record that fails validation throws
- * `CorruptSlotMetadataError` (see `slot-metadata-schema.ts` for why it is
- * refused rather than treated as absent).
+ * Every single-slot read goes through here, so validation cannot be
+ * forgotten at one of its call sites (`list()` uses the list form,
+ * `requirePrisonSlotMetadata`). `undefined` means "no such slot"; a record
+ * that fails validation throws `CorruptSlotMetadataError` (see
+ * `slot-metadata-schema.ts` for why it is refused rather than treated as
+ * absent).
  */
 function readSlot(record: unknown, prisonId?: string): PrisonSlotMetadata | undefined {
   return decodePrisonSlotMetadata(record, prisonId);

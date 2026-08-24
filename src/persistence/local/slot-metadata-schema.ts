@@ -1,16 +1,27 @@
 import { z } from 'zod';
 import type { PrisonSlotMetadata } from './store';
 
+const pendingSyncSchema = z
+  .object({
+    dirtySinceRevision: z.number().int().min(0),
+    markedAt: z.number().int().min(0),
+  })
+  .strict();
+
 /**
  * The one persistence boundary that had no schema (#105 finding 14):
  * IndexedDB slot metadata was declared as `PrisonSlotMetadata` by
  * `LocalSaveTransaction` and consumed raw, so the type was an assertion about
- * bytes on a player's disk rather than something checked. Every other
- * boundary in this repository validates with Zod -- the save envelope
- * (`save-schema.ts`), input settings (`src/input/settings.ts`), the cached
- * entitlement projection (`src/services/entitlements/projection.ts`), the
- * worker protocol (`src/simulation/protocol/`) -- and this now does too, with
- * generations' own precedent followed exactly: the store interface returns
+ * bytes on a player's disk rather than something checked. Every other stored
+ * or transported value here is validated before it is believed -- the save
+ * envelope (`save-schema.ts`) and the worker protocol
+ * (`src/simulation/protocol/types.ts`) with Zod, the cached entitlement
+ * projection (`src/services/entitlements/projection.ts`) with Zod, stored
+ * input settings with a hand-written structural check
+ * (`src/input/settings.ts`) -- and this boundary now is too, with Zod,
+ * matching the two schemas it sits closest to.
+ *
+ * Generations' own precedent is followed exactly: the store interface returns
  * the record as `unknown` and `PrisonSaveRepository` decodes it, because
  * "what to do with unreadable data" is repository policy.
  *
@@ -53,13 +64,6 @@ import type { PrisonSlotMetadata } from './store';
  * field without a version bump"): optional, with absence meaning what the
  * older build already did.
  */
-const pendingSyncSchema = z
-  .object({
-    dirtySinceRevision: z.number().int().min(0),
-    markedAt: z.number().int().min(0),
-  })
-  .strict();
-
 export const prisonSlotMetadataSchema = z
   .object({
     prisonId: z.string().min(1),
