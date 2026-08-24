@@ -37,7 +37,7 @@
 -- nothing below proves GoTrue mints the identity these policies read.
 
 begin;
-select plan(21);
+select plan(23);
 
 insert into auth.users (id, email) values
   ('77777777-7777-7777-7777-777777777777', 'bounds@example.test');
@@ -257,6 +257,34 @@ select cmp_ok(
   32768,
   'the ceiling clears what the TypeScript contract can produce, so SQL refuses nothing a legitimate caller may send'
 );
+
+-- --- save_versions.save_schema_version (issue #191) -------------------
+--
+-- Client-supplied through create_save_version(), whose TypeScript contract is
+-- `schemaVersionSchema = z.number().int().positive()`
+-- (`src/simulation/protocol/types.ts:52`). Before 20260824130000 the column had
+-- no check at all, so `-5` or `0` was storable on a row whose payload is a
+-- perfectly valid V3 save.
+--
+-- Bounded rather than pinned to `SAVE_SCHEMA_VERSION` (currently 3): the column
+-- records the schema version of the payload *as stored*, and a V1 or V2 row is
+-- legitimate history the migration chain still reads. The second assertion is
+-- the guard on that -- a pin would pass the first and fail it.
+
+select throws_ok(
+  $$ select public.create_save_version('88888888-8888-8888-8888-888888888888'::uuid, 2, 0,
+       repeat('c', 16), '{"tick": 0}'::jsonb, null, 11) $$,
+  '23514',
+  null,
+  'a non-positive save schema version is refused'
+);
+
+select lives_ok(
+  $$ select public.create_save_version('88888888-8888-8888-8888-888888888888'::uuid, 2, 1,
+       repeat('c', 16), '{"tick": 0}'::jsonb, null, 11) $$,
+  'schema version 1 is still admitted, so the bound did not pin the column to the version shipped today'
+);
+
 
 select * from finish();
 rollback;
