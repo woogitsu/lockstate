@@ -22,17 +22,18 @@ design. That gap is now closed except where noted:
   carried, and it earned its keep immediately: the first run failed on the
   *first assertion* of suite 001 and exposed defect 4 below.
 
-  **The #105 hardening is not in that run.** Seven migrations now postdate
+  **The #105 hardening is not in that run.** Eight migrations now postdate
   it — `20260824090000` and `20260824090100` for findings 5, 10 and 3 (see
   "Declarations, not only privileges" below), `20260824100000` and
-  `20260824100100` for findings 1 and 2, then `20260824110000`,
+  `20260824100100` for findings 1 and 2, `20260824101000` for finding 4
+  (see "Size bounds, not only shapes" below), then `20260824110000`,
   `20260824110100` and `20260824110200` for findings 6, 7, 9 and 11 — along
   with every suite change that came with them, and all of it has been
   executed only against plain PostgreSQL. The counts above are the
-  stack-run counts, not today's. `pnpm verify:sql` is at 163 assertions
-  (32/32, 76/76, 21/21, 26/26, 8/8), measured on the run that produced this
-  line; re-running `supabase test db` is what would raise the stack figure
-  to match.
+  stack-run counts, not today's. `pnpm verify:sql` is at 184 assertions
+  (32/32, 76/76, 21/21, 26/26, 8/8, 21/21), measured on the run that
+  produced this line; re-running `supabase test db` is what would raise the
+  stack figure to match.
 - **Executed through GoTrue and PostgREST:** `pnpm verify:stack`
   (`scripts/verify-supabase-stack.mjs`, 48/48 checks against a running
   stack). The pgTAP suites feed `auth.uid()` with `set_config`, so they
@@ -47,7 +48,7 @@ design. That gap is now closed except where noted:
   key, which is the only place PostgREST's mapping of that credential onto
   the role is exercised at all.
 - **Executed against plain PostgreSQL 16.13/18.6 + pgTAP:** every
-  migration and every suite via `pnpm verify:sql` — 163 assertions — which
+  migration and every suite via `pnpm verify:sql` — 184 assertions — which
   prepares a scratch database with
   `scripts/sql/supabase-compat-harness.sql`. This is the only path the
   #105 hardening has run on. That harness
@@ -290,6 +291,103 @@ skips materialized views, partitioned tables and foreign tables. Suite 002
 additionally runs every trusted step under `set local role service_role`
 rather than as the privileged role the suite is invoked with, which is what
 makes those assertions load-bearing at all.
+
+## Size bounds, not only shapes
+
+#105 finding 4 read as narrow — *"ADR 0013's 4 MiB bound covers only
+`save_versions.payload`; every other client-writable text/jsonb column is
+unbounded"* — and the shape underneath it is worth stating, because it is not
+"nobody bounded anything". The convention **does** exist and is applied
+consistently from `20260823090000` onward: `entitlement_events` bounds five
+text columns at 128 characters (200 for `reason`), `challenge_definitions`
+bounds `challenge_id` the same way, and both hash columns carry
+`~ '^[0-9a-f]{16}$'`. What has none of it is the four tables created on
+`20260822190*`, which predate it. `20260824101000_bound_client_writable_columns.sql`
+brings them up to the same convention rather than inventing a second one.
+
+Reproduced as `authenticated` before that migration, every probe inside an
+explicit `begin; … rollback;` with `select current_user` read back:
+
+| column | accepted before |
+| --- | --- |
+| `user_settings.payload` | 8,388,620 bytes |
+| `user_settings.settings_schema_version` | `-2147483648` |
+| `profiles.display_name` | 1,048,576 characters |
+| `prisons.game_version` | 1,048,576 characters |
+| `prisons.display_name` | 1,048,576 characters |
+| `save_versions.checksum` | 524,288 characters, through `create_save_version()` |
+| `challenge_submissions.claimed_metrics` | 4,194,316 bytes, through `submit_challenge_evidence()` |
+
+Two of those rows deserve to be read twice.
+
+**The 4 MiB save bound measures one column, not the row.** Measured: a single
+accepted `save_versions` row carried 4,194,252 bytes of `payload` *and*
+4,194,304 characters of `checksum` — 8,388,556 bytes of text in a row whose
+`byte_size` recorded 4,194,252 against a limit of 4,194,304. The trigger
+overwrites `p_byte_size` with `octet_length(new.payload::text)`, which is the
+right thing to do about a lying caller and says nothing about the rest of the
+row. `checksum` is now bounded, so the row's bound is the sum of its columns'
+bounds rather than one column's.
+
+**`claimed_metrics` walked around the evidence bound.** `20260824100000` caps
+`challenge_submissions.evidence` at 8,000,000 bytes. Measured: the same RPC
+call stored 4,194,316 bytes in `claimed_metrics` beside 58 bytes of
+`evidence`. A bound a sibling column steps around is the "control that reads
+as protection" shape this repository keeps finding, so that column is bounded
+in the same migration even though it belongs to a later table — the fix is a
+table constraint and touches no function body.
+
+**Every ceiling is derived from a contract in `src/`, not picked**, so that
+SQL refuses nothing a legitimate caller may send. That direction is the same
+one `20260824100000` took when it capped evidence at 8,000,000 rather than at
+ADR 0013's 4 MiB: `challengeLimitsSchema` already permits more, and a
+database that refuses what the TypeScript contract admits is a defect rather
+than hardening.
+
+| column | bound | where the number comes from |
+| --- | --- | --- |
+| `profiles.display_name`, `prisons.display_name` | NULL or 1–128 characters | every other bounded text column in this schema uses 128; `>= 1` refuses the empty string, which would be a second spelling of NULL |
+| `prisons.game_version` | 1–128 characters | `identifierSchema`'s own `.min(1).max(128)` (`src/simulation/protocol/types.ts`) |
+| `save_versions.checksum` | 1–64 characters | 4× the 16 hex characters `computeSaveChecksum` produces, leaving room for a wider digest |
+| `user_settings.payload` | ≤ 65,536 bytes of `payload::text` | the shipped defaults serialize to 792 bytes (718 for `DEFAULT_INPUT_SETTINGS` over its 7 keyboard bindings, 47 for `DEFAULT_ACCESSIBILITY_SETTINGS`), so this is ~82× the real payload, and 1/64th of ADR 0013's save bound — settings are not a save, and this table exists so they never ride inside one |
+| `user_settings.settings_schema_version` | ≥ 1 | bounded rather than pinned; see below |
+| `challenge_submissions.challenge_id` | 1–128 characters | identical to `challenge_definitions_challenge_id_check` on the identical vocabulary |
+| `challenge_submissions.claimed_metrics` | ≤ 32,768 bytes | 3.3× the 10,049 bytes the TypeScript contract can produce (`MAX_EVIDENCE_METRICS = 64` keys of a 128-character identifier and a number serializing to at most 24 characters) |
+
+Three choices in that table are worth their reasons.
+
+**`game_version` and `checksum` get lengths, not regexes**, even though both
+have exact TypeScript contracts and even though this schema already regexes
+two hash columns. Copying `identifierSchema`'s character class or
+`^[0-9a-f]{16}$` into SQL would put one rule in two places — the defect class
+issues #93 and #123 are about — and a later move to a wider digest would then
+refuse a legitimate save until a migration caught up. What the format pin
+would buy is narrow: a client that stores a malformed checksum fails its own
+next restore, which is self-harm rather than a boundary crossing. What the
+finding is about is size, and a length bound closes it completely.
+
+**`settings_schema_version` is bounded, not pinned**, unlike
+`entitlement_events_schema_version_check`'s `= 1`. That pin is right where it
+is, because the ledger's schema version is part of ADR 0008's event contract,
+so a new version needs a migration by design. Nothing says the same of the
+settings payload, and pinning it would make a client that writes version 2
+fail on a constraint before the migration admitting version 2 could exist.
+
+**`save_versions.storage_path` is not in this migration** — its bound and its
+shape belong to #105 finding 11 and arrived with
+`20260824110200_validate_save_version_storage_path.sql`.
+
+Two columns worth naming as *not* covered, because they are unbounded and the
+finding's own wording excludes them: `entitlements.key`/`value` and
+`challenge_definitions.definition`/`signature` are written only by
+`SECURITY DEFINER` functions and hold no grant for either client role, so
+they are trusted-tier surface rather than client-writable. They should still
+be bounded; that is a separate piece of work, not a silent omission.
+
+`supabase/tests/006_client_writable_column_bounds.test.sql` asserts every
+bound in **both** directions — refusing a value past the ceiling *and*
+admitting one exactly at it. The second half is not padding: it is what fails
+if a later change tightens a bound below what a caller may legitimately send.
 
 ## Declarations, not only privileges
 
