@@ -24,6 +24,7 @@ import { registerAtlasTextures } from '../phaser/atlas-textures';
 import { BuildOverlay } from '../phaser/build-overlay';
 import { TileLayer } from '../phaser/tile-layer';
 import { TILE_SIZE_PX, visibleTileRange, type TileRange } from '../tile-metrics';
+import { VOID_COLOR } from '../world/appearance';
 
 /**
  * The world view: camera, input, tiles and actors.
@@ -178,7 +179,7 @@ export class WorldScene extends Phaser.Scene {
   }
 
   public create(): void {
-    this.cameras.main.setBackgroundColor('#0b0e12');
+    this.cameras.main.setBackgroundColor(VOID_COLOR);
     this.tiles = new TileLayer(this);
     this.buildOverlay = new BuildOverlay(this);
 

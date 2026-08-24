@@ -53,9 +53,12 @@ covers the tile at all.
 
 ### Why the disagreement matters
 
-Not because a player has seen it. Nothing in `src/` registers a parcel and
-nothing in `src/` calls `canBuildAt`, so the two answers have never been
-compared in a running game — see *Reachability* below.
+Not because a player has seen it. Nothing in `src/` registers a parcel, so the
+two answers have never been compared over an overlap in a running game — see
+*Reachability* below. (When this ADR was written nothing in `src/` called
+`canBuildAt` either; `ConstructionSystem.submitOrder` does since #215, which
+makes the ownership answer reachable from a build gesture without making an
+*overlap* reachable.)
 
 It matters because one game rule had two implementations, and one of them lived
 in the renderer. `AGENTS.md` boundary 1 says rendering is not simulation and
@@ -93,8 +96,12 @@ Nothing in `src/` registers a parcel. The only `registerParcel` call site in
 production code is inside `SparseWorld.fromSnapshot`, re-registering what a
 save already contained; `createNewSimulationRuntime` creates a world with one
 owned chunk and no parcels, and there is no content or scenario module that
-defines any. `canBuildAt` has no caller in `src/` either. Every other call site
-of both is a test.
+defines any. `canBuildAt` has exactly one caller in `src/` —
+`ConstructionSystem.submitOrder`, which refuses a build order on unowned land
+(#215) — and every other call site of both is a test. That caller consults the
+ownership answer; it cannot reach a disagreement about one, because reaching a
+disagreement needs two parcels covering the same tile and nothing creates a
+parcel.
 
 So no player can reach the divergence today. Overlapping parcels exist only in
 tests. Before this change there was one such file,

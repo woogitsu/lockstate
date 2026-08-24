@@ -243,11 +243,47 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'save.failure.export': 'Exporting failed: {detail}',
   'save.failure.unknown': 'The action failed: {detail}',
 
-  // `{restored}` and `{notCarried}` are lists of scope identifiers joined by
-  // `src/ui/save-panel.ts`. They are English prose owned by
-  // `src/simulation/runtime/restore-session.ts` and are **not** localized --
-  // see `describeRestoredScope`, which records why that is a separate change.
+  // `{restored}` and `{notCarried}` are the `save.scope.*` lines below,
+  // resolved and joined with `', '` by `describeRestoredScope`
+  // (`src/ui/save-panel.ts`). Sentence frame and list items are both catalog
+  // entries since #226; before that the frame was localized and the items were
+  // English prose spliced in from the simulation.
   'save.detail.restored-scope': 'Restored: {restored}. Not carried by this save version: {notCarried}.',
+
+  // The thirteen lines a restore report is built from. `CURRENT_SAVE_RESTORED_SCOPE`
+  // (`src/simulation/runtime/restore-session.ts`) held these as English prose
+  // until #226 and now holds only the keys: ADR 0011 says the simulation tier
+  // is the one place translated text may never live.
+  //
+  // Message keys with no content id behind them, exactly like `save.status.*`.
+  // A restore scope describes the save format rather than game content, so
+  // `docs/CONTENT.md`'s vocabulary gains nothing here and no id is persisted.
+  //
+  // **Each string is the one that stood in `restore-session.ts`, character for
+  // character.** The owner's decision on #226 was one key per existing string:
+  // the wording, and the granularity it implies -- `save.scope.operations` is
+  // three subsystems on one line, `save.scope.names` is one -- was moved, not
+  // chosen. Regrouping what a restore reports is a product change with its own
+  // evidence, deliberately kept separable from this compliance fix. Do not
+  // "improve" these sentences here; change the report, if it should change, as
+  // its own decision.
+  'save.scope.kernel': 'kernel tick and command queue',
+  'save.scope.rng-streams': 'RNG stream states',
+  'save.scope.world': 'world terrain and ownership',
+  'save.scope.construction': 'construction orders and undo/redo',
+  'save.scope.entity-liveness': 'entity id liveness',
+  'save.scope.prisoners': 'prisoners, needs, actions and cell assignments',
+  'save.scope.operations': 'jobs, containers and utility networks',
+  'save.scope.security': 'doors, security sectors, guards and patrols',
+  'save.scope.contraband': 'contraband, intelligence and searches',
+  'save.scope.incidents': 'incidents, gangs and tunnels',
+  'save.scope.names': 'prisoner and staff names',
+  // The two right-hand entries. Each carries its own parenthetical
+  // reassurance, which #226 noted "wants splitting into a label and a
+  // reassurance" -- that split is a copy decision and is deliberately not made
+  // here: the sentence moves whole.
+  'save.scope.room-caches': 'room and topology caches (recomputed from the world)',
+  'save.scope.navigation-caches': 'navigation caches and in-flight path requests (re-issued on the next tick)',
 
   // Semantic input actions (`src/input/actions.ts`). `ActionDefinition.descriptionKey`
   // is typed `input.action.${ActionId}`, so the *shape* was guaranteed and the

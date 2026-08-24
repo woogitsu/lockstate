@@ -210,8 +210,9 @@ export class SimulationSnapshotFeed implements RenderFeed {
         // Always empty, and this feed is the reason -- not the bundle. Since
         // #70 `SessionSnapshotBundle.simulation` does carry prisoner state,
         // tile positions included (`session-systems.ts`, `tileX`/`tileY`), and
-        // `CURRENT_SAVE_RESTORED_SCOPE` lists "prisoners, needs, actions and
-        // cell assignments" under `restored`. What is missing is on this side:
+        // `CURRENT_SAVE_RESTORED_SCOPE` reports it under `restored` (as
+        // `save.scope.prisoners`, "prisoners, needs, actions and cell
+        // assignments"). What is missing is on this side:
         // nothing here decodes that section into `RenderFrame.actors`, and no
         // delta or event publishes actor state either. Reading it is the whole
         // change; until then `DemoActorFeed` exercises the sprite path, and is

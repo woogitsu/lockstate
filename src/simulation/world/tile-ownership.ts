@@ -15,10 +15,14 @@ import { rectContainsTileXY } from './parcel';
  * under a single parcel, and on every overlapping tile whose lowest-id
  * covering parcel was owned. And no world in `src/` has overlapping parcels to
  * differ over: the only `registerParcel` call site there is
- * `SparseWorld.fromSnapshot` re-registering what a save carried, and nothing in
- * `src/` calls `canBuildAt` at all. So the two answers have never been compared
- * in a running game. The defect is one game rule with two implementations, one
- * of them in the renderer -- not an observed wrong highlight.
+ * `SparseWorld.fromSnapshot` re-registering what a save carried. When #93 was
+ * fixed nothing in `src/` called `canBuildAt` either, so the two answers had
+ * never been compared in a running game at all; `ConstructionSystem.submitOrder`
+ * calls it now (#215), which makes the ownership answer reachable from a build
+ * gesture -- but still only against chunk ownership and parcels a save carried,
+ * never against overlapping ones, because nothing creates those. The defect was
+ * one game rule with two implementations, one of them in the renderer -- not an
+ * observed wrong highlight.
  *
  * The rule: **a tile is owned when any owned parcel contains it, or when the
  * chunk holding it is owned outright.** Parcels do not veto each other.

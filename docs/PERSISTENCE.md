@@ -1315,6 +1315,10 @@ both.
 This is also why the migration's refusal to fabricate an empty section is safe:
 absence is now reported rather than silently reinterpreted as presence.
 
+The two columns below are the default `en` text of the thirteen `save.scope.*`
+keys the scope carries (`src/content/default-locale-en.ts`); since #226 the
+scope itself holds the keys and nothing else, and the panel resolves them.
+
 | Restored | Rebuilt from scratch |
 | --- | --- |
 | kernel tick and command queue | room and topology caches (recomputed from the world) |
@@ -1474,14 +1478,22 @@ Two decisions inside that are worth having written down:
   around it stays translatable and the fragment is honestly data; hiding it
   would cost the player the one detail that names what went wrong (issue #65's
   `did not reply within 15000ms` is that detail).
-- **What a load restored is *not* localized, deliberately.**
-  `describeRestoredScope` splices `RestoredScope.restored` and
-  `notCarriedByThisSaveVersion` into a localized sentence as joined text.
-  Those entries are English prose authored in
-  `src/simulation/runtime/restore-session.ts`, and giving them keys means
-  changing a simulation-owned structure to carry keys — the tier ADR 0011 says
-  translated text may never live in. That belongs with #109, which owns that
-  function.
+- **What a load restored is localized too, since #226.**
+  `RestoredScope.restored` and `notCarriedByThisSaveVersion` carry
+  `RestoredScopeEntry` values — a `labelKey` and nothing else — rather than the
+  English prose they held until then, because
+  `src/simulation/runtime/restore-session.ts` is the tier ADR 0011 says
+  translated text may never live in. `describeRestoredScope`
+  (`src/ui/save-panel.ts`) resolves each key against the panel's localizer and
+  joins the results with `', '` into the `{restored}` and `{notCarried}`
+  placeholders, so the whole sentence — frame and list items — is catalog text
+  resolved at the last possible moment. The thirteen `save.scope.*` entries are
+  authored in `src/content/default-locale-en.ts` and are word for word the
+  strings the simulation used to hold: #226's decision was one key per existing
+  string, so **what a restore reports to the player did not change**. Nothing
+  about the scope is persisted, checksummed or branched on — it is derived from
+  the bundle at load time by `restoredScopeFor` and read only by the panel — so
+  this is not a save-format change and needs no migration.
 
 The panel takes its localizer as a **required** third constructor argument, and
 `main.ts` hands it the same instance the HUD uses. This used to be an optional
