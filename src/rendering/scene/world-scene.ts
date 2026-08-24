@@ -3,6 +3,7 @@ import type { KeyValueStore } from '../../shared/key-value-store';
 import {
   KeyboardInputAdapter,
   TouchGestureTracker,
+  isTextEntryFocused,
   loadInputSettings,
 } from '../../input';
 import { AtlasFrameIndex } from '../assets/atlas-frame-index';
@@ -124,7 +125,14 @@ export class WorldScene extends Phaser.Scene {
     this.buildTool = options.buildTool;
     this.keyboard = new KeyboardInputAdapter(
       loadInputSettings(options.keyValueStore).keyboardBindings,
-      () => ['world'],
+      // Answered from the document rather than by a literal. This was
+      // `() => ['world']`, which made `'text-entry'`, `'modal'` and
+      // `'construction'` decorative: `docs/INPUT.md` credited a guard against
+      // game controls firing while a text field owns input, the mechanism for it
+      // worked and was unit-tested, and the one thing that would make it fire
+      // never happened (issue #201). `isActive` re-reads this on every call, so
+      // focus moving into a field mid-hold stops the camera too.
+      () => (isTextEntryFocused() ? ['text-entry'] : ['world']),
     );
     this.loadAtlasLibrary = options.loadAtlasLibrary ?? (() => AtlasLibrary.load());
     this.onError =
@@ -165,8 +173,21 @@ export class WorldScene extends Phaser.Scene {
     const keyUp = (event: KeyboardEvent): void => {
       this.keyboard.keyUp(event);
     };
+    // A `keyup` goes to whichever window has focus, so holding a camera key and
+    // alt-tabbing sends the release elsewhere and the key stays down forever --
+    // measured at 1,419 world units of panning over three seconds, continuing
+    // through refocus and through a click (issue #202). `window`'s `blur` is the
+    // right event rather than `document.visibilitychange`: an
+    // unfocused-but-visible window is exactly the case that produces this, and
+    // `visibilitychange` does not fire for it. Phaser's own
+    // `Core.Events.BLUR` would work too; `window` keeps this symmetric with the
+    // two listeners above, so the pair is added and removed together.
+    const blur = (): void => {
+      this.keyboard.releaseAll();
+    };
     window.addEventListener('keydown', keyDown);
     window.addEventListener('keyup', keyUp);
+    window.addEventListener('blur', blur);
 
     this.input.on(
       'wheel',
@@ -261,6 +282,7 @@ export class WorldScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       window.removeEventListener('keydown', keyDown);
       window.removeEventListener('keyup', keyUp);
+      window.removeEventListener('blur', blur);
       this.tiles?.destroy();
       this.actors?.destroy();
       this.buildOverlay?.destroy();
