@@ -38,16 +38,61 @@ segments.
 Completing a build order does write world geometry: `finalizeConstruction`
 sets the tile's `topEdge`/`leftEdge` value for an edge-geometry buildable and
 only bumps the geometry revision for everything else. Door placement is still
-not wired into `ConstructionSystem`, for a narrower reason — the only door in
-`BUILDABLE_REGISTRY` is `category: 'object'`, so `edgeNumericIdFor` returns 0
-for it, it writes no edge value and it registers nothing with `DoorRegistry`.
+not wired into `ConstructionSystem`, and the `category: 'object'` on
+`BUILDABLE_REGISTRY`'s only door explains just one half of that: it is why
+`edgeNumericIdFor` returns 0 and a completed door order writes no edge value.
+It does not explain the other half. `ConstructionSystem` is constructed with a
+`SparseWorld` and a materials provider and holds no `DoorRegistry` at all, so
+a completed order registers nothing whatever the category says.
 Navigation therefore still cannot assume a door corresponds to any particular
 wall-edge numericId.
 Instead: a door registered at an edge is authoritative for gating that
 edge, whatever the world's own edge value is; a plain nonzero edge value
-with no registered door is an ordinary, permanently impassable wall. When
-construction eventually places real doors, it only needs to call
-`DoorRegistry.register`/`setState` — navigation's model does not change.
+with no registered door is an ordinary, permanently impassable wall.
+
+Wiring construction to place real doors is more than calling
+`DoorRegistry.register`/`setState` from `finalizeConstruction`, and this
+section used to say otherwise. Four things are undecided (issue #261):
+
+- **Orientation.** A `DoorDefinition` needs a `side`, and `BuildOrder`
+  already carries an `edge` that the world pointer tool fills in for any
+  buildable. The Build panel's coordinate form does not: it derives
+  `occupiesEdge` from `category === 'wall'` (`src/main.ts`) and hides the
+  edge chooser for a door, so a door submitted there silently takes
+  whichever edge was last selected. Which edge a door sits on stops being
+  cosmetic the moment it gates one.
+- **Removal.** `ConstructionSystem.cancelOrder`/`undo` reverse a completed
+  order's geometry on purpose, so a placed door has to be removable —
+  and `DoorRegistry` exposes no removal operation. Adding one contradicts
+  `structuralRevision`'s "bumped only when a door is *added*" contract
+  below, and `SecuritySectorRegistry` keeps a baseline state per governed
+  door id whose `setState` would then throw on a door that no longer exists.
+- **Identity.** Doors cross the save boundary (`doorsSnapshot` in
+  `runtime/session-systems.ts`), and `buildNavigationGraph` sorts portals by
+  door id — so the minted id decides routing tie-breaks. That is exactly the
+  choice [ADR 0012](./adr/0012-derived-identifier-reproducibility.md)
+  requires a declaring module to make explicitly.
+- **Access requirements.** `DoorDefinition` needs a state, a clearance and a
+  cost multiplier; `createGradedDoor` (`security/sector.ts`) states that a
+  door's requirements must come from a security grade rather than
+  hand-picked values, and no buildable carries one.
+
+A door is still a portal whatever placed it, so `findRoute`'s model is
+unaffected. Two things around it are. First, *when* the graph is rebuilt:
+every placed door moves `structuralRevision`, so `isNavigationGraphStale`
+makes each one a whole-graph rebuild, and how often a build gesture may do
+that is the work budget's problem —
+[ADR 0007](./adr/0007-navigation-work-budgets-and-flow-fields.md) territory.
+Second, `RouteCache`/`FlowFieldCache` do **not** invalidate on
+`structuralRevision`: they compare `NavigationGraph.geometrySignature`, which
+is built from chunk `geometryRevision`s alone, plus (for `RouteCache`) the
+access versions of the doors an entry actually used. A door that appears
+without its chunk's geometry revision moving would therefore leave routes
+cached from before it existed. Nothing does that today — the sole caller of
+`DoorRegistry.register` is `restoreSessionSystems`, which runs before any
+route is computed — and a construction-driven placement would bump the
+revision anyway (`finalizeConstruction` always does), so this is a hazard
+for whatever wires door placement, not a live defect.
 
 ## Permission model
 
