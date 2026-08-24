@@ -55,6 +55,38 @@ export function resolveBuildEdge(order: { readonly edge?: BuildEdge }): BuildEdg
   return order.edge ?? DEFAULT_BUILD_EDGE;
 }
 
+/**
+ * Every reason `ConstructionSystem.submitOrder` can fail an order with.
+ *
+ * It was `string` until #261, which is what let a refusal be produced and
+ * consumed by nobody: a value nothing can enumerate cannot be mapped onto a
+ * player-facing vocabulary without a fallback, and a fallback is how a new
+ * refusal reaches the screen as the wrong sentence. Declared as a closed
+ * union, `src/simulation/refusals/refusal-log.ts` maps it through an
+ * exhaustive `Record` and a sixth member added here fails to compile until
+ * somebody decides what the player is told.
+ *
+ * `'unbuildable'` is the value `submitOrder` writes when `canBuildAt` refuses
+ * for a reason `SUBMISSION_FAIL_REASONS` does not name; the other four are
+ * that table's entries plus the out-of-bounds check that runs before it.
+ *
+ * Persisted: `save-schema.ts` validates `failReason` as an optional string, so
+ * a save written by an older build can carry any of these and no migration is
+ * needed. It stays a `z.string()` there deliberately -- a save is data that
+ * already exists, and narrowing the *reader* would turn an unrecognised
+ * historical value into an unloadable prison rather than an order that reads
+ * as failed.
+ */
+export const BUILD_ORDER_FAIL_REASONS = [
+  'out-of-bounds',
+  'unbuildable',
+  'unbuildable-terrain',
+  'unowned-land',
+  'water-blocked',
+] as const;
+
+export type BuildOrderFailReason = (typeof BUILD_ORDER_FAIL_REASONS)[number];
+
 export interface BuildOrderMaterial {
   readonly itemId: string;
   readonly quantity: number;
@@ -78,7 +110,7 @@ export interface BuildOrder {
   // Future logistics state
   materialsAllocated: BuildOrderMaterial[];
   assignedWorkerId?: string;
-  failReason?: string;
+  failReason?: BuildOrderFailReason;
 }
 
 export function createBuildOrder(

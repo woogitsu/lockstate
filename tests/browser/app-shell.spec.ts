@@ -1,6 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { expect, test, type Page } from '@playwright/test';
+import { DEFAULT_LOCALE } from '../../src/content/localization';
+import { procurableMaterial } from '../../src/content/procurement-catalog';
+import { defaultMessageCatalogEn, formatNumber } from '../../src/services/localization';
+import { TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
 
 /**
  * Real-browser verification for the *assembled application* — `index.html`
@@ -9,7 +13,7 @@ import { expect, test, type Page } from '@playwright/test';
  *
  * Every other spec in this directory drives a purpose-built harness page.
  * That is the right shape for a module under test, but it means nothing so
- * far has ever loaded the page a player loads. Twelve claims only exist once
+ * far has ever loaded the page a player loads. Thirteen claims only exist once
  * the pieces are assembled in a browser, and none of them can be settled a
  * layer down (the count is this list's own length, and it read "six" while
  * the list held seven):
@@ -111,6 +115,17 @@ import { expect, test, type Page } from '@playwright/test';
  *    assembled page can settle it, because the seam joins a `SimulationCommandSender`
  *    built at module scope to a `SessionController` built inside
  *    `bootPersistence`, and only `src/main.ts` holds both ends.
+ * 13. **A refused purchase produces exactly one player-visible message.**
+ *    Two surfaces report one, and they sit on opposite sides of one dispatch:
+ *    `src/main.ts` throws before submitting, which paints the refusal line on
+ *    the control that was pressed, and `ProcurementSystem` refuses what got
+ *    past that, which arrives as a row in the alerts list (#89 built the
+ *    first, #261 the second). Each has its own tests and each passes with the
+ *    other one silent or doubled, because "exactly one" is a claim about both
+ *    at once -- and only the assembled page has both. It also needs the real
+ *    join underneath the second surface: a kernel dispatching the command at
+ *    its tick, a worker publication carrying the refusal, and the composition
+ *    root's one listener writing it into the view model.
  *
  * Deliberately NOT here, because a headless test already proves it and a
  * browser test that repeats one costs a minute of CI and adds no evidence:
@@ -331,6 +346,94 @@ async function openApp(page: Page): Promise<void> {
  * leave the drag below panning the camera, and a test that never built
  * anything would report a refusal line it never earned.
  */
+/**
+ * The sentence the bundled default locale gives a key.
+ *
+ * Read out of `defaultMessageCatalogEn` -- the catalog `src/main.ts` builds
+ * the page's localizer from -- rather than typed here as English. ADR 0011
+ * puts the key on one side of that boundary and the text on the other, so a
+ * test that hard-codes the text is asserting against a copy: rewording the
+ * sentence in `src/content/default-locale-en.ts` would leave the test green
+ * while the player read something else.
+ */
+function localeText(key: string): string {
+  const entry = defaultMessageCatalogEn.messages[key];
+  if (typeof entry !== 'string') {
+    throw new Error(`"${key}" is not a plain string in the bundled default locale, so it cannot be matched as one.`);
+  }
+  return entry;
+}
+
+/** The figure the HUD prints for `value`, formatted the way the status strip formats every count. */
+function fundsText(value: number): string {
+  return formatNumber(DEFAULT_LOCALE, value);
+}
+
+/** The catalog price of one unit, taken from the catalog the page itself prices against. */
+function unitPriceOf(itemId: string): number {
+  const priced = procurableMaterial(itemId);
+  if (priced === undefined) throw new Error(`${itemId} is not for sale, so no purchase of it can be driven.`);
+  return priced.unitPriceMinorUnits;
+}
+
+/**
+ * Records every `postMessage` the page makes to a real simulation worker.
+ *
+ * The same tee the #89 test installs inline, as a helper because the two
+ * purchase-refusal tests below both need to say what did **not** reach the
+ * worker: a command that was never sent is a refusal the worker cannot report,
+ * which is half of "exactly one message". Subclassing the real `Worker` rather
+ * than replacing it, so the page still gets a working simulation.
+ */
+async function installCommandTee(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    const RealWorker = Worker;
+    const sent: unknown[] = [];
+
+    class CommandTeeWorker extends RealWorker {
+      public override postMessage(message: unknown, transfer?: Transferable[] | StructuredSerializeOptions): void {
+        sent.push(message);
+        if (transfer === undefined) super.postMessage(message);
+        else if (Array.isArray(transfer)) super.postMessage(message, transfer);
+        else super.postMessage(message, transfer);
+      }
+    }
+
+    Object.defineProperty(window, 'Worker', { configurable: true, value: CommandTeeWorker });
+    (window as unknown as CommandTeeWindow).lockstateSentToWorker = sent;
+  });
+}
+
+/** Every `PurchaseMaterials` the page has posted to the worker, in the order it posted them. */
+async function purchasesSent(page: Page): Promise<readonly { itemId: string; quantity: number }[]> {
+  return page.evaluate(() =>
+    ((window as unknown as CommandTeeWindow).lockstateSentToWorker ?? [])
+      .map((message) => message as SubmittedCommand)
+      .filter((message) => message.kind === 'simulation/submit-command')
+      .filter((message) => message.payload?.command?.data?.type === 'PurchaseMaterials')
+      .map((message) => ({
+        itemId: message.payload?.command?.data?.itemId ?? '',
+        quantity: message.payload?.command?.data?.quantity ?? 0,
+      })),
+  );
+}
+
+/** Opens the Build panel and its buy disclosure, which starts closed. */
+async function openBuyRow(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'Build' }).click();
+  const buyToggle = page.locator('.hud-build__buy-toggle');
+  await expect(buyToggle).toHaveAttribute('aria-expanded', 'false');
+  await buyToggle.click();
+  await expect(page.locator('.hud-build__buy')).toBeVisible();
+}
+
+/** Types a quantity into the buy row's stepper and commits it, the way a player would. */
+async function setBuyQuantity(page: Page, quantity: number): Promise<void> {
+  const field = page.locator('.hud-build__buy .ui-number__input');
+  await field.fill(String(quantity));
+  await field.press('Enter');
+}
+
 async function armBuildTool(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Build' }).click();
   // `.hud-build__arm`, not `.hud-build__map .ui-action`: the map block holds
@@ -1561,6 +1664,134 @@ test.describe('the assembled application', () => {
   });
 
   /**
+   * Issue #261: the *other* refusal, and the one nothing on this page could
+   * report.
+   *
+   * The two tests above are about a **command** being refused on this thread
+   * -- there is no session, `SimulationCommandSender.submit` throws, and the
+   * gate paints `.hud__refusal`. This is the opposite case and it is the one
+   * that vanished: a page with a real prison, a running clock, and a command
+   * the worker *accepts*. `handleSubmitCommand` answers `status: 'queued'`,
+   * the kernel dispatches the order at its tick, and
+   * `ConstructionSystem.submitOrder` refuses it on its content --
+   * `state: 'failed'`, `failReason: 'out-of-bounds'`.
+   *
+   * Reproduced exactly as reported: type `100, 100` into the Build panel's
+   * coordinate fields, which carry no `min`/`max`, and press *Place order*.
+   * Before this the player saw **nothing**: no ghost, because `phaseOf`
+   * (`src/rendering/world/structures.ts`) maps a failed order to `undefined`
+   * and it is drawn as no geometry; and no refusal line, because that line
+   * answers a rejected command and this command was accepted.
+   *
+   * It belongs here rather than in `ui-shell.spec.ts` for the same reason
+   * #207's does, one layer further along: nothing below the assembled page
+   * can produce it. It needs a real worker, a real session, a real tick loop
+   * to dispatch the command, a real `simulation/status-counts` publication to
+   * carry the refusal back, and `src/main.ts`'s own listener to put it in the
+   * view model. Every one of those halves has its own tests; only this proves
+   * they are joined.
+   */
+  test('a build order the simulation refuses reaches the alerts list (#261)', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+
+    // A real prison, and a running clock -- the order is dispatched at a tick,
+    // so a paused simulation would leave it queued and refuse nothing.
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
+    await expect
+      .poll(async () => page.locator('.hud-clock__day-progress').textContent(), {
+        message: 'the simulation never advanced, so no command could be dispatched',
+        timeout: 15_000,
+      })
+      .not.toBe('0%');
+
+    // The alerts list says it is empty, which is the state this test changes.
+    const alertsSection = page.locator('.hud-minimap .ui-section');
+    const emptyRow = page.locator('.hud-alerts__list [data-alert="empty"]');
+    await expect(emptyRow).toHaveCount(1);
+
+    await page.getByRole('button', { name: 'Build' }).click();
+    const coordinates = page.locator('.hud-build .ui-section__header').last();
+    if ((await coordinates.getAttribute('aria-expanded')) === 'false') await coordinates.click();
+
+    // Outside the single 32x32 chunk a new prison owns. The fields accept it
+    // because they have no bounds -- which is the reproduction, not an
+    // incidental detail.
+    // The spinbutton itself: `getByLabel` also matches the two stepper
+    // buttons, which carry `aria-label="Decrease Tile X"`/"Increase Tile X".
+    await page.getByRole('spinbutton', { name: 'Tile X' }).fill('100');
+    await page.getByRole('spinbutton', { name: 'Tile Y' }).fill('100');
+    const submit = page.locator('.hud-build .ui-section__body .ui-action');
+    await expect(submit).toBeVisible();
+    await submit.click();
+
+    // The command itself was accepted, so the thread-local refusal line stays
+    // hidden. If this ever lit up, the test would be measuring the wrong
+    // refusal entirely.
+    await expect(page.locator('.hud__refusal')).toBeHidden();
+
+    // The row arrives on the worker's own schedule: the command is scheduled
+    // a lead of ticks ahead, and the publication that carries the refusal
+    // follows on the next tick-loop wake.
+    const alertRow = page.locator('.hud-alerts__list [data-alert]:not([data-alert="empty"])');
+    await expect
+      .poll(async () => alertRow.count(), {
+        message: 'the simulation refused the order and the alerts list never heard about it',
+        timeout: 20_000,
+      })
+      .toBe(1);
+    // The empty-state row goes when there is something to say.
+    await expect(emptyRow).toHaveCount(0);
+
+    // **Visible, not merely present.** The alerts section starts folded
+    // (`INITIAL_HUD_SHELL_STATE`), so the row is in the DOM with a 0x0 box
+    // until the player opens it -- which is exactly the state #220 measured
+    // and moved the "simulation unavailable" sentence out of. A
+    // `toContainText` here without the fold being opened would pass against
+    // an invisible row and prove nothing.
+    await expect(alertRow).toBeHidden();
+    await expect(alertsSection).toHaveAttribute('data-collapsed', 'true');
+    await page.locator('.hud-minimap .ui-section__header').click();
+    await expect(alertsSection).toHaveAttribute('data-collapsed', 'false');
+
+    await expect(alertRow).toBeVisible();
+    // The sentence for the reason the simulation actually gave: the tile is
+    // outside the one chunk a new prison has, so `submitOrder`'s bounds check
+    // decides before the ownership check does.
+    await expect(alertRow).toContainText('that tile is outside the map');
+    // A localized sentence, not the wire vocabulary and not a thrown Error
+    // (ADR 0011). `build.out-of-bounds` is the id the worker sent; it must not
+    // be what the player reads.
+    await expect(alertRow).not.toContainText('out-of-bounds');
+    await expect(alertRow).not.toContainText('build.');
+    // The severity badge carries the state without relying on colour, the
+    // same way the incident chip does.
+    await expect(alertRow.locator('.ui-badge')).toBeVisible();
+    await expect(alertRow.locator('.ui-badge')).toHaveText('Warning');
+
+    // And the HUD's own rendered text says it -- `hudMentionsIt` is the
+    // measurement #220 established as the honest one, because `toBeVisible`
+    // and `innerText` can disagree about a subtree the layout has dropped.
+    const measured = await page.evaluate(() => {
+      const node = document.querySelector<HTMLElement>('.hud-alerts__list [data-alert]:not([data-alert="empty"])');
+      const rect = node?.getBoundingClientRect();
+      return {
+        laidOut: node !== null && node.offsetParent !== null,
+        width: rect?.width ?? 0,
+        height: rect?.height ?? 0,
+        hudMentionsIt: (document.querySelector<HTMLElement>('.hud')?.innerText ?? '')
+          .toLowerCase()
+          .includes('that tile is outside the map'),
+      };
+    });
+    expect(measured.laidOut).toBe(true);
+    expect(measured.width).toBeGreaterThan(0);
+    expect(measured.height).toBeGreaterThan(0);
+    expect(measured.hudMentionsIt).toBe(true);
+  });
+
+  /**
    * "One gesture is one transaction", on the wire, in the assembled page.
    *
    * `src/ui/build-tool.ts` has always claimed it -- every segment of a run
@@ -1787,6 +2018,285 @@ test.describe('the assembled application', () => {
     // And nothing left this thread: a refusal that still posted the command
     // would spend the money in the worker and paint a refusal about it.
     expect(await purchases()).toHaveLength(sentBefore);
+  });
+
+  /*
+   * The two tests below are one claim in two halves, and the claim is neither
+   * #89's nor #261's: it is the one that only exists once both are in the
+   * tree. **A refused purchase produces exactly one player-visible message.**
+   *
+   * Each PR proved its own surface. #89 proved that the main thread's
+   * pre-flight paints the refusal line for a total the published balance
+   * cannot cover; #261 proved that a refusal the *worker* decides reaches the
+   * alerts list -- using a refused **build order**. Nothing drove a refused
+   * *purchase* from a real worker to the alerts list, and nothing asserted
+   * that either surface stays quiet while the other speaks. Measured on this
+   * branch before these tests existed: deleting purchase refusals from the
+   * view model at the composition root, and separately making the pre-flight
+   * raise an alert row *as well as* throwing, each left `tsc` clean, all 1862
+   * headless tests passing, and every browser test passing but the one this
+   * container always fails on unfetched Git LFS content.
+   *
+   * Neither half is provable a layer down, and for different reasons.
+   * `hudAlertsFromWorkerMessage` and `RefusalLog` each have full unit tests
+   * that pass either way, because the thing that can break is the join: the
+   * kernel dispatching the command at its tick, `ProcurementSystem` refusing
+   * it, the worker opening its own publication gate for a new refusal, and
+   * `src/main.ts`'s single listener writing the row into the view model. And
+   * "exactly one" is a statement about *two* surfaces at once, which only the
+   * assembled page has both of.
+   *
+   * Both are driven with the clock **paused** at the point where determinism
+   * matters, which is a fact about the sender rather than a trick:
+   * `SimulationCommandSender.projectExecuteTick` says "a paused clock cannot
+   * have moved, so the last reported tick is exact and the order runs on the
+   * very first step after play -- no lead, no wait". So presses made while
+   * paused are all scheduled for the same tick, and `Kernel.step` drains every
+   * command whose `executeAtTick` equals the tick it is on -- all of them, in
+   * one pass. That is the "several purchases pressed inside one tick" case
+   * `src/main.ts` names as the one its pre-flight cannot see, produced without
+   * racing a 50 ms tick and without a fixed sleep anywhere.
+   */
+
+  /**
+   * The worker's half: the simulation refuses a purchase, and the alerts list
+   * is the only place the player hears about it.
+   *
+   * Two presses at half the treasury plus one unit. Each passes the
+   * pre-flight on its own -- it compares against the balance the worker last
+   * published, and a paused clock has dispatched neither of them, so that
+   * figure is still the starting balance for both. The pair cannot both be
+   * paid for, so when the clock runs `Treasury.spend` refuses the second and
+   * `ProcurementSystem` answers `insufficient-funds`: the only one of its four
+   * refusal reasons this panel can reach at all (a fresh `crypto.randomUUID()`
+   * per press rules out `duplicate-order`, the stepper's clamp rules out
+   * `invalid-quantity`, and the pre-flight answers `unknown-material` before
+   * the worker ever sees it).
+   */
+  test('a purchase the simulation refuses reaches the alerts list, and nowhere else (#89, #261)', async ({
+    page,
+  }) => {
+    await installCommandTee(page);
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+
+    // A real prison: `submit` throws until a snapshot has baselined the
+    // command sequence, and a refused command sends nothing at all.
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+
+    // Paused on arrival, which is the state the two presses below depend on.
+    await expect(page.locator('.hud-clock__day-progress')).toHaveText('0%');
+
+    const funds = page.locator('[data-metric="funds"] .ui-stat__value');
+    // Published once on `simulation/ready`, before any tick runs -- so the
+    // pre-flight has a real figure to compare against from the first press.
+    await expect(funds).toHaveText(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS));
+
+    const unitPrice = unitPriceOf('item.brick');
+    const quantity = Math.floor(TREASURY_STARTING_BALANCE_MINOR_UNITS / unitPrice / 2) + 1;
+    // The arithmetic this test rests on, asserted rather than left to a
+    // reader: one is affordable against the published balance and two are not.
+    expect(quantity * unitPrice).toBeLessThanOrEqual(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+    expect(2 * quantity * unitPrice).toBeGreaterThan(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+
+    const alertsSection = page.locator('.hud-minimap .ui-section');
+    const emptyRow = page.locator('.hud-alerts__list [data-alert="empty"]');
+    const alertRow = page.locator('.hud-alerts__list [data-alert]:not([data-alert="empty"])');
+    const refusal = page.locator('.hud__refusal');
+    await expect(emptyRow).toHaveCount(1);
+    await expect(refusal).toBeHidden();
+
+    await openBuyRow(page);
+    await setBuyQuantity(page, quantity);
+    const buy = page.locator('.hud-build__buy-submit');
+
+    await buy.click();
+    await expect
+      .poll(async () => (await purchasesSent(page)).length, {
+        message: 'the first press sent no PurchaseMaterials, so there is no purchase to refuse',
+      })
+      .toBe(1);
+    await buy.click();
+    await expect
+      .poll(async () => (await purchasesSent(page)).length, {
+        message: 'the second press was swallowed, so the treasury is never asked for more than it has',
+      })
+      .toBe(2);
+
+    // Both got past the main thread, which is what makes this a test of the
+    // worker's refusal: a refusal line here would mean the pre-flight had
+    // spoken and there was nothing left for the simulation to refuse.
+    await expect(refusal).toBeHidden();
+    await expect(page.locator('[data-action-failed="true"]')).toHaveCount(0);
+    expect(await purchasesSent(page)).toEqual([
+      { itemId: 'item.brick', quantity },
+      { itemId: 'item.brick', quantity },
+    ]);
+
+    // Nothing has been dispatched yet, so nothing has been spent and nothing
+    // has been refused: a paused clock steps no ticks, and commands are
+    // applied inside `Kernel.step`.
+    await expect(funds).toHaveText(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS));
+    await expect(emptyRow).toHaveCount(1);
+
+    await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
+
+    // Exactly one of the two was paid for, measured rather than inferred: the
+    // balance lands one purchase down. Both succeeding is impossible because
+    // the treasury refuses rather than overdrawing, and neither succeeding
+    // would leave this at the starting figure.
+    await expect
+      .poll(async () => funds.textContent(), {
+        message: 'the balance never moved, so neither queued purchase was ever dispatched',
+        timeout: 20_000,
+      })
+      .toBe(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS - quantity * unitPrice));
+
+    // The row arrives on the worker's own schedule: a new refusal opens the
+    // status-counts publication gate, so it is posted on the tick-loop wake
+    // the command was refused on rather than waiting out the 500 ms interval.
+    await expect
+      .poll(async () => alertRow.count(), {
+        message: 'the simulation refused the purchase and the alerts list never heard about it',
+        timeout: 20_000,
+      })
+      .toBe(1);
+    await expect(emptyRow).toHaveCount(0);
+
+    // **Visible, not merely present.** The alerts section starts folded
+    // (`INITIAL_HUD_SHELL_STATE.collapsedPanels` holds `'alerts'`), so the row
+    // is in the DOM with a 0x0 box until the player opens it -- and a text
+    // assertion against a folded region passes while nothing is on screen,
+    // which is exactly the state #220 measured. Opened here the same way the
+    // #261 test opens it.
+    await expect(alertRow).toBeHidden();
+    await expect(alertsSection).toHaveAttribute('data-collapsed', 'true');
+    await page.locator('.hud-minimap .ui-section__header').click();
+    await expect(alertsSection).toHaveAttribute('data-collapsed', 'false');
+    await expect(alertRow).toBeVisible();
+
+    // The sentence the bundled locale gives the reason the simulation
+    // actually sent, resolved from the catalog rather than typed here.
+    await expect(alertRow).toContainText(localeText('hud.alert.refusal.purchase.insufficient-funds'));
+    // And not the wire vocabulary (ADR 0011): `insufficient-funds` is what
+    // `ProcurementSystem` decided and `purchase.insufficient-funds` is the id
+    // it crossed the boundary as. Neither is a sentence.
+    await expect(alertRow).not.toContainText('insufficient-funds');
+    await expect(alertRow).not.toContainText('purchase.');
+
+    // The HUD's own rendered text says it -- the measurement #220 established
+    // as the honest one, because `toBeVisible` and `innerText` can disagree
+    // about a subtree the layout has dropped.
+    expect((await page.locator('.hud').innerText()).includes(localeText('hud.alert.refusal.purchase.insufficient-funds'))).toBe(
+      true,
+    );
+
+    // **Exactly one message, which is the assertion this seam had none of.**
+    // The refusal line is still hidden and no control is marked: the worker's
+    // row is the only thing the player was told, and the pre-flight in
+    // `src/main.ts` did not also speak about the same gesture.
+    await expect(refusal).toBeHidden();
+    await expect(page.locator('[data-action-failed="true"]')).toHaveCount(0);
+    await expect(alertRow).toHaveCount(1);
+  });
+
+  /**
+   * The pre-flight's half: this thread refuses a purchase, and the refusal
+   * line is the only place the player hears about it.
+   *
+   * One unit more than the whole treasury can buy -- the case a player
+   * actually reaches, and the only one of the pre-flight's two throws this
+   * panel can provoke, since it offers no buy control at all for a material
+   * nothing sells.
+   *
+   * The interesting half is the last one: the alerts list must stay on its
+   * empty-state row. An empty list proves nothing on its own, because it is
+   * also what "the worker has not published yet" looks like -- so the page is
+   * made to publish again, with something observable, before emptiness is
+   * asserted for the last time.
+   */
+  test('a purchase this thread refuses reaches the refusal line, and raises no alert (#89, #261)', async ({
+    page,
+  }) => {
+    await installCommandTee(page);
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+
+    const funds = page.locator('[data-metric="funds"] .ui-stat__value');
+    await expect(funds).toHaveText(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS));
+
+    const unitPrice = unitPriceOf('item.brick');
+    const unaffordable = Math.floor(TREASURY_STARTING_BALANCE_MINOR_UNITS / unitPrice) + 1;
+    expect(unaffordable * unitPrice).toBeGreaterThan(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+
+    const alertsSection = page.locator('.hud-minimap .ui-section');
+    const emptyRow = page.locator('.hud-alerts__list [data-alert="empty"]');
+    const alertRow = page.locator('.hud-alerts__list [data-alert]:not([data-alert="empty"])');
+    const refusal = page.locator('.hud__refusal');
+    await expect(refusal).toBeHidden();
+    await expect(emptyRow).toHaveCount(1);
+
+    await openBuyRow(page);
+    await setBuyQuantity(page, unaffordable);
+    const buy = page.locator('.hud-build__buy-submit');
+    await buy.click();
+
+    await expect(refusal).toBeVisible();
+    await expect(refusal).toHaveAttribute('data-action', 'purchase-materials');
+    await expect(refusal).toContainText(localeText('hud.refusal.purchase-materials'));
+    // The thrown English never reaches the screen (ADR 0011).
+    await expect(refusal).not.toContainText('cannot cover');
+    // On the control that was pressed, as well as in the line -- which is the
+    // half of this surface the alerts row structurally cannot have.
+    await expect(buy).toHaveAttribute('data-action-failed', 'true');
+    const refusalId = await refusal.getAttribute('id');
+    expect(refusalId).not.toBeNull();
+    await expect(buy).toHaveAttribute('aria-describedby', String(refusalId));
+
+    // Nothing left this thread, so the worker has nothing it *could* report
+    // about this press: the throw happened instead of the submit, not
+    // alongside it.
+    expect(await purchasesSent(page)).toEqual([]);
+
+    // **And the alerts list is untouched**, which is the half nothing
+    // asserted. A row here would be the same refusal said twice, in two
+    // places, for one press of one button.
+    await expect(alertRow).toHaveCount(0);
+    await expect(emptyRow).toHaveCount(1);
+    await page.locator('.hud-minimap .ui-section__header').click();
+    await expect(alertsSection).toHaveAttribute('data-collapsed', 'false');
+    await expect(emptyRow).toBeVisible();
+
+    /*
+     * Now make the page publish again, so the emptiness above means "the
+     * channel carried no refusal" rather than "the channel has not spoken
+     * yet". One brick is affordable, a running clock dispatches it, and the
+     * balance on the status strip moves -- and that readout arrives on the
+     * very same `simulation/status-counts` message an alert row would have
+     * arrived on. No sleep and no wall-clock assertion: the poll below waits
+     * on the figure itself.
+     */
+    await setBuyQuantity(page, 1);
+    await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
+    await buy.click();
+    await expect
+      .poll(async () => funds.textContent(), {
+        message: 'the balance never moved, so no status-counts publication was observed after the refusal',
+        timeout: 20_000,
+      })
+      .toBe(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS - unitPrice));
+
+    // The publication that carried the new balance carried no refusal, and
+    // nothing the pre-flight did put one there.
+    await expect(alertRow).toHaveCount(0);
+    await expect(emptyRow).toHaveCount(1);
+    await expect(page.locator('.hud-alerts__list')).not.toContainText(
+      localeText('hud.alert.refusal.purchase.insufficient-funds'),
+    );
   });
 
   /**

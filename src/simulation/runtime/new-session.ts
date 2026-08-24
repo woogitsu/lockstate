@@ -25,6 +25,7 @@ import {
   type SectorRiskSampler,
 } from '../incidents';
 import { ProcurementSystem, Treasury } from '../economy';
+import { RefusalLog } from '../refusals';
 import { createSessionCommandHandler } from './session-commands';
 import { ACTOR_IDENTITY_RNG_STREAM, ActorIdentityRegistry } from '../identity';
 import { Kernel } from '../kernel';
@@ -76,6 +77,22 @@ export interface SimulationRuntime {
    */
   readonly treasury: Treasury;
   readonly procurement: ProcurementSystem;
+  /**
+   * What the simulation last refused, and how many times (#261).
+   *
+   * Session state rather than system state, because three routes write to
+   * it: `ConstructionSystem` refuses a wall on ground the player does not
+   * own, `ProcurementSystem` refuses a purchase the treasury cannot cover,
+   * `RoomZoningService` refuses a rectangle that overlaps a room -- and all
+   * three reach the player as one alert down one channel.
+   *
+   * **Not in the session snapshot, deliberately.** See `RefusalLog`'s own
+   * comment and `docs/HUD_PROJECTIONS.md` gap 33: this is a notice about an
+   * action the player just took, not a condition of the prison, so a restored
+   * session starts with none rather than re-raising an alert about a wall
+   * that failed before the save.
+   */
+  readonly refusals: RefusalLog;
   /**
    * Names for prisoners and staff (ADR 0015). Session-owned rather than
    * owned by either population, because it spans both `EntityStore`s --
@@ -227,6 +244,11 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   const treasury = new Treasury();
   const procurement = new ProcurementSystem(treasury, constructionMaterials);
 
+  // Issue #261's route out for a command the simulation accepts and then
+  // refuses on its content. Empty for a new session and for a restored one
+  // alike -- it is not snapshotted.
+  const refusals = new RefusalLog();
+
   const jobs = new JobBoard();
   const jobWorkers = new JobWorkerPool();
   const jobWorkerAdapter = new PrisonerJobWorkerAdapter(prisoners);
@@ -357,7 +379,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   kernel.registerSystem(incidentTriggerSystem);
   kernel.registerSystem(searchSystem);
   kernel.registerSystem(incidentResponseSystem);
-  kernel.setCommandHandler(createSessionCommandHandler(construction, procurement, roomZoning));
+  kernel.setCommandHandler(createSessionCommandHandler(construction, procurement, roomZoning, refusals));
 
   return {
     kernel,
@@ -365,6 +387,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     construction,
     treasury,
     procurement,
+    refusals,
     actorIdentity,
     topology,
     roomZoning,

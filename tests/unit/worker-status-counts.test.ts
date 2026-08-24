@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
 import { HUD_VIEW_MODEL_SCHEMA_VERSION } from '../../src/simulation/presentation/view-model';
 import { decodeWorkerToMainMessage } from '../../src/simulation/protocol/decode';
-import { SIMULATION_PROTOCOL_VERSION, type MainToWorkerMessage } from '../../src/simulation/protocol/types';
+import { REFUSAL_REASONS, SIMULATION_PROTOCOL_VERSION, type MainToWorkerMessage } from '../../src/simulation/protocol/types';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
 import {
   captureSessionSnapshot,
@@ -15,6 +15,7 @@ import {
   STATUS_COUNTS_PUBLISH_INTERVAL_MS,
   type MessagePortLike,
 } from '../../src/simulation/worker/state-machine';
+import { packCommand } from '../../src/simulation/protocol/commands';
 import { projectStatusCounts } from '../../src/simulation/worker/status-counts';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from '../helpers/determinism-scenario';
@@ -22,7 +23,7 @@ import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from 
 /**
  * The `simulation/status-counts` channel: the worker telling the main thread
  * how many prisoners, staff, rooms, open incidents and contraband finds the
- * session has.
+ * session has, and -- since #261 -- what it last refused.
  *
  * Issue #104 is the gap this closes. `src/simulation/presentation/` has
  * always computed these counts and no worker-to-main message carried them, so
@@ -49,7 +50,13 @@ vi.mock('../../src/simulation/worker/status-counts', async (importOriginal) => {
 interface Published {
   readonly kind: string;
   readonly replyTo?: string;
-  readonly payload: { readonly tick: number; readonly schemaVersion: number; readonly counts: Record<string, number> };
+  readonly payload: {
+    readonly tick: number;
+    readonly schemaVersion: number;
+    readonly counts: Record<string, number>;
+    /** Absent until the session has refused something (#261). */
+    readonly refusal?: { readonly sequence: number; readonly tick: number; readonly reason: string };
+  };
 }
 
 class RecordingPort implements MessagePortLike {
@@ -141,6 +148,40 @@ class Harness {
     if (reply === undefined) throw new Error('The worker returned no snapshot.');
     return (reply.payload.snapshot.data as SessionSnapshotBundle).kernel.tick;
   }
+}
+
+/**
+ * Places one build order through the kernel's real command path.
+ *
+ * `executeAtTick` is explicit rather than defaulted to zero because the
+ * kernel refuses a command aimed at a tick it has already run
+ * (`CommandRejectedError('past-tick')`), and a rejected command never reaches
+ * a system -- so a test that submitted a second order at tick 0 after one
+ * wake would be asserting about a refusal that never happened.
+ */
+function submitBuildOrder(
+  machine: SimulationWorkerStateMachine,
+  sequence: number,
+  tile: { x: number; y: number },
+  executeAtTick: number,
+): void {
+  machine.handleMessage({
+    protocolVersion: SIMULATION_PROTOCOL_VERSION,
+    messageId: `build-${String(sequence)}`,
+    kind: 'simulation/submit-command',
+    payload: {
+      commandId: `order-${String(sequence)}`,
+      sequence,
+      executeAtTick,
+      command: packCommand({
+        type: 'PlaceBuildOrder',
+        orderId: `order-${String(sequence)}`,
+        definitionId: 'wall-brick',
+        x: tile.x,
+        y: tile.y,
+      }) as never,
+    },
+  });
 }
 
 describe('publishing the status counts', () => {
@@ -294,6 +335,144 @@ describe('publishing the status counts', () => {
     expect(vi.mocked(projectStatusCounts).mock.calls.length).toBeGreaterThan(0);
   });
 
+  /**
+   * Issue #261: the channel also carries what the simulation *refused*.
+   *
+   * A command travels through two acceptances -- `handleSubmitCommand`
+   * answers `status: 'queued'` when the kernel takes the message, and a
+   * system decides at the command's tick what it means. Only the first was
+   * ever reported, so an out-of-bounds wall left `state: 'failed'` on an
+   * order nothing drew and nothing announced.
+   *
+   * The tile is `100, 100`: outside the single 32x32 chunk a new session
+   * owns, and a coordinate a player can actually enter, because the Build
+   * panel's number fields carry no `min`/`max`.
+   */
+  test('reports a build order the simulation refused, though no count moved', () => {
+    // A new session has nothing to count and nothing that can change a
+    // count, so the counts channel is silent for as long as it runs -- which
+    // is exactly why this needed the refusal to open the gate. The
+    // `statusCountsEqual` comparison alone would have suppressed the only
+    // message that could carry it.
+    const harness = new Harness();
+    harness.run(1);
+    const before = harness.publications();
+    expect(before).toHaveLength(1);
+    expect(before[0]?.payload.refusal).toBeUndefined();
+
+    submitBuildOrder(harness['machine'], 0, { x: 100, y: 100 }, 0);
+    harness.advance(50);
+
+    const after = harness.publications();
+    expect(after).toHaveLength(2);
+    const published = after[1];
+    expect(published?.payload.refusal).toEqual({ sequence: 1, tick: 0, reason: 'build.out-of-bounds' });
+    // The counts really did not move, so nothing but the refusal caused this
+    // message to exist.
+    expect(published?.payload.counts).toEqual(before[0]?.payload.counts);
+    // And the envelope's tick is the tick the *readout* was taken at, which
+    // is a tick later than the one the refusal happened on. Conflating them
+    // would make a standing refusal look as if it had just happened again.
+    expect(published?.payload.tick).toBe(1);
+  });
+
+  test('reports it on the same wake it was refused, rather than up to an interval later', () => {
+    // The refusal is recorded during `kernel.step()` and published later in
+    // the same `onTickLoop`. Waiting for the 500 ms interval would be a delay
+    // the player feels on their own action -- and pausing inside that window
+    // stops the tick loop, which would strand the refusal until the clock
+    // next ran.
+    const harness = new Harness();
+    harness.run(1);
+    submitBuildOrder(harness['machine'], 0, { x: 100, y: 100 }, 0);
+
+    // One wake, 50 ms of simulated time -- a tenth of the publish interval.
+    harness.advance(50);
+    expect(harness.elapsedMs).toBeLessThan(STATUS_COUNTS_PUBLISH_INTERVAL_MS);
+    expect(harness.publications()[1]?.payload.refusal?.reason).toBe('build.out-of-bounds');
+  });
+
+  test('says nothing further about a refusal it has already reported', () => {
+    // The gate opens once per refusal, not once per wake after one. Without
+    // recording the published sequence this would be a message on every wake
+    // for the rest of the session -- the firehose #104 named, arriving
+    // through the new field.
+    const harness = new Harness();
+    harness.run(1);
+    submitBuildOrder(harness['machine'], 0, { x: 100, y: 100 }, 0);
+    harness.advance(50);
+    expect(harness.publications()).toHaveLength(2);
+
+    for (let wake = 0; wake < 200; wake += 1) harness.advance(50);
+    expect(harness.publications()).toHaveLength(2);
+  });
+
+  test('replaces the standing refusal when the simulation refuses something else', () => {
+    const harness = new Harness();
+    harness.run(1);
+    submitBuildOrder(harness['machine'], 0, { x: 100, y: 100 }, 0);
+    harness.advance(50);
+    submitBuildOrder(harness['machine'], 1, { x: -100, y: -100 }, 1);
+    harness.advance(50);
+
+    const published = harness.publications();
+    expect(published).toHaveLength(3);
+    // A new ordinal, so the HUD paints a new row rather than leaving the old
+    // one standing, and the count of refusals is carried by the same number.
+    expect(published[2]?.payload.refusal).toEqual({ sequence: 2, tick: 1, reason: 'build.out-of-bounds' });
+  });
+
+  test('keeps carrying the standing refusal beside counts that do move', () => {
+    // The channel is a snapshot, not an event stream: a listener that starts
+    // late must see the same state as one that was there all along, so the
+    // refusal is republished with every later readout for as long as it is
+    // the most recent one. The scenario session's counts move on their own as
+    // intake runs, which is what produces the later readouts.
+    const harness = new Harness(scenarioSnapshot());
+    harness.run(1);
+    // The snapshot carries four already-queued commands, so the next
+    // session-local sequence is 4.
+    submitBuildOrder(harness['machine'], 4, { x: 100, y: 100 }, 0);
+
+    for (let wake = 0; wake < 200; wake += 1) harness.advance(50);
+
+    const carrying = harness.publications().filter((publication) => publication.payload.refusal !== undefined);
+    expect(carrying.length).toBeGreaterThan(1);
+    for (const publication of carrying) {
+      expect(publication.payload.refusal).toEqual({ sequence: 1, tick: 0, reason: 'build.out-of-bounds' });
+    }
+  });
+
+  test('still projects at most once per interval plus once per refusal', () => {
+    // The refusal gate is bounded by how often a player can have a command
+    // refused, not by how often the loop wakes. Two refusals over ten seconds
+    // buy two extra projections, and the loop woke 200 times to produce them.
+    const harness = new Harness();
+    harness.run(1);
+    submitBuildOrder(harness['machine'], 0, { x: 100, y: 100 }, 0);
+    harness.advance(50);
+    submitBuildOrder(harness['machine'], 1, { x: -100, y: -100 }, 1);
+
+    for (let wake = 0; wake < 200; wake += 1) harness.advance(50);
+
+    const refusalCount = 2;
+    expect(vi.mocked(projectStatusCounts).mock.calls.length).toBeLessThanOrEqual(
+      1 + refusalCount + Math.ceil(harness.elapsedMs / STATUS_COUNTS_PUBLISH_INTERVAL_MS),
+    );
+  });
+
+  test('is still a message the main thread accepts once it carries a refusal', () => {
+    const harness = new Harness();
+    harness.run(1);
+    submitBuildOrder(harness['machine'], 0, { x: 100, y: 100 }, 0);
+    harness.advance(50);
+
+    const published = harness.publications()[1];
+    expect(published?.payload.refusal).toBeDefined();
+    const decoded = decodeWorkerToMainMessage(published);
+    expect(decoded.ok, decoded.ok ? '' : JSON.stringify(decoded.error)).toBe(true);
+  });
+
   test('publishes nothing once the session has stopped', () => {
     const harness = new Harness(scenarioSnapshot());
     harness.run(1);
@@ -366,7 +545,21 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       const counts = projectStatusCounts(runtime, runtime.kernel.tick);
       const projectMs = performance.now() - projectStartedAt;
 
-      const payload = { tick: runtime.kernel.tick, schemaVersion: HUD_VIEW_MODEL_SCHEMA_VERSION, counts };
+      // The **largest** payload this channel can send, which is what makes
+      // the size bound below a bound: the refusal field is optional, and a
+      // measurement taken without it would understate every publication that
+      // carries one (#261). The longest declared reason is used for the same
+      // reason.
+      const payload = {
+        tick: runtime.kernel.tick,
+        schemaVersion: HUD_VIEW_MODEL_SCHEMA_VERSION,
+        counts,
+        refusal: {
+          sequence: Number.MAX_SAFE_INTEGER,
+          tick: runtime.kernel.tick,
+          reason: [...REFUSAL_REASONS].sort((left, right) => right.length - left.length)[0],
+        },
+      };
       const cloneStartedAt = performance.now();
       structuredClone(payload);
       const cloneMs = performance.now() - cloneStartedAt;
@@ -383,7 +576,12 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // This is what a status-counts
       // payload is, and why it needs no paging.
       expect(Object.keys(counts)).toHaveLength(11);
-      expect(JSON.stringify(payload).length).toBeLessThan(300);
+      // And the refusal beside them is one fixed record of three scalars, not
+      // a queue: exactly the shape a snapshot channel can carry honestly
+      // (`RefusalLog`). A queue would put the one growing thing this channel
+      // is designed to exclude right next to the counts.
+      expect(Object.keys(payload.refusal)).toHaveLength(3);
+      expect(JSON.stringify(payload).length).toBeLessThan(400);
 
       // Reported evidence, never a gate (docs/BENCHMARKING.md).
       console.log(

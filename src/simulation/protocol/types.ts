@@ -482,6 +482,93 @@ export type SimulationStatusCounts = DeepReadonly<
 >;
 
 /**
+ * Every reason the simulation itself refuses something the player asked for.
+ *
+ * Not a fault code and not a command rejection. `ProtocolFaultCode` and
+ * `simulation/command-result`'s `rejected` form both describe a command that
+ * never reached the kernel; these describe a command that was accepted,
+ * ordered, dispatched at its tick -- and then refused on its *content* by the
+ * system that ran it. `WorkerStateMachine.handleSubmitCommand` has already
+ * answered `status: 'queued'` by then, and ADR 0003 decision 9 is explicit
+ * that the queued acknowledgement "never reports a command as applied": this
+ * vocabulary is what the simulation says instead.
+ *
+ * A stable id, never a sentence (ADR 0011). The main thread maps each id to a
+ * message key in `src/ui/simulation-alerts.ts`; no text crosses the boundary.
+ *
+ * Declared in ascending code-unit order, and namespaced by the command the
+ * refusal answers, so the three vocabularies behind it cannot collide:
+ * `build.*` mirrors `BuildOrder.failReason`, `purchase.*` mirrors
+ * `PurchaseOutcome`'s refusal reasons and `zone.*` mirrors
+ * `ZoneRoomRefusalReason`. The namespace is doing real work rather than
+ * being tidy -- `out-of-bounds` and `unowned-land` are members of *two* of
+ * those domain vocabularies and mean different things to a player depending
+ * on which command they answer, so one flat id per spelling would put one
+ * sentence on both.
+ *
+ * `src/simulation/refusals/refusal-log.ts` maps each domain value onto one of
+ * these through an exhaustive `Record`, so a reason added to any of the three
+ * fails to compile until it is named here -- and
+ * `tests/unit/simulation-refusals.test.ts` asserts the three tables between
+ * them cover this list exactly, so a member declared here and produced by
+ * nothing is a failure too.
+ */
+export const REFUSAL_REASONS = [
+  'build.out-of-bounds',
+  'build.unbuildable',
+  'build.unbuildable-terrain',
+  'build.unowned-land',
+  'build.water-blocked',
+  'purchase.duplicate-order',
+  'purchase.insufficient-funds',
+  'purchase.invalid-quantity',
+  'purchase.unknown-material',
+  'zone.duplicate-instance-id',
+  'zone.invalid-area',
+  'zone.out-of-bounds',
+  'zone.overlaps-existing-room',
+  'zone.unknown-room-type',
+  'zone.unowned-land',
+] as const;
+
+export type RefusalReason = (typeof REFUSAL_REASONS)[number];
+
+/**
+ * The most recent refusal, and how many there have been.
+ *
+ * **Snapshot-shaped, because the channel that carries it is.**
+ * `simulation/status-counts` is published on a cadence and only when
+ * something it reports has changed; it is a statement about the session *as
+ * of* `tick`, not a stream of events. A queue of individual refusals could
+ * not be carried honestly here -- the publication is rate-limited and
+ * skippable, so a consumer could not tell a queue that was drained from one
+ * that was never sent, and its size would grow with the session, which is
+ * exactly what `docs/HUD_PROJECTIONS.md` contract 5 forbids on a cadence.
+ * "The last refusal was X" and "there have been N of them" are both plain
+ * readings of current state, so both survive being read late, twice, or not
+ * at all.
+ *
+ * `sequence` is 1-based and increments once per refusal, so it is *both*
+ * facts at once: the ordinal of this refusal and the total recorded so far.
+ * It also gives the main thread a stable row identity -- republishing the
+ * same refusal alongside a changed count must not rebuild the row
+ * (`HudAlertViewModel.id`).
+ *
+ * `tick` is the tick the refusal happened on, which is not necessarily the
+ * `tick` on the envelope around it: the publication reports the state as of a
+ * later tick, and a refusal that is still the most recent one keeps its own.
+ */
+const refusalSchema = z
+  .object({
+    sequence: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER),
+    tick: tickSchema,
+    reason: z.enum(REFUSAL_REASONS),
+  })
+  .strict();
+
+export type SimulationRefusal = DeepReadonly<z.infer<typeof refusalSchema>>;
+
+/**
  * The status-strip counts, as the worker sees them.
  *
  * **Always unsolicited.** Nothing requests it, so it has no `replyTo` field
@@ -504,6 +591,16 @@ export type SimulationStatusCounts = DeepReadonly<
  * to describe an *opaque* `data` blob, and here the message kind already
  * names which schema the payload follows and every field of it is validated
  * above.
+ *
+ * `refusal` is a sibling of `counts`, not a member of it. `counts` is
+ * documented and `.strict()`-pinned as the projection's own `counts` block
+ * field for field, and a refusal is not a status-strip count: it comes from
+ * the session's `RefusalLog` rather than from
+ * `src/simulation/presentation/`, and putting it inside would make that
+ * correspondence false. It is absent -- not zero, not null -- until the
+ * simulation has refused something, because "no refusal has happened" and "a
+ * refusal happened" are different facts and an optional field is how this
+ * schema already says so elsewhere.
  */
 const statusCountsMessageSchema = z
   .object({
@@ -514,6 +611,7 @@ const statusCountsMessageSchema = z
         tick: tickSchema,
         schemaVersion: schemaVersionSchema,
         counts: statusCountsSchema,
+        refusal: refusalSchema.optional(),
       })
       .strict(),
   })

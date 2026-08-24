@@ -266,14 +266,22 @@ export class RoomZoningService {
   /**
    * The refusals this session has produced, oldest first.
    *
-   * **Nothing in `src/` reads this yet, and that is the point.** A refusal
-   * has nowhere to go: the kernel's command handler returns `void` and the
-   * worker's reply to a command acknowledges receipt, not effect -- the same
-   * gap `session-commands.ts` records for a refused purchase and #225 closed
-   * for a refused wall, tracked as step 2 of #261. Keeping the reason here
-   * costs one bounded array and means the route, when it is built, has
-   * something to report instead of having to re-derive why a zone did not
-   * appear.
+   * **This window is diagnosis, not the player's alert.** It used to be
+   * neither -- nothing in `src/` read it, because a refusal had nowhere to
+   * go: the kernel's command handler returns `void` and the worker's reply to
+   * a command acknowledges receipt, not effect. It was kept anyway "so that
+   * the route, when it is built, has something to report", and #261 step 2
+   * built the route: `session-commands.ts` maps `ZoneRoomRefusalReason` onto
+   * a `RefusalReason` and records it on the session's `RefusalLog`, which the
+   * worker publishes on `simulation/status-counts`.
+   *
+   * The two are not duplicates and neither replaces the other. What crosses
+   * the boundary is the *most recent* refusal's reason and nothing else --
+   * one sentence in the HUD's alerts list. What stays here is the last
+   * `MAX_RECORDED_ZONING_REFUSALS` of them with the request and the deciding
+   * tile: enough to answer "why did none of my last six rooms appear", which
+   * is a question for a developer inside the worker rather than a line on
+   * screen.
    *
    * Deliberately **not** snapshotted: it is a record of things that did not
    * happen, no simulation state is derived from it, and a save that carried

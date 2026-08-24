@@ -92,6 +92,24 @@ const UNLABELLED: readonly { readonly sourceFile: string; readonly declaration: 
       'The twelve reasons the worker may refuse or abandon a request, and the superset of `PROTOCOL_DECODE_ERROR_CODES` exempted just above for the same reason: developer diagnostics on the worker-to-main boundary. A player-facing failure message is the UI layer\'s own string with its own key -- `src/ui/hud/messages.ts`\'s `hud.refusal.*` names the outcome and deliberately carries neither the code nor the thrown `Error` text (#207) -- so rendering "snapshot-incompatible" verbatim would be a bug rather than a missing translation. Newly *discovered* by this scan rather than newly written: the vocabulary used to live inline inside `z.enum([...])`, where no scan could see it, and #187 exported it as a `const` tuple so `tests/foundation/fault-code-reachability-contract.test.ts` could enumerate it.',
   },
   {
+    sourceFile: 'src/simulation/protocol/types.ts',
+    declaration: 'REFUSAL_REASONS',
+    reason:
+      'The only exemption here for a vocabulary that genuinely does reach the player, and the distinction is *how*. This table labels an id a panel renders as a **label** -- a cell reading "Awaiting Materials", a badge reading "High Risk" -- and a refusal is not a label: it is a whole sentence saying what did not happen and why ("The build order failed -- you do not own that land."), which a derived `refusal-reason.build.unowned-land.name` reading "Unowned Land" cannot be and would have nowhere to be rendered. So the id maps 1:1 onto an authored HUD sentence key in `src/ui/simulation-alerts.ts` (#261). The completeness this table would give is given there instead, and in two directions: the mapping is a `Record` over the closed union, so a reason added to the protocol fails to compile until it has a key, and `tests/unit/ui-simulation-alerts.test.ts` resolves every one of those keys against the bundled default catalog so none can ship as its own raw dotted text.',
+  },
+  {
+    sourceFile: 'src/simulation/construction/build-order.ts',
+    declaration: 'BUILD_ORDER_FAIL_REASONS',
+    reason:
+      'The construction system\'s own spelling of why it failed an order, and it never leaves the simulation under this name: `createConstructionCommandHandler` maps every member onto a `RefusalReason` through an exhaustive `Record` before anything is published, and no projection in `src/simulation/presentation/` emits `BuildOrder.failReason` at all. It is persisted (`save-schema.ts`) and read back as save data, which is storage rather than display. Labelling it would author a second set of words for the same nine facts `REFUSAL_REASONS` already carries, and the two would drift.',
+  },
+  {
+    sourceFile: 'src/simulation/economy/procurement.ts',
+    declaration: 'PurchaseRefusalReason',
+    reason:
+      'The procurement system\'s own spelling of why it refused a purchase, exempt for exactly the reason `BUILD_ORDER_FAIL_REASONS` above is: `createSessionCommandHandler` maps every member onto a `RefusalReason` through an exhaustive `Record` before anything crosses the worker boundary, and nothing projects or persists it. Newly *discovered* rather than newly written -- the union used to sit inline inside `PurchaseOutcome`, where no scan could see it, and #261 named it so the mapping could be checked exhaustively at compile time.',
+  },
+  {
     sourceFile: 'src/simulation/kernel/kernel.ts',
     declaration: 'CommandRejectionKind',
     reason:
@@ -101,7 +119,7 @@ const UNLABELLED: readonly { readonly sourceFile: string; readonly declaration: 
     sourceFile: 'src/simulation/rooms/zoning.ts',
     declaration: 'ZoneRoomRefusalReason',
     reason:
-      'Why `RoomZoningService.zone` refused a `ZoneRoom` -- unowned land, an overlap, a rectangle no room can be. It is the zoning counterpart of `BuildOrder.failReason`, which is likewise a stable id and likewise carries no key: #207 settled that a refusal a player sees is the UI layer\'s own `hud.refusal.*` string naming the outcome, never the simulation\'s code rendered verbatim. Nothing projects this one at all yet -- it reaches `recentRefusals()` and stops there, because the reporting route is #261 step 2 -- so a key today would be a translation for a string with no reader.',
+      'Why `RoomZoningService.zone` refused a `ZoneRoom` -- unowned land, an overlap, a rectangle no room can be. It is the zoning counterpart of `BuildOrder.failReason`, which is likewise a stable id and likewise carries no key: #207 settled that a refusal a player sees is the UI layer\'s own `hud.refusal.*` string naming the outcome, never the simulation\'s code rendered verbatim. It never leaves the simulation under this spelling: `createSessionCommandHandler` maps every member onto a `RefusalReason` through an exhaustive `Record` before anything is published, and what the player reads is one authored `hud.alert.refusal.zone.*` sentence per reason rather than a two-word label this table could hold -- see the `REFUSAL_REASONS` entry above for that argument in full. Until #261 step 2 built the route this entry said "nothing projects this one at all yet -- it reaches `recentRefusals()` and stops there"; the reason it reaches now is mapped, and the window it also still fills is diagnosis.',
   },
   {
     sourceFile: 'src/content/simulation-message-keys.ts',
