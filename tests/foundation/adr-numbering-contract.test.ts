@@ -51,6 +51,37 @@ interface AdrDocument {
   readonly status: string | undefined;
 }
 
+/**
+ * The status keyword, with the wrapping each side happens to use removed.
+ *
+ * The two sides genuinely spell the same status differently and always have:
+ * an ADR writes `**Accepted.**` or `**Proposed -- pending human approval.** Not
+ * accepted.`, while the index writes `Accepted` or
+ * `Proposed -- pending human approval`. Comparing the strings would fail on
+ * formatting, so this reduces both to the one word that is the status.
+ *
+ * Anchored at the start rather than searching the whole line, and that is
+ * **defensive rather than load-bearing** -- said plainly because the obvious
+ * justification is wrong. `**Proposed -- pending human approval.** Not
+ * accepted.` does contain "accepted", but an unanchored alternation returns
+ * whichever alternative appears *first*, and "Proposed" is first. Measured:
+ * replacing this with a case-insensitive search anywhere leaves every
+ * assertion below passing.
+ *
+ * It stays because the inversion it guards against is one edit away -- a
+ * status opening `Not accepted. Proposed ...` would read as Accepted to an
+ * unanchored scan -- and because a status keyword belongs at the start of a
+ * status.
+ */
+function statusKeyword(status: string): string | undefined {
+  const stripped = status.replace(/\*/gu, '').trim();
+  const keyword = /^(Accepted|Proposed|Superseded|Deprecated)\b/u.exec(stripped);
+  return keyword?.[1];
+}
+
+/** `| [0019](./0019-....md) | Title | Status |` -- rows that name a file. */
+const INDEX_ROW = /^\|\s*\[(\d{4})\]\(\.\/\d{4}-[a-z0-9-]+\.md\)\s*\|[^|]*\|([^|]*)\|/gmu;
+
 function listMarkdownFiles(directory: string): string[] {
   const found: string[] = [];
   for (const entry of readdirSync(directory)) {
@@ -168,5 +199,67 @@ describe('ADR numbering contract', () => {
     }
 
     expect(broken).toEqual([]);
+  });
+
+  /*
+   * The index reports each ADR's status, and nothing checked that it reports
+   * the status the ADR actually holds.
+   *
+   * `docs/adr/README.md` says of itself: *"Nothing here changes a status; this
+   * table only reports them."* That is a claim about the table, and it was
+   * unenforced -- accepting ADR 0019 without touching the index, or editing
+   * the index without touching the ADR, both left the tree green. Measured:
+   * both mutations survived every assertion in this file.
+   *
+   * This is #118's defect class one level up. #118 is about statuses that
+   * contradict the *code*; this is about a status that contradicts the
+   * *document it summarises*, which is cheaper to check and strictly
+   * mechanical -- it asserts the two agree, never which value is right. Which
+   * ADRs should be Accepted remains #118's and #119's subject, exactly as the
+   * header above says.
+   */
+  it('reports each ADR with the status that ADR itself holds', () => {
+    const documents = readAdrDocuments();
+    const index = readFileSync(join(ADR_ROOT, 'README.md'), 'utf8');
+
+    const indexed = new Map<string, string>();
+    for (const row of index.matchAll(INDEX_ROW)) {
+      const [, number, status] = row;
+      if (number === undefined || status === undefined) continue;
+      indexed.set(number, status.trim());
+    }
+
+    // Vacuity guard. A table that stopped matching -- a reformat, a column
+    // added -- would make every comparison below vacuous, and an empty map
+    // reads exactly like agreement.
+    expect(indexed.size, 'no ADR rows parsed out of docs/adr/README.md; the table shape changed').toBe(documents.length);
+
+    const disagreements: string[] = [];
+    for (const document of documents) {
+      const own = document.status === undefined ? undefined : statusKeyword(document.status);
+      const listed = indexed.get(document.numberFromFilename);
+      const reported = listed === undefined ? undefined : statusKeyword(listed);
+
+      if (own === undefined) {
+        disagreements.push(`${document.filename}: its own status does not start with a known keyword`);
+        continue;
+      }
+      if (listed === undefined) {
+        disagreements.push(`${document.filename}: no row in docs/adr/README.md links to it`);
+        continue;
+      }
+      if (reported === undefined) {
+        disagreements.push(`${document.filename}: the index reports "${listed}", which starts with no known keyword`);
+        continue;
+      }
+      if (own !== reported) {
+        disagreements.push(`${document.filename}: the document says ${own}, the index says ${reported}`);
+      }
+    }
+
+    expect(
+      disagreements,
+      'docs/adr/README.md disagrees with an ADR about its own status. The index reports statuses and never sets them, so the document is right and the table is what changes -- unless the document is the one that drifted, in which case say so in the same commit that fixes it',
+    ).toEqual([]);
   });
 });

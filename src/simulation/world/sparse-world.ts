@@ -553,7 +553,7 @@ export class SparseWorld {
    * owned outright. The rule itself lives in `isTileOwnedBy`, which
    * `WorldRenderView.isTileOwned` also calls, so the authoritative answer and
    * the one `tile-layer.ts` shades and outlines from cannot diverge (issue
-   * #93). See ADR 0019, which is Proposed rather than Accepted.
+   * #93). ADR 0019 (Accepted) is where the rule itself was decided.
    */
   public isTileOwned(tile: TilePosition): boolean {
     const { chunk } = tileToChunk(tile, this.tileChunkSize);
