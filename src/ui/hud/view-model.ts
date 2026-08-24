@@ -79,8 +79,10 @@ export interface HudClockViewModel {
  * That line is exactly where the honest boundary falls. There **is** a
  * treasury: a balance a purchase spends from, carried in the save, published
  * by the same channel as every other count. There is **no** budget, forecast,
- * income or running cost, because nothing credits the treasury on a schedule
- * -- what the state pays for is ADR 0017 question 1 and it is open.
+ * income or running cost, because nothing credits the treasury on a schedule.
+ * ADR 0017 decision 6 now settles what the state pays for -- per prisoner-day,
+ * accrued per occupied place -- and nothing implements it, which is the state
+ * this line describes: the answer exists, the accrual does not.
  *
  * So the rule this interface has always followed is unchanged and is now
  * doing real work rather than excluding a whole subject: a HUD that displays

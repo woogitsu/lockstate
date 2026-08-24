@@ -129,9 +129,12 @@ describe('every HUD message key resolves in the bundled default locale', () => {
      *
      * What exists is a **balance** the simulation publishes. What does not
      * exist is anything that credits or debits it on a schedule -- no income,
-     * no payroll, no running cost -- because what the state pays for is
-     * ADR 0017 question 1 and it is open. So `funds` is admitted by name and
-     * every word that would imply the missing half is still refused.
+     * no payroll, no running cost. ADR 0017 decision 6 settles what the state
+     * pays for and nothing accrues it, so the gap this gate guards is between
+     * a decided answer and an unbuilt system rather than an undecided one. A
+     * label is still where a fake number gets its first place to sit, so
+     * `funds` is admitted by name and every word implying the missing half is
+     * refused.
      *
      * `budget`, `cost` and `price` are the interesting refusals: the
      * procurement catalog does hold prices, and a *label* naming one would be
