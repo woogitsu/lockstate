@@ -87,7 +87,7 @@ export function createBrandBadge(options: BrandBadgeOptions): BrandBadge {
   });
 
   // The three visible fragments are hidden from the accessibility tree and the
-  // row carries one sentence instead. "PRE-ALPHA", "v0.0.0" and a bare hex
+  // row carries one sentence instead. "PRE-ALPHA", "v0.0.7" and a bare hex
   // string read out in sequence are close to meaningless; the sentence names
   // what each is. Every fragment stays on screen -- this replaces nothing
   // visible.

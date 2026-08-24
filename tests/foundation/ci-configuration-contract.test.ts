@@ -3,6 +3,10 @@ import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+// The resolver the *build* uses, imported rather than re-described, so the
+// assertion that a version bump reaches a player is a behavioural one. See
+// "version bump workflow contract" at the foot of this file.
+import { packageVersion } from '../../tooling/build-identity.mjs';
 
 /**
  * Contract tests for repository *configuration* — the files that describe how
@@ -970,5 +974,264 @@ describe('deploy concurrency policy contract', () => {
       missing.map((phrase) => `${phrase} -- ${REQUIRED_REASONING[phrase]}`),
       'the reasoning above `concurrency:` in .github/workflows/deploy.yml no longer makes this part of its argument. #134 decided to keep `cancel-in-progress: true` *and* to write down what it costs, so that a cancelled deploy is legible and the next reader does not re-derive the trade-off. Restore it. If the policy itself changed, change it in deploy.yml, record the new choice on #134, and update this map to the phrases the new argument turns on.',
     ).toEqual([]);
+  });
+});
+
+/**
+ * `.github/workflows/version.yml` is the only workflow in this repository that
+ * writes to the repository. It bumps `package.json`'s patch version on every
+ * merge to `main` and tags the commit, which is what turned the version half
+ * of the build badge from a constant into an answer: the field was `0.0.0`
+ * with no tags anywhere, so every build ever made shared it.
+ *
+ * It therefore has one failure mode nothing else here has. Its own commit is a
+ * push to `main`, and a push to `main` is its trigger, so an unguarded copy of
+ * it bumps for ever. There are two ways to acquire that silently -- the guard
+ * being deleted, and the guard drifting away from the commit the bump step
+ * actually writes, which leaves a guard that reads correct and matches
+ * nothing. The second is the dangerous one, because the file still looks
+ * right.
+ *
+ * So the assertions below are not a spell-check of the YAML. Each one pins a
+ * property some *other* part of the repository depends on, and the loop-guard
+ * assertion pins the two halves against each other: it reads the commit
+ * message template out of the bump step and requires the guard to name that
+ * same prefix, rather than repeating a literal here that could go stale
+ * alongside the file it describes.
+ *
+ * None of this can establish that the workflow runs. That is only settled by a
+ * real push to `main`.
+ */
+describe('version bump workflow contract', () => {
+  const WORKFLOW = '.github/workflows/version.yml';
+
+  /**
+   * The settings under a top-level key: comments and blank lines dropped, up
+   * to the next top-level key. Parsed rather than searched for across the
+   * whole file, exactly as `concurrencyBlock` above is and for the same
+   * reason -- a `contents: write` sitting in some other block must not satisfy
+   * an assertion about `permissions:`.
+   */
+  function topLevelSettings(workflow: string, key: string, absenceMeans: string): readonly string[] {
+    const lines = workflow.split(/\r?\n/u);
+    const start = lines.indexOf(`${key}:`);
+
+    expect(start, `${WORKFLOW} has no top-level \`${key}:\` block. ${absenceMeans}`)
+      .toBeGreaterThanOrEqual(0);
+
+    const body = lines.slice(start + 1);
+    const end = body.findIndex((line) => line.length > 0 && !/^\s/u.test(line));
+    const settings = body
+      .slice(0, end === -1 ? body.length : end)
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0 && !line.startsWith('#'));
+
+    // Vacuity guard: a block that parsed to nothing would make every
+    // `toContain` below fail rather than pass, but it would fail with the
+    // wrong message. This says which of the two it is.
+    expect(
+      settings.length,
+      `no settings parsed out of the \`${key}:\` block in ${WORKFLOW}; the parser is broken.`,
+    ).toBeGreaterThan(0);
+
+    return settings;
+  }
+
+  /**
+   * The file with every comment line removed, so that a workflow which only
+   * *describes* a setting cannot satisfy an assertion that it *has* it. The
+   * same weakness the provisioning contract above was rewritten to close:
+   * both YAML comments and the shell comments inside `run:` blocks start with
+   * `#` once trimmed, and both are stripped here.
+   */
+  function withoutComments(workflow: string): string {
+    return workflow
+      .split(/\r?\n/u)
+      .filter((line) => !line.trim().startsWith('#'))
+      .join('\n');
+  }
+
+  /** The job-level `if:` expression, folded to the single line GitHub evaluates. */
+  function loopGuard(workflow: string): string {
+    const lines = workflow.split(/\r?\n/u);
+    const start = lines.findIndex((line) => /^\s+if:\s*>-\s*$/u.test(line));
+
+    expect(
+      start,
+      `${WORKFLOW} has no job-level \`if: >-\` guard. Its own commit is a push to \`main\` and a push to \`main\` is its trigger, so without a guard it bumps the version for ever. Restore it.`,
+    ).toBeGreaterThanOrEqual(0);
+
+    const indent = (lines[start] ?? '').search(/\S/u);
+    const folded: string[] = [];
+    for (const line of lines.slice(start + 1)) {
+      if (line.trim().length === 0 || line.search(/\S/u) <= indent) {
+        break;
+      }
+      folded.push(line.trim());
+    }
+
+    const guard = folded.join(' ');
+    expect(
+      guard.length,
+      `the \`if:\` guard in ${WORKFLOW} parsed to nothing; the parser is broken.`,
+    ).toBeGreaterThan(0);
+
+    return guard;
+  }
+
+  /** The `--message` template the bump step hands to `npm version`. */
+  function releaseSubjectTemplate(workflow: string): string {
+    const match = /--message '([^']*)'/u.exec(withoutComments(workflow));
+
+    expect(
+      match?.[1],
+      `${WORKFLOW} no longer passes an explicit \`--message\` to \`npm version\`. The subject of the bump commit is half of the loop guard, so it cannot be left to npm's default: give the template back, and make the guard test for its prefix.`,
+    ).toBeDefined();
+
+    return match?.[1] ?? '';
+  }
+
+  /**
+   * Settings the rest of the repository depends on, and what each one is
+   * load-bearing for. Substrings rather than a copy of the file: the wording
+   * and the comments around them should stay editable, but a workflow that no
+   * longer does these things is a different workflow.
+   */
+  const REQUIRED_SETTINGS: Readonly<Record<string, string>> = {
+    'runs-on: ubuntu-latest':
+      'a hosted runner, so this job never commits, tags or leaves a rewritten package.json in the workspace the single self-hosted runner reuses between jobs -- which is the workspace ci.yml\'s "Verify generated output did not modify tracked files" step judges. Moving it onto [self-hosted, ...] puts a writer into that shared checkout.',
+    'persist-credentials: true':
+      'the one checkout in this repository that keeps its token, because this is the one job that pushes. Every other checkout sets `false`, so a copy-paste from one of them leaves this job unable to push and every bump failing at its last step.',
+    'git push --atomic':
+      'the branch and the tag land together or neither lands. Without it a rejected branch update can still publish the tag, leaving `v0.0.N` pointing at a commit `main` does not contain.',
+    '--tag-version-prefix=v':
+      "the tag spelling, stated rather than inherited from npm's default. `v0.0.7` is what the badge puts on screen, so it is what a bug report quotes.",
+    'git reset --quiet --hard "origin/$branch"':
+      'every retry recomputes the next patch from what the branch holds now. Without it a run that lost a race would re-propose the version the winner just took, and all three attempts would be rejected for the same reason.',
+  };
+
+  it('runs on a push to main, and on nothing that carries no commit', async () => {
+    const settings = topLevelSettings(
+      await readRepositoryFile(WORKFLOW),
+      'on',
+      'A workflow with no trigger never runs, so the version stops moving and the badge quietly goes back to naming one number for every build.',
+    );
+
+    expect(
+      settings.length,
+      `the \`on:\` block in ${WORKFLOW} parsed to more settings than it has; the parser is reading past the end of it.`,
+    ).toBeLessThan(6);
+
+    expect(
+      settings,
+      `${WORKFLOW} no longer triggers on a push. The policy is one patch bump per merged pull request, and a push to \`main\` is what a merge is.`,
+    ).toContain('push:');
+
+    expect(
+      settings,
+      `${WORKFLOW} no longer restricts its push trigger to \`main\`. Every branch would bump its own version, and this workflow pushes what it bumps.`,
+    ).toContain('branches: [main]');
+
+    // The loop guard is entirely a statement about `github.event.head_commit`,
+    // which only a push carries. A trigger whose payload has no head commit
+    // would make both halves of it vacuously true.
+    expect(
+      settings,
+      `${WORKFLOW} has gained a trigger that carries no \`head_commit\`. The loop guard is two statements about \`github.event.head_commit\`, and against an event that has none they are both vacuously true -- the guard would still read correct and would be guarding nothing. Either keep the trigger list to pushes, or rewrite the guard to hold for the new event and change this assertion in the same commit.`,
+    ).not.toContain('workflow_dispatch:');
+  });
+
+  it('is granted the write it needs, and nothing else', async () => {
+    const settings = topLevelSettings(
+      await readRepositoryFile(WORKFLOW),
+      'permissions',
+      'Without an explicit block the job inherits whatever the repository default is, which is neither a guarantee that it can push nor a bound on what else it could do.',
+    );
+
+    expect(
+      settings,
+      `${WORKFLOW} must declare exactly \`contents: write\` and nothing more. \`write\` is what pushes the bump commit and its tag -- the job cannot work without it, and it must be supplied by this block through GITHUB_TOKEN rather than by any personal access token or added secret. Anything beyond it widens what a workflow that runs on every merge to \`main\` is able to do.`,
+    ).toEqual(['contents: write']);
+  });
+
+  it('cannot re-trigger itself, and says so in terms of what it actually commits', async () => {
+    const workflow = await readRepositoryFile(WORKFLOW);
+    const guard = loopGuard(workflow);
+    const template = releaseSubjectTemplate(workflow);
+
+    expect(
+      template,
+      `the \`--message\` template in ${WORKFLOW} has no \`%s\`, so \`npm version\` would write the same subject for every release and the prefix the guard tests for could not be derived from it.`,
+    ).toContain('%s');
+
+    const subjectPrefix = template.slice(0, template.indexOf('%s'));
+    expect(
+      subjectPrefix.length,
+      `the \`--message\` template in ${WORKFLOW} starts with \`%s\`, so a bump commit has no fixed prefix for the guard to recognise it by.`,
+    ).toBeGreaterThan(0);
+
+    // The load-bearing assertion. Not "the guard mentions a prefix" but "the
+    // guard mentions THIS prefix": the two halves are checked against each
+    // other, so changing the commit subject without changing the guard fails
+    // here rather than on `main`.
+    expect(
+      guard,
+      `the loop guard in ${WORKFLOW} does not test for the subject its own bump commit carries. The bump step writes \`${template}\`, so the guard must skip a push whose head commit starts with \`${subjectPrefix}\` -- otherwise the workflow's own commit re-triggers it and it bumps the version for ever. Change both together or neither.`,
+    ).toContain(`startsWith(github.event.head_commit.message, '${subjectPrefix}')`);
+
+    expect(
+      guard,
+      `the loop guard in ${WORKFLOW} no longer skips a push authored by \`github-actions[bot]\`. That is the second, independent half of the guard: either half alone closes the loop, and keeping both means a change to the commit subject cannot open it.`,
+    ).toContain("github.event.head_commit.author.name != 'github-actions[bot]'");
+
+    expect(
+      withoutComments(workflow),
+      `${WORKFLOW} commits as an identity its own loop guard does not name. The guard skips pushes authored by \`github-actions[bot]\`, so that has to be the identity the bump commit carries, or the guard matches nothing it is meant to match.`,
+    ).toContain('git config user.name "github-actions[bot]"');
+  });
+
+  it('keeps the settings the loop guard, the clean-tree gate and the race retry depend on', async () => {
+    const body = withoutComments(await readRepositoryFile(WORKFLOW));
+
+    // Vacuity guard: every substring below is also absent from an empty
+    // string, so a comment stripper that ate the whole file would report all
+    // five missing rather than pass.
+    expect(
+      body.length,
+      `${WORKFLOW} parsed to almost nothing once comments were removed; the comment stripper is broken.`,
+    ).toBeGreaterThan(400);
+
+    const missing = Object.keys(REQUIRED_SETTINGS).filter((setting) => !body.includes(setting));
+    expect(
+      missing.map((setting) => `${setting} -- ${REQUIRED_SETTINGS[setting]}`),
+      `${WORKFLOW} no longer carries a setting something outside it depends on. Each entry above names what breaks. If one of them is genuinely being replaced, replace the reasoning in the workflow header in the same commit and update this map to what the new arrangement turns on.`,
+    ).toEqual([]);
+  });
+
+  it('bumps the field the build actually reads, in the spelling the badge renders', async () => {
+    const manifest = JSON.parse(await readRepositoryFile('package.json')) as { readonly version?: unknown };
+
+    expect(
+      typeof manifest.version,
+      'package.json has no string `version` field. The bump workflow rewrites that field and nothing else, so without it there is nothing to bump and nothing for the build to read.',
+    ).toBe('string');
+
+    // Behavioural, not textual: this is the resolver `vite.config.ts` and
+    // `tests/browser/vite.config.ts` both call, so a version bump reaching
+    // `__LOCKSTATE_VERSION__` -- and from there the badge,
+    // `SaveEnvelope.gameVersion` and the worker handshake -- is exactly this
+    // function returning what the workflow wrote. It is also the reason the
+    // workflow needed no change to `tooling/build-identity.mjs`.
+    expect(
+      packageVersion(),
+      "`packageVersion()` in tooling/build-identity.mjs no longer returns package.json's `version`. The version bump workflow rewrites that field and touches nothing else, so if this seam is cut the workflow publishes a number that reaches no build, no badge and no save envelope, and every deploy goes back to reporting one version for ever.",
+    ).toBe(manifest.version);
+
+    // The `v` in `--tag-version-prefix=v` is chosen to match this, because a
+    // tag is for the human reading the screen: nothing in the build parses one.
+    expect(
+      await readRepositoryFile('src/content/default-locale-en.ts'),
+      "the `brand.build` catalog entry no longer renders the version with a leading `v`. The tags .github/workflows/version.yml publishes are `v0.0.N` precisely so that the string on screen and the string in the tag list are the same string. Change one and you have to change the other, and say so in the workflow header's tag section.",
+    ).toContain("'brand.build': 'v{version}");
   });
 });
