@@ -41,12 +41,34 @@ const namedRngStreamStateSchema = z
   })
   .strict();
 
+/**
+ * `jsonValueSchema` is `z.custom`, so it validates by *predicate* and returns
+ * its input **by reference** -- unlike every `z.object`/`z.array`/primitive
+ * node, which Zod rebuilds. That made a parsed payload's interior alias its
+ * input at exactly the `jsonValue` fields, which contradicted the detachment
+ * `markTrusted` relies on (issue #106).
+ *
+ * The clone lives here rather than inside `jsonValueSchema` deliberately. That
+ * schema also types `versionedPayloadSchema.data`, which carries an entire
+ * session snapshot across the worker boundary on every snapshot and restore,
+ * where `postMessage` has already structured-cloned it -- cloning there would
+ * cost 0.8-81 ms per message to detach a value nobody aliases. A queued
+ * command payload is the *pending queue*, not bulk state: 908 B of a 42 KiB
+ * save, 28.8 KiB of a 2.88 MiB one, and 0.01-0.27 ms to copy
+ * (`tests/perf/persistence-decode-aliasing.perf.ts`).
+ *
+ * One line, and it closes both trust entry points -- `createSaveEnvelope` and
+ * `decodeSaveEnvelope` -- across all three payload versions and the V1 -> V2 ->
+ * V3 migration chain, because `kernelSnapshotSchema` is shared by all of them.
+ */
+const detachedJsonValueSchema = jsonValueSchema.transform((value) => structuredClone(value) as JsonValue);
+
 const queuedCommandSchema = z
   .object({
     id: identifierSchema,
     sequence: sequenceSchema,
     executeAtTick: tickSchema,
-    payload: jsonValueSchema,
+    payload: detachedJsonValueSchema,
   })
   .strict();
 
@@ -899,48 +921,35 @@ export type TrustedSaveEnvelope = SaveEnvelope & {
 const trustedEnvelopes = new WeakSet<object>();
 
 function markTrusted(envelope: SaveEnvelope): TrustedSaveEnvelope {
-  // Shallow, and the payload's interior is **not** a detached copy. This
-  // comment used to claim the opposite ("already detached from live runtime
-  // state (Zod's parse returns a fresh value)"), which is false for
-  // `jsonValueSchema` fields and was corrected in #105.
+  // Shallow, and the payload's interior really is detached from live runtime
+  // state -- which this comment asserted long before it was true.
   //
-  // `jsonValueSchema` is `z.custom`: it validates by predicate and returns
-  // its input **by reference**. Zod rebuilds every other node of a payload,
-  // so the only aliasing fields are the `jsonValue` ones -- in this schema
-  // exactly `payload.kernel.commands[].payload`. Two consequences, both
-  // pinned by tests/unit/persistence-save-schema-aliasing.test.ts so this
-  // comment and the code cannot drift apart again:
+  // The original wording ("Zod's parse returns a fresh value") is right for
+  // every `z.object`/`z.array`/`z.tuple`/primitive node and wrong for a
+  // `z.custom` one, which validates by predicate and passes its input through
+  // by reference. In this schema the only such field was
+  // `payload.kernel.commands[].payload`, so a parsed payload aliased its input
+  // at exactly that point: `decodeSaveEnvelope` shared it with the caller's
+  // object, and `createSaveEnvelope` shared it with the **live kernel**,
+  // because `Kernel.snapshot()` shallow-copies each queued command (`{ ...c }`)
+  // and hands over the object the command queue still holds. Either alias let a
+  // later mutation leave `checksum` describing a payload that no longer
+  // existed. Issue #106 established all of that by execution, and #105 reached
+  // the same mechanism from the SQL side.
   //
-  //   * `decodeSaveEnvelope`'s result shares those objects with its input, so
-  //     a caller that keeps a reference to what it decoded can mutate the
-  //     interior of a *trusted* envelope afterwards and leave `checksum`
-  //     describing a payload that no longer exists.
-  //   * `createSaveEnvelope`'s result shares them with the **live** kernel,
-  //     because `Kernel.snapshot()` shallow-copies each queued command
-  //     (`{ ...c }`) and therefore hands over the same payload object the
-  //     command queue still holds.
+  // `detachedJsonValueSchema` (see its own comment) now clones that one field,
+  // so the sentence above is a property of the code rather than a claim about
+  // it. `tests/unit/persistence-save-schema-aliasing.test.ts` pins the
+  // detachment from both entry points; reverting the schema fails those tests,
+  // which is what stops this comment and the code drifting apart again.
   //
-  // No caller exploits either today, which is why this is hardening rather
-  // than a defect (re-verified against the tree in #105): `importSave` and
-  // `PrisonSyncEngine.pull` are the two paths taking external input. `pull`
-  // decodes exactly what `downloadVersion` returned -- PostgREST's own parse
-  // of a response, which nothing else holds -- and `importSave` decodes
-  // whatever its caller passes, which today is only a test, since
-  // `SessionController.importInto` has no production caller (nor does the
-  // sync engine). `loadCurrent` decodes a value read back from the
-  // store, which real IndexedDB returns as a per-read structured clone.
-  // `save()` only decodes an *untrusted* envelope, which in production never
-  // happens because `SessionController` always hands it a value this module
-  // produced. Anything that leaves for storage is structured-cloned
-  // (IndexedDB) or JSON-serialized (the Supabase RPC) on the way out, so the
-  // window is in-process only.
-  //
-  // What a future caller must therefore not do: decode a value it keeps a
-  // mutable reference to, mutate a queued command payload after a save, or
-  // treat a trusted envelope's interior as immutable. If a caller ever needs
-  // that guarantee, the fix is a copy at the `jsonValue` fields (or a deep
-  // freeze), not a comment -- see docs/PERSISTENCE.md for what each costs, and
-  // tests/perf/persistence-decode-aliasing.perf.ts for the measurement.
+  // What is still **not** guaranteed, and never was: an envelope's interior is
+  // not immutable to whoever holds the envelope. Detachment is about the
+  // *caller's* objects and the live simulation; it is not a deep freeze, which
+  // #49 rejected on cost. So `checksum` remains a statement about the payload
+  // at the moment this module vouched for it, not a lock on its present
+  // contents -- the module doc above says exactly that, and
+  // `tests/unit/persistence-save-schema.test.ts` pins that narrower promise.
   //
   // Freezing stays shallow: deep-freezing a multi-megabyte payload would
   // reintroduce exactly the per-node walk #49 exists to remove.
@@ -1011,7 +1020,9 @@ export function decodeSaveEnvelope(input: unknown): SaveDecodeResult {
 
   // `envelope` is the migration chain's own freshly parsed value, never the
   // caller's object, so marking it trusted cannot hand out trust for a value
-  // an untrusted caller still holds a mutable reference to.
+  // an untrusted caller still holds a mutable reference to. That now holds for
+  // the whole payload including the `jsonValue` fields, which used to be the
+  // exception -- see `detachedJsonValueSchema` and `markTrusted` (issue #106).
   return { ok: true, value: markTrusted(migrationResult.value), migrated: migrationResult.stepsApplied > 0 };
 }
 
