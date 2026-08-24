@@ -375,10 +375,32 @@ describe('the browser-global rule reads an access and not a word', () => {
     expect(findBrowserGlobalAccess('navigator.keyboard.getLayoutMap();')).toEqual([{ global: 'navigator', line: 1 }]);
   });
 
+  it('finds a global reached through globalThis, with no member access after it', () => {
+    // `src/input/storage.ts` writes exactly this: `const store =
+    // globalThis.localStorage;` and then calls `getItem` on the binding. The
+    // member-access rule alone sees nothing here -- there is a `.` before the
+    // name and none after it -- so a scan without this second shape would
+    // report the one real access in `src/input/**` as clean.
+    expect(findBrowserGlobalAccess('const store = globalThis.localStorage;')).toEqual([
+      { global: 'globalThis.localStorage', line: 1 },
+    ]);
+    expect(findBrowserGlobalAccess('globalThis.document.title = "x";').map((entry) => entry.global)).toContain(
+      'globalThis.document',
+    );
+  });
+
+  it('does not read a globalThis property that is not a browser global as an access', () => {
+    expect(findBrowserGlobalAccess('globalThis.crypto.randomUUID();')).toEqual([]);
+    expect(findBrowserGlobalAccess('globalThis.structuredClone(value);')).toEqual([]);
+    // And a property *named* like one on something that is not globalThis.
+    expect(findBrowserGlobalAccess('const s = host.globalThis;')).toEqual([]);
+  });
+
   it('does not read prose, a bare mention, or a same-named property as an access', () => {
     // `docs/INPUT.md`'s rule about `window.localStorage` is quoted in
     // `src/input/storage.ts`'s own doc comment.
     expect(findBrowserGlobalAccess('// The browser entry point supplies window.localStorage.')).toEqual([]);
+    expect(findBrowserGlobalAccess('/**\n * Reads `globalThis.localStorage` inside a try.\n */')).toEqual([]);
     expect(findBrowserGlobalAccess('/**\n * Not a hard-coded `document.body`.\n */')).toEqual([]);
     expect(findBrowserGlobalAccess('const host = options.document;')).toEqual([]);
     expect(findBrowserGlobalAccess('type Host = { readonly window: unknown };')).toEqual([]);

@@ -27,19 +27,26 @@ import {
  * > headless."*
  *
  * Until #206 nothing enforced either. `src/input/**` was one of two trees under
- * `src/` outside every boundary test -- and it is, by this measure, the
- * cleanest tree in the repository: every one of its imports is either
- * intra-tree or the single type-only `KeyValueStore` contract, and it accesses
- * no browser global at all. That is a state worth pinning while it is still
- * true rather than after, which is why this file exists with an allow-list of
- * one entry and nothing to forgive.
+ * `src/` outside every boundary test -- and it is, by this measure, close to
+ * the cleanest tree in the repository: every one of its imports is either
+ * intra-tree or the single type-only `KeyValueStore` contract, it imports no
+ * package at all, and it reaches for exactly one browser global, in the one
+ * function whose job is to produce the browser store for the composition root
+ * to inject. That is a state worth pinning while it is still true rather than
+ * after, which is why this file exists with two allow-lists holding one entry
+ * each.
  *
- * Two of those rules are load-bearing for open work rather than decorative:
+ * Both entries are recorded facts about today, not permissions granted in
+ * advance -- and both lists fail in both directions, so an entry whose subject
+ * disappears is as loud as an unrecorded new dependency.
+ *
+ * Two of the rules are load-bearing for open work rather than decorative:
  *
  * - the browser-global rule is what #199 was about from the other side (a
- *   field initializer reading `window.localStorage` at module scope gave a
- *   browser with site data blocked a blank page), and it is what keeps this
- *   tree headless-testable;
+ *   field initializer in `src/rendering/scene/world-scene.ts` reading
+ *   `window.localStorage` gave a browser with site data blocked a blank page,
+ *   while the seam that exists to prevent exactly that sat unused one tree
+ *   over), and it is what keeps the rest of this tree headless-testable;
  * - the renderer rule is what would notice a future remapping UI
  *   (`AGENTS.md` boundary 10, #141) reaching for a Phaser type "just for the
  *   pointer".
@@ -97,6 +104,40 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
     kind: 'type-only',
     reason:
       'The injectable `KeyValueStore` contract `docs/INPUT.md` requires: `import type { KeyValueStore } from "../shared/key-value-store"`. It is type-only, so nothing in `src/shared/` runs as a consequence of importing it, and the store itself is supplied by the caller -- `src/main.ts` passes the browser one. That is what keeps this tree headless: every input test constructs its own in-memory store. A value import from `src/shared/` would mean input had started to depend on a shared implementation rather than on a contract, which is a different fact and should fail here.',
+  },
+];
+
+/**
+ * The one place in `src/input/**` that touches a browser global, and why.
+ *
+ * `docs/INPUT.md`'s rule is about how settings persistence *reaches* storage:
+ * "through an injectable `KeyValueStore` (`getItem`/`setItem`), not a
+ * hard-coded browser global, so tests stay headless". Every consumer in this
+ * tree obeys that -- they are handed a store. What one module must do is
+ * *produce* the browser store for the composition root to inject, and
+ * `resolveBrowserKeyValueStore` is it.
+ *
+ * Widening the boundary rule to `globalThis.<global>` is what surfaced this
+ * (#206). It is recorded rather than fixed: the placement is a deliberate,
+ * argued decision landed by #199 and restated in `docs/INPUT.md`, which says
+ * the function "lives in `src/input/` rather than beside the `KeyValueStore`
+ * interface in `src/shared/`, because nothing under `src/shared/` references a
+ * DOM global and `src/services/` consumes that interface under an asserted
+ * no-I/O rule (#121 item 1)". Moving it is an architectural question this test
+ * has no business deciding.
+ *
+ * What the entry buys is the difference between one audited seam and a tree
+ * that has quietly started reading browser state: a *second* module here, or a
+ * second access in this one, fails. That is precisely the shape #199 was --
+ * `world-scene.ts` reading `window.localStorage` in a class field initializer,
+ * one tree over, where nothing was looking.
+ */
+const BROWSER_GLOBAL_SEAMS: readonly { readonly file: string; readonly global: string; readonly reason: string }[] = [
+  {
+    file: 'src/input/storage.ts',
+    global: 'globalThis.localStorage',
+    reason:
+      '`resolveBrowserKeyValueStore()` -- the single seam that produces the browser `KeyValueStore` the composition root injects. It reads `globalThis.localStorage` inside a `try` and falls back to an in-memory `Map`, because reaching for the property is itself a throwing operation: Chrome raises `SecurityError` from the getter when site data is blocked for the origin, which is the #199 blank-page defect. `docs/INPUT.md` states why the function lives in this tree rather than in `src/shared/`. Every other module here is handed a store and never reaches for one.',
   },
 ];
 
@@ -186,14 +227,39 @@ describe('input module boundaries', () => {
     // `KeyValueStore`, "not a hard-coded browser global, so tests stay
     // headless". `src/input/storage.ts` quotes that rule in its own prose,
     // which is why the scan strips comments before looking.
+    const seamKey = (file: string, global: string): string => `${file} :: ${global}`;
+    const recorded = new Set(BROWSER_GLOBAL_SEAMS.map((seam) => seamKey(seam.file, seam.global)));
+    const found = new Set<string>();
     const offenders: string[] = [];
+    let accessCount = 0;
+
     for (const { file, source } of inputFiles) {
-      for (const access of findBrowserGlobalAccess(source)) offenders.push(`${file}:${access.line} reads ${access.global}`);
+      for (const access of findBrowserGlobalAccess(source)) {
+        accessCount += 1;
+        const key = seamKey(file, access.global);
+        found.add(key);
+        if (recorded.has(key)) continue;
+        offenders.push(`${file}:${access.line} reads ${access.global}`);
+      }
     }
+
     expect(
       offenders,
-      'an input module now reaches for a browser global. That is what #199 was: a field initializer reading window.localStorage at module scope gave a browser with site data blocked a blank page. Storage reaches this tree only through the injected KeyValueStore',
+      'an input module now reaches for a browser global. That is what #199 was: a field initializer reading window.localStorage gave a browser with site data blocked a blank page, and the seam that exists to prevent it was not used. Storage reaches this tree only through the injected KeyValueStore -- if this really is a new composition seam, record it in BROWSER_GLOBAL_SEAMS with the reason',
     ).toEqual([]);
+
+    // Both directions, and the denominator. A seam whose access is gone leaves
+    // a permission nobody needs; and an empty `offenders` list means nothing
+    // unless the scan found the access that is really there.
+    expect(
+      [...recorded].filter((key) => !found.has(key)),
+      'this browser-global access no longer exists: delete its BROWSER_GLOBAL_SEAMS entry in the same change, or the list becomes fiction',
+    ).toEqual([]);
+    expect(accessCount).toBe(BROWSER_GLOBAL_SEAMS.length);
+
+    for (const seam of BROWSER_GLOBAL_SEAMS) {
+      expect(seam.reason.trim().length, `${seam.file} -> ${seam.global} needs a reason`).toBeGreaterThan(80);
+    }
   });
 
   it('builds no simulation, which is AGENTS.md boundary 1 from the input side', () => {

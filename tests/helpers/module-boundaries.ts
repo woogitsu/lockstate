@@ -446,18 +446,34 @@ export const describeMissingForm = ({ form, declaredInstead }: MissingConstructi
 const BROWSER_GLOBALS = ['document', 'window', 'localStorage', 'sessionStorage', 'navigator'] as const;
 
 export interface BrowserGlobalAccess {
+  /** The global as reached: `localStorage`, or `globalThis.localStorage` for the `globalThis` shape. Used as the allow-list key, so changing how a module reaches a global makes an entry go stale. */
   readonly global: string;
+  /** 1-based line in the real file: `stripComments` preserves every newline. */
   readonly line: number;
 }
 
 /**
- * Every member access or index of a browser global in this source.
+ * Every access of a browser global in this source, in two shapes.
  *
- * A member access is required, so the word "window" ending an English sentence
- * is not a hit -- the same reason
- * `tests/unit/services-layer-boundaries.test.ts` requires one. Comments are
- * stripped as well, because `docs/INPUT.md`'s rule about `window.localStorage`
- * is quoted in `src/input/storage.ts`'s own prose.
+ * **A bare global with a member access or an index** -- `document.body`,
+ * `localStorage["k"]`. A member access is required, so the word "window"
+ * ending an English sentence is not a hit and neither is a property named
+ * `window` in a type literal; that is the same reason
+ * `tests/unit/services-layer-boundaries.test.ts` requires one.
+ *
+ * **`globalThis.<global>`, with or without a following member access.** This
+ * second shape is not symmetry for its own sake: `src/input/storage.ts:111`
+ * writes `const store = globalThis.localStorage;` and then calls `getItem` on
+ * the *binding*, so the first rule alone sees nothing at all -- neither the
+ * `.` before `localStorage` (excluded by the lookbehind) nor a member access
+ * after it (there is none). A rule that silently missed the one real access in
+ * the tree it scans would be the same defect #206 reported, in the other
+ * direction. `globalThis.` is unambiguous evidence on its own, so no trailing
+ * access is required for it.
+ *
+ * Comments are stripped, because `docs/INPUT.md`'s rule about
+ * `window.localStorage` is quoted at length in `src/input/storage.ts`'s own
+ * doc comment and in `src/main.ts`'s.
  */
 export function findBrowserGlobalAccess(rawSource: string): readonly BrowserGlobalAccess[] {
   const source = stripComments(rawSource);
@@ -465,6 +481,10 @@ export function findBrowserGlobalAccess(rawSource: string): readonly BrowserGlob
   for (const global of BROWSER_GLOBALS) {
     const pattern = new RegExp(`(?<![\\w$.])${global}\\s*(?:\\.\\s*[A-Za-z_$]|\\[)`, 'g');
     for (const match of source.matchAll(pattern)) found.push({ global, line: lineOf(source, match.index) });
+  }
+  const viaGlobalThis = new RegExp(`(?<![\\w$.])globalThis\\s*\\.\\s*(${BROWSER_GLOBALS.join('|')})\\b`, 'g');
+  for (const match of source.matchAll(viaGlobalThis)) {
+    found.push({ global: `globalThis.${match[1]!}`, line: lineOf(source, match.index) });
   }
   return found.sort((left, right) => left.line - right.line || left.global.localeCompare(right.global));
 }
