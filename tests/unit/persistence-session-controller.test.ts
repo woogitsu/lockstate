@@ -92,13 +92,17 @@ describe('SessionController: create/save/load a prison entirely offline', () => 
     expect(outcome.ok).toBe(true);
     if (!outcome.ok) return;
 
-    expect(outcome.scope.restored).toContain('world terrain and ownership');
-    expect(outcome.scope.restored).toContain('incidents, gangs and tunnels');
+    // Message keys since #226; the text they resolve to is pinned in
+    // `tests/unit/restored-scope.test.ts` against the bundled catalog.
+    const restored = outcome.scope.restored.map((entry) => entry.labelKey);
+    const notCarried = outcome.scope.notCarriedByThisSaveVersion.map((entry) => entry.labelKey);
+    expect(restored).toContain('save.scope.world');
+    expect(restored).toContain('save.scope.incidents');
     // Still a non-empty list, and still shown: what a save leaves behind is
     // now derived/in-flight state rather than whole subsystems, but the UI
     // must keep saying so rather than implying a perfect restore.
-    expect(outcome.scope.notCarriedByThisSaveVersion.length).toBeGreaterThan(0);
-    expect(outcome.scope.notCarriedByThisSaveVersion.join(' ')).toContain('navigation caches');
+    expect(notCarried.length).toBeGreaterThan(0);
+    expect(notCarried).toContain('save.scope.navigation-caches');
   });
 
   it('increments revision on each successful save', async () => {
