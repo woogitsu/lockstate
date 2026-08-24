@@ -87,7 +87,7 @@ describe('the two segment-fill implementations are one rule', () => {
     // status strip uses. Every value in range, so a rule that agrees at the
     // sampled points and diverges one step away is caught.
     const mismatches: string[] = [];
-    for (const max of [180, 255, 7, 1_000]) {
+    for (const max of [180, 255, 7, 1_000, 2_500]) {
       for (let value = 0; value <= max; value += 1) {
         const primitive = filledSegments(value, max, SEGMENTS);
         const projection = toBoundedValue(value, max, SEGMENTS).filled;
@@ -153,5 +153,16 @@ describe('the two segment-fill implementations are one rule', () => {
     expect(tiny.permille).toBe(4);
     expect(tiny.filled).toBe(1);
     expect(toBoundedValue(254, 255).permille).toBe(996);
+
+    // And the case where the two routes give different answers, which is what
+    // makes this an assertion rather than a preference. 251 of 2500 is 10.04 %
+    // -- 1.004 segments, so `ceil` lights two. Rounded to `permille` first it
+    // is exactly 100, and a fill derived from 100 lights one. Measured: with
+    // this pair absent, rewriting the fill to go through `permille` again
+    // passes every other assertion in this file, including the sweep.
+    const straddling = toBoundedValue(251, 2_500);
+    expect(straddling.permille).toBe(100);
+    expect(straddling.filled).toBe(2);
+    expect(filledSegments(251, 2_500)).toBe(2);
   });
 });
