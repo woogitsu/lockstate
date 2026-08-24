@@ -69,20 +69,30 @@ future UI/localization issue); `default-locale-en.ts` is the one built-in
 catalogs use, enough for headless tests and any current dev UI to show a
 real label.
 
-## Feeding issue #17's room validation contract
+## Feeding issue #17's room vocabulary
 
 `src/simulation/rooms/definition.ts`'s `RoomRegistry`/`RoomDefinition`
-(issue #17) are unchanged in shape and still own `RoomSystem`'s validation
-contract. `roomDefinitionFromCatalog` converts one validated
-`RoomCatalogDefinition` into that shape (resolving `nameKey` to `name` via
-a locale catalog, `en` by default); `buildRoomRegistryFromCatalog` does
-this for a whole catalog and is how `defaultRoomRegistry` is now built —
-replacing #17's two hard-coded entries with issue #23's full, validated,
-representative set. `RoomSystem.validateRoom`'s own logic is unchanged
-(including its known mock behavior around object-placement checks, real
-object-placement tracking is out of scope for #23) — the point of this
-integration is only that catalog-driven room types resolve and are
-evaluated, not that #17's placeholder validation became complete.
+(issue #17) are unchanged in shape. `roomDefinitionFromCatalog` converts one
+validated `RoomCatalogDefinition` into that shape (resolving `nameKey` to
+`name` via a locale catalog, `en` by default);
+`buildRoomRegistryFromCatalog` does this for a whole catalog and is how
+`defaultRoomRegistry` is now built — replacing #17's two hard-coded entries
+with issue #23's full, validated, representative set. What the integration
+establishes is that a catalog-driven room type resolves, including by the
+numeric zoning id a `Uint8Array` zoning plane stores
+(`tests/unit/rooms-catalog-integration.test.ts`).
+
+It no longer feeds a *validator*. #17's `RoomSystem.validateRoom` was the
+consumer of these definitions' `requirements`, and #123 item 2 deleted it: it
+reported every `object` requirement as missing and treated `minimum-size` as
+always satisfied, in its own words as a mock, and nothing in `src/` called it.
+The single evaluator of room requirements is now `requirementStatus` in
+`src/simulation/presentation/room-projection.ts`, which reads the **content**
+catalog rather than this registry. So `defaultRoomRegistry` currently has no
+consumer in `src/` — it is the runtime-side room vocabulary that real
+object-placement work will need, not dead content, and it is kept for the same
+reason `tests/foundation/unconsumed-content-contract.test.ts` keeps declared
+ids that no code reads yet.
 
 ## Representative catalog scope
 

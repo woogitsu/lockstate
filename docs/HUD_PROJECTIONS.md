@@ -293,8 +293,14 @@ decision about what to build next.
     "instance declares the required object's capabilities", never against
     `minQuantity`, and `enclosed` / `outdoors` / `minimum-size` are
     projected as `'not-evaluated'`.
-14. **`RoomSystem.validateRoom` is mocked** in its own body for size and
-    enclosure. There is no real room-geometry validation to project.
+14. **Nothing validates room geometry at all.** There is no real
+    room-geometry validation to project. Until #123 item 2 there was a
+    *mocked* one — `RoomSystem.validateRoom` reported every `object`
+    requirement as missing and treated `minimum-size` as always satisfied,
+    saying so in its own body — which made this gap look half-filled while
+    production never called it. It is deleted, so `requirementStatus` in
+    `room-projection.ts` is the single evaluator and gap 13 above is the
+    whole of what can be answered.
 15. **`RoomInstanceRegistry` has no `all()` or `size()`.** Enumeration
     fans out over catalog room ids, so an instance registered under a
     room-catalog id the catalog does not define is invisible to the room

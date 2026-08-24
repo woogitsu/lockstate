@@ -30,8 +30,6 @@ import { Kernel } from '../kernel';
 import { NavigationSystem, type NavigationSystemOptions } from '../navigation';
 import { Container, ContainerMaterialsProvider, ContainerRegistry, JobBoard, JobSystem, JobWorkerPool, UtilityNetwork } from '../operations';
 import { NEED_MAX, PrisonerJobWorkerAdapter, PrisonerOperationsRuntime } from '../prisoners';
-import { defaultRoomRegistry } from '../rooms/definition';
-import { RoomSystem } from '../rooms/system';
 import { TopologyManager } from '../rooms/topology';
 import { deriveXoshiroState } from '../rng/seed';
 import { NamedRngStreams } from '../rng/streams';
@@ -74,7 +72,6 @@ export interface SimulationRuntime {
    */
   readonly actorIdentity: ActorIdentityRegistry;
   readonly topology: TopologyManager;
-  readonly rooms: RoomSystem;
   readonly navigation: NavigationSystem;
   readonly prisoners: PrisonerOperationsRuntime;
   readonly containers: ContainerRegistry;
@@ -157,7 +154,6 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   }
 
   const topology = new TopologyManager(world);
-  const rooms = new RoomSystem(world, topology, defaultRoomRegistry);
   const navigation = new NavigationSystem(world, DEFAULT_NAVIGATION_SYSTEM_OPTIONS);
   navigation.setLoadedChunks(options.loadedChunks ?? (options.world === undefined ? [initialChunk] : world.snapshot().ownedChunks.map((position) => ({ x: chunkCoordinate(position.x), y: chunkCoordinate(position.y) }))));
 
@@ -324,7 +320,6 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     construction,
     actorIdentity,
     topology,
-    rooms,
     navigation,
     prisoners,
     containers,

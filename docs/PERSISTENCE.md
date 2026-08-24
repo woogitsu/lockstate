@@ -153,11 +153,11 @@ Every entry here is an exclusion with a stated reason, not a gap. The rule
 V3 applies is: **authoritative state is persisted; derived state and in-flight
 work are not.**
 
-- **Room and topology geometry** (`TopologyManager`, `RoomSystem`). Pure
-  caches recomputed from `SparseWorld` geometry by `TopologyManager.update`,
-  so there is no independent state to persist. Restoring the world restores
-  them. (Placed *room instances* — `RoomInstanceRegistry` — are a different
-  thing and **are** persisted; see V3 below.)
+- **Topology geometry** (`TopologyManager`). A pure cache recomputed from
+  `SparseWorld` geometry by `TopologyManager.update`, so there is no
+  independent state to persist. Restoring the world restores it. (Placed
+  *room instances* — `RoomInstanceRegistry` — are a different thing and
+  **are** persisted; see V3 below.)
 - **Navigation caches and the pending path-request queue** (`RouteCache`,
   flow fields, `PathRequestQueue`). ADR 0007 defines these as a budgeted
   caching layer over the world and the door registry, both of which are

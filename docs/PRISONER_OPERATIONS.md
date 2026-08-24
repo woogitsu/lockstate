@@ -131,10 +131,12 @@ else here is a pure function of state.
 
 ## Room instances: the minimal, real bridge #17/#23 don't provide
 
-Neither #17's `RoomSystem` nor #23's content catalog track individual
-*placed* room instances or which objects sit in which room -- #17 only
-validates an ad-hoc topology/zoning pair, and real object-placement
-tracking doesn't exist yet. `room-instance-registry.ts`'s
+#23's content catalog does not track individual *placed* room instances or
+which objects sit in which room, and real object-placement tracking doesn't
+exist yet. #17's `RoomSystem` didn't either -- it validated an ad-hoc
+topology/zoning pair with a mocked body, and #123 item 2 deleted it, leaving
+`requirementStatus` in `room-projection.ts` as the one evaluator.
+`room-instance-registry.ts`'s
 `RoomInstanceRegistry` is the minimal, real (not mocked) layer this issue
 needs to make cell/room assignment meaningful: instances are registered
 explicitly (id, #23 room-catalog id, anchor tile, capacity, the object
