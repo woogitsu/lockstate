@@ -272,9 +272,9 @@ unforgeable:
 - A trusted envelope is shallow-frozen, so its `checksum`, `saveSchemaVersion`
   and `payload` reference cannot be swapped after this module vouched for
   them. Freezing stops at the top level deliberately: a deep freeze would
-  reintroduce the per-node walk this change exists to remove, and the payload
-  interior is already a fresh Zod-parsed value detached from live runtime
-  state.
+  reintroduce the per-node walk this change exists to remove. **It does not
+  mean the payload interior is detached** — see "The payload interior is
+  aliased, not copied" below, which corrects exactly that claim.
 
 `decodeSaveEnvelope`'s output is trusted for the same reason and with the same
 safety: it is the migration chain's own freshly parsed value, never the
@@ -288,6 +288,86 @@ decoded.
 rejection tests in `tests/unit/persistence-save-schema.test.ts` and
 `tests/unit/persistence-local-repository.test.ts` that prove it were not
 edited by #49.
+
+### The payload interior is aliased, not copied
+
+This section exists because the sentence it replaces was false, and a false
+comment about a safety property is worse than none. Both `markTrusted` and
+this document used to say the payload interior was "a fresh Zod-parsed value
+detached from live runtime state". It is not, for `jsonValueSchema` fields.
+
+`jsonValueSchema` (`src/simulation/protocol/types.ts`) is `z.custom`: it
+validates by predicate (`isJsonValue`) and returns **the input object
+itself**. Zod rebuilds every other node it parses, so the aliasing is exactly
+as wide as the `jsonValue` fields in the schema, which in the save payload is
+one: `payload.kernel.commands[].payload`. Two consequences follow, and both
+are now pinned as tests in
+`tests/unit/persistence-save-schema-aliasing.test.ts`:
+
+- `decodeSaveEnvelope`'s result shares those objects with the value it was
+  given. A caller that keeps a reference to what it decoded can mutate the
+  interior of a *trusted* envelope afterwards, and `checksum !==
+  computeSaveChecksum(payload)` from then on. (Verified by execution in #105,
+  and again here.)
+- `createSaveEnvelope`'s result shares them with the **live kernel**:
+  `Kernel.snapshot()` shallow-copies each queued command (`{ ...c }`), so the
+  payload object inside the snapshot is the one the command queue still holds.
+  This is the part the old wording denied most directly.
+
+**Honest severity: hardening, not a live defect — no exploiting caller
+exists.** Re-verified against the tree, not inherited from #105: the two
+paths that take external input are `PrisonSaveRepository.importSave` and
+`PrisonSyncEngine.pull`, and both are handed a freshly parsed value nobody
+else retains (a `JSON.parse` of a file, and PostgREST's parse of a response);
+neither has a production caller yet, since `SessionController.importInto` and
+the sync engine are both wired only in tests. `loadCurrent` decodes a value
+read back from the store, which a real IndexedDB returns as a fresh
+structured clone per read — `MemoryLocalSaveStore` does not, but it is
+test-only. `save()` decodes only an *untrusted* envelope, which production
+never produces. And everything that leaves for storage is structured-cloned
+(IndexedDB) or JSON-serialized (the Supabase RPC) on the way out, so the
+window is in-process only. What would change this is a caller that decodes a
+value it keeps and mutates, or one that mutates a queued command payload
+after composing a save.
+
+**Why the comment was corrected rather than the schema made to copy.** #105
+offered both. The measurement is in `tests/perf/persistence-decode-aliasing.perf.ts`
+(report-only, per `docs/BENCHMARKING.md`), on this container — Node 24.19.0,
+4× Xeon @ 2.10GHz:
+
+| tier | payload | queued commands | aliased bytes | decode | copy just the aliased fields | copy the whole payload | protocol bundle: `isJsonValue` | + `structuredClone` |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| small | 42.2 KiB | 4 | 908 B | 9.47 ms | 0.01 ms | 1.15 ms | 2.35 ms | 0.80 ms |
+| medium | 288.6 KiB | 16 | 3.6 KiB | 43.3 ms | 0.03 ms | 8.98 ms | 15.4 ms | 6.04 ms |
+| large | 1.12 MiB | 64 | 14.4 KiB | 162 ms | 0.17 ms | 35.5 ms | 61.4 ms | 27.5 ms |
+| x-large | 2.88 MiB | 128 | 28.8 KiB | 430 ms | 0.27 ms | 114 ms | 169 ms | 81.3 ms |
+
+The numbers do **not** say "a copy is too expensive", and pretending they did
+would be the same kind of overclaim this section exists to remove. Copying
+only the aliased fields is 1–2 % of a payload and ≤ 0.1 % of a decode — cheap
+at every tier this project measures. Three other things decide it:
+
+- **A copy inside `jsonValueSchema` itself is not cheap**, and that is the
+  only place a fix would be uniform. That schema also types
+  `versionedPayloadSchema.data`, which carries an entire
+  `SessionSnapshotBundle` on every worker snapshot and every restore
+  (`src/simulation/worker/state-machine.ts`,
+  `src/persistence/session/worker-session-host.ts`). Cloning there adds
+  0.80–81.3 ms per message — up to +48 % on top of the `isJsonValue` walk it
+  already performs — on a boundary `postMessage` has *already* structured-cloned.
+- **A narrow copy in `save-schema.ts` buys half a property the codebase
+  deliberately does not provide.** Detaching the interior from the *caller's
+  input* still leaves a trusted envelope's interior mutable by anyone holding
+  the envelope, so `checksum` is still not a guarantee about the payload's
+  present contents. The other half is a deep freeze, which #49 rejected on
+  cost and which this table prices at the same order as the whole-payload
+  copy. Paying for half a guarantee, on the save/load hot path, for a caller
+  that does not exist, is what #49 spent its effort removing.
+- **The defect that actually existed was the comment.** A reader who trusted
+  it could write precisely the caller that turns this into a real bug. The
+  correction states the contract a future caller must respect, and the test
+  pins the behaviour either way — so a later decision to make the schema copy
+  fails those tests and forces the comment to be updated in the same commit.
 
 ## Migration framework
 

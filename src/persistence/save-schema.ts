@@ -899,10 +899,48 @@ export type TrustedSaveEnvelope = SaveEnvelope & {
 const trustedEnvelopes = new WeakSet<object>();
 
 function markTrusted(envelope: SaveEnvelope): TrustedSaveEnvelope {
-  // Shallow: the payload's interior is already detached from live runtime
-  // state (Zod's parse returns a fresh value), and deep-freezing a
-  // multi-megabyte payload would reintroduce exactly the per-node walk this
-  // change exists to remove.
+  // Shallow, and the payload's interior is **not** a detached copy. This
+  // comment used to claim the opposite ("already detached from live runtime
+  // state (Zod's parse returns a fresh value)"), which is false for
+  // `jsonValueSchema` fields and was corrected in #105.
+  //
+  // `jsonValueSchema` is `z.custom`: it validates by predicate and returns
+  // its input **by reference**. Zod rebuilds every other node of a payload,
+  // so the only aliasing fields are the `jsonValue` ones -- in this schema
+  // exactly `payload.kernel.commands[].payload`. Two consequences, both
+  // pinned by tests/unit/persistence-save-schema-aliasing.test.ts so this
+  // comment and the code cannot drift apart again:
+  //
+  //   * `decodeSaveEnvelope`'s result shares those objects with its input, so
+  //     a caller that keeps a reference to what it decoded can mutate the
+  //     interior of a *trusted* envelope afterwards and leave `checksum`
+  //     describing a payload that no longer exists.
+  //   * `createSaveEnvelope`'s result shares them with the **live** kernel,
+  //     because `Kernel.snapshot()` shallow-copies each queued command
+  //     (`{ ...c }`) and therefore hands over the same payload object the
+  //     command queue still holds.
+  //
+  // No caller exploits either today, which is why this is hardening rather
+  // than a defect (re-verified against the tree in #105): `importSave` and
+  // `PrisonSyncEngine.pull` are the two paths taking external input, and both
+  // pass a freshly parsed value nobody else retains -- and neither has a
+  // production caller yet. `loadCurrent` decodes a value read back from the
+  // store, which real IndexedDB returns as a per-read structured clone.
+  // `save()` only decodes an *untrusted* envelope, which in production never
+  // happens because `SessionController` always hands it a value this module
+  // produced. Anything that leaves for storage is structured-cloned
+  // (IndexedDB) or JSON-serialized (the Supabase RPC) on the way out, so the
+  // window is in-process only.
+  //
+  // What a future caller must therefore not do: decode a value it keeps a
+  // mutable reference to, mutate a queued command payload after a save, or
+  // treat a trusted envelope's interior as immutable. If a caller ever needs
+  // that guarantee, the fix is a copy at the `jsonValue` fields (or a deep
+  // freeze), not a comment -- see docs/PERSISTENCE.md for what each costs, and
+  // tests/perf/persistence-decode-aliasing.perf.ts for the measurement.
+  //
+  // Freezing stays shallow: deep-freezing a multi-megabyte payload would
+  // reintroduce exactly the per-node walk #49 exists to remove.
   const frozen = Object.freeze(envelope);
   trustedEnvelopes.add(frozen);
   return frozen as TrustedSaveEnvelope;
