@@ -74,9 +74,17 @@ export interface HudClockViewModel {
 /**
  * The dense top-strip counts.
  *
- * Deliberately no money, funds, budget or cost of any kind: there is no
- * economy system yet, and a HUD that displays a number no system produces is
- * a lie with a place to sit.
+ * Deliberately no money, funds, budget or cost of any kind -- still, and for
+ * a narrower reason than before. There **is** a treasury now (#96): a balance
+ * a purchase spends from, carried in the save. What there is not is anything
+ * that credits it, because what the state pays for is ADR 0017 question 1 and
+ * it is open.
+ *
+ * So a balance could honestly be shown, and a *budget* or a *forecast* could
+ * not, and the rule that keeps this strip truthful is unchanged: a HUD that
+ * displays a number no system produces is a lie with a place to sit. Adding
+ * the balance here is a real change to what the strip carries and belongs to
+ * the slice that gives the player a way to spend it.
  */
 export interface HudCountsViewModel {
   readonly prisoners: number;

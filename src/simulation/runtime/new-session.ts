@@ -13,7 +13,6 @@ import {
 } from '../contraband';
 import {
   ConstructionSystem,
-  createConstructionCommandHandler,
 } from '../construction';
 import {
   GangRegistry,
@@ -25,6 +24,8 @@ import {
   type SectorOccupantResolver,
   type SectorRiskSampler,
 } from '../incidents';
+import { ProcurementSystem, Treasury } from '../economy';
+import { createSessionCommandHandler } from './session-commands';
 import { ACTOR_IDENTITY_RNG_STREAM, ActorIdentityRegistry } from '../identity';
 import { Kernel } from '../kernel';
 import { NavigationSystem, type NavigationSystemOptions } from '../navigation';
@@ -64,6 +65,15 @@ export interface SimulationRuntime {
   readonly kernel: Kernel;
   readonly world: SparseWorld;
   readonly construction: ConstructionSystem;
+  /**
+   * The prison's money, and the deliveries it has bought (#96, #89).
+   *
+   * `treasury` holds a balance and nothing credits it on a schedule -- there
+   * is no income line, because what the state pays for is ADR 0017 question 1
+   * and it is open. `procurement` spends from it and delivers later.
+   */
+  readonly treasury: Treasury;
+  readonly procurement: ProcurementSystem;
   /**
    * Names for prisoners and staff (ADR 0015). Session-owned rather than
    * owned by either population, because it spans both `EntityStore`s --
@@ -182,6 +192,19 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   const constructionMaterials = new Container(CONSTRUCTION_MATERIALS_CONTAINER_ID);
   containers.register(constructionMaterials);
   const construction = new ConstructionSystem(world, new ContainerMaterialsProvider(constructionMaterials));
+
+  // Issue #96's money-first resource model, and the half of its loop that
+  // exists (#89). A purchase spends now and delivers later; the delivery
+  // lands in the container construction draws from.
+  //
+  // **Directly, and that is scaffolding.** #96 describes the materials
+  // arriving at `room.delivery-bay` and being carried to the site. No session
+  // instantiates that room -- it is declared content with no consumer (#141)
+  // -- so there is no bay to deliver to, and inventing one would mean
+  // deciding where a new prison's bay sits and when a carry job is raised.
+  // Recorded on #96 rather than left to be discovered from the absence.
+  const treasury = new Treasury();
+  const procurement = new ProcurementSystem(treasury, constructionMaterials);
 
   const jobs = new JobBoard();
   const jobWorkers = new JobWorkerPool();
@@ -303,6 +326,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   const incidentResponseSystem = new IncidentResponseSystem(incidents, securitySectors, securityGuards, navigation);
 
   kernel.registerSystem(construction);
+  kernel.registerSystem(procurement);
   kernel.registerSystem(navigation);
   prisoners.registerOn(kernel);
   kernel.registerSystem(jobSystem);
@@ -312,12 +336,14 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   kernel.registerSystem(incidentTriggerSystem);
   kernel.registerSystem(searchSystem);
   kernel.registerSystem(incidentResponseSystem);
-  kernel.setCommandHandler(createConstructionCommandHandler(construction));
+  kernel.setCommandHandler(createSessionCommandHandler(construction, procurement));
 
   return {
     kernel,
     world,
     construction,
+    treasury,
+    procurement,
     actorIdentity,
     topology,
     navigation,

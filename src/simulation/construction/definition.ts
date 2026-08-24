@@ -44,19 +44,19 @@ export type BuildableItemReferenceError = {
  * `BUILDABLE_REGISTRY` and `src/content/item-catalog.ts` were two
  * unrelated vocabularies -- the former said `'brick'`, the latter
  * `'item.brick'`, and nothing ever put one into the other's hands. That
- * was silent rather than harmless: because nothing supplies construction
- * materials at all yet (#89), a mismatch cost nothing, and
+ * was silent rather than harmless: while nothing supplied construction
+ * materials at all (#89) a mismatch cost nothing, and
  * `tests/unit/operations-construction-integration.test.ts` recorded the
  * split in a comment as though it were a design decision.
  *
- * It stops being silent the moment anything deposits stock using item
- * catalog ids -- which is exactly what a purchase and delivery will do
- * (#96). A mismatch then produces no error anywhere: only a build order
- * that waits in `'materials-pending'` forever, which is
- * indistinguishable from #89 itself. The demand side has to speak the
- * same vocabulary as the supply side before there is a supply side, so
- * the two are checked against each other here, at import time, and a
- * failure is loud.
+ * **The supply side exists now**, and this check is why its arrival was
+ * uneventful. `ProcurementSystem` deposits stock using item-catalog ids
+ * (#96), which is exactly the case this was written ahead of: a mismatch
+ * would produce no error anywhere, only a build order waiting in
+ * `'materials-pending'` forever -- indistinguishable from #89 itself, the
+ * defect the supply side was built to fix. The demand side had to speak the
+ * same vocabulary as the supply side *before* there was one, so the two are
+ * checked against each other here, at import time, and a failure is loud.
  *
  * This is the buildables-to-items direction. The reverse check -- a
  * supplier naming an item nothing declares -- belongs with whatever
