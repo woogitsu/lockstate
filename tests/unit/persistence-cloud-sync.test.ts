@@ -168,3 +168,60 @@ describe('resolveSyncConflict', () => {
     expect(resolveSyncConflict('cancel', cloudCurrent)).toEqual({ kind: 'cancel' });
   });
 });
+
+/**
+ * Issue #192: `registerPrison` inserted `{id, game_version, slot_index}` directly
+ * into `prisons` and could never succeed -- `owner_id` is `not null` with no
+ * default and the insert policy is `auth.uid() = owner_id`, so the real schema
+ * answers `new row violates row-level security policy for table "prisons"`,
+ * refusing the row before the NOT NULL check because `auth.uid() = NULL` is NULL
+ * rather than true.
+ *
+ * It failed 100% of the time, and **no test could have noticed**: the double
+ * stores into a `Map` and needs no `owner_id`, so it succeeded on exactly the
+ * arguments the real client failed on, and every test in this file drives the
+ * double. That divergence is the defect underneath the defect, so what is
+ * asserted here is the *contract both implementations now share* -- the same
+ * statuses `create_prison()` answers with.
+ *
+ * What this cannot assert is that the real adapter speaks it correctly; that
+ * needs a running PostgREST, which is `pnpm verify:stack`'s job.
+ */
+describe('registering a cloud prison answers with a status rather than a bare void', () => {
+  it('reports the slot it took, so a caller learns what the server decided', () => {
+    // Not merely `status: 'created'`: the RPC returns the slot index it actually
+    // used, which is the value worth reporting rather than the one requested.
+    const client = new MemoryCloudSaveClient();
+    return expect(client.registerPrison('prison-1', 'lockstate-0.0.0', 3)).resolves.toEqual({
+      status: 'created',
+      slotIndex: 3,
+    });
+  });
+
+  it('refuses a slot another prison already holds, keyed on the slot and not the id', () => {
+    // `prisons_owner_slot_unique` is on `(owner_id, slot_index)`. A second
+    // prison with a different id and the same slot is the collision the schema
+    // actually has.
+    const client = new MemoryCloudSaveClient();
+    return client.registerPrison('prison-1', 'lockstate-0.0.0', 0).then(async () => {
+      await expect(client.registerPrison('prison-2', 'lockstate-0.0.0', 0)).resolves.toEqual({
+        status: 'slot-taken',
+        slotIndex: 0,
+      });
+      // And a free slot still works afterwards, so the refusal is about the slot
+      // rather than about the account being wedged.
+      await expect(client.registerPrison('prison-2', 'lockstate-0.0.0', 1)).resolves.toEqual({
+        status: 'created',
+        slotIndex: 1,
+      });
+    });
+  });
+
+  it('still throws on a repeated prison id, which is a different mistake', async () => {
+    // Running out of room is a status; registering the same prison twice is the
+    // caller confusing two prisons, and collapsing the two would hide it.
+    const client = new MemoryCloudSaveClient();
+    await client.registerPrison('prison-1', 'lockstate-0.0.0', 0);
+    await expect(client.registerPrison('prison-1', 'lockstate-0.0.0', 1)).rejects.toThrow(/already registered/u);
+  });
+});

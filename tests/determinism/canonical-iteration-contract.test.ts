@@ -112,6 +112,12 @@ const ALLOWED: readonly CanonicalIterationExemption[] = [
       'This pass builds an adjacency `Map` and a node `Set` from chunk boundaries -- both order-independent, since `addEdge` is symmetric and idempotent. The order-dependent step is which node seeds which connected component, and that walks `[...allNodes].sort()` a few lines below, pinned by `iteration-order.test.ts`.',
   },
   {
+    file: 'src/persistence/cloud/memory-client.ts',
+    expression: 'this.prisons.values()',
+    reason:
+      'A membership test, not an ordering: `registerPrison` asks whether any prison already holds the requested slot index, and at most one can -- `prisons_owner_slot_unique` is on `(owner_id, slot_index)`. Every walk order therefore returns the same answer, and the answer is a boolean rather than a sequence. This is a test double for a cloud client besides, so nothing it enumerates reaches a simulation snapshot or a determinism hash.',
+  },
+  {
     file: 'src/simulation/worker/client.ts',
     expression: 'this.listeners',
     reason:
