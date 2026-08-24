@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Kernel } from '../../src/simulation/kernel/kernel';
 import { ACTION_PHASES, CurrentActionComponent, PositionComponent, PrisonerRecordComponent, intakeStageIndex } from '../../src/simulation/prisoners/components';
-import { NEED_IDS, NEED_MAX, NeedsComponent } from '../../src/simulation/prisoners/needs';
+import { NEED_IDS, NEED_MAX_SCALED, NeedsComponent } from '../../src/simulation/prisoners/needs';
 import type { PrisonerOperationsRuntime } from '../../src/simulation/prisoners/prisoner-operations-runtime';
 import { deriveXoshiroState } from '../../src/simulation/rng/seed';
 import { NamedRngStreams } from '../../src/simulation/rng/streams';
@@ -103,8 +103,10 @@ const SLOT_DEFAULTS: Readonly<Record<string, number>> = {
   'records.classificationGroupIndex': 0,
   'records.intakeStage': intakeStageIndex('queued'),
   // Stated once for every need, the way `NeedsComponent.reset` itself loops
-  // `NEED_IDS`: a seventh need is covered here with no second edit.
-  ...Object.fromEntries(NEED_IDS.map((needId) => [`needs.levels.${needId}`, NEED_MAX])),
+  // `NEED_IDS`: a seventh need is covered here with no second edit. The value
+  // is `NEED_MAX` expressed in the units `levels` actually stores -- scaled by
+  // `NEED_SCALE` since #259 -- because this list pins the *array* contents.
+  ...Object.fromEntries(NEED_IDS.map((needId) => [`needs.levels.${needId}`, NEED_MAX_SCALED])),
   // The component's own documented "no action selected" sentinel, and the
   // phase that pairs with it.
   'currentAction.actionIndex': -1,

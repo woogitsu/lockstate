@@ -86,8 +86,10 @@ both over the same inputs so the copies cannot drift. They did drift, for as
 long as both existed: issue #123 item 1.
 
 The raw value and raw maximum are deliberately **absent**. Needs are
-`0..255` `Uint8Array` levels today; that is an internal storage decision,
-and exposing it would guarantee some panel hard-codes `255`.
+`0..255` levels at the projection boundary and are stored as scaled
+`Uint16Array` values underneath (`NEED_SCALE`, #259); both are internal
+storage decisions, and exposing either would guarantee some panel hard-codes
+`255`.
 
 Semantics are "how full", not "how bad": a need at `permille: 0` is a
 starving prisoner. There is **no** severity band, because the simulation

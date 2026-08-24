@@ -7,11 +7,11 @@ Supabase sync (#20) is a separate issue with its own document: its schema, RPC
 and client-side sync/conflict policy (`src/persistence/cloud/`) are covered in
 [CLOUD_SAVE.md](./CLOUD_SAVE.md), not here.
 
-## Envelope shape (`SaveEnvelope`, currently V3)
+## Envelope shape (`SaveEnvelope`, currently V4)
 
 ```
 {
-  saveSchemaVersion: 3,
+  saveSchemaVersion: 4,
   gameVersion: string,     // build/version identifier, e.g. "lockstate-0.0.0"
   prisonId: string,
   revision: number,        // caller-managed monotonic counter; optimistic-concurrency
@@ -59,10 +59,11 @@ are deliberately separate, because the simulation may not import
 keeps evolving.
 
 `SaveEnvelope`/`SavePayload`/`TrustedSaveEnvelope` are the names call sites
-use for "the current version"; `SaveEnvelopeV1`…`V3` name specific historical
+use for "the current version"; `SaveEnvelopeV1`…`V4` name specific historical
 shapes and should appear only in `save-schema.ts` and `save-migrations.ts`.
 V2 exists because #50 changed the entity section; V3 because #70 added
-`simulation` — see the two version sections below.
+`simulation`; V4 because #259 changed the *units* of the need levels inside
+it — see the three version sections below.
 
 ### Adding an optional field without a version bump
 
@@ -118,14 +119,15 @@ obstacle to producing such a save — it is an integrity check, not a signature
 byte in a stored `chunkSize` has the same effect. Issue #102.
 
 **This narrows what counts as a valid save, at every version.**
-`worldSnapshotSchema` is shared by the V1, V2 and V3 payload schemas, so a
+`worldSnapshotSchema` is shared by every payload schema, V1 through V4, so a
 save declaring `chunkSize: 65` or more is now rejected as `invalid-shape`
 wherever it appears, and `SparseWorld.fromSnapshot` rejects the same value as
 a `WorldSnapshotError`. Under `AGENTS.md` boundary 7 that is a format
 decision, so it is recorded here rather than left in a schema line:
 
-- **No migration step is added and `SAVE_SCHEMA_VERSION` stays at 3**, because
-  there is no save in the field to migrate. `chunkSize` is always written from
+- **No migration step was added and `SAVE_SCHEMA_VERSION` was not bumped for
+  it** (it stood at 3 when #102 landed), because there is no save in the field
+  to migrate. `chunkSize` is always written from
   a live `SparseWorld`, and the only production construction site is
   `createNewSimulationRuntime`, which uses `32`; the widest value anywhere in
   this repository, tests included, is `32`, and both checked-in V1 fixtures
@@ -322,8 +324,8 @@ const detachedJsonValueSchema = jsonValueSchema.transform((value) => structuredC
 ```
 
 and `queuedCommandSchema.payload` uses it. One line closes both trust entry
-points across all three payload versions and the V1 → V2 → V3 migration chain,
-because `kernelSnapshotSchema` is shared by all of them.
+points across all four payload versions and the V1 → V2 → V3 → V4 migration
+chain, because `kernelSnapshotSchema` is shared by all of them.
 
 `tests/unit/persistence-save-schema-aliasing.test.ts` pins the detachment from
 both entry points, and also pins a rule about the *module*: no object-literal
@@ -422,39 +424,99 @@ trade-off to be recorded rather than decided in implementation code.
   A step never receives or returns the caller's original object reference in
   a way that lets it mutate the source fixture.
 
-`saveMigrationChain` registers the V1, V2 and V3 schemas and the `1 -> 2` and
-`2 -> 3` steps. The chain-walking, per-step validation and immutability
-guarantees are also exercised against a synthetic multi-version fixture in
-`tests/unit/persistence-migration.test.ts`, independent of the real save
-versions; the real upgrades are covered in
-`tests/migrations/save-v1-to-v2.test.ts` and
-`tests/migrations/save-v2-to-v3.test.ts`, the latter including the two-hop
-V1 → V2 → V3 walk a save from the first release actually takes.
+`saveMigrationChain` registers the V1, V2, V3 and V4 schemas and the `1 -> 2`,
+`2 -> 3` and `3 -> 4` steps. The chain-walking, per-step validation and
+immutability guarantees are also exercised against a synthetic multi-version
+fixture in `tests/unit/persistence-migration.test.ts`, independent of the real
+save versions; the real upgrades are covered in
+`tests/migrations/save-v1-to-v2.test.ts`,
+`tests/migrations/save-v2-to-v3.test.ts` and
+`tests/migrations/save-v3-to-v4.test.ts`, the last two each walking a frozen
+V1 fixture the whole way in one decode, which is what a save from the first
+release actually gets.
 
-### Adding a V4 later
+### Adding a V5 later
+
+The steps below are what V4 (#259) did, and are the pattern to follow.
 
 1. Add the new interface/type and a `.strict()` Zod schema for it, alongside
    the existing ones — never edit a historical schema to match new code.
-2. `saveMigrationChain.registerSchema(zodVersionSchema(4, v4Schema))`.
-3. `saveMigrationChain.registerMigration({ fromVersion: 3, toVersion: 4, migrate })`,
+   Where two versions differ only in a bound or a leaf type, make the shared
+   part a **factory** parameterised by that difference (as
+   `sessionSystemsSchemaFor` is) rather than copying several hundred lines:
+   the historical version is then frozen by the argument it is instantiated
+   with, and the two shapes cannot drift apart in any other respect.
+2. `saveMigrationChain.registerSchema(zodVersionSchema(5, v5Schema))`.
+3. `saveMigrationChain.registerMigration({ fromVersion: 4, toVersion: 5, migrate })`,
    pure and side-effect-free, in `src/persistence/save-migrations.ts`. If it
    changes the payload, recompute `checksum` in the step (see "Checksum").
-4. Bump `SAVE_SCHEMA_VERSION` to `4`. Call sites use the version-neutral
+4. Bump `SAVE_SCHEMA_VERSION` to `5`. Call sites use the version-neutral
    `SaveEnvelope`/`SavePayload`/`TrustedSaveEnvelope` aliases, so this step no
-   longer sweeps a rename through the repository the way V2 did.
+   longer sweeps a rename through the repository the way V2 did — but a test
+   that hand-writes an envelope with a *literal* version does not benefit, so
+   prefer `SAVE_SCHEMA_VERSION` there too.
 5. Keep every older fixture in `tests/fixtures/persistence/` checked in
    unchanged, and add a test asserting they migrate to the new shape
-   correctly. `tests/fixtures/persistence/` holds V1 saves only; V2 and V3
+   correctly. `tests/fixtures/persistence/` holds V1 saves only; V2, V3 and V4
    test inputs are *derived* from those frozen V1 files by running the frozen
    migrations over them (see `save-v2-to-v3.test.ts`), which keeps
    `git diff -- tests/fixtures/` empty and keeps the inputs independent of the
    code under test. Follow that pattern rather than checking in a fixture
-   generated by the build you are changing.
+   generated by the build you are changing. Where the frozen fixtures cannot
+   reach the case under test — none of them carries a `simulation` section, so
+   none can exercise a change *inside* it — construct the older payload by
+   hand from values chosen in the test, as `save-v3-to-v4.test.ts` does, so
+   the expected output is still not computed by the code under test.
 6. If the new version adds *simulation* state, extend `EncodedSessionSystems`
    and its Zod mirror together, and decide per subsystem whether the state is
    authoritative or derived — recording the answer under "What is deliberately
    excluded from the payload" above. An undecided subsystem is the failure
    mode #70 existed to fix.
+
+## V4: need levels are stored scaled (#259)
+
+`NeedsComponent` stored each need as a whole 0-255 level in a `Uint8Array`,
+and `NeedsDecaySystem` decayed it every ten ticks through `decayNeed`, which
+rounded. Every rate in `NEED_DECAY_PER_TICK` is far below one level per tick,
+so the per-interval step was at most `0.8` and for five of the six needs at
+most `0.5` — and `Math.round(n - d) === n` for any integer `n` and any
+`d <= 0.5`. Those five needs were **fixed points**: they never moved, at any
+level, for any number of ticks. Only `bladder` decayed.
+
+The fix stores the level multiplied by `NEED_SCALE` (200) in a `Uint16Array`,
+so the quantum is below every decay step instead of above most of them. 200 is
+the smallest scale at which every rate is a whole number of stored units per
+tick, which makes decay exactly linear in `ticksElapsed` and therefore
+independent of the batch size the system happens to use — see `needs.ts` for
+why that matters beyond this defect.
+
+**Why this is a version bump rather than the optional-field pattern above.**
+The `simulation.prisoners.components.needs` arrays did not change *shape*;
+they changed *meaning*. A `hunger` of `200` is a nearly-satisfied prisoner in
+a V3 save and a starving one read as V4, and nothing in the value says which
+version wrote it. The two conditions the optional-field section names are
+therefore both violated: absence is not what distinguishes the versions, and
+an existing field changed meaning. `migrateSaveEnvelopeV3ToV4` multiplies
+every level by `NEED_SCALE` exactly once; skipping it would load every
+prisoner in every existing save at a two-hundredth of their real levels.
+
+The migration is total and lossless in the direction it runs: a V3 level is a
+whole number in `0..255` by V3's own (now frozen) schema, so every product
+lands inside V4's bound, and `255 * 200` is exactly `NEED_MAX_SCALED`. It does
+not invent a sub-level remainder — a V3 save genuinely did not record one, and
+zero is what "exactly at level N" means. A V3 save with no `simulation`
+section stays without one, for the same reason `migrateSaveEnvelopeV2ToV3`
+fabricates nothing.
+
+**What it costs.** Six arrays per save now carry five-digit values where they
+carried three: about 2 bytes per prisoner per need, ~36 KB for a
+3,000-prisoner save, and ~59 KiB in the capacity-shaped counterfactual the
+"Prisoner components" section quotes. The component arrays themselves double
+from `Uint8Array` to `Uint16Array` — 30 KB at `DEFAULT_PRISONER_CAPACITY`.
+Both were accepted against the alternative of carrying a per-(entity, need)
+fractional remainder, which keeps the byte range but adds a second
+authoritative array per need that must itself be snapshotted in canonical
+order, and puts floating-point state into the payload.
 
 ## V3: the save carries the prison, not just the plot (#70)
 
@@ -507,8 +569,9 @@ Two properties the save boundary must not break, both from ADR 0015:
   would undo that guarantee at the boundary instead of honouring it.
 - **The registry's `version` is its own**, independent of
   `SAVE_SCHEMA_VERSION` — the same separation ADR 0003 gives the worker
-  snapshot. It is pinned to a literal in the V3 schema, so a future registry
-  shape arriving inside a V3 envelope is rejected as `invalid-shape` rather
+  snapshot. It is pinned to a literal in the payload schema (one
+  `actorIdentitySnapshotSchema` serves V3 and V4), so a future registry shape
+  arriving inside one of those envelopes is rejected as `invalid-shape` rather
   than half-read.
 
 ### Session wiring for identity
@@ -572,16 +635,23 @@ original `'open'`.
 ### Prisoner components: allocated prefix, not capacity, and not RLE
 
 `DEFAULT_PRISONER_CAPACITY` is 5,000 slots and there are eighteen per-prisoner
-arrays. Writing them at capacity would cost ~240 KiB (245,332 bytes) in every
+arrays. Writing them at capacity would cost ~298 KiB (305,332 bytes) in every
 save regardless of population — the same mistake #50 removed from `entities`,
 at eighteen times the size. That is measured, not derived: the encoded arrays
 are `readonly number[]`, so the cost is digit widths rather than element sizes,
-and 240 KiB is the size at 5,000 slots with every array at its constructor
-default (needs at `NEED_MAX` = 255, `actionIndex` at its `-1` sentinel, the
-rest zero) — the empty-prison case this claim is about. A populated mid-game
-prison, with seven-digit tick stamps in three of the arrays, measures ~337 KiB
-at the same capacity. They are written across the store's **allocated prefix**
-(`maxActiveIndex + 1`) instead.
+and 298 KiB is the size at 5,000 slots with every array at its constructor
+default (needs at `NEED_MAX_SCALED` = 51,000, `actionIndex` at its `-1`
+sentinel, the rest zero) — the empty-prison case this claim is about. A
+populated mid-game prison, with seven-digit tick stamps in three of the arrays,
+measures ~425 KiB at the same capacity. They are written across the store's
+**allocated prefix** (`maxActiveIndex + 1`) instead.
+
+Both figures moved with V4 (#259): a need level is stored scaled by
+`NEED_SCALE`, so the six need arrays carry five-digit values where they carried
+three, which is ~59 KiB across 30,000 elements at this capacity. Before that
+change the same two cases measured ~240 KiB (245,332 bytes) and ~337 KiB.
+`tests/unit/session-component-payload-size.test.ts` is what keeps this
+paragraph and `session-systems.ts`'s copy of it from drifting apart again.
 
 The prefix, not just the live indices, because nothing clears a component
 array when an entity is destroyed: a freed index inside the prefix keeps
@@ -648,7 +718,8 @@ unchanged the recomputed value necessarily equals the stored one, and a test
 pins that so a future edit cannot start rewriting the payload unnoticed.
 
 The V1 fixtures in `tests/fixtures/persistence/` are checked in **unchanged**
-and now migrate two hops to V3.
+and migrated two hops to V3 when #70 landed; since #259 they walk three, to
+V4.
 
 ### Measured size impact
 
@@ -657,6 +728,14 @@ directly comparable. These tiers populate prisoners and construction only, so
 the security/contraband/incident sections are near-empty *by construction*,
 not by encoding — a prison with guards and incidents pays for them
 proportionally.
+
+**Measured at V3**, and left at V3 deliberately: the table's subject is what
+adding the `simulation` section cost, so re-measuring the "before" column
+under a later encoding would stop it answering that question. V4 (#259) adds a
+known, population-proportional delta on top of every "after" figure — two
+bytes per prisoner per need, so ~0.3 KiB at 25 prisoners and ~35 KiB at 3,000
+— which does not change the shape of the comparison. Reproduce either version
+with the command below.
 
 | tier | prisoners | envelope before (V2) | after (V3) | `simulation` | of which `prisoners` | `identity` |
 | --- | --- | --- | --- | --- | --- | --- |

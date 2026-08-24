@@ -49,19 +49,25 @@ import type { SimulationRuntime } from './new-session';
  *    runtime's mutable configuration arrays) it sorts explicitly.
  * 2. **Population-shaped, never capacity-shaped.** `DEFAULT_PRISONER_CAPACITY`
  *    is 5,000 slots; writing eighteen per-prisoner component arrays at that
- *    allocation would cost **~240 KiB (245,332 bytes) in every save even for a
+ *    allocation would cost **~298 KiB (305,332 bytes) in every save even for a
  *    prison with no prisoners at all** — the exact mistake #50 removed from
  *    the entity ledger. See `encodePrisonerComponents` for what is written
  *    instead.
  *
  *    That figure is the JSON size of the encoded shape at 5,000 slots with
- *    every array at its constructor default (needs at `NEED_MAX` = 255,
- *    `actionIndex` at its `-1` sentinel, the rest zero), measured rather than
- *    derived — the encoded arrays are `readonly number[]`, so the cost is
- *    digit widths and not element sizes. A populated mid-game prison, where
- *    three of the arrays hold seven-digit tick stamps, measures ~337 KiB at
- *    the same capacity. `docs/PERSISTENCE.md` states the same 240 KiB for the
- *    same claim; this comment said ~300 KiB, which is neither figure (#169).
+ *    every array at its constructor default (needs at `NEED_MAX_SCALED` =
+ *    51,000, `actionIndex` at its `-1` sentinel, the rest zero), measured
+ *    rather than derived — the encoded arrays are `readonly number[]`, so the
+ *    cost is digit widths and not element sizes. A populated mid-game prison,
+ *    where three of the arrays hold seven-digit tick stamps, measures ~425 KiB
+ *    at the same capacity. `docs/PERSISTENCE.md` states the same two figures
+ *    for the same claims; this comment once said ~300 KiB for the first, which
+ *    was neither figure (#169).
+ *
+ *    Both numbers moved with save-schema V4 (#259): needs are stored scaled by
+ *    `NEED_SCALE`, five digits rather than three, across 30,000 elements at
+ *    this capacity. The pre-V4 figures were ~240 KiB (245,332 bytes) and
+ *    ~337 KiB.
  */
 
 // --- Prisoner components -----------------------------------------------
@@ -105,7 +111,15 @@ export interface EncodedPrisonerComponents {
   readonly riskTier: readonly number[];
   readonly classificationGroupIndex: readonly number[];
   readonly intakeStage: readonly number[];
-  /** Keyed by need id rather than positional, so reordering `NEED_IDS` cannot silently swap two needs' levels in an existing save. */
+  /**
+   * Keyed by need id rather than positional, so reordering `NEED_IDS` cannot
+   * silently swap two needs' levels in an existing save.
+   *
+   * Values are in `NeedsComponent`'s **stored units** (`level * NEED_SCALE`),
+   * not whole 0-255 levels, so a restore recovers the sub-level remainder a
+   * mid-interval save was holding. That change of units is what makes this a
+   * V4 payload rather than a V3 one; see `docs/PERSISTENCE.md`.
+   */
   readonly needs: { readonly [Need in NeedId]: readonly number[] };
   readonly actionIndex: readonly number[];
   readonly actionPhase: readonly number[];
@@ -281,7 +295,8 @@ export function encodePrisonerComponents(prisoners: SimulationRuntime['prisoners
  * the same capacity and overwriting only the written prefix, so an
  * unallocated slot restores to exactly the value it holds in a never-saved
  * session (`intakeStage: 'queued'`, `actionIndex: -1`, every need at
- * `NEED_MAX`) rather than to zero.
+ * `NEED_MAX`, which the array holds as `NEED_MAX_SCALED`) rather than to
+ * zero.
  */
 export function decodePrisonerComponents(
   encoded: EncodedPrisonerComponents,

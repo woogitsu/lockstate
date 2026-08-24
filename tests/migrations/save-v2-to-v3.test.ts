@@ -64,10 +64,12 @@ describe('save-schema V2 -> V3 migration', () => {
       expect(result.value.updatedAt).toBe(v2.updatedAt);
     });
 
-    it(`walks a checked-in V1 "${name}" fixture all the way to V3 in one decode, unmodified`, () => {
-      // The two-hop path: V1 -> V2 -> V3, driven by the chain rather than by
-      // calling either step directly. This is what a player with a save from
-      // the first release actually gets.
+    it(`walks a checked-in V1 "${name}" fixture all the way to the current version in one decode, unmodified`, () => {
+      // The full path -- V1 -> V2 -> V3 when this test was written, V1 -> V2
+      // -> V3 -> V4 since #259 -- driven by the chain rather than by calling
+      // any step directly. This is what a player with a save from the first
+      // release actually gets, which is why it asserts
+      // `SAVE_SCHEMA_VERSION` rather than a literal.
       const before = JSON.stringify(fixture);
       const result = decodeSaveEnvelope(fixture);
       expect(result).toMatchObject({ ok: true, migrated: true });

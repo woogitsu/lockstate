@@ -494,7 +494,7 @@ Three columns had no check of any kind:
 
 | column | now | why this number |
 | --- | --- | --- |
-| `save_versions.save_schema_version` | `>= 1` | `schemaVersionSchema = z.number().int().positive()`. **Bounded, not pinned** to `SAVE_SCHEMA_VERSION` (3): the column records the payload's version *as stored*, and a V1 or V2 row is legitimate history the migration chain still reads, so a pin would refuse the past as well as the future |
+| `save_versions.save_schema_version` | `>= 1` | `schemaVersionSchema = z.number().int().positive()`. **Bounded, not pinned** to `SAVE_SCHEMA_VERSION` (4 since #259): the column records the payload's version *as stored*, and a V1, V2 or V3 row is legitimate history the migration chain still reads, so a pin would refuse the past as well as the future. `20260824130000_bound_scalar_columns.sql`'s own comment says 3, which was current when that migration was authored — an applied migration is a historical artefact and is not edited afterwards |
 | `challenge_submissions.challenge_version` | `>= 1` | the identical constraint `challenge_definitions_version_check` already places on the same vocabulary |
 | `challenge_submissions.ranked_score` | NULL or finite | see below |
 
