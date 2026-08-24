@@ -210,6 +210,16 @@ begin
   -- both malformed and foreign the caller is told about the prefix.
   v_prefix := split_part(new.storage_path, '/', 1);
 
+  -- `is distinct from` here is defensive rather than load-bearing, and that
+  -- is said out loud rather than left to look stronger than it is: both
+  -- operands are non-null by construction on the two lines above --
+  -- `split_part` returns the empty string, never NULL, and a NULL `v_owner`
+  -- has already returned. Rewriting it as `<>` was tried and the pgTAP
+  -- suite stayed green, so it is reported as a surviving mutation in the
+  -- pull request for #105 findings 6, 7, 9 and 11. It is kept because the
+  -- NULL-safe spelling is what every comparison in this schema uses (see
+  -- `create_save_version()`), and because a future edit that makes either
+  -- operand nullable should not silently turn this check into UNKNOWN.
   if v_prefix is distinct from v_owner::text then
     raise exception 'save version storage path must live under the owning account''s prefix'
       using errcode = 'LS004',

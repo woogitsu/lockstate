@@ -301,6 +301,16 @@ begin
       -- A concurrent append committed this exact event between the lookup
       -- and the insert. Loop once to find it and answer `duplicate`.
       --
+      -- NO SINGLE-SESSION ASSERTION REACHES THIS HANDLER, and rather than
+      -- implying otherwise: disabling it leaves the whole pgTAP suite
+      -- green, which the pull request for #105 findings 6, 7, 9 and 11
+      -- reports as a surviving mutation. A pgTAP suite is one session, and
+      -- the situation this answers needs two. It is not dead code -- the
+      -- two-session race was run in all four combinations of this handler
+      -- and the lock above, and either one alone answers `duplicate` while
+      -- neither raises `23505`. The lock's existence and keying ARE
+      -- asserted, through `pg_locks`, in suite 002.
+      --
       -- On the second attempt, re-raise: the lookup has already failed to
       -- find a row for this key once after a `unique_violation`, so the
       -- violated constraint is not one of the two dedup keys and
