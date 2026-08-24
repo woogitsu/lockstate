@@ -14,6 +14,15 @@
 #     itself -- see docs/CLOUD_SAVE.md for what that does and does not prove.
 #     That step lives in scripts/provision-postgres.sh, shared with CI.
 #
+# It deliberately does NOT provision everything CI provisions. scripts/ holds
+# four provision-*.sh; this calls one. The two it skips are expensive rather
+# than forgotten -- `git lfs pull` is metered bandwidth and the Playwright
+# browsers are a ~280 MiB download -- so instead of paying that on every
+# session start, the summary printed at the end of this hook names what was
+# skipped and which commands it disables. Issue #138: that gap had been
+# rediscovered and re-explained in at least three consecutive sessions, and a
+# line of output is cheaper than another handover note.
+#
 # Idempotent: every step checks before it acts, so `resume` and `clear`
 # re-runs are cheap.
 set -euo pipefail
@@ -92,5 +101,51 @@ pnpm install --frozen-lockfile
 if ! bash "${PROJECT_DIR}/scripts/provision-postgres.sh"; then
   log "WARNING: postgres provisioning failed; pnpm verify:sql will not run"
 fi
+
+# --- What this hook did not provision ---------------------------------
+# CI runs scripts/provision-git-lfs.sh (assets, browser jobs) and
+# scripts/provision-playwright-browsers.sh (browser job); this hook runs
+# neither, because `git lfs pull` is metered bandwidth and the browsers are a
+# ~280 MiB download, and most sessions need neither.
+#
+# The cost of leaving that unsaid was measured: issue #138 records the
+# LFS-pointer browser failure being rediscovered, and explained again in a
+# handover, in at least three consecutive sessions. So report the state instead
+# of assuming it -- the checks below look at what is actually on disk, because
+# some container images ship a pre-baked Chromium even though this hook never
+# installs one, and "not provisioned" would then be false.
+report_unprovisioned() {
+  local lfs_sample="${PROJECT_DIR}/public/assets/actors/actor.guard.base.idle.png"
+
+  if [ -f "$lfs_sample" ] && head -c 64 "$lfs_sample" | grep -q 'git-lfs.github.com'; then
+    log "NOT provisioned: Git LFS content. The atlas PNGs under public/assets/ and"
+    log "  public/game-content/ are ~131-byte LFS pointer text files, not images."
+    log "  This DISABLES 'pnpm verify:assets' -- the atlas validator correctly"
+    log "  refuses a pointer -- and it makes the browser suite's \"the art is real"
+    log "  image data\" test in tests/browser/app-shell.spec.ts fail on a decode"
+    log "  error. Both are the EXPECTED BASELINE in this container, not a"
+    log "  regression, and not something to debug or work around."
+    log "  To get the real bytes: bash scripts/provision-git-lfs.sh && git lfs pull"
+    log "  (metered bandwidth -- that is why this hook leaves it to you)."
+  else
+    log "Git LFS content looks present; pnpm verify:assets can run."
+  fi
+
+  local browsers="${PLAYWRIGHT_BROWSERS_PATH:-$HOME/.cache/ms-playwright}"
+
+  if compgen -G "${browsers}/chromium*" >/dev/null 2>&1; then
+    log "Chromium found in ${browsers} (shipped by the image, not by this hook);"
+    log "  pnpm test:browser can launch."
+  else
+    log "NOT provisioned: the Playwright browsers. Nothing is in ${browsers}, so"
+    log "  'pnpm test:browser' fails at launch with \"Executable doesn't exist\"."
+    log "  To install: bash scripts/provision-playwright-browsers.sh (~280 MiB)."
+  fi
+
+  log "Everything else -- pnpm typecheck, pnpm test, pnpm build, pnpm verify,"
+  log "  pnpm verify:sql -- is provisioned and expected to pass."
+}
+
+report_unprovisioned
 
 log "done"

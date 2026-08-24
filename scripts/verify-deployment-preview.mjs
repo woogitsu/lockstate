@@ -23,6 +23,13 @@ import { fileURLToPath } from 'node:url';
  * clickjackable, with a full referrer and no permissions policy, and nothing
  * saying a word (issue #138).
  *
+ * That deliberate independence leaves the opposite gap open -- a header added
+ * to `public/_headers` and never added here would be asserted by nothing -- so
+ * `tests/foundation/ci-configuration-contract.test.ts` closes it from the other
+ * side: it reads `public/_headers` and requires every header on `/*` to appear
+ * in this list with the same value. The two directions catch different
+ * mistakes and neither substitutes for the other.
+ *
  * Note what this does NOT cover: there is no Content-Security-Policy at all,
  * which matters because the bundle carries ~1.6 MB of Phaser. Adding one has a
  * real chance of breaking the renderer, so it is its own change; see #105.

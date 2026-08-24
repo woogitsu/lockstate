@@ -13,10 +13,23 @@ public/game-content/**/*.png filter=lfs diff=lfs merge=lfs -text
 #     the literal carries \r and the aggregate does not, so two assertions
 #     failed on Windows while passing in CI, printing a have/want diff whose
 #     two sides look identical.
-#   * A CRLF .sh file fails on Linux with a bad-interpreter error, which would
-#     break scripts/provision-postgres.sh and .claude/hooks/session-start.sh
-#     if either were ever run from a Windows working tree.
+#   * A CRLF file with a shebang fails on Linux with a bad-interpreter error,
+#     because the \r becomes part of the interpreter path. That covers the .sh
+#     scripts -- scripts/provision-*.sh, .claude/hooks/session-start.sh,
+#     scripts/check-deploy-secrets.sh -- and also scripts/verify-supabase-sql.mjs,
+#     which is mode 755 and starts `#!/usr/bin/env node`. The .mjs case was
+#     missed until issue #138: the rationale above was written about executable
+#     scripts, but the patterns only listed the two extensions, so the one
+#     executable script that is neither .sh nor .sql was pinned by nothing.
+#
+# `.mjs` is pinned by extension rather than only where a shebang exists today,
+# to match how the two patterns above already work: the next executable .mjs
+# then needs no change here. tests/foundation/ci-configuration-contract.test.ts
+# asserts the coverage mechanically -- it takes the mode bits from
+# `git ls-files -s` and the resolved attribute from `git check-attr`, so a new
+# executable script with a shebang and no matching pattern fails the suite.
 #
 # The committed blobs are already LF; this only pins what lands on disk.
 *.sql text eol=lf
 *.sh text eol=lf
+*.mjs text eol=lf
