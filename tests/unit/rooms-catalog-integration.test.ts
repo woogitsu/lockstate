@@ -3,14 +3,34 @@ import { defaultRoomContentRegistry } from '../../src/content';
 import { defaultObjectRegistry } from '../../src/content/object-catalog';
 import { projectRoomDetail } from '../../src/simulation/presentation/room-projection';
 import { RoomInstanceRegistry } from '../../src/simulation/prisoners/room-instance-registry';
-import { buildRoomRegistryFromCatalog, defaultRoomRegistry, roomDefinitionFromCatalog } from '../../src/simulation/rooms/definition';
+import { buildRoomRegistryFromCatalog, roomDefinitionFromCatalog } from '../../src/simulation/rooms/definition';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 
-describe('defaultRoomRegistry is built from issue #23s validated content catalog', () => {
+/**
+ * The registry these assertions read, built here rather than imported.
+ *
+ * `src/simulation/rooms/definition.ts` used to export a module-level
+ * `defaultRoomRegistry` built eagerly at import. After #181 deleted
+ * `RoomSystem` its only reader was this file, so #182 finding 2 recorded it as
+ * an exported value with no consumer in `src/` -- and building it here rather
+ * than keeping a production export alive for a test is the option that loses
+ * nothing: `buildRoomRegistryFromCatalog` is the live API, and this file was
+ * already importing it alongside the singleton.
+ *
+ * The alternative #182 raises -- widening
+ * `tests/foundation/unconsumed-content-contract.test.ts` to cover exported
+ * values whose only importer is under `tests/` -- was measured rather than
+ * argued: **258** exports are in that position. A gate needing 258 allow-list
+ * entries is a list nobody reads, so the singleton goes and the gate does not
+ * grow.
+ */
+const catalogRegistry = buildRoomRegistryFromCatalog();
+
+describe('the catalog registry is built from issue #23s validated content catalog', () => {
   it('has the same number of entries as the content catalog, id-for-id', () => {
     const catalogEntries = defaultRoomContentRegistry.all();
     for (const entry of catalogEntries) {
-      const runtimeDefinition = defaultRoomRegistry.getById(entry.id);
+      const runtimeDefinition = catalogRegistry.getById(entry.id);
       expect(runtimeDefinition).toBeDefined();
       expect(runtimeDefinition?.numericId).toBe(entry.numericId);
       expect(runtimeDefinition?.requirements).toEqual(entry.requirements);
@@ -18,7 +38,7 @@ describe('defaultRoomRegistry is built from issue #23s validated content catalog
   });
 
   it('resolves a human-readable name from the nameKey, not the raw key', () => {
-    const cell = defaultRoomRegistry.getById('room.cell');
+    const cell = catalogRegistry.getById('room.cell');
     expect(cell?.name).toBe('Cell');
   });
 
@@ -47,10 +67,10 @@ describe('defaultRoomRegistry is built from issue #23s validated content catalog
  * The lookup is worth keeping covered: zoning is stored as a `Uint8Array`
  * plane, so a numeric id is how a zoned tile refers to a room type at all.
  */
-describe('the catalog-driven defaultRoomRegistry resolves a room type by its numeric zoning id', () => {
+describe('the catalog-driven registry resolves a room type by its numeric zoning id', () => {
   it('resolves a known catalog room type', () => {
-    const cellNumericId = defaultRoomRegistry.getById('room.cell')!.numericId;
-    const resolved = defaultRoomRegistry.getByNumericId(cellNumericId);
+    const cellNumericId = catalogRegistry.getById('room.cell')!.numericId;
+    const resolved = catalogRegistry.getByNumericId(cellNumericId);
 
     expect(resolved).toBeDefined();
     expect(resolved?.id).toBe('room.cell');
@@ -61,7 +81,7 @@ describe('the catalog-driven defaultRoomRegistry resolves a room type by its num
     // from does, so the premise is checked there. If a room ever claims 250,
     // this test is asserting the wrong id and says so rather than passing.
     expect(defaultRoomContentRegistry.all().some((entry) => entry.numericId === 250)).toBe(false);
-    expect(defaultRoomRegistry.getByNumericId(250)).toBeUndefined();
+    expect(catalogRegistry.getByNumericId(250)).toBeUndefined();
   });
 });
 
