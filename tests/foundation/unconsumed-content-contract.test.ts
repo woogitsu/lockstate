@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { stripComments } from '../helpers/canonical-iteration';
 import { defaultContrabandRegistry } from '../../src/content/contraband-catalog';
 import { defaultItemRegistry } from '../../src/content/item-catalog';
 import { defaultObjectRegistry } from '../../src/content/object-catalog';
@@ -146,13 +147,13 @@ function collectTypeScriptFiles(directory: string): readonly string[] {
   return files;
 }
 
-/** Comments removed, so an id discussed in prose does not read as a reference. */
-function code(path: string): string {
-  return readFileSync(path, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
-}
-
 const consumerSources = [...collectTypeScriptFiles(join(ROOT, 'src')), ...collectTypeScriptFiles(join(ROOT, 'tests'))]
-  .map((path) => ({ where: relative(ROOT, path), text: code(path) }))
+  // Comments are stripped so an id discussed in prose does not read as a
+  // reference. `stripComments` is the shared one: it removes a trailing `//`
+  // comment as well as a whole-line one, which a local copy did not -- so a
+  // comment saying an id is *not* wired anywhere used to count as wiring it
+  // (#188).
+  .map((path) => ({ where: relative(ROOT, path), text: stripComments(readFileSync(path, 'utf8')) }))
   // The catalogs declare the ids; they cannot be their own consumers. This
   // file is excluded for the same reason -- its allowlists name every id it
   // is asserting about, so leaving it in would make every entry consumed.

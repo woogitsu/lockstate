@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { stripComments } from '../helpers/canonical-iteration';
 import { DEFAULT_LOCALE } from '../../src/content/localization';
 import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
 
@@ -55,24 +56,32 @@ function collectTypeScriptFiles(directory: string): readonly string[] {
   return files;
 }
 
-/** Source with comments removed, so prose naming a key cannot be mistaken for a declaration. */
-function code(path: string): string {
-  return readFileSync(path, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
-}
-
 interface Declaration {
   readonly field: string;
   readonly key: string;
   readonly where: string;
+  /** Line in the real file: `stripComments` preserves every newline. */
+  readonly line: number;
 }
 
 function scanDeclarations(): readonly Declaration[] {
   const declarations: Declaration[] = [];
   for (const path of collectTypeScriptFiles(SRC_ROOT)) {
+    // Comments are stripped so prose naming a key cannot be mistaken for a
+    // declaration. `stripComments` is the shared one, which replaces a block
+    // comment with its own newlines -- so `line` below is the line in the real
+    // file. A local copy used to delete block comments outright, which would
+    // have made every line number here silently wrong (#188).
+    const source = stripComments(readFileSync(path, 'utf8'));
     // The catalogs themselves author keys as record *keys*, not as `xKey:`
     // fields, so they are not skipped -- they simply produce no matches.
-    for (const match of code(path).matchAll(/\b([A-Za-z][A-Za-z0-9]*Key)\s*:\s*'([^']+)'/g)) {
-      declarations.push({ field: match[1]!, key: match[2]!, where: relative(SRC_ROOT, path) });
+    for (const match of source.matchAll(/\b([A-Za-z][A-Za-z0-9]*Key)\s*:\s*'([^']+)'/g)) {
+      declarations.push({
+        field: match[1]!,
+        key: match[2]!,
+        where: relative(SRC_ROOT, path),
+        line: source.slice(0, match.index).split('\n').length,
+      });
     }
   }
   return declarations;
@@ -98,7 +107,7 @@ describe('every localization key declared in src/ resolves in the bundled defaul
               !(LOCALIZATION_KEY_FIELDS as readonly string[]).includes(declaration.field) &&
               NON_LOCALIZATION_KEY_FIELDS[declaration.field] === undefined,
           )
-          .map((declaration) => `${declaration.field} (${declaration.where})`),
+          .map((declaration) => `${declaration.field} (${declaration.where}:${declaration.line})`),
       ),
     ];
     expect(
@@ -116,7 +125,7 @@ describe('every localization key declared in src/ resolves in the bundled defaul
       const text = localizer.format(declaration.key);
       // ADR 0011: an unresolved key renders as itself.
       if (text === declaration.key || text.trim().length === 0) {
-        unresolved.push(`${declaration.key} (${declaration.field} in ${declaration.where})`);
+        unresolved.push(`${declaration.key} (${declaration.field} in ${declaration.where}:${declaration.line})`);
       }
     }
 
