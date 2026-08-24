@@ -26,6 +26,7 @@ import {
   type HudViewModel,
 } from './ui/hud';
 import { hudClockFromWorkerMessage } from './ui/simulation-clock';
+import { hudCountsFromWorkerMessage } from './ui/simulation-counts';
 import { SimulationCommandSender } from './ui/simulation-commands';
 import { BuildTool } from './ui/build-tool';
 import { BUILDABLE_REGISTRY } from './simulation/construction';
@@ -268,20 +269,31 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     : EMPTY_HUD_VIEW_MODEL;
 
   /**
-   * Repaints the clock from what the worker last said, and from nothing else.
+   * Repaints the strip from what the worker last said, and from nothing else.
    *
    * Day, position within the day, mode and speed all come out of a
-   * `simulation/ready` or `simulation/clock-state` message. The worker
-   * publishes the second one unprompted while the clock runs (ADR 0003's
-   * "unsolicited ... do not pretend to be request responses"), which is what
-   * makes the day counter move without this thread ever counting time of its
-   * own. With no worker, no session, or a stopped one, the clock reads
-   * unknown -- see `EMPTY_HUD_VIEW_MODEL`.
+   * `simulation/ready` or `simulation/clock-state` message; the prisoner,
+   * staff, room, incident and contraband counts come out of a
+   * `simulation/status-counts` one. The worker publishes both unprompted
+   * while a session exists (ADR 0003's "unsolicited ... do not pretend to be
+   * request responses"), which is what makes the readouts move without this
+   * thread ever counting anything of its own. With no worker, no session, or
+   * a stopped one, the clock reads unknown and the counts read empty -- see
+   * `EMPTY_HUD_VIEW_MODEL`.
+   *
+   * One listener for both, because they land on one view model: a message
+   * that says nothing about either leaves the HUD alone rather than
+   * triggering a repaint.
    */
   client?.addListener((message) => {
     const clock = hudClockFromWorkerMessage(message, viewModel.clock);
-    if (clock === undefined) return;
-    viewModel = { ...viewModel, clock };
+    const counts = hudCountsFromWorkerMessage(message);
+    if (clock === undefined && counts === undefined) return;
+    viewModel = {
+      ...viewModel,
+      ...(clock === undefined ? {} : { clock }),
+      ...(counts === undefined ? {} : { counts }),
+    };
     hud?.update(viewModel);
   });
 

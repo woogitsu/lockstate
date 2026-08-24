@@ -45,7 +45,16 @@ test('StateMachine transitions from uninitialized to ready', () => {
   });
   
   expect(machine.state).toBe('paused');
-  expect(port.messages.length).toBe(2);
+  // Two answers to the initialize, in this order: the correlated
+  // `simulation/ready`, and then the first unsolicited status-counts readout
+  // -- which a restored session needs before any tick runs, or a prison with a
+  // population would sit behind a row of zeros until the player pressed play
+  // (issue #104, and `tests/unit/worker-status-counts.test.ts`).
+  expect(port.messages.map((message) => message.kind)).toEqual([
+    'protocol/handshake-accepted',
+    'simulation/ready',
+    'simulation/status-counts',
+  ]);
   expect(port.messages[1].kind).toBe('simulation/ready');
   // A new session starts stopped at tick zero, and says so. The main thread
   // paints its transport controls and its day counter from this message, so

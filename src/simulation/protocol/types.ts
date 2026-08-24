@@ -20,6 +20,7 @@ export const WORKER_TO_MAIN_MESSAGE_KINDS = [
   'simulation/clock-state',
   'simulation/command-result',
   'simulation/delta',
+  'simulation/status-counts',
   'simulation/snapshot',
   'simulation/event',
   'simulation/stopped',
@@ -402,6 +403,81 @@ const deltaMessageSchema = z
   })
   .strict();
 
+const countSchema = z.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
+
+/**
+ * The `counts` block of the status-strip projection
+ * (`src/simulation/presentation/status-strip-projection.ts`), field for
+ * field.
+ *
+ * Every field is a non-negative integer, and that is the whole payload.
+ * The projection also computes a clock position and the active regime
+ * blocks; neither is carried here (see `simulation/status-counts` below for
+ * why).
+ *
+ * `.strict()` means the two definitions cannot drift apart quietly: a count
+ * added to the projection and not added here is rejected by the main
+ * thread's decoder as `invalid-payload`, which
+ * `tests/unit/worker-status-counts.test.ts` turns into a failing test rather
+ * than a HUD that stops updating.
+ */
+export const statusCountsSchema = z
+  .object({
+    prisoners: countSchema,
+    prisonersInIntake: countSchema,
+    prisonersHighRisk: countSchema,
+    staff: countSchema,
+    staffUnassigned: countSchema,
+    rooms: countSchema,
+    roomCapacity: countSchema,
+    roomOccupants: countSchema,
+    activeIncidents: countSchema,
+    contrabandDiscovered: countSchema,
+  })
+  .strict();
+
+export type SimulationStatusCounts = DeepReadonly<
+  z.infer<typeof statusCountsSchema>
+>;
+
+/**
+ * The status-strip counts, as the worker sees them.
+ *
+ * **Always unsolicited.** Nothing requests it, so it has no `replyTo` field
+ * at all rather than an optional one -- `.strict()` therefore rejects a
+ * correlated form outright. That is the stronger half of ADR 0003 decision
+ * 2 ("Unsolicited deltas and domain events do not pretend to be request
+ * responses"): `simulation/clock-state` needs `replyTo` to be *optional*
+ * because it is also the acknowledgement of a `simulation/set-clock`, while
+ * this message, like `simulation/delta` and `simulation/event`, is only ever
+ * a publication. A fabricated `replyTo` would resolve whichever pending
+ * request on the main thread happened to share that id.
+ *
+ * `tick` is the tick the counts were read at, so a readout can never be
+ * mistaken for a statement about a later state than the one it describes.
+ *
+ * `schemaVersion` is the projection's own
+ * `HUD_VIEW_MODEL_SCHEMA_VERSION`, carried so the view-model shape can
+ * evolve without an envelope-version change (ADR 0003 decision 5). There is
+ * no `schemaId` beside it, unlike `versionedPayloadSchema`: that type exists
+ * to describe an *opaque* `data` blob, and here the message kind already
+ * names which schema the payload follows and every field of it is validated
+ * above.
+ */
+const statusCountsMessageSchema = z
+  .object({
+    ...requestEnvelopeFields,
+    kind: z.literal('simulation/status-counts'),
+    payload: z
+      .object({
+        tick: tickSchema,
+        schemaVersion: schemaVersionSchema,
+        counts: statusCountsSchema,
+      })
+      .strict(),
+  })
+  .strict();
+
 const snapshotMessageSchema = z
   .object({
     ...correlatedResponseEnvelopeFields,
@@ -457,6 +533,7 @@ export const workerToMainMessageSchema = z.discriminatedUnion('kind', [
   clockStateMessageSchema,
   commandResultMessageSchema,
   deltaMessageSchema,
+  statusCountsMessageSchema,
   snapshotMessageSchema,
   eventMessageSchema,
   stoppedMessageSchema,

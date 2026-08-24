@@ -41,6 +41,8 @@ Phaser objects are views. Their position, animation and visual state are derived
 
 The same rule applies to the browser UI: HUD panels read *projections* of authoritative state from `src/simulation/presentation/`, never simulation internals. The view-model, ordering, localization, bounded-value and paging contracts those projections guarantee — and the list of fields a panel would want that the simulation does not yet have — are defined in [HUD_PROJECTIONS.md](./HUD_PROJECTIONS.md).
 
+Two of them reach the status strip today, both over a worker-to-main publication rather than a snapshot poll. The worker publishes the tick (`simulation/clock-state`) and the composition root runs `projectClockPosition` on it; the worker runs `projectStatusStrip` itself and publishes its counts (`simulation/status-counts`). The remaining projections are computed and nothing carries them yet — HUD_PROJECTIONS.md section 8 says which, and what a row-carrying projection needs before it can be published on a cadence.
+
 ### Fixed-step simulation
 Simulation time advances in deterministic fixed ticks independent of rendering FPS. Systems run at explicit frequencies; expensive low-frequency systems must not run every tick merely for convenience.
 The `Kernel` orchestrates this logic using a strict 50ms tick interval and deterministic system ordering. See [DETERMINISM.md](./DETERMINISM.md) for full details on tick semantics, command ordering, and RNG ownership.
@@ -51,7 +53,7 @@ The simulation is designed to execute in a Dedicated Web Worker. The only suppor
 Boundary rules:
 - every received value is decoded through the direction-specific runtime validator before dispatch;
 - the main thread sends lifecycle requests, semantic clock controls and ordered commands, but never render-frame deltas or direct state mutations;
-- the worker publishes snapshots, deltas and domain events; renderer or Phaser objects never cross the boundary;
+- the worker publishes snapshots, deltas, projection readouts and domain events; renderer or Phaser objects never cross the boundary;
 - request/response operations use stable message IDs and explicit correlation;
 - malformed, wrong-direction or incompatible messages fail closed before simulation state is touched;
 - domain payload schemas evolve independently from the envelope protocol version;

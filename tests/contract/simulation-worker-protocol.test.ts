@@ -151,6 +151,26 @@ describe('simulation worker protocol', () => {
         payload: { baseTick: 11, tick: 12, delta: structuredPayload },
       },
       {
+        ...eventEnvelope,
+        kind: 'simulation/status-counts',
+        payload: {
+          tick: 12,
+          schemaVersion: 1,
+          counts: {
+            prisoners: 4,
+            prisonersInIntake: 1,
+            prisonersHighRisk: 2,
+            staff: 5,
+            staffUnassigned: 1,
+            rooms: 6,
+            roomCapacity: 158,
+            roomOccupants: 3,
+            activeIncidents: 0,
+            contrabandDiscovered: 7,
+          },
+        },
+      },
+      {
         ...responseEnvelope,
         kind: 'simulation/snapshot',
         payload: {
@@ -314,6 +334,74 @@ describe('simulation worker protocol', () => {
         true,
       );
     }
+  });
+
+  it('refuses a status-counts publication that presents itself as a reply, or that drops a count', () => {
+    const counts = {
+      prisoners: 4,
+      prisonersInIntake: 1,
+      prisonersHighRisk: 2,
+      staff: 5,
+      staffUnassigned: 1,
+      rooms: 6,
+      roomCapacity: 158,
+      roomOccupants: 3,
+      activeIncidents: 0,
+      contrabandDiscovered: 7,
+    };
+
+    // Nothing ever requests this message, so ADR 0003 decision 2 says it must
+    // not carry a `replyTo` -- and its schema has no slot for one at all,
+    // rather than an optional one as `simulation/clock-state` does. A
+    // fabricated `replyTo` would resolve whichever pending request on the
+    // main thread happened to share the id.
+    expectDecodeErrorCode(
+      decodeWorkerToMainMessage({
+        ...responseEnvelope,
+        kind: 'simulation/status-counts',
+        payload: { tick: 12, schemaVersion: 1, counts },
+      }),
+      'invalid-payload',
+    );
+
+    // The counts block is exhaustive and closed: a projection field that goes
+    // missing, and one that is added without being declared here, both fail
+    // at the boundary instead of reaching the HUD as `undefined`.
+    const { staff: _dropped, ...withoutStaff } = counts;
+    expectDecodeErrorCode(
+      decodeWorkerToMainMessage({
+        ...eventEnvelope,
+        kind: 'simulation/status-counts',
+        payload: { tick: 12, schemaVersion: 1, counts: withoutStaff },
+      }),
+      'invalid-payload',
+    );
+    expectDecodeErrorCode(
+      decodeWorkerToMainMessage({
+        ...eventEnvelope,
+        kind: 'simulation/status-counts',
+        payload: { tick: 12, schemaVersion: 1, counts: { ...counts, undeclared: 1 } },
+      }),
+      'invalid-payload',
+    );
+
+    // And a count is a count: no fractions, no negatives.
+    expectDecodeErrorCode(
+      decodeWorkerToMainMessage({
+        ...eventEnvelope,
+        kind: 'simulation/status-counts',
+        payload: { tick: 12, schemaVersion: 1, counts: { ...counts, prisoners: -1 } },
+      }),
+      'invalid-payload',
+    );
+    expectDecodeErrorCode(
+      decodeWorkerToMainMessage({
+        ...eventEnvelope,
+        kind: 'simulation/status-counts',
+        payload: { tick: 12, schemaVersion: 1, counts: { ...counts, rooms: 1.5 } },
+      }),
+      'invalid-payload',
+    );
   });
 
   it('accepts only finite, acyclic plain JSON values', () => {

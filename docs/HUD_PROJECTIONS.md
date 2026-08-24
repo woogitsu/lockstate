@@ -100,6 +100,13 @@ Page size is flat in population, which is the property that matters.
 per-prisoner object at all, so the always-visible strip is safe to
 re-project every frame at the stretch tier.
 
+The always-visible counts have no rows at all, which is what makes them
+publishable on a timer: `simulation/status-counts` (section 8) carries ten
+integers, so there is nothing here for this contract to bound. A
+projection that carries rows must be paged before it may be published on a
+cadence — a per-send cost that grows with the prison is exactly the failure
+that cadence was chosen to avoid.
+
 Rows are **not** sortable by an arbitrary column. Sorting 5,000 prisoners
 by need or by cell is `O(n log n)` plus a full materialisation each time the
 key changes; that needs an indexed accessor on the prisoner runtime, not a
@@ -119,14 +126,17 @@ Two projections deliberately drop state they can see:
   them from `IncidentAlert`. The timeline is not hidden: it records what
   visibly happened.
 
-### 7. The clock, and why it is the exception that proves the rule
+### 7. The clock, and the first route of its own
 
-Everything else in this document is a projection captured inside a session
-snapshot. The clock is not, because a snapshot is expensive: the render feed
-polls one every two seconds while the simulation runs, and each poll makes
-the worker capture the full session bundle. A day counter cannot be worth
-that, and a day counter that only moved every two seconds would be worse
-than none.
+The clock was the first projection with a published route rather than a
+snapshot behind it, and section 8 is the second. Everything *else* in this
+document still has neither: it is computed here and nothing carries it to a
+panel.
+
+A snapshot is why. It is expensive: the render feed polls one every two
+seconds while the simulation runs, and each poll makes the worker capture
+the full session bundle. A day counter cannot be worth that, and a day
+counter that only moved every two seconds would be worse than none.
 
 So the clock has its own route, and it is still a route the worker owns:
 
@@ -152,6 +162,52 @@ read. `tests/determinism/clock-transport.test.ts` drives the real worker
 state machine twice from one snapshot — once straight through, once paused
 and resumed at three speeds — and requires a byte-identical session at the
 same tick.
+
+### 8. The status-strip counts, and the pipe the rest will use
+
+The strip's five metrics — prisoners, staff, rooms, open incidents,
+contraband found — were literal zeros until issue #104. The counts existed
+(`projectStatusStrip`), the receiving mapping existed
+(`src/ui/hud/projection.ts`), and there was no pipe between them.
+
+There is now, and it is the same shape as the clock's:
+
+1. The worker projects `projectStatusStrip(...).counts` from its own
+   registries (`src/simulation/worker/status-counts.ts`) and **publishes**
+   an uncorrelated `simulation/status-counts`. Nothing requests it, so ADR
+   0003 gives it no `replyTo` field at all.
+2. It publishes at most every 500 ms, and only when a count has changed —
+   so a steady prison costs the boundary nothing. The interval is checked
+   before the projection runs, so the *projection* is rate-limited too, not
+   just the message.
+3. Every payload carries the tick it was read at, so a readout cannot drift
+   away from the state it claims to describe.
+4. `hudCountsFromWorkerMessage` (`src/ui/simulation-counts.ts`) turns it
+   into a `HudCountsViewModel`. Like the clock's translator it lives outside
+   `src/ui/hud/`, because the HUD may not import the simulation.
+
+Two things deliberately do **not** cross:
+
+- **Every `BoundedValue`.** The projection also computes `clock.dayProgress`
+  and `regime[].blockProgress`, and this channel drops both. `filled` is
+  floored here (section 4) while the HUD's own bars light `ceil` of their
+  segments (`filledSegments`, `src/ui/primitives/segmented-bar.ts`), so the
+  two disagree for every small-but-nonzero value. Which is right is an open
+  product question (issue #123, item 1), and carrying `filled` to a panel
+  would answer it by accident. The HUD keeps computing its own fill from the
+  numbers it is given.
+- **A prisoner capacity.** `counts.roomCapacity` sums every registered room
+  instance — canteens and yards included — and the HUD's occupancy bar is
+  documented as *cell* capacity with an over-capacity warning behind it. The
+  simulation has no cell-only total, so `HudCountsViewModel.prisonerCapacity`
+  stays `0` and the strip omits the bar rather than drawing a wrong
+  denominator.
+
+What this does **not** close: the other nine projections in this directory
+still have no route. Rosters, room lists, staff, security, contraband and
+incidents remain reachable only from their own tests, and each carries rows,
+so each needs the paging contract honoured (section 5) and a page *request*
+direction the protocol does not have yet — the counts needed neither.
 
 ## Gaps: fields a panel plausibly wants that the simulation does not have
 

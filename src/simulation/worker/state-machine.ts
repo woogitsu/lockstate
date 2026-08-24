@@ -11,13 +11,16 @@ import {
   type SessionSnapshotBundle,
 } from '../runtime/restore-session';
 import { FixedStepClock, type ClockControl } from '../clock/fixed-step-clock';
+import { HUD_VIEW_MODEL_SCHEMA_VERSION } from '../presentation/view-model';
 import { 
   type MainToWorkerMessage, 
   type ProtocolFaultCode,
+  type SimulationStatusCounts,
   type WorkerToMainMessage, 
   SIMULATION_PROTOCOL_VERSION 
 } from '../protocol/types';
 import type { JsonValue } from '../../shared/json';
+import { projectStatusCounts, statusCountsEqual } from './status-counts';
 
 export type WorkerState = 
   | 'uninitialized'
@@ -50,6 +53,30 @@ export interface MessagePortLike {
  * or what they compute.
  */
 export const CLOCK_STATE_PUBLISH_INTERVAL_MS = 250;
+
+/**
+ * How often, at most, the worker publishes `simulation/status-counts`.
+ *
+ * Twice the clock's interval, because the two readouts have different jobs.
+ * Day progress is a continuously moving quantity and a coarse step in it
+ * reads as a stutter; the counts are levels that only move when a discrete
+ * event happens -- a prisoner is admitted, a guard is hired, a room is
+ * registered, a search finds something -- and a counter that refreshes twice
+ * a second is indistinguishable to a player from one that refreshes every
+ * frame. Issue #104 asked for "a low fixed cadence"; this is the lower of
+ * the two cadences on the boundary.
+ *
+ * It is a **ceiling, not a rate**: `publishStatusCounts` skips the
+ * publication when nothing it reports has changed, so a session in which
+ * nothing happens posts nothing at all after the first readout.
+ *
+ * Wall-clock milliseconds rather than a count of ticks, for the same reason
+ * the clock's interval is: it governs how often the *main thread* is told,
+ * so it must be bounded in the units the main thread's frame budget is in.
+ * At x4 the same 500 ms covers four times as many ticks and still costs the
+ * boundary at most two messages a second.
+ */
+export const STATUS_COUNTS_PUBLISH_INTERVAL_MS = 500;
 
 /**
  * How `handleInitialize` reports a snapshot it refuses to restore: correlated
@@ -87,6 +114,10 @@ export class SimulationWorkerStateMachine {
   /** The tick the main thread was last told about, so an unchanged clock says nothing. */
   private _publishedTick: number | null = null;
   private _publishedAtMs = Number.NEGATIVE_INFINITY;
+  /** The counts the main thread was last told, so an unchanged prison says nothing. */
+  private _publishedCounts: SimulationStatusCounts | null = null;
+  /** When the counts were last *projected*, which bounds the projection's cost as well as the message rate. */
+  private _countsProjectedAtMs = Number.NEGATIVE_INFINITY;
 
   public constructor(
     private readonly port: MessagePortLike,
@@ -136,6 +167,7 @@ export class SimulationWorkerStateMachine {
       }
 
       this.publishClockState(now);
+      this.publishStatusCounts(now);
     } catch (e) {
       this.fault('internal-error', e instanceof Error ? e.message : String(e));
     }
@@ -179,6 +211,61 @@ export class SimulationWorkerStateMachine {
   private notePublished(tick: number, nowMilliseconds: number): void {
     this._publishedTick = tick;
     this._publishedAtMs = nowMilliseconds;
+  }
+
+  /**
+   * Tells the main thread how many prisoners, staff, rooms, open incidents
+   * and contraband finds the session has, unprompted.
+   *
+   * This is the channel issue #104 asked for: without it the HUD's counts
+   * are literal zeros with nothing behind them, and
+   * `src/simulation/presentation/` -- the read-model layer written for
+   * exactly this -- is unreachable from the interface.
+   *
+   * Strictly a *report*, exactly like `publishClockState`. It reads
+   * `Kernel.tick`, runs a pure projection over the runtime's registries and
+   * posts the result; it calls nothing on the kernel, steps nothing and
+   * writes nothing, so it cannot change what a tick computes
+   * (`tests/determinism/status-counts-publication.test.ts`).
+   *
+   * **Two gates, and their order is the point.** The interval is checked
+   * *before* projecting, so the projection runs at most twice a second
+   * rather than on all ~66 tick-loop wakes; the value comparison happens
+   * after, so a prison in which nothing counted here has changed posts
+   * nothing even though it was projected. Issue #104 names the failure mode
+   * both halves exist to avoid: "a per-tick firehose that serialises every
+   * projection every tick and eats the frame budget".
+   *
+   * Every payload carries the tick it was read at, so a readout can never be
+   * mistaken for a statement about a later state, and no list crosses at all
+   * -- the counts are ten integers, which is why `docs/HUD_PROJECTIONS.md`
+   * contract 5 (paging) has nothing to bound here yet.
+   */
+  private publishStatusCounts(nowMilliseconds: number): void {
+    if (this._kernel === null || this._runtime === null) return;
+    if (nowMilliseconds - this._countsProjectedAtMs < STATUS_COUNTS_PUBLISH_INTERVAL_MS) return;
+    this._countsProjectedAtMs = nowMilliseconds;
+
+    const tick = this._kernel.tick;
+    const counts = projectStatusCounts(this._runtime, tick);
+    if (this._publishedCounts !== null && statusCountsEqual(this._publishedCounts, counts)) return;
+    this._publishedCounts = counts;
+
+    this.post({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: crypto.randomUUID(),
+      // No `replyTo`, and the schema has no slot for one: nobody asked for
+      // this. ADR 0003 forbids an unsolicited message from presenting itself
+      // as a request response.
+      kind: 'simulation/status-counts',
+      payload: {
+        tick,
+        // The projection's own schema version, so the view-model shape can
+        // evolve without an envelope-version change (ADR 0003 decision 5).
+        schemaVersion: HUD_VIEW_MODEL_SCHEMA_VERSION,
+        counts,
+      },
+    });
   }
 
   /**
@@ -340,6 +427,14 @@ export class SimulationWorkerStateMachine {
         clock: this._clock.control,
       }
     });
+    // And one counts readout straight away, before any tick has run. A
+    // restored session arrives `paused`, so the tick loop is not running and
+    // the next publication would otherwise wait for the player to press
+    // play -- leaving a prison that has a population on screen as the same
+    // row of zeros this channel exists to remove. For a new session the
+    // counts genuinely are all zero, and this first readout is the baseline
+    // the later "publish only what changed" comparison is made against.
+    this.publishStatusCounts(this.performanceNow());
   }
 
   private handleSetClock(msg: Extract<MainToWorkerMessage, { kind: 'simulation/set-clock' }>): void {
