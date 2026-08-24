@@ -16,7 +16,7 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  * representation, it has tests -- and no code path in the shipped application
  * can produce one, so every one of those is exercised only by the suite.
  *
- * ## What it found on the first run
+ * ## What it found on the first run, and what it has moved since
  *
  * Six commands are declared. **One had a producer.**
  *
@@ -27,32 +27,33 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  * cancel, a zone, a purchase or an undo, and no other module built a
  * command object at all.
  *
- * ## What it reads today: three of six
+ * ## What it reads today: four of six
  *
- * `Undo` and `Redo` gained producers with #261, and their entries came out of
- * the list below in the same change -- which is the direction this file exists
- * to force. `HudIntent` now declares seven members, two of which are `undo`
- * and `redo`: the world's `KeyZ`/`KeyY` bindings report through `BuildTool` to
- * the HUD, the HUD dispatches its own intent, and `src/main.ts` turns it into
- * the command. The three that remain are named below with what is true about
- * each.
+ * `Undo` and `Redo` gained producers with #261's step 6, and their entries came
+ * out of the list below in the same change -- which is the direction this file
+ * exists to force. The transaction model itself is older than either: it has
+ * been in `ConstructionSystem` since #108, and what #261 added was the way to
+ * reach it. `HudIntent` now declares eight members, two of which are `undo` and
+ * `redo`: the world's `KeyZ`/`KeyY` bindings report through `BuildTool` to the
+ * HUD, the HUD dispatches its own intent, and `src/main.ts` turns it into the
+ * command.
  *
- * What that did **not** do is give the player something to feel. An undo
- * needs a placed order to reverse, and a placed order still stalls in
- * `'materials-pending'` for ever because nothing can buy materials (#89, and
- * the `PurchaseMaterials` entry below) -- so what a player can undo today is a
- * pending order, not a wall. The mechanism was complete, tested and
- * unreachable; it is now complete, tested and reachable, and it becomes
- * valuable the moment #89's buy surface lands.
- *
- * `PurchaseMaterials` is the one that made this worth writing. #249 gave the
+ * `PurchaseMaterials` is the one that made this worth writing, and it is the
+ * one this gate has since moved. On the first run it read: #249 gave the
  * simulation money, a price list and a delivery; #250 put the balance on the
- * status strip. A player now *sees* the starting balance and cannot spend a
- * unit of it, because the only thing that can issue a purchase is a test.
- * That is the exact condition `src/ui/hud/projection.ts`'s own comment warns
+ * status strip; and a player could *see* the starting balance and not spend a
+ * unit of it, because the only thing that could issue a purchase was a test.
+ * That was the exact condition `src/ui/hud/projection.ts`'s own comment warns
  * about -- "the same class of lie as a money counter with no economy" -- and
- * it shipped anyway, because nothing was counting. This gate would have
- * failed on `PurchaseMaterials` the moment it joined the union.
+ * it shipped anyway, because nothing was counting. #89 closed it by giving the
+ * Build panel a quantity stepper, so its entry came out of the list below and
+ * the count at the foot of this file moved with it. The gate fails in both
+ * directions by design, which is why closing #89 had to change this file: a
+ * record of unreachability cannot outlive the fact.
+ *
+ * So `CancelBuildOrder` and `ZoneRoom` are what the list below still holds,
+ * and the count is measured, not carried: four producers all in `src/main.ts`,
+ * two commands with none.
  *
  * ## What counts as a producer
  *
@@ -75,7 +76,7 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  *
  * - A producer that assembles the object from a variable (`{ type: kind, ... }`)
  *   is invisible to a text scan. None exists today, and the positive control
- *   below fails loudly if the one that does exist stops being found.
+ *   below fails loudly if any of the four that do exist stops being found.
  * - The scan cannot tell a live dispatch from dead code inside `src/`. It
  *   answers "can this command be constructed anywhere in the application",
  *   which is the weaker and checkable half of "can a player send it".
@@ -104,9 +105,7 @@ const AWAITING_PRODUCER: Readonly<Record<string, string>> = {
   CancelBuildOrder:
     'Handled at `construction/handler.ts` and reachable from `ConstructionSystem.cancelOrder`, but nothing in the application constructs the command. The Build panel places an order and offers no way to withdraw a *particular* one: since #261 a misplaced run can be taken back whole, by `KeyZ`, because undo pops the last transaction -- which is not the same control. Cancelling the third order of a twelve-segment run still needs a per-order control on the panel, which is #174 territory since that panel is already over its height budget.',
   ZoneRoom:
-    'Declared, schema-bounded and handled, with no producer. Its consumer stopped being a no-op in #261\'s zoning step -- `RoomZoningService` paints the world\'s zoning plane and registers a room instance, which is what finally moves the status strip\'s `Rooms` count -- so what is missing here is only the producer. Room zoning still has no interface at all: every member of `HudIntent` is a tab, a panel, the clock, a build order, the build tool or the undo pair, and none is about a room, so the whole zoning vocabulary is reachable only from a test. This is the command shape a room-designation tool would use when one exists.',
-  PurchaseMaterials:
-    'Added by #249 with the economy and still unreachable: `grep -rn "type: \'PurchaseMaterials\'" src/` returns nothing. The treasury balance is on the status strip as of #250, so the player sees money they cannot spend, and a build order therefore still cannot complete in a real session -- which is #89, unchanged in symptom and changed in cause. Blocked on a product decision about the buy surface, not on implementation.',
+    'Declared, schema-bounded and handled, with no producer. Its consumer stopped being a no-op in #261\'s zoning step -- `RoomZoningService` paints the world\'s zoning plane and registers a room instance, which is what finally moves the status strip\'s `Rooms` count -- so what is missing here is only the producer. Room zoning still has no interface at all: every member of `HudIntent` is a tab, a panel, the clock, a build order, a materials purchase, the build tool or the undo pair, and none is about a room, so the whole zoning vocabulary is reachable only from a test. This is the command shape a room-designation tool would use when one exists.',
 };
 
 function collectTypeScriptFiles(directory: string): readonly string[] {
@@ -147,15 +146,21 @@ describe('every declared simulation command either has a producer or is accounte
     // matters. An empty file list would make every command unproduced --
     // loud. A pattern that matched nothing, or a stripper that blanked every
     // file, would do the same in a way the file count cannot see, so the
-    // positive control names the one command that genuinely has a producer
-    // and where it is.
+    // positive control names every command that genuinely has a producer and
+    // where it is -- all four in `src/main.ts`, which is the composition root
+    // and the only place in `src/` that builds a command object.
     expect(producerSources.length).toBeGreaterThan(50);
     expect(COMMAND_TYPES.length).toBe(6);
 
     expect(producersOf('PlaceBuildOrder')).toEqual(['src/main.ts']);
+    expect(producersOf('PurchaseMaterials')).toEqual(['src/main.ts']);
+    expect(producersOf('Redo')).toEqual(['src/main.ts']);
     const main = producerSources.find((source) => source.where === 'src/main.ts');
-    expect(main, 'the one production producer of a simulation command is no longer where this gate looks for it').toBeDefined();
+    expect(main, 'the production producers of a simulation command are no longer where this gate looks for them').toBeDefined();
     expect(main!.text).toContain(`type: 'PlaceBuildOrder'`);
+    expect(main!.text).toContain(`type: 'PurchaseMaterials'`);
+    expect(main!.text).toContain(`type: 'Undo'`);
+    expect(main!.text).toContain(`type: 'Redo'`);
   });
 
   it('separates producing from consuming, so a handler branch is not mistaken for a dispatch', () => {
@@ -197,10 +202,10 @@ describe('every declared simulation command either has a producer or is accounte
   });
 
   it('holds no entry for a command that has since gained a producer', () => {
-    // The direction that makes the list a gate rather than a note. Giving the
-    // HUD a purchase control -- the most likely next change here, and #89's
-    // actual blocker -- fails this until the `PurchaseMaterials` entry goes,
-    // so the record cannot outlive the fact. Restricted to types still
+    // The direction that makes the list a gate rather than a note, and the
+    // one that has already fired: giving the HUD a purchase control -- #89's
+    // actual blocker -- failed this until the `PurchaseMaterials` entry went,
+    // so the record could not outlive the fact. Restricted to types still
     // declared, so a *removed* command fails the assertion below with its
     // reason rather than failing here with the wrong diagnosis.
     const declared = new Set(COMMAND_TYPES);
@@ -217,14 +222,20 @@ describe('every declared simulation command either has a producer or is accounte
     ).toEqual([]);
   });
 
-  it('measures three produced and three unproduced, which is the state #89 is really about', () => {
+  it('measures four produced and two unproduced, which is where #89 left the command surface', () => {
     // The denominator, stated so the gate reports a fact rather than only
     // guarding one, and exact in both directions. A command that quietly
     // stopped being reachable would otherwise only have to be added to the
     // list above, and adding an entry is a smaller act than changing a count
-    // that says half the command surface cannot be reached from the
-    // application. It was one and five before #261 wired the undo pair.
-    expect(unproducedTypes.length).toBe(3);
-    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(3);
+    // that says a third of the command surface cannot be reached from the
+    // application.
+    //
+    // It read five and one on the first run, three and three once #261 gave
+    // the undo pair its keys, and two and four on #89's branch before that
+    // merged in. Both numbers move in the same change as a producer, which is
+    // the point of asserting the count as well as the list: neither can be
+    // edited alone and stay green.
+    expect(unproducedTypes.length).toBe(2);
+    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(4);
   });
 });

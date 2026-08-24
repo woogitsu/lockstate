@@ -74,7 +74,7 @@ export interface HudClockViewModel {
 /**
  * The dense top-strip counts.
  *
- * The treasury balance is here, and nothing else about money is (#96).
+ * The treasury balance is the only money the *strip* carries (#96).
  *
  * That line is exactly where the honest boundary falls. There **is** a
  * treasury: a balance a purchase spends from, carried in the save, published
@@ -84,10 +84,14 @@ export interface HudClockViewModel {
  * accrued per occupied place -- and nothing implements it, which is the state
  * this line describes: the answer exists, the accrual does not.
  *
- * So the rule this interface has always followed is unchanged and is now
- * doing real work rather than excluding a whole subject: a HUD that displays
- * a number no system produces is a lie with a place to sit. A balance is
- * produced. A budget is not.
+ * It is no longer the only money *the HUD* carries, and the difference is
+ * #89's: `HudBuildMaterialViewModel` below carries a unit price, so the Build
+ * panel renders what a purchase would cost and issues the purchase that
+ * spends this balance. Both figures are produced by something -- the price by
+ * `src/content/procurement-catalog.ts`, the balance by the treasury -- which
+ * is what the rule this interface has always followed actually demands: a HUD
+ * that displays a number no system produces is a lie with a place to sit. A
+ * balance is produced. A price is produced. A budget is not.
  */
 export interface HudCountsViewModel {
   readonly prisoners: number;
@@ -134,6 +138,46 @@ export interface HudAlertViewModel {
 export const HUD_BUILD_EDGES = ['north', 'west'] as const;
 export type HudBuildEdge = (typeof HUD_BUILD_EDGES)[number];
 
+/**
+ * What a buildable is made of, and what that material costs to buy (#89).
+ *
+ * Every figure here is **content the host passes through**, never something
+ * the HUD knows: the unit price lives in `src/content/procurement-catalog.ts`,
+ * the per-placement quantity in the buildable registry, and the ceiling in
+ * `src/simulation/economy/`. The panel multiplies and formats them and holds
+ * no table of its own, for the same reason `HudCountsViewModel` carries the
+ * balance rather than a currency: a copy on this side of the boundary would
+ * silently disagree with the simulation the day a price moved.
+ *
+ * Absent from a buildable whose materials cannot be bought at all, and that
+ * is a real state rather than a defensive default: `PROCURABLE_MATERIALS`
+ * covers exactly the two items the two shipped buildables consume, and a
+ * third buildable made of something unpurchasable must offer no purchase
+ * control rather than one that would be refused.
+ */
+export interface HudBuildMaterialViewModel {
+  /** Stable content id. Travels back out unchanged in the intent. */
+  readonly itemId: string;
+  /** A message key, never text. */
+  readonly labelKey: LocalizationKey;
+  /**
+   * What one unit costs, in the same minor units
+   * `HudCountsViewModel.treasuryMinorUnits` is counted in -- so the total the
+   * panel renders and the balance the strip renders are the same scale, and
+   * the player can compare them without a conversion nobody has chosen.
+   */
+  readonly unitPriceMinorUnits: number;
+  /**
+   * How many units one placement of this buildable consumes.
+   *
+   * It is the quantity stepper's starting value: one wall's worth, derived
+   * from content rather than a round number somebody picked.
+   */
+  readonly quantityPerPlacement: number;
+  /** The largest quantity one purchase may ask for, as the simulation bounds it. */
+  readonly maxQuantity: number;
+}
+
 export interface HudBuildableViewModel {
   /** Stable simulation id. Travels back out unchanged in the intent. */
   readonly definitionId: string;
@@ -145,6 +189,8 @@ export interface HudBuildableViewModel {
    * whose value would be ignored.
    */
   readonly occupiesEdge: boolean;
+  /** Absent when nothing this buildable is made of can be bought. */
+  readonly material?: HudBuildMaterialViewModel;
 }
 
 /**

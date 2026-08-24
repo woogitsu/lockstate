@@ -901,6 +901,153 @@ test.describe('HUD shell', () => {
       expect(focusable).toBeGreaterThanOrEqual(8);
     });
 
+    /**
+     * Issue #89: the panel is where the treasury is spent, and the control
+     * that spends it costs the panel no height until it is opened.
+     *
+     * Three claims, and none of them is provable a layer down: `hidden` is a
+     * DOM attribute an author `display` can defeat, so whether the row is
+     * *laid out* needs a browser; the button's label is a formatted product of
+     * two numbers the panel was handed; and the intent that leaves is what the
+     * composition root turns into a `PurchaseMaterials` command.
+     */
+    test('offers a closed buy disclosure, and reveals a stepper priced from the view model', async ({ page }) => {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+
+      const closed = await page.evaluate(() => window.lockstateUiHarness.buildProbe());
+      // Offered, and closed. The first half is what makes the second half
+      // meaningful: a row that is absent for the wrong reason also reads as
+      // "not laid out".
+      expect(closed.buyToggleVisible).toBe(true);
+      expect(closed.buyOpen).toBe(false);
+      expect(closed.buyRowVisible).toBe(false);
+      // And the arm button is still the panel's only primary: two primaries
+      // is no primary (`src/ui/primitives/action-button.ts`).
+      expect(closed.armIsPrimary).toBe(true);
+
+      expect(await page.evaluate(() => window.lockstateUiHarness.clickBuyToggle())).toBe(true);
+      const open = await page.evaluate(() => window.lockstateUiHarness.buildProbe());
+      expect(open.buyOpen).toBe(true);
+      expect(open.buyRowVisible).toBe(true);
+      // Two bricks per wall, at 40 each: the quantity starts at one
+      // placement's worth and the button states what pressing it will spend.
+      // Every one of those three numbers came in on the view model.
+      expect(open.buyQuantity).toBe('2');
+      expect(open.buyLabel).toBe('Buy 2 × Brick · 80');
+      expect(open.texts.filter((text) => text.startsWith('hud.'))).toEqual([]);
+
+      // The stepper is a stepper: the total follows it.
+      expect(await page.evaluate(() => window.lockstateUiHarness.stepBuyQuantity('up'))).toBe(true);
+      expect((await page.evaluate(() => window.lockstateUiHarness.buildProbe())).buyLabel).toBe('Buy 3 × Brick · 120');
+      expect(await page.evaluate(() => window.lockstateUiHarness.stepBuyQuantity('down'))).toBe(true);
+      expect((await page.evaluate(() => window.lockstateUiHarness.buildProbe())).buyLabel).toBe('Buy 2 × Brick · 80');
+    });
+
+    test('the buy control follows the selection, in material, price and quantity', async ({ page }) => {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+      await page.evaluate(() => window.lockstateUiHarness.clickBuyToggle());
+
+      await page.evaluate(() => window.lockstateUiHarness.stepBuyQuantity('up'));
+      expect((await page.evaluate(() => window.lockstateUiHarness.buildProbe())).buyLabel).toBe('Buy 3 × Brick · 120');
+
+      // A door is made of planks at 65, one per placement. The quantity does
+      // not carry over: 3 bricks becoming 3 planks would be a purchase the
+      // player never asked for, at a price they never saw.
+      await page.evaluate(() => window.lockstateUiHarness.clickBuildable('door-wooden'));
+      const door = await page.evaluate(() => window.lockstateUiHarness.buildProbe());
+      expect(door.selected).toBe('door-wooden');
+      expect(door.buyQuantity).toBe('1');
+      expect(door.buyLabel).toBe('Buy 1 × Wood Plank · 65');
+    });
+
+    test('a typed quantity is clamped to what one purchase may ask for', async ({ page }) => {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+      await page.evaluate(() => window.lockstateUiHarness.clickBuyToggle());
+
+      // Zero and below are not purchases, and the ceiling is the simulation's
+      // own `MAX_PURCHASE_QUANTITY` -- passed in on the view model, because a
+      // panel that composed a command past the schema's bound would have it
+      // rejected at the decoder with nothing to show the player.
+      expect(await page.evaluate(() => window.lockstateUiHarness.typeBuyQuantity('0'))).toBe(true);
+      expect((await page.evaluate(() => window.lockstateUiHarness.buildProbe())).buyQuantity).toBe('1');
+
+      expect(await page.evaluate(() => window.lockstateUiHarness.typeBuyQuantity('999999'))).toBe(true);
+      expect((await page.evaluate(() => window.lockstateUiHarness.buildProbe())).buyQuantity).toBe('100000');
+    });
+
+    test('buying dispatches one gated intent, and a refusal is reported on the button', async ({ page }) => {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+      await page.evaluate(() => window.lockstateUiHarness.clickBuyToggle());
+      expect(await page.evaluate(() => window.lockstateUiHarness.clickBuy())).toBe(true);
+
+      // Ids and numbers only. The HUD does not know a `PurchaseMaterials`
+      // command exists, and it does not mint the order id one needs -- that is
+      // `src/main.ts`'s, and `app-shell.spec.ts` is where it is observed on
+      // the wire.
+      const intents = await page.evaluate(() => window.lockstateUiHarness.hudIntents());
+      expect(intents.filter((intent) => intent.includes('purchase-materials'))).toEqual([
+        JSON.stringify({ kind: 'purchase-materials', itemId: 'item.brick', quantity: 2 }),
+      ]);
+
+      // A refused purchase reaches the player, on the line #207 built and on
+      // the control that was pressed -- because buying is a command, and a
+      // button that reports success and spends nothing is the failure #82 is
+      // about.
+      await page.evaluate(() => window.lockstateUiHarness.failIntents(true));
+      await page.evaluate(() => window.lockstateUiHarness.clickBuy());
+      await expect
+        .poll(() => page.evaluate(() => window.lockstateUiHarness.refusalProbe().visible), {
+          message: 'a refused purchase said nothing on screen',
+        })
+        .toBe(true);
+      const probe = await page.evaluate(() => window.lockstateUiHarness.refusalProbe());
+      expect(probe.action).toBe('purchase-materials');
+      expect(probe.text).toContain('Nothing was bought');
+      // The thrown `Error` is diagnostic English and never reaches the screen
+      // (ADR 0011).
+      expect(probe.text).not.toContain('ui-harness: the host refused');
+      expect(probe.failedControls).toEqual(['Buy 2 × Brick · 80']);
+
+      expect(await page.evaluate(() => window.lockstateUiHarness.takeUnhandledRejections())).toEqual([]);
+    });
+
+    test('offers no purchase at all for a buildable nothing sells', async ({ page }) => {
+      // The harness's invented `buildable-N` entries carry no material,
+      // because no content module defines them and no price exists for them.
+      // A disabled buy button would still claim the purchase exists; the
+      // control is absent instead, which is the rule the edge chooser follows
+      // in the test below.
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell({ buildables: 4 }));
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+      expect((await page.evaluate(() => window.lockstateUiHarness.buildProbe())).buyToggleVisible).toBe(true);
+
+      await page.evaluate(() => window.lockstateUiHarness.clickBuildable('buildable-2'));
+      const probe = await page.evaluate(() => window.lockstateUiHarness.buildProbe());
+      expect(probe.selected).toBe('buildable-2');
+      expect(probe.buyToggleVisible).toBe(false);
+      expect(probe.buyRowVisible).toBe(false);
+    });
+
+    test('an open buy row closes itself when the selection stops being purchasable', async ({ page }) => {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell({ buildables: 4 }));
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+      await page.evaluate(() => window.lockstateUiHarness.clickBuyToggle());
+      expect((await page.evaluate(() => window.lockstateUiHarness.buildProbe())).buyRowVisible).toBe(true);
+
+      // Leaving the row open behind a hidden toggle would put a buy button on
+      // screen with no material behind it -- and its label would still name
+      // the last one, which is a price quoted for something else.
+      await page.evaluate(() => window.lockstateUiHarness.clickBuildable('buildable-3'));
+      const probe = await page.evaluate(() => window.lockstateUiHarness.buildProbe());
+      expect(probe.buyToggleVisible).toBe(false);
+      expect(probe.buyRowVisible).toBe(false);
+      expect(probe.buyOpen).toBe(false);
+    });
+
     test('hides the edge chooser for a buildable that does not sit on an edge', async ({ page }) => {
       await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
       await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));

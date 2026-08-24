@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { PROCUREMENT_DELIVERY_DELAY_TICKS } from '../../src/content/procurement-catalog';
-import { createBuildOrder } from '../../src/simulation/construction';
+import { PROCUREMENT_DELIVERY_DELAY_TICKS, procurableMaterial } from '../../src/content/procurement-catalog';
+import { BUILDABLE_REGISTRY, createBuildOrder } from '../../src/simulation/construction';
 import { TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import {
@@ -31,6 +31,34 @@ import { tileCoordinate } from '../../src/simulation/world/coordinates';
  * whole point: a test that seeded the materials would prove the *construction*
  * half and say nothing about whether a player can get them.
  *
+ * ## Where the other half of "a player can get them" is proved
+ *
+ * This file drives the command; it does not drive the button. Until #89 there
+ * was no button: `PurchaseMaterials` had a schema, a decoder, a router, a
+ * system and a save representation, and **nothing in `src/` could construct
+ * one**, so the loop below was reachable only from a test and the running app
+ * still could not finish a wall. That is now closed, and it is closed
+ * somewhere this layer cannot reach: `src/main.ts` imports Phaser,
+ * constructs a `Worker` and runs at import, so no Vitest file executes it.
+ *
+ * The proof is therefore split, deliberately and along the line
+ * `docs/TESTING.md` draws:
+ *
+ * - **that a producer exists at all** --
+ *   `tests/foundation/unconsumed-command-contract.test.ts`, which scans `src/`
+ *   and fails in both directions;
+ * - **that pressing Buy sends one** -- `tests/browser/app-shell.spec.ts`, over
+ *   a tee on the real `postMessage`, which is the only place a minted
+ *   `orderId` is observable;
+ * - **that the panel dispatches the intent behind it** --
+ *   `tests/browser/ui-shell.spec.ts`;
+ * - **that the command closes the loop** -- here.
+ *
+ * The quantities below are read out of the same two content modules the
+ * composition root reads, rather than written as literals, so a buildable
+ * whose material nobody sells fails here rather than shipping as a buy
+ * control that can only be refused.
+ *
  * ## What this does not cover, and why the gap is where it is
  *
  * #96's loop has a physical middle -- the delivery arrives at
@@ -44,8 +72,20 @@ import { tileCoordinate } from '../../src/simulation/world/coordinates';
  */
 
 const WALL = 'wall-brick';
-/** `wall-brick` requires 2x `item.brick` (`construction/definition.ts`). */
-const BRICKS_PER_WALL = 2;
+
+/**
+ * What one wall is made of, and what a unit of it costs -- read from content
+ * rather than written down.
+ *
+ * These are the exact two lookups `src/main.ts` performs to build the Build
+ * panel's buy control (`purchasableMaterialFor`), so the purchase this file
+ * drives is the purchase that control composes. Written as literals they
+ * agreed with content by coincidence, and would have kept agreeing with a
+ * `materialsRequired` nobody had priced.
+ */
+const WALL_REQUIREMENT = BUILDABLE_REGISTRY.get(WALL)!.materialsRequired[0]!;
+const BRICKS_PER_WALL = WALL_REQUIREMENT.quantity;
+const BRICK_PRICE = procurableMaterial(WALL_REQUIREMENT.itemId)?.unitPriceMinorUnits;
 
 function tile(x: number, y: number) {
   return { x: tileCoordinate(x), y: tileCoordinate(y) };
@@ -87,21 +127,37 @@ describe('money buys materials and a wall gets built (#89, #96)', () => {
     // `(id, sequence, executeAtTick, payload)`. Sequence 0 because this is the
     // session's first command; `executeAtTick` is now, not zero, because the
     // kernel refuses a command dated before the tick it has reached.
+    //
+    // The order id is the shape `src/main.ts` mints, `order-` and a UUID, and
+    // not a hand-written `buy-1`: `purchaseMaterialsSchema` bounds it with
+    // `identifierSchema`, so an id shape the composition root can produce and
+    // the decoder rejects would fail at the boundary rather than here.
+    expect(BRICK_PRICE, `nothing sells ${WALL_REQUIREMENT.itemId}, so no buy control can be offered for a wall`)
+      .toBeGreaterThan(0);
     runtime.kernel.submitCommand(
       'cmd-buy',
       0,
       runtime.kernel.tick,
-      packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.brick', quantity: BRICKS_PER_WALL }),
+      packCommand({
+        type: 'PurchaseMaterials',
+        orderId: `order-${crypto.randomUUID()}`,
+        itemId: WALL_REQUIREMENT.itemId,
+        quantity: BRICKS_PER_WALL,
+      }),
     );
     runtime.kernel.step();
 
     // Paid now, delivered later. Both are asserted because the money leaving
-    // immediately is what makes a save taken mid-flight matter.
-    expect(runtime.treasury.balanceMinorUnits).toBeLessThan(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+    // immediately is what makes a save taken mid-flight matter -- and the
+    // amount is asserted exactly, because "less than the starting balance" is
+    // also true of a purchase that charged the wrong price.
+    expect(runtime.treasury.balanceMinorUnits).toBe(
+      TREASURY_STARTING_BALANCE_MINOR_UNITS - BRICK_PRICE! * BRICKS_PER_WALL,
+    );
     expect(runtime.procurement.pendingDeliveries).toHaveLength(1);
     expect(materials!.quantityOf('item.brick'), 'nothing arrives on the tick it is bought').toBe(0);
 
-    const stepsToDelivery = stepUntil(runtime, () => materials!.quantityOf('item.brick') > 0);
+    const stepsToDelivery = stepUntil(runtime, () => materials!.quantityOf(WALL_REQUIREMENT.itemId) > 0);
     expect(stepsToDelivery, 'the delivery never arrived').toBeGreaterThan(0);
     expect(stepsToDelivery, 'it arrived early').toBeGreaterThanOrEqual(PROCUREMENT_DELIVERY_DELAY_TICKS - 2);
     expect(runtime.procurement.pendingDeliveries, 'an arrived delivery must leave the queue').toHaveLength(0);

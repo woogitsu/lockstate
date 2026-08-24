@@ -408,23 +408,34 @@ decision about what to build next.
 
 ### Construction
 
-32a. **Nothing stocks a new session's construction container.**
+32a. ~~**Nothing stocks a new session's construction container.**~~
+    **Closed for the player, still true of the session's starting state.**
     `createNewSimulationRuntime` wires `ConstructionSystem` to a
     `ContainerMaterialsProvider` over the well-known
-    `construction-materials` container and then leaves that container
+    `construction-materials` container and still leaves that container
     **empty**, following the runtime's "no fabricated default content"
-    convention. `ProcurementSystem` (#249) is the one thing that deposits
-    into it, and only for a purchase — and **nothing in `src/` mints a
-    `PurchaseMaterials` command**, which
-    `tests/foundation/unconsumed-command-contract.test.ts` holds as a gated
-    fact. So in the running app every build order still reaches
-    `materials-pending` and stays there: the ghost appears, and the wall
-    never does. The cause has changed from "no supplier" to "no buy
-    surface"; the symptom has not. Tests and fixtures deposit directly
+    convention — there is no starter stock, no delivery job and no scenario
+    that deposits into it. `ProcurementSystem` (#249) is the one thing that
+    deposits into it at all, and only for a purchase.
+
+    What changed with #89 is that a player can now make that purchase: the
+    Build panel's buy control issues `PurchaseMaterials` (`src/main.ts`), the
+    purchase spends from the treasury, and `ProcurementSystem` deposits the
+    delivery into that same container some ticks later. So a build order in
+    the running app reaches `materials-pending` and then *leaves* it, once the
+    player has bought what it needs and the clock has run long enough to
+    deliver — the loop `tests/integration/economy-build-loop.test.ts` drives
+    end to end. Until then it stayed there for ever, and the cause moved twice
+    without the symptom moving at all: first "no supplier", then "no buy
+    surface", which `tests/foundation/unconsumed-command-contract.test.ts`
+    held as a gated fact until this closed it.
+
+    Tests and fixtures still deposit directly
     (`tests/determinism/snapshot-restore-fidelity.test.ts`,
-    `tests/perf/fixtures/prison-fixture.ts`), which is why this has never
-    shown up as a failure. Whether a fresh prison starts with materials, or
-    earns them, is a session/economy decision, not a construction one.
+    `tests/perf/fixtures/prison-fixture.ts`), which is why the original defect
+    never showed up as a failure. Whether a fresh prison should *start* with
+    materials, or earn them, is a session/economy decision and still unmade;
+    what is no longer true is that the wall never comes.
 
 32. **Build costs are material quantities, and that part is real**:
     `BuildableDefinition.materialsRequired` is `{itemId, quantity}` and
@@ -439,12 +450,29 @@ decision about what to build next.
 
     Issue #74 added a Build **panel** without closing this. The panel is
     handed its option list as view-model data — `{definitionId, labelKey,
-    occupiesEdge}` — and the id→key mapping lives at the composition root
-    (`src/main.ts`) against HUD-namespaced keys, because the registry has no
-    `nameKey` to pass through. The registry's own English `name` is never
-    read. When a buildable gains a real content key the mapping goes away and
-    nothing else changes. There is still **no projection of order state**:
-    the panel submits orders and cannot show what happened to them.
+    occupiesEdge, material?}` — and the id→key mapping lives at the
+    composition root (`src/main.ts`) against HUD-namespaced keys, because the
+    registry has no `nameKey` to pass through. The registry's own English
+    `name` is never read. When a buildable gains a real content key the
+    mapping goes away and nothing else changes.
+
+    `material` is #89's addition and is projected from three places at once,
+    which is why it too lives at the composition root: the requirement comes
+    from `materialsRequired`, the unit price from
+    `src/content/procurement-catalog.ts` and the label from the item
+    catalog's real `nameKey` — the one part of this list that is not a
+    workaround. It carries the *first* requirement anything sells, so a
+    buildable made of two materials would get a buy control for one of them;
+    both shipped buildables require exactly one, and a multi-material buy
+    surface is undesigned rather than implemented and broken.
+
+    There is still **no projection of order state**: the panel submits orders
+    and cannot show what happened to them. So a player who has bought
+    materials sees the wall appear and is never told that an order was
+    waiting for them — which is why the buy control is a control rather than
+    a prompt, and why it is offered for whatever is selected rather than
+    "when the materials are short". Answering *that* needs a projection of
+    the construction container's stock, which no channel carries.
 
 ### Cross-cutting
 

@@ -214,12 +214,18 @@ export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMe
       // nobody has chosen -- and every price in
       // `src/content/procurement-catalog.ts` is a whole number of these, so
       // the figure the player compares against is in the same units.
+      //
+      // That comparison is a real one since #89: the Build panel's buy
+      // control renders `unit price × quantity` in these same units, so the
+      // two numbers on screen can be read against each other without anybody
+      // having chosen a currency to divide them by.
       value: counts.treasuryMinorUnits,
       capacity: undefined,
       // No tone. "Low on money" is a threshold, and a threshold is a balance
       // decision -- the same reason `BoundedValue` carries no severity band.
-      // There is also nothing to be low *for*: nothing credits the treasury,
-      // so a warning would describe a slope that does not exist yet.
+      // There is also nothing to be low *for* on a schedule: buying materials
+      // is the only thing that spends (#89), and nothing credits the treasury
+      // at all, so a warning would describe a slope that does not exist yet.
       tone: undefined,
       badge: undefined,
     },
@@ -251,10 +257,10 @@ export function severityLabelKey(severity: HudSeverity): LocalizationKey {
  * What to tell the player when the host refused the action a control asked
  * for (issue #207).
  *
- * A *command* -- a clock change, a build order, an undo -- asks the simulation
- * to change and changes nothing locally, so a refusal means the prison is
- * exactly as it was and the player has to be told, or the control they
- * pressed is a control that silently did nothing (issue #82's point). "The
+ * A *command* -- a clock change, a build order, a purchase, an undo -- asks
+ * the simulation to change and changes nothing locally, so a refusal means the
+ * prison is exactly as it was and the player has to be told, or the control
+ * they pressed is a control that silently did nothing (issue #82's point). "The
  * control they pressed" is a key for the undo pair and there is no button to
  * mark, which changes where the report lands and not whether one is owed.
  *
@@ -272,6 +278,8 @@ export function refusalMessageKey(actionId: string): LocalizationKey | undefined
       return HUD_MESSAGE_KEY.refusalSetClock;
     case 'place-build-order':
       return HUD_MESSAGE_KEY.refusalPlaceBuildOrder;
+    case 'purchase-materials':
+      return HUD_MESSAGE_KEY.refusalPurchaseMaterials;
     case 'undo':
       return HUD_MESSAGE_KEY.refusalUndo;
     case 'redo':

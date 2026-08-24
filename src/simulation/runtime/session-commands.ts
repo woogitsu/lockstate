@@ -67,10 +67,16 @@ export function createSessionCommandHandler(
       // slice leaves open rather than an oversight. A refusal --
       // `insufficient-funds`, `unknown-material` -- has nowhere to go: the
       // kernel's command handler returns `void`, and the worker's reply to a
-      // command is an acknowledgement of *receipt*, not of effect. Telling
-      // the player a purchase was refused is the same problem #225 solved for
-      // a refused wall, and it needs the same route: an intent the HUD
-      // dispatched and can report on. Recorded on #96.
+      // command is an acknowledgement of *receipt*, not of effect.
+      //
+      // #89 built the route a report would travel on -- the HUD dispatches a
+      // `purchase-materials` intent and paints its own refusal line when the
+      // host rejects it (issue #207) -- and reaching it from *here* still
+      // needs something this handler does not have: a worker-to-main message
+      // carrying the outcome. What the composition root does instead is
+      // refuse before sending, against the balance the worker last published
+      // (`src/main.ts`), which covers the refusal a player can actually
+      // provoke and covers nothing this line drops. Recorded on #96.
       procurement.purchase(simCommand.orderId, simCommand.itemId, simCommand.quantity, context.tick);
       return;
     }

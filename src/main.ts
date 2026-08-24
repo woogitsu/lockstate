@@ -22,6 +22,7 @@ import {
   EMPTY_HUD_VIEW_MODEL,
   HUD_MESSAGE_KEY,
   mountHud,
+  type HudBuildMaterialViewModel,
   type HudBuildViewModel,
   type HudBuildableViewModel,
   type HudHandle,
@@ -34,6 +35,9 @@ import { hudCountsFromWorkerMessage } from './ui/simulation-counts';
 import { SimulationCommandSender } from './ui/simulation-commands';
 import { BuildTool } from './ui/build-tool';
 import { BUILDABLE_REGISTRY } from './simulation/construction';
+import { MAX_PURCHASE_QUANTITY } from './simulation/economy';
+import { defaultItemRegistry } from './content/item-catalog';
+import { procurableMaterial } from './content/procurement-catalog';
 import type { LocalizationKey } from './content/localization';
 import { DEFAULT_LOCALE } from './content/localization';
 import { defaultMessageCatalogEn } from './services/localization';
@@ -270,6 +274,51 @@ const BUILDABLE_LABEL_KEY: Readonly<Record<string, LocalizationKey>> = {
 const CATEGORY_RANK: Readonly<Record<string, number>> = { wall: 0, object: 1, utility: 2 };
 
 /**
+ * What a buildable is made of, priced, for the panel's buy control (#89).
+ *
+ * Three vocabularies meet here and nowhere else, which is why this is at the
+ * composition root: `BuildableDefinition.materialsRequired` says what a
+ * placement consumes, `src/content/procurement-catalog.ts` says what a unit of
+ * it costs, and `src/content/item-catalog.ts` says what it is called. The HUD
+ * may hold none of them (`AGENTS.md` boundary 1), so the figures travel as
+ * plain numbers and one message key on `HudBuildMaterialViewModel`.
+ *
+ * **The first requirement that can actually be bought**, and nothing more.
+ * Both shipped buildables require exactly one material, so "first" and "only"
+ * agree today; a buildable requiring two would get a control for one of them
+ * and no way to buy the other, which is a real limit and is stated rather than
+ * hidden -- the panel offers one stepper, and a multi-material buy surface is
+ * a design question nobody has answered. A requirement no one sells yields
+ * `undefined` and the panel offers no purchase at all, which is the honest
+ * rendering of a material the economy has no price for.
+ *
+ * `maxQuantity` comes from `MAX_PURCHASE_QUANTITY` rather than from a number
+ * chosen here: the simulation's own bound on one purchase, so the stepper
+ * cannot compose a command the schema would reject.
+ */
+function purchasableMaterialFor(
+  requirements: readonly { readonly itemId: string; readonly quantity: number }[],
+): HudBuildMaterialViewModel | undefined {
+  for (const requirement of requirements) {
+    const priced = procurableMaterial(requirement.itemId);
+    if (priced === undefined) continue;
+    const item = defaultItemRegistry.getById(requirement.itemId);
+    // Unreachable while `validateBuildableItemReferences` throws at import for
+    // a requirement naming no item, and skipped rather than asserted here so
+    // that a catalogue with one unlabelled entry still renders the rest.
+    if (item === undefined) continue;
+    return {
+      itemId: priced.itemId,
+      labelKey: item.nameKey,
+      unitPriceMinorUnits: priced.unitPriceMinorUnits,
+      quantityPerPlacement: requirement.quantity,
+      maxQuantity: MAX_PURCHASE_QUANTITY,
+    };
+  }
+  return undefined;
+}
+
+/**
  * What the Build panel may offer, projected from the buildable registry.
  *
  * Ordered by `(category rank, id)` rather than taken in `Map` insertion
@@ -288,10 +337,16 @@ function buildCatalogue(): HudBuildViewModel {
   for (const definition of ordered) {
     const labelKey = BUILDABLE_LABEL_KEY[definition.id];
     if (labelKey === undefined) continue;
+    const material = purchasableMaterialFor(definition.materialsRequired);
     buildables.push({
       definitionId: definition.id,
       labelKey,
       occupiesEdge: definition.category === 'wall',
+      // Spread rather than passed as `undefined`: `exactOptionalPropertyTypes`
+      // is on, so a buildable made of nothing purchasable has to have no
+      // property at all -- which is what makes the panel hide its buy control
+      // rather than offer one that could only be refused.
+      ...(material === undefined ? {} : { material }),
     });
   }
 
@@ -546,6 +601,75 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
               transactionId,
             });
           }
+          return;
+        }
+
+        case 'purchase-materials': {
+          const sender = requireSimulation(commands);
+          /*
+           * The producer #89 was missing.
+           *
+           * `PurchaseMaterials` has had a schema, a decoder, a session
+           * command router, a system and a save representation since #249,
+           * and nothing in `src/` could construct one -- so a build order
+           * placed in a real session reached `materials-pending` and stayed
+           * there for ever, because the only way to stock the construction
+           * container is a delivery and the only way to buy a delivery was a
+           * test. `tests/foundation/unconsumed-command-contract.test.ts` is
+           * the gate that measures this, and this dispatch is what took
+           * `PurchaseMaterials` off its list.
+           *
+           * The affordability check is here rather than in the HUD, and it is
+           * a *report*, not a second treasury. `Treasury.spend` refuses
+           * rather than overdrawing, and the refusal is dropped on the worker
+           * side: the kernel's command handler returns `void` and a command
+           * reply acknowledges receipt, not effect
+           * (`src/simulation/runtime/session-commands.ts` says so in its own
+           * body). So a purchase the balance cannot cover would otherwise be
+           * the exact failure #82 and #207 are about -- a button that reports
+           * success and does nothing. Throwing here rejects the HUD's gated
+           * action, which paints the refusal line and marks the button that
+           * was pressed.
+           *
+           * What it checks against is `viewModel.counts.treasuryMinorUnits`,
+           * the balance the worker last published -- at most 500ms old, and
+           * published once immediately on `simulation/ready` before any tick
+           * runs, so it is never the empty view model's zero while a session
+           * exists.
+           *
+           * **It is an echo, not the authority, and two cases get past it.** A
+           * command runs at a future tick, so several purchases pressed in a
+           * row are each checked against a balance none of them has been
+           * deducted from yet -- most visibly with the clock paused, where
+           * nothing steps at all and every queued purchase is measured against
+           * the same figure. And a balance that moved in the last 500ms is not
+           * yet here. In both, `Treasury.spend` refuses without overdrawing and
+           * the player is told nothing, which is the gap recorded on #96: it
+           * needs a worker-to-main outcome message, and this change does not
+           * add one. What the check does close is the case a player actually
+           * reaches -- asking for more than the prison has ever had -- which
+           * before it was a button that reported success and spent nothing.
+           */
+          const priced = procurableMaterial(intent.itemId);
+          if (priced === undefined) {
+            throw new Error(`Nothing sells ${intent.itemId}, so it cannot be bought.`);
+          }
+          const total = priced.unitPriceMinorUnits * intent.quantity;
+          if (total > viewModel.counts.treasuryMinorUnits) {
+            throw new Error(
+              `The last reported balance of ${viewModel.counts.treasuryMinorUnits} cannot cover ${total}.`,
+            );
+          }
+          sender.submit({
+            type: 'PurchaseMaterials',
+            // Identifier-shaped and fresh per purchase, exactly as a build
+            // order's is: `ProcurementSystem.purchase` refuses a duplicate
+            // id, so a stable one would make every purchase after the first a
+            // silent no-op.
+            orderId: `order-${crypto.randomUUID()}`,
+            itemId: intent.itemId,
+            quantity: intent.quantity,
+          });
           return;
         }
       }
