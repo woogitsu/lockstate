@@ -316,6 +316,15 @@ decision about what to build next.
     "instance declares the required object's capabilities", never against
     `minQuantity`, and `enclosed` / `outdoors` / `minimum-size` are
     projected as `'not-evaluated'`.
+
+    Since #261 this is visible on the strip rather than only in a test.
+    `RoomZoningService` is the first thing in `src/` that registers an
+    instance, and it registers a *zoned* room -- an empty rectangle -- so it
+    declares capacity `0` and no capabilities at all. `Rooms` therefore
+    counts the room while `roomCapacity` stays `0`, and every `object`
+    requirement on it reads `'missing-capability'`. Both are the room's true
+    state, not a projection defect: nothing has been placed in it, and
+    nothing can be until object placement exists.
 14. **Nothing validates room geometry at all.** There is no real
     room-geometry validation to project. Until #123 item 2 there was a
     *mocked* one — `RoomSystem.validateRoom` reported every `object`

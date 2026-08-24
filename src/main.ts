@@ -194,11 +194,13 @@ new Phaser.Game(gameConfig);
  * `?actors=demo` puts scripted actors on screen.
  *
  * A fresh session genuinely has no actors -- the simulation fabricates no
- * default population, and no protocol message publishes actor positions even
- * when one exists. This flag is therefore the honest way to look at the
- * sprite path end to end (manifest -> atlas texture -> direction -> foot
- * pivot -> depth) without inventing simulation state to do it. It is off by
- * default and it never touches the world underneath.
+ * default population and nothing in `src/` admits a prisoner. The renderer
+ * does decode the prisoners a snapshot carries, but a prison with none stays
+ * empty, and a snapshot carries no movement for the ones it does have. This
+ * flag is therefore still the way to look at the whole sprite path (manifest
+ * -> atlas texture -> direction -> foot pivot -> depth), walk cycle included,
+ * without inventing simulation state to do it. It is off by default and it
+ * never touches the world underneath.
  */
 if (isDemoActorsRequested(window.location.search)) {
   void atlasLibrary

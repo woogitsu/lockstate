@@ -6,16 +6,27 @@ import type { RenderActor, RenderFeed, RenderFrame } from './render-feed';
  *
  * **This is not game state and never becomes game state.** A fresh Lockstate
  * session contains no actors at all: the simulation deliberately fabricates no
- * default content, and `SessionSnapshotBundle` carries no actor positions
- * across the worker boundary even when some exist. So there is currently no
- * honest way to see a prisoner sprite from real simulation data.
+ * default content, and nothing in `src/` admits a prisoner, so a prison a
+ * player can currently reach holds nobody to draw.
  *
- * Rather than pretend otherwise, this feed puts a scripted walk in front of
- * the camera when explicitly asked for (`?actors=demo`). It is opt-in, it is
- * clearly labelled, and it wraps a real feed instead of replacing it, so the
- * world underneath is still the real world from the real snapshot. When the
- * simulation starts publishing actors, the renderer needs no change: only the
- * feed handed to the scene does.
+ * `SimulationSnapshotFeed` does now decode the prisoners a bundle carries
+ * (`actors-from-snapshot.ts`), so this is no longer the only path to a sprite
+ * -- it is the only one that works on an *empty* prison, which is every prison
+ * today. A snapshot also carries no velocity and no facing, so a decoded
+ * prisoner stands still; the scripted walk below is what shows the walk cycle
+ * and the eight authored directions at all.
+ *
+ * So this feed puts a scripted walk in front of the camera when explicitly
+ * asked for (`?actors=demo`). It is opt-in, it is clearly labelled, and it
+ * wraps a real feed instead of replacing it, so the world underneath is still
+ * the real world from the real snapshot.
+ *
+ * It does **replace** the frame's actor list rather than adding to it, so a
+ * prison that did hold prisoners would show the demo instead of them while the
+ * flag is on. That is deliberate: the demo numbers its actors from 1 and
+ * `EntityId`s start at 0, so a merged list could hand two actors the same
+ * pooled sprite. A flag that exists to look at the art is the wrong place to
+ * fix that, and the flag is off by default.
  *
  * The motion is a closed-form function of presentation time, so it is
  * deterministic, allocation-free per frame, and sweeps all eight authored

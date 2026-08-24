@@ -98,6 +98,12 @@ const UNLABELLED: readonly { readonly sourceFile: string; readonly declaration: 
       'Which of three refusals `Kernel.submitCommand` made -- a duplicate sequence, a sequence gap, or a tick already executed. It exists so the worker can map a refusal to a fault code instead of collapsing all three onto `invalid-state` (#187 finding 2), so it is one layer *below* a diagnostic that is itself exempt above. Nothing projects it: it never leaves the worker, and the main thread receives the mapped `ProtocolFaultCode` and never this discriminant.',
   },
   {
+    sourceFile: 'src/simulation/rooms/zoning.ts',
+    declaration: 'ZoneRoomRefusalReason',
+    reason:
+      'Why `RoomZoningService.zone` refused a `ZoneRoom` -- unowned land, an overlap, a rectangle no room can be. It is the zoning counterpart of `BuildOrder.failReason`, which is likewise a stable id and likewise carries no key: #207 settled that a refusal a player sees is the UI layer\'s own `hud.refusal.*` string naming the outcome, never the simulation\'s code rendered verbatim. Nothing projects this one at all yet -- it reaches `recentRefusals()` and stops there, because the reporting route is #261 step 2 -- so a key today would be a translation for a string with no reader.',
+  },
+  {
     sourceFile: 'src/content/simulation-message-keys.ts',
     declaration: 'SimulationEnumForm',
     reason:
