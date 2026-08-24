@@ -98,6 +98,25 @@ describe('every localization key declared in src/ resolves in the bundled defaul
     expect(new Set(declarations.map((declaration) => declaration.field)).size).toBeGreaterThan(1);
   });
 
+  it('reports the line the declaration is really on', () => {
+    // The line numbers above are only ever read out of a *failure* message, so
+    // nothing else here would notice them drifting. They are correct only
+    // because `stripComments` replaces a block comment with its own newlines;
+    // the local copy this gate used to carry deleted block comments outright,
+    // which put every line number out by however many lines of block comment
+    // preceded it -- 28 lines for the first declaration in
+    // `services/entitlements/products.ts` (#188). This checks the property
+    // rather than pinning a line, so it cannot go stale as files are edited.
+    const wrong = declarations.filter((declaration) => {
+      const lines = readFileSync(join(SRC_ROOT, declaration.where), 'utf8').split('\n');
+      return !(lines[declaration.line - 1] ?? '').includes(`'${declaration.key}'`);
+    });
+    expect(
+      wrong.map((declaration) => `${declaration.key} reported at ${declaration.where}:${declaration.line}`),
+      'a reported line does not contain the key it names: comment stripping is no longer line-preserving',
+    ).toEqual([]);
+  });
+
   it('classifies every `*Key` field as a localization key or an explicitly exempt one', () => {
     const unclassified = [
       ...new Set(
