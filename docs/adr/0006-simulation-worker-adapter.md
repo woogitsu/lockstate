@@ -16,6 +16,17 @@ We implemented a rigid state machine (`SimulationWorkerStateMachine`) inside the
 4. **shutting-down**: Triggered by a graceful shutdown request.
 5. **faulted**: Reached when an unhandled exception or protocol decode error occurs. The worker emits a `protocol/error` and refuses to process further ticks or commands. The renderer must detect this and surface a restart/reload UI.
 
+### Implementation note, 2026-08-24: states 1 and 2 are not what `main` does
+
+States 1 and 2 above are the design. The code implements neither, and the two gaps are independent:
+
+- **No client sends a `protocol/handshake`.** Every occurrence of that message kind in `src/` is the receiver, the kind union or the schema; the only senders in the repository are under `tests/`. The main thread's first message to a worker is `simulation/initialize` (`src/persistence/session/worker-session-host.ts:137-144`), which `handleInitialize` accepts because the state is still `'uninitialized'` (`src/simulation/worker/state-machine.ts:421-423`). [ADR 0003](./0003-simulation-worker-protocol.md)'s decision 4 carries the same note.
+- **`'ready'` is unreachable.** `SimulationWorkerStateMachine` declares six states (`state-machine.ts:25-31`) and writes `_state` in exactly one place, `transition()` (`:179-180`). Its four call sites reach `'faulted'` (`:349`), `'paused'` (`:457`), `'paused'`/`'running'` (`:492`) and `'shutting-down'` (`:601`). `handleHandshake` (`:393-409`) posts `protocol/handshake-accepted` and transitions nothing, so even a handshake that *was* sent would not advance the state.
+
+The Positive consequence below — "main thread cannot send commands before the kernel is ready" — still holds, by a different route than this list implies: `simulation/submit-command` and `simulation/request-snapshot` fault with `not-initialized` when no kernel exists (`state-machine.ts:510-511`, `:569-570`), and `simulation/set-clock` faults with `invalid-state` outside `paused`/`running` (`:486-487`). What does not hold is that a handshake is the gate.
+
+Whether to send the handshake and make `'ready'` real, or to delete `protocol/handshake`, `protocol/handshake-accepted` and `'ready'` and amend items 1-2 above, is an open decision for the owner (issue #274, Q4; issue #118 item 1). This note records the gap rather than closing it.
+
 ### Loop Pacing
 Because `requestAnimationFrame` is unavailable in standard Dedicated Web Workers, we use `setInterval(loop, 15)` to wake the worker. During each wake, the `FixedStepClock` calculates how many 50ms ticks are owed based on monotonic time `performance.now()`. The kernel runs up to 5 ticks per wake (budgeting) to avoid long blocking if the worker falls behind.
 

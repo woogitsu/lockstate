@@ -69,9 +69,14 @@ persisted and never derived from the account id, so it correlates events
 inside one session and nothing across sessions.
 
 ### Sampling is deterministic and declared
-Sampling uses `deterministicStateHash(sessionId + eventName)` against the
-category's rate, so a session either reports an event type consistently or
-not at all — no partially-sampled sequences that misrepresent frequency.
+Sampling uses `deterministicStateHash([sessionId, eventName])` against the
+category's rate (`src/services/telemetry/sampling.ts:16`), so a session either
+reports an event type consistently or not at all — no partially-sampled
+sequences that misrepresent frequency. The key is a two-element array, not the
+`sessionId + eventName` concatenation this paragraph used to describe, and the
+array is the better of the two: a concatenation loses the boundary, so the
+pairs `("ab", "c")` and `("a", "bc")` would hash identically and share one
+sampling decision. A two-element array keeps them distinct.
 Diagnostics default to rate 1 (a crash is rare and always interesting);
 performance and gameplay are sampled. The applied rate travels with the
 event so the receiver can weight correctly instead of guessing.
@@ -82,8 +87,20 @@ enforces a token-bucket rate limit and a bounded queue that drops the
 *oldest* events (recording a drop count) when full. It never throws into
 its caller, never awaits inside `record()`, and a failed flush drops the
 batch rather than retrying forever. Nothing in `src/simulation/` or the
-render loop may import the sink; telemetry is fed from the main thread's
+render loop may import the sink; telemetry is to be fed from the main thread's
 orchestration layer, off the tick and frame paths.
+
+**As of 2026-08-24 that feed does not exist.** No module outside
+`src/services/telemetry/` calls into this layer: the only reference to it
+anywhere else in `src/` is the barrel re-export `export * from './telemetry'`
+(`src/services/index.ts:21`), and nothing imports that barrel either. So
+`TelemetryConsent` is never asked for, `record()` is never called and
+`BatchingTelemetrySink` never flushes. Every module specified here is built and
+tested — `tests/unit/services-telemetry.test.ts` — and none is wired —
+the same posture [ADR 0008](./0008-trusted-service-boundary.md) states
+explicitly for the server-side deployment units, which this ADR inherits
+without having said so. Wiring the first `record()` call is the moment the
+boot path must also obtain consent; it obtains none today.
 
 ### Release correlation without public source maps
 `vite.config.ts` keeps `sourcemap: false` for shipped assets. Diagnostics

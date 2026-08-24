@@ -156,14 +156,29 @@ an assertion and becomes a fact, and the bound is applied to the fact.
 
 Reasoning for the figure:
 
-- `docs/PERSISTENCE.md` measures a small prison's envelope at 66.0 KiB, of
-  which 29.4 KiB is `EntityStoreSnapshot` padding that issue #50 already
-  owns. Its four benchmark tiers scale roughly 30× in serialization cost
-  from small to x-large, which puts the largest envelope the game currently
-  produces in the low megabytes at worst.
-- 4 MiB therefore leaves roughly an order of magnitude of headroom over
-  ordinary content while capping the worst case a hostile client can force
-  into a single row.
+- `docs/PERSISTENCE.md:742-745` measures the envelope across four benchmark
+  tiers at **42.0 KiB** for a small prison (25 prisoners) and **2.86 MiB** for
+  x-large (3,000), at save-schema V3. V4 (#259) adds a known,
+  population-proportional delta on top — two bytes per prisoner per need, so
+  ~0.3 KiB and ~35 KiB respectively.
+  **Those figures replace the 66.0 KiB / 29.4 KiB pair this bullet used to
+  cite, and the replacement is not cosmetic.** That pair was pre-#50: the
+  `EntityStoreSnapshot` padding it described no longer exists, `entities` fell
+  to 129-135 B at every tier, and a small prison's envelope fell to 36.7 KiB
+  before #70's `simulation` and `identity` sections took it back up to 42.0 KiB
+  (`docs/PERSISTENCE.md`, "Entity snapshot serialized at capacity, not
+  population (#50) — resolved"). The 66.0 KiB and 29.4 KiB numbers do still
+  appear in that document, at `:832` — in the **before** column of the table
+  recording that fix — which is why a spot check for the strings passes while
+  the claim built on them is false.
+- On those figures 4 MiB leaves roughly 97× headroom over a small prison but
+  only about **1.4×** over the largest tier already measured — a little less
+  once V4's delta is counted. **That is a materially weaker position than the
+  "roughly an order of magnitude of headroom" this bullet claimed on the
+  superseded numbers, and the approval asked for in the Status table above
+  should be given or withheld against these figures rather than those.** What
+  the bound still does unambiguously is cap the worst case a hostile client can
+  force into a single row.
 - It sits below the size at which JSONB stops being a reasonable home. A
   payload approaching this bound is precisely the signal that the Storage
   path is needed — which is the still-open question in `docs/CLOUD_SAVE.md`,
@@ -194,10 +209,26 @@ together with §6.
 save every 30 seconds writes 2,880 rows a day, for one prison, forever.
 That is a larger uncontrolled quantity than slot count ever was.
 
-20 is proposed as roughly a day of ordinary autosaving at the current
-`DEFAULT_AUTOSAVE_INTERVAL_MS`, which is what a "restore an earlier
-generation" feature realistically needs — the local repository (#19) already
-keeps generations for the same purpose and does not keep them forever.
+20 was proposed as "roughly a day of ordinary autosaving at the current
+`DEFAULT_AUTOSAVE_INTERVAL_MS`". **That justification is arithmetically wrong
+and is withdrawn here.** `DEFAULT_AUTOSAVE_INTERVAL_MS` is 30,000 ms
+(`src/persistence/session/session-controller.ts:9`), so 20 autosaves is **ten
+minutes**, not a day — and the paragraph immediately above computes 2,880 rows
+a day from that same constant. A day of ordinary autosaving is 2,880
+revisions, 144× the proposed number.
+
+**The number itself is left at 20, because moving it is the owner's decision
+and not an editor's** (issue #274, Q2). The choice being put is between two
+different retention policies, not between two phrasings: keep 20, in which
+case the retained window is the last ten minutes of autosaving *or* the last
+twenty manual saves, and the question is whether that is what "restore an
+earlier generation" should mean; or keep "roughly a day" as the requirement,
+in which case the number moves toward 2,880 and §5's 256 MiB — derived as 5
+slots × 20 retained revisions × ~2 MiB — moves with it. The nearest existing
+precedent in the repository is neither figure: the local repository (#19)
+retains **3** generations (`src/persistence/local/repository.ts:24`, "Current
+generation plus this many previous safe copies. Default 3") and does not keep
+them forever.
 
 Not implemented here because pruning means deleting rows, and `prisons`
 carries a foreign key to `save_versions.id` (`prisons_current_version_fk`)
@@ -221,9 +252,19 @@ it may well be the cheaper half.
   Rejected as the *primary* control for the reasons in §2 — it makes the
   bound contingent on a grant rather than on an invariant. It remains
   available as an additional hardening step, and would be a small change on
-  top of what is here; it is not taken now because it is a breaking change
-  to `SupabaseCloudSaveClient.registerPrison`, which belongs with the client
-  wiring rather than with the database bound.
+  top of what is here; it is not taken because the trigger is the primary
+  control (§2) and a grant-contingent bound is weaker. The client-wiring
+  objection this bullet used to give — that it would be a breaking change to
+  `SupabaseCloudSaveClient.registerPrison` — has expired: `registerPrison` has
+  gone through the `create_prison()` RPC since #192
+  (`src/persistence/cloud/supabase-client.ts:131`), and there is no `.insert`
+  into `prisons` anywhere in `src/`. The alternative has still *not* been
+  taken, so §2's argument stands unchanged — the table-level INSERT grant was
+  revoked and immediately re-granted per column in
+  `supabase/migrations/20260824140000_protect_server_timestamps.sql:68-69`, and
+  `supabase/tests/004_free_tier_capacity.test.sql` still drives the trigger
+  through that grant. What has changed is only the cost of taking it, and that
+  is a fact for whoever decides rather than a decision made here.
 - **A `CHECK` constraint.** Not possible: a `CHECK` cannot count sibling
   rows. Stated because it is the first thing anyone reaching for a cap
   tries.
