@@ -19,10 +19,13 @@ and threat model) and [ADR 0009](./adr/0009-challenge-verification-strategy.md)
 - **Executed against the real Supabase local stack:** the first nine
   migrations in `supabase/migrations/` and the first four pgTAP suites in
   `supabase/tests/`, under Supabase CLI 2.115.0 with GoTrue, PostgREST,
-  Storage and Realtime running. The four #105 hardening migrations
-  (`20260824090000`, `20260824090100`, `20260824100000`, `20260824100100`),
-  suite 005 and the twenty-two assertions suite 002 gained for findings 1
-  and 2 all postdate that run and are not in it. Reproduce with:
+  Storage and Realtime running. The seven #105 hardening migrations
+  (`20260824090000`, `20260824090100`, `20260824100000`, `20260824100100`,
+  `20260824110000`, `20260824110100`, `20260824110200`), suite 005, the
+  twenty-two assertions suite 002 gained for findings 1 and 2, the
+  twenty-nine it gained for findings 6, 7 and 9, and the thirteen suite 001
+  gained for finding 11 all postdate that run and are not in it. Reproduce
+  with:
   ```bash
   supabase start && supabase db reset && supabase test db
   ```
@@ -30,7 +33,7 @@ and threat model) and [ADR 0009](./adr/0009-challenge-verification-strategy.md)
   check, and the security audit of that run found a second — see "Defects
   this tooling found" below.
 - **Also executed against a plain PostgreSQL 16/18 + pgTAP:** every
-  migration and every suite — 121 assertions, and the only path the #105
+  migration and every suite — 163 assertions, and the only path the #105
   hardening has run on. First run on 16.13 + pgTAP 1.3.2, since also on
   18.6 + pgTAP 1.3.4 — no major version is required or pinned. Reproduce
   with:
@@ -55,15 +58,24 @@ and threat model) and [ADR 0009](./adr/0009-challenge-verification-strategy.md)
   the schema has run there; none of the checks above has. The local stack
   runs the same GoTrue/PostgREST/Storage images, but nothing here has
   exercised a real project's networking, quotas or connection pooling. The
-  four #105 hardening migrations
+  seven #105 hardening migrations
   (`20260824090000_pin_trigger_function_search_path.sql`,
   `20260824090100_revoke_client_truncate.sql`,
-  `20260824100000_bind_challenge_evidence_to_payload.sql` and
-  `20260824100100_harden_submit_challenge_evidence.sql`) postdate that apply
-  and have run on a scratch database only. Nothing in the last two touches
-  stored data: `challenge_submissions` is empty on every project, because a
-  submission needs a published definition and the Z2 publisher does not
-  exist.
+  `20260824100000_bind_challenge_evidence_to_payload.sql`,
+  `20260824100100_harden_submit_challenge_evidence.sql`,
+  `20260824110000_generalize_entitlement_idempotency.sql`,
+  `20260824110100_close_challenge_definition_oracle.sql` and
+  `20260824110200_validate_save_version_storage_path.sql`) postdate that
+  apply and have run on a scratch database only. Nothing in the challenge
+  ones touches stored data: `challenge_submissions` is empty on every
+  project, because a submission needs a published definition and the Z2
+  publisher does not exist. Two of the others can *refuse to apply* on a
+  populated project rather than changing a row — the ledger's natural-key
+  index if two provider-less `entitlement_events` rows are identical in
+  every recorded field, and the `save_versions_storage_path_shape` CHECK if
+  any row already carries a non-null `storage_path`. Both failures are loud
+  and destroy nothing; each migration names the query that answers whether
+  the condition holds.
 - **Deliberately not built:** the deployed server functions themselves (the
   Edge Function/Worker handlers), a payment provider integration, a replay
   runner and a telemetry ingestion endpoint. Each is either out of scope
@@ -224,7 +236,8 @@ both as `1` — a narrower residual than "any 16 hex characters will do", but
 a real one. And it is bounded: `enforce_challenge_evidence_size()` refuses
 evidence over `max_challenge_evidence_bytes()` (8,000,000, the largest
 figure `challengeLimitsSchema.maxEvidenceBytes` can legally declare) with
-SQLSTATE `LS003`, distinct from `LS001` and `LS002`. #105 measured an
+SQLSTATE `LS003`, distinct from `LS001`, `LS002` and `LS004` (the
+per-owner storage-path prefix, `docs/CLOUD_SAVE.md`). #105 measured an
 8,388,619-byte blob accepted before that trigger existed. The real budget
 is still the definition's own, checked by the verifier (ADR 0009 step 4);
 this is a ceiling on abuse.
@@ -266,6 +279,51 @@ disagrees with the authenticated caller — but that field is outside the
 hashed evidence, so a captured blob can be resubmitted under any account.
 Until the ADR settles it, a thief who submits first still holds the single
 global row for that run.
+
+### Submission refusals do not answer what RLS refuses to answer
+
+`submit_challenge_evidence()` is `SECURITY DEFINER`, so it reads
+`challenge_definitions` as the table owner and is exempt from
+`challenge_definitions_public_read`. Issue #105 finding 9: it therefore said
+"unknown challenge X version N" for a definition that does not exist and
+"challenge X version N is not open for submissions" for one that exists but
+is hidden — an existence oracle for the unpublished pipeline, queryable one
+guessed id at a time by any anonymously-signed-in identity. What leaked was
+not the definition, whose seed and scoring stay unreadable, but its
+existence and version numbering: the "a challenge is coming, and it is
+called this" fact the `published_at` bound exists to hold back.
+
+Worse, and not in #105's wording: a definition that had *opened* but had
+not been *published* accepted submissions outright. `published_at` was a
+read-side switch with no write-side counterpart, so a row could be keyed
+and ranked against a definition no client was allowed to read.
+
+`20260824110100_close_challenge_definition_oracle.sql` applies the read
+policy's own predicate — `published_at <= now() and opens_at <= now()` — in
+the function's lookup, and answers everything it does not match from **one**
+`raise`: `challenge % version % is not available for submissions`. Absent,
+unpublished, unopened and non-existent-version all produce the identical
+message. Two answers become indistinguishable by there being one answer, not
+by two statements sharing a wording.
+
+**What a legitimate client can still learn**, stated as the contract: for a
+definition it can read — which is every definition it could have played —
+whether the window is still open (`challenge % version % is closed for
+submissions`), whether its evidence duplicates its own earlier submission
+(`duplicate`), whether the same evidence is already recorded by somebody
+(`conflict`, no id), and every validation refusal about the payload it sent.
+For anything it cannot read, one answer, identical whether or not the
+definition exists.
+
+The closed-window message stays distinguishable on purpose, and the reason
+it is not the finding reappearing is structural: reaching that branch
+requires satisfying the read policy, and both client roles hold `SELECT` on
+the table, so the caller who sees it could have read the row — `closes_at`
+included — for itself. The predicate is duplicated from the policy because
+a definer function cannot have RLS applied to itself (inside one, the
+invoker *is* the owner, so a `security_invoker` view does not help either);
+suite 002 asserts the policy's expression as the catalog renders it, so
+widening the read rule fails the gate and comes back to this function.
 
 ### Verification order (cheapest first, fail closed)
 `verifyChallengeSubmission()`:
@@ -355,6 +413,72 @@ including events that did **not** apply and why.
 The payment provider is not chosen (out of scope pending commercial/legal
 review), so the webhook contract is provider-agnostic and the signature
 check is an injected port.
+
+### A redelivery is idempotent on every path, not only the webhook
+
+`record_entitlement_event()` promises one thing about a repeat: "return the
+original outcome, write nothing." Issue #105 findings 6 and 7 are the two
+ways it did not keep that promise, and
+`20260824110000_generalize_entitlement_idempotency.sql` is the fix.
+
+**Finding 6: the key covered one path.**
+`entitlement_events_provider_event_key` is partial (`where provider is not
+null`), so only the payment webhook was deduplicated. Three byte-identical
+`promotional` calls returned `applied` three times and the projection went
+to `grantedSaveSlots: 15`; the same replay under `support-adjustment` and
+`migration` produced two rows each. That is two defects at once, and only
+one of them is bounded: the audit trail records grants that never happened,
+and the derived capacity inflates — the latter clamped at 45 by
+`recompute_entitlement_projection()`, which is why #105 saw ten replays of
+a 25-slot grant produce 45 rather than 250. The fix removes the duplicate
+row; the clamp is untouched and stays the last line of defence.
+
+A second partial unique index now covers the provider-less rows, over
+**every field the ledger records about the fact**: account, product,
+capability, event type, source, quantity, `occurred_at`, actor kind, actor
+id, reason and `expires_at` (`nulls not distinct`, because a
+never-expiring grant is the common case and NULLs are distinct by default).
+The two columns left out are the two that describe the row rather than the
+fact — `event_id` and `recorded_at` — which is exactly what differs between
+a redelivery and the original. `schema_version` is out because its CHECK
+pins it to 1; a version 2 has to revisit the key.
+
+**The cost, and the escape hatch.** Two genuinely separate grants that are
+identical in every audited field, at the same microsecond, are now one: the
+second is answered `duplicate` and does not apply. Recording two facts
+means letting them differ in a field a human reading the ledger can see —
+`occurred_at`, or `reason`, which an audit trail wants distinct anyway.
+`reason` being in the key is what makes that hatch exist, and it is also
+the one field a sloppy caller could vary by accident: a reason string
+carrying a timestamp defeats this key, and nothing in the schema can stop
+it. Callers should still supply `provider`/`provider_event_id`, which is a
+general external-idempotency pair rather than a payment-only one — a
+`promotional` event may carry it, and when it does, that key wins.
+
+**Finding 7: a concurrent redelivery raised instead of answering.** Two
+`psql` sessions, the second calling one second behind the first: the
+second's dedup SELECT saw nothing (the first was uncommitted), its INSERT
+blocked on the unique index, and the moment the first committed it raised
+`23505` — "your write failed", for a write that had in fact already been
+applied. It now takes a `pg_advisory_xact_lock` keyed on the dedup key
+itself before looking, and wraps the insert in a handler that turns
+`unique_violation` into `duplicate` by looking the original up again. The
+lock is the fast path and the handler is the correct one: a writer that
+takes no lock (a backfill, a restore, a session whose `timestamptz`
+rendering differs) still lands on the index. Measured across all four
+combinations of the two controls, the same two-session race answers
+`duplicate` with either one alone and `23505` with neither.
+
+**This is the one concurrency claim in this schema that is demonstrated
+rather than reasoned.** #105's residual-risk section says the advisory locks
+were "reasoned from the locking rather than demonstrated"; that is still
+true of `enforce_prison_slot_capacity()` and of
+`submit_challenge_evidence()`. It is no longer true here. What is still
+reasoned: the retry depends on READ COMMITTED, where each statement takes a
+fresh snapshot and therefore sees the row a concurrent transaction just
+committed. Under REPEATABLE READ or SERIALIZABLE it re-raises instead,
+which is the right answer at those levels — retry the transaction — and
+PostgREST runs READ COMMITTED.
 
 ### Offline degradation
 The client keeps an `EntitlementProjection` (`grantedSaveSlots`,
