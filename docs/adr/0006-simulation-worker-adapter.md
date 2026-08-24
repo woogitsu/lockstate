@@ -80,7 +80,7 @@ rather than being relaxed to make loading work.
 
 **Negative:** a worker start per load, paid while the player waits, and it is
 measurable rather than free. Measured in Chromium against the production build
-of this repository (`dist/assets/worker-*.js`, 228 kB), constructing the worker
+of this repository (`dist/assets/worker-*.js`, 231 kB at `9b6965a`), constructing the worker
 and getting its first protocol reply back — `new Worker` plus module evaluation
 plus one round trip — took **152–200 ms over eight consecutive runs, median
 ~172 ms**, on the container this was developed on. That is the whole of what

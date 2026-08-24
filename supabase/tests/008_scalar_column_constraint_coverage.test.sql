@@ -12,6 +12,19 @@
 -- column later gains a constraint. An allow-list that cannot go stale is worth
 -- having; one that can is worse than none.
 --
+-- THE SECOND STALENESS DIRECTION, and why it exists. A constraint is not the
+-- only thing these reasons assert. Every reason below also says who can write
+-- the column, and that half went stale first: `prisons.created_at` and
+-- `profiles.created_at` kept reasons reading `CLIENT-WRITABLE ... Open finding
+-- #194` after 20260824140000 revoked exactly those grants, and this suite
+-- stayed green throughout, because the rule above fires when a column gains a
+-- *constraint*, never when it loses a *grant*. So each allow-list entry now
+-- declares `client_writable` as a boolean and the catalog decides whether it is
+-- true -- the same `has_column_privilege` reading suite 003 takes for the
+-- `default now()` columns, applied here to the prose that was drifting.
+-- Suite 003's rule is about which timestamps a client may write at all; this
+-- one is about whether this suite's own reasons still describe the schema.
+--
 -- SCOPE, and what is excluded by type rather than by decision. `uuid` and
 -- `boolean` columns are not scanned: their domains are already exactly what the
 -- contract permits (128 bits, or two values), so there is nothing a constraint
@@ -27,7 +40,7 @@
 -- EXECUTED against plain PostgreSQL via `pnpm verify:sql`.
 
 begin;
-select plan(11);
+select plan(12);
 
 -- --- The declaration --------------------------------------------------
 
@@ -39,7 +52,11 @@ create temporary table constrained_columns (
   -- Required for `unconstrained-by-decision` and NULL otherwise. A reason is
   -- what separates "nobody got to this" from "this is right"; the assertion
   -- below refuses an empty one.
-  reason text
+  reason text,
+  -- Also required for `unconstrained-by-decision` and NULL otherwise: the
+  -- reason's claim about who may write the column, stated as a fact the catalog
+  -- can contradict. See "THE SECOND STALENESS DIRECTION" in the header.
+  client_writable boolean
 );
 
 insert into constrained_columns (tbl, col, mechanism, object_name, reason) values
@@ -74,45 +91,54 @@ insert into constrained_columns (tbl, col, mechanism, object_name, reason) value
   ('challenge_definitions', 'opens_at',                'relational-check', 'challenge_definitions_window', null),
   ('challenge_definitions', 'closes_at',               'relational-check', 'challenge_definitions_window', null),
   ('entitlement_events',    'occurred_at',             'relational-check', 'entitlement_events_expiry_after_occurrence', null),
-  ('entitlement_events',    'expires_at',              'relational-check', 'entitlement_events_expiry_after_occurrence', null),
+  ('entitlement_events',    'expires_at',              'relational-check', 'entitlement_events_expiry_after_occurrence', null);
 
-  -- Unconstrained, with reasons. Two distinct kinds, and the difference
-  -- matters: the first kind is settled, the second is an open finding.
-  --
+-- Unconstrained, with reasons, and each one declaring whether a client role can
+-- write it. Two distinct kinds, and the difference matters: the first kind is
+-- settled, the second is an open finding.
+insert into constrained_columns (tbl, col, mechanism, object_name, reason, client_writable) values
   -- (a) Server-defaulted and unreachable from either client role. An absolute
   --     bound on a timestamp is a product question -- is a challenge opening in
   --     the year 4000 wrong? -- and these cannot be set by anyone the contract
   --     does not already trust.
   ('challenge_definitions', 'published_at',  'unconstrained-by-decision', null,
-   'Server-defaulted; INSERT is service_role only. An absolute calendar bound would be a product decision, and no client can reach this column.'),
+   'Server-defaulted; INSERT is service_role only. An absolute calendar bound would be a product decision, and no client can reach this column.', false),
   ('challenge_submissions', 'submitted_at',  'unconstrained-by-decision', null,
-   'Server-defaulted; no client or service_role grant. Written only through submit_challenge_evidence().'),
+   'Server-defaulted; no client or service_role grant. Written only through submit_challenge_evidence().', false),
   ('challenge_submissions', 'verified_at',   'unconstrained-by-decision', null,
-   'Written only by the verifier''s four-column service_role UPDATE grant. Nullable by design until a verdict exists.'),
+   'Written only by the verifier''s four-column service_role UPDATE grant. Nullable by design until a verdict exists.', false),
   ('entitlement_events',    'recorded_at',   'unconstrained-by-decision', null,
-   'Server-defaulted; no client or service_role grant. Written only through record_entitlement_event().'),
+   'Server-defaulted; no client or service_role grant. Written only through record_entitlement_event().', false),
   ('entitlements',          'granted_at',    'unconstrained-by-decision', null,
-   'Server-defaulted; no client or service_role grant. Written only by the ledger recompute.'),
+   'Server-defaulted; no client or service_role grant. Written only by the ledger recompute.', false),
   ('entitlements',          'updated_at',    'unconstrained-by-decision', null,
-   'Server-defaulted; no client or service_role grant. Written only by the ledger recompute.'),
+   'Server-defaulted; no client or service_role grant. Written only by the ledger recompute.', false),
   ('save_versions',         'created_at',    'unconstrained-by-decision', null,
-   'Server-defaulted; no client grant. Written only through create_save_version().'),
+   'Server-defaulted; no client grant. Written only through create_save_version().', false),
+
+  -- (a2) The same kind, but they arrived here by being fixed rather than by
+  --      being designed that way. Both sat under (b) as client-writable --
+  --      correctly until 20260824140000 (#194) revoked the table-level grants
+  --      that reached them, and wrongly on every run after, because a reason
+  --      naming a grant was something this suite had no way to read. That is
+  --      what `client_writable` is for.
+  ('prisons',               'created_at',    'unconstrained-by-decision', null,
+   'Server-defaulted; not client-writable since 20260824140000, which revoked the table-level INSERT and re-granted INSERT per column without created_at. The UPDATE grant never covered it.', false),
+  ('profiles',              'created_at',    'unconstrained-by-decision', null,
+   'Server-defaulted; not client-writable since 20260824140000, which replaced this table''s table-level INSERT and UPDATE grants with per-column lists that omit created_at.', false),
 
   -- (b) Client-writable, and that is a finding rather than a decision. A
   --     client can set these at insert time and walk `updated_at` backwards --
-  --     reproduced in #194. They are listed here so this suite records the open
-  --     finding instead of reading as though the state were intended; the
-  --     entries move to a real mechanism when #194 is acted on.
-  ('prisons',               'created_at',    'unconstrained-by-decision', null,
-   'CLIENT-WRITABLE at insert time and not by intent: the prisons UPDATE grant deliberately excludes created_at, but the table-level INSERT grant covers it. Open finding #194.'),
+  --     reproduced in #194, whose `updated_at` half is still open. They are
+  --     listed here so this suite records the open finding instead of reading
+  --     as though the state were intended; the entries move to a real mechanism
+  --     when that half is acted on.
   ('prisons',               'updated_at',    'unconstrained-by-decision', null,
-   'CLIENT-WRITABLE by explicit grant. Whether a client may set its own updated_at is the decision in #194; a client-supplied value cannot be trusted for ordering.'),
-  ('profiles',              'created_at',    'unconstrained-by-decision', null,
-   'CLIENT-WRITABLE via table-level INSERT and UPDATE; no column-level treatment exists on this table. Open finding #194.'),
+   'CLIENT-WRITABLE by explicit grant. Whether a client may set its own updated_at is the decision in #194; a client-supplied value cannot be trusted for ordering.', true),
   ('profiles',              'updated_at',    'unconstrained-by-decision', null,
-   'CLIENT-WRITABLE via table-level INSERT and UPDATE. Open finding #194.'),
+   'CLIENT-WRITABLE via the per-column INSERT and UPDATE grants 20260824140000 left in place. Open finding #194.', true),
   ('user_settings',         'updated_at',    'unconstrained-by-decision', null,
-   'CLIENT-WRITABLE via table-level INSERT and UPDATE. Open finding #194.');
+   'CLIENT-WRITABLE via table-level INSERT and UPDATE; 20260824140000 deliberately changed nothing here. Open finding #194.', true);
 
 -- --- The enumeration, from the catalog --------------------------------
 
@@ -227,6 +253,30 @@ select is_empty(
            and pg_get_constraintdef(k.oid) ~ ('(^|[^A-Za-z0-9_])' || b.col || '([^A-Za-z0-9_]|$)')
        ) $$,
   'no column recorded as unconstrained has quietly gained a constraint'
+);
+
+-- --- ...nor in the direction that actually went stale ------------------
+--
+-- Every reason above also claims who may write the column, and a grant can
+-- change without a constraint appearing: 20260824140000 revoked the grants that
+-- reached `prisons.created_at` and `profiles.created_at` and the two reasons
+-- kept saying `CLIENT-WRITABLE` for as long as nobody read them. So the claim
+-- is declared as a boolean and compared against the catalog, and both
+-- directions fail -- a column that loses its client grants, and one that gains
+-- them. `is distinct from` carries the null half of the rule too: a constrained
+-- entry that declares client-writability, or an unconstrained one that omits
+-- it, is as much a defect as a wrong value.
+select is_empty(
+  $$ select b.tbl || '.' || b.col
+     from constrained_columns b
+     where b.client_writable is distinct from (
+       case when b.mechanism = 'unconstrained-by-decision' then
+         has_column_privilege('authenticated', 'public.' || b.tbl, b.col, 'INSERT')
+           or has_column_privilege('authenticated', 'public.' || b.tbl, b.col, 'UPDATE')
+           or has_column_privilege('anon', 'public.' || b.tbl, b.col, 'INSERT')
+           or has_column_privilege('anon', 'public.' || b.tbl, b.col, 'UPDATE')
+       end) $$,
+  'every unconstrained entry declares client-writability and the grants still agree with it'
 );
 
 select * from finish();
