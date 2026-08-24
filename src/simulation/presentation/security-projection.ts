@@ -82,7 +82,7 @@ export interface SecuritySectorViewModel {
   readonly requiredPermission?: string;
   readonly controlState: SectorControlState;
   readonly postTile: TileViewModel;
-  /** Ascending door id. `DoorRegistry.all()` is `Map` order; this projection never uses it. */
+  /** Ascending door id, from sorting the sector's own `doorIds` -- this projection resolves doors by id and never enumerates the registry. */
   readonly doors: readonly SecurityDoorViewModel[];
   readonly patrol: SectorPatrolViewModel;
   readonly staffing: SectorStaffingViewModel;
