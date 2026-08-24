@@ -2,10 +2,14 @@
 -- optimistic-concurrency/idempotency RPC.
 --
 -- EXECUTED two ways. The first 19 assertions have been run both ways,
--- 19/19 each; the thirteen added for issue #105 finding 11 -- the
--- "storage_path" section at the end -- have been run only the second way,
+-- 19/19 each. Everything added since has been run only the second way,
 -- because the stack run needs container images that were not reachable when
--- they were written. `pnpm verify:sql` reports 32/32 for this suite.
+-- they were written: the thirteen for issue #105 finding 11 (the
+-- "storage_path" section), and the five for issue #194 (the
+-- server-timestamp section at the end). `pnpm verify:sql` reports 37/37 for
+-- this suite. That figure is what drifted before -- it read 32/32 for as
+-- long as nobody re-ran it after #194 -- so treat it as a claim to check
+-- rather than as a fact to trust.
 --
 --   * `supabase test db` against the REAL Supabase local stack (CLI 2.115.0,
 --     PostgreSQL 17 + pgTAP, with GoTrue, PostgREST, Storage and Realtime

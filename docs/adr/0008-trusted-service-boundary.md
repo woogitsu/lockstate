@@ -125,7 +125,7 @@ Every trusted mutation path, without exception, is:
 | --- | --- | --- | --- | --- |
 | T1 | Forged score submitted directly to the API | Any authenticated user with a HTTP client | Leaderboard integrity | Rank only replay-verified submissions; ADR 0009 |
 | T2 | Tampered/patched client produces "valid" evidence | Local code modification | Leaderboard integrity | Evidence binds build/content/config; replay recomputes the outcome server-side; incompatible builds rejected |
-| T3 | Replaying someone else's evidence | Network capture or public data | Leaderboard integrity | Submissions are account-scoped and deduplicated by evidence hash |
+| T3 | Replaying someone else's evidence | Network capture or public data | Leaderboard integrity | Submissions are account-scoped (`user_id` is `auth.uid()` and there is no owner parameter) and deduplicated on `evidence_digest`, a stored generated column the server computes from the payload. The caller-supplied `evidence_hash` keyed this until issue #105 finding 1 and now keys nothing — see `docs/TRUSTED_SERVICES.md`, "The dedup key is the payload, not the caller's claim", for the residual the global key leaves open |
 | T4 | Direct write to `entitlements` via PostgREST | Authenticated session | Paid capacity | No insert/update/delete policy **and** revoked table grants; only Z2 writes |
 | T5 | Editing the local entitlement cache | DevTools/localStorage | Paid capacity | Cache is advisory, clamped and expiring; capacity is re-checked server-side at slot creation |
 | T6 | Forged or replayed payment webhook | Anyone who can reach the endpoint | Paid capacity, revenue | Signature verification before parsing effects; `(provider, provider_event_id)` uniqueness |

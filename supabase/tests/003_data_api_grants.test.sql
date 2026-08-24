@@ -468,7 +468,7 @@ select is(
 
 -- --- Server-defaulted timestamps are the server's (issue #194) --------
 --
--- Shaped as a rule, not a list, for the reason suites 005, 007 and 008 are:
+-- Shaped as a rule, not a list, for the reason suites 005, 007, 008 and 009 are:
 -- the four columns #194 found were client-writable were found by an inventory,
 -- not by a failing test, because this suite pins **what the grants are** rather
 -- than **what they ought to be**. That is the right thing for a grant suite to
