@@ -809,6 +809,71 @@ Database `lockstate-saves`, version 1, two object stores:
 - `generations` (out-of-line key `` `${prisonId}:${generationId}` ``) — one
   validated `SaveEnvelope` per generation.
 
+#### Slot metadata is validated, and what happens when it is not valid
+
+Until #105 finding 14 this was the one persistence boundary with no schema:
+`LocalSaveTransaction` declared `getMetadata`/`listMetadata` as returning
+`PrisonSlotMetadata`, which made the type an assertion about bytes on a
+player's disk rather than something checked, while the generation stored
+beside it went through `decodeSaveEnvelope` in full. The store interface now
+returns both kinds of record as `unknown` — the shape generations always
+had — and `PrisonSaveRepository` validates slot records with
+`prisonSlotMetadataSchema` (`src/persistence/local/slot-metadata-schema.ts`),
+because deciding what to do with unreadable data is repository policy.
+
+**A record that fails validation is refused, not treated as absent, and
+nothing is written, deleted or demoted.** That is the deliberate part, and
+the reason is that "absent" is not a safe synonym for "damaged" here.
+Elsewhere it is: invalid stored input settings and an invalid cached
+entitlement projection are both read as absent, because absent means "use
+the defaults" and "assume the free tier". For a save slot, absent means
+*there is no such prison* — `create()` treats the id as free, `delete()` as
+nothing to do, `list()` simply stops showing it. So treating a damaged record
+as absent lets the next write replace it and orphan its generations, which no
+read path can then reach and `delete()` would never clean up. That is the one
+outcome that converts a damaged index into lost saves, and it is what the
+mutation test for this behaviour demonstrates: with refusal replaced by
+treat-as-absent, `create()` on the damaged slot succeeds and the record is
+gone.
+
+Refusal reaches the player through paths that already existed: `save()`
+already converts a throw from inside its transaction into a `SaveWriteError`
+(`unknown-error`, carrying the reason), and a rejected `list()` or load is
+already rendered by `src/ui/save-panel.ts`. The one thing that changed there
+is wording — the status line no longer asserts that storage is unavailable,
+because an unreadable slot record is now a second possible cause.
+
+**Availability is the price, and it is a decision to revisit rather than a
+settled one.** One damaged record refuses the whole list, so the player is
+told the list is unreadable instead of seeing their other prisons; and a
+damaged slot cannot be deleted through `delete()`, because the generations it
+references can no longer be enumerated. The alternative — skip the bad row,
+keep the rest usable — silently hides a prison whose saves are still on disk,
+and no existing behaviour in this repository settles which is right (the
+generation path skips *and* demotes, but only because a redundant good
+generation may remain; a slot record has no redundant copy). The conservative
+option that cannot lose data was taken, and a recovery path for a damaged
+slot — surfacing it as unreadable rather than refusing everything, and
+offering an explicit destructive repair — is left as its own issue.
+
+**No migration, and why none is needed** (`AGENTS.md` boundary 7 — a schema
+added over an existing store can turn a readable slot unreadable, which is
+data loss dressed as validation): `PrisonSlotMetadata` has had exactly one
+shape since it was introduced, the database version has never moved past 1,
+and every writer of the record writes that shape. The schema is also
+deliberately no narrower than the records that exist — `prisonId`/`gameVersion`
+are `string().min(1)` rather than the envelope's `identifierSchema`, the
+current-generation pointer is accepted both as an explicit `undefined` and as
+an absent key, and there is **no** `updatedAt >= createdAt` refinement and no
+cross-field invariant. The timestamp rule in particular belongs to the
+envelope and not here: an envelope's timestamps are written together and are
+self-consistent by construction, while a slot's are two independent
+`Date.now()` readings, so a backwards system-clock adjustment must not cost a
+prison. Validation runs on writes too (`encodePrisonSlotMetadata`), so this
+repository cannot write a slot its own read path would refuse — before that
+gate, `create()` with an id the schema rejects would have produced a slot no
+later read, load or delete could touch.
+
 ### Generation retention and recovery
 
 `save()` validates by provenance (see "Trusted envelopes" above), then writes

@@ -1,7 +1,8 @@
 import { decodeSaveEnvelope, decodeSaveEnvelopeUnlessTrusted, type SaveEnvelope } from '../save-schema';
 import { applyGenerationRetention } from './generation-policy';
 import { classifyStoreError, type SaveWriteError } from './errors';
-import type { LocalSaveStore, PendingSyncState, PrisonSlotMetadata } from './store';
+import { decodePrisonSlotMetadata, encodePrisonSlotMetadata, requirePrisonSlotMetadata } from './slot-metadata-schema';
+import type { LocalSaveStore, LocalSaveTransaction, PendingSyncState, PrisonSlotMetadata } from './store';
 
 export type SaveResult =
   | { readonly ok: true; readonly generationId: string }
@@ -24,6 +25,22 @@ export interface PrisonSaveRepositoryOptions {
   readonly keepGenerations?: number;
   readonly now?: () => number;
   readonly generateGenerationId?: () => string;
+}
+
+/**
+ * Every read of a stored slot record goes through here, so validation cannot
+ * be forgotten at one of the eight call sites below. `undefined` means "no
+ * such slot"; a record that fails validation throws
+ * `CorruptSlotMetadataError` (see `slot-metadata-schema.ts` for why it is
+ * refused rather than treated as absent).
+ */
+function readSlot(record: unknown, prisonId?: string): PrisonSlotMetadata | undefined {
+  return decodePrisonSlotMetadata(record, prisonId);
+}
+
+/** Every write of a slot record, validated on the way in for the same reason. */
+async function writeSlot(tx: LocalSaveTransaction, metadata: PrisonSlotMetadata): Promise<void> {
+  await tx.putMetadata(encodePrisonSlotMetadata(metadata));
 }
 
 let generationSequence = 0;
@@ -55,12 +72,17 @@ export class PrisonSaveRepository {
   }
 
   public async list(): Promise<readonly PrisonSlotMetadata[]> {
-    return this.store.runTransaction('readonly', (tx) => tx.listMetadata());
+    const stored = await this.store.runTransaction('readonly', (tx) => tx.listMetadata());
+    // One unreadable record refuses the whole list rather than being skipped:
+    // see `decodePrisonSlotMetadata`'s header for why absent is not a safe
+    // synonym for corrupt here, and docs/PERSISTENCE.md for the availability
+    // trade-off that choice makes.
+    return stored.map((record) => requirePrisonSlotMetadata(record));
   }
 
   public async create(input: CreatePrisonInput): Promise<PrisonSlotMetadata> {
     return this.store.runTransaction('readwrite', async (tx) => {
-      const existing = await tx.getMetadata(input.prisonId);
+      const existing = readSlot(await tx.getMetadata(input.prisonId), input.prisonId);
       if (existing !== undefined) {
         throw new Error(`Prison "${input.prisonId}" already exists.`);
       }
@@ -74,14 +96,14 @@ export class PrisonSaveRepository {
         updatedAt: timestamp,
         ...(input.displayName === undefined ? {} : { displayName: input.displayName }),
       };
-      await tx.putMetadata(metadata);
+      await writeSlot(tx, metadata);
       return metadata;
     });
   }
 
   public async delete(prisonId: string): Promise<void> {
     await this.store.runTransaction('readwrite', async (tx) => {
-      const metadata = await tx.getMetadata(prisonId);
+      const metadata = readSlot(await tx.getMetadata(prisonId), prisonId);
       if (metadata === undefined) return;
       for (const generationId of metadata.generationIds) {
         await tx.deleteGeneration(prisonId, generationId);
@@ -115,7 +137,7 @@ export class PrisonSaveRepository {
 
     try {
       await this.store.runTransaction('readwrite', async (tx) => {
-        const metadata = await tx.getMetadata(prisonId);
+        const metadata = readSlot(await tx.getMetadata(prisonId), prisonId);
         if (metadata === undefined) {
           throw new Error(`Prison "${prisonId}" does not exist. Call create() first.`);
         }
@@ -123,7 +145,7 @@ export class PrisonSaveRepository {
         await tx.putGeneration(prisonId, generationId, decoded.value);
 
         const retention = applyGenerationRetention(metadata.generationIds, generationId, this.keepGenerations);
-        await tx.putMetadata({
+        await writeSlot(tx, {
           ...metadata,
           currentGenerationId: generationId,
           generationIds: retention.generationIds,
@@ -150,7 +172,7 @@ export class PrisonSaveRepository {
    * window validates.
    */
   public async loadCurrent(prisonId: string): Promise<LoadResult> {
-    const metadata = await this.store.runTransaction('readonly', (tx) => tx.getMetadata(prisonId));
+    const metadata = readSlot(await this.store.runTransaction('readonly', (tx) => tx.getMetadata(prisonId)), prisonId);
     if (metadata === undefined) return { ok: false, reason: 'not-found' };
 
     const candidates = [...metadata.generationIds].reverse(); // newest first
@@ -200,14 +222,14 @@ export class PrisonSaveRepository {
    */
   public async demoteGeneration(prisonId: string, generationId: string): Promise<void> {
     await this.store.runTransaction('readwrite', async (tx) => {
-      const metadata = await tx.getMetadata(prisonId);
+      const metadata = readSlot(await tx.getMetadata(prisonId), prisonId);
       if (metadata === undefined) return;
       const generationIds = metadata.generationIds.filter((id) => id !== generationId);
       // `generationIds` is ordered oldest-first, so the newest survivor is last.
       const nextCurrent = metadata.currentGenerationId === generationId
         ? generationIds[generationIds.length - 1]
         : metadata.currentGenerationId;
-      await tx.putMetadata({
+      await writeSlot(tx, {
         ...metadata,
         currentGenerationId: nextCurrent,
         generationIds,
@@ -227,9 +249,9 @@ export class PrisonSaveRepository {
     const confirmedInvalid = triedNewestFirst.slice(0, recoveredIndex);
 
     await this.store.runTransaction('readwrite', async (tx) => {
-      const metadata = await tx.getMetadata(prisonId);
+      const metadata = readSlot(await tx.getMetadata(prisonId), prisonId);
       if (metadata === undefined) return;
-      await tx.putMetadata({
+      await writeSlot(tx, {
         ...metadata,
         currentGenerationId: recoveredGenerationId,
         generationIds: metadata.generationIds.filter((id) => !confirmedInvalid.includes(id)),
@@ -256,18 +278,18 @@ export class PrisonSaveRepository {
 
   public async markPendingSync(prisonId: string, pendingSync: PendingSyncState): Promise<void> {
     await this.store.runTransaction('readwrite', async (tx) => {
-      const metadata = await tx.getMetadata(prisonId);
+      const metadata = readSlot(await tx.getMetadata(prisonId), prisonId);
       if (metadata === undefined) throw new Error(`Prison "${prisonId}" does not exist.`);
-      await tx.putMetadata({ ...metadata, pendingSync });
+      await writeSlot(tx, { ...metadata, pendingSync });
     });
   }
 
   public async clearPendingSync(prisonId: string): Promise<void> {
     await this.store.runTransaction('readwrite', async (tx) => {
-      const metadata = await tx.getMetadata(prisonId);
+      const metadata = readSlot(await tx.getMetadata(prisonId), prisonId);
       if (metadata === undefined) throw new Error(`Prison "${prisonId}" does not exist.`);
       const { pendingSync: _omit, ...rest } = metadata;
-      await tx.putMetadata(rest);
+      await writeSlot(tx, rest);
     });
   }
 }
