@@ -193,7 +193,10 @@ export class WorldScene extends Phaser.Scene {
     // `input.manager` after this line has run and gets four pointer entries,
     // `pointersTotal` 3 and `mousePointer` at index 0 -- one mouse, three
     // touch pointers -- with `inputActivePointers` still at its default of 1,
-    // which is the "unless told otherwise" above. #209 recorded this comment
+    // which is the "unless told otherwise" above. Deleting this line takes the
+    // scene to one touch pointer and `addPointer(1)` to two, both measured by
+    // applying them; that is the same spec, and it is what makes the count a
+    // guarded number rather than a remembered one. #209 recorded this comment
     // as INFERRED twice, once because the audit could not tell which entry was
     // the mouse and once because the harness had no handle on the manager at
     // all; it is VERIFIED now, and that spec is what keeps it so.
