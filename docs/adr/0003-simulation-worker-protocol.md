@@ -42,7 +42,7 @@ Worker to main thread:
 - handshake acceptance and pong;
 - ready and clock-state acknowledgements;
 - queued/rejected command results;
-- state deltas, snapshots and domain events;
+- state deltas, snapshots, projection readouts and domain events;
 - stopped acknowledgement;
 - structured protocol faults.
 
@@ -84,6 +84,77 @@ every 250 ms and only when the tick has moved. It calls nothing on the kernel.
 This is what keeps clock control compatible with ADR 0009's determinism
 guarantee, and `tests/determinism/clock-transport.test.ts` is the executable
 form of that claim.
+
+## Amendment, 2026-08-24: `simulation/status-counts` publishes a projection
+
+`src/simulation/presentation/` computes the read models the HUD panels are
+written against, and until now no worker-to-main message carried any of
+them. The projections take live registries and entity stores, so they can
+only run inside the worker; with no message for their output the always-
+visible status strip painted the literal zeros of `EMPTY_HUD_VIEW_MODEL`
+for a whole session, however many prisoners the simulation held (issue
+#104). `simulation/delta` was declared in the kind union with no schema and
+no sender, which is not a route either.
+
+`simulation/status-counts` is the first message that carries a projection.
+It follows the `simulation/clock-state` precedent above rather than
+inventing a second pattern, and takes it one step further: this message is
+*only ever* a publication, so its envelope has **no `replyTo` field at
+all** rather than an optional one, and `.strict()` rejects a correlated
+form outright. That is the same rule the amendment above states, applied to
+the other case in it -- `replyTo` is optional on exactly those messages the
+worker may emit with no request behind them, and absent from those that are
+never replies, which is where `simulation/delta` and `simulation/event`
+already sit.
+
+The payload is the projection's `counts` block field for field, as
+validated non-negative integers, plus the `tick` they were read at and the
+projection's own `schemaVersion`. It is deliberately not a
+`versionedPayload`: that type exists to move an *opaque* `data` blob, and
+here the message kind already names which schema the payload follows, so
+declaring every field lets the boundary reject a negative or fractional
+count and lets a count added to the projection without being added to the
+schema fail at the decoder instead of reaching the HUD as `undefined`.
+Decision 5 still holds -- the domain payload carries its own version and can
+evolve without an envelope-version change.
+
+Publication is a **read**, on a cadence, and never per tick. The worker
+projects at most every 500 ms -- the interval is checked *before* the
+projection runs, so a busy prison pays for at most two projections a second
+rather than one on each of the ~66 tick-loop wakes -- and posts nothing at
+all when none of the counts has changed. The tick stamp is what stops a
+readout from being taken for a statement about a later state than the one
+it describes. Measured per publication at 300 room instances and 40 guards:
+0.23-0.43 ms to project and 0.03-0.05 ms to structured-clone a ~229-byte
+payload, flat from 250 to 5,000 actors
+(`tests/unit/worker-status-counts.test.ts`, reported not asserted).
+
+It calls nothing on the kernel and advances nothing, which is what keeps
+ADR 0009's determinism guarantee intact:
+`tests/determinism/status-counts-publication.test.ts` requires sixty ticks
+driven through the real worker, publishing as it goes, to end byte-identical
+to the same sixty ticks stepped with no worker at all.
+
+No list crosses this channel: the payload is ten integers, so
+`docs/HUD_PROJECTIONS.md` contract 5 has nothing to bound here yet. A
+projection with rows in it must be paged before it may be published on a
+timer, because a per-send cost that grows with the prison is the failure
+this cadence was chosen to avoid.
+
+The envelope version stays at `1`, and the argument for a *new kind* is not
+quite the argument the amendment above made for relaxing an existing one.
+There, the point was that both peers come from one build, so no old peer
+exists to misread the new form. That is still true -- the worker is a Vite
+worker chunk of the same bundle -- but it is no longer the whole reason. An
+old peer that did somehow receive this message reads its `kind` first, does
+not know it, and classifies it as `unknown-message-kind`: the decoder fails
+closed before dispatch, so the outcome is a readout that never appears, not
+a payload interpreted as something else. That is what this ADR's
+compatibility strategy asks for -- an old peer must be unable to interpret
+the message *unsafely* -- so adding a kind whose discriminant is the thing
+an old peer rejects needs no increment. A change to an *existing* kind's
+payload would not have this property, which is why relaxing one took the
+reasoning above instead.
 
 ## Compatibility strategy
 
