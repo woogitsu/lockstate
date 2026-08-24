@@ -48,9 +48,19 @@ import type { SimulationRuntime } from './new-session';
  *    runtime's mutable configuration arrays) it sorts explicitly.
  * 2. **Population-shaped, never capacity-shaped.** `DEFAULT_PRISONER_CAPACITY`
  *    is 5,000 slots; writing eighteen per-prisoner component arrays at that
- *    allocation would cost ~300 KiB in every save regardless of how many
- *    prisoners exist — the exact mistake #50 removed from the entity ledger.
- *    See `encodePrisonerComponents` for what is written instead.
+ *    allocation would cost **~240 KiB (245,332 bytes) in every save even for a
+ *    prison with no prisoners at all** — the exact mistake #50 removed from
+ *    the entity ledger. See `encodePrisonerComponents` for what is written
+ *    instead.
+ *
+ *    That figure is the JSON size of the encoded shape at 5,000 slots with
+ *    every array at its constructor default (needs at `NEED_MAX` = 255,
+ *    `actionIndex` at its `-1` sentinel, the rest zero), measured rather than
+ *    derived — the encoded arrays are `readonly number[]`, so the cost is
+ *    digit widths and not element sizes. A populated mid-game prison, where
+ *    three of the arrays hold seven-digit tick stamps, measures ~337 KiB at
+ *    the same capacity. `docs/PERSISTENCE.md` states the same 240 KiB for the
+ *    same claim; this comment said ~300 KiB, which is neither figure (#169).
  */
 
 // --- Prisoner components -----------------------------------------------
