@@ -41,13 +41,14 @@ import {
  *
  * It frames the world and never covers it: a dense strip along the top, a
  * tab bar centred along the bottom, a minimap frame in the bottom-left
- * corner, and nothing at all in the middle. One more band can appear
- * directly under the strip -- the refusal line, empty and `hidden` until a
- * control's action is refused (issue #207) -- and it is a grid row of its
- * own rather than an overlay, so even then the HUD shrinks the world's space
- * instead of covering it. The root is `pointer-events: none` so every pixel
- * that is not a control passes clicks straight through to the renderer's
- * canvas.
+ * corner, and nothing at all in the middle. Two more bands can appear
+ * directly under the strip -- the unavailable line, `hidden` unless the host
+ * says this page has no simulation behind it (issue #220), and below it the
+ * refusal line, empty and `hidden` until a control's action is refused
+ * (issue #207). Each is a grid row of its own rather than an overlay, so
+ * even then the HUD shrinks the world's space instead of covering it. The
+ * root is `pointer-events: none` so every pixel that is not a control passes
+ * clicks straight through to the renderer's canvas.
  *
  * It renders from a plain `HudViewModel` and imports nothing from
  * `src/simulation/**` -- `AGENTS.md` boundary 1, restated: the HUD is a view
@@ -100,6 +101,23 @@ export type HudIntent =
       readonly definitionId: string | undefined;
     };
 
+/**
+ * Why this page cannot run a simulation at all.
+ *
+ * A key and nothing else: text never crosses into the HUD (ADR 0011).
+ *
+ * The field is `labelKey`, matching `HudAlertViewModel`'s, so that
+ * `tests/foundation/localization-key-completeness.test.ts` covers it without
+ * being extended: that gate matches `*Key:` fields by name, proves each
+ * declared key resolves in the bundled default locale, and pins the exact
+ * set of field names it finds -- so inventing a name here would be a change
+ * to the gate rather than a use of it.
+ */
+export interface HudUnavailableNotice {
+  /** A message key, never text. */
+  readonly labelKey: LocalizationKey;
+}
+
 export interface MountHudOptions {
   readonly localizer: HudLocalizer;
   /** First paint. Defaults to an empty prison so the shell renders before any snapshot arrives. */
@@ -115,6 +133,18 @@ export interface MountHudOptions {
    * a coordinate field mid-edit.
    */
   readonly build?: HudBuildViewModel;
+  /**
+   * A standing sentence about the page itself, in a band of its own directly
+   * under the status strip (issue #220).
+   *
+   * Omitted -- the ordinary case -- the band is `hidden` and its grid row
+   * costs nothing. Supplied, it is laid out at every viewport and needs no
+   * control pressed and no section opened to be read.
+   *
+   * Deliberately **not** an entry in `HudViewModel.alerts`, and deliberately
+   * not settable afterwards. See the comment on the element in `mountHud`.
+   */
+  readonly unavailable?: HudUnavailableNotice;
   /**
    * Receives every player action, and may be async.
    *
@@ -198,6 +228,54 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
 
   let state = options.initialState ?? INITIAL_HUD_SHELL_STATE;
   let viewModel = options.viewModel ?? EMPTY_HUD_VIEW_MODEL;
+
+  /**
+   * Where "this page has no simulation behind it" is put on screen (issue
+   * #220).
+   *
+   * A grid row of its own, immediately under the status strip and above the
+   * refusal line, `hidden` -- and therefore costing exactly zero -- unless
+   * the host supplied `MountHudOptions.unavailable`. It is the same shape
+   * issue #207 built for the refusal line, and for the first two of the same
+   * three reasons:
+   *
+   *   - **It is there at every viewport.** `hud.css` drops `.hud__corner`
+   *     entirely at 720px and below, so a message routed to the alerts list
+   *     does not exist on a phone at all.
+   *   - **It is there without being opened.** The alerts section starts
+   *     folded (`INITIAL_HUD_SHELL_STATE`) and `createCollapsibleSection`
+   *     sets `body.hidden` while it is, so a row appended to that list is
+   *     `offsetParent === null` with a 0x0 box on *every* viewport, not only
+   *     on a phone. Measured in Chromium at 1280x800 and at 375x812 with
+   *     `Worker` construction blocked, on the shipped page, before this row
+   *     existed: `.hud` innerText did not contain the sentence at either
+   *     size (#220).
+   *
+   * The third reason #207 gave does **not** apply here and is why this is a
+   * second row rather than a second use of the first: a refusal is a fact
+   * about this HUD's own interaction and clears the moment the same action
+   * succeeds (`clearRefusal`), whereas "this browser cannot start a worker"
+   * belongs to no control and cannot stop being true while the page is
+   * loaded. Sharing one band would need a rule deciding which sentence wins.
+   *
+   * Set once, at mount, with no setter: the host learns this before it
+   * mounts the HUD -- a `Worker` constructor that threw does not un-throw --
+   * so a `setUnavailable` would be an API for a transition that cannot
+   * happen.
+   */
+  const unavailableText = element('span', { className: 'hud-unavailable__text' });
+  const unavailable = element('div', {
+    className: 'hud__unavailable',
+    // `role="status"` already implies `aria-live="polite"`; both are written
+    // out to match the refusal line exactly. Neither *announces* this
+    // sentence, because a live region announces changes and this text is
+    // present at first paint -- what the role buys is that a screen reader
+    // reaching it reads it as a status rather than as unlabelled prose.
+    attributes: { role: 'status', 'aria-live': 'polite' },
+    children: [unavailableText],
+  });
+  if (options.unavailable === undefined) unavailable.hidden = true;
+  else unavailableText.textContent = t(options.unavailable.labelKey);
 
   /**
    * Where a refused command is reported to the player (issue #207).
@@ -440,7 +518,10 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
 
   const hud = element('div', {
     className: 'hud',
-    children: [strip.element, refusal, corner, rail, tabBar],
+    // DOM order matches grid order, so reading order and tab order agree with
+    // what is painted: the standing "no simulation" band first, then the
+    // refusal line about the last press, then the world's furniture.
+    children: [strip.element, unavailable, refusal, corner, rail, tabBar],
   });
 
   // Only the controls that issue a *command* are disabled while one is in

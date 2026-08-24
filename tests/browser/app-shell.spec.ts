@@ -54,7 +54,7 @@ import { expect, test, type Page } from '@playwright/test';
  *    checked and neither is provable a layer down: that the badge is *laid out*
  *    at the top-left of the real page rather than merely present in the DOM
  *    (`getBoundingClientRect` and `offsetParent`, the distinction that let #82's
- *    own alert stay invisible on a phone with a green suite), and that
+ *    own alert stay invisible at every viewport with a green suite), and that
  *    `data-build-id` carries a real injected commit rather than the module's
  *    `unknown` fallback, which is the only way to tell the `define` is wired at
  *    all.
@@ -1155,6 +1155,16 @@ test.describe('the assembled application', () => {
     const before = await page.locator('.hud').innerText();
     await expect(page.locator('.hud__refusal')).toBeHidden();
 
+    // The other band in the same part of the grid, on a page whose worker
+    // started perfectly well. Both carry an author `display: flex`, which
+    // beats the user agent's `[hidden] { display: none }` -- so without the
+    // `[hidden]` rule written out beside each of them an empty coloured band
+    // is painted across the top of the world on every load. That is not a
+    // theory: `hud.css` records it happening to the refusal line, measured in
+    // Chromium with `offsetParent` non-null before anything had been refused.
+    // This is the assertion that it cannot happen to the unavailable line.
+    await expect(page.locator('.hud__unavailable')).toBeHidden();
+
     await submit.click();
 
     // What the player sees. The line is real layout, not merely a node in the
@@ -1216,12 +1226,16 @@ test.describe('the assembled application', () => {
     expect(await page.locator('.hud-tabs__inner .ui-tab').count()).toBeGreaterThan(0);
 
     /*
-     * The alert is in the DOM. **It does not reach the screen**, and this
-     * assertion is deliberately DOM-only until #220 is decided.
+     * The player is told, **on screen**. A console message is not
+     * communication, and neither is a node in the DOM that no viewport lays
+     * out.
      *
-     * This comment used to read "The player is told. A console message is not
-     * communication: it has to reach the screen" -- which was false. Measured
-     * at 1280x800 with `Worker` construction blocked:
+     * `toBeVisible` and not `toContainText` alone, because that pairing is
+     * the whole history of this assertion. Until #220 the sentence was an
+     * entry in `HudViewModel.alerts`, and this line read
+     * `expect(page.locator('.hud-alerts__list')).toContainText(...)` and
+     * passed -- while the same page, measured at 1280x800 with `Worker`
+     * blocked, reported:
      *
      *   listExists    true
      *   listText      "Simulation unavailable — this browser could not start
@@ -1229,21 +1243,63 @@ test.describe('the assembled application', () => {
      *   listLaidOut   false          <- offsetParent === null
      *   listRect      0 x 0
      *   cornerDisplay "block"        <- so NOT the <=720px media query
-     *   hudMentionsIt false          <- .hud innerText never says it
+     *   hudMentionsIt false          <- .hud innerText never said it
      *
-     * `.hud__corner` is displayed; the Alerts *section* starts collapsed
-     * (`INITIAL_HUD_SHELL_STATE`, and `createCollapsibleSection` sets
-     * `body.hidden = collapsed`), so the row has zero size on every viewport
-     * rather than only on a phone. That is a live defect and it is #220's.
-     *
-     * `toContainText` passes here because it does not imply visibility -- which
-     * is exactly how the defect survived. Pairing it with `toBeVisible()` is
-     * the correct assertion and **would fail today**, so it is not added: where
-     * the alert should go, and whether the section should start open, is a
-     * design decision. What is fixed here is the comment, which claimed the
-     * opposite of what the browser does.
+     * `.hud__corner` was displayed; the Alerts *section* inside it starts
+     * collapsed (`INITIAL_HUD_SHELL_STATE`, and `createCollapsibleSection`
+     * sets `body.hidden = collapsed`), so the row had zero size on every
+     * viewport rather than only on a phone. The sentence now goes to
+     * `.hud__unavailable`, a HUD grid row that is laid out at every width.
      */
-    await expect(page.locator('.hud-alerts__list')).toContainText('Simulation unavailable');
+    const unavailable = page.locator('.hud__unavailable');
+    await expect(unavailable).toBeVisible();
+    await expect(unavailable).toContainText('Simulation unavailable');
+    await expect(unavailable).toHaveAttribute('role', 'status');
+    await expect(unavailable).toHaveAttribute('aria-live', 'polite');
+
+    // And it is not merely visible to Playwright: it is a real box, and the
+    // HUD's own rendered text says it. `hudMentionsIt` is the measurement
+    // that was `false` for as long as the defect lived.
+    const measured = await page.evaluate(() => {
+      const node = document.querySelector<HTMLElement>('.hud__unavailable');
+      const rect = node?.getBoundingClientRect();
+      return {
+        laidOut: node !== null && node.offsetParent !== null,
+        width: rect?.width ?? 0,
+        height: rect?.height ?? 0,
+        hudMentionsIt: (document.querySelector<HTMLElement>('.hud')?.innerText ?? '')
+          .toLowerCase()
+          .includes('simulation unavailable'),
+      };
+    });
+    expect(measured.laidOut).toBe(true);
+    expect(measured.width).toBeGreaterThan(0);
+    expect(measured.height).toBeGreaterThan(0);
+    expect(measured.hudMentionsIt).toBe(true);
+
+    // The alerts list is where it used to be routed, and where it must not be
+    // again: that region is `display: none` below 720px and its section
+    // starts folded, so a sentence in it reaches nobody.
+    await expect(page.locator('.hud-alerts__list')).not.toContainText('Simulation unavailable');
+
+    // A phone. `hud.css` drops `.hud__corner` entirely at 720px and below, so
+    // under the old routing no interaction could put the sentence on screen
+    // here at all: with the whole region `display: none`, opening the Alerts
+    // section inside it still leaves its rows unlaid-out (#220 measured
+    // exactly that, at this viewport). This row survives the breakpoint.
+    await page.setViewportSize({ width: 375, height: 812 });
+    await expect(unavailable).toBeVisible();
+    await expect(unavailable).toContainText('Simulation unavailable');
+    expect(
+      await page.evaluate(() => {
+        const corner = document.querySelector('.hud__corner');
+        return corner === null ? null : getComputedStyle(corner).display;
+      }),
+    ).toBe('none');
+
+    // Back to the viewport the rest of this test measures at -- Playwright's
+    // default, which is what it ran at before the phone check was added.
+    await page.setViewportSize({ width: 1280, height: 720 });
 
     // No save panel, and that is correct rather than a second bug: with no
     // worker there is no session, so nothing exists to save. A panel here
@@ -1277,7 +1333,8 @@ test.describe('the assembled application', () => {
     const badge = page.locator('.brand');
     // `toBeVisible` and not `toContainText` alone. A text assertion on a
     // `display: none` ancestor passes, which is exactly how #82's alert stayed
-    // invisible on a phone while its guard stayed green.
+    // invisible -- at every viewport, not only on a phone -- while its guard
+    // stayed green (#220).
     await expect(badge).toBeVisible();
     await expect(badge.locator('.brand__wordmark')).toHaveText('LockState.io');
     await expect(badge.locator('.brand__stage')).toHaveText('PRE-ALPHA');

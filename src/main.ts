@@ -24,6 +24,7 @@ import {
   type HudBuildableViewModel,
   type HudHandle,
   type HudIntent,
+  type HudUnavailableNotice,
   type HudViewModel,
 } from './ui/hud';
 import { hudClockFromWorkerMessage } from './ui/simulation-clock';
@@ -331,17 +332,23 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   /**
    * Without a worker there is no simulation and no session, so there is
    * genuinely nothing to save -- a save panel here would be a prop. What the
-   * player is owed is being *told*, which the console message alone never did.
-   * The alerts region already exists for exactly this (issue #82).
+   * player is owed is being *told*, which the console message alone never did
+   * (issue #82).
+   *
+   * This used to be an entry in `HudViewModel.alerts`, on the premise that
+   * "the alerts region already exists for exactly this". The premise was
+   * false: that region is inside `.hud__corner`, which `hud.css` drops
+   * entirely at 720px and below, and the alerts *section* within it starts
+   * folded (`INITIAL_HUD_SHELL_STATE`), so the row was `offsetParent === null`
+   * with a 0x0 box at **every** viewport and `.hud` innerText never mentioned
+   * it. Measured in Chromium on this page at 1280x800 and 375x812 with
+   * `Worker` construction blocked (issue #220). It now goes to the HUD's own
+   * always-laid-out band instead, which needs no section opened and survives
+   * every breakpoint in `hud.css`.
    */
-  let viewModel: HudViewModel = simulationUnavailable
-    ? {
-        ...EMPTY_HUD_VIEW_MODEL,
-        alerts: [
-          { id: 'simulation-unavailable', labelKey: 'hud.alerts.simulation-unavailable', severity: 'danger' },
-        ],
-      }
-    : EMPTY_HUD_VIEW_MODEL;
+  const unavailableNotice: HudUnavailableNotice = { labelKey: 'hud.unavailable.simulation' };
+
+  let viewModel: HudViewModel = EMPTY_HUD_VIEW_MODEL;
 
   /**
    * Repaints the strip from what the worker last said, and from nothing else.
@@ -374,10 +381,17 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
 
   hud = mountHud(app, {
     localizer,
-    // Passed at mount, not left to the first `update`: with no worker there
-    // is no snapshot coming, so an alert the HUD only learns about on the
-    // next repaint would never be painted at all (issue #82).
     viewModel,
+    // Passed at mount, not applied by a later call: with no worker there is
+    // no snapshot coming and nothing that would ever repaint, so a sentence
+    // the HUD only learned about afterwards would never be painted at all
+    // (issue #82). It is also the whole truth about this page -- a `Worker`
+    // constructor that threw does not un-throw -- so there is nothing to
+    // clear it later either.
+    //
+    // Spread rather than passed as `undefined`: `exactOptionalPropertyTypes`
+    // is on, so an absent notice has to be an absent property.
+    ...(simulationUnavailable ? { unavailable: unavailableNotice } : {}),
     build: buildCatalogue(),
     onIntent: (intent: HudIntent) => {
       switch (intent.kind) {
