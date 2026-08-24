@@ -26,9 +26,12 @@ const baseURL = `http://127.0.0.1:${port}`;
  * whether a real, browser-generated `pagehide` reaches it at all (#92); for
  * the camera it is what a real Phaser camera answers for a real mouse
  * position, which is the only thing that can catch a pure transform that has
- * drifted from the engine drawing the frame (#115); for the assembled page it
- * is canvas sizing, hit-testing the centre pixel and decoding a real PNG.
- * Everything else stays headless.
+ * drifted from the engine drawing the frame (#115); for the world scene it is
+ * what the keyboard listeners it puts on `window` do when focus moves, and what
+ * a **second finger** does -- a pinch needs a context created with `hasTouch`
+ * and CDP `Input.dispatchTouchEvent`, which no layer below this one can supply
+ * (#209); for the assembled page it is canvas sizing, hit-testing the centre
+ * pixel and decoding a real PNG. Everything else stays headless.
  *
  * `docs/TESTING.md` gates browser test environments behind explicit review,
  * so this stays a narrowly-scoped, separate project: it is NOT part of
