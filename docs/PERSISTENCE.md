@@ -1483,14 +1483,29 @@ Two decisions inside that are worth having written down:
   translated text may never live in. That belongs with #109, which owns that
   function.
 
-The panel takes its localizer as an optional third constructor argument
-defaulting to the bundled default locale. That default is a **seam and not a
-design**: `main.ts` already builds a `Localizer` for the HUD with the same
-locale and the same catalog and should hand that instance in, which is a
-one-argument change at the panel's only construction site. Today the two are
-equivalent because `en` is the only locale that exists; the first non-`en`
-locale makes a panel that built its own localizer render English while the
-rest of the interface changes language.
+The panel takes its localizer as a **required** third constructor argument, and
+`main.ts` hands it the same instance the HUD uses. This used to be an optional
+argument defaulting to a localizer the panel built for itself — recorded there
+as "a seam and not a design", because the two were equivalent only while `en`
+was the only locale that existed: the first non-`en` locale would have left the
+panel rendering English while the rest of the interface changed language, in the
+one panel that protects the player's prison.
+
+Closing it was slightly larger than the "one-argument change" that note
+predicted. The localizer was local to `mountInterface` while the panel is
+constructed in `bootPersistence`, so it is now built once at module scope —
+which is the honest shape anyway, since having exactly one localizer per page is
+the property that was wanted. Removing the panel's fallback also collapsed two
+entries in `tests/unit/ui-orchestration-boundaries.test.ts` from `value` to
+`type-only`, exactly as their own reasons predicted, and that gate is what
+reported it: it fails on `value -> type-only` with "the entry overstates what
+the module needs and should be tightened".
+
+`tsc` now guarantees that *a* localizer is passed. It cannot guarantee it is the
+same instance, and re-adding a default would compile — an unused default is dead
+code rather than the defect, and the defect was the composition root not handing
+one over. That is pinned by
+`tests/foundation/composition-root-contract.test.ts` instead.
 
 `describeSaveResult` maps each failure code to its **own** state and
 advice, satisfying "quota, private-mode and transaction-abort errors are

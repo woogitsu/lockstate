@@ -80,6 +80,12 @@ const REQUIRED_WIRINGS: readonly RequiredWiring[] = [
       'Issue #199. `WorldSceneOptions.keyValueStore` is required, so `tsc` guarantees *a* store is passed -- but not which one, and not that the resolver is used at all. A `main.ts` that passed `globalThis.localStorage` directly would compile and would reintroduce the blank page on a browser that blocks site data, because reaching for the property is itself a throwing operation. `resolveBrowserKeyValueStore()` is the only reach that guards both the access and a first read.',
   },
   {
+    what: 'the save panel is handed the page\'s localizer',
+    source: 'new SavePanel(controller, savePanelHost, localizer)',
+    reason:
+      'Issue #208. The panel used to default to a localizer of its own over the same catalog -- equivalent while `en` is the only locale, and not equivalent the moment a second ships, when a panel holding its own default-locale localizer would keep rendering English while the rest of the interface changed language. The parameter is required now, so `tsc` guarantees *a* localizer is passed; it cannot guarantee it is the same instance the HUD uses, and re-adding a default would compile. Measured: with the default restored and this line intact the boundary manifest stays green and `tsc` is clean, because an unused default is dead code rather than the defect -- the defect was the composition root not handing one over, which is what this entry pins.',
+  },
+  {
     what: 'the lifecycle save handler is attached to the controller',
     source: 'new LifecycleSaveHandler(controller).attach()',
     reason:
