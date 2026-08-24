@@ -10,16 +10,25 @@ This work was originally produced in a sandbox with no working database,
 so every file under `supabase/` was shipped as reviewed-by-inspection
 design. That gap is now closed except where noted:
 
-- **Executed against the real Supabase local stack:** every migration in
-  `supabase/migrations/` and all four pgTAP suites in `supabase/tests/`
-  — 89 assertions, all passing (19/19, 25/25, 19/19, 26/26) — under Supabase
-  CLI 2.115.0, with GoTrue, PostgREST, Storage and Realtime running:
+- **Executed against the real Supabase local stack:** the first nine
+  migrations in `supabase/migrations/` and the first four pgTAP suites in
+  `supabase/tests/` — 89 assertions, all passing (19/19, 25/25, 19/19,
+  26/26) — under Supabase CLI 2.115.0, with GoTrue, PostgREST, Storage and
+  Realtime running:
   ```bash
   supabase start && supabase db reset && supabase test db
   ```
   This closes the outstanding verification item that #20 and #36 both
   carried, and it earned its keep immediately: the first run failed on the
   *first assertion* of suite 001 and exposed defect 4 below.
+
+  **The #105 hardening is not in that run.** The two migrations and the
+  three assertions added for issue #105 findings 5, 10 and 3 (see
+  "Declarations, not only privileges" below) postdate it and have been
+  executed only against plain PostgreSQL, so the counts above are the
+  stack-run counts and not today's. `pnpm verify:sql` is at 99 assertions
+  (19/19, 25/25, 21/21, 26/26, 8/8); re-running `supabase test db` is what
+  would raise the stack figure to match.
 - **Executed through GoTrue and PostgREST:** `pnpm verify:stack`
   (`scripts/verify-supabase-stack.mjs`, 48/48 checks against a running
   stack). The pgTAP suites feed `auth.uid()` with `set_config`, so they
@@ -33,9 +42,11 @@ design. That gap is now closed except where noted:
   drives the trusted (`service_role`) paths with the local stack's secret
   key, which is the only place PostgREST's mapping of that credential onto
   the role is exercised at all.
-- **Executed against plain PostgreSQL 16.13/18.6 + pgTAP:** the same
-  migrations and suites via `pnpm verify:sql`, which prepares a scratch
-  database with `scripts/sql/supabase-compat-harness.sql`. That harness
+- **Executed against plain PostgreSQL 16.13/18.6 + pgTAP:** every
+  migration and every suite via `pnpm verify:sql` — 99 assertions — which
+  prepares a scratch database with
+  `scripts/sql/supabase-compat-harness.sql`. This is the only path the
+  #105 hardening has run on. That harness
   supplies only the client roles, Supabase's default privileges and the
   slice of the `auth` schema this SQL references; it emulates no GoTrue,
   JWT verification, PostgREST, Storage or Realtime. It needs no Docker and
@@ -53,12 +64,17 @@ design. That gap is now closed except where noted:
   upload/download/restore timing. The local stack makes this newly
   possible, but it is a benchmark of its own rather than a by-product of
   this verification. See "Storage placement" below.
-- **Applied, but not exercised, on a *hosted* Supabase project:** all nine
-  migrations are applied to the hosted staging project as of 2026-08-23
-  (`docs/DEPLOYMENT.md`, "Database migrations"), so the DDL itself has now run
-  there. None of the checks above has. The local stack runs the same images,
-  but nothing here has exercised a real project's networking, quotas or
-  connection pooling.
+- **Applied, but not exercised, on a *hosted* Supabase project:** the first
+  nine migrations are applied to the hosted staging project as of
+  2026-08-23 (`docs/DEPLOYMENT.md`, "Database migrations"), so that much of
+  the DDL has now run there. None of the checks above has. The local stack
+  runs the same images, but nothing here has exercised a real project's
+  networking, quotas or connection pooling.
+- **Not applied anywhere but a scratch database:** the two #105 hardening
+  migrations, `20260824090000_pin_trigger_function_search_path.sql` and
+  `20260824090100_revoke_client_truncate.sql`. They are newer than the
+  hosted apply above, so the hosted project still carries the pre-#105
+  declarations and grants until they are pushed.
 - **Fully implemented and unit-tested:** `PrisonSyncEngine`,
   `resolveSyncConflict` and `MemoryCloudSaveClient`
   (`src/persistence/cloud/`) — the client-side sync/conflict policy is
@@ -126,7 +142,10 @@ invisible until it was run on the real thing.
    ```
 
    leaving those roles `TRUNCATE, REFERENCES, TRIGGER, MAINTAIN` and nothing
-   useful. `supabase/config.toml` documents the escape hatch
+   the Data API can serve. That was written as though the residue were
+   inert, and one of the four is not: see "Declarations, not only
+   privileges" below for what `TRUNCATE` reaches past.
+   `supabase/config.toml` documents the escape hatch
    (`[api] auto_expose_new_tables = true`) as deprecated, with the field
    removed on 2026-10-30 — so this is not a local-stack quirk to work
    around but the permanent behaviour.
@@ -236,6 +255,71 @@ skips materialized views, partitioned tables and foreign tables. Suite 002
 additionally runs every trusted step under `set local role service_role`
 rather than as the privileged role the suite is invoked with, which is what
 makes those assertions load-bearing at all.
+
+## Declarations, not only privileges
+
+A later migration-by-migration audit (#105) executed this schema again and
+found the confidentiality boundary sound — no cross-tenant access on any of
+the eight tables for either client role, `create_save_version` and
+`create_prison` both authorizing internally, and a deliberate `pg_temp`
+hijack attempt against `create_prison` failing to exploit. Three of its
+findings were about the gate rather than the schema, and are fixed here.
+
+**The suite pinned every privilege and no declaration.** Suite 003 compares
+the whole privilege surface exactly, for all three roles, and read back
+neither `pg_proc.prosecdef` nor `pg_proc.proconfig`. So dropping
+`set search_path = public, pg_temp` from any `SECURITY DEFINER` function
+passed all 89 assertions, even though defect 8 above exists precisely
+because that pinning matters, and three migrations argue for it in their own
+comments. `supabase/tests/005_function_security_declarations.test.sql` now
+reads both properties out of the catalog: an exhaustive matrix over every
+function in `public`, plus rules — that every `SECURITY DEFINER` function and
+every trigger function pins a path, that every pinned path is exactly
+`public, pg_temp`, that `pg_temp` is *positionally* last, and that the only
+unpinned functions are the three constant-returning limit helpers. Stating
+them as rules over `pg_proc` rather than as a list is the point: a
+`SECURITY DEFINER` function added tomorrow with no pinned path fails, rather
+than being merely un-asserted.
+
+**Two trigger functions omitted the pinned path, and all four kept
+PostgreSQL's default `PUBLIC EXECUTE`.**
+`reject_entitlement_event_update()` and
+`enforce_challenge_verification_transition()` were the exceptions;
+`20260824090000_pin_trigger_function_search_path.sql` pins both, bodies
+unchanged, and revokes the ambient `EXECUTE` from `PUBLIC` and all three
+roles on all four. They were the only functions in `public` whose `proacl`
+was still null, which is why `has_function_privilege` answered true for
+every role on them. Whether the revoke breaks a trigger was checked by
+execution rather than reasoned about: with `EXECUTE` held by nobody, the
+slot cap still refuses a sixth prison inserted as `authenticated` (`LS001`),
+the payload bound still refuses an oversized save (`LS002`), the append-only
+trigger still refuses an `UPDATE` as `service_role`, and the verification
+transition still refuses a re-verification as `service_role`. A trigger's
+firing does not consult the `EXECUTE` grant.
+
+**`TRUNCATE` was in the residue defect 4 called inert.** Supabase's default
+privileges `grant all on tables` and then revoke only the four DML
+privileges, so `anon` and `authenticated` held `TRUNCATE` on every table in
+`public`. It ignores RLS entirely, so every `auth.uid()` policy here is
+irrelevant to it, and it fires no row trigger, so
+`entitlement_events_no_update` — the control that makes the ledger
+append-only even for the table owner — does not run.
+`20260824090100_revoke_client_truncate.sql` revokes it from both client
+roles, and suite 003 sweeps the schema for it.
+
+**What is harness-only, stated as such.** The `TRUNCATE` grant and its
+consequence were observed on `scripts/sql/supabase-compat-harness.sql`,
+whose job is to model Supabase's default privileges — `\dp public.*` showed
+`anon=Dxt` and `authenticated=…Dxt` on all eight tables, and `truncate table
+public.entitlement_events` as `authenticated`, inside an explicit
+transaction block, emptied the ledger. **Whether the hosted project's grants
+match is unverified**, and #105 asks the owner to run `\dp public.*` against
+it. The revoke landed anyway because it is harmless either way: nothing in
+this repository truncates anything, and PostgREST exposes no verb that
+reaches `TRUNCATE`. `service_role` holds the same ambient `TRUNCATE` and is
+deliberately untouched — whether the trusted role should be able to empty a
+table it holds no `DELETE` grant on is a boundary question ADR 0008's
+authority table does not answer.
 
 ## Schema (`supabase/migrations/`)
 

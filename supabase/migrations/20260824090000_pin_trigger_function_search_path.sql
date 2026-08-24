@@ -1,6 +1,15 @@
--- The trigger functions, brought in line with every other function in this
--- schema: the two that never pinned `search_path`, and the default `PUBLIC
--- EXECUTE` that all four of them kept (issue #105 finding 10).
+-- The four trigger functions: the two of them that never pinned
+-- `search_path`, and the default `PUBLIC EXECUTE` that all four kept
+-- (issue #105 finding 10).
+--
+-- "The two that never pinned it" is relative to the functions that pin one
+-- at all. Three functions in this schema deliberately do not -- the
+-- constant-returning limit helpers `base_save_slot_capacity()`,
+-- `max_save_slot_capacity()` and `max_save_payload_bytes()`, which are
+-- `language sql immutable` one-liners naming no relation, type or function.
+-- After this migration those three are the only unpinned functions in
+-- `public`, and suite 005 asserts that list exactly rather than leaving it
+-- implied.
 --
 -- Nothing here changes what any role can legitimately do. Both changes
 -- close a path that no code in this repository uses, and both are now
