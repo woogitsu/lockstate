@@ -35,6 +35,7 @@ export type ChallengeRejectionCode =
   | 'command-stream-out-of-order'
   | 'command-after-final-tick'
   | 'checkpoint-cadence-invalid'
+  | 'evidence-hash-mismatch'
   | 'duplicate-evidence'
   | 'replay-failed'
   | 'checkpoint-hash-mismatch'
@@ -93,6 +94,24 @@ export interface VerifyChallengeSubmissionInput {
   readonly accountId: string;
   readonly now: number;
   readonly replayRunner?: ChallengeReplayRunner;
+  /**
+   * The `evidence_hash` the submitter claimed, as stored in
+   * `challenge_submissions.evidence_hash` -- never as the source of any
+   * decision. Supplying it makes this pipeline *contradict* the claim
+   * (ADR 0009: "the claimed score is present only so it can be
+   * contradicted", which is equally true of the claimed hash); omitting it
+   * leaves the claim unchecked, which is what a caller that has no claim to
+   * check does.
+   *
+   * This comparison lives here, and only here, because this is the tier
+   * that owns the algorithm. The database keys its unique constraint on a
+   * digest it computes itself (`challenge_submissions.evidence_digest`,
+   * issue #105 finding 1) precisely because it cannot recompute this hash:
+   * `challengeEvidenceHash` is FNV-1a over `canonicalJson`, and reproducing
+   * that in SQL would mean hand-writing a JSON canonicalizer including
+   * JavaScript number formatting.
+   */
+  readonly claimedEvidenceHash?: string;
   readonly isDuplicateEvidence?: (evidenceHash: string) => boolean | Promise<boolean>;
 }
 
@@ -221,6 +240,25 @@ export async function verifyChallengeSubmission(
   }
 
   const evidenceHash = challengeEvidenceHash(evidence);
+
+  // The hash was recomputed above and, until issue #105 finding 1, was never
+  // compared to the one the submitter sent -- so a submission could carry any
+  // 16 hex characters and nothing at either tier disagreed. It is checked
+  // here rather than earlier because there is nothing to check until the
+  // evidence has parsed, and later would mean replaying a submission whose
+  // own self-description is wrong.
+  //
+  // A mismatch is a rejection rather than a repair. It means the stored claim
+  // does not describe the stored evidence, which is either a broken client or
+  // a tampered row, and both are things a leaderboard must surface instead of
+  // quietly ranking.
+  if (input.claimedEvidenceHash !== undefined && input.claimedEvidenceHash !== evidenceHash) {
+    return reject(
+      'evidence-hash-mismatch',
+      `Submitted evidence hashes to ${evidenceHash}, but the submission claims ${input.claimedEvidenceHash}.`,
+    );
+  }
+
   if (input.isDuplicateEvidence !== undefined && (await input.isDuplicateEvidence(evidenceHash))) {
     return reject('duplicate-evidence', 'This exact evidence has already been submitted.');
   }

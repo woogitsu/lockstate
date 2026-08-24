@@ -87,9 +87,23 @@ export const challengeSubmissionSchema = z
 export type ChallengeSubmission = DeepReadonly<z.infer<typeof challengeSubmissionSchema>>;
 
 /**
- * Stable identity of one run's evidence. Used for duplicate/replay-of-
- * someone-else's-evidence detection (threat T3): identical evidence hashes
- * to the same value regardless of key order or resubmission.
+ * Stable identity of one run's evidence: identical evidence hashes to the
+ * same value regardless of key order or resubmission.
+ *
+ * It is NOT the database's dedup key, and was never able to be one. The
+ * value a submission carries in `challenge_submissions.evidence_hash` is
+ * caller-asserted, and the unique constraint that implements ADR 0008
+ * threat T3 was keyed on it until issue #105 finding 1 -- which meant
+ * lying about the hash created a second ranked row for the same run. The
+ * key is now `challenge_submissions.evidence_digest`, a stored generated
+ * column the server computes over the payload
+ * (`supabase/migrations/20260824100000_bind_challenge_evidence_to_payload.sql`).
+ *
+ * What this function is for is the other half of that fix: recomputing the
+ * claim so `verifyChallengeSubmission` can contradict it
+ * (`claimedEvidenceHash`), and answering the verifier's own
+ * `isDuplicateEvidence` port. The two hashes deliberately do not agree --
+ * canonical JSON here, `jsonb` there -- and the SQL side says why.
  */
 export function challengeEvidenceHash(evidence: ChallengeEvidence): string {
   return deterministicStateHash(evidence as unknown as JsonValue);

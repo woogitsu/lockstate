@@ -9,7 +9,11 @@
 -- `language sql immutable` one-liners naming no relation, type or function.
 -- After this migration those three are the only unpinned functions in
 -- `public`, and suite 005 asserts that list exactly rather than leaving it
--- implied.
+-- implied. (A fourth joined them later:
+-- `max_challenge_evidence_bytes()` in
+-- 20260824100000_bind_challenge_evidence_to_payload.sql, the same shape and
+-- exempt for the same reason. The assertion in suite 005 is where that had
+-- to be stated, which is the point of asserting the list.)
 --
 -- Nothing here changes what any role can legitimately do. Both changes
 -- close a path that no code in this repository uses, and both are now
@@ -80,6 +84,13 @@ end;
 $$;
 
 -- --- 2. The default PUBLIC EXECUTE on all four trigger functions --------
+--
+-- "All four" is the four that existed when this migration was written.
+-- `enforce_challenge_evidence_size()`
+-- (20260824100000_bind_challenge_evidence_to_payload.sql) is a fifth, and
+-- revokes its own PUBLIC EXECUTE where it is defined; the schema-wide
+-- function sweep in supabase/tests/003_data_api_grants.test.sql is what
+-- makes that obligatory rather than customary.
 --
 -- A function with no explicit ACL is executable by `PUBLIC`, and Supabase's
 -- `alter default privileges ... revoke execute on functions` only drops the

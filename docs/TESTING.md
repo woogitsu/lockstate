@@ -59,7 +59,7 @@ fails `pnpm test` without needing any art at all.
 
 ```bash
 scripts/provision-postgres.sh   # needs root or passwordless sudo
-pnpm verify:sql                 # 99 pgTAP assertions
+pnpm verify:sql                 # 121 pgTAP assertions
 ```
 
 It is deliberately **version-agnostic**. It uses whichever PostgreSQL major version is already installed, or failing that whichever one the distribution ships, and installs the matching `postgresql-<major>-pgtap`. No third-party apt repository is added and no major version is pinned anywhere: the schema is executed and green on **PostgreSQL 16.13 + pgTAP 1.3.2** and on **18.6 + pgTAP 1.3.4**, and Ubuntu 26.04 does not package 16 at all. It then ensures the cluster is running and that the invoking user has a login role with SUPERUSER — the compatibility harness creates extensions and roles, so CREATEDB alone is insufficient. Set `DATABASE_URL` to point `pnpm verify:sql` at an existing server instead; the role step then does nothing.
