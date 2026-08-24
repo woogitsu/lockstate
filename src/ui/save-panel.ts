@@ -224,7 +224,13 @@ export class SavePanel {
       prisons = await this.controller.listPrisons();
     } catch (error) {
       if (token !== this.refreshToken) return;
-      this.setStatus({ kind: 'storage-unavailable', message: `Local storage is unavailable (private browsing can cause this): ${describeActionError(error)}` });
+      // Two different causes reach here: local storage being unusable at all
+      // (private browsing, a denied quota) and a slot record that fails
+      // validation (`slot-metadata-schema.ts`, #105 finding 14), which refuses
+      // the whole list rather than hiding a prison. The wording names the
+      // outcome the player has rather than asserting one of the two causes;
+      // the appended detail says which it was.
+      this.setStatus({ kind: 'storage-unavailable', message: `Could not read the local prison list (private browsing or an unreadable slot record can cause this): ${describeActionError(error)}` });
       return;
     }
 

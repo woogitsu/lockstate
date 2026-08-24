@@ -67,6 +67,20 @@ describe('IndexedDbLocalSaveStore (fake-indexeddb)', () => {
     expect(loaded).toMatchObject({ ok: true, outcome: 'current' });
   });
 
+  it('reads back a freshly created slot whose current-generation pointer is an explicit undefined', async () => {
+    const repo = new PrisonSaveRepository(new IndexedDbLocalSaveStore(db));
+    const created = await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0' });
+
+    // The one path where the slot-metadata schema (#105 finding 14) meets a
+    // real structured-clone round trip rather than the in-memory fake: until
+    // the first save the pointer is a key whose value is `undefined`, and a
+    // schema that required a string there -- or a clone that dropped the key
+    // -- would make a brand-new prison unreadable.
+    expect(created.currentGenerationId).toBeUndefined();
+    expect(await repo.list()).toEqual([created]);
+    expect(await repo.loadCurrent('prison-1')).toEqual({ ok: false, reason: 'no-valid-generation' });
+  });
+
   it('preserves prior good generations atomically across the real transaction boundary', async () => {
     const repo = new PrisonSaveRepository(new IndexedDbLocalSaveStore(db));
     await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0' });

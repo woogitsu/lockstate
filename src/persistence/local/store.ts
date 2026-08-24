@@ -28,8 +28,17 @@ export interface PrisonSlotMetadata {
 }
 
 export interface LocalSaveTransaction {
-  getMetadata(prisonId: string): Promise<PrisonSlotMetadata | undefined>;
-  listMetadata(): Promise<readonly PrisonSlotMetadata[]>;
+  /**
+   * Raw stored records, exactly like `getGeneration` below: what a store
+   * hands back is whatever is on disk, so the declared type is `unknown` and
+   * `PrisonSaveRepository` validates it with `prisonSlotMetadataSchema`
+   * (`slot-metadata-schema.ts`). Declaring these as `PrisonSlotMetadata` was
+   * an assertion about a player's disk rather than something checked -- #105
+   * finding 14.
+   */
+  getMetadata(prisonId: string): Promise<unknown | undefined>;
+  listMetadata(): Promise<readonly unknown[]>;
+  /** Writes are typed, and the repository validates them too, so a record this store writes is always one it can read back. */
   putMetadata(metadata: PrisonSlotMetadata): Promise<void>;
   deleteMetadata(prisonId: string): Promise<void>;
   /** Generations are stored as validated, JSON-safe values (a decoded `SaveEnvelope`, structurally). */
