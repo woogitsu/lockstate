@@ -1,4 +1,4 @@
-import { test, expect } from 'vitest';
+import { describe, test, expect, it } from 'vitest';
 import { SparseWorld } from '../../src/simulation/world/sparse-world';
 import { ConstructionSystem } from '../../src/simulation/construction/system';
 import { createBuildOrder } from '../../src/simulation/construction/build-order';
@@ -143,4 +143,117 @@ test('restore copies the snapshot it is given, so a restored session cannot writ
   restoredOrder?.materialsAllocated.push({ itemId: 'item.steel', quantity: 1 });
 
   expect(snapshot.orders[0]?.materialsAllocated).toEqual([{ itemId: 'item.brick', quantity: 2 }]);
+});
+
+/**
+ * The other direction of the same seam (#113).
+ *
+ * The test above pins that `restore()` copies the orders it is handed. What
+ * nothing pinned is `snapshot()`, or the undo/redo stacks in either
+ * direction: five separate mutations that alias a live array into the
+ * snapshot -- both stacks and the open gesture in `snapshot()`, the orders in
+ * `snapshot()`, and both stacks in `restore()` -- left the whole suite green.
+ *
+ * Aliasing is not a style question here, it is the checksum. `capture()` is
+ * `async` and `SessionController.buildEnvelope` awaits it before
+ * `createSaveEnvelope` hashes the payload, and the envelope keeps the
+ * snapshot's own arrays until `repository.save` has written them. With any of
+ * those five mutations applied, a session that keeps playing across those
+ * awaits -- one more wall segment, one undo -- edits the payload behind the
+ * hash that was taken over it, and the save fails its own checksum when it is
+ * loaded again. So a snapshot must be a detached value: play that happens
+ * after it cannot reach into it, and a session restored from it cannot write
+ * back into it.
+ */
+describe('a construction snapshot is a detached value, not a live view', () => {
+  function loadedWorld(): SparseWorld {
+    const world = new SparseWorld(32);
+    world.ensureMetadata({ x: chunkCoordinate(0), y: chunkCoordinate(0) });
+    world.load({ x: chunkCoordinate(0), y: chunkCoordinate(0) });
+    return world;
+  }
+
+  /** One build gesture, exactly as `BuildTool` submits one: every order in it shares a transaction id. */
+  function placeGesture(construction: ConstructionSystem, transactionId: string, orderIds: readonly string[], firstX: number): void {
+    orderIds.forEach((orderId, offset) => {
+      construction.submitOrder(createBuildOrder(orderId, 'wall-brick', { x: tileCoordinate(firstX + offset), y: tileCoordinate(0) }));
+      construction.registerTransactionOrder(orderId, transactionId);
+    });
+  }
+
+  const states = (construction: ConstructionSystem, orderIds: readonly string[]): readonly string[] =>
+    orderIds.map((orderId) => construction.getOrder(orderId)?.state ?? 'missing');
+
+  it('is not edited by the play that continues after it was taken', () => {
+    const construction = new ConstructionSystem(loadedWorld());
+    placeGesture(construction, 'gesture-a', ['a1'], 0);
+    placeGesture(construction, 'gesture-b', ['b1'], 1);
+    construction.undo(); // B is cancelled and sits on the redo stack
+    placeGesture(construction, 'gesture-c', ['c1'], 2);
+    construction.getOrder('c1')!.materialsAllocated.push({ itemId: 'item.brick', quantity: 2 });
+
+    const snapshot = construction.snapshot();
+
+    // Stated positively first, so what follows is a claim about detachment
+    // and not merely about two values being equal to each other.
+    expect(snapshot.undoStack).toEqual([['a1']]);
+    expect(snapshot.redoStack).toEqual([]);
+    expect(snapshot.currentTransaction).toEqual(['c1']);
+    const written = JSON.parse(JSON.stringify(snapshot)) as unknown;
+
+    // The player carries on. Every step here changes a different part of the
+    // live system, and each one is an in-place mutation rather than a
+    // reassignment -- an aliased snapshot follows those and nothing else, so
+    // the sequence is ordered to leave every structure genuinely different
+    // from how the snapshot found it.
+    placeGesture(construction, 'gesture-c', ['c2'], 3); // pushes onto the open gesture
+    construction.getOrder('c1')!.materialsAllocated.push({ itemId: 'item.steel', quantity: 1 });
+    construction.getOrder('a1')!.progress = 40;
+    construction.undo(); // pushes onto the redo stack
+    placeGesture(construction, 'gesture-e', ['e1'], 4);
+    placeGesture(construction, 'gesture-f', ['f1'], 5); // commits E: pushes onto the undo stack
+
+    expect(states(construction, ['a1', 'b1', 'c1', 'c2', 'e1', 'f1'])).toEqual([
+      'approved',
+      'cancelled',
+      'cancelled',
+      'cancelled',
+      'approved',
+      'approved',
+    ]);
+    // ...and none of it reached the snapshot, which still describes the
+    // moment it was taken.
+    expect(JSON.parse(JSON.stringify(snapshot))).toEqual(written);
+  });
+
+  it('can be restored twice into two sessions that then diverge independently', () => {
+    // `docs/DETERMINISM.md` requires a restore to be repeatable: "restoring
+    // an already-restored snapshot must produce the same result, or a save
+    // written by a restored session would drift further every time it was
+    // loaded." A stack shared between the snapshot and the system restored
+    // from it makes the *second* load see a history the *first* session
+    // already spent.
+    const source = new ConstructionSystem(loadedWorld());
+    placeGesture(source, 'gesture-a', ['a1'], 0);
+    placeGesture(source, 'gesture-b', ['b1'], 1);
+    const snapshot = source.snapshot();
+
+    const first = new ConstructionSystem(loadedWorld());
+    first.restore(snapshot);
+    const second = new ConstructionSystem(loadedWorld());
+    second.restore(snapshot);
+
+    // The first session undoes its way back to the beginning.
+    first.undo();
+    first.undo();
+    expect(states(first, ['a1', 'b1'])).toEqual(['cancelled', 'cancelled']);
+
+    // The second still has the entire history, because it was handed a copy.
+    second.undo();
+    expect(states(second, ['a1', 'b1'])).toEqual(['approved', 'cancelled']);
+    second.undo();
+    expect(states(second, ['a1', 'b1'])).toEqual(['cancelled', 'cancelled']);
+    // The source session is untouched by either of them.
+    expect(states(source, ['a1', 'b1'])).toEqual(['approved', 'approved']);
+  });
 });

@@ -112,8 +112,16 @@ export class PathRequestQueue {
     return this.pending.get(id);
   }
 
+  /**
+   * The ids still queued, in ascending code-unit order rather than the order
+   * they were enqueued in. `processTick` decides *processing* order by
+   * effective priority with a total tie-break of its own; this accessor is a
+   * plain listing, and a listing that leaked `Map` insertion order would be
+   * the trap `docs/DETERMINISM.md` ("Canonical iteration order") rules out
+   * for whichever caller reads it first. It has none today.
+   */
   public pendingIds(): readonly string[] {
-    return [...this.pending.keys()];
+    return [...this.pending.keys()].sort();
   }
 
   public getMetrics(): PathRequestQueueMetrics {

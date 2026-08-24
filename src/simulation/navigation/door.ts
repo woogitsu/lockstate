@@ -100,7 +100,21 @@ export class DoorRegistry {
     this._accessRevision += 1;
   }
 
+  /**
+   * Every door, in ascending id (code-unit order), never `Map` insertion
+   * order -- the same contract every other registry `all()` in the codebase
+   * holds (`ContentRegistry`, `SecuritySectorRegistry`, `GangRegistry`).
+   *
+   * This returned insertion order until #132. Nothing observably depended on
+   * it: the one production caller (`doorsSnapshot` in
+   * `runtime/session-systems.ts`) sorts what it gets, and the security
+   * projection looks doors up by sorted `sector.doorIds` instead. But
+   * `docs/DETERMINISM.md` ("Canonical iteration order") states the rule for
+   * anything feeding simulation state with no exception, and an accessor that
+   * hands out registration history is a trap for the next caller rather than
+   * a safe default.
+   */
   public all(): readonly DoorDefinition[] {
-    return [...this.doorsById.values()];
+    return [...this.doorsById.values()].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   }
 }

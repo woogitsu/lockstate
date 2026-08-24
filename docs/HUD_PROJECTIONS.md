@@ -28,10 +28,11 @@ never `Map`/`Set` insertion order and never `localeCompare`
 every incidental registration order reversed and requires byte-identical
 canonical JSON from every projection.
 
-Two existing accessors return insertion order and are therefore never used
-by this layer: `RoomInstanceRegistry.occupantsOf` (sorted here before
-projecting) and `DoorRegistry.all` (never called; doors are looked up by the
-sector's own sorted `doorIds`).
+`RoomInstanceRegistry.occupantsOf` returns insertion order, so this layer
+sorts what it gets before projecting (`tests/determinism/projection-ordering.test.ts`
+is the guard). `DoorRegistry.all` sorts by door id since #132, but this layer
+still never calls it: doors are looked up by the sector's own sorted
+`doorIds`.
 
 ### 3. Ids and message keys, never text (ADR 0011)
 

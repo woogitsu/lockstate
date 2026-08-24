@@ -49,6 +49,9 @@ Rules:
 - `EntityQuery.execute()` walks indices `0..maxActiveIndex`, which is why it is the only supported way to iterate entities ([ADR 0005](./adr/0005-entity-storage-model.md)).
 - **Never `localeCompare`.** Collation depends on the runtime's default locale and on the ICU data the engine was built with, so the same ids can sort differently on two clients. Compare strings with `(a < b ? -1 : a > b ? 1 : 0)` — code-unit ordering is spec-defined and identical everywhere.
 - A tie-break must be *total*. A comparator that leaves two elements equal falls back to whatever order the input array happened to be in.
+- A registry-shaped `all()` sorts. `ContentRegistry`, `SecuritySectorRegistry`, `GangRegistry` and — since #132 — `DoorRegistry` all do; an accessor that hands out registration history is a trap for its next caller even where today's only caller sorts what it gets. Where an accessor deliberately does not (`RoomInstanceRegistry.occupantsOf`), that is stated at the accessor and its consumer sorts, and the arrangement has its own test.
+
+`tests/determinism/canonical-iteration-contract.test.ts` is what stops this section from being advice. Every unordered enumeration in `src/simulation/` and `src/content/` is either sorted or named in that test's allow-list with the reason insertion order is safe there, so reverting a canonical sort means editing a reviewable list rather than one method body.
 
 ## Floating point
 
@@ -72,6 +75,7 @@ JavaScript numbers are IEEE-754 doubles and are deterministic **for a fixed sequ
 | `session-replay.test.ts` | Same seed plus same command stream reproduces an identical canonical state hash, at every checkpoint and not only at the end. |
 | `snapshot-restore-fidelity.test.ts` | Restore-and-continue equals never-restoring, at several restore points; bundle round-trip fidelity; per-subsystem exactness or idempotence; and that the save payload itself is written in canonical order — the same prison built with every incidental registration reversed must produce a byte-identical payload. |
 | `iteration-order.test.ts` | The canonical orders above, stated as concrete expected sequences. |
+| `canonical-iteration-contract.test.ts` | The "Canonical iteration order" rule as a static contract over `src/simulation/` and `src/content/`: every enumeration of a `Map`/`Set` must reach a sort, or carry an allow-list entry stating why insertion order is safe there. Demonstrated break: reverting `SparseWorld.ownedParcelBounds` to `this.parcels.values()` — the walk that prompted #132 — survives the rest of the suite, because that function computes a disjunction and no behavioural test can distinguish the two orders. Also demonstrated: the same revert written as a bare `for ... of`, and dropping the sort from `ContentRegistry.all()`, `ConstructionSystem.orderedOrders()`, `DoorRegistry.all()` or `PathRequestQueue.pendingIds()`. Its scope is a limit, not an omission: `src/rendering/` and `src/persistence/` are outside it. |
 
 The allow-list in the first of these is the mechanism that stops a future contributor reintroducing an ambient source quietly: doing so requires editing a reviewable list, not just a system.
 
