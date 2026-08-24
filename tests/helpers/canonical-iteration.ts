@@ -57,6 +57,35 @@
  * `.size`, `.get`, `.has` and `.delete` are not enumerations and are not
  * matched at all.
  *
+ * ## Arrays call their views the same thing
+ *
+ * `array.entries()`, `array.keys()` and `array.values()` are written exactly
+ * like the `Map` views above, and an array's iteration order *is* canonical --
+ * it is the array. `src/persistence/save-schema.ts` has one
+ * (`value.freeIndices.entries()`, which numbers the free list so a zod issue
+ * can name the offending position), so bringing `src/persistence/` into scope
+ * without handling this would have produced a violation that is not one. An
+ * exemption would have been the cheap answer and the wrong one: the allow-list
+ * is a list of *audited hazards*, and padding it with entries whose reason is
+ * "this is an array" is how it becomes the list nobody reads.
+ *
+ * So a view call is skipped when the same file uses **the same receiver
+ * expression** in a way no `Map` or `Set` supports -- `.length`, `.push(`,
+ * `[index]` and the rest of `ARRAY_ONLY_MEMBERS`. Under `strict` TypeScript
+ * that evidence cannot appear on a `Map` or `Set`: `map.length` does not
+ * compile. It is deliberately keyed on the whole receiver expression rather
+ * than on the last property name, so `other.ids.length` cannot vouch for
+ * `this.ids.values()`, and a `Map`/`Set` *declaration* of the receiver's final
+ * name (rule 2's `findCollectionNames`) overrides the evidence and flags the
+ * site anyway. Both directions err toward flagging, and both are pinned by
+ * fixtures in the caller's tests -- a tightening that stopped matching real
+ * `Map` iteration would otherwise look exactly like compliance.
+ *
+ * It follows that an array view with no such evidence in its file is still
+ * flagged. That is the residual cost of a text scan, and the honest remedy
+ * there is to give the reviewer a real choice rather than to widen the
+ * evidence list until it guesses.
+ *
  * One shape it does **not** see, stated rather than left to be discovered: a
  * spread of a collection reached through a lookup, as in
  * `RoomInstanceRegistry.occupantsOf`'s `[...(this.occupants.get(id) ?? [])]`.
@@ -174,6 +203,35 @@ function reachesSort(source: string, occurrenceEnd: number): boolean {
 
 const VIEW_CALL = /\b((?:this\s*\.\s*)?[A-Za-z_$][\w$]*(?:\s*\.\s*[A-Za-z_$][\w$]*)*)\s*\.\s*(values|keys|entries)\s*\(\s*\)/g;
 
+/**
+ * Members that exist on an array and on no `Map` or `Set`. Reading one off a
+ * `Map` is a compile error under this repository's `strict` TypeScript, so
+ * their presence on an expression is evidence about that expression's type
+ * that a text scan can actually rely on.
+ */
+const ARRAY_ONLY_MEMBERS = ['length', 'push', 'pop', 'shift', 'unshift', 'splice', 'slice', 'concat', 'indexOf', 'join', 'at'] as const;
+
+/**
+ * Whether `source` uses `receiver` -- the normalised receiver expression of a
+ * view call, e.g. `value.freeIndices` -- in a way only an array supports.
+ *
+ * Exported so the rule is testable on its own, in both directions: the point
+ * of the whole module is that a pattern which quietly stops matching is worse
+ * than no pattern.
+ *
+ * `receiver` is matched as a whole dotted expression, tolerating the
+ * whitespace a formatter may put around the dots, and indexing counts as
+ * evidence because `map[key]` does not compile either.
+ */
+export function hasArrayOnlyUsage(source: string, receiver: string): boolean {
+  const escaped = receiver
+    .split('.')
+    .map((segment) => segment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    .join('\\s*\\.\\s*');
+  const members = ARRAY_ONLY_MEMBERS.join('|');
+  return new RegExp(`(?<![\\w$.])${escaped}\\s*(?:\\.\\s*(?:${members})\\b|\\[)`).test(source);
+}
+
 const lineOf = (source: string, index: number): number => source.slice(0, index).split('\n').length;
 
 const normalise = (expression: string): string => expression.replace(/\s+/g, '');
@@ -187,6 +245,7 @@ const normalise = (expression: string): string => expression.replace(/\s+/g, '')
 export function findEnumerationSites(rawSource: string): readonly EnumerationSite[] {
   const source = stripComments(rawSource);
   const sites: EnumerationSite[] = [];
+  const collections = findCollectionNames(source);
 
   for (const match of source.matchAll(VIEW_CALL)) {
     const receiver = normalise(match[1]!);
@@ -194,6 +253,12 @@ export function findEnumerationSites(rawSource: string): readonly EnumerationSit
     // `ActorIdentityRegistry` has one. A collection view always has a
     // property between `this` and the view call.
     if (receiver === 'this') continue;
+    // An array names its views the same way, and its order is canonical. A
+    // `Map`/`Set` declaration of the same name wins, so the evidence can only
+    // ever remove a site this file has no other reason to think is a
+    // collection.
+    const declaredCollection = collections.includes(receiver.split('.').at(-1) ?? '');
+    if (!declaredCollection && hasArrayOnlyUsage(source, receiver)) continue;
     const end = match.index + match[0].length;
     sites.push({
       expression: `${receiver}.${match[2]!}()`,
@@ -203,7 +268,6 @@ export function findEnumerationSites(rawSource: string): readonly EnumerationSit
     });
   }
 
-  const collections = findCollectionNames(source);
   if (collections.length > 0) {
     const alternatives = collections.map((name) => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
     const bareForOf = new RegExp(`\\bfor\\s*\\(\\s*(?:const|let|var)\\s[^)]*?\\bof\\s+(this\\s*\\.\\s*(?:${alternatives}))\\s*\\)`, 'g');

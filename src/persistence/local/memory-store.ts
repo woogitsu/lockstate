@@ -27,7 +27,16 @@ export class MemoryLocalSaveStore implements LocalSaveStore {
 
     const tx: LocalSaveTransaction = {
       getMetadata: (prisonId) => Promise.resolve(metadataStaging.get(prisonId)),
-      listMetadata: () => Promise.resolve([...metadataStaging.values()]),
+      // Ascending `prisonId`, which is what the real store returns: the
+      // metadata object store is keyed on `prisonId` and IndexedDB's
+      // `getAll()` hands back records in ascending key order. Walking the
+      // staging `Map` instead would return put order, so this fake would
+      // answer a list in an order no browser produces -- and any repository
+      // behaviour that came to depend on list order would then be pinned
+      // against the wrong one (docs/DETERMINISM.md, "Canonical iteration
+      // order").
+      listMetadata: () =>
+        Promise.resolve([...metadataStaging.entries()].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)).map(([, value]) => value)),
       putMetadata: (value) => {
         metadataStaging.set(value.prisonId, value);
         return Promise.resolve();
