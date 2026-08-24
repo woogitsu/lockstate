@@ -64,10 +64,12 @@ concurrency:
   #
   # What the steps below do and do not establish about that:
   #
-  #   * Everything before `Deploy to Cloudflare` -- checkout, Node setup,
-  #     install, scripts/check-deploy-secrets.sh -- publishes nothing, so a run
-  #     cancelled in one of those steps leaves the live site exactly as it was.
-  #     Every cancellation recorded on #134 was of that kind, seconds in.
+  #   * Every step before `Deploy to Cloudflare` publishes nothing, so a run
+  #     cancelled in one of them leaves the live site exactly as it was. That
+  #     is all of them, not a sample: checkout, Node setup, Corepack, the
+  #     node_modules check, install, scripts/check-deploy-secrets.sh, and in
+  #     the production job `pnpm verify` as well. Every cancellation recorded
+  #     on #134 was of that kind, seconds in.
   #   * The publishing step is a single `wrangler deploy` behind a `vite build`
   #     (scripts/cloudflare-task.mjs). Whether cancelling *during* that upload
   #     can leave a half-published Worker is NOT established here, anywhere
