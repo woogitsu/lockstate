@@ -81,6 +81,68 @@ async function sourceFilesMatching(pattern: RegExp): Promise<readonly string[]> 
 }
 
 describe('docs/ARCHITECTURE.md: what the persistence layer actually does', () => {
+
+  /**
+   * `docs/INPUT.md`'s claims about which modules emit which contract.
+   *
+   * That file was **mentioned nowhere in this suite** until #203, which is how
+   * five false sentences accumulated in a 17-bullet document -- including two
+   * that contradicted other bullets in the same file. Three of the five are
+   * mechanically checkable, and these are they.
+   *
+   * The other two had a code half rather than only a prose half and were fixed
+   * by #199 and #201; their prose is now true because the code changed, not
+   * because the sentence was softened.
+   */
+  it('emits SemanticActionEvent from exactly the two adapters docs/INPUT.md names', async () => {
+    // The claim being pinned: "**Keyboard and pointer** emit one
+    // `SemanticActionEvent` contract -- those two and nothing else." The bullet
+    // used to include touch, which contradicted the gesture bullet two below it.
+    //
+    // `actions.ts` is expected: it *declares* the type. What matters is which
+    // modules produce one, so a third producer appearing is the failure.
+    const producing = await sourceFilesMatching(/SemanticActionEvent/u);
+    expect(
+      [...producing].sort(),
+      'a module outside src/input/ now produces or consumes SemanticActionEvent, or a third adapter emits one. Either is a real change -- docs/INPUT.md names keyboard and pointer only, and #200 owns the decision about whether that stream gets a consumer at all',
+    ).toEqual(
+      [
+        path.join('src', 'input', 'actions.ts'),
+        path.join('src', 'input', 'keyboard.ts'),
+        path.join('src', 'input', 'pointer.ts'),
+      ].sort(),
+    );
+  });
+
+  it('keeps the accessibility module free of any event surface, as three bullets now agree', async () => {
+    // `src/input/accessibility.ts` is a versioned settings record, not an
+    // adapter -- four exports, no method, no event type. Asserted separately
+    // from the sweep above because it is the specific sentence that was wrong
+    // ("Pointer, touch and accessibility adapters emit this same action
+    // contract"), and because it would still be wrong if the module gained an
+    // event type of some other name.
+    const source = stripComments(await readFile(path.join(repositoryRoot, 'src', 'input', 'accessibility.ts'), 'utf8'));
+    expect(
+      /SemanticActionEvent|Gesture\b/u.test(source),
+      'src/input/accessibility.ts now carries an event surface. docs/INPUT.md says in two places that it is a versioned settings record with none -- correct both in the same change',
+    ).toBe(false);
+  });
+
+  it('leaves the key-label resolver with no consumer, as docs/INPUT.md now says outright', async () => {
+    // The claim being pinned: the resolver exists, is tested, and **nothing
+    // displays a label yet**. The bullet used to be present tense, which sent a
+    // reader looking for a remapping UI that does not exist (#141).
+    //
+    // This is the direction that matters: a consumer *appearing* is good news
+    // and a doc change, not a regression -- so the failure message says so
+    // rather than implying something broke.
+    const referencing = await sourceFilesMatching(/resolveKeyboardLabel|fallbackKeyboardLabel/u);
+    expect(
+      referencing,
+      'something now references the key-label resolver. That is a feature arriving, not a defect -- say so in docs/INPUT.md, which currently states it has no consumer',
+    ).toEqual([path.join('src', 'input', 'bindings.ts')]);
+  });
+
   it('reads surviving code and not whitespace, so a scanner that strips too much cannot pass', async () => {
     // The counterpart to every `toEqual([])` below. If this stops matching
     // nearly everything, the scanner is not reading source any more and the
