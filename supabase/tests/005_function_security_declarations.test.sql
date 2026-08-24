@@ -80,6 +80,7 @@ enforce_challenge_evidence_size:definer:public, pg_temp
 enforce_challenge_verification_transition:invoker:public, pg_temp
 enforce_prison_slot_capacity:definer:public, pg_temp
 enforce_save_version_size:invoker:public, pg_temp
+enforce_save_version_storage_prefix:definer:public, pg_temp
 max_challenge_evidence_bytes:invoker:<unpinned>
 max_save_payload_bytes:invoker:<unpinned>
 max_save_slot_capacity:invoker:<unpinned>
@@ -197,14 +198,23 @@ select is(
 
 -- The six client- or trusted-callable RPCs are the ones whose definer
 -- rights are the security control, so their `prosecdef` is worth naming as
--- a set and not only inside the matrix above. Two trigger functions are
--- here too, both for the same reason: they call a limit helper that is
--- executable by nobody, so invoker rights would make the invariant depend
--- on the writer holding a grant no role has.
--- `enforce_prison_slot_capacity` reads `entitlements` through
--- `account_save_slot_capacity()` (ADR 0013);
--- `enforce_challenge_evidence_size` reads
--- `max_challenge_evidence_bytes()` (issue #105 finding 1).
+-- a set and not only inside the matrix above. Three trigger functions are
+-- here too, and for two distinct reasons.
+--
+-- Two of them call a limit helper that is executable by nobody, so invoker
+-- rights would make the invariant depend on the writer holding a grant no
+-- role has: `enforce_prison_slot_capacity` reads `entitlements` through
+-- `account_save_slot_capacity()` (ADR 0013), and
+-- `enforce_challenge_evidence_size` reads `max_challenge_evidence_bytes()`
+-- (issue #105 finding 1).
+--
+-- The third, `enforce_save_version_storage_prefix` (issue #105 finding 11),
+-- is definer for a reason of its own: it reads `public.prisons` to learn
+-- which account owns the version being written, and an invoker-rights
+-- trigger would enforce the per-owner prefix only for writers who happen to
+-- hold SELECT on that table -- and would see only the rows that table's RLS
+-- policy shows them, which for a trusted importer is none of the ones it
+-- needs to validate against.
 select is(
   (select string_agg(p.proname, ' ' order by p.proname)
      from pg_proc p
@@ -212,9 +222,9 @@ select is(
     where n.nspname = 'public'
       and p.prosecdef),
   'account_save_slot_capacity create_prison create_save_version enforce_challenge_evidence_size '
-    || 'enforce_prison_slot_capacity recompute_entitlement_projection record_entitlement_event '
-    || 'submit_challenge_evidence',
-  'exactly eight functions run with their definer''s rights, and each one is a documented trusted path'
+    || 'enforce_prison_slot_capacity enforce_save_version_storage_prefix '
+    || 'recompute_entitlement_projection record_entitlement_event submit_challenge_evidence',
+  'exactly nine functions run with their definer''s rights, and each one is a documented trusted path'
 );
 
 select * from finish();
