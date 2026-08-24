@@ -104,10 +104,11 @@ export const HUD_MESSAGE_KEY = {
    * What the player is told when a control's action was refused (issue #207).
    *
    * One key per *command* intent rather than one generic sentence, because
-   * the two commands leave the prison in different states and a player acting
+   * each command leaves the prison in a different state and a player acting
    * on the message needs to know which: a refused clock change leaves the
    * simulation running exactly as it was, a refused build order leaves
-   * nothing queued.
+   * nothing queued, and a refused undo leaves in place whatever the player was
+   * trying to take back.
    *
    * Deliberately no key for the thrown `Error`'s own text. Those messages are
    * hard-coded English raised on the main thread (`src/ui/simulation-commands.ts`,
@@ -118,6 +119,8 @@ export const HUD_MESSAGE_KEY = {
    */
   refusalSetClock: 'hud.refusal.set-clock',
   refusalPlaceBuildOrder: 'hud.refusal.place-build-order',
+  refusalUndo: 'hud.refusal.undo',
+  refusalRedo: 'hud.refusal.redo',
 
   severityInfo: 'hud.severity.info',
   severityWarning: 'hud.severity.warning',

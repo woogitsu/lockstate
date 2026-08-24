@@ -535,6 +535,63 @@ test.describe('HUD shell', () => {
       ]);
     });
 
+    /**
+     * The undo key, at the layer that decides whether the player is told (#261).
+     *
+     * `ConstructionSystem` has maintained a transaction-grouped undo stack
+     * since #108 and nothing in the application could produce an `Undo`
+     * command. Routing the key through the HUD rather than from the renderer
+     * straight to the command sender is what buys the sentence on screen: an
+     * undo pressed before a session exists throws in `src/main.ts`, and this
+     * is where that becomes a line the player can read rather than a failure
+     * with no surface to report it -- the defect #225 removed from the build
+     * drag, not re-created for the key.
+     */
+    test('a refused undo says so on screen, with no control to blame', async ({ page }) => {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(() => window.lockstateUiHarness.failIntents(true));
+
+      // The key really reached the HUD. Without this the assertions below
+      // would be equally green against a HUD that registered no sink at all.
+      expect(await page.evaluate(() => window.lockstateUiHarness.pressWorldUndo('undo'))).toBe(true);
+
+      await expect
+        .poll(() => page.evaluate(() => window.lockstateUiHarness.refusalProbe().visible), {
+          message: 'a refused undo left nothing on screen, which is what the key routing through the HUD is for',
+        })
+        .toBe(true);
+
+      const probe = await page.evaluate(() => window.lockstateUiHarness.refusalProbe());
+      expect(probe.action).toBe('undo');
+      expect(probe.text).toContain('Nothing was undone');
+      // Not the build order's sentence: a refused undo and a refused order
+      // leave the prison in different states, and one generic line would make
+      // the player guess which.
+      expect(probe.text).not.toContain('The build order was not placed');
+      expect(probe.text).not.toContain('ui-harness: the host refused');
+      // No control is marked, for the reason a refused world drag marks none:
+      // the player pressed a key on the world, not a button in the HUD.
+      expect(probe.failedControls).toEqual([]);
+      expect(await page.evaluate(() => window.lockstateUiHarness.takeUnhandledRejections())).toEqual([]);
+    });
+
+    test('undo and redo are separate intents, each dispatched once per press', async ({ page }) => {
+      // Two kinds and not one carrying a direction, because the gate and the
+      // refusal sentence are both keyed on `intent.kind`. Asserted as the
+      // exact intent list so a redo dispatched as an undo -- which would
+      // reverse the player's work instead of restoring it -- cannot pass.
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+
+      expect(await page.evaluate(() => window.lockstateUiHarness.pressWorldUndo('undo'))).toBe(true);
+      expect(await page.evaluate(() => window.lockstateUiHarness.pressWorldUndo('redo'))).toBe(true);
+
+      const intents = await page.evaluate(() => window.lockstateUiHarness.hudIntents());
+      expect(intents.filter((intent) => intent.includes('undo') || intent.includes('redo'))).toEqual([
+        JSON.stringify({ kind: 'undo' }),
+        JSON.stringify({ kind: 'redo' }),
+      ]);
+    });
+
     test('the refusal line is there at 375px, where the alerts region is not', async ({ page }) => {
       // `hud.css` drops `.hud__corner` at 720px and below, so a refusal
       // reported into the alerts list would not exist on a phone at all.

@@ -311,16 +311,27 @@ describe('severity', () => {
  * half of the rule its `default` case happens to be.
  */
 describe('refusalMessageKey: what a refused control says', () => {
-  it('names an outcome for each command, and two different ones', () => {
+  it('names an outcome for each command, and four different ones', () => {
     // A command changes nothing locally, so a refusal means the prison is
     // exactly as it was and nothing on screen says so unless this does.
-    const clockKey = refusalMessageKey('set-clock');
-    const buildKey = refusalMessageKey('place-build-order');
-    expect(clockKey).toBe(HUD_MESSAGE_KEY.refusalSetClock);
-    expect(buildKey).toBe(HUD_MESSAGE_KEY.refusalPlaceBuildOrder);
-    // Not one generic sentence: a refused clock change and a refused build
-    // order leave the prison in different states.
-    expect(clockKey).not.toBe(buildKey);
+    const keys = [
+      refusalMessageKey('set-clock'),
+      refusalMessageKey('place-build-order'),
+      refusalMessageKey('undo'),
+      refusalMessageKey('redo'),
+    ];
+    expect(keys).toEqual([
+      HUD_MESSAGE_KEY.refusalSetClock,
+      HUD_MESSAGE_KEY.refusalPlaceBuildOrder,
+      HUD_MESSAGE_KEY.refusalUndo,
+      HUD_MESSAGE_KEY.refusalRedo,
+    ]);
+    // Not one generic sentence: each of the four leaves the prison in a
+    // different state, and the undo pair is the case where the player pressed
+    // a key rather than a button (#261) -- so the line is the whole report and
+    // "that was refused" without saying what would leave them guessing whether
+    // their wall is still queued.
+    expect(new Set(keys).size).toBe(keys.length);
   });
 
   it('says nothing about a chrome intent, which has already been applied', () => {

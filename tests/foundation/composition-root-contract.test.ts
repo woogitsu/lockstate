@@ -44,9 +44,12 @@ import { stripComments } from '../helpers/canonical-iteration';
  * passing. That mutation is what this file kills.
  *
  * Entries are therefore *few and load-bearing*. Every one names a defect that
- * actually happened; a wiring nobody has broken does not need a line here, and
- * filling this list with every call in `main.ts` would make it a second copy of
- * the file that nobody reads.
+ * actually happened, or -- for the pair added by #261 -- a seam whose deletion
+ * was **measured** to be invisible while it was being built, which is the same
+ * evidence the three defects above produced after the fact. A wiring nobody
+ * has broken and nothing can silently break does not need a line here, and
+ * filling this list with every call in `main.ts` would make it a second copy
+ * of the file that nobody reads.
  */
 
 const MAIN_PATH = join(__dirname, '../../src/main.ts');
@@ -102,6 +105,18 @@ const REQUIRED_WIRINGS: readonly RequiredWiring[] = [
     source: 'const alerts = hudAlertsFromWorkerMessage(message);',
     reason:
       'Issue #261, and the exact shape this list exists for: a seam that is correct, fully covered, and joined to nothing. `HudViewModel.alerts` -- the list, the severity badges, the folding section, the empty-state row and the insertion ordering #209 measured in a real browser -- is fully implemented, and between #220 and #261 **nothing assigned to it**: this file wrote `clock` and `counts`, and the only assignment anywhere in `src/` was the literal `[]` in `EMPTY_HUD_VIEW_MODEL` (#220 moved the one message that had ever been routed there to `.hud__unavailable`). So a build order the simulation refused (`state: \'failed\'`, `failReason: \'out-of-bounds\'`) reached the main thread and was dropped, with no ghost drawn and no refusal line raised, because the refusal line answers a rejected *command* and this command was queued. `hudAlertsFromWorkerMessage` is pure and has its own unit tests either way, so deleting this one line restores the defect exactly with `tsc` clean and the suite green -- which is the mutation this entry kills.',
+  },
+  {
+    what: 'the world\'s undo keys to the renderer',
+    source: '{ buildTool, editHistory: buildTool }',
+    reason:
+      'Issue #261. `WorldSceneOptions.editHistory` is optional -- correctly, since a page with no worker builds no tool and a world with no undo is a coherent state -- so `tsc` cannot say that the running application passes one, and the scene reports an undo to nobody without it. `KeyZ` then does nothing, which is the dead key #200 spent an issue on. Measured while the seam was built: with `editHistory: buildTool` deleted, `tsc` is clean and all 1,780 tests pass, because every other test of this feature drives a harness that constructs its own scene. The one production `new WorldScene(...)` is here.',
+  },
+  {
+    what: 'the world\'s undo keys to the HUD, so a refused undo is reported',
+    source: '{ worldBuild: tool, editHistory: tool }',
+    reason:
+      'Issue #261, and the other half of the same seam. The key reaches the HUD rather than the command sender so that a refusal paints the refusal line instead of a `console.warn` -- the defect #225 removed from the build drag. `MountHudOptions.editHistory` is optional, so deleting this argument compiles, and the HUD then registers no sink: `BuildTool.undo()` drops the request and the player gets silence from a key that is bound. Measured: with `editHistory: tool` deleted, `tsc` is clean and all 1,780 tests pass, because `tests/browser/ui-shell.spec.ts` mounts the HUD with a source of its own.',
   },
   {
     what: 'the lifecycle save handler is attached to the controller',

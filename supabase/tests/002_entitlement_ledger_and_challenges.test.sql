@@ -33,8 +33,12 @@
 --
 -- The same is true of the twenty-nine added for issue #105 findings 6, 7
 -- and 9: "Ledger idempotency beyond the payment webhook" (nineteen) and
--- "The definition oracle" (ten). `pnpm verify:sql` reports 76/76 for this
--- suite.
+-- "The definition oracle" (ten), and of the twelve added for issues #189 and
+-- #191: "Trusted-tier column bounds" (seven), "ranked_score is finite"
+-- (four) and "challenge_version has a floor" (one). `pnpm verify:sql`
+-- reports 88/88 for this suite. That figure is what drifted before -- it
+-- read 76/76 for as long as nobody re-ran it after #189 and #191 -- so treat
+-- it as a claim to check rather than as a fact to trust.
 
 begin;
 select plan(88);
