@@ -100,24 +100,99 @@ function parseHeadersFile(contents: string): readonly HeaderRule[] {
 }
 
 /**
+ * Splits the top-level elements of an array literal's body by bracket depth,
+ * ignoring anything inside a quoted string.
+ *
+ * This exists so the entry parser below cannot fail *quietly*. The previous
+ * version matched `['name', 'value']` pairs with one regex and only checked
+ * that it had found at least one, so an entry it could not read simply went
+ * missing -- and a missing entry makes the "same value" assertion below
+ * compare `undefined` against nothing at all. The Content-Security-Policy
+ * value is the case that exposed it: it contains `'self'`, so the verifier has
+ * to quote it with double quotes, and a single-quote-only pattern skipped it.
+ */
+function splitTopLevelElements(body: string): readonly string[] {
+  const elements: string[] = [];
+  let depth = 0;
+  let quote: string | undefined;
+  let current = '';
+
+  for (let index = 0; index < body.length; index += 1) {
+    const character = body[index] ?? '';
+
+    if (quote !== undefined) {
+      current += character;
+      if (character === '\\') {
+        current += body[index + 1] ?? '';
+        index += 1;
+      } else if (character === quote) {
+        quote = undefined;
+      }
+      continue;
+    }
+
+    if (character === "'" || character === '"' || character === '`') {
+      quote = character;
+      current += character;
+      continue;
+    }
+
+    if (character === '[') {
+      depth += 1;
+      if (depth === 1) {
+        current = '';
+        continue;
+      }
+    }
+
+    if (character === ']') {
+      depth -= 1;
+      if (depth === 0) {
+        elements.push(current);
+        current = '';
+        continue;
+      }
+    }
+
+    if (depth >= 1) {
+      current += character;
+    }
+  }
+
+  return elements;
+}
+
+/**
  * Reads `SECURITY_HEADER_BASELINE` out of the verifier as text rather than
  * importing it. `scripts/verify-deployment-preview.mjs` calls `main()` at
  * module scope, so importing it would build the project and start a preview
  * server from inside a unit test.
  *
  * A parser that silently returned an empty set would make the assertions below
- * vacuously true, so failing to find the declaration is an explicit failure.
+ * vacuously true, so failing to find the declaration is an explicit failure --
+ * and so is finding fewer entries than the literal has elements.
  */
 function parseSecurityHeaderBaseline(source: string): ReadonlyMap<string, string> {
-  const declaration = /const SECURITY_HEADER_BASELINE = \[([\s\S]*?)\];/u.exec(source);
+  const declaration = /const SECURITY_HEADER_BASELINE = \[([\s\S]*?)\n\];/u.exec(source);
   expect(
     declaration?.[1],
     'Could not find the SECURITY_HEADER_BASELINE declaration in scripts/verify-deployment-preview.mjs.',
   ).toBeDefined();
 
+  // The declaration body already sits *inside* the outer `[...]`, so each
+  // top-level `[` here opens one entry.
+  const elements = splitTopLevelElements(declaration?.[1] ?? '');
   const entries = new Map<string, string>();
-  for (const pair of (declaration?.[1] ?? '').matchAll(/\[\s*'([^']+)'\s*,\s*'([^']*)'\s*\]/gu)) {
-    entries.set((pair[1] ?? '').toLowerCase(), pair[2] ?? '');
+
+  for (const element of elements) {
+    // Either quote style, because a value containing `'self'` has to be
+    // double-quoted and a value containing none conventionally is not.
+    const pair = /^\s*(['"])(.+?)\1\s*,\s*(['"])([\s\S]*?)\3\s*,?\s*$/u.exec(element);
+    expect(
+      pair,
+      `SECURITY_HEADER_BASELINE element ${JSON.stringify(element)} is not a [name, value] pair this parser can read. Fix the parser rather than leaving the entry unasserted.`,
+    ).not.toBeNull();
+    entries.set((pair?.[2] ?? '').toLowerCase(), pair?.[4] ?? '');
   }
 
   expect(
@@ -125,10 +200,64 @@ function parseSecurityHeaderBaseline(source: string): ReadonlyMap<string, string
     'SECURITY_HEADER_BASELINE was found but parsed to no entries; the parser is broken.',
   ).toBeGreaterThan(0);
 
+  expect(
+    entries.size,
+    'SECURITY_HEADER_BASELINE has more elements than this parser read, so at least one header is asserted by nothing.',
+  ).toBe(elements.length);
+
   return entries;
 }
 
 describe('deployment header contract', () => {
+  /**
+   * The security headers the `/*` rule must carry, and what each is for.
+   *
+   * An exact set, declared here, for the reason `EXPECTED_RULE_BLOCKS` below
+   * is one: the two inclusion checks in this file and in
+   * `scripts/verify-deployment-preview.mjs` both compare `public/_headers`
+   * against the verifier, so deleting a header from *both* in one change
+   * satisfies both of them. #138's surviving mutation was exactly that shape
+   * one level down -- three headers removed, every gate green -- and the
+   * lesson recorded there is that an inclusion-only check cannot see a
+   * deletion. This set can, because a removed header leaves an entry here with
+   * nothing to match.
+   */
+  const REQUIRED_SECURITY_HEADERS: Readonly<Record<string, string>> = {
+    'X-Content-Type-Options': 'Stops MIME sniffing turning a served file into a script.',
+    'X-Frame-Options': 'Legacy clickjacking defence, kept for anything that does not honour frame-ancestors.',
+    'Referrer-Policy': 'Keeps the full URL off cross-origin requests.',
+    'Permissions-Policy': 'Denies camera, geolocation, microphone and USB, none of which this game asks for.',
+    'Content-Security-Policy':
+      'ADR-0021. The renderer-constraining one: `img-src` must keep `data:` and `blob:` or Phaser cannot install a texture or load an atlas, and `script-src` deliberately withholds `unsafe-eval`.',
+    'Strict-Transport-Security':
+      'ADR-0021. Independent of the renderer; `includeSubDomains` without `preload`, because preload submission is an owner action outside this repository.',
+    'Cross-Origin-Opener-Policy': 'ADR-0021. Half of cross-origin isolation; severs the opener relationship.',
+    'Cross-Origin-Embedder-Policy':
+      'ADR-0021. The other half. `require-corp` is what makes the page cross-origin isolated, and it will reject a future cross-origin subresource that does not opt in.',
+    'Cross-Origin-Resource-Policy': 'ADR-0021. Stops another origin embedding these responses.',
+  };
+
+  it('carries exactly the security headers this contract accounts for on /*', async () => {
+    const rules = parseHeadersFile(await readRepositoryFile('public/_headers'));
+    const names = rules.filter((rule) => rule.pathPattern === '/*').map((rule) => rule.headerName);
+
+    // Vacuity guard: a parser that stopped matching would make both
+    // difference checks below pass while comparing nothing.
+    expect(names.length, 'no headers parsed off the /* rule in public/_headers; the parser is broken').toBeGreaterThan(3);
+
+    const missing = Object.keys(REQUIRED_SECURITY_HEADERS).filter((name) => !names.includes(name));
+    expect(
+      missing.map((name) => `${name}: ${REQUIRED_SECURITY_HEADERS[name]}`),
+      'public/_headers no longer sets this security header on /*. If dropping it is deliberate, delete its entry here, remove it from SECURITY_HEADER_BASELINE in scripts/verify-deployment-preview.mjs, and say why in the ADR that introduced it -- all in the same change',
+    ).toEqual([]);
+
+    const unaccounted = names.filter((name) => REQUIRED_SECURITY_HEADERS[name] === undefined);
+    expect(
+      unaccounted,
+      'public/_headers sets a header on /* that this contract does not account for: add it here with what it is for, and add it to SECURITY_HEADER_BASELINE so a real response is checked for it',
+    ).toEqual([]);
+  });
+
   /**
    * The other direction is already covered, and the two catch different
    * mistakes:
@@ -173,6 +302,152 @@ describe('deployment header contract', () => {
 });
 
 /**
+ * The exact-set and value-equality checks above both compare `public/_headers`
+ * against `SECURITY_HEADER_BASELINE`, so they agree with each other by
+ * construction: editing the Content-Security-Policy's *value* in both places
+ * in one change satisfies every one of them, and the verifier too, because it
+ * asserts the response against the same edited baseline. The policy could be
+ * weakened to `default-src *` in three lines of diff with the suite green.
+ *
+ * These are the properties that cannot be satisfied that way, because they are
+ * stated as invariants rather than as an expected string. ADR-0021 is where
+ * each comes from, and the two halves pull in opposite directions on purpose:
+ * some directives must not be *widened* because widening them gives the 1.6 MB
+ * of bundled third-party code back the capability the policy exists to remove,
+ * and `img-src` must not be *narrowed* because Phaser genuinely needs `data:`
+ * and `blob:` and taking either away breaks the renderer.
+ */
+describe('content-security-policy invariants', () => {
+  /** Splits a CSP into directive name -> source list. */
+  function parsePolicy(policy: string): ReadonlyMap<string, readonly string[]> {
+    const directives = new Map<string, readonly string[]>();
+    for (const part of policy.split(';')) {
+      const tokens = part.trim().split(/\s+/u).filter((token) => token.length > 0);
+      const name = tokens.shift();
+      if (name === undefined) continue;
+      directives.set(name.toLowerCase(), tokens);
+    }
+    return directives;
+  }
+
+  async function contentSecurityPolicy(): Promise<ReadonlyMap<string, readonly string[]>> {
+    const rules = parseHeadersFile(await readRepositoryFile('public/_headers'));
+    const rule = rules.find(
+      (candidate) => candidate.pathPattern === '/*' && candidate.headerName.toLowerCase() === 'content-security-policy',
+    );
+    expect(rule, 'public/_headers sets no Content-Security-Policy on /*.').toBeDefined();
+
+    const directives = parsePolicy(rule?.headerValue ?? '');
+    expect(
+      directives.size,
+      'the Content-Security-Policy parsed to no directives; the parser is broken',
+    ).toBeGreaterThan(3);
+    return directives;
+  }
+
+  /**
+   * ADR-0021 withholds `'unsafe-eval'` deliberately, on a measurement: the Zod
+   * JIT it costs is not measurably faster on this repository's own save
+   * envelope, and the concession would apply to the whole bundle. Phaser 4.2.1
+   * needs neither keyword -- the production bundle contains no `eval(` and no
+   * `new Function` outside Zod's caught feature probe.
+   */
+  it('never concedes unsafe-eval, unsafe-inline or a wildcard source', async () => {
+    const directives = await contentSecurityPolicy();
+
+    for (const [name, sources] of directives) {
+      for (const forbidden of ["'unsafe-eval'", "'unsafe-inline'", '*', "data:", "blob:"]) {
+        if (forbidden === 'data:' || forbidden === 'blob:') {
+          // Allowed for img-src, and only there; see the next assertion.
+          if (name === 'img-src') continue;
+        }
+        expect(
+          sources,
+          `Content-Security-Policy directive ${name} lists ${forbidden}. ADR-0021 records why the policy does not concede it; widening it needs that ADR amended, not just this line changed.`,
+        ).not.toContain(forbidden);
+      }
+    }
+  });
+
+  /**
+   * The opposite failure, and the one #105 and #138 both predicted when they
+   * called a CSP "a real chance of breaking Phaser". Both allowances were
+   * measured, and removing either was observed to break the game rather than
+   * harden it:
+   *
+   *   * without `blob:`, all ten actor atlases fail with
+   *     `Refused to load the image 'blob:...'` -- Phaser's loader is
+   *     XHR -> Blob -> `URL.createObjectURL`
+   *     (`phaser/src/loader/filetypes/ImageFile.js:132`) and has no other path;
+   *   * without `data:`, Phaser's `__DEFAULT`/`__MISSING`/`__WHITE` textures
+   *     (`phaser/src/textures/TextureManager.js:206-216`) never exist and the
+   *     page throws `TypeError: Cannot read properties of undefined (reading
+   *     'glTexture')`.
+   */
+  it('keeps the two img-src allowances the renderer cannot run without', async () => {
+    const directives = await contentSecurityPolicy();
+    const imgSrc = directives.get('img-src');
+
+    expect(imgSrc, 'the Content-Security-Policy sets no img-src, so default-src governs images.').toBeDefined();
+
+    for (const required of ["'self'", 'data:', 'blob:']) {
+      expect(
+        imgSrc,
+        `Content-Security-Policy img-src no longer allows ${required}. Removing it does not harden the site, it breaks the renderer -- see ADR-0021 for the observed failure.`,
+      ).toContain(required);
+    }
+  });
+
+  /** The directives whose whole value is to deny, so a non-`'none'` value is a regression. */
+  it('keeps the deny-only directives denying', async () => {
+    const directives = await contentSecurityPolicy();
+
+    for (const name of ['default-src', 'object-src', 'base-uri', 'frame-ancestors']) {
+      expect(
+        directives.get(name),
+        `Content-Security-Policy ${name} must be exactly 'none'; ADR-0021 relies on it.`,
+      ).toEqual(["'none'"]);
+    }
+  });
+});
+
+/**
+ * HSTS is the one security header here whose value can be gutted without
+ * removing it: `max-age=0` is a valid header that switches the protection off,
+ * and it satisfies every name-based check in this file. ADR-0021 chose one
+ * year with `includeSubDomains` and deliberately no `preload`.
+ */
+describe('strict-transport-security invariants', () => {
+  const SIX_MONTHS_IN_SECONDS = 15_552_000;
+
+  it('keeps a max-age that actually protects, and stays out of the preload list', async () => {
+    const rules = parseHeadersFile(await readRepositoryFile('public/_headers'));
+    const rule = rules.find(
+      (candidate) => candidate.pathPattern === '/*' && candidate.headerName.toLowerCase() === 'strict-transport-security',
+    );
+    expect(rule, 'public/_headers sets no Strict-Transport-Security on /*.').toBeDefined();
+
+    const value = (rule?.headerValue ?? '').toLowerCase();
+    const maxAge = /max-age=(\d+)/u.exec(value);
+    expect(maxAge?.[1], 'Strict-Transport-Security has no max-age.').toBeDefined();
+    expect(
+      Number(maxAge?.[1] ?? '0'),
+      'Strict-Transport-Security max-age is below six months, which is short enough that the header stops being a protection. ADR-0021 chose one year.',
+    ).toBeGreaterThanOrEqual(SIX_MONTHS_IN_SECONDS);
+
+    expect(value, 'ADR-0021 chose includeSubDomains; dropping it needs that ADR amended.').toContain('includesubdomains');
+
+    // `preload` is only meaningful after a submission to hstspreload.org, which
+    // is an owner action outside this repository, and it is slow to undo.
+    // Claiming it here would be a statement the repository cannot back.
+    expect(
+      value,
+      'Strict-Transport-Security now claims preload. ADR-0021 deliberately does not, because it requires a submission this repository cannot make and is slow to reverse.',
+    ).not.toContain('preload');
+  });
+});
+
+/**
  * Issue #122 found `docs/DEPLOYMENT.md` forbidding, in prose, exactly what
  * `public/_headers` deliberately does: it told a contributor not to place
  * mutable stable-name files under `/assets/`, while ADR-0014 puts the runtime
@@ -206,7 +481,7 @@ describe('cache-policy documentation contract', () => {
    * is a rule that no longer needs documenting. This set can.
    */
   const EXPECTED_RULE_BLOCKS: Readonly<Record<string, string>> = {
-    '/*': 'The four security headers. Sets no cache policy; its values are asserted against a real preview response by scripts/verify-deployment-preview.mjs.',
+    '/*': 'The security headers, including the ADR-0021 Content-Security-Policy, HSTS and cross-origin isolation trio. Sets no cache policy; the exact set of names is pinned by REQUIRED_SECURITY_HEADERS above and every value is asserted against a real preview response by scripts/verify-deployment-preview.mjs.',
     '/assets/:file':
       'Vite`s fingerprinted output. `:file` matches a single path segment, so this deliberately excludes the /assets/actors/ subtree -- overlapping _headers rules concatenate rather than override.',
     '/assets/actors/*':

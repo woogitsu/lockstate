@@ -44,8 +44,9 @@ this index's. Nothing here changes a status; this table only reports them.
 | 0018 | *Reserved by open PR #91 — not in this directory* | not merged, PR held |
 | [0019](./0019-tile-ownership-under-overlapping-parcels.md) | What "owned" means for a tile under overlapping parcels | Proposed — pending human approval |
 | [0020](./0020-deterministic-kernel.md) | Deterministic Kernel and Scheduler | Accepted |
+| [0021](./0021-http-response-security-headers.md) | HTTP response security headers for the static-asset deployment | Proposed — pending human approval |
 
-**Next free number: 0021.**
+**Next free number: 0022.**
 
 ## 0018, claimed by work that has not merged
 

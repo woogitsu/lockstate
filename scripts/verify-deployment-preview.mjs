@@ -27,18 +27,35 @@ import { fileURLToPath } from 'node:url';
  * to `public/_headers` and never added here would be asserted by nothing -- so
  * `tests/foundation/ci-configuration-contract.test.ts` closes it from the other
  * side: it reads `public/_headers` and requires every header on `/*` to appear
- * in this list with the same value. The two directions catch different
- * mistakes and neither substitutes for the other.
+ * in this list with the same value. It also holds an exact set of the header
+ * names the `/*` rule must carry, which is what catches a header deleted from
+ * `public/_headers` *and* from this list in one change. The three directions
+ * catch different mistakes and none substitutes for another.
  *
- * Note what this does NOT cover: there is no Content-Security-Policy at all,
- * which matters because the bundle carries ~1.6 MB of Phaser. Adding one has a
- * real chance of breaking the renderer, so it is its own change; see #105.
+ * The Content-Security-Policy and the cross-origin isolation headers arrived
+ * with ADR-0021 (issue #105 finding 12). What this verifier checks about them
+ * is that a real response carries them verbatim -- it runs `vite preview`,
+ * which serves `dist/` through workerd and therefore applies `public/_headers`
+ * exactly as production does. What it CANNOT check is that the policy still
+ * lets the renderer run, because it never opens a browser: that was settled by
+ * execution when the policy landed (ADR-0021 records the observed violations)
+ * and has no standing gate. A Phaser upgrade that started needing
+ * `'unsafe-eval'`, a cross-origin CDN or a `blob:` worker would pass every
+ * check in this repository and break the page.
  */
 const SECURITY_HEADER_BASELINE = [
   ['x-content-type-options', 'nosniff'],
   ['x-frame-options', 'DENY'],
   ['referrer-policy', 'strict-origin-when-cross-origin'],
   ['permissions-policy', 'camera=(), geolocation=(), microphone=(), usb=()'],
+  [
+    'content-security-policy',
+    "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+  ],
+  ['strict-transport-security', 'max-age=31536000; includeSubDomains'],
+  ['cross-origin-opener-policy', 'same-origin'],
+  ['cross-origin-embedder-policy', 'require-corp'],
+  ['cross-origin-resource-policy', 'same-origin'],
 ];
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
