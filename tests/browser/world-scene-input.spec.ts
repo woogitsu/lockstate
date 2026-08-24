@@ -181,6 +181,12 @@ test.describe('the world scene keyboard', () => {
     await page.keyboard.up('KeyD');
 
     expect(after).toBe(before);
+    // `toHaveValue` reads the DOM and implies nothing about visibility, so it
+    // would stay green on a field inside a `display: none` subtree -- and
+    // "the field owns the keyboard" is a claim about a field the player can
+    // see and type into. Playwright's own visibility check, which is this
+    // file's idiom for a locator (#218 section 6.6).
+    await expect(page.locator('#probe-text')).toBeVisible();
     await expect(page.locator('#probe-text')).toHaveValue('d');
   });
 

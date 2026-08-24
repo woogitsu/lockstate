@@ -96,7 +96,22 @@ export type VersionedPayload = DeepReadonly<
   z.infer<typeof versionedPayloadSchema>
 >;
 
-const protocolFaultCodeSchema = z.enum([
+/**
+ * The twelve fault codes, as a runtime tuple.
+ *
+ * A `const` array with the schema derived from it, rather than the literals
+ * living only inside `z.enum([...])`, for the same reason
+ * `PROTOCOL_DECODE_ERROR_CODES` in `./decode.ts` is shaped this way: a test
+ * cannot enumerate the members of a schema that is not exported, so the
+ * vocabulary could not be checked for reachability at all. Two of these twelve
+ * are currently emitted by nothing (#187 finding 2), and
+ * `tests/foundation/fault-code-reachability-contract.test.ts` is what makes
+ * that a checked state rather than something a reader rediscovers.
+ *
+ * `as const` keeps the literal tuple, so `ProtocolFaultCode` stays these
+ * twelve strings and does not widen to `string`.
+ */
+export const PROTOCOL_FAULT_CODES = [
   'invalid-message',
   'unsupported-protocol-version',
   'unknown-message-kind',
@@ -109,7 +124,9 @@ const protocolFaultCodeSchema = z.enum([
   'snapshot-incompatible',
   'shutting-down',
   'internal-error',
-]);
+] as const;
+
+const protocolFaultCodeSchema = z.enum(PROTOCOL_FAULT_CODES);
 
 /**
  * The closed set of reasons the worker may refuse or abandon a request.
@@ -120,7 +137,7 @@ const protocolFaultCodeSchema = z.enum([
  * message that was reporting the original failure, with the real cause gone
  * (issue #139). The cast is gone; this is what replaced it.
  */
-export type ProtocolFaultCode = z.infer<typeof protocolFaultCodeSchema>;
+export type ProtocolFaultCode = (typeof PROTOCOL_FAULT_CODES)[number];
 
 export const protocolFaultSchema = z
   .object({

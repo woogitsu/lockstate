@@ -23,6 +23,7 @@ export {
   type DeepReadonly,
   type MainToWorkerMessage,
   type ProtocolFault,
+  PROTOCOL_FAULT_CODES,
   type ProtocolFaultCode,
   type SimulationProtocolMessage,
   type SimulationStatusCounts,

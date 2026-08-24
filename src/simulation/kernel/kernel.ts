@@ -17,6 +17,46 @@ export interface KernelSnapshot {
   readonly commands: readonly QueuedCommand[];
 }
 
+/**
+ * Why a command was refused, as a value rather than as prose in a message.
+ *
+ * `Kernel.submitCommand` has always distinguished these two conditions -- two
+ * adjacent `if` branches on the same comparison -- but it threw a bare `Error`,
+ * so the only carrier of the distinction was the human-readable text. The
+ * worker's `catch` therefore reported all three of its refusal reasons as
+ * `invalid-state`, while `duplicate-message` and `sequence-gap` sat in the
+ * twelve-member `ProtocolFaultCode` enum emitted by nothing at all (#187
+ * finding 2).
+ *
+ * A discriminant and not a subclass per case: there are exactly two, they are
+ * decided one line apart, and the worker maps them through an exhaustive
+ * `Record` so a third added here fails to compile until it is mapped.
+ */
+export type CommandRejectionKind = 'duplicate-sequence' | 'sequence-gap' | 'past-tick';
+
+/**
+ * A command the kernel refused, carrying which of the three refusals it was.
+ *
+ * `extends Error` and not a plain result object, because `submitCommand`'s
+ * contract is already to throw and every caller is written for that; changing
+ * the return type would be a change to the boundary rather than to what the
+ * boundary can say. `WorldSnapshotError` in `src/simulation/world/sparse-world.ts`
+ * is the same shape for the same reason.
+ *
+ * `instanceof` is the only check the worker needs, and it is safe here because
+ * this class and its one thrower are in the same bundle -- there is no realm
+ * boundary between the kernel and the worker's state machine.
+ */
+export class CommandRejectedError extends Error {
+  public constructor(
+    public readonly kind: CommandRejectionKind,
+    message: string,
+  ) {
+    super(message);
+    this.name = 'CommandRejectedError';
+  }
+}
+
 export class Kernel {
   private _tick: number;
   private _expectedSequence: number;
@@ -77,14 +117,23 @@ export class Kernel {
   }
 
   public submitCommand(id: string, sequence: number, executeAtTick: number, payload: unknown): void {
+    // The messages are unchanged. Only the type is new: these three branches
+    // already knew which refusal this was, and now say so in a way a caller
+    // can read without parsing English (#187 finding 2).
     if (sequence < this._expectedSequence) {
-      throw new Error(`Duplicate command sequence: ${sequence}`);
+      throw new CommandRejectedError('duplicate-sequence', `Duplicate command sequence: ${sequence}`);
     }
     if (sequence > this._expectedSequence) {
-      throw new Error(`Command sequence gap: expected ${this._expectedSequence}, got ${sequence}`);
+      throw new CommandRejectedError(
+        'sequence-gap',
+        `Command sequence gap: expected ${this._expectedSequence}, got ${sequence}`,
+      );
     }
     if (executeAtTick < this._tick) {
-      throw new Error(`Cannot schedule command in the past: tick ${executeAtTick} < current ${this._tick}`);
+      throw new CommandRejectedError(
+        'past-tick',
+        `Cannot schedule command in the past: tick ${executeAtTick} < current ${this._tick}`,
+      );
     }
 
     this._commands.push({ id, sequence, executeAtTick, payload });

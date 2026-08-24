@@ -293,3 +293,111 @@ test('StateMachine queues valid commands', () => {
   expect(response.kind).toBe('simulation/command-result');
   expect(response.payload.status).toBe('queued');
 });
+
+/**
+ * Issue #187 finding 2: every kernel refusal reported `invalid-state`, and two
+ * members of the twelve-code `ProtocolFaultCode` vocabulary --
+ * `duplicate-message` and `sequence-gap` -- were emitted by nothing at all.
+ *
+ * The issue reads that as needing design work first: *"the classification does
+ * not exist yet. The kernel throws a bare `Error`; distinguishing a duplicate
+ * command from a sequence gap from a genuine invalid state needs
+ * distinguishable kernel error types first. That is the real work."*
+ *
+ * **The classification did exist.** `Kernel.submitCommand` decided all three
+ * cases in three adjacent `if` branches and put the answer in the `Error`
+ * message: a rejected gap arrived at the main thread reading
+ * `code: 'invalid-state'`, `message: 'Command sequence gap: expected 0, got 1'`
+ * -- the distinction present in the prose and absent from the field built to
+ * carry it. What was missing was a *type*, not a decision, and the enum already
+ * named both outcomes, so no vocabulary question had to be answered either.
+ *
+ * These three cases are why that is now true rather than argued. They also kill
+ * the surviving mutation the issue names -- "change `'invalid-state'` to any
+ * other member of `protocolFaultCodeSchema` and the whole suite stays green,
+ * because no test reads that code".
+ *
+ * **What is not asserted here, stated rather than implied.** The mapping's
+ * fallback -- an untyped throw from inside a system handler, which must stay
+ * `invalid-state` and must not be recovered from the message text -- is not
+ * reachable through this seam: the state machine builds its own runtime and
+ * registers its own systems, so no test can install a throwing one from
+ * outside. The three typed branches above are the whole reachable surface. The
+ * fallback is guarded by `commandRejectionFaultCode` having no other return
+ * path, which is a reading of four lines and not a test, and it is why
+ * `tests/foundation/fault-code-reachability-contract.test.ts` asserts the
+ * *vocabulary* rather than trying to drive every producer.
+ */
+describe('a refused command reports which refusal it was (#187 finding 2)', () => {
+  const initialized = (): MockPort => {
+    const port = new MockPort();
+    const machine = new SimulationWorkerStateMachine(port, 'test-build', () => 0);
+    machine.handleMessage({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: 'msg-init',
+      kind: 'simulation/initialize',
+      payload: { sessionId: 's1', source: { kind: 'new', masterSeed: 1 } },
+    });
+    (port as MockPort & { machine?: SimulationWorkerStateMachine }).machine = machine;
+    return port;
+  };
+
+  const submit = (port: MockPort, sequence: number, executeAtTick: number): void => {
+    const machine = (port as MockPort & { machine?: SimulationWorkerStateMachine }).machine!;
+    machine.handleMessage({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: `msg-${sequence}-${executeAtTick}`,
+      kind: 'simulation/submit-command',
+      payload: {
+        commandId: `cmd-${sequence}`,
+        sequence,
+        executeAtTick,
+        command: { transport: 'structured-clone', schemaId: 'test', schemaVersion: 1, data: null },
+      },
+    });
+  };
+
+  const lastFault = (port: MockPort): { code: string; message: string } => {
+    const last = port.messages[port.messages.length - 1];
+    expect(last.kind).toBe('simulation/command-result');
+    expect(last.payload.status).toBe('rejected');
+    return last.payload.fault;
+  };
+
+  test('a sequence gap reports sequence-gap', () => {
+    const port = initialized();
+    // Expected sequence is 0; 1 skips one.
+    submit(port, 1, 0);
+    const fault = lastFault(port);
+    expect(fault.code).toBe('sequence-gap');
+    // The message is unchanged by this fix, which is the point: the text always
+    // knew, and now the code does too. Asserting both together is what stops a
+    // future change from moving the distinction back into the prose.
+    expect(fault.message).toContain('Command sequence gap');
+  });
+
+  test('a replayed sequence reports duplicate-message', () => {
+    const port = initialized();
+    submit(port, 0, 0);
+    expect(port.messages[port.messages.length - 1].payload.status).toBe('queued');
+    // Sequence 0 again, now that the kernel expects 1.
+    submit(port, 0, 0);
+    const fault = lastFault(port);
+    expect(fault.code).toBe('duplicate-message');
+    expect(fault.message).toContain('Duplicate command sequence');
+  });
+
+  test('a command aimed at an already-executed tick still reports invalid-state', () => {
+    // The third branch, asserted so the mapping is pinned in both directions:
+    // `invalid-state` must stay *emitted*. Without this, a change that moved
+    // all three refusals onto their own codes would replace two dead enum
+    // members with a third and nothing would notice.
+    //
+    // A fresh session sits at tick 0, so any negative target is behind it --
+    // no clock has to run for this branch to be reached, and the sequence is
+    // the expected one so the two branches above it do not fire first.
+    const port = initialized();
+    submit(port, 0, -1);
+    expect(lastFault(port).code).toBe('invalid-state');
+  });
+});
