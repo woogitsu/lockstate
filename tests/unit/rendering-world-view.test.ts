@@ -392,6 +392,26 @@ describe('loaded chunk positions', () => {
     );
   });
 
+  /**
+   * `fromSnapshot` accepts whatever a decoded save hands it, and a snapshot
+   * that lists one chunk twice would otherwise put that chunk in the walk
+   * twice: every tile in it read twice, and every edge on it pushed into its
+   * row twice. `chunks` is a `Map` and silently keeps one entry, so the
+   * duplicate shows up only in this array.
+   */
+  it('lists a chunk once even if the snapshot lists it twice', () => {
+    const world = new SparseWorld(8);
+    world.load({ x: chunkCoordinate(0), y: chunkCoordinate(0) });
+    world.setTopEdge(tile(3, 2), 1);
+    const snapshot = world.snapshot();
+    const doubled = { ...snapshot, chunks: [...snapshot.chunks, ...snapshot.chunks] };
+
+    const view = WorldRenderView.fromSnapshot(doubled);
+    expect(view.loadedChunkPositions).toEqual([{ chunkX: 0, chunkY: 0 }]);
+    expect(view.loadedChunkCount).toBe(1);
+    expect(buildRowIndex(view, []).get(2)?.edges).toEqual([{ tileX: 3, top: 1, left: 0 }]);
+  });
+
   it('agrees with isChunkLoaded, and omits a chunk the snapshot has not materialised', () => {
     const world = new SparseWorld(8);
     world.load({ x: chunkCoordinate(0), y: chunkCoordinate(0) });
