@@ -137,7 +137,13 @@ const BROWSER_GLOBAL_SEAMS: readonly { readonly file: string; readonly global: s
     file: 'src/input/storage.ts',
     global: 'globalThis.localStorage',
     reason:
-      '`resolveBrowserKeyValueStore()` -- the single seam that produces the browser `KeyValueStore` the composition root injects. It reads `globalThis.localStorage` inside a `try` and falls back to an in-memory `Map`, because reaching for the property is itself a throwing operation: Chrome raises `SecurityError` from the getter when site data is blocked for the origin, which is the #199 blank-page defect. `docs/INPUT.md` states why the function lives in this tree rather than in `src/shared/`. Every other module here is handed a store and never reaches for one.',
+      '`resolveBrowserKeyValueStore()` -- the seam that produces the browser `KeyValueStore` the composition root injects. It reads `globalThis.localStorage` inside a `try` and falls back to an in-memory `Map`, because reaching for the property is itself a throwing operation: Chrome raises `SecurityError` from the getter when site data is blocked for the origin, which is the #199 blank-page defect. `docs/INPUT.md` states why the function lives in this tree rather than in `src/shared/`. Every module that *consumes* a store is handed one and never reaches for one.',
+  },
+  {
+    file: 'src/input/focus.ts',
+    global: 'globalThis.document',
+    reason:
+      '`isTextEntryFocused()` -- the seam that answers whether a text control owns the keyboard, so the input context can be read from the document instead of from a literal. That literal was the #201 defect: `docs/INPUT.md` credited a guard against game controls firing while a text field has input, the mechanism worked and was unit-tested, and nothing ever put `text-entry` in the active set, so a focused field received a character *and* panned the camera 249.6 world units at once. The document is a **parameter** here, defaulting to the ambient one: every test supplies its own, which is what keeps this tree headless-testable, and the default exists only because the one production caller has no reason to name it.',
   },
 ];
 
@@ -170,11 +176,12 @@ describe('input module boundaries', () => {
 
     // And the scanner really is reading imports out of these files: a scan
     // that returned nothing at all would make every rule below vacuous in a
-    // way the file count cannot see. `src/input/index.ts` is eight
+    // way the file count cannot see. `src/input/index.ts` is nine
     // `export * from` lines and nothing else, so it is the honest place to pin
-    // that -- measured, not derived.
+    // that -- measured, not derived. It was eight until #201 added
+    // `./focus`, and this assertion is what said so.
     const barrel = inputFiles.find(({ file }) => file === 'src/input/index.ts')!;
-    expect(findImports(barrel.source).length).toBe(8);
+    expect(findImports(barrel.source).length).toBe(9);
     expect(inputFiles.flatMap(({ source }) => findImports(source)).length).toBeGreaterThan(15);
   });
 
