@@ -1,0 +1,247 @@
+name: Version
+
+# ONE VERSION NUMBER PER MERGE.
+#
+# `package.json` sat at `0.0.0` and this repository carried no tags, so every
+# build ever made shared a version: the badge in the top-left corner
+# (`src/ui/brand-badge.ts`) rendered `v0.0.0 · <commit>` on every deploy of
+# every day and only the seven-character commit identified anything. The
+# owner's decision is a semver **patch** bump per merged pull request, driven
+# from here rather than by hand, because a number a human has to remember to
+# raise is a number that stops being raised.
+#
+# ## What this workflow does, and what it deliberately does not
+#
+# On a push to `main` it rewrites the `version` field of `package.json` to the
+# next patch, commits that one file, and tags the commit. That is all: no
+# changelog, no GitHub Release, no build, no deploy, no `pnpm install`.
+#
+# Nothing else had to change for the number to reach a player.
+# `tooling/build-identity.mjs` already reads `package.json`'s `version` and
+# hands it to both Vite configs as the `__LOCKSTATE_VERSION__` define, so the
+# bumped value reaches the badge, `SaveEnvelope.gameVersion` and the simulation
+# worker's handshake with no edit to any of them. See docs/DEPLOYMENT.md,
+# "Build identity".
+#
+# ## The tag is `v0.0.N`, and it marks where a version BEGINS
+#
+# The prefix is `v`. Nothing reads a tag -- `tooling/build-identity.mjs` reads
+# the `version` *field*, which is bare semver (`0.0.7`) and stays that way --
+# so the tag is chosen for the human who has to quote it, and what the badge
+# puts on screen is `v0.0.7 · 1695340` (`brand.build` in
+# `src/content/default-locale-en.ts`). A tag spelled the way the screen spells
+# it is one fewer translation for a bug report to get wrong.
+#
+# Which commit a tag lands on is worth being exact about, because it is not the
+# commit that ships as that version:
+#
+#   * a merge lands as commit A; CI runs on A; deploy.yml builds A, whose
+#     `package.json` still holds the *previous* number, so the site now serves
+#     that number;
+#   * this workflow then commits B on top of A, setting the next number, and
+#     tags B.
+#
+# So `v0.0.N` is on the commit that *introduces* 0.0.N, and every build made
+# while `main` sits inside `v0.0.N..v0.0.N+1` reports 0.0.N. That range is
+# therefore exactly the work that shipped as 0.0.N, which is the question a
+# version in a bug report is being asked. The commit is still beside it on the
+# badge whenever an exact answer is needed.
+#
+# ## THE LOOP GUARD
+#
+# This workflow's own commit is a push to `main`, and a push to `main` is this
+# workflow's trigger. Unguarded, it would bump for ever.
+#
+# The guard is the job-level `if` below. It is two independent statements about
+# the commit at the tip of the push -- that it was not authored by the identity
+# this workflow commits as, and that its subject is not the subject this
+# workflow writes -- and both can be checked against the two steps further down
+# that set that identity and write that subject. `tests/foundation/
+# ci-configuration-contract.test.ts` checks the second one mechanically: it
+# reads the `--message` template out of the bump step and asserts the guard
+# names that same prefix, so the two cannot drift apart.
+#
+# Not `[skip ci]`. GitHub honours that marker itself, but it lives in a commit
+# message rather than in this file, so nothing here would show a reader that
+# the loop is closed; and it suppresses *every* workflow for that push, which
+# is a larger claim than this one needs to make.
+#
+# GitHub additionally documents that a push made with a workflow's own
+# `GITHUB_TOKEN` does not create a new workflow run. That alone would make the
+# loop impossible, and this file does **not** rely on it: it is invisible in
+# the diff, it carries documented exceptions, and it would disappear silently
+# if this workflow's authentication ever changed. It is the reason the guard is
+# belt-and-braces rather than a reason to omit the guard.
+#
+# ## What the bump commit does and does not set off
+#
+# Because of that `GITHUB_TOKEN` behaviour the bump commit normally starts no
+# CI run, and deploy.yml -- which triggers on CI *completion*, not on the push
+# -- therefore does not deploy it. That is the intended shape rather than a
+# gap: the bump commit differs from the commit CI has just judged by one
+# string, and the next merge's CI covers it. It also means this workflow never
+# joins deploy.yml's `deploy-staging` concurrency group and cannot cause one of
+# the cancellations #134 documents.
+#
+# If that behaviour were ever not in force, the consequence would be one extra
+# CI run and one extra staging deploy per merge -- superseded in the ordinary
+# way by that group -- and still not a loop, because the `if` below refuses to
+# bump a bump.
+#
+# ## Concurrency: deliberately none
+#
+# A `concurrency` group here would make things worse. GitHub keeps at most one
+# *pending* run per group, so with `cancel-in-progress: false` a third merge
+# arriving while one bump runs and another waits cancels the waiting one, and
+# that merge silently gets no version; with `cancel-in-progress: true` a bump
+# could be cancelled between its commit and its push. Both trade a race this
+# job can handle for a dropped bump it cannot detect.
+#
+# So two bumps may run at once, and the step below is written for that: fetch,
+# reset, bump, `git push --atomic`, and on rejection discard the tag and
+# recompute from whatever `main` holds now. The loser of a race takes the next
+# number instead of losing its bump. Verified by simulation against two clones
+# racing one bare remote: both computed `v0.0.1`, the loser was rejected on
+# both refs together and recomputed `v0.0.2`.
+#
+# ## Which runner, and why the obvious answer was wrong
+#
+# The self-hosted one, because **`ubuntu-latest` does not work in this
+# repository.** That is measured, not assumed: this workflow's first real run
+# (32727713492, on the merge that introduced it) failed after **four seconds**
+# with no step recorded and no log to download -- the signature of a runner
+# that was never provisioned. delete-branches.yml is the only other workflow
+# here that asks for `ubuntu-latest`; it has run exactly once, and failed the
+# same way in the same four seconds. Every workflow in this repository that
+# has ever succeeded runs on `[self-hosted, Linux, X64, wsl2]`.
+#
+# The first version of this file chose a hosted runner deliberately, to keep
+# this job's commits and tags out of the shared workspace that ci.yml's
+# "Verify generated output did not modify tracked files" step judges, and cited
+# delete-branches.yml as the precedent. The reasoning was sound and the
+# precedent was not: that workflow had never succeeded either.
+#
+# **The shared workspace is safe anyway, and this is the argument rather than a
+# hope.** Every job in ci.yml -- `verify` (:32), `assets` (:178) and `browser`
+# (:298) -- runs its own `actions/checkout`, which cleans the workspace and
+# resets it to that job's commit before anything else happens. So nothing this
+# job leaves behind can reach the tree a later CI job measures. The gate also
+# compares a checked-out commit against itself, and the bump is a commit of its
+# own, so it is not the kind of thing that gate can see in the first place.
+#
+# One residual effect, stated because it is real: `git config user.name` below
+# is repo-local and persists in the reused workspace. No other job in this
+# repository commits, so nothing consumes it.
+#
+# The bump cannot fail `pnpm install --frozen-lockfile` either: pnpm-lock.yaml
+# records the root importer's dependencies and not its own version, checked by
+# bumping `package.json` locally and re-running the frozen install.
+
+on:
+  # No `workflow_dispatch`. A version bump that is not a merge would put a
+  # number on the badge that names no work.
+  #
+  # A tag push is not a branch push, so the tags this workflow creates do not
+  # match this filter and cannot re-enter here by that door either.
+  push:
+    branches: [main]
+
+permissions:
+  # The only workflow in this repository that writes to the repository. Nothing
+  # else is granted: no `actions:`, no `packages:`, no `id-token:`. `write`
+  # here is what pushes the commit and the tag below, and it is the whole
+  # reason `persist-credentials` is left on for this checkout alone.
+  contents: write
+
+jobs:
+  bump:
+    # THE LOOP GUARD -- see the header. Two statements about the commit this
+    # push put at the tip, either of which alone would close the loop:
+    #
+    #   1. it was not authored by `github-actions[bot]`, the identity the
+    #      "Configure git identity" step below commits as;
+    #   2. its subject does not start with `chore(release): v`, the subject the
+    #      "Bump the patch version" step below writes.
+    #
+    # The cost of the guard being over-eager is one skipped bump: a human
+    # pushing a commit that looks like a release commit gets no version for
+    # that push, and the next merge bumps as usual.
+    if: >-
+      github.event.head_commit.author.name != 'github-actions[bot]'
+      && !startsWith(github.event.head_commit.message, 'chore(release): v')
+    runs-on: [self-hosted, Linux, X64, wsl2]
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          # THE ONE CHECKOUT IN THIS REPOSITORY THAT KEEPS THE TOKEN. Every
+          # other one sets `persist-credentials: false`, because none of them
+          # writes anything back. This job exists to push, so the credential
+          # has to survive the checkout -- and it grants exactly the
+          # `contents: write` declared above and nothing else. Written out
+          # rather than left to the action's default so the exception is
+          # visible in the diff that introduces it.
+          persist-credentials: true
+          # The branch, not the pushed commit. A push event checks out its own
+          # SHA in detached HEAD; bumping there would build the commit on top
+          # of a tip that a later merge may already have moved past, and the
+          # push would then be rejected for a reason that is not a race.
+          ref: ${{ github.ref_name }}
+          # Full history, because the retry below re-fetches and hard-resets
+          # the branch and a depth-1 checkout turns that into a shallow-update
+          # special case for no gain. No `lfs:` -- this job never opens an
+          # asset.
+          fetch-depth: 0
+
+      - name: Configure git identity
+        # The same identity delete-branches.yml commits as, and the identity
+        # the loop guard above names. Changing it here without changing the
+        # guard would reopen the loop; the guard is asserted in
+        # tests/foundation/ci-configuration-contract.test.ts.
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump the patch version, tag it, and push both
+        run: |
+          set -euo pipefail
+
+          branch="${GITHUB_REF_NAME}"
+
+          for attempt in 1 2 3; do
+            # Start every attempt from what the branch holds right now, so a
+            # retry recomputes the next patch from the version the winner of
+            # the race just published rather than re-proposing the one it took.
+            git fetch --quiet origin "$branch"
+            git reset --quiet --hard "origin/$branch"
+
+            # `npm version` is the entire bump: it rewrites exactly the
+            # `version` line of package.json, commits that one file, creates an
+            # annotated tag, and prints the tag name. npm ships with this
+            # runner's Node, and package.json declares no `preversion`,
+            # `version` or `postversion` script for it to run.
+            #
+            # `--tag-version-prefix=v` is npm's own default. It is written out
+            # because the `v` is a decision (see the header) and a default that
+            # is not stated is a default that can change under the file.
+            #
+            # `%s` is replaced with the bare version, so the subject is
+            # `chore(release): v0.0.7` -- the prefix the loop guard above
+            # tests for.
+            tag="$(npm version patch --tag-version-prefix=v --message 'chore(release): v%s' | tail -n 1)"
+
+            # `--atomic`: the branch and the tag land together or neither
+            # lands. Without it a rejected branch update can still leave the
+            # tag published, pointing at a commit the branch does not contain.
+            if git push --atomic origin "HEAD:refs/heads/$branch" "refs/tags/$tag"; then
+              echo "::notice::Published $tag"
+              exit 0
+            fi
+
+            echo "Attempt $attempt: $branch moved while this run was preparing $tag. Discarding it and recomputing."
+            git tag --delete "$tag"
+          done
+
+          echo "::error::Three attempts to publish a version bump were all rejected; the branch is moving faster than this workflow can bump it. Nothing was published and no tag was left behind -- the pushes are atomic. The next merge bumps again, so the sequence loses a number rather than a commit."
+          exit 1

@@ -41,15 +41,23 @@ export const BRAND_MESSAGE_KEY = {
    */
   stage: 'brand.stage',
   /**
-   * The version and the build, e.g. `v0.0.0 · 1695340`.
+   * The version and the build, e.g. `v0.0.7 · 1695340`.
    *
    * Both, because they answer different questions and only together answer the
    * one that was asked. The semantic version says what the build claims to be;
-   * the commit says which build it actually is, and today the version alone
-   * says almost nothing -- `package.json` is at `0.0.0` and the repository has
-   * no tags, so every build of every day shares it. Choosing a real versioning
-   * policy is the owner's, and until then the commit is the part that
-   * identifies anything.
+   * the commit says which build it actually is.
+   *
+   * The version half used to say almost nothing: `package.json` sat at `0.0.0`
+   * and the repository carried no tags, so every build of every day shared the
+   * number and only the commit identified anything. There is a policy now --
+   * `.github/workflows/version.yml` bumps the patch on every merge to `main`
+   * and tags the commit that introduces it -- so a merge is a version and a
+   * bug report can quote `v0.0.7` without a hash.
+   *
+   * The commit stays, and stays the exact answer. The tag marks the commit
+   * where a version *begins*, so a version names the range of commits that
+   * shipped under it and the hash names one of them. See docs/DEPLOYMENT.md,
+   * "Build identity".
    */
   build: 'brand.build',
   /**

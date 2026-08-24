@@ -97,8 +97,13 @@ Every build stamps itself with its `package.json` version and the short commit i
 
 The spelling is `lockstate-<version>-<commit>`, joined with `-` and not semver's `+` because both destinations validate it as an `identifierSchema`, which rejects `+`.
 
-Three things an operator needs to know:
+Four things an operator needs to know:
 
+- **The version is bumped by CI, one patch per merge, and the tag marks where a version begins.** `.github/workflows/version.yml` runs on every push to `main`, rewrites `package.json`'s `version` to the next patch, commits that one file and tags the commit `v0.0.N`. Before it existed `package.json` sat at `0.0.0` with no tags anywhere, so every build ever made shared a version and only the commit identified anything. Two consequences follow from *when* it runs, and both matter when reading a bug report:
+  - The tag is on the commit that **introduces** a version, not on a commit that was built as one. A merge lands as commit A, CI judges A, `deploy.yml` publishes A carrying the *previous* number, and only then does the bump commit go on top. So every build made while `main` sits inside `v0.0.N..v0.0.N+1` reports `0.0.N`, and that range is exactly the work that shipped under it. The commit beside the version on the badge is still the exact answer whenever one is needed.
+  - A bump can be **missed**, and never mis-numbered. The workflow retries a rejected push three times, recomputing the next patch from whatever `main` holds, so two bumps racing take two consecutive numbers. If all three attempts are rejected the run fails and that merge gets no bump — one version then covers two merges instead of one. No tag is ever reused and no number is ever published twice; the range simply gets longer.
+
+  Nothing in the build reads a tag. `tooling/build-identity.mjs` reads the `version` *field*, which stays bare semver; the `v` on the tag is there because `v0.0.7` is what the badge puts on screen (`brand.build` in `src/content/default-locale-en.ts`), so the tag list and the screen spell it the same way.
 - **The commit comes from the environment before `git`.** `CF_PAGES_COMMIT_SHA`, `GITHUB_SHA` and `LOCKSTATE_COMMIT_SHA` are consulted in that order, then `git rev-parse --short=7 HEAD`. The environment first because a shallow or detached CI checkout still carries the SHA while a hosted build image may have no `.git` at all. Set `LOCKSTATE_COMMIT_SHA` to override.
 - **Nothing fails when it cannot be resolved.** A missing value renders as `unknown` and the build succeeds — a deploy must not break because it ran from a tarball. So `lockstate-unknown-unknown` on screen means the injection did not happen, not that the page is broken, and it is the one thing to look at first if a badge says nothing useful. `tests/browser/app-shell.spec.ts` asserts against it, which is why an unwired `define` fails CI rather than shipping.
 - **`PRE-ALPHA` beside the version is authored, not derived.** It is the `brand.stage` entry in `src/content/default-locale-en.ts` and no code computes it. Nothing in the repository declares a release stage, so this string is the claim: **change it by hand when the project's stage changes.** The version and commit next to it cannot go stale in that way; this one can.
@@ -139,6 +144,7 @@ Ordinary CI (`.github/workflows/ci.yml`) validates packages but does not publish
 | Frontend → Cloudflare **production** | manual dispatch only | `production` environment approval |
 | Migrations → Supabase **staging** | automatically, on every merge to `main`, through Supabase's own GitHub integration | none |
 | Migrations → Supabase **production** | manual dispatch of `migrate-database.yml` | environment approval **and** a typed project ref |
+| Patch version bump + `v0.0.N` tag on `main` | automatically, on every merge to `main`, from `version.yml` | none |
 
 **A merge to `main` can now change a hosted database.** That is a recent and deliberate change, and it inverts what this table said until 2026-08-23, so it is worth being precise about what is known.
 
