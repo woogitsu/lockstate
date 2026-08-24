@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Lockstate world-scene input harness</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: #0b0e12;
+      }
+
+      /*
+        The field sits above the canvas rather than beside it, because the
+        defect under test is that a focused field and the camera both receive
+        the same keystroke -- so the field has to be somewhere a real click can
+        reach while the world fills the window, which is how the Build panel's
+        numeric fields sit in the running game.
+      */
+      #probe-text {
+        position: fixed;
+        top: 8px;
+        left: 8px;
+        z-index: 1;
+        font: 16px/1.2 system-ui, sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="world-scene-harness-root"></div>
+    <input id="probe-text" type="text" aria-label="probe" />
+    <script type="module" src="/tests/browser/world-scene-harness.ts"></script>
+  </body>
+</html>
