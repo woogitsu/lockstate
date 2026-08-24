@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import type { KeyValueStore } from '../../shared/key-value-store';
 import {
   KeyboardInputAdapter,
+  type SemanticActionEvent,
   TouchGestureTracker,
   isTextEntryFocused,
   loadInputSettings,
@@ -33,8 +34,14 @@ import { TILE_SIZE_PX, visibleTileRange, type TileRange } from '../tile-metrics'
  * here because they are presentation; nothing the player does with the camera
  * reaches the simulation.
  *
- * Camera input behaviour (keyboard pan, middle-drag, wheel zoom, touch
- * pan/pinch) is unchanged from the boot scene this replaces.
+ * Camera input arrives two ways, and the split is the design rather than an
+ * accident. Panning is **polled** -- `update()` asks `KeyboardInputAdapter`
+ * which of the four `continuous` camera actions are held, because a held key
+ * should move the camera in proportion to the frame it was held for. Discrete
+ * actions -- keyboard zoom, cancelling a build run -- arrive as
+ * `SemanticActionEvent`s from `keyDown`/`keyUp` and are handled in
+ * `handleActionEvents`. Middle-drag, wheel zoom and the touch pan/pinch are
+ * Phaser pointer handlers and consult no action id at all.
  */
 
 /**
@@ -47,6 +54,21 @@ const ZOOM_BOUNDS = { min: 0.2, max: 3 } as const;
 
 /** About nine tiles a second at zoom 1, and proportionally faster zoomed out. */
 const PAN_SPEED_WORLD_UNITS_PER_MS = 0.6;
+
+/**
+ * One press of a zoom key, as a multiplier.
+ *
+ * Applied as `zoom * STEP` and `zoom / STEP` rather than the wheel's `1.1` and
+ * `0.9`, so a press in and a press out return to exactly where they started.
+ * The wheel's pair does not (`1.1 * 0.9 = 0.99`), and that is tolerable for a
+ * gesture nobody counts; a keypress is countable, and a player who presses `+`
+ * then `-` and lands somewhere new has been told the keys do not work.
+ *
+ * `1.25` rather than `1.1`, because a key is one discrete event where a wheel
+ * delivers a stream: at `1.1` a press would move a 64px tile by six pixels and
+ * read as nothing happening. Eight presses cross the whole `0.2`-`3` range.
+ */
+const KEYBOARD_ZOOM_STEP = 1.25;
 
 export interface WorldSceneOptions {
   readonly feed: RenderFeed;
@@ -168,10 +190,10 @@ export class WorldScene extends Phaser.Scene {
     this.input.addPointer(2);
 
     const keyDown = (event: KeyboardEvent): void => {
-      this.keyboard.keyDown(event);
+      this.handleActionEvents(this.keyboard.keyDown(event));
     };
     const keyUp = (event: KeyboardEvent): void => {
-      this.keyboard.keyUp(event);
+      this.handleActionEvents(this.keyboard.keyUp(event));
     };
     // A `keyup` goes to whichever window has focus, so holding a camera key and
     // alt-tabbing sends the release elsewhere and the key stays down forever --
@@ -326,6 +348,90 @@ export class WorldScene extends Phaser.Scene {
   }
 
 
+  // ---- semantic actions ---------------------------------------------
+
+  /**
+   * What the game does when a key that means something is pressed.
+   *
+   * The other half of the input tier, and until now the missing one. Camera
+   * panning is a **poll**: `update()` asks `isActive` four times a frame,
+   * because a held key should move the camera by an amount proportional to the
+   * frame it was held for. That works for `continuous` actions and cannot work
+   * for a `discrete` one -- "zoom in" is not a thing you do for 16 ms -- so
+   * `Equal`, `Minus` and `Escape` were bound to actions nothing could serve.
+   * Measured in a browser: five presses of `Equal` left the zoom at 1, and
+   * `Escape` pressed mid-drag neither cleared the pending wall run nor stopped
+   * it committing (#200).
+   *
+   * `KeyboardInputAdapter.keyDown`/`keyUp` have always returned the events;
+   * both return values were discarded at the two call sites above, which is why
+   * `docs/INPUT.md`'s opening claim that "consumers receive semantic action
+   * IDs" described nothing. They receive them here.
+   *
+   * **`'started'` only, and that is a rule rather than a filter that looks like
+   * one.** A press produces `'started'` and the release produces `'ended'`, so
+   * acting on both would zoom twice per press and cancel twice per `Escape`.
+   * It is written in the consumer rather than pushed back into `eventsFor`,
+   * where an unconditionally-true version of exactly this predicate used to sit
+   * (#200 item 4): what an action *means* on release is the reader's business,
+   * and a future consumer that wants a key-up -- a held modifier, a
+   * press-and-hold -- must not have to undo a rule the adapter imposed.
+   *
+   * Continuous actions reach this loop and fall through the switch. There is no
+   * `behavior` check guarding that, deliberately: with only discrete cases
+   * listed, one could never change an outcome, and an inert check that reads as
+   * a rule is the defect this file's history is made of. The invariant is
+   * asserted where it can fail loudly instead --
+   * `tests/foundation/unconsumed-action-contract.test.ts` pins that every
+   * polled action is `continuous` and every action switched on here is
+   * `discrete`.
+   */
+  private handleActionEvents(events: readonly SemanticActionEvent[]): void {
+    for (const event of events) {
+      if (event.phase !== 'started') continue;
+      switch (event.action) {
+        case 'camera.zoom.in':
+          this.stepZoom(KEYBOARD_ZOOM_STEP);
+          break;
+        case 'camera.zoom.out':
+          this.stepZoom(1 / KEYBOARD_ZOOM_STEP);
+          break;
+        case 'build.cancel':
+          this.cancelBuild();
+          break;
+        default:
+          break;
+      }
+    }
+  }
+
+  /**
+   * Zooms about the middle of the viewport.
+   *
+   * The wheel and the pinch zoom about the point the player indicated, because
+   * they have one. A key does not, and the centre is the only choice that does
+   * not invent an intention: zooming about the last cursor position would move
+   * the world under a pointer the player was not using, and zooming about the
+   * camera origin would drift whatever they were looking at off screen.
+   *
+   * Routed through `zoomAtScreenPoint` rather than `camera.setZoom` alone so
+   * the clamp to `ZOOM_BOUNDS` and the scroll correction are the same code the
+   * other two zoom paths use. `setZoom` on its own would let a key walk the
+   * zoom past the bounds the wheel respects.
+   */
+  private stepZoom(factor: number): void {
+    const camera = this.cameras.main;
+    const state = this.cameraState();
+    const next = zoomAtScreenPoint(
+      state,
+      { x: state.viewport.width / 2, y: state.viewport.height / 2 },
+      camera.zoom * factor,
+      ZOOM_BOUNDS,
+    );
+    camera.setZoom(next.zoom);
+    camera.setScroll(next.scroll.x, next.scroll.y);
+  }
+
   // ---- build tool ---------------------------------------------------
   //
   // The interaction is **modal**, and deliberately so. The alternative --
@@ -414,7 +520,21 @@ export class WorldScene extends Phaser.Scene {
     return true;
   }
 
-  /** Abandons a run without placing anything -- a second finger, or disarming mid-gesture. */
+  /**
+   * Abandons a run without placing anything.
+   *
+   * Three ways in: a second finger arriving during a pinch, the tool being
+   * disarmed mid-gesture, and `Escape` (`build.cancel`, #200 item 2). The
+   * early return means `Escape` with nothing in progress does nothing, which is
+   * the truthful behaviour -- there is no run to abandon, and clearing the
+   * hover ghost as well would take away the preview the armed tool is supposed
+   * to be showing.
+   *
+   * It leaves the pointer down. A player who presses `Escape` mid-drag and
+   * keeps dragging gets the ordinary armed-hover preview back, and the release
+   * places nothing, because `commitBuild` matches on a `buildPointerId` this
+   * has cleared.
+   */
   private cancelBuild(): void {
     if (this.buildPointerId === undefined) return;
     this.buildPointerId = undefined;

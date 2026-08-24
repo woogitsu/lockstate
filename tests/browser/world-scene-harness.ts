@@ -2,27 +2,32 @@ import Phaser from 'phaser';
 import type { KeyValueStore } from '../../src/shared/key-value-store';
 import { EMPTY_RENDER_FRAME, type RenderFeed } from '../../src/rendering/feed/render-feed';
 import { WorldScene } from '../../src/rendering/scene/world-scene';
-import type { CameraScroll, LockstateWorldSceneHarness } from './world-scene-harness-api';
+import type { BuildToolPort, EdgeTarget } from '../../src/rendering/build/edge-picking';
+import type { CameraScroll, HarnessEdge, LockstateWorldSceneHarness } from './world-scene-harness-api';
 
 /**
- * The real `WorldScene`, in a real browser, for the two claims no headless test
- * can make: that the keyboard listeners the scene registers on `window` behave
- * when focus moves, and that the context set it supplies is read from the
- * document rather than baked in.
+ * The real `WorldScene`, in a real browser, for the claims no headless test can
+ * make: that the keyboard listeners the scene registers on `window` behave when
+ * focus moves, that the context set it supplies is read from the document
+ * rather than baked in, and -- since #200 -- that pressing a key bound to a
+ * `discrete` action actually does the thing.
  *
  * **`WorldScene` had never been constructed by any test in this repository** --
- * `grep -rn WorldScene tests/` returned a single comment -- which is why two
- * defects this visible were never seen by CI. Both were reported with numbers
- * from a throwaway harness (#201, #202); this is the same harness, kept.
+ * `grep -rn WorldScene tests/` returned a single comment -- which is why
+ * defects this visible were never seen by CI. #201 and #202 were reported with
+ * numbers from a throwaway harness; this is that harness, kept. #200's dead
+ * `Equal`, `Minus` and `Escape` are the same absence measured a third time: the
+ * adapter was covered and its one call site was not.
  *
  * The game config is deliberately the same shape as `src/main.ts`
  * (`Scale.RESIZE`, `CENTER_BOTH`), because the behaviour under test involves
  * `window`-level listeners and a canvas that fills the viewport.
  *
  * No atlases are loaded and the feed is empty. Nothing here draws anything worth
- * looking at, and it does not need to: the assertions are all about where the
- * camera is pointing, and an empty world moves exactly as far per frame as a
- * full one.
+ * looking at, and it does not need to: the assertions are about where the camera
+ * is pointing, how far it is zoomed, and what the build tool was asked to
+ * place -- none of which depends on there being art or a world. An empty world
+ * moves exactly as far per frame as a full one.
  */
 
 const CANVAS_PARENT_ID = 'world-scene-harness-root';
@@ -42,9 +47,36 @@ const emptyFeed: RenderFeed = {
   readFrame: () => EMPTY_RENDER_FRAME,
 };
 
+/**
+ * A build tool that records instead of building.
+ *
+ * The real port reaches the simulation through a command sender; nothing here
+ * needs that, because what `Escape` must do is entirely on the renderer's side
+ * of the boundary -- abandon the pending run so `place` is never called. So the
+ * double this uses is the smallest thing that can tell "cancelled" from
+ * "committed": a list of what `place` received, and the last thing `target`
+ * was shown.
+ */
+let buildArmed = false;
+const placed: EdgeTarget[][] = [];
+let targeted: readonly EdgeTarget[] | undefined;
+
+const buildTool: BuildToolPort = {
+  isArmed: () => buildArmed,
+  place: (segments) => {
+    placed.push([...segments]);
+  },
+  target: (segments) => {
+    targeted = segments === undefined ? undefined : [...segments];
+  },
+};
+
+const toHarnessEdge = (edge: EdgeTarget): HarnessEdge => ({ tileX: edge.tileX, tileY: edge.tileY, edge: edge.edge });
+
 const scene = new WorldScene({
   feed: emptyFeed,
   keyValueStore: memoryStore(),
+  buildTool,
   // No atlas library: the harness asserts nothing about art, and loading one
   // would make every spec here depend on the git-LFS baseline.
   loadAtlasLibrary: () => Promise.reject(new Error('the input harness loads no atlases')),
@@ -113,6 +145,12 @@ const harness: LockstateWorldSceneHarness = {
     y: scene.cameras.main.scrollY,
   }),
   isActive: (action) => internals.keyboard.isActive(action),
+  zoom: () => scene.cameras.main.zoom,
+  armBuildTool: (armed) => {
+    buildArmed = armed;
+  },
+  placedRuns: () => placed.map((run) => run.map(toHarnessEdge)),
+  targetedRun: () => targeted?.map(toHarnessEdge),
 };
 
 window.lockstateWorldSceneHarness = harness;

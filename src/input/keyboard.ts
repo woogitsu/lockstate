@@ -36,11 +36,13 @@ export class KeyboardInputAdapter {
    * touching the keyboard, and it did not stop on refocus or on a click
    * (issue #202). The player's only recovery was to guess which key was stuck.
    *
-   * Returns `void` rather than the `'ended'` events for the keys it drops.
-   * Whether a synthetic release should emit them is a real question, and it is
-   * moot today: both `keyDown` and `keyUp` have their return values discarded
-   * at the one production call site (#200). Returning events nobody reads would
-   * be inventing a contract to look complete.
+   * Returns `void` rather than the `'ended'` events for the keys it drops, and
+   * that is now a choice rather than a moot point: since #200 the one
+   * production caller does consume what `keyDown` and `keyUp` return
+   * (`WorldScene.handleActionEvents`). It reads `'started'` only, so emitting
+   * releases here would change nothing it can see -- but a consumer that wanted
+   * key-ups would want these, and the question is left for whoever writes one.
+   * The keys really are released either way; only the notification is withheld.
    */
   public releaseAll(): void {
     this.pressedCodes.clear();
@@ -71,13 +73,14 @@ export class KeyboardInputAdapter {
     // `behavior === 'discrete'` was killed by an existing test -- so the
     // behaviour the suite pins depends on the tautology being true.
     //
-    // Deleted rather than repaired, and deliberately not replaced with a real
-    // rule. Whether continuous and discrete actions should be filtered
-    // differently here only means something once something *consumes* these
-    // events, and whether they get a consumer at all is #200's open question
-    // (it bears on `AGENTS.md` boundary 10 and #141). Writing a rule now would
-    // pre-empt that decision; leaving a tautology that looks like one was worse
-    // than either answer.
+    // Deleted rather than repaired, and still deliberately not replaced. The
+    // events do have a consumer now (`WorldScene.handleActionEvents`, #200
+    // items 2 and 3), and it turned out not to need this: the consumer's rule
+    // is "act on `'started'`", which is about what a *reader* does with a
+    // release, not about which events exist. Reinstating a phase rule here
+    // would take that choice away from a future consumer that wants a key-up
+    // -- a held modifier, a press-and-hold -- and buy nothing, since this
+    // adapter emits at most one event per key per phase.
     return this.bindings
       .filter((binding) => binding.code === code && intersects(binding.contexts, contexts))
       .map((binding) => ({ action: binding.action, phase, source: 'keyboard' as const }));

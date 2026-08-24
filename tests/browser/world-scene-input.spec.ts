@@ -226,3 +226,190 @@ test.describe('the world scene keyboard', () => {
     expect(later).toBe(atFocus);
   });
 });
+
+/**
+ * The `discrete` half of the keyboard: keys that do a thing once per press.
+ *
+ * Panning is polled, and every spec above measures the poll. These measure the
+ * route that did not exist -- `KeyboardInputAdapter.keyDown` has always
+ * returned a `SemanticActionEvent[]` and `WorldScene` discarded it, so three
+ * keys a player will try on the first session were bound to actions nothing
+ * could serve. Measured before the fix: five presses of `Equal` and five of
+ * `Minus` left the zoom at exactly 1, and `Escape` pressed mid-drag left the
+ * four targeted segments unchanged and the run committed anyway (#200).
+ *
+ * A poll could not have fixed either. "Zoom in" has no duration to poll, which
+ * is what `ActionDefinition.behavior` records and what
+ * `tests/foundation/unconsumed-action-contract.test.ts` now pins.
+ */
+test.describe('the world scene discrete keys', () => {
+  /** The zoom, once the scene exists. */
+  async function zoom(page: Page): Promise<number> {
+    return page.evaluate(() => window.lockstateWorldSceneHarness!.zoom());
+  }
+
+  /** One tap, then long enough for the scene to have drawn at least one frame with it. */
+  async function press(page: Page, key: string): Promise<void> {
+    await page.keyboard.press(key);
+    await settle(page);
+  }
+
+  test('zooms in on Equal and out on Minus (#200)', async ({ page }) => {
+    await openHarness(page);
+    const resting = await zoom(page);
+
+    await press(page, 'Equal');
+    const zoomedIn = await zoom(page);
+    expect(zoomedIn, 'Equal left the zoom exactly where it was, which is the defect').toBeGreaterThan(resting);
+
+    await press(page, 'Minus');
+    // Back to the start, not merely smaller. The step is applied as `* STEP`
+    // and `/ STEP` precisely so a press each way is reversible; the wheel's
+    // `1.1`/`0.9` pair is not, and a player who presses `+` then `-` and lands
+    // somewhere new has been told the keys do not work.
+    expect(await zoom(page)).toBeCloseTo(resting, 10);
+
+    await press(page, 'Minus');
+    expect(await zoom(page), 'Minus zoomed the wrong way').toBeLessThan(resting);
+  });
+
+  test('clamps the keyboard zoom to the same bounds the wheel respects (#200)', async ({ page }) => {
+    // The reason `stepZoom` goes through `zoomAtScreenPoint` rather than
+    // calling `setZoom` directly. Twenty presses is well past the eight the
+    // 0.2-3 range takes, so an unclamped key would be far outside it.
+    await openHarness(page);
+    for (let index = 0; index < 20; index += 1) await press(page, 'Equal');
+    expect(await zoom(page)).toBeLessThanOrEqual(3);
+
+    for (let index = 0; index < 40; index += 1) await press(page, 'Minus');
+    expect(await zoom(page)).toBeGreaterThanOrEqual(0.2);
+  });
+
+  test('acts on the press and not on the release (#200)', async ({ page }) => {
+    /*
+     * The rule `handleActionEvents` states by reading `'started'` only. A
+     * release produces an `'ended'` event carrying the same action, so a
+     * consumer that acted on every event would zoom twice per press.
+     *
+     * The down and the up are dispatched **separately**, which is the whole
+     * design of this test. An earlier version pressed the key twice and
+     * asserted the second landing "one more step" on, with the step derived
+     * from the first pair -- and measured, deleting the phase check left that
+     * green: doubling every step is self-consistent under a ratio taken from
+     * the doubled steps themselves. It was a test that could not fail. Reading
+     * the zoom between the down and the up cannot be fooled that way, and it
+     * needs no copy of `KEYBOARD_ZOOM_STEP` to say so.
+     */
+    await openHarness(page);
+    const resting = await zoom(page);
+
+    await page.keyboard.down('Equal');
+    await settle(page);
+    const afterDown = await zoom(page);
+    expect(afterDown, 'the press did nothing, so the release assertion below proves nothing').toBeGreaterThan(resting);
+
+    await page.keyboard.up('Equal');
+    await settle(page);
+    expect(await zoom(page), 'the release zoomed again, so a press is worth two steps').toBe(afterDown);
+  });
+
+  test('cancels a pending wall run on Escape, and the run does not commit (#200)', async ({ page }) => {
+    await openHarness(page);
+    await page.evaluate(() => window.lockstateWorldSceneHarness!.armBuildTool(true));
+
+    const canvas = page.locator('canvas');
+    await expect(canvas).toBeVisible();
+    const box = (await canvas.boundingBox())!;
+    const centre = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+
+    await page.mouse.move(centre.x, centre.y);
+    await page.mouse.down({ button: 'left' });
+    await page.mouse.move(centre.x + 200, centre.y, { steps: 10 });
+
+    // The run really is in progress before Escape, or the assertion after it
+    // proves nothing: a spec that cancelled nothing would pass every check
+    // below. This is the positive control.
+    const during = await page.evaluate(() => window.lockstateWorldSceneHarness!.targetedRun());
+    expect(during, 'no run was in progress, so this spec would pass without Escape doing anything').toBeDefined();
+    expect(during!.length).toBeGreaterThan(1);
+
+    await page.keyboard.press('Escape');
+    await settle(page);
+    expect(await page.evaluate(() => window.lockstateWorldSceneHarness!.targetedRun())).toBeUndefined();
+
+    // And the half that matters most: releasing must not place what was
+    // cancelled. Before the fix the four targeted segments were unchanged by
+    // Escape and committed on release.
+    await page.mouse.up({ button: 'left' });
+    await settle(page);
+    expect(
+      await page.evaluate(() => window.lockstateWorldSceneHarness!.placedRuns()),
+      'the cancelled run was placed anyway, which is the defect #200 measured',
+    ).toEqual([]);
+  });
+
+  test('still places a run that was not cancelled, so Escape is not a permanent mute (#200)', async ({ page }) => {
+    // The other direction, and the mutation this kills is the cheap fix:
+    // clearing the pending run unconditionally, or on every key, would satisfy
+    // the spec above and break building entirely.
+    await openHarness(page);
+    await page.evaluate(() => window.lockstateWorldSceneHarness!.armBuildTool(true));
+
+    const box = (await page.locator('canvas').boundingBox())!;
+    const centre = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+
+    await page.mouse.move(centre.x, centre.y);
+    await page.mouse.down({ button: 'left' });
+    await page.mouse.move(centre.x + 200, centre.y, { steps: 10 });
+    await page.mouse.up({ button: 'left' });
+    await settle(page);
+
+    const runs = await page.evaluate(() => window.lockstateWorldSceneHarness!.placedRuns());
+    expect(runs.length).toBe(1);
+    expect(runs[0]!.length).toBeGreaterThan(1);
+  });
+
+  test('leaves the armed tool\'s hover ghost alone when there is no run to cancel (#200)', async ({ page }) => {
+    /*
+     * `cancelBuild` returns early when no pointer owns a run, so `Escape` with
+     * the tool merely armed does nothing -- the preview the armed tool exists
+     * to show stays under the cursor.
+     *
+     * Written because the claim was made in a comment before it was pinned:
+     * measured, deleting that early return left every other spec here green.
+     * A cancel that also wiped the hover would make the tool look disarmed
+     * after a stray `Escape`, with the panel still saying it is on.
+     */
+    await openHarness(page);
+    await page.evaluate(() => window.lockstateWorldSceneHarness!.armBuildTool(true));
+
+    const box = (await page.locator('canvas').boundingBox())!;
+    // Moved, never pressed: this is the hover path, not a run.
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.move(box.x + box.width / 2 + 8, box.y + box.height / 2);
+    await settle(page);
+
+    const hovering = await page.evaluate(() => window.lockstateWorldSceneHarness!.targetedRun());
+    expect(hovering, 'no hover ghost was showing, so this spec would pass without Escape leaving one').toBeDefined();
+    expect(hovering!.length).toBe(1);
+
+    await page.keyboard.press('Escape');
+    await settle(page);
+    expect(await page.evaluate(() => window.lockstateWorldSceneHarness!.targetedRun())).toEqual(hovering);
+  });
+
+  test('leaves the camera zoom alone while a text field owns the keyboard (#200, #201)', async ({ page }) => {
+    // The context guard covers the received route as well as the polled one.
+    // It is not automatic: `eventsFor` intersects contexts the same way
+    // `isActive` does, but nothing had ever exercised that path, because
+    // nothing consumed the events it produces.
+    await openHarness(page);
+    await page.locator('#probe-text').click();
+    expect(await page.evaluate(() => document.activeElement?.id)).toBe('probe-text');
+
+    const resting = await zoom(page);
+    await press(page, 'Equal');
+    await press(page, 'Minus');
+    expect(await zoom(page)).toBe(resting);
+  });
+});
