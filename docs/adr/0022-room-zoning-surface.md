@@ -1,0 +1,492 @@
+# ADR 0022: Where a player zones a room, and with what gesture
+
+## Status
+
+**Proposed — pending human approval.** Not accepted.
+
+The owner delegated the choice of surface, and this document is the record of
+what was chosen under that delegation. It is not accepted until they say so,
+and nothing in `src/` implements it yet.
+
+A reviewer is being asked to sign off on one thing: **a room type is a row in
+the Build catalogue, and a room is zoned by dragging a rectangle across tiles
+on the world canvas** — rather than by a new "Rooms" tab beside Build, or by a
+new always-visible block inside the Build panel.
+
+If that goes the other way, the alternative it goes to is the Rooms tab
+(alternative B below), which is measured as costing the Build panel nothing and
+is named here as this ADR's intended successor rather than as a discarded idea.
+The always-visible block (alternative C) does not survive a reversal either: it
+is refused by measurement, not by preference.
+
+### What the evidence rests on, stated because it bounds every figure below
+
+Two kinds of claim appear here and they are not equally verifiable from this
+branch.
+
+**Structural claims** — what a type is, what a port carries, what a test
+asserts — were re-verified against `origin/main` at v0.0.30 while writing this,
+and every `file:line` below resolves there unless the text says otherwise.
+
+**Browser measurements** were taken on a local merge of PR #282
+(`claude/purchase-stepper`, the #89 buy surface) and PR #283
+(`claude/report-refusals`) on the assembled page, and have **not** been re-run
+on `main`. They are quoted as measured on that tree and attributed as such
+wherever a figure depends on either branch. Two consequences of that are worth
+stating rather than leaving to be discovered:
+
+- The pixel budget below is the budget *with* #282's buy surface in the Build
+  panel. If #282 does not land in its current shape the budget is larger, and
+  the argument against alternative C gets weaker by however much that is.
+- `docs/adr/README.md`'s index row and this file are the whole of this change.
+  It is docs-only and depends on neither PR.
+
+## Context
+
+### The consumer is finished, and nothing in the application can reach it
+
+This is the fact that makes the question worth an ADR rather than a panel
+sketch.
+
+`RoomZoningService.zone` (`src/simulation/rooms/zoning.ts:203`) is complete. It
+validates the room type against `defaultRoomContentRegistry`, bounds both
+dimensions at `MAX_ZONE_DIMENSION_TILES` (`:101`), checks every tile for bounds,
+ownership and overlap *before* writing any tile (`:225-241`), paints the world's
+zoning plane with the room catalog's own `numericId` (`:243-251`), registers a
+`RoomInstance` and returns `{ kind: 'zoned', instance }` (`:252-263`). Refusals
+are typed — six reasons at `:140-146` — and kept in a bounded window because a
+command handler returns `void`.
+
+`src/simulation/runtime/session-commands.ts:38-63` already routes the command to
+it, and records why the schema's field is named `roomId` while the service's
+parameter is `roomCatalogId`: the field was named before instances existed, and
+renaming a field a queued command in an existing save may already carry is a
+save-compatibility change rather than a rename (`:47-51`).
+
+What does not exist is a producer. `tests/foundation/unconsumed-command-contract.test.ts`
+holds that as a gated fact — `ZoneRoom` is one of three commands in
+`AWAITING_PRODUCER` (`:106-107`), and its entry says so in the terms this ADR
+answers: *"Room zoning still has no interface at all: every member of
+`HudIntent` is a tab, a panel, the clock, a build order, the build tool or the
+undo pair, and none is about a room."* That is true of `main`: `HudIntent`
+(`src/ui/hud/hud.ts:153-195`) declares seven members and none of them is a room.
+
+So the whole zoning vocabulary — the plane, the instance registry, the six
+refusal reasons, `MAX_ZONE_DIMENSION_TILES` — is reachable only from a test.
+This ADR decides the one missing piece.
+
+### What a producer is, structurally
+
+The HUD may not import the simulation at all. That is `AGENTS.md` boundary 1 in
+its strongest form for `src/ui/hud/**` and `src/ui/primitives/**`, and
+`tests/unit/ui-hud-messages.test.ts:196-200` asserts it by scanning for the
+import. So the HUD cannot build a command; it emits a `HudIntent` and
+`src/main.ts` turns it into one, in the `onIntent` switch at `:458-459`. The
+build gesture already takes that route: `case 'place-build-order'` at `:511`.
+
+Text never crosses either ([ADR 0011](./0011-localization-architecture.md)):
+every rendered string is a message key, and a stable content id may never reach
+the player. The room catalog is unusually well placed for that — all 18 room
+definitions carry a real `nameKey` (`src/content/room-catalog.ts:66-159`) and
+all 18 `room.*.name` keys ship in the default catalog
+(`src/content/default-locale-en.ts:26-43`).
+
+### The height budget, which is the number the decision turns on
+
+The Build panel's body headroom is **not** the budget, and treating it as one
+would have made alternative C look merely tight instead of impossible.
+`.hud__side` is `flex: 0 1 auto` with `min-height: 0` (`src/ui/hud/hud.css:385-393`)
+and `.hud__aside` is `flex: 1 1 0` with a `min-height: 25%` floor (`:367-372`),
+so the Build panel grows into the aside's slack before it overflows anything.
+
+Always-visible pixels actually available, measured on the #282+#283 merge by
+injecting blocks of known height into the assembled page and reading the
+resulting overflow — four independent probes (a 44px button, a 45px collapsed
+header, a 63.2px choice group, a 71.2px coordinates row) agreeing to within
+0.2px:
+
+| Viewport | Always-visible pixels available |
+| --- | --- |
+| 1440×900 | 173.3 |
+| 375×812 | 79.1 |
+| 1024×768 | 74.3 |
+| 1280×720 | 38.2 |
+| 900×600 | 12.2 |
+
+`--tap-target` is 44px (`src/ui/tokens.css:150`). So **a single always-visible
+control fits at three of the five viewports and at neither 1280×720 nor
+900×600** — and the desktop 1280×720 is the second-tightest of the five,
+tighter than the phone. That inversion is why the number had to be measured
+rather than reasoned about from viewport size.
+
+At 900×600 the 12.2px is 7.9px of body slack plus the catalogue's 3.9px
+donation (`.hud-build__catalogue` 135.9 → its 132px floor) and nothing else,
+because `.hud__aside` is already pinned at its floor there. The panel's floor
+is derived rather than tuned and accounts for every pixel: `hud.css:505-517`
+sets it out as 132 catalogue + 94.2 map + 45 collapsed section, and `:528-529`
+records it resolving to 271.2px against a 275px content box at 900×600. The
+`min-height` that expresses it is `hud.css:542-546`.
+
+Relaxing `.hud__aside`'s floor is not the lever, and that is already recorded
+rather than newly argued: `hud.css:719-722` measured it — with `min-height: 0`
+the aside drops to 53.1px and the Build panel fits perfectly, and the save panel
+becomes a 41.1px box over 240px of content.
+
+## Decision
+
+### 1. A room type is a row in the existing Build catalogue
+
+Grouped into its own section of the catalogue list rather than appended to the
+buildables. The catalogue is `.hud-build__list`, which is `overflow-y: auto`
+with an 88px two-row floor (`hud.css:605-611`, floor from
+`--hud-build-catalogue-floor` = `2 * --tap-target`, `tokens.css:175`).
+
+**This costs nothing, at every viewport, and that is measured.** On the
+#282+#283 merge, injecting 18 extra catalogue rows (20 total) left body
+overflow at 0, headroom at 7.9, no panel scroll and rail overflow 0 at all five
+viewports. Two rows are already inside the list's own floor, so at today's
+catalogue size the list donates nothing and a longer list is absorbed by the
+list rather than by the panel.
+
+That mechanism is not new and is already guarded:
+`tests/browser/ui-shell.spec.ts:949` ("keeps the last section on screen however
+long the catalogue gets") drives a twelve-entry catalogue at the same five
+viewports (`CATALOGUE_VIEWPORTS`, `:941-947`) and asserts the last section
+header stays inside the panel's unscrolled box. One caveat, stated because the
+test itself states it (`:992-996`): that harness leaves the aside slot empty, so
+the Build panel gets the whole rail and there is no rail contention. Rail
+contention is only on the assembled page, which is where the 20-row measurement
+above was taken and where `tests/browser/app-shell.spec.ts` measures issue #174.
+
+A readout of the dragged area costs nothing either. `.hud-build__target` is
+pinned at `min-height: var(--space-5)` — 20px (`hud.css:653-658`,
+`tokens.css:115`) — and measured 20.0px unchanged with 22-character and
+42-character readouts on the merged tree.
+
+### 2. The gesture is a rectangle drag across tiles on the world canvas
+
+Select the room type, arm the tool, press on a tile, drag to the opposite
+corner, release. One command per gesture.
+
+This is what the simulation accepts and nothing else is: `zone` refuses
+`invalid-area` for any `width` or `height` below 1 or above 64
+(`zoning.ts:209-213`), so the shape a player may express is exactly an
+axis-aligned rectangle of at most 64 tiles per side.
+
+### 3. The producer is one new `HudIntent` variant and one branch in `src/main.ts`
+
+The intent carries ids and numbers only:
+
+```
+{ kind: 'zone-room'; roomId: string; x: number; y: number; width: number; height: number }
+```
+
+Verified against both ends. `zoneRoomSchema`
+(`src/simulation/protocol/commands.ts:37-45`) is
+`{ type: 'ZoneRoom', roomId: string, x: int, y: int, width: int, height: int,
+transactionId?: string }`, `.strict()`; `RoomZoningService.zone` takes
+`ZoneRoomRequest` (`zoning.ts:112-121`) whose first field is `roomCatalogId`
+and is fed from `simCommand.roomId` at `session-commands.ts:54`. So `roomId` is
+the right name for the intent field — it is the field name the wire format and
+every queued command in an existing save already use, and it holds a room
+*catalog* id (`room.cell`), never an instance id.
+
+`transactionId` is optional in the schema and this ADR does not decide whether a
+zone gesture should carry one. Zoning writes no construction order, so there is
+nothing for `ConstructionSystem.registerTransactionOrder` to group; whether a
+zone should be undoable at all is left open in §*What this does not settle*.
+
+### 4. What the renderer already does, and what it does not
+
+**An accepted zone is visible with no renderer work at all.** The zoning plane
+is already projected, decoded and painted per tile with a per-category tint:
+`src/simulation/presentation/world-projection.ts:14,42` carries `zoning` in the
+chunk projection → `src/rendering/world/world-view.ts:116` decodes the RLE and
+`:179` reads it per tile → `src/rendering/phaser/tile-layer.ts:189-197` fills the
+tile with `zoningTint` (`src/rendering/world/appearance.ts:96`) at
+`ZONING_TINT_ALPHA` (`:93`). This is true of all three alternatives and is not
+an argument for any one of them; it is recorded because it is the largest piece
+of work that does *not* have to be done.
+
+**A rectangle drag is a second gesture, not an edit to the wall drag**, and
+this is the honest cost of the decision. The build picking layer is edge-typed
+end to end, and its whole reason for existing is a question a rectangle never
+asks:
+
+- `EdgeTarget` is `{tileX, tileY, edge}` (`src/rendering/build/edge-picking.ts:26`).
+- `edgeRunFromDrag` (`:162`) commits the drag to one axis, and `edgeRunBetween`
+  (`:183`) walks a one-dimensional run.
+- `pickEdgeAtWorld` (`:96`), `pickEdgeOnAxis` (`:136`) and
+  `DRAG_AXIS_THRESHOLD_PX` (`:125`) exist to answer "which of the two stored
+  edges did you mean" — a wall lives on a tile edge and only north and west are
+  stored, so all four sides are pickable and resolve onto two.
+- `BuildToolPort` (`:210-217`) is edge-typed: `place(segments: readonly EdgeTarget[])`.
+  Its arm signal is `isArmed(): boolean` and carries no shape, so the scene
+  cannot tell an edge tool from an area tool. That needs either a mode on the
+  port or a second port beside it — and `EditHistoryPort` (`:238-243`) is the
+  precedent, its own comment arguing for the second-port shape because "the two
+  answer different questions".
+- `BuildTool` (`src/ui/build-tool.ts:62`), `HudBuildOrder`
+  (`src/ui/hud/hud.ts:96-99`, `readonly edges`) and the private dedupe keyed on
+  the three edge fields (`build-tool.ts:219`) are edge-typed too.
+
+**No area preview or selection rectangle exists anywhere in the tree.**
+`BuildOverlay` (`src/rendering/phaser/build-overlay.ts:30`) is one
+`Phaser.GameObjects.Graphics` whose `update(segments)` (`:39`) draws a thin
+`fillRect`/`strokeRect` per edge at wall thickness. Its lifecycle — one graphics
+object, a fixed preview depth, cleared on cancel — is reusable; its signature is
+not.
+
+What *is* reusable unchanged is the part that took the most care to get right:
+
+- The pointer gesture and its modal arbitration —
+  `src/rendering/scene/world-scene.ts:260` (pointerdown), `:277` (pointermove),
+  `:324` (release), `beginBuild` `:534`, `extendBuild` `:546`, `commitBuild`
+  `:554`, `cancelBuild` `:582`, `previewHover` `:591`, `paintBuildPreview`
+  `:599`, `isBuildArmed()` `:496`.
+- The camera keeping every gesture it had: wheel zoom `:246`, middle-drag
+  `:273-275`, two-finger pan/pinch `:288-309`, second-finger abandon `:293`,
+  `Escape` cancel `:431`. `docs/INPUT.md` records why arbitration is modal
+  rather than threshold-based, and the reason applies unchanged to an area drag:
+  a drag that designates an area is still a drag.
+- `worldPointOf`/`screenToWorld` (`:530`), proven against a real camera by
+  `tests/browser/camera-coordinates.spec.ts`.
+- `worldToTile` and the `TileRange`/`TileBounds` shapes with `tileRangeArea`
+  (`src/rendering/tile-metrics.ts:61,34,41,101`) — a rectangle in tiles is
+  already a type this tree has.
+
+One pleasing agreement, noted because it is a constraint neither side chose for
+the other: the renderer's `MAX_RUN_SEGMENTS = 64` (`edge-picking.ts:46`) is the
+same number as the simulation's `MAX_ZONE_DIMENSION_TILES = 64`
+(`zoning.ts:101`), and the second is the room catalog's own ceiling.
+
+## Alternatives considered
+
+### A — catalogue row plus a rectangle drag on the world. **Chosen.**
+
+Recorded above. Its cost is §4's second gesture; its benefits are §1's zero
+pixels and §4's free rendering.
+
+### B — a new "Rooms" tab beside Build. **Rejected, and named as the successor.**
+
+B is not the weaker design for the Rooms surface itself, and pretending
+otherwise would misrepresent the decision. Measured on the #282+#283 merge, a
+fifth tab injected into the tab bar left the Build panel's layout
+byte-identical at all five viewports: B costs the Build panel **nothing**. And a
+Rooms panel would inherit the whole aside box — 338.1px with a 291px body at
+900×600 — instead of sharing the 12.2px of §*The height budget*. That is a 24×
+larger budget for the surface that needs it.
+
+Most of the pieces exist. The `rooms` icon is already declared
+(`src/ui/primitives/icon.ts:16`). A room catalogue projection would be
+*simpler* than `buildCatalogue()` (`src/main.ts:282-300`), because rooms carry
+real `nameKey`s and need no id→key mapping table: `BUILDABLE_LABEL_KEY`
+(`src/main.ts:264-267`) exists only because `BUILDABLE_REGISTRY` carries a
+hard-coded English `name` and no key (`docs/HUD_PROJECTIONS.md` gap 32), and
+rooms have no such gap.
+
+It is rejected on scope and on one hard measured constraint.
+
+**The constraint.** `HUD_TAB_IDS` has four members
+(`src/ui/hud/hud-state.ts:14`). Measured on the merged tree with a fifth tab
+injected, `.hud-tabs__inner` spans x = 1.8 … 373.2 at 375×812 — 1.8px of margin
+per side. So "Rooms" is the only viable label: a nine-character "Logistics"
+puts the bar at x = −9.5, which fails the assertions at
+`tests/browser/ui-shell.spec.ts:745-746` (`tabs.x >= 0`, `tabs.right <= 375`) in
+the test at `:736`. And a **sixth tab is foreclosed** at that viewport.
+
+**The scope argument.** Spending the last tab slot on the first room feature,
+before rooms have a lifecycle to manage, is premature. A tab is a place to
+*list and manage* things; today there is one create gesture and nothing to
+list. B also widens the #88 tab sweep
+(`tests/browser/app-shell.spec.ts:790`, four-tab loop at `:833`), which
+`test.slow()` gives a tripled budget of 180s (`tests/browser/playwright.config.ts:65`).
+That test's own comment records 14–28s on `main` (`app-shell.spec.ts:792-798`);
+on the #282+#283 merge it measured 44.0s, and a fifth tab would take it to
+roughly 55s. An estimate, not a measurement.
+
+**The revisit trigger, recorded explicitly.** B becomes the right answer when
+rooms need listing and lifecycle — occupancy, capacity, per-room state — rather
+than one create gesture. At that point this ADR should be **superseded** rather
+than argued with: nothing in A forecloses B, and the intent in §3 is unchanged
+by which surface emits it.
+
+### C — a new always-visible room block inside the Build panel. **Rejected outright.**
+
+A minimal room surface — a type chooser, an area row and a submit control —
+measures 178.4px on the #282+#283 merge, and overflows at **all five**
+viewports: by 166.6px at 900×600 against a 291px body, and by 5.1px even at the
+roomiest, 1440×900. Against the table in §*The height budget* there is no
+viewport where it fits, and the two tightest are a desktop size and the phone.
+
+Two nearby variants *do* hold at 0px of overflow and 5 of 5 viewports, and both
+are recorded because they show where the line is — and because neither is
+option C any more:
+
+- a **catalogue row**, which is decision §1;
+- a control folded **inside the existing coordinates section**, which is already
+  collapsed by default and therefore not always-visible.
+
+The #89 two-button trick does not rescue C either, and this is the one place
+where a `main` reader will look for something that is not there. #282 puts the
+arm button and a "Buy" disclosure side by side in a flex row
+(`.hud-build__actions`, on `origin/claude/purchase-stepper` only), and its own
+comment records why that is affordable: the two controls and their gap come to
+about 170px of the 238px the block has. Measured on the merged tree, a **third**
+button in that row keeps its height at 44.0px and overflows the panel
+**horizontally by 37.9px**, clipped with no scrollbar — `.ui-panel` sets
+`overflow: hidden` (`src/ui/primitives/primitives.css:294,301`) and
+`.ui-panel.hud-build` overrides it on the y axis only (`hud.css:449,458-459`).
+It fits only at 375×812, where the panel is full width (`hud.css:804`). The
+238px is derivable on `main` and not only on the branch: 264px panel
+(`tokens.css:166`) less two hairlines (`:121`) less the body's 8px padding
+either side (`primitives.css:332`) less the section body's 4px
+(`primitives.css:360`).
+
+## The genre evidence, and where Lockstate differs
+
+Recorded because it makes the gesture a matter of convention rather than of
+taste, and because a player arriving from any of these games will try the drag
+first. `AGENTS.md` is explicit that research may inform mechanics while
+Lockstate must have its own implementation and identity; nothing here is a
+layout to copy.
+
+The closest analogues converge on "pick a room type from a list, then drag out
+an area", and **none of them uses coordinate entry**:
+
+- **Prison Architect** — a separate Rooms menu; select the room, then left click
+  and drag over the area to designate it, and right click and drag to remove a
+  designation.
+- **Two Point Hospital** — a Rooms button, pick from the list, then drag out a
+  floorplan of at least the room's minimum size.
+- **RimWorld** — zone designators live in the Architect menu's Zone tab; the
+  designator is selected and then the area is drawn by clicking and dragging,
+  painting the whole rectangle.
+- **Dwarf Fortress** is the outlier, and the useful one: a room exists only when
+  defined *from a piece of furniture* — you place a bed, query it, make a
+  bedroom of it and then set the size. The room is a property of an object
+  rather than of an area.
+
+Sources:
+
+- https://prisonarchitect.paradoxwikis.com/Room
+- https://prisonarchitect.paradoxwikis.com/Controls
+- https://twopointhospital-archive.fandom.com/wiki/How_to_play_guide_for_Two_Point_Hospital
+- https://rimworldwiki.com/wiki/Stockpile_zone
+- https://rimworldwiki.com/wiki/Zone/Area
+- https://dwarffortresswiki.org/index.php/DF2014:Room
+- https://dwarffortresswiki.org/index.php/DF2014:Bedroom
+
+**Where Lockstate differs, and why the difference helps.** Two of the three
+let a room end up as something other than one rectangle: Two Point Hospital
+through its Add Blueprint / Remove Blueprint controls, and RimWorld by dragging
+over an existing zone to expand it. `RoomZoningService.zone` does not: it takes
+a `width` and a `height` and refuses `invalid-area` for anything else
+(`zoning.ts:209-213`), and it checks every tile of the rectangle before writing
+any of them (`:225-241`). So a single filled-rectangle drag is simultaneously
+the genre norm *and* the only shape the finished consumer accepts. The decision
+is not asking the player to learn a restriction; it is asking the gesture to
+express exactly what the service already takes.
+
+## What this decision does not settle
+
+Left open deliberately. None of these has an answer in the tree, and inventing
+one here would be the invented-consequence defect this repository spends the
+most effort on.
+
+1. **Whether a room can be re-zoned or un-zoned.** Prison Architect's
+   right-drag has no analogue here: no command expresses removal, `zone` refuses
+   `overlaps-existing-room` for a tile whose zoning value is non-zero
+   (`zoning.ts:239`), and nothing moves or resizes an instance. The instance id
+   scheme depends on that — `zoning.ts`'s header states that if a future feature
+   moves or resizes a room, [ADR 0012](./0012-derived-identifier-reproducibility.md)
+   has to be settled first.
+2. **Whether the room type list is grouped under a heading or interleaved with
+   the buildables.** §1 assumes a grouped section; the measurement that makes §1
+   free — 18 injected rows costing 0px — does not distinguish the two, and the
+   ordering rule `buildCatalogue()` uses (`src/main.ts:270,282-289`) is a
+   composition-root decision either way.
+3. **Whether a zone drag should snap to an enclosing wall run.** A convenience
+   of that kind is common in the genre, and it is not free here: `zone` takes a
+   rectangle, nothing derives one from wall topology, the zoning plane stores a
+   room *type* per tile rather than an instance id (`zoning.ts`'s header says
+   so), and a `RoomInstance` carries an anchor tile rather than bounds
+   (`docs/HUD_PROJECTIONS.md` gap 11). A snap is a feature to build, not a
+   default to inherit.
+4. **How a room type with unmet prerequisites should read in the list.** Room
+   definitions carry `requirements`, and `requirementStatus` in
+   `src/simulation/presentation/room-projection.ts` is the only evaluator —
+   which, with no object placement (`docs/HUD_PROJECTIONS.md` gaps 13 and 14),
+   answers `'missing-capability'` or `'not-evaluated'` for most of them. Greying
+   a row on that basis would be showing the player a judgement the simulation
+   cannot yet make.
+
+## Consequences
+
+- **The Build panel is unchanged in layout.** §1 adds rows to a list that
+  already scrolls, and §*Alternative C* is the measurement that says nothing
+  always-visible may be added instead.
+- **A second gesture arrives in the renderer**, and with it the first area
+  preview: either a mode on `BuildToolPort` or a second port beside it, an
+  overlay that draws a rectangle rather than a run of edges, and a `BuildTool`
+  path that is not keyed on `EdgeTarget`. §4 lists what is reused unchanged, and
+  it is most of the pointer and camera arbitration.
+- **`tests/foundation/unconsumed-command-contract.test.ts` must lose its
+  `ZoneRoom` entry in the same change as the producer.** The file fails in both
+  directions — an entry for a command that has gained a producer is as much a
+  failure as a producer-less command with no entry — so this is owed by the
+  implementation, not optional. Two of six declared commands would then remain
+  without producers (`CancelBuildOrder`, `PurchaseMaterials`), or one if #282
+  lands first.
+- **`tests/foundation/unconsumed-content-contract.test.ts` is affected only to
+  the extent the implementation names room ids, and the honest statement is
+  narrower than "zoning gives the rooms a consumer".** That gate counts a
+  reference to an id *as a single-quoted literal* in any `.ts` file under `src/`
+  or `tests/`, excluding `src/content/` (`:33-38`). A producer that projects the
+  catalog generically names no room id, so it moves nothing by itself; a test
+  that zones a particular room type moves that one id. Nine room ids sit in
+  `AWAITING_CONSUMER` today (`:83-91`) and two more are in
+  `PROTECTED_BY_DECISION` (`room.delivery-bay`, `room.storage-room`, `:63-64`).
+  Whichever of the nine gain a literal reference must have their entries deleted
+  in the same change — the "holds no entry for an id that has since gained a
+  consumer" case (`:251-266`) fails otherwise — and the exact-count assertion
+  `{ declared: 62, unconsumedBySrcAndTests: 34, unconsumedBySrcOnly: 53 }`
+  (`:198-202`) must be updated to match. **This ADR changes neither file.**
+- **This unblocks step 3 of audit issue #261** — the step `zoning.ts`'s own
+  header names — and it is the structural precondition for step 4, admitting a
+  prisoner. `IntakeSystem` marks an arrival `'failed'` when
+  `allByRoomCatalogId(target.roomCatalogId)` is empty
+  (`src/simulation/prisoners/intake-system.ts:124-130`), and with nothing able
+  to register an instance that is every arrival.
+- **Zoning alone does not complete an admission, and this ADR claims no more
+  than it can.** A zoned room is registered with `capacity: 0` and
+  `objectCapabilities: []`, which `zoning.ts:252-262` records as measured rather
+  than chosen — an empty rectangle accommodates nobody. The default
+  accommodation target asks for `room.cell` with the `'sleep-surface'`
+  capability (`intake-system.ts:30-32`), and `findAvailable`
+  (`src/simulation/prisoners/room-instance-registry.ts:81-87`) rejects an
+  instance at capacity or missing the capability. So zoning a cell converts a
+  structural `'failed'` into a retry-able wait counted in
+  `accommodationBacklogTicks` (`intake-system.ts:133-135`). Object placement, or
+  an authored occupancy figure per room definition, is what closes step 4 — a
+  product decision recorded on #261, per `zoning.ts`'s header.
+- **A refusal has somewhere to go only if #283 lands.** That branch ships the
+  whole route a producer needs, and every path in this bullet resolves on
+  `origin/claude/report-refusals` and **on no other branch**: all six
+  `hud.alert.refusal.zone.*` strings (`src/content/default-locale-en.ts:166-171`
+  there), their mapping in `src/ui/simulation-alerts.ts:43-48`, and
+  `ZONE_REFUSAL_REASONS` (`src/simulation/refusals/refusal-log.ts:135`)
+  recorded from the handler at `src/simulation/runtime/session-commands.ts:70`.
+  Two of those files do not exist on `main` at all, and the fourth has
+  unrelated content at that line there.
+  Without it a zone gesture the simulation refuses tells the player nothing —
+  which is the defect #225 removed from the build drag, and it should not be
+  reintroduced by a new gesture.
+- **The status strip starts moving.** `RoomZoningService` is the first thing in
+  `src/` that registers a room instance, so `Rooms` stops being permanently
+  zero while `roomCapacity` stays `0`. `docs/HUD_PROJECTIONS.md` gap 13 already
+  records both as the room's true state rather than a projection defect.
+- **Nothing here is enforced by a test.** This is a decision about a surface,
+  and no gate can assert that a room type is a catalogue row rather than a tab.
+  What the implementation owes is listed above; the choice itself is held by
+  this document and by the index row that reports its status.
