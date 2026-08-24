@@ -105,6 +105,11 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.status.rooms': 'Rooms',
   'hud.status.incidents': 'Incidents',
   'hud.status.contraband': 'Contraband',
+  // The treasury balance (#96). "Funds" names no currency on purpose: #96
+  // settled that money is primary and did not name a unit, and the number is
+  // shown as a plain count of the units the simulation holds it in rather
+  // than converted into a major unit nobody has chosen yet.
+  'hud.status.funds': 'Funds',
   'hud.status.occupancy': 'Cell occupancy',
   'hud.status.occupancy-value': '{value} of {capacity}',
   'hud.status.incidents-clear': 'Clear',

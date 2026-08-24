@@ -49,6 +49,7 @@ export function projectStatusCounts(runtime: SimulationRuntime, tick: number): S
     staff: runtime.securityGuards,
     incidents: runtime.incidents,
     searchSystem: runtime.searchSystem,
+    treasury: runtime.treasury,
   }).counts;
 }
 

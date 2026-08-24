@@ -450,6 +450,30 @@ export const statusCountsSchema = z
     roomOccupants: countSchema,
     activeIncidents: countSchema,
     contrabandDiscovered: countSchema,
+    /**
+     * The treasury balance, in the minor units `Treasury` holds it in (#96).
+     *
+     * A count rather than a `BoundedValue`: it has no maximum to be a share
+     * of. `countSchema`'s floor of 0 is the treasury's own invariant, not an
+     * assumption made here -- `Treasury.spend` refuses rather than
+     * overdrawing, so a negative balance is unreachable, and a schema that
+     * admitted one would be describing a state the simulation cannot be in.
+     *
+     * **`HUD_VIEW_MODEL_SCHEMA_VERSION` is deliberately not bumped for this**,
+     * and the reason is a limitation of that constant rather than a judgement
+     * that the change is small. One number covers *every* projection in
+     * `src/simulation/presentation/` -- the status strip, security, staff and
+     * contraband all stamp the same value -- so raising it because the status
+     * strip gained a field would assert that the other three changed too.
+     *
+     * Nothing reads it as a compatibility gate today: the worker and the main
+     * thread are one build, and no projection is ever stored, so there is no
+     * artifact that a version could disambiguate. If one is ever stored, the
+     * constant needs splitting per projection before it can carry that weight,
+     * and that is the change to make then rather than a bump now that would
+     * be wrong about three of the four.
+     */
+    treasuryMinorUnits: countSchema,
   })
   .strict();
 

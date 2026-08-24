@@ -46,6 +46,12 @@ export interface StatusStripSource {
   readonly staff?: StaffRosterSource;
   readonly incidents?: StatusStripIncidentSource;
   readonly searchSystem?: ContrabandSearchSource;
+  /**
+   * The prison's money (#96). Absent reports `0`, which is what a session
+   * without an economy had -- not a guess, and not a hidden default: a
+   * runtime that has no treasury genuinely has no money.
+   */
+  readonly treasury?: { readonly balanceMinorUnits: number };
   /** Defaults to the shipped schedules; a session running custom regimes passes its own. */
   readonly regimeSchedules?: readonly RegimeSchedule[];
 }
@@ -105,6 +111,8 @@ export interface StatusStripViewModel {
     readonly activeIncidents: number;
     /** Cumulative items found by searches this session. Read from the search system's own counter, not from the drainable confiscation ledger. */
     readonly contrabandDiscovered: number;
+    /** The treasury balance in minor units (#96). `0` when no treasury was supplied. */
+    readonly treasuryMinorUnits: number;
   };
 }
 
@@ -188,6 +196,7 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
       roomOccupants,
       activeIncidents: source.incidents?.openIncidents().length ?? 0,
       contrabandDiscovered: source.searchSystem?.getMetrics().itemsDiscovered ?? 0,
+      treasuryMinorUnits: source.treasury?.balanceMinorUnits ?? 0,
     },
   };
 }

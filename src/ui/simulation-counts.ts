@@ -41,6 +41,7 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
         rooms: counts.rooms,
         activeIncidents: counts.activeIncidents,
         contrabandFound: counts.contrabandDiscovered,
+        treasuryMinorUnits: counts.treasuryMinorUnits,
       };
     }
 

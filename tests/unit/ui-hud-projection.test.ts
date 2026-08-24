@@ -44,20 +44,24 @@ function counts(overrides: Partial<HudCountsViewModel> = {}): HudCountsViewModel
     rooms: 0,
     activeIncidents: 0,
     contrabandFound: 0,
+    treasuryMinorUnits: 0,
     ...overrides,
   };
 }
 
 describe('status strip: which metrics exist, in what order', () => {
-  it('projects exactly the five declared metrics, in a fixed order', () => {
+  it('projects exactly the six declared metrics, in a fixed order', () => {
     // Order is part of the contract: a HUD whose metrics move between builds
-    // is one a player has to re-read every time.
+    // is one a player has to re-read every time. It was five until the
+    // treasury balance joined them (#96), and `funds` is last so the five a
+    // player already knows keep their positions.
     expect(projectStatusMetrics(counts()).map((metric) => metric.id)).toEqual([
       'prisoners',
       'staff',
       'rooms',
       'incidents',
       'contraband',
+      'funds',
     ]);
   });
 
@@ -71,20 +75,41 @@ describe('status strip: which metrics exist, in what order', () => {
       HUD_MESSAGE_KEY.rooms,
       HUD_MESSAGE_KEY.incidents,
       HUD_MESSAGE_KEY.contraband,
+      HUD_MESSAGE_KEY.funds,
     ]);
     for (const label of labels) expect(label).toMatch(/^hud\.[a-z.-]+$/);
   });
 
-  it('renders no money, funds, budget or currency metric', () => {
-    // There is no economy system yet, and a HUD slot is where a fake number
-    // starts. This fails the moment one is added without an economy.
-    const serialized = JSON.stringify(projectStatusMetrics(counts({ prisoners: 12 })));
-    expect(serialized).not.toMatch(/money|fund|budget|cash|balance|currency|cost/i);
+  it('renders a balance and no budget, cost or income metric', () => {
+    /*
+     * This used to forbid every money word outright, because there was no
+     * economy and a HUD slot is where a fake number starts. #96 built one, so
+     * the rule narrows rather than being dropped: a **balance** the
+     * simulation publishes may be shown; anything implying the half that does
+     * not exist may not.
+     *
+     * Nothing credits or debits the treasury on a schedule -- no income, no
+     * payroll, no running cost -- so a `budget`, a `cost` or a `wage` on the
+     * strip would be a number no system produces. `fund` is admitted only as
+     * the metric id and label key this change adds.
+     */
+    const metrics = projectStatusMetrics(counts({ prisoners: 12, treasuryMinorUnits: 24_920 }));
+    const serialized = JSON.stringify(metrics);
+
+    expect(serialized).not.toMatch(/money|budget|cash|currency|cost|price|income|wage|salary/i);
+
+    const funds = metrics.find((metric) => metric.id === 'funds');
+    expect(funds?.value, 'the balance is shown in the units the simulation holds it in').toBe(24_920);
+    expect(funds?.capacity, 'a balance has no maximum to be a share of').toBeUndefined();
+    expect(funds?.tone, 'a low-funds threshold would be a balance decision, and nothing pays in').toBeUndefined();
+    expect(funds?.badge).toBeUndefined();
   });
 
   it('passes the counts through unchanged', () => {
-    const metrics = projectStatusMetrics(counts({ prisoners: 142, staff: 27, rooms: 61, contrabandFound: 8 }));
-    expect(metrics.map((metric) => metric.value)).toEqual([142, 27, 61, 0, 8]);
+    const metrics = projectStatusMetrics(
+      counts({ prisoners: 142, staff: 27, rooms: 61, contrabandFound: 8, treasuryMinorUnits: 24_920 }),
+    );
+    expect(metrics.map((metric) => metric.value)).toEqual([142, 27, 61, 0, 8, 24_920]);
   });
 });
 

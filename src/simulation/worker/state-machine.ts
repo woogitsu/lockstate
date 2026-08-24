@@ -283,7 +283,7 @@ export class SimulationWorkerStateMachine {
    *
    * Every payload carries the tick it was read at, so a readout can never be
    * mistaken for a statement about a later state, and no list crosses at all
-   * -- the counts are ten integers, which is why `docs/HUD_PROJECTIONS.md`
+   * -- the counts are eleven integers, which is why `docs/HUD_PROJECTIONS.md`
    * contract 5 (paging) has nothing to bound here yet.
    */
   private publishStatusCounts(nowMilliseconds: number): void {

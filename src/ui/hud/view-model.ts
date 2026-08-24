@@ -74,17 +74,18 @@ export interface HudClockViewModel {
 /**
  * The dense top-strip counts.
  *
- * Deliberately no money, funds, budget or cost of any kind -- still, and for
- * a narrower reason than before. There **is** a treasury now (#96): a balance
- * a purchase spends from, carried in the save. What there is not is anything
- * that credits it, because what the state pays for is ADR 0017 question 1 and
- * it is open.
+ * The treasury balance is here, and nothing else about money is (#96).
  *
- * So a balance could honestly be shown, and a *budget* or a *forecast* could
- * not, and the rule that keeps this strip truthful is unchanged: a HUD that
- * displays a number no system produces is a lie with a place to sit. Adding
- * the balance here is a real change to what the strip carries and belongs to
- * the slice that gives the player a way to spend it.
+ * That line is exactly where the honest boundary falls. There **is** a
+ * treasury: a balance a purchase spends from, carried in the save, published
+ * by the same channel as every other count. There is **no** budget, forecast,
+ * income or running cost, because nothing credits the treasury on a schedule
+ * -- what the state pays for is ADR 0017 question 1 and it is open.
+ *
+ * So the rule this interface has always followed is unchanged and is now
+ * doing real work rather than excluding a whole subject: a HUD that displays
+ * a number no system produces is a lie with a place to sit. A balance is
+ * produced. A budget is not.
  */
 export interface HudCountsViewModel {
   readonly prisoners: number;
@@ -94,6 +95,16 @@ export interface HudCountsViewModel {
   readonly rooms: number;
   readonly activeIncidents: number;
   readonly contrabandFound: number;
+  /**
+   * The treasury balance in minor units (#96).
+   *
+   * Minor units all the way to the DOM, and converted for display at the
+   * last possible moment, for the same reason the simulation holds it that
+   * way: an integer is exact and a fraction of a currency is not. The strip
+   * formats it; nothing upstream of the formatter knows what a "major unit"
+   * is, which is what keeps a currency decision out of the view model.
+   */
+  readonly treasuryMinorUnits: number;
 }
 
 export type HudSeverity = 'info' | 'warning' | 'danger';
@@ -199,6 +210,7 @@ export const EMPTY_HUD_VIEW_MODEL: HudViewModel = {
     rooms: 0,
     activeIncidents: 0,
     contrabandFound: 0,
+    treasuryMinorUnits: 0,
   },
   clock: UNKNOWN_HUD_CLOCK,
   alerts: [],

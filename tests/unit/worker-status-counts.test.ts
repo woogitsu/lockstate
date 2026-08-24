@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
 import { HUD_VIEW_MODEL_SCHEMA_VERSION } from '../../src/simulation/presentation/view-model';
 import { decodeWorkerToMainMessage } from '../../src/simulation/protocol/decode';
 import { SIMULATION_PROTOCOL_VERSION, type MainToWorkerMessage } from '../../src/simulation/protocol/types';
@@ -167,6 +168,10 @@ describe('publishing the status counts', () => {
       prisonersHighRisk: 0,
       staff: 5,
       staffUnassigned: 5,
+      // The starting balance, unspent: this scenario buys nothing, so the
+      // number is `TREASURY_STARTING_BALANCE_MINOR_UNITS` and reads as one
+      // rather than as an arbitrary constant (#96).
+      treasuryMinorUnits: TREASURY_STARTING_BALANCE_MINOR_UNITS,
       rooms: 6,
       roomCapacity: 20,
       roomOccupants: 0,
@@ -369,9 +374,15 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       expect(counts.prisoners).toBe(actorCount);
       expect(counts.rooms).toBe(CELL_COUNT);
       expect(counts.staff).toBe(GUARD_COUNT);
-      // Ten integers, whatever the population. This is what a status-counts
+      // Eleven integers, whatever the population. It was ten until the
+      // treasury balance joined them (#96); the exact count is pinned rather
+      // than bounded so that a *list* arriving here -- the thing this channel
+      // is shaped to exclude -- cannot slip in as "one more field". A scalar
+      // being added is a one-line, visible edit; that is the point.
+      //
+      // This is what a status-counts
       // payload is, and why it needs no paging.
-      expect(Object.keys(counts)).toHaveLength(10);
+      expect(Object.keys(counts)).toHaveLength(11);
       expect(JSON.stringify(payload).length).toBeLessThan(300);
 
       // Reported evidence, never a gate (docs/BENCHMARKING.md).

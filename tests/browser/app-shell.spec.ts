@@ -198,6 +198,12 @@ interface StatusCountsPublication {
  * real decoder, so a wrong shape would be dropped rather than drawn -- and
  * the values are deliberately unlike any default: a hardcoded strip cannot
  * produce a 37.
+ *
+ * "Dropped rather than drawn" is the whole payload, not one field. Adding a
+ * required count to `statusCountsSchema` without adding it here makes this
+ * message fail to decode, so every metric stays at its zero and the failure
+ * reads as "the channel is dead" rather than "one field is missing". That is
+ * how it presented when `treasuryMinorUnits` was added.
  */
 const INJECTED_STATUS_COUNTS = {
   protocolVersion: 1,
@@ -217,6 +223,7 @@ const INJECTED_STATUS_COUNTS = {
       roomOccupants: 30,
       activeIncidents: 2,
       contrabandDiscovered: 5,
+      treasuryMinorUnits: 31_500,
     },
   },
 } as const;
@@ -1071,7 +1078,7 @@ test.describe('the assembled application', () => {
   /**
    * The HUD's counts, end to end, in the page a player loads.
    *
-   * The strip's five metrics were literal zeros for the whole of a session
+   * The strip's metrics were literal zeros for the whole of a session
    * until now: `src/simulation/presentation/` computed them and no
    * worker-to-main message carried them (issue #104). Three of the four
    * layers are proven headlessly -- the worker publishes them
@@ -1201,6 +1208,10 @@ test.describe('the assembled application', () => {
     await expect(metric('rooms')).toHaveText('12');
     await expect(metric('incidents')).toHaveText('2');
     await expect(metric('contraband')).toHaveText('5');
+    // Grouped for reading, which is the only thing the strip does to it:
+    // the value arrives in minor units and no layer between the worker and
+    // the formatter converts or re-denominates it (#96).
+    await expect(metric('funds')).toHaveText('31,500');
     // The badge follows the count, so the colour is never the only signal.
     // The badge is the non-colour carrier of the incident state, so a badge
     // that is present and not painted defeats its own purpose.
@@ -1773,7 +1784,7 @@ test.describe('the assembled application', () => {
      * layout, so on its own it cannot tell a visible version from a hidden one.
      * `brand.css` drops `.brand__build` at 720px and under -- the same
      * breakpoint `hud.css` drops the minimap at -- because the strip has to fit
-     * five metric chips and three transport buttons on a phone, and the wordmark
+     * six metric chips and three transport buttons on a phone, and the wordmark
      * is what makes the corner read as a product. Asserting only the desktop
      * half would leave a rule that could stop applying; asserting only the phone
      * half would pass if the line were hidden everywhere.

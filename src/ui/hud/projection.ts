@@ -104,7 +104,7 @@ export function transportPressedStates(clock: HudClockViewModel): TransportPress
   return { pause: false, play: !fast, fastForward: fast };
 }
 
-export type HudMetricId = 'prisoners' | 'staff' | 'rooms' | 'incidents' | 'contraband';
+export type HudMetricId = 'prisoners' | 'staff' | 'rooms' | 'incidents' | 'contraband' | 'funds';
 
 export interface HudMetricBadge {
   readonly tone: BadgeTone;
@@ -197,6 +197,30 @@ export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMe
       value: counts.contrabandFound,
       capacity: undefined,
       tone: counts.contrabandFound > 0 ? 'warning' : undefined,
+      badge: undefined,
+    },
+    {
+      id: 'funds',
+      icon: 'build',
+      labelKey: HUD_MESSAGE_KEY.funds,
+      // The balance as the simulation holds it: a count of minor units,
+      // formatted by the strip like every other count.
+      //
+      // **Not divided into a major unit, and not given a symbol.** #96
+      // settled that money is the primary resource and named no currency;
+      // ADR 0017 is Proposed. Dividing by 100 and printing a symbol would
+      // decide both by implication, in a chip. A plain number under a label
+      // reading "Funds" is the honest rendering of a quantity whose unit
+      // nobody has chosen -- and every price in
+      // `src/content/procurement-catalog.ts` is a whole number of these, so
+      // the figure the player compares against is in the same units.
+      value: counts.treasuryMinorUnits,
+      capacity: undefined,
+      // No tone. "Low on money" is a threshold, and a threshold is a balance
+      // decision -- the same reason `BoundedValue` carries no severity band.
+      // There is also nothing to be low *for*: nothing credits the treasury,
+      // so a warning would describe a slope that does not exist yet.
+      tone: undefined,
       badge: undefined,
     },
   ];
