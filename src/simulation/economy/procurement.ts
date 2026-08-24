@@ -70,11 +70,29 @@ export const MAX_PURCHASE_QUANTITY = 100_000;
 export class ProcurementSystem implements SystemRegistration {
   public readonly id = 'procurement';
   /**
-   * After construction (100), so a delivery that lands on a tick construction
-   * also runs is visible to that same tick's allocation attempt rather than
-   * the next one. Ordering between systems is a scheduling decision the
-   * kernel makes explicit, so it is stated rather than left to registration
-   * order.
+   * After construction (100). Ordering between systems is a scheduling
+   * decision the kernel makes explicit, so it is stated rather than left to
+   * registration order, and it is pinned by
+   * `tests/determinism/kernel-system-order.test.ts`.
+   *
+   * **After means later, so a delivery is picked up on the next scheduled
+   * construction tick, not the one it landed on.** `Kernel.register` sorts
+   * ascending (`kernel.ts:113`, `a.order - b.order`) and iterates in that
+   * order, so construction runs first within a tick. Construction is also on
+   * `intervalTicks: 10` (`construction/system.ts:100`) against this system's
+   * `1`, so a deposit made at order 110 on tick T is visible to the
+   * allocation attempt at T+10 -- measured: a delivery arriving on tick 100
+   * leaves `materials-pending` on tick 110.
+   *
+   * That half-second lag is accepted, and this comment says so rather than
+   * claiming the opposite. It previously read "so a delivery that lands on a
+   * tick construction also runs is visible to that same tick's allocation
+   * attempt rather than the next one", which described the behaviour of
+   * `order < 100` and was never true of this value. Making the same-tick
+   * property real would mean moving below 100, which is a deliberate reviewed
+   * edit rather than a free one: declared order is part of ADR 0020's
+   * determinism contract and ADR 0009's replay guarantee over stored saves,
+   * and the pin above fails on the change by design.
    */
   public readonly order = 110;
   /** Every tick: a delivery that arrives is not something to round to a window. */

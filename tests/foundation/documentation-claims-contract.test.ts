@@ -203,6 +203,53 @@ describe('docs/ARCHITECTURE.md: what the persistence layer actually does', () =>
     ).toEqual([]);
   });
 
+  it('names every module outside operations/ that deposits into a container, as the no-teleport rule claims to', async () => {
+    /*
+     * The claim being pinned, from `docs/OPERATIONS.md`'s "The no-teleport
+     * rule": that section enumerates the deliberate exceptions to "every unit
+     * of every item that moves between containers does so through a
+     * `CarryItemJob`'s two navigation-backed legs", and says how many there
+     * are.
+     *
+     * It was wrong for exactly as long as #249 had been merged. The section
+     * said `ContainerMaterialsProvider` "is the one deliberate exception",
+     * while `ProcurementSystem.update` had begun calling `deposit` at no tile
+     * whatsoever -- a second exception to a rule the document declared
+     * singular. Nothing noticed, because deleting the entire section left the
+     * whole suite green.
+     *
+     * `src/simulation/operations/` is excluded because it *is* the inventory
+     * tier: `Container.deposit`'s declaration, `ContainerRegistry`'s
+     * delegation and the carry job's own dropoff leg all live there, and a
+     * module implementing the rule is not an exception to it.
+     *
+     * The assertion is deliberately shaped as "the section names it" rather
+     * than as an allow-list here. An allow-list would let the code and the
+     * prose drift apart while both looked checked; requiring the *document*
+     * to contain the module's own name means the only way to add a third
+     * exception is to write the paragraph explaining it.
+     */
+    const depositors = (await sourceFilesMatching(/\.\s*deposit\s*\(/u)).filter(
+      (file) => !file.startsWith(path.join('src', 'simulation', 'operations')),
+    );
+    const operations = await readFile(path.join(repositoryRoot, 'docs', 'OPERATIONS.md'), 'utf8');
+    const ruleSection = operations.slice(operations.indexOf('## The no-teleport rule'));
+    expect(ruleSection.length, 'docs/OPERATIONS.md no longer has a "## The no-teleport rule" section for this to check').toBeGreaterThan(200);
+
+    const unnamed = depositors.filter((file) => !ruleSection.includes(path.basename(file)));
+    expect(
+      unnamed,
+      'a module outside src/simulation/operations/ deposits into a container and docs/OPERATIONS.md\'s no-teleport rule does not name it. Moving items outside a carry job is a real architectural exception: add the paragraph saying which module, and why it is not a transfer',
+    ).toEqual([]);
+
+    // The positive control, and the reason this is not a vacuous pass: the
+    // exception the rule already documents must actually be found by the scan.
+    // A pattern that matched nothing would satisfy the assertion above.
+    expect(depositors, 'the procurement deposit this rule was corrected for is no longer where the scan looks').toContain(
+      path.join('src', 'simulation', 'economy', 'procurement.ts'),
+    );
+  });
+
   it('cannot reach Supabase from the running app, as the topology and the persistence section both now say', async () => {
     // The claim being pinned: "Supabase cloud sync (contract and SQL only --
     // not reachable from the app)" and "nothing under `src/` reads

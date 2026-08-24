@@ -39,6 +39,7 @@ and client-side sync/conflict policy (`src/persistence/cloud/`) are covered in
                     searchPolicies, searchContainerLocations, search },
       incidents:  { log, sectorRisk, gangs, tunnels,
                     watchedSectorIds, trigger, response },
+      economy?:   { treasury, procurement },                  // #96 / #249
     },
     identity?: {                                              // V3, issue #75 / ADR 0015
       version: 1, poolId,
@@ -478,6 +479,7 @@ snapshot-capable and never connected to a payload. V3 connects them.
 | `security` | `SecuritySectorRegistry`, `GuardRoster`, `DeploymentSchedule[]`, `DeploymentSystem`, `PatrolSystem` | Hired staff, their posts, sector control state and the schedules that drive them. |
 | `contraband` | `ContrabandRegistry`, `IntelligenceLedger`, `InformantRegistry`, `ConfiscationLedger`, `SearchPolicyDefinition[]`, `SearchSystem` | Concealed items, their provenance and movement history, decayed suspicion, and the evidence chain a confiscation produced. |
 | `incidents` | `IncidentLog`, `SectorRiskTracker`, `GangRegistry`, `TunnelRegistry`, `IncidentTriggerSystem`, `IncidentResponseSystem` | Incident records are explicitly "simulation entities and domain events, not transient UI popups" (#28). |
+| `economy` *(optional)* | `Treasury`, `ProcurementSystem` | A balance is spent, not derived, and a purchased delivery in flight has a `arrivesAtTick` in the future — dropping it would silently refund nothing and deliver nothing. Optional so a save written before #249 loads unchanged; see "Adding an optional field without a version bump" above. |
 
 | `identity` *(session-level)* | `ActorIdentityRegistry` | ADR 0015: a name is an **allocated identity**, minted once and carried — never recomputable from an entity id. |
 
