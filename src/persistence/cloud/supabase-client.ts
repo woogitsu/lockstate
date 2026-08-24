@@ -43,12 +43,18 @@ interface CreateSaveVersionRow {
  * `docs/TESTING.md`: it has to keep working where container images cannot
  * be pulled. Review this class by inspection against that SQL.
  *
- * The one thing a pure-JS fake *can* prove is which rows this class asks
- * for, because that is a property of the query this file builds rather
- * than of the database: `tests/unit/persistence-cloud-supabase-client.test.ts`
- * drives it through a filter-applying PostgREST stand-in and pins that both
- * save-version reads are scoped to their prison (#105 finding 13). That
- * test says nothing about RLS, grants or the RPC's semantics.
+ * Two things a pure-JS fake *can* prove, because both are properties of the
+ * code in this file rather than of the database, and
+ * `tests/unit/persistence-cloud-supabase-client.test.ts` pins both. Which
+ * rows this class asks for: it drives the class through a filter-applying
+ * PostgREST stand-in and pins that both save-version reads are scoped to
+ * their prison (#105 finding 13). And which outcome each RPC status maps
+ * to, for `create_prison` and `create_save_version` alike, including that
+ * no two statuses collapse onto the same outcome -- `rpc-status-vocabulary-
+ * contract.test.ts` checks the row type's declared vocabulary, so a
+ * *missing* case is a type error while a *wrong* case was caught by nothing
+ * (#264 S7). Neither test says anything about RLS, grants or the RPC's
+ * semantics.
  */
 export class SupabaseCloudSaveClient implements CloudSaveClient {
   public constructor(private readonly supabase: SupabaseClient) {}
