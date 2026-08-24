@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { type EdgeTarget, edgeTargetKey } from '../../src/rendering/build/edge-picking';
 import { BuildTool } from '../../src/ui/build-tool';
-import type { SimulationCommand } from '../../src/simulation/protocol/commands';
+import type { HudBuildOrder } from '../../src/ui/hud';
 
 /**
  * One string format, two spellings, and the pin that keeps them the same.
@@ -64,22 +64,26 @@ import type { SimulationCommand } from '../../src/simulation/protocol/commands';
 
 const edge = (tileX: number, tileY: number, target: EdgeTarget['edge']): EdgeTarget => ({ tileX, tileY, edge: target });
 
-/** Every command a run submits, with a deterministic id per order. */
+/**
+ * The edges a finished run reports, keyed the way `edgeTargetKey` keys them.
+ *
+ * Read off `attachOrders` rather than off submitted commands: since #225 the
+ * tool assembles no command at all -- a gesture leaves as one `HudBuildOrder`
+ * and the HUD dispatches it, so that one intent is where the de-duplication is
+ * now observable. The property under test is unchanged; only where it surfaces
+ * moved.
+ */
 function placedEdges(segments: readonly EdgeTarget[]): readonly string[] {
-  const commands: SimulationCommand[] = [];
-  let nextOrder = 0;
-  const tool = new BuildTool({
-    submit: (command) => commands.push(command),
-    generateOrderId: () => `order-${nextOrder++}`,
-    generateTransactionId: () => 'run-1',
-  });
+  const orders: HudBuildOrder[] = [];
+  const tool = new BuildTool();
+  tool.attachOrders((order) => orders.push(order));
   tool.setArmed(true, 'wall-brick');
   tool.place(segments);
 
-  return commands.map((command) => {
-    if (command.type !== 'PlaceBuildOrder') throw new Error(`unexpected command ${command.type}`);
-    return `${command.x},${command.y},${command.edge}`;
-  });
+  // One gesture is one order (#225), so a run that reported two would be a
+  // different defect and this would say so rather than silently flattening.
+  expect(orders.length, 'a single gesture must report exactly one order').toBe(1);
+  return orders[0]!.edges.map((edge) => `${edge.x},${edge.y},${edge.edge}`);
 }
 
 describe('the two spellings of an edge key are one format', () => {

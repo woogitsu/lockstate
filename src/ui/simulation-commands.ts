@@ -165,18 +165,23 @@ export class SimulationCommandSender {
    * Posts a command, throwing rather than pretending when it cannot.
    *
    * A silent no-op here would be the worst possible failure: the player taps
-   * "Place order", nothing happens, and nothing says why. A throw on the
-   * HUD's numeric route now reaches the HUD's own failure surface: the submit
-   * button is marked as failed and the refusal line under the status strip
-   * says the order was not placed (issue #207 -- until it was fixed, this
-   * sentence claimed a report that only ever reached `console.warn`). The
+   * "Place order", nothing happens, and nothing says why. A throw now reaches
+   * the HUD's own failure surface: the refusal line under the status strip
+   * says the order was not placed, and the control that asked for it -- when
+   * there was one -- is marked as failed (issue #207 -- until it was fixed,
+   * this sentence claimed a report that only ever reached `console.warn`). The
    * thrown text is not what the player reads: it is English raised on this
    * thread, and the HUD may not put untranslated text on screen (ADR 0011),
    * so it travels to the host as diagnostics instead.
    *
-   * The *map* route is still console-only. A run laid by dragging on the
-   * world goes through `BuildTool`, and its `onError` in `src/main.ts` is a
-   * `console.warn` -- that refusal reaches a developer and not a player.
+   * That covers the *map* route too, which it did not until issue #225. A run
+   * laid by dragging on the world used to go from `BuildTool` straight to this
+   * method, with a `console.warn` for its refusal -- a report that reached a
+   * developer and not a player, on the primary way to build. The drag is now
+   * dispatched as the HUD's own `place-build-order` intent, so both routes
+   * raise here and both are reported the same way. There is no control to mark
+   * for a drag, because the player pressed none; the refusal line is the whole
+   * report, and it is laid out at every viewport.
    */
   public submit(command: SimulationCommand): void {
     if (!this.ready) {

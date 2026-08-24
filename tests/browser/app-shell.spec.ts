@@ -9,9 +9,10 @@ import { expect, test, type Page } from '@playwright/test';
  *
  * Every other spec in this directory drives a purpose-built harness page.
  * That is the right shape for a module under test, but it means nothing so
- * far has ever loaded the page a player loads. Six claims only exist once
+ * far has ever loaded the page a player loads. Eight claims only exist once
  * the pieces are assembled in a browser, and none of them can be settled a
- * layer down:
+ * layer down (the count is this list's own length, and it read "six" while
+ * the list held seven):
  *
  * 1. **The canvas is the size of the window.** Phaser's `Scale.RESIZE` is
  *    implemented against a real layout, a real `ResizeObserver` and a real
@@ -58,6 +59,21 @@ import { expect, test, type Page } from '@playwright/test';
  *    `data-build-id` carries a real injected commit rather than the module's
  *    `unknown` fallback, which is the only way to tell the `define` is wired at
  *    all.
+ *
+ * 8. **A wall refused after a *world drag* says so on screen, and one drag
+ *    is one transaction.** #207 fixed the Build panel's numeric fallback and
+ *    left the drag -- the primary way a wall is laid -- reporting to
+ *    `console.warn`, so the two routes to one command disagreed about whether
+ *    the player is told (#225). Neither half is provable a layer down: the
+ *    refusal comes from the real command sender on a real page with no
+ *    session, and it reaches the screen only if `src/main.ts` really has
+ *    joined the renderer's gesture to the HUD's intent path; and a
+ *    `transactionId` is minted on this thread, packed into the command and
+ *    never echoed back, so a tee over the real `postMessage` is the only place
+ *    "one gesture is one transaction" is observable at all. The HUD's own half
+ *    -- that a gesture becomes one gated intent and that refusing it paints
+ *    the line -- is `ui-shell.spec.ts`'s, per the pairing rule in
+ *    `docs/TESTING.md`.
  *
  * Deliberately NOT here, because a headless test already proves it and a
  * browser test that repeats one costs a minute of CI and adds no evidence:
@@ -129,6 +145,26 @@ function expectedAtlasSizes(): ReadonlyMap<string, readonly [number, number]> {
 interface WorkerTeeWindow extends Window {
   lockstateWorkerMessages?: readonly unknown[];
   lockstateInjectWorkerMessage?: (data: unknown) => boolean;
+}
+
+/**
+ * What the tee installed by the world-drag transaction test exposes.
+ *
+ * The other tee on this page records what the worker *posted*; this one
+ * records what the page *sent*, which is the only place a `transactionId`
+ * is observable at all -- it is minted on this thread, travels inside a
+ * packed command, and nothing comes back that mentions it.
+ */
+interface CommandTeeWindow extends Window {
+  lockstateSentToWorker?: readonly unknown[];
+}
+
+/** One `simulation/submit-command` message as it went over `postMessage`. */
+interface SubmittedCommand {
+  readonly kind?: string;
+  readonly payload?: {
+    readonly command?: { readonly data?: { readonly type?: string; readonly orderId?: string; readonly transactionId?: string } };
+  };
 }
 
 interface StatusCountsPublication {
@@ -210,6 +246,45 @@ async function openApp(page: Page): Promise<void> {
   await page.waitForSelector('#game-root canvas');
   await page.waitForSelector('.hud');
   await page.waitForSelector('.save-panel');
+}
+
+/**
+ * Arms the Build tool for the *world* route, the way a player does.
+ *
+ * The Build tab, then the map panel's arm toggle -- not the numeric fallback
+ * underneath it, which is the route issue #207 already covers. The returned
+ * label is asserted by every caller: an arm that silently did not take would
+ * leave the drag below panning the camera, and a test that never built
+ * anything would report a refusal line it never earned.
+ */
+async function armBuildTool(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'Build' }).click();
+  const arm = page.locator('.hud-build__map .ui-action');
+  await expect(arm).toBeVisible();
+  await arm.click();
+  await expect(arm).toHaveText('Stop placing');
+}
+
+/**
+ * A drag along a tile edge on the world, in real pointer events.
+ *
+ * From the centre of the screen, which the spec above establishes belongs to
+ * the canvas rather than to the HUD, and 320 CSS px eastwards: `TILE_SIZE_PX`
+ * is 64 and the camera starts at zoom 1, so the run is several segments long
+ * rather than sitting on the one-versus-many boundary. `steps` matters -- the
+ * scene decides the run's axis from pointer *movement*, so a single jump to
+ * the end point would still work but would not resemble a hand.
+ */
+async function dragOnWorld(page: Page): Promise<void> {
+  const viewport = page.viewportSize();
+  if (viewport === null) throw new Error('the viewport size is needed to aim the drag');
+  const x = Math.round(viewport.width / 2);
+  const y = Math.round(viewport.height / 2);
+
+  await page.mouse.move(x, y);
+  await page.mouse.down({ button: 'left' });
+  await page.mouse.move(x + 320, y, { steps: 12 });
+  await page.mouse.up({ button: 'left' });
 }
 
 /**
@@ -1198,6 +1273,153 @@ test.describe('the assembled application', () => {
     // not wedge the control that was refused.
     await expect(submit).toBeEnabled();
     await expect(submit).toHaveAttribute('aria-busy', 'false');
+  });
+
+  /**
+   * Issue #225: the same refusal, reached the way players actually build.
+   *
+   * #207 fixed the Build panel's numeric fallback -- expand ENTER
+   * COORDINATES, press *Place order*, and a refusal is painted. The **world
+   * drag** is the primary route to the identical command, and it was left
+   * out: `src/main.ts` gave `BuildTool` an `onError` that was
+   * `console.warn(\'Build order refused:\', ...)` and nothing else, so the two
+   * ways of laying one wall disagreed about whether the player is told, and
+   * the silent one was the one the tool is designed around
+   * (`docs/RENDERING.md` describes the modal arming precisely so that a drag
+   * can mean "build").
+   *
+   * The mutation the issue predicted for this was measured before the fix and
+   * it survived exactly as predicted: deleting that `onError` line left
+   * `pnpm typecheck`, `pnpm test` and this whole spec green, because the
+   * option is optional and nothing asserted on it. This test is what makes it
+   * die.
+   *
+   * It cannot be written with `Worker` blocked, which is how the analogous
+   * #82 test below reproduces its state: with no worker there is no command
+   * sender, and with no command sender `src/main.ts` builds no `BuildTool` at
+   * all, so there is no drag route to exercise. A page with a healthy worker
+   * and no prison is the state that refuses, and it is the state a first-time
+   * player is in for as long as they leave the save panel alone -- the same
+   * one #207 reproduced.
+   */
+  test('a wall refused after a world drag says so on screen (#225)', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+
+    await armBuildTool(page);
+
+    const refusal = page.locator('.hud__refusal');
+    await expect(refusal).toBeHidden();
+    const before = await page.locator('.hud').innerText();
+
+    await dragOnWorld(page);
+
+    // `toBeVisible`, not `toContainText`: a text assertion passes inside a
+    // `display: none` subtree and on a 0x0 box, which is exactly how #220
+    // shipped a message no viewport ever laid out.
+    await expect(refusal).toBeVisible();
+    await expect(refusal).toContainText('The build order was not placed');
+    // The thrown English never reaches the screen (ADR 0011).
+    await expect(refusal).not.toContainText('No simulation session');
+    await expect(refusal).toHaveAttribute('role', 'status');
+    await expect(refusal).toHaveAttribute('aria-live', 'polite');
+    await expect(refusal).toHaveAttribute('data-action', 'place-build-order');
+
+    // The measurement the issue was filed on, in the direction that now
+    // matters.
+    expect(await page.locator('.hud').innerText()).not.toBe(before);
+
+    // **Nothing is marked as the control that failed**, because the player
+    // pressed no control -- the gesture was on the world. Marking the panel's
+    // *Place order* button would point `aria-describedby` at a refusal about
+    // a gesture that button had no part in.
+    expect(await page.locator('[data-action-failed="true"]').count()).toBe(0);
+
+    // The tool is still armed and the panel still works: a refusal must not
+    // wedge the route it was refused on.
+    await expect(page.locator('.hud-build__map .ui-action')).toHaveText('Stop placing');
+  });
+
+  /**
+   * "One gesture is one transaction", on the wire, in the assembled page.
+   *
+   * `src/ui/build-tool.ts` has always claimed it -- every segment of a run
+   * shares a `transactionId` so a twelve-segment wall undoes as one wall --
+   * and routing the gesture through the HUD's intent path (#225) is exactly
+   * the change that could have quietly turned it into a per-segment dispatch.
+   * The claim was only ever asserted by reading, so it is asserted here
+   * instead, at the one layer where a `transactionId` is observable at all: it
+   * is minted on this thread, packed into the command, and nothing the worker
+   * sends back mentions it.
+   *
+   * A tee over `postMessage` rather than a stub: the real page, the real
+   * command sender and the real worker, with an extra recorder in the middle
+   * that intercepts nothing.
+   */
+  test('one world drag is one transaction, however many edges it covered (#225)', async ({ page }) => {
+    await page.addInitScript(() => {
+      const RealWorker = Worker;
+      const sent: unknown[] = [];
+
+      class CommandTeeWorker extends RealWorker {
+        public override postMessage(message: unknown, transfer?: Transferable[] | StructuredSerializeOptions): void {
+          sent.push(message);
+          if (transfer === undefined) super.postMessage(message);
+          else if (Array.isArray(transfer)) super.postMessage(message, transfer);
+          else super.postMessage(message, transfer);
+        }
+      }
+
+      Object.defineProperty(window, 'Worker', { configurable: true, value: CommandTeeWorker });
+      (window as unknown as CommandTeeWindow).lockstateSentToWorker = sent;
+    });
+
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+
+    // A session, because a refused command sends nothing at all. Creating a
+    // prison also takes the first snapshot, which is what baselines the
+    // command sequence -- `submit` throws until it has.
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+
+    await armBuildTool(page);
+
+    const orders = async (): Promise<readonly { orderId: string; transactionId: string | undefined }[]> =>
+      page.evaluate(() =>
+        ((window as unknown as CommandTeeWindow).lockstateSentToWorker ?? [])
+          .map((message) => message as SubmittedCommand)
+          .filter((message) => message.kind === 'simulation/submit-command')
+          .filter((message) => message.payload?.command?.data?.type === 'PlaceBuildOrder')
+          .map((message) => ({
+            orderId: message.payload?.command?.data?.orderId ?? '',
+            transactionId: message.payload?.command?.data?.transactionId,
+          })),
+      );
+
+    expect(await orders()).toEqual([]);
+
+    await dragOnWorld(page);
+
+    await expect
+      .poll(async () => (await orders()).length, {
+        message: 'the drag placed no build order at all, so nothing below is being measured',
+      })
+      .toBeGreaterThan(1);
+
+    // Nothing was refused, so the line the previous test asserts stays down.
+    await expect(page.locator('.hud__refusal')).toBeHidden();
+
+    const placed = await orders();
+    // One transaction across the whole run -- the property under test.
+    const transactions = new Set(placed.map((order) => order.transactionId));
+    expect(transactions.size).toBe(1);
+    expect([...transactions][0]).toMatch(/^build-/);
+
+    // And distinct orders within it: the kernel refuses a duplicate id, so a
+    // shared one would make every segment after the first a no-op, which is
+    // the failure a single shared `transactionId` could otherwise disguise.
+    expect(new Set(placed.map((order) => order.orderId)).size).toBe(placed.length);
   });
 
   test('still mounts the interface when the simulation worker cannot start (#82)', async ({ page }) => {

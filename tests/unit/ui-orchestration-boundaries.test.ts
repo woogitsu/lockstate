@@ -108,12 +108,16 @@ const orchestrationFiles = allUiFiles.filter((entry) => subtreeOf(entry) === und
  * Every layer outside `src/ui/` that a top-level UI module is allowed to know,
  * and how.
  *
- * Ten entries, which is the whole cross-layer dependency surface of the
+ * Thirteen entries, which is the whole cross-layer dependency surface of the
  * composition tier. Written down rather than inferred, because the point of
  * the list is that it converts "we know `build-tool.ts` is special" from
- * folklore into a line CI reads -- and because a reviewer can audit ten
- * facts. (Seven when this file was written; issue #208 added three by routing
- * the save panel's strings through the localization runtime.)
+ * folklore into a line CI reads -- and because a reviewer can audit thirteen
+ * facts. The count is the list's own length and is corrected whenever an
+ * entry is added or removed: it read "ten" while the list held fourteen, and
+ * the last change to it removed `build-tool.ts -> simulation`, which the
+ * `stale` check below failed on before anybody looked (issue #225 -- the tool
+ * stopped assembling `PlaceBuildOrder` commands and now reports the gesture to
+ * the HUD, so it names no simulation type at all).
  *
  * Each `kind` is measured, not chosen: `type-only` means every import of that
  * layer from that file is erased at compile time, so the module cannot run any
@@ -130,13 +134,6 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
     kind: 'type-only',
     reason:
       'Type-only: `BuildToolPort` and `EdgeTarget` from `src/rendering/build/edge-picking`. `BuildToolPort` is the port the renderer *offers* -- the scene reports the edges a gesture covered and this module turns them into orders -- so the dependency direction is UI-onto-a-renderer-contract, not UI-into-renderer-internals, and it is erased. This is the module `AGENTS.md` boundary 3 describes: it is deliberately the one place that knows both halves, and its own header says so. A value import from `src/rendering/` would mean the orchestrator had started calling into the renderer rather than being handed its reports.',
-  },
-  {
-    file: 'src/ui/build-tool.ts',
-    tree: 'simulation',
-    kind: 'type-only',
-    reason:
-      'Type-only: `SimulationCommand` from `src/simulation/protocol/commands`. A command is the serializable request the worker accepts, and naming its type is what lets this module assemble one without owning any simulation state; the command is handed to a sender, and the worker decides. Erased at compile time, so nothing in `src/simulation/` runs on the main thread as a consequence.',
   },
   {
     file: 'src/ui/save-panel.ts',

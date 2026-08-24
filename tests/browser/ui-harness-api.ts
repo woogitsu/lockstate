@@ -232,6 +232,20 @@ export interface LockstateUiHarness {
   stepBuildCoordinate(axis: 'x' | 'y', direction: 'up' | 'down'): boolean;
   clickBuildEdge(edge: string): boolean;
   clickPlaceOrder(): boolean;
+  /**
+   * The *world* route to the same command: one finished drag, however many
+   * edges it covered (issue #225).
+   *
+   * It calls the sink the HUD registered on `MountHudOptions.worldBuild`,
+   * which is what `BuildTool` calls in the running application. Driving a real
+   * canvas belongs to `app-shell.spec.ts`; what this exercises is the half
+   * that lives in `mountHud` -- that a gesture becomes one gated intent and
+   * that a refusal of it is painted.
+   *
+   * Returns `false` when no sink is registered, so a spec cannot pass by
+   * asserting about a gesture that never happened.
+   */
+  dragWorldBuild(definitionId: string, edges: readonly { x: number; y: number; edge: string }[]): boolean;
   buildLayoutProbe(): BuildLayoutProbe;
   /** Repaints the HUD with a changed view model and reports what it cost the localizer. */
   measureRepaintFormatterCost(): RepaintFormatterCost;

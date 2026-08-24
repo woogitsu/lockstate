@@ -9,6 +9,8 @@ import {
 } from '../../src/services/localization';
 import {
   EMPTY_HUD_VIEW_MODEL,
+  type HudBuildEdge,
+  type HudBuildOrder,
   type HudIntent,
   type HudLocalizer,
   type HudViewModel,
@@ -225,6 +227,13 @@ const intents: string[] = [];
 let holdClock = false;
 let heldClockIntent: (() => void) | undefined;
 let intentsFail = false;
+/**
+ * The sink `mountHud` registers for world build gestures (issue #225).
+ *
+ * Module-level and cleared on every mount, because it is the HUD's, not the
+ * harness's: a stale one would report a gesture into a destroyed shell.
+ */
+let worldBuildPlace: ((order: HudBuildOrder) => void) | undefined;
 
 function findSaveButton(label: string): HTMLButtonElement | undefined {
   const buttons = [...document.querySelectorAll<HTMLButtonElement>('.save-panel__button')];
@@ -322,7 +331,19 @@ window.lockstateUiHarness = {
   mountHudShell(options?: { readonly empty?: boolean; readonly buildables?: number }): void {
     hud?.destroy();
     intents.length = 0;
+    // The previous mount's sink belongs to a destroyed HUD; a gesture sent to
+    // it would report intents into a shell that is no longer on the page.
+    worldBuildPlace = undefined;
     hud = mountHud(root, {
+      // Stands in for `BuildTool`, which is the only implementation in the
+      // application: the composition root hands the HUD a source, the HUD
+      // registers a sink on it at mount, and a finished world drag calls it
+      // (issue #225).
+      worldBuild: {
+        attachOrders: (place) => {
+          worldBuildPlace = place;
+        },
+      },
       localizer: countingLocalizer,
       // `empty` mounts the shipped default instead of a populated prison --
       // the state the real app paints before any session exists.
@@ -591,6 +612,15 @@ window.lockstateUiHarness = {
     const option = document.querySelector<HTMLButtonElement>(`.hud-build .ui-choice__option[data-choice="${edge}"]`);
     if (option === null) return false;
     option.click();
+    return true;
+  },
+
+  dragWorldBuild(definitionId: string, edges: readonly { x: number; y: number; edge: string }[]): boolean {
+    if (worldBuildPlace === undefined) return false;
+    worldBuildPlace({
+      definitionId,
+      edges: edges.map((edge) => ({ x: edge.x, y: edge.y, edge: edge.edge as HudBuildEdge })),
+    });
     return true;
   },
 

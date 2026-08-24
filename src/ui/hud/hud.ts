@@ -71,22 +71,78 @@ export const HUD_TABS: readonly HudTabDefinition[] = [
   { id: 'regime', icon: 'regime', labelKey: HUD_MESSAGE_KEY.tabRegime },
 ];
 
+/**
+ * One tile edge a build order names.
+ *
+ * Numbers and a HUD-local edge id, never a simulation type: the HUD may not
+ * import `src/simulation/**` (`AGENTS.md` boundary 1), and `HudBuildEdge` is
+ * the wire shape the host translates to and from -- see its own comment in
+ * `view-model.ts`.
+ */
+export interface HudBuildEdgeTarget {
+  readonly x: number;
+  readonly y: number;
+  readonly edge: HudBuildEdge;
+}
+
+/**
+ * What one build gesture asked for: a buildable, and the edges it covered.
+ *
+ * `edges` is never empty -- an order that names no edge is not an order --
+ * and it is a list rather than a single edge because a drag along the world
+ * covers a run. See the `place-build-order` intent for why the run stays
+ * whole.
+ */
+export interface HudBuildOrder {
+  readonly definitionId: string;
+  readonly edges: readonly HudBuildEdgeTarget[];
+}
+
+/**
+ * The world's build gesture, as the HUD is willing to know it (issue #225).
+ *
+ * The problem this solves: two routes reach the same command. The Build
+ * panel's numeric fallback goes through `dispatchCommand`, so a refusal is
+ * painted on the refusal line and on the control that was pressed (issue
+ * #207). A run dragged along the world went straight from the composition
+ * root to the command sender, so a refused wall reached `console.warn` and
+ * the player was told nothing -- the primary route being the silent one.
+ *
+ * The fix is not a way to *report* a refusal from outside; that would let any
+ * caller paint a refusal for an action the HUD never dispatched, which is the
+ * door `refusalMessageKey` deliberately closed for chrome intents. It is this
+ * instead: the host hands the HUD the gesture, the HUD dispatches it as its
+ * own `place-build-order` intent, and one piece of machinery serves both
+ * routes because there is only one route left.
+ *
+ * A *source*, not a callback the HUD hands out: the tool exists before the
+ * HUD does (`src/main.ts` builds it for the renderer at boot), so the
+ * connection has to be made in this direction. It is the same shape, and for
+ * the same reason, as `BuildTool.attachReadout`.
+ */
+export interface HudWorldBuildSource {
+  /** Points the finished-gesture report at the HUD. Called once, at mount. */
+  attachOrders(place: (order: HudBuildOrder) => void): void;
+}
+
 export type HudIntent =
   | { readonly kind: 'select-tab'; readonly tab: HudTabId }
   | { readonly kind: 'set-clock'; readonly mode: HudClockMode; readonly speed: HudSpeed }
   | { readonly kind: 'toggle-panel'; readonly panel: HudPanelId; readonly collapsed: boolean }
   /**
    * The player asked for something to be built. Ids and numbers only -- the
-   * host turns this into a `PlaceBuildOrder` command; the HUD does not know
+   * host turns this into `PlaceBuildOrder` commands; the HUD does not know
    * that such a command exists.
+   *
+   * **One intent is one gesture**, however many edges the gesture covered.
+   * The numeric fallback sends a run of one; a drag along the world sends the
+   * whole run in a single intent (issue #225), because a run is one
+   * transaction to the player -- one thing they did, one thing to undo, and
+   * one thing to be told about when it is refused. Splitting it here would
+   * make a twelve-segment wall twelve gated commands and twelve chances to
+   * paint a refusal line about a wall the player drew once.
    */
-  | {
-      readonly kind: 'place-build-order';
-      readonly definitionId: string;
-      readonly x: number;
-      readonly y: number;
-      readonly edge: HudBuildEdge;
-    }
+  | ({ readonly kind: 'place-build-order' } & HudBuildOrder)
   /**
    * The player handed the world pointer to the build tool, or took it back.
    *
@@ -145,6 +201,22 @@ export interface MountHudOptions {
    * not settable afterwards. See the comment on the element in `mountHud`.
    */
   readonly unavailable?: HudUnavailableNotice;
+  /**
+   * The world's build gesture, routed into the HUD's own intent path (issue
+   * #225).
+   *
+   * Supplied, the HUD attaches to it once at mount and turns each finished
+   * run into a `place-build-order` intent of its own -- so a refused drag
+   * reaches the refusal line by exactly the path a refused *Place order*
+   * press does, and there is one implementation of "the player is told"
+   * rather than two.
+   *
+   * Omitted, nothing at all happens: the Build panel's numeric route is
+   * unaffected and the HUD simply never hears about the world pointer. That
+   * is the state of every harness in `tests/browser/` and of a page whose
+   * `Worker` never started, which has no build tool to offer.
+   */
+  readonly worldBuild?: HudWorldBuildSource;
   /**
    * Receives every player action, and may be async.
    *
@@ -316,9 +388,16 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * the control that was pressed* rather than merely somewhere on screen.
    *
    * `AsyncActionFailure.actionId` is the intent kind and the gate is
-   * single-slot, so one entry per kind is enough to name the button. Both
+   * single-slot, so one entry per kind is enough to name the button. The
    * controls registered here carry no `aria-describedby` of their own; one
    * that gained one would need this to merge rather than replace.
+   *
+   * A kind is *deleted* rather than left standing when a command arrives with
+   * no control behind it, which is what a drag on the world is (issue #225).
+   * There is nothing on screen the player pressed, so there is nothing to
+   * mark -- and marking the Build panel's button because it was the last
+   * thing to ask for the same kind would point `aria-describedby` at a
+   * refusal about a gesture that button had no part in.
    */
   const commandControls = new Map<string, HTMLElement>();
 
@@ -387,8 +466,15 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * commands, and so a rejection is reported rather than discarded (issue
    * #65). Nothing changes locally -- the HUD waits for the next snapshot.
    */
-  const dispatchCommand = (intent: HudIntent, control: HTMLElement): void => {
-    commandControls.set(intent.kind, control);
+  const dispatchCommand = (intent: HudIntent, control?: HTMLElement): void => {
+    if (control === undefined) {
+      // Unmarked *before* the entry goes, or the mark would be stranded: the
+      // control that carries it is about to stop being the one this kind's
+      // refusal is about, and `markControl` can only reach it while the map
+      // still remembers it.
+      markControl(intent.kind, false);
+      commandControls.delete(intent.kind);
+    } else commandControls.set(intent.kind, control);
     gate.run(intent.kind, async () => {
       await options.onIntent?.(intent);
       // Reached only when the host did not throw or reject, which is the one
@@ -472,13 +558,49 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     localizer,
     model: options.build ?? { buildables: [], origin: { x: 0, y: 0 } },
     onPlace: (intent) => {
-      dispatchCommand({ kind: 'place-build-order', ...intent }, buildPanel.submitControl);
+      // A run of one. The numeric route names exactly one edge, and it says
+      // so in the same shape a drag does so that the host has one case to
+      // handle and the gate has one action id to key on.
+      dispatchCommand(
+        {
+          kind: 'place-build-order',
+          definitionId: intent.definitionId,
+          edges: [{ x: intent.x, y: intent.y, edge: intent.edge }],
+        },
+        buildPanel.submitControl,
+      );
     },
     onArm: (armed, definitionId) => {
       runReported('arm-build-tool', () => options.onIntent?.({ kind: 'arm-build-tool', armed, definitionId }), reportError);
     },
   });
   const side = element('div', { className: 'hud__side', children: [buildPanel.element] });
+
+  /**
+   * The other route to the same command: a run dragged along the world
+   * (issue #225).
+   *
+   * It goes through `dispatchCommand`, exactly as the button above does, and
+   * that is the whole of the fix -- the gate refuses a second gesture while
+   * one is in flight, and a refusal paints the same line with the same
+   * `data-action`. Before this the drag went straight from the composition
+   * root to the command sender and a refused wall reached `console.warn`.
+   *
+   * **No control is passed**, and that is deliberate rather than an omission:
+   * the player pressed nothing, so there is no control for the report to land
+   * on. The refusal line still says what happened, which is the surface issue
+   * #207 established as "reaching the player" at every viewport.
+   *
+   * The whole run travels as one intent. `BuildTool` already de-duplicates
+   * and canonicalises the segments, and this is the point at which "one
+   * gesture is one transaction" has to survive: a per-segment dispatch here
+   * would have the gate refuse every segment after the first as busy, and
+   * would ask the host for twelve unrelated orders where the player drew one
+   * wall.
+   */
+  options.worldBuild?.attachOrders((order) => {
+    dispatchCommand({ kind: 'place-build-order', ...order });
+  });
 
   /**
    * The right rail: one column, holding the host's aside slot at the top and
