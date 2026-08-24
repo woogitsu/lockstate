@@ -439,6 +439,18 @@ test.describe('HUD shell', () => {
         failedControls: [],
       });
 
+      // The panel route first, refused, so that its *Place order* button is
+      // marked and the map below is not vacuous: a drag asserted against a HUD
+      // that had never marked anything would pass whether or not the mark is
+      // moved off a control the second gesture had nothing to do with.
+      await page.evaluate(() => window.lockstateUiHarness.expandBuildCoordinates());
+      expect(await page.evaluate(() => window.lockstateUiHarness.clickPlaceOrder())).toBe(true);
+      await expect
+        .poll(() => page.evaluate(() => window.lockstateUiHarness.refusalProbe().failedControls), {
+          message: 'the panel route stopped marking its own button, so this test proves nothing',
+        })
+        .toEqual(['Place order']);
+
       // A four-segment run, which is what a drag along a tile edge produces.
       const dragged = await page.evaluate(() =>
         window.lockstateUiHarness.dragWorldBuild('wall-brick', [
@@ -453,12 +465,14 @@ test.describe('HUD shell', () => {
       expect(dragged).toBe(true);
 
       await expect
-        .poll(() => page.evaluate(() => window.lockstateUiHarness.refusalProbe().visible), {
-          message: 'a refused world drag still tells the player nothing',
+        .poll(() => page.evaluate(() => window.lockstateUiHarness.refusalProbe().failedControls), {
+          message: 'a refused world drag left the mark on a button the player never pressed',
         })
-        .toBe(true);
+        .toEqual([]);
 
       const probe = await page.evaluate(() => window.lockstateUiHarness.refusalProbe());
+      // Still on screen -- the line is about the drag now, not about the press.
+      expect(probe.visible).toBe(true);
       expect(probe.action).toBe('place-build-order');
       expect(probe.text).toContain('The build order was not placed');
       expect(probe.text).not.toContain('ui-harness: the host refused');
