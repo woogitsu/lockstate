@@ -22,9 +22,9 @@ import {
  * correctly; what no document said is that the rest of the tree was ungated.
  *
  * There were five such modules when this file was written (869 lines);
- * `save-panel-messages.ts` (#208) made six, and `brand-badge.ts` with
- * `brand-messages.ts` made eight. The vacuity guard below is the list a new one
- * has to be added to.
+ * `save-panel-messages.ts` (#208) made six, `brand-badge.ts` with
+ * `brand-messages.ts` made eight, and `simulation-alerts.ts` (#261) makes
+ * nine. The vacuity guard below is the list a new one has to be added to.
  *
  * ## Why this is a separate file, and not a widening of the HUD gate
  *
@@ -185,6 +185,20 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
       'Value: `packCommand` (the protocol encoder), `SIMULATION_PROTOCOL_VERSION` and `SESSION_SNAPSHOT_SCHEMA_ID`, plus protocol and clock types. This is the orchestration half of `AGENTS.md` boundary 3 -- it turns a player action on this thread into a message on the worker. Everything it imports is protocol vocabulary: an encoder, a version constant and a schema id. It owns no simulation state, holds no authoritative copy of anything, and its own header states that every value it tracks is a cached echo of something the worker already told it. It constructs no runtime, which the construction assertion below checks rather than trusts.',
   },
   {
+    file: 'src/ui/simulation-alerts.ts',
+    tree: 'content',
+    kind: 'type-only',
+    reason:
+      'Type-only: `LocalizationKey` from `src/content/localization`, so `satisfies`/`Record` can check at compile time that every refusal reason has a message key. The same use `save-panel-messages.ts` and `brand-messages.ts` already make of it; erased, so no content code runs because of it.',
+  },
+  {
+    file: 'src/ui/simulation-alerts.ts',
+    tree: 'simulation',
+    kind: 'type-only',
+    reason:
+      'Type-only: `RefusalReason` and `WorkerToMainMessage` from `src/simulation/protocol/types`. It reads the refusal off a status-counts publication into a HUD alert row and nothing else -- the same shape as `simulation-counts.ts` beside it, and for the same reason: the HUD may not import the simulation (`AGENTS.md` boundary 1), so the module that has to know both a protocol message and a view model sits outside `src/ui/hud/`. No simulation code runs because of it, and the `Record` over `RefusalReason` is what makes a reason added to the protocol fail to compile until it has something to say (#261).',
+  },
+  {
     file: 'src/ui/simulation-counts.ts',
     tree: 'simulation',
     kind: 'type-only',
@@ -237,6 +251,7 @@ describe('UI orchestration boundaries', () => {
       'src/ui/build-tool.ts',
       'src/ui/save-panel-messages.ts',
       'src/ui/save-panel.ts',
+      'src/ui/simulation-alerts.ts',
       'src/ui/simulation-clock.ts',
       'src/ui/simulation-commands.ts',
       'src/ui/simulation-counts.ts',

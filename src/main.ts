@@ -31,6 +31,7 @@ import {
   type HudViewModel,
 } from './ui/hud';
 import { hudClockFromWorkerMessage } from './ui/simulation-clock';
+import { hudAlertsFromWorkerMessage } from './ui/simulation-alerts';
 import { hudCountsFromWorkerMessage } from './ui/simulation-counts';
 import { SimulationCommandSender } from './ui/simulation-commands';
 import { BuildTool } from './ui/build-tool';
@@ -451,30 +452,48 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   let viewModel: HudViewModel = EMPTY_HUD_VIEW_MODEL;
 
   /**
-   * Repaints the strip from what the worker last said, and from nothing else.
+   * Repaints the HUD from what the worker last said, and from nothing else.
    *
    * Day, position within the day, mode and speed all come out of a
    * `simulation/ready` or `simulation/clock-state` message; the prisoner,
-   * staff, room, incident and contraband counts come out of a
-   * `simulation/status-counts` one. The worker publishes both unprompted
-   * while a session exists (ADR 0003's "unsolicited ... do not pretend to be
-   * request responses"), which is what makes the readouts move without this
-   * thread ever counting anything of its own. With no worker, no session, or
-   * a stopped one, the clock reads unknown and the counts read empty -- see
+   * staff, room, incident and contraband counts, and the last thing the
+   * simulation refused, both come out of a `simulation/status-counts` one.
+   * The worker publishes them unprompted while a session exists (ADR 0003's
+   * "unsolicited ... do not pretend to be request responses"), which is what
+   * makes the readouts move without this thread ever counting anything of its
+   * own. With no worker, no session, or a stopped one, the clock reads
+   * unknown, the counts read empty and the alerts list is empty -- see
    * `EMPTY_HUD_VIEW_MODEL`.
    *
-   * One listener for both, because they land on one view model: a message
-   * that says nothing about either leaves the HUD alone rather than
-   * triggering a repaint.
+   * **This line is what the alerts list is for.** The list, its severity
+   * badges, its folding section, its empty-state row and the insertion
+   * ordering `tests/browser/ui-shell.spec.ts` measures are all implemented
+   * and tested -- and between #220 and #261 the only assignment to
+   * `HudViewModel.alerts` anywhere in `src/` was the literal `[]` in
+   * `EMPTY_HUD_VIEW_MODEL`. (#220 moved the one message that had ever been
+   * routed there, "simulation unavailable", to `.hud__unavailable`; see
+   * `SIMULATION_UNAVAILABLE_NOTICE` above for why.) So a command the worker
+   * accepted and the simulation then refused on its content -- a wall on
+   * unowned land, a purchase the treasury cannot cover, a room zoned over one
+   * already there -- reached this thread and was thrown away.
+   * `hudAlertsFromWorkerMessage` is the mapping and this line is the only
+   * thing that calls it, which is why
+   * `tests/foundation/composition-root-contract.test.ts` pins it.
+   *
+   * One listener for all three, because they land on one view model: a
+   * message that says nothing about any of them leaves the HUD alone rather
+   * than triggering a repaint.
    */
   client?.addListener((message) => {
     const clock = hudClockFromWorkerMessage(message, viewModel.clock);
     const counts = hudCountsFromWorkerMessage(message);
-    if (clock === undefined && counts === undefined) return;
+    const alerts = hudAlertsFromWorkerMessage(message);
+    if (clock === undefined && counts === undefined && alerts === undefined) return;
     viewModel = {
       ...viewModel,
       ...(clock === undefined ? {} : { clock }),
       ...(counts === undefined ? {} : { counts }),
+      ...(alerts === undefined ? {} : { alerts }),
     };
     hud?.update(viewModel);
   });
@@ -621,15 +640,11 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
            *
            * The affordability check is here rather than in the HUD, and it is
            * a *report*, not a second treasury. `Treasury.spend` refuses
-           * rather than overdrawing, and the refusal is dropped on the worker
-           * side: the kernel's command handler returns `void` and a command
-           * reply acknowledges receipt, not effect
-           * (`src/simulation/runtime/session-commands.ts` says so in its own
-           * body). So a purchase the balance cannot cover would otherwise be
-           * the exact failure #82 and #207 are about -- a button that reports
-           * success and does nothing. Throwing here rejects the HUD's gated
-           * action, which paints the refusal line and marks the button that
-           * was pressed.
+           * rather than overdrawing, so a purchase the balance cannot cover
+           * would otherwise be the exact failure #82 and #207 are about -- a
+           * button that reports success and does nothing. Throwing here
+           * rejects the HUD's gated action, which paints the refusal line and
+           * marks the button that was pressed.
            *
            * What it checks against is `viewModel.counts.treasuryMinorUnits`,
            * the balance the worker last published -- at most 500ms old, and
@@ -643,12 +658,34 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
            * deducted from yet -- most visibly with the clock paused, where
            * nothing steps at all and every queued purchase is measured against
            * the same figure. And a balance that moved in the last 500ms is not
-           * yet here. In both, `Treasury.spend` refuses without overdrawing and
-           * the player is told nothing, which is the gap recorded on #96: it
-           * needs a worker-to-main outcome message, and this change does not
-           * add one. What the check does close is the case a player actually
-           * reaches -- asking for more than the prison has ever had -- which
-           * before it was a button that reported success and spent nothing.
+           * yet here. In both, `Treasury.spend` refuses without overdrawing --
+           * and the player is now told: #261 gave that refusal a route out, so
+           * `session-commands.ts` records the `insufficient-funds` outcome in
+           * the session's `RefusalLog` and the worker publishes it on the
+           * tick-loop wake the command was refused on, opening the
+           * status-counts interval gate to do it. The paused case is the one
+           * exception, and it is an exception about *when*, not whether: a
+           * paused clock steps no ticks, so the command is not dispatched and
+           * nothing refuses it until the clock runs again.
+           *
+           * **The two routes are exclusive per gesture.** This throw happens
+           * instead of the `submit` below, so a purchase reported here is one
+           * the worker never saw, and a purchase the worker refuses is one
+           * this check let through. One press, one message -- never both, and
+           * never neither.
+           *
+           * So the check is kept, now that the worker reports, because the two
+           * messages are not interchangeable. The refusal line is laid out at
+           * every viewport and carries `data-action` and `aria-describedby` on
+           * the control that was pressed; the alerts row starts folded
+           * (`INITIAL_HUD_SHELL_STATE`) and `hud.css` drops `.hud__corner`,
+           * which contains the whole alerts region, at 720px and below
+           * (`docs/HUD_PROJECTIONS.md` gap 34 records both). At 720px and
+           * below this throw is therefore the only purchase refusal a player
+           * can see. And what it closes is the case a player actually reaches
+           * -- asking for more than the prison has ever had -- attached to the
+           * button they pressed, rather than as an unattached alert about
+           * something decided a tick later.
            */
           const priced = procurableMaterial(intent.itemId);
           if (priced === undefined) {

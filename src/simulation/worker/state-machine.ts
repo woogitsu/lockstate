@@ -161,6 +161,18 @@ export class SimulationWorkerStateMachine {
   private _publishedAtMs = Number.NEGATIVE_INFINITY;
   /** The counts the main thread was last told, so an unchanged prison says nothing. */
   private _publishedCounts: SimulationStatusCounts | null = null;
+  /**
+   * The `sequence` of the refusal the main thread was last told about, `0`
+   * for none.
+   *
+   * Tracked beside the counts rather than inside them because a refusal
+   * changes no count: an out-of-bounds wall leaves the prisoner, staff, room,
+   * incident, contraband and treasury figures exactly where they were, so
+   * `statusCountsEqual` alone would suppress the publication that carries it
+   * and the refusal would be lost between the simulation and the HUD for a
+   * second time (#261).
+   */
+  private _publishedRefusalSequence = 0;
   /** When the counts were last *projected*, which bounds the projection's cost as well as the message rate. */
   private _countsProjectedAtMs = Number.NEGATIVE_INFINITY;
 
@@ -260,17 +272,27 @@ export class SimulationWorkerStateMachine {
 
   /**
    * Tells the main thread how many prisoners, staff, rooms, open incidents
-   * and contraband finds the session has, unprompted.
+   * and contraband finds the session has, and what it last refused,
+   * unprompted.
    *
    * This is the channel issue #104 asked for: without it the HUD's counts
    * are literal zeros with nothing behind them, and
    * `src/simulation/presentation/` -- the read-model layer written for
    * exactly this -- is unreachable from the interface.
    *
+   * It carries the session's last refusal too, since #261. A command the
+   * kernel accepts and a system then refuses on its content -- a wall on
+   * ground the player does not own, a purchase the treasury cannot cover, a
+   * room zoned over one already there -- has no other way out: `handleSubmitCommand` has already answered
+   * `status: 'queued'`, which ADR 0003 decision 9 says is receipt and not
+   * effect, and the correlated reply is spent. This is a snapshot channel and
+   * the payload is snapshot-shaped to match: the most recent refusal and its
+   * 1-based ordinal, never a queue. `RefusalLog` argues that shape in full.
+   *
    * Strictly a *report*, exactly like `publishClockState`. It reads
-   * `Kernel.tick`, runs a pure projection over the runtime's registries and
-   * posts the result; it calls nothing on the kernel, steps nothing and
-   * writes nothing, so it cannot change what a tick computes
+   * `Kernel.tick`, `RefusalLog.last` and a pure projection over the runtime's
+   * registries and posts the result; it calls nothing on the kernel, steps
+   * nothing and writes nothing, so it cannot change what a tick computes
    * (`tests/determinism/status-counts-publication.test.ts`).
    *
    * **Two gates, and their order is the point.** The interval is checked
@@ -281,20 +303,38 @@ export class SimulationWorkerStateMachine {
    * both halves exist to avoid: "a per-tick firehose that serialises every
    * projection every tick and eats the frame budget".
    *
+   * **A new refusal opens the interval gate, and that is bounded.** A refusal
+   * is a player-initiated event, not a level: waiting up to 500 ms to report
+   * it would be a delay the player feels on their own action, and pausing
+   * inside that window would stop the tick loop and strand the refusal until
+   * the clock next ran. Reading `RefusalLog.last` is a field access, so the
+   * extra gate costs nothing on a wake that has none; and it can open at most
+   * once per refusal, because publishing records the sequence it published.
+   * The bound is therefore "one extra projection per command the simulation
+   * refuses" -- bounded by how fast a player can press a button, which is not
+   * a firehose. The refusal reaches the HUD on the same tick-loop wake the
+   * command was refused on (#261).
+   *
    * Every payload carries the tick it was read at, so a readout can never be
    * mistaken for a statement about a later state, and no list crosses at all
-   * -- the counts are eleven integers, which is why `docs/HUD_PROJECTIONS.md`
-   * contract 5 (paging) has nothing to bound here yet.
+   * -- eleven integers of counts beside at most one refusal record, which is
+   * why `docs/HUD_PROJECTIONS.md` contract 5 (paging) has nothing to bound
+   * here yet.
    */
   private publishStatusCounts(nowMilliseconds: number): void {
     if (this._kernel === null || this._runtime === null) return;
-    if (nowMilliseconds - this._countsProjectedAtMs < STATUS_COUNTS_PUBLISH_INTERVAL_MS) return;
+
+    const refusal = this._runtime.refusals.last;
+    const refusalSequence = refusal?.sequence ?? 0;
+    const refusalIsNew = refusalSequence !== this._publishedRefusalSequence;
+    if (!refusalIsNew && nowMilliseconds - this._countsProjectedAtMs < STATUS_COUNTS_PUBLISH_INTERVAL_MS) return;
     this._countsProjectedAtMs = nowMilliseconds;
 
     const tick = this._kernel.tick;
     const counts = projectStatusCounts(this._runtime, tick);
-    if (this._publishedCounts !== null && statusCountsEqual(this._publishedCounts, counts)) return;
+    if (!refusalIsNew && this._publishedCounts !== null && statusCountsEqual(this._publishedCounts, counts)) return;
     this._publishedCounts = counts;
+    this._publishedRefusalSequence = refusalSequence;
 
     this.post({
       protocolVersion: SIMULATION_PROTOCOL_VERSION,
@@ -309,6 +349,17 @@ export class SimulationWorkerStateMachine {
         // evolve without an envelope-version change (ADR 0003 decision 5).
         schemaVersion: HUD_VIEW_MODEL_SCHEMA_VERSION,
         counts,
+        // Spread rather than passed as `undefined`: `exactOptionalPropertyTypes`
+        // is on, and the payload schema is `.strict()` over an *optional*
+        // field, so "nothing has been refused" is an absent key rather than a
+        // present one holding nothing.
+        //
+        // The refusal is republished with every later readout for as long as
+        // it is still the most recent one. That is what makes this channel a
+        // snapshot rather than an event stream: the main thread never has to
+        // remember a message it saw, and a listener that starts late sees the
+        // same state as one that was there all along.
+        ...(refusal === undefined ? {} : { refusal }),
       },
     });
   }

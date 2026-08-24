@@ -145,9 +145,9 @@ describe('save panel message keys (issue #208)', () => {
 });
 
 /**
- * The gate hole itself, closed for the five `src/ui/*.ts` modules that no
- * other localization test collects (issue #208, and the same shape as #206
- * part 2 asks for the import boundaries).
+ * The gate hole itself, closed for every `src/ui/*.ts` module that no other
+ * localization test collects -- five when issue #208 opened it, nine now
+ * (and the same shape as #206 part 2 asks for the import boundaries).
  *
  * A scan rather than a registry, because the defect was a file nobody had
  * registered anywhere: the check has to be about *the directory*, or the
@@ -167,6 +167,7 @@ describe('no module in src/ui/ renders a hard-coded sentence (issue #208)', () =
     'build-tool.ts',
     'save-panel.ts',
     'save-panel-messages.ts',
+    'simulation-alerts.ts',
     'simulation-clock.ts',
     'simulation-commands.ts',
     'simulation-counts.ts',
