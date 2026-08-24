@@ -4,9 +4,10 @@ import { canBuildAt } from '../../src/simulation/world/buildability';
 import { chunkCoordinate, tileCoordinate } from '../../src/simulation/world/coordinates';
 import { createParcelRect } from '../../src/simulation/world/parcel';
 import { SparseWorld } from '../../src/simulation/world/sparse-world';
-import { buildRowIndex } from '../../src/rendering/world/row-index';
+import { buildRowIndex, type RowContent } from '../../src/rendering/world/row-index';
+import type { RenderStructure } from '../../src/rendering/world/structures';
 import { structuresFromConstruction } from '../../src/rendering/world/structures';
-import { createTileSample, WorldRenderView } from '../../src/rendering/world/world-view';
+import { createTileSample, WorldRenderView, type TileSample } from '../../src/rendering/world/world-view';
 
 /**
  * The renderer's world view has to agree with the simulation's world about
@@ -258,5 +259,168 @@ describe('row index', () => {
 
   it('produces no rows for a world with nothing standing on it', () => {
     expect(buildRowIndex(WorldRenderView.empty(), []).size).toBe(0);
+  });
+
+  /**
+   * Issue #204. The walk used to iterate `loadedBounds`, so its cost was the
+   * area of the bounding box of the loaded chunks -- two chunks 40 apart span
+   * 1,721,344 tile positions and hold 2,048 tiles, and the walk read all
+   * 1,721,344 of them. Correctness was already
+   * guarded above and stayed green throughout, so nothing in the suite could
+   * tell the two walks apart; what was guarded by nothing was the *volume*.
+   *
+   * These count reads instead of timing them, per `docs/BENCHMARKING.md`:
+   * elapsed time is not asserted from a unit test.
+   */
+  describe('cost', () => {
+    /** Wraps `readTile` on one view and returns how many times the build called it. */
+    function countReads(view: WorldRenderView, structures: readonly RenderStructure[] = []): { reads: number; rows: ReadonlyMap<number, RowContent> } {
+      const original = view.readTile.bind(view);
+      let reads = 0;
+      Object.defineProperty(view, 'readTile', {
+        configurable: true,
+        value: (tileX: number, tileY: number, out: TileSample): void => {
+          reads += 1;
+          original(tileX, tileY, out);
+        },
+      });
+      const rows = buildRowIndex(view, structures);
+      return { reads, rows };
+    }
+
+    function worldWithChunks(chunkSize: number, positions: readonly (readonly [number, number])[]): SparseWorld {
+      const world = new SparseWorld(chunkSize);
+      for (const [x, y] of positions) world.load({ x: chunkCoordinate(x), y: chunkCoordinate(y) });
+      return world;
+    }
+
+    it('reads every materialised tile exactly once, whatever the chunks cost as a bounding box', () => {
+      const chunkSize = 8;
+      const layouts: readonly { readonly label: string; readonly chunks: readonly (readonly [number, number])[] }[] = [
+        { label: 'adjacent diagonal', chunks: [[0, 0], [1, 1]] },
+        { label: '10 chunks apart', chunks: [[0, 0], [10, 10]] },
+        { label: '40 chunks apart', chunks: [[0, 0], [40, 40]] },
+        { label: 'one row, a gap in it', chunks: [[0, 0], [7, 0]] },
+      ];
+
+      for (const { label, chunks } of layouts) {
+        const view = WorldRenderView.fromSnapshot(worldWithChunks(chunkSize, chunks).snapshot());
+        const materialised = view.loadedChunkCount * chunkSize * chunkSize;
+        const bounds = view.loadedBounds;
+        if (bounds === undefined) throw new Error('expected loaded bounds');
+        const box = (bounds.maxTileX - bounds.minTileX + 1) * (bounds.maxTileY - bounds.minTileY + 1);
+
+        expect(countReads(view).reads, `${label}: reads`).toBe(materialised);
+        // Stated as its own assertion so the pair reads as the finding: the
+        // cost tracks contents, and the box it is *not* tracking is bigger.
+        expect(box, `${label}: box exceeds contents`).toBeGreaterThan(materialised);
+      }
+    });
+
+    it('costs the same for two chunks 40 apart as for two adjacent ones', () => {
+      const chunkSize = 8;
+      const near = WorldRenderView.fromSnapshot(worldWithChunks(chunkSize, [[0, 0], [1, 1]]).snapshot());
+      const far = WorldRenderView.fromSnapshot(worldWithChunks(chunkSize, [[0, 0], [40, 40]]).snapshot());
+
+      expect(countReads(far).reads).toBe(countReads(near).reads);
+    });
+
+    it('reads nothing at all for a world with no materialised chunks', () => {
+      const view = WorldRenderView.fromSnapshot(new SparseWorld(8).snapshot());
+      expect(view.loadedChunkCount).toBe(0);
+      expect(countReads(view).reads).toBe(0);
+    });
+
+    /**
+     * The band walk exists for this: two chunks side by side share world rows,
+     * and `paintRow` (`rendering/phaser/tile-layer.ts`) walks `edges` in the
+     * order they are stored. A walk that finished one chunk before starting
+     * the next would emit tile 9 before tile 1 on row 1.
+     */
+    it('keeps a row\'s edges ascending in tile X across a chunk seam', () => {
+      const chunkSize = 8;
+      const world = worldWithChunks(chunkSize, [[0, 0], [1, 0]]);
+      world.setTopEdge(tile(9, 1), 1);
+      world.setTopEdge(tile(1, 1), 1);
+      world.setLeftEdge(tile(14, 1), 1);
+      world.setTopEdge(tile(6, 1), 1);
+
+      const rows = buildRowIndex(WorldRenderView.fromSnapshot(world.snapshot()), []);
+      expect(rows.get(1)?.edges.map((edge) => edge.tileX)).toEqual([1, 6, 9, 14]);
+    });
+
+    it('creates rows in ascending tile Y even when a later chunk holds the earlier row', () => {
+      const chunkSize = 8;
+      const world = worldWithChunks(chunkSize, [[0, 0], [1, 0]]);
+      // The low row lives in the *second* chunk of the band, so a walk that
+      // visited whole chunks in turn would key the index in the wrong order.
+      world.setTopEdge(tile(9, 1), 1);
+      world.setTopEdge(tile(2, 6), 1);
+
+      const rows = buildRowIndex(WorldRenderView.fromSnapshot(world.snapshot()), []);
+      expect([...rows.keys()]).toEqual([1, 6]);
+    });
+  });
+});
+
+describe('loaded chunk positions', () => {
+  it('lists exactly the materialised chunks, ascending by row band then column', () => {
+    const world = new SparseWorld(8);
+    const loaded: readonly (readonly [number, number])[] = [[2, 1], [0, 1], [1, -1], [0, 0]];
+    for (const [x, y] of loaded) world.load({ x: chunkCoordinate(x), y: chunkCoordinate(y) });
+    const view = WorldRenderView.fromSnapshot(world.snapshot());
+
+    expect(view.loadedChunkPositions).toEqual([
+      { chunkX: 1, chunkY: -1 },
+      { chunkX: 0, chunkY: 0 },
+      { chunkX: 0, chunkY: 1 },
+      { chunkX: 2, chunkY: 1 },
+    ]);
+    expect(view.loadedChunkPositions.length).toBe(view.loadedChunkCount);
+    expect(WorldRenderView.empty().loadedChunkPositions).toEqual([]);
+  });
+
+  it('is a property of the world, not of the order the snapshot happened to list chunks in', () => {
+    const world = new SparseWorld(8);
+    const loaded: readonly (readonly [number, number])[] = [[0, 0], [1, 0], [0, 1], [1, 1]];
+    for (const [x, y] of loaded) world.load({ x: chunkCoordinate(x), y: chunkCoordinate(y) });
+    const snapshot = world.snapshot();
+    const reversed = { ...snapshot, chunks: [...snapshot.chunks].reverse() };
+
+    expect(WorldRenderView.fromSnapshot(reversed).loadedChunkPositions).toEqual(
+      WorldRenderView.fromSnapshot(snapshot).loadedChunkPositions,
+    );
+  });
+
+  /**
+   * `fromSnapshot` accepts whatever a decoded save hands it, and a snapshot
+   * that lists one chunk twice would otherwise put that chunk in the walk
+   * twice: every tile in it read twice, and every edge on it pushed into its
+   * row twice. `chunks` is a `Map` and silently keeps one entry, so the
+   * duplicate shows up only in this array.
+   */
+  it('lists a chunk once even if the snapshot lists it twice', () => {
+    const world = new SparseWorld(8);
+    world.load({ x: chunkCoordinate(0), y: chunkCoordinate(0) });
+    world.setTopEdge(tile(3, 2), 1);
+    const snapshot = world.snapshot();
+    const doubled = { ...snapshot, chunks: [...snapshot.chunks, ...snapshot.chunks] };
+
+    const view = WorldRenderView.fromSnapshot(doubled);
+    expect(view.loadedChunkPositions).toEqual([{ chunkX: 0, chunkY: 0 }]);
+    expect(view.loadedChunkCount).toBe(1);
+    expect(buildRowIndex(view, []).get(2)?.edges).toEqual([{ tileX: 3, top: 1, left: 0 }]);
+  });
+
+  it('agrees with isChunkLoaded, and omits a chunk the snapshot has not materialised', () => {
+    const world = new SparseWorld(8);
+    world.load({ x: chunkCoordinate(0), y: chunkCoordinate(0) });
+    const view = WorldRenderView.fromSnapshot(world.snapshot());
+
+    for (const { chunkX, chunkY } of view.loadedChunkPositions) {
+      expect(view.isChunkLoaded(chunkX, chunkY), `chunk ${chunkX},${chunkY}`).toBe(true);
+    }
+    expect(view.isChunkLoaded(1, 0)).toBe(false);
+    expect(view.loadedChunkPositions).not.toContainEqual({ chunkX: 1, chunkY: 0 });
   });
 });

@@ -78,6 +78,15 @@ Consequences worth stating plainly:
   already there. Chunks and rows that leave the view return to a pool.
 - The ground is painted per chunk because the world *is* chunked
   (`AGENTS.md` boundary 8), not because it is convenient.
+- **A world revision costs one pass over the materialised tiles**, and only
+  those: `buildRowIndex` iterates `WorldRenderView.loadedChunkPositions`, so
+  the figure is `loadedChunkCount * chunkSize^2` regardless of how the loaded
+  chunks are arranged. Until issue #204 it walked `loadedBounds` instead —
+  the bounding box of those chunks — which is the same number only while they
+  tile that box: two 32x32 chunks 40 apart span 1,721,344 tile positions and
+  contain 2,048. Boundary 8 is the reason that is a defect and not a
+  trade-off; a walk over a bounding box is the dense matrix the boundary
+  forbids, and it runs on the thread that draws.
 - Sprites are never created or destroyed per frame. The pool grows to the
   largest number of *visible* actors ever reached -- bounded by the viewport,
   not by the population.

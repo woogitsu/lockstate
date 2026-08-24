@@ -41,6 +41,12 @@ import { createTileSample, type WorldRenderView } from '../world/world-view';
  *
  * Both caches are dropped when the feed publishes a new revision -- i.e. when
  * the simulation actually changed the world, not every frame.
+ *
+ * Rebuilding the row index is the one piece of work a new revision pays for up
+ * front, synchronously, here on the thread that draws. `buildRowIndex` reads
+ * every materialised tile once and no tile that is not materialised, so that
+ * cost tracks how much world exists and not how far apart its pieces sit
+ * (issue #204).
  */
 
 export class TileLayer {
