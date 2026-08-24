@@ -80,6 +80,12 @@ const REQUIRED_WIRINGS: readonly RequiredWiring[] = [
       'Issue #199. `WorldSceneOptions.keyValueStore` is required, so `tsc` guarantees *a* store is passed -- but not which one, and not that the resolver is used at all. A `main.ts` that passed `globalThis.localStorage` directly would compile and would reintroduce the blank page on a browser that blocks site data, because reaching for the property is itself a throwing operation. `resolveBrowserKeyValueStore()` is the only reach that guards both the access and a first read.',
   },
   {
+    what: 'the page localizer carries the complete default locale',
+    source: 'catalogs: [defaultMessageCatalogEn]',
+    reason:
+      'Issue #229. ADR 0011: "Only the default locale is bundled -- it must be **complete** so the game always has text offline." It was not. This localizer was built from `defaultLocaleEnCatalog`, which is `src/content/`\'s half, while the trusted-services layer contributes twelve strings of its own (product names, save-slot counts, entitlement notices, challenge results, the telemetry consent prompt) that reach the page only through `defaultMessageCatalogEn`. Worse than an ordinary gap, because `tests/foundation/localization-key-completeness.test.ts` resolves every declared key against `defaultMessageCatalogEn` -- so the gate proving completeness was proving it of a catalog the application did not use, and `src/services/entitlements/products.ts`\'s `nameKey: \'product.save-slots.plus-5.name\'` passes that gate while the running page would paint the raw key. Measured: reverting this line leaves `tsc` clean and all 1,589 tests green.',
+  },
+  {
     what: 'the save panel is handed the page\'s localizer',
     source: 'new SavePanel(controller, savePanelHost, localizer)',
     reason:
