@@ -50,10 +50,16 @@ export function displayDay(day: number): number | undefined {
  * produces, which is the same class of lie as a money counter with no economy
  * behind it.
  *
- * Floored, for the reason `BoundedValue.filled` is floored: 99.6% of the way
- * through a day must not read as a whole day gone. A tick position outside
- * the day wraps rather than throwing, so a readout that arrives one tick
- * either side of the day boundary still renders.
+ * Floored: 99.6% of the way through a day must not read as a whole day gone.
+ * That is the same half of the rule `BoundedValue.filled` obeys by reserving
+ * its last segment for the true maximum (`docs/HUD_PROJECTIONS.md` section
+ * 4), and only that half -- a bar's *other* rule, that any value above zero
+ * lights one segment, is deliberately not copied here. One tick into a
+ * thousand-tick day is 0% and reporting `0` says so truthfully; a percent has
+ * a zero and a bar has no empty-but-not-nothing state to draw.
+ *
+ * A tick position outside the day wraps rather than throwing, so a readout
+ * that arrives one tick either side of the day boundary still renders.
  */
 export function dayProgressPercent(tickOfDay: number, dayLengthTicks: number): number | undefined {
   if (!Number.isFinite(tickOfDay) || !Number.isFinite(dayLengthTicks)) return undefined;

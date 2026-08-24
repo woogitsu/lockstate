@@ -24,19 +24,20 @@ import type { SimulationRuntime } from '../runtime/new-session';
  * form of that claim.
  *
  * The projection's other two blocks -- `clock` and `regime` -- are computed
- * and dropped. That is deliberate rather than wasteful bookkeeping: they are
- * where the projection's `BoundedValue`s live (`dayProgress`,
- * `blockProgress`), and `BoundedValue.filled` is floored (`toBoundedValue`)
- * while the HUD's own bars light `ceil` of their segments
- * (`filledSegments`, `src/ui/primitives/segmented-bar.ts`), so the two
- * disagree for every small-but-nonzero
- * value. Which of the two is right is an undecided product question (issue
- * #123, item 1), and carrying `filled` across this boundary would settle it
- * by accident. The clock already reaches the HUD as a tick position through
- * `simulation/clock-state`, and the HUD computes its own day-progress figure
- * from that (`src/ui/hud/projection.ts`), so nothing is missing from the
- * strip. Whoever adds the regime blocks to this channel has to decide #123
- * first.
+ * and dropped. They are where the projection's `BoundedValue`s live
+ * (`dayProgress`, `blockProgress`), and this channel carries integers only.
+ *
+ * That used to be load-bearing for a reason that no longer exists: the two
+ * fill rules disagreed for every small-but-nonzero value, so carrying
+ * `filled` across this boundary would have settled an open product question
+ * by accident (issue #123, item 1). It is settled -- `toBoundedValue` and
+ * `filledSegments` implement one rule now, pinned by
+ * `tests/unit/segment-fill-agreement.test.ts` -- so what keeps the blocks out
+ * is ordinary scope, not correctness. The clock already reaches the HUD as a
+ * tick position through `simulation/clock-state` and the HUD computes its own
+ * day-progress figure from that (`src/ui/hud/projection.ts`), so nothing the
+ * strip renders is missing. Whoever needs the regime blocks should widen this
+ * channel rather than work around it.
  */
 export function projectStatusCounts(runtime: SimulationRuntime, tick: number): SimulationStatusCounts {
   return projectStatusStrip({

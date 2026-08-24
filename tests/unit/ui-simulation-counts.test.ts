@@ -100,15 +100,16 @@ describe('the HUD counts are read from the worker', () => {
     expect(hudCountsFromWorkerMessage(clock)).toBeUndefined();
   });
 
-  it('carries no bounded value across the boundary, so nothing decides issue #123 by accident', () => {
+  it('carries integers only, so a bounded value cannot reach the HUD unnoticed', () => {
     // The status-strip projection also computes `BoundedValue`s
-    // (`clock.dayProgress`, `regime[].blockProgress`) whose `filled` is
-    // floored, while the HUD's own bars light `ceil` of their segments
-    // (`src/ui/primitives/segmented-bar.ts`). The two disagree for every
-    // small-but-nonzero value, and which is right is an open product question
-    // (issue #123, item 1). This channel carries integers only, so the
-    // question stays open instead of being answered by whichever number
-    // happened to reach the screen.
+    // (`clock.dayProgress`, `regime[].blockProgress`); this channel drops
+    // them. It used to be the thing keeping issue #123 item 1 from being
+    // decided by accident -- the projection's fill and the HUD primitive's
+    // disagreed for every small-but-nonzero value -- and that is now one rule
+    // pinned by `tests/unit/segment-fill-agreement.test.ts`. What this still
+    // asserts is the narrower and durable fact: the payload is flat integers,
+    // so widening it to carry a structured value is a visible change to this
+    // test rather than a field that quietly appears.
     const counts = hudCountsFromWorkerMessage(statusCounts());
 
     expect(counts).toBeDefined();

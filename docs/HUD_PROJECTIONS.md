@@ -60,10 +60,30 @@ segmented bar:
 | `permille` | The value as an integer share of its own maximum, `0`–`1000`. Authoritative: use it for tooltips, ARIA values and width calculations. |
 | `filled` / `segments` | A ready-made segmented bar: fill `filled` of `segments` (`BOUNDED_VALUE_SEGMENTS` = 10). |
 
-`filled` is `floor(permille * segments / 1000)`, so a partially filled last
-segment reads as unfilled and a bar is full **only** when the underlying
-value is exactly at its maximum. Rounding would render 96 % as a full need
-bar, which is a lie a player acts on.
+`filled` obeys two rules at once, and both are **product decisions** about
+how the game reads rather than implementation detail:
+
+1. **Any value above zero lights at least one segment.** One prisoner in a
+   180-capacity prison is not "nothing here", and an empty bar states a
+   different fact from the one that is true.
+2. **A bar is completely full only when the value is at its maximum.** The
+   last segment is reserved for that case, so 254 of 255 lights nine of ten.
+   Rounding would render 99.6 % as a full need bar, which is a lie a player
+   acts on.
+
+The rule that satisfies both is `ceil` of the ratio, clamped below the last
+segment: `min(segments - 1, max(1, ceil(value / maximum * segments)))`, with
+`0` and `value >= maximum` answered outright. It is computed from the ratio
+and **not** from `permille`, which would quantize twice — 1 of 255 rounds to
+`permille: 4`, and a fill derived from `4` loses the only fact rule 1 needs,
+that the value is non-zero.
+
+`src/ui/primitives/segmented-bar.ts`'s `filledSegments` implements the same
+rule for bars the HUD fills from raw numbers. It is a deliberate second copy
+— `AGENTS.md` boundary 1 forbids `src/ui/primitives/**` importing
+`src/simulation/**` — and `tests/unit/segment-fill-agreement.test.ts` drives
+both over the same inputs so the copies cannot drift. They did drift, for as
+long as both existed: issue #123 item 1.
 
 The raw value and raw maximum are deliberately **absent**. Needs are
 `0..255` `Uint8Array` levels today; that is an internal storage decision,
@@ -190,13 +210,15 @@ There is now, and it is the same shape as the clock's:
 Two things deliberately do **not** cross:
 
 - **Every `BoundedValue`.** The projection also computes `clock.dayProgress`
-  and `regime[].blockProgress`, and this channel drops both. `filled` is
-  floored here (section 4) while the HUD's own bars light `ceil` of their
-  segments (`filledSegments`, `src/ui/primitives/segmented-bar.ts`), so the
-  two disagree for every small-but-nonzero value. Which is right is an open
-  product question (issue #123, item 1), and carrying `filled` to a panel
-  would answer it by accident. The HUD keeps computing its own fill from the
-  numbers it is given.
+  and `regime[].blockProgress`, and this channel drops both. The HUD keeps
+  computing its own fill from the numbers it is given. That used to be
+  load-bearing for a bad reason — the two fill rules disagreed for every
+  small-but-nonzero value, so carrying `filled` across would have answered an
+  open product question by accident — and issue #123 item 1 settled it: both
+  now implement the rule in section 4, pinned by
+  `tests/unit/segment-fill-agreement.test.ts`. What remains is an ordinary
+  scope decision. Widening this channel is a change to make when a panel
+  needs one of these values, not a correctness fix.
 - **A prisoner capacity.** `counts.roomCapacity` sums every registered room
   instance — canteens and yards included — and the HUD's occupancy bar is
   documented as *cell* capacity with an over-capacity warning behind it. The
