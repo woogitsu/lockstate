@@ -302,6 +302,152 @@ describe('deployment header contract', () => {
 });
 
 /**
+ * The exact-set and value-equality checks above both compare `public/_headers`
+ * against `SECURITY_HEADER_BASELINE`, so they agree with each other by
+ * construction: editing the Content-Security-Policy's *value* in both places
+ * in one change satisfies every one of them, and the verifier too, because it
+ * asserts the response against the same edited baseline. The policy could be
+ * weakened to `default-src *` in three lines of diff with the suite green.
+ *
+ * These are the properties that cannot be satisfied that way, because they are
+ * stated as invariants rather than as an expected string. ADR-0021 is where
+ * each comes from, and the two halves pull in opposite directions on purpose:
+ * some directives must not be *widened* because widening them gives the 1.6 MB
+ * of bundled third-party code back the capability the policy exists to remove,
+ * and `img-src` must not be *narrowed* because Phaser genuinely needs `data:`
+ * and `blob:` and taking either away breaks the renderer.
+ */
+describe('content-security-policy invariants', () => {
+  /** Splits a CSP into directive name -> source list. */
+  function parsePolicy(policy: string): ReadonlyMap<string, readonly string[]> {
+    const directives = new Map<string, readonly string[]>();
+    for (const part of policy.split(';')) {
+      const tokens = part.trim().split(/\s+/u).filter((token) => token.length > 0);
+      const name = tokens.shift();
+      if (name === undefined) continue;
+      directives.set(name.toLowerCase(), tokens);
+    }
+    return directives;
+  }
+
+  async function contentSecurityPolicy(): Promise<ReadonlyMap<string, readonly string[]>> {
+    const rules = parseHeadersFile(await readRepositoryFile('public/_headers'));
+    const rule = rules.find(
+      (candidate) => candidate.pathPattern === '/*' && candidate.headerName.toLowerCase() === 'content-security-policy',
+    );
+    expect(rule, 'public/_headers sets no Content-Security-Policy on /*.').toBeDefined();
+
+    const directives = parsePolicy(rule?.headerValue ?? '');
+    expect(
+      directives.size,
+      'the Content-Security-Policy parsed to no directives; the parser is broken',
+    ).toBeGreaterThan(3);
+    return directives;
+  }
+
+  /**
+   * ADR-0021 withholds `'unsafe-eval'` deliberately, on a measurement: the Zod
+   * JIT it costs is not measurably faster on this repository's own save
+   * envelope, and the concession would apply to the whole bundle. Phaser 4.2.1
+   * needs neither keyword -- the production bundle contains no `eval(` and no
+   * `new Function` outside Zod's caught feature probe.
+   */
+  it('never concedes unsafe-eval, unsafe-inline or a wildcard source', async () => {
+    const directives = await contentSecurityPolicy();
+
+    for (const [name, sources] of directives) {
+      for (const forbidden of ["'unsafe-eval'", "'unsafe-inline'", '*', "data:", "blob:"]) {
+        if (forbidden === 'data:' || forbidden === 'blob:') {
+          // Allowed for img-src, and only there; see the next assertion.
+          if (name === 'img-src') continue;
+        }
+        expect(
+          sources,
+          `Content-Security-Policy directive ${name} lists ${forbidden}. ADR-0021 records why the policy does not concede it; widening it needs that ADR amended, not just this line changed.`,
+        ).not.toContain(forbidden);
+      }
+    }
+  });
+
+  /**
+   * The opposite failure, and the one #105 and #138 both predicted when they
+   * called a CSP "a real chance of breaking Phaser". Both allowances were
+   * measured, and removing either was observed to break the game rather than
+   * harden it:
+   *
+   *   * without `blob:`, all ten actor atlases fail with
+   *     `Refused to load the image 'blob:...'` -- Phaser's loader is
+   *     XHR -> Blob -> `URL.createObjectURL`
+   *     (`phaser/src/loader/filetypes/ImageFile.js:132`) and has no other path;
+   *   * without `data:`, Phaser's `__DEFAULT`/`__MISSING`/`__WHITE` textures
+   *     (`phaser/src/textures/TextureManager.js:206-216`) never exist and the
+   *     page throws `TypeError: Cannot read properties of undefined (reading
+   *     'glTexture')`.
+   */
+  it('keeps the two img-src allowances the renderer cannot run without', async () => {
+    const directives = await contentSecurityPolicy();
+    const imgSrc = directives.get('img-src');
+
+    expect(imgSrc, 'the Content-Security-Policy sets no img-src, so default-src governs images.').toBeDefined();
+
+    for (const required of ["'self'", 'data:', 'blob:']) {
+      expect(
+        imgSrc,
+        `Content-Security-Policy img-src no longer allows ${required}. Removing it does not harden the site, it breaks the renderer -- see ADR-0021 for the observed failure.`,
+      ).toContain(required);
+    }
+  });
+
+  /** The directives whose whole value is to deny, so a non-`'none'` value is a regression. */
+  it('keeps the deny-only directives denying', async () => {
+    const directives = await contentSecurityPolicy();
+
+    for (const name of ['default-src', 'object-src', 'base-uri', 'frame-ancestors']) {
+      expect(
+        directives.get(name),
+        `Content-Security-Policy ${name} must be exactly 'none'; ADR-0021 relies on it.`,
+      ).toEqual(["'none'"]);
+    }
+  });
+});
+
+/**
+ * HSTS is the one security header here whose value can be gutted without
+ * removing it: `max-age=0` is a valid header that switches the protection off,
+ * and it satisfies every name-based check in this file. ADR-0021 chose one
+ * year with `includeSubDomains` and deliberately no `preload`.
+ */
+describe('strict-transport-security invariants', () => {
+  const SIX_MONTHS_IN_SECONDS = 15_552_000;
+
+  it('keeps a max-age that actually protects, and stays out of the preload list', async () => {
+    const rules = parseHeadersFile(await readRepositoryFile('public/_headers'));
+    const rule = rules.find(
+      (candidate) => candidate.pathPattern === '/*' && candidate.headerName.toLowerCase() === 'strict-transport-security',
+    );
+    expect(rule, 'public/_headers sets no Strict-Transport-Security on /*.').toBeDefined();
+
+    const value = (rule?.headerValue ?? '').toLowerCase();
+    const maxAge = /max-age=(\d+)/u.exec(value);
+    expect(maxAge?.[1], 'Strict-Transport-Security has no max-age.').toBeDefined();
+    expect(
+      Number(maxAge?.[1] ?? '0'),
+      'Strict-Transport-Security max-age is below six months, which is short enough that the header stops being a protection. ADR-0021 chose one year.',
+    ).toBeGreaterThanOrEqual(SIX_MONTHS_IN_SECONDS);
+
+    expect(value, 'ADR-0021 chose includeSubDomains; dropping it needs that ADR amended.').toContain('includesubdomains');
+
+    // `preload` is only meaningful after a submission to hstspreload.org, which
+    // is an owner action outside this repository, and it is slow to undo.
+    // Claiming it here would be a statement the repository cannot back.
+    expect(
+      value,
+      'Strict-Transport-Security now claims preload. ADR-0021 deliberately does not, because it requires a submission this repository cannot make and is slow to reverse.',
+    ).not.toContain('preload');
+  });
+});
+
+/**
  * Issue #122 found `docs/DEPLOYMENT.md` forbidding, in prose, exactly what
  * `public/_headers` deliberately does: it told a contributor not to place
  * mutable stable-name files under `/assets/`, while ADR-0014 puts the runtime
