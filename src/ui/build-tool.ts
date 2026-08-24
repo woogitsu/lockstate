@@ -1,44 +1,55 @@
 import type { BuildToolPort, EdgeTarget } from '../rendering/build/edge-picking';
-import type { SimulationCommand } from '../simulation/protocol/commands';
-import type { BuildPanelTarget } from './hud';
+import type { BuildPanelTarget, HudBuildOrder, HudWorldBuildSource } from './hud';
 
 /**
  * The armed build tool: the thing that turns "the player dragged here" into
- * build orders.
+ * a build order the HUD can dispatch.
  *
  * It sits at the composition root's layer, between two things that must not
  * know about each other. The renderer reports *edges* -- it may not submit a
  * command (`tests/unit/rendering-module-boundaries.test.ts`) and must never
  * become the place a build is decided. The HUD reports *intents* -- it may
- * not import the simulation at all. This is where a gesture becomes a
- * `PlaceBuildOrder`, and it is the only place that knows both halves.
+ * not import the simulation at all. This is where a gesture on the world
+ * becomes an order in the HUD's own vocabulary, and it is the only place that
+ * knows both halves.
+ *
+ * ### It no longer submits anything
+ *
+ * It used to assemble `PlaceBuildOrder` commands and hand them to the command
+ * sender directly, which meant a refused wall reached a `console.warn` and
+ * the player was told nothing -- while the Build panel's button, asking for
+ * the identical command, painted a refusal line (issues #207, #225). The
+ * gesture now leaves through `attachOrders` as a `HudBuildOrder`, the HUD
+ * dispatches it as a `place-build-order` intent, and `src/main.ts` turns that
+ * one intent into commands. One route, so one answer to "was the player
+ * told".
  *
  * ### One gesture, one transaction
  *
- * Every segment of a run shares a `transactionId`, so a twelve-segment wall
- * undoes as one wall rather than as twelve taps on undo. That is what
- * `ConstructionSystem.registerTransactionOrder` is for, and it is the reason
- * a run is submitted as a batch here rather than one order at a time from the
- * scene.
+ * A run leaves here as **one** order carrying every edge it covered, never as
+ * one report per segment: a twelve-segment wall is one thing the player drew,
+ * one thing to undo and one thing to be told about. The `transactionId` that
+ * makes `ConstructionSystem.registerTransactionOrder` group it is generated
+ * once per intent by the composition root, which is now the only place a
+ * command is built.
  */
 
-export interface BuildToolOptions {
-  /** Posts a command to the worker. Throwing is how a refusal reaches the player. */
-  readonly submit: (command: SimulationCommand) => void;
-  readonly generateOrderId?: () => string;
-  readonly generateTransactionId?: () => string;
-  /** A refusal from the worker boundary -- reported, never swallowed. */
-  readonly onError?: (error: Error) => void;
-}
-
-export class BuildTool implements BuildToolPort {
+export class BuildTool implements BuildToolPort, HudWorldBuildSource {
   private armed = false;
   private definitionId: string | undefined;
 
-  private readonly submit: (command: SimulationCommand) => void;
-  private readonly generateOrderId: () => string;
-  private readonly generateTransactionId: () => string;
-  private readonly onError: ((error: Error) => void) | undefined;
+  /**
+   * Where a finished gesture goes, and the reason this class no longer knows
+   * what a command is.
+   *
+   * Attached after mounting rather than taken by construction, for the same
+   * reason `readout` is: the HUD does not exist yet when the tool is built.
+   * Unattached, a gesture is dropped -- which is the honest behaviour for a
+   * page that has a world but no interface, and cannot happen in the running
+   * application, where `src/main.ts` mounts the HUD synchronously during
+   * module evaluation and no pointer event can be dispatched before that.
+   */
+  private orders: ((order: HudBuildOrder) => void) | undefined;
   /**
    * Set after mounting, because the tool exists before the HUD does: the
    * renderer and this tool are constructed at boot, and `mountInterface`
@@ -48,11 +59,9 @@ export class BuildTool implements BuildToolPort {
    */
   private readout: ((target: BuildPanelTarget | undefined) => void) | undefined;
 
-  public constructor(options: BuildToolOptions) {
-    this.submit = options.submit;
-    this.generateOrderId = options.generateOrderId ?? (() => `order-${crypto.randomUUID()}`);
-    this.generateTransactionId = options.generateTransactionId ?? (() => `build-${crypto.randomUUID()}`);
-    this.onError = options.onError;
+  /** Points finished gestures at the mounted HUD's intent path. */
+  public attachOrders(place: (order: HudBuildOrder) => void): void {
+    this.orders = place;
   }
 
   /** Points the live readout at the mounted panel. */
@@ -99,30 +108,25 @@ export class BuildTool implements BuildToolPort {
     this.readout({ x: first.tileX, y: first.tileY, edge: first.edge, segments: segments.length });
   }
 
+  /**
+   * The gesture finished. Reported once, whole.
+   *
+   * Reported once and not once per segment: the HUD gates a command while one
+   * is in flight, so a per-segment report would have every segment after the
+   * first refused as busy, and it would ask the host for twelve unrelated
+   * orders where the player drew one wall. `tests/unit/ui-build-tool.test.ts`
+   * asserts the count rather than trusting this paragraph.
+   */
   public place(segments: readonly EdgeTarget[]): void {
     const definitionId = this.definitionId;
     if (!this.armed || definitionId === undefined || segments.length === 0) return;
 
-    const transactionId = this.generateTransactionId();
-    for (const segment of this.deduplicate(segments)) {
-      try {
-        this.submit({
-          type: 'PlaceBuildOrder',
-          orderId: this.generateOrderId(),
-          definitionId,
-          x: segment.tileX,
-          y: segment.tileY,
-          edge: segment.edge,
-          transactionId,
-        });
-      } catch (error) {
-        // One refusal ends the run rather than firing eleven more doomed
-        // commands at a worker that has already said no -- and the sequence
-        // counter has to re-baseline before anything else is worth sending.
-        this.onError?.(error instanceof Error ? error : new Error(String(error)));
-        return;
-      }
-    }
+    const edges = this.deduplicate(segments).map((segment) => ({
+      x: segment.tileX,
+      y: segment.tileY,
+      edge: segment.edge,
+    }));
+    this.orders?.({ definitionId, edges });
   }
 
   /**

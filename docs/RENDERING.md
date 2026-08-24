@@ -169,9 +169,18 @@ the feed drop polling entirely without the renderer changing at all.
   and a drag reports the run it covers, drawn as a ghost by `BuildOverlay`
   until the gesture ends. The scene reports **edges**, never commands --
   `tests/unit/rendering-module-boundaries.test.ts` forbids the renderer
-  submitting one, and `src/ui/build-tool.ts` is where a gesture becomes a
-  `PlaceBuildOrder`. The picking rule is pure geometry in
+  submitting one, and `src/ui/build-tool.ts` is where a gesture becomes a build
+  order in the HUD's vocabulary. The picking rule is pure geometry in
   `src/rendering/build/edge-picking.ts` and is unit-tested without a canvas.
+
+  From there the run takes the **same path as the Build panel's own *Place
+  order* button**: the tool reports the whole gesture to the HUD, the HUD
+  dispatches it as one gated `place-build-order` intent, and `src/main.ts`
+  turns that intent into `PlaceBuildOrder` commands sharing one
+  `transactionId`. That is not a detour -- it is the reason a refused drag is
+  now reported to the player at all. Until issue #225 the tool submitted the
+  run itself and wrote a refusal to `console.warn`, so the primary way to build
+  a wall was also the only one that said nothing when the worker said no.
 
   The interaction is **modal** rather than threshold-discriminated: laying a
   run *is* a drag, so no travel threshold can separate it from a pan without

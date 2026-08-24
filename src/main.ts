@@ -103,24 +103,28 @@ const atlasLibrary = AtlasLibrary.load();
 atlasLibrary.catch(() => undefined);
 
 /**
- * The main thread's command channel, and the build tool that uses it.
+ * The main thread's command channel, and the build tool that feeds it.
  *
  * Both are built here, before the scene, because the scene needs the tool:
  * `AGENTS.md` boundary 3 puts input orchestration on this thread, and the
  * renderer may not submit a command of its own. So the scene reports the tile
- * edges a gesture covered, and this pair turns them into `PlaceBuildOrder`s.
+ * edges a gesture covered, and the tool turns them into an order the HUD can
+ * dispatch.
+ *
+ * The tool used to hold the sender itself and submit the run directly, and
+ * its only report of a refusal was `console.warn` -- so the *primary* way to
+ * build a wall was the one that told the player nothing, while the Build
+ * panel's fallback button painted a refusal line for the identical command
+ * (issues #207, #225). It now reports the gesture to the HUD instead
+ * (`mountInterface` connects the two), the HUD dispatches it through the same
+ * gate the button uses, and `onIntent` below is the single place a
+ * `PlaceBuildOrder` is built.
  *
  * With no worker there is no tool: an armed pointer that could never place
  * anything would take the camera away and give nothing back.
  */
 const commandSender = simulation === undefined ? undefined : new SimulationCommandSender(simulation);
-const buildTool =
-  commandSender === undefined
-    ? undefined
-    : new BuildTool({
-        submit: (command) => commandSender.submit(command),
-        onError: (error) => console.warn('Build order refused:', error.message),
-      });
+const buildTool = commandSender === undefined ? undefined : new BuildTool();
 
 // The entry point supplies the key/value store, which is what `docs/INPUT.md`
 // has always described and what the renderer had stopped doing: it read
@@ -393,6 +397,18 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     // is on, so an absent notice has to be an absent property.
     ...(simulationUnavailable ? { unavailable: unavailableNotice } : {}),
     build: buildCatalogue(),
+    /*
+     * The world's build gesture, joined to the HUD's own intent path (#225).
+     *
+     * This one line is what makes the two ways of laying a wall agree about
+     * whether the player is told when the worker refuses: the drag no longer
+     * has a route of its own to the command sender, so there is no second
+     * path left to forget.
+     *
+     * Spread rather than passed as `undefined`: `exactOptionalPropertyTypes`
+     * is on, so an absent tool has to be an absent property.
+     */
+    ...(tool === undefined ? {} : { worldBuild: tool }),
     onIntent: (intent: HudIntent) => {
       switch (intent.kind) {
         // Chrome: the HUD has already applied it locally and there is nothing
@@ -417,18 +433,46 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           );
           return;
 
-        case 'place-build-order':
-          requireSimulation(commands).submit({
-            type: 'PlaceBuildOrder',
-            // A fresh id per order: the kernel refuses a duplicate, and a
-            // stable one would make the second wall a no-op.
-            orderId: `order-${crypto.randomUUID()}`,
-            definitionId: intent.definitionId,
-            x: intent.x,
-            y: intent.y,
-            edge: intent.edge,
-          });
+        case 'place-build-order': {
+          const sender = requireSimulation(commands);
+          /*
+           * One gesture, one transaction (`src/ui/build-tool.ts`).
+           *
+           * One id per *intent*, and an intent is one gesture however many
+           * edges it covered -- so a twelve-segment wall dragged along the
+           * world undoes as one wall rather than as twelve taps on undo,
+           * which is what `ConstructionSystem.registerTransactionOrder`
+           * groups by.
+           *
+           * The numeric route now carries one too, where it previously sent
+           * none. That is a deliberate consequence and not a side effect:
+           * `registerTransactionOrder` compares the incoming id with the open
+           * gesture's, and `undefined === undefined` is a match -- so two
+           * *Place order* presses minutes apart used to join one undo step,
+           * an accidental grouping that followed from the absence of an id
+           * rather than from anything anyone chose. Each press is one gesture
+           * and is now one transaction.
+           */
+          const transactionId = `build-${crypto.randomUUID()}`;
+          for (const edge of intent.edges) {
+            // A throw ends the run here rather than firing eleven more doomed
+            // commands at a worker that has already said no -- and it is the
+            // throw itself that reaches the player: it rejects the gate's
+            // action, and the HUD paints its refusal line (issue #207).
+            sender.submit({
+              type: 'PlaceBuildOrder',
+              // A fresh id per order: the kernel refuses a duplicate, and a
+              // stable one would make the second wall a no-op.
+              orderId: `order-${crypto.randomUUID()}`,
+              definitionId: intent.definitionId,
+              x: edge.x,
+              y: edge.y,
+              edge: edge.edge,
+              transactionId,
+            });
+          }
           return;
+        }
       }
     },
     onError: (failure) => console.warn('HUD action failed', failure),

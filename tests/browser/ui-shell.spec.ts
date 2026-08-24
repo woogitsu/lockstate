@@ -411,6 +411,113 @@ test.describe('HUD shell', () => {
       expect(await page.evaluate(() => window.lockstateUiHarness.takeUnhandledRejections())).toEqual([]);
     });
 
+    /**
+     * The world-drag route, at the layer that dispatches it (issue #225).
+     *
+     * The Build panel's *Place order* button has been reporting refusals since
+     * #207; the drag along a tile edge -- the primary way a wall is laid --
+     * went from the composition root straight to the command sender, and its
+     * only report was a `console.warn`. The two ways to lay one wall disagreed
+     * about whether the player is told, and the silent one was the one people
+     * use.
+     *
+     * The fix routes the gesture through this same `dispatchCommand`, so what
+     * this proves is the half that lives in `mountHud`: the gesture becomes a
+     * gated `place-build-order` intent, and refusing it paints the line. That
+     * the *real* `BuildTool` and a *real* canvas drag reach here is
+     * `app-shell.spec.ts`'s to prove; a harness cannot settle it and does not
+     * pretend to.
+     */
+    test('a refused world drag says so on screen, with no control to blame', async ({ page }) => {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+      await page.evaluate(() => window.lockstateUiHarness.failIntents(true));
+
+      expect(await page.evaluate(() => window.lockstateUiHarness.refusalProbe())).toMatchObject({
+        visible: false,
+        action: null,
+        failedControls: [],
+      });
+
+      // A four-segment run, which is what a drag along a tile edge produces.
+      const dragged = await page.evaluate(() =>
+        window.lockstateUiHarness.dragWorldBuild('wall-brick', [
+          { x: 4, y: 7, edge: 'north' },
+          { x: 5, y: 7, edge: 'north' },
+          { x: 6, y: 7, edge: 'north' },
+          { x: 7, y: 7, edge: 'north' },
+        ]),
+      );
+      // The gesture really was delivered. Without this the assertions below
+      // would be equally green against a HUD that registered no sink at all.
+      expect(dragged).toBe(true);
+
+      await expect
+        .poll(() => page.evaluate(() => window.lockstateUiHarness.refusalProbe().visible), {
+          message: 'a refused world drag still tells the player nothing',
+        })
+        .toBe(true);
+
+      const probe = await page.evaluate(() => window.lockstateUiHarness.refusalProbe());
+      expect(probe.action).toBe('place-build-order');
+      expect(probe.text).toContain('The build order was not placed');
+      expect(probe.text).not.toContain('ui-harness: the host refused');
+      expect(probe.role).toBe('status');
+      expect(probe.ariaLive).toBe('polite');
+
+      // **No control is marked**, and that is the assertion rather than an
+      // omission. The player pressed nothing -- the gesture was on the world
+      // -- so marking the panel's *Place order* button would point
+      // `aria-describedby` at a refusal about something that button had no
+      // part in. The refusal line is the whole report, and #207 put it where
+      // every viewport lays it out.
+      expect(probe.failedControls).toEqual([]);
+
+      expect(await page.evaluate(() => window.lockstateUiHarness.takeUnhandledRejections())).toEqual([]);
+    });
+
+    /**
+     * One gesture is one transaction (`src/ui/build-tool.ts`), asserted at the
+     * point routing it through the HUD could have broken it.
+     *
+     * A run of four edges is one thing the player drew, one thing to undo and
+     * one thing to be told about. A per-segment dispatch would be the obvious
+     * way to write this and would be wrong three times over: the gate is
+     * single-slot, so segments two, three and four would be refused as busy;
+     * `src/main.ts` mints one `transactionId` per intent, so four intents
+     * would be four undo steps; and a refusal would paint the line about a
+     * segment rather than about the wall.
+     */
+    test('a whole drag is one intent, not one per segment', async ({ page }) => {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+
+      expect(
+        await page.evaluate(() =>
+          window.lockstateUiHarness.dragWorldBuild('wall-brick', [
+            { x: 4, y: 7, edge: 'north' },
+            { x: 5, y: 7, edge: 'north' },
+            { x: 6, y: 7, edge: 'north' },
+            { x: 7, y: 7, edge: 'north' },
+          ]),
+        ),
+      ).toBe(true);
+
+      const intents = await page.evaluate(() => window.lockstateUiHarness.hudIntents());
+      expect(intents.filter((intent) => intent.includes('place-build-order'))).toEqual([
+        JSON.stringify({
+          kind: 'place-build-order',
+          definitionId: 'wall-brick',
+          edges: [
+            { x: 4, y: 7, edge: 'north' },
+            { x: 5, y: 7, edge: 'north' },
+            { x: 6, y: 7, edge: 'north' },
+            { x: 7, y: 7, edge: 'north' },
+          ],
+        }),
+      ]);
+    });
+
     test('the refusal line is there at 375px, where the alerts region is not', async ({ page }) => {
       // `hud.css` drops `.hud__corner` at 720px and below, so a refusal
       // reported into the alerts list would not exist on a phone at all.
@@ -700,8 +807,14 @@ test.describe('HUD shell', () => {
       await page.evaluate(() => window.lockstateUiHarness.clickPlaceOrder());
       const intents = await page.evaluate(() => window.lockstateUiHarness.hudIntents());
 
+      // A run of one: the numeric route names exactly one edge, and says so
+      // in the same shape a drag does (issue #225).
       expect(intents.filter((intent) => intent.includes('place-build-order'))).toEqual([
-        JSON.stringify({ kind: 'place-build-order', definitionId: 'wall-brick', x: 18, y: 15, edge: 'west' }),
+        JSON.stringify({
+          kind: 'place-build-order',
+          definitionId: 'wall-brick',
+          edges: [{ x: 18, y: 15, edge: 'west' }],
+        }),
       ]);
 
       // Every control in the fallback is a real focusable element, so the
