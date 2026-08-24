@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   MAIN_TO_WORKER_MESSAGE_KINDS,
   MAX_JSON_VALUE_DEPTH,
+  REFUSAL_REASONS,
   SIMULATION_PROTOCOL_VERSION,
   WORKER_TO_MAIN_MESSAGE_KINDS,
   collectProtocolTransferables,
@@ -348,6 +349,13 @@ describe('simulation worker protocol', () => {
       roomOccupants: 3,
       activeIncidents: 0,
       contrabandDiscovered: 7,
+      // Present so each refusal below is refused for the reason it names.
+      // Without it every payload here is already invalid for a *missing
+      // count*, so the `replyTo` case in particular would have passed while
+      // proving nothing about `replyTo` (#96 added this field to the
+      // projection and to the fixture at the top of this file, and this local
+      // copy was left behind).
+      treasuryMinorUnits: 24_920,
     };
 
     // Nothing ever requests this message, so ADR 0003 decision 2 says it must
@@ -402,6 +410,76 @@ describe('simulation worker protocol', () => {
       }),
       'invalid-payload',
     );
+  });
+
+  /**
+   * The refusal a status-counts publication may carry (#261).
+   *
+   * A sibling of `counts`, not a member of it: `counts` is the projection's
+   * own block field for field, and a refusal comes from the session's
+   * `RefusalLog` rather than from `src/simulation/presentation/`. It is
+   * optional because "nothing has been refused" is a different fact from "a
+   * refusal happened", and everything about it is closed -- a reason outside
+   * the declared vocabulary and a `sequence` of zero both fail here rather
+   * than reaching the HUD as a row with no sentence behind it.
+   */
+  it('accepts a status-counts publication carrying a refusal, and closes the vocabulary around it', () => {
+    const counts = {
+      prisoners: 0,
+      prisonersInIntake: 0,
+      prisonersHighRisk: 0,
+      staff: 0,
+      staffUnassigned: 0,
+      rooms: 0,
+      roomCapacity: 0,
+      roomOccupants: 0,
+      activeIncidents: 0,
+      contrabandDiscovered: 0,
+      treasuryMinorUnits: 25_000,
+    };
+    const withRefusal = (refusal: unknown): unknown => ({
+      ...eventEnvelope,
+      kind: 'simulation/status-counts',
+      payload: { tick: 12, schemaVersion: 1, counts, refusal },
+    });
+
+    const accepted = decodeWorkerToMainMessage(withRefusal({ sequence: 3, tick: 9, reason: 'build.unowned-land' }));
+    expect(accepted.ok, accepted.ok ? '' : JSON.stringify(accepted.error)).toBe(true);
+
+    // Absent is valid and is what a session that has refused nothing sends.
+    const withoutRefusal = decodeWorkerToMainMessage({
+      ...eventEnvelope,
+      kind: 'simulation/status-counts',
+      payload: { tick: 12, schemaVersion: 1, counts },
+    });
+    expect(withoutRefusal.ok, withoutRefusal.ok ? '' : JSON.stringify(withoutRefusal.error)).toBe(true);
+
+    // Every declared reason is accepted, so the enum on the wire and the
+    // reasons the two systems produce cannot drift apart silently.
+    for (const reason of REFUSAL_REASONS) {
+      const decoded = decodeWorkerToMainMessage(withRefusal({ sequence: 1, tick: 0, reason }));
+      expect(decoded.ok, `${reason} was rejected by the decoder`).toBe(true);
+    }
+
+    // A reason nobody declared. This is the case that matters: the mapping
+    // that produces one is exhaustive at compile time, so the only way an
+    // unknown reason reaches the wire is a build mismatch -- and it must fail
+    // closed rather than paint a row whose key resolves to itself.
+    expectDecodeErrorCode(decodeWorkerToMainMessage(withRefusal({ sequence: 1, tick: 0, reason: 'build.no-such-reason' })), 'invalid-payload');
+    // `sequence` is 1-based because it is the refusal's ordinal *and* the
+    // count of refusals so far; zero would mean "the first refusal, of which
+    // there have been none".
+    expectDecodeErrorCode(decodeWorkerToMainMessage(withRefusal({ sequence: 0, tick: 0, reason: 'build.unowned-land' })), 'invalid-payload');
+    expectDecodeErrorCode(decodeWorkerToMainMessage(withRefusal({ sequence: 1, tick: -1, reason: 'build.unowned-land' })), 'invalid-payload');
+    // `.strict()`, like every other payload here: an extra field is a build
+    // that knows something this one does not, and guessing is worse than
+    // dropping the readout.
+    expectDecodeErrorCode(
+      decodeWorkerToMainMessage(withRefusal({ sequence: 1, tick: 0, reason: 'build.unowned-land', x: 100 })),
+      'invalid-payload',
+    );
+    // And a queue is not what this channel carries -- see `RefusalLog`.
+    expectDecodeErrorCode(decodeWorkerToMainMessage(withRefusal([{ sequence: 1, tick: 0, reason: 'build.unowned-land' }])), 'invalid-payload');
   });
 
   it('accepts only finite, acyclic plain JSON values', () => {

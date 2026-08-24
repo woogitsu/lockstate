@@ -199,6 +199,20 @@ work are not.**
   serialization format for something nothing uses would be an unreviewed
   architecture decision. When a real generic consumer appears, that registry
   is the change to make — and it is a V4.
+- **`RefusalLog`** (`SimulationRuntime.refusals`, #261). What the simulation
+  last refused — an out-of-bounds wall, a purchase the treasury cannot cover —
+  and how many refusals a session has made, published to the HUD on
+  `simulation/status-counts` and rendered as an alert row. It is a notice
+  about an action the player took moments ago rather than a condition of the
+  prison, so a restored session starting with none is the correct reading of
+  it: an alert re-raised on load would be about a wall somebody failed to
+  place before the save, with no order left to point at (a failed order *is*
+  persisted, in `construction.orders`, but its `failReason` says only that it
+  failed and when it is loaded it is already history). Carrying it would be
+  cheap — an optional field, no version bump, exactly how `simulation` and
+  `identity` arrived — which is why this entry is about what it would *buy*
+  rather than what it would cost. Also recorded in
+  `docs/HUD_PROJECTIONS.md` gap 33.
 - **Storage backend, compression algorithm, encryption.** Out of scope per
   issue #18; see "Size hook" below for the one hook this schema does provide.
 

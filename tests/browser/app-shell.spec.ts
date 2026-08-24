@@ -1463,6 +1463,134 @@ test.describe('the assembled application', () => {
   });
 
   /**
+   * Issue #261: the *other* refusal, and the one nothing on this page could
+   * report.
+   *
+   * The two tests above are about a **command** being refused on this thread
+   * -- there is no session, `SimulationCommandSender.submit` throws, and the
+   * gate paints `.hud__refusal`. This is the opposite case and it is the one
+   * that vanished: a page with a real prison, a running clock, and a command
+   * the worker *accepts*. `handleSubmitCommand` answers `status: 'queued'`,
+   * the kernel dispatches the order at its tick, and
+   * `ConstructionSystem.submitOrder` refuses it on its content --
+   * `state: 'failed'`, `failReason: 'out-of-bounds'`.
+   *
+   * Reproduced exactly as reported: type `100, 100` into the Build panel's
+   * coordinate fields, which carry no `min`/`max`, and press *Place order*.
+   * Before this the player saw **nothing**: no ghost, because `phaseOf`
+   * (`src/rendering/world/structures.ts`) maps a failed order to `undefined`
+   * and it is drawn as no geometry; and no refusal line, because that line
+   * answers a rejected command and this command was accepted.
+   *
+   * It belongs here rather than in `ui-shell.spec.ts` for the same reason
+   * #207's does, one layer further along: nothing below the assembled page
+   * can produce it. It needs a real worker, a real session, a real tick loop
+   * to dispatch the command, a real `simulation/status-counts` publication to
+   * carry the refusal back, and `src/main.ts`'s own listener to put it in the
+   * view model. Every one of those halves has its own tests; only this proves
+   * they are joined.
+   */
+  test('a build order the simulation refuses reaches the alerts list (#261)', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+
+    // A real prison, and a running clock -- the order is dispatched at a tick,
+    // so a paused simulation would leave it queued and refuse nothing.
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
+    await expect
+      .poll(async () => page.locator('.hud-clock__day-progress').textContent(), {
+        message: 'the simulation never advanced, so no command could be dispatched',
+        timeout: 15_000,
+      })
+      .not.toBe('0%');
+
+    // The alerts list says it is empty, which is the state this test changes.
+    const alertsSection = page.locator('.hud-minimap .ui-section');
+    const emptyRow = page.locator('.hud-alerts__list [data-alert="empty"]');
+    await expect(emptyRow).toHaveCount(1);
+
+    await page.getByRole('button', { name: 'Build' }).click();
+    const coordinates = page.locator('.hud-build .ui-section__header').last();
+    if ((await coordinates.getAttribute('aria-expanded')) === 'false') await coordinates.click();
+
+    // Outside the single 32x32 chunk a new prison owns. The fields accept it
+    // because they have no bounds -- which is the reproduction, not an
+    // incidental detail.
+    // The spinbutton itself: `getByLabel` also matches the two stepper
+    // buttons, which carry `aria-label="Decrease Tile X"`/"Increase Tile X".
+    await page.getByRole('spinbutton', { name: 'Tile X' }).fill('100');
+    await page.getByRole('spinbutton', { name: 'Tile Y' }).fill('100');
+    const submit = page.locator('.hud-build .ui-section__body .ui-action');
+    await expect(submit).toBeVisible();
+    await submit.click();
+
+    // The command itself was accepted, so the thread-local refusal line stays
+    // hidden. If this ever lit up, the test would be measuring the wrong
+    // refusal entirely.
+    await expect(page.locator('.hud__refusal')).toBeHidden();
+
+    // The row arrives on the worker's own schedule: the command is scheduled
+    // a lead of ticks ahead, and the publication that carries the refusal
+    // follows on the next tick-loop wake.
+    const alertRow = page.locator('.hud-alerts__list [data-alert]:not([data-alert="empty"])');
+    await expect
+      .poll(async () => alertRow.count(), {
+        message: 'the simulation refused the order and the alerts list never heard about it',
+        timeout: 20_000,
+      })
+      .toBe(1);
+    // The empty-state row goes when there is something to say.
+    await expect(emptyRow).toHaveCount(0);
+
+    // **Visible, not merely present.** The alerts section starts folded
+    // (`INITIAL_HUD_SHELL_STATE`), so the row is in the DOM with a 0x0 box
+    // until the player opens it -- which is exactly the state #220 measured
+    // and moved the "simulation unavailable" sentence out of. A
+    // `toContainText` here without the fold being opened would pass against
+    // an invisible row and prove nothing.
+    await expect(alertRow).toBeHidden();
+    await expect(alertsSection).toHaveAttribute('data-collapsed', 'true');
+    await page.locator('.hud-minimap .ui-section__header').click();
+    await expect(alertsSection).toHaveAttribute('data-collapsed', 'false');
+
+    await expect(alertRow).toBeVisible();
+    // The sentence for the reason the simulation actually gave: the tile is
+    // outside the one chunk a new prison has, so `submitOrder`'s bounds check
+    // decides before the ownership check does.
+    await expect(alertRow).toContainText('that tile is outside the map');
+    // A localized sentence, not the wire vocabulary and not a thrown Error
+    // (ADR 0011). `build.out-of-bounds` is the id the worker sent; it must not
+    // be what the player reads.
+    await expect(alertRow).not.toContainText('out-of-bounds');
+    await expect(alertRow).not.toContainText('build.');
+    // The severity badge carries the state without relying on colour, the
+    // same way the incident chip does.
+    await expect(alertRow.locator('.ui-badge')).toBeVisible();
+    await expect(alertRow.locator('.ui-badge')).toHaveText('Warning');
+
+    // And the HUD's own rendered text says it -- `hudMentionsIt` is the
+    // measurement #220 established as the honest one, because `toBeVisible`
+    // and `innerText` can disagree about a subtree the layout has dropped.
+    const measured = await page.evaluate(() => {
+      const node = document.querySelector<HTMLElement>('.hud-alerts__list [data-alert]:not([data-alert="empty"])');
+      const rect = node?.getBoundingClientRect();
+      return {
+        laidOut: node !== null && node.offsetParent !== null,
+        width: rect?.width ?? 0,
+        height: rect?.height ?? 0,
+        hudMentionsIt: (document.querySelector<HTMLElement>('.hud')?.innerText ?? '')
+          .toLowerCase()
+          .includes('that tile is outside the map'),
+      };
+    });
+    expect(measured.laidOut).toBe(true);
+    expect(measured.width).toBeGreaterThan(0);
+    expect(measured.height).toBeGreaterThan(0);
+    expect(measured.hudMentionsIt).toBe(true);
+  });
+
+  /**
    * "One gesture is one transaction", on the wire, in the assembled page.
    *
    * `src/ui/build-tool.ts` has always claimed it -- every segment of a run

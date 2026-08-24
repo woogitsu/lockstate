@@ -2,6 +2,7 @@ import { createConstructionCommandHandler } from '../construction';
 import type { ProcurementSystem } from '../economy';
 import type { CommandHandler } from '../kernel/kernel';
 import { unpackCommand } from '../protocol/commands';
+import { PURCHASE_REFUSAL_REASONS, ZONE_REFUSAL_REASONS, type RefusalLog } from '../refusals';
 import type { ConstructionSystem } from '../construction/system';
 import type { RoomZoningService } from '../rooms/zoning';
 
@@ -25,31 +26,38 @@ import type { RoomZoningService } from '../rooms/zoning';
  * handle is passed through unchanged, including ones neither layer handles --
  * `unpackCommand` returning `null` is the decoder's business and is left to
  * the handler that owns it.
+ *
+ * `refusals` is the session's `RefusalLog`, and all three routes write to the
+ * same one: a refused wall, a refused purchase and a refused zoning
+ * rectangle are the same kind of fact about the session -- the kernel took
+ * the command and a system then declined to carry it out -- and they reach
+ * the player down one channel (#261).
  */
 export function createSessionCommandHandler(
   construction: ConstructionSystem,
   procurement: ProcurementSystem,
   roomZoning: RoomZoningService,
+  refusals: RefusalLog,
 ): CommandHandler {
-  const constructionCommands = createConstructionCommandHandler(construction);
+  const constructionCommands = createConstructionCommandHandler(construction, refusals);
 
   return (command, context) => {
     const simCommand = unpackCommand(command.payload as never);
     if (simCommand !== null && simCommand.type === 'ZoneRoom') {
-      // The outcome is not dropped, and it does not reach the player either.
-      // `RoomZoningService.zone` keeps a refusal in its own bounded window
-      // because a command handler returns `void` and a worker's reply to a
-      // command acknowledges receipt rather than effect -- the same missing
-      // route the purchase below records, tracked as step 2 of #261. The
-      // point of keeping it is that the route, when it exists, reads a
-      // reason instead of guessing one.
+      // The outcome is not dropped and it now reaches the player. It used to
+      // reach only `RoomZoningService.recentRefusals`, a bounded window kept
+      // "so the route, when it is built, reads a reason instead of guessing
+      // one" -- this is that route (#261 step 2). The window stays: it holds
+      // the last thirty-two refusals with their requests and tiles, which is
+      // diagnosis, while what crosses the boundary is the most recent
+      // refusal's reason and nothing else.
       //
       // `simCommand.roomId` is the room *catalog* id (`room.cell`), not an
       // instance id: the command schema named the field before instances
       // existed, and renaming a field that a queued command in an existing
       // save may already carry is a save-compatibility change rather than a
       // rename.
-      roomZoning.zone(
+      const outcome = roomZoning.zone(
         {
           roomCatalogId: simCommand.roomId,
           x: simCommand.x,
@@ -59,19 +67,25 @@ export function createSessionCommandHandler(
         },
         context.tick,
       );
+      if (outcome.kind === 'refused') refusals.record(ZONE_REFUSAL_REASONS[outcome.reason], context.tick);
       return;
     }
 
     if (simCommand !== null && simCommand.type === 'PurchaseMaterials') {
-      // The outcome is deliberately dropped here, and that is a gap this
-      // slice leaves open rather than an oversight. A refusal --
-      // `insufficient-funds`, `unknown-material` -- has nowhere to go: the
-      // kernel's command handler returns `void`, and the worker's reply to a
-      // command is an acknowledgement of *receipt*, not of effect. Telling
-      // the player a purchase was refused is the same problem #225 solved for
-      // a refused wall, and it needs the same route: an intent the HUD
-      // dispatched and can report on. Recorded on #96.
-      procurement.purchase(simCommand.orderId, simCommand.itemId, simCommand.quantity, context.tick);
+      // The outcome used to be dropped here, and the comment that stood in
+      // this place said so: "a refusal -- `insufficient-funds`,
+      // `unknown-material` -- has nowhere to go", because the kernel's
+      // command handler returns `void` and the worker's reply to a command
+      // acknowledges *receipt*, not effect. It has somewhere to go now, and
+      // it is the route that comment predicted would be needed: the same one
+      // #225 built for a refused wall, reaching the HUD as an alert rather
+      // than as a command result (#261).
+      //
+      // The lookup is exhaustive over `PurchaseRefusalReason`, so a fifth
+      // refusal reason added to `ProcurementSystem` fails to compile until it
+      // is given a wire id and a message key.
+      const outcome = procurement.purchase(simCommand.orderId, simCommand.itemId, simCommand.quantity, context.tick);
+      if (!outcome.ok) refusals.record(PURCHASE_REFUSAL_REASONS[outcome.reason], context.tick);
       return;
     }
     constructionCommands(command, context);

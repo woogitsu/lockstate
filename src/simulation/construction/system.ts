@@ -1,5 +1,5 @@
 import { type SystemRegistration, type SimulationContext } from '../kernel/system';
-import { type BuildEdge, type BuildOrder, resolveBuildEdge } from './build-order';
+import { type BuildEdge, type BuildOrder, type BuildOrderFailReason, resolveBuildEdge } from './build-order';
 import { edgeNumericIdFor, getBuildableDefinition } from './definition';
 import { type ConstructionMaterialsProvider, UNLIMITED_MATERIALS_PROVIDER } from './materials-provider';
 import { SparseWorld } from '../world/sparse-world';
@@ -75,18 +75,30 @@ const SUBMISSION_REQUIREMENT: BuildabilityRequirement = {
  * things.
  *
  * The two vocabularies really are different and this is not ceremony:
- * `buildability.ts` uses `unowned_land` with an underscore, `failReason`'s one
- * existing value is `out-of-bounds` with a hyphen, and `failReason` is
- * persisted -- `save-schema.ts:176` and `:402` carry it into the save. Letting
- * an underscore reach a save because two modules disagreed about a separator
+ * `buildability.ts` uses `unowned_land` with an underscore, every member of
+ * `BUILD_ORDER_FAIL_REASONS` is hyphenated, and `failReason` is persisted --
+ * `save-schema.ts:176` and `:402` carry it into the save. Letting an
+ * underscore reach a save because two modules disagreed about a separator
  * would be a format decision made by accident.
  *
- * All four of `canBuildAt`'s refusals are mapped, not just the one this change
- * turns on, so enabling a flag above cannot produce a `failReason` nobody
- * chose. `'ok'` is absent deliberately: it is not a refusal, and it can never
- * reach this table because the lookup happens only when `buildable` is false.
+ * All three of `canBuildAt`'s refusals are mapped, not just the one this
+ * change turns on, so enabling a flag above cannot produce a `failReason`
+ * nobody chose. (It said "four" until #261, counting the `'ok'` in the same
+ * union -- and `'ok'` is absent deliberately: it is not a refusal, and it can
+ * never reach this table because the lookup happens only when `buildable` is
+ * false.)
+ *
+ * The lookup still needs its `?? 'unbuildable'` fallback, because
+ * `BuildabilityResult.reason` is `'ok' | ... | string` and therefore open:
+ * a refusal reason added there and not added here reaches the player as "the
+ * build order failed" with no cause named, rather than as `undefined`.
+ *
+ * The *values* are `BuildOrderFailReason` rather than `string` since #261, so
+ * a spelling this table invents that nothing downstream can render fails to
+ * compile here. The key stays `string`: it is `BuildabilityResult.reason`,
+ * which is that module's vocabulary and not this one's.
  */
-const SUBMISSION_FAIL_REASONS: Readonly<Record<string, string>> = {
+const SUBMISSION_FAIL_REASONS: Readonly<Record<string, BuildOrderFailReason>> = {
   unowned_land: 'unowned-land',
   unbuildable_terrain: 'unbuildable-terrain',
   water_blocked: 'water-blocked',

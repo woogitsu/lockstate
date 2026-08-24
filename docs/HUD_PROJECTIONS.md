@@ -125,10 +125,10 @@ re-project every frame at the stretch tier.
 
 The always-visible counts have no rows at all, which is what makes them
 publishable on a timer: `simulation/status-counts` (section 8) carries eleven
-integers, so there is nothing here for this contract to bound. A
-projection that carries rows must be paged before it may be published on a
-cadence — a per-send cost that grows with the prison is exactly the failure
-that cadence was chosen to avoid.
+integers and at most one three-field refusal record, so there is nothing here
+for this contract to bound. A projection that carries rows must be paged
+before it may be published on a cadence — a per-send cost that grows with the
+prison is exactly the failure that cadence was chosen to avoid.
 
 Rows are **not** sortable by an arbitrary column. Sorting 5,000 prisoners
 by need or by cell is `O(n log n)` plus a full materialisation each time the
@@ -200,15 +200,56 @@ There is now, and it is the same shape as the clock's:
    registries (`src/simulation/worker/status-counts.ts`) and **publishes**
    an uncorrelated `simulation/status-counts`. Nothing requests it, so ADR
    0003 gives it no `replyTo` field at all.
-2. It publishes at most every 500 ms, and only when a count has changed —
-   so a steady prison costs the boundary nothing. The interval is checked
-   before the projection runs, so the *projection* is rate-limited too, not
-   just the message.
+2. It publishes at most every 500 ms, and only when a count has changed or
+   the session has refused something new — so a steady prison costs the
+   boundary nothing. The interval is checked before the projection runs, so
+   the *projection* is rate-limited too, not just the message.
 3. Every payload carries the tick it was read at, so a readout cannot drift
    away from the state it claims to describe.
 4. `hudCountsFromWorkerMessage` (`src/ui/simulation-counts.ts`) turns it
    into a `HudCountsViewModel`. Like the clock's translator it lives outside
    `src/ui/hud/`, because the HUD may not import the simulation.
+
+#### The refusal it also carries (#261)
+
+The same payload has an optional `refusal` beside `counts`, and it is what
+finally gives `HudViewModel.alerts` a producer. The list, the severity
+badges, the folding section, the empty-state row and the insertion ordering
+#209 measured in a real browser were all implemented; between #220 — which
+moved the one message ever routed there, "simulation unavailable", to
+`.hud__unavailable` — and #261, the only assignment to the field anywhere in
+`src/` was the literal `[]` in `EMPTY_HUD_VIEW_MODEL`.
+
+The hole it fills is between a command's two acceptances. The worker answers
+`status: 'queued'` when the kernel takes the message, which ADR 0003 decision
+9 is explicit is receipt and not effect; a system then decides at the
+command's tick what the command *means*, and that decision had no wire
+message at all. So `ConstructionSystem.submitOrder` set `state: 'failed'`
+with `failReason: 'out-of-bounds'` — reachable by typing `100, 100` into the
+Build panel's unbounded coordinate fields — and the player saw nothing: a
+failed order is drawn as no geometry (`phaseOf` in
+`src/rendering/world/structures.ts`) and the HUD's refusal line answers a
+*rejected* command. `ProcurementSystem.purchase` returned an outcome that
+`session-commands.ts` discarded, and `RoomZoningService.zone` returned one
+that reached a bounded in-worker window and stopped there.
+
+- **Snapshot-shaped, because the channel is.** `{ sequence, tick, reason }`:
+  the most recent refusal and its 1-based ordinal, which is also the total.
+  A *queue* is what this channel cannot carry honestly — the publication is
+  rate-limited and skippable, so a reader could not tell a drained queue from
+  one that was never sent, and its length would grow with the session, which
+  is exactly what contract 5 forbids on a cadence. `RefusalLog`
+  (`src/simulation/refusals/`) argues this in full.
+- **A stable id, never a sentence** (ADR 0011).
+  `hudAlertsFromWorkerMessage` (`src/ui/simulation-alerts.ts`) maps each
+  reason onto a `hud.alert.refusal.*` message key through a `Record` over the
+  closed union, so a reason added to the protocol fails to compile until it
+  has something to say.
+- **It stays up until another refusal replaces it, or the session ends.**
+  Nothing on this channel can say "dismissed"; that needs a main-to-worker
+  message and simulation state to hold it. Recorded as gap 34 below rather
+  than invented here.
+- **Not snapshotted.** A restored session starts with none — see gap 33.
 
 Two things deliberately do **not** cross:
 
@@ -444,7 +485,14 @@ decision about what to build next.
     `nameKey` to pass through. The registry's own English `name` is never
     read. When a buildable gains a real content key the mapping goes away and
     nothing else changes. There is still **no projection of order state**:
-    the panel submits orders and cannot show what happened to them.
+    the panel submits orders and cannot show what a given order is doing.
+
+    **Except that an order the simulation *refuses* is now reported** (#261,
+    section 8 above). That is one fact about one order and not a projection of
+    order state: what crosses is the last refusal's reason, and the order id,
+    the tile and the definition stay behind. A panel that listed orders and
+    their lifecycle states still needs the projection this gap describes, and
+    it carries rows, so it needs the paging contract too.
 
 ### Cross-cutting
 
@@ -452,4 +500,34 @@ decision about what to build next.
     `docs/DETERMINISM.md` records that `SearchSystem`, `DeploymentSystem`,
     `PatrolSystem` and `ActionSystem` do not snapshot `requestSequence` and
     that several metrics are not carried. A metrics panel therefore resets
-    on load.
+    on load. `RefusalLog` (#261) joins them and does so **deliberately**
+    rather than by omission: it holds a notice about an action the player
+    took moments ago, not a condition of the prison, so restoring it means a
+    loaded prison raising an alert about a wall that failed before the save,
+    which nothing can then dismiss (gap 34). Carrying it would be cheap — an
+    optional field, no version bump — so the exclusion is about what it would
+    buy, and it is written down as such under "What is deliberately excluded
+    from the payload" in `docs/PERSISTENCE.md`.
+
+34. **A refusal cannot be dismissed, and carries no location.** The alerts
+    row raised by `simulation/status-counts` stands until another refusal
+    replaces it or the session ends: the channel is a snapshot, so "the last
+    refusal was X" stays true, and there is no way for the HUD to say
+    "dismissed" — that needs a main-to-worker message and a piece of
+    simulation state to hold the acknowledgement. The refusal also carries no
+    tile, order id or item id, so the sentence can say *what* was refused and
+    *why* but not *where*; carrying a position would put a second copy of the
+    order's location on the boundary and needs a decision about how the HUD
+    renders it (highlight the tile? move the camera?).
+
+    Two placement facts belong with this and are measured, not assumed: the
+    alerts section starts **folded** (`INITIAL_HUD_SHELL_STATE`), and
+    `hud.css` drops `.hud__corner` — which contains the whole alerts region —
+    at 720px and below. So a refusal is *reported* rather than *unmissable*,
+    and on a phone it is not reported at all. That is the same measurement
+    #220 made when it moved the "simulation unavailable" notice out of this
+    list and into `.hud__unavailable`. Whether a simulation refusal deserves
+    that always-laid-out band as well is a product decision: the band is
+    currently bound to a control that was pressed (`data-action`,
+    `aria-describedby`), and a refusal decided several ticks later has no
+    control to attach to.

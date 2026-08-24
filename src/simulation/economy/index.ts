@@ -5,4 +5,5 @@ export {
   type PendingDelivery,
   type ProcurementSnapshot,
   type PurchaseOutcome,
+  type PurchaseRefusalReason,
 } from './procurement';

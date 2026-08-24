@@ -136,6 +136,40 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.alerts.title': 'Alerts',
   'hud.alerts.empty': 'No active alerts',
 
+  // What the simulation refused, in the alerts list (issue #261).
+  //
+  // A command the worker accepted and a system then refused on its content:
+  // the order was queued, dispatched at its tick, and the prison declined to
+  // carry it out. Each sentence says what did not happen and why, in that
+  // order, because the player already knows what they asked for and needs the
+  // reason to decide what to do differently.
+  //
+  // Namespaced `hud.alert.refusal.*` and not `hud.refusal.*`: the two keys in
+  // that older namespace label the always-laid-out band under the status
+  // strip, which reports a *control's* action being refused on this thread
+  // and is bound to the control that was pressed. These are rows in the
+  // alerts list about something the simulation decided later, with no control
+  // to attach to.
+  'hud.alert.refusal.build.out-of-bounds': 'The build order failed — that tile is outside the map.',
+  'hud.alert.refusal.build.unbuildable': 'The build order failed — nothing can be built on that tile.',
+  'hud.alert.refusal.build.unbuildable-terrain': 'The build order failed — the ground there cannot be built on.',
+  'hud.alert.refusal.build.unowned-land': 'The build order failed — you do not own that land.',
+  'hud.alert.refusal.build.water-blocked': 'The build order failed — there is water on that tile.',
+  'hud.alert.refusal.purchase.duplicate-order': 'The materials were not ordered — that order already exists.',
+  'hud.alert.refusal.purchase.insufficient-funds': 'The materials were not ordered — there are not enough funds.',
+  'hud.alert.refusal.purchase.invalid-quantity': 'The materials were not ordered — that quantity cannot be bought.',
+  'hud.alert.refusal.purchase.unknown-material': 'The materials were not ordered — that material is not for sale.',
+  // `zone.out-of-bounds` and `zone.unowned-land` describe the same condition
+  // as their `build.*` neighbours and get their own sentence, because the
+  // player asked for a room rather than for a wall and a message that named
+  // the wrong thing would send them to look at the wrong control.
+  'hud.alert.refusal.zone.duplicate-instance-id': 'The room was not zoned — a room is already recorded on that tile.',
+  'hud.alert.refusal.zone.invalid-area': 'The room was not zoned — that area is not a valid rectangle.',
+  'hud.alert.refusal.zone.out-of-bounds': 'The room was not zoned — part of that area is outside the map.',
+  'hud.alert.refusal.zone.overlaps-existing-room': 'The room was not zoned — it overlaps a room that is already there.',
+  'hud.alert.refusal.zone.unknown-room-type': 'The room was not zoned — that is not a room type this prison knows.',
+  'hud.alert.refusal.zone.unowned-land': 'The room was not zoned — you do not own all of that land.',
+
   // A browser that cannot start a Worker gets a page with no simulation
   // behind it. Saying so is the whole point: the failure was previously
   // reported to the console only, so the player saw an empty world and had

@@ -98,6 +98,12 @@ const REQUIRED_WIRINGS: readonly RequiredWiring[] = [
       'Issue #149. `SimulationWorkerStateMachine` accepts one `simulation/initialize` and answers every later one with `already-initialized`, so a page that builds one worker and drives it with a bare `WorkerSessionHost` -- which is what this file did -- can start exactly one session, and every load after the first fails with no way forward but a page reload. Both components are correct in isolation and both have their own green tests; the defect was only ever in the composition, which is what this list is for. `tsc` cannot catch the revert either: `WorkerSessionHost` and `WorkerPerSessionHost` both satisfy `SessionRuntimeHost`, so swapping one for the other compiles. The HUD half of the same wiring -- the `onWorkerAvailability` callback that raises #82\'s notice when a *later* worker cannot be constructed -- is asserted in `tests/browser/app-shell.spec.ts`, where a real `Worker` can actually be blocked.',
   },
   {
+    what: 'the worker\'s refusals reach the HUD\'s alerts list',
+    source: 'const alerts = hudAlertsFromWorkerMessage(message);',
+    reason:
+      'Issue #261, and the exact shape this list exists for: a seam that is correct, fully covered, and joined to nothing. `HudViewModel.alerts` -- the list, the severity badges, the folding section, the empty-state row and the insertion ordering #209 measured in a real browser -- is fully implemented, and between #220 and #261 **nothing assigned to it**: this file wrote `clock` and `counts`, and the only assignment anywhere in `src/` was the literal `[]` in `EMPTY_HUD_VIEW_MODEL` (#220 moved the one message that had ever been routed there to `.hud__unavailable`). So a build order the simulation refused (`state: \'failed\'`, `failReason: \'out-of-bounds\'`) reached the main thread and was dropped, with no ghost drawn and no refusal line raised, because the refusal line answers a rejected *command* and this command was queued. `hudAlertsFromWorkerMessage` is pure and has its own unit tests either way, so deleting this one line restores the defect exactly with `tsc` clean and the suite green -- which is the mutation this entry kills.',
+  },
+  {
     what: 'the lifecycle save handler is attached to the controller',
     source: 'new LifecycleSaveHandler(controller).attach()',
     reason:
