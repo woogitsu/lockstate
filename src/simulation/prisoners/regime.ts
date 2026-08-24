@@ -21,7 +21,21 @@ export interface RegimeSchedule {
   readonly blocks: readonly RegimeBlock[];
 }
 
-function assertGaplessSchedule(schedule: RegimeSchedule): void {
+/**
+ * Throws unless the schedule's blocks tile `[0, DAY_LENGTH_TICKS)` exactly
+ * once -- no gap, no overlap, no short or over-long day. Sorting first means
+ * declaration order does not matter; requiring each block to start exactly
+ * where the previous one ended is what rules out both a gap and an overlap in
+ * one comparison.
+ *
+ * Exported because the two schedules below are not the only ones that reach
+ * `resolveActiveRegimeBlock`. `buildRiotRegimeSchedule` constructs one at
+ * runtime, and both `PrisonerOperationsRuntime`'s constructor options and
+ * `projectStatusStrip`'s source accept a caller-supplied `regimeSchedules`
+ * array -- none of which the module-load check below can see. The exported sibling
+ * `assertGaplessDeploymentSchedule` has the same shape for the same reason.
+ */
+export function assertGaplessSchedule(schedule: RegimeSchedule): void {
   const sorted = [...schedule.blocks].sort((a, b) => a.startTickOfDay - b.startTickOfDay);
   let cursor = 0;
   for (const block of sorted) {
@@ -40,8 +54,10 @@ function assertGaplessSchedule(schedule: RegimeSchedule): void {
  * blocks by prisoner/security group"): general population gets a full
  * daily rhythm; high-risk/solitary is confined almost all day. Every tick
  * of the day maps to exactly one block for both -- `assertGaplessSchedule`
- * enforces this at module load, since an undefined tick-of-day would leave
- * `resolveActiveRegimeBlock` with no legal action category at all.
+ * enforces this at module load for *these two*, since an undefined
+ * tick-of-day would leave `resolveActiveRegimeBlock` with no legal action
+ * category at all. A schedule built anywhere else has to be checked by
+ * whoever builds it; the check is exported for that.
  */
 export const GENERAL_POPULATION_REGIME: RegimeSchedule = {
   classificationGroupId: 'general-population',

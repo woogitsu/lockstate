@@ -22,3 +22,8 @@ assets/runtime/
 # Blender imports tooling/blender/pipeline_common.py, which makes CPython write
 # bytecode next to it.
 tooling/blender/__pycache__/
+# Agent worktrees. `.claude/` itself is tracked (hooks, settings), so a
+# worktree created under it shows up as untracked content in a tree the
+# repository's own clean-tree gate reads -- and untracked content sitting in a
+# tracked directory is how the node_modules symlink above got committed.
+.claude/worktrees/
