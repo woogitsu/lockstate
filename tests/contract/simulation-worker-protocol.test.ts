@@ -166,6 +166,7 @@ describe('simulation worker protocol', () => {
             roomOccupants: 3,
             activeIncidents: 0,
             contrabandDiscovered: 7,
+            treasuryMinorUnits: 24_920,
           },
         },
       },

@@ -8,7 +8,7 @@ import { hudCountsFromWorkerMessage } from '../../src/ui/simulation-counts';
  * knows about how big the prison is.
  *
  * The property that matters is that every figure comes out of a worker
- * message. Before this existed the strip's five metrics were the literal
+ * message. Before this existed the strip's metrics were the literal
  * zeros of `EMPTY_HUD_VIEW_MODEL` for the entire session, and the read-model
  * layer that computes them (`src/simulation/presentation/`) had no route to
  * the interface at all (issue #104).
@@ -25,6 +25,7 @@ const COUNTS = {
   roomOccupants: 31,
   activeIncidents: 1,
   contrabandDiscovered: 5,
+  treasuryMinorUnits: 24_920,
 } as const;
 
 function statusCounts(counts: Record<string, number> = { ...COUNTS }): WorkerToMainMessage {
@@ -48,6 +49,11 @@ describe('the HUD counts are read from the worker', () => {
       // The publication names this `contrabandDiscovered`, because that is
       // what the search system counts; the HUD field is `contrabandFound`.
       contrabandFound: 5,
+      // Straight through, in minor units, and that is the whole mapping:
+      // the strip formats it for display and nothing upstream of the
+      // formatter knows what a major unit is (#96). A conversion here would
+      // put a currency decision in a message adapter.
+      treasuryMinorUnits: 24_920,
     });
   });
 

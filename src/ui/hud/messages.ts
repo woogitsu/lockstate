@@ -21,6 +21,15 @@ export const HUD_MESSAGE_KEY = {
   rooms: 'hud.status.rooms',
   incidents: 'hud.status.incidents',
   contraband: 'hud.status.contraband',
+  /**
+   * The treasury balance chip (#96).
+   *
+   * "Funds" rather than a currency name, because #96 decided that money is
+   * the primary resource and did not name one, and ADR 0017 is still Proposed.
+   * A label that names no currency lets the number be shown honestly without
+   * inventing one.
+   */
+  funds: 'hud.status.funds',
   occupancy: 'hud.status.occupancy',
   occupancyValue: 'hud.status.occupancy-value',
   incidentsClear: 'hud.status.incidents-clear',

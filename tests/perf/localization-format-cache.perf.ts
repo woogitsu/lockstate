@@ -29,7 +29,7 @@ import { environmentSummary, formatMs, measureSync, renderTable, summarize } fro
  * **Counted, not estimated.** `measureRepaintFormatterCost` in
  * `tests/browser/ui-harness.ts` wraps the HUD's own `HudLocalizer` and reports
  * how many values one `hud.update()` formats: **10** for the harness's
- * populated prison (five metrics, both halves of the occupancy readout, the
+ * populated prison (six metrics, both halves of the occupancy readout, the
  * day, the position in the day and the speed) and **8** for a prison with no
  * capacity, which is the state the shipped app is in until a cell-only total
  * exists (`docs/HUD_PROJECTIONS.md`, section 8). The mix below is that

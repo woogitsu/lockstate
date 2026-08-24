@@ -135,7 +135,7 @@ ADR 0009's determinism guarantee intact:
 driven through the real worker, publishing as it goes, to end byte-identical
 to the same sixty ticks stepped with no worker at all.
 
-No list crosses this channel: the payload is ten integers, so
+No list crosses this channel: the payload is eleven integers, so
 `docs/HUD_PROJECTIONS.md` contract 5 has nothing to bound here yet. A
 projection with rows in it must be paged before it may be published on a
 timer, because a per-send cost that grows with the prison is the failure

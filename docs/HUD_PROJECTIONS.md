@@ -186,8 +186,9 @@ same tick.
 
 ### 8. The status-strip counts, and the pipe the rest will use
 
-The strip's five metrics — prisoners, staff, rooms, open incidents,
-contraband found — were literal zeros until issue #104. The counts existed
+The strip's metrics — prisoners, staff, rooms, open incidents, contraband
+found, and since #96 the treasury balance — were literal zeros until issue
+#104. The counts existed
 (`projectStatusStrip`), the receiving mapping existed
 (`src/ui/hud/projection.ts`), and there was no pipe between them.
 

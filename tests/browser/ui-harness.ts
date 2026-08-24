@@ -172,7 +172,7 @@ const countingLocalizer: HudLocalizer = {
 };
 
 const BASE_VIEW_MODEL: HudViewModel = {
-  counts: { prisoners: 142, prisonerCapacity: 180, staff: 27, rooms: 61, activeIncidents: 0, contrabandFound: 4 },
+  counts: { prisoners: 142, prisonerCapacity: 180, staff: 27, rooms: 61, activeIncidents: 0, contrabandFound: 4, treasuryMinorUnits: 24_920 },
   // Day 3, a quarter of the way through a 2,400-tick day, paused.
   clock: { day: 3, tickOfDay: 600, dayLengthTicks: 2_400, mode: 'paused', speed: 1 },
   alerts: [],

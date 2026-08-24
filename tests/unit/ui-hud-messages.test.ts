@@ -121,11 +121,35 @@ describe('every HUD message key resolves in the bundled default locale', () => {
     for (const key of HUD_MESSAGE_KEYS) expect(key).toMatch(/^hud\.[a-z0-9]+(?:[.-][a-z0-9]+)*$/);
   });
 
-  it('declares no money, funds, budget or currency string', () => {
-    // There is no economy system yet. A string is where a fake number gets
-    // its first place to sit.
+  it('declares a funds label and nothing that implies an income or a cost', () => {
+    /*
+     * This used to forbid *every* money word, and it was right to: there was
+     * no economy, and a string is where a fake number gets its first place to
+     * sit. #96 built one, so the rule moves rather than being deleted.
+     *
+     * What exists is a **balance** the simulation publishes. What does not
+     * exist is anything that credits or debits it on a schedule -- no income,
+     * no payroll, no running cost -- because what the state pays for is
+     * ADR 0017 question 1 and it is open. So `funds` is admitted by name and
+     * every word that would imply the missing half is still refused.
+     *
+     * `budget`, `cost` and `price` are the interesting refusals: the
+     * procurement catalog does hold prices, and a *label* naming one would be
+     * the HUD claiming a cost is on screen when the strip shows only a
+     * balance.
+     */
+    const ALLOWED_MONEY_KEYS = new Set(['hud.status.funds']);
+
     for (const key of HUD_MESSAGE_KEYS) {
-      expect(key).not.toMatch(/money|fund|budget|cash|balance|currency|cost|price/i);
+      if (ALLOWED_MONEY_KEYS.has(key)) continue;
+      expect(key).not.toMatch(/money|fund|budget|cash|balance|currency|cost|price|income|wage|salary/i);
+    }
+
+    // And the allow-list is not stale: a key it names that no longer exists
+    // would silently permit nothing, which reads exactly like the rule being
+    // tighter than it is.
+    for (const allowed of ALLOWED_MONEY_KEYS) {
+      expect(HUD_MESSAGE_KEYS, `${allowed} is allowed but no longer declared`).toContain(allowed);
     }
   });
 });
@@ -150,6 +174,7 @@ describe('message keys live in one registry', () => {
       rooms: 1,
       activeIncidents: 1,
       contrabandFound: 1,
+      treasuryMinorUnits: 0,
     })) {
       expect(registry.has(metric.labelKey), metric.labelKey).toBe(true);
       if (metric.badge !== undefined) expect(registry.has(metric.badge.textKey), metric.badge.textKey).toBe(true);

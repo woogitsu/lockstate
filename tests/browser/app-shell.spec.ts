@@ -1071,7 +1071,7 @@ test.describe('the assembled application', () => {
   /**
    * The HUD's counts, end to end, in the page a player loads.
    *
-   * The strip's five metrics were literal zeros for the whole of a session
+   * The strip's metrics were literal zeros for the whole of a session
    * until now: `src/simulation/presentation/` computed them and no
    * worker-to-main message carried them (issue #104). Three of the four
    * layers are proven headlessly -- the worker publishes them
@@ -1773,7 +1773,7 @@ test.describe('the assembled application', () => {
      * layout, so on its own it cannot tell a visible version from a hidden one.
      * `brand.css` drops `.brand__build` at 720px and under -- the same
      * breakpoint `hud.css` drops the minimap at -- because the strip has to fit
-     * five metric chips and three transport buttons on a phone, and the wordmark
+     * six metric chips and three transport buttons on a phone, and the wordmark
      * is what makes the corner read as a product. Asserting only the desktop
      * half would leave a rule that could stop applying; asserting only the phone
      * half would pass if the line were hidden everywhere.

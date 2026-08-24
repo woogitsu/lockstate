@@ -18,7 +18,7 @@ import {
 import type { HudLocalizer, HudViewModel } from './view-model';
 
 /**
- * The dense top row: five metrics on the left, the clock and transport
+ * The dense top row: six metrics on the left, the clock and transport
  * controls on the right, one hairline underneath and nothing in the middle.
  *
  * It is built once and updated in place. Rebuilding a strip that changes
@@ -90,7 +90,7 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
     staff: 0,
     rooms: 0,
     activeIncidents: 0,
-    contrabandFound: 0,
+    contrabandFound: 0, treasuryMinorUnits: 0,
   })) {
     const trailing = element('span', { className: 'hud-metric__trailing' });
     const chip = createStatChip({
