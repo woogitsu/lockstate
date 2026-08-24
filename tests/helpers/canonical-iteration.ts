@@ -56,6 +56,15 @@
  * caller's allow-list with the reason it is safe. Membership tests,
  * `.size`, `.get`, `.has` and `.delete` are not enumerations and are not
  * matched at all.
+ *
+ * One shape it does **not** see, stated rather than left to be discovered: a
+ * spread of a collection reached through a lookup, as in
+ * `RoomInstanceRegistry.occupantsOf`'s `[...(this.occupants.get(id) ?? [])]`.
+ * Whether that expression is a `Set` or an array is known to `tsc` and not to
+ * a text scan. That particular accessor is a documented insertion-order
+ * accessor whose consumer sorts, guarded by
+ * `tests/determinism/projection-ordering.test.ts`; the general case is a
+ * genuine limit of a textual rule.
  */
 
 /**
