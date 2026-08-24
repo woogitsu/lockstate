@@ -1,0 +1,51 @@
+-- Revoke TRUNCATE, on every table in `public`, from the two client-facing
+-- Data API roles (issue #105 finding 3).
+--
+-- EXECUTED against plain PostgreSQL 16.13 + pgTAP 1.3.2 via `pnpm
+-- verify:sql`, and pinned by the schema-wide sweep in
+-- supabase/tests/003_data_api_grants.test.sql. NOT executed against the
+-- real Supabase local stack or a hosted project; see docs/CLOUD_SAVE.md,
+-- "What has and has not been executed".
+--
+-- Supabase's default privileges `grant all on tables` to the three Data API
+-- roles and then revoke only SELECT/INSERT/UPDATE/DELETE, which leaves
+-- TRUNCATE, REFERENCES and TRIGGER (and MAINTAIN on PostgreSQL 17+) behind
+-- on every table in `public`. docs/CLOUD_SAVE.md called that residue
+-- "nothing useful". TRUNCATE is not nothing:
+--
+--   * it ignores row level security entirely, so every `auth.uid() = ...`
+--     policy in this schema is irrelevant to it; and
+--   * it fires no row trigger, so `entitlement_events_no_update` -- the
+--     control that makes the ledger append-only even for the table owner --
+--     does not run.
+--
+-- Executed on the compatibility harness as `authenticated` inside an
+-- explicit transaction block (`set local role` outside one silently no-ops
+-- and leaves the session privileged): `truncate table
+-- public.entitlement_events` succeeded and emptied the ledger, while the
+-- same session's `update` was refused by the append-only trigger. That is
+-- the whole of ADR 0008 threat T4's "no insert/update/delete policy **and**
+-- revoked table grants" reduced to a single statement.
+--
+-- WHAT IS AND IS NOT ESTABLISHED. The observation above is the *harness*,
+-- whose whole job is to model Supabase's default privileges; #105 asks for
+-- `\dp public.*` against the hosted project before treating the grant as a
+-- fact there, and that is still unrun. The revoke is landed regardless
+-- because it is harmless either way: no code in this repository truncates
+-- anything, and PostgREST exposes no verb that reaches TRUNCATE.
+--
+-- SCOPE. This revoke names the two client-facing roles, which is the
+-- finding. `service_role` also holds the same ambient TRUNCATE, and the
+-- ledger's immutability is documented as holding against it too -- but
+-- whether the trusted role should be able to truncate a table it holds no
+-- DELETE grant on is a boundary question ADR 0008's authority table does
+-- not answer, so it is reported rather than decided here.
+--
+-- `on all tables in schema public` expands at execution time, so it covers
+-- the nine relations that exist now and nothing added later. A future table
+-- inherits the ambient TRUNCATE again; the schema-wide sweep in
+-- supabase/tests/003_data_api_grants.test.sql is what fails when it does,
+-- for the same reason the RLS sweep there is schema-wide -- an omission
+-- cannot be caught by a per-table case somebody also has to remember to
+-- write.
+revoke truncate on all tables in schema public from anon, authenticated;
