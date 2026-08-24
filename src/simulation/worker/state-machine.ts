@@ -1,4 +1,4 @@
-import { Kernel } from '../kernel/kernel';
+import { CommandRejectedError, type CommandRejectionKind, Kernel } from '../kernel/kernel';
 import {
   createNewSimulationRuntime,
   type SimulationRuntime,
@@ -100,6 +100,46 @@ export const STATUS_COUNTS_PUBLISH_INTERVAL_MS = 500;
  */
 function rejectedSnapshotFault(requestMessageId: string): { readonly replyTo: string; readonly recoverable: boolean } {
   return { replyTo: requestMessageId, recoverable: true };
+}
+
+/**
+ * Which fault code each kernel refusal reports.
+ *
+ * A `Record` over `CommandRejectionKind` rather than a `switch` with a
+ * `default`, because that makes it **exhaustive at compile time**: a fourth
+ * rejection kind added in `../kernel/kernel` fails to compile here until
+ * somebody decides what the main thread should be told, which is the property
+ * the collapsed version did not have.
+ *
+ * This is what makes `duplicate-message` and `sequence-gap` reachable. Both
+ * were members of the twelve-code `ProtocolFaultCode` vocabulary that **nothing
+ * in the repository could emit** (#187 finding 2) -- the same state #184 found
+ * and fixed for `unsupported-protocol-version` and `unknown-message-kind` one
+ * module over.
+ *
+ * `past-tick` maps to `invalid-state` and that is not a fallback: the enum has
+ * no member for scheduling in the past, and a command aimed at a tick already
+ * executed genuinely is an invalid state. It also keeps `invalid-state`
+ * emitted, which matters -- moving all three off it would have replaced two
+ * dead codes with a third.
+ */
+const COMMAND_REJECTION_FAULT_CODES: Readonly<Record<CommandRejectionKind, ProtocolFaultCode>> = {
+  'duplicate-sequence': 'duplicate-message',
+  'sequence-gap': 'sequence-gap',
+  'past-tick': 'invalid-state',
+};
+
+/**
+ * `invalid-state` for anything that is not a typed kernel refusal.
+ *
+ * Deliberately *not* widened to inspect the message text. Reading a code out of
+ * an English sentence is what this change exists to stop: the distinction was
+ * always in the message and never in the code, and parsing it back would
+ * reproduce the defect with extra steps. An untyped throw from a system handler
+ * is a genuine invalid state and says so.
+ */
+function commandRejectionFaultCode(error: unknown): ProtocolFaultCode {
+  return error instanceof CommandRejectedError ? COMMAND_REJECTION_FAULT_CODES[error.kind] : 'invalid-state';
 }
 
 export class SimulationWorkerStateMachine {
@@ -499,7 +539,7 @@ export class SimulationWorkerStateMachine {
           commandId: msg.payload.commandId,
           sequence: msg.payload.sequence,
           fault: {
-            code: 'invalid-state', // or sequence-gap, duplicate-message
+            code: commandRejectionFaultCode(e),
             message: e instanceof Error ? e.message : String(e),
             recoverable: true,
           }

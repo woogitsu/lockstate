@@ -218,6 +218,28 @@ function findSaveButton(label: string): HTMLButtonElement | undefined {
 }
 
 window.lockstateUiHarness = {
+  /**
+   * Whether every element matching `selector` was actually laid out.
+   *
+   * `getClientRects()` is empty exactly when the element -- or an ancestor --
+   * is `display: none`, which is the same rule `layoutProbe`'s `box()` below
+   * states as "a zero-area box is not laid out at all". `offsetParent`, the
+   * idiom `refusalProbe` and `buildProbe` use, answers the same question for
+   * the two elements they ask it about, but not in general: it is also `null`
+   * for a `position: fixed` element that is perfectly visible, and `.hud` is
+   * `position: fixed` (`hud.css`). Stating the property directly is what
+   * makes this helper safe to point at any selector.
+   *
+   * Every match rather than the first, because a five-metric row with one
+   * metric dropped is a defect and reading only `[0]` would miss it. Empty
+   * selector means false: a pairing assertion that stopped matching anything
+   * would otherwise pass by matching nothing.
+   */
+  laidOut(selector: string): boolean {
+    const nodes = [...document.querySelectorAll(selector)];
+    return nodes.length > 0 && nodes.every((node) => node.getClientRects().length > 0);
+  },
+
   mountSavePanel(options?: { readonly pseudoLocale?: boolean }): void {
     panel?.dispose();
     sessions = new StubSessions();

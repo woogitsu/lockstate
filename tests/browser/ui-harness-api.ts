@@ -147,6 +147,22 @@ export interface RepaintFormatterCost {
 }
 
 export interface LockstateUiHarness {
+  /**
+   * Whether every element matching `selector` was actually laid out.
+   *
+   * The pairing this layer needs for any rendered-text claim: `textContent`,
+   * `toHaveText` and `toContainText` all read the DOM and imply nothing about
+   * visibility, so a text assertion stays green on an element inside a
+   * `display: none` subtree. That is not hypothetical -- `hud.css` drops
+   * `.hud__corner` at 720px and below, and a rendered-text assertion on a
+   * region inside it passed while the text was not on the page at all
+   * (#218 section 6.6).
+   *
+   * False when the selector matches nothing, so pairing an assertion with
+   * this cannot go vacuous by outliving the element it was written for.
+   */
+  laidOut(selector: string): boolean;
+
   mountSavePanel(options?: { readonly pseudoLocale?: boolean }): void;
   clickSaveButton(label: string): boolean;
   saveButtonState(label: string): ButtonState;

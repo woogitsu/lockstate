@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { type Page, expect, test } from '@playwright/test';
 import './ui-harness-api'; // pulls in the `Window.lockstateUiHarness` global augmentation
 
 /**
@@ -24,6 +24,30 @@ import './ui-harness-api'; // pulls in the `Window.lockstateUiHarness` global au
  */
 
 const HARNESS_URL = '/tests/browser/ui-harness.html';
+
+/**
+ * Pairs a rendered-text assertion with the fact that the text is on screen.
+ *
+ * Every text assertion in this file reads the DOM -- through a probe's
+ * `textContent`, or through a Playwright `toHaveText`/`toContainText` -- and
+ * none of those imply visibility. A `display: none` on the element or on any
+ * ancestor leaves every one of them green while the player sees nothing,
+ * which is exactly how a live defect hid: `hud.css` drops `.hud__corner` at
+ * 720px and below, so a rendered-text assertion on a region inside it passed
+ * on a phone where the region is not laid out at all (#218 section 6.6).
+ *
+ * Two assertions in this file are deliberately *not* paired with this, and
+ * say so at their own sites: the `refusalProbe` calls that require
+ * `visible: false` (the refusal line starts `hidden` and its text is read in
+ * that state on purpose), and `hudText()`, which reads `innerText` -- already
+ * rendered text, so it answers the visibility question itself.
+ */
+async function expectLaidOut(page: Page, selector: string, what: string): Promise<void> {
+  expect(
+    await page.evaluate((s) => window.lockstateUiHarness.laidOut(s), selector),
+    `${what} (${selector}) is not laid out, so the text asserted above is not on screen`,
+  ).toBe(true);
+}
 
 test.beforeEach(async ({ page }) => {
   await page.goto(HARNESS_URL);
@@ -68,6 +92,8 @@ test.describe('save panel concurrency (issue #65)', () => {
     expect(await page.evaluate(() => window.lockstateUiHarness.savePanelStatus())).toContain(
       'did not reply within 15000ms',
     );
+    // "Reaches the player" is a claim about the screen, not about the DOM.
+    await expectLaidOut(page, '.save-panel__status', 'the save panel status line');
 
     // A rejection reaching here is the defect, not a symptom of it.
     await page.waitForTimeout(200);
@@ -127,6 +153,11 @@ test.describe('save panel localization (issue #208)', () => {
     // unbracketed -- which is what every one of these was before #208.
     const notLocalized = rendered.filter((text) => !text.startsWith('⟦') || !text.endsWith('⟧'));
     expect(notLocalized, 'these strings never went through the localizer').toEqual([]);
+
+    // The strings above were read out of the DOM, which a hidden panel still
+    // has. #208 is about what a player reads, so the panel has to be on
+    // screen for the check above to be about anything.
+    await expectLaidOut(page, '.save-panel', 'the save panel');
   });
 
   test('still renders the default locale word for word', async ({ page }) => {
@@ -145,6 +176,7 @@ test.describe('save panel localization (issue #208)', () => {
       'No prisons yet.',
       'Local saves only — no network required.',
     ]);
+    await expectLaidOut(page, '.save-panel', 'the save panel');
   });
 });
 
@@ -162,6 +194,13 @@ test.describe('HUD shell', () => {
     expect(probe.clockDay).toBe('3');
     expect(probe.clockDayProgress).toBe('25%');
 
+    // Every number above came out of `textContent`, which a `display: none`
+    // subtree still answers. "Renders the status strip" is only true if the
+    // browser laid the strip out.
+    await expectLaidOut(page, '.ui-stat .ui-stat__value', 'the strip metric values');
+    await expectLaidOut(page, '.hud-clock__day', 'the clock day');
+    await expectLaidOut(page, '.hud-clock__day-progress', 'the clock day progress');
+
     // The HUD frames the world; it does not cover it.
     expect(probe.centreIsClickThrough).toBe(true);
   });
@@ -175,6 +214,10 @@ test.describe('HUD shell', () => {
     // variant, which is why this assertion lives here and not in a unit test.
     expect(probe.valueCount).toBeGreaterThan(5);
     expect(probe.nonMonospaceValues).toEqual([]);
+    // `getComputedStyle` answers for a `display: none` element too, so the
+    // count above and the filter behind it would both survive a strip that
+    // was never laid out. "Every number" means every number on screen.
+    await expectLaidOut(page, '.hud-strip .ui-value', 'the strip values');
   });
 
   test('tabs respond, moving both the selection and the reported intent', async ({ page }) => {
@@ -216,6 +259,8 @@ test.describe('HUD shell', () => {
     expect(updated.metricValues[0]).toBe('179');
     // The clock moved with the view model, not with wall time.
     expect(updated.clockDayProgress).toBe('75%');
+    await expectLaidOut(page, '.ui-stat .ui-stat__value', 'the strip metric values');
+    await expectLaidOut(page, '.hud-clock__day-progress', 'the clock day progress');
   });
 
   test('shows the clock as unknown until a session reports one', async ({ page }) => {
@@ -229,6 +274,11 @@ test.describe('HUD shell', () => {
     expect(probe.clockDay).toBe('--');
     expect(probe.clockDayProgress).toBe('--');
     expect(probe.pressedTransport).toEqual(['Pause']);
+    // The `--` has to be visible to be an honest "unknown": a clock the
+    // player cannot see says nothing at all, and this assertion would not
+    // have noticed the difference.
+    await expectLaidOut(page, '.hud-clock__day', 'the clock day');
+    await expectLaidOut(page, '.hud-clock__day-progress', 'the clock day progress');
   });
 
   test('a slow host blocks a second clock command but never blocks the chrome', async ({ page }) => {
@@ -276,6 +326,15 @@ test.describe('HUD shell', () => {
       await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
       await page.evaluate(() => window.lockstateUiHarness.failIntents(true));
 
+      // Deliberately *not* paired with a visibility assertion, in either
+      // direction. `.hud__refusal` is a `hidden` live region that starts with
+      // nothing to say, and requiring `visible: false` here is the assertion:
+      // the region has to exist in the DOM for `aria-live` to announce into
+      // it later, and it must not be showing an empty band before it does.
+      // The same holds for the two other `visible: false` requirements below.
+      // `hudText()` is not paired either -- it reads `innerText`, which is
+      // rendered text and therefore already excludes a `display: none`
+      // subtree, so a pairing assertion would restate what it measures.
       const before = await page.evaluate(() => window.lockstateUiHarness.hudText());
       expect(await page.evaluate(() => window.lockstateUiHarness.refusalProbe())).toMatchObject({
         visible: false,
@@ -461,6 +520,11 @@ test.describe('HUD shell', () => {
       await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
       const probe = await page.evaluate(() => window.lockstateUiHarness.buildProbe());
 
+      // `armLabel` and `targetText` are `textContent` reads, and
+      // `coordinatesCollapsed` is a `data-` attribute: all three answer the
+      // same on a panel the Build tab never showed. The probe already
+      // measures the panel's own layout, so the pairing is one field.
+      expect(probe.visible).toBe(true);
       expect(probe.armLabel).toBe('Place on map');
       expect(probe.armIsPrimary).toBe(true);
       expect(probe.armed).toBe(false);
@@ -476,6 +540,9 @@ test.describe('HUD shell', () => {
       const armedProbe = await page.evaluate(() => window.lockstateUiHarness.buildProbe());
       expect(armedProbe.armed).toBe(true);
       expect(armedProbe.armLabel).toBe('Stop placing');
+      // A toggle "that reports itself" reports to the player, so the label
+      // read above has to be on screen and not merely in the DOM.
+      expect(armedProbe.visible).toBe(true);
 
       await page.evaluate(() => window.lockstateUiHarness.clickArmBuild());
       const disarmedProbe = await page.evaluate(() => window.lockstateUiHarness.buildProbe());
@@ -517,6 +584,10 @@ test.describe('HUD shell', () => {
       await page.evaluate(() => window.lockstateUiHarness.clickBuildEdge('west'));
 
       const probe = await page.evaluate(() => window.lockstateUiHarness.buildProbe());
+      // `input.value` is the `toHaveValue` case: it reads back whatever the
+      // steppers wrote whether or not the field was ever laid out, so the
+      // "reachable by keyboard alone" claim needs the panel on screen too.
+      expect(probe.visible).toBe(true);
       expect(probe.tileX).toBe('18');
       expect(probe.tileY).toBe('15');
       expect(probe.edge).toBe('west');
@@ -591,6 +662,9 @@ test.describe('HUD shell', () => {
 
         const probe = await page.evaluate(() => window.lockstateUiHarness.buildLayoutProbe());
         expect(probe.rows, `catalogue rows at ${width}x${height}`).toBe(12);
+        // Already paired: `lastSectionHeader` is `null` for a zero-area box,
+        // so the `not.toBeNull()` two lines down is the visibility half of
+        // this text assertion and no `laidOut` call is needed.
         expect(probe.lastSectionHeaderText, `the panel's last section at ${width}x${height}`).toBe(
           'Enter coordinates',
         );
@@ -625,7 +699,12 @@ test.describe('HUD shell', () => {
       expect(probe.rows).toBe(2);
       expect(probe.listOverflow).toBe(0);
       expect(probe.panelOverflow).toBe(0);
-      expect(probe.lastSectionHeader?.bottom ?? 0).toBeLessThanOrEqual(probe.panelVisibleBottom);
+      // `?? 0` used to stand here, which passed when the header had no box at
+      // all -- the state a `display: none` panel is in. The box is required
+      // first, so the comparison is about a header that exists on screen.
+      const header = probe.lastSectionHeader;
+      expect(header, 'the last section header has no box').not.toBeNull();
+      expect(header?.bottom).toBeLessThanOrEqual(probe.panelVisibleBottom);
     });
   });
 

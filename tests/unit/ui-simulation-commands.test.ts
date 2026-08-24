@@ -78,7 +78,12 @@ function rejected(): WorkerToMainMessage {
       commandId: 'c-1',
       sequence: 0,
       status: 'rejected',
-      fault: { code: 'invalid-state', message: 'Command sequence gap: expected 7, got 0', recoverable: true },
+      // `sequence-gap`, not `invalid-state`: this fixture used to pair the
+      // collapsed code with a message that named the real condition, which is
+      // the #187 finding 2 defect reproduced in a test double. The worker now
+      // reports the two apart, so a double that did not would be testing the UI
+      // against a message the worker can no longer send.
+      fault: { code: 'sequence-gap', message: 'Command sequence gap: expected 7, got 0', recoverable: true },
     },
   };
 }
