@@ -1110,6 +1110,30 @@ use Vitest's fake timers (`vi.useFakeTimers()`/`advanceTimersByTimeAsync`),
 per `docs/TESTING.md`'s "own the complete timer lifecycle" rule, rather than
 real elapsed time.
 
+**What marks a session dirty: every command the simulation accepts.** The main
+thread observes acceptance as a `simulation/command-result` with
+`status: 'queued'`, and `SimulationCommandSender` notifies a listener that
+`src/main.ts` wires to `SessionController.markDirty()`. Acceptance rather than
+execution, deliberately: a queued command runs at a future tick, so a tab that
+dies in between schedules a save for a command that never ran — early rather
+than late, which is the harmless direction. Hooking execution instead would tie
+wall-clock durability to simulation speed, so a paused game would never autosave
+and ×4 would autosave four times as often.
+
+The chattiness that implies is the scheduler's to absorb and is what it was
+built for: a thousand accepted commands inside one interval produce one write.
+
+This is worth stating because it was missing for the whole life of the
+scheduler. Nothing called `markDirty`, so the interval above was configured,
+reached the scheduler, and never fired a single save — the sentence further
+down this document calling the interval autosave "the actual durability
+mechanism" was aspirational rather than true, and the best-effort `pagehide`
+save was the only automatic write in the shipped app (issue #146). A callback
+rather than a `SessionController` reference, because `src/ui/**` may not depend
+on `src/persistence/**` and the sender is constructed before a controller
+exists; `tests/foundation/composition-root-contract.test.ts` is what fails if
+that one wiring line is removed again.
+
 ### Export/import
 
 `exportSave` returns the current generation's already-validated envelope.
