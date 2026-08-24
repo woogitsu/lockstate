@@ -28,9 +28,8 @@ branch.
 asserts — were re-verified against `origin/main` at v0.0.30 while writing this,
 and every `file:line` below resolves there unless the text says otherwise.
 
-**Browser measurements** were taken on a local merge of PR #282
-(`claude/purchase-stepper`, the #89 buy surface) and PR #283
-(`claude/report-refusals`) on the assembled page, and have **not** been re-run
+**Browser measurements** were taken on a local merge of PR #282 (the #89 buy
+surface) and PR #283 (the refusal-reporting route) on the assembled page, and have **not** been re-run
 on `main`. They are quoted as measured on that tree and attributed as such
 wherever a figure depends on either branch. Two consequences of that are worth
 stating rather than leaving to be discovered:
@@ -330,7 +329,7 @@ option C any more:
 The #89 two-button trick does not rescue C either, and this is the one place
 where a `main` reader will look for something that is not there. #282 puts the
 arm button and a "Buy" disclosure side by side in a flex row
-(`.hud-build__actions`, on `origin/claude/purchase-stepper` only), and its own
+(`.hud-build__actions`, which exists on #282's branch and nowhere else), and its own
 comment records why that is affordable: the two controls and their gap come to
 about 170px of the 238px the block has. Measured on the merged tree, a **third**
 button in that row keeps its height at 44.0px and overflows the panel
@@ -471,8 +470,8 @@ most effort on.
   an authored occupancy figure per room definition, is what closes step 4 — a
   product decision recorded on #261, per `zoning.ts`'s header.
 - **A refusal has somewhere to go only if #283 lands.** That branch ships the
-  whole route a producer needs, and every path in this bullet resolves on
-  `origin/claude/report-refusals` and **on no other branch**: all six
+  whole route a producer needs, and every path in this bullet resolves on #283's
+  branch and **on no other**: all six
   `hud.alert.refusal.zone.*` strings (`src/content/default-locale-en.ts:166-171`
   there), their mapping in `src/ui/simulation-alerts.ts:43-48`, and
   `ZONE_REFUSAL_REASONS` (`src/simulation/refusals/refusal-log.ts:135`)
