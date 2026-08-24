@@ -4,7 +4,7 @@ import { PrisonSaveRepository } from '../../src/persistence/local/repository';
 import { SessionController } from '../../src/persistence/session/session-controller';
 import { WorkerPerSessionHost } from '../../src/persistence/session/worker-per-session-host';
 import { computeSaveChecksum } from '../../src/persistence/checksum';
-import { createSaveEnvelope, type SaveEnvelope } from '../../src/persistence/save-schema';
+import { createSaveEnvelope, SAVE_SCHEMA_VERSION, type SaveEnvelope } from '../../src/persistence/save-schema';
 import type { SimulationClient } from '../../src/simulation/worker/client';
 import { SimulationWorkerChannel } from '../../src/simulation/worker/worker-channel';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
@@ -108,7 +108,7 @@ function payloadFor(prisonId: string, seed: number): SaveEnvelope['payload'] {
 function goodEnvelope(prisonId: string, revision: number, seed: number): SaveEnvelope {
   const payload = payloadFor(prisonId, seed);
   return {
-    saveSchemaVersion: 3,
+    saveSchemaVersion: SAVE_SCHEMA_VERSION,
     gameVersion: 'test-version',
     prisonId,
     revision,
@@ -138,7 +138,7 @@ function unrestorableEnvelope(prisonId: string, revision: number): SaveEnvelope 
     },
   };
   return {
-    saveSchemaVersion: 3,
+    saveSchemaVersion: SAVE_SCHEMA_VERSION,
     gameVersion: 'test-version',
     prisonId,
     revision,

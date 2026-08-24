@@ -57,6 +57,12 @@ Rules:
 
 JavaScript numbers are IEEE-754 doubles and are deterministic **for a fixed sequence of operations**. The risk is therefore never the arithmetic itself; it is accumulation whose *order* can vary. Wherever simulation state sums floats over a collection (needs effects, risk sampling, utility scoring), the collection must be iterated in canonical order for the same reason as above.
 
+### Quantised state and multi-rate schedules
+
+There is a second, quieter failure of the same family: a rate below the resolution of the integer it is applied to. A system scheduled every `intervalTicks` that rounds its result to storage each call does not merely lose precision — if the per-interval step rounds to zero the value is a **fixed point** and never moves again, and *which* values are fixed points is decided by the schedule rather than by the state. That is a scheduling cadence silently deciding what a tick computes, which is the same line the transport controls above must not cross.
+
+`NeedsDecaySystem` did exactly this until #259: five of six needs never decayed at any level, because their per-interval step was at most half a level and `Math.round(n - d) === n` for such a `d`. The rule the fix follows, and the one to apply to any future quantised rate: **store at a resolution finer than the smallest step, and choose it so the step is a whole number of stored units per tick.** Decay is then exactly linear in ticks elapsed, the same total of ticks gives the same result however it is batched, and `intervalTicks` goes back to being a work-per-tick decision. `tests/unit/prisoners-needs.test.ts` pins both halves — that every rate is whole at the scale, and that batching cannot change the outcome.
+
 ## Snapshots and Overload
 - By removing non-determinism, a full snapshot becomes a simple data dump of the RNG state, active systems, and kernel tick/sequence index.
 - Heavy simulation lag must be handled by the worker queue preserving backlog, executing up to a tick budget without altering the 50ms semantic interval.

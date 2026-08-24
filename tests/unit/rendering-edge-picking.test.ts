@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  DRAG_AXIS_THRESHOLD_PX,
   MAX_RUN_SEGMENTS,
   edgeRunBetween,
   edgeRunFromDrag,
@@ -190,5 +191,66 @@ describe('the drag direction decides the axis, and the press decides the tile', 
   it('offers only the two edges the world stores, on either axis', () => {
     expect(pickEdgeOnAxis(inTile(3, 3, 0.9, 0.9), 'x').edge).toBe('north');
     expect(pickEdgeOnAxis(inTile(3, 3, 0.9, 0.9), 'y').edge).toBe('west');
+  });
+});
+
+/**
+ * Where a click stops being a click, which is the only thing
+ * `DRAG_AXIS_THRESHOLD_PX` decides.
+ *
+ * The tests above settle *which axis* a drag that has clearly committed picks.
+ * None of them touched the threshold, so issue #264 could set it to `0` and
+ * leave the whole suite green. What that changes is exact and worth stating no
+ * more strongly than it can be measured here: at `0` the strict `<` is false
+ * for every gesture including one that never moved, so `edgeRunFromDrag` takes
+ * `pickEdgeOnAxis` where it used to take `pickEdgeAtWorld`. Those two disagree.
+ * `pickEdgeAtWorld` answers with the nearest of all four sides; `pickEdgeOnAxis`
+ * is told an axis and returns an edge on it, and with no travel at all the axis
+ * falls to `x` — so a press nearest a tile's **west** edge comes back as its
+ * **north** edge instead.
+ *
+ * Whether a player would see that has **not** been measured in a browser and is
+ * not claimed. What is claimed, and asserted below, is that the function
+ * answers differently.
+ *
+ * The press is deliberately one where the two paths disagree. A press near the
+ * bottom of a tile is not: `pickEdgeAtWorld` resolves it south to `(x, y + 1)`
+ * north, and `pickEdgeOnAxis(_, 'x')` resolves the same lower half to the same
+ * edge, which is exactly why the existing zero-movement test above survived the
+ * mutation.
+ */
+describe('a press becomes a drag at half a tile, and not before', () => {
+  /** Nearest the west edge (0.1 across) but in the tile's upper half (0.4 down). */
+  const press = inTile(4, 6, 0.1, 0.4);
+  const WEST_PICK = { tileX: 4, tileY: 6, edge: 'west' } as const;
+
+  it('answers with the nearest of four sides while the gesture is still a click', () => {
+    expect(pickEdgeAtWorld(press)).toEqual(WEST_PICK);
+    // The x axis would force north here, so the two paths are distinguishable.
+    expect(pickEdgeOnAxis(press, 'x')).toEqual({ tileX: 4, tileY: 6, edge: 'north' });
+  });
+
+  it('treats a press that never moved as a click, not as a zero-length drag along x', () => {
+    expect(edgeRunFromDrag(press, press)).toEqual([WEST_PICK]);
+  });
+
+  it('is still a click one pixel below the threshold', () => {
+    const current = { x: press.x + DRAG_AXIS_THRESHOLD_PX - 1, y: press.y };
+    expect(edgeRunFromDrag(press, current)).toEqual([WEST_PICK]);
+  });
+
+  it('is a drag at the threshold exactly, because the comparison is strict', () => {
+    // The other side of the same boundary: a threshold larger than half a tile,
+    // or a `<=` in place of the `<`, fails here rather than passing quietly.
+    const current = { x: press.x + DRAG_AXIS_THRESHOLD_PX, y: press.y };
+    expect(edgeRunFromDrag(press, current)).toEqual([{ tileX: 4, tileY: 6, edge: 'north' }]);
+  });
+
+  it('is half a tile: a real distance, and less than the tile it lives in', () => {
+    // A zero threshold makes every gesture a drag and no gesture a click; a
+    // threshold of a whole tile or more means a deliberate one-tile drag is
+    // still reported as a tap.
+    expect(DRAG_AXIS_THRESHOLD_PX).toBeGreaterThan(0);
+    expect(DRAG_AXIS_THRESHOLD_PX).toBeLessThan(TILE_SIZE_PX);
   });
 });

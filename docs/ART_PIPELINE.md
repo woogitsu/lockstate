@@ -140,7 +140,11 @@ input before writing anything and aborts with `run \`git lfs pull\` first` —
 without that check it hashes the pointer text, republishes 23 pointer files
 under content-addressed names, and `rm -rf`s the real output on the way
 (verified by execution; `tests/contract/art-pipeline-contract.test.ts` does
-then fail on the result, but the images are already gone).
+then fail on the result, but the images are already gone). The refusal itself
+lives in `tooling/source-art-lfs-guard.mjs` with its reading injected, so
+`tests/foundation/art-catalog-generator-contract.test.ts` can run it against a
+pointer-only fixture instead of only reading the generator's source — a gate
+that only read it stayed green when the condition was made unreachable (#264).
 
 **Its output is committed and it runs on demand, not in CI.** Regenerating in
 CI would mean pulling `assets/source/generated` on every run, which is metered

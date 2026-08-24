@@ -28,7 +28,8 @@ Per the issue's explicit scope, this is deliberately bounded:
 
 - **Hot, per-tick-relevant, fixed-width numeric fields** as flat typed
   arrays -- `PrisonerRecordComponent` (sentence/risk/classification/intake
-  stage), `NeedsComponent` (needs.ts, one `Uint8Array` per need),
+  stage), `NeedsComponent` (needs.ts, one `Uint16Array` per need, holding
+  the level scaled by `NEED_SCALE`),
   `CurrentActionComponent` (action index/phase/timing), `PositionComponent`
   (tile-space, integer).
 - **Cold, rarely-mutated, string-keyed metadata** as a small wrapper class
@@ -80,14 +81,25 @@ prisoner (#31).
 `needs.ts` defines each need's per-tick decay rate as data (`NEED_DECAY_PER_TICK`),
 not an if-chain. `NeedsDecaySystem` (`needs-system.ts`) is a
 `SystemRegistration` scheduled every 10 ticks, decaying every prisoner's
-every need by exactly that batch's elapsed ticks in one call. Because
-`decayNeed` rounds to an integer level per call, this is only guaranteed
-deterministic at one *consistent* batch cadence -- it is not required to
-(and for sub-1-per-tick rates, does not) match what calling it once per
-single tick would produce. `NeedsDecaySystem` always uses its own fixed
-`schedule.intervalTicks`, so this never matters in practice; see
-`needs-system.ts`'s own doc comment and
-`tests/unit/prisoners-needs.test.ts` for the exact behavior this pins down.
+every need by exactly that batch's elapsed ticks in one call.
+
+Levels are **stored scaled** by `NEED_SCALE` (200) rather than as whole
+0-255 levels, and `decayNeed` works in those stored units. Every rate is a
+whole number of stored units per tick at that scale, so decay is exactly
+linear in `ticksElapsed`: the same total of ticks gives the same level however
+it is split across calls, which makes `schedule.intervalTicks` a scheduling
+choice rather than a balance one.
+
+That was not true before #259. Levels were whole numbers in a `Uint8Array`
+and `decayNeed` rounded per call, so the ten-tick interval produced a step of
+at most `0.5` for five of the six needs -- and `Math.round(n - d) === n` for
+any integer `n` and any such `d`. Those five needs never decayed at all, at
+any level, so the utility AI had only `bladder`'s deficit to score with. It
+was latent only because nothing in `src/` calls `admitPrisoner` yet. See
+`needs.ts`'s `NEED_SCALE` comment for why 200, `docs/PERSISTENCE.md`'s V4
+section for the save-format consequence, and
+`tests/unit/prisoners-needs.test.ts` plus
+`tests/unit/prisoners-needs-decay-system.test.ts` for what pins it.
 
 ## Regime: schedule blocks by classification group
 

@@ -6,11 +6,21 @@ import { decayNeed, NEED_IDS, type NeedsComponent } from './needs';
 /**
  * Scheduled need decay (issue #24): runs every `intervalTicks`, decaying
  * every need by exactly that many ticks' worth in one batch -- not once
- * per kernel tick per need. `decayNeed` rounds to an integer level per
- * call, so this only needs to be called at one *consistent* batch size
- * (`schedule.intervalTicks`, fixed) to stay deterministic -- it is not
- * required to (and for sub-1-per-tick rates, does not) match what calling
- * it once per single tick would produce; see needs.ts's decay-rate table.
+ * per kernel tick per need.
+ *
+ * `decayNeed` works in the scaled units `NeedsComponent` stores (see
+ * `NEED_SCALE`) and is exactly linear in `ticksElapsed`, so the batch size
+ * below cannot change what a run computes: N ticks in one call and the same
+ * N ticks split across calls land on the same level. `intervalTicks` is
+ * therefore a scheduling choice -- how much work per tick -- in the same
+ * sense as every other multi-rate cadence, and not a balance lever.
+ *
+ * Until #259 that was not true. Decay rounded to a whole level per call
+ * against a `Uint8Array`, and every rate in `NEED_DECAY_PER_TICK` is well
+ * under one level per tick, so `Math.round(n - d) === n` held for five of
+ * the six needs at this cadence and they never decayed at all. Which needs
+ * moved was a property of `intervalTicks`, which is exactly what it must
+ * not be.
  */
 export class NeedsDecaySystem implements SystemRegistration {
   public readonly id = 'prisoners.needs-decay';
@@ -27,7 +37,7 @@ export class NeedsDecaySystem implements SystemRegistration {
     for (const entityId of this.query.execute()) {
       const index = this.store.getIndex(entityId);
       for (const needId of NEED_IDS) {
-        this.needs.set(index, needId, decayNeed(this.needs.get(index, needId), needId, this.schedule.intervalTicks));
+        this.needs.setScaled(index, needId, decayNeed(this.needs.getScaled(index, needId), needId, this.schedule.intervalTicks));
       }
     }
   }

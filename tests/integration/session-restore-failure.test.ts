@@ -4,7 +4,7 @@ import { PrisonSaveRepository } from '../../src/persistence/local/repository';
 import { SessionController } from '../../src/persistence/session/session-controller';
 import { WorkerSessionHost } from '../../src/persistence/session/worker-session-host';
 import { computeSaveChecksum } from '../../src/persistence/checksum';
-import { createSaveEnvelope, type SaveEnvelope } from '../../src/persistence/save-schema';
+import { createSaveEnvelope, SAVE_SCHEMA_VERSION, type SaveEnvelope } from '../../src/persistence/save-schema';
 import type { SimulationClient } from '../../src/simulation/worker/client';
 import { LoopbackWorker } from '../helpers/loopback-worker';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
@@ -65,7 +65,7 @@ function unrestorableEnvelope(revision: number): unknown {
     },
   };
   return {
-    saveSchemaVersion: 3,
+    saveSchemaVersion: SAVE_SCHEMA_VERSION,
     gameVersion: 'test-version',
     prisonId: PRISON_ID,
     revision,
@@ -79,7 +79,7 @@ function unrestorableEnvelope(revision: number): unknown {
 function envelopeWithSeed(seed: number, revision: number): SaveEnvelope {
   const payload = goodPayload(seed);
   return {
-    saveSchemaVersion: 3,
+    saveSchemaVersion: SAVE_SCHEMA_VERSION,
     gameVersion: 'test-version',
     prisonId: PRISON_ID,
     revision,

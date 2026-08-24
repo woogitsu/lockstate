@@ -9,13 +9,14 @@ import {
   uint32Schema,
 } from '../simulation/protocol/types';
 import { MAX_PURCHASE_QUANTITY } from '../simulation/economy';
+import { NEED_MAX_SCALED } from '../simulation/prisoners/needs';
 import { WORLD_CHUNK_SIZE_LIMIT } from '../simulation/world/coordinates';
 import { WORLD_SNAPSHOT_VERSION } from '../simulation/world/sparse-world';
 import { MigrationChain, type MigrationError, type MigrationErrorCode } from './migration';
 import { zodVersionSchema } from './zod-version-schema';
 import { computeSaveChecksum } from './checksum';
 import type { EncodedEntityStoreSnapshot } from './entity-codec';
-import { migrateSaveEnvelopeV1ToV2, migrateSaveEnvelopeV2ToV3 } from './save-migrations';
+import { migrateSaveEnvelopeV1ToV2, migrateSaveEnvelopeV2ToV3, migrateSaveEnvelopeV3ToV4 } from './save-migrations';
 import type { KernelSnapshot } from '../simulation/kernel/kernel';
 import type { WorldSnapshotV1 } from '../simulation/world/sparse-world';
 import type { ConstructionSnapshot } from '../simulation/construction/system';
@@ -23,7 +24,7 @@ import type { EncodedSessionSystems } from '../simulation/runtime/session-system
 import { ACTOR_IDENTITY_SNAPSHOT_VERSION, ACTOR_KINDS, type ActorIdentitySnapshot } from '../simulation/identity/actor-identity';
 
 /** The version every newly written save carries. Older versions are still readable via `saveMigrationChain`. */
-export const SAVE_SCHEMA_VERSION = 3 as const;
+export const SAVE_SCHEMA_VERSION = 4 as const;
 
 // --- Kernel / RNG ---
 
@@ -280,8 +281,9 @@ const entityStoreSnapshotV2Schema = z
 // The mirror of `EncodedSessionSystems`
 // (`src/simulation/runtime/session-systems.ts`). Two separate declarations on
 // purpose, exactly like `SessionSnapshotBundle` and `SavePayload` already
-// are: the simulation may not depend on `src/persistence`, and this schema is
-// frozen historical shape once V4 exists.
+// are: the simulation may not depend on `src/persistence`, and a version's
+// schema here is frozen historical shape once the next version exists —
+// which V3's now is, since #259 added V4.
 //
 // Structural validation only, and deliberately permissive about *values* —
 // semantic rules (a free-list entry inside capacity, a legal incident
@@ -294,10 +296,25 @@ const tilePositionSchema = z.object({ x: z.number().int(), y: z.number().int() }
 const entityIdSchema = z.number().int().min(0);
 const byteSchema = z.number().int().min(0).max(255);
 
-const needLevelsSchema = z.array(byteSchema);
+/**
+ * Need levels are stored *scaled* by the simulation since V4 (issue #259):
+ * `NeedsComponent` keeps `level * NEED_SCALE` so a decay step smaller than
+ * one whole level is not rounded away, and the payload carries those stored
+ * units verbatim so a restore is exact down to the sub-level remainder.
+ *
+ * The bound is therefore per-version, and every schema below that depends on
+ * it is a factory rather than a constant: V3 is frozen at whole levels
+ * (`0..255`) and must stay that way for the migration chain to validate a
+ * V3 save, while V4 admits the scaled range. Nothing else about the shape
+ * differs between the two versions.
+ */
+const NEED_LEVEL_MAX_V3 = 255;
+const NEED_LEVEL_MAX_V4 = NEED_MAX_SCALED;
 
-const prisonerComponentsSchema = z
-  .object({
+const needLevelsSchemaFor = (needLevelMax: number) => z.array(z.number().int().min(0).max(needLevelMax));
+
+const prisonerComponentsSchemaFor = (needLevelMax: number) =>
+  z.object({
     activeLength: z.number().int().min(0).max(0xf_ffff),
     sentenceLengthTicks: z.array(uint32Schema),
     priorIncidentsAtIntake: z.array(byteSchema),
@@ -309,12 +326,12 @@ const prisonerComponentsSchema = z
     // silently reinterpret an existing save's levels as a different need.
     needs: z
       .object({
-        hunger: needLevelsSchema,
-        sleep: needLevelsSchema,
-        hygiene: needLevelsSchema,
-        bladder: needLevelsSchema,
-        safety: needLevelsSchema,
-        recreation: needLevelsSchema,
+        hunger: needLevelsSchemaFor(needLevelMax),
+        sleep: needLevelsSchemaFor(needLevelMax),
+        hygiene: needLevelsSchemaFor(needLevelMax),
+        bladder: needLevelsSchemaFor(needLevelMax),
+        safety: needLevelsSchemaFor(needLevelMax),
+        recreation: needLevelsSchemaFor(needLevelMax),
       })
       .strict(),
     actionIndex: z.array(z.number().int().min(-0x8000).max(0x7fff)),
@@ -360,9 +377,9 @@ const roomInstanceSchema = z
   })
   .strict();
 
-const prisonersSectionSchema = z
-  .object({
-    components: prisonerComponentsSchema,
+const prisonersSectionSchemaFor = (needLevelMax: number) =>
+  z.object({
+    components: prisonerComponentsSchemaFor(needLevelMax),
     coldState: z
       .object({
         accommodationInstanceId: z.array(z.tuple([entityIdSchema, z.string().min(1)])),
@@ -764,9 +781,9 @@ const economySectionSchema = z
   })
   .strict();
 
-const sessionSystemsV3Schema = z
-  .object({
-    prisoners: prisonersSectionSchema,
+const sessionSystemsSchemaFor = (needLevelMax: number) =>
+  z.object({
+    prisoners: prisonersSectionSchemaFor(needLevelMax),
     operations: operationsSectionSchema,
     navigation: navigationSectionSchema,
     security: securitySectionSchema,
@@ -775,6 +792,11 @@ const sessionSystemsV3Schema = z
     economy: economySectionSchema.optional(),
   })
   .strict();
+
+/** Frozen historical shape: whole-level needs, as every V3 save on disk carries them. */
+const sessionSystemsV3Schema = sessionSystemsSchemaFor(NEED_LEVEL_MAX_V3);
+/** Current shape: scaled needs (#259). Identical to V3 in every other respect. */
+const sessionSystemsV4Schema = sessionSystemsSchemaFor(NEED_LEVEL_MAX_V4);
 
 // --- Envelope ---
 
@@ -817,13 +839,45 @@ const savePayloadV3Schema = z
   })
   .strict();
 
+/**
+ * V4 (#259): `simulation.prisoners.components.needs` changes **units**.
+ *
+ * The simulation now stores a need level scaled by `NEED_SCALE` rather than
+ * as a whole 0-255 level, because at whole-level resolution the decay step
+ * rounded to zero for five of the six needs and they never moved at all.
+ * The payload carries the stored units, so the same array means something
+ * different than it did in V3 -- a V3 `hunger` of `200` and a V4 `hunger` of
+ * `200` are not the same prisoner.
+ *
+ * That is why this is a version bump and not the optional-field pattern the
+ * "Adding an optional field without a version bump" section in
+ * `docs/PERSISTENCE.md` describes: the reader cannot tell the two apart from
+ * the value, so absence-means-the-old-default does not apply and an existing
+ * field changed meaning. `migrateSaveEnvelopeV3ToV4` is what resolves it, by
+ * rescaling every level exactly once.
+ *
+ * Everything outside that one field is byte-identical to V3.
+ */
+const savePayloadV4Schema = z
+  .object({
+    kernel: kernelSnapshotSchema,
+    world: worldSnapshotSchema,
+    construction: constructionSnapshotSchema,
+    entities: entityStoreSnapshotV2Schema.optional(),
+    simulation: sessionSystemsV4Schema.optional(),
+    identity: actorIdentitySnapshotSchema.optional(),
+  })
+  .strict();
+
 /** Historical V1 payload shape, retained so V1 saves can still be validated and migrated. */
 export type SavePayloadV1 = DeepReadonly<z.infer<typeof savePayloadV1Schema>>;
 /** Historical V2 payload shape. Only the migration chain and `migrateSaveEnvelopeV2ToV3` should name this. */
 export type SavePayloadV2 = DeepReadonly<z.infer<typeof savePayloadV2Schema>>;
+/** Historical V3 payload shape. Only the migration chain and `migrateSaveEnvelopeV3ToV4` should name this. */
 export type SavePayloadV3 = DeepReadonly<z.infer<typeof savePayloadV3Schema>>;
+export type SavePayloadV4 = DeepReadonly<z.infer<typeof savePayloadV4Schema>>;
 /** The payload shape newly written saves use. Prefer this over the versioned alias at call sites that just mean "a save payload". */
-export type SavePayload = SavePayloadV3;
+export type SavePayload = SavePayloadV4;
 
 /**
  * The envelope's own fields, without `payload`. Kept separate so the two
@@ -871,13 +925,19 @@ const saveEnvelopeV2ObjectSchema = z
 const saveEnvelopeV2Schema = withOrderedTimestamps(saveEnvelopeV2ObjectSchema);
 
 const saveEnvelopeV3ObjectSchema = z
-  .object({ ...saveEnvelopeMetadataShape(SAVE_SCHEMA_VERSION), payload: savePayloadV3Schema })
+  .object({ ...saveEnvelopeMetadataShape(3), payload: savePayloadV3Schema })
   .strict();
 
 const saveEnvelopeV3Schema = withOrderedTimestamps(saveEnvelopeV3ObjectSchema);
 
-/** Validates only the envelope's own fields; `payload` is validated separately by `savePayloadV3Schema`. */
-const saveEnvelopeMetadataV3Schema = withOrderedTimestamps(
+const saveEnvelopeV4ObjectSchema = z
+  .object({ ...saveEnvelopeMetadataShape(SAVE_SCHEMA_VERSION), payload: savePayloadV4Schema })
+  .strict();
+
+const saveEnvelopeV4Schema = withOrderedTimestamps(saveEnvelopeV4ObjectSchema);
+
+/** Validates only the envelope's own fields; `payload` is validated separately by `savePayloadV4Schema`. */
+const saveEnvelopeMetadataV4Schema = withOrderedTimestamps(
   z.object(saveEnvelopeMetadataShape(SAVE_SCHEMA_VERSION)).strict(),
 );
 
@@ -885,13 +945,15 @@ const saveEnvelopeMetadataV3Schema = withOrderedTimestamps(
 export type SaveEnvelopeV1 = DeepReadonly<z.infer<typeof saveEnvelopeV1ObjectSchema>>;
 /** Historical V2 envelope shape. Only the migration chain and the two migrations that touch it should name this. */
 export type SaveEnvelopeV2 = DeepReadonly<z.infer<typeof saveEnvelopeV2ObjectSchema>>;
+/** Historical V3 envelope shape. Only the migration chain and the two migrations that touch it should name this. */
 export type SaveEnvelopeV3 = DeepReadonly<z.infer<typeof saveEnvelopeV3ObjectSchema>>;
+export type SaveEnvelopeV4 = DeepReadonly<z.infer<typeof saveEnvelopeV4ObjectSchema>>;
 /**
  * The envelope shape newly written saves use. Call sites that simply mean "a
  * save envelope" use this alias, so the next version bump does not sweep a
  * rename through the repository the way bumping to V2 did.
  */
-export type SaveEnvelope = SaveEnvelopeV3;
+export type SaveEnvelope = SaveEnvelopeV4;
 
 // --- Migration chain ---
 // Every historical version registers its schema once and is never edited;
@@ -902,7 +964,8 @@ export type SaveEnvelope = SaveEnvelopeV3;
 export const saveMigrationChain = new MigrationChain(SAVE_SCHEMA_VERSION);
 saveMigrationChain.registerSchema(zodVersionSchema(1, saveEnvelopeV1Schema));
 saveMigrationChain.registerSchema(zodVersionSchema(2, saveEnvelopeV2Schema));
-saveMigrationChain.registerSchema(zodVersionSchema(SAVE_SCHEMA_VERSION, saveEnvelopeV3Schema));
+saveMigrationChain.registerSchema(zodVersionSchema(3, saveEnvelopeV3Schema));
+saveMigrationChain.registerSchema(zodVersionSchema(SAVE_SCHEMA_VERSION, saveEnvelopeV4Schema));
 saveMigrationChain.registerMigration({
   fromVersion: 1,
   toVersion: 2,
@@ -912,6 +975,11 @@ saveMigrationChain.registerMigration({
   fromVersion: 2,
   toVersion: 3,
   migrate: (input) => migrateSaveEnvelopeV2ToV3(input as SaveEnvelopeV2),
+});
+saveMigrationChain.registerMigration({
+  fromVersion: 3,
+  toVersion: 4,
+  migrate: (input) => migrateSaveEnvelopeV3ToV4(input as SaveEnvelopeV3),
 });
 
 export type SaveDecodeErrorCode = MigrationErrorCode | 'checksum-mismatch';
@@ -1113,7 +1181,7 @@ export interface CreateSaveEnvelopeInput {
  * live runtime snapshots.
  *
  * The payload is validated **exactly once** here. The envelope's own fields
- * are validated separately by `saveEnvelopeMetadataV2Schema`, which does not
+ * are validated separately by `saveEnvelopeMetadataV4Schema`, which does not
  * re-walk the payload it was just handed; the composed result is then marked
  * trusted so `PrisonSaveRepository.save` does not walk it a third time (#49).
  *
@@ -1121,7 +1189,7 @@ export interface CreateSaveEnvelopeInput {
  * before — validity is still proven, just not proven repeatedly.
  */
 export function createSaveEnvelope(input: CreateSaveEnvelopeInput): TrustedSaveEnvelope {
-  const payload = savePayloadV3Schema.parse({
+  const payload = savePayloadV4Schema.parse({
     kernel: input.kernel,
     world: input.world,
     construction: input.construction,
@@ -1130,7 +1198,7 @@ export function createSaveEnvelope(input: CreateSaveEnvelopeInput): TrustedSaveE
     ...(input.identity === undefined ? {} : { identity: input.identity }),
   });
 
-  const metadata = saveEnvelopeMetadataV3Schema.parse({
+  const metadata = saveEnvelopeMetadataV4Schema.parse({
     saveSchemaVersion: SAVE_SCHEMA_VERSION,
     gameVersion: input.gameVersion,
     prisonId: input.prisonId,
