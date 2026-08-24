@@ -2,6 +2,8 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, posix, relative, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
+import { stripComments } from '../helpers/canonical-iteration';
+
 /**
  * A static contract, in the spirit of `tests/unit/navigation-no-phaser.test.ts`,
  * over *everything the simulation can reach*.
@@ -145,18 +147,18 @@ function buildSimulationImportGraph(): ImportGraph {
   return { files: [...visited].sort(), bareSpecifiers, unresolved };
 }
 
-/**
- * Comments are removed before scanning so the rule can still be *discussed*
- * in documentation comments (several modules explain why they do not use
- * `Math.random()`). This is a guard against honest mistakes, not against a
- * contributor deliberately hiding a call inside a string literal.
- */
-function stripComments(source: string): string {
-  return source
-    .replace(/\/\*[\s\S]*?\*\//g, ' ')
-    .replace(/(^|[^:])\/\/[^\n]*/g, '$1');
-}
 
+// Comments are stripped before scanning so the rule can still be *discussed* in
+// prose -- several modules explain in a doc comment why they do not use
+// `Math.random()`. This is a guard against honest mistakes, not against a
+// contributor deliberately hiding a call inside a string literal.
+//
+// The stripper is the shared one. A local copy here replaced each block comment
+// with a single space, which collapses newlines: harmless while this suite
+// reports only file paths, and silently wrong the day anyone adds a line number
+// to one of its failures. Measured in #193: the deleting variant changed the
+// line count in 341 of 420 files. Consolidated by #198, which leaves exactly
+// one implementation of this rule in `tests/`.
 const repoPath = (file: string): string => relative(REPOSITORY_ROOT, file).split('\\').join(posix.sep);
 
 const GRAPH = buildSimulationImportGraph();
