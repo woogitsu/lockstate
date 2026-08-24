@@ -91,6 +91,25 @@ export const HUD_MESSAGE_KEY = {
   buildableWallBrick: 'hud.build.buildable.wall-brick',
   buildableDoorWooden: 'hud.build.buildable.door-wooden',
 
+  /**
+   * What the player is told when a control's action was refused (issue #207).
+   *
+   * One key per *command* intent rather than one generic sentence, because
+   * the two commands leave the prison in different states and a player acting
+   * on the message needs to know which: a refused clock change leaves the
+   * simulation running exactly as it was, a refused build order leaves
+   * nothing queued.
+   *
+   * Deliberately no key for the thrown `Error`'s own text. Those messages are
+   * hard-coded English raised on the main thread (`src/ui/simulation-commands.ts`,
+   * `src/main.ts`), so putting one on screen would put untranslated text in
+   * the HUD -- which ADR 0011 and `tests/unit/ui-hud-messages.test.ts` forbid.
+   * The diagnostic detail stays with the host through `MountHudOptions.onError`;
+   * what reaches the player is a localized sentence about the outcome.
+   */
+  refusalSetClock: 'hud.refusal.set-clock',
+  refusalPlaceBuildOrder: 'hud.refusal.place-build-order',
+
   severityInfo: 'hud.severity.info',
   severityWarning: 'hud.severity.warning',
   severityDanger: 'hud.severity.danger',

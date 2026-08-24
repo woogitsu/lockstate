@@ -37,6 +37,17 @@ export interface StatusStrip {
   readonly element: HTMLElement;
   /** Controls the caller must gate while an intent is in flight. */
   readonly controls: readonly HTMLButtonElement[];
+  /**
+   * The one button that asks for `kind`, so a refusal can be reported *on the
+   * control that was pressed* (issue #207).
+   *
+   * Narrower than `controls` on purpose: all three transport buttons are
+   * disabled together while a clock command is in flight, because they all
+   * change the same clock -- but only one of them was pressed, and marking
+   * the other two as failed would say that a button the player never touched
+   * had refused something.
+   */
+  controlFor(kind: TransportIntentKind): HTMLButtonElement;
   update(viewModel: HudViewModel): void;
 }
 
@@ -202,6 +213,7 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
   return {
     element: root,
     controls: [transport.pause.element, transport.play.element, transport['fast-forward'].element],
+    controlFor: (kind: TransportIntentKind): HTMLButtonElement => transport[kind].element,
     update,
   };
 }

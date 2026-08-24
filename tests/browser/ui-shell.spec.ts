@@ -91,6 +91,63 @@ test.describe('save panel concurrency (issue #65)', () => {
   });
 });
 
+/**
+ * Issue #208: every player-facing string in the save panel comes from the
+ * catalog.
+ *
+ * ADR 0011 names the pseudo-locale as the tool for this exact question --
+ * "it exposes hard-coded strings (they stay unaccented)" -- and this is the
+ * first place it is pointed at a real UI. Until #208 the panel held about
+ * thirty English literals and passed both localization gates: the HUD's
+ * registry gate collects only `src/ui/hud/**` and `src/ui/primitives/**`,
+ * and the repository-wide one asks whether the keys a file *declares*
+ * resolve, which a file declaring none satisfies trivially.
+ *
+ * It needs a browser because the claim is about what the *panel renders*,
+ * not about what its mapping functions return: `tests/unit/ui-save-panel-status.test.ts`
+ * proves the keys resolve, and proved it while `heading.textContent =
+ * 'Prisons'` sat three lines away.
+ */
+test.describe('save panel localization (issue #208)', () => {
+  test('renders nothing that is not in the catalog, checked in the pseudo-locale', async ({ page }) => {
+    await page.evaluate(() => window.lockstateUiHarness.mountSavePanel({ pseudoLocale: true }));
+    // The empty-list row is painted by `refresh`, not by the constructor,
+    // and it is one of the strings that was hard-coded.
+    await page.evaluate(() => window.lockstateUiHarness.refreshSavePanel());
+
+    const rendered = await page.evaluate(() => window.lockstateUiHarness.savePanelText());
+
+    // The panel's default state: its accessible name, its heading, three
+    // buttons, the empty-list row and the status line. A shrinking list here
+    // would make the assertion below vacuous.
+    expect(rendered.length).toBeGreaterThanOrEqual(7);
+
+    // `pseudoLocalizeText` brackets everything it resolves. A string the
+    // module hard-codes never passes through the localizer, so it arrives
+    // unbracketed -- which is what every one of these was before #208.
+    const notLocalized = rendered.filter((text) => !text.startsWith('⟦') || !text.endsWith('⟧'));
+    expect(notLocalized, 'these strings never went through the localizer').toEqual([]);
+  });
+
+  test('still renders the default locale word for word', async ({ page }) => {
+    // The other direction: routing the strings through the catalog must not
+    // have changed what an English player reads. These are the exact strings
+    // the panel showed before it had any keys at all.
+    await page.evaluate(() => window.lockstateUiHarness.mountSavePanel());
+    await page.evaluate(() => window.lockstateUiHarness.refreshSavePanel());
+
+    expect(await page.evaluate(() => window.lockstateUiHarness.savePanelText())).toEqual([
+      'Prison saves',
+      'Prisons',
+      'New prison',
+      'Save now',
+      'Export',
+      'No prisons yet.',
+      'Local saves only — no network required.',
+    ]);
+  });
+});
+
 test.describe('HUD shell', () => {
   test('renders the status strip and leaves the centre of the screen to the world', async ({ page }) => {
     await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
@@ -199,6 +256,116 @@ test.describe('HUD shell', () => {
       .poll(() => page.evaluate(() => window.lockstateUiHarness.transportDisabled()))
       .toBe(false);
     expect(await page.evaluate(() => window.lockstateUiHarness.takeUnhandledRejections())).toEqual([]);
+  });
+
+  /**
+   * Issue #207: a refused command has to reach the player, not `console.warn`.
+   *
+   * Four comments in `src/` said the HUD "reports on the control that was
+   * pressed" while the only consumer of a failure was a console message, and
+   * the HUD was byte-identical before and after a refusal. These drive the
+   * real `mountHud` with a host that refuses, and read the production DOM.
+   *
+   * The gate's own contract -- that it calls `onError` at all -- is proven
+   * headlessly in `tests/unit/ui-async-action-gate.test.ts`, and it was
+   * always green while this defect was live: the seam is exactly where the
+   * old assertion stopped.
+   */
+  test.describe('a refused command reports to the player (issue #207)', () => {
+    test('a refused clock change changes the HUD and marks the button that was pressed', async ({ page }) => {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(() => window.lockstateUiHarness.failIntents(true));
+
+      const before = await page.evaluate(() => window.lockstateUiHarness.hudText());
+      expect(await page.evaluate(() => window.lockstateUiHarness.refusalProbe())).toMatchObject({
+        visible: false,
+        action: null,
+        failedControls: [],
+      });
+
+      expect(await page.evaluate(() => window.lockstateUiHarness.clickTransport('Pause'))).toBe(true);
+
+      await expect
+        .poll(() => page.evaluate(() => window.lockstateUiHarness.refusalProbe().visible), {
+          message: 'the HUD never reported the refusal',
+        })
+        .toBe(true);
+      const probe = await page.evaluate(() => window.lockstateUiHarness.refusalProbe());
+      expect(probe.action).toBe('set-clock');
+
+      // A sentence about the outcome, not the thrown `Error`: the throw is
+      // English raised on the main thread and may not reach the screen.
+      expect(probe.text).toContain('The clock did not change');
+      expect(probe.text).not.toContain('ui-harness: the host refused');
+      // A live region, or the report never reaches a screen reader at all.
+      expect(probe.role).toBe('status');
+      expect(probe.ariaLive).toBe('polite');
+
+      // "On the control that was pressed", which is what the four comments
+      // claimed: Pause and only Pause, even though all three transport
+      // buttons are disabled together while a clock command is in flight.
+      expect(probe.failedControls).toEqual(['Pause']);
+      expect(probe.describedByRefusal).toBe(true);
+
+      // The measurement issue #207 was filed on: the HUD's rendered text was
+      // byte-identical before and after the press.
+      expect(await page.evaluate(() => window.lockstateUiHarness.hudText())).not.toBe(before);
+
+      // Reported to the player *and* never left for the browser to find.
+      expect(await page.evaluate(() => window.lockstateUiHarness.takeUnhandledRejections())).toEqual([]);
+    });
+
+    test('a later success clears the refusal, so the line never outlives its truth', async ({ page }) => {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(() => window.lockstateUiHarness.failIntents(true));
+      await page.evaluate(() => window.lockstateUiHarness.clickTransport('Pause'));
+      await expect
+        .poll(() => page.evaluate(() => window.lockstateUiHarness.refusalProbe().visible))
+        .toBe(true);
+
+      await page.evaluate(() => window.lockstateUiHarness.failIntents(false));
+      await page.evaluate(() => window.lockstateUiHarness.clickTransport('Pause'));
+
+      await expect
+        .poll(() => page.evaluate(() => window.lockstateUiHarness.refusalProbe()), {
+          message: 'the refusal outlived the successful retry',
+        })
+        .toMatchObject({ visible: false, action: null, failedControls: [] });
+    });
+
+    test('a refused tab change says nothing, because the tab really did change', async ({ page }) => {
+      // Chrome is applied locally before the host is told, so "that did not
+      // go through" would be a false statement on screen. The host still
+      // hears about it.
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(() => window.lockstateUiHarness.failIntents(true));
+
+      expect(await page.evaluate(() => window.lockstateUiHarness.clickTab('build'))).toBe(true);
+      expect((await page.evaluate(() => window.lockstateUiHarness.hudProbe())).activeTab).toBe('build');
+
+      await page.waitForTimeout(100);
+      expect(await page.evaluate(() => window.lockstateUiHarness.refusalProbe())).toMatchObject({
+        visible: false,
+        failedControls: [],
+      });
+      expect(await page.evaluate(() => window.lockstateUiHarness.takeUnhandledRejections())).toEqual([]);
+    });
+
+    test('the refusal line is there at 375px, where the alerts region is not', async ({ page }) => {
+      // `hud.css` drops `.hud__corner` at 720px and below, so a refusal
+      // reported into the alerts list would not exist on a phone at all.
+      await page.setViewportSize({ width: 375, height: 812 });
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(() => window.lockstateUiHarness.failIntents(true));
+      await page.evaluate(() => window.lockstateUiHarness.clickTransport('Pause'));
+
+      await expect
+        .poll(() => page.evaluate(() => window.lockstateUiHarness.refusalProbe().visible), {
+          message: 'the refusal line is not laid out at 375px',
+        })
+        .toBe(true);
+      expect((await page.evaluate(() => window.lockstateUiHarness.layoutProbe())).minimap).toBeNull();
+    });
   });
 
   test('the alerts section folds and unfolds from a single tap on its header', async ({ page }) => {

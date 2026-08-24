@@ -13,7 +13,21 @@ import {
   restoredScopeFor,
   type SessionSnapshotBundle,
 } from '../../src/simulation/runtime/restore-session';
-import { describeRestoredScope } from '../../src/ui/save-panel';
+import { DEFAULT_LOCALE } from '../../src/content/localization';
+import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
+import { type SaveMessage, describeRestoredScope } from '../../src/ui/save-panel';
+
+/**
+ * The panel maps a scope to a message key and its parameters since issue
+ * #208; the sentence a player reads is what this file is about, so it
+ * resolves the key through the real bundled catalog rather than asserting on
+ * the descriptor.
+ */
+const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
+
+function restoredSentence(message: SaveMessage): string {
+  return localizer.format(message.messageKey, message.messageParameters);
+}
 
 /**
  * The restored scope is what the save panel tells the player came back.
@@ -132,7 +146,7 @@ describe('the restored scope describes the bundle, not the save version', () => 
   it('produces a player-facing sentence that does not claim the absent subsystems', () => {
     // The end of the pipe. `describeRestoredScope` is what the save panel
     // renders, and the defect was only ever visible there.
-    const sentence = describeRestoredScope(restoredScopeFor(bundleWith({ entities: true })));
+    const sentence = restoredSentence(describeRestoredScope(restoredScopeFor(bundleWith({ entities: true }))));
 
     expect(sentence).toContain('Not carried by this save version:');
     // The exact claim #109 measured a real panel making about a save that
@@ -208,7 +222,7 @@ describe('both restore paths report the bundle they were given', () => {
     expect(outcome.scope.restored).not.toContain('prisoners, needs, actions and cell assignments');
     expect(outcome.scope.notCarriedByThisSaveVersion).toContain('prisoners, needs, actions and cell assignments');
 
-    const sentence = describeRestoredScope(outcome.scope);
+    const sentence = restoredSentence(describeRestoredScope(outcome.scope));
     const claimed = sentence.slice(0, sentence.indexOf('Not carried by this save version:'));
     expect(claimed).not.toContain('prisoners, needs, actions and cell assignments');
   });

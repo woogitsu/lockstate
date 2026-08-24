@@ -1,7 +1,12 @@
 import type { SaveResult } from '../../src/persistence/local/repository';
 import type { PrisonSlotMetadata } from '../../src/persistence/local/store';
 import type { ActiveSession, SessionLoadOutcome } from '../../src/persistence/session/session-controller';
-import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
+import {
+  Localizer,
+  PSEUDO_LOCALE,
+  buildPseudoLocaleCatalog,
+  defaultMessageCatalogEn,
+} from '../../src/services/localization';
 import {
   EMPTY_HUD_VIEW_MODEL,
   type HudIntent,
@@ -18,6 +23,7 @@ import type {
   LayoutBox,
   LayoutProbe,
   LockstateUiHarness,
+  RefusalProbe,
   RepaintFormatterCost,
 } from './ui-harness-api';
 import { HUD_MESSAGE_KEY, type HudBuildViewModel } from '../../src/ui/hud';
@@ -119,6 +125,18 @@ window.addEventListener('unhandledrejection', (event) => {
 const localizer = new Localizer({ locale: 'en', catalogs: [defaultMessageCatalogEn] });
 
 /**
+ * The pseudo-locale, derived mechanically from the same catalog (ADR 0011).
+ *
+ * Every resolved string comes back bracketed and accented, so any text a
+ * module hard-codes instead of resolving stands out immediately -- which is
+ * exactly the defect issue #208 reported in `src/ui/save-panel.ts`.
+ */
+const pseudoLocalizer = new Localizer({
+  locale: PSEUDO_LOCALE,
+  catalogs: [defaultMessageCatalogEn, buildPseudoLocaleCatalog(defaultMessageCatalogEn)],
+});
+
+/**
  * The real `Localizer`, with a counter around the one method issue #136 is
  * about.
  *
@@ -192,6 +210,7 @@ let hud: ReturnType<typeof mountHud> | undefined;
 const intents: string[] = [];
 let holdClock = false;
 let heldClockIntent: (() => void) | undefined;
+let intentsFail = false;
 
 function findSaveButton(label: string): HTMLButtonElement | undefined {
   const buttons = [...document.querySelectorAll<HTMLButtonElement>('.save-panel__button')];
@@ -199,10 +218,14 @@ function findSaveButton(label: string): HTMLButtonElement | undefined {
 }
 
 window.lockstateUiHarness = {
-  mountSavePanel(): void {
+  mountSavePanel(options?: { readonly pseudoLocale?: boolean }): void {
     panel?.dispose();
     sessions = new StubSessions();
-    panel = new SavePanel(sessions, root);
+    // The host's localizer is passed in rather than left to the panel's
+    // default, which is what `src/main.ts` should also do (issue #208).
+    // `en-XA` is ADR 0011's own tool for the question this panel failed: a
+    // string that is not in the catalog stays unaccented and unbracketed.
+    panel = new SavePanel(sessions, root, options?.pseudoLocale === true ? pseudoLocalizer : localizer);
   },
 
   clickSaveButton(label: string): boolean {
@@ -224,6 +247,20 @@ window.lockstateUiHarness = {
     return document.querySelector('.save-panel__status')?.textContent ?? '';
   },
 
+  savePanelText(): readonly string[] {
+    const panelRoot = document.querySelector<HTMLElement>('.save-panel');
+    if (panelRoot === null) return [];
+    const parts = [
+      panelRoot.getAttribute('aria-label') ?? '',
+      ...[...panelRoot.querySelectorAll<HTMLElement>(
+        '.save-panel__heading, .save-panel__button, .save-panel__empty, .save-panel__status, .save-panel__item-label',
+      )].map((node) => node.textContent ?? ''),
+    ];
+    // An empty string here would satisfy a "starts with the marker" check by
+    // being vacuous, so blanks are dropped and the caller asserts the count.
+    return parts.filter((text) => text.trim().length > 0);
+  },
+
   createCalls(): number {
     return sessions?.createCalls ?? -1;
   },
@@ -234,6 +271,10 @@ window.lockstateUiHarness = {
 
   releaseCreate(outcome: 'ok' | 'worker-timeout'): void {
     sessions?.releaseCreate(outcome);
+  },
+
+  async refreshSavePanel(): Promise<void> {
+    await panel?.refresh();
   },
 
   async settleSavePanel(): Promise<void> {
@@ -253,6 +294,11 @@ window.lockstateUiHarness = {
       build: options?.buildables === undefined ? BUILD_MODEL : buildModelWithCatalogueOf(options.buildables),
       onIntent: (intent: HudIntent) => {
         intents.push(JSON.stringify(intent));
+        // Stands in for a host that refuses -- which in the real app is
+        // `requireSimulation` with no worker, or a `submit` before the
+        // simulation has reported its command sequence (issue #207). Thrown
+        // rather than rejected, because that is the shape both of those take.
+        if (intentsFail) throw new Error('ui-harness: the host refused this intent');
         // Stands in for a slow or wedged host, which is the condition the
         // command gate exists for.
         if (!holdClock || intent.kind !== 'set-clock') return undefined;
@@ -336,6 +382,34 @@ window.lockstateUiHarness = {
     const resolve = heldClockIntent;
     heldClockIntent = undefined;
     resolve?.();
+  },
+
+  failIntents(enabled: boolean): void {
+    intentsFail = enabled;
+  },
+
+  refusalProbe(): RefusalProbe {
+    const line = document.querySelector<HTMLElement>('.hud__refusal');
+    const marked = [...document.querySelectorAll<HTMLElement>('.hud [data-action-failed="true"]')];
+    return {
+      // `offsetParent` is null for an element that is `hidden` or inside one,
+      // which is the state the line starts in. A `hidden` element is still
+      // found by `querySelector`, so presence alone would prove nothing.
+      visible: line !== null && line.offsetParent !== null,
+      text: line?.textContent ?? '',
+      action: line?.dataset['action'] ?? null,
+      failedControls: marked.map((control) => control.getAttribute('title') ?? control.textContent ?? ''),
+      describedByRefusal:
+        line !== null &&
+        marked.length > 0 &&
+        marked.every((control) => control.getAttribute('aria-describedby') === line.id),
+      role: line?.getAttribute('role') ?? null,
+      ariaLive: line?.getAttribute('aria-live') ?? null,
+    };
+  },
+
+  hudText(): string {
+    return document.querySelector<HTMLElement>('.hud')?.innerText ?? '';
   },
 
   layoutProbe(): LayoutProbe {

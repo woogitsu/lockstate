@@ -1101,6 +1101,73 @@ test.describe('the assembled application', () => {
     await expect(page.locator('[data-metric="incidents"] .ui-badge')).toHaveText('Active');
   });
 
+  /**
+   * Issue #207, reproduced exactly as it was reported and then asserted.
+   *
+   * Load the page, do not create a prison, open the Build tab, expand ENTER
+   * COORDINATES, press Place order. `SimulationCommandSender.submit` throws
+   * "No simulation session is running yet", the gate reports it -- and until
+   * this was fixed the only thing that happened was a `console.warn`, with
+   * `.hud` innerText byte-identical before and after, `[data-alert]` still
+   * reading "No active alerts", and the button's own `disabled` and
+   * `aria-busy` back where they started. A refusal indistinguishable from a
+   * success is the failure issue #82 named: a control that silently does
+   * nothing is a lie the player has no way to detect.
+   *
+   * This belongs here rather than in `ui-shell.spec.ts` because nothing
+   * below the assembled page can produce it: the throw comes from the real
+   * command sender, on a real page with no session, and it is
+   * `src/main.ts`'s own wiring that carries it to the HUD. The harness test
+   * beside it proves the HUD's half against a host that refuses on demand;
+   * this proves the two halves are actually connected.
+   */
+  test('a control the simulation refuses says so on screen, not to the console (#207)', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+
+    // No prison is created: with no session, every command is refused. This
+    // is the state a first-time player is in for as long as they leave the
+    // save panel alone.
+    await page.getByRole('button', { name: 'Build' }).click();
+    const coordinates = page.locator('.hud-build .ui-section__header').last();
+    if ((await coordinates.getAttribute('aria-expanded')) === 'false') await coordinates.click();
+
+    const submit = page.locator('.hud-build .ui-section__body .ui-action');
+    await expect(submit).toBeVisible();
+
+    const before = await page.locator('.hud').innerText();
+    await expect(page.locator('.hud__refusal')).toBeHidden();
+
+    await submit.click();
+
+    // What the player sees. The line is real layout, not merely a node in the
+    // DOM, and it names the outcome rather than the thrown English `Error`.
+    const refusal = page.locator('.hud__refusal');
+    await expect(refusal).toBeVisible();
+    await expect(refusal).toContainText('The build order was not placed');
+    await expect(refusal).not.toContainText('No simulation session');
+    // A live region, so it is announced rather than merely drawn.
+    await expect(refusal).toHaveAttribute('role', 'status');
+    await expect(refusal).toHaveAttribute('aria-live', 'polite');
+    await expect(refusal).toHaveAttribute('data-action', 'place-build-order');
+
+    // "On the control that was pressed" -- the sentence four comments in
+    // `src/` made while nothing in the HUD did it.
+    await expect(submit).toHaveAttribute('data-action-failed', 'true');
+    const refusalId = await refusal.getAttribute('id');
+    expect(refusalId).not.toBeNull();
+    await expect(submit).toHaveAttribute('aria-describedby', String(refusalId));
+
+    // The measurement the issue was filed on, in the direction that now
+    // matters: the HUD's rendered text is no longer identical.
+    expect(await page.locator('.hud').innerText()).not.toBe(before);
+
+    // The button comes back live, exactly as it did before: a refusal must
+    // not wedge the control that was refused.
+    await expect(submit).toBeEnabled();
+    await expect(submit).toHaveAttribute('aria-busy', 'false');
+  });
+
   test('still mounts the interface when the simulation worker cannot start (#82)', async ({ page }) => {
     // Break `Worker` before any module evaluates, which is the one failure
     // mode `src/main.ts` explicitly promises to survive: "a browser that

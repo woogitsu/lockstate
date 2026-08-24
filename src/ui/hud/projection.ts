@@ -216,3 +216,31 @@ export function severityTone(severity: HudSeverity): BadgeTone {
 export function severityLabelKey(severity: HudSeverity): LocalizationKey {
   return SEVERITY_LABEL_KEYS[severity];
 }
+
+/**
+ * What to tell the player when the host refused the action a control asked
+ * for (issue #207).
+ *
+ * A *command* -- a clock change, a build order -- asks the simulation to
+ * change and changes nothing locally, so a refusal means the prison is
+ * exactly as it was and the player has to be told, or the control they
+ * pressed is a control that silently did nothing (issue #82's point).
+ *
+ * A *chrome* intent returns `undefined`, and that is the whole reason this
+ * is a mapping rather than one generic sentence: selecting a tab, folding a
+ * panel or arming the build tool has **already been applied locally** before
+ * the host is told, so a failure to notify the host is not something the
+ * player did not get. Saying "that did not go through" about a tab that
+ * visibly did would be a false statement on screen -- the failure still
+ * reaches the host through `MountHudOptions.onError`.
+ */
+export function refusalMessageKey(actionId: string): LocalizationKey | undefined {
+  switch (actionId) {
+    case 'set-clock':
+      return HUD_MESSAGE_KEY.refusalSetClock;
+    case 'place-build-order':
+      return HUD_MESSAGE_KEY.refusalPlaceBuildOrder;
+    default:
+      return undefined;
+  }
+}

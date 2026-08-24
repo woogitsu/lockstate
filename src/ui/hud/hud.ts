@@ -6,7 +6,7 @@ import {
   createBusyGroup,
   runReported,
 } from '../primitives/async-action';
-import { element, eyebrowText } from '../primitives/dom';
+import { element, eyebrowText, nextUiId } from '../primitives/dom';
 import type { IconId } from '../primitives/icon';
 import { type CollapsibleSection, createCollapsibleSection } from '../primitives/collapsible-section';
 import { type ListRow, createListRow } from '../primitives/list-row';
@@ -24,7 +24,7 @@ import {
   isPanelCollapsed,
 } from './hud-state';
 import { HUD_MESSAGE_KEY } from './messages';
-import { nextFastForwardSpeed, severityLabelKey, severityTone } from './projection';
+import { nextFastForwardSpeed, refusalMessageKey, severityLabelKey, severityTone } from './projection';
 import { type TransportIntentKind, createStatusStrip } from './status-strip';
 import {
   EMPTY_HUD_VIEW_MODEL,
@@ -41,9 +41,13 @@ import {
  *
  * It frames the world and never covers it: a dense strip along the top, a
  * tab bar centred along the bottom, a minimap frame in the bottom-left
- * corner, and nothing at all in the middle. The root is `pointer-events:
- * none` so every pixel that is not a control passes clicks straight through
- * to the renderer's canvas.
+ * corner, and nothing at all in the middle. One more band can appear
+ * directly under the strip -- the refusal line, empty and `hidden` until a
+ * control's action is refused (issue #207) -- and it is a grid row of its
+ * own rather than an overlay, so even then the HUD shrinks the world's space
+ * instead of covering it. The root is `pointer-events: none` so every pixel
+ * that is not a control passes clicks straight through to the renderer's
+ * canvas.
  *
  * It renders from a plain `HudViewModel` and imports nothing from
  * `src/simulation/**` -- `AGENTS.md` boundary 1, restated: the HUD is a view
@@ -123,6 +127,18 @@ export interface MountHudOptions {
    * discarded.
    */
   readonly onIntent?: (intent: HudIntent) => void | Promise<void>;
+  /**
+   * Receives every failure, for the host's own diagnostics.
+   *
+   * It is **not** how the player is told. The HUD reports a refused command
+   * itself -- on the control that was pressed and in its own live region --
+   * because for four releases this callback was the only consumer of a
+   * failure and the one production handler wrote it to `console.warn`, so a
+   * "Place order" with no session left the HUD byte-identical (issue #207).
+   * A host that omits this still shows the player a refusal; what it loses
+   * is the thrown `Error`, which is diagnostic English and deliberately
+   * never reaches the screen (ADR 0011).
+   */
   readonly onError?: (failure: AsyncActionFailure) => void;
 }
 
@@ -175,7 +191,94 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   let state = options.initialState ?? INITIAL_HUD_SHELL_STATE;
   let viewModel = options.viewModel ?? EMPTY_HUD_VIEW_MODEL;
 
-  const reportError = (failure: AsyncActionFailure): void => options.onError?.(failure);
+  /**
+   * Where a refused command is reported to the player (issue #207).
+   *
+   * A live region of the HUD's own, in a grid row directly under the status
+   * strip, `hidden` while there is nothing to say. Three properties earned it
+   * that place rather than a row in the alerts list:
+   *
+   *   - **It is there at every viewport.** `hud.css` drops `.hud__corner`
+   *     entirely at 720px and below, so the alerts list -- the region issue
+   *     #82 established as "reaching the player" -- does not exist on a
+   *     phone. A refusal surface that vanishes on the smallest screen is the
+   *     same defect in a narrower window.
+   *   - **It is there without being opened.** The alerts section starts
+   *     folded (`INITIAL_HUD_SHELL_STATE`) and its body is `hidden` while it
+   *     is, so appending a row to it changes nothing a player can see.
+   *   - **It is not simulation state.** `HudViewModel.alerts` is what the
+   *     host says about the prison; a control the host refused is a fact
+   *     about this HUD's own interaction, and folding it into the view model
+   *     would mean the HUD writing into the data it is a view over.
+   *
+   * It does **not** auto-dismiss. A message that clears itself on a timer is
+   * a race against how fast the player reads, and there is no press to
+   * acknowledge it -- so it stays until the same action later succeeds, which
+   * is the first moment its sentence stops being true.
+   */
+  const refusalId = nextUiId('hud-refusal');
+  const refusalText = element('span', { className: 'hud-refusal__text' });
+  const refusal = element('div', {
+    className: 'hud__refusal',
+    attributes: { id: refusalId, role: 'status', 'aria-live': 'polite' },
+    children: [refusalText],
+  });
+  refusal.hidden = true;
+
+  /**
+   * The control that asked for the command now in flight, so the report lands
+   * *on the control that was pressed* rather than merely somewhere on screen.
+   *
+   * `AsyncActionFailure.actionId` is the intent kind, and the gate is
+   * single-slot, so one entry per kind is enough to name the button. Both
+   * controls registered here carry no `aria-describedby` of their own; one
+   * that gained one would need this to merge rather than replace.
+   */
+  const commandControls = new Map<string, HTMLElement>();
+  let refusedAction: string | undefined;
+
+  const markControl = (actionId: string, refused: boolean): void => {
+    const control = commandControls.get(actionId);
+    if (control === undefined) return;
+    if (refused) {
+      control.dataset['actionFailed'] = 'true';
+      control.setAttribute('aria-describedby', refusalId);
+      return;
+    }
+    delete control.dataset['actionFailed'];
+    control.removeAttribute('aria-describedby');
+  };
+
+  /**
+   * Reports a failure to the player, then hands it to the host.
+   *
+   * In that order deliberately: a host handler that throws must not be able
+   * to swallow the player's half of the report.
+   */
+  const reportError = (failure: AsyncActionFailure): void => {
+    const messageKey = refusalMessageKey(failure.actionId);
+    // `undefined` is a chrome intent, which has already been applied locally
+    // -- see `refusalMessageKey`. Nothing is shown, and the host still hears.
+    if (messageKey !== undefined) {
+      if (refusedAction !== undefined && refusedAction !== failure.actionId) markControl(refusedAction, false);
+      refusedAction = failure.actionId;
+      refusalText.textContent = t(messageKey);
+      refusal.dataset['action'] = failure.actionId;
+      refusal.hidden = false;
+      markControl(failure.actionId, true);
+    }
+    options.onError?.(failure);
+  };
+
+  /** The refusal stops being true the moment the same action succeeds. */
+  const clearRefusal = (actionId: string): void => {
+    if (refusedAction !== actionId) return;
+    refusedAction = undefined;
+    markControl(actionId, false);
+    refusalText.textContent = '';
+    delete refusal.dataset['action'];
+    refusal.hidden = true;
+  };
 
   const busy = createBusyGroup();
   const gate = new AsyncActionGate({
@@ -189,9 +292,13 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * commands, and so a rejection is reported rather than discarded (issue
    * #65). Nothing changes locally -- the HUD waits for the next snapshot.
    */
-  const dispatchCommand = (intent: HudIntent): void => {
+  const dispatchCommand = (intent: HudIntent, control: HTMLElement): void => {
+    commandControls.set(intent.kind, control);
     gate.run(intent.kind, async () => {
       await options.onIntent?.(intent);
+      // Reached only when the host did not throw or reject, which is the one
+      // moment a standing refusal for this action becomes false.
+      clearRefusal(intent.kind);
     });
   };
 
@@ -214,7 +321,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   const strip = createStatusStrip({
     localizer,
     onTransport: (kind: TransportIntentKind) => {
-      dispatchCommand(transportIntent(kind, viewModel));
+      dispatchCommand(transportIntent(kind, viewModel), strip.controlFor(kind));
     },
   });
 
@@ -270,7 +377,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     localizer,
     model: options.build ?? { buildables: [], origin: { x: 0, y: 0 } },
     onPlace: (intent) => {
-      dispatchCommand({ kind: 'place-build-order', ...intent });
+      dispatchCommand({ kind: 'place-build-order', ...intent }, buildPanel.submitControl);
     },
     onArm: (armed, definitionId) => {
       runReported('arm-build-tool', () => options.onIntent?.({ kind: 'arm-build-tool', armed, definitionId }), reportError);
@@ -316,7 +423,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
 
   const hud = element('div', {
     className: 'hud',
-    children: [strip.element, corner, rail, tabBar],
+    children: [strip.element, refusal, corner, rail, tabBar],
   });
 
   // Only the controls that issue a *command* are disabled while one is in

@@ -130,8 +130,18 @@ export class SimulationCommandSender {
    * Posts a command, throwing rather than pretending when it cannot.
    *
    * A silent no-op here would be the worst possible failure: the player taps
-   * "Place order", nothing happens, and nothing says why. The HUD's gate
-   * reports a thrown error on the control that was pressed.
+   * "Place order", nothing happens, and nothing says why. A throw on the
+   * HUD's numeric route now reaches the HUD's own failure surface: the submit
+   * button is marked as failed and the refusal line under the status strip
+   * says the order was not placed (issue #207 -- until it was fixed, this
+   * sentence claimed a report that only ever reached `console.warn`). The
+   * thrown text is not what the player reads: it is English raised on this
+   * thread, and the HUD may not put untranslated text on screen (ADR 0011),
+   * so it travels to the host as diagnostics instead.
+   *
+   * The *map* route is still console-only. A run laid by dragging on the
+   * world goes through `BuildTool`, and its `onError` in `src/main.ts` is a
+   * `console.warn` -- that refusal reaches a developer and not a player.
    */
   public submit(command: SimulationCommand): void {
     if (!this.ready) {
