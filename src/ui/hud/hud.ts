@@ -197,8 +197,9 @@ export interface MountHudOptions {
    * costs nothing. Supplied, it is laid out at every viewport and needs no
    * control pressed and no section opened to be read.
    *
-   * Deliberately **not** an entry in `HudViewModel.alerts`, and deliberately
-   * not settable afterwards. See the comment on the element in `mountHud`.
+   * Deliberately **not** an entry in `HudViewModel.alerts`. See the comment
+   * on the element in `mountHud`, and `HudHandle.setUnavailable` for why the
+   * band can also be raised after the mount.
    */
   readonly unavailable?: HudUnavailableNotice;
   /**
@@ -287,6 +288,20 @@ export interface HudHandle {
    * mouse wiggle look like a simulation update.
    */
   setBuildTarget(target: BuildPanelTarget | undefined): void;
+  /**
+   * Raises or clears the standing "this page has no simulation" band after the
+   * mount (issues #82, #149).
+   *
+   * A key or nothing, exactly like `MountHudOptions.unavailable`: the HUD
+   * renders the sentence and never learns what caused it. Passing `undefined`
+   * hides the band and empties it, so a page that recovers a worker stops
+   * saying it has none.
+   *
+   * Idempotent by construction -- setting the notice it already shows repaints
+   * the same text -- because the host that calls it reports the state of the
+   * page after every attempt to obtain a worker, not only the transitions.
+   */
+  setUnavailable(notice: HudUnavailableNotice | undefined): void;
   getState(): HudShellState;
   /** Applies a shell action programmatically -- restoring a saved UI state, or a test. */
   dispatch(action: HudShellAction): void;
@@ -330,10 +345,14 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * belongs to no control and cannot stop being true while the page is
    * loaded. Sharing one band would need a rule deciding which sentence wins.
    *
-   * Set once, at mount, with no setter: the host learns this before it
-   * mounts the HUD -- a `Worker` constructor that threw does not un-throw --
-   * so a `setUnavailable` would be an API for a transition that cannot
-   * happen.
+   * Set at mount *and* settable afterwards (`setUnavailable`). It used to be
+   * mount-only, on the argument that the host learns this before it mounts the
+   * HUD because a `Worker` constructor that threw does not un-throw. That
+   * argument held only while the page constructed exactly one worker, at boot.
+   * Since #149 a session boundary is a `Worker` boundary, so a construction can
+   * fail -- or start working again -- long after first paint, and a band that
+   * could not follow that would either miss the failure or keep asserting it
+   * after the page had a simulation again.
    */
   const unavailableText = element('span', { className: 'hud-unavailable__text' });
   const unavailable = element('div', {
@@ -346,8 +365,11 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     attributes: { role: 'status', 'aria-live': 'polite' },
     children: [unavailableText],
   });
-  if (options.unavailable === undefined) unavailable.hidden = true;
-  else unavailableText.textContent = t(options.unavailable.labelKey);
+  function setUnavailable(notice: HudUnavailableNotice | undefined): void {
+    unavailable.hidden = notice === undefined;
+    unavailableText.textContent = notice === undefined ? '' : t(notice.labelKey);
+  }
+  setUnavailable(options.unavailable);
 
   /**
    * Where a refused command is reported to the player (issue #207).
@@ -751,6 +773,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     brandSlot: strip.brandSlot,
     update,
     setBuildTarget: (target) => buildPanel.setTarget(target),
+    setUnavailable,
     getState: () => state,
     dispatch: (action: HudShellAction) => {
       applyState(hudShellReducer(state, action));

@@ -208,6 +208,28 @@ describe('simulation snapshot feed', () => {
     expect(feed.readFrame(6.1).revision).toBe(2);
   });
 
+  it('redraws for a new session even when its tick matches the last one drawn', () => {
+    const client = new FakeClient();
+    const { feed } = newFeed(client);
+
+    client.emit(ready());
+    feed.readFrame(0);
+    client.emit(snapshotReply(client.lastRequestId, 0));
+    const first = feed.readFrame(0.1);
+    expect(first.revision).toBe(1);
+
+    // A second session in the same page, which #149 made reachable: the
+    // worker behind this feed is a different one and its prison is a
+    // different prison. Tick 0 is the ordinary case for both -- a freshly
+    // created prison and a saved-while-paused one -- so the "nothing has
+    // advanced, keep the frame" shortcut would otherwise leave the first
+    // prison on screen under the second one's name.
+    client.emit(ready());
+    feed.readFrame(1);
+    client.emit(snapshotReply(client.lastRequestId, 0));
+    expect(feed.readFrame(1.1).revision).toBe(2);
+  });
+
   it('reports an incompatible snapshot instead of drawing something wrong', () => {
     const client = new FakeClient();
     const { feed, errors } = newFeed(client);

@@ -87,9 +87,15 @@ const REQUIRED_WIRINGS: readonly RequiredWiring[] = [
   },
   {
     what: 'the save panel is handed the page\'s localizer',
-    source: 'new SavePanel(controller, savePanelHost, localizer)',
+    source: 'new SavePanel(controller, hud.asideSlot, localizer)',
     reason:
-      'Issue #208. The panel used to default to a localizer of its own over the same catalog -- equivalent while `en` is the only locale, and not equivalent the moment a second ships, when a panel holding its own default-locale localizer would keep rendering English while the rest of the interface changed language. The parameter is required now, so `tsc` guarantees *a* localizer is passed; it cannot guarantee it is the same instance the HUD uses, and re-adding a default would compile. Measured: with the default restored and this line intact the boundary manifest stays green and `tsc` is clean, because an unused default is dead code rather than the defect -- the defect was the composition root not handing one over, which is what this entry pins.',
+      'Issue #208. The panel used to default to a localizer of its own over the same catalog -- equivalent while `en` is the only locale, and not equivalent the moment a second ships, when a panel holding its own default-locale localizer would keep rendering English while the rest of the interface changed language. The parameter is required now, so `tsc` guarantees *a* localizer is passed; it cannot guarantee it is the same instance the HUD uses, and re-adding a default would compile. Measured: with the default restored and this line intact the boundary manifest stays green and `tsc` is clean, because an unused default is dead code rather than the defect -- the defect was the composition root not handing one over, which is what this entry pins. The pinned call reads `hud.asideSlot` since #149, because `bootPersistence` now takes the whole `HudHandle` -- it needs the HUD\'s standing notice as well as its slot. The wiring this entry exists for, the third argument, is untouched.',
+  },
+  {
+    what: 'each session gets a simulation worker of its own',
+    source: 'new WorkerPerSessionHost(workers, {',
+    reason:
+      'Issue #149. `SimulationWorkerStateMachine` accepts one `simulation/initialize` and answers every later one with `already-initialized`, so a page that builds one worker and drives it with a bare `WorkerSessionHost` -- which is what this file did -- can start exactly one session, and every load after the first fails with no way forward but a page reload. Both components are correct in isolation and both have their own green tests; the defect was only ever in the composition, which is what this list is for. `tsc` cannot catch the revert either: `WorkerSessionHost` and `WorkerPerSessionHost` both satisfy `SessionRuntimeHost`, so swapping one for the other compiles. The HUD half of the same wiring -- the `onWorkerAvailability` callback that raises #82\'s notice when a *later* worker cannot be constructed -- is asserted in `tests/browser/app-shell.spec.ts`, where a real `Worker` can actually be blocked.',
   },
   {
     what: 'the lifecycle save handler is attached to the controller',

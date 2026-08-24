@@ -9,7 +9,7 @@ import { expect, test, type Page } from '@playwright/test';
  *
  * Every other spec in this directory drives a purpose-built harness page.
  * That is the right shape for a module under test, but it means nothing so
- * far has ever loaded the page a player loads. Eight claims only exist once
+ * far has ever loaded the page a player loads. Ten claims only exist once
  * the pieces are assembled in a browser, and none of them can be settled a
  * layer down (the count is this list's own length, and it read "six" while
  * the list held seven):
@@ -74,6 +74,21 @@ import { expect, test, type Page } from '@playwright/test';
  *    -- that a gesture becomes one gated intent and that refusing it paints
  *    the line -- is `ui-shell.spec.ts`'s, per the pairing rule in
  *    `docs/TESTING.md`.
+ *
+ * 9. **A second prison loads in the same tab.** The worker refuses every
+ *    `simulation/initialize` after the first, so the page has to give each
+ *    session a `Worker` of its own -- and whether it really constructs a
+ *    second one, terminates the first, and keeps the renderer and the HUD
+ *    attached across the swap is a claim about real `Worker` construction in
+ *    a real browser. `tests/integration/session-second-load.test.ts` proves
+ *    the composition against loopback transports; only this layer has the
+ *    thread (#149).
+ * 10. **A worker that cannot be started for a *later* session is reported
+ *    rather than thrown.** #82's notice used to be a boot-time-only fact, and
+ *    the HUD said so in its own comment. With a worker per session it is not,
+ *    and the only way to prove the report is re-entrant is to let a page boot
+ *    successfully and then take `Worker` away from it, which needs a browser
+ *    (#82, #149).
  *
  * Deliberately NOT here, because a headless test already proves it and a
  * browser test that repeats one costs a minute of CI and adds no evidence:
@@ -1420,6 +1435,145 @@ test.describe('the assembled application', () => {
     // shared one would make every segment after the first a no-op, which is
     // the failure a single shared `transactionId` could otherwise disguise.
     expect(new Set(placed.map((order) => order.orderId)).size).toBe(placed.length);
+  });
+
+  /**
+   * Issue #149, on the page a player actually loads.
+   *
+   * `tests/integration/session-second-load.test.ts` proves the composition
+   * headlessly, against real state machines behind a loopback transport. What
+   * it stands in for is the only thing that matters here: a real second
+   * `Worker`, constructed by a real browser from a real bundled worker chunk,
+   * after a first one has been terminated. That is also where the defect was
+   * -- `src/main.ts` built one worker per page, so the worker's own
+   * `already-initialized` rule turned every load after the first into a dead
+   * end.
+   *
+   * Measured on this page before the fix, at this viewport, by exactly this
+   * sequence: the status line read
+   *
+   *   "Loading failed: Simulation worker fault (already-initialized): Kernel
+   *    is already initialized."
+   *
+   * and `.save-panel__detail` stayed empty, because `requestLoad` never
+   * reached the line that fills it.
+   */
+  test('a second prison loads in the same tab, in a worker of its own (#149)', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.save-panel__item-label')).toHaveText('New Prison (1 gen)');
+    await expect(page.locator('.save-panel__status')).toContainText('Saved (generation ');
+
+    // A second prison, which is already a second `simulation/initialize` in
+    // this page: creating one starts a session exactly as loading one does.
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.save-panel__item-label')).toHaveCount(2);
+    await expect(page.locator('.save-panel__status')).toContainText('Saved (generation ');
+
+    // And now the case the issue is named for: Load, on a prison, in a page
+    // that has already had a session.
+    await page.locator('.save-panel__item').last().getByRole('button', { name: 'Load' }).click();
+
+    await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
+    // The detail line is the half that stayed empty before: it is written
+    // only on the success path, from the bundle the load actually restored.
+    await expect(page.locator('.save-panel__detail')).toContainText('Restored:');
+    await expect(page.locator('.save-panel__status')).not.toContainText('already-initialized');
+
+    // The row the player loaded is the active one, and the HUD is still the
+    // real HUD rather than a shell left behind by a swapped-out worker.
+    await expect(page.locator('.save-panel__item[data-active="true"]')).toHaveCount(1);
+    await expect(page.locator('.hud__unavailable')).toBeHidden();
+
+    // The renderer followed the swap: the clock strip is fed by
+    // `simulation/ready` and `simulation/clock-state` from whichever worker is
+    // current, so a day counter that still reads `--` here would mean the
+    // page's readers were left attached to the terminated one.
+    await expect(page.locator('.hud-clock__day')).not.toHaveText('--');
+
+    // And a third session works too, which is the property "load means what
+    // reloading the page means" actually asserts.
+    await page.locator('.save-panel__item').first().getByRole('button', { name: 'Load' }).click();
+    await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
+  });
+
+  /**
+   * Issue #82's failure path, re-entered rather than run once at boot (#149).
+   *
+   * With a worker per session, `new Worker` can fail long after first paint,
+   * and the outgoing worker is terminated before its replacement is built --
+   * so the page really is left with no simulation, which is precisely what the
+   * `simulation-unavailable` band says. Before #149 this state was
+   * unreachable, and the HUD's own comment said so ("a `Worker` constructor
+   * that threw does not un-throw"), which is why the notice had no setter.
+   *
+   * Blocking `Worker` *after* load rather than in an init script is the whole
+   * point: the boot construction has to succeed, so that this is a later one
+   * failing and not the case the test below already covers.
+   */
+  test('a worker that cannot be started for a later session is reported, not thrown (#82, #149)', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    const unhandled: string[] = [];
+    page.on('pageerror', (error) => unhandled.push(String(error)));
+    await openApp(page);
+
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.save-panel__item-label')).toHaveText('New Prison (1 gen)');
+    await expect(page.locator('.hud__unavailable')).toBeHidden();
+
+    await page.evaluate(() => {
+      (window as unknown as { __realWorker: unknown }).__realWorker = window.Worker;
+      Object.defineProperty(window, 'Worker', {
+        configurable: true,
+        value: function BlockedWorker(): never {
+          throw new DOMException('Worker construction is blocked in this test.', 'SecurityError');
+        },
+      });
+    });
+
+    await page.locator('.save-panel__item').first().getByRole('button', { name: 'Load' }).click();
+
+    // The player is told which action failed, and why, on the panel they
+    // pressed -- an ordinary error, so no save generation was blamed for it.
+    await expect(page.locator('.save-panel__status')).toContainText('Loading failed:');
+    await expect(page.locator('.save-panel__status')).toContainText('could not be started');
+    await expect(page.locator('.save-panel__item-label')).toHaveText('New Prison (1 gen)');
+
+    // And the page says what it now is, in the band that survives every
+    // breakpoint (#220): this tab has no simulation until it is reloaded.
+    const unavailable = page.locator('.hud__unavailable');
+    await expect(unavailable).toBeVisible();
+    await expect(unavailable).toContainText('Simulation unavailable');
+    expect(
+      await page.evaluate(
+        () =>
+          (document.querySelector<HTMLElement>('.hud')?.innerText ?? '').toLowerCase().includes('simulation unavailable'),
+      ),
+    ).toBe(true);
+
+    // And it stops saying so once the page has a simulation again. The band is
+    // a standing statement about this page, so it has to be able to come down:
+    // that is the half of `setUnavailable` a raise-only setter would miss, and
+    // it is only reachable because the failure is.
+    await page.evaluate(() => {
+      Object.defineProperty(window, 'Worker', {
+        configurable: true,
+        value: (window as unknown as { __realWorker: unknown }).__realWorker,
+      });
+    });
+    await page.locator('.save-panel__item').first().getByRole('button', { name: 'Load' }).click();
+    await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
+    await expect(unavailable).toBeHidden();
+    expect(
+      await page.evaluate(
+        () =>
+          (document.querySelector<HTMLElement>('.hud')?.innerText ?? '').toLowerCase().includes('simulation unavailable'),
+      ),
+    ).toBe(false);
+
+    expect(unhandled).toEqual([]);
   });
 
   test('still mounts the interface when the simulation worker cannot start (#82)', async ({ page }) => {

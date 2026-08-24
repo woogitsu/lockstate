@@ -4,8 +4,9 @@ import { IndexedDbLocalSaveStore, openLockstateDatabase } from './persistence/lo
 import { PrisonSaveRepository, type SaveResult } from './persistence/local/repository';
 import { LifecycleSaveHandler } from './persistence/session/lifecycle';
 import { SessionController } from './persistence/session/session-controller';
-import { WorkerSessionHost } from './persistence/session/worker-session-host';
+import { WorkerPerSessionHost } from './persistence/session/worker-per-session-host';
 import { SimulationClient } from './simulation/worker/client';
+import { SimulationWorkerChannel, type SimulationMessageChannel } from './simulation/worker/worker-channel';
 // `?worker` is Vite's statically-analyzable worker import: it emits the
 // worker as its own chunk and gives us a constructor. See SimulationClient's
 // constructor docs for why a bare `new URL(...)` cannot work here.
@@ -61,12 +62,29 @@ import './styles.css';
 const GAME_VERSION = BUILD_IDENTITY.id;
 
 /**
- * The simulation worker is created once, up front, and shared.
+ * The page's channel to whichever simulation worker is current.
  *
- * Both consumers on this thread are readers of the same protocol: the
- * renderer asks it for world snapshots, and persistence asks it for save
- * snapshots. Neither owns simulation state, and a second worker would be a
- * second, divergent simulation.
+ * There is at most one worker at a time and every reader on this thread talks
+ * to the same one: the renderer asks it for world snapshots, the HUD reads its
+ * clock and counts, and persistence asks it for save snapshots. None of them
+ * owns simulation state, and two workers at once would be two divergent
+ * simulations.
+ *
+ * **One at a time is not one per page** (issue #149). The worker's state
+ * machine accepts `simulation/initialize` only while it is `uninitialized`, so
+ * a worker that has hosted a session refuses the next one -- and this module
+ * used to build exactly one, which made *every* load after the first fail in
+ * that tab with `already-initialized` and no way forward but a page reload. A
+ * session boundary is therefore a worker boundary: `WorkerPerSessionHost`
+ * claims a worker that has hosted nothing for each new session, and the
+ * channel keeps the listeners the readers below register at boot pointed at
+ * whichever worker that is.
+ *
+ * `open()` constructs the first one now rather than at the first session, so
+ * that a browser which cannot start a worker is discovered *before* the HUD
+ * mounts -- which is what lets the notice below be painted at first paint
+ * (issue #82). It is not a throwaway probe: it has hosted no session, so the
+ * first one runs in it.
  *
  * A browser that cannot start a worker still gets a running page: the
  * renderer draws an empty world and the save panel reports that there is no
@@ -80,12 +98,14 @@ const GAME_VERSION = BUILD_IDENTITY.id;
  * Each is a different resource and each needed its own guard; none of them is
  * covered by the others.
  */
-let simulation: SimulationClient | undefined;
+const simulationWorkers = new SimulationWorkerChannel(() => new SimulationClient(new SimulationWorker()));
 try {
-  simulation = new SimulationClient(new SimulationWorker());
+  simulationWorkers.open();
 } catch (error) {
   console.error('The simulation worker could not be started; the world will not render.', error);
 }
+/** The channel, or nothing at all when this browser refused to start a worker. */
+const simulation: SimulationWorkerChannel | undefined = simulationWorkers.isOpen ? simulationWorkers : undefined;
 
 /** Used when there is no worker at all -- an empty world, drawn honestly. */
 const NO_SIMULATION_FEED: RenderFeed = { readFrame: () => EMPTY_RENDER_FRAME };
@@ -281,8 +301,12 @@ interface InterfaceHost {
    * pressed -- a pause button that silently does nothing is a lie the player
    * has no way to detect (issue #82's point, applied to the build controls
    * too).
+   *
+   * The channel rather than a `SimulationClient`, because the HUD's readouts
+   * are registered once at mount and have to keep arriving from whichever
+   * worker the current session is running in (issue #149).
    */
-  readonly client?: SimulationClient;
+  readonly client?: SimulationMessageChannel;
   readonly commands?: SimulationCommandSender;
   readonly tool?: BuildTool;
 }
@@ -333,30 +357,35 @@ function requireSimulation(commands: SimulationCommandSender | undefined): Simul
  */
 const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
 
+/**
+ * Without a worker there is no simulation and no session, so there is
+ * genuinely nothing to save -- a save panel here would be a prop. What the
+ * player is owed is being *told*, which the console message alone never did
+ * (issue #82).
+ *
+ * This used to be an entry in `HudViewModel.alerts`, on the premise that
+ * "the alerts region already exists for exactly this". The premise was
+ * false: that region is inside `.hud__corner`, which `hud.css` drops
+ * entirely at 720px and below, and the alerts *section* within it starts
+ * folded (`INITIAL_HUD_SHELL_STATE`), so the row was `offsetParent === null`
+ * with a 0x0 box at **every** viewport and `.hud` innerText never mentioned
+ * it. Measured in Chromium on this page at 1280x800 and 375x812 with
+ * `Worker` construction blocked (issue #220). It now goes to the HUD's own
+ * always-laid-out band instead, which needs no section opened and survives
+ * every breakpoint in `hud.css`.
+ *
+ * Module scope rather than local to `mountInterface`, because there are two
+ * moments this page can end up with no simulation and they must say the same
+ * thing: the boot construction failing, and -- since a session boundary is a
+ * worker boundary (issue #149) -- a later one failing in `bootPersistence`.
+ */
+const SIMULATION_UNAVAILABLE_NOTICE: HudUnavailableNotice = { labelKey: 'hud.unavailable.simulation' };
+
 function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   const { client, commands, tool } = host;
   const simulationUnavailable = client === undefined;
 
   let hud: HudHandle | undefined;
-
-  /**
-   * Without a worker there is no simulation and no session, so there is
-   * genuinely nothing to save -- a save panel here would be a prop. What the
-   * player is owed is being *told*, which the console message alone never did
-   * (issue #82).
-   *
-   * This used to be an entry in `HudViewModel.alerts`, on the premise that
-   * "the alerts region already exists for exactly this". The premise was
-   * false: that region is inside `.hud__corner`, which `hud.css` drops
-   * entirely at 720px and below, and the alerts *section* within it starts
-   * folded (`INITIAL_HUD_SHELL_STATE`), so the row was `offsetParent === null`
-   * with a 0x0 box at **every** viewport and `.hud` innerText never mentioned
-   * it. Measured in Chromium on this page at 1280x800 and 375x812 with
-   * `Worker` construction blocked (issue #220). It now goes to the HUD's own
-   * always-laid-out band instead, which needs no section opened and survives
-   * every breakpoint in `hud.css`.
-   */
-  const unavailableNotice: HudUnavailableNotice = { labelKey: 'hud.unavailable.simulation' };
 
   let viewModel: HudViewModel = EMPTY_HUD_VIEW_MODEL;
 
@@ -392,16 +421,21 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   hud = mountHud(app, {
     localizer,
     viewModel,
-    // Passed at mount, not applied by a later call: with no worker there is
-    // no snapshot coming and nothing that would ever repaint, so a sentence
-    // the HUD only learned about afterwards would never be painted at all
-    // (issue #82). It is also the whole truth about this page -- a `Worker`
-    // constructor that threw does not un-throw -- so there is nothing to
-    // clear it later either.
+    // Passed at mount rather than applied afterwards, because this failure is
+    // known before the HUD exists: with no worker there is no snapshot coming
+    // and nothing that would ever repaint, so a sentence the HUD only learned
+    // about later would not be painted at all (issue #82).
+    //
+    // It is no longer the *whole* truth about this page, which is why
+    // `HudHandle.setUnavailable` exists: a session boundary is a worker
+    // boundary since #149, so a construction that succeeds here can fail on a
+    // later load, and one that failed here still means this page has no
+    // simulation until it is reloaded (nothing retries it -- with no worker
+    // the save panel is never mounted, so no session can be started).
     //
     // Spread rather than passed as `undefined`: `exactOptionalPropertyTypes`
     // is on, so an absent notice has to be an absent property.
-    ...(simulationUnavailable ? { unavailable: unavailableNotice } : {}),
+    ...(simulationUnavailable ? { unavailable: SIMULATION_UNAVAILABLE_NOTICE } : {}),
     build: buildCatalogue(),
     /*
      * The world's build gesture, joined to the HUD's own intent path (#225).
@@ -505,15 +539,20 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
 }
 
 /**
- * `savePanelHost` is the HUD's aside slot, not `#app`.
+ * The save panel goes in the HUD's aside slot, not in `#app`.
  *
- * The save panel used to be appended to `#app` as a sibling of the HUD and
- * positioned by its own `position: fixed` rule, which is exactly how it ended
- * up underneath the Build panel with no layout relating the two (issue #88).
- * Mounting it into the slot puts it in the HUD's grid, so the HUD's own
- * layout decides where it goes and the collision cannot recur.
+ * It used to be appended to `#app` as a sibling of the HUD and positioned by
+ * its own `position: fixed` rule, which is exactly how it ended up underneath
+ * the Build panel with no layout relating the two (issue #88). Mounting it
+ * into the slot puts it in the HUD's grid, so the HUD's own layout decides
+ * where it goes and the collision cannot recur.
+ *
+ * The whole `HudHandle` is passed rather than only that slot, because the
+ * other end of this function needs the HUD too: a worker that cannot be
+ * constructed for a later session has to reach the HUD's standing notice
+ * (issues #82, #149).
  */
-async function bootPersistence(client: SimulationClient, savePanelHost: HTMLElement): Promise<void> {
+async function bootPersistence(workers: SimulationWorkerChannel, hud: HudHandle): Promise<void> {
   let controller: SessionController;
   let panel: SavePanel;
   try {
@@ -523,13 +562,33 @@ async function bootPersistence(client: SimulationClient, savePanelHost: HTMLElem
     // Authoritative simulation state lives in the worker, never here.
     // Saving goes through its snapshot request/response (ADR 0003), so the
     // main thread only ever holds derived projections and save envelopes.
-    const host = new WorkerSessionHost(client);
+    //
+    // A worker per session, not per page (issue #149): the host claims one
+    // that has hosted nothing each time a prison is created or loaded, so
+    // "load" means what a player expects it to mean.
+    const host = new WorkerPerSessionHost(workers, {
+      /*
+       * Issue #82's failure path, re-entered rather than run once at boot.
+       *
+       * Worker construction can now fail long after first paint -- there is
+       * one per session, and the outgoing worker is terminated before its
+       * replacement is built, so a failure leaves the page with no simulation
+       * at all. That is the state the notice describes, so the notice goes up,
+       * by exactly the route it takes when the *first* construction fails. The
+       * player also learns which action failed, on the save panel: the host
+       * raises an ordinary `Error`, which reaches the panel's own failure
+       * line and costs no save generation.
+       */
+      onWorkerAvailability: (available) => {
+        hud.setUnavailable(available ? undefined : SIMULATION_UNAVAILABLE_NOTICE);
+      },
+    });
 
     controller = new SessionController(repository, host, {
       gameVersion: GAME_VERSION,
       onSaveResult: (_prisonId: string, result: SaveResult) => panel.reportBackgroundSave(result),
     });
-    panel = new SavePanel(controller, savePanelHost, localizer);
+    panel = new SavePanel(controller, hud.asideSlot, localizer);
   } catch (error) {
     console.warn('Local save storage is unavailable; continuing without persistence.', error);
     return;
@@ -590,5 +649,5 @@ const mountedHud =
 // the HUD is mounted. That is not a new dependency in disguise: with no
 // interface there is no screen for a save panel to be on.
 if (simulation !== undefined && mountedHud !== undefined) {
-  void bootPersistence(simulation, mountedHud.asideSlot);
+  void bootPersistence(simulationWorkers, mountedHud);
 }

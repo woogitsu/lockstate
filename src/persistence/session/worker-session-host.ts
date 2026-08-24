@@ -109,7 +109,11 @@ export class WorkerSessionHost implements SessionRuntimeHost {
    *
    * The worker also stays usable after refusing a snapshot: the fault is
    * raised as recoverable, so the next generation can be handed to the same
-   * worker rather than needing a new one.
+   * worker rather than needing a new one. This host does exactly that.
+   * Production wraps it in `WorkerPerSessionHost`, which takes a fresh worker
+   * per attempt instead -- not because this one is spent, but because the main
+   * thread cannot tell a worker that refused a snapshot apart from one that
+   * faulted while restoring, and reusing the latter is issue #149 again.
    */
   public async startFromSnapshot(bundle: SessionSnapshotBundle): Promise<void> {
     try {
