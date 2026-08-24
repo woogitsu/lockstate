@@ -139,9 +139,13 @@ export class WorldRenderView {
       ownedParcels.push(createParcelRect(parcel.x, parcel.y, parcel.width, parcel.height));
     }
 
-    // Ascending by row band, then by column within the band. The snapshot's
-    // own chunk order is whatever the simulation emitted, so sorting here is
-    // what makes the order a property of the world rather than of the session.
+    // Ascending by row band, then by column within the band. `SparseWorld`
+    // already emits its chunks in this order -- `compareChunkPositions` is
+    // `left.y - right.y || left.x - right.x` -- so this sort changes nothing
+    // about any snapshot the simulation writes today. It is here so that the
+    // order is a property of the world rather than an agreement with one
+    // producer: `fromSnapshot` accepts whatever a decoded save hands it, and
+    // the walk below reads tile X ordering off this array.
     positions.sort((left, right) => left.chunkY - right.chunkY || left.chunkX - right.chunkX);
 
     return new WorldRenderView(size, chunks, ownedChunkKeys, ownedParcels, bounds, positions);
