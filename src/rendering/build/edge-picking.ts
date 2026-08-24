@@ -215,3 +215,29 @@ export interface BuildToolPort {
   /** Live feedback for the panel's readout. `undefined` when nothing is targeted. */
   target?(segments: readonly EdgeTarget[] | undefined): void;
 }
+
+/**
+ * What the renderer needs from whoever owns the edit history (#261).
+ *
+ * The same shape and the same reason as `BuildToolPort` above: the scene is
+ * where a key press is recognised -- it owns the keyboard adapter and the
+ * context set that keeps a control quiet while a text field has focus -- and
+ * it may not turn one into a command. It reports the request; the composition
+ * root decides what an undo is.
+ *
+ * A **separate** port rather than two more methods on `BuildToolPort`, because
+ * the two answer different questions. `BuildToolPort` is asked whether the
+ * world pointer builds and is handed the gesture it drew; undo is neither, and
+ * it must work whether or not a tool is armed. One object may implement both
+ * -- `BuildTool` does -- and nothing here requires that.
+ *
+ * It lives beside `BuildToolPort` in this file for the reason that one does:
+ * these are the ports the scene is given, and the picking helpers above are
+ * what it uses to fill one of them.
+ */
+export interface EditHistoryPort {
+  /** The player asked for the last thing they did to be reversed. */
+  undo(): void;
+  /** The player asked for the last thing they undid to be reapplied. */
+  redo(): void;
+}

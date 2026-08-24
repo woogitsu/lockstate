@@ -44,9 +44,12 @@ import { stripComments } from '../helpers/canonical-iteration';
  * passing. That mutation is what this file kills.
  *
  * Entries are therefore *few and load-bearing*. Every one names a defect that
- * actually happened; a wiring nobody has broken does not need a line here, and
- * filling this list with every call in `main.ts` would make it a second copy of
- * the file that nobody reads.
+ * actually happened, or -- for the pair added by #261 -- a seam whose deletion
+ * was **measured** to be invisible while it was being built, which is the same
+ * evidence the three defects above produced after the fact. A wiring nobody
+ * has broken and nothing can silently break does not need a line here, and
+ * filling this list with every call in `main.ts` would make it a second copy
+ * of the file that nobody reads.
  */
 
 const MAIN_PATH = join(__dirname, '../../src/main.ts');
@@ -96,6 +99,18 @@ const REQUIRED_WIRINGS: readonly RequiredWiring[] = [
     source: 'new WorkerPerSessionHost(workers, {',
     reason:
       'Issue #149. `SimulationWorkerStateMachine` accepts one `simulation/initialize` and answers every later one with `already-initialized`, so a page that builds one worker and drives it with a bare `WorkerSessionHost` -- which is what this file did -- can start exactly one session, and every load after the first fails with no way forward but a page reload. Both components are correct in isolation and both have their own green tests; the defect was only ever in the composition, which is what this list is for. `tsc` cannot catch the revert either: `WorkerSessionHost` and `WorkerPerSessionHost` both satisfy `SessionRuntimeHost`, so swapping one for the other compiles. The HUD half of the same wiring -- the `onWorkerAvailability` callback that raises #82\'s notice when a *later* worker cannot be constructed -- is asserted in `tests/browser/app-shell.spec.ts`, where a real `Worker` can actually be blocked.',
+  },
+  {
+    what: 'the world\'s undo keys to the renderer',
+    source: '{ buildTool, editHistory: buildTool }',
+    reason:
+      'Issue #261. `WorldSceneOptions.editHistory` is optional -- correctly, since a page with no worker builds no tool and a world with no undo is a coherent state -- so `tsc` cannot say that the running application passes one, and the scene reports an undo to nobody without it. `KeyZ` then does nothing, which is the dead key #200 spent an issue on. Measured while the seam was built: with `editHistory: buildTool` deleted, `tsc` is clean and all 1,780 tests pass, because every other test of this feature drives a harness that constructs its own scene. The one production `new WorldScene(...)` is here.',
+  },
+  {
+    what: 'the world\'s undo keys to the HUD, so a refused undo is reported',
+    source: '{ worldBuild: tool, editHistory: tool }',
+    reason:
+      'Issue #261, and the other half of the same seam. The key reaches the HUD rather than the command sender so that a refusal paints the refusal line instead of a `console.warn` -- the defect #225 removed from the build drag. `MountHudOptions.editHistory` is optional, so deleting this argument compiles, and the HUD then registers no sink: `BuildTool.undo()` drops the request and the player gets silence from a key that is bound. Measured: with `editHistory: tool` deleted, `tsc` is clean and all 1,780 tests pass, because `tests/browser/ui-shell.spec.ts` mounts the HUD with a source of its own.',
   },
   {
     what: 'the lifecycle save handler is attached to the controller',

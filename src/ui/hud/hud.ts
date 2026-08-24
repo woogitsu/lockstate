@@ -125,6 +125,31 @@ export interface HudWorldBuildSource {
   attachOrders(place: (order: HudBuildOrder) => void): void;
 }
 
+/** Which way along the edit history the player asked to move. */
+export type HudHistoryDirection = 'undo' | 'redo';
+
+/**
+ * The world's undo and redo keys, as the HUD is willing to know them (#261).
+ *
+ * The same shape as `HudWorldBuildSource`, and for the same two reasons. The
+ * host builds this before the HUD exists, so the connection is made in this
+ * direction rather than by handing a callback out. And the request arrives as
+ * a *direction*, never as a command: the HUD dispatches its own `undo` or
+ * `redo` intent, so a refused undo is painted on the refusal line by exactly
+ * the machinery a refused build order is, instead of being raised where no
+ * surface reports it -- the shape of the defect #225 removed for the build
+ * gesture.
+ *
+ * There is no control on screen for either. That is not an omission this
+ * interface papers over -- the refusal line is laid out at every viewport and
+ * needs no control to name (`reportError`, and the `worldBuild` attachment
+ * below).
+ */
+export interface HudEditHistorySource {
+  /** Points the undo/redo report at the HUD. Called once, at mount. */
+  attachHistory(request: (direction: HudHistoryDirection) => void): void;
+}
+
 export type HudIntent =
   | { readonly kind: 'select-tab'; readonly tab: HudTabId }
   | { readonly kind: 'set-clock'; readonly mode: HudClockMode; readonly speed: HudSpeed }
@@ -171,7 +196,19 @@ export type HudIntent =
       readonly kind: 'arm-build-tool';
       readonly armed: boolean;
       readonly definitionId: string | undefined;
-    };
+    }
+  /**
+   * The player asked to reverse, or reapply, the last thing they did (#261).
+   *
+   * Two kinds rather than one carrying a direction, because the HUD keys its
+   * gate and its refusal sentence on `intent.kind`: a refused undo and a
+   * refused redo leave the prison in different states and must not share a
+   * line. Payload-free -- *what* gets reversed is the host's and the
+   * simulation's business, and the HUD does not know that `Undo` is a command
+   * any more than it knows `PlaceBuildOrder` is.
+   */
+  | { readonly kind: 'undo' }
+  | { readonly kind: 'redo' };
 
 /**
  * Why this page cannot run a simulation at all.
@@ -234,6 +271,17 @@ export interface MountHudOptions {
    * `Worker` never started, which has no build tool to offer.
    */
   readonly worldBuild?: HudWorldBuildSource;
+  /**
+   * The world's undo and redo keys, routed into the HUD's own intent path
+   * (#261).
+   *
+   * Supplied, the HUD attaches to it once at mount and turns each request into
+   * an `undo` or `redo` intent of its own, gated and reported exactly as a
+   * build order is. Omitted, nothing at all happens and the HUD never hears
+   * about the keys -- which is the state of a page whose `Worker` never
+   * started, because `src/main.ts` builds no build tool for one either.
+   */
+  readonly editHistory?: HudEditHistorySource;
   /**
    * Receives every player action, and may be async.
    *
@@ -648,6 +696,23 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    */
   options.worldBuild?.attachOrders((order) => {
     dispatchCommand({ kind: 'place-build-order', ...order });
+  });
+
+  /**
+   * The undo and redo keys, joined to the same gate (#261).
+   *
+   * The direction is the intent kind, and `tsc` checks that rather than this
+   * line trusting it: a `HudHistoryDirection` member with no matching
+   * `HudIntent` member fails here with "not assignable", measured by adding a
+   * third direction. So the two vocabularies cannot drift apart silently.
+   *
+   * No control is passed, for the reason the gesture above passes none: the
+   * player pressed a key on the world, not a button in the HUD, so there is
+   * nothing on screen for a refusal to be marked on. The refusal line still
+   * says what happened.
+   */
+  options.editHistory?.attachHistory((direction) => {
+    dispatchCommand({ kind: direction });
   });
 
   /**

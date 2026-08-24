@@ -125,10 +125,12 @@ export const HUD_MESSAGE_KEY = {
    * What the player is told when a control's action was refused (issue #207).
    *
    * One key per *command* intent rather than one generic sentence, because
-   * the three commands leave the prison in different states and a player
-   * acting on the message needs to know which: a refused clock change leaves
-   * the simulation running exactly as it was, a refused build order leaves
-   * nothing queued, and a refused purchase leaves the money where it was.
+   * each command leaves the prison in a different state and a player acting
+   * on the message needs to know which: a refused clock change leaves the
+   * simulation running exactly as it was, a refused build order leaves
+   * nothing queued, a refused purchase leaves the money where it was, and a
+   * refused undo or redo leaves in place whatever the player was trying to
+   * take back or reapply.
    *
    * `refusalPurchaseMaterials` covers both ways a purchase is refused before
    * it is sent -- no session at all, and a total the last published balance
@@ -147,6 +149,8 @@ export const HUD_MESSAGE_KEY = {
   refusalSetClock: 'hud.refusal.set-clock',
   refusalPlaceBuildOrder: 'hud.refusal.place-build-order',
   refusalPurchaseMaterials: 'hud.refusal.purchase-materials',
+  refusalUndo: 'hud.refusal.undo',
+  refusalRedo: 'hud.refusal.redo',
 
   severityInfo: 'hud.severity.info',
   severityWarning: 'hud.severity.warning',

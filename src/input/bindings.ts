@@ -34,6 +34,35 @@ export const DEFAULT_KEYBOARD_BINDINGS: readonly KeyboardBinding[] = [
   { device: 'keyboard', code: 'Equal', action: 'camera.zoom.in', contexts: ['world', 'construction'] },
   { device: 'keyboard', code: 'Minus', action: 'camera.zoom.out', contexts: ['world', 'construction'] },
   { device: 'keyboard', code: 'Escape', action: 'build.cancel', contexts: ['world', 'construction', 'modal'] },
+  // Undo and redo the last build gesture (#261). The transaction stack
+  // `ConstructionSystem` maintains could be pushed and never popped: `undo()`
+  // and `redo()` are implemented, `Undo` and `Redo` are declared commands with
+  // handler branches that call them, and nothing in the application could
+  // produce one -- no control, no binding, no intent.
+  //
+  // ## No modifier is expressed here, because none can be
+  //
+  // `KeyboardBinding` has four fields and none of them is a modifier, and
+  // `KeyboardEventLike` reads `code` and `repeat` and nothing else -- so the
+  // adapter cannot tell `Z` from `Ctrl`+`Z` from `Cmd`+`Z`, and a binding
+  // cannot ask it to. **All three therefore reach this entry**, which
+  // `tests/browser/world-scene-input.spec.ts` measures rather than assumes:
+  // the chord a player already has in their fingers works, and so does the
+  // bare key.
+  //
+  // What is *not* available is the other half of a chord scheme -- undo on
+  // `Ctrl`+`Z` and nothing at all on a bare `Z`. That needs a modifier
+  // vocabulary in the binding record, which reaches the versioned settings
+  // format (`src/input/settings.ts`) and the remapping validator, so it is a
+  // schema decision rather than a line here; #261 raises it and deliberately
+  // does not invent one. Until it is taken, the bare key is the control the
+  // player can rely on and the chord is a coincidence that happens to work.
+  //
+  // Physical positions, like every binding above: on AZERTY these two are the
+  // keys labelled `W` and `Y`. `text-entry` is absent from both contexts, so
+  // typing a `z` into the Build panel's coordinate field cancels nothing.
+  { device: 'keyboard', code: 'KeyZ', action: 'edit.undo', contexts: ['world', 'construction'] },
+  { device: 'keyboard', code: 'KeyY', action: 'edit.redo', contexts: ['world', 'construction'] },
 ];
 
 export interface BindingConflict {

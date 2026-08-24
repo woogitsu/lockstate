@@ -11,6 +11,7 @@ import {
   EMPTY_HUD_VIEW_MODEL,
   type HudBuildEdge,
   type HudBuildOrder,
+  type HudHistoryDirection,
   type HudIntent,
   type HudLocalizer,
   type HudViewModel,
@@ -274,6 +275,13 @@ let intentsFail = false;
  * harness's: a stale one would report a gesture into a destroyed shell.
  */
 let worldBuildPlace: ((order: HudBuildOrder) => void) | undefined;
+/**
+ * The sink `mountHud` registers for the world's undo and redo keys (#261).
+ *
+ * Module-level and cleared on every mount, for the same reason `worldBuildPlace`
+ * is: it belongs to the HUD that registered it.
+ */
+let worldHistoryRequest: ((direction: HudHistoryDirection) => void) | undefined;
 
 function findSaveButton(label: string): HTMLButtonElement | undefined {
   const buttons = [...document.querySelectorAll<HTMLButtonElement>('.save-panel__button')];
@@ -374,6 +382,7 @@ window.lockstateUiHarness = {
     // The previous mount's sink belongs to a destroyed HUD; a gesture sent to
     // it would report intents into a shell that is no longer on the page.
     worldBuildPlace = undefined;
+    worldHistoryRequest = undefined;
     hud = mountHud(root, {
       // Stands in for `BuildTool`, which is the only implementation in the
       // application: the composition root hands the HUD a source, the HUD
@@ -382,6 +391,14 @@ window.lockstateUiHarness = {
       worldBuild: {
         attachOrders: (place) => {
           worldBuildPlace = place;
+        },
+      },
+      // Stands in for the same `BuildTool`, under its other port: the scene
+      // reports a key press, the tool reports a direction, and the HUD
+      // dispatches its own gated intent (#261).
+      editHistory: {
+        attachHistory: (request) => {
+          worldHistoryRequest = request;
         },
       },
       localizer: countingLocalizer,
@@ -704,6 +721,12 @@ window.lockstateUiHarness = {
       definitionId,
       edges: edges.map((edge) => ({ x: edge.x, y: edge.y, edge: edge.edge as HudBuildEdge })),
     });
+    return true;
+  },
+
+  pressWorldUndo(direction: string): boolean {
+    if (worldHistoryRequest === undefined) return false;
+    worldHistoryRequest(direction as HudHistoryDirection);
     return true;
   },
 

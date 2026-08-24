@@ -257,10 +257,12 @@ export function severityLabelKey(severity: HudSeverity): LocalizationKey {
  * What to tell the player when the host refused the action a control asked
  * for (issue #207).
  *
- * A *command* -- a clock change, a build order, a purchase -- asks the
- * simulation to change and changes nothing locally, so a refusal means the
+ * A *command* -- a clock change, a build order, a purchase, an undo -- asks
+ * the simulation to change and changes nothing locally, so a refusal means the
  * prison is exactly as it was and the player has to be told, or the control
- * they pressed is a control that silently did nothing (issue #82's point).
+ * they pressed is a control that silently did nothing (issue #82's point). "The
+ * control they pressed" is a key for the undo pair and there is no button to
+ * mark, which changes where the report lands and not whether one is owed.
  *
  * A *chrome* intent returns `undefined`, and that is the whole reason this
  * is a mapping rather than one generic sentence: selecting a tab, folding a
@@ -278,6 +280,10 @@ export function refusalMessageKey(actionId: string): LocalizationKey | undefined
       return HUD_MESSAGE_KEY.refusalPlaceBuildOrder;
     case 'purchase-materials':
       return HUD_MESSAGE_KEY.refusalPurchaseMaterials;
+    case 'undo':
+      return HUD_MESSAGE_KEY.refusalUndo;
+    case 'redo':
+      return HUD_MESSAGE_KEY.refusalRedo;
     default:
       return undefined;
   }

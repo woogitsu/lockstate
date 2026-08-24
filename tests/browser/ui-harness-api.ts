@@ -263,6 +263,19 @@ export interface LockstateUiHarness {
    * asserting about a gesture that never happened.
    */
   dragWorldBuild(definitionId: string, edges: readonly { x: number; y: number; edge: string }[]): boolean;
+  /**
+   * The world's undo or redo key, as the HUD hears it (#261).
+   *
+   * It calls the sink the HUD registered on `MountHudOptions.editHistory`,
+   * which is what `BuildTool.undo()` calls in the running application. The key
+   * itself is `world-scene-input.spec.ts`'s; what this exercises is the half
+   * that lives in `mountHud` -- that a request becomes one gated intent and
+   * that a refusal of it is painted, with no control to mark.
+   *
+   * Returns `false` when no sink is registered, so a spec cannot pass by
+   * asserting about a key press that never reached the HUD.
+   */
+  pressWorldUndo(direction: string): boolean;
   buildLayoutProbe(): BuildLayoutProbe;
   /** Repaints the HUD with a changed view model and reports what it cost the localizer. */
   measureRepaintFormatterCost(): RepaintFormatterCost;

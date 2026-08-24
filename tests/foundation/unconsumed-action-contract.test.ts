@@ -11,9 +11,9 @@ import { ACTION_IDS, ACTION_REGISTRY } from '../../src/input/actions';
  * applies to content ids, and it would have caught five of these nine at
  * declaration time."*
  *
- * Nine actions are declared. Seven are read.
+ * Eleven actions are declared. Nine are read.
  *
- * When this gate was written it was four. `src/rendering/scene/world-scene.ts`
+ * When this gate was written it was nine and four. `src/rendering/scene/world-scene.ts`
  * called `isActive` for `camera.right`/`camera.left`/`camera.down`/`camera.up`
  * and for nothing else, so five ids were declared, given a locale string apiece
  * (`src/content/default-locale-en.ts`), and read by no consumer -- three of
@@ -28,6 +28,12 @@ import { ACTION_IDS, ACTION_REGISTRY } from '../../src/input/actions';
  * `WorldScene.handleActionEvents` consumes the `SemanticActionEvent` array the
  * adapter returns and switches on `action`. Their entries came out of the list
  * below, which is the direction this file was built to force.
+ *
+ * The two ids added since are `edit.undo` and `edit.redo` (#261), declared and
+ * consumed in the same change: they are switched on in the same handler and
+ * bound to `KeyZ` and `KeyY`, so the list below never held an entry for
+ * either. The count moved because the denominator did, not because anything
+ * stopped being read.
  *
  * ## The second rule, added with the consumer
  *
@@ -135,7 +141,7 @@ describe('every declared input action either has a reader or is accounted for', 
     // in a way the file count cannot see, so the positive control names the
     // four ids that are genuinely consumed and where.
     expect(readerSources.length).toBeGreaterThan(50);
-    expect(ACTION_IDS.length).toBe(9);
+    expect(ACTION_IDS.length).toBe(11);
 
     const cameraPoll = readerSources.find((source) => source.where === join('src', 'rendering', 'scene', 'world-scene.ts'));
     expect(cameraPoll, 'the one production consumer of src/input/ is no longer where this gate looks for it').toBeDefined();
@@ -178,15 +184,16 @@ describe('every declared input action either has a reader or is accounted for', 
     ).toEqual([]);
   });
 
-  it('measures seven consumed and two unread, which is what #200 items 2 and 3 changed', () => {
+  it('measures nine consumed and two unread, which is what #200 and #261 left behind', () => {
     // The denominator, stated so the gate reports a fact rather than only
     // guarding one. This is deliberately an exact number in both directions:
     // an action that quietly stopped being read would otherwise only have to
     // be added to the list above, and adding an entry is a smaller act than
     // changing a count that says the control surface is half-built. It was
-    // four and five before the event stream gained a consumer.
+    // four and five before the event stream gained a consumer, and seven and
+    // two before the undo pair was declared and wired in one change (#261).
     expect(unreadIds.length).toBe(2);
-    expect(ACTION_IDS.length - unreadIds.length).toBe(7);
+    expect(ACTION_IDS.length - unreadIds.length).toBe(9);
   });
 
   it('serves each action the way its declared behavior says it can be served', () => {
@@ -217,7 +224,7 @@ describe('every declared input action either has a reader or is accounted for', 
     // Vacuity guard: both routes must actually be found, or the two loops
     // below iterate over nothing and pass while saying nothing.
     expect(polled.length).toBe(4);
-    expect(switched.length).toBe(3);
+    expect(switched.length).toBe(5);
     expect(polled.filter((id) => switched.includes(id)), 'an action served both ways would act twice').toEqual([]);
 
     for (const id of polled) {

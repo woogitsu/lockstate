@@ -32,13 +32,13 @@ design. That gap is now closed except where noted:
   the server timestamps a client could stamp (see "The server's timestamps
   are the server's" below), `20260824110000`, `20260824110100` and
   `20260824110200` for findings 6, 7, 9 and 11, and `20260824150000` for
-  #163's trusted-role `TRUNCATE`. So do **suites 005 to 008 in their
+  #163's trusted-role `TRUNCATE`. So do **suites 005 to 010 in their
   entirety** and every change the first four suites have gained since. All of
   it has been executed only against plain PostgreSQL. The date is what
   defines the set here, not this list: the list stood at eleven while twelve
   postdated the run. The counts above are the stack-run counts, not today's.
-  `pnpm verify:sql` is at 233 assertions
-  (37/37, 88/88, 28/28, 26/26, 8/8, 23/23, 11/11, 12/12), measured on the run that
+  `pnpm verify:sql` is at 268 assertions
+  (37/37, 88/88, 28/28, 26/26, 8/8, 23/23, 11/11, 12/12, 25/25, 10/10), measured on the run that
   produced this line; re-running `supabase test db` is what would raise the
   stack figure to match.
 - **Executed through GoTrue and PostgREST:** `pnpm verify:stack`
@@ -55,7 +55,7 @@ design. That gap is now closed except where noted:
   key, which is the only place PostgREST's mapping of that credential onto
   the role is exercised at all.
 - **Executed against plain PostgreSQL 16.13/18.6 + pgTAP:** every
-  migration and every suite via `pnpm verify:sql` — 233 assertions — which
+  migration and every suite via `pnpm verify:sql` — 268 assertions — which
   prepares a scratch database with
   `scripts/sql/supabase-compat-harness.sql`. This is the only path the
   #105 hardening has run on. That harness
@@ -390,12 +390,15 @@ fail on a constraint before the migration admitting version 2 could exist.
 shape belong to #105 finding 11 and arrived with
 `20260824110200_validate_save_version_storage_path.sql`.
 
-Two columns worth naming as *not* covered, because they are unbounded and the
-finding's own wording excludes them: `entitlements.key`/`value` and
+Four columns are worth naming as *not* covered **by this migration**, because
+the finding's own wording excludes them: `entitlements.key`/`value` and
 `challenge_definitions.definition`/`signature` are written only by
-`SECURITY DEFINER` functions and hold no grant for either client role, so
-they are trusted-tier surface rather than client-writable. They should still
-be bounded; that is a separate piece of work, not a silent omission.
+`SECURITY DEFINER` functions and hold no *write* grant for either client role,
+so they are trusted-tier surface rather than client-writable. (`anon` and
+`authenticated` do hold `SELECT` on `challenge_definitions`, which is what
+makes a published definition readable at all; it is the write side that is
+closed.) They should still be bounded — and they now are, by
+`20260824120000_bound_trusted_tier_columns.sql`, which is the next subsection.
 
 `supabase/tests/006_client_writable_column_bounds.test.sql` asserts every
 bound in **both** directions — refusing a value past the ceiling *and*
@@ -815,6 +818,99 @@ on all eight tables (`Dxt` on five, `rDxt` on `challenge_submissions` and
 project matches is unverified, and a revoke of a privilege that is not held is
 a no-op.
 
+## Policies, not only privileges and declarations
+
+The same shape one layer further in, found by a later audit of the SQL tier
+against its own suite. Suite 003 pins **which role may touch which table**;
+suite 005 pins **how each function is declared**. A third property decides
+what a reachable table actually returns — **the policy** — and until
+`supabase/tests/009_rls_policy_surface.test.sql` existed the whole
+233-assertion suite asserted almost nothing about it.
+
+Measured one mutation at a time, on the scratch database `pnpm verify:sql`
+prepares, re-running all eight suites after each. **Every one of these passed
+233/233:**
+
+| Mutation | What it would mean in production |
+| --- | --- |
+| `save_versions_select_own` → `using (true)` | every signed-in identity reads every cloud save payload in the database |
+| `challenge_submissions_select_own` → `using (true)` | every account reads every other account's submitted evidence |
+| `user_settings_select_own` → `using (true)` | every account reads every other account's cloud-synced settings |
+| `entitlements_select_own` → `using (true)` | every account reads every other account's paid capacity |
+| `profiles_select_own` → `using (true)` | every account reads every profile |
+| `prisons_update_own_metadata` → `using (true) with check (true)` | see below — this one is genuinely hard to catch |
+| `profiles_insert_own` / `user_settings_insert_own` → `with check (true)` | a client writes a row owned by somebody else |
+| `drop policy` on `profiles_select_own`, `entitlements_select_own`, `entitlement_events_select_own`, `user_settings_delete_own`, `prisons_delete_own` | the feature stops working; the table denies the owner their own row |
+
+With `[auth] enable_anonymous_sign_ins = true` the `authenticated` role is
+effectively anyone, so each of the first five rows is a cross-tenant read of
+one of the five things this schema stores about a player, available for the
+price of one signup call. Two ownership boundaries *were* already covered
+before this — `prisons` by suite 001 and the `entitlement_events` audit trail
+by suite 002 — so the gap was the five that nobody had written a case for,
+which is the shape a per-table list always fails in.
+
+**The two halves fail differently, which is why both are now asserted.** A
+*widened* predicate needs an isolation probe (a second account reading the
+first account's row and getting nothing). A *dropped* policy needs a
+reachability probe (the owner reading their own row and getting it), because
+RLS with no policy denies everything, so a cross-account read still returns
+zero. That asymmetry is exactly why `entitlement_events_select_own` could be
+dropped with the suite green while widening it was caught: suite 002 asserts
+that a different account reads none of the ledger, and nothing asserted that
+the owner reads their own.
+
+**One policy cannot be probed behaviourally, and the suite says so rather
+than implying it is covered.** PostgreSQL applies the SELECT policies to the
+rows an UPDATE has to read, so a foreign `UPDATE` on `prisons` is refused by
+`prisons_select_own` before `prisons_update_own_metadata` is consulted —
+which means suite 001's "the foreign UPDATE/DELETE left the owner's prison
+untouched" is testing the SELECT policy a second time. No probe separates the
+two while the SELECT policy is the narrower of them, so that policy is held
+by the catalog matrix and by nothing else.
+
+Suite 009 is shaped the way 005, 007 and 008 are: an exhaustive catalog
+matrix over `pg_policy` (table, command, permissive/restrictive, roles, and
+both expressions), plus rules that hold for a policy nobody has written yet —
+every RLS-enabled table carries at least one policy, no policy expression is
+the literal `true`, every policy is permissive and applies to `PUBLIC`, and
+every policy except the deliberately identity-free
+`challenge_definitions_public_read` names `auth.uid()`.
+
+### The constraints that belong to no column
+
+The same audit found a second blind spot, and this one is a property of how
+suites 007 and 008 enumerate rather than of anyone forgetting a case. Both are
+coverage rules keyed **one row per column**. A constraint that relates *two*
+columns is the declared object for no row, so dropping it fails nothing.
+Measured the same way — every one of these six passed 233/233:
+
+| Constraint | What its absence would permit |
+| --- | --- |
+| `save_versions_exactly_one_location` | a version row with both a payload and a storage path, or neither — the hybrid split this document calls the model |
+| `entitlement_events_provider_pair` | a provider with no event id, so `record_entitlement_event()` takes its deduplicating branch and looks up against `NULL` |
+| `entitlement_events_webhook_requires_provider` | a `payment-webhook` row outside the partial idempotency index entirely — ADR 0008 threat T6's mitigation missing on the one source that must have it |
+| `challenge_submissions_verified_has_score` | a `verified` row with no `ranked_score` |
+| `challenge_submissions_rejected_has_code` | a `rejected` row with no `rejection_code` |
+| `prisons_owner_slot_unique` | two prisons at one slot index for one owner — reachable from a client, through the INSERT grant ADR 0013 deliberately retains |
+
+`supabase/tests/010_constraint_inventory.test.sql` closes it with an
+inventory of every `CHECK`, `UNIQUE`, `PRIMARY KEY` and `FOREIGN KEY` in
+`public` — name, type and the columns it covers — plus a behavioural probe
+for each of the six, and the paired admission that a *complete* verdict is
+still accepted so the two verdict constraints bound a shape rather than
+forbid one.
+
+It pins the catalog facts and deliberately **not** `pg_get_constraintdef`
+text: a rendered predicate is free to differ between PostgreSQL 16 and 18,
+and this schema is run on both, so pinning the text would trade one blind
+spot for a suite that fails on a server-version difference. `contype` is
+restricted to `c`/`u`/`p`/`f` for the same reason — PostgreSQL 17 added NOT
+NULL constraints to `pg_constraint` as `contype = 'n'`. What that leaves
+uncovered is a constraint rewritten in place under the same name over the
+same columns, which suites 006, 007 and 008 already hold for every column
+they declare.
+
 ## Schema (`supabase/migrations/`)
 
 | Table | Purpose | Ownership |
@@ -849,9 +945,15 @@ it closes is a *default*: it must remain closed on a project that sets
 default changed. The grant of the four editable columns is what does the
 positive work in both cases.
 
-`save_versions` goes further: `authenticated`/`anon` get `SELECT` and no
+`save_versions` goes further: `authenticated` gets `SELECT` and no
 insert/update/delete grant at all, so immutability doesn't depend on a
-trigger the client could reason its way around.
+trigger the client could reason its way around. `anon` gets nothing — read
+back from the catalog, its ACL entry on this table is `xt` (`REFERENCES`,
+`TRIGGER`), the ambient residue of Supabase's defaults, and
+`has_table_privilege('anon', 'public.save_versions', 'SELECT')` is false. The
+schema-wide sweep in `supabase/tests/003_data_api_grants.test.sql` says the
+same thing exhaustively: the only relation `anon` reaches in `public` is
+`challenge_definitions`, for `SELECT`.
 
 ## Optimistic concurrency and idempotent resume (`create_save_version`)
 
@@ -974,14 +1076,26 @@ touches Supabase nowhere, and no module in `src/ui/` imports
 
 Supabase's built-in anonymous auth (`supabase.auth.signInAnonymously()`)
 creates a real `auth.users` row; linking a permanent identity later
-(`linkIdentity`/`updateUser`) keeps that **same** `id`. Every foreign key
-in this schema (`prisons.owner_id`, `profiles.id`, `user_settings.user_id`,
-`entitlements.user_id`) points at `auth.users.id`, so upgrading an account
+(`linkIdentity`/`updateUser`) keeps that **same** `id`. Every account-owned
+row in this schema is keyed on `auth.users.id` — six foreign keys point at
+it (`prisons.owner_id`, `profiles.id`, `user_settings.user_id`,
+`entitlements.user_id`, `entitlement_events.user_id`,
+`challenge_submissions.user_id`), and the schema's other three foreign keys
+(`save_versions.prison_id`, `prisons.current_version_id` and
+`challenge_submissions`' composite key into `challenge_definitions`) are
+internal rather than account-facing. So upgrading an account
 requires no data migration or extra step here — existing prisons simply
 continue to belong to the same, now-permanent, identity. This is a
 property of Supabase's anonymous-auth design, not something this schema
 implements itself; it is not exercised by a pgTAP test here because it is
 a GoTrue-level auth flow, not a row-level SQL behavior.
+
+The *other* end of those six keys is a row-level SQL behaviour, and it is
+now exercised: `supabase/tests/009_rls_policy_surface.test.sql` asserts that
+every one of them is `on delete cascade`, and drives one account deletion
+through the case that could plausibly have failed — a prison whose
+`current_version_id` points at one of its own save versions, since
+`prisons_current_version_fk` carries no `ON DELETE` action of its own.
 
 `pnpm verify:stack` is that CLI-level auth flow check. Against the real
 local stack it confirms that `signInAnonymously` issues a session whose

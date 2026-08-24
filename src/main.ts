@@ -166,7 +166,11 @@ const worldScene = new WorldScene({
   feed: renderFeed,
   loadAtlasLibrary: () => atlasLibrary,
   keyValueStore: resolveBrowserKeyValueStore(),
-  ...(buildTool === undefined ? {} : { buildTool }),
+  // The same object under both ports: the tool is where a gesture leaves the
+  // renderer, and since #261 it is where the undo of that gesture leaves too.
+  // Spread rather than passed as `undefined`, because `exactOptionalPropertyTypes`
+  // is on.
+  ...(buildTool === undefined ? {} : { buildTool, editHistory: buildTool }),
 });
 
 const gameConfig: Phaser.Types.Core.GameConfig = {
@@ -505,7 +509,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
      * Spread rather than passed as `undefined`: `exactOptionalPropertyTypes`
      * is on, so an absent tool has to be an absent property.
      */
-    ...(tool === undefined ? {} : { worldBuild: tool }),
+    ...(tool === undefined ? {} : { worldBuild: tool, editHistory: tool }),
     onIntent: (intent: HudIntent) => {
       switch (intent.kind) {
         // Chrome: the HUD has already applied it locally and there is nothing
@@ -528,6 +532,35 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           requireSimulation(commands).setClock(
             intent.mode === 'paused' ? { mode: 'paused' } : { mode: 'running', speed: intent.speed },
           );
+          return;
+
+        /*
+         * Undo, and the reason it was worth wiring a key for (#261).
+         *
+         * `ConstructionSystem` has kept a transaction-grouped, snapshot-safe
+         * undo model since #108, `Undo` and `Redo` have been declared commands
+         * with handler branches since then, and **nothing in the application
+         * could produce one**: no control, no binding, no intent. The stack
+         * could be pushed and never popped.
+         *
+         * Payload-free by protocol: `undoCommandSchema` is `{ type: 'Undo' }`
+         * and the simulation owns which transaction that reverses. So there is
+         * no id to mint here and, unlike a build order, nothing to loop over --
+         * one press is one command, whatever the gesture it takes back covered.
+         * That grouping is the `transactionId` minted below, which is why a
+         * twelve-segment wall undoes as one wall.
+         *
+         * `requireSimulation` throws with no worker and `submit` throws with no
+         * session, and both reach the player: the HUD dispatched this and
+         * paints its refusal line. That is the whole reason the key routes
+         * through the HUD rather than reaching the sender from the renderer.
+         */
+        case 'undo':
+          requireSimulation(commands).submit({ type: 'Undo' });
+          return;
+
+        case 'redo':
+          requireSimulation(commands).submit({ type: 'Redo' });
           return;
 
         case 'place-build-order': {
@@ -583,8 +616,8 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
            * there for ever, because the only way to stock the construction
            * container is a delivery and the only way to buy a delivery was a
            * test. `tests/foundation/unconsumed-command-contract.test.ts` is
-           * the gate that measures this, and this branch is what moves it
-           * from five unproduced commands to four.
+           * the gate that measures this, and this dispatch is what took
+           * `PurchaseMaterials` off its list.
            *
            * The affordability check is here rather than in the HUD, and it is
            * a *report*, not a second treasury. `Treasury.spend` refuses
