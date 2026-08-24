@@ -893,6 +893,7 @@ test.describe('the assembled application', () => {
   test('a prison created in the running game is still listed after a real navigation', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await openApp(page);
+    await expect(page.locator('.save-panel__empty')).toBeVisible();
     await expect(page.locator('.save-panel__empty')).toHaveText('No prisons yet.');
 
     await page.getByRole('button', { name: 'New prison' }).click();
@@ -901,6 +902,7 @@ test.describe('the assembled application', () => {
     // IndexedDB. `(1 gen)` is the proof that generation reached storage —
     // issue #65's orphan was a row with none.
     await expect(page.locator('.save-panel__item-label')).toHaveText('New Prison (1 gen)');
+    await expect(page.locator('.save-panel__status')).toBeVisible();
     await expect(page.locator('.save-panel__status')).toContainText('Saved (generation ');
 
     // A real navigation. The module graph, the Phaser game, the simulation
@@ -1110,6 +1112,9 @@ test.describe('the assembled application', () => {
     await expect(metric('incidents')).toHaveText('2');
     await expect(metric('contraband')).toHaveText('5');
     // The badge follows the count, so the colour is never the only signal.
+    // The badge is the non-colour carrier of the incident state, so a badge
+    // that is present and not painted defeats its own purpose.
+    await expect(page.locator('[data-metric="incidents"] .ui-badge')).toBeVisible();
     await expect(page.locator('[data-metric="incidents"] .ui-badge')).toHaveText('Active');
   });
 
@@ -1155,6 +1160,11 @@ test.describe('the assembled application', () => {
     // What the player sees. The line is real layout, not merely a node in the
     // DOM, and it names the outcome rather than the thrown English `Error`.
     const refusal = page.locator('.hud__refusal');
+    await expect(refusal).toBeVisible();
+    // Visibility first: #218 measured a first draft of this row that was
+    // danger-coloured and laid out from first paint, because `display: flex`
+    // beats the user agent's `[hidden] { display: none }`. A text assertion
+    // alone cannot tell a painted refusal from a hidden one.
     await expect(refusal).toBeVisible();
     await expect(refusal).toContainText('The build order was not placed');
     await expect(refusal).not.toContainText('No simulation session');
@@ -1205,9 +1215,34 @@ test.describe('the assembled application', () => {
     await expect(page.locator('.hud-strip')).toBeVisible();
     expect(await page.locator('.hud-tabs__inner .ui-tab').count()).toBeGreaterThan(0);
 
-    // The player is told. A console message is not communication: it has to
-    // reach the screen, and the alerts region is where the HUD already says
-    // things of this kind.
+    /*
+     * The alert is in the DOM. **It does not reach the screen**, and this
+     * assertion is deliberately DOM-only until #220 is decided.
+     *
+     * This comment used to read "The player is told. A console message is not
+     * communication: it has to reach the screen" -- which was false. Measured
+     * at 1280x800 with `Worker` construction blocked:
+     *
+     *   listExists    true
+     *   listText      "Simulation unavailable — this browser could not start
+     *                  it, so nothing can run or be saved" + "Critical"
+     *   listLaidOut   false          <- offsetParent === null
+     *   listRect      0 x 0
+     *   cornerDisplay "block"        <- so NOT the <=720px media query
+     *   hudMentionsIt false          <- .hud innerText never says it
+     *
+     * `.hud__corner` is displayed; the Alerts *section* starts collapsed
+     * (`INITIAL_HUD_SHELL_STATE`, and `createCollapsibleSection` sets
+     * `body.hidden = collapsed`), so the row has zero size on every viewport
+     * rather than only on a phone. That is a live defect and it is #220's.
+     *
+     * `toContainText` passes here because it does not imply visibility -- which
+     * is exactly how the defect survived. Pairing it with `toBeVisible()` is
+     * the correct assertion and **would fail today**, so it is not added: where
+     * the alert should go, and whether the section should start open, is a
+     * design decision. What is fixed here is the comment, which claimed the
+     * opposite of what the browser does.
+     */
     await expect(page.locator('.hud-alerts__list')).toContainText('Simulation unavailable');
 
     // No save panel, and that is correct rather than a second bug: with no
@@ -1226,6 +1261,7 @@ test.describe('the assembled application', () => {
     const pause = page.locator('.hud-strip__transport [title="Pause"]');
     await pause.click();
     const refusal = page.locator('.hud__refusal');
+    await expect(refusal).toBeVisible();
     await expect(refusal).toBeVisible();
     await expect(refusal).toContainText('The clock did not change');
     await expect(refusal).toHaveAttribute('data-action', 'set-clock');

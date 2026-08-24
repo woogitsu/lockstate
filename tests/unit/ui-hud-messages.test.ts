@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { stripComments } from '../helpers/canonical-iteration';
 import { DEFAULT_LOCALE } from '../../src/content/localization';
 import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
 import { HUD_TABS } from '../../src/ui/hud/hud';
@@ -42,9 +43,33 @@ function collectTypeScriptFiles(directory: string): readonly string[] {
 const hudFiles = collectTypeScriptFiles(HUD_ROOT);
 const primitiveFiles = collectTypeScriptFiles(PRIMITIVES_ROOT);
 
-/** Source with comments removed, so prose about a rule cannot trip the rule. */
+/**
+ * Source with comments removed, so prose about a rule cannot trip the rule.
+ *
+ * The shared stripper from `tests/helpers/canonical-iteration.ts` rather than a
+ * local copy (#193, #198). The local copy removed only *whole-line* `//`
+ * comments, so a **trailing** comment survived it -- and a trailing comment is
+ * exactly where a disabled import or a commented-out reference ends up.
+ *
+ * **Measured, and the consequence is smaller than #188's was, so it is stated
+ * rather than implied.** These are "must not contain" rules, so a surviving
+ * comment makes them fail *loudly* rather than pass silently: with the old
+ * stripper restored and a trailing `// import { Kernel } from
+ * '../../simulation/kernel/kernel';` appended to a real import line in
+ * `src/ui/hud/projection.ts`, "imports nothing from the simulation" **fails**;
+ * with the shared stripper the same mutation leaves all 12 tests passing,
+ * correctly. A false failure is not a hole -- but a gate that fails because
+ * somebody wrote a comment costs the next reader a hunt for an import that
+ * does not exist, and #188's own case (`unconsumed-content-contract`, where the
+ * rule asks "is this referenced" and a comment answers yes) is the direction
+ * that really is silent.
+ *
+ * The second difference is about the failure messages rather than the rules:
+ * the shared stripper replaces a block comment with its own newlines, while
+ * the local copy deleted it outright and shifted every line number after it.
+ */
 function code(path: string): string {
-  return readFileSync(path, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+  return stripComments(readFileSync(path, 'utf8'));
 }
 
 describe('every HUD message key resolves in the bundled default locale', () => {
