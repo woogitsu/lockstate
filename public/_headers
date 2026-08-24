@@ -3,6 +3,56 @@
   X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), geolocation=(), microphone=(), usb=()
+  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Embedder-Policy: require-corp
+  Cross-Origin-Resource-Policy: same-origin
+
+# ADR-0021 records why each directive above is the shape it is, and every
+# allowance in the CSP was measured against the real production bundle running
+# in a real browser rather than reasoned about. The two that are NOT optional,
+# and whose removal was observed to break the renderer:
+#
+#   img-src blob:  Phaser's image loader is XHR -> Blob -> URL.createObjectURL
+#                  (node_modules/phaser/src/loader/filetypes/ImageFile.js:132
+#                  via File.js:583). That is the ONLY path it uses for a loaded
+#                  image, so removing `blob:` blocks every actor atlas with
+#                  `Refused to load the image 'blob:...'`.
+#   img-src data:  Phaser installs its `__DEFAULT`, `__MISSING` and `__WHITE`
+#                  textures from base64 data URIs at boot
+#                  (textures/TextureManager.js:206-216), and device/
+#                  CanvasFeatures.js:30 probes canvas support with two more.
+#                  Removing `data:` produced an uncaught
+#                  `TypeError: Cannot read properties of undefined (reading
+#                  'glTexture')`.
+#
+# `frame-ancestors 'none'` deliberately duplicates `X-Frame-Options: DENY`:
+# the modern directive is what browsers honour, the legacy header is kept for
+# anything that only understands it.
+#
+# NO 'unsafe-eval', and Phaser 4.2.1 does not need it -- the production bundle
+# contains no `eval(` and no `new Function` of its own. Zod's optional JIT does
+# probe for it (`Function('')`, swallowed by its own try/catch in
+# node_modules/zod/v4/core/util.js:145-162), so Chromium reports one caught
+# violation per load and Zod then validates on its interpreter path. That is a
+# reported violation without a broken behaviour; ADR-0021 records the measured
+# cost of the slower path and the `z.config({ jitless: true })` option that
+# would silence the probe.
+#
+# connect-src 'self' is correct today and is a LATENT breakage: no code in
+# `src/` constructs a Supabase client (`SupabaseCloudSaveClient` takes an
+# injected one and imports the type only), so nothing makes a cross-origin
+# request. The day a client is constructed, this directive has to gain the
+# Supabase project origin or every cloud-save call fails. ADR-0021 §"Latent
+# consequences" is the record of that.
+#
+# Cross-origin isolation is on, and it buys something measured rather than
+# assumed: with COOP + COEP the page reports `crossOriginIsolated === true`
+# and `SharedArrayBuffer` becomes available, which is the prerequisite for ever
+# sharing simulation state with the worker without copying. `require-corp` is
+# the aggressive half -- it will reject any future cross-origin subresource
+# that does not opt in -- and ADR-0021 says so.
 
 # `:file` matches a single path segment, so this covers the fingerprinted files
 # Vite emits directly into /assets/ without also matching the /assets/actors/
