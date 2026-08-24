@@ -1,4 +1,4 @@
-import { CURRENT_SAVE_RESTORED_SCOPE, type RestoredScope, type SessionSnapshotBundle } from '../../simulation/runtime/restore-session';
+import { restoredScopeFor, type RestoredScope, type SessionSnapshotBundle } from '../../simulation/runtime/restore-session';
 import { AutosaveScheduler } from '../local/autosave';
 import type { PrisonSaveRepository, SaveResult } from '../local/repository';
 import type { PrisonSlotMetadata } from '../local/store';
@@ -156,8 +156,10 @@ export class SessionController {
 
   /**
    * Loads a prison and makes it the active session. Reports whether recovery
-   * fell back to a previous generation, and what the current save version
-   * actually restores (`CURRENT_SAVE_RESTORED_SCOPE`).
+   * fell back to a previous generation, and what the bundle it actually
+   * loaded restores -- derived from that bundle by `restoredScopeFor`, not
+   * from a constant. This method holds the payload, so it is the only place
+   * that can answer the question honestly for a legacy save (#109).
    *
    * The generation walk covers restore failures, not only decode failures
    * (#103). `loadCurrent` can only judge a generation by schema, migration
@@ -187,12 +189,18 @@ export class SessionController {
         throw new Error(`Save generation "${result.generationId}" was demoted and offered again; the prison cannot be loaded.`);
       }
 
+      // The envelope's payload is structurally the session snapshot bundle;
+      // it has already passed schema, migration and checksum validation in
+      // `loadCurrent`, so the host receives verified state at the current
+      // save-schema version -- an older save was migrated on the way through.
+      //
+      // Read twice, deliberately: once to restore, and once to report which
+      // sections actually arrived. A migrated V1/V2 save carries no
+      // `simulation` or `identity`, and the scope has to say so (#109).
+      const bundle = result.envelope.payload as unknown as SessionSnapshotBundle;
+
       try {
-        // The envelope's payload is structurally the session snapshot bundle;
-        // it has already passed schema, migration and checksum validation in
-        // `loadCurrent`, so the host receives verified state at the current
-        // save-schema version -- an older save was migrated on the way through.
-        await this.host.startFromSnapshot(result.envelope.payload as unknown as SessionSnapshotBundle);
+        await this.host.startFromSnapshot(bundle);
       } catch (error) {
         if (!(error instanceof SnapshotRestoreRejectedError)) throw error;
         await this.repository.demoteGeneration(prisonId, result.generationId);
@@ -205,7 +213,7 @@ export class SessionController {
       return {
         ok: true,
         recovered: demoted.size > 0 || result.outcome === 'recovered-previous',
-        scope: CURRENT_SAVE_RESTORED_SCOPE,
+        scope: restoredScopeFor(bundle),
       };
     }
   }

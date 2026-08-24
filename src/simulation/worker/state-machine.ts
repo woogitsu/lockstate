@@ -14,10 +14,12 @@ import { FixedStepClock, type ClockControl } from '../clock/fixed-step-clock';
 import { HUD_VIEW_MODEL_SCHEMA_VERSION } from '../presentation/view-model';
 import { 
   type MainToWorkerMessage, 
+  type ProtocolFaultCode,
   type SimulationStatusCounts,
   type WorkerToMainMessage, 
   SIMULATION_PROTOCOL_VERSION 
 } from '../protocol/types';
+import type { JsonValue } from '../../shared/json';
 import { projectStatusCounts, statusCountsEqual } from './status-counts';
 
 export type WorkerState = 
@@ -28,8 +30,16 @@ export type WorkerState =
   | 'shutting-down'
   | 'faulted';
 
+/**
+ * The part of a `MessagePort`/worker global this machine uses.
+ *
+ * `message` is the protocol union rather than `any`, so the one place that
+ * posts is checked against the schema's own shape. A real port declares
+ * `postMessage(message: any)` and stays assignable to this, because a
+ * function accepting anything satisfies one accepting less.
+ */
 export interface MessagePortLike {
-  postMessage(message: any, transfer?: Transferable[]): void;
+  postMessage(message: WorkerToMainMessage, transfer?: Transferable[]): void;
 }
 
 /**
@@ -97,7 +107,10 @@ export class SimulationWorkerStateMachine {
   private _kernel: Kernel | null = null;
   private _runtime: SimulationRuntime | null = null;
   private _clock: FixedStepClock = new FixedStepClock(50, { mode: 'paused' });
-  private _tickTimerId: any | null = null;
+  // `setTimeout`/`setInterval` return a number in the DOM and a `Timeout`
+  // object in Node, and this file runs under both. `ReturnType` says exactly
+  // that without reaching for `any`.
+  private _tickTimerId: ReturnType<typeof setInterval> | undefined;
   /** The tick the main thread was last told about, so an unchanged clock says nothing. */
   private _publishedTick: number | null = null;
   private _publishedAtMs = Number.NEGATIVE_INFINITY;
@@ -128,14 +141,14 @@ export class SimulationWorkerStateMachine {
   }
 
   private startTickLoop(): void {
-    if (this._tickTimerId !== null) return;
+    if (this._tickTimerId !== undefined) return;
     this._tickTimerId = setInterval(() => this.onTickLoop(), 15);
   }
 
   private stopTickLoop(): void {
-    if (this._tickTimerId !== null) {
+    if (this._tickTimerId !== undefined) {
       clearInterval(this._tickTimerId);
-      this._tickTimerId = null;
+      this._tickTimerId = undefined;
     }
   }
 
@@ -283,7 +296,7 @@ export class SimulationWorkerStateMachine {
    * failure it did not cause.
    */
   public fault(
-    code: string,
+    code: ProtocolFaultCode,
     message: string,
     options: { readonly replyTo?: string; readonly recoverable?: boolean } = {},
   ): void {
@@ -295,7 +308,7 @@ export class SimulationWorkerStateMachine {
       ...(options.replyTo === undefined ? {} : { replyTo: options.replyTo }),
       kind: 'protocol/error',
       payload: {
-        code: code as any, // mapping code to protocol fault code
+        code,
         message,
         recoverable,
       }
@@ -525,7 +538,15 @@ export class SimulationWorkerStateMachine {
           transport: 'structured-clone',
           schemaId: SESSION_SNAPSHOT_SCHEMA_ID,
           schemaVersion: SESSION_SNAPSHOT_SCHEMA_VERSION,
-          data: bundle as any, // Structurally JSON-compatible; validated as a save envelope on the persistence side.
+          // A `SessionSnapshotBundle` is JSON-compatible in fact but does
+          // not structurally satisfy the recursive `JsonValue`, so the
+          // assertion stays. It names its target rather than `any`, which
+          // would switch off checking for the whole object. The claim it
+          // rests on is checkable: the main thread re-validates this against
+          // `versionedPayloadSchema` in `workerToMainMessageSchema`, and the
+          // persistence layer validates it again as a save payload in
+          // `decodeSaveEnvelope` (`src/persistence/save-schema.ts`).
+          data: bundle as unknown as JsonValue,
         }
       }
     });
