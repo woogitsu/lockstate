@@ -2,10 +2,14 @@
 
 ## Status
 
-**Proposed — pending human approval.** Not accepted.
+**Accepted.**
 
-Two things are bundled in the change this ADR describes, and only one of them
-needs a decision.
+The owner signed off on the one thing this ADR asked for: *an owned parcel
+makes the tiles inside it owned, and an unowned parcel overlapping the same
+tiles does not take that away.*
+
+Two things were bundled in the change this ADR describes, and only one of them
+needed that decision.
 
 Removing the renderer's private copy of the ownership rule does not: it is a
 straight `AGENTS.md` boundary-1 defect fix, and no reviewer needs to weigh it.
@@ -23,8 +27,19 @@ with its ownership rather than only the owned bounds, `WorldRenderView` would
 have to be given the unowned parcels too, and `docs/WORLD.md`'s ownership
 sentence would be rewritten — issue #120 records the replacement wording.
 
-Until this ADR is accepted, `docs/WORLD.md` marks the disjunction as pending
-rather than settled.
+### What the decision was taken against, stated because it bounds the evidence
+
+**No world a running game can reach has overlapping parcels.** `src/` has
+exactly one `registerParcel` call site — `SparseWorld.fromSnapshot`,
+re-registering what a save carried — and nothing creates a parcel, so the case
+this ADR decides has never occurred in a running game. It was accepted on the
+argument rather than on a player-visible symptom, and that is worth knowing if
+the first real parcel content makes the rule feel wrong in play.
+
+What is *not* speculative is the rule's reachability: since #215,
+`ConstructionSystem.submitOrder` calls `canBuildAt`, so the ownership answer
+this ADR settles is consulted on every build gesture. It is a disagreement
+about one that remains unreachable.
 
 ## Context
 

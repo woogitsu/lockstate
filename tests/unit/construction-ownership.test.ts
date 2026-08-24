@@ -35,8 +35,8 @@ import { SparseWorld } from '../../src/simulation/world/sparse-world';
  *
  * ## What this deliberately does not decide
  *
- * ADR 0019 -- tile ownership under overlapping parcels -- is still **Proposed**
- * (#120), and nothing here settles it. The rule for *which* tiles are owned
+ * ADR 0019 -- tile ownership under overlapping parcels -- is **Accepted**, and
+ * nothing here is what settled it. The rule for *which* tiles are owned
  * lives in `isTileOwnedBy` and is what ADR 0019 is about; this file only
  * consumes the answer. The two are separable in fact and not just in
  * principle: `src/` has exactly one `registerParcel` call site

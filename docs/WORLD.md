@@ -68,15 +68,15 @@ containing the tile is sufficient; an unowned parcel covering the same tile
 takes nothing away. Ownership is a disjunction, not a lookup, so it does not
 depend on which parcel comes "first".
 
-**That half of the rule is not settled.**
-[ADR 0019](./adr/0019-tile-ownership-under-overlapping-parcels.md) records it and
-is *Proposed — pending human approval*, so the ownership bullet above and the
-paragraph above describe what the code does today, not a ratified decision.
+That half of the rule is settled.
+[ADR 0019](./adr/0019-tile-ownership-under-overlapping-parcels.md) records it
+and is **Accepted**, so the ownership bullet above is a ratified decision and
+not merely a description of what the code does.
 `SparseWorld.isTileOwned` used to answer differently in exactly one case: a tile
 whose lowest-id covering parcel was unowned while a higher-id parcel covering it
-was owned was unowned to the simulation. If ADR 0019 is rejected, that case
-returns to the old answer and this section is rewritten; issue #120 records the
-replacement wording for the bullet above.
+was owned was unowned to the simulation. That case now answers *owned*, which is
+the change ADR 0019 asked to be signed off, and issue #120 records the wording
+that would have replaced this bullet had it gone the other way.
 
 What does *not* depend on that decision: the rule has exactly one
 implementation, `isTileOwnedBy` in `src/simulation/world/tile-ownership.ts`,

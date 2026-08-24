@@ -100,9 +100,10 @@ describe('world render view', () => {
    *
    * Every assertion below compares the two sides rather than trusting either,
    * so the rule can change but the two cannot drift apart again. Which answer
-   * wins in that one case is ADR 0019, which is Proposed rather than Accepted;
-   * if it is decided the other way these expectations change while the
-   * compare-both-sides shape of them does not.
+   * wins in that one case was ADR 0019, now **Accepted**: the owned parcel
+   * wins. Had it gone the other way these expectations would have changed
+   * while the compare-both-sides shape of them did not, which is the property
+   * that made them safe to write before the decision.
    */
   describe('overlapping parcels', () => {
     // `a-marsh` sorts before `z-estate` in code-unit order, which is the order

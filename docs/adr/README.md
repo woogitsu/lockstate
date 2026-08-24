@@ -42,7 +42,7 @@ this index's. Nothing here changes a status; this table only reports them.
 | [0016](./0016-migration-delivery-mechanism.md) | Which mechanism applies migrations, and to which project | Proposed — pending human approval |
 | [0017](./0017-money-primary-resource-model.md) | Money Is the Primary Resource; Materials Are Procured | Proposed — pending human approval |
 | 0018 | *Reserved by open PR #91 — not in this directory* | not merged, PR held |
-| [0019](./0019-tile-ownership-under-overlapping-parcels.md) | What "owned" means for a tile under overlapping parcels | Proposed — pending human approval |
+| [0019](./0019-tile-ownership-under-overlapping-parcels.md) | What "owned" means for a tile under overlapping parcels | Accepted |
 | [0020](./0020-deterministic-kernel.md) | Deterministic Kernel and Scheduler | Accepted |
 | [0021](./0021-http-response-security-headers.md) | HTTP response security headers for the static-asset deployment | Proposed — pending human approval |
 
