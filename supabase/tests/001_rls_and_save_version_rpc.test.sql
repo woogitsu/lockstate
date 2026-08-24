@@ -25,7 +25,7 @@
 -- which drives the same contract through /auth/v1 and /rest/v1.
 
 begin;
-select plan(32);
+select plan(37);
 
 -- Two auth.users rows to test cross-owner isolation. Inserting directly
 -- into auth.users is the standard way to seed fixtures for RLS pgTAP tests.
@@ -376,6 +376,54 @@ select throws_ok(
   null,
   'and so is the shape: a dot-file segment is refused for a privileged writer as well'
 );
+
+-- --- A client cannot stamp the server's creation timestamps (#194) -----
+--
+-- The grant surface is pinned exhaustively in suite 003; this is the behaviour
+-- that surface produces. Before 20260824140000 both of these inserts succeeded:
+-- a client set `profiles.created_at` to 1970 and `prisons.created_at` to the
+-- year 4000, reproduced as `authenticated` with `current_user` read back.
+--
+-- The refusal is `42501`, not a check violation: this is a privilege boundary
+-- rather than a value one. That distinction matters for the paired admissions
+-- below -- they are what fails if a later change revokes too much.
+
+select set_config('request.jwt.claim.sub', '11111111-1111-1111-1111-111111111111', true);
+set local role authenticated;
+
+select is(current_user::text, 'authenticated', 'the four assertions below run as the client role');
+
+select throws_ok(
+  $$ insert into public.profiles (id, display_name, created_at)
+     values ('11111111-1111-1111-1111-111111111111', 'A', '1970-01-01T00:00:00Z') $$,
+  '42501',
+  null,
+  'a client naming profiles.created_at is refused on the privilege, not on the value'
+);
+
+select lives_ok(
+  $$ insert into public.profiles (id, display_name)
+     values ('11111111-1111-1111-1111-111111111111', 'A') $$,
+  'the same insert without created_at succeeds, so the revoke did not take the whole write path with it'
+);
+
+select throws_ok(
+  $$ insert into public.prisons (owner_id, game_version, slot_index, created_at)
+     values ('11111111-1111-1111-1111-111111111111', 'lockstate-0.0.0', 7,
+             '4000-01-01T00:00:00Z') $$,
+  '42501',
+  null,
+  'a client naming prisons.created_at is refused -- the intent the UPDATE grant already stated, now held on the insert path too'
+);
+
+select lives_ok(
+  $$ insert into public.prisons (owner_id, game_version, slot_index)
+     values ('11111111-1111-1111-1111-111111111111', 'lockstate-0.0.0', 8) $$,
+  'the same insert without created_at succeeds, so suite 004 still drives the slot cap through this grant'
+);
+
+reset role;
+
 
 select * from finish();
 rollback;

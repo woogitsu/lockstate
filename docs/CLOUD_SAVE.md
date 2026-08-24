@@ -22,18 +22,20 @@ design. That gap is now closed except where noted:
   carried, and it earned its keep immediately: the first run failed on the
   *first assertion* of suite 001 and exposed defect 4 below.
 
-  **The #105 hardening is not in that run.** Ten migrations now postdate
+  **The #105 hardening is not in that run.** Eleven migrations now postdate
   it — `20260824090000` and `20260824090100` for findings 5, 10 and 3 (see
   "Declarations, not only privileges" below), `20260824100000` and
   `20260824100100` for findings 1 and 2, `20260824101000` for finding 4 and
   `20260824120000` for its trusted-tier remainder and
   `20260824130000` for the scalar columns neither reached (see "Size
-  bounds, not only shapes" below), then `20260824110000`,
+  bounds, not only shapes" below), `20260824140000` for the server
+  timestamps a client could stamp (see "The server's timestamps are the
+  server's" below), then `20260824110000`,
   `20260824110100` and `20260824110200` for findings 6, 7, 9 and 11 — along
   with every suite change that came with them, and all of it has been
   executed only against plain PostgreSQL. The counts above are the
-  stack-run counts, not today's. `pnpm verify:sql` is at 220 assertions
-  (32/32, 88/88, 21/21, 26/26, 8/8, 23/23, 11/11, 11/11), measured on the run that
+  stack-run counts, not today's. `pnpm verify:sql` is at 232 assertions
+  (37/37, 88/88, 28/28, 26/26, 8/8, 23/23, 11/11, 11/11), measured on the run that
   produced this line; re-running `supabase test db` is what would raise the
   stack figure to match.
 - **Executed through GoTrue and PostgREST:** `pnpm verify:stack`
@@ -50,7 +52,7 @@ design. That gap is now closed except where noted:
   key, which is the only place PostgREST's mapping of that credential onto
   the role is exercised at all.
 - **Executed against plain PostgreSQL 16.13/18.6 + pgTAP:** every
-  migration and every suite via `pnpm verify:sql` — 220 assertions — which
+  migration and every suite via `pnpm verify:sql` — 232 assertions — which
   prepares a scratch database with
   `scripts/sql/supabase-compat-harness.sql`. This is the only path the
   #105 hardening has run on. That harness
@@ -552,6 +554,83 @@ backwards, reproduced in **#194**. `prisons` even states the intent and enforces
 it in one direction only: its UPDATE grant deliberately excludes `created_at`,
 while the table-level INSERT grant covers it. Those entries move to a real
 mechanism when #194 is acted on, and the suite fails if they are not.
+
+## The server's timestamps are the server's
+
+`20260824140000_protect_server_timestamps.sql` (#194) closes the `created_at`
+half of what the #191 inventory turned up. Reproduced as `authenticated` before
+it, inside `begin; … rollback;` with `current_user` read back:
+
+```
+insert into public.profiles (id, created_at, updated_at)
+  values (…, '1970-01-01T00:00:00Z', '4000-01-01T00:00:00Z');
+-->  created_at 1970-01-01 | updated_at 4000-01-01
+
+insert into public.prisons (owner_id, game_version, slot_index, created_at, updated_at)
+  values (…, 'lockstate-dev', 0, '4000-01-01T00:00:00Z', '1970-01-01T00:00:00Z');
+-->  created_at 4000-01-01 | updated_at 1970-01-01
+
+update public.profiles set updated_at = '1900-01-01T00:00:00Z' where …;
+-->  updated_at 1900-01-01
+```
+
+So `default now()` was a suggestion rather than a fact, and `updated_at` could
+be walked **backwards**.
+
+**The sharpest part is that `prisons` already stated this intent and enforced it
+in one direction only.** Its UPDATE grant comment says a client "has no reason
+to rewrite … a creation timestamp" and the grant excludes `created_at` — while
+the `grant select, insert, delete` on the line above it covered every column, so
+the insert path set it anyway. The rule was stated, correct, and held on one of
+the two write paths.
+
+Both tables now grant INSERT per column. `prisons` gets
+`(id, owner_id, game_version, display_name, slot_index, updated_at)` — matching
+its UPDATE list plus identity, with `created_at` and both pointer columns absent.
+`owner_id` **must** be granted: the insert policy is `auth.uid() = owner_id` and
+the column has no default, so a client has to supply it. `profiles`, which had no
+column-level treatment at all, gets `(id, display_name, updated_at)` for INSERT
+and `(display_name, updated_at)` for UPDATE.
+
+**It has to be revoke-then-grant, and that is now proved rather than asserted.**
+The prisons migration has always claimed that a column-level `REVOKE` cannot
+subtract a privilege out of a table-level grant. Verified by mutation: replacing
+`revoke insert on public.prisons` with `revoke insert (created_at) on
+public.prisons` leaves the client able to write `created_at`, and five
+assertions across two suites catch it.
+
+**Scope: `created_at` only.** Whether a client may stamp its own `updated_at` is
+a real decision and it is #194's open half — `prisons` grants it on purpose, and
+the alternative is a `before update` trigger, which is a choice about whether
+anything is ever to trust that column for ordering. Every `updated_at` keeps
+exactly the privileges it had, so `user_settings` needed no change at all: it has
+no `created_at`.
+
+**Nothing broke**, verified rather than assumed: no code in `src/` writes any of
+these columns. `registerPrison` writes `{id, game_version, slot_index}` — and is
+broken for an unrelated reason, #192 — while `uploadVersion` goes through
+`create_save_version()`, which is `SECURITY DEFINER` and so bypasses column
+grants. Suite 004 still drives the free-tier slot cap through the client's own
+INSERT, which is why that grant was made per column rather than revoked in favour
+of `create_prison()`: ADR 0013 argues the cap is a count invariant of the table,
+enforced by a trigger on every write path rather than by one blessed door.
+
+### And a rule, because an inventory found this rather than a test
+
+`supabase/tests/003_data_api_grants.test.sql` pins the whole privilege surface
+exhaustively — and it passed throughout, because it pins **what the grants are**,
+not **what they ought to be**. That is the right thing for a grant suite to do,
+and it is why the next table created with a table-level grant would have
+re-opened this silently.
+
+So that suite now also carries a rule: a column whose default is `now()` is the
+server's statement about when something happened, and **no client role may write
+it** unless an allow-list says otherwise with a reason. Both directions fail — a
+`default now()` column that becomes client-writable is caught unless listed, and
+a listed column that stops being client-writable is caught too, so acting on
+#194's open half forces the entry out rather than leaving it asserting something
+untrue. Three entries remain, all three `updated_at`, all three citing that open
+decision.
 
 ## Declarations, not only privileges
 

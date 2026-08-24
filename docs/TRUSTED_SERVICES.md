@@ -33,7 +33,7 @@ and threat model) and [ADR 0009](./adr/0009-challenge-verification-strategy.md)
   check, and the security audit of that run found a second — see "Defects
   this tooling found" below.
 - **Also executed against a plain PostgreSQL 16/18 + pgTAP:** every
-  migration and every suite — 220 assertions, and the only path the #105
+  migration and every suite — 232 assertions, and the only path the #105
   hardening has run on. First run on 16.13 + pgTAP 1.3.2, since also on
   18.6 + pgTAP 1.3.4 — no major version is required or pinned. Reproduce
   with:
