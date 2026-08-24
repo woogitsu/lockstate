@@ -275,14 +275,25 @@ describe('the canonical-iteration scanner recognises what it claims to', () => {
    * one fixture** and that `tsc` did not object when it was removed. Measured,
    * by deleting `!declaredCollection &&` from `findEnumerationSites`:
    *
-   *   drop the Map-declaration override   1 test fails, 0 tsc errors
-   *   drop the `receiver === 'this'` guard 3 tests fail
-   *   hasArrayOnlyUsage always false       6 tests fail
+   * | mutation on the scanner's own branch          | before | after |
+   * | --- | --- | --- |
+   * | drop `!declaredCollection &&` (the override)  | **1**, and `tsc` clean | 4 |
+   * | narrow the declaration regex to `= new Map`   | **1** | 2 |
+   * | treat any `const`/`private` name as a collection | 3 | 5 |
+   * | drop the `receiver === 'this'` guard          | 3 | 3 |
+   * | `hasArrayOnlyUsage` always false              | 6 | 6 |
    *
-   * So the branch that decides *which* of two conflicting signals wins was the
-   * thinnest-guarded part of the scanner -- a check whose own branches are
-   * single-fixture-deep, which is the shape this repository keeps finding one
-   * level up. These four cover the declaration forms the regex actually
+   * The "before" column was measured against the previous revision of this
+   * file, not inferred: the first three mutations were re-run with the old
+   * fixtures restored. So the branch that decides *which* of two conflicting
+   * signals wins was the thinnest-guarded part of the scanner, and the
+   * declaration regex's type-annotation alternative was one fixture deep too --
+   * a check whose own branches are single-fixture-deep, which is the shape this
+   * repository keeps finding one level up.
+   *
+   * The last two rows are unchanged and are here as the control: they were
+   * already covered, so this work adds nothing to them and does not pretend
+   * to. These four fixtures cover the declaration forms the regex actually
    * recognises and the looseness it deliberately keeps.
    */
   it('overrides array evidence for a Map declared as a local, not only as a field', () => {
