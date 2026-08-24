@@ -117,6 +117,23 @@ describe('the two segment-fill implementations are one rule', () => {
       }
     });
 
+    it('lights one segment even when the ratio underflows to zero', () => {
+      // The case that makes `max(1, ...)` a mechanism rather than a restatement
+      // of what `ceil` already does. `5e-324 / 1e300` is exactly `0` in
+      // doubles, so `ceil` returns `0` and a non-zero value would draw as an
+      // empty bar. Measured: without the clamp, on either side, every other
+      // assertion in this file still passes.
+      expect((5e-324 / 1e300) === 0, 'the underflow this pins no longer happens').toBe(true);
+      expect(filledSegments(5e-324, 1e300)).toBe(1);
+      expect(toBoundedValue(5e-324, 1e300).filled).toBe(1);
+
+      // And the honest reading of the pair: `permille` rounds this to `0`
+      // while `filled` is `1`. They answer different questions -- a rounded
+      // share, and whether there is anything there at all -- and this is the
+      // input where the difference is visible.
+      expect(toBoundedValue(5e-324, 1e300).permille).toBe(0);
+    });
+
     it('reserves the last segment for the true maximum', () => {
       // The half a pure `ceil` gets wrong. 254/255 is 99.6 %, and the fix is
       // only correct if it is still not a full bar.

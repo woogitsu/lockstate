@@ -117,10 +117,12 @@ export function toBoundedValue(value: number, maximum: number, segments: number 
  * `ceil`, with the top segment reserved for the true maximum. Read the two
  * clamps as the two rules they are:
  *
- * - `Math.max(1, ...)` -- a value above zero lights one segment. `ceil`
- *   already does this for a ratio above zero, so the clamp is the statement
- *   rather than the mechanism; it is what makes the rule survive a later
- *   change of rounding.
+ * - `Math.max(1, ...)` -- a value above zero lights one segment. For almost
+ *   every input `ceil` has already done this and the clamp only states the
+ *   rule; the exception is real rather than defensive, and is asserted:
+ *   `clamped / maximum` can underflow to exactly `0` when the two are far
+ *   enough apart in magnitude (`5e-324 / 1e300`), and `ceil(0)` is `0`. A
+ *   non-zero value would then draw as an empty bar.
  * - `Math.min(segments - 1, ...)` -- and it stops short of the last one.
  *   This is the clamp that does work: 254/255 is `ceil(9.96) = 10`, a
  *   completely full bar for a prisoner who is not sated.

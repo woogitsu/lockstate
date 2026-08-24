@@ -35,6 +35,11 @@ export const DEFAULT_BAR_SEGMENTS = 10;
  * `tests/unit/segment-fill-agreement.test.ts` exists to pin -- it drives
  * both over the same inputs, so a change to either alone fails.
  *
+ * `Math.max(1, ...)` is the first rule stated where `ceil` cannot carry it:
+ * `value / max` underflows to exactly `0` when the two are far enough apart
+ * in magnitude, and `ceil(0)` is `0`, so a non-zero value would draw as an
+ * empty bar. Asserted in the agreement test rather than left as an argument.
+ *
  * At `segments: 1` the reserved segment leaves nothing to light below the
  * maximum, so any partial value reads as empty. No caller passes 1.
  */
