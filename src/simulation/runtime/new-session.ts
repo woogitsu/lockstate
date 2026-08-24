@@ -108,7 +108,15 @@ export interface SimulationRuntime {
   readonly incidentResponseSystem: IncidentResponseSystem;
 }
 
-const DEFAULT_PRISONER_CAPACITY = 5_000;
+/**
+ * Exported because two documentation claims are stated in terms of it -- the
+ * "population-shaped, never capacity-shaped" rule in `session-systems.ts` and
+ * the same rule in `docs/PERSISTENCE.md` both quote a byte figure derived from
+ * this number, and both had drifted (#169). The figure is pinned in
+ * `tests/unit/session-component-payload-size.test.ts`, which needs the real
+ * value rather than a copy of it.
+ */
+export const DEFAULT_PRISONER_CAPACITY = 5_000;
 /** Realistic guard headcounts are tens, not thousands (see `tests/unit/security-scale.test.ts`) -- generous headroom, not a scale target. */
 const DEFAULT_GUARD_CAPACITY = 500;
 

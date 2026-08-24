@@ -570,9 +570,15 @@ original `'open'`.
 ### Prisoner components: allocated prefix, not capacity, and not RLE
 
 `DEFAULT_PRISONER_CAPACITY` is 5,000 slots and there are eighteen per-prisoner
-arrays. Writing them at capacity would cost ~240 KiB in every save regardless
-of population — the same mistake #50 removed from `entities`, at eighteen
-times the size. They are written across the store's **allocated prefix**
+arrays. Writing them at capacity would cost ~240 KiB (245,332 bytes) in every
+save regardless of population — the same mistake #50 removed from `entities`,
+at eighteen times the size. That is measured, not derived: the encoded arrays
+are `readonly number[]`, so the cost is digit widths rather than element sizes,
+and 240 KiB is the size at 5,000 slots with every array at its constructor
+default (needs at `NEED_MAX` = 255, `actionIndex` at its `-1` sentinel, the
+rest zero) — the empty-prison case this claim is about. A populated mid-game
+prison, with seven-digit tick stamps in three of the arrays, measures ~337 KiB
+at the same capacity. They are written across the store's **allocated prefix**
 (`maxActiveIndex + 1`) instead.
 
 The prefix, not just the live indices, because nothing clears a component
