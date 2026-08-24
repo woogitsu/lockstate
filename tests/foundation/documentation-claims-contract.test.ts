@@ -203,6 +203,77 @@ describe('docs/ARCHITECTURE.md: what the persistence layer actually does', () =>
     ).toEqual([]);
   });
 
+  it('is the only thing that credits the treasury, as the HUD projections gap list claims', async () => {
+    /*
+     * The claim being pinned, from `docs/HUD_PROJECTIONS.md`'s gap 21: that
+     * the only thing crediting the treasury is a cancelled purchase's refund,
+     * and that there is therefore no income line.
+     *
+     * It said "nothing credits the treasury at all" until this gate was
+     * written, which was false the day `ProcurementSystem.cancel` landed --
+     * `treasury.ts` documents the refund at the method itself. The gap's
+     * *point* survived the error, which is exactly why nobody noticed: an
+     * absolute that is nearly true reads as true.
+     *
+     * A second crediting site is not a typo. It is **the arrival of an income
+     * line** -- the single most significant thing ADR 0017 decision 6 is
+     * waiting on -- and it must not be able to land while a document still
+     * says there is none.
+     */
+    const crediting = await sourceFilesMatching(/\.\s*credit\s*\(/u);
+    expect(
+      crediting,
+      'something other than ProcurementSystem.cancel now credits the treasury. If that is an income line, say so in docs/HUD_PROJECTIONS.md gap 21 and in ADR 0017 in the same change',
+    ).toEqual([path.join('src', 'simulation', 'economy', 'procurement.ts')]);
+  });
+
+  it('agrees with itself about how many integers the status-counts channel carries', async () => {
+    /*
+     * Three files state this number in prose and one of them drifted.
+     * `src/simulation/worker/state-machine.ts` and
+     * `docs/adr/0003-simulation-worker-protocol.md` were updated to eleven
+     * when the treasury field landed; `docs/HUD_PROJECTIONS.md` was left at
+     * ten *by the same commit*, which was editing that file at the time.
+     *
+     * The number is load-bearing rather than decorative: it is the reason
+     * `docs/HUD_PROJECTIONS.md` contract 5 (paging) has nothing to bound on
+     * this channel. A payload that grew rows while the sentence still said
+     * "integers" would be a paging contract silently not applying.
+     *
+     * Counted from the schema rather than from a fixture, so it cannot be
+     * satisfied by a projection that happens to emit the right number today.
+     */
+    const source = await readFile(
+      path.join(repositoryRoot, 'src', 'simulation', 'presentation', 'status-strip-projection.ts'),
+      'utf8',
+    );
+    const block = /readonly counts: \{([\s\S]*?)\n {2}\};/u.exec(stripComments(source));
+    expect(block, 'the `counts` block in status-strip-projection.ts is no longer where this gate looks for it').not.toBeNull();
+    const fieldCount = [...block![1]!.matchAll(/readonly \w+: number;/gu)].length;
+    expect(fieldCount, 'no counts fields parsed; the block shape changed').toBeGreaterThan(5);
+
+    const WORDS: Readonly<Record<number, string>> = {
+      9: 'nine', 10: 'ten', 11: 'eleven', 12: 'twelve', 13: 'thirteen', 14: 'fourteen',
+    };
+    const word = WORDS[fieldCount];
+    expect(word, `add ${fieldCount} to this gate's number-word table`).toBeDefined();
+
+    for (const claimant of [
+      path.join('docs', 'HUD_PROJECTIONS.md'),
+      path.join('docs', 'adr', '0003-simulation-worker-protocol.md'),
+      path.join('src', 'simulation', 'worker', 'state-machine.ts'),
+    ]) {
+      // Whitespace-collapsed, because prose wraps: this gate's own first run
+      // failed on `carries eleven\nintegers` in a document that said exactly
+      // the right thing.
+      const text = (await readFile(path.join(repositoryRoot, claimant), 'utf8')).replace(/\s+/gu, ' ');
+      expect(
+        text.includes(`${word} integers`),
+        `${claimant} does not say "${word} integers", but simulation/status-counts carries ${fieldCount}`,
+      ).toBe(true);
+    }
+  });
+
   it('names every module outside operations/ that deposits into a container, as the no-teleport rule claims to', async () => {
     /*
      * The claim being pinned, from `docs/OPERATIONS.md`'s "The no-teleport

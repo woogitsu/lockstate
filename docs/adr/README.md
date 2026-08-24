@@ -8,8 +8,11 @@ in the same commit — the number is not reserved until it appears below.
 of that: filenames are `NNNN-kebab-case.md`, each four-digit prefix is unique,
 the number in the filename matches the number in the `# ADR…` heading, every
 ADR has a parseable `Status`, and every relative link to an ADR from `docs/`
-resolves to a file that exists. It does not check this table, so the table is
-maintained by hand.
+resolves to a file that exists. Since #118's follow-up it also checks this
+table: the row count must equal the number of ADR files, and each row's status
+keyword must equal the one the ADR itself carries, so a status edit that does
+not update the row here fails. It does **not** check the Title column or the
+`0018` row, which has no link and is maintained by hand.
 
 ## Status values in this table
 
