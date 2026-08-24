@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { stripComments } from '../helpers/canonical-iteration';
 import { DEFAULT_LOCALE } from '../../src/content/localization';
 import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
 import { HUD_TABS } from '../../src/ui/hud/hud';
@@ -42,9 +43,23 @@ function collectTypeScriptFiles(directory: string): readonly string[] {
 const hudFiles = collectTypeScriptFiles(HUD_ROOT);
 const primitiveFiles = collectTypeScriptFiles(PRIMITIVES_ROOT);
 
-/** Source with comments removed, so prose about a rule cannot trip the rule. */
+/**
+ * Source with comments removed, so prose about a rule cannot trip the rule.
+ *
+ * The shared stripper from `tests/helpers/canonical-iteration.ts` rather than a
+ * local copy (#193, #198). The local copy this replaced removed only
+ * *whole-line* `//` comments, so a **trailing** comment survived it -- and a
+ * trailing comment is exactly where a disabled import or a commented-out
+ * reference ends up. That is the #188 defect: a sentence saying a thing is
+ * *not* wired reads as wiring it.
+ *
+ * The other difference matters for the failure messages below rather than for
+ * the rules: the shared stripper replaces a block comment with its own
+ * newlines, while the local copy deleted it outright and shifted every line
+ * number after it.
+ */
 function code(path: string): string {
-  return readFileSync(path, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+  return stripComments(readFileSync(path, 'utf8'));
 }
 
 describe('every HUD message key resolves in the bundled default locale', () => {

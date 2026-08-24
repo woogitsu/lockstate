@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { stripComments } from '../helpers/canonical-iteration';
 
 /**
  * The trusted-services layer is separate on purpose (issue #36, ADR 0008):
@@ -99,7 +100,14 @@ describe('trusted services layer boundaries', () => {
     for (const { relative, source } of serviceFiles) {
       // Comments stripped: this layer's whole job is to describe sends that a
       // caller will one day make, so prose naming `fetch` is not a send.
-      const code = source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+      //
+      // The shared stripper rather than a local copy (#193, #198). The copy
+      // this replaced removed only whole-line `//` comments, so a trailing
+      // `// fetch(...)` survived it -- and for *this* rule that is the wrong
+      // direction twice over: a commented-out call reads as a real send and
+      // fails the layer for prose, while the allow-list's staleness check one
+      // test below would then keep an entry alive on the strength of a comment.
+      const code = stripComments(source);
       for (const [name, pattern] of IO_SOURCES) {
         if (!pattern.test(code)) continue;
         if (MODULES_PERFORMING_IO[relative] !== undefined) continue;
