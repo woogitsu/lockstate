@@ -45,10 +45,17 @@ design. That gap is now closed except where noted:
   `scripts/provision-postgres.sh`, so a change to this schema cannot reach
   `main` unexecuted again — see `docs/TESTING.md` for the provisioning
   contract. The stack run needs Docker and stays a local, manual gate.
-- **Not executed:** `SupabaseCloudSaveClient` (`src/persistence/cloud/
-  supabase-client.ts`) still has no automated test; a pure-JS fake would
-  test the fake, not the contract. `verify:stack` at least exercises the
-  same HTTP contract that client speaks.
+- **Not executed:** `SupabaseCloudSaveClient`'s behaviour against a real
+  database (`src/persistence/cloud/supabase-client.ts`); a pure-JS fake
+  asserting RLS, grants or RPC semantics would test the fake, not the
+  contract. `verify:stack` at least exercises the same HTTP contract that
+  client speaks. One narrower claim *is* now unit-tested, because it is a
+  property of the query this repository builds rather than of the database:
+  `tests/unit/persistence-cloud-supabase-client.test.ts` drives the client
+  through a PostgREST stand-in that applies the `.eq()` filters it is given,
+  and pins that both save-version reads are scoped to their prison (see
+  "Every save-version read is scoped to its prison" below). It asserts
+  nothing about ownership, roles or policies.
 - **Not attempted:** the JSONB-vs-Storage payload benchmark and any real
   upload/download/restore timing. The local stack makes this newly
   possible, but it is a benchmark of its own rather than a by-product of
@@ -344,6 +351,34 @@ without a real Supabase project:
   `decodeSaveEnvelope` (#18: schema + migration + checksum) before the
   caller can trust it — an invalid or future-schema cloud payload is
   rejected the same way a corrupt local generation is (#19).
+
+### Every save-version read is scoped to its prison
+
+Both reads of `save_versions` in `SupabaseCloudSaveClient` filter on
+`prison_id` as well as the row id: `downloadVersion` always did, and
+`getPrisonState` does since #105 finding 13, which found the asymmetry.
+
+**What that is not.** It is not a confidentiality fix, and describing it as
+one would be inventing a consequence. `save_versions` is RLS-protected
+through `prisons.owner_id`, and #105 verified by execution — as a second
+`authenticated` subject, with affected-row counts captured — that no
+cross-tenant read exists on this table for either client role. An unscoped
+read by id could therefore only ever have returned a row the caller already
+owned.
+
+**What it is.** Defence in depth against a same-owner id mix-up: a stale,
+swapped or corrupted `prisons.current_version_id` pointing at another of the
+same owner's prisons. Unscoped, `getPrisonState` reported that other
+prison's `revision` and `checksum` as this prison's cloud state, which
+`PrisonSyncEngine` then used to sequence the next push — so the failure mode
+was a wrong baseline (a spurious conflict, or a push sequenced against
+another prison's revision), not a leak. Scoped, the pointer fails loudly
+instead: `.single()` finds no row and the call throws.
+
+`.single()` is deliberately kept rather than relaxed to `.maybeSingle()`. A
+pointer that does not resolve *inside its own prison* is a broken invariant,
+and reporting it as "this prison has no cloud version" would let `push`
+proceed from revision 0.
 
 ### Conflict resolution — user-facing choices, never automatic
 

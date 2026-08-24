@@ -18,13 +18,20 @@ interface CreateSaveVersionRow {
  * translates between its `CloudSaveClient` contract and PostgREST/RPC
  * calls.
  *
- * Not unit-tested here: unlike IndexedDB (#19, faked with
+ * Mostly not unit-tested here: unlike IndexedDB (#19, faked with
  * `fake-indexeddb`), Postgres RLS and this RPC's `SECURITY DEFINER` /
  * row-locking behavior are not meaningfully fakeable in pure JS — a fake
  * would test the fake, not this contract. `supabase/tests/` covers the
  * DB-side contract this adapter depends on (unexecuted here; needs a
  * local Supabase/Docker stack — see docs/CLOUD_SAVE.md). Review this
  * class by inspection against that SQL.
+ *
+ * The one thing a pure-JS fake *can* prove is which rows this class asks
+ * for, because that is a property of the query this file builds rather
+ * than of the database: `tests/unit/persistence-cloud-supabase-client.test.ts`
+ * drives it through a filter-applying PostgREST stand-in and pins that both
+ * save-version reads are scoped to their prison (#105 finding 13). That
+ * test says nothing about RLS, grants or the RPC's semantics.
  */
 export class SupabaseCloudSaveClient implements CloudSaveClient {
   public constructor(private readonly supabase: SupabaseClient) {}
@@ -39,9 +46,20 @@ export class SupabaseCloudSaveClient implements CloudSaveClient {
     if (prison === null) return undefined;
     if (prison.current_version_id === null) return { prisonId, currentVersion: undefined };
 
+    // Scoped to `prison_id` as well as `id`, exactly as `downloadVersion`
+    // below already is. This is defence in depth against a same-owner id
+    // mix-up -- a stale or swapped `current_version_id` pointing at another
+    // of this owner's prisons -- not a confidentiality fix: `save_versions`
+    // is RLS-protected through `prisons.owner_id`, and #105 demonstrated by
+    // execution that no cross-tenant read exists on this table for either
+    // client role. What it changes is that such a pointer now fails loudly
+    // (`.single()` finds no row) instead of quietly reporting another
+    // prison's revision and checksum as this prison's cloud state, which
+    // `PrisonSyncEngine` would then use to sequence pushes.
     const { data: version, error: versionError } = await this.supabase
       .from('save_versions')
       .select('id, revision, checksum')
+      .eq('prison_id', prisonId)
       .eq('id', prison.current_version_id)
       .single();
     if (versionError !== null) throw new Error(`Failed to load the current save version: ${versionError.message}`);
