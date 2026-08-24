@@ -65,10 +65,16 @@ schema_paths = []
 
 [db.seed]
 # If enabled, seeds the database after migrations during a db reset.
-enabled = true
+#
+# Disabled, and the path list emptied, because `supabase init` left this
+# enabled against `./seed.sql` -- a file this repository does not have and never
+# had. There is nothing to seed: every fixture the pgTAP suites in
+# supabase/tests/ need is created and torn down inside the test transaction, so
+# a shared seed would be state those tests do not want. Issue #138.
+enabled = false
 # Specifies an ordered list of seed files to load during db reset.
 # Supports glob patterns relative to supabase directory: "./seeds/*.sql"
-sql_paths = ["./seed.sql"]
+sql_paths = []
 
 [db.network_restrictions]
 # Enable management of network restrictions.
@@ -156,11 +162,32 @@ max_indexes = 5
 enabled = true
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
 # in emails.
-site_url = "http://127.0.0.1:3000"
+#
+# Port 3000 was the `supabase init` default and described a project this is not:
+# nothing in this repository serves 3000. The two origins a local run of
+# Lockstate actually answers on are the Vite dev server (`pnpm dev`, 5173) and
+# the Playwright harness's preview server (`pnpm test:browser`, 5183 -- see
+# tests/browser/playwright.config.ts, which overrides it with
+# LOCKSTATE_BROWSER_TEST_PORT when that port is taken). Issue #138.
+#
+# Nothing is broken today either way: the client's only sign-in path is
+# anonymous sign-in (`enable_anonymous_sign_ins` below), which performs no
+# redirect, and email confirmations are disabled. This allow-list becomes
+# load-bearing the day an OAuth provider or a magic link is added, and until
+# then it is configuration an operator would read as intentional.
+site_url = "http://127.0.0.1:5173"
 # The public URL that Auth serves on. Defaults to the API external URL with `/auth/v1` appended.
 # external_url = ""
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["https://127.0.0.1:3000"]
+# Exact means exact: both the loopback spellings Vite binds (`server.host = true`
+# in vite.config.ts) are listed, because a redirect to the one that is missing
+# is rejected.
+additional_redirect_urls = [
+  "http://127.0.0.1:5173",
+  "http://localhost:5173",
+  "http://127.0.0.1:5183",
+  "http://localhost:5183",
+]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # JWT issuer URL. If not set, defaults to auth.external_url.
