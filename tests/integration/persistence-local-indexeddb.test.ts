@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { IDBFactory } from 'fake-indexeddb';
 import { openLockstateDatabase, IndexedDbLocalSaveStore } from '../../src/persistence/local/indexeddb-store';
 import { PrisonSaveRepository } from '../../src/persistence/local/repository';
+import { MemoryLocalSaveStore } from '../../src/persistence/local/memory-store';
 import { createSaveEnvelope, type SaveEnvelope } from '../../src/persistence/save-schema';
 import { Kernel } from '../../src/simulation/kernel/kernel';
 import { SparseWorld } from '../../src/simulation/world/sparse-world';
@@ -65,6 +66,25 @@ describe('IndexedDbLocalSaveStore (fake-indexeddb)', () => {
 
     const loaded = await repo.loadCurrent('prison-1');
     expect(loaded).toMatchObject({ ok: true, outcome: 'current' });
+  });
+
+  it('lists slots in ascending prisonId, and the in-memory fake agrees', async () => {
+    // `MemoryLocalSaveStore` is what every repository unit test runs against,
+    // so an order it invents is an order those tests would pin. IndexedDB's
+    // `getAll()` returns records in ascending key order and this store is
+    // keyed on `prisonId`; the fake walked its staging `Map` instead, which is
+    // put order (#177). This asserts the two agree rather than trusting the
+    // comment that says so.
+    const real = new PrisonSaveRepository(new IndexedDbLocalSaveStore(db));
+    const fake = new PrisonSaveRepository(new MemoryLocalSaveStore());
+    for (const prisonId of ['prison-c', 'prison-a', 'prison-b']) {
+      await real.create({ prisonId, gameVersion: 'lockstate-0.0.0' });
+      await fake.create({ prisonId, gameVersion: 'lockstate-0.0.0' });
+    }
+
+    const realOrder = (await real.list()).map((slot) => slot.prisonId);
+    expect(realOrder).toEqual(['prison-a', 'prison-b', 'prison-c']);
+    expect((await fake.list()).map((slot) => slot.prisonId)).toEqual(realOrder);
   });
 
   it('reads back a freshly created slot whose current-generation pointer is an explicit undefined', async () => {

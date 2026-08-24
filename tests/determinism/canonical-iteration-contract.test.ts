@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import {
   findCollectionNames,
   findEnumerationSites,
+  hasArrayOnlyUsage,
   reportCanonicalIterationViolations,
   stripComments,
   type CanonicalIterationExemption,
@@ -32,23 +33,32 @@ import {
  * the same split `tests/unit/simulation-message-keys.test.ts` and
  * `src/content/validate-catalog.ts` use.
  *
- * **Scope: `src/simulation/` and `src/content/`**, the two roots
- * `simulation-message-keys.test.ts` also scans, because the rule is about
- * what feeds simulation state and those are the trees that hold it. This is a
- * real limit and not an oversight: a `Map`-order walk in `src/rendering/` or
- * `src/persistence/` is *not* guarded here. Measured, those trees hold 11 and
- * 4 unordered enumerations respectively (9 and 4 distinct expressions).
- * Rendering is deliberately outside -- AGENTS.md's first architectural
- * boundary is that rendering is not simulation, its sprite pools iterate
- * insertion order by design, and covering them would add nine exemptions
- * whose reason is "this is not what the rule is about". An allow-list padded
- * with those is the list nobody reads, which enforces nothing. Persistence is
- * the more interesting extension, and needs one thing first: an array's
- * `.entries()` matches the view pattern too, and `save-schema.ts` has one.
+ * **Scope: `src/simulation/`, `src/content/` and `src/persistence/`.** The
+ * first two are the roots `simulation-message-keys.test.ts` also scans,
+ * because the rule is about what feeds simulation state and those are the
+ * trees that hold it. `src/persistence/` was added by #177 for the reason
+ * that issue gives: the payload is where an insertion-order walk stops being
+ * theoretical, because a walk that reaches a save makes its checksum depend
+ * on the history of the session that wrote it, and the failure then surfaces
+ * as a `checksum-mismatch` on some later load with nothing pointing at the
+ * walk. Extending it needed one thing first -- an array's `.entries()` is
+ * written exactly like a `Map`'s, and `save-schema.ts` has one -- which is
+ * handled in the scanner rather than by an exemption, and pinned by the
+ * array-versus-`Map` fixtures below.
+ *
+ * `src/rendering/` remains outside, which is a real limit and not an
+ * oversight: a `Map`-order walk there is not guarded here. Measured with the
+ * same scanner, that tree holds 11 unordered enumerations (9 distinct
+ * expressions). It is deliberately excluded -- AGENTS.md's first
+ * architectural boundary is that rendering is not simulation, its sprite
+ * pools iterate insertion order by design, and its order reaches neither a
+ * save nor a hash, so covering it would add nine exemptions whose reason is
+ * "this is not what the rule is about". An allow-list padded with those is
+ * the list nobody reads, which enforces nothing.
  */
 
 const REPOSITORY_ROOT = resolve(__dirname, '../..');
-const SCANNED_ROOTS = ['src/simulation', 'src/content'] as const;
+const SCANNED_ROOTS = ['src/simulation', 'src/content', 'src/persistence'] as const;
 
 /**
  * Every unordered enumeration in scope, with the reason insertion order is
@@ -57,13 +67,26 @@ const SCANNED_ROOTS = ['src/simulation', 'src/content'] as const;
  * a canonical sort a change to a reviewable list rather than a quiet edit
  * inside one method.
  *
- * Two entries the scan flagged on `main` are absent because they were fixed
- * instead of exempted, which is the right remedy whenever the sort costs
- * nothing: `DoorRegistry.all()` and `PathRequestQueue.pendingIds()` now sort
- * by id. `ownedParcelBounds`, the walk that started #132, was already fixed
- * the same way.
+ * Entries the scan flagged are absent whenever they were fixed instead of
+ * exempted, which is the right remedy whenever the sort costs nothing:
+ * `DoorRegistry.all()` and `PathRequestQueue.pendingIds()` now sort by id,
+ * and `MemoryLocalSaveStore`'s `listMetadata` now sorts by `prisonId`, which
+ * is also the order the real IndexedDB store returns. `ownedParcelBounds`,
+ * the walk that started #132, was already fixed the same way.
  */
 const ALLOWED: readonly CanonicalIterationExemption[] = [
+  {
+    file: 'src/persistence/local/autosave.ts',
+    expression: 'this.perPrison.values()',
+    reason:
+      '`dispose` clears each entry\'s own `setTimeout` handle and then empties the map. Cancelling one timer cannot affect another and nothing is read out of the walk, so the set of cancellations is identical in any order. This is main-thread save *scheduling*: when a timer is cancelled reaches neither a payload nor simulation state.',
+  },
+  {
+    file: 'src/persistence/session/worker-session-host.ts',
+    expression: 'this.pending.values()',
+    reason:
+      '`stop` fails every still-pending worker request with the same error after the shutdown reply, clearing each one\'s own timer. No entry\'s teardown is folded into another\'s, and the keys are `crypto.randomUUID()` message ids, so there is no order derived from state to sort into. Main-thread transport, like `worker/client.ts` below; no snapshot or save payload is built from this walk.',
+  },
   {
     file: 'src/simulation/contraband/intelligence.ts',
     expression: 'this.records.entries()',
@@ -118,13 +141,23 @@ const SCANNED: readonly ScannedFile[] = SCANNED_ROOTS.flatMap((root) =>
 const REPORT = reportCanonicalIterationViolations(SCANNED, ALLOWED);
 
 describe('the simulation iterates collections in a canonical order', () => {
-  it('scans the whole of src/simulation and src/content, and finds enumerations there', () => {
+  it('scans the whole of src/simulation, src/content and src/persistence, and finds enumerations there', () => {
     expect(SCANNED.length).toBeGreaterThan(80);
     expect(SCANNED.map((entry) => entry.file)).toContain('src/simulation/world/sparse-world.ts');
     expect(SCANNED.map((entry) => entry.file)).toContain('src/content/registry.ts');
+    expect(SCANNED.map((entry) => entry.file)).toContain('src/persistence/save-schema.ts');
     // Non-vacuous: an empty violation list means nothing if nothing was found
     // to look at. Most of these sites sort, which is the point.
     expect(REPORT.siteCount).toBeGreaterThan(40);
+  });
+
+  it('reads the real array `.entries()` in save-schema.ts as the array it is', () => {
+    // The fixtures below pin the rule; this pins the file that made it
+    // necessary, so the two cannot drift apart. `freeIndices` is an array in
+    // the save payload, and its order is the array's own.
+    const saveSchema = SCANNED.find((entry) => entry.file === 'src/persistence/save-schema.ts')!;
+    expect(saveSchema.source).toContain('value.freeIndices.entries()');
+    expect(findEnumerationSites(saveSchema.source).map((found) => found.expression)).not.toContain('value.freeIndices.entries()');
   });
 
   it('enumerates no Map or Set in insertion order without a recorded reason', () => {
@@ -189,6 +222,51 @@ describe('the canonical-iteration scanner recognises what it claims to', () => {
       'byId',
       'seen',
     ]);
+  });
+
+  // ## Arrays versus Maps (#177)
+  //
+  // `array.entries()` and `map.entries()` are textually identical, and the
+  // real one is in `src/persistence/save-schema.ts`, which is why bringing
+  // that tree into scope needed this first. Both directions are pinned here:
+  // a tightening that started flagging arrays again would put an exemption
+  // for a non-hazard in the allow-list, and one that stopped matching real
+  // `Map` views would look exactly like compliance.
+
+  it('does not flag an array view -- the shape save-schema.ts actually writes', () => {
+    // `superRefine` numbering a free list so a zod issue can name the
+    // offending position. `.length` on the same expression is the evidence:
+    // no `Map` or `Set` has it.
+    const source =
+      'refine(value) { if (value.freeIndices.length > value.capacity) reject(); for (const [position, index] of value.freeIndices.entries()) check(position, index); }';
+    expect(findEnumerationSites(source)).toEqual([]);
+  });
+
+  it('reads .push and indexing as array evidence too', () => {
+    expect(findEnumerationSites('run(rows) { rows.push(1); return [...rows.values()]; }')).toEqual([]);
+    expect(findEnumerationSites('run(rows) { const first = rows[0]; return [...rows.keys()]; }')).toEqual([]);
+  });
+
+  it('still flags a Map view whose file happens to talk about lengths elsewhere', () => {
+    // The evidence is keyed on the whole receiver expression, so a *different*
+    // expression ending in the same property name cannot vouch for this one.
+    const source = 'class A { private records = new Map<string, R>(); all(other) { use(other.records.length); return [...this.records.values()]; } }';
+    expect(site(source)).toEqual({ expression: 'this.records.values()', shape: 'collection-view', line: 1, ordered: false });
+  });
+
+  it('lets a Map declaration override array evidence, so the rule can only ever drop a non-collection', () => {
+    // Contrived on purpose: if a file both declares the name as a `Map` and
+    // carries array-only usage of it, one of the two is wrong and the scan
+    // must err toward flagging rather than toward silence.
+    const source = 'class A { private ids = new Set<string>(); all() { use(this.ids.length); return [...this.ids.values()]; } }';
+    expect(site(source)?.ordered).toBe(false);
+  });
+
+  it('answers the array question on its own, for the receiver it was asked about', () => {
+    expect(hasArrayOnlyUsage('value.freeIndices.length > 0', 'value.freeIndices')).toBe(true);
+    expect(hasArrayOnlyUsage('value . freeIndices [ 0 ]', 'value.freeIndices')).toBe(true);
+    expect(hasArrayOnlyUsage('other.freeIndices.length > 0', 'value.freeIndices')).toBe(false);
+    expect(hasArrayOnlyUsage('this.pending.size > 0; this.pending.get(id)', 'this.pending')).toBe(false);
   });
 
   it('ignores a class method that merely happens to be called entries()', () => {
