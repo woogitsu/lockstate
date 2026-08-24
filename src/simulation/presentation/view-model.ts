@@ -68,11 +68,14 @@ export const BOUNDED_VALUE_PERMILLE_MAX = 1_000;
  *   tooltip still has a digit of precision left. This is the authoritative
  *   number: use it for tooltips, ARIA values and any width calculation.
  * - `filled`/`segments` -- a ready-made segmented bar: fill `filled` of
- *   `segments`. `filled` is `floor(permille * segments / 1000)`, so a
- *   partially-filled final segment reads as unfilled and a bar shows
- *   completely full **only** when the underlying value is exactly at its
- *   maximum. Rounding instead would show 96 % as a full bar, which for a
- *   need bar is a lie the player acts on.
+ *   `segments`. Two rules hold at once, and neither is negotiable:
+ *   a bar shows completely full **only** when the value is at its maximum
+ *   (rounding would show 96 % as a full bar, which for a need bar is a lie
+ *   the player acts on), and **any** value above zero lights at least one
+ *   segment (an empty bar says "nothing here", which is a different fact
+ *   from "almost nothing"). See `computeFilledSegments` for the rule that
+ *   satisfies both, and `src/ui/primitives/segmented-bar.ts` for the copy
+ *   of it that the DOM primitive has to keep in step.
  *
  * Deliberately **absent**: the raw value and its raw maximum. Needs are
  * `0..255` `Uint8Array` levels today (`src/simulation/prisoners/needs.ts`)
@@ -104,8 +107,41 @@ export function toBoundedValue(value: number, maximum: number, segments: number 
 
   const clamped = Math.max(0, Math.min(maximum, value));
   const permille = Math.round((clamped / maximum) * BOUNDED_VALUE_PERMILLE_MAX);
-  const filled = Math.floor((permille * segments) / BOUNDED_VALUE_PERMILLE_MAX);
+  const filled = computeFilledSegments(clamped, maximum, segments);
   return { permille, filled, segments };
+}
+
+/**
+ * How many of `segments` a value in `[0, maximum]` lights.
+ *
+ * `ceil`, with the top segment reserved for the true maximum. Read the two
+ * clamps as the two rules they are:
+ *
+ * - `Math.max(1, ...)` -- a value above zero lights one segment. `ceil`
+ *   already does this for a ratio above zero, so the clamp is the statement
+ *   rather than the mechanism; it is what makes the rule survive a later
+ *   change of rounding.
+ * - `Math.min(segments - 1, ...)` -- and it stops short of the last one.
+ *   This is the clamp that does work: 254/255 is `ceil(9.96) = 10`, a
+ *   completely full bar for a prisoner who is not sated.
+ *
+ * Computed from the ratio and **not** from `permille`, which is why this is
+ * not `floor(permille * segments / 1000)` restated. Going through an
+ * integer per-mille first quantizes twice: 1/255 rounds to `permille: 4`
+ * and the fill is then derived from `4` rather than from the fact that the
+ * value is non-zero. The per-mille figure remains the authoritative number
+ * for tooltips and ARIA; the fill is its own reading of the same ratio.
+ *
+ * At `segments: 1` the two rules cannot both hold -- one segment cannot be
+ * both "lit because non-zero" and "reserved for the maximum" -- and the
+ * reserved-maximum rule wins, so any value below the maximum lights
+ * nothing. Said here because it is a real consequence of the ordering and
+ * not an oversight; no caller passes 1, and `BOUNDED_VALUE_SEGMENTS` is 10.
+ */
+function computeFilledSegments(clamped: number, maximum: number, segments: number): number {
+  if (clamped <= 0) return 0;
+  if (clamped >= maximum) return segments;
+  return Math.min(segments - 1, Math.max(1, Math.ceil((clamped / maximum) * segments)));
 }
 
 // ---------------------------------------------------------------------------
