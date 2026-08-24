@@ -2,9 +2,24 @@ import type { SaveResult } from '../../src/persistence/local/repository';
 import type { PrisonSlotMetadata } from '../../src/persistence/local/store';
 import type { ActiveSession, SessionLoadOutcome } from '../../src/persistence/session/session-controller';
 import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
-import { EMPTY_HUD_VIEW_MODEL, type HudIntent, type HudViewModel, mountHud } from '../../src/ui/hud';
+import {
+  EMPTY_HUD_VIEW_MODEL,
+  type HudIntent,
+  type HudLocalizer,
+  type HudViewModel,
+  mountHud,
+} from '../../src/ui/hud';
 import { SavePanel, type SavePanelSessions } from '../../src/ui/save-panel';
-import type { BuildProbe, ButtonState, HudProbe, LayoutBox, LayoutProbe, LockstateUiHarness } from './ui-harness-api';
+import type {
+  BuildLayoutProbe,
+  BuildProbe,
+  ButtonState,
+  HudProbe,
+  LayoutBox,
+  LayoutProbe,
+  LockstateUiHarness,
+  RepaintFormatterCost,
+} from './ui-harness-api';
 import { HUD_MESSAGE_KEY, type HudBuildViewModel } from '../../src/ui/hud';
 import '../../src/styles.css';
 
@@ -103,6 +118,25 @@ window.addEventListener('unhandledrejection', (event) => {
 
 const localizer = new Localizer({ locale: 'en', catalogs: [defaultMessageCatalogEn] });
 
+/**
+ * The real `Localizer`, with a counter around the one method issue #136 is
+ * about.
+ *
+ * `HudLocalizer` is the two-method port the HUD depends on, so this is a
+ * legitimate implementation of it rather than a mock: every call still goes
+ * to the real localizer. The counter is what lets `ui-shell.spec.ts` report
+ * how many values one repaint formats instead of asserting a number somebody
+ * counted by reading the code.
+ */
+let formatNumberCalls = 0;
+const countingLocalizer: HudLocalizer = {
+  format: (key, parameters) => (parameters === undefined ? localizer.format(key) : localizer.format(key, parameters)),
+  formatNumber: (value, options) => {
+    formatNumberCalls += 1;
+    return options === undefined ? localizer.formatNumber(value) : localizer.formatNumber(value, options);
+  },
+};
+
 const BASE_VIEW_MODEL: HudViewModel = {
   counts: { prisoners: 142, prisonerCapacity: 180, staff: 27, rooms: 61, activeIncidents: 0, contrabandFound: 4 },
   // Day 3, a quarter of the way through a 2,400-tick day, paused.
@@ -122,6 +156,32 @@ const BUILD_MODEL: HudBuildViewModel = {
   ],
   origin: { x: 16, y: 16 },
 };
+
+/**
+ * A catalogue of `count` entries, for issue #143.
+ *
+ * `BUILDABLE_REGISTRY` holds two buildables, and two is one fewer than it
+ * takes to push the panel's last section below the fold at 1280x720, so the
+ * condition cannot be reached through the real app at all today. The panel
+ * takes its option list as view-model data, so the honest way to reach it is
+ * to hand the real panel a longer list -- which is what the economy work
+ * (#29) will do to it for real.
+ *
+ * The two label keys repeat down the list because the content catalogue
+ * defines exactly two, and inventing a third key here would put a key with no
+ * translation on screen. The row count is what this varies; the labels are
+ * not the subject.
+ */
+function buildModelWithCatalogueOf(count: number): HudBuildViewModel {
+  return {
+    buildables: Array.from({ length: count }, (_, index) => ({
+      definitionId: index === 0 ? 'wall-brick' : index === 1 ? 'door-wooden' : `buildable-${index}`,
+      labelKey: index % 2 === 0 ? HUD_MESSAGE_KEY.buildableWallBrick : HUD_MESSAGE_KEY.buildableDoorWooden,
+      occupiesEdge: index % 2 === 0,
+    })),
+    origin: { x: 16, y: 16 },
+  };
+}
 
 const root = document.getElementById('ui-root');
 if (root === null) throw new Error('ui-harness: #ui-root is missing');
@@ -182,15 +242,15 @@ window.lockstateUiHarness = {
     await new Promise((resolve) => setTimeout(resolve, 0));
   },
 
-  mountHudShell(options?: { readonly empty?: boolean }): void {
+  mountHudShell(options?: { readonly empty?: boolean; readonly buildables?: number }): void {
     hud?.destroy();
     intents.length = 0;
     hud = mountHud(root, {
-      localizer,
+      localizer: countingLocalizer,
       // `empty` mounts the shipped default instead of a populated prison --
       // the state the real app paints before any session exists.
       viewModel: options?.empty === true ? EMPTY_HUD_VIEW_MODEL : BASE_VIEW_MODEL,
-      build: BUILD_MODEL,
+      build: options?.buildables === undefined ? BUILD_MODEL : buildModelWithCatalogueOf(options.buildables),
       onIntent: (intent: HudIntent) => {
         intents.push(JSON.stringify(intent));
         // Stands in for a slow or wedged host, which is the condition the
@@ -415,6 +475,73 @@ window.lockstateUiHarness = {
     // A real click, so a disabled button genuinely does not fire.
     submit.click();
     return true;
+  },
+
+  buildLayoutProbe(): BuildLayoutProbe {
+    const panel = document.querySelector<HTMLElement>('.hud-build');
+    const list = document.querySelector<HTMLElement>('.hud-build__list');
+    // The panel's last section is the numeric fallback -- "Enter coordinates".
+    // Found as the last `.ui-section` inside the panel rather than by a
+    // hard-coded index, so it stays the *last* one if another is ever added.
+    const sections = [...document.querySelectorAll<HTMLElement>('.hud-build .ui-section')];
+    const header = sections[sections.length - 1]?.querySelector<HTMLElement>('.ui-section__header') ?? null;
+
+    const box = (node: Element | null): LayoutBox | null => {
+      if (node === null) return null;
+      const rect = node.getBoundingClientRect();
+      if (rect.width === 0 && rect.height === 0) return null;
+      return {
+        x: Math.round(rect.x),
+        y: Math.round(rect.y),
+        width: Math.round(rect.width),
+        height: Math.round(rect.height),
+        right: Math.round(rect.right),
+        bottom: Math.round(rect.bottom),
+      };
+    };
+
+    const panelRect = panel?.getBoundingClientRect();
+
+    return {
+      viewport: [window.innerWidth, window.innerHeight],
+      rows: document.querySelectorAll('.hud-build__list [data-buildable]').length,
+      panel: box(panel),
+      panelVisibleBottom:
+        panel === undefined || panel === null || panelRect === undefined
+          ? 0
+          : Math.round(panelRect.top + panel.clientTop + panel.clientHeight),
+      panelOverflow: panel === null ? 0 : panel.scrollHeight - panel.clientHeight,
+      panelScrollTop: panel?.scrollTop ?? 0,
+      list: box(list),
+      listOverflow: list === null ? 0 : list.scrollHeight - list.clientHeight,
+      listOverflowY: list === null ? '' : getComputedStyle(list).overflowY,
+      lastSectionHeader: box(header),
+      lastSectionHeaderText: header?.textContent?.trim() ?? '',
+    };
+  },
+
+  measureRepaintFormatterCost(): RepaintFormatterCost {
+    const original = Intl.NumberFormat;
+    let constructions = 0;
+    Intl.NumberFormat = new Proxy(original, {
+      construct: (target, args: readonly unknown[]) => {
+        constructions += 1;
+        return Reflect.construct(target, args);
+      },
+    });
+    formatNumberCalls = 0;
+    try {
+      // A *changed* view model, so nothing short-circuits: this is the repaint
+      // the worker's 250 ms clock publication drives.
+      hud?.update({
+        ...BASE_VIEW_MODEL,
+        counts: { ...BASE_VIEW_MODEL.counts, prisoners: BASE_VIEW_MODEL.counts.prisoners + 1 },
+        clock: { ...BASE_VIEW_MODEL.clock, tickOfDay: BASE_VIEW_MODEL.clock.tickOfDay + 5 },
+      });
+    } finally {
+      Intl.NumberFormat = original;
+    }
+    return { formatNumberCalls, numberFormatConstructions: constructions };
   },
 
   takeUnhandledRejections(): readonly string[] {

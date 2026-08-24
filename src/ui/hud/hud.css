@@ -271,28 +271,46 @@
  * rather than handing it to the rail. Being a scroll container also gives it
  * an automatic minimum size of 0, so `.hud__side` above can shrink it as
  * freely as the rail shrinks `.hud__side`; and it sits inside `.hud__side`,
- * which is where pointer events are re-enabled.
+ * which is where pointer events are re-enabled. It is the *outer* scroll
+ * container: the catalogue below has its own, and this one is what catches
+ * whatever the catalogue's floor will not let it absorb.
  *
  * Because the aside slot above asks for no height of its own, this panel gets
  * its full content height wherever the rail can afford it. Measured on the
- * Build tab with one prison saved and the coordinates section folded -- the
- * default state -- that is four of the five viewports the browser suite
- * visits: 398px of box for 396px of content at 1280x720, 1024x768 and
- * 1440x900, and 385px for 383px at the 375x812 phone width, where the panel
- * is full-width and so a little shorter. In all four the "Enter coordinates"
- * header is inside the panel's visible box; at 1280x720 it sits at
- * y=586..630 in a panel that ends at y=639.
+ * assembled page with one prison saved and the coordinates section folded --
+ * the default state, and the two buildables `BUILDABLE_REGISTRY` defines --
+ * that is four of the five viewports the browser suite visits: 398px of box
+ * for 396px of content at 1280x720, 1024x768 and 1440x900, and 385px for
+ * 383px at the 375x812 phone width, where the panel is full-width and so a
+ * little shorter. In all four the "Enter coordinates" header is inside the
+ * panel's visible box; at 1280x720 it sits at y=586..630 in a panel that ends
+ * at y=639. Those five numbers are what they were before the catalogue became
+ * a scroll region: at today's catalogue size the change below is inert.
  *
  * It does scroll in two situations, and both are honest. At 900x600 the rail
  * is 483px, which is less than this panel's 398px plus the save panel's floor,
- * so the panel gets 330px and the last section header is below its own fold.
+ * so the panel gets 330px, its content is 380px and the last section header is
+ * below its own fold. The catalogue's two-row floor is why that is still true
+ * here: the catalogue can hand back 8px of a 50px shortfall and no more, so
+ * issue #143's expectation that making the list scroll would also fix this
+ * viewport does not hold -- what it fixes is the panel's dependence on how
+ * many buildables exist, not a rail too short for the panel's fixed parts.
  * And expanding the numeric fallback adds content no viewport here can
- * absorb: 396px becomes 621px at the desktop widths and 383px becomes 592px
+ * absorb: 396px becomes 605px at the desktop widths and 383px becomes 576px
  * at 375x812, against boxes running from 330px to 555px. In every one of
  * those states the panel is whole and on screen and scrolls under the wheel;
  * nothing hangs off the rail.
+ *
+ * Written `.ui-panel.hud-build` rather than `.hud-build`, and that is not
+ * decoration. `.ui-panel` sets `overflow: hidden`; this rule overrides it on
+ * one axis. Both were single-class selectors, so which one won was decided by
+ * the order `styles.css` happens to import the two files in -- a layout that
+ * depended on file order (issue #143). Two classes beat one, so the
+ * precedence is now stated here rather than inherited from an import list.
+ * The `@media (max-width: 720px)` override at the foot of this file is written
+ * the same way for the same reason.
  */
-.hud-build {
+.ui-panel.hud-build {
   width: var(--hud-rail-panel-width);
   max-width: 100%;
   /* `border-box`, so this panel and the save panel above it render at exactly
@@ -301,11 +319,111 @@
      and 264px -- a 2px step down one edge of a column that is meant to read as
      one. */
   box-sizing: border-box;
+  overflow-x: hidden;
   overflow-y: auto;
   background: var(--surface-raised);
 }
 
-.hud-build__list { display: flex; flex-direction: column; }
+/*
+ * The catalogue is the region that scrolls; everything below it keeps its
+ * place (issue #143).
+ *
+ * `.hud-build` used to be the only scroll container in the panel, so the
+ * whole panel scrolled -- section headers, the map affordance and the
+ * coordinates fallback included. That made the panel's height budget a
+ * function of how many things exist to build: measured at 1280x720 the panel
+ * had 398px of box for 396px of content with the two buildables
+ * `BUILDABLE_REGISTRY` defines, so the catalogue was already spending the
+ * budget the controls below it needed, and a longer list pushed the "Enter
+ * coordinates" header off the bottom of the panel. Not off the *page* -- the
+ * panel scrolled -- but a control you have to scroll a panel to discover is
+ * one most players never find.
+ *
+ * So the body is a flex column, every block in it keeps its content height,
+ * and the catalogue alone may be shrunk. The excess lands in
+ * `.hud-build__list`, which scrolls. Measured in the UI harness at 1280x720
+ * with a twelve-entry catalogue: before, the panel wanted 259px more than its
+ * box and the last section header sat at y=845..889 in a panel clipped at
+ * y=638; after, the header is back at y=586..630 and the list carries the
+ * 259px instead. `tests/browser/ui-shell.spec.ts` holds that as an assertion
+ * at all five viewports the suite visits.
+ *
+ * `flex: 0 1 auto` and not `1 1 auto`: the catalogue may shrink, never grow.
+ * Where the rail can afford the panel's full content height -- four of the
+ * five viewports in the browser suite, in the default state -- the layout is
+ * exactly what it was before this rule existed.
+ */
+.hud-build > .ui-panel__body {
+  display: flex;
+  flex-direction: column;
+  /* Without this the body's automatic minimum size is its content, and a flex
+     item that cannot shrink below its content cannot hand the excess to the
+     list inside it. */
+  min-height: 0;
+}
+
+/* Every block in the body keeps its content height; the catalogue below is
+   the one exception. Both selectors are written from `.hud-build` down so the
+   exception is more specific than the rule -- `> *` adds no specificity of its
+   own, so a bare `.hud-build__catalogue` would lose to this line and silently
+   refuse to shrink. */
+.hud-build > .ui-panel__body > * { flex: 0 0 auto; }
+
+.hud-build > .ui-panel__body > .hud-build__catalogue {
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 auto;
+  /* Its own header plus the two-row floor below. Every shrinkable box in this
+     chain carries the same floor, and none of them may be left to `0`: only
+     the list clips, so a section or a body shrunk under its content lets the
+     rows paint *behind* the map block below instead of scrolling. Observed
+     exactly that way -- with the floor on the list alone, the #88
+     reachability sweep in `tests/browser/app-shell.spec.ts` found the
+     catalogue header and both rows hit-testing to "Place on map" and the
+     placement readout at 1280x720 with the coordinates expanded. */
+  min-height: calc(var(--hud-build-catalogue-floor) + var(--tap-target));
+}
+
+.hud-build__catalogue > .ui-section__header { flex: 0 0 auto; }
+
+/*
+ * `:not([hidden])` because this section folds. An author `display: flex` beats
+ * the `display: none` the user agent gives `[hidden]`, so an unguarded rule
+ * here would leave the catalogue on screen after the player collapsed it --
+ * the same trap `.ui-panel[hidden]` in `primitives.css` exists to close.
+ */
+.hud-build__catalogue > .ui-section__body:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  /* The body's *vertical* padding is on the bottom edge only, and a
+     `min-height` under the default `content-box` sizes the content box, so
+     this floor is exactly the list's rather than the list's plus padding. */
+  min-height: var(--hud-build-catalogue-floor);
+}
+
+/*
+ * The list is the scroll region, with a floor of two rows under it.
+ *
+ * The floor is the same idea as `.hud__aside`'s `min-height: 25%` above: a
+ * region that can be shrunk needs a limit, or a tall enough panel squeezes it
+ * out of existence and the catalogue becomes a scrollbar with no rows.
+ *
+ * Below the floor the panel itself scrolls again, which is the behaviour every
+ * viewport already had -- so `.hud-build`'s own `overflow-y: auto` above stays
+ * load-bearing rather than vestigial. With two buildables the floor is the
+ * list's own height, so those states keep scrolling the panel and only get
+ * back the 8px the catalogue section can give: measured on the assembled page,
+ * 900x600's default content goes 396px to 380px in a 330px box, and the
+ * coordinates-expanded content goes 621px to 605px. What state the panel is in
+ * does not change; how far it has to scroll does, slightly.
+ */
+.hud-build__list {
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 auto;
+  min-height: var(--hud-build-catalogue-floor);
+  overflow-y: auto;
+}
 
 .hud-build__coords {
   display: grid;
@@ -407,7 +525,11 @@
 
   .hud__side { padding: var(--space-2) var(--space-2) var(--space-6); }
 
-  .hud-build { width: 100%; }
+  /* Two classes, matching `.ui-panel.hud-build` above: a single-class
+     selector here would lose to it on specificity and leave the panel at its
+     desktop width -- measured, at 375x812, as a 264px panel in a 343px rail
+     and an arm hint wrapping to an extra line. */
+  .ui-panel.hud-build { width: 100%; }
 
   .hud-strip {
     flex-wrap: wrap;
