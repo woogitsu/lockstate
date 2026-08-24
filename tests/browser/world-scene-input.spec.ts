@@ -125,6 +125,44 @@ test.describe('the world scene keyboard', () => {
     await page.keyboard.up('KeyD');
   });
 
+  test('moves the camera with the arrow keys the Build panel promises (#200)', async ({ page }) => {
+    // `hud.build.arm-hint` is painted into the Build panel and says "the arrow
+    // keys still move the camera". No `Arrow*` binding existed: all four moved
+    // the camera by exactly zero while `KeyS` moved it 180.89, measured in a
+    // browser. An advertised key that does nothing reads as a broken build --
+    // worse than an unadvertised one, which is only a missing feature.
+    //
+    // Each direction is asserted with its sign, not just "something moved": a
+    // binding wired to the wrong action would pass a movement check and send the
+    // camera the opposite way from the arrow the player pressed.
+    await openHarness(page);
+
+    for (const { key, axis, sign } of [
+      { key: 'ArrowRight', axis: 'x', sign: 1 },
+      { key: 'ArrowLeft', axis: 'x', sign: -1 },
+      { key: 'ArrowDown', axis: 'y', sign: 1 },
+      { key: 'ArrowUp', axis: 'y', sign: -1 },
+    ] as const) {
+      const before = await page.evaluate(
+        (which) => window.lockstateWorldSceneHarness!.scroll()[which as 'x' | 'y'],
+        axis,
+      );
+      await page.keyboard.down(key);
+      await page.waitForFunction(
+        ([which, start]) => window.lockstateWorldSceneHarness!.scroll()[which as 'x' | 'y'] !== start,
+        [axis, before] as const,
+        { timeout: 5_000 },
+      );
+      const after = await page.evaluate(
+        (which) => window.lockstateWorldSceneHarness!.scroll()[which as 'x' | 'y'],
+        axis,
+      );
+      await page.keyboard.up(key);
+
+      expect(Math.sign(after - before), `${key} moved the camera the wrong way on ${axis}`).toBe(sign);
+    }
+  });
+
   test('leaves the camera still while a text field owns the keyboard (#201)', async ({ page }) => {
     await openHarness(page);
 
