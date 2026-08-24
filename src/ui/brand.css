@@ -1,0 +1,93 @@
+/*
+ * The brand badge: mark, wordmark, stage and build.
+ *
+ * Where it sits is the HUD's -- `.hud-strip__brand` in `hud/hud.css` is the
+ * slot, and this file says nothing about position, order or the strip. That
+ * split is the arrangement `src/ui/brand-badge.ts` describes (the HUD lays it
+ * out, the badge owns itself), and keeping the two rulesets in separate files
+ * is what makes it true rather than merely stated.
+ *
+ * Semantic tokens only. See `src/ui/tokens.css`.
+ */
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  /* It is a label, not a control: nothing here is pressable, focusable or
+     hoverable, so it does not claim the pointer. */
+  pointer-events: none;
+  /* A wordmark is not selectable text. Dragging across it to pan the world
+     would start a text selection instead. */
+  user-select: none;
+}
+
+/*
+ * The mark. `createIcon` sets its own class (`ui-icon`) and accepts no other,
+ * so it is addressed as a descendant rather than given a class of its own --
+ * one way to build an icon, not two.
+ */
+.brand .ui-icon {
+  color: var(--accent);
+  flex: none;
+}
+
+.brand__wordmark {
+  font-family: var(--font-ui);
+  font-size: var(--text-size-body);
+  font-weight: 600;
+  color: var(--text-heading);
+  white-space: nowrap;
+}
+
+/*
+ * The stage chip. Deliberately the neutral badge tone and not a warning one:
+ * "pre-alpha" says where the project is, not that something is wrong with the
+ * page, and the warning and danger tones are spoken for by things that are
+ * (the refusal line, the alert severities).
+ */
+.brand__stage {
+  font-family: var(--font-ui);
+  font-size: var(--text-size-label);
+  font-weight: 600;
+  letter-spacing: var(--label-tracking);
+  text-transform: uppercase;
+  color: var(--badge-neutral-fg);
+  background: var(--badge-neutral-bg);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-2);
+  line-height: 1;
+  white-space: nowrap;
+  flex: none;
+}
+
+/*
+ * The version and the commit. Monospace with tabular figures, for the reason
+ * `valueText` in `primitives/dom.ts` gives about every number destined for the
+ * screen: a proportional figure changes width with its digits, and this one
+ * sits at the left edge of a strip whose contents must not shift.
+ */
+.brand__build {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-size-label);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/*
+ * Below the HUD's narrow breakpoint the build drops and the wordmark stays.
+ *
+ * The order is not arbitrary. At 720px and under the strip has to fit five
+ * metric chips and three transport buttons, and of the three fragments here the
+ * build is the one that is still recoverable when it is not painted: it is in
+ * the DOM, in `data-build-id` on the badge, and in every save this build
+ * writes. `720px` is the same breakpoint `hud.css` uses to drop the minimap, so
+ * the strip's contents thin out at one width rather than at two.
+ */
+@media (max-width: 720px) {
+  .brand__build {
+    display: none;
+  }
+}

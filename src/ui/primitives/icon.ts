@@ -27,6 +27,7 @@ export const ICON_IDS = [
   'security',
   'regime',
   'check',
+  'brand',
 ] as const;
 
 export type IconId = (typeof ICON_IDS)[number];
@@ -55,6 +56,20 @@ const ICON_PATHS: Readonly<Record<IconId, readonly string[]>> = {
   security: ['M12 3.75 19.75 6.5v5.75c0 4-3.1 6.9-7.75 8.1-4.65-1.2-7.75-4.1-7.75-8.1V6.5z'],
   regime: ['M3.75 6.25h16.5v13.5H3.75z', 'M3.75 10.5h16.5', 'M8.5 3.75v4.5', 'M15.5 3.75v4.5'],
   check: ['M5.25 12.5 10 17.25 18.75 6.75'],
+  // The wordmark's mark: a padlock, shackle above a body, with a keyway. The
+  // same 24x24 stroke-only rule as every other entry, so the brand mark scales
+  // and recolours with the text beside it instead of being a bitmap that has to
+  // be shipped, LFS-tracked and validated by the atlas pipeline.
+  //
+  // Deliberately not the `contraband` padlock, which this resembles. Two ids
+  // pointing at one path would make a content sweep read the brand as a
+  // contraband indicator, and the shapes want to diverge: `contraband` is a
+  // closed lock and this one is the identity of the game.
+  brand: [
+    'M8 10.25V7.5a4 4 0 0 1 8 0v2.75',
+    'M5.75 10.25h12.5v9.5H5.75z',
+    'M12 13.5v3',
+  ],
 };
 
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';

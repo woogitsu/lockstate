@@ -47,6 +47,18 @@ import { expect, test, type Page } from '@playwright/test';
  *    a browser answers `elementFromPoint`, and only the assembled page has
  *    both regions in it at once.
  *
+ * 7. **The build the player is looking at names itself, in the corner.** The
+ *    badge exists so a bug report can say which build it is about, and the
+ *    identity in it comes from a compile-time `define` -- so what it shows can
+ *    only be settled by loading a page that a real build served. Two halves are
+ *    checked and neither is provable a layer down: that the badge is *laid out*
+ *    at the top-left of the real page rather than merely present in the DOM
+ *    (`getBoundingClientRect` and `offsetParent`, the distinction that let #82's
+ *    own alert stay invisible on a phone with a green suite), and that
+ *    `data-build-id` carries a real injected commit rather than the module's
+ *    `unknown` fallback, which is the only way to tell the `define` is wired at
+ *    all.
+ *
  * Deliberately NOT here, because a headless test already proves it and a
  * browser test that repeats one costs a minute of CI and adds no evidence:
  * the tab/collapse state machine, the view-model → display mapping and the
@@ -1221,6 +1233,91 @@ test.describe('the assembled application', () => {
     // Only the button that was pressed, though all three were disabled while
     // the command was in flight.
     expect(await page.locator('.hud-strip__transport [data-action-failed="true"]').count()).toBe(1);
+  });
+
+  test('names the build it is, in the top-left corner, from a real injected define', async ({ page }) => {
+    await openApp(page);
+
+    const badge = page.locator('.brand');
+    // `toBeVisible` and not `toContainText` alone. A text assertion on a
+    // `display: none` ancestor passes, which is exactly how #82's alert stayed
+    // invisible on a phone while its guard stayed green.
+    await expect(badge).toBeVisible();
+    await expect(badge.locator('.brand__wordmark')).toHaveText('LockState.io');
+    await expect(badge.locator('.brand__stage')).toHaveText('PRE-ALPHA');
+
+    const measured = await page.evaluate(() => {
+      const element = document.querySelector('.brand');
+      if (element === null) return null;
+      const rect = element.getBoundingClientRect();
+      const strip = document.querySelector('.hud-strip')?.getBoundingClientRect();
+      const metrics = document.querySelector('.hud-strip__metrics')?.getBoundingClientRect();
+      return {
+        buildId: (element as HTMLElement).dataset['buildId'] ?? null,
+        build: document.querySelector('.brand__build')?.textContent ?? null,
+        laidOut: (element as HTMLElement).offsetParent !== null,
+        left: rect.left,
+        top: rect.top,
+        width: rect.width,
+        // Whether it overlaps the metrics it sits beside. Two independently
+        // positioned layers competing for one corner is the #88 defect, and the
+        // reason this badge is in the strip's own flex row rather than `fixed`.
+        overlapsMetrics: metrics === undefined ? null : rect.right > metrics.left,
+        insideStrip: strip === undefined ? null : rect.top >= strip.top && rect.bottom <= strip.bottom,
+      };
+    });
+
+    expect(measured).not.toBeNull();
+    expect(measured!.laidOut).toBe(true);
+    expect(measured!.width).toBeGreaterThan(0);
+    // The top-left corner, in the strip's band, and clear of the metrics.
+    expect(measured!.left).toBeLessThan(24);
+    expect(measured!.top).toBeLessThan(24);
+    expect(measured!.insideStrip).toBe(true);
+    expect(measured!.overlapsMetrics).toBe(false);
+
+    /*
+     * The `define` really ran.
+     *
+     * This is the assertion the whole feature rests on and the one no headless
+     * test can make: `src/shared/build-identity.ts` falls back to `unknown`
+     * whenever the compile-time replacement is absent, and that fallback is
+     * what the unit suite necessarily exercises. Only a page served by a real
+     * Vite build can show the injected value -- so `lockstate-unknown-unknown`
+     * here would mean the badge works, reads correctly, and tells every player
+     * nothing, with every other assertion in this test still green.
+     */
+    expect(measured!.buildId).not.toBeNull();
+    expect(measured!.buildId).toMatch(/^lockstate-\d+\.\d+\.\d+(?:-[0-9A-Za-z.]+)?-[0-9a-f]{7}$/u);
+    expect(measured!.buildId).not.toContain('unknown');
+    // And the visible line is built from the same identity rather than from a
+    // second source: both halves of `data-build-id` appear in it.
+    const [, version, commit] = /^lockstate-(.+)-([0-9a-f]{7})$/u.exec(measured!.buildId!) ?? [];
+    expect(measured!.build).toContain(version!);
+    expect(measured!.build).toContain(commit!);
+
+    /*
+     * The build line is *painted*, and the responsive rule is asserted in both
+     * directions.
+     *
+     * `textContent` above would read a line `display: none` had removed from the
+     * layout, so on its own it cannot tell a visible version from a hidden one.
+     * `brand.css` drops `.brand__build` at 720px and under -- the same
+     * breakpoint `hud.css` drops the minimap at -- because the strip has to fit
+     * five metric chips and three transport buttons on a phone, and the wordmark
+     * is what makes the corner read as a product. Asserting only the desktop
+     * half would leave a rule that could stop applying; asserting only the phone
+     * half would pass if the line were hidden everywhere.
+     */
+    const laidOut = (selector: string): Promise<boolean> =>
+      page.evaluate((s) => (document.querySelector(s) as HTMLElement | null)?.offsetParent !== null, selector);
+
+    expect(await laidOut('.brand__build'), 'the build line is not painted at 1280px').toBe(true);
+    expect(await laidOut('.brand__wordmark')).toBe(true);
+
+    await page.setViewportSize({ width: 375, height: 812 });
+    expect(await laidOut('.brand__build'), 'the build line still takes strip width on a phone').toBe(false);
+    expect(await laidOut('.brand__wordmark'), 'the wordmark is the last thing to go, and it does not go').toBe(true);
   });
 
   test('still renders when the browser blocks site data, so localStorage throws (#199)', async ({ page }) => {

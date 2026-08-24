@@ -87,6 +87,25 @@ pnpm deploy:dry-run:production
 
 Dry-runs validate the generated deployment package and write ignored output below `.wrangler/dry-run/` without publishing it.
 
+### Build identity
+
+Every build stamps itself with its `package.json` version and the short commit it was made from. One value, resolved once in `tooling/build-identity.mjs` and passed as a Vite `define`, reaches three places that used to hold three unrelated placeholders:
+
+- the badge in the top-left corner of the page (`src/ui/brand-badge.ts`), so a player and a bug report can say which build they are looking at — this is what the whole seam exists for;
+- `SaveEnvelope.gameVersion`, so a save names the build that wrote it (`src/main.ts`; it was the literal `lockstate-dev` for every build ever made);
+- the simulation worker's `workerBuildId` in its ready handshake (`src/simulation/worker/worker.ts`; it was `dev-build`, under a comment saying it was to be injected "in the future").
+
+The spelling is `lockstate-<version>-<commit>`, joined with `-` and not semver's `+` because both destinations validate it as an `identifierSchema`, which rejects `+`.
+
+Three things an operator needs to know:
+
+- **The commit comes from the environment before `git`.** `CF_PAGES_COMMIT_SHA`, `GITHUB_SHA` and `LOCKSTATE_COMMIT_SHA` are consulted in that order, then `git rev-parse --short=7 HEAD`. The environment first because a shallow or detached CI checkout still carries the SHA while a hosted build image may have no `.git` at all. Set `LOCKSTATE_COMMIT_SHA` to override.
+- **Nothing fails when it cannot be resolved.** A missing value renders as `unknown` and the build succeeds — a deploy must not break because it ran from a tarball. So `lockstate-unknown-unknown` on screen means the injection did not happen, not that the page is broken, and it is the one thing to look at first if a badge says nothing useful. `tests/browser/app-shell.spec.ts` asserts against it, which is why an unwired `define` fails CI rather than shipping.
+- **`PRE-ALPHA` beside the version is authored, not derived.** It is the `brand.stage` entry in `src/content/default-locale-en.ts` and no code computes it. Nothing in the repository declares a release stage, so this string is the claim: **change it by hand when the project's stage changes.** The version and commit next to it cannot go stale in that way; this one can.
+
+Neither value is a secret. Both are baked into a public bundle, and a commit already published in a public repository is not a credential.
+
+
 ## Deployment
 
 Staging:

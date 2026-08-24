@@ -35,6 +35,21 @@ export interface StatusStripOptions {
 
 export interface StatusStrip {
   readonly element: HTMLElement;
+  /**
+   * A box at the left end of the strip, for the host to mount page chrome into.
+   *
+   * The HUD lays it out and nothing more: it never renders into it, never reads
+   * it, and does not know what goes there -- the same arrangement, and the same
+   * reason, as `HudHandle.asideSlot`. What occupies it in the running app is
+   * `src/ui/brand-badge.ts`, which reads a build constant the HUD has no
+   * business importing: the strip is a projection of `HudViewModel`, repainted
+   * on every snapshot, and a build identity is neither prison state nor
+   * something that changes.
+   *
+   * Empty, it collapses to nothing and the strip is exactly what it was
+   * before -- `hud.css` gives it no width, no padding and no border of its own.
+   */
+  readonly brandSlot: HTMLElement;
   /** Controls the caller must gate while an intent is in flight. */
   readonly controls: readonly HTMLButtonElement[];
   /**
@@ -140,10 +155,16 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
     ],
   });
 
+  // First child, so the wordmark reads before the metrics in the DOM as well as
+  // on screen. Order matters here beyond aesthetics: a screen reader walks the
+  // strip in document order, and "which build is this" belongs before five
+  // counters rather than after them.
+  const brandSlot = element('div', { className: 'hud-strip__brand' });
+
   const root = element('div', {
     className: 'hud-strip',
     attributes: { role: 'region', 'aria-label': t(HUD_MESSAGE_KEY.statusRegion) },
-    children: [metricsRow, clockGroup, transportGroup],
+    children: [brandSlot, metricsRow, clockGroup, transportGroup],
   });
 
   const update = (viewModel: HudViewModel): void => {
@@ -212,6 +233,7 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
 
   return {
     element: root,
+    brandSlot,
     controls: [transport.pause.element, transport.play.element, transport['fast-forward'].element],
     controlFor: (kind: TransportIntentKind): HTMLButtonElement => transport[kind].element,
     update,

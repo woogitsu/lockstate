@@ -168,6 +168,14 @@ export interface HudHandle {
    * Empty, it collapses to nothing and the rail is exactly what it was before.
    */
   readonly asideSlot: HTMLElement;
+  /**
+   * The status strip's left-hand chrome slot, passed straight through.
+   *
+   * `StatusStrip.brandSlot` documents the arrangement; this is the handle the
+   * composition root reaches it by, exactly as `asideSlot` is for the rail. The
+   * HUD supplies a box in its own layout and never looks inside it.
+   */
+  readonly brandSlot: HTMLElement;
   update(viewModel: HudViewModel): void;
   /**
    * Live feedback from the world pointer into the Build panel's readout.
@@ -518,6 +526,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   return {
     element: hud,
     asideSlot: aside,
+    brandSlot: strip.brandSlot,
     update,
     setBuildTarget: (target) => buildPanel.setTarget(target),
     getState: () => state,

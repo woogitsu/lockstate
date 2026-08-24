@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
+import { buildIdentityDefines } from '../../tooling/build-identity.mjs';
 
 const repositoryRoot = fileURLToPath(new URL('../../', import.meta.url));
 
@@ -23,6 +24,20 @@ const repositoryRoot = fileURLToPath(new URL('../../', import.meta.url));
  */
 export default defineConfig({
   root: repositoryRoot,
+  /*
+   * The same build-identity `define` the production config passes, from the
+   * same module.
+   *
+   * Not a convenience: this is the *only* place the injection can be proven.
+   * `src/shared/build-identity.ts` falls back to a visible `unknown` whenever
+   * the replacement is absent, and the default Vitest environment has no
+   * `define` at all -- so every headless test necessarily exercises the
+   * fallback, and a build that shipped `lockstate-unknown-unknown` to every
+   * player would leave the whole suite green.
+   * `app-shell.spec.ts` asserts against the injected value, which is a
+   * statement about production only because both configs import one resolver.
+   */
+  define: buildIdentityDefines(),
   // Pre-bundle from every page the suite actually opens. `index.html` pulls in
   // Phaser, so leaving it out made the first app-shell test pay for an
   // optimizer run and the page reload that follows it.

@@ -259,6 +259,31 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // Bound in the world, construction and modal contexts, so it is a general
   // cancel rather than a build-specific one.
   'input.action.build.cancel': 'Cancel',
+
+  // The brand badge in the top-left corner (`src/ui/brand-badge.ts`). Page
+  // chrome rather than a projection of prison state, which is why the namespace
+  // is `brand.` and not `hud.`.
+  'brand.region': 'Lockstate build',
+  // The wordmark, in the catalog rather than as a literal in the DOM builder,
+  // for the reason `src/ui/brand-messages.ts` gives.
+  'brand.wordmark': 'LockState.io',
+  // **Authored, and the only entry here that a build cannot verify.** Nothing in
+  // the repository declares a release stage: `docs/TESTING.md` says "during the
+  // pre-alpha foundation" and `docs/ROADMAP.md` counts phases without naming
+  // one, so this sentence is the claim rather than a reading of one. It has to
+  // be changed by hand when the stage changes -- `docs/DEPLOYMENT.md`'s "Build
+  // identity" section says so where an operator will see it, next to the two
+  // values beside it that cannot go stale this way.
+  'brand.stage': 'PRE-ALPHA',
+  // `v{version}` and the commit, separated by a middle dot. Both, because the
+  // version says what the build claims to be and the commit says which build it
+  // is -- and today `package.json` is at `0.0.0` with no tags in the
+  // repository, so the commit is the half that identifies anything.
+  'brand.build': 'v{version} · {commit}',
+  // The whole badge as one sentence, for a screen reader. The visible fragments
+  // are `aria-hidden`, because "PRE-ALPHA", "v0.0.0" and seven hex characters
+  // read out in sequence name nothing.
+  'brand.description': 'Lockstate, {stage} build, version {version}, commit {commit}.',
 };
 
 /**
