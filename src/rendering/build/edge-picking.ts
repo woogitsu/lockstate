@@ -45,6 +45,36 @@ export interface WorldPoint {
  */
 export const MAX_RUN_SEGMENTS = 64;
 
+/**
+ * An edge's identity as a string, for a `Set` or a `Map` key.
+ *
+ * **It has no caller in `src/`, and the module that wants it cannot have it.**
+ * `src/ui/build-tool.ts:138` de-duplicates a run by exactly this format,
+ * written out inline, and calling this instead would be a **value** import
+ * from `src/rendering/` into `src/ui/` -- which
+ * `tests/unit/ui-orchestration-boundaries.test.ts` records as forbidden for
+ * that file, in terms that are about intent rather than mechanics: *"a value
+ * import from `src/rendering/` would mean the orchestrator had started calling
+ * into the renderer rather than being handed its reports."*
+ *
+ * So this is deliberately not shared, and deliberately not deleted either:
+ * #141 lists it among the exports with no reference anywhere and explicitly
+ * does not propose deleting them. What was missing is the third option, and
+ * measuring it sharpened what #141 called a two-implementation pair: the two
+ * strings are identical today, but only **this** one is a contract, because
+ * only this one is exported. `BuildTool`'s copy is a private `Set` key, so any
+ * injective function of the same three fields would serve equally -- reordering
+ * its fields is a mutation that survives, correctly.
+ *
+ * `tests/unit/edge-key-agreement.test.ts` therefore pins two different things:
+ * this function's exact format, as the exported contract it is, and that
+ * `BuildTool` de-duplicates by the same three fields. Dropping `edge` from its
+ * key fails; renaming the separator here fails.
+ *
+ * A renderer-side caller may still appear; the format is the natural one for
+ * an `EdgeTarget`, and `edgeTargetsEqual` beside it is already used by
+ * `world-scene.ts`.
+ */
 export function edgeTargetKey(target: EdgeTarget): string {
   return `${target.tileX},${target.tileY},${target.edge}`;
 }

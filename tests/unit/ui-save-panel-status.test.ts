@@ -248,7 +248,12 @@ describe('refresh supersession guard', () => {
 
 describe('describeRestoredScope: honest about what a save carries', () => {
   it('names both what was restored and what this save version does not carry', () => {
-    const text = resolve(describeRestoredScope(CURRENT_SAVE_RESTORED_SCOPE));
+    // The whole pipe, in the direction a player meets it: keys in the
+    // simulation-owned scope, resolved by `describeRestoredScope` against the
+    // real bundled catalog, spliced into the localized sentence frame. Before
+    // #226 the list items were English literals from `src/simulation/**` and
+    // these assertions passed without the catalog being involved at all.
+    const text = resolve(describeRestoredScope(CURRENT_SAVE_RESTORED_SCOPE, localizer));
     expect(text).toContain('world terrain and ownership');
     expect(text).toContain('incidents, gangs and tunnels');
     expect(text).toContain('Not carried by this save version');
