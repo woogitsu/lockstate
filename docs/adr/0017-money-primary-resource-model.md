@@ -25,9 +25,15 @@ Nothing in a Lockstate prison can be built. Issue #89: a build order reaches
 `materials-pending` and stays there forever, because
 `createNewSimulationRuntime` registers one empty `Container` under
 `CONSTRUCTION_MATERIALS_CONTAINER_ID` and **nothing in the shipped codebase
-ever deposits into it**. `ConstructionSystem.update` calls
-`materialsProvider.tryAllocate` on every scheduled tick and gets `false`,
-forever. The core loop cannot complete.
+deposited into it**. `ConstructionSystem.update` called
+`materialsProvider.tryAllocate` on every scheduled tick and got `false`,
+forever. The core loop could not complete.
+
+That was the state when this ADR was written. #249 added
+`ProcurementSystem`, which deposits into exactly that container — see the
+Status note above for what is implemented and what is not. #89's symptom
+survives for a different reason: nothing in `src/` mints a
+`PurchaseMaterials` command, so a player still cannot buy anything.
 
 So something must supply materials, and the shape of that something is a
 resource-model decision, not an implementation detail. Two readings were
