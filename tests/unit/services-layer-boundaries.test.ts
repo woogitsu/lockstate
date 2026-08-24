@@ -103,10 +103,23 @@ describe('trusted services layer boundaries', () => {
       //
       // The shared stripper rather than a local copy (#193, #198). The copy
       // this replaced removed only whole-line `//` comments, so a trailing
-      // `// fetch(...)` survived it -- and for *this* rule that is the wrong
-      // direction twice over: a commented-out call reads as a real send and
-      // fails the layer for prose, while the allow-list's staleness check one
-      // test below would then keep an entry alive on the strength of a comment.
+      // `// fetch(...)` survived it and a commented-out call read as a real
+      // send.
+      //
+      // **The direction matters and is smaller than #188's.** This is a "must
+      // not contain" rule, so a surviving comment makes it fail *loudly* on
+      // prose -- a false failure, not a silent hole. Measured on the sibling
+      // rule below by restoring the old stripper and adding a trailing
+      // `// import { Kernel } ...` to a HUD module: "imports nothing from the
+      // simulation" fails. That is still worth fixing, because a gate that
+      // fails for a comment sends the next reader chasing an import that is not
+      // there -- but it is not the silent pass `unconsumed-content-contract`
+      // was exposed to, where the rule asks "is this referenced" and a comment
+      // answers yes.
+      //
+      // The allow-list's staleness check one test below is unaffected either
+      // way: it asks only whether the file is still under `src/services/` and
+      // never re-reads the source, so no comment can keep an entry alive.
       const code = stripComments(source);
       for (const [name, pattern] of IO_SOURCES) {
         if (!pattern.test(code)) continue;

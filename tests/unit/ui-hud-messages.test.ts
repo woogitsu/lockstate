@@ -47,16 +47,26 @@ const primitiveFiles = collectTypeScriptFiles(PRIMITIVES_ROOT);
  * Source with comments removed, so prose about a rule cannot trip the rule.
  *
  * The shared stripper from `tests/helpers/canonical-iteration.ts` rather than a
- * local copy (#193, #198). The local copy this replaced removed only
- * *whole-line* `//` comments, so a **trailing** comment survived it -- and a
- * trailing comment is exactly where a disabled import or a commented-out
- * reference ends up. That is the #188 defect: a sentence saying a thing is
- * *not* wired reads as wiring it.
+ * local copy (#193, #198). The local copy removed only *whole-line* `//`
+ * comments, so a **trailing** comment survived it -- and a trailing comment is
+ * exactly where a disabled import or a commented-out reference ends up.
  *
- * The other difference matters for the failure messages below rather than for
- * the rules: the shared stripper replaces a block comment with its own
- * newlines, while the local copy deleted it outright and shifted every line
- * number after it.
+ * **Measured, and the consequence is smaller than #188's was, so it is stated
+ * rather than implied.** These are "must not contain" rules, so a surviving
+ * comment makes them fail *loudly* rather than pass silently: with the old
+ * stripper restored and a trailing `// import { Kernel } from
+ * '../../simulation/kernel/kernel';` appended to a real import line in
+ * `src/ui/hud/projection.ts`, "imports nothing from the simulation" **fails**;
+ * with the shared stripper the same mutation leaves all 12 tests passing,
+ * correctly. A false failure is not a hole -- but a gate that fails because
+ * somebody wrote a comment costs the next reader a hunt for an import that
+ * does not exist, and #188's own case (`unconsumed-content-contract`, where the
+ * rule asks "is this referenced" and a comment answers yes) is the direction
+ * that really is silent.
+ *
+ * The second difference is about the failure messages rather than the rules:
+ * the shared stripper replaces a block comment with its own newlines, while
+ * the local copy deleted it outright and shifted every line number after it.
  */
 function code(path: string): string {
   return stripComments(readFileSync(path, 'utf8'));
