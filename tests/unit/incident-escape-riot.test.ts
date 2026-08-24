@@ -3,7 +3,7 @@ import { DoorRegistry } from '../../src/simulation/navigation/door';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { TunnelRegistry, resolveEscapeOpportunity } from '../../src/simulation/incidents/escape';
 import { RIOT_ALLOWED_CATEGORIES, applyRiotRegimeOverride, buildRiotRegimeSchedule } from '../../src/simulation/incidents/riot-regime';
-import { DAY_LENGTH_TICKS, DEFAULT_REGIME_SCHEDULES, resolveActiveRegimeBlock } from '../../src/simulation/prisoners/regime';
+import { assertGaplessSchedule, DAY_LENGTH_TICKS, DEFAULT_REGIME_SCHEDULES, resolveActiveRegimeBlock } from '../../src/simulation/prisoners/regime';
 import { DEFAULT_ACTIONS } from '../../src/simulation/prisoners/actions';
 import { isActionCategoryAllowed } from '../../src/simulation/prisoners/utility-ai';
 
@@ -116,11 +116,37 @@ describe('resolveEscapeOpportunity: real doors and completed tunnels only', () =
  * utility-ai.ts.
  */
 describe('riot regime override: reuses the existing regime/action framework', () => {
+  /**
+   * "Gapless" was asserted by sampling seven ticks (issue #140's shape, in a
+   * neighbouring file): a gap between two of them was invisible, and a
+   * *runtime-built* schedule is precisely the case the module-load check in
+   * `regime.ts` cannot see. So the exported invariant check runs on it
+   * directly, and the categories are checked at every tick of the day rather
+   * than at seven of them.
+   */
   it('the riot schedule is gapless across the whole day and allows only riot categories', () => {
     const schedule = buildRiotRegimeSchedule('general-population');
-    for (const tick of [0, 1, 500, 1_200, DAY_LENGTH_TICKS - 1, DAY_LENGTH_TICKS, DAY_LENGTH_TICKS * 3 + 7]) {
-      const block = resolveActiveRegimeBlock(schedule, tick);
-      expect(block.allowedCategories).toEqual(RIOT_ALLOWED_CATEGORIES);
+
+    // The same check the two default schedules get at module load.
+    expect(() => assertGaplessSchedule(schedule)).not.toThrow();
+
+    for (let tickOfDay = 0; tickOfDay < DAY_LENGTH_TICKS; tickOfDay += 1) {
+      expect(resolveActiveRegimeBlock(schedule, tickOfDay).allowedCategories).toEqual(RIOT_ALLOWED_CATEGORIES);
+    }
+
+    // Wraparound: a riot does not end at midnight.
+    for (const tick of [DAY_LENGTH_TICKS, DAY_LENGTH_TICKS * 3 + 7]) {
+      expect(resolveActiveRegimeBlock(schedule, tick).allowedCategories).toEqual(RIOT_ALLOWED_CATEGORIES);
+    }
+  });
+
+  /**
+   * The override's *output* is what `ActionSystem` resolves against, so the
+   * invariant has to survive the swap, not merely hold for each input.
+   */
+  it('leaves every schedule in the overridden array gapless', () => {
+    for (const schedule of applyRiotRegimeOverride(DEFAULT_REGIME_SCHEDULES, ['general-population', 'high-risk'])) {
+      expect(() => assertGaplessSchedule(schedule), schedule.classificationGroupId).not.toThrow();
     }
   });
 

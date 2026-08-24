@@ -63,14 +63,19 @@ single tick would produce. `NeedsDecaySystem` always uses its own fixed
 `regime.ts` defines `RegimeSchedule`s as data: a list of `(startTickOfDay,
 endTickOfDay, allowedCategories)` blocks that must cover every tick of a
 `DAY_LENGTH_TICKS`-tick day exactly once (`assertGaplessSchedule` checks
-this at module load -- an undefined tick-of-day would leave action
-selection with no legal category at all). `DAY_LENGTH_TICKS=2,400` is a
+this at module load for the two defaults -- an undefined tick-of-day would
+leave action selection with no legal category at all). The check is
+exported, because schedules also arrive from elsewhere: `riot-regime.ts`
+builds one at runtime, and both `PrisonerOperationsRuntime`'s constructor
+options and `projectStatusStrip`'s source accept a caller-supplied array,
+none of which the module-load call can see. `DAY_LENGTH_TICKS=2,400` is a
 deliberately short in-game day (not literal 24h/86,400 ticks at 20 Hz) so
 a full regime cycle is fast to simulate and test -- a candidate value, not
 a locked balance decision. Two representative schedules exist:
 general-population (a full daily rhythm: sleep, meals, work/education,
 recreation, free association) and high-risk (confined to sleep/meal/hygiene
-for ~83% of the day, one brief supervised recreation block).
+for 2,200 of the day's 2,400 ticks -- ~92% -- with one brief 200-tick
+supervised recreation block).
 
 ## Actions: data-driven candidates, not a condition chain
 
