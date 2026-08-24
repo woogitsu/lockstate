@@ -875,3 +875,100 @@ describe('provisioning contract', () => {
     }
   });
 });
+
+/**
+ * `.github/workflows/deploy.yml` cancels an in-flight deployment as soon as a
+ * newer run joins its concurrency group. Issue #134 established that this is a
+ * trade rather than an oversight -- the run that joins the group last is the
+ * one that reaches the site and the queue never backs up, at the cost that a
+ * cancelled run may have partially completed -- and the decision recorded
+ * there was to keep the behaviour and write the reasoning into the file.
+ *
+ * A decision that lives only as a YAML comment is enforced by nothing, which
+ * is the shape #138 was filed about. These two assertions are what stands
+ * behind it, and both halves are needed: the value, so the policy cannot be
+ * swapped for one of the alternatives #134 declined without anyone noticing,
+ * and the reasoning, because a gate that pins only the value lets the argument
+ * be deleted and leaves the next reader a bare setting to re-derive.
+ */
+describe('deploy concurrency policy contract', () => {
+  /**
+   * The phrases the reasoning above the block must still carry, and what each
+   * one is load-bearing for. Substrings rather than a rewritten copy of the
+   * comment: the wording should stay editable, but a comment that no longer
+   * says these things is no longer the argument #134 decided to record.
+   */
+  const REQUIRED_REASONING: Readonly<Record<string, string>> = {
+    '#134': 'where the decision, and the two alternatives declined with it, are recorded.',
+    'superseded, deliberately':
+      'the legibility half #134 calls LIVE: a cancelled `Deploy` run on `main` is intended, and a column of them is this policy working rather than a broken pipeline.',
+    'wrangler deploy':
+      'the one step that publishes. The comment must keep naming it, because "a cancelled run may have partially completed" is a statement about that step and about nothing before it.',
+    'cancel-in-progress: false':
+      'the queued alternative, named as the answer if a half-finished deployment is ever actually observed rather than a patch around one.',
+  };
+
+  /**
+   * The `concurrency:` block: its top-level key and every line under it, up to
+   * the next top-level key. Parsed rather than searched for across the whole
+   * file, so that a `cancel-in-progress` in some other block, or reasoning
+   * that has drifted away from the setting it argues for, cannot satisfy
+   * either assertion below.
+   */
+  function concurrencyBlock(workflow: string): readonly string[] {
+    const lines = workflow.split(/\r?\n/u);
+    const start = lines.indexOf('concurrency:');
+
+    expect(
+      start,
+      '.github/workflows/deploy.yml has no top-level `concurrency:` block. Two deployments of one environment may now overlap, which is the state the block was added to prevent -- see #134.',
+    ).toBeGreaterThanOrEqual(0);
+
+    const body = lines.slice(start + 1);
+    const end = body.findIndex((line) => line.length > 0 && !/^\s/u.test(line));
+    return body.slice(0, end === -1 ? body.length : end);
+  }
+
+  it('still cancels a superseded deploy', async () => {
+    const block = concurrencyBlock(await readRepositoryFile('.github/workflows/deploy.yml'));
+    const settings = block
+      .filter((line) => line.trim().length > 0 && !line.trim().startsWith('#'))
+      .map((line) => line.trim());
+
+    // Vacuity guard: a block parsed down to nothing but comments would make
+    // the check below fail rather than pass, but a parser that returned the
+    // rest of the file would make it pass for the wrong reason.
+    expect(
+      settings.length,
+      'no settings parsed out of the concurrency block in .github/workflows/deploy.yml; the parser is broken.',
+    ).toBeGreaterThan(0);
+    expect(
+      settings.length,
+      'the concurrency block in .github/workflows/deploy.yml parsed to more settings than a concurrency block has; the parser is reading past the end of it.',
+    ).toBeLessThan(5);
+
+    expect(
+      settings,
+      '.github/workflows/deploy.yml no longer sets `cancel-in-progress: true` on its concurrency group. #134 decided that policy deliberately over the two alternatives it lists -- a deploy per commit that passes CI, or a queue with `cancel-in-progress: false`. Changing it is that decision being reopened, not a tidy-up: say on #134 which option replaces it and why, rewrite the reasoning above the block to argue the new trade, and change this assertion in the same commit.',
+    ).toContain('cancel-in-progress: true');
+  });
+
+  it('still explains why, in the block itself', async () => {
+    const block = concurrencyBlock(await readRepositoryFile('.github/workflows/deploy.yml'));
+    const reasoning = block.filter((line) => line.trim().startsWith('#')).join('\n');
+
+    // Vacuity guard: every phrase below would also be absent from an empty
+    // string, so a parser that stopped matching comments would report the
+    // reasoning missing rather than present. This says which of the two it is.
+    expect(
+      reasoning.length,
+      'the concurrency block in .github/workflows/deploy.yml carries no comment at all, or the comment parse is broken.',
+    ).toBeGreaterThan(400);
+
+    const missing = Object.keys(REQUIRED_REASONING).filter((phrase) => !reasoning.includes(phrase));
+    expect(
+      missing.map((phrase) => `${phrase} -- ${REQUIRED_REASONING[phrase]}`),
+      'the reasoning above `concurrency:` in .github/workflows/deploy.yml no longer makes this part of its argument. #134 decided to keep `cancel-in-progress: true` *and* to write down what it costs, so that a cancelled deploy is legible and the next reader does not re-derive the trade-off. Restore it. If the policy itself changed, change it in deploy.yml, record the new choice on #134, and update this map to the phrases the new argument turns on.',
+    ).toEqual([]);
+  });
+});

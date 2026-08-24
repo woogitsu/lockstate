@@ -48,6 +48,54 @@ permissions:
 concurrency:
   # Never let two deployments of the same environment overlap; a later commit
   # cancels an in-flight earlier one rather than racing it onto the same worker.
+  #
+  # `cancel-in-progress: true` is a decision, not a default (#134). Both
+  # alternatives were considered and declined there: one deploy per commit that
+  # passes CI (`cancel-in-progress: ${{ github.event_name != 'workflow_run' }}`,
+  # the shape ci.yml uses), and a strict queue (`cancel-in-progress: false`).
+  #
+  # The trade. Gained: the run that joins the group last is the one that
+  # survives, so the site converges on the latest work and the queue never
+  # backs up behind deploys of commits a later merge has already superseded --
+  # a cancelled `Deploy` run on `main` is *superseded, deliberately*, not a
+  # failure, and a column of cancelled runs in the Actions list is this policy
+  # working rather than a broken pipeline. Paid: a cancelled run may have
+  # partially completed, and nothing in this file says that it did not.
+  #
+  # What the steps below do and do not establish about that:
+  #
+  #   * Every step before `Deploy to Cloudflare` publishes nothing, so a run
+  #     cancelled in one of them leaves the live site exactly as it was. That
+  #     is all of them, not a sample: checkout, Node setup, Corepack, the
+  #     node_modules check, install, scripts/check-deploy-secrets.sh, and in
+  #     the production job `pnpm verify` as well. Every cancellation recorded
+  #     on #134 was of that kind, seconds in.
+  #   * The publishing step is a single `wrangler deploy` behind a `vite build`
+  #     (scripts/cloudflare-task.mjs). Whether cancelling *during* that upload
+  #     can leave a half-published Worker is NOT established here, anywhere
+  #     else in this repository, or by any observation on #134. It is unknown,
+  #     which is not the same as safe: do not restate it as "cannot happen"
+  #     without evidence.
+  #   * No step inspects the deployed site afterwards, so a partly applied
+  #     deploy would not be detected by this workflow. The next successful run
+  #     overwriting it is what would end it.
+  #
+  # Two properties of the group itself, because they are easy to misread:
+  #
+  #   * `github.event_name` is `workflow_run` for every automatic deploy, so
+  #     the group evaluates to the constant `deploy-staging` and all automatic
+  #     deploys contend with one another. A `workflow_dispatch` of
+  #     `production` gets `deploy-production` and is never cancelled by one.
+  #   * The trigger is CI completion rather than the merge (see `on:` above),
+  #     so a cancelled run is one whose CI has already passed: cancellation
+  #     here discards verified work. It also means "joins the group last" is
+  #     ordered by when CI finished, which on a linear `main` is normally the
+  #     newest commit but is not guaranteed to be -- a slower CI on a newer
+  #     commit could leave an older commit live until something deploys again.
+  #     Not observed, and not ruled out by anything here either.
+  #
+  # If a half-finished deployment is ever actually seen, #134's answer is to
+  # move to `cancel-in-progress: false` with a queue, not to patch around it.
   group: deploy-${{ github.event_name == 'workflow_dispatch' && inputs.target || 'staging' }}
   cancel-in-progress: true
 
