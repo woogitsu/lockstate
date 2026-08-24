@@ -37,7 +37,7 @@
 -- suite.
 
 begin;
-select plan(83);
+select plan(88);
 
 insert into auth.users (id, email) values
   ('33333333-3333-3333-3333-333333333333', 'entitled@example.test'),
@@ -1151,6 +1151,104 @@ select is(
       and pg_get_constraintdef(oid) ilike '%is null%'),
   1,
   'the rejection-code bound admits NULL, so it does not make the column required'
+);
+
+
+-- --- ranked_score is finite (issue #191) ------------------------------
+--
+-- `double precision` admits `NaN` and both infinities, and PostgreSQL orders
+-- `NaN` above every other float value -- above `Infinity`. Measured:
+--
+--   select v from (values ('NaN'::float8),(100),(5),('Infinity'::float8),
+--                         ('-Infinity'::float8)) t(v) order by v desc;
+--    -->  NaN, Infinity, 100, 5, -Infinity
+--
+-- `challenge_submissions_ranking_idx` is `(challenge_id, challenge_version,
+-- ranked_score)`, so a single `NaN` takes permanent first place by the access
+-- path that index exists to serve.
+--
+-- LATENT: `public.challenge_leaderboard` has every grant revoked from all
+-- three roles, because ADR 0009 gates public ranking on a privacy decision. So
+-- nothing can read the ranking yet. What makes it live is granting that read.
+--
+-- This is **not** redundant with the TypeScript side, which is why it is
+-- asserted rather than assumed. `claimedMetrics` -- the client's claim -- is
+-- `z.number().finite()` (`src/services/challenges/evidence.ts:63`), but
+-- `ranked_score` is written from the verifier's own computed outcome,
+-- `outcome.metrics[definition.objective.metricId]`
+-- (`src/services/challenges/verification.ts:285`), where `metrics` is typed
+-- `Readonly<Record<string, number>>` with no finiteness validation and the only
+-- guard is `=== undefined`. `NaN` is a `number`. So this constraint is the sole
+-- finiteness check on the path that actually writes the column.
+--
+-- Probed as the table owner: nothing here is reachable from a client role, and
+-- suite 003 already pins the grants that make that so.
+
+-- `challenge_submissions` carries a composite foreign key to
+-- `challenge_definitions (challenge_id, version)`, so an *admission* needs a
+-- real definition to point at. The refusals below do not: a CHECK is evaluated
+-- before a foreign key, and each asserts `23514` specifically, so a `23503`
+-- would not satisfy it.
+insert into public.challenge_definitions
+  (challenge_id, version, definition, definition_hash, signature, opens_at, closes_at, published_at)
+values ('challenge.finite', 1, '{"k":1}'::jsonb, repeat('e', 16), '{"s":1}'::jsonb,
+        now() - interval '1 day', now() + interval '1 day', now() - interval '1 day');
+
+select throws_ok(
+  $$ insert into public.challenge_submissions
+       (user_id, challenge_id, challenge_version, evidence_hash, evidence, claimed_metrics,
+        verification_status, ranked_score)
+     values ('33333333-3333-3333-3333-333333333333', 'challenge.finite', 1, repeat('e', 16),
+             '{"k":1}'::jsonb, '{}'::jsonb, 'verified', 'NaN'::float8) $$,
+  '23514',
+  null,
+  'a NaN ranked score is refused, so it cannot sort above every real score'
+);
+
+select throws_ok(
+  $$ insert into public.challenge_submissions
+       (user_id, challenge_id, challenge_version, evidence_hash, evidence, claimed_metrics,
+        verification_status, ranked_score)
+     values ('33333333-3333-3333-3333-333333333333', 'challenge.finite', 1, repeat('e', 16),
+             '{"k":2}'::jsonb, '{}'::jsonb, 'verified', 'Infinity'::float8) $$,
+  '23514',
+  null,
+  'an infinite ranked score is refused by the same predicate'
+);
+
+select lives_ok(
+  $$ insert into public.challenge_submissions
+       (user_id, challenge_id, challenge_version, evidence_hash, evidence, claimed_metrics,
+        verification_status, ranked_score)
+     values ('33333333-3333-3333-3333-333333333333', 'challenge.finite', 1, repeat('e', 16),
+             '{"k":3}'::jsonb, '{}'::jsonb, 'verified', 1.7976931348623157e308) $$,
+  'the largest finite double is still admitted, so the check bounds the domain and not the range'
+);
+
+select lives_ok(
+  $$ insert into public.challenge_submissions
+       (user_id, challenge_id, challenge_version, evidence_hash, evidence, claimed_metrics)
+     values ('33333333-3333-3333-3333-333333333333', 'challenge.finite', 1, repeat('e', 16),
+             '{"k":4}'::jsonb, '{}'::jsonb) $$,
+  'a pending submission with no score yet is still admitted, so the check did not make the column required'
+);
+
+-- --- challenge_version has a floor (issue #191) -----------------------
+--
+-- The identical constraint `challenge_definitions_version_check` already places
+-- on the same vocabulary. submit_challenge_evidence()'s cross-field check
+-- already ensures a stored row matched a real definition at write time, but
+-- that invariant lives in the function rather than in the schema, so a second
+-- writer would not inherit it.
+
+select throws_ok(
+  $$ insert into public.challenge_submissions
+       (user_id, challenge_id, challenge_version, evidence_hash, evidence, claimed_metrics)
+     values ('33333333-3333-3333-3333-333333333333', 'challenge.finite', 0, repeat('e', 16),
+             '{"k":5}'::jsonb, '{}'::jsonb) $$,
+  '23514',
+  null,
+  'a challenge version of zero is refused, as it already is on the definitions table'
 );
 
 

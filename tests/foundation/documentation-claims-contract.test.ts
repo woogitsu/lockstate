@@ -2,6 +2,7 @@ import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { stripComments } from '../helpers/canonical-iteration';
 
 /**
  * Documentation claims about the code, asserted against the code.
@@ -44,11 +45,6 @@ async function collectSourceFiles(directory: string): Promise<readonly string[]>
   return files;
 }
 
-/** Comments removed, so a sentence *about* a mechanism is not read as the mechanism. */
-function code(source: string): string {
-  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
-}
-
 async function sourceFilesMatching(pattern: RegExp): Promise<readonly string[]> {
   const files = await collectSourceFiles(path.join(repositoryRoot, 'src'));
 
@@ -58,7 +54,10 @@ async function sourceFilesMatching(pattern: RegExp): Promise<readonly string[]> 
 
   const matches: string[] = [];
   for (const file of files) {
-    if (pattern.test(code(await readFile(file, 'utf8')))) matches.push(path.relative(repositoryRoot, file));
+    // Comments removed, so a sentence *about* a mechanism is not read as the
+    // mechanism. `stripComments` is the shared one: it removes a trailing `//`
+    // comment as well as a whole-line one, which a local copy did not (#188).
+    if (pattern.test(stripComments(await readFile(file, 'utf8')))) matches.push(path.relative(repositoryRoot, file));
   }
   return matches;
 }

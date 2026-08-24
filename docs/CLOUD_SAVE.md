@@ -22,17 +22,18 @@ design. That gap is now closed except where noted:
   carried, and it earned its keep immediately: the first run failed on the
   *first assertion* of suite 001 and exposed defect 4 below.
 
-  **The #105 hardening is not in that run.** Nine migrations now postdate
+  **The #105 hardening is not in that run.** Ten migrations now postdate
   it — `20260824090000` and `20260824090100` for findings 5, 10 and 3 (see
   "Declarations, not only privileges" below), `20260824100000` and
   `20260824100100` for findings 1 and 2, `20260824101000` for finding 4 and
-  `20260824120000` for its trusted-tier remainder (see "Size bounds, not
-  only shapes" below), then `20260824110000`,
+  `20260824120000` for its trusted-tier remainder and
+  `20260824130000` for the scalar columns neither reached (see "Size
+  bounds, not only shapes" below), then `20260824110000`,
   `20260824110100` and `20260824110200` for findings 6, 7, 9 and 11 — along
   with every suite change that came with them, and all of it has been
   executed only against plain PostgreSQL. The counts above are the
-  stack-run counts, not today's. `pnpm verify:sql` is at 202 assertions
-  (32/32, 83/83, 21/21, 26/26, 8/8, 21/21, 11/11), measured on the run that
+  stack-run counts, not today's. `pnpm verify:sql` is at 220 assertions
+  (32/32, 88/88, 21/21, 26/26, 8/8, 23/23, 11/11, 11/11), measured on the run that
   produced this line; re-running `supabase test db` is what would raise the
   stack figure to match.
 - **Executed through GoTrue and PostgREST:** `pnpm verify:stack`
@@ -49,7 +50,7 @@ design. That gap is now closed except where noted:
   key, which is the only place PostgREST's mapping of that credential onto
   the role is exercised at all.
 - **Executed against plain PostgreSQL 16.13/18.6 + pgTAP:** every
-  migration and every suite via `pnpm verify:sql` — 202 assertions — which
+  migration and every suite via `pnpm verify:sql` — 220 assertions — which
   prepares a scratch database with
   `scripts/sql/supabase-compat-harness.sql`. This is the only path the
   #105 hardening has run on. That harness
@@ -469,6 +470,88 @@ enumeration, which is the part that must not be a list, comes from
 
 It asserts no ceiling is the *right* number and no bound refuses anything —
 suites 002 and 006 do that, in both directions, for the columns they created.
+
+### The scalar columns, and the one that could take first place
+
+`20260824130000_bound_scalar_columns.sql` (#191) covers what neither of the
+above reached: numeric and timestamp columns. An integer cannot be unbounded in
+the storage-exhaustion sense, but it can hold nonsense —
+`user_settings.settings_schema_version` accepted `-2147483648` until
+`20260824101000`, which is the precedent that this is not hypothetical.
+
+Three columns had no check of any kind:
+
+| column | now | why this number |
+| --- | --- | --- |
+| `save_versions.save_schema_version` | `>= 1` | `schemaVersionSchema = z.number().int().positive()`. **Bounded, not pinned** to `SAVE_SCHEMA_VERSION` (3): the column records the payload's version *as stored*, and a V1 or V2 row is legitimate history the migration chain still reads, so a pin would refuse the past as well as the future |
+| `challenge_submissions.challenge_version` | `>= 1` | the identical constraint `challenge_definitions_version_check` already places on the same vocabulary |
+| `challenge_submissions.ranked_score` | NULL or finite | see below |
+
+`save_schema_version` is LATENT for a reason worth naming: nothing reads it back
+for dispatch — the migration chain is driven by the version inside the envelope,
+not by the row. It goes live the moment any code trusts the column instead of
+the payload, which is exactly what a column with that name invites.
+
+**`ranked_score` is the interesting one.** It is `double precision`, so its
+domain includes `NaN` and both infinities, and PostgreSQL orders `NaN` **above
+every other float value — above `Infinity`**. Measured:
+
+```
+select v from (values ('NaN'::float8),(100),(5),('Infinity'::float8),
+                      ('-Infinity'::float8)) t(v) order by v desc;
+ -->  NaN, Infinity, 100, 5, -Infinity
+```
+
+`challenge_submissions_ranking_idx` is `(challenge_id, challenge_version,
+ranked_score)`, so a single `NaN` takes permanent first place by the access path
+that index exists to serve.
+
+LATENT, and precisely why: `public.challenge_leaderboard` has every grant
+revoked from `anon`, `authenticated` *and* `service_role`, because ADR 0009
+gates public ranking on a privacy decision that has not been made. What makes it
+live is granting that read — a decision already queued rather than a
+hypothetical one.
+
+**This check is not redundant with the TypeScript side, which is the part worth
+noticing.** `claimedMetrics` — the client's *claim* — is
+`z.record(identifierSchema, z.number().finite())`. But `ranked_score` is written
+from the verifier's own computed outcome,
+`outcome.metrics[definition.objective.metricId]`, where `metrics` is typed
+`Readonly<Record<string, number>>` with no finiteness validation anywhere on
+that path and `=== undefined` as the only guard. `NaN` is a `number`. So the
+claim is checked for finiteness and the computed score is not, and this
+constraint is the sole finiteness check on the path that actually writes the
+column. Tightening the TypeScript side needs a rejection code for "the replay
+produced a non-finite metric", which is a contract decision recorded in #191.
+
+The predicate is two strict comparisons rather than a helper because PostgreSQL
+has no `isfinite` for `double precision` — and note that the idiom from other
+languages does **not** work here: PostgreSQL defines `NaN = NaN` as **true**, so
+a self-equality test admits `NaN`. Verified by mutation: replacing the bound with
+`ranked_score = ranked_score` lets both `NaN` and `Infinity` through.
+
+`supabase/tests/008_scalar_column_constraint_coverage.test.sql` makes this
+coverage a rule too, with one difference from suite 007 that matters. A text
+column can always be bounded; a scalar column legitimately may not be. So this
+suite has an allow-list — and the allow-list is the interesting part:
+
+* every entry must carry a **reason** long enough not to be a placeholder;
+* an entry **fails if the column later gains a constraint**, so acting on a
+  finding forces the entry to be reclassified rather than left asserting a state
+  that is no longer true.
+
+`uuid` and `boolean` columns are excluded by type rather than by decision: their
+domains are already exactly what the contract permits, so there is nothing a
+constraint could add.
+
+**Five of the twelve allow-list entries record an open finding rather than a
+settled decision.** `prisons.created_at`/`updated_at`,
+`profiles.created_at`/`updated_at` and `user_settings.updated_at` are
+**client-writable** — a client can set them at insert time and walk `updated_at`
+backwards, reproduced in **#194**. `prisons` even states the intent and enforces
+it in one direction only: its UPDATE grant deliberately excludes `created_at`,
+while the table-level INSERT grant covers it. Those entries move to a real
+mechanism when #194 is acted on, and the suite fails if they are not.
 
 ## Declarations, not only privileges
 
