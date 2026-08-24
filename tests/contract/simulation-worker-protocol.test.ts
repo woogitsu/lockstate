@@ -9,6 +9,7 @@ import {
   decodeWorkerToMainMessage,
   isJsonValue,
   type MainToWorkerMessage,
+  type ProtocolDecodeErrorCode,
   type WorkerToMainMessage,
 } from '../../src/simulation/protocol';
 
@@ -39,11 +40,9 @@ function expectDecodeErrorCode(
   result:
     | ReturnType<typeof decodeMainToWorkerMessage>
     | ReturnType<typeof decodeWorkerToMainMessage>,
-  expectedCode:
-    | 'invalid-message'
-    | 'unsupported-protocol-version'
-    | 'unknown-message-kind'
-    | 'invalid-payload',
+  // The decoder's own type rather than a fourth hand-written copy of the same
+  // four codes: a code renamed there is a compile error here.
+  expectedCode: ProtocolDecodeErrorCode,
 ): void {
   expect(result.ok).toBe(false);
   if (!result.ok) {
