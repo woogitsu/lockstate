@@ -9,7 +9,7 @@ import { expect, test, type Page } from '@playwright/test';
  *
  * Every other spec in this directory drives a purpose-built harness page.
  * That is the right shape for a module under test, but it means nothing so
- * far has ever loaded the page a player loads. Eleven claims only exist once
+ * far has ever loaded the page a player loads. Twelve claims only exist once
  * the pieces are assembled in a browser, and none of them can be settled a
  * layer down (the count is this list's own length, and it read "six" while
  * the list held seven):
@@ -89,7 +89,18 @@ import { expect, test, type Page } from '@playwright/test';
  *    and the only way to prove the report is re-entrant is to let a page boot
  *    successfully and then take `Worker` away from it, which needs a browser
  *    (#82, #149).
- * 11. **The 30-second autosave actually fires, from play alone.** Issue #146's
+ * 11. **Pressing "Buy" really sends a `PurchaseMaterials` to the worker.**
+ *    #89's whole defect was that nothing in `src/` could construct that
+ *    command, so a build order placed in a real session waited for materials
+ *    for ever. `tests/foundation/unconsumed-command-contract.test.ts` proves
+ *    a producer is *written*, and says in its own header that it can prove no
+ *    more than that; `tests/browser/ui-shell.spec.ts` proves the panel
+ *    dispatches an intent. What neither can reach is the composition root
+ *    itself -- `src/main.ts` imports Phaser, constructs a `Worker` and runs at
+ *    import, so no unit test executes it. A tee over the real `postMessage`
+ *    on this page is the only place the command is observable at all, and the
+ *    order id it mints is minted here and never echoed back.
+ * 12. **The 30-second autosave actually fires, from play alone.** Issue #146's
  *    defect was that nothing ever called `markDirty`, so the interval autosave
  *    was configured and dead and the only automatic write was the best-effort
  *    one on `pagehide`. `tests/foundation/composition-root-contract.test.ts`
@@ -174,12 +185,14 @@ interface WorkerTeeWindow extends Window {
 }
 
 /**
- * What the tee installed by the world-drag transaction test exposes.
+ * What the tee installed by the world-drag transaction test and the purchase
+ * test exposes.
  *
  * The other tee on this page records what the worker *posted*; this one
- * records what the page *sent*, which is the only place a `transactionId`
- * is observable at all -- it is minted on this thread, travels inside a
- * packed command, and nothing comes back that mentions it.
+ * records what the page *sent*, which is the only place a `transactionId` or
+ * a minted `orderId` is observable at all -- both are made on this thread,
+ * travel inside a packed command, and nothing comes back that mentions
+ * either.
  */
 interface CommandTeeWindow extends Window {
   lockstateSentToWorker?: readonly unknown[];
@@ -198,11 +211,26 @@ interface AutosaveProbeWindow extends Window {
   lockstateAutosaveProbe?: { readonly longTimers: number[]; readonly lifecycle: string[] };
 }
 
-/** One `simulation/submit-command` message as it went over `postMessage`. */
+/**
+ * One `simulation/submit-command` message as it went over `postMessage`.
+ *
+ * Every field optional and read structurally, because the point of the tee is
+ * to look at what the page really sent rather than to re-declare the
+ * protocol: a payload that had lost a field must read as `undefined` here and
+ * fail an assertion, not fail to compile.
+ */
 interface SubmittedCommand {
   readonly kind?: string;
   readonly payload?: {
-    readonly command?: { readonly data?: { readonly type?: string; readonly orderId?: string; readonly transactionId?: string } };
+    readonly command?: {
+      readonly data?: {
+        readonly type?: string;
+        readonly orderId?: string;
+        readonly transactionId?: string;
+        readonly itemId?: string;
+        readonly quantity?: number;
+      };
+    };
   };
 }
 
@@ -305,7 +333,11 @@ async function openApp(page: Page): Promise<void> {
  */
 async function armBuildTool(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Build' }).click();
-  const arm = page.locator('.hud-build__map .ui-action');
+  // `.hud-build__arm`, not `.hud-build__map .ui-action`: the map block holds
+  // two actions since #89 -- the arm toggle and the buy disclosure beside it
+  // -- and a locator matching both is a strict-mode violation rather than a
+  // selection.
+  const arm = page.locator('.hud-build__arm');
   await expect(arm).toBeVisible();
   await arm.click();
   await expect(arm).toHaveText('Stop placing');
@@ -1006,6 +1038,72 @@ test.describe('the assembled application', () => {
       // Folded away again, so the next viewport starts from the same state.
       if ((await coordinates.getAttribute('aria-expanded')) === 'true') await coordinates.click();
 
+      // The buy row open (#89), which is the panel's other player-opened
+      // state and the one whose controls exist in the DOM at every moment and
+      // are laid out at none of the ones above. Without this state the
+      // `neverLaidOut` check below is not merely weaker -- it fails, naming
+      // the quantity stepper and the buy button, which is the gate doing
+      // exactly its job: a control the sweep can never see is a control this
+      // test cannot claim is reachable.
+      const buyToggle = page.locator('.hud-build__buy-toggle');
+      await expect(buyToggle, `the buy disclosure is missing at ${width}x${height}`).toBeVisible();
+      await buyToggle.click();
+      await expect(page.locator('.hud-build__buy')).toBeVisible();
+
+      // The row the player just opened is inside the panel's *visible* box,
+      // measured before anything below scrolls anything. It is about 150px
+      // and the panel is sized to its arrival content, so at four of these
+      // five viewports the panel now has more content than box -- and without
+      // the panel scrolling to the row, the disclosure would reveal a control
+      // below its own fold, which is #174's defect wearing a different hat.
+      // Measured the way #174 measures it: the control's rectangle against
+      // the panel's client box. `controlReachability` below cannot make this
+      // claim, because it calls `scrollIntoView` first.
+      const buyBox = await page.evaluate(() => {
+        const panel = document.querySelector('.hud-build');
+        const control = document.querySelector('.hud-build__buy-submit');
+        if (panel === null || control === null) return null;
+        const p = panel.getBoundingClientRect();
+        const c = control.getBoundingClientRect();
+        return {
+          above: c.top - (p.top + panel.clientTop),
+          below: p.top + panel.clientTop + panel.clientHeight - c.bottom,
+        };
+      });
+      expect(buyBox, `the buy button has no box once the row is open at ${width}x${height}`).not.toBeNull();
+      expect(
+        buyBox?.above ?? -1,
+        `the buy button is above the Build panel's visible box at ${width}x${height}`,
+      ).toBeGreaterThanOrEqual(0);
+      expect(
+        buyBox?.below ?? -1,
+        `the buy button is below the Build panel's visible box at ${width}x${height}: opening the row revealed a control the player cannot see`,
+      ).toBeGreaterThanOrEqual(0);
+
+      const buying = await controlReachability(page);
+      for (const index of buying.measured) everMeasured.add(index);
+      expect(
+        buying.unreachable,
+        `controls covered by something else with the buy row open at ${width}x${height}`,
+      ).toEqual([]);
+      // The rail still holds, in a state that overflows the panel at four of
+      // these five viewports: the panel absorbs its own excess and the player
+      // can scroll it, which is what separates this from #174's defect --
+      // there the panel arrived clipped, here the player opened it.
+      expect(
+        railInvariants(await railIntegrity(page)),
+        `the rail with the buy row open at ${width}x${height}`,
+      ).toEqual({ railOverflow: 0, offScreen: [], stuck: [] });
+      await buyToggle.click();
+      await expect(page.locator('.hud-build__buy')).toBeHidden();
+      // Closed again, the panel fits, so a scroll left over from reaching a
+      // control in that state cannot survive into the next viewport's
+      // measurement of where the last section is.
+      await page.evaluate(() => {
+        const panel = document.querySelector('.hud-build');
+        if (panel !== null) panel.scrollTop = 0;
+      });
+
       // Nothing got a free pass by never being laid out. At desktop widths the
       // Build tab with its coordinates expanded shows every control there is,
       // so the list is empty; at 720px and below the responsive rules drop
@@ -1459,7 +1557,7 @@ test.describe('the assembled application', () => {
 
     // The tool is still armed and the panel still works: a refusal must not
     // wedge the route it was refused on.
-    await expect(page.locator('.hud-build__map .ui-action')).toHaveText('Stop placing');
+    await expect(page.locator('.hud-build__arm')).toHaveText('Stop placing');
   });
 
   /**
@@ -1670,6 +1768,153 @@ test.describe('the assembled application', () => {
     // shared one would make every segment after the first a no-op, which is
     // the failure a single shared `transactionId` could otherwise disguise.
     expect(new Set(placed.map((order) => order.orderId)).size).toBe(placed.length);
+  });
+
+  /**
+   * Issue #89: the player can spend the treasury, and the command really
+   * leaves this thread.
+   *
+   * The defect was not a broken purchase -- `ProcurementSystem`,
+   * `purchaseMaterialsSchema` and the session command router have all worked
+   * since #249 and are all covered headlessly. It was that **nothing in
+   * `src/` could construct a `PurchaseMaterials`**, so the only thing that
+   * could buy a brick was a test, and every build order placed in a real
+   * session sat in `materials-pending` for ever (`docs/HUD_PROJECTIONS.md`,
+   * gap 32a).
+   *
+   * The producer lives in `src/main.ts`, which no unit test can execute --
+   * it imports Phaser, constructs a `Worker` and runs at import. So this is
+   * the layer that can watch it: the same `postMessage` tee the transaction
+   * test above uses, over the real page, the real panel, the real command
+   * sender and the real worker.
+   *
+   * Three things are asserted and each is a separate claim. That a command
+   * of that type is sent at all; that its payload carries the item and the
+   * quantity the stepper showed, rather than a default the panel never
+   * displayed; and that its `orderId` is identifier-shaped and fresh, because
+   * `identifierSchema` bounds it at the decoder and
+   * `ProcurementSystem.purchase` refuses a duplicate -- a stable id would
+   * make every purchase after the first a silent no-op.
+   */
+  test('the Build panel buys materials, and a real PurchaseMaterials reaches the worker (#89)', async ({ page }) => {
+    await page.addInitScript(() => {
+      const RealWorker = Worker;
+      const sent: unknown[] = [];
+
+      class CommandTeeWorker extends RealWorker {
+        public override postMessage(message: unknown, transfer?: Transferable[] | StructuredSerializeOptions): void {
+          sent.push(message);
+          if (transfer === undefined) super.postMessage(message);
+          else if (Array.isArray(transfer)) super.postMessage(message, transfer);
+          else super.postMessage(message, transfer);
+        }
+      }
+
+      Object.defineProperty(window, 'Worker', { configurable: true, value: CommandTeeWorker });
+      (window as unknown as CommandTeeWindow).lockstateSentToWorker = sent;
+    });
+
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+
+    // A session, for the same reason the transaction test needs one: `submit`
+    // throws until a snapshot has baselined the command sequence, and a
+    // refused command sends nothing at all.
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+
+    await page.getByRole('button', { name: 'Build' }).click();
+
+    const purchases = async (): Promise<readonly { orderId: string; itemId: string; quantity: number }[]> =>
+      page.evaluate(() =>
+        ((window as unknown as CommandTeeWindow).lockstateSentToWorker ?? [])
+          .map((message) => message as SubmittedCommand)
+          .filter((message) => message.kind === 'simulation/submit-command')
+          .filter((message) => message.payload?.command?.data?.type === 'PurchaseMaterials')
+          .map((message) => ({
+            orderId: message.payload?.command?.data?.orderId ?? '',
+            itemId: message.payload?.command?.data?.itemId ?? '',
+            quantity: message.payload?.command?.data?.quantity ?? 0,
+          })),
+      );
+
+    // Nothing yet, so what follows is measuring the press rather than the
+    // page load.
+    expect(await purchases()).toEqual([]);
+
+    // The disclosure, closed on arrival. Its own state is asserted because a
+    // row that was already open would make the click below close it.
+    const buyToggle = page.locator('.hud-build__buy-toggle');
+    await expect(buyToggle).toHaveAttribute('aria-expanded', 'false');
+    await buyToggle.click();
+
+    const buy = page.locator('.hud-build__buy-submit');
+    // Two bricks per wall at 40 each, out of `BUILDABLE_REGISTRY` and
+    // `src/content/procurement-catalog.ts` by way of the view model. The
+    // label is asserted before the press so the payload below can be checked
+    // against what the player was actually shown.
+    await expect(buy).toHaveText('Buy 2 × Brick · 80');
+    await page.locator('.hud-build__buy .ui-number__step').last().click();
+    await expect(buy).toHaveText('Buy 3 × Brick · 120');
+    await buy.click();
+
+    await expect
+      .poll(async () => (await purchases()).length, {
+        message: 'pressing Buy sent no PurchaseMaterials command at all -- #89 is not closed',
+      })
+      .toBe(1);
+
+    // Nothing was refused: the starting balance is 25,000 and this costs 120.
+    await expect(page.locator('.hud__refusal')).toBeHidden();
+
+    const [purchase] = await purchases();
+    expect(purchase?.itemId).toBe('item.brick');
+    expect(purchase?.quantity).toBe(3);
+    // `identifierSchema`: `/^[A-Za-z0-9][A-Za-z0-9._:/-]*$/`, 1-128 characters.
+    expect(purchase?.orderId).toMatch(/^order-[A-Za-z0-9][A-Za-z0-9._:/-]{0,120}$/);
+
+    // A second purchase gets an id of its own -- `ProcurementSystem.purchase`
+    // refuses a duplicate order id outright, so a stable one would spend
+    // nothing and deliver nothing, silently.
+    await buy.click();
+    await expect.poll(async () => (await purchases()).length).toBe(2);
+    const both = await purchases();
+    expect(new Set(both.map((entry) => entry.orderId)).size).toBe(2);
+
+    /*
+     * And a purchase the prison cannot afford is **refused before it is
+     * sent**, and said so on screen.
+     *
+     * This is the half that has nowhere else to live. `Treasury.spend`
+     * refuses rather than overdrawing, and the worker drops the outcome --
+     * the kernel's command handler returns `void` and a command reply
+     * acknowledges receipt, not effect
+     * (`src/simulation/runtime/session-commands.ts`). So without the guard in
+     * `src/main.ts` the player would press Buy, watch the money not move, and
+     * be told nothing: the exact failure #82 and #207 exist for. The guard
+     * reads the balance the worker published, which is why it needs a real
+     * session and a real page.
+     *
+     * 1,000 bricks at 40 is 40,000 against a 25,000 starting balance, less
+     * the 200 already spent above.
+     */
+    const sentBefore = (await purchases()).length;
+    await page.locator('.hud-build__buy .ui-number__input').fill('1000');
+    await page.locator('.hud-build__buy .ui-number__input').press('Enter');
+    await expect(buy).toHaveText('Buy 1000 × Brick · 40,000');
+    await buy.click();
+
+    const refusal = page.locator('.hud__refusal');
+    await expect(refusal).toBeVisible();
+    await expect(refusal).toHaveAttribute('data-action', 'purchase-materials');
+    await expect(refusal).toContainText('Nothing was bought');
+    // The thrown English never reaches the screen (ADR 0011).
+    await expect(refusal).not.toContainText('cannot cover');
+    // On the control that was pressed, as well as in the line.
+    await expect(buy).toHaveAttribute('data-action-failed', 'true');
+    // And nothing left this thread: a refusal that still posted the command
+    // would spend the money in the worker and paint a refusal about it.
+    expect(await purchases()).toHaveLength(sentBefore);
   });
 
   /**

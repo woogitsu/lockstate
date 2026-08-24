@@ -72,14 +72,46 @@ export function createSessionCommandHandler(
     }
 
     if (simCommand !== null && simCommand.type === 'PurchaseMaterials') {
-      // The outcome used to be dropped here, and the comment that stood in
-      // this place said so: "a refusal -- `insufficient-funds`,
-      // `unknown-material` -- has nowhere to go", because the kernel's
-      // command handler returns `void` and the worker's reply to a command
-      // acknowledges *receipt*, not effect. It has somewhere to go now, and
-      // it is the route that comment predicted would be needed: the same one
-      // #225 built for a refused wall, reaching the HUD as an alert rather
-      // than as a command result (#261).
+      // The outcome reaches the player, and this is where it is put on the
+      // route out. It used to be dropped here, under a comment saying that a
+      // refusal -- `insufficient-funds`, `unknown-material` -- had "nowhere to
+      // go", because the kernel's command handler returns `void` and the
+      // worker's reply to a command acknowledges *receipt*, not effect.
+      // `refusals` is that somewhere: the same route #225 built for a refused
+      // wall, reaching the HUD as an alert on `simulation/status-counts`
+      // rather than as a command result (#261).
+      //
+      // **It is not the only route a refused purchase travels, and the two
+      // cannot both fire for one press.** `src/main.ts` checks the item
+      // against the procurement catalog and the price against the balance the
+      // worker last published *before* it submits, and throws instead of
+      // submitting -- so a purchase this line refuses is one that check let
+      // through, and a purchase that check stopped never became a command at
+      // all. One gesture produces exactly one player-visible message, from
+      // one side of that dispatch or the other, never both and never neither.
+      //
+      // Of the four reasons, only `insufficient-funds` currently arrives here
+      // from the Build panel, and only in the two cases the main-thread check
+      // cannot see: several purchases pressed inside one tick, each measured
+      // against a balance none of them has been deducted from yet, and a
+      // balance that moved since the last publication. `unknown-material` is
+      // pre-empted by that same check, `invalid-quantity` by the stepper
+      // clamping to `[1, MAX_PURCHASE_QUANTITY]`, and `duplicate-order` by a
+      // fresh `crypto.randomUUID()` per press. All four stay reachable from a
+      // `PurchaseMaterials` composed anywhere else -- a queued command in a
+      // restored save, a future producer -- which is why this maps the whole
+      // union rather than the one reason a panel can provoke.
+      //
+      // **The clock has to run before this line is reached at all**, so the
+      // one message a refused press produces is not always immediate.
+      // `Kernel.step()` is what dispatches a command queued by `submitCommand`,
+      // and `FixedStepClock.pump` returns zero executed ticks while its mode is
+      // `paused`, so the worker steps nothing and a purchase submitted against
+      // a paused clock is not refused yet -- it is not dispatched yet. Its
+      // refusal, if it is refused, arrives when the clock next runs. That is
+      // also why a paused run of presses is each measured by the main-thread
+      // check against one unchanged balance: none of them has been dispatched,
+      // so none of them has spent anything.
       //
       // The lookup is exhaustive over `PurchaseRefusalReason`, so a fifth
       // refusal reason added to `ProcurementSystem` fails to compile until it

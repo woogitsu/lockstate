@@ -306,31 +306,36 @@ describe('severity', () => {
  * be a false statement on screen.
  *
  * The mapping is the whole decision. Every intent the HUD can dispatch is
- * enumerated here rather than only the two that produce a message, so an
- * intent added later fails this test instead of silently landing in whichever
- * half of the rule its `default` case happens to be.
+ * enumerated here -- all eight `HudIntent` kinds, the five commands that
+ * produce a message and the three chrome intents that must not -- rather than
+ * only the ones that produce a message, so an intent added later fails this
+ * test instead of silently landing in whichever half of the rule its
+ * `default` case happens to be.
  */
 describe('refusalMessageKey: what a refused control says', () => {
-  it('names an outcome for each command, and four different ones', () => {
+  it('names an outcome for each command, and five different ones', () => {
     // A command changes nothing locally, so a refusal means the prison is
     // exactly as it was and nothing on screen says so unless this does.
     const keys = [
       refusalMessageKey('set-clock'),
       refusalMessageKey('place-build-order'),
+      refusalMessageKey('purchase-materials'),
       refusalMessageKey('undo'),
       refusalMessageKey('redo'),
     ];
     expect(keys).toEqual([
       HUD_MESSAGE_KEY.refusalSetClock,
       HUD_MESSAGE_KEY.refusalPlaceBuildOrder,
+      HUD_MESSAGE_KEY.refusalPurchaseMaterials,
       HUD_MESSAGE_KEY.refusalUndo,
       HUD_MESSAGE_KEY.refusalRedo,
     ]);
-    // Not one generic sentence: each of the four leaves the prison in a
-    // different state, and the undo pair is the case where the player pressed
-    // a key rather than a button (#261) -- so the line is the whole report and
-    // "that was refused" without saying what would leave them guessing whether
-    // their wall is still queued.
+    // Not one generic sentence: each of the five leaves the prison in a
+    // different state, and two of them are not a button at all -- the undo
+    // pair is the case where the player pressed a key (#261), so the line is
+    // the whole report -- while a refused purchase is the one that is about
+    // money (#89). "That was refused" without saying what would leave them
+    // guessing whether their wall is still queued and whether they paid.
     expect(new Set(keys).size).toBe(keys.length);
   });
 

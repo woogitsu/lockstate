@@ -121,25 +121,32 @@ describe('every HUD message key resolves in the bundled default locale', () => {
     for (const key of HUD_MESSAGE_KEYS) expect(key).toMatch(/^hud\.[a-z0-9]+(?:[.-][a-z0-9]+)*$/);
   });
 
-  it('declares a funds label and nothing that implies an income or a cost', () => {
+  it('declares a funds label and nothing that implies an income or a standing cost', () => {
     /*
      * This used to forbid *every* money word, and it was right to: there was
      * no economy, and a string is where a fake number gets its first place to
      * sit. #96 built one, so the rule moves rather than being deleted.
      *
-     * What exists is a **balance** the simulation publishes. What does not
-     * exist is anything that credits or debits it on a schedule -- no income,
-     * no payroll, no running cost. ADR 0017 decision 6 settles what the state
-     * pays for and nothing accrues it, so the gap this gate guards is between
-     * a decided answer and an unbuilt system rather than an undecided one. A
-     * label is still where a fake number gets its first place to sit, so
-     * `funds` is admitted by name and every word implying the missing half is
-     * refused.
+     * What exists is a **balance** the simulation publishes and, since #89, a
+     * **purchase** that spends it: the Build panel's buy control renders a
+     * unit price times a quantity, both handed to it by the composition root
+     * from `src/content/procurement-catalog.ts`. What does not exist is
+     * anything that credits or debits the treasury *on a schedule* -- no
+     * income, no payroll, no running cost. ADR 0017 decision 6 settles what
+     * the state pays for and nothing accrues it, so the gap this gate guards
+     * is between a decided answer and an unbuilt system rather than an
+     * undecided one.
      *
-     * `budget`, `cost` and `price` are the interesting refusals: the
-     * procurement catalog does hold prices, and a *label* naming one would be
-     * the HUD claiming a cost is on screen when the strip shows only a
-     * balance.
+     * So the allow-list stays one entry long and the refused words stay
+     * exactly as they were, for a reason that moved with #89 rather than
+     * disappearing. `income`, `wage` and `salary` name a flow no system
+     * produces. `budget` names a ceiling nobody has set. `money`, `cash` and
+     * `currency` name a unit #96 deliberately did not choose. And `cost` and
+     * `price` stay refused because a key carrying one would be a *standalone*
+     * readout of a figure with no purchase behind it: the panel names the
+     * quantity, the material and the total in one sentence
+     * (`hud.build.buy-submit`), which is a statement about the button that is
+     * about to be pressed, not a price list the HUD keeps.
      */
     const ALLOWED_MONEY_KEYS = new Set(['hud.status.funds']);
 

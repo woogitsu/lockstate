@@ -94,10 +94,17 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // ---------------------------------------------------------------
   // HUD shell. Keys, never source text: `hud.status.prisoners` stays
   // stable while "Prisoners" is free to change per locale and release
-  // (ADR 0011). No money, funds or cost keys exist. There is a treasury now
-  // (#96) and nothing yet renders it: the purchase loop reached the
-  // simulation before it reached the interface, and a string is where a fake
-  // number starts -- so the keys arrive with the control that needs them.
+  // (ADR 0011).
+  //
+  // The money keys arrived with the controls that needed them, one release
+  // apart, which is the rule this block follows rather than an accident: a
+  // string is where a fake number gets its first place to sit, so a label is
+  // authored when something produces the figure it names and not before.
+  // `hud.status.funds` came with the strip's balance readout (#96/#250);
+  // `hud.build.buy*` below came with the purchase control that spends it
+  // (#89). There is still no income, payroll or running-cost key, because
+  // nothing credits or debits the treasury on a schedule --
+  // `tests/unit/ui-hud-messages.test.ts` is the gate that keeps it that way.
   // ---------------------------------------------------------------
   'hud.status.title': 'Prison status',
   'hud.status.prisoners': 'Prisoners',
@@ -204,6 +211,10 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.build.target-run': '{count} × {edge} from {x}, {y}',
   'hud.build.coordinates': 'Enter coordinates',
   'hud.build.coordinates-hint': 'The keyboard route. Pointing at the map is quicker.',
+  'hud.build.buy': 'Buy',
+  'hud.build.buy-quantity': 'Quantity',
+  'hud.build.buy-submit': 'Buy {count} × {material} · {total}',
+  'hud.build.buy-hint': 'Arrives while the clock runs, into the stock a build draws from.',
   'hud.build.buildable.wall-brick': 'Brick wall',
   'hud.build.buildable.door-wooden': 'Wooden door',
 
@@ -222,6 +233,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // refused has to guess whether their wall is still queued.
   'hud.refusal.set-clock': 'The clock did not change — the request was refused.',
   'hud.refusal.place-build-order': 'The build order was not placed — the request was refused.',
+  'hud.refusal.purchase-materials': 'Nothing was bought — the purchase was refused and no money was spent.',
   'hud.refusal.undo': 'Nothing was undone — the request was refused.',
   'hud.refusal.redo': 'Nothing was redone — the request was refused.',
 

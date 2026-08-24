@@ -13,8 +13,18 @@ of that work. Issue #22 needs deterministic scheduling, a bounded per-tick
 CPU budget, and evidence-backed sharing for common-destination scenarios,
 without weakening #21's correctness or determinism guarantees.
 
-No real prisoner/staff entity model exists yet (#23/#24 own that). Per the
-owner's explicit decision for this issue, the budget/queue/flow-field
+When this ADR was written, no real prisoner/staff entity model existed
+(#23/#24 own that). That is no longer true: six production systems under
+`src/simulation/` now call `NavigationSystem.requestRoute` —
+`incidents/response-system.ts:147`, `operations/job-system.ts:140`,
+`contraband/search-system.ts:177`, `prisoners/action-system.ts:205`,
+`security/deployment-system.ts:128` and `security/patrol-system.ts:103`. The
+decision below is unaffected by that and remains correct: `NavigationSystem`
+is still generic over `id: string`
+(`src/simulation/navigation/navigation-system.ts:66`) and each of the six
+supplies its own id shape, which is precisely what this Context argued for.
+
+Per the owner's explicit decision for this issue, the budget/queue/flow-field
 infrastructure is built and benchmarked against minimal synthetic "stub"
 actors (an `EntityStore`-backed id plus a position/destination/
 `RouteContext`, nothing else) rather than blocking on real gameplay content.
@@ -124,8 +134,11 @@ that is deliberate: #23/#24 own the real entity/component model; coupling
 navigation scheduling to a specific gameplay entity representation now
 would be inventing architecture #22 was never scoped to decide. Chunk
 loading is still driven externally (`setLoadedChunks`), matching
-`TopologyManager`'s existing convention documented in `docs/NAVIGATION.md`
-("`SparseWorld` exposes no such enumeration").
+`TopologyManager`'s existing "no enumeration" convention as documented in
+`docs/NAVIGATION.md:236`. (That parenthetical previously quoted
+`docs/NAVIGATION.md` as saying "`SparseWorld` exposes no such enumeration";
+that string has never been in that file, on any branch. The convention it
+described is real, so only the quotation is withdrawn.)
 
 ### Minimal stub actors, not gameplay
 Per the owner's decision, `tests/helpers/navigation-actor-stub.ts` spawns
@@ -135,8 +148,10 @@ seeded origin/destination/`RouteContext`, nothing else) purely to drive
 (`tests/unit/navigation-system.test.ts`, 250 actors per scenario family,
 Kernel-stepped to completion). It is intentionally *not* exported from
 `src/`: it is test/benchmark scaffolding, not a production entity model,
-so it cannot be mistaken for #23/#24's eventual real catalog-driven
-prisoners and staff.
+so it cannot be mistaken for a real catalog-driven prisoner or staff model.
+That model is no longer hypothetical — `src/simulation/prisoners/` and
+`src/simulation/security/` hold one — and this helper is still confined to
+`tests/`, which is what the distinction above turns on.
 
 ### Benchmark evidence: a hand-rolled mirror, not an import of production code
 `benchmarks/scenarios/navigation-actor-tiers.mjs` follows this repository's

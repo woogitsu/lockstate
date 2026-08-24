@@ -25,7 +25,7 @@ Components are decoupled typed arrays (e.g., `TransformX = Float32Array`). A cen
 
 ### Query Determinism
 Unlike dense-array implementations utilizing swap-and-pop (such as `bitecs`), which change iteration order based on entity deletion history, our queries strictly iterate from index `0` to `maxActiveIndex`. This approach:
-- Naturally guarantees strictly ascending ID order, making simulation entirely deterministic regardless of spawning/despawning history.
+- Guarantees ascending **index** order regardless of spawning/despawning history — a total order derived from state, stable across runs and across a snapshot restore, which is what determinism actually needs. This is deliberately narrower than the "strictly ascending ID order" this bullet used to claim, and `src/simulation/entity/query.ts:16-36` states the narrower guarantee and the arithmetic behind it: an id packs the generation into its high 12 bits and the index into its low 20, so id order is `(generation, index)` lexicographic and coincides with index order only while every live slot shares a generation. Today it always does, because nothing in `src/` calls `EntityStore.destroy` and no index is ever recycled; the first release path (#31) is what separates the two orders. Callers that need ids in numeric order sort them.
 - Remains highly performant, requiring only lightweight bitmask checks (benchmarked at ~0.6ms to process 5,000 entities).
 
 ### Snapshotting
@@ -39,5 +39,5 @@ Because the state is just bounded typed arrays, snapshotting requires merely cop
 - Stale reference bugs are safely caught by the generation bitmask, and ids naming a freed slot by the `alive` record alongside it.
 
 **Negative:**
-- Iterating sparse component combinations still requires walking up to `maxActiveIndex`. However, given our 5,000 entity cap, iterating lightweight bitsets scales incredibly well within V8 without causing bottlenecks.
+- Iterating sparse component combinations still requires walking up to `maxActiveIndex`. However, at the capacities the runtime actually allocates — 5,000 for the prisoner store (`src/simulation/runtime/new-session.ts:156`) and 500 for the guard roster's own separate store (`:158`) — iterating lightweight bitsets scales incredibly well within V8 without causing bottlenecks. `EntityStore` itself imposes no 5,000 cap: its ceiling is `INDEX_MASK`, 1,048,575 (`src/simulation/entity/entity-store.ts:13`, enforced at `:83`), so the figure above is a per-store default and not a property of this model.
 - Custom implementation means maintaining it instead of relying on an established library.

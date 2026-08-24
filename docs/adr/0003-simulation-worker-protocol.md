@@ -93,8 +93,9 @@ them. The projections take live registries and entity stores, so they can
 only run inside the worker; with no message for their output the always-
 visible status strip painted the literal zeros of `EMPTY_HUD_VIEW_MODEL`
 for a whole session, however many prisoners the simulation held (issue
-#104). `simulation/delta` was declared in the kind union with no schema and
-no sender, which is not a route either.
+#104). `simulation/delta` was declared in the kind union with a schema
+(`src/simulation/protocol/types.ts:400`) but no sender, which is not a route
+either.
 
 `simulation/status-counts` is the first message that carries a projection.
 It follows the `simulation/clock-state` precedent above rather than
@@ -126,13 +127,24 @@ rather than one on each of the ~66 tick-loop wakes -- and posts nothing at
 all when none of the counts has changed. The tick stamp is what stops a
 readout from being taken for a statement about a later state than the one
 it describes. Measured per publication at 300 room instances and 40 guards:
-0.25-0.50 ms to project and 0.03-0.08 ms to structured-clone a 342-344 byte
-payload -- the largest form the channel can send, carrying a refusal and the
-longest declared reason -- flat from 250 to 5,000 actors
-(`tests/unit/worker-status-counts.test.ts`, reported not asserted; the
-figures moved from ~229 bytes when #261 added the refusal, and this container
-also produced a single 2.13 ms projection under load, which is why the timing
-is reported rather than gated).
+0.23-0.58 ms to project and 0.02-0.07 ms to structured-clone a 342-344 byte
+payload -- the largest form the channel can send, carrying eleven counts, a
+refusal and the longest declared reason -- flat from 250 to 5,000 actors
+(`tests/unit/worker-status-counts.test.ts`, reported not asserted).
+
+That byte figure **replaces** the `~229` this paragraph used to state, and it
+replaces it by re-measurement rather than by re-labelling. The old one was
+taken when the payload carried **ten** counts; `treasuryMinorUnits` (#96) made
+it eleven and the sentence below was updated without the measurement being
+re-run, so `~229` had already stopped being a current reading *before* #261
+added the refusal. The difference between the two numbers is therefore not the
+refusal's cost and is not offered as one. The timing is a range over repeated
+runs on one container, and an earlier reported run on it recorded a single
+2.13 ms projection under load; that spread is why `docs/BENCHMARKING.md` keeps
+this evidence reported rather than gated. What the test *asserts* is the shape
+and not either number -- eleven count keys, a refusal of exactly three scalars,
+and a serialized payload under 400 bytes -- because the shape is the property
+that makes the cadence safe, and the population cannot move it.
 
 It calls nothing on the kernel and advances nothing, which is what keeps
 ADR 0009's determinism guarantee intact:
@@ -261,6 +273,14 @@ Envelope protocol version 1 is the only accepted version initially. Adding an op
 
 Message identifiers are correlation and diagnostics identifiers, not simulation time. Wall-clock timestamps are intentionally excluded from the deterministic command contract.
 
+### Implementation note, 2026-08-24: decision 4's handshake has no sender
+
+Decision 4's middle sentence — "a version-1 handshake advertises supported versions and capabilities before initialization" — describes a negotiation that no production code path performs, and has never performed. Every occurrence of `protocol/handshake` or `protocol/handshake-accepted` in `src/` is the receiver, the kind union or the schema: `src/simulation/protocol/types.ts:7`, `:17`, `:204`, `:304`; `src/simulation/protocol/transferables.ts:30`, `:35`; `src/simulation/worker/state-machine.ts:417`, `:444`, `:453`. The only senders in the repository are under `tests/` (`tests/contract/simulation-worker-entry.test.ts:103`, `tests/contract/simulation-worker-protocol.test.ts:58`, `tests/contract/worker-integration.test.ts:51`, `tests/unit/worker-state-machine.test.ts:26`), and `git log -S` over `src/` finds no commit that ever added one there. The main thread's first message to a worker is `simulation/initialize` (`src/persistence/session/worker-session-host.ts:137-144`), which `handleInitialize` accepts precisely because the state is still `'uninitialized'` (`state-machine.ts:472-474`).
+
+Decision 4's third sentence is nevertheless true, by a route that is not the handshake: `protocolVersion: z.literal(SIMULATION_PROTOCOL_VERSION)` (`types.ts:154`) rejects any other envelope version at the decoder, before dispatch. That is why nothing is broken today — there is one envelope version, and the worker's handshake reply advertises no capabilities at all (`state-machine.ts:457`, `capabilities: []`). It is also why this is worth recording: the mechanism designed to detect a version mismatch is one nobody calls, so the day a version 2 exists it will not run.
+
+**Decision 4 is left standing rather than rewritten, because the repair is the owner's choice and not an editor's** (issue #274, Q4; issue #118 item 1): either send the handshake from `WorkerSessionHost` and make `'ready'` a reachable state, or delete `protocol/handshake`, `protocol/handshake-accepted` and `'ready'` and amend decision 4 together with [ADR 0006](./0006-simulation-worker-adapter.md)'s states 1-2. Until one is taken, read decision 4 as the design and this note as what `main` does.
+
 ## Runtime validation and failure behavior
 
 Decoders classify malformed envelopes, unsupported versions, unknown kinds and invalid payloads separately. Validation errors are returned as data and do not call simulation code. Protocol errors are bounded structured records; untrusted payload contents are not interpolated into logs or user-facing messages automatically.
@@ -271,7 +291,7 @@ Structured-clone payloads reject non-finite numbers, sparse arrays, class instan
 
 Use structured clone for low-frequency control messages and small versioned domain payloads. Use `ArrayBuffer` only when profiling demonstrates that payload size or clone cost justifies ownership transfer. The declared byte length must equal the actual buffer length before dispatch.
 
-`SharedArrayBuffer` is not approved by this ADR. It would require cross-origin isolation, atomic/concurrency rules and a separate performance case.
+`SharedArrayBuffer` is not approved by this ADR. It would require cross-origin isolation, atomic/concurrency rules and a separate performance case. One of those three has since been delivered and this paragraph should not be read as though it had not: `public/_headers:8-9` sets `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp`, and [ADR-0021](./0021-http-response-security-headers.md) records that under them the document reports `crossOriginIsolated === true`. Approval is still withheld — for the atomics/concurrency rules and the performance case, which are what remain.
 
 ## Alternatives considered
 

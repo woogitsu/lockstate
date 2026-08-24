@@ -35,10 +35,13 @@ rather than an intuition:
 "Stored costs a save-schema bump" is no longer an argument against
 allocation. Issue #70 was adding save schema V3 regardless -- and it has
 since shipped (`docs/PERSISTENCE.md`). When this ADR was written the envelope
-today carries only `kernel`/`world`/`construction`/`entities` while the
-runtime builds roughly thirty subsystems, and prisoners, staff, security,
-contraband and incidents are not persisted at all. The two routes are
-therefore weighed on their merits.
+carried only `kernel`/`world`/`construction`/`entities` while the runtime built
+roughly thirty subsystems, and prisoners, staff, security, contraband and
+incidents were not persisted at all. Neither half is true on `main` any more:
+`sessionSystemsSchemaFor` (`src/persistence/save-schema.ts:784-794`) persists
+`prisoners`, `operations`, `navigation`, `security`, `contraband`, `incidents`
+and `economy` as the `simulation` section of both the V3 and the V4 payload.
+The two routes are therefore weighed on their merits.
 
 ### The decisive fact: an `EntityId` is a storage slot, not a person
 
@@ -99,7 +102,10 @@ category 1.**
   destroyed** — mandatory, because the index is recycled.
 - **Part of the session snapshot**, and restored such that no future mint
   can collide with a restored one. The registry owns `getSnapshot()` /
-  `loadSnapshot()`; the envelope field is #70's to add (see below).
+  `loadSnapshot()`; the envelope field was #70's to add, and #70 has added it —
+  `identity` is a field of both the V3 and the V4 payload
+  (`src/persistence/save-schema.ts:838`, `:868`), with the snapshot shape at
+  `:715`.
 - **Renameable**, with no RNG involvement. `ActorIdentityRegistry.rename`
   exists today with no command wired to it, so the decision is not quietly
   reversible.
@@ -164,13 +170,19 @@ no decision recorded here.
   `registry.loadSnapshot(payload.identity)`; absent, a V2 save restores to
   an empty registry and every roster row simply projects no name, which is
   the same state a session that never registered the RNG stream is in. This
-  ADR deliberately does not create the V3 bump.
-- **Session wiring.** `src/simulation/runtime/new-session.ts` must register
-  the `identity.actor-name` stream alongside the existing three, construct
-  the registry, pass it to `PrisonerOperationsRuntime`, and mint for each
-  `GuardRoster.hire`. Until it does, identity is inert: `IntakeSystem`
-  draws nothing when no registry is supplied, which matters because
-  `NamedRngStreams.get` throws for an unregistered stream.
+  ADR deliberately did not create the V3 bump. #70 has since made it, in the
+  shape described above: `identity: actorIdentitySnapshotSchema.optional()` at
+  `src/persistence/save-schema.ts:838` for V3 and `:868` for V4.
+- **Session wiring — done.** `src/simulation/runtime/new-session.ts` had to
+  register the `identity.actor-name` stream alongside the existing three,
+  construct the registry, pass it to `PrisonerOperationsRuntime`, and mint for
+  each `GuardRoster.hire`. All four have since landed: `:187` registers the
+  stream, `:196` constructs the registry, `:198` passes it to
+  `PrisonerOperationsRuntime`, and `:248` constructs `GuardRoster` with the
+  registry and a draw on that stream. Identity is therefore no longer inert.
+  The reason it would otherwise have been still stands as written:
+  `IntakeSystem` draws nothing when no registry is supplied, which matters
+  because `NamedRngStreams.get` throws for an unregistered stream.
 - **A destroy path must release.** Nothing destroys a prisoner or a guard
   today. Whichever change first does must call `release`, or reuse
   `reconcile` as a safety net; a retained entry eventually misnames a

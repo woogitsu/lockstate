@@ -26,6 +26,17 @@ The deployment contract must support deep links, safe cache invalidation, produc
 - Keep production publishing outside ordinary CI until a protected release workflow and credential policy are accepted.
 - Automatically validate generated environment configuration, Wrangler dry-runs and local preview behavior.
 
+### Operational note, 2026-08-24: what is configured here is not what is deployed
+
+The two deployment bullets above describe the topology this ADR **decided**, and `wrangler.jsonc` configures exactly that: `:11-18` for `lockstate-staging` on `workers.dev` with no route, `:19-32` for `lockstate` on the `lockstate.io` Custom Domain with `workers_dev` and `preview_urls` false. Neither describes what is currently serving traffic.
+
+`docs/DEPLOYMENT.md`, "What currently serves lockstate.io" (`:165-176`), records the operating state: `lockstate.io` is served by **`lockstate-staging`** — the Worker the `staging` job deploys — through a Custom Domain attached by hand in the Cloudflare dashboard, and the Worker `lockstate` that this ADR names as production is "a Worker that has never been deployed". Two things follow, and the second is why this note exists:
+
+- A merge to `main` already updates the public site: the `staging` job runs on every push to `main`, so `lockstate.io` tracks `main` with no further configuration.
+- **Dispatching the `production` job would take the live domain off the Worker currently holding it** and transfer it onto a freshly created one, and wrangler does not warn. `docs/DEPLOYMENT.md:172` names that as a trap. Read that section before acting on the production bullet above.
+
+This note records the discrepancy; it does not resolve it. Which of the two Workers is *meant* to be production is an open decision for the owner (issue #274, Q9), so the deployment bullets above are deliberately left standing as the decision they are rather than rewritten to describe `lockstate-staging`. The live binding cannot be read from this repository at all — `docs/DEPLOYMENT.md:176` says so itself — so the operating state above is what that document records, not something this repository can verify.
+
 ## Alternatives considered
 
 ### Cloudflare Pages

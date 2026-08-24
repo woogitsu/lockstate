@@ -52,8 +52,15 @@ consequences, so they belong in an ADR rather than in a `_headers` file and a
   `pnpm verify:assets` and run in CI as a required `assets` job.
 - That job materialises LFS content; the main `verify` job does not. `verify`
   stays on a pointer-only checkout so ordinary runs do not consume metered LFS
-  bandwidth, which is safe because only `*.png` is LFS-tracked: the atlas
-  manifests and `asset-registry.json` are plain files. (The later `browser` job
+  bandwidth, which is safe because nothing `verify` needs the *contents* of is
+  LFS-tracked: the atlas manifests, the authored contracts under
+  `assets/contracts/` and `asset-registry.json` are all plain files, and the
+  build only copies `public/` through verbatim. **This sentence previously gave
+  its reason as "only `*.png` is LFS-tracked", which is false**:
+  `.gitattributes:1-4` tracks `*.png` under three trees **and** `*.blend` under
+  `assets/source/`, and six `.blend` files exist. The conclusion is unchanged —
+  no `.blend` is read by any job — but the stated reason was an absolute that
+  did not hold. (The later `browser` job
   pulls the same path-scoped subset, for the same reason `assets` does: the
   assembled page asks a real browser to decode the art. It reuses the objects
   `assets` already fetched into the shared workspace, so the second pull

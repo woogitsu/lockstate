@@ -48,8 +48,9 @@ this index's. Nothing here changes a status; this table only reports them.
 | [0019](./0019-tile-ownership-under-overlapping-parcels.md) | What "owned" means for a tile under overlapping parcels | Accepted |
 | [0020](./0020-deterministic-kernel.md) | Deterministic Kernel and Scheduler | Accepted |
 | [0021](./0021-http-response-security-headers.md) | HTTP response security headers for the static-asset deployment | Proposed — pending human approval |
+| [0022](./0022-room-zoning-surface.md) | Where a player zones a room, and with what gesture | Proposed — pending human approval |
 
-**Next free number: 0022.**
+**Next free number: 0023.**
 
 ## 0018, and why it is free again
 
@@ -64,7 +65,7 @@ opening balance, which is ADR 0017 decision 1 — so this table releases the
 number, exactly as the previous version of this section said it should on that
 outcome.
 
-**0018 is therefore available.** It is not the next free number (0022 is), and
+**0018 is therefore available.** It is not the next free number (0023 is), and
 it should not be reached for preferentially: a gap in the sequence is easier to
 read than a number reused years apart. Take it only if a future ADR is a direct
 successor to what #91 proposed, where sharing the number would be
