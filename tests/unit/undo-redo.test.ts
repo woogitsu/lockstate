@@ -6,6 +6,7 @@ import { createConstructionCommandHandler } from '../../src/simulation/construct
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { createBuildOrder } from '../../src/simulation/construction/build-order';
 import { tileCoordinate, chunkCoordinate } from '../../src/simulation/world/coordinates';
+import { RefusalLog } from '../../src/simulation/refusals';
 
 test('ConstructionSystem handles undo and redo of transactions', () => {
   const world = new SparseWorld(32);
@@ -23,7 +24,7 @@ test('ConstructionSystem handles undo and redo of transactions', () => {
   const construction = new ConstructionSystem(world);
   const kernel = new Kernel();
   kernel.registerSystem(construction);
-  kernel.setCommandHandler(createConstructionCommandHandler(construction));
+  kernel.setCommandHandler(createConstructionCommandHandler(construction, new RefusalLog()));
 
   // Place first order with transactionId 'tx1'
   kernel.submitCommand('cmd-1', 0, 0, packCommand({

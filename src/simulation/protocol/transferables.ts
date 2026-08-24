@@ -36,9 +36,11 @@ export function collectProtocolTransferables(
     case 'protocol/pong':
     case 'simulation/ready':
     case 'simulation/clock-state':
-    // Eleven integers under structured clone. ADR 0003's transferable policy
-    // reserves `ArrayBuffer` for payloads profiling shows need ownership
-    // transfer, which this is the opposite of.
+    // Eleven integers, and at most one three-field refusal record, under
+    // structured clone -- 344 bytes of JSON at the largest, measured at 5,000
+    // actors (`tests/unit/worker-status-counts.test.ts`). ADR 0003's
+    // transferable policy reserves `ArrayBuffer` for payloads profiling shows
+    // need ownership transfer, which this is the opposite of.
     case 'simulation/status-counts':
     case 'simulation/command-result':
     case 'simulation/stopped':

@@ -795,14 +795,20 @@ test.describe('HUD shell', () => {
    * place and *appended* a new one, so the list was in first-seen order and
    * the browser laid out `[a, b, c]` for a view model that said `[c, a, b]`.
    *
-   * Nothing in the shipped app could see it: after #220 the alerts list has no
-   * producer at all (`main.ts` sends the "simulation unavailable" sentence to
-   * `.hud__unavailable` instead), so this is LATENT, and it becomes visible
-   * the moment #104's channel gives the list a source that reports more than
-   * one row. It is the defect `main.ts` argues against for the buildable
-   * catalogue -- an order nobody chose -- and it is unfixable from the
-   * outside, because a caller cannot make its own output order survive a
-   * renderer that ignores it.
+   * It was latent when it was found: after #220 the alerts list had no
+   * producer at all (`main.ts` sent the "simulation unavailable" sentence to
+   * `.hud__unavailable` instead), and the note said it would become visible
+   * "the moment #104's channel gives the list a source that reports more than
+   * one row". #261 gave it the source -- a refusal the simulation reported --
+   * and stopped one step short of the condition: that producer emits at most
+   * one row, because the counts channel carries the *last* refusal rather
+   * than a queue of them (`RefusalLog`). So these four tests are still the
+   * only thing in the repository that exercises the ordering, and they stay
+   * exactly as they are until a second producer merges into the same list.
+   * It is the defect `main.ts` argues against for the buildable catalogue --
+   * an order nobody chose -- and it is unfixable from the outside, because a
+   * caller cannot make its own output order survive a renderer that ignores
+   * it.
    *
    * The alert ids here are opaque strings and the label key repeats down the
    * list on purpose: the message catalogue defines no per-alert key (only

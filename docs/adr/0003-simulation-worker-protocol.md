@@ -109,8 +109,9 @@ never replies, which is where `simulation/delta` and `simulation/event`
 already sit.
 
 The payload is the projection's `counts` block field for field, as
-validated non-negative integers, plus the `tick` they were read at and the
-projection's own `schemaVersion`. It is deliberately not a
+validated non-negative integers, plus the `tick` they were read at, the
+projection's own `schemaVersion` and -- since the 2026-08-24 amendment
+below -- an optional `refusal`. It is deliberately not a
 `versionedPayload`: that type exists to move an *opaque* `data` blob, and
 here the message kind already names which schema the payload follows, so
 declaring every field lets the boundary reject a negative or fractional
@@ -126,13 +127,24 @@ rather than one on each of the ~66 tick-loop wakes -- and posts nothing at
 all when none of the counts has changed. The tick stamp is what stops a
 readout from being taken for a statement about a later state than the one
 it describes. Measured per publication at 300 room instances and 40 guards:
-0.23-0.43 ms to project and 0.03-0.05 ms to structured-clone a ~229-byte
-payload, flat from 250 to 5,000 actors
-(`tests/unit/worker-status-counts.test.ts`, reported not asserted). The byte
-figure was measured when the payload carried **ten** counts; `treasuryMinorUnits`
-(#96) made it eleven and updated the sentence below without re-running the
-measurement, so read ~229 bytes as ten integers' worth of a flat object rather
-than as a current reading.
+0.23-0.58 ms to project and 0.02-0.07 ms to structured-clone a 342-344 byte
+payload -- the largest form the channel can send, carrying eleven counts, a
+refusal and the longest declared reason -- flat from 250 to 5,000 actors
+(`tests/unit/worker-status-counts.test.ts`, reported not asserted).
+
+That byte figure **replaces** the `~229` this paragraph used to state, and it
+replaces it by re-measurement rather than by re-labelling. The old one was
+taken when the payload carried **ten** counts; `treasuryMinorUnits` (#96) made
+it eleven and the sentence below was updated without the measurement being
+re-run, so `~229` had already stopped being a current reading *before* #261
+added the refusal. The difference between the two numbers is therefore not the
+refusal's cost and is not offered as one. The timing is a range over repeated
+runs on one container, and an earlier reported run on it recorded a single
+2.13 ms projection under load; that spread is why `docs/BENCHMARKING.md` keeps
+this evidence reported rather than gated. What the test *asserts* is the shape
+and not either number -- eleven count keys, a refusal of exactly three scalars,
+and a serialized payload under 400 bytes -- because the shape is the property
+that makes the cadence safe, and the population cannot move it.
 
 It calls nothing on the kernel and advances nothing, which is what keeps
 ADR 0009's determinism guarantee intact:
@@ -140,11 +152,11 @@ ADR 0009's determinism guarantee intact:
 driven through the real worker, publishing as it goes, to end byte-identical
 to the same sixty ticks stepped with no worker at all.
 
-No list crosses this channel: the payload is eleven integers, so
-`docs/HUD_PROJECTIONS.md` contract 5 has nothing to bound here yet. A
-projection with rows in it must be paged before it may be published on a
-timer, because a per-send cost that grows with the prison is the failure
-this cadence was chosen to avoid.
+No list crosses this channel: the payload is eleven integers beside at most
+one three-field refusal record, so `docs/HUD_PROJECTIONS.md` contract 5 has
+nothing to bound here yet. A projection with rows in it must be paged before
+it may be published on a timer, because a per-send cost that grows with the
+prison is the failure this cadence was chosen to avoid.
 
 The envelope version stays at `1`, and the argument for a *new kind* is not
 quite the argument the amendment above made for relaxing an existing one.
@@ -161,6 +173,100 @@ an old peer rejects needs no increment. A change to an *existing* kind's
 payload would not have this property, which is why relaxing one took the
 reasoning above instead.
 
+## Amendment, 2026-08-24: `simulation/status-counts` also carries the last refusal
+
+Decision 9 says the worker "never reports a command as applied merely because
+the message was received", and that is exactly what left a hole. A player
+command passes two acceptances: the kernel takes the message and
+`handleSubmitCommand` answers `status: 'queued'`, and then, at the command's
+tick, a system decides what it *means*. The first acceptance had a wire
+message; the second decision had none. So `ConstructionSystem.submitOrder`
+could set `state: 'failed'` with `failReason: 'out-of-bounds'` -- reachable by
+typing `100, 100` into the Build panel's unbounded coordinate fields -- and
+the player saw nothing at all, because a failed order is drawn as no geometry
+and the HUD's refusal line answers a *rejected* command rather than a refused
+one. `ProcurementSystem.purchase` returned a `PurchaseOutcome` that the
+session command handler discarded, and said so in its own comment (#96, #261).
+`RoomZoningService.zone` returned a `ZoneRoomOutcome` that reached a bounded
+in-worker window and stopped there.
+
+The `payload` therefore gains an optional `refusal`:
+`{ sequence, tick, reason }`, where `reason` is a `z.enum` over
+`REFUSAL_REASONS` -- namespaced (`build.*`, `purchase.*`) so the two domain
+vocabularies behind it cannot collide, and closed so that a reason this build
+does not know fails at the decoder rather than reaching the HUD as a row with
+no sentence behind it.
+
+### Why this shape, and why not a new message kind
+
+**The channel is a snapshot on a cadence, so what it carries has to be
+snapshot-shaped.** A refusal is an event, and this publication is rate-limited
+and skipped whenever nothing it reports has changed -- so a *queue* of
+refusals could not be carried honestly: a reader could not distinguish a queue
+that was drained from one that was never sent, and its length would grow with
+the session, which contract 5 of `docs/HUD_PROJECTIONS.md` forbids on a timer.
+"The last refusal was X" and "there have been N refusals" are plain readings
+of the session at a tick; both survive a publication being late, repeated,
+coalesced or dropped. One 1-based `sequence` carries both, and doubles as the
+row identity the HUD needs so that republishing an unchanged refusal beside a
+changed count updates a row instead of rebuilding it.
+
+The refusal is a **sibling** of `counts`, not a member of it: `counts` is
+documented and `.strict()`-pinned as the projection's own block field for
+field, and a refusal comes from the session's `RefusalLog` rather than from
+`src/simulation/presentation/`.
+
+A refusal is **not** a `simulation/event`, and that is a decision rather than
+convenience. `simulation/event` moves an opaque `versionedPayload`, so nothing
+about a refusal would be validated at the boundary -- the property this
+message's declared fields exist for. And an event stream makes the *reader*
+responsible for state: the main thread would have to accumulate what it saw
+and decide when to forget it, and a listener attached after an event was sent
+would never learn of it. A snapshot needs neither. The moment the simulation
+has something to say that genuinely cannot be read as state, that is when
+`simulation/event` needs a schema of its own -- which is the wider question of
+the routes this protocol still does not have, circled by #157 and not settled
+here.
+
+### Cost, and why the cadence still holds
+
+A new refusal opens the interval gate early. That is bounded and stated
+plainly: `RefusalLog.last` is a field read, so a wake with no refusal pays
+nothing, and the gate can open at most once per refusal because the publication
+records the sequence it published. The bound is therefore *one extra projection
+per command the simulation refuses* -- bounded by how fast a player can press a
+button. What it buys is that the refusal reaches the HUD on the same tick-loop
+wake it happened on: waiting up to 500 ms would be a delay felt on the player's
+own action, and pausing inside that window stops the tick loop entirely and
+would strand the refusal until the clock next ran.
+
+Publication remains a **read**: the log is written from inside the kernel's
+command dispatch, and the publication only reads it.
+`tests/determinism/status-counts-publication.test.ts` is unchanged and still
+requires sixty ticks driven through the real worker to end byte-identical to
+sixty ticks stepped with no worker at all.
+
+### Compatibility
+
+The envelope version stays at `1`, and this *is* a change to an existing
+kind's payload -- the case the amendment above said would not have the
+new-kind property. It is compatible for the narrower reason that section
+already gives first: both peers are emitted from one build, so no old peer
+exists. And the field is optional, so a peer built before it decodes every
+message a peer built after it sends *except* one carrying a refusal, which it
+would classify as `invalid-payload` and drop -- a readout that never appears,
+not a payload interpreted as something else.
+
+`RefusalLog` is **not** in the session snapshot and a restored session starts
+with none. That is deliberate, and not for want of a cheap way to do it: an
+optional field on the bundle needs no version bump, which is how `simulation`
+and `identity` arrived. It holds a notice about an action the player took
+moments ago rather than a condition of the prison, so restoring it means a
+loaded prison raising an alert about a wall that failed last week, with
+nothing on this channel able to dismiss it. `docs/PERSISTENCE.md` records the
+exclusion and `docs/HUD_PROJECTIONS.md` gap 33 lists it alongside the other
+counters that do not survive a restore.
+
 ## Compatibility strategy
 
 Envelope protocol version 1 is the only accepted version initially. Adding an optional domain field may remain compatible if old peers can ignore it through an explicitly versioned domain payload. Adding or changing an envelope message in a way an old peer cannot safely interpret requires either a compatibility path or an envelope-version increment with fixtures covering both sides.
@@ -169,9 +275,9 @@ Message identifiers are correlation and diagnostics identifiers, not simulation 
 
 ### Implementation note, 2026-08-24: decision 4's handshake has no sender
 
-Decision 4's middle sentence — "a version-1 handshake advertises supported versions and capabilities before initialization" — describes a negotiation that no production code path performs, and has never performed. Every occurrence of `protocol/handshake` or `protocol/handshake-accepted` in `src/` is the receiver, the kind union or the schema: `src/simulation/protocol/types.ts:7`, `:17`, `:204`, `:304`; `src/simulation/protocol/transferables.ts:30`, `:35`; `src/simulation/worker/state-machine.ts:366`, `:393`, `:402`. The only senders in the repository are under `tests/` (`tests/contract/simulation-worker-entry.test.ts:103`, `tests/contract/simulation-worker-protocol.test.ts:58`, `tests/contract/worker-integration.test.ts:51`, `tests/unit/worker-state-machine.test.ts:26`), and `git log -S` over `src/` finds no commit that ever added one there. The main thread's first message to a worker is `simulation/initialize` (`src/persistence/session/worker-session-host.ts:137-144`), which `handleInitialize` accepts precisely because the state is still `'uninitialized'` (`state-machine.ts:421-423`).
+Decision 4's middle sentence — "a version-1 handshake advertises supported versions and capabilities before initialization" — describes a negotiation that no production code path performs, and has never performed. Every occurrence of `protocol/handshake` or `protocol/handshake-accepted` in `src/` is the receiver, the kind union or the schema: `src/simulation/protocol/types.ts:7`, `:17`, `:204`, `:304`; `src/simulation/protocol/transferables.ts:30`, `:35`; `src/simulation/worker/state-machine.ts:417`, `:444`, `:453`. The only senders in the repository are under `tests/` (`tests/contract/simulation-worker-entry.test.ts:103`, `tests/contract/simulation-worker-protocol.test.ts:58`, `tests/contract/worker-integration.test.ts:51`, `tests/unit/worker-state-machine.test.ts:26`), and `git log -S` over `src/` finds no commit that ever added one there. The main thread's first message to a worker is `simulation/initialize` (`src/persistence/session/worker-session-host.ts:137-144`), which `handleInitialize` accepts precisely because the state is still `'uninitialized'` (`state-machine.ts:472-474`).
 
-Decision 4's third sentence is nevertheless true, by a route that is not the handshake: `protocolVersion: z.literal(SIMULATION_PROTOCOL_VERSION)` (`types.ts:154`) rejects any other envelope version at the decoder, before dispatch. That is why nothing is broken today — there is one envelope version, and the worker's handshake reply advertises no capabilities at all (`state-machine.ts:406`, `capabilities: []`). It is also why this is worth recording: the mechanism designed to detect a version mismatch is one nobody calls, so the day a version 2 exists it will not run.
+Decision 4's third sentence is nevertheless true, by a route that is not the handshake: `protocolVersion: z.literal(SIMULATION_PROTOCOL_VERSION)` (`types.ts:154`) rejects any other envelope version at the decoder, before dispatch. That is why nothing is broken today — there is one envelope version, and the worker's handshake reply advertises no capabilities at all (`state-machine.ts:457`, `capabilities: []`). It is also why this is worth recording: the mechanism designed to detect a version mismatch is one nobody calls, so the day a version 2 exists it will not run.
 
 **Decision 4 is left standing rather than rewritten, because the repair is the owner's choice and not an editor's** (issue #274, Q4; issue #118 item 1): either send the handshake from `WorkerSessionHost` and make `'ready'` a reachable state, or delete `protocol/handshake`, `protocol/handshake-accepted` and `'ready'` and amend decision 4 together with [ADR 0006](./0006-simulation-worker-adapter.md)'s states 1-2. Until one is taken, read decision 4 as the design and this note as what `main` does.
 

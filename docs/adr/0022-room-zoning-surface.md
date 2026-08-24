@@ -56,7 +56,7 @@ zoning plane with the room catalog's own `numericId` (`:243-251`), registers a
 are typed — six reasons at `:140-146` — and kept in a bounded window because a
 command handler returns `void`.
 
-`src/simulation/runtime/session-commands.ts:38-63` already routes the command to
+`src/simulation/runtime/session-commands.ts:46-72` already routes the command to
 it, and records why the schema's field is named `roomId` while the service's
 parameter is `roomCatalogId`: the field was named before instances existed, and
 renaming a field a queued command in an existing save may already carry is a
@@ -185,7 +185,7 @@ Verified against both ends. `zoneRoomSchema`
 `{ type: 'ZoneRoom', roomId: string, x: int, y: int, width: int, height: int,
 transactionId?: string }`, `.strict()`; `RoomZoningService.zone` takes
 `ZoneRoomRequest` (`zoning.ts:112-121`) whose first field is `roomCatalogId`
-and is fed from `simCommand.roomId` at `session-commands.ts:54`. So `roomId` is
+and is fed from `simCommand.roomId` at `session-commands.ts:62`. So `roomId` is
 the right name for the intent field — it is the field name the wire format and
 every queued command in an existing save already use, and it holds a room
 *catalog* id (`room.cell`), never an instance id.
@@ -278,9 +278,9 @@ larger budget for the surface that needs it.
 
 Most of the pieces exist. The `rooms` icon is already declared
 (`src/ui/primitives/icon.ts:16`). A room catalogue projection would be
-*simpler* than `buildCatalogue()` (`src/main.ts:282-300`), because rooms carry
+*simpler* than `buildCatalogue()` (`src/main.ts:332-357`), because rooms carry
 real `nameKey`s and need no id→key mapping table: `BUILDABLE_LABEL_KEY`
-(`src/main.ts:264-267`) exists only because `BUILDABLE_REGISTRY` carries a
+(`src/main.ts:269-272`) exists only because `BUILDABLE_REGISTRY` carries a
 hard-coded English `name` and no key (`docs/HUD_PROJECTIONS.md` gap 32), and
 rooms have no such gap.
 
@@ -403,7 +403,7 @@ most effort on.
 2. **Whether the room type list is grouped under a heading or interleaved with
    the buildables.** §1 assumes a grouped section; the measurement that makes §1
    free — 18 injected rows costing 0px — does not distinguish the two, and the
-   ordering rule `buildCatalogue()` uses (`src/main.ts:270,282-289`) is a
+   ordering rule `buildCatalogue()` uses (`src/main.ts:275,334-337`) is a
    composition-root decision either way.
 3. **Whether a zone drag should snap to an enclosing wall run.** A convenience
    of that kind is common in the genre, and it is not free here: `zone` takes a
@@ -469,16 +469,16 @@ most effort on.
   `accommodationBacklogTicks` (`intake-system.ts:133-135`). Object placement, or
   an authored occupancy figure per room definition, is what closes step 4 — a
   product decision recorded on #261, per `zoning.ts`'s header.
-- **A refusal has somewhere to go only if #283 lands.** That branch ships the
-  whole route a producer needs, and every path in this bullet resolves on #283's
-  branch and **on no other**: all six
-  `hud.alert.refusal.zone.*` strings (`src/content/default-locale-en.ts:166-171`
-  there), their mapping in `src/ui/simulation-alerts.ts:43-48`, and
-  `ZONE_REFUSAL_REASONS` (`src/simulation/refusals/refusal-log.ts:135`)
-  recorded from the handler at `src/simulation/runtime/session-commands.ts:70`.
-  Two of those files do not exist on `main` at all, and the fourth has
-  unrelated content at that line there.
-  Without it a zone gesture the simulation refuses tells the player nothing —
+- **A refusal has somewhere to go, and it did not when this ADR was written.**
+  The route a producer needs was on #283's branch and on no other, so this
+  bullet was a precondition; #283 has since landed and it is now a description
+  of `main`. All six `hud.alert.refusal.zone.*` strings are in
+  `src/content/default-locale-en.ts:173-178`, their mapping is in
+  `src/ui/simulation-alerts.ts:43-48`, and `ZONE_REFUSAL_REASONS`
+  (`src/simulation/refusals/refusal-log.ts:135`) is recorded from the handler at
+  `src/simulation/runtime/session-commands.ts:70`. Two of those files did not
+  exist on `main` when this was written.
+  Without that route a zone gesture the simulation refuses tells the player nothing —
   which is the defect #225 removed from the build drag, and it should not be
   reintroduced by a new gesture.
 - **The status strip starts moving.** `RoomZoningService` is the first thing in

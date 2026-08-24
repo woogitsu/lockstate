@@ -51,10 +51,21 @@ export interface ProcurementSnapshot {
   readonly pending: readonly PendingDelivery[];
 }
 
-/** Why a purchase was refused. `ok` is not a refusal. */
+/**
+ * Why a purchase was refused.
+ *
+ * Named rather than left inline in `PurchaseOutcome` since #261: the refusal
+ * now has to reach the player, and `src/simulation/refusals/refusal-log.ts`
+ * maps this union through an exhaustive `Record` so a fifth reason added here
+ * fails to compile until somebody decides what the player is told. Inline, it
+ * could only have been mapped with a fallback.
+ */
+export type PurchaseRefusalReason = 'unknown-material' | 'invalid-quantity' | 'duplicate-order' | 'insufficient-funds';
+
+/** What a purchase did. `ok` is not a refusal. */
 export type PurchaseOutcome =
   | { readonly ok: true; readonly paidMinorUnits: number; readonly arrivesAtTick: number }
-  | { readonly ok: false; readonly reason: 'unknown-material' | 'invalid-quantity' | 'duplicate-order' | 'insufficient-funds' };
+  | { readonly ok: false; readonly reason: PurchaseRefusalReason };
 
 /**
  * Quantity bound for one purchase.
