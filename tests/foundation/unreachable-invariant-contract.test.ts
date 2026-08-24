@@ -172,11 +172,19 @@ describe('every exported invariant enforcer is reachable from a path that runs',
 
   it('reads the rule out of code and not out of prose about the rule, on the real tree', () => {
     // `src/simulation/prisoners/regime.ts` *discusses*
-    // `assertGaplessDeploymentSchedule` in a doc comment, so this is not a
-    // hypothetical: a scan that read a mention as a call would report the
-    // deployment enforcer as wired and this gate would pass while nothing
-    // called it. #159's own `grep -rn` returns that comment line as a hit,
-    // which is exactly why grep is not a gate.
+    // `assertGaplessDeploymentSchedule` in a doc comment, and #159's own
+    // `grep -rn` reports that line as a hit alongside the definition -- which
+    // is exactly why grep is not a gate.
+    //
+    // Stated honestly: that particular mention is backticked with no
+    // parenthesis, so a comment-blind version of this scan would not read it
+    // as a call either. This assertion pins the mention against gaining one.
+    // The comment case that *is* load-bearing is a commented-out call, and
+    // the fixtures below are what hold the stripper to it -- measured, with
+    // the stripper replaced by an identity function and
+    // `assertValidActorNamePool(this.pool)` commented out, the
+    // `leaves no exported enforcer unreachable` assertion below goes green
+    // while nothing calls the enforcer, and only the fixture fails.
     const regime = MODULES.find((module) => module.file === 'src/simulation/prisoners/regime.ts')!;
     expect(regime.source).toContain('`assertGaplessDeploymentSchedule` has the same shape for the same reason.');
     expect(findCallSites(regime.source, 'assertGaplessDeploymentSchedule')).toEqual([]);

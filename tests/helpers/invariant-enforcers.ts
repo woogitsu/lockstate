@@ -90,11 +90,24 @@
 // Comments are stripped by the helper next door rather than by a second
 // implementation here. Two copies of one rule is the defect class #123 and
 // #93 are about, and AGENTS.md's required workflow is explicit that existing
-// implementation is inspected before a new abstraction is proposed. The
-// stripper matters concretely for this scan: `src/simulation/prisoners/
-// regime.ts` *mentions* `assertGaplessDeploymentSchedule` in a doc comment,
-// which is a discussion of the twin and not a call to it, and reading a
-// mention as a call would make this gate pass while nothing was wired.
+// implementation is inspected before a new abstraction is proposed.
+//
+// The stripper is load-bearing, and the demonstration is a commented-out
+// call rather than a prose mention. Measured: comment out
+// `assertValidActorNamePool(this.pool)` in
+// `src/simulation/identity/actor-identity.ts` *and* replace this import with
+// an identity function, and the gate's main assertion goes green with the
+// enforcer called by nothing -- only the fixture below catches it. That is
+// the "a check read a mention in a comment as a call" failure in its exact
+// form, which is why the stripper has fixtures of its own.
+//
+// The other direction is weaker than it looks and is stated rather than
+// implied: `src/simulation/prisoners/regime.ts` does mention
+// `assertGaplessDeploymentSchedule` in a doc comment, and #159's own
+// `grep -rn` reports that line as a hit -- but the mention is backticked
+// with no parenthesis, so even a comment-blind version of this scan would
+// not read it as a call. It is a pin against that mention gaining a
+// parenthesis, not a live save.
 import { stripComments } from './canonical-iteration';
 
 /** Whether a scanned file is production code (`src/`) or a test (`tests/`). */
