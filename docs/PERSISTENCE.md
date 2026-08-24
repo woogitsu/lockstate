@@ -1219,9 +1219,15 @@ Two implementations satisfy it:
   `snapshot-incompatible` is the one answer that may cost a generation: it
   becomes a `SnapshotRestoreRejectedError`, and everything else stays an
   ordinary error. Refusing a snapshot also leaves the worker usable rather
-  than `faulted` — it installed no runtime, and `handleInitialize` accepts
-  only `uninitialized`, so faulting it would make one bad save cost every
-  later load in the tab.
+  than `faulted` — it installed no runtime, so it is still `uninitialized` in
+  substance, and `recoverable: true` says exactly that. (Until #149 that
+  carried a second, larger reason: `handleInitialize` accepts only
+  `uninitialized` and the page held one worker for its whole life, so faulting
+  it made one bad save cost every later load in the tab. See "A worker per
+  session" below for why that consequence is gone.)
+- **`WorkerPerSessionHost`** (production) is the layer above it, and the one
+  the composition root actually builds. It gives every session a worker of its
+  own and a `WorkerSessionHost` of its own — see "A worker per session" below.
 - **`InProcessSessionHost`** (tests, headless tooling) runs the same
   simulation in-process. This is not a bypass of the boundary — it is the
   same boundary honoured through the same interface, for contexts where a
@@ -1252,6 +1258,43 @@ worker side:
   decoder before it could reach a save. The codec moved to
   `src/simulation/entity/entity-codec.ts` (the simulation layer may not
   import persistence; persistence re-exports it).
+
+### A worker per session (#149)
+
+`SimulationWorkerStateMachine` accepts `simulation/initialize` only while it is
+`uninitialized` and answers anything later with `already-initialized`, because a
+worker holds one authoritative simulation (ADR 0006). `src/main.ts` built one
+`WorkerSessionHost` per **page**, so the first `createPrison` or `loadPrison`
+consumed the worker and **every later load in that tab failed** — the panel
+offers Load per prison, so a player with two prisons met it on the second one.
+Both components were right; the composition was the defect, and nothing tested
+it because every test builds a fresh machine or a fresh host per case.
+
+The session boundary is now the worker itself, which is ADR 0006's amendment of
+2026-08-24. `SimulationWorkerChannel` owns the page's worker and enforces one
+rule — **a worker that has been sent `simulation/initialize` is never sent
+another** — and `WorkerPerSessionHost` claims one per session, drives it through
+an ordinary `WorkerSessionHost`, and shuts the previous session down over the
+protocol before the outgoing worker is terminated. Loading a prison therefore
+means what reloading the page means, which is what a player expects it to mean.
+
+Three consequences worth stating plainly:
+
+- **The renderer and the HUD do not see the swap.** They register their
+  listeners on the channel at boot, and it forwards from whichever worker is
+  current; a message from a worker that is no longer current is dropped rather
+  than delivered late.
+- **A load costs a worker start.** Measured on the production build in
+  Chromium: 152–200 ms for construction, module evaluation and a first protocol
+  round trip (ADR 0006's amendment carries the figures). The recovery walk above
+  pays it once per demoted generation, bounded by the three that are retained.
+- **A `Worker` that cannot be constructed for a later session is reported, not
+  thrown.** It surfaces as an ordinary `Error` — never a
+  `SnapshotRestoreRejectedError` — so the panel names the action that failed and
+  no generation is demoted for a failure that says nothing about the save. The
+  page also raises the same `simulation-unavailable` band a browser that cannot
+  start a worker at boot gets, because after the swap that is exactly the state
+  it is in (issue #82's failure path, which had to become re-entrant for this).
 
 `tests/contract/worker-snapshot-roundtrip.test.ts` pins this end to end:
 correlated replies, the full bundle, JSON-stability across the boundary, a

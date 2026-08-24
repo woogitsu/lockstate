@@ -108,6 +108,16 @@ export class SimulationSnapshotFeed implements RenderFeed {
         this.sessionReady = true;
         this.clockRunning = message.payload.clock.mode === 'running';
         this.dirty = true;
+        // A new session, so the tick this feed last drew is a tick of a
+        // *different* simulation and says nothing about whether the frame it
+        // holds is still correct. Clearing it is what makes the skip below
+        // ("an unchanged tick means the decoded view we already hold is still
+        // correct") a statement about one simulation rather than about a
+        // number. It became reachable with #149: a page can now start a second
+        // session, and two prisons paused at the same tick -- tick 0 being the
+        // ordinary case -- would otherwise leave the first one's world painted
+        // under the second one's name.
+        this.lastAppliedTick = undefined;
         break;
 
       case 'simulation/clock-state':

@@ -5,10 +5,8 @@ import { SessionController } from '../../src/persistence/session/session-control
 import { WorkerSessionHost } from '../../src/persistence/session/worker-session-host';
 import { computeSaveChecksum } from '../../src/persistence/checksum';
 import { createSaveEnvelope, type SaveEnvelope } from '../../src/persistence/save-schema';
-import { decodeMainToWorkerMessage, decodeWorkerToMainMessage } from '../../src/simulation/protocol/decode';
-import type { MainToWorkerMessage, WorkerToMainMessage } from '../../src/simulation/protocol/types';
 import type { SimulationClient } from '../../src/simulation/worker/client';
-import { SimulationWorkerStateMachine } from '../../src/simulation/worker/state-machine';
+import { LoopbackWorker } from '../helpers/loopback-worker';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { captureSessionSnapshot } from '../../src/simulation/runtime/restore-session';
 
@@ -27,46 +25,6 @@ import { captureSessionSnapshot } from '../../src/simulation/runtime/restore-ses
  * carried a `replyTo` the schema does not permit would fail here rather than
  * being silently dropped.
  */
-
-/** A `SimulationClient` stand-in wired straight to a state machine, through both real decoders. */
-class LoopbackWorker {
-  public readonly machine: SimulationWorkerStateMachine;
-  private readonly listeners = new Set<(message: WorkerToMainMessage) => void>();
-  public readonly undecodableWorkerMessages: unknown[] = [];
-
-  public constructor() {
-    this.machine = new SimulationWorkerStateMachine(
-      {
-        postMessage: (message: unknown) => {
-          const decoded = decodeWorkerToMainMessage(message);
-          if (!decoded.ok) {
-            this.undecodableWorkerMessages.push(message);
-            return;
-          }
-          for (const listener of this.listeners) listener(decoded.value);
-        },
-      },
-      'test-build',
-      () => 0,
-    );
-  }
-
-  public addListener(handler: (message: WorkerToMainMessage) => void): void {
-    this.listeners.add(handler);
-  }
-
-  public removeListener(handler: (message: WorkerToMainMessage) => void): void {
-    this.listeners.delete(handler);
-  }
-
-  public send(message: MainToWorkerMessage): void {
-    const decoded = decodeMainToWorkerMessage(message);
-    if (!decoded.ok) throw new Error(`the main thread sent a message the worker rejects: ${decoded.error.message}`);
-    this.machine.handleMessage(decoded.value);
-  }
-
-  public terminate(): void {}
-}
 
 const PRISON_ID = 'prison-1';
 

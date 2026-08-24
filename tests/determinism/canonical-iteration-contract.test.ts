@@ -118,6 +118,12 @@ const ALLOWED: readonly CanonicalIterationExemption[] = [
       'A membership test, not an ordering: `registerPrison` asks whether any prison already holds the requested slot index, and at most one can -- `prisons_owner_slot_unique` is on `(owner_id, slot_index)`. Every walk order therefore returns the same answer, and the answer is a boolean rather than a sequence. This is a test double for a cloud client besides, so nothing it enumerates reaches a simulation snapshot or a determinism hash.',
   },
   {
+    file: 'src/simulation/worker/worker-channel.ts',
+    expression: 'this.listeners',
+    reason:
+      'The same main-thread transport fan-out as `worker/client.ts` below, one layer up: the channel hands each message from whichever worker is current to every listener registered for the life of the page (#149). It runs on the main thread, reads nothing the kernel owns and writes nothing into a snapshot; every listener is handed the identical decoded message, so no listener\'s work is folded into another\'s.',
+  },
+  {
     file: 'src/simulation/worker/client.ts',
     expression: 'this.listeners',
     reason:

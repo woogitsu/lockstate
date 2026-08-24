@@ -85,18 +85,23 @@ export const STATUS_COUNTS_PUBLISH_INTERVAL_MS = 500;
  *
  * Refusing a snapshot installs nothing -- `_runtime` and `_kernel` are only
  * assigned once `restoreSimulationRuntime` has returned -- so the worker is
- * still `uninitialized` in substance, and reporting it as `faulted` would
- * make one bad save cost the whole tab: `handleInitialize` accepts only
- * `uninitialized`, so every later load, including one from a generation that
- * is perfectly good, would be refused as `already-initialized`. The session
- * layer's recovery walk (`SessionController.loadPrison`) depends on being
- * able to hand this same worker the previous generation.
+ * still `uninitialized` in substance, and `recoverable: true` says exactly
+ * that: this worker can still be used.
  *
  * This agrees with ADR 0006's own definition of the state rather than
  * stretching it: `faulted` is "reached when an unhandled exception or protocol
  * decode error occurs", and a snapshot this build declines to restore is
  * neither -- it is a request rejected with its reason, which is what
  * `protocol/error` is for.
+ *
+ * It used to carry a second, larger reason as well: because `handleInitialize`
+ * accepts only `uninitialized` and `src/main.ts` built one worker per *page*,
+ * faulting here made one bad save refuse every later load in the tab. That
+ * consequence is gone -- since #149 the main thread claims a worker that has
+ * hosted no session for each new session, so no fault of any kind can outlive
+ * the load that caused it. What the recoverable refusal still buys is the
+ * worker itself: it is not spent, and the state it reports is the state it is
+ * actually in.
  */
 function rejectedSnapshotFault(requestMessageId: string): { readonly replyTo: string; readonly recoverable: boolean } {
   return { replyTo: requestMessageId, recoverable: true };
