@@ -22,7 +22,8 @@ export type RoomCategory = z.infer<typeof roomCategorySchema>;
 /**
  * Shape-compatible with `src/simulation/rooms/definition.ts`'s existing
  * `RoomRequirement` (issue #17) -- deliberately the same requirement kinds
- * and fields, so `room-catalog-adapter.ts` can convert one into the other
+ * and fields, so `roomDefinitionFromCatalog`
+ * (`src/simulation/rooms/definition.ts`) can convert one into the other
  * without reinterpreting what a requirement means. `objectId` is validated
  * against the real object catalog at load time (see `validate-catalog.ts`)
  * instead of being an untyped string, unlike #17's original.
