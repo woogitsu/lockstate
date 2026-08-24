@@ -926,20 +926,36 @@ test.describe('HUD shell', () => {
     test('leaves the shipped two-entry catalogue exactly as it was (#143)', async ({ page }) => {
       // The fix must be invisible at today's catalogue size. Two rows fit
       // inside the list's own floor, so nothing scrolls anywhere.
-      await page.setViewportSize({ width: 1280, height: 720 });
-      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-      await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+      //
+      // Every viewport, not just 1280x720. This test used to pin itself to
+      // that one desktop size -- the one where the panel fits most easily --
+      // which made `CATALOGUE_VIEWPORTS` above read as coverage of the shipped
+      // catalogue that it did not provide, since the twelve-entry test next to
+      // it can never be pointed at two entries (its `listOverflow > 0` cannot
+      // hold there). Hardening rather than a substitute: the harness leaves
+      // `hud.asideSlot` empty, so `.hud__aside:empty { display: none }` fires
+      // and the Build panel gets the whole rail. Rail contention is a thing
+      // only the assembled page has, and `app-shell.spec.ts` is where issue
+      // #174 is measured.
+      for (const [width, height] of CATALOGUE_VIEWPORTS) {
+        await page.setViewportSize({ width, height });
+        await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+        await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
 
-      const probe = await page.evaluate(() => window.lockstateUiHarness.buildLayoutProbe());
-      expect(probe.rows).toBe(2);
-      expect(probe.listOverflow).toBe(0);
-      expect(probe.panelOverflow).toBe(0);
-      // `?? 0` used to stand here, which passed when the header had no box at
-      // all -- the state a `display: none` panel is in. The box is required
-      // first, so the comparison is about a header that exists on screen.
-      const header = probe.lastSectionHeader;
-      expect(header, 'the last section header has no box').not.toBeNull();
-      expect(header?.bottom).toBeLessThanOrEqual(probe.panelVisibleBottom);
+        const probe = await page.evaluate(() => window.lockstateUiHarness.buildLayoutProbe());
+        expect(probe.rows, `catalogue rows at ${width}x${height}`).toBe(2);
+        expect(probe.listOverflow, `the two-entry list scrolls at ${width}x${height}`).toBe(0);
+        expect(probe.panelOverflow, `the Build panel scrolls at ${width}x${height}`).toBe(0);
+        // `?? 0` used to stand here, which passed when the header had no box at
+        // all -- the state a `display: none` panel is in. The box is required
+        // first, so the comparison is about a header that exists on screen.
+        const header = probe.lastSectionHeader;
+        expect(header, `the last section header has no box at ${width}x${height}`).not.toBeNull();
+        expect(
+          header?.bottom ?? Number.POSITIVE_INFINITY,
+          `the last section header is below the fold at ${width}x${height}`,
+        ).toBeLessThanOrEqual(probe.panelVisibleBottom);
+      }
     });
   });
 
