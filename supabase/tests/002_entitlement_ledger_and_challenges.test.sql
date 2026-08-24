@@ -24,9 +24,16 @@
 -- The harness is still not Supabase, and neither run proves that GoTrue
 -- mints the identity these policies read; `auth.uid()` is fed here by
 -- `set_config`. See scripts/verify-supabase-stack.mjs for that step.
+--
+-- The twenty-two assertions added for issue #105 findings 1 and 2 -- the
+-- "Evidence integrity" and "Account binding" sections at the end -- have
+-- been executed only on plain PostgreSQL 16.13 + pgTAP 1.3.2 via
+-- `pnpm verify:sql`, and so have the two evidence bodies changed further
+-- down. The stack run needs container images that were not reachable when
+-- they were written.
 
 begin;
-select plan(25);
+select plan(47);
 
 insert into auth.users (id, email) values
   ('33333333-3333-3333-3333-333333333333', 'entitled@example.test'),
@@ -259,9 +266,18 @@ select throws_ok(
   'a client cannot insert an already-verified submission'
 );
 
+-- The evidence body names the challenge and version it was played
+-- against, because `submit_challenge_evidence()` now refuses a payload that
+-- disagrees with the row it is being filed under (issue #105 finding 1,
+-- 20260824100100_harden_submit_challenge_evidence.sql). It used to be
+-- `{"commands":[]}` here, which is exactly the shape #105's third
+-- demonstration exploited -- and the assertion passed either way, which is
+-- why the cross-field checks get their own assertions further down.
 select is(
   (select status from public.submit_challenge_evidence(
-     'challenge.first-intake', 1, 'fedcba9876543210', '{"commands":[]}'::jsonb, '{"score":10}'::jsonb)),
+     'challenge.first-intake', 1, 'fedcba9876543210',
+     '{"challengeId":"challenge.first-intake","challengeVersion":1,"commands":[]}'::jsonb,
+     '{"score":10}'::jsonb)),
   'submitted',
   'the RPC accepts evidence from an authenticated caller'
 );
@@ -274,7 +290,9 @@ select is(
 
 select is(
   (select status from public.submit_challenge_evidence(
-     'challenge.first-intake', 1, 'fedcba9876543210', '{"commands":[]}'::jsonb, '{"score":10}'::jsonb)),
+     'challenge.first-intake', 1, 'fedcba9876543210',
+     '{"challengeId":"challenge.first-intake","challengeVersion":1,"commands":[]}'::jsonb,
+     '{"score":10}'::jsonb)),
   'duplicate',
   'identical evidence cannot be submitted twice'
 );
@@ -331,6 +349,323 @@ select throws_ok(
 );
 
 reset role;
+
+-- --- Evidence integrity: the key is the payload, not the claim ---
+--
+-- Issue #105 findings 1 and 2, one assertion per demonstration the audit
+-- executed, plus the properties the fix rests on.
+--
+-- WHY THESE ARE HERE AND NOT ONLY IN THE MIGRATION'S COMMENTS. The
+-- constraint being replaced --
+-- `challenge_submissions_unique_evidence (challenge_id, challenge_version,
+-- evidence_hash)` -- said in its own comment that "resubmitting identical
+-- evidence, or replaying someone else's capture, cannot create a second
+-- ranked row (ADR 0008 threat T3)", and this suite passed while three
+-- `submitted` rows held byte-identical evidence under three fabricated
+-- hashes. A constraint that names a contract and enforces a different one
+-- is the defect; a suite that asserts the name rather than the behaviour is
+-- how it survived.
+--
+-- Each assertion below drives the refusal through the tier that is
+-- supposed to own it. Where the property belongs to the table rather than
+-- to `submit_challenge_evidence()`, the probe writes directly as the
+-- privileged role the suite is invoked with, which is the strongest caller
+-- there is -- if it cannot get past the constraint or the trigger, no
+-- client role can.
+
+select set_config('request.jwt.claim.sub', '33333333-3333-3333-3333-333333333333', true);
+set local role authenticated;
+
+-- #105's fail-closed shape, now spelled like create_prison(): an
+-- unauthenticated caller is refused on identity with `42501`, not with the
+-- `P0001` a validation failure raises.
+select set_config('request.jwt.claim.sub', '', true);
+
+select throws_ok(
+  $$ select public.submit_challenge_evidence(
+       'challenge.first-intake', 1, '0f0f0f0f0f0f0f0f',
+       '{"challengeId":"challenge.first-intake","challengeVersion":1,"commands":[]}'::jsonb,
+       '{"score":1}'::jsonb) $$,
+  '42501',
+  null,
+  'evidence cannot be submitted without an authenticated identity'
+);
+
+select set_config('request.jwt.claim.sub', '33333333-3333-3333-3333-333333333333', true);
+
+-- #105 DEMONSTRATION 3: evidence whose own challengeId disagreed with the
+-- row it was filed under. The verifier compares evidence against the
+-- definition it is *handed*, so a row filed under the wrong challenge is a
+-- row the verifier will verify against the wrong definition.
+select throws_ok(
+  $$ select public.submit_challenge_evidence(
+       'challenge.first-intake', 1, '0f0f0f0f0f0f0f0f',
+       '{"challengeId":"challenge.finished","challengeVersion":1,"commands":[]}'::jsonb,
+       '{"score":1}'::jsonb) $$,
+  'P0001',
+  null,
+  'evidence naming another challenge cannot be filed under this one'
+);
+
+select throws_ok(
+  $$ select public.submit_challenge_evidence(
+       'challenge.first-intake', 1, '0f0f0f0f0f0f0f0f',
+       '{"challengeId":"challenge.first-intake","challengeVersion":99,"commands":[]}'::jsonb,
+       '{"score":1}'::jsonb) $$,
+  'P0001',
+  null,
+  'evidence naming another version of this challenge cannot be filed under this one'
+);
+
+select throws_ok(
+  $$ select public.submit_challenge_evidence(
+       'challenge.first-intake', 1, '0f0f0f0f0f0f0f0f', '{"commands":[]}'::jsonb, '{"score":1}'::jsonb) $$,
+  'P0001',
+  null,
+  'evidence that names no challenge at all is refused rather than adopted by the row'
+);
+
+-- A version that is not a number reaches the same refusal rather than the
+-- `22P02` its `::numeric` cast would raise. The type check is written first
+-- so the cast is never reached, which relies on `or` short-circuiting --
+-- true here and not promised by PostgreSQL, so it is asserted rather than
+-- assumed. Either way the row is refused; only the message differs.
+select throws_ok(
+  $$ select public.submit_challenge_evidence(
+       'challenge.first-intake', 1, '0f0f0f0f0f0f0f0f',
+       '{"challengeId":"challenge.first-intake","challengeVersion":"1"}'::jsonb, '{"score":1}'::jsonb) $$,
+  'P0001',
+  null,
+  'a challengeVersion that is not a number is refused by the type check, not by the numeric cast'
+);
+
+-- The same check, fed a JSON `null` rather than an object.
+select throws_ok(
+  $$ select public.submit_challenge_evidence(
+       'challenge.first-intake', 1, '0f0f0f0f0f0f0f0f', 'null'::jsonb, '{"score":1}'::jsonb) $$,
+  'P0001',
+  null,
+  'evidence that is a JSON null rather than an object is refused'
+);
+
+-- And fed an SQL NULL, where the NULL-safe comparisons matter:
+-- `jsonb_typeof(NULL)` is NULL, so a `<>` comparison evaluates to UNKNOWN,
+-- the `if` does not fire and that check silently passes -- the mistake
+-- `create_save_version()` documents about `auth.uid()`.
+--
+-- WHAT THIS PINS, MEASURED RATHER THAN ASSUMED: that a NULL payload is
+-- refused with `P0001` before it reaches the table, not *which* check
+-- refuses it. Rewriting the object check's `is distinct from` as `<>` was
+-- tried, and this suite stayed green -- because the `challengeId` check on
+-- the next lines is NULL-safe too and raises the same SQLSTATE. So the
+-- object check is a message-quality check rather than an independent
+-- control, which is what its migration now says; the NULL-safety of the
+-- cross-field checks is the property, and it is this assertion plus the two
+-- above it that hold it.
+select throws_ok(
+  $$ select public.submit_challenge_evidence(
+       'challenge.first-intake', 1, '0f0f0f0f0f0f0f0f', null::jsonb, '{"score":1}'::jsonb) $$,
+  'P0001',
+  null,
+  'evidence that is SQL NULL is refused by a NULL-safe check, not waved through as UNKNOWN'
+);
+
+-- #105 DEMONSTRATION 1: three `submitted` rows holding byte-identical
+-- evidence under three fabricated hashes. The claimed hash differs on
+-- every call below; the payload does not.
+select is(
+  (select status from public.submit_challenge_evidence(
+     'challenge.first-intake', 1, 'aaaaaaaaaaaaaaaa',
+     '{"challengeId":"challenge.first-intake","challengeVersion":1,"commands":[{"tick":1,"sequence":1,"payload":{}}]}'::jsonb,
+     '{"score":7}'::jsonb)),
+  'submitted',
+  'the first submission of a run is recorded'
+);
+
+select is(
+  (select status from public.submit_challenge_evidence(
+     'challenge.first-intake', 1, 'bbbbbbbbbbbbbbbb',
+     '{"challengeId":"challenge.first-intake","challengeVersion":1,"commands":[{"tick":1,"sequence":1,"payload":{}}]}'::jsonb,
+     '{"score":7}'::jsonb)),
+  'duplicate',
+  'the same evidence under a second fabricated hash is a duplicate, not a second row'
+);
+
+select is(
+  (select status from public.submit_challenge_evidence(
+     'challenge.first-intake', 1, 'cccccccccccccccc',
+     '{"challengeId":"challenge.first-intake","challengeVersion":1,"commands":[{"tick":1,"sequence":1,"payload":{}}]}'::jsonb,
+     '{"score":7}'::jsonb)),
+  'duplicate',
+  'and under a third: the caller''s hash keys nothing'
+);
+
+select is(
+  (select count(*)::int from public.challenge_submissions
+    where evidence = '{"challengeId":"challenge.first-intake","challengeVersion":1,"commands":[{"tick":1,"sequence":1,"payload":{}}]}'::jsonb),
+  1,
+  '#105 finding 1''s three fabricated hashes now produce one row, not three'
+);
+
+-- The digest is canonical because `jsonb` is: key order and whitespace are
+-- normalized on input, so a re-serialized capture is the same key. This is
+-- the property that makes the constraint worth anything -- without it,
+-- pretty-printing the payload would be a bypass.
+select is(
+  (select status from public.submit_challenge_evidence(
+     'challenge.first-intake', 1, 'dddddddddddddddd',
+     '{"challengeVersion":1,  "commands":[{"payload":{},"sequence":1,"tick":1}],   "challengeId":"challenge.first-intake"}'::jsonb,
+     '{"score":7}'::jsonb)),
+  'duplicate',
+  'reordering keys and adding whitespace does not produce a new dedup key'
+);
+
+-- The converse, and the reason the claim can stay in the table: reusing an
+-- already-stored `evidence_hash` for *different* evidence is accepted,
+-- because the claim no longer keys anything. Under the old constraint this
+-- was a way to deny an honest submitter their row.
+select is(
+  (select status from public.submit_challenge_evidence(
+     'challenge.first-intake', 1, 'aaaaaaaaaaaaaaaa',
+     '{"challengeId":"challenge.first-intake","challengeVersion":1,"commands":[{"tick":2,"sequence":1,"payload":{}}]}'::jsonb,
+     '{"score":8}'::jsonb)),
+  'submitted',
+  'a different run submitted under an already-stored claimed hash is accepted: the claim keys nothing'
+);
+
+-- #105 DEMONSTRATION 2: an 8,388,619-byte evidence blob accepted. The
+-- bound is on the table, so both the RPC and a direct write hit it, and it
+-- is asserted at the boundary rather than at a round number -- an
+-- off-by-one in either direction fails here.
+select is(
+  (select status from public.submit_challenge_evidence(
+     'challenge.first-intake', 1, 'eeeeeeeeeeeeeeee',
+     jsonb_build_object('challengeId', 'challenge.first-intake', 'challengeVersion', 1,
+                        'blob', repeat('x', 7999924)),
+     '{"score":9}'::jsonb)),
+  'submitted',
+  'evidence measuring exactly the limit is accepted: the bound is inclusive'
+);
+
+select throws_ok(
+  $$ select public.submit_challenge_evidence(
+       'challenge.first-intake', 1, 'ffffffffffffffff',
+       jsonb_build_object('challengeId', 'challenge.first-intake', 'challengeVersion', 1,
+                          'blob', repeat('x', 7999925)),
+       '{"score":9}'::jsonb) $$,
+  'LS003',
+  null,
+  'one byte over the limit is refused with LS003, distinct from LS001 and LS002'
+);
+
+reset role;
+
+-- --- The table tier, probed as the privileged role ---
+--
+-- Everything above went through `submit_challenge_evidence()`. These four
+-- bypass it entirely, as the role the suite runs as -- which owns the table
+-- and is exempt from RLS -- so they assert that the properties hold of the
+-- data rather than of one caller.
+--
+-- The first of them also has to run here rather than above:
+-- `max_challenge_evidence_bytes()` is executable by nobody (issue #105
+-- finding 1's migration says why), so `authenticated` cannot name it in an
+-- assertion, and supabase/tests/003_data_api_grants.test.sql is what pins
+-- that.
+
+select is(
+  (select octet_length(evidence::text) from public.challenge_submissions
+    where evidence_hash = 'eeeeeeeeeeeeeeee'),
+  public.max_challenge_evidence_bytes(),
+  'the accepted payload measures exactly max_challenge_evidence_bytes(), so the measure is octet_length(evidence::text)'
+);
+
+select throws_ok(
+  $$ insert into public.challenge_submissions
+       (user_id, challenge_id, challenge_version, evidence_hash, evidence, claimed_metrics)
+     values ('33333333-3333-3333-3333-333333333333', 'challenge.first-intake', 1, '1010101010101010',
+             '{"challengeId":"challenge.first-intake","challengeVersion":1,"commands":[{"tick":1,"sequence":1,"payload":{}}]}'::jsonb,
+             '{"score":7}'::jsonb) $$,
+  '23505',
+  null,
+  'byte-identical evidence is refused by the constraint even for a privileged writer'
+);
+
+select throws_ok(
+  $$ insert into public.challenge_submissions
+       (user_id, challenge_id, challenge_version, evidence_hash, evidence, claimed_metrics)
+     values ('33333333-3333-3333-3333-333333333333', 'challenge.first-intake', 1, '1010101010101010',
+             jsonb_build_object('challengeId', 'challenge.first-intake', 'challengeVersion', 1,
+                                'blob', repeat('x', 7999925)),
+             '{"score":9}'::jsonb) $$,
+  'LS003',
+  null,
+  'the payload ceiling is the table''s, not the RPC''s: a privileged direct write is refused too'
+);
+
+-- The strongest property of the fix, and the reason it is a generated
+-- column rather than a trigger-maintained one: the key cannot be supplied
+-- by anybody, including the owner of the table.
+select throws_ok(
+  $$ insert into public.challenge_submissions
+       (user_id, challenge_id, challenge_version, evidence_hash, evidence, claimed_metrics, evidence_digest)
+     values ('33333333-3333-3333-3333-333333333333', 'challenge.first-intake', 1, '1010101010101010',
+             '{"challengeId":"challenge.first-intake","challengeVersion":1,"commands":[{"tick":9,"sequence":1,"payload":{}}]}'::jsonb,
+             '{"score":7}'::jsonb, sha256('spoofed'::bytea)) $$,
+  '428C9',
+  null,
+  'evidence_digest cannot be written directly, so no writer can choose its own dedup key'
+);
+
+-- --- Account binding (issue #105 finding 2) ---
+--
+-- "Whoever submits a captured blob first is ranked for it." The row above
+-- belongs to account 3333; account 4444 now submits the same capture.
+--
+-- What changes here is the *answer*, and it is the part that was an
+-- account-binding defect rather than a dedup defect: the old code replied
+-- `duplicate` together with the other account's `submission_id` -- the
+-- primary key of a row `challenge_submissions_select_own` deliberately
+-- hides -- so the one path whose job is to bind a submission to an account
+-- handed one account another account's row id.
+--
+-- What does NOT change is who holds the row: the key is global (ADR 0008
+-- threat T3 is "replaying someone else's evidence", and a per-account key
+-- would let every account hold a ranked row for one capture), so the first
+-- submitter still holds it. The database can bind a row to the account
+-- that submitted it; it cannot know which account *played* the run,
+-- because nothing in the evidence says. That residual needs an ADR 0009
+-- evidence-format amendment and is reported, not decided here.
+
+select set_config('request.jwt.claim.sub', '44444444-4444-4444-4444-444444444444', true);
+set local role authenticated;
+
+select is(
+  (select status from public.submit_challenge_evidence(
+     'challenge.first-intake', 1, '2020202020202020',
+     '{"challengeId":"challenge.first-intake","challengeVersion":1,"commands":[{"tick":1,"sequence":1,"payload":{}}]}'::jsonb,
+     '{"score":7}'::jsonb)),
+  'conflict',
+  'another account submitting a captured run is told conflict, not duplicate'
+);
+
+select is(
+  (select submission_id from public.submit_challenge_evidence(
+     'challenge.first-intake', 1, '2020202020202020',
+     '{"challengeId":"challenge.first-intake","challengeVersion":1,"commands":[{"tick":1,"sequence":1,"payload":{}}]}'::jsonb,
+     '{"score":7}'::jsonb)),
+  null::uuid,
+  'and is handed no submission_id at all, rather than the other account''s row id'
+);
+
+reset role;
+
+select is(
+  (select user_id::text from public.challenge_submissions
+    where evidence = '{"challengeId":"challenge.first-intake","challengeVersion":1,"commands":[{"tick":1,"sequence":1,"payload":{}}]}'::jsonb),
+  '33333333-3333-3333-3333-333333333333',
+  'the capture still has exactly one row, owned by the account that submitted first'
+);
 
 select * from finish();
 rollback;

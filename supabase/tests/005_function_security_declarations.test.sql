@@ -76,9 +76,11 @@ select is(
 base_save_slot_capacity:invoker:<unpinned>
 create_prison:definer:public, pg_temp
 create_save_version:definer:public, pg_temp
+enforce_challenge_evidence_size:definer:public, pg_temp
 enforce_challenge_verification_transition:invoker:public, pg_temp
 enforce_prison_slot_capacity:definer:public, pg_temp
 enforce_save_version_size:invoker:public, pg_temp
+max_challenge_evidence_bytes:invoker:<unpinned>
 max_save_payload_bytes:invoker:<unpinned>
 max_save_slot_capacity:invoker:<unpinned>
 recompute_entitlement_projection:definer:public, pg_temp
@@ -155,21 +157,27 @@ select is(
 -- finding this suite closes. Adding a function here is a decision a
 -- reviewer has to see.
 --
--- These three are `language sql immutable` one-liners returning a
+-- These four are `language sql immutable` one-liners returning a
 -- constant (`select 5`). They are SECURITY INVOKER, they name no relation,
 -- type or function, and they are inlined by the planner, so there is
 -- nothing for a temporary schema to shadow. That is why they are excluded
 -- rather than pinned -- and it is a property of their bodies, so if one of
 -- them ever grows a table reference it needs a pinned path and this
 -- assertion is where that gets noticed.
+--
+-- `max_challenge_evidence_bytes()` (issue #105 finding 1,
+-- 20260824100000_bind_challenge_evidence_to_payload.sql) is the fourth. It
+-- is the same shape as the three ADR 0013 helpers and is exempt for the
+-- same reason; unlike them it is callable by nobody, which
+-- supabase/tests/003_data_api_grants.test.sql pins rather than this file.
 select is(
   (select string_agg(p.proname, ' ' order by p.proname)
      from pg_proc p
      join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public'
       and pg_temp.pinned_search_path(p.oid) is null),
-  'base_save_slot_capacity max_save_payload_bytes max_save_slot_capacity',
-  'the only functions in public without a pinned search_path are the three constant-returning limit helpers'
+  'base_save_slot_capacity max_challenge_evidence_bytes max_save_payload_bytes max_save_slot_capacity',
+  'the only functions in public without a pinned search_path are the four constant-returning limit helpers'
 );
 
 -- `proconfig` can carry any GUC, not only `search_path`. A `SET role`, a
@@ -189,19 +197,24 @@ select is(
 
 -- The six client- or trusted-callable RPCs are the ones whose definer
 -- rights are the security control, so their `prosecdef` is worth naming as
--- a set and not only inside the matrix above. `enforce_prison_slot_capacity`
--- is here too: it is a trigger function, but it is SECURITY DEFINER
--- because it reads `entitlements` through `account_save_slot_capacity()`
--- regardless of the inserting role's RLS visibility (ADR 0013).
+-- a set and not only inside the matrix above. Two trigger functions are
+-- here too, both for the same reason: they call a limit helper that is
+-- executable by nobody, so invoker rights would make the invariant depend
+-- on the writer holding a grant no role has.
+-- `enforce_prison_slot_capacity` reads `entitlements` through
+-- `account_save_slot_capacity()` (ADR 0013);
+-- `enforce_challenge_evidence_size` reads
+-- `max_challenge_evidence_bytes()` (issue #105 finding 1).
 select is(
   (select string_agg(p.proname, ' ' order by p.proname)
      from pg_proc p
      join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public'
       and p.prosecdef),
-  'account_save_slot_capacity create_prison create_save_version enforce_prison_slot_capacity '
-    || 'recompute_entitlement_projection record_entitlement_event submit_challenge_evidence',
-  'exactly seven functions run with their definer''s rights, and each one is a documented trusted path'
+  'account_save_slot_capacity create_prison create_save_version enforce_challenge_evidence_size '
+    || 'enforce_prison_slot_capacity recompute_entitlement_projection record_entitlement_event '
+    || 'submit_challenge_evidence',
+  'exactly eight functions run with their definer''s rights, and each one is a documented trusted path'
 );
 
 select * from finish();

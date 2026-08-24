@@ -19,8 +19,10 @@ and threat model) and [ADR 0009](./adr/0009-challenge-verification-strategy.md)
 - **Executed against the real Supabase local stack:** the first nine
   migrations in `supabase/migrations/` and the first four pgTAP suites in
   `supabase/tests/`, under Supabase CLI 2.115.0 with GoTrue, PostgREST,
-  Storage and Realtime running. The two #105 hardening migrations and suite
-  005 postdate that run and are not in it. Reproduce with:
+  Storage and Realtime running. The four #105 hardening migrations
+  (`20260824090000`, `20260824090100`, `20260824100000`, `20260824100100`),
+  suite 005 and the twenty-two assertions suite 002 gained for findings 1
+  and 2 all postdate that run and are not in it. Reproduce with:
   ```bash
   supabase start && supabase db reset && supabase test db
   ```
@@ -28,7 +30,7 @@ and threat model) and [ADR 0009](./adr/0009-challenge-verification-strategy.md)
   check, and the security audit of that run found a second — see "Defects
   this tooling found" below.
 - **Also executed against a plain PostgreSQL 16/18 + pgTAP:** every
-  migration and every suite — 99 assertions, and the only path the #105
+  migration and every suite — 121 assertions, and the only path the #105
   hardening has run on. First run on 16.13 + pgTAP 1.3.2, since also on
   18.6 + pgTAP 1.3.4 — no major version is required or pinned. Reproduce
   with:
@@ -53,10 +55,15 @@ and threat model) and [ADR 0009](./adr/0009-challenge-verification-strategy.md)
   the schema has run there; none of the checks above has. The local stack
   runs the same GoTrue/PostgREST/Storage images, but nothing here has
   exercised a real project's networking, quotas or connection pooling. The
-  two #105 hardening migrations
-  (`20260824090000_pin_trigger_function_search_path.sql` and
-  `20260824090100_revoke_client_truncate.sql`) postdate that apply and have
-  run on a scratch database only.
+  four #105 hardening migrations
+  (`20260824090000_pin_trigger_function_search_path.sql`,
+  `20260824090100_revoke_client_truncate.sql`,
+  `20260824100000_bind_challenge_evidence_to_payload.sql` and
+  `20260824100100_harden_submit_challenge_evidence.sql`) postdate that apply
+  and have run on a scratch database only. Nothing in the last two touches
+  stored data: `challenge_submissions` is empty on every project, because a
+  submission needs a published definition and the Z2 publisher does not
+  exist.
 - **Deliberately not built:** the deployed server functions themselves (the
   Edge Function/Worker handlers), a payment provider integration, a replay
   runner and a telemetry ingestion endpoint. Each is either out of scope
@@ -180,6 +187,86 @@ own protocol decoder — pinning the command union into the evidence schema
 would invalidate every stored submission each time a command type is added,
 for no security gain.
 
+### The dedup key is the payload, not the caller's claim
+
+Submissions carry two hashes, and only one of them keys anything.
+
+`challenge_submissions.evidence_hash` is the client's claim: 16 hex
+characters produced by `challengeEvidenceHash()` (FNV-1a over
+`canonicalJson`). Until issue #105 finding 1 it was also the column the
+unique constraint implementing ADR 0008 threat T3 was built on — so lying
+about it created a second row for the same run, which #105 demonstrated by
+executing it: three `submitted` rows holding byte-identical evidence under
+three fabricated hashes. `verifyChallengeSubmission()` recomputed the hash
+and never compared it to the stored one, and `service_role` holds no
+`UPDATE` grant on that column, so nothing at either tier disagreed.
+
+`challenge_submissions.evidence_digest` is now the key: a **stored
+generated column**, `sha256(jsonb_send(evidence))`, computed by the server
+from the payload. It cannot be supplied and cannot be written afterwards by
+anybody — PostgreSQL refuses a direct write to a generated column with
+`428C9`, including for the table owner — so no writer chooses its own dedup
+key. It is canonical because `jsonb` is: key order and whitespace are
+normalized on input, so a re-serialized capture is the same key.
+
+The claim stays in the table and is now *contradicted* rather than trusted:
+`verifyChallengeSubmission()` takes an optional `claimedEvidenceHash` and
+rejects with `evidence-hash-mismatch` when it does not describe the
+evidence. That comparison lives in TypeScript because that tier owns the
+algorithm — reproducing `canonicalJson` in SQL would mean hand-writing a
+JSON canonicalizer including JavaScript number formatting, so the two
+hashes deliberately do not agree and the SQL side says so.
+
+Two properties of this key are worth knowing before relying on it. It
+identifies the *stored `jsonb`*, so two payloads differing only in numeric
+scale (`1` and `1.0`) are distinct keys even though `canonicalJson` renders
+both as `1` — a narrower residual than "any 16 hex characters will do", but
+a real one. And it is bounded: `enforce_challenge_evidence_size()` refuses
+evidence over `max_challenge_evidence_bytes()` (8,000,000, the largest
+figure `challengeLimitsSchema.maxEvidenceBytes` can legally declare) with
+SQLSTATE `LS003`, distinct from `LS001` and `LS002`. #105 measured an
+8,388,619-byte blob accepted before that trigger existed. The real budget
+is still the definition's own, checked by the verifier (ADR 0009 step 4);
+this is a ceiling on abuse.
+
+### Submissions are bound to the submitting account, not to the player
+
+`submit_challenge_evidence()` derives `user_id` from `auth.uid()` and has
+no owner parameter, so there is nothing to forge, and with no identity it
+fails closed with `42501` — the same shape as `create_prison()`. It also
+refuses a payload whose own `challengeId`/`challengeVersion` disagrees with
+the row it is being filed under, which #105 also demonstrated: evidence
+naming one challenge stored under another is evidence the verifier would
+replay against the wrong definition.
+
+The dedup key is **global**, not per-account: one row per run for
+everybody. That is the reading ADR 0008 threat T3 requires — the threat is
+"replaying someone else's evidence", and a per-account key would let every
+account hold its own ranked row for one captured run.
+
+The consequence is that the first submitter holds the row, which is #105
+finding 2 ("whoever submits a captured blob first is ranked for it"). What
+this schema fixes is the *answer* the second submitter gets: it used to be
+`duplicate` together with the other account's `submission_id` — the primary
+key of a row `challenge_submissions_select_own` deliberately hides — and it
+is now `conflict` with no id at all. The three statuses are therefore
+`submitted`, `duplicate` (the caller's own earlier submission, an
+idempotent replay) and `conflict` (the evidence is recorded, not under this
+account).
+
+**What is still open, and needs an ADR amendment rather than a migration.**
+The database can bind a row to the account that *submitted* it; it cannot
+know which account *played* the run, because nothing in the evidence says.
+Closing that means putting the producing account inside the evidence body
+that the hash covers, which is an ADR 0009 evidence-format change (and a
+`CHALLENGE_EVIDENCE_SCHEMA_VERSION` bump). `challengeSubmissionSchema`
+already carries an `accountId` beside the evidence, and
+`verifyChallengeSubmission()` already rejects `account-mismatch` when it
+disagrees with the authenticated caller — but that field is outside the
+hashed evidence, so a captured blob can be resubmitted under any account.
+Until the ADR settles it, a thief who submits first still holds the single
+global row for that run.
+
 ### Verification order (cheapest first, fail closed)
 `verifyChallengeSubmission()`:
 
@@ -190,9 +277,11 @@ for no security gain.
 4. budget — evidence bytes, command count, tick count;
 5. structure — monotonic ticks, strictly increasing sequences, no command
    after the final tick, mandatory checkpoint cadence;
-6. duplicate evidence (optional port);
-7. replay through `ChallengeReplayRunner`;
-8. agreement — every checkpoint, the final hash and the claimed metrics.
+6. the claimed evidence hash, when one is supplied — the recomputed hash
+   must equal it (`evidence-hash-mismatch`);
+7. duplicate evidence (optional port);
+8. replay through `ChallengeReplayRunner`;
+9. agreement — every checkpoint, the final hash and the claimed metrics.
 
 Each failure has its own code (`build-not-allowed`,
 `final-state-hash-mismatch`, `metrics-mismatch`, …) so "your build is too

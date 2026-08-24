@@ -239,6 +239,61 @@ describe('challenge submission verification', () => {
     expect(result).toMatchObject({ status: 'rejected', code: 'duplicate-evidence' });
   });
 
+  it('contradicts a claimed evidence hash that does not describe the evidence', async () => {
+    const evidence = buildEvidence();
+    const result = await verifyChallengeSubmission({
+      submission: submissionFor(evidence),
+      definition,
+      accountId: 'account-1',
+      now: NOW,
+      replayRunner: agreeingRunner,
+      // What `challenge_submissions.evidence_hash` would hold if the client
+      // simply made one up -- which is all it took to bypass the unique
+      // constraint before issue #105 finding 1 moved the dedup key onto a
+      // server-computed digest.
+      claimedEvidenceHash: 'deadbeefdeadbeef',
+    });
+
+    expect(result).toMatchObject({ status: 'rejected', code: 'evidence-hash-mismatch' });
+  });
+
+  it('accepts the claim when it does describe the evidence, and still ranks the replay', async () => {
+    const evidence = buildEvidence();
+    const result = await verifyChallengeSubmission({
+      submission: submissionFor(evidence),
+      definition,
+      accountId: 'account-1',
+      now: NOW,
+      replayRunner: agreeingRunner,
+      claimedEvidenceHash: challengeEvidenceHash(evidence),
+    });
+
+    expect(result).toMatchObject({ status: 'verified', evidenceHash: challengeEvidenceHash(evidence) });
+  });
+
+  it('leaves the claim unchecked when no claim is supplied, rather than inventing one', async () => {
+    const result = await verify(buildEvidence(), agreeingRunner);
+    expect(result).toMatchObject({ status: 'verified' });
+  });
+
+  it('binds the claim to the evidence body: an edited field changes the hash it must match', async () => {
+    const evidence = buildEvidence();
+    const claimedEvidenceHash = challengeEvidenceHash(evidence);
+    const tampered = buildEvidence({ finalStateHash: 'dddddddddddddddd' });
+
+    expect(challengeEvidenceHash(tampered)).not.toBe(claimedEvidenceHash);
+    const result = await verifyChallengeSubmission({
+      submission: submissionFor(tampered),
+      definition,
+      accountId: 'account-1',
+      now: NOW,
+      replayRunner: agreeingRunner,
+      claimedEvidenceHash,
+    });
+
+    expect(result).toMatchObject({ status: 'rejected', code: 'evidence-hash-mismatch' });
+  });
+
   it('rejects a tampered final state hash: the replay disagrees', async () => {
     const runner: ChallengeReplayRunner = {
       replay: ({ evidence }) => ({
