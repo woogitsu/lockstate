@@ -5,7 +5,7 @@ import { EntityStore } from '../../src/simulation/entity/entity-store';
 import { EntityQuery } from '../../src/simulation/entity/query';
 import { deriveXoshiroState } from '../../src/simulation/rng/seed';
 import { NamedRngStreams } from '../../src/simulation/rng/streams';
-import { PrisonerColdState, PrisonerRecordComponent, intakeStageIndex } from '../../src/simulation/prisoners/components';
+import { PrisonerColdState, PrisonerRecordComponent, classificationGroupIndex, intakeStageIndex } from '../../src/simulation/prisoners/components';
 import { IntakeSystem } from '../../src/simulation/prisoners/intake-system';
 import { RoomInstanceRegistry } from '../../src/simulation/prisoners/room-instance-registry';
 import { buildPrisonerScenarioFixture } from '../helpers/prisoner-fixture';
@@ -42,6 +42,62 @@ describe('IntakeSystem: deterministic stage-by-stage pipeline', () => {
     expect(fixture.prisoners.records.intakeStage[index]).toBe(4); // 'completed'
     expect(fixture.prisoners.coldState.getAccommodation(entityId)).toBeDefined();
     expect(fixture.prisoners.intakeSystem.getMetrics().completedCount).toBe(1);
+  });
+
+  it('routes the arrival to the room type its own classification group resolves to, not merely to some free room', () => {
+    // The pipeline test above ends on `toBeDefined()`, which asks only that
+    // *an* accommodation was written. That is exactly the assertion an
+    // intake which never read `classificationGroupIndex` -- and handed
+    // `DEFAULT_ACCOMMODATION_POLICY` a hard-coded 'general-population' --
+    // would still satisfy, because a general-population cell is free and
+    // gets assigned. So the identity of the instance is asserted here.
+    //
+    // The fixture makes that identity readable: it registers a trailing
+    // slice of the cell block's cell tiles -- `Math.floor(40%)` of them, at
+    // least one -- as `room.solitary-cell` instances named
+    // `solitary-cell-<n>`, and every earlier tile as a `room.cell` instance
+    // named `cell-<n>`. So the instance id alone says which room-catalog id
+    // the policy was asked for, and `DEFAULT_ACCOMMODATION_POLICY` maps
+    // 'high-risk' to `room.solitary-cell` and every other group to
+    // `room.cell`.
+    const fixture = buildPrisonerScenarioFixture({ cellCount: 4, capacity: 10 });
+    const kernel = makeKernel();
+    fixture.prisoners.registerOn(kernel);
+
+    // `classifyPrisoner` scores a sentence at or over 200_000 ticks as +1
+    // and adds `min(2, max(0, priorIncidents))`, then shifts the total by
+    // one screening draw in {-1, 0, +1} and clamps to 0..3; 'high-risk' is
+    // riskTier 3. The first arrival therefore scores the maximum 3 and lands
+    // high-risk unless the draw is -1 -- which under this file's fixed seed
+    // it is not, and the group assertions below are what make that visible
+    // rather than assumed. The second scores 0, so no draw can lift it out
+    // of general-population.
+    const highRisk = fixture.prisoners.admitPrisoner({ sentenceLengthTicks: 250_000, priorIncidents: 4 }, fixture.originTile);
+    const generalPopulation = fixture.prisoners.admitPrisoner({ sentenceLengthTicks: 1_000, priorIncidents: 0 }, fixture.originTile);
+
+    // Four firings (ticks 0, 5, 10, 15) carry both arrivals from 'queued' to
+    // 'completed'; `update` advances every prisoner entity on each firing,
+    // so two arrivals take no longer than one.
+    for (let i = 0; i < 20; i += 1) kernel.step();
+
+    const highRiskIndex = fixture.prisoners.entityStore.getIndex(highRisk);
+    const generalPopulationIndex = fixture.prisoners.entityStore.getIndex(generalPopulation);
+
+    expect(fixture.prisoners.records.classificationGroupIndex[highRiskIndex]).toBe(classificationGroupIndex('high-risk'));
+    expect(fixture.prisoners.records.classificationGroupIndex[generalPopulationIndex]).toBe(classificationGroupIndex('general-population'));
+    expect(fixture.prisoners.records.intakeStage[highRiskIndex]).toBe(intakeStageIndex('completed'));
+    expect(fixture.prisoners.records.intakeStage[generalPopulationIndex]).toBe(intakeStageIndex('completed'));
+
+    // `findAvailable` takes the first free instance in ascending instance-id
+    // order, so in a prison that starts empty, with one arrival per group,
+    // each takes its own group's lowest instance id.
+    expect(fixture.prisoners.coldState.getAccommodation(highRisk)).toBe('solitary-cell-0');
+    expect(fixture.prisoners.coldState.getAccommodation(generalPopulation)).toBe('cell-0');
+
+    // The ids above are only shorthand for the room type as long as the
+    // registry agrees, so ask it directly too.
+    expect(fixture.prisoners.roomInstances.getById('solitary-cell-0')?.roomCatalogId).toBe('room.solitary-cell');
+    expect(fixture.prisoners.roomInstances.getById('cell-0')?.roomCatalogId).toBe('room.cell');
   });
 
   it('classification assigns a risk tier and sets sentenceEndTick from the submitted sentence length', () => {

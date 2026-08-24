@@ -68,9 +68,10 @@ export interface SimulationRuntime {
   /**
    * The prison's money, and the deliveries it has bought (#96, #89).
    *
-   * `treasury` holds a balance and nothing credits it on a schedule -- there
-   * is no income line, because what the state pays for is ADR 0017 question 1
-   * and it is open. `procurement` spends from it and delivers later.
+   * `treasury` holds a balance and nothing credits it on a schedule: there is
+   * no income line. ADR 0017 decision 6 settles the basis -- per prisoner-day,
+   * accrued per occupied place -- but no system accrues it, so the balance only
+   * ever goes down. `procurement` spends from it and delivers later.
    */
   readonly treasury: Treasury;
   readonly procurement: ProcurementSystem;

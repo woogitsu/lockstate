@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { intakeStageIndex } from '../../src/simulation/prisoners/components';
 import { TopologyManager } from '../../src/simulation/rooms/topology';
 import { chunkCoordinate, tileCoordinate, type ChunkPosition } from '../../src/simulation/world/coordinates';
 import type { ParcelDefinition } from '../../src/simulation/world/parcel';
@@ -130,9 +131,52 @@ describe('search jobs and room instances are ordered canonically, not by registr
   it('lists room instances in ascending instance id, even though they were registered out of order', () => {
     const runtime = buildDeterminismScenario(SCENARIO_SEED);
     expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.cell').map((instance) => instance.instanceId)).toEqual(['cell-1', 'cell-2', 'cell-3', 'cell-4']);
-    // `findAvailable` returns the first of that order, so accommodation
-    // assignment is a function of registry state, not of registration order.
-    expect(runtime.prisoners.roomInstances.findAvailable('room.cell', 'sleep-surface')?.instanceId).toBe('cell-1');
+  });
+
+  it('fills cells from the front of that order as intake actually assigns them, arrival by arrival', () => {
+    // Asking `findAvailable` directly only pins what the registry answers.
+    // `IntakeSystem` is the caller whose answer reaches state, and nothing
+    // made it use that answer: an intake that walked the same sorted list
+    // backwards -- packing arrivals from `cell-4` down -- leaves both the
+    // registry accessor above and every run-against-run determinism
+    // comparison in this file unchanged, because both runs would pack
+    // backwards identically. Naming the instances is what distinguishes
+    // them.
+    //
+    // The scenario admits four prisoners in a fixed order into an empty
+    // prison, and nothing destroys a prisoner entity, so ascending entity
+    // index is admission order -- the same order `EntityQuery.execute()`
+    // hands them to `IntakeSystem.update`.
+    const runtime = buildDeterminismScenario(SCENARIO_SEED);
+    // Four intake firings (ticks 0, 5, 10, 15) carry an arrival from
+    // 'queued' to a terminal stage.
+    for (let tick = 0; tick < 20; tick += 1) runtime.kernel.step();
+
+    const admissionOrder = Array.from({ length: runtime.prisoners.entityStore.maxActiveIndex + 1 }, (_, index) =>
+      runtime.prisoners.entityStore.getIdByIndex(index),
+    );
+
+    // The second arrival classifies 'high-risk' under this seed, and
+    // `DEFAULT_ACCOMMODATION_POLICY` sends that group to
+    // `room.solitary-cell`, of which this scenario registers no instance at
+    // all -- a structural gap, so that intake ends 'failed' with no
+    // accommodation rather than taking a cell. The other three take the
+    // three lowest cell ids in turn, leaving `cell-4` free.
+    expect(admissionOrder.map((entityId) => runtime.prisoners.coldState.getAccommodation(entityId))).toEqual([
+      'cell-1',
+      undefined,
+      'cell-2',
+      'cell-3',
+    ]);
+
+    // Which pins why that one is undefined: 'failed', not still queued or
+    // still waiting on a cell that never freed up.
+    expect(admissionOrder.map((entityId) => runtime.prisoners.records.intakeStage[runtime.prisoners.entityStore.getIndex(entityId)])).toEqual([
+      intakeStageIndex('completed'),
+      intakeStageIndex('failed'),
+      intakeStageIndex('completed'),
+      intakeStageIndex('completed'),
+    ]);
   });
 
   it('plays out identically when every incidental registration order is reversed', () => {

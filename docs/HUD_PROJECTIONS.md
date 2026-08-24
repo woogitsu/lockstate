@@ -345,9 +345,10 @@ decision about what to build next.
 21. **`wageBand` exists in content, and there is no payroll.** There is a
     treasury and a procurement system since #96/#89 — money buys materials —
     but nothing pays anyone: no wage is ever debited, and nothing credits the
-    treasury at all, because what the state pays *for* is ADR 0017 question 1
-    and it is open. Nothing wage-related may be rendered as a live figure; it
-    is still a content hook for a future issue.
+    treasury at all. ADR 0017 decision 6 settles what the state pays *for*
+    (per prisoner-day, accrued per occupied place) and no system accrues it,
+    so the balance only ever goes down. Nothing wage-related may be rendered
+    as a live figure; it is still a content hook for a future issue.
 22. **`'on-search'` conflates two duties.** A guard pulled onto a
     contraband search and a guard dispatched to an incident share one
     deployment phase, and neither `SearchSystem` nor
