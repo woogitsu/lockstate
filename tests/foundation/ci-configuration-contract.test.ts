@@ -172,6 +172,195 @@ describe('deployment header contract', () => {
   });
 });
 
+/**
+ * Issue #122 found `docs/DEPLOYMENT.md` forbidding, in prose, exactly what
+ * `public/_headers` deliberately does: it told a contributor not to place
+ * mutable stable-name files under `/assets/`, while ADR-0014 puts the runtime
+ * atlases there on purpose and a deployment gate asserts they must *not* be
+ * immutable. Two concrete wrong moves followed from believing it -- collapsing
+ * `_headers` to one immutable `/assets/*` rule, which pins a re-rendered atlas
+ * in every visitor's cache for a year, or relocating the atlases out of
+ * `/assets/actors/` and breaking `asset-registry.json` resolution.
+ *
+ * The prose is corrected. This is the part that keeps it corrected, and it is
+ * the check #122 asked for: every rule block in `public/_headers` has to be
+ * described in the document an operator reads before touching caching.
+ *
+ * Scoped to the whole document rather than to its "Cache policy" section,
+ * because the `/*` block sets no cache policy at all -- it carries the security
+ * headers. Requiring it inside the cache section would be a false requirement.
+ */
+describe('cache-policy documentation contract', () => {
+  /**
+   * The rule blocks `public/_headers` is expected to contain, with what each
+   * one is for. Declared here rather than derived from the file, for the same
+   * reason `SECURITY_HEADER_BASELINE` is declared inside
+   * `scripts/verify-deployment-preview.mjs` rather than parsed out of
+   * `_headers`: a derived expectation shrinks silently when the file does.
+   *
+   * #122's own surviving mutation is deleting the `/assets/actors/*` block,
+   * which pins a re-rendered atlas in every visitor's cache for a year --
+   * `/assets/:file` does not cover it, but a deletion means the broader
+   * Cloudflare default applies. An inclusion check in the
+   * `_headers`-to-document direction cannot see that, because a deleted rule
+   * is a rule that no longer needs documenting. This set can.
+   */
+  const EXPECTED_RULE_BLOCKS: Readonly<Record<string, string>> = {
+    '/*': 'The four security headers. Sets no cache policy; its values are asserted against a real preview response by scripts/verify-deployment-preview.mjs.',
+    '/assets/:file':
+      'Vite`s fingerprinted output. `:file` matches a single path segment, so this deliberately excludes the /assets/actors/ subtree -- overlapping _headers rules concatenate rather than override.',
+    '/assets/actors/*':
+      'Stable-name runtime art (ADR-0014): re-rendering an atlas reuses its URL, so this must revalidate and must never be immutable. Deleting this block is #122`s surviving mutation.',
+    '/game-content/source-art/*': 'Content-hashed filenames, so the URL changes with the bytes and immutable is safe.',
+    '/index.html': 'Explicit revalidation for the SPA entry point rather than relying on the Cloudflare default.',
+  };
+
+  /** A rule block is a line starting at column 0 with `/`; its header lines are indented. */
+  function ruleBlockPatterns(headers: string): readonly string[] {
+    return [
+      ...new Set(
+        headers
+          .split(/\r?\n/)
+          .filter((line) => line.startsWith('/'))
+          .map((line) => line.trim()),
+      ),
+    ];
+  }
+
+  it('contains exactly the rule blocks this contract accounts for', async () => {
+    const patterns = ruleBlockPatterns(await readRepositoryFile('public/_headers'));
+
+    // Vacuity guard: a parser that stopped matching would make the two
+    // difference checks below pass while comparing nothing.
+    expect(patterns.length, 'no rule blocks parsed out of public/_headers; the parser is broken').toBeGreaterThan(3);
+
+    const removed = Object.keys(EXPECTED_RULE_BLOCKS).filter((pattern) => !patterns.includes(pattern));
+    expect(
+      removed.map((pattern) => `${pattern}: ${EXPECTED_RULE_BLOCKS[pattern]}`),
+      'public/_headers no longer has this rule block -- if the removal is deliberate, delete its entry here and the paragraph describing it in docs/DEPLOYMENT.md in the same change',
+    ).toEqual([]);
+
+    const unaccounted = patterns.filter((pattern) => EXPECTED_RULE_BLOCKS[pattern] === undefined);
+    expect(
+      unaccounted,
+      'public/_headers has a new rule block: add it here with what it is for, and describe it in docs/DEPLOYMENT.md',
+    ).toEqual([]);
+  });
+
+  it('describes every rule block in docs/DEPLOYMENT.md', async () => {
+    const patterns = ruleBlockPatterns(await readRepositoryFile('public/_headers'));
+    const deploymentDoc = await readRepositoryFile('docs/DEPLOYMENT.md');
+
+    const undocumented = patterns.filter((pattern) => !deploymentDoc.includes(pattern));
+    expect(
+      undocumented,
+      'public/_headers sets a rule for these paths and docs/DEPLOYMENT.md never names them, so an operator has no way to know the rule exists or why',
+    ).toEqual([]);
+  });
+});
+
+/**
+ * `docs/CLOUD_SAVE.md` claimed "No check in this repository uses the
+ * service-role key" while `scripts/verify-supabase-stack.mjs` read the local
+ * stack's secret key and sent it as both `apikey` and `Authorization: Bearer`
+ * for every trusted-path request (issue #122 item 3).
+ *
+ * That is worse than an ordinary stale sentence, because it is a *security*
+ * claim in the section a reviewer consults when tracing where service-role
+ * credentials flow: believing it, they skip the one script that holds one, and
+ * a contributor extending that script has no reason to preserve its three real
+ * safeguards -- the loopback assertion, never printing a value, and storing
+ * nothing in the repository.
+ *
+ * The claim is corrected. Two checks keep it corrected, and the first is the
+ * durable one: an inclusion check, so a *new* script that starts handling the
+ * credential fails until the documentation names it. The literal-phrase check
+ * is second because a phrase ban only catches the exact regression that
+ * already happened; it is cheap, and #122 asked for it, but it is not what
+ * makes this hold.
+ */
+describe('service-role credential documentation contract', () => {
+  /**
+   * The scripts allowed to handle a service-role/secret credential, with the
+   * reason. A new entry here is a deliberate decision; an unlisted script that
+   * starts handling one fails.
+   */
+  const SCRIPTS_HANDLING_A_SERVICE_ROLE_CREDENTIAL: Readonly<Record<string, string>> = {
+    'verify-supabase-stack.mjs':
+      'Drives the trusted (service_role) paths against the local stack, which is the only place PostgREST mapping that credential onto the role is exercised at all. Reads it from `supabase status` at run time, refuses to run unless the API is on loopback, and never prints any part of a value.',
+  };
+
+  it('names every script that handles one in docs/CLOUD_SAVE.md', async () => {
+    const scriptsDirectory = path.join(repositoryRoot, 'scripts');
+    const entries = await readdir(scriptsDirectory, { withFileTypes: true });
+
+    const handling: string[] = [];
+    for (const entry of entries) {
+      if (!entry.isFile()) continue;
+      const source = await readFile(path.join(scriptsDirectory, entry.name), 'utf8');
+      if (/\bSERVICE_ROLE_KEY\b|\bSECRET_KEY\b/u.test(source)) handling.push(entry.name);
+    }
+
+    expect(
+      handling.length,
+      'no script matched; the credential scan is broken, and this contract would pass while checking nothing',
+    ).toBeGreaterThan(0);
+
+    const unlisted = handling.filter((name) => SCRIPTS_HANDLING_A_SERVICE_ROLE_CREDENTIAL[name] === undefined);
+    expect(
+      unlisted,
+      'this script handles a service-role/secret credential and is not accounted for: add it with the reason, and make sure docs/CLOUD_SAVE.md says it does',
+    ).toEqual([]);
+
+    const stale = Object.keys(SCRIPTS_HANDLING_A_SERVICE_ROLE_CREDENTIAL).filter((name) => !handling.includes(name));
+    expect(stale, 'this script no longer handles such a credential: remove its entry').toEqual([]);
+
+    const cloudSaveDoc = await readRepositoryFile('docs/CLOUD_SAVE.md');
+    for (const name of handling) {
+      expect(
+        cloudSaveDoc,
+        `${name} handles a service-role credential, so docs/CLOUD_SAVE.md must say so -- a reviewer auditing credential handling reads that document, not this list`,
+      ).toContain(name.replace(/\.mjs$/u, ''));
+    }
+  });
+
+  it('carries no documentation claim that nothing here handles one', async () => {
+    // Narrow by design: this catches the exact sentence that regressed and
+    // near variants of it, and nothing else. A general "is this security claim
+    // true" check is not mechanisable, which is why the inclusion check above
+    // is the load-bearing half.
+    const denials = [
+      /no check in this repository uses the service-role key/iu,
+      /nothing in this repository (?:uses|holds|reads) (?:a|the) service[- ]role key/iu,
+      /no (?:script|check) (?:here|in this repository) (?:uses|holds|reads) (?:a|the) service[- ]role/iu,
+    ];
+
+    const docsDirectory = path.join(repositoryRoot, 'docs');
+    const offending: string[] = [];
+
+    const walk = async (directory: string): Promise<void> => {
+      for (const entry of await readdir(directory, { withFileTypes: true })) {
+        const entryPath = path.join(directory, entry.name);
+        if (entry.isDirectory()) {
+          await walk(entryPath);
+          continue;
+        }
+        if (!entry.name.endsWith('.md')) continue;
+        const text = await readFile(entryPath, 'utf8');
+        for (const denial of denials) {
+          if (denial.test(text)) offending.push(path.relative(repositoryRoot, entryPath));
+        }
+      }
+    };
+    await walk(docsDirectory);
+
+    expect(
+      offending,
+      'a document denies that any check handles a service-role credential, and `pnpm verify:stack` does -- say what the guarantee actually is instead',
+    ).toEqual([]);
+  });
+});
+
 describe('line-ending contract', () => {
   /**
    * `.gitattributes` pins LF by extension because a CRLF file with a shebang
