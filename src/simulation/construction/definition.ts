@@ -104,6 +104,16 @@ export const WALL_EDGE_NUMERIC_ID = 1;
  * supposed to open. Doors are modelled by `navigation/door.ts`'s
  * `DoorRegistry`, and connecting a completed door order to it is a separate
  * piece of work (see `docs/NAVIGATION.md`).
+ *
+ * `'object'` is therefore not a mistyped `'wall'`, and #261 asked directly
+ * whether it was. `BuildableCategory` has three members and none of them
+ * means "edge gate": `'wall'` means *opaque* edge geometry, so promoting the
+ * door would build a solid wall where the player asked for a door -- worse
+ * than today, not a fix. What is actually missing is a placement model for a
+ * door, not a different category for one, and until that exists a completed
+ * `door-wooden` order changes nothing in the simulation. It is the one
+ * buildable the registry offers that cannot finish meaningfully; see #261 for
+ * the decisions that blocks on.
  */
 export function edgeNumericIdFor(definition: BuildableDefinition): number {
   return definition.category === 'wall' ? WALL_EDGE_NUMERIC_ID : 0;
