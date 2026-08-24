@@ -22,16 +22,17 @@ design. That gap is now closed except where noted:
   carried, and it earned its keep immediately: the first run failed on the
   *first assertion* of suite 001 and exposed defect 4 below.
 
-  **The #105 hardening is not in that run.** Eight migrations now postdate
+  **The #105 hardening is not in that run.** Nine migrations now postdate
   it — `20260824090000` and `20260824090100` for findings 5, 10 and 3 (see
   "Declarations, not only privileges" below), `20260824100000` and
-  `20260824100100` for findings 1 and 2, `20260824101000` for finding 4
-  (see "Size bounds, not only shapes" below), then `20260824110000`,
+  `20260824100100` for findings 1 and 2, `20260824101000` for finding 4 and
+  `20260824120000` for its trusted-tier remainder (see "Size bounds, not
+  only shapes" below), then `20260824110000`,
   `20260824110100` and `20260824110200` for findings 6, 7, 9 and 11 — along
   with every suite change that came with them, and all of it has been
   executed only against plain PostgreSQL. The counts above are the
-  stack-run counts, not today's. `pnpm verify:sql` is at 184 assertions
-  (32/32, 76/76, 21/21, 26/26, 8/8, 21/21), measured on the run that
+  stack-run counts, not today's. `pnpm verify:sql` is at 202 assertions
+  (32/32, 83/83, 21/21, 26/26, 8/8, 21/21, 11/11), measured on the run that
   produced this line; re-running `supabase test db` is what would raise the
   stack figure to match.
 - **Executed through GoTrue and PostgREST:** `pnpm verify:stack`
@@ -48,7 +49,7 @@ design. That gap is now closed except where noted:
   key, which is the only place PostgREST's mapping of that credential onto
   the role is exercised at all.
 - **Executed against plain PostgreSQL 16.13/18.6 + pgTAP:** every
-  migration and every suite via `pnpm verify:sql` — 184 assertions — which
+  migration and every suite via `pnpm verify:sql` — 202 assertions — which
   prepares a scratch database with
   `scripts/sql/supabase-compat-harness.sql`. This is the only path the
   #105 hardening has run on. That harness
@@ -388,6 +389,86 @@ be bounded; that is a separate piece of work, not a silent omission.
 bound in **both** directions — refusing a value past the ceiling *and*
 admitting one exactly at it. The second half is not padding: it is what fails
 if a later change tightens a bound below what a caller may legitimately send.
+
+### The trusted-tier remainder, and why it needed no ADR
+
+`20260824120000_bound_trusted_tier_columns.sql` (#189) closes the five columns
+the finding's own wording excluded, because they are reachable only through a
+`SECURITY DEFINER` function or a `service_role` grant:
+
+| column | bound | derivation |
+| --- | --- | --- |
+| `entitlements.key` | 1–128 characters | the convention every id-shaped text column here uses |
+| `entitlements.value` | ≤ 4,096 bytes | `entitlementRowValueSchema` is `.strict()` over two integers, ~60 bytes; ~68× headroom |
+| `challenge_definitions.definition` | ≤ 65,536 bytes | `challengeDefinitionSchema`'s two `.max(64)` identifier allow-lists dominate it at ~17.5 KB; ~3.7× |
+| `challenge_definitions.signature` | ≤ 4,096 bytes | `challengeSignatureSchema` is at most ~700 bytes; ~5.8× |
+| `challenge_submissions.rejection_code` | NULL or 1–128 characters | `ChallengeRejectionCode` is a closed 23-member union whose longest members are 27 characters |
+
+An oversized value in any of the five needs a bug in the trusted tier or a
+compromised key rather than a hostile client. That is defence in depth, not a
+reachable hole, and it is worth stating rather than dressing up: neither client
+role holds a grant on `entitlements`, `challenge_definitions` is empty because
+the Z2 publisher ADR 0008 deliberately does not build does not exist, and
+`rejection_code` is written by the verifier's own four-column UPDATE grant.
+
+**The ADR question, and why the answer differs from #163.** ADR 0008 treats
+`service_role` as trusted, so constraining it looks like an authority decision
+— which is exactly why #163 (`service_role` can `TRUNCATE` the append-only
+ledger) is filed for a ruling rather than fixed in a migration. The distinction
+that makes both positions coherent: `TRUNCATE` **removes an authority** ADR 0008
+may have meant the trusted tier to have, while a size bound **asserts an
+invariant the trusted tier's own contract already satisfies**. This schema has
+done the latter since `20260823090000` — `entitlement_events` is written only by
+`record_entitlement_event()`, a `SECURITY DEFINER` function, and carries five
+`char_length` bounds. `20260824120000` follows that precedent rather than
+setting a new one.
+
+**One choice left open**, recorded in #189 rather than guessed: `entitlements.key`
+could be *pinned* to `'save-slots'` instead of bounded, since that is the only
+key the code writes and its sibling `entitlement_events.capability` already
+carries exactly that pin. What stops it is that nothing in this schema states
+whether `entitlements.key` and `entitlement_events.capability` are the same
+vocabulary. If they are, the pin is right and the two constraints should
+reference each other; if `entitlements` is meant to project several capability
+kinds while the ledger records one, the pin breaks on the second capability. The
+length closes the size hole either way.
+
+Two columns *look* bounded and are not, which is why that inventory was read
+constraint by constraint rather than by matching column names against
+constraint text: `challenge_definitions_definition_hash_check` is a regex on
+`definition_hash`, and a `LIKE '%definition%'` scan reads it as bounding
+`definition`; and `challenge_submissions_rejected_has_code` requires a rejected
+row to *have* a code while saying nothing about its length.
+
+### Coverage is a rule now, not a list
+
+`supabase/tests/007_column_bound_coverage.test.sql` enumerates every
+`text`/`jsonb`/`json`/`bytea` column in `public` from `pg_attribute` and
+requires each to be declared with the mechanism that bounds it and the catalog
+object implementing it — and requires that object to exist and to touch that
+column. **Every such column is now covered, with nothing left over**, by one of
+five mechanisms this schema already used:
+
+| mechanism | what it is | example |
+| --- | --- | --- |
+| `length-check` | `char_length()`/`octet_length()` in a CHECK | 19 columns |
+| `regex-check` | an anchored fixed-width regex | `definition_hash`, `evidence_hash` |
+| `value-set-check` | a closed value set or a pinned literal — stronger than a length, because the set is finite | `verification_status`, `actor_kind`, `event_type`, `source`, `capability` |
+| `row-trigger` | a BEFORE ROW trigger raising `LS002`/`LS003`, used where the refusal must carry measured/limit numbers a CHECK cannot | `save_versions.payload`, `challenge_submissions.evidence` |
+| `generated-column` | fixed width by construction | `evidence_digest`, `sha256(jsonb_send(evidence))` |
+
+Three directions fail: a column added with no bound is in no declaration; a
+bound that is dropped leaves its declared object missing; and a declaration for
+a column that no longer exists goes stale loudly. The mechanism is *declared*
+rather than inferred from constraint text on purpose — a single regex would have
+to recognise four shapes, and getting it wrong permissively is the exact failure
+the suite exists to prevent. What the catalog is asked is only whether the named
+object exists and constrains the named column in the declared way; the
+enumeration, which is the part that must not be a list, comes from
+`pg_attribute`.
+
+It asserts no ceiling is the *right* number and no bound refuses anything —
+suites 002 and 006 do that, in both directions, for the columns they created.
 
 ## Declarations, not only privileges
 
