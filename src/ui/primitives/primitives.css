@@ -30,7 +30,7 @@
   letter-spacing: var(--label-tracking);
   text-transform: uppercase;
   color: var(--text-muted);
-  line-height: 1.2;
+  line-height: var(--label-line-height);
   white-space: nowrap;
 }
 
@@ -274,7 +274,7 @@
   font-weight: 500;
   letter-spacing: var(--label-tracking);
   text-transform: uppercase;
-  line-height: 1.2;
+  line-height: var(--label-line-height);
 }
 
 .ui-tab:hover { color: var(--text-body); background: var(--surface-overlay); }

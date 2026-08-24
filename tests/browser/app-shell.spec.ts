@@ -573,19 +573,6 @@ async function railIntegrity(page: Page): Promise<RailIntegrity> {
   }, RAIL_PANELS);
 }
 
-/**
- * The one viewport in the sweep below where the Build panel does not get its
- * whole content height in the *default* state, and so scrolls on arrival.
- *
- * Named rather than tolerated. The rail there is 483px and the Build panel
- * wants 398px of it, which leaves less than the save panel's floor, so
- * something has to scroll and the tool the player is holding is the thing
- * that keeps the space it can. Everywhere else the default state fits, and
- * that is the property this constant makes assertable: the first #88 fix
- * clipped the Build panel at 1280x720 too, on arrival, and nothing said so.
- */
-const BUILD_PANEL_SCROLLS_BY_DEFAULT_AT = '900x600';
-
 /** Only the fields that must hold in every state, at every viewport. */
 function railInvariants(integrity: RailIntegrity): Pick<RailIntegrity, 'railOverflow' | 'offScreen' | 'stuck'> {
   return { railOverflow: integrity.railOverflow, offScreen: integrity.offScreen, stuck: integrity.stuck };
@@ -766,6 +753,15 @@ test.describe('the assembled application', () => {
    * scrollbar gutter hit-testing to the world canvas. `scrollIntoView` reached
    * the controls anyway, so every assertion here stayed green. Reachable by a
    * scroll the player cannot perform is not reachable.
+   *
+   * Which is why the default state also measures *where the Build panel's last
+   * section is*, rather than only whether the panel scrolls. Issue #174 was
+   * the same failure a second time and every assertion above stayed green
+   * through it: at 900x600 the "Enter coordinates" header ended 51.8px past
+   * the panel's own fold with `scrollTop` still 0, and the sweep passed
+   * because `scrollIntoView` found it. Position, unscrolled, on this page --
+   * the harness in `ui-shell.spec.ts` cannot see this defect, because nothing
+   * there occupies the rail's aside slot.
    */
   test('every control can actually be pressed, on every tab and at every viewport (#88)', async ({ page }) => {
     // The most expensive test in the suite by a wide margin, and the only one
@@ -850,10 +846,86 @@ test.describe('the assembled application', () => {
         [...new Set(foldedRail.widths)],
         `the rail's panels are not all one width at ${width}x${height}`,
       ).toHaveLength(1);
+      // The Build panel gets its whole content height in the default state at
+      // every viewport here -- no exception, and 900x600 used to be one. The
+      // rail there is 483px and the panel wanted 398px of it, which left less
+      // than the save panel's floor, so the panel arrived already scrolled by
+      // 52px; `hud.css`'s `max-height: 700px` block trims 63.6px off the
+      // panel's fixed blocks and the catalogue's own slack covers the rest of
+      // the 67.7px shortfall (issue #174). The first #88 fix clipped the panel
+      // at 1280x720 too, on arrival, and nothing said so -- which is what this
+      // line is for.
       expect(
         foldedRail.buildPanelScrolls,
         `the Build panel scrolls on arrival at ${width}x${height}`,
-      ).toBe(`${width}x${height}` === BUILD_PANEL_SCROLLS_BY_DEFAULT_AT);
+      ).toBe(false);
+
+      // Not "does the panel scroll" -- where the last section actually is, with
+      // the panel folded and unscrolled, in a rail that really holds the save
+      // panel. #174: at 900x600 this ended at y=569.5 in a panel clipped at
+      // y=517.7 while every other assertion here stayed green. It has to live
+      // on this page rather than in `ui-shell.spec.ts`'s harness, whose aside
+      // slot is empty -- `.hud__aside:empty { display: none }` then hands the
+      // Build panel 128.7px more rail than the application ever gives it, and
+      // the defect cannot be reproduced there at all.
+      //
+      // Two separate claims, and the order matters. `scrollTop` is read
+      // *before* the header is measured and then reset, because the sweep
+      // above reaches controls with `scrollIntoView`: with the defect present
+      // it left this panel scrolled 52px, which is enough to carry the header
+      // back inside the fold and make the measurement below pass for exactly
+      // the reason the defect is a defect. So the first assertion is that
+      // nothing had to scroll the panel to reach a control, and the second is
+      // where the header sits once it is unscrolled -- each red on its own.
+      const lastSection = await page.evaluate(() => {
+        const panel = document.querySelector('.hud-build');
+        const sections = [...document.querySelectorAll('.hud-build .ui-section')];
+        const header = sections.at(-1)?.querySelector('.ui-section__header') ?? null;
+        if (panel === null || header === null) return null;
+        const scrollTop = panel.scrollTop;
+        panel.scrollTop = 0;
+        const p = panel.getBoundingClientRect();
+        const h = header.getBoundingClientRect();
+        return {
+          text: header.textContent?.trim() ?? '',
+          bottom: h.bottom,
+          fold: p.top + panel.clientTop + panel.clientHeight,
+          scrollTop,
+        };
+      });
+      expect(lastSection, `the Build panel's last section has no box at ${width}x${height}`).not.toBeNull();
+      expect(lastSection?.text, `the panel's last section at ${width}x${height}`).toBe('Enter coordinates');
+      expect(
+        lastSection?.scrollTop,
+        `reaching a control scrolled the Build panel at ${width}x${height}`,
+      ).toBe(0);
+      expect(
+        lastSection?.bottom ?? Number.POSITIVE_INFINITY,
+        `"Enter coordinates" is below the unscrolled Build panel's fold at ${width}x${height}: it ends at y=${Math.round(lastSection?.bottom ?? 0)} in a panel clipped at y=${Math.round(lastSection?.fold ?? 0)}`,
+      ).toBeLessThanOrEqual(lastSection?.fold ?? 0);
+
+      // And the body of that panel is never shorter than its own content. It
+      // was 283px of box over 335px of content at 900x600 (#174): harmless
+      // only because the one ancestor between it and the viewport that clips
+      // also scrolls, which is a property of today's box chain rather than a
+      // guarantee.
+      //
+      // Be exact about what makes this green. Today it is the layout above --
+      // `hud.css`'s summed floor under the body is 3.8px slack at 900x600 and
+      // further slack everywhere else, so nothing is currently resting on it.
+      // The floor is what holds once something does: with the `max-height`
+      // block disabled the body is pressed onto it and this reads 32 rather
+      // than the 52 it read before the floor existed. That is also why the
+      // assertion matters more than the sum -- a floor derived 9px short is a
+      // 9 here the moment the rail is tight enough to reach it, instead of a
+      // panel quietly clipping again.
+      expect(
+        await page.evaluate(() => {
+          const body = document.querySelector('.hud-build > .ui-panel__body');
+          return body === null ? -1 : body.scrollHeight - body.clientHeight;
+        }),
+        `the Build panel's body is shorter than its own content at ${width}x${height}`,
+      ).toBe(0);
 
       // The numeric fallback expanded: the tallest the Build panel gets, and
       // the state issue #88 was measured in.

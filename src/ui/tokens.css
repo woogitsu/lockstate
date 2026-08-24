@@ -132,6 +132,13 @@
   --text-size-body: 13px;
   --text-size-label: 11px;
   --label-tracking: 0.14em;
+  /* The line-height every label-sized run of type is set in. A token rather
+     than a literal because a layout has to be able to *sum* a line of it:
+     `hud.css`'s Build-panel body floor counts one line of the arm hint, and a
+     floor that disagreed with the type it is measuring would be a floor under
+     the wrong number. Unitless, so it multiplies whatever `font-size` the
+     element inherits rather than pinning one. */
+  --label-line-height: 1.2;
 
   --icon-size-sm: 16px;
   --icon-size-md: 18px;
@@ -166,4 +173,11 @@
      body and the list itself -- each have to express the same floor, and they
      are only correct while they agree. */
   --hud-build-catalogue-floor: calc(2 * var(--tap-target));
+  /* The vertical padding *and* the gap inside the Build panel's map block,
+     which are one number because the block reads as evenly spaced only while
+     they agree. A token rather than a literal for the same reason as the
+     catalogue floor above: `hud.css` spends it in the block itself, sums four
+     of it in the panel body's floor, and overrides it at short viewports --
+     three places that are only correct while they hold the same value. */
+  --hud-build-map-gutter: var(--space-2);
 }
