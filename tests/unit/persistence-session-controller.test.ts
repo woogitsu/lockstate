@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryLocalSaveStore } from '../../src/persistence/local/memory-store';
 import { PrisonSaveRepository } from '../../src/persistence/local/repository';
+import { decodePrisonSlotMetadata } from '../../src/persistence/local/slot-metadata-schema';
 import { InProcessSessionHost, type SessionRuntimeHost } from '../../src/persistence/session/runtime-host';
 import { computeSaveChecksum } from '../../src/persistence/checksum';
 import type { SaveEnvelope } from '../../src/persistence/save-schema';
@@ -166,7 +167,7 @@ describe('SessionController: durable failure evidence', () => {
     await controller.createPrison('prison-1');
     // Corrupt every retained generation.
     await store.runTransaction('readwrite', async (tx) => {
-      const metadata = await tx.getMetadata('prison-1');
+      const metadata = decodePrisonSlotMetadata(await tx.getMetadata('prison-1'), 'prison-1');
       for (const generationId of metadata!.generationIds) {
         await tx.putGeneration('prison-1', generationId, { saveSchemaVersion: 1, garbage: true });
       }
@@ -182,7 +183,7 @@ describe('SessionController: durable failure evidence', () => {
 
     // Corrupt only the newest generation; the previous one stays good.
     await store.runTransaction('readwrite', async (tx) => {
-      const metadata = await tx.getMetadata('prison-1');
+      const metadata = decodePrisonSlotMetadata(await tx.getMetadata('prison-1'), 'prison-1');
       const newest = metadata!.generationIds[metadata!.generationIds.length - 1]!;
       await tx.putGeneration('prison-1', newest, { saveSchemaVersion: 1, garbage: true });
     });

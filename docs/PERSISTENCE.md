@@ -272,9 +272,9 @@ unforgeable:
 - A trusted envelope is shallow-frozen, so its `checksum`, `saveSchemaVersion`
   and `payload` reference cannot be swapped after this module vouched for
   them. Freezing stops at the top level deliberately: a deep freeze would
-  reintroduce the per-node walk this change exists to remove, and the payload
-  interior is already a fresh Zod-parsed value detached from live runtime
-  state.
+  reintroduce the per-node walk this change exists to remove. **It does not
+  mean the payload interior is detached** — see "The payload interior is
+  aliased, not copied" below, which corrects exactly that claim.
 
 `decodeSaveEnvelope`'s output is trusted for the same reason and with the same
 safety: it is the migration chain's own freshly parsed value, never the
@@ -288,6 +288,88 @@ decoded.
 rejection tests in `tests/unit/persistence-save-schema.test.ts` and
 `tests/unit/persistence-local-repository.test.ts` that prove it were not
 edited by #49.
+
+### The payload interior is aliased, not copied
+
+This section exists because the sentence it replaces was false, and a false
+comment about a safety property is worse than none. Both `markTrusted` and
+this document used to say the payload interior was "a fresh Zod-parsed value
+detached from live runtime state". It is not, for `jsonValueSchema` fields.
+
+`jsonValueSchema` (`src/simulation/protocol/types.ts`) is `z.custom`: it
+validates by predicate (`isJsonValue`) and returns **the input object
+itself**. Zod rebuilds every other node it parses, so the aliasing is exactly
+as wide as the `jsonValue` fields in the schema, which in the save payload is
+one: `payload.kernel.commands[].payload`. Two consequences follow, and both
+are now pinned as tests in
+`tests/unit/persistence-save-schema-aliasing.test.ts`:
+
+- `decodeSaveEnvelope`'s result shares those objects with the value it was
+  given. A caller that keeps a reference to what it decoded can mutate the
+  interior of a *trusted* envelope afterwards, and `checksum !==
+  computeSaveChecksum(payload)` from then on. (Verified by execution in #105,
+  and again here.)
+- `createSaveEnvelope`'s result shares them with the **live kernel**:
+  `Kernel.snapshot()` shallow-copies each queued command (`{ ...c }`), so the
+  payload object inside the snapshot is the one the command queue still holds.
+  This is the part the old wording denied most directly.
+
+**Honest severity: hardening, not a live defect — no exploiting caller
+exists.** Re-verified against the tree, not inherited from #105: the two
+paths that take external input are `PrisonSaveRepository.importSave` and
+`PrisonSyncEngine.pull`. `pull` decodes exactly what `downloadVersion`
+returns — PostgREST's own parse of a response, which nothing else holds — and
+`importSave` decodes whatever its caller passes, which today is only a test
+(`SessionController.importInto` has no production caller, and neither does
+the sync engine), and whose intended source is a `JSON.parse` of an exported
+file. `loadCurrent` decodes a value
+read back from the store, which a real IndexedDB returns as a fresh
+structured clone per read — `MemoryLocalSaveStore` does not, but it is
+test-only. `save()` decodes only an *untrusted* envelope, which production
+never produces. And everything that leaves for storage is structured-cloned
+(IndexedDB) or JSON-serialized (the Supabase RPC) on the way out, so the
+window is in-process only. What would change this is a caller that decodes a
+value it keeps and mutates, or one that mutates a queued command payload
+after composing a save.
+
+**Why the comment was corrected rather than the schema made to copy.** #105
+offered both. The measurement is in `tests/perf/persistence-decode-aliasing.perf.ts`
+(report-only, per `docs/BENCHMARKING.md`), on this container — Node 24.19.0,
+4× Xeon @ 2.10GHz:
+
+| tier | payload | queued commands | aliased bytes | decode | copy just the aliased fields | copy the whole payload | protocol bundle: `isJsonValue` | + `structuredClone` |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| small | 42.2 KiB | 4 | 908 B | 9.47 ms | 0.01 ms | 1.15 ms | 2.35 ms | 0.80 ms |
+| medium | 288.6 KiB | 16 | 3.6 KiB | 43.3 ms | 0.03 ms | 8.98 ms | 15.4 ms | 6.04 ms |
+| large | 1.12 MiB | 64 | 14.4 KiB | 162 ms | 0.17 ms | 35.5 ms | 61.4 ms | 27.5 ms |
+| x-large | 2.88 MiB | 128 | 28.8 KiB | 430 ms | 0.27 ms | 114 ms | 169 ms | 81.3 ms |
+
+The numbers do **not** say "a copy is too expensive", and pretending they did
+would be the same kind of overclaim this section exists to remove. Copying
+only the aliased fields is 1–2 % of a payload and ≤ 0.1 % of a decode — cheap
+at every tier this project measures. Three other things decide it:
+
+- **A copy inside `jsonValueSchema` itself is not cheap**, and that is the
+  only place a fix would be uniform. That schema also types
+  `versionedPayloadSchema.data`, which carries an entire
+  `SessionSnapshotBundle` on every worker snapshot and every restore
+  (`src/simulation/worker/state-machine.ts`,
+  `src/persistence/session/worker-session-host.ts`). Cloning there adds
+  0.80–81.3 ms per message — up to +48 % on top of the `isJsonValue` walk it
+  already performs — on a boundary `postMessage` has *already* structured-cloned.
+- **A narrow copy in `save-schema.ts` buys half a property the codebase
+  deliberately does not provide.** Detaching the interior from the *caller's
+  input* still leaves a trusted envelope's interior mutable by anyone holding
+  the envelope, so `checksum` is still not a guarantee about the payload's
+  present contents. The other half is a deep freeze, which #49 rejected on
+  cost and which this table prices at the same order as the whole-payload
+  copy. Paying for half a guarantee, on the save/load hot path, for a caller
+  that does not exist, is what #49 spent its effort removing.
+- **The defect that actually existed was the comment.** A reader who trusted
+  it could write precisely the caller that turns this into a real bug. The
+  correction states the contract a future caller must respect, and the test
+  pins the behaviour either way — so a later decision to make the schema copy
+  fails those tests and forces the comment to be updated in the same commit.
 
 ## Migration framework
 
@@ -808,6 +890,71 @@ Database `lockstate-saves`, version 1, two object stores:
   `pendingSync`.
 - `generations` (out-of-line key `` `${prisonId}:${generationId}` ``) — one
   validated `SaveEnvelope` per generation.
+
+#### Slot metadata is validated, and what happens when it is not valid
+
+Until #105 finding 14 this was the one persistence boundary with no schema:
+`LocalSaveTransaction` declared `getMetadata`/`listMetadata` as returning
+`PrisonSlotMetadata`, which made the type an assertion about bytes on a
+player's disk rather than something checked, while the generation stored
+beside it went through `decodeSaveEnvelope` in full. The store interface now
+returns both kinds of record as `unknown` — the shape generations always
+had — and `PrisonSaveRepository` validates slot records with
+`prisonSlotMetadataSchema` (`src/persistence/local/slot-metadata-schema.ts`),
+because deciding what to do with unreadable data is repository policy.
+
+**A record that fails validation is refused, not treated as absent, and
+nothing is written, deleted or demoted.** That is the deliberate part, and
+the reason is that "absent" is not a safe synonym for "damaged" here.
+Elsewhere it is: invalid stored input settings and an invalid cached
+entitlement projection are both read as absent, because absent means "use
+the defaults" and "assume the free tier". For a save slot, absent means
+*there is no such prison* — `create()` treats the id as free, `delete()` as
+nothing to do, `list()` simply stops showing it. So treating a damaged record
+as absent lets the next write replace it and orphan its generations, which no
+read path can then reach and `delete()` would never clean up. That is the one
+outcome that converts a damaged index into lost saves, and it is what the
+mutation test for this behaviour demonstrates: with refusal replaced by
+treat-as-absent, `create()` on the damaged slot succeeds and the record is
+gone.
+
+Refusal reaches the player through paths that already existed: `save()`
+already converts a throw from inside its transaction into a `SaveWriteError`
+(`unknown-error`, carrying the reason), and a rejected `list()` or load is
+already rendered by `src/ui/save-panel.ts`. The one thing that changed there
+is wording — the status line no longer asserts that storage is unavailable,
+because an unreadable slot record is now a second possible cause.
+
+**Availability is the price, and it is a decision to revisit rather than a
+settled one.** One damaged record refuses the whole list, so the player is
+told the list is unreadable instead of seeing their other prisons; and a
+damaged slot cannot be deleted through `delete()`, because the generations it
+references can no longer be enumerated. The alternative — skip the bad row,
+keep the rest usable — silently hides a prison whose saves are still on disk,
+and no existing behaviour in this repository settles which is right (the
+generation path skips *and* demotes, but only because a redundant good
+generation may remain; a slot record has no redundant copy). The conservative
+option that cannot lose data was taken, and a recovery path for a damaged
+slot — surfacing it as unreadable rather than refusing everything, and
+offering an explicit destructive repair — is left as its own issue.
+
+**No migration, and why none is needed** (`AGENTS.md` boundary 7 — a schema
+added over an existing store can turn a readable slot unreadable, which is
+data loss dressed as validation): `PrisonSlotMetadata` has had exactly one
+shape since it was introduced, the database version has never moved past 1,
+and every writer of the record writes that shape. The schema is also
+deliberately no narrower than the records that exist — `prisonId`/`gameVersion`
+are `string().min(1)` rather than the envelope's `identifierSchema`, the
+current-generation pointer is accepted both as an explicit `undefined` and as
+an absent key, and there is **no** `updatedAt >= createdAt` refinement and no
+cross-field invariant. The timestamp rule in particular belongs to the
+envelope and not here: an envelope's timestamps are written together and are
+self-consistent by construction, while a slot's are two independent
+`Date.now()` readings, so a backwards system-clock adjustment must not cost a
+prison. Validation runs on writes too (`encodePrisonSlotMetadata`), so this
+repository cannot write a slot its own read path would refuse — before that
+gate, `create()` with an id the schema rejects would have produced a slot no
+later read, load or delete could touch.
 
 ### Generation retention and recovery
 

@@ -22,10 +22,22 @@
 --
 -- Each assertion below pins an exact privilege set rather than "at least
 -- these", so an accidental over-grant fails just as loudly as a missing one.
--- Only the four DML privileges are compared: TRUNCATE/REFERENCES/TRIGGER --
--- and MAINTAIN, which exists only on PostgreSQL 17+ -- are ambient defaults
--- that carry no Data API meaning, and pinning them would make this suite
--- fail on a server-version difference instead of a privilege change.
+-- The per-table and per-role comparisons compare only the four DML
+-- privileges, because REFERENCES, TRIGGER and MAINTAIN (which exists only
+-- on PostgreSQL 17+) are ambient defaults that carry no Data API meaning,
+-- and folding them into those aggregates would make this suite fail on a
+-- server-version difference instead of on a privilege change.
+--
+-- TRUNCATE used to be dismissed with them, and is not one of them (issue
+-- #105 finding 3). Supabase's default privileges `grant all on tables` and
+-- then revoke only the four DML privileges, so every table in `public`
+-- started out TRUNCATE-able by `anon` and `authenticated` -- and TRUNCATE
+-- ignores row level security completely and fires no row trigger, so it
+-- reaches past every `auth.uid()` policy here *and* past the append-only
+-- trigger that makes `entitlement_events` immutable. It gets its own
+-- schema-wide sweep below rather than a place in the DML aggregates, which
+-- keeps this suite portable across server versions while still asserting
+-- the one residual privilege that means something.
 --
 -- WHAT THE FIRST VERSION OF THIS SUITE MISSED, and why each gap is now a
 -- schema-wide sweep rather than another per-table case:
@@ -53,10 +65,14 @@
 --
 -- EXECUTED against the real Supabase local stack (`supabase test db`,
 -- CLI 2.115.0) and against plain PostgreSQL 18.6 + pgTAP 1.3.4 via
--- `pnpm verify:sql`.
+-- `pnpm verify:sql`. The two assertions added for issue #105 finding 3 and
+-- finding 10 -- the TRUNCATE sweep and the PUBLIC function-grant sweep --
+-- have been executed only on plain PostgreSQL 16.13 + pgTAP 1.3.2 via
+-- `pnpm verify:sql`; the stack run needs container images that were not
+-- reachable when they were written.
 
 begin;
-select plan(19);
+select plan(21);
 
 -- Alphabetical because the aggregates below order by privilege name:
 -- DELETE, INSERT, SELECT, UPDATE.
@@ -276,12 +292,61 @@ select is(
   'nothing in public is granted to PUBLIC, so the per-role sweeps above are the whole story'
 );
 
+-- --- TRUNCATE (issue #105 finding 3) ---
+--
+-- The privilege the DML aggregates above deliberately do not compare, and
+-- the reason it is asserted on its own is in this file's header: TRUNCATE
+-- ignores RLS and fires no row trigger, so a single statement reaches past
+-- every ownership policy in this schema and past the append-only trigger on
+-- `entitlement_events`. Observed on the compatibility harness before
+-- 20260824090100_revoke_client_truncate.sql: `\dp public.*`
+-- showed `anon=Dxt` and `authenticated=...Dxt` on all eight tables, and
+-- `truncate table public.entitlement_events` as `authenticated`, inside an
+-- explicit transaction block, emptied the ledger while the same session's
+-- `update` was refused.
+--
+-- Schema-wide and role-parameterised for the same reason the RLS assertion
+-- above is: the mistake is one of omission. A table added later inherits the
+-- ambient TRUNCATE from Supabase's default privileges, and the revoke in
+-- that migration expanded at execution time over the relations that existed
+-- then -- so this is what fails, rather than a per-table case somebody also
+-- has to remember to write.
+--
+-- `service_role` is deliberately NOT in this sweep. It holds the same
+-- ambient TRUNCATE, and whether the trusted role should be able to empty a
+-- table it holds no DELETE grant on is a boundary question ADR 0008's
+-- authority table does not answer; #105's follow-up carries it rather than
+-- this assertion silently deciding it in either direction.
+select is(
+  (select string_agg(r.role || ':' || c.relname, ' ' order by r.role, c.relname)
+     from pg_class c
+     join pg_namespace n on n.oid = c.relnamespace
+     cross join unnest(array['anon', 'authenticated']) as r(role)
+    where n.nspname = 'public'
+      and c.relkind in ('r', 'v', 'm', 'p', 'f')
+      and has_table_privilege(r.role, c.oid, 'TRUNCATE')),
+  null,
+  'no client-facing role may TRUNCATE anything in public: it would ignore RLS and fire no row trigger'
+);
+
 -- --- Callable RPCs ---
 --
--- Trigger functions are excluded: they keep PostgreSQL's built-in PUBLIC
+-- Every function in `public` is swept, trigger functions included. They used
+-- to be excluded, on the grounds that they keep PostgreSQL's built-in PUBLIC
 -- EXECUTE (Supabase's `revoke execute on functions` default only drops the
--- roles' own grant), but PL/pgSQL refuses to run one outside a trigger, so
--- they are not a Data API surface. Everything else is.
+-- roles' own grant) while PL/pgSQL refuses to run one outside a trigger, so
+-- they were not a Data API surface. That was true and it made the exclusion
+-- self-fulfilling: the sweeps could not have seen a trigger function's
+-- privileges change, because the filter existed to hide the privilege they
+-- had. 20260824090000_pin_trigger_function_search_path.sql revokes it
+-- (issue #105 finding 10) -- verified there by execution not to affect
+-- whether a trigger fires -- so all four now hold EXECUTE for nobody and the
+-- filter has nothing left to exclude. Removing it makes the three sweeps
+-- below assert that, and makes a future re-grant fail here.
+--
+-- The expected values are unchanged by the removal, which is the point: a
+-- filter whose removal changes no expectation was hiding something that
+-- should have been zero all along.
 
 -- Three of these six are constant-returning helpers added by ADR 0013
 -- (`base_save_slot_capacity`, `max_save_slot_capacity`,
@@ -299,7 +364,6 @@ select is(
      from pg_proc p
      join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public'
-      and p.prorettype <> 'pg_catalog.trigger'::regtype
       and has_function_privilege('authenticated', p.oid, 'EXECUTE')),
   'base_save_slot_capacity create_prison create_save_version max_save_payload_bytes max_save_slot_capacity submit_challenge_evidence',
   'authenticated may call exactly the three RPCs that check auth.uid() themselves, plus the three published limit constants'
@@ -310,7 +374,6 @@ select is(
      from pg_proc p
      join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public'
-      and p.prorettype <> 'pg_catalog.trigger'::regtype
       and has_function_privilege('anon', p.oid, 'EXECUTE')),
   null,
   'anon may call nothing: every RPC here needs an identity'
@@ -328,10 +391,35 @@ select is(
      from pg_proc p
      join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public'
-      and p.prorettype <> 'pg_catalog.trigger'::regtype
       and has_function_privilege('service_role', p.oid, 'EXECUTE')),
   'record_entitlement_event',
   'service_role may call exactly one RPC: the Z3 -> Z2 payment-webhook write path'
+);
+
+-- A grant to PUBLIC is invisible to the three sweeps above for the same
+-- reason it is invisible to the table sweeps: `has_function_privilege()`
+-- reports it for every role at once, so each of them looks merely generous
+-- rather than wrong. The table version of this assertion exists further up;
+-- this is its function counterpart, and it is what the four trigger
+-- functions would have failed before issue #105 finding 10 was fixed.
+--
+-- `coalesce(p.proacl, acldefault('f', p.proowner))` is load-bearing, and is
+-- the reason the table assertion's plain `aclexplode(c.relacl)` cannot be
+-- copied here. A function with no explicit ACL has a NULL `proacl`, and
+-- `aclexplode(NULL)` yields no rows -- so a bare `aclexplode(p.proacl)`
+-- reports nothing for precisely the functions that still carry
+-- PostgreSQL's *default* PUBLIC EXECUTE, which is the only way this grant
+-- ever arises here. Expanding the default explicitly is what makes the
+-- assertion see it.
+select is(
+  (select string_agg(p.proname || ':' || a.privilege_type, ' ' order by p.proname, a.privilege_type)
+     from pg_proc p
+     join pg_namespace n on n.oid = p.pronamespace
+     cross join lateral aclexplode(coalesce(p.proacl, acldefault('f', p.proowner))) as a
+    where n.nspname = 'public'
+      and a.grantee = 0),
+  null,
+  'no function in public is executable by PUBLIC, including the ones that never had an explicit ACL'
 );
 
 select * from finish();

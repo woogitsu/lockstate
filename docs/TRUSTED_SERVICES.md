@@ -16,18 +16,20 @@ and threat model) and [ADR 0009](./adr/0009-challenge-verification-strategy.md)
   ledger fold, webhook processing, projection policy, telemetry controls
   and localization runtime are all exercised in Node
   (`tests/unit/services-*.test.ts`).
-- **Executed against the real Supabase local stack:** every migration in
-  `supabase/migrations/` and all four pgTAP suites in `supabase/tests/`,
-  under Supabase CLI 2.115.0 with GoTrue, PostgREST, Storage and Realtime
-  running. Reproduce with:
+- **Executed against the real Supabase local stack:** the first nine
+  migrations in `supabase/migrations/` and the first four pgTAP suites in
+  `supabase/tests/`, under Supabase CLI 2.115.0 with GoTrue, PostgREST,
+  Storage and Realtime running. The two #105 hardening migrations and suite
+  005 postdate that run and are not in it. Reproduce with:
   ```bash
   supabase start && supabase db reset && supabase test db
   ```
   The first such run found a defect that had been invisible to every earlier
   check, and the security audit of that run found a second — see "Defects
   this tooling found" below.
-- **Also executed against a plain PostgreSQL 16/18 + pgTAP:** the same
-  migrations and suites. First run on 16.13 + pgTAP 1.3.2, since also on
+- **Also executed against a plain PostgreSQL 16/18 + pgTAP:** every
+  migration and every suite — 99 assertions, and the only path the #105
+  hardening has run on. First run on 16.13 + pgTAP 1.3.2, since also on
   18.6 + pgTAP 1.3.4 — no major version is required or pinned. Reproduce
   with:
   ```bash
@@ -45,12 +47,16 @@ and threat model) and [ADR 0009](./adr/0009-challenge-verification-strategy.md)
   ownership boundaries and the signed-out read surface via `/rest/v1`. This
   is the only check that proves GoTrue actually mints the identity
   `auth.uid()` reads; the pgTAP suites fake it with `set_config`.
-- **Applied, but NOT exercised, on a hosted Supabase *project*:** the
-  migrations are applied to the hosted staging project as of 2026-08-23
-  (`docs/DEPLOYMENT.md`, "Database migrations"), so the schema itself has run
-  there; none of the checks above has. The local stack runs the same
-  GoTrue/PostgREST/Storage images, but nothing here has exercised a real
-  project's networking, quotas or connection pooling.
+- **Applied, but NOT exercised, on a hosted Supabase *project*:** the first
+  nine migrations are applied to the hosted staging project as of
+  2026-08-23 (`docs/DEPLOYMENT.md`, "Database migrations"), so that much of
+  the schema has run there; none of the checks above has. The local stack
+  runs the same GoTrue/PostgREST/Storage images, but nothing here has
+  exercised a real project's networking, quotas or connection pooling. The
+  two #105 hardening migrations
+  (`20260824090000_pin_trigger_function_search_path.sql` and
+  `20260824090100_revoke_client_truncate.sql`) postdate that apply and have
+  run on a scratch database only.
 - **Deliberately not built:** the deployed server functions themselves (the
   Edge Function/Worker handlers), a payment provider integration, a replay
   runner and a telemetry ingestion endpoint. Each is either out of scope
@@ -244,7 +250,14 @@ including events that did **not** apply and why.
   projection with no ledger append behind it.
 - A trigger rejects any UPDATE to the ledger; corrections are appended as
   compensating events. DELETE is left only to the `auth.users` cascade, so
-  account deletion still works.
+  account deletion still works. TRUNCATE would have gone round both — it
+  ignores RLS and fires no row trigger — and `anon`/`authenticated` held it
+  on every table from Supabase's default privileges until
+  `20260824090100_revoke_client_truncate.sql` (#105 finding 3, harness-only
+  observation; see `docs/CLOUD_SAVE.md`, "Declarations, not only
+  privileges"). `service_role` still holds it, so "append-only even for a
+  privileged connection" is a statement about UPDATE and DELETE, not about
+  TRUNCATE.
 - `processEntitlementWebhook()` verifies the provider signature over the
   **raw body before parsing it**, then validates, checks the product,
   bounds the quantity, rejects stale events, deduplicates on

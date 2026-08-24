@@ -1,7 +1,16 @@
 /**
  * A version-scoped structural check. Each supported save-schema version owns
  * exactly one of these; `parse` must return a fresh value and never mutate
- * `input` in place, so migrations can never corrupt the caller's fixture.
+ * `input` in place, so a migration cannot corrupt the caller's fixture by
+ * writing to what it was handed.
+ *
+ * One precision, because the guarantee is narrower than it reads: the value
+ * `zodVersionSchema` returns is fresh at every node Zod rebuilds, but a
+ * `z.custom` field -- `jsonValueSchema`, and so a save's queued command
+ * payloads -- is returned by reference (see `markTrusted` in
+ * `save-schema.ts`). A step that mutated such a sub-object in place *would*
+ * reach the caller's input; the existing steps rebuild rather than mutate,
+ * which is what "must be pure" below requires of any new one.
  *
  * Values are treated as opaque (`unknown`) rather than constrained to
  * `JsonValue`: the chain only ever calls `parse`/`migrate` on them, and
