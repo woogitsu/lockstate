@@ -705,8 +705,12 @@ of scope here; only the serialized form moved.
 
 **The encoding.** `generations` and `alive` are run-length encoded as
 `[value, length]` pairs — the same convention the world snapshot already uses
-for terrain planes. That was chosen over the two alternatives the issue
-listed:
+for terrain planes, and since #123 item 3 the same *code*:
+`src/simulation/codec/run-length.ts` is the single encoder/decoder both planes
+go through. It had been one convention with two implementations, whose
+decoders disagreed about what a corrupt save is; see
+[One run-length codec, two planes](#one-run-length-codec-two-planes) below.
+That convention was chosen over the two alternatives the issue listed:
 
 - *Truncate at `maxActiveIndex`* would still write one array entry per live
   slot (≈12 KiB at 3,000 prisoners) and needs an explicit pad-on-restore step.
@@ -778,6 +782,58 @@ transported by structured clone rather than JSON, read back after a real page
 navigation, and migrated inside the repository's own recovery scan rather than
 by calling the chain directly. See `docs/TESTING.md` for why a format
 migration belongs in that layer as well as in-process.
+
+## One run-length codec, two planes
+
+The save carries `[value, length]` runs in two places: the world snapshot's
+`terrain` / `topEdge` / `leftEdge` / `zoning` chunk layers, and the entity
+store's `generations` / `alive` liveness ledger. `entity-codec.ts` picked that
+tuple shape on purpose, so the save would carry *one* RLE shape — but it
+carried one shape and two implementations, and #123 item 3 found that their
+decoders did not validate the same things. `decodeTerrainRle` rejected a
+malformed tuple, a value outside 0–255, a non-positive count and an expansion
+past capacity, each as a typed `WorldSnapshotError`. The entity path checked
+only the run length and the total, and accepted **any** value: a corrupt
+`alive` run of `999` restored as `231`, `-1` as `255`, `NaN` as `0`, because
+`TypedArray.fill` coerces silently. The same corrupt save was a typed error in
+one plane and accepted in the other.
+
+`src/simulation/codec/run-length.ts` is now the only encoder and the only
+decoder. The two things that legitimately differ between the callers are
+**parameters**, not divergent code:
+
+- **`maxValue`**, the inclusive upper bound on a run's value, is the target
+  array's own maximum: `255` for a world plane and for `alive`, both
+  `Uint8Array`s, and `65535` for `generations`, a `Uint16Array`. One shared
+  bound would have been wrong in one direction or the other — `0–255`
+  everywhere would reject a save legitimately carrying generation `65535`,
+  which is a migration rather than a hardening, and `0–65535` everywhere would
+  re-admit the byte-plane corruption this fixes.
+- **`fail`** builds the caller's own error type from a structured
+  `RunLengthFailure`. The codec itself never constructs an error, so
+  `WorldSnapshotError` stays part of the world snapshot's decode contract and
+  `RangeError` stays part of the entity codec's; neither is flattened into a
+  shared generic error to make sharing possible, and every message both paths
+  threw before is unchanged.
+
+**No save's contents changed and no migration was needed.** The two encoders'
+outputs were verified identical by execution before they were merged — over an
+empty input, a single element, a single 1,024-slot run, alternating values, a
+banded full 32×32 plane, the 0/255 boundaries and all 256 byte values — and
+the decoder's added checks are refusals only: they never alter a successful
+decode, and no run the encoder can emit trips one. What did change is that a
+**corrupt** entity save that was previously accepted now fails, which is the
+point. `tests/unit/run-length-codec-unification.test.ts` pins the encoding,
+asserts the round trip on both planes, and asserts the range check fires for
+both callers with each one's own error type.
+
+Not in scope, and still open: #102's unbounded `chunkSize` (already bounded by
+`WORLD_CHUNK_SIZE_LIMIT` in the envelope schema, but the ADR that decision
+needs is not written), and `decodeRenderLayer` in
+`src/simulation/presentation/world-projection.ts`, which is a third
+implementation of the same run shape. That one decodes a worker-to-main render
+payload rather than a save, so it is outside this section's contract, but it is
+the same defect class.
 
 ## Error taxonomy
 

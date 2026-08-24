@@ -17,6 +17,14 @@ Terrain definitions are data-driven records with stable string IDs, packed numer
 - Loaded chunks store terrain in packed `Uint8Array(chunkSize * chunkSize)` buffers (1 KiB per 32×32 chunk).
 - Terrain mutations advance the chunk's `contentRevision` and mark the chunk `dirty`.
 - Serialization uses deterministic Run-Length Encoding (RLE) tuples `[numericId, count]` to minimize snapshot size for uniform regions.
+- `encodeTerrainRle` / `decodeTerrainRle` are thin wrappers over
+  `src/simulation/codec/run-length.ts`, the one run-length codec the save
+  format uses — the entity store's liveness ledger goes through the same
+  functions (#123 item 3). A world plane is a `Uint8Array`, so it passes
+  `maxValue: 255`; the decoder rejects anything outside `0..255` rather than
+  letting `fill` coerce it, and it still raises `WorldSnapshotError` because
+  the shared codec builds no errors of its own. See
+  `docs/PERSISTENCE.md` → "One run-length codec, two planes".
 
 ## Wall geometry lives on tile edges
 
