@@ -36,12 +36,15 @@ import {
  * `simulation-message-keys.test.ts` also scans, because the rule is about
  * what feeds simulation state and those are the trees that hold it. This is a
  * real limit and not an oversight: a `Map`-order walk in `src/rendering/` or
- * `src/persistence/` is *not* guarded here. Rendering is deliberately outside
- * -- AGENTS.md's first architectural boundary is that rendering is not
- * simulation, its sprite pools iterate insertion order by design, and
- * covering them would add a dozen exemptions whose reason is "this is not
- * what the rule is about". An allow-list padded with those is the list nobody
- * reads, which enforces nothing.
+ * `src/persistence/` is *not* guarded here. Measured, those trees hold 11 and
+ * 4 unordered enumerations respectively (9 and 4 distinct expressions).
+ * Rendering is deliberately outside -- AGENTS.md's first architectural
+ * boundary is that rendering is not simulation, its sprite pools iterate
+ * insertion order by design, and covering them would add nine exemptions
+ * whose reason is "this is not what the rule is about". An allow-list padded
+ * with those is the list nobody reads, which enforces nothing. Persistence is
+ * the more interesting extension, and needs one thing first: an array's
+ * `.entries()` matches the view pattern too, and `save-schema.ts` has one.
  */
 
 const REPOSITORY_ROOT = resolve(__dirname, '../..');
