@@ -22,20 +22,23 @@ design. That gap is now closed except where noted:
   carried, and it earned its keep immediately: the first run failed on the
   *first assertion* of suite 001 and exposed defect 4 below.
 
-  **The #105 hardening is not in that run.** Eleven migrations now postdate
-  it — `20260824090000` and `20260824090100` for findings 5, 10 and 3 (see
-  "Declarations, not only privileges" below), `20260824100000` and
-  `20260824100100` for findings 1 and 2, `20260824101000` for finding 4 and
-  `20260824120000` for its trusted-tier remainder and
-  `20260824130000` for the scalar columns neither reached (see "Size
-  bounds, not only shapes" below), `20260824140000` for the server
-  timestamps a client could stamp (see "The server's timestamps are the
-  server's" below), then `20260824110000`,
-  `20260824110100` and `20260824110200` for findings 6, 7, 9 and 11 — along
-  with every suite change that came with them, and all of it has been
-  executed only against plain PostgreSQL. The counts above are the
-  stack-run counts, not today's. `pnpm verify:sql` is at 232 assertions
-  (37/37, 88/88, 28/28, 26/26, 8/8, 23/23, 11/11, 11/11), measured on the run that
+  **The #105 hardening is not in that run, and neither is anything since.**
+  The twelve migrations dated `20260824` all postdate it — `20260824090000`
+  and `20260824090100` for findings 5, 10 and 3 (see "Declarations, not only
+  privileges" below), `20260824100000` and `20260824100100` for findings 1
+  and 2, `20260824101000` for finding 4 and `20260824120000` for its
+  trusted-tier remainder and `20260824130000` for the scalar columns neither
+  reached (see "Size bounds, not only shapes" below), `20260824140000` for
+  the server timestamps a client could stamp (see "The server's timestamps
+  are the server's" below), `20260824110000`, `20260824110100` and
+  `20260824110200` for findings 6, 7, 9 and 11, and `20260824150000` for
+  #163's trusted-role `TRUNCATE`. So do **suites 005 to 008 in their
+  entirety** and every change the first four suites have gained since. All of
+  it has been executed only against plain PostgreSQL. The date is what
+  defines the set here, not this list: the list stood at eleven while twelve
+  postdated the run. The counts above are the stack-run counts, not today's.
+  `pnpm verify:sql` is at 233 assertions
+  (37/37, 88/88, 28/28, 26/26, 8/8, 23/23, 11/11, 12/12), measured on the run that
   produced this line; re-running `supabase test db` is what would raise the
   stack figure to match.
 - **Executed through GoTrue and PostgREST:** `pnpm verify:stack`
@@ -52,7 +55,7 @@ design. That gap is now closed except where noted:
   key, which is the only place PostgREST's mapping of that credential onto
   the role is exercised at all.
 - **Executed against plain PostgreSQL 16.13/18.6 + pgTAP:** every
-  migration and every suite via `pnpm verify:sql` — 232 assertions — which
+  migration and every suite via `pnpm verify:sql` — 233 assertions — which
   prepares a scratch database with
   `scripts/sql/supabase-compat-harness.sql`. This is the only path the
   #105 hardening has run on. That harness
@@ -86,28 +89,29 @@ design. That gap is now closed except where noted:
   the DDL has now run there. None of the checks above has. The local stack
   runs the same images, but nothing here has exercised a real project's
   networking, quotas or connection pooling.
-- **Not applied anywhere but a scratch database:** the seven #105 hardening
-  migrations — `20260824090000_pin_trigger_function_search_path.sql`,
-  `20260824090100_revoke_client_truncate.sql`,
-  `20260824100000_bind_challenge_evidence_to_payload.sql`,
-  `20260824100100_harden_submit_challenge_evidence.sql`,
-  `20260824110000_generalize_entitlement_idempotency.sql`,
-  `20260824110100_close_challenge_definition_oracle.sql` and
-  `20260824110200_validate_save_version_storage_path.sql`. They are all
+- **Not applied anywhere but a scratch database:** the twelve migrations
+  dated `20260824` — everything from
+  `20260824090000_pin_trigger_function_search_path.sql` through
+  `20260824150000_revoke_trusted_truncate.sql`. They are all
   newer than the hosted apply above, so the hosted project still carries the
-  pre-#105 declarations, grants, constraints and function bodies until they
-  are pushed. Two of them can refuse to apply on a populated project rather
-  than applying silently, which is deliberate and is what their headers
-  describe: the ledger's natural-key index if two provider-less
-  `entitlement_events` rows are identical in every recorded field, and the
-  `save_versions_storage_path_shape` CHECK if any row already carries a
-  non-null `storage_path`. Neither deletes anything; both name the query
-  that answers whether the condition holds.
-  `20260824150000_revoke_trusted_truncate.sql` (#163) is newer still and is
-  in the same position: a single `REVOKE`, applied to a scratch database
-  only, so whatever `TRUNCATE` the hosted project grants `service_role` is
-  untouched until it is pushed — and what that is remains unverified, since
-  every grant observed here is the harness's model of Supabase's defaults.
+  declarations, grants, constraints and function bodies as they stood on
+  2026-08-23 until they are pushed. Two of them can refuse to apply on a
+  populated project rather than applying silently, which is deliberate and is
+  what their headers describe: the ledger's natural-key index if two
+  provider-less `entitlement_events` rows are identical in every recorded
+  field, and the `save_versions_storage_path_shape` CHECK if any row already
+  carries a non-null `storage_path`. Neither deletes anything; both name the
+  query that answers whether the condition holds. Those two are the
+  deliberate refusals rather than the only possible ones —
+  `20260824101000`, `20260824120000` and `20260824130000` add CHECK
+  constraints without `NOT VALID`, so PostgreSQL validates the existing rows
+  and a violating one refuses the migration too.
+  `20260824150000_revoke_trusted_truncate.sql` (#163) is the newest of them
+  and is worth naming on its own: a single `REVOKE`, applied to a scratch
+  database only, so whatever `TRUNCATE` the hosted project grants
+  `service_role` is untouched until it is pushed — and what that is remains
+  unverified, since every grant observed here is the harness's model of
+  Supabase's defaults.
 - **Fully implemented and unit-tested:** `PrisonSyncEngine`,
   `resolveSyncConflict` and `MemoryCloudSaveClient`
   (`src/persistence/cloud/`) — the client-side sync/conflict policy is
@@ -549,20 +553,41 @@ suite has an allow-list — and the allow-list is the interesting part:
 * every entry must carry a **reason** long enough not to be a placeholder;
 * an entry **fails if the column later gains a constraint**, so acting on a
   finding forces the entry to be reclassified rather than left asserting a state
-  that is no longer true.
+  that is no longer true;
+* every entry also **declares whether a client role can write the column**, as a
+  boolean the catalog is asked to confirm. That rule is newer than the other
+  two, and the paragraph below is why it exists.
 
 `uuid` and `boolean` columns are excluded by type rather than by decision: their
 domains are already exactly what the contract permits, so there is nothing a
 constraint could add.
 
-**Five of the twelve allow-list entries record an open finding rather than a
-settled decision.** `prisons.created_at`/`updated_at`,
-`profiles.created_at`/`updated_at` and `user_settings.updated_at` are
-**client-writable** — a client can set them at insert time and walk `updated_at`
-backwards, reproduced in **#194**. `prisons` even states the intent and enforces
-it in one direction only: its UPDATE grant deliberately excludes `created_at`,
-while the table-level INSERT grant covers it. Those entries move to a real
-mechanism when #194 is acted on, and the suite fails if they are not.
+**Three of the twelve allow-list entries record an open finding rather than a
+settled decision.** `prisons.updated_at`, `profiles.updated_at` and
+`user_settings.updated_at` are **client-writable** — a client can set them at
+insert time and walk them backwards, reproduced in **#194**. Those entries move
+to a real mechanism when #194's open half is acted on, and the suite fails if
+they are not.
+
+**It was five until `20260824140000_protect_server_timestamps.sql`** (see "The
+server's timestamps are the server's" below). `prisons.created_at` and
+`profiles.created_at` were client-writable too, and `prisons` even stated the
+intent and enforced it in one direction only: its UPDATE grant deliberately
+excluded `created_at`, while the table-level INSERT grant covered it. Both are
+server-only now, and both entries stay in the allow-list — a revoked grant is
+not a constraint — reclassified from an open finding to a settled one.
+
+**They did not reclassify themselves, which is what the third bullet above is
+for.** Their reasons went on reading `CLIENT-WRITABLE … Open finding #194` for
+every run between that migration and this change, and the suite stayed green
+throughout, because its staleness rule fires when a column gains a *constraint*
+and never when it loses a *grant*.
+So each allow-list entry now states client-writability as a boolean, compared
+against `has_column_privilege` for `anon` and `authenticated` on INSERT and
+UPDATE — the same reading suite 003 takes of the `default now()` columns, turned
+here on this suite's own prose. Both directions fail, verified by mutation:
+declaring `prisons.created_at` client-writable again fails the suite, and so
+does declaring `prisons.updated_at` server-only.
 
 ## A client write that could never succeed
 

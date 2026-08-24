@@ -32,6 +32,7 @@ import { NavigationSystem, type NavigationSystemOptions } from '../navigation';
 import { Container, ContainerMaterialsProvider, ContainerRegistry, JobBoard, JobSystem, JobWorkerPool, UtilityNetwork } from '../operations';
 import { NEED_MAX, PrisonerJobWorkerAdapter, PrisonerOperationsRuntime } from '../prisoners';
 import { TopologyManager } from '../rooms/topology';
+import { RoomZoningService } from '../rooms/zoning';
 import { deriveXoshiroState } from '../rng/seed';
 import { NamedRngStreams } from '../rng/streams';
 import { DeploymentSystem, GuardRoster, PatrolSystem, SecuritySectorRegistry, type DeploymentSchedule } from '../security';
@@ -83,6 +84,17 @@ export interface SimulationRuntime {
    */
   readonly actorIdentity: ActorIdentityRegistry;
   readonly topology: TopologyManager;
+  /**
+   * The `ZoneRoom` consumer (#261). Owns no tick work, so it is a service on
+   * the runtime rather than a registered system -- like `treasury`, and
+   * unlike `construction`.
+   *
+   * It writes into two things this runtime already holds -- the world's
+   * zoning plane and `prisoners.roomInstances` -- so it is constructed after
+   * both and holds no state of its own beyond the bounded refusal window
+   * documented on `recentRefusals`.
+   */
+  readonly roomZoning: RoomZoningService;
   readonly navigation: NavigationSystem;
   readonly prisoners: PrisonerOperationsRuntime;
   readonly containers: ContainerRegistry;
@@ -185,6 +197,12 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
 
   const prisoners = new PrisonerOperationsRuntime({ capacity: DEFAULT_PRISONER_CAPACITY, navigation, identity: actorIdentity });
 
+  // Issue #261's `ZoneRoom` consumer. No default room is zoned here -- the
+  // same "no fabricated default content" convention every registry below
+  // follows -- so a fresh prison still has no rooms until a `ZoneRoom`
+  // command arrives.
+  const roomZoning = new RoomZoningService(world, prisoners.roomInstances);
+
   // Issue #25's job/inventory substrate. Starts empty -- no default stock,
   // no default containers beyond the one construction draws from, no
   // registered workers -- exactly like navigation/prisoners wire real
@@ -200,7 +218,9 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   //
   // **Directly, and that is scaffolding.** #96 describes the materials
   // arriving at `room.delivery-bay` and being carried to the site. No session
-  // instantiates that room -- it is declared content with no consumer (#141)
+  // instantiates that room: a `ZoneRoom` command can zone one since #261, and
+  // nothing in the application sends that command (`room.delivery-bay` is
+  // still content with no reader, #141)
   // -- so there is no bay to deliver to, and inventing one would mean
   // deciding where a new prison's bay sits and when a carry job is raised.
   // Recorded on #96 rather than left to be discovered from the absence.
@@ -337,7 +357,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   kernel.registerSystem(incidentTriggerSystem);
   kernel.registerSystem(searchSystem);
   kernel.registerSystem(incidentResponseSystem);
-  kernel.setCommandHandler(createSessionCommandHandler(construction, procurement));
+  kernel.setCommandHandler(createSessionCommandHandler(construction, procurement, roomZoning));
 
   return {
     kernel,
@@ -347,6 +367,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     procurement,
     actorIdentity,
     topology,
+    roomZoning,
     navigation,
     prisoners,
     containers,

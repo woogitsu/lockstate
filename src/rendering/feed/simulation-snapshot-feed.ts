@@ -7,6 +7,7 @@ import {
 } from '../../simulation/runtime/restore-session';
 import { structuresFromConstruction } from '../world/structures';
 import { WorldRenderView } from '../world/world-view';
+import { actorsFromSnapshot } from './actors-from-snapshot';
 import { EMPTY_RENDER_FRAME, type RenderFeed, type RenderFrame } from './render-feed';
 
 /**
@@ -217,17 +218,21 @@ export class SimulationSnapshotFeed implements RenderFeed {
         revision: this.frame.revision + 1,
         world: WorldRenderView.fromSnapshot(bundle.world),
         structures: structuresFromConstruction(bundle.construction),
-        // Always empty, and this feed is the reason -- not the bundle. Since
-        // #70 `SessionSnapshotBundle.simulation` does carry prisoner state,
-        // tile positions included (`session-systems.ts`, `tileX`/`tileY`), and
-        // `CURRENT_SAVE_RESTORED_SCOPE` reports it under `restored` (as
-        // `save.scope.prisoners`, "prisoners, needs, actions and cell
-        // assignments"). What is missing is on this side:
-        // nothing here decodes that section into `RenderFrame.actors`, and no
-        // delta or event publishes actor state either. Reading it is the whole
-        // change; until then `DemoActorFeed` exercises the sprite path, and is
-        // clearly not simulation state.
-        actors: [],
+        // Decoded from the bundle's own `simulation` and `entities` sections
+        // (#70 put prisoner tile positions there; `CURRENT_SAVE_RESTORED_SCOPE`
+        // reports them under `restored` as `save.scope.prisoners`). Empty
+        // whenever the bundle omits either section -- a V2 save does -- and
+        // empty on a fresh session for a reason that is not this feed's:
+        // nothing in `src/` calls `admitPrisoner`, so a prison a player can
+        // currently reach holds no prisoners to draw. What this feed no longer
+        // does is discard the ones a bundle carries.
+        //
+        // Positions only. The bundle publishes no velocity and no facing, so
+        // every prisoner is drawn with the idle clip and the pose module's
+        // default facing; `actors-from-snapshot.ts` states which fields are
+        // defaults rather than simulation state. A render-delta channel is
+        // still what would publish real motion.
+        actors: actorsFromSnapshot(bundle.simulation, bundle.entities),
       };
       this.lastAppliedTick = payload.tick;
     } catch (error) {

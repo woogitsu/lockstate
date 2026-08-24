@@ -120,6 +120,11 @@ export class RoomInstanceRegistry {
    * first, occupancy second -- it is no longer a split between what is and
    * is not saved. Sorted by instance id then entity id for deterministic
    * output.
+   *
+   * In a *live* session the caller is `RoomZoningService`
+   * (`src/simulation/rooms/zoning.ts`), which registers an instance when a
+   * `ZoneRoom` command is accepted (#261). Before that, the restore path was
+   * the only registrar anywhere in `src/`.
    */
   public getSnapshot(): readonly (readonly [string, readonly EntityId[]])[] {
     return [...this.occupants.entries()]

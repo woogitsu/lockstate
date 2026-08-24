@@ -159,6 +159,30 @@ assumption (AGENTS.md: "state assumptions when requirements are
 underspecified") -- building the real object-placement/instance-discovery
 system is construction/rooms work, not this issue's.
 
+**Who registers an instance (#261).** For as long as `ZoneRoom` had a no-op
+consumer, nothing in `src/` registered one except the *restore* path -- so
+the only rooms a session could hold were rooms no session had a way to
+create, and the status strip's `Rooms` count was structurally zero.
+`src/simulation/rooms/zoning.ts`'s `RoomZoningService`, routed from
+`runtime/session-commands.ts`, is the registrar for a live session: it paints
+the world's per-tile zoning plane with the room catalog's `numericId` and
+registers one instance anchored at the zoned rectangle's top-left tile, or
+refuses the request (unowned land, an overlap, an unknown room type) with a
+reason it keeps in a bounded window. It registers that instance with
+**capacity `0` and no object capabilities**, because object placement still
+does not exist and an empty rectangle accommodates nobody -- that module's
+header argues why this is a measurement rather than a placeholder, and #261
+records the content addition a usable capacity would need.
+
+That zero has one consequence worth stating next to the intake stage machine
+below: a zoned cell is a *matching* instance that can never free up, so
+`accommodation-assignment` keeps retrying against it rather than failing
+fast. The rule itself is unchanged -- it fails only when no instance of the
+required type exists at all -- but its stated justification, that a real
+prison holds an arriving prisoner because capacity may return, does not hold
+for a room with no beds in it. Nothing in the shipped application reaches
+that path yet: `ZoneRoom` has no producer and nothing calls `admitPrisoner`.
+
 **Performance note:** `allByRoomCatalogId`/`findAvailable` are a per-tick,
 potentially-thousands-of-instances hot path (every pending intake and every
 action reconsideration queries them). They are grouped by room-catalog id
