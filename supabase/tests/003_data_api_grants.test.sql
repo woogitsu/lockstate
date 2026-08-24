@@ -22,10 +22,22 @@
 --
 -- Each assertion below pins an exact privilege set rather than "at least
 -- these", so an accidental over-grant fails just as loudly as a missing one.
--- Only the four DML privileges are compared: TRUNCATE/REFERENCES/TRIGGER --
--- and MAINTAIN, which exists only on PostgreSQL 17+ -- are ambient defaults
--- that carry no Data API meaning, and pinning them would make this suite
--- fail on a server-version difference instead of a privilege change.
+-- The per-table and per-role comparisons compare only the four DML
+-- privileges, because REFERENCES, TRIGGER and MAINTAIN (which exists only
+-- on PostgreSQL 17+) are ambient defaults that carry no Data API meaning,
+-- and folding them into those aggregates would make this suite fail on a
+-- server-version difference instead of on a privilege change.
+--
+-- TRUNCATE used to be dismissed with them, and is not one of them (issue
+-- #105 finding 3). Supabase's default privileges `grant all on tables` and
+-- then revoke only the four DML privileges, so every table in `public`
+-- started out TRUNCATE-able by `anon` and `authenticated` -- and TRUNCATE
+-- ignores row level security completely and fires no row trigger, so it
+-- reaches past every `auth.uid()` policy here *and* past the append-only
+-- trigger that makes `entitlement_events` immutable. It gets its own
+-- schema-wide sweep below rather than a place in the DML aggregates, which
+-- keeps this suite portable across server versions while still asserting
+-- the one residual privilege that means something.
 --
 -- WHAT THE FIRST VERSION OF THIS SUITE MISSED, and why each gap is now a
 -- schema-wide sweep rather than another per-table case:
@@ -53,13 +65,14 @@
 --
 -- EXECUTED against the real Supabase local stack (`supabase test db`,
 -- CLI 2.115.0) and against plain PostgreSQL 18.6 + pgTAP 1.3.4 via
--- `pnpm verify:sql`. The assertion added for issue #105 finding 10 -- the
--- PUBLIC function-grant sweep -- has been executed only on plain
--- PostgreSQL 16.13 + pgTAP 1.3.2 via `pnpm verify:sql`; the stack run
--- needs container images that were not reachable when it was written.
+-- `pnpm verify:sql`. The two assertions added for issue #105 finding 3 and
+-- finding 10 -- the TRUNCATE sweep and the PUBLIC function-grant sweep --
+-- have been executed only on plain PostgreSQL 16.13 + pgTAP 1.3.2 via
+-- `pnpm verify:sql`; the stack run needs container images that were not
+-- reachable when they were written.
 
 begin;
-select plan(20);
+select plan(21);
 
 -- Alphabetical because the aggregates below order by privilege name:
 -- DELETE, INSERT, SELECT, UPDATE.
@@ -277,6 +290,43 @@ select is(
       and a.grantee = 0),
   null,
   'nothing in public is granted to PUBLIC, so the per-role sweeps above are the whole story'
+);
+
+-- --- TRUNCATE (issue #105 finding 3) ---
+--
+-- The privilege the DML aggregates above deliberately do not compare, and
+-- the reason it is asserted on its own is in this file's header: TRUNCATE
+-- ignores RLS and fires no row trigger, so a single statement reaches past
+-- every ownership policy in this schema and past the append-only trigger on
+-- `entitlement_events`. Observed on the compatibility harness before
+-- 20260824090100_revoke_client_truncate.sql: `\dp public.*`
+-- showed `anon=Dxt` and `authenticated=...Dxt` on all eight tables, and
+-- `truncate table public.entitlement_events` as `authenticated`, inside an
+-- explicit transaction block, emptied the ledger while the same session's
+-- `update` was refused.
+--
+-- Schema-wide and role-parameterised for the same reason the RLS assertion
+-- above is: the mistake is one of omission. A table added later inherits the
+-- ambient TRUNCATE from Supabase's default privileges, and the revoke in
+-- that migration expanded at execution time over the relations that existed
+-- then -- so this is what fails, rather than a per-table case somebody also
+-- has to remember to write.
+--
+-- `service_role` is deliberately NOT in this sweep. It holds the same
+-- ambient TRUNCATE, and whether the trusted role should be able to empty a
+-- table it holds no DELETE grant on is a boundary question ADR 0008's
+-- authority table does not answer; #105's follow-up carries it rather than
+-- this assertion silently deciding it in either direction.
+select is(
+  (select string_agg(r.role || ':' || c.relname, ' ' order by r.role, c.relname)
+     from pg_class c
+     join pg_namespace n on n.oid = c.relnamespace
+     cross join unnest(array['anon', 'authenticated']) as r(role)
+    where n.nspname = 'public'
+      and c.relkind in ('r', 'v', 'm', 'p', 'f')
+      and has_table_privilege(r.role, c.oid, 'TRUNCATE')),
+  null,
+  'no client-facing role may TRUNCATE anything in public: it would ignore RLS and fire no row trigger'
 );
 
 -- --- Callable RPCs ---
