@@ -1,4 +1,5 @@
 export {
+  PROTOCOL_DECODE_ERROR_CODES,
   decodeMainToWorkerMessage,
   decodeWorkerToMainMessage,
   type ProtocolDecodeError,
@@ -22,6 +23,7 @@ export {
   type DeepReadonly,
   type MainToWorkerMessage,
   type ProtocolFault,
+  type ProtocolFaultCode,
   type SimulationProtocolMessage,
   type SimulationStatusCounts,
   type VersionedPayload,

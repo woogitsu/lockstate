@@ -6,14 +6,35 @@ import {
   mainToWorkerMessageSchema,
   workerToMainMessageSchema,
   type MainToWorkerMessage,
+  type ProtocolFaultCode,
   type WorkerToMainMessage,
 } from './types';
 
-export type ProtocolDecodeErrorCode =
-  | 'invalid-message'
-  | 'unsupported-protocol-version'
-  | 'unknown-message-kind'
-  | 'invalid-payload';
+/**
+ * Every code `classifyFailure` can return, and each one is a member of the
+ * protocol's own `ProtocolFaultCode`.
+ *
+ * `satisfies` is what makes that a fact rather than a coincidence. This list
+ * was a hand-written string union with no link to the fault enum, so a typo in
+ * it compiled -- the same defect issue #139 found in
+ * `SimulationWorkerStateMachine.fault`, one file along the same path. It
+ * matters here because these codes are reported verbatim as protocol faults by
+ * `src/simulation/worker/worker.ts`: a code the fault enum does not contain is
+ * rejected by `workerToMainMessageSchema` at the main thread, so the
+ * diagnostic for a real failure would itself fail, with the original cause
+ * gone.
+ *
+ * `as const` keeps the literal tuple, so the type below is these four codes
+ * and not all twelve fault codes.
+ */
+export const PROTOCOL_DECODE_ERROR_CODES = [
+  'invalid-message',
+  'unsupported-protocol-version',
+  'unknown-message-kind',
+  'invalid-payload',
+] as const satisfies readonly ProtocolFaultCode[];
+
+export type ProtocolDecodeErrorCode = (typeof PROTOCOL_DECODE_ERROR_CODES)[number];
 
 export interface ProtocolValidationIssue {
   readonly code: string;
