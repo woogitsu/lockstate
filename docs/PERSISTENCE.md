@@ -1433,6 +1433,41 @@ module type-imports `SaveResult`, `PrisonSlotMetadata`, `SaveEnvelope` and
 the HUD may import neither (`AGENTS.md` boundary 1). The HUD supplies a box;
 the composition root supplies the panel.
 
+**Its strings are message keys, not literals.** Every player-facing string in
+the panel — the heading, the five buttons, the empty-list row and the
+seventeen status sentences — was a hard-coded English literal until issue
+#208, in the one UI module that no localization gate collected. They now go
+through `SAVE_PANEL_MESSAGE_KEY` (`src/ui/save-panel-messages.ts`) and the
+bundled default locale, and the panel's mapping functions return a message key
+plus parameters rather than text, the same split the HUD uses between
+`projection.ts` and its DOM builders ([ADR 0011](./adr/0011-localization-architecture.md)).
+Two decisions inside that are worth having written down:
+
+- **A spliced `Error.message` is a diagnostic, not copy.** `Save failed:
+  {detail}`, `Could not create a prison: {detail}` and the per-action failure
+  sentences interpolate a message thrown in `src/persistence/**`, which is
+  English and untranslated. The key carries the placeholder so the sentence
+  around it stays translatable and the fragment is honestly data; hiding it
+  would cost the player the one detail that names what went wrong (issue #65's
+  `did not reply within 15000ms` is that detail).
+- **What a load restored is *not* localized, deliberately.**
+  `describeRestoredScope` splices `RestoredScope.restored` and
+  `notCarriedByThisSaveVersion` into a localized sentence as joined text.
+  Those entries are English prose authored in
+  `src/simulation/runtime/restore-session.ts`, and giving them keys means
+  changing a simulation-owned structure to carry keys — the tier ADR 0011 says
+  translated text may never live in. That belongs with #109, which owns that
+  function.
+
+The panel takes its localizer as an optional third constructor argument
+defaulting to the bundled default locale. That default is a **seam and not a
+design**: `main.ts` already builds a `Localizer` for the HUD with the same
+locale and the same catalog and should hand that instance in, which is a
+one-argument change at the panel's only construction site. Today the two are
+equivalent because `en` is the only locale that exists; the first non-`en`
+locale makes a panel that built its own localizer render English while the
+rest of the interface changes language.
+
 `describeSaveResult` maps each failure code to its **own** state and
 advice, satisfying "quota, private-mode and transaction-abort errors are
 distinct recoverable states" — quota tells the player to free space,

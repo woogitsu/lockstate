@@ -1202,6 +1202,25 @@ test.describe('the assembled application', () => {
     // worker there is no session, so nothing exists to save. A panel here
     // would offer an action that cannot work.
     await expect(page.locator('.save-panel')).toHaveCount(0);
+
+    // And the transport controls are still there and still pressable, so the
+    // second half of `src/main.ts`'s promise has to hold too: with no worker
+    // `requireSimulation` throws for every one of them, and the comment on it
+    // says the HUD reports that "on the control that was pressed" (#207).
+    // Until #207 nothing on screen changed at all, which is the same defect
+    // the alert above fixes, one layer in: the player is told the simulation
+    // is unavailable, and was not told that the button they just pressed did
+    // nothing.
+    const pause = page.locator('.hud-strip__transport [title="Pause"]');
+    await pause.click();
+    const refusal = page.locator('.hud__refusal');
+    await expect(refusal).toBeVisible();
+    await expect(refusal).toContainText('The clock did not change');
+    await expect(refusal).toHaveAttribute('data-action', 'set-clock');
+    await expect(pause).toHaveAttribute('data-action-failed', 'true');
+    // Only the button that was pressed, though all three were disabled while
+    // the command was in flight.
+    expect(await page.locator('.hud-strip__transport [data-action-failed="true"]').count()).toBe(1);
   });
 });
 
