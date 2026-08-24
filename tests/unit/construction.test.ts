@@ -13,6 +13,13 @@ test('ConstructionSystem processes build order through lifecycle deterministical
   // Create chunk metadata and load it so the chunk is recognized and modifiable
   world.ensureMetadata({ x: chunkCoordinate(0), y: chunkCoordinate(0) });
   world.load({ x: chunkCoordinate(0), y: chunkCoordinate(0) });
+  // Owned, because `ConstructionSystem.submitOrder` refuses an order on land
+  // the player does not own (#215) and this fixture is about the order
+  // lifecycle rather than about ownership. `createNewSimulationRuntime` owns
+  // the starting chunk (`new-session.ts:153`), so an owned chunk is what a
+  // real session's first build gesture actually lands on -- this makes the
+  // fixture match it instead of relying on a check that used to be absent.
+  world.setOwned({ x: chunkCoordinate(0), y: chunkCoordinate(0) }, true);
   
   const construction = new ConstructionSystem(world);
   const kernel = new Kernel();
@@ -90,6 +97,8 @@ test('ConstructionSystem snapshot restores orders correctly', () => {
 test('CancelBuildOrder command stops construction', () => {
   const world = new SparseWorld(32);
   world.ensureMetadata({ x: chunkCoordinate(0), y: chunkCoordinate(0) });
+  // Owned, for the reason the lifecycle fixture above is (#215).
+  world.setOwned({ x: chunkCoordinate(0), y: chunkCoordinate(0) }, true);
   const construction = new ConstructionSystem(world);
   const kernel = new Kernel();
   kernel.registerSystem(construction);
@@ -170,6 +179,8 @@ describe('a construction snapshot is a detached value, not a live view', () => {
     const world = new SparseWorld(32);
     world.ensureMetadata({ x: chunkCoordinate(0), y: chunkCoordinate(0) });
     world.load({ x: chunkCoordinate(0), y: chunkCoordinate(0) });
+    // Owned, for the reason the top-level fixtures are (#215).
+    world.setOwned({ x: chunkCoordinate(0), y: chunkCoordinate(0) }, true);
     return world;
   }
 

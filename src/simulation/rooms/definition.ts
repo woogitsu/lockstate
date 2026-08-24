@@ -74,5 +74,3 @@ export function buildRoomRegistryFromCatalog(
   return registry;
 }
 
-/** Built from issue #23's validated content catalog -- see src/content/room-catalog.ts. */
-export const defaultRoomRegistry = buildRoomRegistryFromCatalog();

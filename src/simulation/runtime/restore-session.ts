@@ -74,6 +74,38 @@ export const SESSION_SNAPSHOT_SCHEMA_ID = 'simulation-save-payload';
 export const SESSION_SNAPSHOT_SCHEMA_VERSION = 3;
 
 /**
+ * One line of a restore report: a **message key, never text** (ADR 0011).
+ *
+ * These entries used to be English prose authored right here, in the one tier
+ * ADR 0011 says translated text may never live in (issue #226). What a scope
+ * carries now is a stable identifier the simulation may hold, resolved to text
+ * by the UI at the last possible moment -- the rule `docs/HUD_PROJECTIONS.md`
+ * contract 3 states for every projection. `describeRestoredScope` in
+ * `src/ui/save-panel.ts` is the resolver; nothing under `src/simulation/**`
+ * reads the text.
+ *
+ * Two naming decisions, both forced rather than preferred:
+ *
+ * - **The field is `labelKey`**, not `scopeKey` or `entryKey`.
+ *   `tests/foundation/localization-key-completeness.test.ts` finds keys by
+ *   matching `<name>Key: '<literal>'` and *pins the exact set* of field names
+ *   its scan produces (`descriptionKey`, `labelKey`, `nameKey`). Reusing
+ *   `labelKey` puts these thirteen keys inside that gate instead of requiring
+ *   it to be widened -- the same call PR #234 made for
+ *   `HudUnavailableNotice.labelKey`.
+ * - **The type is `string`**, not `LocalizationKey`.
+ *   `LocalizationKey` is declared in `src/content/localization.ts`, and
+ *   `tests/unit/services-layer-boundaries.test.ts` fails any module under
+ *   `src/simulation/**` that imports from a specifier ending in
+ *   `localization`. `LocalizationKey` is `string`, so the alias would buy a
+ *   documentation nicety at the cost of the import that gate exists to
+ *   refuse; this comment carries the meaning instead.
+ */
+export interface RestoredScopeEntry {
+  readonly labelKey: string;
+}
+
+/**
  * What a session snapshot actually restores, stated explicitly rather
  * than implied.
  *
@@ -96,7 +128,7 @@ export const SESSION_SNAPSHOT_SCHEMA_VERSION = 3;
  */
 export interface RestoredScope {
   /** Restored by the bundle this scope describes. */
-  readonly restored: readonly string[];
+  readonly restored: readonly RestoredScopeEntry[];
   /**
    * Not restored, for either of two reasons: it is derived state or in-flight
    * work rather than authoritative state, or the bundle simply does not carry
@@ -107,7 +139,7 @@ export interface RestoredScope {
    * the two applies is a distinction for `docs/PERSISTENCE.md`, not for a
    * status line.
    */
-  readonly notCarriedByThisSaveVersion: readonly string[];
+  readonly notCarriedByThisSaveVersion: readonly RestoredScopeEntry[];
 }
 
 /**
@@ -115,22 +147,35 @@ export interface RestoredScope {
  *
  * `restoredScopeFor` derives from this rather than from a second list, so the
  * two cannot disagree about what a complete save contains.
+ *
+ * Eleven keys and two, thirteen in all -- one for each English line this
+ * constant used to hold, authored in `src/content/default-locale-en.ts` under
+ * `save.scope.*`. The mapping is one-for-one and the strings there are the
+ * ones that stood here, character for character: #226's owner decision moved
+ * them without touching what a restore reports, so the granularity below
+ * (`save.scope.operations` covering three subsystems, `save.scope.names`
+ * covering one) is inherited rather than chosen. Regrouping the report is a
+ * product change and stays a decision of its own.
+ *
+ * The slug after `save.scope.` names the *message key* and nothing else.
+ * There is no content id behind it and none is persisted -- `docs/CONTENT.md`
+ * gains no vocabulary from this, exactly as `save.status.*` adds none.
  */
 export const CURRENT_SAVE_RESTORED_SCOPE: RestoredScope = {
   restored: [
-    'kernel tick and command queue',
-    'RNG stream states',
-    'world terrain and ownership',
-    'construction orders and undo/redo',
-    'entity id liveness',
-    'prisoners, needs, actions and cell assignments',
-    'jobs, containers and utility networks',
-    'doors, security sectors, guards and patrols',
-    'contraband, intelligence and searches',
-    'incidents, gangs and tunnels',
-    'prisoner and staff names',
+    { labelKey: 'save.scope.kernel' },
+    { labelKey: 'save.scope.rng-streams' },
+    { labelKey: 'save.scope.world' },
+    { labelKey: 'save.scope.construction' },
+    { labelKey: 'save.scope.entity-liveness' },
+    { labelKey: 'save.scope.prisoners' },
+    { labelKey: 'save.scope.operations' },
+    { labelKey: 'save.scope.security' },
+    { labelKey: 'save.scope.contraband' },
+    { labelKey: 'save.scope.incidents' },
+    { labelKey: 'save.scope.names' },
   ],
-  notCarriedByThisSaveVersion: ['room and topology caches (recomputed from the world)', 'navigation caches and in-flight path requests (re-issued on the next tick)'],
+  notCarriedByThisSaveVersion: [{ labelKey: 'save.scope.room-caches' }, { labelKey: 'save.scope.navigation-caches' }],
 };
 
 /**
@@ -142,28 +187,32 @@ export const CURRENT_SAVE_RESTORED_SCOPE: RestoredScope = {
  * the entries below are the ones whose presence in `restored` depends on the
  * bundle rather than on the save version alone.
  *
- * Every `entries` string must appear in `CURRENT_SAVE_RESTORED_SCOPE.restored`,
+ * Every `entries` key must appear in `CURRENT_SAVE_RESTORED_SCOPE.restored`,
  * which `tests/unit/restored-scope.test.ts` asserts -- otherwise a rename here
  * would silently stop moving anything.
+ *
+ * `RestoredScopeEntry` rather than a bare key string, so these declarations are
+ * `labelKey: '...'` too and the completeness gate checks this second copy of
+ * each key as well as the canonical one above.
  */
 const OPTIONAL_SECTION_SCOPE: readonly {
   readonly section: string;
   readonly carries: (bundle: SessionSnapshotBundle) => boolean;
-  readonly entries: readonly string[];
+  readonly entries: readonly RestoredScopeEntry[];
 }[] = [
-  { section: 'entities', carries: (bundle) => bundle.entities !== undefined, entries: ['entity id liveness'] },
+  { section: 'entities', carries: (bundle) => bundle.entities !== undefined, entries: [{ labelKey: 'save.scope.entity-liveness' }] },
   {
     section: 'simulation',
     carries: (bundle) => bundle.simulation !== undefined,
     entries: [
-      'prisoners, needs, actions and cell assignments',
-      'jobs, containers and utility networks',
-      'doors, security sectors, guards and patrols',
-      'contraband, intelligence and searches',
-      'incidents, gangs and tunnels',
+      { labelKey: 'save.scope.prisoners' },
+      { labelKey: 'save.scope.operations' },
+      { labelKey: 'save.scope.security' },
+      { labelKey: 'save.scope.contraband' },
+      { labelKey: 'save.scope.incidents' },
     ],
   },
-  { section: 'identity', carries: (bundle) => bundle.identity !== undefined, entries: ['prisoner and staff names'] },
+  { section: 'identity', carries: (bundle) => bundle.identity !== undefined, entries: [{ labelKey: 'save.scope.names' }] },
 ];
 
 /**
@@ -181,18 +230,21 @@ const OPTIONAL_SECTION_SCOPE: readonly {
  * save panel builds reads the same way whichever sections are present.
  */
 export function restoredScopeFor(bundle: SessionSnapshotBundle): RestoredScope {
+  // Keyed by `labelKey`, not by object identity: `OPTIONAL_SECTION_SCOPE`
+  // declares its own `RestoredScopeEntry` literals, so the two lists share
+  // keys and never share references.
   const absent = new Set<string>();
   for (const section of OPTIONAL_SECTION_SCOPE) {
     if (section.carries(bundle)) continue;
-    for (const entry of section.entries) absent.add(entry);
+    for (const entry of section.entries) absent.add(entry.labelKey);
   }
   if (absent.size === 0) return CURRENT_SAVE_RESTORED_SCOPE;
 
   return {
-    restored: CURRENT_SAVE_RESTORED_SCOPE.restored.filter((entry) => !absent.has(entry)),
+    restored: CURRENT_SAVE_RESTORED_SCOPE.restored.filter((entry) => !absent.has(entry.labelKey)),
     notCarriedByThisSaveVersion: [
       ...CURRENT_SAVE_RESTORED_SCOPE.notCarriedByThisSaveVersion,
-      ...CURRENT_SAVE_RESTORED_SCOPE.restored.filter((entry) => absent.has(entry)),
+      ...CURRENT_SAVE_RESTORED_SCOPE.restored.filter((entry) => absent.has(entry.labelKey)),
     ],
   };
 }

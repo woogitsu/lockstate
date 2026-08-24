@@ -12,6 +12,16 @@ export interface CameraScroll {
   readonly y: number;
 }
 
+/**
+ * A point in the camera's viewport, in the CSS pixels a Phaser pointer reports.
+ *
+ * The same coordinate space `CameraScroll` is not: this one is screen-space.
+ */
+export interface HarnessPoint {
+  readonly x: number;
+  readonly y: number;
+}
+
 /** One tile edge, flattened out of `EdgeTarget` so it crosses `page.evaluate`. */
 export interface HarnessEdge {
   readonly tileX: number;
@@ -79,6 +89,22 @@ export interface LockstateWorldSceneHarness {
    * from a pan.
    */
   zoom(): number;
+  /**
+   * The world point the camera currently puts under a viewport point.
+   *
+   * Answered by Phaser's own `Camera#getWorldPoint`, which inverts the camera
+   * matrix the frame was drawn with -- deliberately **not** by
+   * `src/rendering/camera/`'s `screenToWorld`. The property a pinch spec has to
+   * assert is that the world under the fingers does not slide, and calling the
+   * project's own transform to check the project's own transform would be the
+   * same self-agreement the header above rejects for the context set: it would
+   * hold while both the transform and the gesture were wrong together.
+   *
+   * Read after a rendered frame. `getWorldPoint` uses `matrixCombined`, which
+   * `Camera#preRender` rebuilds once per frame, so a read taken between a
+   * `setZoom` and the next frame answers with the previous frame's matrix.
+   */
+  worldPointAt(screen: HarnessPoint): HarnessPoint;
   /**
    * The input manager's pointer inventory, read live.
    *

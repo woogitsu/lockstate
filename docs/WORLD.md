@@ -105,6 +105,19 @@ pricing, selection and UI; it is not the ownership test.
 - Verifies land ownership (`requiresOwnedLand`).
 - Checks terrain properties (e.g. `requiresBuildableTerrain`, `allowWater`).
 
+Its one production caller is `ConstructionSystem.submitOrder`, which refuses a
+build order whose tile the player does not own — the order is `failed` with
+`failReason: 'unowned-land'` rather than queued, because ownership is
+permission and permission cannot be queued (#215). That caller passes
+`requiresOwnedLand` only: **terrain is deliberately not enforced at
+submission**, so a wall may currently be ordered on water or on rock. Turning
+either on is its own gameplay decision, and `SUBMISSION_REQUIREMENT` in
+`src/simulation/construction/system.ts` is where it would be taken.
+
+Which tile must be owned for an *edge* order is the order's own tile, not the
+tile across the edge it occupies: every boundary edge of an owned parcel has
+unowned land on the far side, and a prison is a perimeter.
+
 ## Snapshot schema
 
 `WorldSnapshotV1` contains:

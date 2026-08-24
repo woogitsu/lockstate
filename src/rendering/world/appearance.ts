@@ -23,8 +23,34 @@ export interface TerrainAppearance {
   readonly fillAlternate: number;
 }
 
-/** Land the simulation has not materialised. Reads as "outside the prison", not as a tile. */
-export const VOID_APPEARANCE: TerrainAppearance = { fill: 0x0b0e12, fillAlternate: 0x0b0e12 };
+/**
+ * What space the simulation has not materialised looks like.
+ *
+ * **One declaration, because a second one that drifted would be visible.**
+ * This colour was written out three times -- here, `src/main.ts`'s Phaser
+ * game config, and `WorldScene.create`'s `setBackgroundColor` -- and the three
+ * are not interchangeable decorations: `TileLayer.updateChunks` gives an
+ * unloaded chunk **no draw calls at all** and lets the camera background show
+ * through, so "the void" is painted by the background and bounded by wherever
+ * loaded chunks stop. If one of the three moved, the seam between materialised
+ * land and empty space would become a visible band.
+ *
+ * `tests/unit/void-colour-agreement.test.ts` pins that they are one value.
+ */
+export const VOID_COLOR = 0x0b0e12;
+
+/**
+ * The same colour as a `TerrainAppearance`, for a painter that needs to fill
+ * the void explicitly rather than leave it to the background.
+ *
+ * **No caller today** (#141), and that is not an oversight to fix by deleting
+ * it: it is the value any such painter would have to use, and deriving it from
+ * `VOID_COLOR` is what makes that true by construction rather than by someone
+ * remembering. Both channels are the same colour deliberately -- the
+ * alternating tone exists to break up large flat areas of *tiles*, and empty
+ * space is not tiles.
+ */
+export const VOID_APPEARANCE: TerrainAppearance = { fill: VOID_COLOR, fillAlternate: VOID_COLOR };
 
 /** Fallback for a terrain id this renderer has no row for: visibly wrong, never invisible. */
 export const UNKNOWN_TERRAIN_APPEARANCE: TerrainAppearance = { fill: 0xb0308a, fillAlternate: 0xa02c7e };

@@ -3,6 +3,7 @@ import { type BuildEdge, type BuildOrder, resolveBuildEdge } from './build-order
 import { edgeNumericIdFor, getBuildableDefinition } from './definition';
 import { type ConstructionMaterialsProvider, UNLIMITED_MATERIALS_PROVIDER } from './materials-provider';
 import { SparseWorld } from '../world/sparse-world';
+import { type BuildabilityRequirement, canBuildAt } from '../world/buildability';
 import { type TilePosition, tileToChunk } from '../world/coordinates';
 
 export interface ConstructionSnapshot {
@@ -46,6 +47,51 @@ function isCancellable(state: BuildOrder['state']): boolean {
   return state !== 'cancelled' && state !== 'failed';
 }
 
+/**
+ * What `submitOrder` asks of a tile before approving an order for it.
+ *
+ * **Ownership only, and every flag is written out on purpose.** `canBuildAt`
+ * defaults all three of these on, so passing nothing would have this change
+ * start enforcing buildable terrain and refusing water in the same commit --
+ * neither of which is what #215 decided, and both of which are gameplay
+ * questions with their own answers. A wall across a stream may well be
+ * intended; a wall on ground the player does not own is not. So the two are
+ * turned **off** explicitly rather than left to a default, and a reader who
+ * finds this constant learns that terrain is not checked here rather than
+ * assuming from the function's name that it is.
+ *
+ * Enabling either is a separate decision. If one is taken, the flag moves and
+ * `SUBMISSION_FAIL_REASONS` already carries the reason it produces.
+ */
+const SUBMISSION_REQUIREMENT: BuildabilityRequirement = {
+  requiresOwnedLand: true,
+  requiresBuildableTerrain: false,
+  requiresWalkableTerrain: false,
+  allowWater: true,
+};
+
+/**
+ * `BuildabilityResult.reason` spelled the way `BuildOrder.failReason` spells
+ * things.
+ *
+ * The two vocabularies really are different and this is not ceremony:
+ * `buildability.ts` uses `unowned_land` with an underscore, `failReason`'s one
+ * existing value is `out-of-bounds` with a hyphen, and `failReason` is
+ * persisted -- `save-schema.ts:176` and `:402` carry it into the save. Letting
+ * an underscore reach a save because two modules disagreed about a separator
+ * would be a format decision made by accident.
+ *
+ * All four of `canBuildAt`'s refusals are mapped, not just the one this change
+ * turns on, so enabling a flag above cannot produce a `failReason` nobody
+ * chose. `'ok'` is absent deliberately: it is not a refusal, and it can never
+ * reach this table because the lookup happens only when `buildable` is false.
+ */
+const SUBMISSION_FAIL_REASONS: Readonly<Record<string, string>> = {
+  unowned_land: 'unowned-land',
+  unbuildable_terrain: 'unbuildable-terrain',
+  water_blocked: 'water-blocked',
+};
+
 export class ConstructionSystem implements SystemRegistration {
   public readonly id = 'construction';
   public readonly order = 100;
@@ -66,12 +112,19 @@ export class ConstructionSystem implements SystemRegistration {
     private readonly materialsProvider: ConstructionMaterialsProvider = UNLIMITED_MATERIALS_PROVIDER,
   ) {}
 
+  /**
+   * Accepts an order, or fails it with a reason.
+   *
+   * Two checks, in this order, and the order matters: a tile outside the
+   * materialised world has no ownership to ask about, so `out-of-bounds` is
+   * decided first and `canBuildAt` is never handed a chunk that does not
+   * exist.
+   */
   public submitOrder(order: BuildOrder): void {
     if (this.orders.has(order.id)) {
       throw new Error(`BuildOrder ${order.id} already exists`);
     }
-    
-    // Validation hooks would run here: check ownership, terrain, occupancy
+
     const { chunk } = tileToChunk(order.location, this.world.tileChunkSize);
     const chunkState = this.world.getChunk(chunk);
     if (!chunkState) {
@@ -80,8 +133,15 @@ export class ConstructionSystem implements SystemRegistration {
       this.orders.set(order.id, order);
       return;
     }
-    
-    // For now, immediately approve valid orders
+
+    const buildability = canBuildAt(this.world, order.location, SUBMISSION_REQUIREMENT);
+    if (!buildability.buildable) {
+      order.state = 'failed';
+      order.failReason = SUBMISSION_FAIL_REASONS[buildability.reason] ?? 'unbuildable';
+      this.orders.set(order.id, order);
+      return;
+    }
+
     order.state = 'approved';
     this.orders.set(order.id, order);
   }

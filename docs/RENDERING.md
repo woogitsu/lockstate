@@ -146,9 +146,10 @@ the feed drop polling entirely without the renderer changing at all.
 - **Actors from the simulation.** A fresh session has none: the simulation
   fabricates no default population. The bundle is no longer the obstacle it once
   was -- since #70 `SessionSnapshotBundle.simulation` carries prisoner state
-  including tile positions, and `CURRENT_SAVE_RESTORED_SCOPE` lists "prisoners,
-  needs, actions and cell assignments" under `restored`, not under
-  `notCarriedByThisSaveVersion`. What is missing is on the renderer's side:
+  including tile positions, and `CURRENT_SAVE_RESTORED_SCOPE` reports it under
+  `restored`, not under `notCarriedByThisSaveVersion` (as the key
+  `save.scope.prisoners`, which the default locale resolves to "prisoners,
+  needs, actions and cell assignments"). What is missing is on the renderer's side:
   `SimulationSnapshotFeed` decodes the world and construction sections and never
   reads that one, so `RenderFrame.actors` is always empty, and no delta or event
   publishes actor state either. The renderer is ready for them -- reading that

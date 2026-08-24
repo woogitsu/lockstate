@@ -139,6 +139,28 @@ export class BuildTool implements BuildToolPort, HudWorldBuildSource {
     const seen = new Set<string>();
     const unique: EdgeTarget[] = [];
     for (const segment of segments) {
+      // Written out rather than calling `edgeTargetKey`, which produces this
+      // exact string one module away in `src/rendering/build/edge-picking.ts`.
+      // Not an oversight: that would be a **value** import from
+      // `src/rendering/` into this file, and
+      // `tests/unit/ui-orchestration-boundaries.test.ts` records this module's
+      // rendering dependency as `type-only` with a reason that is about intent
+      // -- a value import "would mean the orchestrator had started calling
+      // into the renderer rather than being handed its reports". Relaxing that
+      // to share a string formatter would be trading a stated boundary for
+      // three lines.
+      //
+      // What has to hold is **not** that this string equals
+      // `edgeTargetKey`'s. This key is private and never leaves the loop, so
+      // any injective function of the three fields would de-duplicate the
+      // same run -- measured: reordering these fields to
+      // `edge,tileX,tileY` changes nothing any test can see, correctly.
+      // What has to hold is that it keys on *the same three fields*, which is
+      // what makes two orders on one edge impossible; dropping `edge` from it
+      // fails `tests/unit/edge-key-agreement.test.ts`, and so does removing
+      // the de-duplication. That file pins the equivalence, and pins
+      // `edgeTargetKey`'s own format separately, because that one *is* a
+      // contract -- it is exported.
       const key = `${segment.tileX},${segment.tileY},${segment.edge}`;
       if (seen.has(key)) continue;
       seen.add(key);

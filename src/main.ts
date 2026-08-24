@@ -15,6 +15,7 @@ import { DemoActorFeed, isDemoActorsRequested } from './rendering/feed/demo-acto
 import { EMPTY_RENDER_FRAME, type RenderFeed } from './rendering/feed/render-feed';
 import { SimulationSnapshotFeed } from './rendering/feed/simulation-snapshot-feed';
 import { WorldScene } from './rendering/scene/world-scene';
+import { VOID_COLOR } from './rendering/world/appearance';
 import { SavePanel } from './ui/save-panel';
 import {
   EMPTY_HUD_VIEW_MODEL,
@@ -149,7 +150,12 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
   parent: 'game-root',
   width: window.innerWidth,
   height: window.innerHeight,
-  backgroundColor: '#0b0e12',
+  // The one declaration of the void colour, shared with the camera background
+  // `WorldScene.create` sets and with `VOID_APPEARANCE`. Three copies of this
+  // hex used to exist, and a drift between them would show as a band where
+  // loaded chunks stop -- unmaterialised land gets no draw calls, so the
+  // background *is* the void (`src/rendering/world/appearance.ts`).
+  backgroundColor: VOID_COLOR,
   scene: [worldScene],
   scale: {
     mode: Phaser.Scale.RESIZE,
