@@ -222,7 +222,7 @@ The `lockstate-staging` Worker keeps its `workers.dev` URL, but it is also the W
 
 ## Cache policy
 
-Cloudflare Static Assets normally sends revalidation-safe HTML and asset headers (`Cache-Control: public, max-age=0, must-revalidate` with an `ETag`). Lockstate preserves revalidation for HTML and SPA fallback responses so new deployments are discovered promptly.
+Cloudflare Static Assets normally sends revalidation-safe HTML and asset headers (`Cache-Control: public, max-age=0, must-revalidate` with an `ETag`). Lockstate preserves revalidation for HTML and SPA fallback responses so new deployments are discovered promptly, and states it rather than relying on the default: `/index.html` carries that same `max-age=0, must-revalidate` explicitly. The `/*` rule sets no cache policy at all: it carries the four security headers (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`), which `scripts/verify-deployment-preview.mjs` asserts against a real preview response and `tests/foundation/ci-configuration-contract.test.ts` asserts are all covered by that verifier. There is deliberately **no** Content-Security-Policy — adding one has a real chance of breaking Phaser and is its own change (issues #105, #138).
 
 Vite emits content-hashed files directly into `/assets/`. `public/_headers` gives those fingerprinted files:
 
