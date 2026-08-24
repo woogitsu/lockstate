@@ -1,3 +1,5 @@
+import type { RunLengthDecodeContract } from '../codec/run-length';
+import { encodeRunLengths, expandRunLengthsInto } from '../codec/run-length';
 import type { ChunkPosition, TilePosition } from './coordinates';
 import {
   chunkCoordinate,
@@ -127,57 +129,44 @@ function decodePosition(value: unknown, label: string): ChunkPosition {
   }
 }
 
-export function encodeTerrainRle(data: Uint8Array): [number, number][] {
-  if (data.length === 0) return [];
-  const result: [number, number][] = [];
-  let currentId = data[0]!;
-  let currentCount = 1;
+/**
+ * A world plane is a `Uint8Array`, so a run's value is a terrain/edge/zoning
+ * `numericId` in `0..255`. This is the `maxValue` half of the shared codec's
+ * contract; the `fail` half below keeps every message this decoder has always
+ * thrown.
+ */
+const TERRAIN_PLANE_MAX_VALUE = 255;
 
-  for (let i = 1; i < data.length; i += 1) {
-    const id = data[i]!;
-    if (id === currentId) {
-      currentCount += 1;
-    } else {
-      result.push([currentId, currentCount]);
-      currentId = id;
-      currentCount = 1;
-    }
-  }
-  result.push([currentId, currentCount]);
-  return result;
+/** Renders a shared-codec failure as the `WorldSnapshotError` the snapshot contract declares. */
+function terrainRleContract(expectedLength: number): RunLengthDecodeContract {
+  return {
+    maxValue: TERRAIN_PLANE_MAX_VALUE,
+    fail: (failure): never => {
+      switch (failure.kind) {
+        case 'malformed-run':
+          throw new WorldSnapshotError('Terrain RLE entry must be a [numericId, count] tuple.');
+        case 'value-out-of-range':
+          throw new WorldSnapshotError(`Invalid terrain numericId in RLE: ${String(failure.value)}.`);
+        case 'invalid-length':
+          throw new WorldSnapshotError(`Invalid terrain count in RLE: ${String(failure.length)}.`);
+        case 'exceeds-capacity':
+          throw new WorldSnapshotError('Terrain RLE expands beyond chunk capacity.');
+        case 'length-mismatch':
+          throw new WorldSnapshotError(
+            `Terrain RLE length mismatch: expected ${expectedLength}, got ${failure.covered}.`,
+          );
+      }
+    },
+  };
+}
+
+export function encodeTerrainRle(data: Uint8Array): TerrainRle {
+  return encodeRunLengths(data);
 }
 
 export function decodeTerrainRle(rle: TerrainRle, expectedLength: number): Uint8Array {
   const data = new Uint8Array(expectedLength);
-  let offset = 0;
-
-  for (const entry of rle) {
-    if (!Array.isArray(entry) || entry.length !== 2) {
-      throw new WorldSnapshotError('Terrain RLE entry must be a [numericId, count] tuple.');
-    }
-    const [numericId, count] = entry;
-    if (
-      typeof numericId !== 'number' ||
-      !Number.isSafeInteger(numericId) ||
-      numericId < 0 ||
-      numericId > 255
-    ) {
-      throw new WorldSnapshotError(`Invalid terrain numericId in RLE: ${String(numericId)}.`);
-    }
-    if (typeof count !== 'number' || !Number.isSafeInteger(count) || count <= 0) {
-      throw new WorldSnapshotError(`Invalid terrain count in RLE: ${String(count)}.`);
-    }
-    if (offset + count > expectedLength) {
-      throw new WorldSnapshotError('Terrain RLE expands beyond chunk capacity.');
-    }
-    data.fill(numericId, offset, offset + count);
-    offset += count;
-  }
-
-  if (offset !== expectedLength) {
-    throw new WorldSnapshotError(`Terrain RLE length mismatch: expected ${expectedLength}, got ${offset}.`);
-  }
-
+  expandRunLengthsInto(rle, data, terrainRleContract(expectedLength));
   return data;
 }
 

@@ -1,11 +1,17 @@
+import type { RunLength, RunLengthDecodeContract } from '../codec/run-length';
+import { encodeRunLengths, expandRunLengthsInto } from '../codec/run-length';
 import type { EntityStoreSnapshot } from './entity-store';
 
 /**
  * A `[value, length]` run. Matches the run-length convention the world
  * snapshot already uses for terrain/edge/zoning planes, so a save carries one
- * RLE shape rather than two.
+ * RLE shape rather than two -- and, since #123 item 3, one *implementation*
+ * rather than two as well: this is `RunLength` from
+ * `src/simulation/codec/run-length.ts`, which both planes encode and decode
+ * with. The alias stays because "entity liveness run" is what the save
+ * schema and `src/persistence/entity-codec.ts` callers name it.
  */
-export type EntityLivenessRun = readonly [value: number, length: number];
+export type EntityLivenessRun = RunLength;
 
 /**
  * JSON-safe, **population-shaped** form of `EntityStoreSnapshot`.
@@ -65,43 +71,58 @@ export interface EncodedEntityStoreSnapshot {
   readonly alive: readonly EntityLivenessRun[];
 }
 
-/** Run-length encodes a dense numeric array. A zero-length input encodes to zero runs. */
-export function encodeRunLengths(values: ArrayLike<number>): EntityLivenessRun[] {
-  const runs: EntityLivenessRun[] = [];
-  let index = 0;
-  while (index < values.length) {
-    const value = values[index]!;
-    let length = 1;
-    while (index + length < values.length && values[index + length] === value) length += 1;
-    runs.push([value, length]);
-    index += length;
-  }
-  return runs;
-}
+/**
+ * Run-length encodes a dense numeric array. A zero-length input encodes to
+ * zero runs.
+ *
+ * Re-exported from `src/simulation/codec/run-length.ts` rather than
+ * implemented here (#123 item 3): the world snapshot's planes encode with the
+ * same function now, so the save cannot grow two encoders again. The name
+ * stays because persistence callers reach it through
+ * `src/persistence/entity-codec.ts` under this name.
+ */
+export { encodeRunLengths };
 
 /**
- * Expands `runs` into `target`, which must already be sized to the expected
- * slot count. Throws rather than silently truncating or zero-filling: a run
- * total that disagrees with `capacity` means the save is inconsistent, and
- * restoring a partially-populated liveness ledger would corrupt
- * stale-reference detection instead of failing loudly.
+ * Per-plane halves of the shared decoder's contract.
+ *
+ * `maxValue` is the target array's own maximum, so a save cannot smuggle a
+ * value that only survives by `TypedArray.fill` coercion -- before #123 item
+ * 3 this path checked no value at all, and a corrupt `alive` run of `999`
+ * restored silently as `231`, `-1` as `255` and `NaN` as `0`. `fail` builds
+ * the `RangeError` this codec has always thrown, with the messages it has
+ * always used; the two additional failure kinds are the two checks this path
+ * did not previously make.
  */
-function expandRunLengthsInto(runs: readonly EntityLivenessRun[], target: Uint8Array | Uint16Array, field: string): void {
-  let offset = 0;
-  for (const [value, length] of runs) {
-    if (!Number.isInteger(length) || length <= 0) {
-      throw new RangeError(`Entity snapshot "${field}" has a non-positive run length (${length}).`);
-    }
-    if (offset + length > target.length) {
-      throw new RangeError(`Entity snapshot "${field}" runs cover more than ${target.length} slots.`);
-    }
-    target.fill(value, offset, offset + length);
-    offset += length;
-  }
-  if (offset !== target.length) {
-    throw new RangeError(`Entity snapshot "${field}" runs cover ${offset} slots, expected ${target.length}.`);
-  }
+function entityRunContract(field: string, maxValue: number): RunLengthDecodeContract {
+  return {
+    maxValue,
+    fail: (failure): never => {
+      switch (failure.kind) {
+        case 'malformed-run':
+          throw new RangeError(`Entity snapshot "${field}" has a run that is not a [value, length] tuple.`);
+        case 'value-out-of-range':
+          throw new RangeError(
+            `Entity snapshot "${field}" has a run value outside 0..${failure.maxValue} (${String(failure.value)}).`,
+          );
+        case 'invalid-length':
+          throw new RangeError(`Entity snapshot "${field}" has a non-positive run length (${String(failure.length)}).`);
+        case 'exceeds-capacity':
+          throw new RangeError(`Entity snapshot "${field}" runs cover more than ${failure.capacity} slots.`);
+        case 'length-mismatch':
+          throw new RangeError(
+            `Entity snapshot "${field}" runs cover ${failure.covered} slots, expected ${failure.capacity}.`,
+          );
+      }
+    },
+  };
 }
+
+/** `generations` is a `Uint16Array`; a counter above this could only ever have been stored by coercion. */
+const GENERATION_MAX_VALUE = 65_535;
+
+/** `alive` is a `Uint8Array`. The encoder writes only 0 or 1, but the plane's width is what a decode can honestly assert. */
+const ALIVE_MAX_VALUE = 255;
 
 export function encodeEntityStoreSnapshot(snapshot: EntityStoreSnapshot): EncodedEntityStoreSnapshot {
   const { capacity, freeCount } = snapshot;
@@ -141,10 +162,10 @@ export function decodeEntityStoreSnapshot(encoded: EncodedEntityStoreSnapshot): 
   }
 
   const generations = new Uint16Array(capacity);
-  expandRunLengthsInto(encoded.generations, generations, 'generations');
+  expandRunLengthsInto(encoded.generations, generations, entityRunContract('generations', GENERATION_MAX_VALUE));
 
   const alive = new Uint8Array(capacity);
-  expandRunLengthsInto(encoded.alive, alive, 'alive');
+  expandRunLengthsInto(encoded.alive, alive, entityRunContract('alive', ALIVE_MAX_VALUE));
 
   const freeIndices = new Uint32Array(capacity);
   freeIndices.set(encoded.freeIndices);
