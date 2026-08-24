@@ -24,7 +24,7 @@ all behave the same way.
 | `EntityId` | `EntityStore` index + generation | yes (whole store) | yes |
 | `intel.<n>` | `IntelligenceLedger.sequence` | yes (restored from max suffix) | yes |
 | `incident.<type>.<n>` | `IncidentTriggerSystem.sequence` | yes | yes |
-| path request ids | per-system `requestSequence` | no | no — but consumed only by a `NavigationSystem` that a restore rebuilds empty |
+| path request ids | five systems mint from a per-system `requestSequence`; `JobSystem` derives its own from state (`` `job.${job.id}.${job.leg}.${tick}` ``, `operations/job-system.ts:139`) | **yes** — `pathRequestId` is persisted on jobs (`save-schema.ts:419`) and on guards (`:468`) | the `JobSystem` form yes; the five `requestSequence` forms no |
 | `GlobalTopologyId` | `TopologyManager.nextGlobalId` | no | **no** |
 
 `GlobalTopologyId` is the one that is actually wrong rather than merely
@@ -90,10 +90,23 @@ module doc, and `tests/determinism/` gains a pin for it.
   change to a public accessor (`getTopologyId`) and belongs in its own issue
   with its own tests, not smuggled into determinism hardening — which is why
   this ADR is proposed rather than applied.
-- Path-request ids stay category 2 by exception: they are consumed only within
-  one `NavigationSystem` lifetime, which a restore rebuilds empty
-  ([ADR 0007](./0007-navigation-work-budgets-and-flow-fields.md)). If routing
-  state ever enters a save, they become category 1.
+- Path-request ids were placed in category 2 by exception, on the ground that
+  they are consumed only within one `NavigationSystem` lifetime, which a
+  restore rebuilds empty
+  ([ADR 0007](./0007-navigation-work-budgets-and-flow-fields.md)), and the
+  exception carried its own escape clause: if routing state ever enters a save,
+  they become category 1. **That clause has since fired.** `pathRequestId` is a
+  field of the persisted job record (`src/persistence/save-schema.ts:419`) and
+  of the persisted guard record (`:468`), both inside the `simulation` section
+  of the shipped payload (`:837` for V3, `:867` for V4). What keeps it harmless
+  is therefore not the exception but explicit compensation on the restore side:
+  `JobRegistry.loadSnapshot` clears `pathRequestId` for a `'travelling'` job
+  (`src/simulation/operations/job.ts:110`) and `GuardRoster.loadSnapshot` does
+  the same for a `'travelling'` guard
+  (`src/simulation/security/guard-roster.ts:198`), so no restored session
+  consumes an id minted by a previous one. Whether the taxonomy should now move
+  these to category 1, and what that obliges, is left open for whoever accepts
+  this ADR rather than settled here.
 - Future gameplay systems get a decision to follow instead of a precedent to
   guess at.
 

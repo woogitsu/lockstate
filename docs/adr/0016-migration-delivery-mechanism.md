@@ -15,6 +15,14 @@ A reviewer is being asked to sign off on one thing: **staging is applied
 automatically, production is not, and the two are different Supabase
 projects.**
 
+That approval is retroactive rather than prospective, and this queue should be
+honest about it. §1 of the Decision below records the integration as already
+connected and enabled, and `docs/DEPLOYMENT.md` records nine migrations going
+from unapplied to applied inside a 71-second window containing a merge on
+2026-08-23 — attributing that specifically to the integration explicitly as
+**inferred, not proven** from this repository. Rejecting this ADR therefore
+means turning something off, not declining to turn it on.
+
 ## Context
 
 Two mechanisms can apply `supabase/migrations/` to a hosted project, and the
@@ -31,10 +39,15 @@ is the reason the workflow is shaped the way it is:
 
 It therefore runs only on `workflow_dispatch`, only through a GitHub
 Environment, only after the operator types the target project ref back as
-confirmation, and it defaults `dry_run` to true. `docs/DEPLOYMENT.md`
-restates the same policy in its "Automated deployment" table: migrations are
-"manual dispatch only", gated by "environment approval **and** a typed
-project ref".
+confirmation, and it defaults `dry_run` to true. `docs/DEPLOYMENT.md`'s
+"Automated deployment" table restates that policy for production —
+"manual dispatch of `migrate-database.yml`", gated by "environment approval
+**and** a typed project ref" (`:146`). It does **not** say "manual dispatch
+only" of migrations, which is what this paragraph used to quote: that phrase
+now sits on the Frontend → Cloudflare production row (`:144`), and the staging
+migrations row reads "automatically, on every merge to `main`, through
+Supabase's own GitHub integration" (`:145`) — which is the mechanism this ADR
+exists to have approved or rejected.
 
 ### The mechanism now being introduced
 
@@ -51,8 +64,12 @@ and leaves `docs/DEPLOYMENT.md` asserting something untrue.
 
 ### What makes the risk asymmetric
 
-The schema is not in a steady state. `docs/DEPLOYMENT.md` records that the
-SQL "has never been applied to a hosted project", and issue #20's real-stack
+The schema is not in a steady state. When this ADR was written
+`docs/DEPLOYMENT.md` recorded that the SQL "has never been applied to a hosted
+project"; that sentence was replaced on 2026-08-23 and the document now reports
+the first nine migrations applied to the hosted staging project and the twelve
+dated `20260824` not applied there yet (`docs/DEPLOYMENT.md`, "Database
+migrations"). The instability is the point either way: issue #20's real-stack
 verification found that a fresh Supabase project no longer grants the Data
 API roles table privileges by default — a discovery only possible by running
 against a real project. There will be more such discoveries, and each one is
@@ -149,8 +166,12 @@ a credential that does not need to exist is the cheapest one to secure.
 
 ## Consequences
 
-- `docs/DEPLOYMENT.md`'s "Automated deployment" table is wrong until updated:
-  migrations to staging are no longer "manual dispatch only".
+- `docs/DEPLOYMENT.md`'s "Automated deployment" table has since been updated
+  and this consequence is **discharged**: its staging migrations row now reads
+  "automatically, on every merge to `main`, through Supabase's own GitHub
+  integration" (`:145`), and the prose below it records the observed 71-second
+  window and states that this ADR is "**Proposed, not accepted**"
+  (`:149-163`).
 - A merge to `main` becomes capable of changing a hosted database. Reviewing
   a pull request that touches `supabase/migrations/` is now reviewing a
   deployment, and should be treated as one.
@@ -158,5 +179,9 @@ a credential that does not need to exist is the cheapest one to secure.
   topology (§2) that lives outside this repository and that no test can
   assert. If a future operator repoints the integration, nothing here will
   notice.
-- `docs/CLOUD_SAVE.md`'s account of how schema reaches a project needs the
-  same amendment.
+- `docs/CLOUD_SAVE.md` still needs the same amendment, and this consequence is
+  **not** discharged. That document records the *fact* — "the first nine
+  migrations are applied to the hosted staging project as of 2026-08-23"
+  (`:86-88`) — but nowhere the *mechanism*: neither "integration" nor
+  "db push" appears in it, so a reader of it alone cannot learn that a merge
+  applies migrations.

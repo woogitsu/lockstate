@@ -192,7 +192,7 @@ wrong on a specific future change.
 1. **`connect-src 'self'` blocks Supabase the day cloud save is wired up.**
    No code in `src/` constructs a Supabase client:
    `src/persistence/cloud/supabase-client.ts:1` imports `SupabaseClient` as a
-   type only and `:51` takes one by constructor injection, there is no
+   type only and `:60` takes one by constructor injection, there is no
    `createClient` call in `src/`, and no `import.meta.env` read anywhere in
    `src/` — which is also why #105 found `@supabase/supabase-js` absent from
    the production bundle. So nothing makes a cross-origin request and
