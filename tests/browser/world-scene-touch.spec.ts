@@ -87,7 +87,7 @@ const ZOOM_BOUNDS = { min: 0.2, max: 3 } as const;
  * Not exact equality, and it cannot be: the gesture applies one scale and one
  * translation per finger event -- twelve of each in a six-step separation --
  * and `getWorldPoint` then inverts the camera matrix by determinant. Measured
- * worst case across this spec is 3.1e-5 world units, at the zoom-out end where
+ * worst case across this spec is 3.0e-5 world units, at the zoom-out end where
  * one screen pixel is five world units. Three places is 1/64000 of a 64-unit
  * tile: far below anything a player could see, and four orders of magnitude
  * below the smallest drift that would matter.
