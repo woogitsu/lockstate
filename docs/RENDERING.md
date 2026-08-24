@@ -141,23 +141,53 @@ one request.
 render delta channel that publishes geometry changes and actor state would let
 the feed drop polling entirely without the renderer changing at all.
 
+### Actors on the frame
+
+`src/rendering/feed/actors-from-snapshot.ts` turns the bundle's prisoners into
+`RenderFrame.actors`. It reads two sections and needs both: `simulation`, whose
+`prisoners.components` holds tile positions index-keyed over the entity store's
+*allocated prefix* (since #70; `CURRENT_SAVE_RESTORED_SCOPE` reports it under
+`restored` as `save.scope.prisoners`), and `entities`, the liveness ledger that
+says which of those slots is an actual prisoner and carries the generation
+counters an `EntityId` is packed from. A freed slot keeps its previous
+occupant's position -- nothing clears a component array on destroy -- so
+drawing the prefix unfiltered would draw ghosts. A bundle missing either
+section, such as a migrated V2 save, yields no actors rather than a guessed
+population.
+
+Actors are keyed by `EntityId`, which is what lets `ActorLayer` keep one pooled
+sprite on one prisoner across frames, and emitted in ascending entity-index
+order -- the canonical order `EntityQuery.execute` walks (ADR 0005). The decode
+runs once per applied snapshot, seconds apart, never per frame; culling stays
+the layer's single range test, because this side of the seam has no camera.
+
+**On the shipped app this draws nothing today, and the reason is not the
+renderer.** Nothing in `src/` calls `admitPrisoner`, so a prison a player can
+currently reach holds no prisoners to draw. A bundle that carries some is drawn
+-- `tests/unit/rendering-feed.test.ts` admits through the real runtime and
+asserts the decoded frame. Admitting a prisoner in the shipped app is a
+separate step (#31).
+
+`?actors=demo` still puts scripted actors on screen. They are a renderer-side
+demonstration of the sprite path, clearly labelled as such in `DemoActorFeed`,
+opt-in, and never mixed into the world underneath. The flag *replaces* the
+frame's actor list rather than adding to it -- the demo numbers its actors from
+1 and `EntityId`s start at 0, so a merged list could give two actors the same
+pooled sprite -- so a populated prison shows the demo, not its prisoners, while
+it is on.
+
 ## What is not rendered yet, and why
 
-- **Actors from the simulation.** A fresh session has none: the simulation
-  fabricates no default population. The bundle is no longer the obstacle it once
-  was -- since #70 `SessionSnapshotBundle.simulation` carries prisoner state
-  including tile positions, and `CURRENT_SAVE_RESTORED_SCOPE` reports it under
-  `restored`, not under `notCarriedByThisSaveVersion` (as the key
-  `save.scope.prisoners`, which the default locale resolves to "prisoners,
-  needs, actions and cell assignments"). What is missing is on the renderer's side:
-  `SimulationSnapshotFeed` decodes the world and construction sections and never
-  reads that one, so `RenderFrame.actors` is always empty, and no delta or event
-  publishes actor state either. The renderer is ready for them -- reading that
-  section is the whole change -- but it will not invent them.
-
-  `?actors=demo` puts scripted actors on screen instead. They are a renderer-side
-  demonstration of the sprite path, clearly labelled as such in
-  `DemoActorFeed`, opt-in, and never mixed into the world underneath.
+- **Actor movement, and guards.** A snapshot is a set of positions at one
+  instant: it carries no velocity and no facing, so every prisoner is drawn with
+  the idle clip and `actor-pose.ts`'s default facing. Those are written as
+  documented defaults and labelled as such at the call site, not derived by
+  differencing two seconds-apart snapshots into an invented walk -- that would
+  be a renderer-side movement model, which architectural boundary 1 forbids.
+  Real motion is what a render delta channel would publish. Guards are the other
+  population whose tiles the bundle carries
+  (`simulation.security.guards`, as `GuardRecord.tileX`/`tileY`); decoding them
+  is a separate step with its own asset choice.
 
 - **Environment art.** The 23 source sheets under
   `public/game-content/source-art/` are intake material awaiting a reviewed
