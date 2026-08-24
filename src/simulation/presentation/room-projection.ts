@@ -67,10 +67,19 @@ export interface RoomProjectionOptions {
  *   are not declared on the instance.
  * - `'not-evaluated'` -- `enclosed`, `outdoors` and `minimum-size`. A
  *   `RoomInstance` carries an anchor tile and nothing else: no bounds, no
- *   tile set, no wall topology. `RoomSystem.validateRoom` says in its own
- *   body that its size/enclosure checks are mocked, so there is nothing
- *   truthful to project. `minQuantity` is likewise uncheckable -- object
- *   *placement* does not exist, only capability tags.
+ *   tile set, no wall topology, so there is nothing truthful to project.
+ *   `minQuantity` is likewise uncheckable -- object *placement* does not
+ *   exist, only capability tags.
+ *
+ * These three statuses are the **only** answers the codebase gives to "does
+ * this room satisfy its catalog requirements" (#123 item 2). There used to be
+ * a second answer: `RoomSystem.validateRoom` reported every `object`
+ * requirement as missing and treated `minimum-size` as always satisfied, in
+ * its own words as a mock. It was constructed in production and called only
+ * from tests, so the mock was the version nothing ran and this is the version
+ * nothing could reach; it has been deleted rather than left to be inherited.
+ * `enclosed` and `minimum-size` are therefore evaluated nowhere at all now,
+ * which is what `'not-evaluated'` has always meant here.
  */
 export type RoomRequirementStatus = 'satisfied-by-capability' | 'missing-capability' | 'not-evaluated';
 

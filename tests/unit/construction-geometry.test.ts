@@ -14,8 +14,6 @@ import type { ConstructionSnapshot } from '../../src/simulation/construction/sys
 import { Kernel } from '../../src/simulation/kernel/kernel';
 import { SAVE_SCHEMA_VERSION, createSaveEnvelope, decodeSaveEnvelope } from '../../src/persistence/save-schema';
 import { packCommand, unpackCommand } from '../../src/simulation/protocol/commands';
-import { defaultRoomRegistry } from '../../src/simulation/rooms/definition';
-import { RoomSystem } from '../../src/simulation/rooms/system';
 import { TopologyManager } from '../../src/simulation/rooms/topology';
 import {
   CONSTRUCTION_MATERIALS_CONTAINER_ID,
@@ -329,26 +327,23 @@ describe('a room becomes enclosed because walls were built', () => {
     expect(runtime.containers.require(CONSTRUCTION_MATERIALS_CONTAINER_ID).quantityOf('item.brick')).toBe(100 - 24);
   });
 
-  it('RoomSystem stops reporting the enclosure requirement as missing', () => {
+  it('gives the interior a region id, and gives an uncomputed chunk none', () => {
     const runtime = session();
     submitPerimeter(runtime);
     runToCompletion(runtime.kernel);
     const topology = recompute(runtime);
 
-    const rooms = new RoomSystem(runtime.world, topology, defaultRoomRegistry);
-    const cell = defaultRoomRegistry.getById('room.cell');
-    expect(cell).toBeDefined();
-
-    const enclosed = rooms.validateRoom(topology.getTopologyId(INSIDE), cell!.numericId);
-    const unknownRegion = rooms.validateRoom(0, cell!.numericId);
-
-    // `validateRoom`'s enclosure test is a mock (docs/HUD_PROJECTIONS.md gap
-    // 14): it asks only whether the region has an id. What this asserts is
-    // that the interior the walls created *has* one and an unmapped region
-    // does not -- the object requirements below it are still unmet, which is
-    // why `isValid` is not the assertion.
-    expect(enclosed.missingRequirements).not.toContain('Room must be enclosed by walls and doors');
-    expect(unknownRegion.missingRequirements).toContain('Room must be enclosed by walls and doors');
+    // This used to be asserted through `RoomSystem.validateRoom`, whose
+    // enclosure check was the mock `topologyId === 0` (#123 item 2 deleted
+    // it, and `docs/HUD_PROJECTIONS.md` gap 14 records that nothing evaluates
+    // enclosure now). The world fact it was standing in for is asserted
+    // directly here instead: the interior the walls created has a region id,
+    // and a tile in a chunk topology never computed has none. The mock's own
+    // half -- that it reported the enclosure requirement missing for a
+    // hard-coded id of `0` -- was a statement about the mock and not about
+    // the world, so it is gone rather than re-pointed.
+    expect(topology.getTopologyId(INSIDE)).toBeGreaterThan(0);
+    expect(topology.getTopologyId(tile(200, 200))).toBe(0);
   });
 });
 

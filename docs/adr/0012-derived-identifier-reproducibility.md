@@ -34,8 +34,10 @@ the world's geometry changed since the manager was constructed*, not on the
 geometry. Two sessions that reach an identical world by different build orders
 disagree. A restored session, whose `TopologyManager` is rebuilt from scratch,
 disagrees with the session it was saved from. Nothing breaks today only because
-the sole consumer (`RoomSystem.validateRoom`) compares the id to `0` and
-nothing persists it — which is exactly the kind of latent state that becomes a
+nothing persists the id and nothing reads it — when this ADR was written its
+sole consumer was `RoomSystem.validateRoom`, which compared it to `0`, and
+#123 item 2 deleted that, so it now has no consumer at all — which is exactly
+the kind of latent state that becomes a
 determinism defect the moment room ids appear in a save, in a challenge metric,
 or in a UI the player can bookmark.
 

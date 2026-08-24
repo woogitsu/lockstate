@@ -6,11 +6,12 @@ import type { TilePosition } from '../world/coordinates';
  * navigable anchor tile and occupancy capacity.
  *
  * **Explicit scope assumption** (AGENTS.md: "state assumptions when
- * requirements are underspecified"): neither #17's `RoomSystem` nor #23's
- * content catalog track individual placed room instances or which objects
- * physically sit in which room -- #17 only validates an ad-hoc
- * topology/zoning pair, and real object-placement tracking does not exist
- * yet. `RoomInstanceRegistry` is the minimal, real (not mocked) layer #24
+ * requirements are underspecified"): #23's content catalog does not track
+ * individual placed room instances or which objects physically sit in which
+ * room, and real object-placement tracking does not exist yet. (#17's
+ * `RoomSystem` did not either: it validated an ad-hoc topology/zoning pair
+ * with a mocked body, and #123 item 2 deleted it.)
+ * `RoomInstanceRegistry` is the minimal, real (not mocked) layer #24
  * needs to make cell/room assignment meaningful: instances are registered
  * explicitly, with `objectCapabilities` stated up front rather than
  * derived from a placement system that doesn't exist. Building the real

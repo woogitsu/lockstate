@@ -387,7 +387,8 @@ describe('room list and detail', () => {
     expect(objectRequirements[0]?.objectNameKey).toBe('object.bed.name');
 
     // Enclosure and size are not derivable: a RoomInstance carries an anchor
-    // tile and nothing else, and RoomSystem's own size check is mocked.
+    // tile and nothing else, and since #123 item 2 deleted the mocked
+    // RoomSystem.validateRoom, nothing else evaluates them either.
     for (const requirement of detail.requirements) {
       if (requirement.type === 'object') continue;
       expect(requirement.status).toBe('not-evaluated');
