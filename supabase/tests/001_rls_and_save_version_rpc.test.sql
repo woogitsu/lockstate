@@ -1,7 +1,11 @@
 -- pgTAP tests for RLS ownership boundaries and the create_save_version()
 -- optimistic-concurrency/idempotency RPC.
 --
--- EXECUTED two ways, 19/19 assertions each:
+-- EXECUTED two ways. The first 19 assertions have been run both ways,
+-- 19/19 each; the thirteen added for issue #105 finding 11 -- the
+-- "storage_path" section at the end -- have been run only the second way,
+-- because the stack run needs container images that were not reachable when
+-- they were written. `pnpm verify:sql` reports 32/32 for this suite.
 --
 --   * `supabase test db` against the REAL Supabase local stack (CLI 2.115.0,
 --     PostgreSQL 17 + pgTAP, with GoTrue, PostgREST, Storage and Realtime
@@ -21,7 +25,7 @@
 -- which drives the same contract through /auth/v1 and /rest/v1.
 
 begin;
-select plan(19);
+select plan(32);
 
 -- Two auth.users rows to test cross-owner isolation. Inserting directly
 -- into auth.users is the standard way to seed fixtures for RLS pgTAP tests.
@@ -211,7 +215,167 @@ select throws_ok(
   'save_versions has no direct client-facing insert path, only create_save_version()'
 );
 
+-- --- storage_path: a shape, and a prefix it cannot escape --------------
+--
+-- Issue #105 finding 11. Every refusal below was an ACCEPTED, stored row
+-- before 20260824110200_validate_save_version_storage_path.sql -- the
+-- column was `text` with no constraint of any kind and the RPC passes
+-- `p_storage_path` straight through -- so each of these is one of that
+-- finding's demonstrations, driven through the tier that owns it.
+--
+-- The two tiers answer with two different SQLSTATEs, and which one fires is
+-- not arbitrary: a BEFORE-row trigger runs before CHECK constraints are
+-- evaluated, so a path whose first segment is not the owning account is
+-- refused by the trigger (`LS004`) even when it is also malformed, and
+-- `23514` is what a path with the RIGHT prefix and the WRONG shape gets.
+-- The cases below are chosen to reach each of them deliberately rather than
+-- incidentally.
+--
+-- NOTHING IN THIS SECTION IS REACHABLE BY THIS REPOSITORY'S CLIENT.
+-- `SupabaseCloudSaveClient.uploadVersion` sends `p_storage_path: null` on
+-- every call and `downloadVersion` throws on any row that has one, because
+-- there is still no Storage bucket anywhere in `supabase/migrations/` --
+-- ADR 0013 keeps the JSONB-vs-Storage threshold a candidate, so the bucket
+-- is deliberately not invented. These assertions pin the column's contract
+-- before its first writer exists.
+
+-- Absolute: the first segment of `/etc/passwd` is the empty string, so it
+-- is not this account's prefix.
+select throws_ok(
+  $$ select * from public.create_save_version(
+       'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 4, 1, 'checksum-abs', null, '/etc/passwd', 10) $$,
+  'LS004',
+  null,
+  'an absolute storage path is refused: it does not live under the owner prefix'
+);
+
+select throws_ok(
+  $$ select * from public.create_save_version(
+       'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 4, 1, 'checksum-traversal', null, '../../../../etc/shadow', 10) $$,
+  'LS004',
+  null,
+  'a traversal out of every prefix is refused'
+);
+
+-- The strongest of the eight probes, because it satisfies every rule in the
+-- shape CHECK: escaping a per-owner prefix does not need traversal syntax
+-- when another owner's prefix can simply be named. User B's id is a real
+-- account in this suite, not a fabricated uuid.
+select throws_ok(
+  $$ select * from public.create_save_version(
+       'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 4, 1, 'checksum-foreign', null,
+       '22222222-2222-2222-2222-222222222222/prison/1.json', 10) $$,
+  'LS004',
+  null,
+  'a well-formed path under ANOTHER account''s prefix is refused: the prefix must be the owner''s own'
+);
+
+select throws_ok(
+  $$ select * from public.create_save_version(
+       'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 4, 1, 'checksum-empty', null, '', 10) $$,
+  'LS004',
+  null,
+  'the empty string is refused rather than stored as a path'
+);
+
+-- Percent-encoded traversal: refused here as a prefix failure, and it could
+-- never reach the shape check either, because `%` is not in the alphabet.
+-- Both matter -- a consumer that URL-decodes before using the value is the
+-- reason to exclude `%` at all.
+select throws_ok(
+  $$ select * from public.create_save_version(
+       'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 4, 1, 'checksum-encoded', null, '%2e%2e%2fetc%2fpasswd', 10) $$,
+  'LS004',
+  null,
+  'a percent-encoded traversal is refused before anything gets a chance to decode it'
+);
+
+-- From here on the prefix is the owner's own, so the trigger passes and the
+-- shape CHECK is what answers.
+select throws_ok(
+  $$ select * from public.create_save_version(
+       'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 4, 1, 'checksum-inner-traversal', null,
+       '11111111-1111-1111-1111-111111111111/../22222222-2222-2222-2222-222222222222/1.json', 10) $$,
+  '23514',
+  null,
+  'a traversal INSIDE the owner prefix is refused by the shape: `..` cannot be a segment'
+);
+
+select throws_ok(
+  $$ select * from public.create_save_version(
+       'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 4, 1, 'checksum-empty-segment', null,
+       '11111111-1111-1111-1111-111111111111//1.json', 10) $$,
+  '23514',
+  null,
+  'an empty segment is refused: `//` cannot match a segment that must start with an alphanumeric'
+);
+
+select throws_ok(
+  $$ select * from public.create_save_version(
+       'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 4, 1, 'checksum-prefix-only', null,
+       '11111111-1111-1111-1111-111111111111', 10) $$,
+  '23514',
+  null,
+  'the bare prefix is not an object key: at least one further segment is required'
+);
+
+-- The 1 MiB path from #105 finding 11 was stored in full. The bound is
+-- asserted at the boundary rather than at a round number, so an off-by-one
+-- in either direction fails here: 36 characters of uuid + 1 separator + 476
+-- is 513.
+select throws_ok(
+  $$ select * from public.create_save_version(
+       'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 4, 1, 'checksum-too-long', null,
+       '11111111-1111-1111-1111-111111111111/' || repeat('a', 476), 10) $$,
+  '23514',
+  null,
+  'one character over 512 is refused, so a megabyte-long path cannot be stored'
+);
+
+select results_eq(
+  $$ select status, revision from public.create_save_version(
+       'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 4, 1, 'checksum-exactly-512', null,
+       '11111111-1111-1111-1111-111111111111/' || repeat('a', 475), 10) $$,
+  $$ values ('created'::text, 4) $$,
+  'a path measuring exactly 512 characters is accepted: the bound is inclusive'
+);
+
+-- What the constraint is FOR: the layout under the owner prefix is
+-- deliberately unconstrained beyond the alphabet, because depth, naming and
+-- extension belong to the Storage decision ADR 0013 has not made.
+select results_eq(
+  $$ select status, revision from public.create_save_version(
+       'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 5, 1, 'checksum-nested', null,
+       '11111111-1111-1111-1111-111111111111/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/0000000005.json.zst', 10) $$,
+  $$ values ('created'::text, 5) $$,
+  'a nested path under the owner prefix is accepted, including dots inside a segment'
+);
+
 reset role;
+
+-- --- The table tier, probed as the privileged role ---------------------
+--
+-- Everything above went through `create_save_version()`. These two bypass
+-- it entirely, as the role this suite runs as -- which owns the table and is
+-- exempt from RLS -- so they assert that both halves hold of the DATA and
+-- not of one caller. A future backfill or importer inherits them.
+select throws_ok(
+  $$ insert into public.save_versions (prison_id, revision, save_schema_version, checksum, storage_path, byte_size)
+     values ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 6, 1, 'direct-foreign-prefix',
+             '22222222-2222-2222-2222-222222222222/1.json', 10) $$,
+  'LS004',
+  null,
+  'the per-owner prefix is the table''s, not the RPC''s: a privileged direct write is refused too'
+);
+
+select throws_ok(
+  $$ insert into public.save_versions (prison_id, revision, save_schema_version, checksum, storage_path, byte_size)
+     values ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 6, 1, 'direct-bad-shape',
+             '11111111-1111-1111-1111-111111111111/.env', 10) $$,
+  '23514',
+  null,
+  'and so is the shape: a dot-file segment is refused for a privileged writer as well'
+);
 
 select * from finish();
 rollback;
