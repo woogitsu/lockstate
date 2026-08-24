@@ -577,9 +577,9 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
 
       // The drawn order is `viewModel.alerts`'s order, re-established on every
       // paint. Appending a new row instead put the list in *first-seen* order,
-      // which is the same defect the buildable catalogue is ordered to avoid
-      // above (`src/main.ts`: "an order that depended on module evaluation
-      // would be an order nobody chose"). Measured, not reasoned about:
+      // which is the same defect `src/main.ts` orders the buildable catalogue
+      // to avoid -- "an order that depended on module evaluation would be an
+      // order nobody chose". Measured, not reasoned about:
       // mounting with `[a, b]` and updating to `[c, a, b]` laid out
       // `a, b, c` -- issue #209's residual-risk note, and
       // `ui-shell.spec.ts`'s "alerts list order" block is that measurement
