@@ -1,9 +1,8 @@
-import { DEFAULT_LOCALE, type LocalizationKey } from '../content/localization';
+import type { LocalizationKey } from '../content/localization';
 import type { SaveResult } from '../persistence/local/repository';
 import type { PrisonSlotMetadata } from '../persistence/local/store';
 import type { SaveEnvelope } from '../persistence/save-schema';
 import type { ActiveSession, SessionLoadOutcome } from '../persistence/session/session-controller';
-import { Localizer, defaultMessageCatalogEn } from '../services/localization';
 import type { MessageParameters } from '../services/localization/format';
 import type { RestoredScope } from '../simulation/runtime/restore-session';
 import {
@@ -28,26 +27,6 @@ export interface SavePanelLocalizer {
   formatNumber(value: number, options?: Intl.NumberFormatOptions): string;
 }
 
-/**
- * The bundled default locale, used when the host constructs the panel
- * without one.
- *
- * **A seam, not a design.** The panel's only production construction site is
- * `src/main.ts`, which already builds a `Localizer` for the HUD -- `locale:
- * 'en'` over exactly the catalog this returns -- and should hand that same
- * instance in rather than let the panel build a second one. It does not yet,
- * which is why this default exists at all.
- *
- * The two are equivalent *today*, when `en` is the only locale that exists.
- * They stop being equivalent the moment a second locale ships: a panel
- * holding its own default-locale localizer would keep rendering English while
- * the rest of the interface changed language, and the player would meet that
- * in the panel that protects their prison. So this is a temporary state with
- * a known end, not the intended wiring (issue #208).
- */
-function bundledDefaultLocalizer(): SavePanelLocalizer {
-  return new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
-}
 
 /**
  * Distinct user-facing recovery/failure states -- issue #19's "quota,
@@ -229,7 +208,7 @@ export class SavePanel {
   public constructor(
     private readonly controller: SavePanelSessions,
     parent: HTMLElement,
-    localizer: SavePanelLocalizer = bundledDefaultLocalizer(),
+    localizer: SavePanelLocalizer,
   ) {
     this.localizer = localizer;
     this.gate = new AsyncActionGate({

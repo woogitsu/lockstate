@@ -155,16 +155,16 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
   {
     file: 'src/ui/save-panel.ts',
     tree: 'content',
-    kind: 'value',
+    kind: 'type-only',
     reason:
-      'Value, and only just: `LocalizationKey` is a type, but `DEFAULT_LOCALE` is a runtime constant read in exactly one place -- the localizer the panel falls back to when the host constructs it without one (issue #208). `src/content/localization.ts` is the stable-ID side of ADR 0011, is dependency-free by design and holds no state, so evaluating it is inert. The kind is `value` rather than `type-only` because that fallback exists at all, and it becomes `type-only` the moment `src/main.ts` passes in the `Localizer` it already builds for the HUD.',
+      'Type-only: `LocalizationKey`, to type the panel\'s `SavePanelLocalizer` port and its message-key registry. **This entry read `value` until the localizer was made required**, because `DEFAULT_LOCALE` was a runtime constant read by the fallback localizer the panel built for itself -- and the previous reason predicted the collapse in those words: "it becomes `type-only` the moment `src/main.ts` passes in the `Localizer` it already builds for the HUD". That happened, and this gate is what said so: the manifest failed with "value -> type-only means the entry overstates what the module needs and should be tightened" before anybody looked. Erased now, so no content code runs on the panel\'s account.',
   },
   {
     file: 'src/ui/save-panel.ts',
     tree: 'services',
-    kind: 'value',
+    kind: 'type-only',
     reason:
-      'Value: `Localizer` and `defaultMessageCatalogEn` from `src/services/localization`, plus the `MessageParameters` type. The panel resolves its own message keys at the moment it writes to the DOM (ADR 0011, issue #208) -- the same synchronous localization call `src/ui/hud/status-strip.ts` makes, which `docs/ARCHITECTURE.md` records as the deliberate exception to this layer being asynchronous. The class itself depends only on the `SavePanelLocalizer` port, so these two values are used solely by the fallback described in the entry above; both go away with it.',
+      'Type-only: `MessageParameters`, for the `format(key, parameters)` signature of the `SavePanelLocalizer` port. **Also `value` until the localizer was made required** -- `Localizer` and `defaultMessageCatalogEn` were imported solely by the fallback the panel used to build, and the previous reason said "both go away with it". They did. The panel still resolves its own message keys at the moment it writes to the DOM (ADR 0011, #208), which is the synchronous localization call `docs/ARCHITECTURE.md` records as this layer\'s deliberate exception -- but it does so through an instance the composition root hands it, so it needs no value from this layer. A `value` import reappearing here would mean the panel had started constructing a localizer again.',
   },
   {
     file: 'src/ui/save-panel-messages.ts',

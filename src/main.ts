@@ -290,13 +290,25 @@ function requireSimulation(commands: SimulationCommandSender | undefined): Simul
   return commands;
 }
 
+/**
+ * The page's one localizer.
+ *
+ * Module scope rather than local to `mountInterface`, because two consumers now
+ * need the *same instance*: the HUD and the save panel. `SavePanel` used to
+ * default to a localizer of its own over the same catalog -- equivalent while
+ * `en` is the only locale, and not equivalent the moment a second ships, when a
+ * panel holding its own default-locale localizer would keep rendering English
+ * while the rest of the interface changed language. Issue #208 recorded that as
+ * a seam with a known end; this is the end.
+ */
+const localizer = new Localizer({
+  locale: 'en',
+  catalogs: [messageCatalogFromLocalizationCatalog('en', defaultLocaleEnCatalog)],
+});
+
 function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   const { client, commands, tool } = host;
   const simulationUnavailable = client === undefined;
-  const localizer = new Localizer({
-    locale: 'en',
-    catalogs: [messageCatalogFromLocalizationCatalog('en', defaultLocaleEnCatalog)],
-  });
 
   let hud: HudHandle | undefined;
 
@@ -437,7 +449,7 @@ async function bootPersistence(client: SimulationClient, savePanelHost: HTMLElem
       gameVersion: GAME_VERSION,
       onSaveResult: (_prisonId: string, result: SaveResult) => panel.reportBackgroundSave(result),
     });
-    panel = new SavePanel(controller, savePanelHost);
+    panel = new SavePanel(controller, savePanelHost, localizer);
   } catch (error) {
     console.warn('Local save storage is unavailable; continuing without persistence.', error);
     return;
