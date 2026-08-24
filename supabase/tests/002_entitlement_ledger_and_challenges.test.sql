@@ -26,14 +26,18 @@
 -- `set_config`. See scripts/verify-supabase-stack.mjs for that step.
 --
 -- The twenty-two assertions added for issue #105 findings 1 and 2 -- the
--- "Evidence integrity" and "Account binding" sections at the end -- have
--- been executed only on plain PostgreSQL 16.13 + pgTAP 1.3.2 via
--- `pnpm verify:sql`, and so have the two evidence bodies changed further
--- down. The stack run needs container images that were not reachable when
--- they were written.
+-- "Evidence integrity" and "Account binding" sections -- have been executed
+-- only on plain PostgreSQL 16.13 + pgTAP 1.3.2 via `pnpm verify:sql`, and so
+-- have the two evidence bodies changed further down. The stack run needs
+-- container images that were not reachable when they were written.
+--
+-- The same is true of the twenty-nine added for issue #105 findings 6, 7
+-- and 9: "Ledger idempotency beyond the payment webhook" (nineteen) and
+-- "The definition oracle" (ten). `pnpm verify:sql` reports 76/76 for this
+-- suite.
 
 begin;
-select plan(47);
+select plan(76);
 
 insert into auth.users (id, email) values
   ('33333333-3333-3333-3333-333333333333', 'entitled@example.test'),
@@ -186,6 +190,244 @@ select is(
 );
 
 reset role;
+
+-- --- Ledger idempotency beyond the payment webhook --------------------
+--
+-- Issue #105 findings 6 and 7, and 20260824110000 is the migration.
+-- `entitlement_events_provider_event_key` is partial (`where provider is
+-- not null`), so before that migration the ONLY deduplicated path was the
+-- payment webhook: three identical `promotional` calls returned `applied`
+-- three times and the projection went to `grantedSaveSlots: 15`. The same
+-- replay under `support-adjustment` and `migration` produced two rows each.
+--
+-- WHAT THIS SECTION CANNOT ASSERT, said here rather than left to be
+-- assumed. Finding 7 is a *race*: a redelivery arriving while the original
+-- is still in flight used to raise `23505` instead of answering
+-- `duplicate`. A pgTAP suite is one session, so no assertion below
+-- exercises two concurrent callers -- that was demonstrated with two
+-- parallel `psql` sessions, before and after, and the transcript is in the
+-- pull request for #105 findings 6, 7, 9 and 11. What IS asserted here is
+-- the machinery the fix rests on: that the advisory lock exists and is
+-- keyed on the event rather than on the call, which is the part a future
+-- edit could silently delete.
+
+insert into auth.users (id, email) values ('55555555-5555-5555-5555-555555555555', 'promo@example.test');
+
+-- Baseline for the two advisory-lock assertions below. Deltas rather than
+-- absolute counts, because the whole suite is one transaction and
+-- `submit_challenge_evidence()` takes advisory locks of its own further
+-- down: an absolute count would couple these assertions to everything that
+-- runs before them.
+create temp table ledger_lock_baseline as
+select count(*)::int as held
+from pg_locks
+where locktype = 'advisory' and pid = pg_backend_pid();
+
+set local role service_role;
+
+-- Three byte-identical promotional grants -- #105 finding 6's
+-- demonstration, replayed against the fixed function.
+select is(
+  (select status from public.record_entitlement_event(
+     '55555555-5555-5555-5555-555555555555', 'product.save-slots.plus-5', 'save-slots', 'grant',
+     'promotional', 5, null, null, '2026-08-01T00:00:00Z'::timestamptz,
+     'system', 'promo-bot', 'launch promo', null)),
+  'applied',
+  'a promotional grant with no provider key is recorded'
+);
+
+select is(
+  (select status from public.record_entitlement_event(
+     '55555555-5555-5555-5555-555555555555', 'product.save-slots.plus-5', 'save-slots', 'grant',
+     'promotional', 5, null, null, '2026-08-01T00:00:00Z'::timestamptz,
+     'system', 'promo-bot', 'launch promo', null)),
+  'duplicate',
+  'replaying it is a duplicate, not a second grant: the ledger key is no longer webhook-only'
+);
+
+-- The third call, because #105's demonstration was three and a fix that
+-- only caught the second would be a fix nobody should trust.
+select is(
+  (select status from public.record_entitlement_event(
+     '55555555-5555-5555-5555-555555555555', 'product.save-slots.plus-5', 'save-slots', 'grant',
+     'promotional', 5, null, null, '2026-08-01T00:00:00Z'::timestamptz,
+     'system', 'promo-bot', 'launch promo', null)),
+  'duplicate',
+  'and the third replay too'
+);
+
+-- The contract is not only "no second row": it is "return the ORIGINAL
+-- outcome". A `duplicate` carrying a different id would be the shape #105
+-- finding 2 found on the challenge path.
+select is(
+  (select event_id from public.record_entitlement_event(
+     '55555555-5555-5555-5555-555555555555', 'product.save-slots.plus-5', 'save-slots', 'grant',
+     'promotional', 5, null, null, '2026-08-01T00:00:00Z'::timestamptz,
+     'system', 'promo-bot', 'launch promo', null)),
+  (select e.event_id from public.entitlement_events e
+    where e.user_id = '55555555-5555-5555-5555-555555555555'),
+  'the duplicate answer carries the original event_id, so a redelivered webhook can report what happened'
+);
+
+select is(
+  (select count(*)::int from public.entitlement_events
+    where user_id = '55555555-5555-5555-5555-555555555555'),
+  1,
+  'four calls describing one fact wrote one ledger row'
+);
+
+reset role;
+
+-- The projection is the reason a duplicate row is not merely untidy: it is
+-- folded, so a replayed grant used to inflate capacity. 15 before the fix.
+select is(
+  (select value ->> 'grantedSaveSlots' from public.entitlements
+    where user_id = '55555555-5555-5555-5555-555555555555' and key = 'save-slots'),
+  '5',
+  'the replays did not inflate the derived capacity: five slots, not fifteen'
+);
+
+-- One lock for four calls describing one event. This is what fails if the
+-- `pg_advisory_xact_lock` line is deleted (delta 0) or if it is ever keyed
+-- on something per-call rather than on the dedup key (delta 4).
+select is(
+  (select count(*)::int from pg_locks where locktype = 'advisory' and pid = pg_backend_pid())
+    - (select held from ledger_lock_baseline),
+  1,
+  'the four calls took exactly one advisory lock between them: it is keyed on the event, not on the call'
+);
+
+set local role service_role;
+
+-- The escape hatch the natural key leaves open, and the reason the key
+-- includes `occurred_at` and `reason`: two genuinely separate facts differ
+-- in at least one field a human reading the audit trail can see.
+select is(
+  (select status from public.record_entitlement_event(
+     '55555555-5555-5555-5555-555555555555', 'product.save-slots.plus-5', 'save-slots', 'grant',
+     'promotional', 5, null, null, '2026-08-02T00:00:00Z'::timestamptz,
+     'system', 'promo-bot', 'launch promo', null)),
+  'applied',
+  'the same grant at a different occurred_at is a different fact, and is recorded'
+);
+
+select is(
+  (select status from public.record_entitlement_event(
+     '55555555-5555-5555-5555-555555555555', 'product.save-slots.plus-5', 'save-slots', 'grant',
+     'promotional', 5, null, null, '2026-08-01T00:00:00Z'::timestamptz,
+     'system', 'promo-bot', 'second launch promo', null)),
+  'applied',
+  'and so is the same grant recorded for a different reason: the audit text is part of the key'
+);
+
+reset role;
+
+select is(
+  (select count(*)::int from pg_locks where locktype = 'advisory' and pid = pg_backend_pid())
+    - (select held from ledger_lock_baseline),
+  3,
+  'two further events took two further locks: the lock serializes one event, not the whole ledger'
+);
+
+set local role service_role;
+
+-- `support-adjustment`, named in #105 finding 6 alongside the other two.
+select is(
+  (select status from public.record_entitlement_event(
+     '55555555-5555-5555-5555-555555555555', 'product.save-slots.plus-5', 'save-slots', 'grant',
+     'support-adjustment', 5, null, null, '2026-08-03T00:00:00Z'::timestamptz,
+     'staff', 'agent-7', 'goodwill', null)),
+  'applied',
+  'a support adjustment is recorded'
+);
+
+select is(
+  (select status from public.record_entitlement_event(
+     '55555555-5555-5555-5555-555555555555', 'product.save-slots.plus-5', 'save-slots', 'grant',
+     'support-adjustment', 5, null, null, '2026-08-03T00:00:00Z'::timestamptz,
+     'staff', 'agent-7', 'goodwill', null)),
+  'duplicate',
+  'a support agent clicking twice does not grant twice'
+);
+
+select is(
+  (select status from public.record_entitlement_event(
+     '55555555-5555-5555-5555-555555555555', 'product.save-slots.legacy', 'save-slots', 'grant',
+     'migration', 3, null, null, '2026-08-04T00:00:00Z'::timestamptz,
+     'system', 'import', 'legacy import', null)),
+  'applied',
+  'a migration event is recorded'
+);
+
+select is(
+  (select status from public.record_entitlement_event(
+     '55555555-5555-5555-5555-555555555555', 'product.save-slots.legacy', 'save-slots', 'grant',
+     'migration', 3, null, null, '2026-08-04T00:00:00Z'::timestamptz,
+     'system', 'import', 'legacy import', null)),
+  'duplicate',
+  'and a re-run of an import does not grant twice either'
+);
+
+-- The expiring case exercises the other side of the nullable column in the
+-- key. A NULL `expires_at` -- every assertion above -- needs `nulls not
+-- distinct` on the index and `is not distinct from` in the lookup; a
+-- non-null one needs neither, and would pass even if both were wrong.
+select is(
+  (select status from public.record_entitlement_event(
+     '55555555-5555-5555-5555-555555555555', 'product.save-slots.plus-5', 'save-slots', 'grant',
+     'promotional', 5, null, null, '2026-08-05T00:00:00Z'::timestamptz,
+     'system', 'promo-bot', 'trial', '2026-09-05T00:00:00Z'::timestamptz)),
+  'applied',
+  'an expiring promotional grant is recorded'
+);
+
+select is(
+  (select status from public.record_entitlement_event(
+     '55555555-5555-5555-5555-555555555555', 'product.save-slots.plus-5', 'save-slots', 'grant',
+     'promotional', 5, null, null, '2026-08-05T00:00:00Z'::timestamptz,
+     'system', 'promo-bot', 'trial', '2026-09-05T00:00:00Z'::timestamptz)),
+  'duplicate',
+  'and replaying it is a duplicate: the expiry is part of the key, on both sides of NULL'
+);
+
+-- The pre-existing caller-supplied key still works, and still works for a
+-- source that is not `payment-webhook` -- which is what makes the natural
+-- key a backstop for callers that forget one rather than a replacement for
+-- it. `entitlement_events_webhook_requires_provider` requires the pair FOR
+-- `payment-webhook` and forbids it for nobody.
+select is(
+  (select status from public.record_entitlement_event(
+     '55555555-5555-5555-5555-555555555555', 'product.save-slots.plus-5', 'save-slots', 'grant',
+     'promotional', 5, 'promo.campaign', 'campaign-x', '2026-08-06T00:00:00Z'::timestamptz,
+     'system', 'promo-bot', 'campaign x', null)),
+  'applied',
+  'a promotional event may carry the provider idempotency pair'
+);
+
+select is(
+  (select status from public.record_entitlement_event(
+     '55555555-5555-5555-5555-555555555555', 'product.save-slots.plus-5', 'save-slots', 'grant',
+     'promotional', 5, 'promo.campaign', 'campaign-x', '2026-08-07T00:00:00Z'::timestamptz,
+     'system', 'promo-bot', 'campaign x, described differently', null)),
+  'duplicate',
+  'and when it does, that key wins: a redelivery differing in every other field is still the same event'
+);
+
+reset role;
+
+-- The table tier, probed as the privileged role this suite runs as -- which
+-- owns the table and is exempt from RLS. The index, not the function, is
+-- what makes the property true of the DATA: a future backfill or importer
+-- inherits it without having to remember the rule.
+select throws_ok(
+  $$ insert into public.entitlement_events
+       (user_id, product_id, capability, event_type, source, quantity, occurred_at, actor_kind, actor_id, reason)
+     values ('55555555-5555-5555-5555-555555555555', 'product.save-slots.plus-5', 'save-slots',
+             'grant', 'promotional', 5, '2026-08-01T00:00:00Z'::timestamptz, 'system', 'promo-bot', 'launch promo') $$,
+  '23505',
+  null,
+  'a privileged direct insert of an identical provider-less event is refused by the index, not by the RPC'
+);
 
 -- --- Challenges ---
 --
@@ -665,6 +907,160 @@ select is(
     where evidence = '{"challengeId":"challenge.first-intake","challengeVersion":1,"commands":[{"tick":1,"sequence":1,"payload":{}}]}'::jsonb),
   '33333333-3333-3333-3333-333333333333',
   'the capture still has exactly one row, owned by the account that submitted first'
+);
+
+-- --- The definition oracle (issue #105 finding 9) ----------------------
+--
+-- `submit_challenge_evidence()` is SECURITY DEFINER, so it reads
+-- `challenge_definitions` as the owner and is exempt from
+-- `challenge_definitions_public_read`. It used to answer 'unknown challenge
+-- X version N' for a definition that does not exist and 'challenge X
+-- version N is not open for submissions' for one that exists but is hidden
+-- -- an existence oracle for the unpublished pipeline, queryable one guessed
+-- id at a time by any anonymously-signed-in identity. 20260824110100 is the
+-- migration.
+--
+-- HOW INDISTINGUISHABILITY IS ASSERTED, because "both raise P0001" is not
+-- it: the same challenge id is asked twice, once when no such row exists
+-- and once after an unpublished row with that exact id has been inserted,
+-- and BOTH are compared to the same spelled-out message. This is the one
+-- place in these suites where matching the message is right rather than
+-- brittle: the message *is* the security property. Everywhere else they
+-- assert the SQLSTATE and leave the wording free.
+-- `p_marker` only exists so the one call that is supposed to be ACCEPTED
+-- carries evidence no earlier assertion in this suite has already stored:
+-- the dedup key is a digest of the payload, so a byte-identical
+-- resubmission would correctly answer `duplicate` and the accept path would
+-- go unasserted.
+create function pg_temp.submission_answer(p_challenge_id text, p_version int, p_marker text default 'probe')
+returns text
+language plpgsql as $$
+declare
+  v_status text;
+begin
+  select status into v_status from public.submit_challenge_evidence(
+    p_challenge_id, p_version, '3f3f3f3f3f3f3f3f',
+    jsonb_build_object('challengeId', p_challenge_id, 'challengeVersion', p_version,
+                       'commands', '[]'::jsonb, 'marker', p_marker),
+    '{"score":1}'::jsonb);
+  return 'status=' || v_status;
+exception when others then
+  return sqlstate || ': ' || sqlerrm;
+end;
+$$;
+
+-- Two more definitions, so each half of the read policy is exercised on its
+-- own: `challenge.staged` is OPEN but not published (the half that used to
+-- accept a submission outright), `challenge.upcoming` is published but has
+-- not opened (the half that used to say "not open").
+insert into public.challenge_definitions
+  (challenge_id, version, definition, definition_hash, signature, opens_at, closes_at, published_at)
+values (
+  'challenge.staged', 1, '{"id":"challenge.staged"}'::jsonb, '00112233445566cc',
+  '{"algorithm":"ed25519","keyId":"key.test","value":"DDDD"}'::jsonb,
+  now() - interval '1 day', now() + interval '1 day', now() + interval '1 day'
+), (
+  'challenge.upcoming', 1, '{"id":"challenge.upcoming"}'::jsonb, '00112233445566dd',
+  '{"algorithm":"ed25519","keyId":"key.test","value":"EEEE"}'::jsonb,
+  now() + interval '1 day', now() + interval '2 days', now() - interval '1 day'
+);
+
+select set_config('request.jwt.claim.sub', '33333333-3333-3333-3333-333333333333', true);
+set local role authenticated;
+
+select is(
+  pg_temp.submission_answer('challenge.oracle-probe', 1),
+  'P0001: challenge challenge.oracle-probe version 1 is not available for submissions',
+  'a challenge id that does not exist is refused with a message that says nothing about existence'
+);
+
+reset role;
+
+-- The same id now exists, staged and hidden by both bounds of the read
+-- policy. Nothing else about the call changes.
+insert into public.challenge_definitions
+  (challenge_id, version, definition, definition_hash, signature, opens_at, closes_at, published_at)
+values (
+  'challenge.oracle-probe', 1, '{"id":"challenge.oracle-probe","seed":"the-secret-seed"}'::jsonb, '00112233445566ee',
+  '{"algorithm":"ed25519","keyId":"key.test","value":"FFFF"}'::jsonb,
+  now() + interval '1 day', now() + interval '2 days', now() + interval '1 day'
+);
+
+select set_config('request.jwt.claim.sub', '33333333-3333-3333-3333-333333333333', true);
+set local role authenticated;
+
+select is(
+  pg_temp.submission_answer('challenge.oracle-probe', 1),
+  'P0001: challenge challenge.oracle-probe version 1 is not available for submissions',
+  'and once that definition exists but is unpublished, the answer is byte-identical: the oracle is closed'
+);
+
+select is(
+  (select count(*)::int from public.challenge_definitions where challenge_id = 'challenge.oracle-probe'),
+  0,
+  'the caller cannot read that definition either, which is the disclosure the two answers above must not undo'
+);
+
+-- The half that was not only an oracle: an OPEN but unpublished definition
+-- used to return `status=submitted`, so a row was keyed and ranked against a
+-- definition no client was allowed to read.
+select is(
+  pg_temp.submission_answer('challenge.staged', 1),
+  'P0001: challenge challenge.staged version 1 is not available for submissions',
+  'an open but unpublished definition no longer accepts a submission, and is not distinguishable from an absent one'
+);
+
+select is(
+  pg_temp.submission_answer('challenge.upcoming', 1),
+  'P0001: challenge challenge.upcoming version 1 is not available for submissions',
+  'a published definition that has not opened gets the same answer: `opens_at` is enforced by the lookup now'
+);
+
+select is(
+  pg_temp.submission_answer('challenge.first-intake', 99),
+  'P0001: challenge challenge.first-intake version 99 is not available for submissions',
+  'a non-existent version of a visible challenge gets it too'
+);
+
+-- WHAT STAYS DISTINGUISHABLE, and why it is not the finding reappearing.
+select is(
+  pg_temp.submission_answer('challenge.finished', 1),
+  'P0001: challenge challenge.finished version 1 is closed for submissions',
+  'a definition that is published, has opened and has closed gets its own answer, which a legitimate client needs'
+);
+
+-- ...because reaching that branch requires satisfying the read policy, so
+-- the caller who saw it can read the row -- `closes_at` included -- for
+-- itself. This assertion is what makes the one above safe.
+select is(
+  (select count(*)::int from public.challenge_definitions where challenge_id = 'challenge.finished'),
+  1,
+  'the closed answer is only ever produced for a row the caller can SELECT, so it discloses nothing new'
+);
+
+-- And the normal path still works, as the same helper, so the section that
+-- proves refusals cannot be passing because everything refuses.
+select is(
+  pg_temp.submission_answer('challenge.first-intake', 1, 'accepts-through-the-same-helper'),
+  'status=submitted',
+  'a published, open definition still accepts a submission through the same helper'
+);
+
+reset role;
+
+-- The predicate this fix duplicates is the read policy's, and the
+-- duplication is structural: a SECURITY DEFINER function cannot have RLS
+-- applied to itself, and inside one the invoker IS the owner, so a
+-- `security_invoker` view does not help either. This asserts the policy as
+-- the catalog renders it, so widening or narrowing the read rule fails here
+-- and has to come back to `submit_challenge_evidence()`.
+select is(
+  (select pg_get_expr(polqual, polrelid)
+     from pg_policy
+    where polrelid = 'public.challenge_definitions'::regclass
+      and polname = 'challenge_definitions_public_read'),
+  '((published_at <= now()) AND (opens_at <= now()))',
+  'the read policy is still exactly the predicate submit_challenge_evidence() copies into its lookup'
 );
 
 select * from finish();

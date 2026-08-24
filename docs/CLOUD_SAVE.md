@@ -22,15 +22,17 @@ design. That gap is now closed except where noted:
   carried, and it earned its keep immediately: the first run failed on the
   *first assertion* of suite 001 and exposed defect 4 below.
 
-  **The #105 hardening is not in that run.** Four migrations now postdate
+  **The #105 hardening is not in that run.** Seven migrations now postdate
   it — `20260824090000` and `20260824090100` for findings 5, 10 and 3 (see
-  "Declarations, not only privileges" below), then `20260824100000` and
-  `20260824100100` for findings 1 and 2 — along with every suite change
-  that came with them, and all of it has been executed only against plain
-  PostgreSQL. The counts above are the stack-run counts, not today's.
-  `pnpm verify:sql` is at 121 assertions (19/19, 47/47, 21/21, 26/26, 8/8),
-  measured on the run that produced this line; re-running
-  `supabase test db` is what would raise the stack figure to match.
+  "Declarations, not only privileges" below), `20260824100000` and
+  `20260824100100` for findings 1 and 2, then `20260824110000`,
+  `20260824110100` and `20260824110200` for findings 6, 7, 9 and 11 — along
+  with every suite change that came with them, and all of it has been
+  executed only against plain PostgreSQL. The counts above are the
+  stack-run counts, not today's. `pnpm verify:sql` is at 163 assertions
+  (32/32, 76/76, 21/21, 26/26, 8/8), measured on the run that produced this
+  line; re-running `supabase test db` is what would raise the stack figure
+  to match.
 - **Executed through GoTrue and PostgREST:** `pnpm verify:stack`
   (`scripts/verify-supabase-stack.mjs`, 48/48 checks against a running
   stack). The pgTAP suites feed `auth.uid()` with `set_config`, so they
@@ -45,7 +47,7 @@ design. That gap is now closed except where noted:
   key, which is the only place PostgREST's mapping of that credential onto
   the role is exercised at all.
 - **Executed against plain PostgreSQL 16.13/18.6 + pgTAP:** every
-  migration and every suite via `pnpm verify:sql` — 121 assertions — which
+  migration and every suite via `pnpm verify:sql` — 163 assertions — which
   prepares a scratch database with
   `scripts/sql/supabase-compat-harness.sql`. This is the only path the
   #105 hardening has run on. That harness
@@ -79,11 +81,23 @@ design. That gap is now closed except where noted:
   the DDL has now run there. None of the checks above has. The local stack
   runs the same images, but nothing here has exercised a real project's
   networking, quotas or connection pooling.
-- **Not applied anywhere but a scratch database:** the two #105 hardening
-  migrations, `20260824090000_pin_trigger_function_search_path.sql` and
-  `20260824090100_revoke_client_truncate.sql`. They are newer than the
-  hosted apply above, so the hosted project still carries the pre-#105
-  declarations and grants until they are pushed.
+- **Not applied anywhere but a scratch database:** the seven #105 hardening
+  migrations — `20260824090000_pin_trigger_function_search_path.sql`,
+  `20260824090100_revoke_client_truncate.sql`,
+  `20260824100000_bind_challenge_evidence_to_payload.sql`,
+  `20260824100100_harden_submit_challenge_evidence.sql`,
+  `20260824110000_generalize_entitlement_idempotency.sql`,
+  `20260824110100_close_challenge_definition_oracle.sql` and
+  `20260824110200_validate_save_version_storage_path.sql`. They are all
+  newer than the hosted apply above, so the hosted project still carries the
+  pre-#105 declarations, grants, constraints and function bodies until they
+  are pushed. Two of them can refuse to apply on a populated project rather
+  than applying silently, which is deliberate and is what their headers
+  describe: the ledger's natural-key index if two provider-less
+  `entitlement_events` rows are identical in every recorded field, and the
+  `save_versions_storage_path_shape` CHECK if any row already carries a
+  non-null `storage_path`. Neither deletes anything; both name the query
+  that answers whether the condition holds.
 - **Fully implemented and unit-tested:** `PrisonSyncEngine`,
   `resolveSyncConflict` and `MemoryCloudSaveClient`
   (`src/persistence/cloud/`) — the client-side sync/conflict policy is
@@ -297,7 +311,9 @@ reads both properties out of the catalog: an exhaustive matrix over every
 function in `public`, plus rules — that every `SECURITY DEFINER` function and
 every trigger function pins a path, that every pinned path is exactly
 `public, pg_temp`, that `pg_temp` is *positionally* last, and that the only
-unpinned functions are the three constant-returning limit helpers. Stating
+unpinned functions are the four constant-returning limit helpers (three from
+ADR 0013 plus `max_challenge_evidence_bytes()`, added for #105 finding 1 —
+this sentence said "three" until #105 findings 6, 7, 9 and 11 re-read it). Stating
 them as rules over `pg_proc` rather than as a list is the point: a
 `SECURITY DEFINER` function added tomorrow with no pinned path fails, rather
 than being merely un-asserted.
@@ -533,6 +549,39 @@ half-supporting it. This mirrors `docs/ARCHITECTURE.md`'s existing
 "candidate until benchmarked" treatment of chunk size — do not treat the
 schema's mere ability to represent a Storage-backed row as an accepted
 policy.
+
+**`storage_path` has a shape, and it is not a bucket layout** (issue #105
+finding 11, `20260824110200_validate_save_version_storage_path.sql`). The
+column was `text` with no constraint at all, and `create_save_version()`
+passes `p_storage_path` through untouched, so an authenticated caller
+driving the RPC directly had `/etc/passwd`, `../../../../etc/shadow`,
+another account's uuid prefix, a URL, a percent-encoded traversal, the
+empty string and a 1 MiB path all accepted and stored verbatim. Two
+controls now apply, and they answer with two different SQLSTATEs:
+
+- `save_versions_storage_path_shape`, a CHECK — the path must be a
+  lowercase-hex UUID followed by at least one further segment, each segment
+  starting with an alphanumeric and continuing in `[A-Za-z0-9._-]`, at most
+  512 characters. That makes `..` and `.` unrepresentable *as segments*,
+  and excludes absolute paths, empty segments, backslashes, whitespace,
+  control characters, `%` and every URL punctuation mark. Violations are
+  `23514`.
+- `save_versions_enforce_storage_prefix`, a `BEFORE INSERT` trigger — the
+  first segment must be the uuid of the account that owns the prison, read
+  from `public.prisons`, because a well-formed path under *someone else's*
+  prefix satisfies every rule above. Violations are **`LS004`**, distinct
+  from `LS001`, `LS002` and `LS003`. A BEFORE-row trigger runs before CHECK
+  constraints are evaluated, so a path that is both foreign and malformed
+  is answered as a prefix failure.
+
+**No Storage bucket or policy exists in `supabase/migrations/`, and this
+did not add one.** Choosing a bucket, its visibility and its object layout
+is the decision this section says is not made; the constraint is on the
+shape only, depth and naming under the prefix are left open, and today it
+constrains a column that nothing writes — `uploadVersion` sends
+`p_storage_path: null` on every call. What it buys is that the shape is
+decided and asserted before the first writer exists rather than remembered
+afterwards.
 
 ## Credential/environment setup (no secrets)
 
