@@ -12,6 +12,25 @@ export const DEFAULT_KEYBOARD_BINDINGS: readonly KeyboardBinding[] = [
   { device: 'keyboard', code: 'KeyS', action: 'camera.down', contexts: ['world', 'construction'] },
   { device: 'keyboard', code: 'KeyA', action: 'camera.left', contexts: ['world', 'construction'] },
   { device: 'keyboard', code: 'KeyD', action: 'camera.right', contexts: ['world', 'construction'] },
+  // The arrow keys, because the Build panel's on-screen hint has always told the
+  // player they work and no binding existed: `hud.build.arm-hint` says "the
+  // arrow keys still move the camera", and all four moved the camera by exactly
+  // zero while `KeyS` moved it 180.89 (issue #200, measured in a browser).
+  //
+  // Two ways to make that sentence true, and this is the one taken: the hint is
+  // the player-visible contract and it already promised these keys, so matching
+  // the code to the promise is smaller than withdrawing the promise. Arrow keys
+  // for camera movement is also not a mechanic anyone has to be taught. The
+  // alternative -- rewriting the hint to name W/A/S/D -- would have left a
+  // player who reached for the arrows with the same "this build is broken"
+  // impression on their first session.
+  //
+  // Deliberately the *same* action ids rather than new ones: this adds a second
+  // way to reach a control that exists, not a control.
+  { device: 'keyboard', code: 'ArrowUp', action: 'camera.up', contexts: ['world', 'construction'] },
+  { device: 'keyboard', code: 'ArrowDown', action: 'camera.down', contexts: ['world', 'construction'] },
+  { device: 'keyboard', code: 'ArrowLeft', action: 'camera.left', contexts: ['world', 'construction'] },
+  { device: 'keyboard', code: 'ArrowRight', action: 'camera.right', contexts: ['world', 'construction'] },
   { device: 'keyboard', code: 'Equal', action: 'camera.zoom.in', contexts: ['world', 'construction'] },
   { device: 'keyboard', code: 'Minus', action: 'camera.zoom.out', contexts: ['world', 'construction'] },
   { device: 'keyboard', code: 'Escape', action: 'build.cancel', contexts: ['world', 'construction', 'modal'] },

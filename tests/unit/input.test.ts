@@ -349,3 +349,64 @@ describe('text entry is recognised from the document, not assumed', () => {
     expect(isTextEntryFocused(withActive({}))).toBe(false);
   });
 });
+
+/**
+ * Issue #200: `hud.build.arm-hint` is painted into the Build panel and says "the
+ * arrow keys still move the camera". No `Arrow*` binding existed -- measured in a
+ * browser, all four moved the camera by exactly zero while `KeyS` moved it
+ * 180.89. An advertised key that does nothing reads as a broken build, which is
+ * worse than an unadvertised one.
+ *
+ * The arrows are bound to the **same action ids** as their WASD twins, so this
+ * adds a second way to reach a control rather than a control. That is the
+ * property asserted here, exactly, rather than in a browser: a browser test can
+ * only observe that the camera moved, and "moved the same amount" is a
+ * wall-clock sample of a running game loop. An earlier draft of this did try it
+ * there and produced an assertion that could not fail, which is the #140 shape.
+ */
+describe('the arrow keys reach the same camera controls as WASD', () => {
+  const TWINS: readonly (readonly [arrow: string, wasd: string])[] = [
+    ['ArrowUp', 'KeyW'],
+    ['ArrowDown', 'KeyS'],
+    ['ArrowLeft', 'KeyA'],
+    ['ArrowRight', 'KeyD'],
+  ];
+
+  it('binds each arrow to the same action as its WASD twin, in the same contexts', () => {
+    for (const [arrow, wasd] of TWINS) {
+      const arrowBinding = DEFAULT_KEYBOARD_BINDINGS.find((binding) => binding.code === arrow);
+      const wasdBinding = DEFAULT_KEYBOARD_BINDINGS.find((binding) => binding.code === wasd);
+      expect(arrowBinding, `${arrow} is not bound`).toBeDefined();
+      expect(arrowBinding!.action, `${arrow} and ${wasd} must be the same control`).toBe(wasdBinding!.action);
+      // Same contexts too: an arrow that worked in a context its twin did not
+      // would be a second control wearing the same action id.
+      expect(arrowBinding!.contexts).toEqual(wasdBinding!.contexts);
+    }
+  });
+
+  it('holding both an arrow and its twin is indistinguishable from holding one', () => {
+    // `isActive` is a boolean over held codes, so "twice as fast" is not
+    // expressible -- and this pins that, so a future change to an accumulating
+    // poll would have to face the assertion rather than slip past it.
+    const adapter = new KeyboardInputAdapter(DEFAULT_KEYBOARD_BINDINGS, () => ['world']);
+    adapter.keyDown({ code: 'KeyD' });
+    expect(adapter.isActive('camera.right')).toBe(true);
+    adapter.keyDown({ code: 'ArrowRight' });
+    expect(adapter.isActive('camera.right')).toBe(true);
+
+    // And releasing one leaves the other holding it, which is what a player
+    // rolling from the arrows onto WASD mid-pan actually does.
+    adapter.keyUp({ code: 'KeyD' });
+    expect(adapter.isActive('camera.right')).toBe(true);
+    adapter.keyUp({ code: 'ArrowRight' });
+    expect(adapter.isActive('camera.right')).toBe(false);
+  });
+
+  it('reports no binding conflict, because mutually reachable codes are not a collision', () => {
+    // `findBindingConflicts` keys on device/code/context, so two codes sharing
+    // one action is not a conflict -- and this asserts that rather than assuming
+    // it, since adding four bindings to a set of seven is exactly the kind of
+    // change a collision rule could reject.
+    expect(findBindingConflicts(DEFAULT_KEYBOARD_BINDINGS)).toEqual([]);
+  });
+});

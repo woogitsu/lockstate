@@ -1,4 +1,4 @@
-import { ACTION_REGISTRY, type ActionId, type InputContextId, type SemanticActionEvent } from './actions';
+import type { ActionId, InputContextId, SemanticActionEvent } from './actions';
 import type { KeyboardBinding } from './bindings';
 
 export interface KeyboardEventLike {
@@ -55,10 +55,32 @@ export class KeyboardInputAdapter {
 
   private eventsFor(code: string, phase: SemanticActionEvent['phase']): readonly SemanticActionEvent[] {
     const contexts = this.activeContexts();
+    // There used to be a third step here:
+    //
+    //   .filter((event) => ACTION_REGISTRY[event.action].behavior === 'discrete'
+    //                      || phase === 'started' || phase === 'ended')
+    //
+    // `phase` is typed `SemanticActionEvent['phase']`, which `actions.ts`
+    // defines as `'started' | 'ended'` -- so the second disjunct was
+    // **unconditionally true** and the predicate could never remove an element.
+    // It read as a rule ("a continuous action only emits on a phase boundary")
+    // and enforced nothing; the `behavior` term was never evaluated for its
+    // answer. That is this repository's signature defect in its smallest
+    // possible form, and issue #200 proved it with a matched pair: deleting the
+    // whole filter survived the entire suite, while narrowing it to
+    // `behavior === 'discrete'` was killed by an existing test -- so the
+    // behaviour the suite pins depends on the tautology being true.
+    //
+    // Deleted rather than repaired, and deliberately not replaced with a real
+    // rule. Whether continuous and discrete actions should be filtered
+    // differently here only means something once something *consumes* these
+    // events, and whether they get a consumer at all is #200's open question
+    // (it bears on `AGENTS.md` boundary 10 and #141). Writing a rule now would
+    // pre-empt that decision; leaving a tautology that looks like one was worse
+    // than either answer.
     return this.bindings
       .filter((binding) => binding.code === code && intersects(binding.contexts, contexts))
-      .map((binding) => ({ action: binding.action, phase, source: 'keyboard' as const }))
-      .filter((event) => ACTION_REGISTRY[event.action].behavior === 'discrete' || phase === 'started' || phase === 'ended');
+      .map((binding) => ({ action: binding.action, phase, source: 'keyboard' as const }));
   }
 }
 
