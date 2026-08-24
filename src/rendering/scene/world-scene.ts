@@ -1,8 +1,10 @@
 import Phaser from 'phaser';
+import type { KeyValueStore } from '../../shared/key-value-store';
 import {
   KeyboardInputAdapter,
   TouchGestureTracker,
   loadInputSettings,
+  resolveBrowserKeyValueStore,
 } from '../../input';
 import { AtlasFrameIndex } from '../assets/atlas-frame-index';
 import { AtlasLibrary } from '../assets/atlas-library';
@@ -60,6 +62,21 @@ export interface WorldSceneOptions {
    * and the renderer must not become the thing that decides a build happened.
    */
   readonly buildTool?: BuildToolPort;
+
+  /**
+   * Where input settings are read from.
+   *
+   * The renderer used to reach for `window.localStorage` itself, in a class
+   * field initializer -- so a browser that blocks site data threw inside this
+   * constructor, at module top level, outside any `try`, and took the whole
+   * boot with it (issue #199). `docs/INPUT.md` had described the arrangement
+   * this option restores: the entry point supplies the store, and the seam
+   * exists so tests stay headless.
+   *
+   * Optional with a safe default rather than required, because a harness page
+   * that only wants a canvas should not have to name a storage strategy.
+   */
+  readonly keyValueStore?: KeyValueStore;
 }
 
 export class WorldScene extends Phaser.Scene {
@@ -67,10 +84,15 @@ export class WorldScene extends Phaser.Scene {
   private readonly loadAtlasLibrary: () => Promise<AtlasLibrary>;
   private readonly onError: (error: Error) => void;
 
-  private readonly keyboard = new KeyboardInputAdapter(
-    loadInputSettings(window.localStorage).keyboardBindings,
-    () => ['world'],
-  );
+  /**
+   * Assigned in the constructor, not in a field initializer.
+   *
+   * A field initializer cannot see the constructor's `options`, so building
+   * this here is what forced the old `window.localStorage` read -- and a field
+   * initializer runs *inside* the constructor, which is why the throw escaped
+   * to module scope rather than to a caller that could handle it (#199).
+   */
+  private readonly keyboard: KeyboardInputAdapter;
   private readonly touchGestures = new TouchGestureTracker();
   private panPointerId: number | undefined;
   private lastPanScreenPoint: { readonly x: number; readonly y: number } | undefined;
@@ -91,6 +113,10 @@ export class WorldScene extends Phaser.Scene {
     super('WorldScene');
     this.feed = options.feed;
     this.buildTool = options.buildTool;
+    this.keyboard = new KeyboardInputAdapter(
+      loadInputSettings(options.keyValueStore ?? resolveBrowserKeyValueStore()).keyboardBindings,
+      () => ['world'],
+    );
     this.loadAtlasLibrary = options.loadAtlasLibrary ?? (() => AtlasLibrary.load());
     this.onError =
       options.onError ??

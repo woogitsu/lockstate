@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { resolveBrowserKeyValueStore } from './input';
 import { IndexedDbLocalSaveStore, openLockstateDatabase } from './persistence/local/indexeddb-store';
 import { PrisonSaveRepository, type SaveResult } from './persistence/local/repository';
 import { LifecycleSaveHandler } from './persistence/session/lifecycle';
@@ -49,6 +50,14 @@ const GAME_VERSION = 'lockstate-dev';
  * A browser that cannot start a worker still gets a running page: the
  * renderer draws an empty world and the save panel reports that there is no
  * session, which is far better than a blank screen.
+ *
+ * That promise covers three hostile configurations now, not one. A blocked
+ * `Worker` is handled here; a blocked IndexedDB below; and a blocked
+ * `localStorage` at the `keyValueStore` option passed to `WorldScene`, which
+ * used to be the hole -- the renderer read the global itself and a browser with
+ * site data blocked got an empty `<body>` rather than a canvas (issue #199).
+ * Each is a different resource and each needed its own guard; none of them is
+ * covered by the others.
  */
 let simulation: SimulationClient | undefined;
 try {
@@ -93,9 +102,21 @@ const buildTool =
         onError: (error) => console.warn('Build order refused:', error.message),
       });
 
+// The entry point supplies the key/value store, which is what `docs/INPUT.md`
+// has always described and what the renderer had stopped doing: it read
+// `window.localStorage` itself, in a class field initializer, so a browser that
+// blocks site data threw before `new Phaser.Game`, `mountInterface` or
+// `bootPersistence` were reached and the player got an empty `<body>`
+// (issue #199). Choosing the environment belongs here, in the composition root,
+// alongside the worker and the database.
+//
+// `resolveBrowserKeyValueStore()` never throws and never returns undefined: a
+// browser that refuses storage gets an in-memory stand-in, so settings work for
+// the rest of the page load and simply are not remembered.
 const worldScene = new WorldScene({
   feed: renderFeed,
   loadAtlasLibrary: () => atlasLibrary,
+  keyValueStore: resolveBrowserKeyValueStore(),
   ...(buildTool === undefined ? {} : { buildTool }),
 });
 
@@ -151,6 +172,13 @@ if (isDemoActorsRequested(window.location.search)) {
  * Storage failures here are non-fatal by design: a browser with IndexedDB
  * blocked (private mode, hardened settings) must still boot into a
  * playable, unsaveable session rather than a blank screen.
+ *
+ * This named the hostile configuration correctly and covered only one of its
+ * two storage APIs. A browser that blocks IndexedDB in private mode generally
+ * blocks `localStorage` in the same act, and that one was unguarded until
+ * issue #199 -- so a configuration this comment describes as survivable
+ * produced a blank screen anyway, one resource over. `localStorage` is now
+ * handled where it is read, at `WorldScene`'s `keyValueStore` option.
  */
 /**
  * Mounts the HUD shell.

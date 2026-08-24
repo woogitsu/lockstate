@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_ACCESSIBILITY_SETTINGS, DEFAULT_INPUT_SETTINGS, DEFAULT_KEYBOARD_BINDINGS, KeyboardInputAdapter, type KeyValueStore, PointerInputAdapter, TouchGestureTracker, decodeAccessibilitySettings, decodeInputSettings, findBindingConflicts, loadAccessibilitySettings, loadInputSettings, remapAndPersistKeyboardBinding, remapKeyboardBinding, resolveKeyboardLabel, saveAccessibilitySettings, saveInputSettings, validateInputSettings } from '../../src/input';
+import { DEFAULT_ACCESSIBILITY_SETTINGS, DEFAULT_INPUT_SETTINGS, DEFAULT_KEYBOARD_BINDINGS, KeyboardInputAdapter, type KeyValueStore, PointerInputAdapter, TouchGestureTracker, decodeAccessibilitySettings, decodeInputSettings, findBindingConflicts, loadAccessibilitySettings, loadInputSettings, remapAndPersistKeyboardBinding, remapKeyboardBinding, resolveBrowserKeyValueStore, resolveKeyboardLabel, saveAccessibilitySettings, saveInputSettings, validateInputSettings } from '../../src/input';
 
 class MemoryStore implements KeyValueStore {
   private readonly values = new Map<string, string>();
@@ -156,5 +156,89 @@ describe('semantic input', () => {
     const accepted = remapAndPersistKeyboardBinding(store, DEFAULT_INPUT_SETTINGS, 1, 'KeyJ');
     expect(accepted.ok).toBe(true);
     expect(loadInputSettings(store).keyboardBindings[1]).toMatchObject({ action: 'camera.down', code: 'KeyJ' });
+  });
+});
+
+/**
+ * Issue #199: a browser that blocks site data for the origin does not hand over
+ * a store that returns null -- it throws, either from `getItem` or from the
+ * `window.localStorage` property getter itself. Every assertion below is about
+ * that difference, because the guard that existed covered a corrupt *value* and
+ * not an unavailable *store*: `store.getItem(key)` sat above the `try`, not
+ * inside it.
+ *
+ * The consequence was not a lost setting. The renderer read the store in a class
+ * field initializer at module top level, so the throw aborted the rest of
+ * `src/main.ts` and the player got an empty `<body>` -- no canvas, no HUD, no
+ * save panel. `tests/browser/app-shell.spec.ts` holds that end of it in a real
+ * browser; this holds the unit behaviour underneath.
+ */
+describe('settings survive a store that refuses to work', () => {
+  class ThrowingStore implements KeyValueStore {
+    public getItem(): string | null {
+      throw new DOMException('The operation is insecure.', 'SecurityError');
+    }
+
+    public setItem(): void {
+      throw new DOMException('The operation is insecure.', 'SecurityError');
+    }
+  }
+
+  it('falls back to defaults when reading throws, not only when parsing fails', () => {
+    expect(loadInputSettings(new ThrowingStore())).toEqual(DEFAULT_INPUT_SETTINGS);
+    expect(loadAccessibilitySettings(new ThrowingStore())).toEqual(DEFAULT_ACCESSIBILITY_SETTINGS);
+  });
+
+  it('does not propagate a refused write, because a lost setting is not worth a crash', () => {
+    const store = new ThrowingStore();
+    expect(() => saveInputSettings(store, DEFAULT_INPUT_SETTINGS)).not.toThrow();
+    expect(() => saveAccessibilitySettings(store, DEFAULT_ACCESSIBILITY_SETTINGS)).not.toThrow();
+  });
+
+  it('still reports a remap as valid when the write is refused, so the session keeps the binding', () => {
+    // The remap itself succeeded; only persistence failed. Reporting failure
+    // here would make a player think the key did not change, when it did.
+    const result = remapAndPersistKeyboardBinding(new ThrowingStore(), DEFAULT_INPUT_SETTINGS, 0, 'KeyJ');
+    expect(result.ok).toBe(true);
+  });
+
+  it('resolves a usable store when the localStorage getter itself throws', () => {
+    // The harder shape, and the one a method stub cannot reach: Chrome raises
+    // from the property access, so a guard wrapping `getItem` never runs.
+    const original = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+    Object.defineProperty(globalThis, 'localStorage', {
+      configurable: true,
+      get(): never {
+        throw new DOMException('Access to storage is not allowed from this context.', 'SecurityError');
+      },
+    });
+    try {
+      const store = resolveBrowserKeyValueStore();
+      // A real fallback, not a black hole: a setting changed in this page load
+      // keeps working. It just does not survive a reload, which is the honest
+      // consequence of a browser that will not store it.
+      store.setItem('probe', 'value');
+      expect(store.getItem('probe')).toBe('value');
+      expect(store.getItem('absent')).toBeNull();
+      expect(loadInputSettings(store)).toEqual(DEFAULT_INPUT_SETTINGS);
+    } finally {
+      if (original === undefined) delete (globalThis as { localStorage?: unknown }).localStorage;
+      else Object.defineProperty(globalThis, 'localStorage', original);
+    }
+  });
+
+  it('rejects a store that resolves and then throws on every read', () => {
+    // Returning it would be worse than the fallback: every caller would take
+    // the default path on every read while believing the value persisted.
+    const original = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+    Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: new ThrowingStore() });
+    try {
+      const store = resolveBrowserKeyValueStore();
+      store.setItem('probe', 'value');
+      expect(store.getItem('probe')).toBe('value');
+    } finally {
+      if (original === undefined) delete (globalThis as { localStorage?: unknown }).localStorage;
+      else Object.defineProperty(globalThis, 'localStorage', original);
+    }
   });
 });
