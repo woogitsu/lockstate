@@ -345,6 +345,23 @@ Each failure has its own code (`build-not-allowed`,
 `final-state-hash-mismatch`, `metrics-mismatch`, …) so "your build is too
 old" is never confused with "these hashes disagree with the replay".
 
+The twenty-three codes are declared as an array in
+`src/services/challenges/rejection-codes.ts`, not only as a union type, so
+the vocabulary can be enumerated rather than merely type-checked.
+`tests/foundation/challenge-rejection-code-reachability-contract.test.ts`
+requires every member to be both emitted by the pipeline and named by the
+tests that drive it. Both directions are needed because issue #264 found
+three members that had a producer and no test: `evidence-too-large`,
+`command-after-final-tick` and `objective-metric-missing` appeared nowhere
+in the suite, and deleting each branch left the whole suite green — the last
+of them then returning `verified` with `rankedScore: 0` for a run whose
+objective metric the replay never produced, which is the one tier eligible
+for public ranking. All three are now driven behaviourally, since a
+reachability gate satisfied by an allow-list entry is not the same thing as
+coverage. The `rejection_code` column is still only length-bounded in SQL
+(128 characters, `20260824120000_bound_trusted_tier_columns.sql`); nothing
+in the database checks membership of this list.
+
 ### Ranking tiers
 `verified` (replayed and agreeing) is the only tier eligible for public
 ranking. `unverified` — structurally valid, not replayed — is a personal
