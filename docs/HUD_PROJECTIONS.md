@@ -122,7 +122,7 @@ per-prisoner object at all, so the always-visible strip is safe to
 re-project every frame at the stretch tier.
 
 The always-visible counts have no rows at all, which is what makes them
-publishable on a timer: `simulation/status-counts` (section 8) carries ten
+publishable on a timer: `simulation/status-counts` (section 8) carries eleven
 integers, so there is nothing here for this contract to bound. A
 projection that carries rows must be paged before it may be published on a
 cadence — a per-send cost that grows with the prison is exactly the failure
@@ -353,8 +353,10 @@ decision about what to build next.
     skill *requirements* per role, but no staff entity carries a skill.
 21. **`wageBand` exists in content, and there is no payroll.** There is a
     treasury and a procurement system since #96/#89 — money buys materials —
-    but nothing pays anyone: no wage is ever debited, and nothing credits the
-    treasury at all. ADR 0017 decision 6 settles what the state pays *for*
+    but nothing pays anyone: no wage is ever debited, and the only thing that
+    credits the treasury is a cancelled purchase's refund
+    (`ProcurementSystem.cancel`), which is not an income line: nothing credits
+    it on a schedule. ADR 0017 decision 6 settles what the state pays *for*
     (per prisoner-day, accrued per occupied place) and no system accrues it,
     so the balance only ever goes down. Nothing wage-related may be rendered
     as a live figure; it is still a content hook for a future issue.
@@ -409,10 +411,14 @@ decision about what to build next.
     `ContainerMaterialsProvider` over the well-known
     `construction-materials` container and then leaves that container
     **empty**, following the runtime's "no fabricated default content"
-    convention. Nothing else deposits into it either — no starter stock, no
-    delivery job, no scenario. So in the running app every build order
-    reaches `materials-pending` and stays there: the ghost appears, and the
-    wall never does. Tests and fixtures deposit directly
+    convention. `ProcurementSystem` (#249) is the one thing that deposits
+    into it, and only for a purchase — and **nothing in `src/` mints a
+    `PurchaseMaterials` command**, which
+    `tests/foundation/unconsumed-command-contract.test.ts` holds as a gated
+    fact. So in the running app every build order still reaches
+    `materials-pending` and stays there: the ghost appears, and the wall
+    never does. The cause has changed from "no supplier" to "no buy
+    surface"; the symptom has not. Tests and fixtures deposit directly
     (`tests/determinism/snapshot-restore-fidelity.test.ts`,
     `tests/perf/fixtures/prison-fixture.ts`), which is why this has never
     shown up as a failure. Whether a fresh prison starts with materials, or

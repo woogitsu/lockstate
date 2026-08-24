@@ -34,7 +34,7 @@ the life of the project.
 ### The fact that makes this decidable rather than speculative
 
 `public/_headers` **is applied by a check that runs, and that CI gates.**
-`vite.config.ts:5` loads `@cloudflare/vite-plugin`, so `vite preview` serves
+`vite.config.ts:6` loads `@cloudflare/vite-plugin`, so `vite preview` serves
 `dist/` through workerd's Static Assets implementation — the same component
 that serves production — and it honours `_headers`. Verified by execution: a
 request to a preview origin returns every header the file declares, and the
@@ -192,7 +192,7 @@ wrong on a specific future change.
 1. **`connect-src 'self'` blocks Supabase the day cloud save is wired up.**
    No code in `src/` constructs a Supabase client:
    `src/persistence/cloud/supabase-client.ts:1` imports `SupabaseClient` as a
-   type only and `:37` takes one by constructor injection, there is no
+   type only and `:51` takes one by constructor injection, there is no
    `createClient` call in `src/`, and no `import.meta.env` read anywhere in
    `src/` — which is also why #105 found `@supabase/supabase-js` absent from
    the production bundle. So nothing makes a cross-origin request and

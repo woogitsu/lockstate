@@ -277,6 +277,8 @@ locomotion/rendering; the complete final need/action catalog and balance;
 real object-placement tracking (the reason `RoomInstanceRegistry` exists
 as an explicit, minimal bridge instead); UI/save-file integration (a session
 UI does now exist -- the HUD and save panel mounted by `src/main.ts` -- but
-nothing in it surfaces prisoner state, matching #19/#22's precedent of
-shipping the system before the surface; the save-file half was closed later,
+the only prisoner state it surfaces is the status strip's population counts
+(#104) -- no roster, no needs, no actions and no cell assignment reaches a
+panel, matching #19/#22's precedent of shipping the system before the
+surface; the save-file half was closed later,
 by #70).

@@ -198,6 +198,7 @@ for violence, escapes, riots and gangs (#28); automatic escort scheduling
 (deciding when a prisoner needs an escort and pairing them with an
 available guard -- the access-policy *resolver* for an already-decided
 escort ships here, the scheduling decision does not); final UI/visual
-effects (a session UI exists -- the HUD and save panel -- but nothing in it
-surfaces sectors, guards or patrols); alarms, cameras or any detection
+effects (a session UI exists -- the HUD and save panel -- but the only thing
+it surfaces is a headcount of hired guards and how many are unassigned
+(#104); no sector, no patrol and no deployment state reaches a panel); alarms, cameras or any detection
 mechanic beyond the access-control/patrol substrate itself.

@@ -36,9 +36,12 @@ interface CreateSaveVersionRow {
  * `fake-indexeddb`), Postgres RLS and this RPC's `SECURITY DEFINER` /
  * row-locking behavior are not meaningfully fakeable in pure JS — a fake
  * would test the fake, not this contract. `supabase/tests/` covers the
- * DB-side contract this adapter depends on (unexecuted here; needs a
- * local Supabase/Docker stack — see docs/CLOUD_SAVE.md). Review this
- * class by inspection against that SQL.
+ * DB-side contract this adapter depends on, and it *is* executed: `pnpm
+ * verify:sql` runs every suite against a plain PostgreSQL server with
+ * pgTAP — no Docker, no Supabase CLI — and CI runs it as a required step.
+ * That is the whole reason the check is shaped that way, per
+ * `docs/TESTING.md`: it has to keep working where container images cannot
+ * be pulled. Review this class by inspection against that SQL.
  *
  * The one thing a pure-JS fake *can* prove is which rows this class asks
  * for, because that is a property of the query this file builds rather
