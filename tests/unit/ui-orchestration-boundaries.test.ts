@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import {
   describeConstructionSite,
   describeDependency,
-  findConstructionSites,
+  reportConstructionSites,
   findCrossTreeDependencies,
   findImports,
   reportCrossTreeViolations,
@@ -268,8 +268,13 @@ describe('UI orchestration boundaries', () => {
     // the two factories that really build one, and
     // `tests/unit/module-boundary-rules.test.ts` checks each form against
     // what `src/simulation/**` exports.
+    const construction = reportConstructionSites(allUiFiles);
+    // Denominator first, for the reason the sibling gates state: a scan handed
+    // an empty list reports no violations and reads exactly like compliance.
+    expect(construction.scannedFiles).toBe(allUiFiles.length);
+    expect(construction.scannedFiles).toBeGreaterThan(20);
     expect(
-      findConstructionSites(allUiFiles).map(describeConstructionSite),
+      construction.sites.map(describeConstructionSite),
       'a UI module now builds a live simulation. The main thread owns rendering, browser UI and input orchestration (AGENTS.md boundary 3); the simulation worker owns authoritative in-session game state (boundary 4). A runtime built here is a second, divergent simulation -- the reason src/main.ts:41-52 gives for creating the worker exactly once',
     ).toEqual([]);
   });

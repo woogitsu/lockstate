@@ -3,7 +3,7 @@ import { join, posix, relative, sep } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   describeConstructionSite,
-  findConstructionSites,
+  reportConstructionSites,
   type ScannedSource,
 } from '../helpers/module-boundaries';
 
@@ -96,8 +96,15 @@ describe('renderer module boundaries', () => {
     // four pure imports, one of which deliberately delegates the tile-ownership
     // rule to the simulation rather than restating it -- and none of them
     // builds anything.
+    const construction = reportConstructionSites(scanned);
+    // The denominator first. An empty `sites` list is only evidence of a clean
+    // renderer if the scan actually read the renderer: measured, with this
+    // call handed `[]` instead of `scanned`, the assertion below goes green
+    // while nothing is checked at all.
+    expect(construction.scannedFiles).toBe(scanned.length);
+    expect(construction.scannedFiles).toBeGreaterThan(10);
     expect(
-      findConstructionSites(scanned).map(describeConstructionSite),
+      construction.sites.map(describeConstructionSite),
       'a rendering module now builds a live simulation. That is AGENTS.md boundary 1: Phaser must never become the source of truth for game state. The renderer is handed snapshots; it does not own the mutable thing',
     ).toEqual([]);
 

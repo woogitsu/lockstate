@@ -367,6 +367,31 @@ export function findConstructionSites(
   return sites.sort((left, right) => left.file.localeCompare(right.file) || left.form.localeCompare(right.form));
 }
 
+export interface ConstructionScanReport {
+  readonly sites: readonly ConstructionSite[];
+  /**
+   * How many files were actually read.
+   *
+   * The denominator that makes an empty `sites` list mean "clean" rather than
+   * merely "quiet". Measured: with the call site mutated from
+   * `reportConstructionSites(allUiFiles)` to `reportConstructionSites([])` --
+   * a scan handed nothing, which is what a collection filter that stops
+   * matching produces -- an assertion on `sites` alone stays green and the
+   * guard is gone. Callers assert this against the file count they collected,
+   * the same role `CanonicalIterationReport.unorderedCount` plays for its own
+   * allow-list.
+   */
+  readonly scannedFiles: number;
+}
+
+/** `findConstructionSites` with the denominator attached, so an empty result cannot pass for compliance. */
+export function reportConstructionSites(
+  files: readonly ScannedSource[],
+  forms: readonly SimulationConstructionForm[] = SIMULATION_CONSTRUCTION_FORMS,
+): ConstructionScanReport {
+  return { sites: findConstructionSites(files, forms), scannedFiles: files.length };
+}
+
 export const describeConstructionSite = (site: ConstructionSite): string => `${site.file}:${site.line} builds ${site.form}`;
 
 export interface MissingConstructionForm {

@@ -254,7 +254,13 @@ describe('the simulation-construction catalog matches construction and only cons
   });
 
   it('does not match a longer name that merely contains a form', () => {
-    expect(findConstructionSites([at('src/alpha/a.ts', 'myCreateNewSimulationRuntime(1);')])).toEqual([]);
+    // A prefixed alias, which is what the lookbehind on the factory patterns
+    // is for -- `myCreateNewSimulationRuntime` would not match anyway, because
+    // camel-casing changes the `c`.
+    expect(findConstructionSites([at('src/alpha/a.ts', '_createNewSimulationRuntime(1);')])).toEqual([]);
+    expect(findConstructionSites([at('src/alpha/a.ts', '$createNewSimulationRuntime(1);')])).toEqual([]);
+    // And a suffixed one, which the required `(` after the name rules out.
+    expect(findConstructionSites([at('src/alpha/a.ts', 'createNewSimulationRuntimeStub(1);')])).toEqual([]);
     expect(findConstructionSites([at('src/alpha/a.ts', 'const k = new KernelProbe();')])).toEqual([]);
     expect(findConstructionSites([at('src/alpha/a.ts', 'const w = new SparseWorldView(32);')])).toEqual([]);
   });

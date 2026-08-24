@@ -5,7 +5,7 @@ import {
   describeConstructionSite,
   describeDependency,
   findBrowserGlobalAccess,
-  findConstructionSites,
+  reportConstructionSites,
   findCrossTreeDependencies,
   findImports,
   reportCrossTreeViolations,
@@ -202,6 +202,11 @@ describe('input module boundaries', () => {
     // and asserted anyway, because the cost is one line and the redundancy is
     // the point of a boundary: input orchestration lives on the main thread
     // (boundary 3) and the main thread does not own simulation state.
-    expect(findConstructionSites(inputFiles).map(describeConstructionSite)).toEqual([]);
+    const construction = reportConstructionSites(inputFiles);
+    // Denominator first: an empty result from a scan that read nothing is not
+    // a clean tree, it is no scan.
+    expect(construction.scannedFiles).toBe(inputFiles.length);
+    expect(construction.scannedFiles).toBeGreaterThan(8);
+    expect(construction.sites.map(describeConstructionSite)).toEqual([]);
   });
 });
