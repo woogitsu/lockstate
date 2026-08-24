@@ -4,7 +4,6 @@ import {
   KeyboardInputAdapter,
   TouchGestureTracker,
   loadInputSettings,
-  resolveBrowserKeyValueStore,
 } from '../../input';
 import { AtlasFrameIndex } from '../assets/atlas-frame-index';
 import { AtlasLibrary } from '../assets/atlas-library';
@@ -73,10 +72,20 @@ export interface WorldSceneOptions {
    * this option restores: the entry point supplies the store, and the seam
    * exists so tests stay headless.
    *
-   * Optional with a safe default rather than required, because a harness page
-   * that only wants a canvas should not have to name a storage strategy.
+   * **Required, not optional with a default**, and the reason is a correction to
+   * this comment's first draft. It said a default was kept "because a harness
+   * page that only wants a canvas should not have to name a storage strategy" --
+   * which invented a consumer: `new WorldScene(...)` appears exactly once in the
+   * repository, at `src/main.ts`, and no harness constructs one. With the option
+   * optional, deleting `main.ts`'s `keyValueStore:` argument passed every test
+   * (measured), so `docs/INPUT.md`'s claim that the entry point supplies the
+   * store had nothing enforcing it. Making it required moves that guard into
+   * `tsc`, which is stronger than any assertion about source text -- and costs
+   * nothing, because there is one caller. Use
+   * `resolveBrowserKeyValueStore()` for a browser and an in-memory store in a
+   * test.
    */
-  readonly keyValueStore?: KeyValueStore;
+  readonly keyValueStore: KeyValueStore;
 }
 
 export class WorldScene extends Phaser.Scene {
@@ -114,7 +123,7 @@ export class WorldScene extends Phaser.Scene {
     this.feed = options.feed;
     this.buildTool = options.buildTool;
     this.keyboard = new KeyboardInputAdapter(
-      loadInputSettings(options.keyValueStore ?? resolveBrowserKeyValueStore()).keyboardBindings,
+      loadInputSettings(options.keyValueStore).keyboardBindings,
       () => ['world'],
     );
     this.loadAtlasLibrary = options.loadAtlasLibrary ?? (() => AtlasLibrary.load());
