@@ -5,7 +5,7 @@ import { EntityStore } from '../../src/simulation/entity/entity-store';
 import { EntityQuery } from '../../src/simulation/entity/query';
 import { deriveXoshiroState } from '../../src/simulation/rng/seed';
 import { NamedRngStreams } from '../../src/simulation/rng/streams';
-import { PrisonerColdState, PrisonerRecordComponent } from '../../src/simulation/prisoners/components';
+import { PrisonerColdState, PrisonerRecordComponent, intakeStageIndex } from '../../src/simulation/prisoners/components';
 import { IntakeSystem } from '../../src/simulation/prisoners/intake-system';
 import { RoomInstanceRegistry } from '../../src/simulation/prisoners/room-instance-registry';
 import { buildPrisonerScenarioFixture } from '../helpers/prisoner-fixture';
@@ -104,5 +104,33 @@ describe('IntakeSystem: deterministic stage-by-stage pipeline', () => {
     expect(records.intakeStage[index]).toBe(5); // 'failed'
     expect(intakeSystem.getMetrics().failedCount).toBe(1);
     expect(intakeSystem.getMetrics().accommodationBacklogTicks).toBe(0); // structural failure, not backlog
+  });
+
+  it('starts an intake at "queued" whatever stage the slot already held', () => {
+    // `submitIntake`'s own intake-stage write is the one reset-shaped write
+    // the admission path had before #111's per-slot component reset landed,
+    // and deleting it still survives the rest of the suite: `admitPrisoner`
+    // resets the slot before calling here, and a never-occupied slot already
+    // reads 'queued', so no admission can observe the write. `IntakeSystem`
+    // is public on `PrisonerOperationsRuntime`, and this write is what makes
+    // a caller that is *not* `admitPrisoner` start at the beginning of the
+    // pipeline rather than wherever the slot was left. Nothing in `src/` is
+    // such a caller today.
+    const capacity = 4;
+    const store = new EntityStore(capacity);
+    const bitset = new ComponentBitset(capacity);
+    const query = new EntityQuery(store, bitset);
+    query.mask.require(0);
+    const records = new PrisonerRecordComponent(capacity);
+    const intakeSystem = new IntakeSystem(store, query, records, new PrisonerColdState(), new RoomInstanceRegistry());
+
+    const entityId = store.spawn();
+    const index = store.getIndex(entityId);
+    bitset.add(index, 0);
+    records.intakeStage[index] = intakeStageIndex('completed');
+
+    intakeSystem.submitIntake(entityId, { sentenceLengthTicks: 100, priorIncidents: 0 });
+
+    expect(records.intakeStage[index]).toBe(intakeStageIndex('queued'));
   });
 });
