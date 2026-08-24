@@ -44,6 +44,37 @@ reinventing ad-hoc iteration -- this is the **first production wiring** of
 `EntityStore` to spawn real gameplay entities (previously only exercised
 by #22's benchmark-only stub actors).
 
+### Slot defaults, and where they are pinned
+
+Every one of those components exposes `reset(index)`, restoring one slot to
+the values an *unoccupied* slot holds, and `admitPrisoner` calls all four
+before it writes the arrival's own fields. It has to: `EntityStore.spawn`
+recycles a freed index and nothing clears a component array on destroy, so
+without the resets thirteen of the eighteen per-slot arrays handed a new
+arrival the previous occupant's needs, classification and action plan
+(#111). The three typed-array components state each default once, in a
+`SlotDefault` list that drives both the constructor's initial fill and
+`reset`; `NeedsComponent` instead loops `NEED_IDS` in both places, so a
+seventh need is covered without a second edit either way.
+
+Two of those defaults carry meaning rather than merely being zero:
+`currentAction.actionIndex` is `-1`, the "no action selected" sentinel
+`prisoner-projection.ts` tests with `actionIndex >= 0` when deciding whether
+to show an action at all, and every need starts at `NEED_MAX`. Both the
+reset coverage and the default *values* are pinned in
+`tests/unit/prisoner-slot-recycling.test.ts`, which discovers each
+component's arrays by reflection, so a nineteenth array fails until someone
+states what it reads as when unoccupied.
+
+Resetting the slot is not a release path. Nothing in `src/` destroys a
+prisoner entity today, and a real release still has to free room-instance
+occupancy, release the actor identity (ADR 0015), drop the gang-membership
+entry and clear the `ComponentBitset` bit. A primitive for each of those
+four already exists -- `RoomInstanceRegistry.release`,
+`ActorIdentityRegistry.release`, `GangRegistry.removeMember`,
+`ComponentBitset.remove` -- and nothing calls any of them for a destroyed
+prisoner (#31).
+
 ## Needs and decay
 
 `needs.ts` defines each need's per-tick decay rate as data (`NEED_DECAY_PER_TICK`),

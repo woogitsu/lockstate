@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Kernel } from '../../src/simulation/kernel/kernel';
-import { CurrentActionComponent, PositionComponent, PrisonerRecordComponent } from '../../src/simulation/prisoners/components';
-import { NeedsComponent } from '../../src/simulation/prisoners/needs';
+import { ACTION_PHASES, CurrentActionComponent, PositionComponent, PrisonerRecordComponent, intakeStageIndex } from '../../src/simulation/prisoners/components';
+import { NEED_IDS, NEED_MAX, NeedsComponent } from '../../src/simulation/prisoners/needs';
 import type { PrisonerOperationsRuntime } from '../../src/simulation/prisoners/prisoner-operations-runtime';
 import { deriveXoshiroState } from '../../src/simulation/rng/seed';
 import { NamedRngStreams } from '../../src/simulation/rng/streams';
@@ -63,14 +63,57 @@ function dirtyValueFor(current: number): number {
 
 const CAPACITY = 4;
 
-function componentsUnderTest(): readonly { readonly name: string; readonly make: () => { reset(index: number): void } }[] {
+function componentsUnderTest(): readonly {
+  readonly name: string;
+  /** The `PrisonerOperationsRuntime` property this component is exposed as, so a default can be named by the path the runtime-level tests below read it at. */
+  readonly runtimeKey: string;
+  readonly make: () => { reset(index: number): void };
+}[] {
   return [
-    { name: 'PrisonerRecordComponent', make: () => new PrisonerRecordComponent(CAPACITY) },
-    { name: 'NeedsComponent', make: () => new NeedsComponent(CAPACITY) },
-    { name: 'CurrentActionComponent', make: () => new CurrentActionComponent(CAPACITY) },
-    { name: 'PositionComponent', make: () => new PositionComponent(CAPACITY) },
+    { name: 'PrisonerRecordComponent', runtimeKey: 'records', make: () => new PrisonerRecordComponent(CAPACITY) },
+    { name: 'NeedsComponent', runtimeKey: 'needs', make: () => new NeedsComponent(CAPACITY) },
+    { name: 'CurrentActionComponent', runtimeKey: 'currentAction', make: () => new CurrentActionComponent(CAPACITY) },
+    { name: 'PositionComponent', runtimeKey: 'position', make: () => new PositionComponent(CAPACITY) },
   ];
 }
+
+/**
+ * What each per-slot default *is*, stated here independently of the
+ * `SlotDefault` lists that produce it.
+ *
+ * The tests below compare a reset slot against a freshly constructed
+ * component, which cannot tell whether the value the two agree on is the
+ * right one: a component states each default once and drives both its
+ * constructor `fill` and its `reset` from that statement, so changing it
+ * changes both sides of that comparison at once and both stay green. Two
+ * such changes survived the entire suite while this list was absent --
+ * `currentAction.actionIndex` from -1 to 0, and `currentAction.phase` from
+ * 'idle' to 'performing' -- and both are visible to a player before the
+ * first action tick: `prisoner-projection.ts` decides whether a prisoner is
+ * doing anything at all with `actionIndex >= 0`, and reports the room a
+ * prisoner occupies only while the phase is 'performing'.
+ */
+const SLOT_DEFAULTS: Readonly<Record<string, number>> = {
+  'records.sentenceLengthTicks': 0,
+  'records.priorIncidentsAtIntake': 0,
+  'records.sentenceEndTick': 0,
+  // RiskTier 0 is 'minimal' and CLASSIFICATION_GROUP_IDS[0] is
+  // 'general-population'; both are recomputed at the classification stage.
+  'records.riskTier': 0,
+  'records.classificationGroupIndex': 0,
+  'records.intakeStage': intakeStageIndex('queued'),
+  // Stated once for every need, the way `NeedsComponent.reset` itself loops
+  // `NEED_IDS`: a seventh need is covered here with no second edit.
+  ...Object.fromEntries(NEED_IDS.map((needId) => [`needs.levels.${needId}`, NEED_MAX])),
+  // The component's own documented "no action selected" sentinel, and the
+  // phase that pairs with it.
+  'currentAction.actionIndex': -1,
+  'currentAction.phase': ACTION_PHASES.indexOf('idle'),
+  'currentAction.phaseStartedAtTick': 0,
+  'currentAction.needFulfilledLastTick': 0,
+  'position.tileX': 0,
+  'position.tileY': 0,
+};
 
 describe('per-prisoner component slot defaults', () => {
   it('counts eighteen per-slot arrays across the four index-keyed components', () => {
@@ -88,6 +131,29 @@ describe('per-prisoner component slot defaults', () => {
       ['PositionComponent', 2],
     ]);
     expect(perComponent.reduce((total, [, count]) => total + count, 0)).toBe(18);
+  });
+
+  it('pins the value of every default, not only that reset agrees with construction', () => {
+    const fresh = new Map<string, number>();
+    const afterReset = new Map<string, number>();
+    const slot = 2;
+
+    for (const { runtimeKey, make } of componentsUnderTest()) {
+      for (const [path, array] of slotArraysOf(make())) fresh.set(`${runtimeKey}.${path}`, array[0]!);
+
+      const dirtied = make();
+      const dirtiedArrays = slotArraysOf(dirtied);
+      for (const [path, array] of dirtiedArrays) array[slot] = dirtyValueFor(fresh.get(`${runtimeKey}.${path}`)!);
+      dirtied.reset(slot);
+      for (const [path, array] of dirtiedArrays) afterReset.set(`${runtimeKey}.${path}`, array[slot]!);
+    }
+
+    // A nineteenth array has to state its default here as well as in its
+    // component's list -- the count assertion above says an array was added,
+    // this one says nobody decided what it should read as when unoccupied.
+    expect([...fresh.keys()].sort()).toEqual(Object.keys(SLOT_DEFAULTS).sort());
+    expect(Object.fromEntries(fresh)).toEqual(SLOT_DEFAULTS);
+    expect(Object.fromEntries(afterReset)).toEqual(SLOT_DEFAULTS);
   });
 
   for (const { name, make } of componentsUnderTest()) {
