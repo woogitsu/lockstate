@@ -1,7 +1,8 @@
 import { computeSaveChecksum } from './checksum';
 import { encodeEntityStoreSnapshot, type EncodedEntityStoreSnapshot } from './entity-codec';
 import type { JsonValue } from '../shared/json';
-import type { SaveEnvelopeV1, SaveEnvelopeV2, SaveEnvelopeV3, SavePayloadV1 } from './save-schema';
+import { NEED_IDS, NEED_MAX_SCALED, NEED_SCALE } from '../simulation/prisoners/needs';
+import type { SaveEnvelopeV1, SaveEnvelopeV2, SaveEnvelopeV3, SaveEnvelopeV4, SavePayloadV1, SavePayloadV3 } from './save-schema';
 
 /**
  * Forward migrations between save-schema versions.
@@ -135,4 +136,90 @@ export function migrateSaveEnvelopeV2ToV3(input: SaveEnvelopeV2): SaveEnvelopeV3
     checksum: computeSaveChecksum(migratedPayload as unknown as JsonValue),
     payload: migratedPayload,
   } as SaveEnvelopeV3;
+}
+
+/** V3's whole-level needs section, the only part of the payload V3 -> V4 reshapes. */
+type NeedLevelsV3 = NonNullable<SavePayloadV3['simulation']>['prisoners']['components']['needs'];
+
+/**
+ * Rescales one prisoner's-worth of whole-level needs into the stored units
+ * `NeedsComponent` uses from V4 on.
+ *
+ * The mapping is `level * NEED_SCALE`, which is exact and total: a V3 level
+ * is a whole number in `0..255` by that version's own schema, so every
+ * product is a whole number in `0..NEED_MAX_SCALED` and lands inside V4's
+ * bound. It is also the *only* honest mapping -- a V3 save recorded whole
+ * levels, so the sub-level remainder V4 can express is genuinely unknown for
+ * it, and zero is what "this prisoner is exactly at level N" means.
+ *
+ * Driven off `NEED_IDS` rather than the six literal keys, so a seventh need
+ * is carried with no second edit. `Math.min` cannot fire for any save the
+ * chain actually reaches this function with -- V3's schema has already
+ * rejected a level above 255 -- and is kept as the one line that would have
+ * to be reconsidered if `NEED_LEVEL_MAX_V3` were ever widened.
+ */
+function upgradeNeedLevels(needs: NeedLevelsV3): Record<string, readonly number[]> {
+  const rescaled: Record<string, readonly number[]> = {};
+  for (const needId of NEED_IDS) {
+    rescaled[needId] = needs[needId].map((level) => Math.min(NEED_MAX_SCALED, level * NEED_SCALE));
+  }
+  return rescaled;
+}
+
+/**
+ * V3 -> V4: need levels stop being whole 0-255 levels and start being those
+ * levels scaled by `NEED_SCALE` (#259).
+ *
+ * This is the first migration in this file that rewrites the *simulation*
+ * section rather than carrying it across, and the reason is that the field
+ * changed meaning rather than shape: `hunger: 200` is a different prisoner
+ * in V3 than in V4, and nothing in the value says which version wrote it.
+ * Leaving it alone would load every V3 prisoner at 1/200th of their real
+ * levels -- effectively starving the whole prison on first load.
+ *
+ * Nothing else in the payload is touched. `simulation` stays optional and an
+ * absent section stays absent: a V3 save written by a build with no
+ * subsystem state genuinely has none, and this function may no more invent
+ * one than `migrateSaveEnvelopeV2ToV3` may.
+ *
+ * The checksum is recomputed for the reason V1 -> V2 recomputes it, and with
+ * the same guarantee: `decodeSaveEnvelope` compares the *stored* checksum
+ * against the payload as written, at its declared version, only after the
+ * whole chain has run -- so this function's output is never the value that
+ * comparison examines.
+ *
+ * Pure: builds new objects and never mutates `input`.
+ */
+export function migrateSaveEnvelopeV3ToV4(input: SaveEnvelopeV3): SaveEnvelopeV4 {
+  const { saveSchemaVersion: _version, checksum: _checksum, payload, ...metadata } = input;
+
+  const simulation =
+    payload.simulation === undefined
+      ? undefined
+      : {
+          ...payload.simulation,
+          prisoners: {
+            ...payload.simulation.prisoners,
+            components: {
+              ...payload.simulation.prisoners.components,
+              needs: upgradeNeedLevels(payload.simulation.prisoners.components.needs),
+            },
+          },
+        };
+
+  const migratedPayload = {
+    kernel: payload.kernel,
+    world: payload.world,
+    construction: payload.construction,
+    ...(payload.entities === undefined ? {} : { entities: payload.entities }),
+    ...(simulation === undefined ? {} : { simulation }),
+    ...(payload.identity === undefined ? {} : { identity: payload.identity }),
+  };
+
+  return {
+    saveSchemaVersion: 4,
+    ...metadata,
+    checksum: computeSaveChecksum(migratedPayload as unknown as JsonValue),
+    payload: migratedPayload,
+  } as SaveEnvelopeV4;
 }

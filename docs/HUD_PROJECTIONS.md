@@ -86,8 +86,10 @@ both over the same inputs so the copies cannot drift. They did drift, for as
 long as both existed: issue #123 item 1.
 
 The raw value and raw maximum are deliberately **absent**. Needs are
-`0..255` `Uint8Array` levels today; that is an internal storage decision,
-and exposing it would guarantee some panel hard-codes `255`.
+`0..255` levels at the projection boundary and are stored as scaled
+`Uint16Array` values underneath (`NEED_SCALE`, #259); both are internal
+storage decisions, and exposing either would guarantee some panel hard-codes
+`255`.
 
 Semantics are "how full", not "how bad": a need at `permille: 0` is a
 starving prisoner. There is **no** severity band, because the simulation
@@ -122,7 +124,7 @@ per-prisoner object at all, so the always-visible strip is safe to
 re-project every frame at the stretch tier.
 
 The always-visible counts have no rows at all, which is what makes them
-publishable on a timer: `simulation/status-counts` (section 8) carries ten
+publishable on a timer: `simulation/status-counts` (section 8) carries eleven
 integers, so there is nothing here for this contract to bound. A
 projection that carries rows must be paged before it may be published on a
 cadence — a per-send cost that grows with the prison is exactly the failure
@@ -316,6 +318,15 @@ decision about what to build next.
     "instance declares the required object's capabilities", never against
     `minQuantity`, and `enclosed` / `outdoors` / `minimum-size` are
     projected as `'not-evaluated'`.
+
+    Since #261 this is visible on the strip rather than only in a test.
+    `RoomZoningService` is the first thing in `src/` that registers an
+    instance, and it registers a *zoned* room -- an empty rectangle -- so it
+    declares capacity `0` and no capabilities at all. `Rooms` therefore
+    counts the room while `roomCapacity` stays `0`, and every `object`
+    requirement on it reads `'missing-capability'`. Both are the room's true
+    state, not a projection defect: nothing has been placed in it, and
+    nothing can be until object placement exists.
 14. **Nothing validates room geometry at all.** There is no real
     room-geometry validation to project. Until #123 item 2 there was a
     *mocked* one — `RoomSystem.validateRoom` reported every `object`
@@ -344,8 +355,10 @@ decision about what to build next.
     skill *requirements* per role, but no staff entity carries a skill.
 21. **`wageBand` exists in content, and there is no payroll.** There is a
     treasury and a procurement system since #96/#89 — money buys materials —
-    but nothing pays anyone: no wage is ever debited, and nothing credits the
-    treasury at all. ADR 0017 decision 6 settles what the state pays *for*
+    but nothing pays anyone: no wage is ever debited, and the only thing that
+    credits the treasury is a cancelled purchase's refund
+    (`ProcurementSystem.cancel`), which is not an income line: nothing credits
+    it on a schedule. ADR 0017 decision 6 settles what the state pays *for*
     (per prisoner-day, accrued per occupied place) and no system accrues it,
     so the balance only ever goes down. Nothing wage-related may be rendered
     as a live figure; it is still a content hook for a future issue.
@@ -402,17 +415,27 @@ decision about what to build next.
     `construction-materials` container and still leaves that container
     **empty**, following the runtime's "no fabricated default content"
     convention — there is no starter stock, no delivery job and no scenario
-    that deposits into it. What changed with #89 is that a player can now
-    fill it: the Build panel's buy control issues `PurchaseMaterials`
-    (`src/main.ts`), the purchase spends from the treasury, and
-    `ProcurementSystem` deposits the delivery into that same container some
-    ticks later. So a build order in the running app reaches
-    `materials-pending`, and then leaves it once the player has bought what it
-    needs and the clock has run long enough to deliver — the loop
-    `tests/integration/economy-build-loop.test.ts` drives end to end. Whether
-    a fresh prison should *start* with materials, or earn them, is still a
-    session/economy decision and still unmade; what is no longer true is that
-    the wall never comes.
+    that deposits into it. `ProcurementSystem` (#249) is the one thing that
+    deposits into it at all, and only for a purchase.
+
+    What changed with #89 is that a player can now make that purchase: the
+    Build panel's buy control issues `PurchaseMaterials` (`src/main.ts`), the
+    purchase spends from the treasury, and `ProcurementSystem` deposits the
+    delivery into that same container some ticks later. So a build order in
+    the running app reaches `materials-pending` and then *leaves* it, once the
+    player has bought what it needs and the clock has run long enough to
+    deliver — the loop `tests/integration/economy-build-loop.test.ts` drives
+    end to end. Until then it stayed there for ever, and the cause moved twice
+    without the symptom moving at all: first "no supplier", then "no buy
+    surface", which `tests/foundation/unconsumed-command-contract.test.ts`
+    held as a gated fact until this closed it.
+
+    Tests and fixtures still deposit directly
+    (`tests/determinism/snapshot-restore-fidelity.test.ts`,
+    `tests/perf/fixtures/prison-fixture.ts`), which is why the original defect
+    never showed up as a failure. Whether a fresh prison should *start* with
+    materials, or earn them, is a session/economy decision and still unmade;
+    what is no longer true is that the wall never comes.
 
 32. **Build costs are material quantities, and that part is real**:
     `BuildableDefinition.materialsRequired` is `{itemId, quantity}` and

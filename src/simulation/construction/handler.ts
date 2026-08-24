@@ -47,9 +47,12 @@ export function createConstructionCommandHandler(
         constructionSystem.redo();
         break;
 
-      case 'ZoneRoom':
-        // Room zoning is owned by the room system and is not a construction order.
-        break;
+      // `ZoneRoom` is deliberately absent. It used to have a branch here that
+      // did nothing, under a comment saying zoning is not a construction
+      // order -- true, and the reason it now reaches `RoomZoningService`
+      // through `runtime/session-commands.ts` instead (#261). The switch is
+      // over the whole command union and no longer covers all of it, which is
+      // the accurate shape: this handler consumes construction commands only.
     }
   };
 }

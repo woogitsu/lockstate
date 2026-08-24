@@ -33,7 +33,8 @@ rather than an intuition:
   and then carried as state, snapshotted like any other state.
 
 "Stored costs a save-schema bump" is no longer an argument against
-allocation. Issue #70 is adding save schema V3 regardless: the envelope
+allocation. Issue #70 was adding save schema V3 regardless -- and it has
+since shipped (`docs/PERSISTENCE.md`). When this ADR was written the envelope
 today carries only `kernel`/`world`/`construction`/`entities` while the
 runtime builds roughly thirty subsystems, and prisoners, staff, security,
 contraband and incidents are not persisted at all. The two routes are

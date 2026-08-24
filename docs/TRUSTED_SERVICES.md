@@ -19,13 +19,15 @@ and threat model) and [ADR 0009](./adr/0009-challenge-verification-strategy.md)
 - **Executed against the real Supabase local stack:** the first nine
   migrations in `supabase/migrations/` and the first four pgTAP suites in
   `supabase/tests/`, under Supabase CLI 2.115.0 with GoTrue, PostgREST,
-  Storage and Realtime running. The seven #105 hardening migrations
-  (`20260824090000`, `20260824090100`, `20260824100000`, `20260824100100`,
-  `20260824110000`, `20260824110100`, `20260824110200`), suite 005, the
-  twenty-two assertions suite 002 gained for findings 1 and 2, the
-  twenty-nine it gained for findings 6, 7 and 9, and the thirteen suite 001
-  gained for finding 11 all postdate that run and are not in it. Reproduce
-  with:
+  Storage and Realtime running. Everything after those postdates that run and
+  is not in it: **the twelve migrations dated `20260824`** and **suites 005 to
+  008 in their entirety**, together with every assertion the first four suites
+  have gained since — among them the twenty-two suite 002 gained for #105
+  findings 1 and 2, the twenty-nine it gained for findings 6, 7 and 9, and the
+  thirteen suite 001 gained for finding 11. Stated as a date range and a suite
+  range rather than as a list of names because the list is what drifted: it
+  named seven migrations and one suite while twelve and four postdated the run.
+  Reproduce with:
   ```bash
   supabase start && supabase db reset && supabase test db
   ```
@@ -33,7 +35,7 @@ and threat model) and [ADR 0009](./adr/0009-challenge-verification-strategy.md)
   check, and the security audit of that run found a second — see "Defects
   this tooling found" below.
 - **Also executed against a plain PostgreSQL 16/18 + pgTAP:** every
-  migration and every suite — 232 assertions, and the only path the #105
+  migration and every suite — 233 assertions, and the only path the #105
   hardening has run on. First run on 16.13 + pgTAP 1.3.2, since also on
   18.6 + pgTAP 1.3.4 — no major version is required or pinned. Reproduce
   with:
@@ -58,24 +60,22 @@ and threat model) and [ADR 0009](./adr/0009-challenge-verification-strategy.md)
   the schema has run there; none of the checks above has. The local stack
   runs the same GoTrue/PostgREST/Storage images, but nothing here has
   exercised a real project's networking, quotas or connection pooling. The
-  seven #105 hardening migrations
-  (`20260824090000_pin_trigger_function_search_path.sql`,
-  `20260824090100_revoke_client_truncate.sql`,
-  `20260824100000_bind_challenge_evidence_to_payload.sql`,
-  `20260824100100_harden_submit_challenge_evidence.sql`,
-  `20260824110000_generalize_entitlement_idempotency.sql`,
-  `20260824110100_close_challenge_definition_oracle.sql` and
-  `20260824110200_validate_save_version_storage_path.sql`) postdate that
-  apply and have run on a scratch database only. Nothing in the challenge
-  ones touches stored data: `challenge_submissions` is empty on every
-  project, because a submission needs a published definition and the Z2
-  publisher does not exist. Two of the others can *refuse to apply* on a
-  populated project rather than changing a row — the ledger's natural-key
-  index if two provider-less `entitlement_events` rows are identical in
-  every recorded field, and the `save_versions_storage_path_shape` CHECK if
-  any row already carries a non-null `storage_path`. Both failures are loud
-  and destroy nothing; each migration names the query that answers whether
-  the condition holds.
+  same twelve migrations dated `20260824` — everything from
+  `20260824090000_pin_trigger_function_search_path.sql` through
+  `20260824150000_revoke_trusted_truncate.sql` — postdate that apply and have
+  run on a scratch database only. Nothing in the challenge ones touches
+  stored data: `challenge_submissions` is empty on every project, because a
+  submission needs a published definition and the Z2 publisher does not
+  exist. Two of the others can *refuse to apply* on a populated project
+  rather than changing a row by design — the ledger's natural-key index if
+  two provider-less `entitlement_events` rows are identical in every recorded
+  field, and the `save_versions_storage_path_shape` CHECK if any row already
+  carries a non-null `storage_path`. Those two are the deliberate ones, not
+  the only ones: `20260824101000`, `20260824120000` and `20260824130000` add
+  CHECK constraints without `NOT VALID`, so PostgreSQL validates every
+  existing row and a violating one refuses the migration as well. Every such
+  failure is loud and destroys nothing; each migration names the query that
+  answers whether the condition holds.
 - **Deliberately not built:** the deployed server functions themselves (the
   Edge Function/Worker handlers), a payment provider integration, a replay
   runner and a telemetry ingestion endpoint. Each is either out of scope
@@ -344,6 +344,23 @@ widening the read rule fails the gate and comes back to this function.
 Each failure has its own code (`build-not-allowed`,
 `final-state-hash-mismatch`, `metrics-mismatch`, …) so "your build is too
 old" is never confused with "these hashes disagree with the replay".
+
+The twenty-three codes are declared as an array in
+`src/services/challenges/rejection-codes.ts`, not only as a union type, so
+the vocabulary can be enumerated rather than merely type-checked.
+`tests/foundation/challenge-rejection-code-reachability-contract.test.ts`
+requires every member to be both emitted by the pipeline and named by the
+tests that drive it. Both directions are needed because issue #264 found
+three members that had a producer and no test: `evidence-too-large`,
+`command-after-final-tick` and `objective-metric-missing` appeared nowhere
+in the suite, and deleting each branch left the whole suite green — the last
+of them then returning `verified` with `rankedScore: 0` for a run whose
+objective metric the replay never produced, which is the one tier eligible
+for public ranking. All three are now driven behaviourally, since a
+reachability gate satisfied by an allow-list entry is not the same thing as
+coverage. The `rejection_code` column is still only length-bounded in SQL
+(128 characters, `20260824120000_bound_trusted_tier_columns.sql`); nothing
+in the database checks membership of this list.
 
 ### Ranking tiers
 `verified` (replayed and agreeing) is the only tier eligible for public

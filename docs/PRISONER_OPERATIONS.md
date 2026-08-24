@@ -28,7 +28,8 @@ Per the issue's explicit scope, this is deliberately bounded:
 
 - **Hot, per-tick-relevant, fixed-width numeric fields** as flat typed
   arrays -- `PrisonerRecordComponent` (sentence/risk/classification/intake
-  stage), `NeedsComponent` (needs.ts, one `Uint8Array` per need),
+  stage), `NeedsComponent` (needs.ts, one `Uint16Array` per need, holding
+  the level scaled by `NEED_SCALE`),
   `CurrentActionComponent` (action index/phase/timing), `PositionComponent`
   (tile-space, integer).
 - **Cold, rarely-mutated, string-keyed metadata** as a small wrapper class
@@ -80,14 +81,25 @@ prisoner (#31).
 `needs.ts` defines each need's per-tick decay rate as data (`NEED_DECAY_PER_TICK`),
 not an if-chain. `NeedsDecaySystem` (`needs-system.ts`) is a
 `SystemRegistration` scheduled every 10 ticks, decaying every prisoner's
-every need by exactly that batch's elapsed ticks in one call. Because
-`decayNeed` rounds to an integer level per call, this is only guaranteed
-deterministic at one *consistent* batch cadence -- it is not required to
-(and for sub-1-per-tick rates, does not) match what calling it once per
-single tick would produce. `NeedsDecaySystem` always uses its own fixed
-`schedule.intervalTicks`, so this never matters in practice; see
-`needs-system.ts`'s own doc comment and
-`tests/unit/prisoners-needs.test.ts` for the exact behavior this pins down.
+every need by exactly that batch's elapsed ticks in one call.
+
+Levels are **stored scaled** by `NEED_SCALE` (200) rather than as whole
+0-255 levels, and `decayNeed` works in those stored units. Every rate is a
+whole number of stored units per tick at that scale, so decay is exactly
+linear in `ticksElapsed`: the same total of ticks gives the same level however
+it is split across calls, which makes `schedule.intervalTicks` a scheduling
+choice rather than a balance one.
+
+That was not true before #259. Levels were whole numbers in a `Uint8Array`
+and `decayNeed` rounded per call, so the ten-tick interval produced a step of
+at most `0.5` for five of the six needs -- and `Math.round(n - d) === n` for
+any integer `n` and any such `d`. Those five needs never decayed at all, at
+any level, so the utility AI had only `bladder`'s deficit to score with. It
+was latent only because nothing in `src/` calls `admitPrisoner` yet. See
+`needs.ts`'s `NEED_SCALE` comment for why 200, `docs/PERSISTENCE.md`'s V4
+section for the save-format consequence, and
+`tests/unit/prisoners-needs.test.ts` plus
+`tests/unit/prisoners-needs-decay-system.test.ts` for what pins it.
 
 ## Regime: schedule blocks by classification group
 
@@ -146,6 +158,30 @@ required, the right capability. This is an explicit, stated scope
 assumption (AGENTS.md: "state assumptions when requirements are
 underspecified") -- building the real object-placement/instance-discovery
 system is construction/rooms work, not this issue's.
+
+**Who registers an instance (#261).** For as long as `ZoneRoom` had a no-op
+consumer, nothing in `src/` registered one except the *restore* path -- so
+the only rooms a session could hold were rooms no session had a way to
+create, and the status strip's `Rooms` count was structurally zero.
+`src/simulation/rooms/zoning.ts`'s `RoomZoningService`, routed from
+`runtime/session-commands.ts`, is the registrar for a live session: it paints
+the world's per-tile zoning plane with the room catalog's `numericId` and
+registers one instance anchored at the zoned rectangle's top-left tile, or
+refuses the request (unowned land, an overlap, an unknown room type) with a
+reason it keeps in a bounded window. It registers that instance with
+**capacity `0` and no object capabilities**, because object placement still
+does not exist and an empty rectangle accommodates nobody -- that module's
+header argues why this is a measurement rather than a placeholder, and #261
+records the content addition a usable capacity would need.
+
+That zero has one consequence worth stating next to the intake stage machine
+below: a zoned cell is a *matching* instance that can never free up, so
+`accommodation-assignment` keeps retrying against it rather than failing
+fast. The rule itself is unchanged -- it fails only when no instance of the
+required type exists at all -- but its stated justification, that a real
+prison holds an arriving prisoner because capacity may return, does not hold
+for a room with no beds in it. Nothing in the shipped application reaches
+that path yet: `ZoneRoom` has no producer and nothing calls `admitPrisoner`.
 
 **Performance note:** `allByRoomCatalogId`/`findAvailable` are a per-tick,
 potentially-thousands-of-instances hot path (every pending intake and every
@@ -253,6 +289,8 @@ locomotion/rendering; the complete final need/action catalog and balance;
 real object-placement tracking (the reason `RoomInstanceRegistry` exists
 as an explicit, minimal bridge instead); UI/save-file integration (a session
 UI does now exist -- the HUD and save panel mounted by `src/main.ts` -- but
-nothing in it surfaces prisoner state, matching #19/#22's precedent of
-shipping the system before the surface; the save-file half was closed later,
+the only prisoner state it surfaces is the status strip's population counts
+(#104) -- no roster, no needs, no actions and no cell assignment reaches a
+panel, matching #19/#22's precedent of shipping the system before the
+surface; the save-file half was closed later,
 by #70).

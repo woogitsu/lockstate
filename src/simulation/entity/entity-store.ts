@@ -56,8 +56,14 @@ export const GENERATION_SHIFT = 20;
  * No save is affected. Reaching generation 2,048 needs 2,048 destroy/spawn
  * cycles of one index, and nothing in `src/` destroys an entity at all
  * (#31), so no save this codebase can produce holds such an id.
+ *
+ * Exported because the id format has a second reader outside this class:
+ * `src/rendering/feed/actors-from-snapshot.ts` rebuilds ids from a *snapshot*
+ * of the store's liveness ledger, where there is no `EntityStore` instance to
+ * ask. It is a pure bit-shuffle over an index and a generation, so sharing it
+ * costs nothing and keeps one definition of how an `EntityId` is packed.
  */
-const packEntityId = (index: number, generation: number): EntityId =>
+export const packEntityId = (index: number, generation: number): EntityId =>
   ((index & INDEX_MASK) | ((generation << GENERATION_SHIFT) & GENERATION_MASK)) >>> 0;
 
 export class EntityStore {

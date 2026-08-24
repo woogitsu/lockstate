@@ -11,37 +11,7 @@ import {
   challengeSubmissionSchema,
   measureEvidenceBytes,
 } from './evidence';
-
-/**
- * Every way a submission can fail, as a distinct code. A single
- * `invalid` code would make the difference between "your build is too old"
- * (a support answer) and "these hashes do not match the replay" (a
- * cheating or determinism signal) invisible.
- */
-export type ChallengeRejectionCode =
-  | 'invalid-shape'
-  | 'account-mismatch'
-  | 'challenge-mismatch'
-  | 'challenge-version-mismatch'
-  | 'definition-hash-mismatch'
-  | 'build-not-allowed'
-  | 'content-version-not-allowed'
-  | 'config-hash-mismatch'
-  | 'seed-mismatch'
-  | 'submission-window-closed'
-  | 'evidence-too-large'
-  | 'command-budget-exceeded'
-  | 'tick-budget-exceeded'
-  | 'command-stream-out-of-order'
-  | 'command-after-final-tick'
-  | 'checkpoint-cadence-invalid'
-  | 'evidence-hash-mismatch'
-  | 'duplicate-evidence'
-  | 'replay-failed'
-  | 'checkpoint-hash-mismatch'
-  | 'final-state-hash-mismatch'
-  | 'metrics-mismatch'
-  | 'objective-metric-missing';
+import type { ChallengeRejectionCode } from './rejection-codes';
 
 export interface ChallengeReplayOutcome {
   readonly finalTick: number;

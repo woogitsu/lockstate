@@ -9,7 +9,7 @@ import { expect, test, type Page } from '@playwright/test';
  *
  * Every other spec in this directory drives a purpose-built harness page.
  * That is the right shape for a module under test, but it means nothing so
- * far has ever loaded the page a player loads. Eleven claims only exist once
+ * far has ever loaded the page a player loads. Twelve claims only exist once
  * the pieces are assembled in a browser, and none of them can be settled a
  * layer down (the count is this list's own length, and it read "six" while
  * the list held seven):
@@ -100,6 +100,17 @@ import { expect, test, type Page } from '@playwright/test';
  *    import, so no unit test executes it. A tee over the real `postMessage`
  *    on this page is the only place the command is observable at all, and the
  *    order id it mints is minted here and never echoed back.
+ * 12. **The 30-second autosave actually fires, from play alone.** Issue #146's
+ *    defect was that nothing ever called `markDirty`, so the interval autosave
+ *    was configured and dead and the only automatic write was the best-effort
+ *    one on `pagehide`. `tests/foundation/composition-root-contract.test.ts`
+ *    pins the line that fixes it and says plainly what that cannot prove —
+ *    *"it proves a wiring is written, not that it works"* — and points here for
+ *    the behaviour. It was not here: #264 found that prefixing the line with a
+ *    never-true `if` left `tsc` clean and every test green. Nothing below the
+ *    assembled page can settle it, because the seam joins a `SimulationCommandSender`
+ *    built at module scope to a `SessionController` built inside
+ *    `bootPersistence`, and only `src/main.ts` holds both ends.
  *
  * Deliberately NOT here, because a headless test already proves it and a
  * browser test that repeats one costs a minute of CI and adds no evidence:
@@ -185,6 +196,19 @@ interface WorkerTeeWindow extends Window {
  */
 interface CommandTeeWindow extends Window {
   lockstateSentToWorker?: readonly unknown[];
+}
+
+/**
+ * What the autosave probe installed by the interval-autosave test exposes.
+ *
+ * `longTimers` are the delays this page asked for that the probe shortened, so
+ * a test can say the autosave *scheduled* something as well as that a save
+ * landed. `lifecycle` records the two events `LifecycleSaveHandler` listens
+ * for, so the test can prove the write it observed did not come from one of
+ * them -- which is the whole distinction issue #146 turns on.
+ */
+interface AutosaveProbeWindow extends Window {
+  lockstateAutosaveProbe?: { readonly longTimers: number[]; readonly lifecycle: string[] };
 }
 
 /**
@@ -1763,6 +1787,131 @@ test.describe('the assembled application', () => {
     // And nothing left this thread: a refusal that still posted the command
     // would spend the money in the worker and paint a refusal about it.
     expect(await purchases()).toHaveLength(sentBefore);
+  });
+
+  /**
+   * Issue #146's autosave, doing the thing it exists to do.
+   *
+   * `tests/foundation/composition-root-contract.test.ts` pins
+   * `commandSender?.onCommandAccepted(() => controller.markDirty())` by
+   * substring, and is explicit that a substring proves a wiring is *written*
+   * and not that it works -- naming this suite as where the behaviour belongs.
+   * It did not belong to anything: issue #264 prefixed that line with
+   * `if (Number.isNaN(0))`, which keeps the pinned substring byte-for-byte, and
+   * measured `tsc` clean with the whole headless suite green. This is that
+   * missing half.
+   *
+   * Every layer under this one is already proven and none of them can reach it.
+   * `AutosaveScheduler` coalesces and fires on its own timer
+   * (`tests/unit/persistence-local-autosave.test.ts`); `SessionController`
+   * turns a dirty marker into a repository write
+   * (`tests/unit/persistence-session-controller.test.ts`);
+   * `SimulationCommandSender` calls its accepted-listener on a `queued` reply
+   * (`tests/unit/ui-simulation-commands.test.ts`). The join between them exists
+   * only in `src/main.ts`, because the sender is built at module scope and the
+   * controller inside `bootPersistence`.
+   *
+   * ## The two things this has to rule out
+   *
+   * **That the write came from a lifecycle event.** #146's defect left the
+   * best-effort `pagehide` save as the only automatic write, so a test that
+   * navigated would pass with the defect present. Nothing here navigates, and
+   * the probe records `pagehide` and a hidden `visibilitychange` so the
+   * assertion is that neither fired rather than that neither was asked for.
+   *
+   * **That the clock did the work.** Waiting 30 real seconds would put this
+   * test at the mercy of the suite's timeout, so the probe shortens any
+   * `setTimeout` of 30 s or more to a few milliseconds. That is a fake of the
+   * autosave interval and nothing else: it is installed on `window.setTimeout`
+   * only, so the simulation worker's own timers (a separate global scope) and
+   * Phaser's `requestAnimationFrame` loop are untouched, and `src/main.ts`
+   * schedules no other timer that long -- which the first assertion below
+   * states, by requiring that no long timer exists until a command is
+   * accepted. Deliberately narrower than `page.clock`, whose remit includes
+   * `requestAnimationFrame` and therefore the loop that processes the world
+   * drag this test depends on.
+   */
+  test('the interval autosave writes after play alone, with no lifecycle event (#146)', async ({ page }) => {
+    await page.addInitScript(() => {
+      const probe = { longTimers: [] as number[], lifecycle: [] as string[] };
+      const realSetTimeout = window.setTimeout.bind(window);
+
+      Object.defineProperty(window, 'setTimeout', {
+        configurable: true,
+        value: (handler: TimerHandler, timeout?: number, ...args: unknown[]): number => {
+          if (typeof timeout === 'number' && timeout >= 30_000) {
+            probe.longTimers.push(timeout);
+            return realSetTimeout(handler, 25, ...args);
+          }
+          return realSetTimeout(handler, timeout, ...args);
+        },
+      });
+
+      // Registered before the app's own listeners, and never removed: what is
+      // being asserted is that these never fire at all.
+      window.addEventListener('pagehide', () => probe.lifecycle.push('pagehide'));
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') probe.lifecycle.push('visibility-hidden');
+      });
+
+      (window as unknown as AutosaveProbeWindow).lockstateAutosaveProbe = probe;
+    });
+
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+
+    const readProbe = async (): Promise<{ longTimers: number[]; lifecycle: string[] }> =>
+      page.evaluate(
+        () =>
+          (window as unknown as AutosaveProbeWindow).lockstateAutosaveProbe ?? {
+            longTimers: [] as number[],
+            lifecycle: [] as string[],
+          },
+      );
+
+    // A session, and the generation `createPrison` writes immediately so that a
+    // crash right after "New prison" does not leave an empty slot.
+    await page.getByRole('button', { name: 'New prison' }).click();
+    const status = page.locator('.save-panel__status');
+    await expect(status).toContainText('Saved (generation ');
+    const afterCreate = await status.textContent();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+
+    // Nothing has asked for a long timer yet: the scheduler is purely
+    // dirty-driven, so with no command accepted there is no autosave pending.
+    // This is the defect's own signature, and it is the state the page is in
+    // right now for a legitimate reason.
+    expect((await readProbe()).longTimers).toEqual([]);
+
+    // Play: a wall, laid on the world, accepted by the simulation.
+    await armBuildTool(page);
+    await dragOnWorld(page);
+    await expect(page.locator('.hud__refusal')).toBeHidden();
+
+    // The interval was armed by the acceptance, which is the seam under test.
+    // A count rather than an exact list: the scheduler coalesces markers into
+    // one trailing-edge timer, but a marker arriving after that timer has
+    // already fired legitimately arms another.
+    await expect
+      .poll(async () => (await readProbe()).longTimers.length, {
+        message:
+          'no 30-second timer was scheduled after an accepted command, so nothing marked the session dirty -- which is issue #146 exactly',
+      })
+      .toBeGreaterThan(0);
+    expect([...new Set((await readProbe()).longTimers)], 'the autosave interval is 30 seconds').toEqual([30_000]);
+
+    // And it wrote. A new generation id is the repository reporting a
+    // completed transaction, so this is a save that reached storage rather
+    // than one that was merely attempted.
+    await expect
+      .poll(async () => status.textContent(), {
+        message: 'the autosave timer fired but no save result reached the panel',
+      })
+      .not.toBe(afterCreate);
+    await expect(status).toContainText('Saved (generation ');
+
+    // The write came from the interval, not from the page going away.
+    expect((await readProbe()).lifecycle).toEqual([]);
   });
 
   /**

@@ -157,7 +157,7 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
 
   // First child, so the wordmark reads before the metrics in the DOM as well as
   // on screen. Order matters here beyond aesthetics: a screen reader walks the
-  // strip in document order, and "which build is this" belongs before five
+  // strip in document order, and "which build is this" belongs before the
   // counters rather than after them.
   const brandSlot = element('div', { className: 'hud-strip__brand' });
 

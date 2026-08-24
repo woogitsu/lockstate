@@ -61,7 +61,7 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  *
  * - A producer that assembles the object from a variable (`{ type: kind, ... }`)
  *   is invisible to a text scan. None exists today, and the positive control
- *   below fails loudly if the one that does exist stops being found.
+ *   below fails loudly if either of the two that do exist stops being found.
  * - The scan cannot tell a live dispatch from dead code inside `src/`. It
  *   answers "can this command be constructed anywhere in the application",
  *   which is the weaker and checkable half of "can a player send it".
@@ -90,7 +90,7 @@ const AWAITING_PRODUCER: Readonly<Record<string, string>> = {
   CancelBuildOrder:
     'Handled at `construction/handler.ts` and reachable from `ConstructionSystem.cancelOrder`, but nothing in the application constructs the command. The Build panel places an order and offers no way to withdraw one, so a misplaced wall can only be undone -- and `Undo` has no producer either. Needs a control on the panel, which is #174 territory since that panel is already over its height budget.',
   ZoneRoom:
-    'Declared, schema-bounded and handled, with no producer. Room zoning has no interface at all: `HudIntent` carries `place-build-order` and `arm-build-tool` and nothing about rooms, so the whole zoning vocabulary is reachable only from a test. This is the command shape a room-designation tool would use when one exists.',
+    'Declared, schema-bounded and handled, with no producer. Its consumer stopped being a no-op in #261 -- `RoomZoningService` paints the world\'s zoning plane and registers a room instance, which is what finally moves the status strip\'s `Rooms` count -- so what is missing here is only the producer. Room zoning still has no interface at all: `HudIntent` carries `place-build-order`, `purchase-materials` and `arm-build-tool` and nothing about rooms, so the whole zoning vocabulary is reachable only from a test. This is the command shape a room-designation tool would use when one exists.',
   Undo:
     'Handled at `construction/handler.ts` and wired to `ConstructionSystem.undo()`, which releases a cancelled order\'s materials. No producer: there is no undo control and no keyboard binding -- `src/input/actions.ts` declares no `edit.undo` action for one to be bound to. So the transaction stack the construction system maintains can be pushed and never popped.',
   Redo:
