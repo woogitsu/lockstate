@@ -37,7 +37,7 @@
 -- suite.
 
 begin;
-select plan(76);
+select plan(83);
 
 insert into auth.users (id, email) values
   ('33333333-3333-3333-3333-333333333333', 'entitled@example.test'),
@@ -1062,6 +1062,97 @@ select is(
   '((published_at <= now()) AND (opens_at <= now()))',
   'the read policy is still exactly the predicate submit_challenge_evidence() copies into its lookup'
 );
+
+-- --- Trusted-tier column bounds (issue #189) --------------------------
+--
+-- The three tables above are written only by `SECURITY DEFINER` functions or
+-- by `service_role` grants, so an oversized value here needs a bug in the
+-- trusted tier or a compromised key rather than a hostile client -- defence in
+-- depth, not a reachable hole, and worth stating as such. It is asserted for
+-- the same reason `entitlement_events` has carried five `char_length` bounds
+-- since 20260823090000: a size bound writes down an invariant the trusted
+-- tier's own TypeScript contract already satisfies, so a bug cannot silently
+-- violate it. That is a different act from `TRUNCATE` (#163), which would
+-- *remove* an authority ADR 0008 may have meant the trusted tier to have.
+--
+-- Both directions, as in suite 006: each bound refuses a value past the
+-- ceiling and admits one exactly at it. The admit half is what fails if a
+-- later change tightens a ceiling below what the contract can produce.
+--
+-- Probed as the table owner, deliberately: these paths are unreachable from
+-- either client role, so `set local role` would prove nothing here beyond what
+-- suite 003 already pins about the grants.
+
+select throws_ok(
+  $$ insert into public.entitlements (user_id, key, value)
+     values ('11111111-1111-1111-1111-111111111111', repeat('k', 129), '{}'::jsonb) $$,
+  '23514',
+  null,
+  'an entitlement key past 128 characters is refused'
+);
+
+select throws_ok(
+  $$ insert into public.entitlements (user_id, key, value)
+     values ('11111111-1111-1111-1111-111111111111', 'save-slots',
+             jsonb_build_object('junk', repeat('v', 4096))) $$,
+  '23514',
+  null,
+  'an entitlement value past 4 KiB is refused'
+);
+
+-- A real seeded identity here, not the fabricated id the two refusals above
+-- use: those assert SQLSTATE `23514` specifically, so a foreign-key failure
+-- (`23503`) would not satisfy them, but an admission has to get past the key.
+-- The primary key is `(user_id, key)`, so a 128-character key cannot collide
+-- with the row the ledger recompute already wrote for this account.
+select lives_ok(
+  $$ insert into public.entitlements (user_id, key, value)
+     values ('55555555-5555-5555-5555-555555555555', repeat('k', 128),
+             jsonb_build_object('k', repeat('v', 4096 - 9))) $$,
+  'an entitlement key at 128 characters and a value at exactly 4 KiB are admitted'
+);
+
+select throws_ok(
+  $$ insert into public.challenge_definitions
+       (challenge_id, version, definition, definition_hash, signature, opens_at, closes_at)
+     values ('challenge.bound', 1, jsonb_build_object('junk', repeat('d', 65536)),
+             repeat('f', 16), '{"s":1}'::jsonb, now(), now() + interval '1 day') $$,
+  '23514',
+  null,
+  'a challenge definition body past 64 KiB is refused'
+);
+
+select throws_ok(
+  $$ insert into public.challenge_definitions
+       (challenge_id, version, definition, definition_hash, signature, opens_at, closes_at)
+     values ('challenge.bound', 1, '{"k":1}'::jsonb, repeat('f', 16),
+             jsonb_build_object('junk', repeat('s', 4096)), now(), now() + interval '1 day') $$,
+  '23514',
+  null,
+  'a challenge definition signature past 4 KiB is refused'
+);
+
+select lives_ok(
+  $$ insert into public.challenge_definitions
+       (challenge_id, version, definition, definition_hash, signature, opens_at, closes_at)
+     values ('challenge.bound', 1, jsonb_build_object('k', repeat('d', 65536 - 9)),
+             repeat('f', 16), jsonb_build_object('k', repeat('s', 4096 - 9)),
+             now(), now() + interval '1 day') $$,
+  'a definition body at exactly 64 KiB and a signature at exactly 4 KiB are admitted'
+);
+
+-- `rejection_code` is nullable, and the existing `..._rejected_has_code`
+-- constraint only requires a rejected row to *have* one. The bound is on its
+-- length, and NULL must stay admissible or every non-rejected row would fail.
+select is(
+  (select count(*)::int from pg_constraint
+    where conrelid = 'public.challenge_submissions'::regclass
+      and conname = 'challenge_submissions_rejection_code_check'
+      and pg_get_constraintdef(oid) ilike '%is null%'),
+  1,
+  'the rejection-code bound admits NULL, so it does not make the column required'
+);
+
 
 select * from finish();
 rollback;
