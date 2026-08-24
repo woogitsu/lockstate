@@ -22,13 +22,15 @@ design. That gap is now closed except where noted:
   carried, and it earned its keep immediately: the first run failed on the
   *first assertion* of suite 001 and exposed defect 4 below.
 
-  **The #105 hardening is not in that run.** The two migrations and the
-  three assertions added for issue #105 findings 5, 10 and 3 (see
-  "Declarations, not only privileges" below) postdate it and have been
-  executed only against plain PostgreSQL, so the counts above are the
-  stack-run counts and not today's. `pnpm verify:sql` is at 99 assertions
-  (19/19, 25/25, 21/21, 26/26, 8/8); re-running `supabase test db` is what
-  would raise the stack figure to match.
+  **The #105 hardening is not in that run.** Four migrations now postdate
+  it — `20260824090000` and `20260824090100` for findings 5, 10 and 3 (see
+  "Declarations, not only privileges" below), then `20260824100000` and
+  `20260824100100` for findings 1 and 2 — along with every suite change
+  that came with them, and all of it has been executed only against plain
+  PostgreSQL. The counts above are the stack-run counts, not today's.
+  `pnpm verify:sql` is at 121 assertions (19/19, 47/47, 21/21, 26/26, 8/8),
+  measured on the run that produced this line; re-running
+  `supabase test db` is what would raise the stack figure to match.
 - **Executed through GoTrue and PostgREST:** `pnpm verify:stack`
   (`scripts/verify-supabase-stack.mjs`, 48/48 checks against a running
   stack). The pgTAP suites feed `auth.uid()` with `set_config`, so they
@@ -43,7 +45,7 @@ design. That gap is now closed except where noted:
   key, which is the only place PostgREST's mapping of that credential onto
   the role is exercised at all.
 - **Executed against plain PostgreSQL 16.13/18.6 + pgTAP:** every
-  migration and every suite via `pnpm verify:sql` — 99 assertions — which
+  migration and every suite via `pnpm verify:sql` — 121 assertions — which
   prepares a scratch database with
   `scripts/sql/supabase-compat-harness.sql`. This is the only path the
   #105 hardening has run on. That harness
