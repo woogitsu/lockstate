@@ -14,6 +14,52 @@ export const INDEX_MASK = 0x000FFFFF; // 20 bits
 export const GENERATION_MASK = 0xFFF00000; // 12 bits
 export const GENERATION_SHIFT = 20;
 
+/**
+ * Why every packed id ends in `>>> 0`.
+ *
+ * The two fields fill the whole word -- 20 index bits and 12 generation bits
+ * is 32 of 32 -- so `generation << GENERATION_SHIFT` sets bit 31 as soon as
+ * the generation reaches 2,048, and JavaScript's `|` yields a *signed*
+ * int32. Without the shift back to unsigned, `spawn()` returns
+ * `-2147483648` for generation 2,048 and `-1048576` for generation 4,095.
+ *
+ * The store itself survives that: every decode site here uses `>>>` or
+ * `& INDEX_MASK`, both of which read a negative id correctly. Three places
+ * outside it do not, and each states the unsigned contract in as many words:
+ *
+ * - `ActorIdentityRegistry`'s `assertEntityId` throws `RangeError` on a
+ *   negative id, and `assign` is on the intake path -- so admitting a
+ *   prisoner into such a slot throws inside `IntakeSystem.update`.
+ * - `save-schema.ts`'s `entityIdSchema` is `z.number().int().min(0)`, under
+ *   the comment "Packed `EntityId`s: index and generation in one
+ *   non-negative integer", and `createSaveEnvelope` parses and throws. The
+ *   session would not serialise.
+ * - A dozen sites in `src/simulation/` sort entity ids numerically to
+ *   establish canonical order. A negative id sorts to the front of every one
+ *   of them, so the same state yields a different order depending only on
+ *   which generation a slot happens to be on.
+ *
+ * So the unsigned domain is the contract two modules already enforce and a
+ * third relies on, and these two encode sites were the only places
+ * contradicting it. The fix is the producer, not the assertions: relaxing
+ * them would buy nothing and cost the sort sites their total order.
+ *
+ * What this does *not* fix, stated because it is the neighbouring claim and
+ * would be easy to assume: `EntityQuery.execute` walks indices, and index
+ * order is id order only while every live slot shares a generation --
+ * `getIdByIndex(0)` at generation 2,048 is 2,147,483,648 while
+ * `getIdByIndex(1)` at generation 0 is 1. That is true with or without the
+ * shift below, because the generation occupies the *high* bits. The comment
+ * there over-claimed and is corrected to what the loop delivers; it is not
+ * something `>>> 0` repairs.
+ *
+ * No save is affected. Reaching generation 2,048 needs 2,048 destroy/spawn
+ * cycles of one index, and nothing in `src/` destroys an entity at all
+ * (#31), so no save this codebase can produce holds such an id.
+ */
+const packEntityId = (index: number, generation: number): EntityId =>
+  ((index & INDEX_MASK) | ((generation << GENERATION_SHIFT) & GENERATION_MASK)) >>> 0;
+
 export class EntityStore {
   public readonly capacity: number;
   private readonly generations: Uint16Array;
@@ -57,8 +103,7 @@ export class EntityStore {
     }
 
     this.alive[index] = 1;
-    const generation = this.generations[index]!;
-    return (index & INDEX_MASK) | ((generation << GENERATION_SHIFT) & GENERATION_MASK);
+    return packEntityId(index, this.generations[index]!);
   }
 
   /**
@@ -166,8 +211,7 @@ export class EntityStore {
    * slot, so the unchecked reconstruction cannot be laundered into liveness.
    */
   public getIdByIndex(index: number): EntityId {
-    const generation = this.generations[index]!;
-    return (index & INDEX_MASK) | ((generation << GENERATION_SHIFT) & GENERATION_MASK);
+    return packEntityId(index, this.generations[index]!);
   }
   
   public getSnapshot(): EntityStoreSnapshot {
