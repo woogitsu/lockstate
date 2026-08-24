@@ -1,8 +1,22 @@
 import { decodeMainToWorkerMessage } from '../protocol/decode';
 import { SimulationWorkerStateMachine } from './state-machine';
 import { SIMULATION_PROTOCOL_VERSION } from '../protocol/types';
+import { BUILD_IDENTITY } from '../../shared/build-identity';
 
-const BUILD_ID = 'dev-build'; // To be injected by Vite or build process in the future
+/**
+ * Reported to the main thread as `workerBuildId` in the ready handshake.
+ *
+ * It used to be the literal `'dev-build'`, under a comment reading "To be
+ * injected by Vite or build process in the future". That is now what happens:
+ * `src/shared/build-identity.ts` is the injection seam, and this is the same
+ * identity the save envelope carries and the badge in the corner shows -- so a
+ * handshake, a save file and the screen cannot disagree about which build is
+ * running.
+ *
+ * Still validated as an `identifierSchema` on the receiving side, which is why
+ * the identity uses `-` and not semver's `+` to join its parts.
+ */
+const BUILD_ID = BUILD_IDENTITY.id;
 
 const stateMachine = new SimulationWorkerStateMachine(
   self as unknown as MessagePort,

@@ -35,9 +35,28 @@ import type { LocalizationKey } from './content/localization';
 import { defaultLocaleEnCatalog } from './content/default-locale-en';
 import { messageCatalogFromLocalizationCatalog } from './services/localization/catalog';
 import { Localizer } from './services/localization/localizer';
+import { createBrandBadge } from './ui/brand-badge';
+import { BUILD_IDENTITY } from './shared/build-identity';
 import './styles.css';
 
-const GAME_VERSION = 'lockstate-dev';
+/**
+ * Stamped into every save envelope as `SaveEnvelope.gameVersion`.
+ *
+ * It used to be the literal `'lockstate-dev'`, which meant no save could name
+ * the build that wrote it -- every build of every day shared one value, so the
+ * field carried no information at all. It is now the injected build identity
+ * (`src/shared/build-identity.ts`), which is also what the badge in the corner
+ * shows and what the worker reports in its handshake: one answer to "which
+ * build is this", in three places that each used to have their own.
+ *
+ * Safe to change. `gameVersion` is validated by `identifierSchema` and is never
+ * compared for equality on load -- nothing in `src/persistence/**` reads it back
+ * to decide whether a save is loadable, so an older save keeps loading. The one
+ * equality comparison in the repository is
+ * `src/services/challenges/verification.ts`, against a challenge definition's
+ * `allowedGameVersions`, and no definition anywhere names the old literal.
+ */
+const GAME_VERSION = BUILD_IDENTITY.id;
 
 /**
  * The simulation worker is created once, up front, and shared.
@@ -372,6 +391,22 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     },
     onError: (failure) => console.warn('HUD action failed', failure),
   });
+
+  /*
+   * The build identity, in the corner, from first paint.
+   *
+   * Mounted into the strip's chrome slot rather than built by the strip: see
+   * `src/ui/brand-badge.ts` for why a projection of prison state is the wrong
+   * place for a compile-time constant. It is mounted here unconditionally, on
+   * the same principle that moved `mountInterface` itself out of
+   * `bootPersistence` (issue #82): a browser that cannot start a worker is
+   * exactly the browser whose player most needs to be able to report which
+   * build failed.
+   *
+   * The same `localizer` the HUD uses, not a second one -- the mistake
+   * `SavePanel`'s defaulted localizer still has to work around.
+   */
+  hud.brandSlot.append(createBrandBadge({ localizer }).element);
 
   tool?.attachReadout((target) => hud?.setBuildTarget(target));
   return hud;

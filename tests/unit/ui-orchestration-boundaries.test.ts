@@ -22,8 +22,9 @@ import {
  * correctly; what no document said is that the rest of the tree was ungated.
  *
  * There were five such modules when this file was written (869 lines);
- * `save-panel-messages.ts` (#208) made six, and the vacuity guard below is
- * the list a new one has to be added to.
+ * `save-panel-messages.ts` (#208) made six, and `brand-badge.ts` with
+ * `brand-messages.ts` made eight. The vacuity guard below is the list a new one
+ * has to be added to.
  *
  * ## Why this is a separate file, and not a widening of the HUD gate
  *
@@ -193,6 +194,34 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
     reason:
       'Type-only: `WorkerToMainMessage` from `src/simulation/protocol/types`. It reads counts off snapshot messages into a HUD view model and nothing else; 57 lines, no simulation code runs because of it.',
   },
+  {
+    file: 'src/ui/brand-badge.ts',
+    tree: 'content',
+    kind: 'type-only',
+    reason:
+      'Type-only: `LocalizationKey` from `src/content/localization`, to type its `BrandLocalizer` port. The same erased naming-of-a-key-type every other UI module here does; no content code runs because of it.',
+  },
+  {
+    file: 'src/ui/brand-badge.ts',
+    tree: 'services',
+    kind: 'type-only',
+    reason:
+      'Type-only: `MessageParameters` from `src/services/localization/format`, for the `format(key, parameters)` signature of its port. **Narrower than the save panel\'s entry on purpose, and the difference is the point of recording the kind:** this module takes its localizer by construction from `src/main.ts` and builds none of its own, so it needs no value from that layer. The save panel\'s two `value` entries exist only because it still defaults a localizer it should be handed. A `value` import appearing here would mean this badge had started constructing a second localizer, which is the thing that entry is a standing reminder to undo.',
+  },
+  {
+    file: 'src/ui/brand-badge.ts',
+    tree: 'shared',
+    kind: 'value',
+    reason:
+      'Value: `BUILD_IDENTITY` from `src/shared/build-identity`, plus the `BuildIdentity` type. The first dependency on `src/shared/` from this tier, and the one layer whose value import is not a seam to be closed later: the module is nine lines of compile-time constant with no imports of its own, no I/O and no DOM, and reading it is the whole point of the badge. It is a `value` and not `type-only` because a constant cannot be erased. Note that the badge takes the identity as an *option* and only defaults to this constant -- which is why the module is drivable from a test with no `define` at all.',
+  },
+  {
+    file: 'src/ui/brand-messages.ts',
+    tree: 'content',
+    kind: 'type-only',
+    reason:
+      'Type-only: `LocalizationKey` from `src/content/localization`. A frozen registry of the badge\'s message keys and nothing else, in the shape `src/ui/hud/messages.ts` and `src/ui/save-panel-messages.ts` both use; naming the key type is what lets `satisfies Readonly<Record<string, LocalizationKey>>` check every entry at compile time. Erased, and it names no other layer.',
+  },
 ];
 
 const dependencies = findCrossTreeDependencies(orchestrationFiles, OWN_TREE);
@@ -206,6 +235,8 @@ describe('UI orchestration boundaries', () => {
     // avoid, and the one `rendering-module-boundaries.test.ts` and
     // `ui-hud-messages.test.ts` both carry a guard for.
     expect(orchestrationFiles.map(({ file }) => file)).toEqual([
+      'src/ui/brand-badge.ts',
+      'src/ui/brand-messages.ts',
       'src/ui/build-tool.ts',
       'src/ui/save-panel-messages.ts',
       'src/ui/save-panel.ts',

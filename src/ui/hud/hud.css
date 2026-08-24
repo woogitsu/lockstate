@@ -80,6 +80,25 @@
   border-bottom: var(--hairline) solid var(--border);
 }
 
+/*
+ * The host's chrome slot at the left end of the strip (`StatusStrip.brandSlot`).
+ *
+ * The HUD gives it a place in the flex row and nothing else: no width, no
+ * padding, no border, no background. So an empty slot is exactly zero pixels
+ * wide and the strip is what it was before -- the same property
+ * `.hud__aside` has, and the reason a slot can be added without changing any
+ * layout it is not used in.
+ *
+ * `flex: none` so the badge is never squeezed by the metrics beside it: the
+ * metrics row is the flexible one and already shrinks to `min-width: 0`.
+ */
+.hud-strip__brand {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  flex: none;
+}
+
 .hud-strip__metrics {
   display: flex;
   align-items: center;
