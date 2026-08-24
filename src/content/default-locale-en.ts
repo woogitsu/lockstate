@@ -3,14 +3,19 @@ import { simulationEnumMessages } from './simulation-message-keys';
 
 /**
  * Default (`en`) resolved labels for every `nameKey` in the default
- * room/object/staff-role catalogs, plus the HUD's own message keys. This is
+ * room/object/staff-role catalogs, plus the HUD's own message keys and the
+ * semantic input actions' descriptions. This is
  * the bundled default locale (ADR 0011): it must be complete, because the
  * game has to have text offline and every other locale falls back to it per
  * key. Not a real i18n pipeline on its own -- see localization.ts, and
  * `src/services/localization/` for the runtime that consumes this.
  *
  * The keys authored below all belong to values that own a definition object
- * (a room, an object, a staff role) or to the HUD's own chrome. The
+ * (a room, an object, a staff role, an input action) or to the HUD's own
+ * chrome. Keys owned by the trusted-services layer -- product names,
+ * entitlement and challenge strings -- are authored in
+ * `src/services/localization/default-catalog.ts` instead and merged on top of
+ * this catalog, so this file is not the whole default locale. The
  * simulation's *enumerations* have no definition object, so their keys are
  * derived rather than written: `simulationEnumMessages()` computes them from
  * the id, and they are merged in below. Authoring them here as literals
@@ -158,6 +163,23 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.severity.info': 'Info',
   'hud.severity.warning': 'Warning',
   'hud.severity.danger': 'Critical',
+
+  // Semantic input actions (`src/input/actions.ts`). `ActionDefinition.descriptionKey`
+  // is typed `input.action.${ActionId}`, so the *shape* was guaranteed and the
+  // existence was not: all nine keys were declared and none was authored
+  // anywhere, which is what issue #139's wider completeness gate found. No
+  // keybinding or help UI reads them yet -- these are the labels it will read.
+  'input.action.camera.up': 'Pan camera up',
+  'input.action.camera.down': 'Pan camera down',
+  'input.action.camera.left': 'Pan camera left',
+  'input.action.camera.right': 'Pan camera right',
+  'input.action.camera.zoom.in': 'Zoom in',
+  'input.action.camera.zoom.out': 'Zoom out',
+  'input.action.selection.primary': 'Select',
+  'input.action.build.confirm': 'Confirm placement',
+  // Bound in the world, construction and modal contexts, so it is a general
+  // cancel rather than a build-specific one.
+  'input.action.build.cancel': 'Cancel',
 };
 
 /**
