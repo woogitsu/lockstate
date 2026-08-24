@@ -22,7 +22,8 @@ import {
  *
  * The panel-level claim ("a second create is refused rather than issued,
  * with nothing leaked") needs a real DOM and real clicks, so it is proven
- * against a real browser in `tests/browser/save-panel-concurrency.spec.ts`.
+ * against a real browser by the `save panel concurrency (issue #65)` block
+ * in `tests/browser/ui-shell.spec.ts`.
  */
 
 interface Deferred {

@@ -73,7 +73,33 @@ describe('prisoner operations: representative headless scenario (250 actors, no 
 });
 
 describe('prisoner operations: determinism', () => {
-  it('an identical seed and scenario produce an identical fingerprint (needs, stages, positions, phases)', () => {
+  /**
+   * Given its own timeout, because of *how* it fails without one.
+   *
+   * It drives two full 250-prisoner, 2,500-tick scenarios, which measures
+   * 1.6 s on an idle machine against `vitest.config.ts`'s 5 s default -- so it
+   * needs only about three times' contention to trip, and a machine running
+   * several test processes at once supplies that. Measured repeatedly: ~6 s
+   * under load, passing in isolation.
+   *
+   * A timeout here is reported as *"an identical seed and scenario produce an
+   * identical fingerprint" failed*, which in this repository is the most
+   * alarming possible false positive -- deterministic replay is an ADR 0009
+   * product guarantee, so the failure reads as the guarantee breaking rather
+   * than as a slow machine. Three consecutive handover documents have had to
+   * spend a paragraph saying it is not. Issue #140.
+   *
+   * The run length is not padding and is deliberately not reduced:
+   * `DAY_LENGTH_TICKS` is 2,400, so 2,500 ticks is just over a full regime
+   * day, and shortening it below one would stop the fingerprint covering the
+   * block transitions it exists to cover.
+   *
+   * 20 s is roughly twelve times the measured cost -- enough headroom for a
+   * loaded machine, and still short enough that a genuine hang fails rather
+   * than stalling the suite. The three scenario tests above cost ~1 s each and
+   * are the next candidates if this reappears.
+   */
+  it('an identical seed and scenario produce an identical fingerprint (needs, stages, positions, phases)', { timeout: 20_000 }, () => {
     const first = runScenario(250, 0x5eed5eed, 2_500);
     const second = runScenario(250, 0x5eed5eed, 2_500);
     expect(second.fingerprint).toEqual(first.fingerprint);
