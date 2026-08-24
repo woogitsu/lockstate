@@ -1222,6 +1222,50 @@ test.describe('the assembled application', () => {
     // the command was in flight.
     expect(await page.locator('.hud-strip__transport [data-action-failed="true"]').count()).toBe(1);
   });
+
+  test('still renders when the browser blocks site data, so localStorage throws (#199)', async ({ page }) => {
+    // #82's sibling, one layer earlier and through a different resource. That
+    // issue was closed by moving `mountInterface` out of `bootPersistence`,
+    // which protects against a failing worker and a failing IndexedDB. It does
+    // not protect against a failing `localStorage`, because the renderer read
+    // one in a class field initializer -- inside the constructor, at module
+    // top level, outside any `try` -- so the throw aborted the rest of
+    // `main.ts`: `new Phaser.Game`, `mountInterface` and `bootPersistence`
+    // together. The player got `document.body.textContent === ''`.
+    //
+    // Two shapes, because a hostile browser produces both and only one of them
+    // is reachable by stubbing a method: Chrome throws on the
+    // `window.localStorage` *property access* when site data is blocked for the
+    // origin, while a sandboxed or partitioned context can hand over a store
+    // whose `getItem` throws. The getter case is the harder one and is what
+    // this test uses, because a guard that only wraps `getItem` passes the
+    // other.
+    await page.addInitScript(() => {
+      Object.defineProperty(window, 'localStorage', {
+        configurable: true,
+        get(): never {
+          throw new DOMException('Access to storage is not allowed from this context.', 'SecurityError');
+        },
+      });
+    });
+
+    await page.goto(APP_URL);
+
+    // The three things a blank page has none of.
+    await expect(page.locator('canvas')).toHaveCount(1);
+    await expect(page.locator('.hud')).toHaveCount(1);
+    expect(await page.locator('.hud-tabs__inner .ui-tab').count()).toBeGreaterThan(0);
+
+    // And the page is genuinely assembled rather than merely non-empty.
+    await expect(page.locator('.hud-strip')).toBeVisible();
+
+    // Settings fell back to defaults rather than failing boot, which is what
+    // `docs/INPUT.md` has always claimed happens. The camera keys are part of
+    // the default bindings, so a working camera is the observable form of that
+    // claim -- and it is the half a try/catch around `JSON.parse` alone would
+    // not deliver, since it never reaches the parse.
+    await expect(page.locator('canvas')).toBeVisible();
+  });
 });
 
 interface CentreHitCounters {

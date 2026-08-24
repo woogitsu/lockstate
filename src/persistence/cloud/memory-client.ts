@@ -1,5 +1,11 @@
 import type { SaveEnvelope } from '../save-schema';
-import type { CloudPrisonState, CloudSaveClient, CloudSaveVersionSummary, UploadOutcome } from './client';
+import type {
+  CloudPrisonState,
+  CloudSaveClient,
+  CloudSaveVersionSummary,
+  RegisterPrisonOutcome,
+  UploadOutcome,
+} from './client';
 
 interface StoredVersion extends CloudSaveVersionSummary {
   readonly payload: unknown;
@@ -31,9 +37,37 @@ export class MemoryCloudSaveClient implements CloudSaveClient {
     return prison === undefined ? undefined : { prisonId, currentVersion: prison.currentVersion };
   }
 
-  public async registerPrison(prisonId: string, gameVersion: string, slotIndex: number): Promise<void> {
+  /**
+   * Mirrors `create_prison()`'s statuses rather than throwing.
+   *
+   * The double used to succeed on exactly the arguments the real client failed
+   * on -- it stores into a `Map` and needs no `owner_id`, while the real insert
+   * could never satisfy the RLS policy (#192). That divergence is why a defect
+   * that failed 100% of the time was invisible to fourteen `PrisonSyncEngine`
+   * tests, so this now answers in the same vocabulary the schema does.
+   *
+   * `slot-taken` is keyed on the slot index, not the prison id: that is what the
+   * `prisons_owner_slot_unique` constraint is on. A repeated *prison id* is a
+   * different mistake and still throws, because the caller has confused two
+   * prisons rather than run out of room.
+   *
+   * It does **not** model the free-tier cap. That is `account_save_slot_capacity`
+   * over the `entitlements` projection, and inventing a number here would be a
+   * second implementation of a rule ADR 0013 deliberately put in one place --
+   * `supabase/tests/004_free_tier_capacity.test.sql` is what proves that rule.
+   * A test that needs the `at-slot-limit` branch should construct it directly.
+   */
+  public async registerPrison(
+    prisonId: string,
+    gameVersion: string,
+    slotIndex: number,
+  ): Promise<RegisterPrisonOutcome> {
     if (this.prisons.has(prisonId)) throw new Error(`Prison "${prisonId}" is already registered.`);
+    for (const prison of this.prisons.values()) {
+      if (prison.slotIndex === slotIndex) return { status: 'slot-taken', slotIndex };
+    }
     this.prisons.set(prisonId, { gameVersion, slotIndex, currentVersion: undefined, versions: [] });
+    return { status: 'created', slotIndex };
   }
 
   public async uploadVersion(prisonId: string, newRevision: number, envelope: SaveEnvelope): Promise<UploadOutcome> {

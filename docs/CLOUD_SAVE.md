@@ -555,6 +555,77 @@ it in one direction only: its UPDATE grant deliberately excludes `created_at`,
 while the table-level INSERT grant covers it. Those entries move to a real
 mechanism when #194 is acted on, and the suite fails if they are not.
 
+## A client write that could never succeed
+
+`SupabaseCloudSaveClient.registerPrison` inserted `{id, game_version,
+slot_index}` straight into `prisons`. `owner_id` is `not null` with **no
+default**, and the insert policy is `auth.uid() = owner_id`. Executed against the
+real schema, as `authenticated` with a real `auth.uid()`:
+
+```
+ERROR:  new row violates row-level security policy for table "prisons"
+```
+
+RLS refuses the row **before** the NOT NULL check ever runs, because
+`auth.uid() = NULL` evaluates to NULL rather than true and a `WITH CHECK` that is
+not true fails. So the error even named the wrong thing — it points at the policy
+rather than at the missing column. It failed 100% of the time, for every caller,
+on every project; there was no configuration under which it worked (#192).
+
+**Why nothing caught it.** Three greps for `registerPrison` return the interface
+declaration and its two implementations and no call site at all, and
+`PrisonSyncEngine` is constructed only in tests, always with
+`MemoryCloudSaveClient` — which stores into a `Map`, needs no `owner_id`, and so
+**succeeds on exactly the arguments the real client fails on**. The double and
+the real client disagreed about whether the method worked at all, and only the
+double was ever run. That is the same shape `RoomSystem` had before #181 deleted
+it, and it is what this document already acknowledges one line above: a pure-JS
+fake asserting RLS would test the fake.
+
+**The fix is `create_prison()`, not an added `owner_id`.** Two properties #105
+verified belong to the RPC and cannot belong to an insert: the owner is
+`auth.uid()` and nothing else — there is no forgeable owner parameter — and it
+fails closed with `42501 an authenticated identity is required`.
+`20260822190100_create_prisons.sql` already calls it "the front door that answers
+with a discriminated status instead of an exception".
+
+**`registerPrison` therefore returns a status rather than `void`**, which is the
+one decision this needed. `at-slot-limit` is a thing a player has to be told, and
+`docs/TRUSTED_SERVICES.md` commits to read-only degradation rather than an opaque
+failure at the free-tier cap; throwing on a non-`created` status would have kept
+the old signature while losing exactly the information ADR 0013 built the status
+to carry. `used` and `capacity` come back with it, so a caller can say "5 of 5"
+rather than "no".
+
+The cap fires on both paths either way — ADR 0013 put it on a trigger precisely
+so it does not depend on one blessed door, and
+`supabase/tests/004_free_tier_capacity.test.sql` drives that refusal through the
+client's own INSERT grant, which is why #194 made that grant per column rather
+than revoking it.
+
+`MemoryCloudSaveClient` now answers in the same vocabulary, so the double and the
+real client agree on the contract by construction. It deliberately does **not**
+model the free-tier cap: that is `account_save_slot_capacity` over the
+`entitlements` projection, and inventing a number in a test double would be a
+second implementation of a rule ADR 0013 put in one place.
+
+### The half of that disagreement a test can hold
+
+`tests/foundation/rpc-status-vocabulary-contract.test.ts` asserts that every
+status each RPC can return is exactly the set the client's row type names, in
+both directions. A `switch` over a status union is exhaustive to `tsc`, so a
+status the database can return and the client does not name falls through it
+**silently** — returning `undefined` from a function typed to return an outcome,
+at runtime, in production, with no compile error. The reverse is dead code that
+reads as handling something.
+
+Stated plainly so the green is not read as more than it is: **this would not have
+caught #192.** It checks the return path, not the request — not that the client
+sends the right arguments, that a column it writes exists, or that a policy
+admits the row. Those need a running PostgREST, which is `pnpm verify:stack`'s
+job and is in no CI gate (#105 owner check 4). What it closes is the neighbouring
+gap, which is the half that can be closed without a stack.
+
 ## The server's timestamps are the server's
 
 `20260824140000_protect_server_timestamps.sql` (#194) closes the `created_at`
@@ -607,10 +678,12 @@ exactly the privileges it had, so `user_settings` needed no change at all: it ha
 no `created_at`.
 
 **Nothing broke**, verified rather than assumed: no code in `src/` writes any of
-these columns. `registerPrison` writes `{id, game_version, slot_index}` — and is
-broken for an unrelated reason, #192 — while `uploadVersion` goes through
-`create_save_version()`, which is `SECURITY DEFINER` and so bypasses column
-grants. Suite 004 still drives the free-tier slot cap through the client's own
+these columns. Both cloud writes now go through a `SECURITY DEFINER` RPC, which
+bypasses column grants entirely — `uploadVersion` through
+`create_save_version()`, and `registerPrison` through `create_prison()` since
+#192. (When this migration landed, `registerPrison` still wrote
+`{id, game_version, slot_index}` directly, and was broken for an unrelated
+reason; see "A client write that could never succeed" below.) Suite 004 still drives the free-tier slot cap through the client's own
 INSERT, which is why that grant was made per column rather than revoked in favour
 of `create_prison()`: ADR 0013 argues the cap is a count invariant of the table,
 enforced by a trigger on every write path rather than by one blessed door.

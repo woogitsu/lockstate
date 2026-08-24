@@ -1,6 +1,20 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { SaveEnvelope } from '../save-schema';
-import type { CloudPrisonState, CloudSaveClient, CloudSaveVersionSummary, UploadOutcome } from './client';
+import type {
+  CloudPrisonState,
+  CloudSaveClient,
+  CloudSaveVersionSummary,
+  RegisterPrisonOutcome,
+  UploadOutcome,
+} from './client';
+
+interface CreatePrisonRow {
+  readonly status: 'created' | 'at_slot_limit' | 'slot_taken';
+  readonly prison_id: string | null;
+  readonly slot_index: number | null;
+  readonly used_slots: number | null;
+  readonly capacity: number | null;
+}
 
 interface CreateSaveVersionRow {
   readonly status: 'created' | 'conflict' | 'idempotent_replay';
@@ -70,11 +84,61 @@ export class SupabaseCloudSaveClient implements CloudSaveClient {
     };
   }
 
-  public async registerPrison(prisonId: string, gameVersion: string, slotIndex: number): Promise<void> {
-    const { error } = await this.supabase
-      .from('prisons')
-      .insert({ id: prisonId, game_version: gameVersion, slot_index: slotIndex });
-    if (error !== null) throw new Error(`Failed to register the cloud prison: ${error.message}`);
+  /**
+   * Registers a cloud prison through `create_prison()`.
+   *
+   * This was a direct `.insert({ id, game_version, slot_index })` into
+   * `prisons`, and it could **never succeed**. `owner_id` is `not null` with no
+   * default, and the insert policy is `auth.uid() = owner_id` -- so executed
+   * against the real schema it raises `new row violates row-level security
+   * policy for table "prisons"`, because RLS refuses the row before the NOT
+   * NULL check runs and `auth.uid() = NULL` is NULL rather than true (#192). It
+   * failed for every caller, on every project, and the error named the policy
+   * rather than the missing column.
+   *
+   * Nothing caught it because nothing called it, and no test could have:
+   * `MemoryCloudSaveClient` stores into a `Map` and needs no `owner_id`, so the
+   * double succeeded on exactly the arguments the real client failed on, and
+   * every `PrisonSyncEngine` test drives the double.
+   *
+   * `create_prison()` is the fix rather than adding `owner_id` to the insert,
+   * for two properties #105 verified and the insert cannot have: the owner is
+   * `auth.uid()` and nothing else -- there is no forgeable owner parameter --
+   * and it fails closed with `42501 an authenticated identity is required`. It
+   * is also what `20260822190100_create_prisons.sql` calls "the front door that
+   * answers with a discriminated status instead of an exception".
+   *
+   * The free-tier slot cap fires on both paths either way: ADR 0013 put it on a
+   * trigger precisely so it does not depend on one blessed door, and
+   * `supabase/tests/004_free_tier_capacity.test.sql` drives that refusal through
+   * the client's own INSERT grant. What the RPC adds is that the cap arrives as
+   * a status carrying `used`/`capacity` rather than as an `LS001` exception.
+   */
+  public async registerPrison(
+    prisonId: string,
+    gameVersion: string,
+    slotIndex: number,
+  ): Promise<RegisterPrisonOutcome> {
+    const { data, error } = await this.supabase.rpc('create_prison', {
+      p_prison_id: prisonId,
+      p_game_version: gameVersion,
+      p_slot_index: slotIndex,
+    });
+    if (error !== null) return { status: 'error', message: error.message };
+
+    const row = (Array.isArray(data) ? data[0] : data) as CreatePrisonRow | undefined;
+    if (row === undefined) return { status: 'error', message: 'create_prison returned no row.' };
+
+    switch (row.status) {
+      case 'created':
+        // `slot_index` is the slot the server actually used, which is the value
+        // worth reporting rather than the one that was asked for.
+        return { status: 'created', slotIndex: row.slot_index ?? slotIndex };
+      case 'at_slot_limit':
+        return { status: 'at-slot-limit', used: row.used_slots ?? 0, capacity: row.capacity ?? 0 };
+      case 'slot_taken':
+        return { status: 'slot-taken', slotIndex: row.slot_index ?? slotIndex };
+    }
   }
 
   public async uploadVersion(prisonId: string, newRevision: number, envelope: SaveEnvelope): Promise<UploadOutcome> {
