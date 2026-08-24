@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import type { KeyValueStore } from '../../shared/key-value-store';
 import {
   KeyboardInputAdapter,
   TouchGestureTracker,
@@ -60,6 +61,31 @@ export interface WorldSceneOptions {
    * and the renderer must not become the thing that decides a build happened.
    */
   readonly buildTool?: BuildToolPort;
+
+  /**
+   * Where input settings are read from.
+   *
+   * The renderer used to reach for `window.localStorage` itself, in a class
+   * field initializer -- so a browser that blocks site data threw inside this
+   * constructor, at module top level, outside any `try`, and took the whole
+   * boot with it (issue #199). `docs/INPUT.md` had described the arrangement
+   * this option restores: the entry point supplies the store, and the seam
+   * exists so tests stay headless.
+   *
+   * **Required, not optional with a default**, and the reason is a correction to
+   * this comment's first draft. It said a default was kept "because a harness
+   * page that only wants a canvas should not have to name a storage strategy" --
+   * which invented a consumer: `new WorldScene(...)` appears exactly once in the
+   * repository, at `src/main.ts`, and no harness constructs one. With the option
+   * optional, deleting `main.ts`'s `keyValueStore:` argument passed every test
+   * (measured), so `docs/INPUT.md`'s claim that the entry point supplies the
+   * store had nothing enforcing it. Making it required moves that guard into
+   * `tsc`, which is stronger than any assertion about source text -- and costs
+   * nothing, because there is one caller. Use
+   * `resolveBrowserKeyValueStore()` for a browser and an in-memory store in a
+   * test.
+   */
+  readonly keyValueStore: KeyValueStore;
 }
 
 export class WorldScene extends Phaser.Scene {
@@ -67,10 +93,15 @@ export class WorldScene extends Phaser.Scene {
   private readonly loadAtlasLibrary: () => Promise<AtlasLibrary>;
   private readonly onError: (error: Error) => void;
 
-  private readonly keyboard = new KeyboardInputAdapter(
-    loadInputSettings(window.localStorage).keyboardBindings,
-    () => ['world'],
-  );
+  /**
+   * Assigned in the constructor, not in a field initializer.
+   *
+   * A field initializer cannot see the constructor's `options`, so building
+   * this here is what forced the old `window.localStorage` read -- and a field
+   * initializer runs *inside* the constructor, which is why the throw escaped
+   * to module scope rather than to a caller that could handle it (#199).
+   */
+  private readonly keyboard: KeyboardInputAdapter;
   private readonly touchGestures = new TouchGestureTracker();
   private panPointerId: number | undefined;
   private lastPanScreenPoint: { readonly x: number; readonly y: number } | undefined;
@@ -91,6 +122,10 @@ export class WorldScene extends Phaser.Scene {
     super('WorldScene');
     this.feed = options.feed;
     this.buildTool = options.buildTool;
+    this.keyboard = new KeyboardInputAdapter(
+      loadInputSettings(options.keyValueStore).keyboardBindings,
+      () => ['world'],
+    );
     this.loadAtlasLibrary = options.loadAtlasLibrary ?? (() => AtlasLibrary.load());
     this.onError =
       options.onError ??
