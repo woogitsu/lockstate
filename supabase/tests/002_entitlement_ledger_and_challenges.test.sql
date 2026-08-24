@@ -31,12 +31,13 @@
 -- have the two evidence bodies changed further down. The stack run needs
 -- container images that were not reachable when they were written.
 --
--- The same is true of the nineteen added for issue #105 findings 6 and 7:
--- "Ledger idempotency beyond the payment webhook". `pnpm verify:sql`
--- reports 66/66 for this suite.
+-- The same is true of the twenty-nine added for issue #105 findings 6, 7
+-- and 9: "Ledger idempotency beyond the payment webhook" (nineteen) and
+-- "The definition oracle" (ten). `pnpm verify:sql` reports 76/76 for this
+-- suite.
 
 begin;
-select plan(66);
+select plan(76);
 
 insert into auth.users (id, email) values
   ('33333333-3333-3333-3333-333333333333', 'entitled@example.test'),
@@ -906,6 +907,160 @@ select is(
     where evidence = '{"challengeId":"challenge.first-intake","challengeVersion":1,"commands":[{"tick":1,"sequence":1,"payload":{}}]}'::jsonb),
   '33333333-3333-3333-3333-333333333333',
   'the capture still has exactly one row, owned by the account that submitted first'
+);
+
+-- --- The definition oracle (issue #105 finding 9) ----------------------
+--
+-- `submit_challenge_evidence()` is SECURITY DEFINER, so it reads
+-- `challenge_definitions` as the owner and is exempt from
+-- `challenge_definitions_public_read`. It used to answer 'unknown challenge
+-- X version N' for a definition that does not exist and 'challenge X
+-- version N is not open for submissions' for one that exists but is hidden
+-- -- an existence oracle for the unpublished pipeline, queryable one guessed
+-- id at a time by any anonymously-signed-in identity. 20260824110100 is the
+-- migration.
+--
+-- HOW INDISTINGUISHABILITY IS ASSERTED, because "both raise P0001" is not
+-- it: the same challenge id is asked twice, once when no such row exists
+-- and once after an unpublished row with that exact id has been inserted,
+-- and BOTH are compared to the same spelled-out message. This is the one
+-- place in these suites where matching the message is right rather than
+-- brittle: the message *is* the security property. Everywhere else they
+-- assert the SQLSTATE and leave the wording free.
+-- `p_marker` only exists so the one call that is supposed to be ACCEPTED
+-- carries evidence no earlier assertion in this suite has already stored:
+-- the dedup key is a digest of the payload, so a byte-identical
+-- resubmission would correctly answer `duplicate` and the accept path would
+-- go unasserted.
+create function pg_temp.submission_answer(p_challenge_id text, p_version int, p_marker text default 'probe')
+returns text
+language plpgsql as $$
+declare
+  v_status text;
+begin
+  select status into v_status from public.submit_challenge_evidence(
+    p_challenge_id, p_version, '3f3f3f3f3f3f3f3f',
+    jsonb_build_object('challengeId', p_challenge_id, 'challengeVersion', p_version,
+                       'commands', '[]'::jsonb, 'marker', p_marker),
+    '{"score":1}'::jsonb);
+  return 'status=' || v_status;
+exception when others then
+  return sqlstate || ': ' || sqlerrm;
+end;
+$$;
+
+-- Two more definitions, so each half of the read policy is exercised on its
+-- own: `challenge.staged` is OPEN but not published (the half that used to
+-- accept a submission outright), `challenge.upcoming` is published but has
+-- not opened (the half that used to say "not open").
+insert into public.challenge_definitions
+  (challenge_id, version, definition, definition_hash, signature, opens_at, closes_at, published_at)
+values (
+  'challenge.staged', 1, '{"id":"challenge.staged"}'::jsonb, '00112233445566cc',
+  '{"algorithm":"ed25519","keyId":"key.test","value":"DDDD"}'::jsonb,
+  now() - interval '1 day', now() + interval '1 day', now() + interval '1 day'
+), (
+  'challenge.upcoming', 1, '{"id":"challenge.upcoming"}'::jsonb, '00112233445566dd',
+  '{"algorithm":"ed25519","keyId":"key.test","value":"EEEE"}'::jsonb,
+  now() + interval '1 day', now() + interval '2 days', now() - interval '1 day'
+);
+
+select set_config('request.jwt.claim.sub', '33333333-3333-3333-3333-333333333333', true);
+set local role authenticated;
+
+select is(
+  pg_temp.submission_answer('challenge.oracle-probe', 1),
+  'P0001: challenge challenge.oracle-probe version 1 is not available for submissions',
+  'a challenge id that does not exist is refused with a message that says nothing about existence'
+);
+
+reset role;
+
+-- The same id now exists, staged and hidden by both bounds of the read
+-- policy. Nothing else about the call changes.
+insert into public.challenge_definitions
+  (challenge_id, version, definition, definition_hash, signature, opens_at, closes_at, published_at)
+values (
+  'challenge.oracle-probe', 1, '{"id":"challenge.oracle-probe","seed":"the-secret-seed"}'::jsonb, '00112233445566ee',
+  '{"algorithm":"ed25519","keyId":"key.test","value":"FFFF"}'::jsonb,
+  now() + interval '1 day', now() + interval '2 days', now() + interval '1 day'
+);
+
+select set_config('request.jwt.claim.sub', '33333333-3333-3333-3333-333333333333', true);
+set local role authenticated;
+
+select is(
+  pg_temp.submission_answer('challenge.oracle-probe', 1),
+  'P0001: challenge challenge.oracle-probe version 1 is not available for submissions',
+  'and once that definition exists but is unpublished, the answer is byte-identical: the oracle is closed'
+);
+
+select is(
+  (select count(*)::int from public.challenge_definitions where challenge_id = 'challenge.oracle-probe'),
+  0,
+  'the caller cannot read that definition either, which is the disclosure the two answers above must not undo'
+);
+
+-- The half that was not only an oracle: an OPEN but unpublished definition
+-- used to return `status=submitted`, so a row was keyed and ranked against a
+-- definition no client was allowed to read.
+select is(
+  pg_temp.submission_answer('challenge.staged', 1),
+  'P0001: challenge challenge.staged version 1 is not available for submissions',
+  'an open but unpublished definition no longer accepts a submission, and is not distinguishable from an absent one'
+);
+
+select is(
+  pg_temp.submission_answer('challenge.upcoming', 1),
+  'P0001: challenge challenge.upcoming version 1 is not available for submissions',
+  'a published definition that has not opened gets the same answer: `opens_at` is enforced by the lookup now'
+);
+
+select is(
+  pg_temp.submission_answer('challenge.first-intake', 99),
+  'P0001: challenge challenge.first-intake version 99 is not available for submissions',
+  'a non-existent version of a visible challenge gets it too'
+);
+
+-- WHAT STAYS DISTINGUISHABLE, and why it is not the finding reappearing.
+select is(
+  pg_temp.submission_answer('challenge.finished', 1),
+  'P0001: challenge challenge.finished version 1 is closed for submissions',
+  'a definition that is published, has opened and has closed gets its own answer, which a legitimate client needs'
+);
+
+-- ...because reaching that branch requires satisfying the read policy, so
+-- the caller who saw it can read the row -- `closes_at` included -- for
+-- itself. This assertion is what makes the one above safe.
+select is(
+  (select count(*)::int from public.challenge_definitions where challenge_id = 'challenge.finished'),
+  1,
+  'the closed answer is only ever produced for a row the caller can SELECT, so it discloses nothing new'
+);
+
+-- And the normal path still works, as the same helper, so the section that
+-- proves refusals cannot be passing because everything refuses.
+select is(
+  pg_temp.submission_answer('challenge.first-intake', 1, 'accepts-through-the-same-helper'),
+  'status=submitted',
+  'a published, open definition still accepts a submission through the same helper'
+);
+
+reset role;
+
+-- The predicate this fix duplicates is the read policy's, and the
+-- duplication is structural: a SECURITY DEFINER function cannot have RLS
+-- applied to itself, and inside one the invoker IS the owner, so a
+-- `security_invoker` view does not help either. This asserts the policy as
+-- the catalog renders it, so widening or narrowing the read rule fails here
+-- and has to come back to `submit_challenge_evidence()`.
+select is(
+  (select pg_get_expr(polqual, polrelid)
+     from pg_policy
+    where polrelid = 'public.challenge_definitions'::regclass
+      and polname = 'challenge_definitions_public_read'),
+  '((published_at <= now()) AND (opens_at <= now()))',
+  'the read policy is still exactly the predicate submit_challenge_evidence() copies into its lookup'
 );
 
 select * from finish();
