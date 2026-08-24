@@ -3,14 +3,17 @@ import type { KeyValueStore } from '../../src/shared/key-value-store';
 import { EMPTY_RENDER_FRAME, type RenderFeed } from '../../src/rendering/feed/render-feed';
 import { WorldScene } from '../../src/rendering/scene/world-scene';
 import type { BuildToolPort, EdgeTarget } from '../../src/rendering/build/edge-picking';
-import type { CameraScroll, HarnessEdge, LockstateWorldSceneHarness } from './world-scene-harness-api';
+import type { CameraScroll, HarnessEdge, HarnessPoint, LockstateWorldSceneHarness } from './world-scene-harness-api';
 
 /**
  * The real `WorldScene`, in a real browser, for the claims no headless test can
  * make: that the keyboard listeners the scene registers on `window` behave when
  * focus moves, that the context set it supplies is read from the document
- * rather than baked in, and -- since #200 -- that pressing a key bound to a
- * `discrete` action actually does the thing.
+ * rather than baked in, that -- since #200 -- pressing a key bound to a
+ * `discrete` action actually does the thing, and that a **second finger**
+ * reaches the scene at all, which is a property of `this.input.addPointer(2)`
+ * and of a browser context created with `hasTouch` rather than of any code a
+ * headless test could call (#209).
  *
  * **`WorldScene` had never been constructed by any test in this repository** --
  * `grep -rn WorldScene tests/` returned a single comment -- which is why
@@ -25,9 +28,10 @@ import type { CameraScroll, HarnessEdge, LockstateWorldSceneHarness } from './wo
  *
  * No atlases are loaded and the feed is empty. Nothing here draws anything worth
  * looking at, and it does not need to: the assertions are about where the camera
- * is pointing, how far it is zoomed, and what the build tool was asked to
- * place -- none of which depends on there being art or a world. An empty world
- * moves exactly as far per frame as a full one.
+ * is pointing, how far it is zoomed, which world point it puts under a given
+ * pixel, and what the build tool was asked to place -- none of which depends on
+ * there being art or a world. An empty world moves exactly as far per frame as a
+ * full one.
  */
 
 const CANVAS_PARENT_ID = 'world-scene-harness-root';
@@ -146,6 +150,10 @@ const harness: LockstateWorldSceneHarness = {
   }),
   isActive: (action) => internals.keyboard.isActive(action),
   zoom: () => scene.cameras.main.zoom,
+  worldPointAt: (screen: HarnessPoint): HarnessPoint => {
+    const point = scene.cameras.main.getWorldPoint(screen.x, screen.y);
+    return { x: point.x, y: point.y };
+  },
   armBuildTool: (armed) => {
     buildArmed = armed;
   },
