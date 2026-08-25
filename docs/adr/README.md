@@ -9,10 +9,24 @@ of that: filenames are `NNNN-kebab-case.md`, each four-digit prefix is unique,
 the number in the filename matches the number in the `# ADR…` heading, every
 ADR has a parseable `Status`, and every relative link to an ADR from `docs/`
 resolves to a file that exists. Since #118's follow-up it also checks this
-table: the row count must equal the number of ADR files, and each row's status
-keyword must equal the one the ADR itself carries, so a status edit that does
-not update the row here fails. It does **not** check the Title column or the
-`0018` row, which has no link and is maintained by hand.
+table, in both directions: the set of rows must be the set of ADR files, each
+row must link to the file its number names, each row's **Title** must be the
+one the ADR's heading carries, each row's status keyword must equal the one the
+ADR itself carries — so a status edit that does not update the row here fails —
+and the stated next free number must be one past the highest number on disk. It
+additionally refuses a link whose label names one ADR while pointing at
+another.
+
+Two things in this directory are outside those checks and are maintained by
+hand: the `0018` row, which has no link because it has no file, and the prose
+sections below the table. `README.md` and `STATUS-QUEUE.md` are the directory's
+only non-ADR documents, and the test names them explicitly — anything else in
+`docs/adr/` must be a well-formed ADR.
+
+[`STATUS-QUEUE.md`](./STATUS-QUEUE.md) is the owner-facing companion to this
+table. This index reports what each ADR *says*; that file records where what an
+ADR says contradicts what the code *does*, and what the owner would have to
+change to settle it. It changes no status either.
 
 ## Status values in this table
 
