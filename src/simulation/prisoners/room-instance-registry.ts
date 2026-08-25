@@ -47,6 +47,50 @@ export class RoomInstanceRegistry {
     this.sortedCache.delete(instance.roomCatalogId);
   }
 
+  /**
+   * Removes an instance, or answers `false` when there was none to remove.
+   *
+   * The counterpart to `register`, and it exists because a room designation
+   * has to be reversible: `RoomZoningService.unzone` clears the world's zoning
+   * plane and this is the half that keeps the registry agreeing with it.
+   * Before it, the registry could only grow within a session -- so a room
+   * zoned by mistake stayed in every projection, in the status strip's `Rooms`
+   * count and in `allByRoomCatalogId` for as long as the session lasted.
+   *
+   * **It refuses to remove an occupied instance rather than orphaning its
+   * occupants.** A prisoner holds an `accommodationInstanceId` in cold state,
+   * and dropping the instance underneath them would leave that reference
+   * naming a room that does not exist. The caller is expected to have checked
+   * `occupancyOf` and to have reported a refusal to the player;
+   * `RoomZoningService.unzone` does exactly that, and this `RangeError` is the
+   * guard behind it, in the same spirit as `register`'s duplicate-id throw.
+   *
+   * Every index `register` writes is undone: the id map, the occupancy map,
+   * the per-room-type group and that type's sorted cache. Leaving the cache
+   * would keep the removed instance visible to `findAvailable` -- the one
+   * reader on the intake hot path -- which is the failure this method would
+   * have if it were only a `Map.delete`.
+   */
+  public unregister(instanceId: string): boolean {
+    const instance = this.instances.get(instanceId);
+    if (instance === undefined) return false;
+    if ((this.occupants.get(instanceId)?.size ?? 0) > 0) {
+      throw new RangeError(`Room instance "${instanceId}" still has occupants.`);
+    }
+
+    this.instances.delete(instanceId);
+    this.occupants.delete(instanceId);
+
+    const group = this.instancesByRoomCatalogId.get(instance.roomCatalogId);
+    if (group !== undefined) {
+      const index = group.findIndex((entry) => entry.instanceId === instanceId);
+      if (index >= 0) group.splice(index, 1);
+      if (group.length === 0) this.instancesByRoomCatalogId.delete(instance.roomCatalogId);
+    }
+    this.sortedCache.delete(instance.roomCatalogId);
+    return true;
+  }
+
   public getById(instanceId: string): RoomInstance | undefined {
     return this.instances.get(instanceId);
   }

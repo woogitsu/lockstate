@@ -27,15 +27,25 @@ import {
   type HudBuildableViewModel,
   type HudHandle,
   type HudIntent,
+  type HudRoomViewModel,
+  type HudRoomsViewModel,
   type HudUnavailableNotice,
   type HudViewModel,
 } from './ui/hud';
 import { hudClockFromWorkerMessage } from './ui/simulation-clock';
 import { hudAlertsFromWorkerMessage } from './ui/simulation-alerts';
 import { hudCountsFromWorkerMessage } from './ui/simulation-counts';
+import { hudZoningFromWorkerMessage } from './ui/simulation-zoning';
 import { SimulationCommandSender } from './ui/simulation-commands';
 import { BuildTool } from './ui/build-tool';
+import { RoomTool } from './ui/room-tool';
+import { defaultRoomContentRegistry } from './content/room-catalog';
+import { zoningTint } from './rendering/world/appearance';
 import { BUILDABLE_REGISTRY } from './simulation/construction';
+// The one reader of the room catalogue's *area* requirements outside the
+// simulation, and it is the composition root by design: three layers ask this
+// question and none may re-derive the answer. See `roomCatalogue()` below.
+import { enclosureRequirement, minimumSizeRequirement } from './simulation/rooms/requirements';
 import { MAX_PURCHASE_QUANTITY } from './simulation/economy';
 import { defaultItemRegistry } from './content/item-catalog';
 import { procurableMaterial } from './content/procurement-catalog';
@@ -151,6 +161,19 @@ atlasLibrary.catch(() => undefined);
  */
 const commandSender = simulation === undefined ? undefined : new SimulationCommandSender(simulation);
 const buildTool = commandSender === undefined ? undefined : new BuildTool();
+/**
+ * The room tool, built beside the build tool and for the same reasons.
+ *
+ * A second object rather than a second mode on `BuildTool`: the two ports carry
+ * different shapes -- a run of edges against one rectangle -- and the room tool
+ * carries a `removing` mode that would have to be explained away on the class
+ * that lays walls. `src/ui/room-tool.ts` states the rule it is following.
+ *
+ * With no worker there is no tool, exactly as there is no build tool: an armed
+ * pointer that could never designate anything would take the camera away and
+ * give nothing back.
+ */
+const roomTool = commandSender === undefined ? undefined : new RoomTool();
 
 // The entry point supplies the key/value store, which is what `docs/INPUT.md`
 // has always described and what the renderer had stopped doing: it read
@@ -172,6 +195,23 @@ const worldScene = new WorldScene({
   // Spread rather than passed as `undefined`, because `exactOptionalPropertyTypes`
   // is on.
   ...(buildTool === undefined ? {} : { buildTool, editHistory: buildTool }),
+  // The area tool and the colour to preview a pending room in. The tint is a
+  // function rather than a value because the player can change the selected
+  // room type without disarming, and the scene reads it on every paint --
+  // handed the answer it needs to draw rather than the state it would have to
+  // interpret.
+  ...(roomTool === undefined
+    ? {}
+    : {
+        roomTool,
+        roomTint: (): number | undefined => {
+          const selected = roomTool.selectedRoomId;
+          if (selected === undefined) return undefined;
+          const definition = defaultRoomContentRegistry.getById(selected);
+          if (definition === undefined) return undefined;
+          return zoningTint(definition.numericId);
+        },
+      }),
 });
 
 const gameConfig: Phaser.Types.Core.GameConfig = {
@@ -356,6 +396,67 @@ function buildCatalogue(): HudBuildViewModel {
   return { buildables, origin: { x: 16, y: 16 } };
 }
 
+/**
+ * What the Rooms panel may offer, projected from the room catalogue.
+ *
+ * **Simpler than `buildCatalogue()` above, and the difference is content's
+ * rather than this function's.** All 18 room definitions carry a real
+ * `nameKey` and all 18 `room.*.name` keys ship in the default catalog, so there
+ * is no id-to-key mapping table here at all -- `BUILDABLE_LABEL_KEY` exists
+ * only because `BUILDABLE_REGISTRY` carries a hard-coded English `name` and no
+ * key (`docs/HUD_PROJECTIONS.md` gap 32), and rooms have no such gap. Nothing
+ * is dropped for want of a label, so this cannot silently show a shorter list
+ * than the catalogue holds.
+ *
+ * Ordered by `(category, id)` rather than taken in registry order, for exactly
+ * the reason `buildCatalogue()` is: this is a list a player reads and taps, and
+ * an order that depended on module evaluation would be an order nobody chose
+ * (`docs/DETERMINISM.md`). Grouping by category also puts the three housing
+ * rooms together, which is the grouping a player is choosing between.
+ *
+ * The two *rules* -- the authored minimum size and the enclosure requirement --
+ * are read through `src/simulation/rooms/requirements.ts` rather than by
+ * looping over `definition.requirements` here. Three layers ask that same
+ * question and none may re-derive the answer: the zoning service refuses a
+ * rectangle below the minimum, the enclosure evaluation reports against the
+ * `enclosed`/`outdoors` requirement, and this projection puts both on screen so
+ * the player can read the rule before dragging. A copy of `requirements.find`
+ * in each would be three places to forget a fifth requirement kind.
+ *
+ * `tint` comes from `zoningTint`, the renderer's own table, so the catalogue
+ * row and the designation painted on the map cannot disagree. That is a value
+ * import from `src/rendering/` into the composition root, which is what a
+ * composition root is for; the *HUD* gets a number and no table.
+ */
+function roomCatalogue(): HudRoomsViewModel {
+  const rooms: HudRoomViewModel[] = [];
+  const ordered = [...defaultRoomContentRegistry.all()].sort(
+    (a, b) =>
+      (a.category < b.category ? -1 : a.category > b.category ? 1 : 0) ||
+      (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
+  );
+  for (const definition of ordered) {
+    const minimum = minimumSizeRequirement(definition);
+    rooms.push({
+      roomId: definition.id,
+      labelKey: definition.nameKey,
+      // The category's tint is defined for every catalogued room, so the
+      // fallback is unreachable; `zoningTint` answers `undefined` only for an
+      // unzoned tile or an id no room claims, and this loop is over the rooms
+      // themselves. `0` rather than a colour picked here, so an unreachable
+      // branch cannot quietly invent a legend entry.
+      tint: zoningTint(definition.numericId) ?? 0,
+      // Spread rather than passed as `undefined`: `exactOptionalPropertyTypes`
+      // is on, so a room that authors no minimum has to have no property at
+      // all -- which is what makes the panel say "no minimum size" instead of
+      // claiming a 1x1 floor nobody wrote.
+      ...(minimum === undefined ? {} : { minimum: { width: minimum.minWidth, height: minimum.minHeight } }),
+      enclosure: enclosureRequirement(definition),
+    });
+  }
+  return { rooms };
+}
+
 interface InterfaceHost {
   /**
    * Absent when no worker started. Every control that would reach the
@@ -371,6 +472,16 @@ interface InterfaceHost {
   readonly client?: SimulationMessageChannel;
   readonly commands?: SimulationCommandSender;
   readonly tool?: BuildTool;
+  /**
+   * The room tool, absent for the reason `tool` is: with no worker there is
+   * nothing to designate a room in, so the pointer keeps its camera meaning.
+   *
+   * A second field rather than a widened `tool`, matching the two ports the
+   * scene is given: a host may hold one and not the other, and
+   * `tests/unit/ui-orchestration-boundaries.test.ts` records each file's
+   * dependencies separately.
+   */
+  readonly rooms?: RoomTool;
 }
 
 /**
@@ -444,7 +555,7 @@ const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMess
 const SIMULATION_UNAVAILABLE_NOTICE: HudUnavailableNotice = { labelKey: 'hud.unavailable.simulation' };
 
 function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
-  const { client, commands, tool } = host;
+  const { client, commands, tool, rooms } = host;
   const simulationUnavailable = client === undefined;
 
   let hud: HudHandle | undefined;
@@ -497,13 +608,27 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     const clock = hudClockFromWorkerMessage(message, viewModel.clock);
     const counts = hudCountsFromWorkerMessage(message);
     const alerts = hudAlertsFromWorkerMessage(message, viewModel.alerts);
-    if (clock === undefined && counts === undefined && alerts === undefined) return;
+    const zoning = hudZoningFromWorkerMessage(message);
+    if (clock === undefined && counts === undefined && alerts === undefined && zoning === undefined) return;
     viewModel = {
       ...viewModel,
       ...(clock === undefined ? {} : { clock }),
       ...(counts === undefined ? {} : { counts }),
       ...(alerts === undefined ? {} : { alerts }),
+      // Three states, not two, which is why the translator returns `'none'`
+      // rather than `undefined` for "no room has been designated": `undefined`
+      // means this message said nothing about zoning and the field must be left
+      // alone, while `'none'` is a message that did say so. Collapsing them
+      // would leave a readout from an ended session on screen.
+      //
+      // `zoning` is an *optional* field, so clearing it has to delete the key
+      // rather than set it to `undefined` -- `exactOptionalPropertyTypes` is on.
+      ...(zoning === undefined ? {} : zoning === 'none' ? {} : { zoning }),
     };
+    if (zoning === 'none' && viewModel.zoning !== undefined) {
+      const { zoning: _cleared, ...withoutZoning } = viewModel;
+      viewModel = withoutZoning;
+    }
     hud?.update(viewModel);
   });
 
@@ -527,6 +652,14 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     ...(simulationUnavailable ? { unavailable: SIMULATION_UNAVAILABLE_NOTICE } : {}),
     build: buildCatalogue(),
     /*
+     * The room catalogue, passed at mount for the reason the buildable one is:
+     * it is content rather than session state, and rebuilding the list on every
+     * snapshot would drop the selection the player just made. What *is* session
+     * state -- what the simulation found about the last room designated --
+     * arrives on `HudViewModel.zoning` through the listener above.
+     */
+    rooms: roomCatalogue(),
+    /*
      * The world's build gesture, joined to the HUD's own intent path (#225).
      *
      * This one line is what makes the two ways of laying a wall agree about
@@ -538,6 +671,17 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
      * is on, so an absent tool has to be an absent property.
      */
     ...(tool === undefined ? {} : { worldBuild: tool, editHistory: tool }),
+    /*
+     * The world's room gesture, joined to the Rooms panel's confirm step (ADR
+     * 0022, amended).
+     *
+     * Unlike the build gesture, a finished rectangle is not dispatched: it
+     * becomes the panel's *pending* rectangle, and the intent leaves when the
+     * player presses the confirm control. So a refused designation is always
+     * reported on a control as well as on the refusal line, which a build drag
+     * cannot manage because the player pressed nothing.
+     */
+    ...(rooms === undefined ? {} : { worldRooms: rooms }),
     onIntent: (intent: HudIntent) => {
       switch (intent.kind) {
         // Chrome: the HUD has already applied it locally and there is nothing
@@ -550,6 +694,24 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           // Also chrome, but it has a second half outside the HUD: it decides
           // whether a click on the *world* builds or moves the camera.
           tool?.setArmed(intent.armed, intent.definitionId);
+          return;
+
+        case 'arm-room-tool':
+          // The same, one tool over. Arming the room tool does *not* disarm the
+          // build tool here, and it does not need to: the two panels are on
+          // different tabs and `setVisible(false)` disarms the panel's tool as
+          // it leaves, so at most one is ever armed. The scene also asks the
+          // build tool first, so even a caller that armed both by hand gets one
+          // defined answer rather than an interleaved gesture.
+          //
+          // Spread rather than passed as `undefined`, because
+          // `exactOptionalPropertyTypes` is on and `roomId` is optional: a
+          // removal names no room type, so "no room selected" has to be an
+          // absent property.
+          rooms?.setArmed(intent.armed, {
+            ...(intent.roomId === undefined ? {} : { roomId: intent.roomId }),
+            removing: intent.removing,
+          });
           return;
 
         case 'set-clock':
@@ -631,6 +793,79 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           }
           return;
         }
+
+        /*
+         * The producer ADR 0022 was written to decide, and the one
+         * `tests/foundation/unconsumed-command-contract.test.ts` has been
+         * holding `ZoneRoom` on its `AWAITING_PRODUCER` list for.
+         *
+         * `RoomZoningService.zone` has been complete since #261 -- it validates
+         * every tile before writing any, paints the zoning plane with the room
+         * catalogue's own `numericId`, registers a `RoomInstance` and refuses
+         * with one of seven typed reasons -- and *nothing in the application
+         * could reach it*. The whole zoning vocabulary was reachable only from
+         * a test.
+         *
+         * `roomId` is the field name the wire format uses and it holds a room
+         * *catalog* id (`room.cell`), never an instance id: the schema named it
+         * before instances existed, and renaming a field a queued command in an
+         * existing save may already carry is a save-compatibility change rather
+         * than a rename (`src/simulation/runtime/session-commands.ts` records
+         * that too).
+         *
+         * **No `transactionId`, and that is a decision rather than an
+         * omission.** The field is optional in the schema; zoning writes no
+         * construction order, so `ConstructionSystem.registerTransactionOrder`
+         * has nothing to group and `Undo` cannot reach a designation whether or
+         * not one is sent. Sending an id that nothing groups by would be
+         * inventing a grouping to explain. Removal is the reversal instead, and
+         * it is `UnzoneRoom` below.
+         *
+         * **One command per gesture, and no loop.** Unlike a build order, which
+         * is one command per edge, a designation is one command for the whole
+         * rectangle: the service checks every tile before writing any, so a
+         * 64x64 room is one outcome rather than 4,096 chances to be half
+         * refused.
+         */
+        case 'zone-room':
+          requireSimulation(commands).submit({
+            type: 'ZoneRoom',
+            roomId: intent.roomId,
+            x: intent.area.x,
+            y: intent.area.y,
+            width: intent.area.width,
+            height: intent.area.height,
+          });
+          return;
+
+        /*
+         * Removal, which is the blocker this change closes rather than a
+         * nicety on top of it.
+         *
+         * Before `UnzoneRoom` existed a designation was permanent for the life
+         * of the session: `zone` refuses `overlaps-existing-room` for any tile
+         * already painted, so it could not be re-zoned; no command expressed
+         * removal; and `Undo` reaches only `ConstructionSystem`, which holds no
+         * transaction for a zoning. So one stray 64x64 drag could put 4,096
+         * tiles beyond use for the whole session -- and on touch there was no
+         * recovery of any kind, because undo is a keyboard chord.
+         *
+         * No room id, because a removal names no room type: what comes out is
+         * whatever the rectangle covers. `RoomZoningService.unzone` states what
+         * "covers" means -- every covered zoned tile is grown into its
+         * connected same-type run before anything is cleared -- and both
+         * consequences of that, one of which the player is told up front by the
+         * panel's removal hint.
+         */
+        case 'unzone-room':
+          requireSimulation(commands).submit({
+            type: 'UnzoneRoom',
+            x: intent.area.x,
+            y: intent.area.y,
+            width: intent.area.width,
+            height: intent.area.height,
+          });
+          return;
 
         case 'purchase-materials': {
           const sender = requireSimulation(commands);
@@ -841,6 +1076,7 @@ const mountedHud =
         ...(simulation === undefined ? {} : { client: simulation }),
         ...(commandSender === undefined ? {} : { commands: commandSender }),
         ...(buildTool === undefined ? {} : { tool: buildTool }),
+        ...(roomTool === undefined ? {} : { rooms: roomTool }),
       });
 
 // The save panel is laid out by the HUD, so there is nowhere to put it until
