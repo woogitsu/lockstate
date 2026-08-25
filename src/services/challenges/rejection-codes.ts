@@ -42,6 +42,7 @@ export const CHALLENGE_REJECTION_CODES = [
   'evidence-hash-mismatch',
   'duplicate-evidence',
   'replay-failed',
+  'final-tick-mismatch',
   'checkpoint-hash-mismatch',
   'final-state-hash-mismatch',
   'metrics-mismatch',

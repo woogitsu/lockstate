@@ -7,12 +7,12 @@ import { CHALLENGE_REJECTION_CODES } from '../../src/services/challenges/rejecti
 /**
  * The sibling of `fault-code-reachability-contract.test.ts` for the other
  * closed refusal vocabulary in this repository, and the larger one:
- * `ChallengeRejectionCode` has twenty-three members and sits on the trust
+ * `ChallengeRejectionCode` has twenty-four members and sits on the trust
  * boundary [ADR 0009](../../docs/adr/0009-challenge-verification-strategy.md)
  * describes, where a code is the difference between "your build is too old"
  * and "these hashes disagree with the replay".
  *
- * Issue #264 S4-S6 measured three of the twenty-three as unreachable *by
+ * Issue #264 S4-S6 measured three of the twenty-four as unreachable *by
  * test*: `evidence-too-large`, `command-after-final-tick` and
  * `objective-metric-missing` appeared nowhere in the suite. Each was mutated
  * to a no-op -- the last in the `tsc`-clean `?? 0` form, which returns
@@ -26,7 +26,7 @@ import { CHALLENGE_REJECTION_CODES } from '../../src/services/challenges/rejecti
  * is the failure `ProtocolFaultCode` actually had twice: a member the worker
  * could not produce at all (#139/#184, #187 finding 2). Asking only that
  * question here would have been **green before this change and after it**: all
- * twenty-three codes have a `reject(...)` call site in the pipeline, and the
+ * twenty-four codes have a `reject(...)` call site in the pipeline, and the
  * three #264 found were emitted by code that no test ever ran. A gate that
  * cannot fail on the defect it was written for is the "check that reads as
  * protection and is wired to nothing" shape its model exists to prevent.
@@ -54,7 +54,7 @@ import { CHALLENGE_REJECTION_CODES } from '../../src/services/challenges/rejecti
  *
  * Second, and this is why `CHALLENGE_REJECTION_CODES` is declared in
  * `src/services/challenges/rejection-codes.ts` rather than beside the pipeline
- * that emits it: the declaration lists all twenty-three literals. A producing
+ * that emits it: the declaration lists all twenty-four literals. A producing
  * surface containing the declaration would report every code emitted no matter
  * what the pipeline does -- unconditionally, permanently green. The
  * declaration module is therefore asserted below to be *outside* the surface,
@@ -209,7 +209,7 @@ describe('every challenge rejection code can be produced and is driven by a test
     // that blanked the files, a moved module -- would do the same in a way a
     // file count cannot see, so each surface is named along with a code it
     // must contain.
-    expect(CHALLENGE_REJECTION_CODES.length).toBe(23);
+    expect(CHALLENGE_REJECTION_CODES.length).toBe(24);
     expect(new Set(CHALLENGE_REJECTION_CODES).size).toBe(CHALLENGE_REJECTION_CODES.length);
 
     expect(producerSources.map((source) => source.where)).toEqual(['src/services/challenges/verification.ts']);
@@ -234,7 +234,7 @@ describe('every challenge rejection code can be produced and is driven by a test
      * The sharpest scope control here, and the reason `rejection-codes.ts`
      * exists as a module at all. It lists every code as a literal, so a
      * producing surface that included it -- `src/services/challenges/`, the
-     * obvious wrong choice -- would report all twenty-three emitted with the
+     * obvious wrong choice -- would report all twenty-four emitted with the
      * pipeline gutted to a single `reject('invalid-shape', ...)`.
      *
      * Fails in both useful directions: widening PRODUCER_PATHS to the
@@ -303,9 +303,15 @@ describe('every challenge rejection code can be produced and is driven by a test
     // exact means a code that quietly loses its last producer or its last test
     // cannot be settled by adding a list entry alone -- the count has to
     // change too, and a reviewer sees that the vocabulary stopped being whole.
+    //
+    // The twenty-fourth is `final-tick-mismatch` (#318), and moving all three
+    // numbers is what the exactness is for: a code cannot join this vocabulary
+    // without a reviewer seeing the denominator move, and it cannot join
+    // without arriving with both a producer and a test, which is the state
+    // #264 found three codes failing in the second half of.
     expect(unemitted).toEqual([]);
     expect(unexercised).toEqual([]);
-    expect(CHALLENGE_REJECTION_CODES.filter((code) => mentions(producerSources, code)).length).toBe(23);
-    expect(CHALLENGE_REJECTION_CODES.filter((code) => mentions(exerciserSources, code)).length).toBe(23);
+    expect(CHALLENGE_REJECTION_CODES.filter((code) => mentions(producerSources, code)).length).toBe(24);
+    expect(CHALLENGE_REJECTION_CODES.filter((code) => mentions(exerciserSources, code)).length).toBe(24);
   });
 });

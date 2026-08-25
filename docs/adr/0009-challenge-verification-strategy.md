@@ -41,6 +41,7 @@ A submission carries a `ChallengeEvidence` payload
 - the seed the run was played with,
 - the ordered command stream (`tick`, `sequence`, `payload`), which is the
   same protocol shape the worker already accepts,
+- the tick the run claims to have ended at,
 - periodic **checkpoint hashes** (canonical state hash every N ticks),
 - the final state hash and the claimed metrics,
 - an evidence hash over all of the above.
@@ -65,10 +66,17 @@ computed from replay output, never from the claim.
 5. **Structure** — ticks/sequences strictly ordered, non-negative, within
    the tick limit; seed matches; submission window open.
 6. **Replay** — a trusted headless runner re-executes the stream and
-   returns its own state hash, checkpoint hashes and metrics.
-7. **Agreement** — every checkpoint hash, the final hash and the claimed
-   metrics must match the replay's own output. The replay's metrics are
-   what gets ranked.
+   returns its own final tick, state hash, checkpoint hashes and metrics.
+7. **Agreement** — the final tick, every checkpoint hash, the final hash
+   and the claimed metrics must match the replay's own output. The replay's
+   metrics are what gets ranked. The final tick is compared *first*, and
+   with its own code (`final-tick-mismatch`, issue #318): it is the cheapest
+   of the four comparisons, and two sides that ended at different ticks
+   disagree about the run itself, which makes every field disagreement under
+   it a consequence rather than the finding. Every other tick bound in the
+   pipeline — step 4's budget, step 5's ordering and the checkpoint cadence —
+   is enforced against the *claimed* final tick, so this is the only check
+   that contradicts it.
 
 Steps 1–5 and 7 are pure, deterministic and unit-tested now; step 6 is a
 port (`ChallengeReplayRunner`) so the pipeline is complete and testable
@@ -88,8 +96,11 @@ already `verified`; the database column is not client-writable at all
 ### Determinism drift is a rejection, not a repair
 If a replay disagrees with evidence produced by an allowed build, that is
 either cheating or a determinism bug — both must surface. The submission is
-rejected with `final-state-hash-mismatch` / `checkpoint-hash-mismatch` and
-the mismatch is diagnostic signal, never silently accepted.
+rejected with `final-tick-mismatch` / `final-state-hash-mismatch` /
+`checkpoint-hash-mismatch` and the mismatch is diagnostic signal, never
+silently accepted. The codes are deliberately distinct rather than one
+"disagreed with the replay": which field disagreed is the difference between
+a run of the wrong length and a run of the wrong content.
 
 ## Alternatives considered
 

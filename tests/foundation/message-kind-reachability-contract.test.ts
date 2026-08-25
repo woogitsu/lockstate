@@ -10,7 +10,7 @@ import {
 /**
  * The third member of the reachability family, after
  * `fault-code-reachability-contract.test.ts` (twelve fault codes) and
- * `challenge-rejection-code-reachability-contract.test.ts` (twenty-three
+ * `challenge-rejection-code-reachability-contract.test.ts` (twenty-four
  * rejection codes). `tests/foundation/` gates commands, content ids, input
  * actions, fault codes and challenge rejection codes, and has never gated the
  * **protocol message kinds** that carry all of them -- twenty of them today,

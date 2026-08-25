@@ -46,6 +46,12 @@ export type ChallengeVerificationResult =
       /** The replay's own metrics, never the submitter's claim. */
       readonly metrics: Readonly<Record<string, number>>;
       readonly rankedScore: number;
+      /**
+       * The tick the *replay* ended at, which a verified result has also
+       * agreed with the claim (`final-tick-mismatch`). It is still reported
+       * from the replay rather than copied from the evidence, because the
+       * trusted side is the one this result is allowed to state.
+       */
       readonly replayedTick: number;
     }
   | {
@@ -242,6 +248,54 @@ export async function verifyChallengeSubmission(
   if (!replayResult.ok) return reject('replay-failed', replayResult.reason);
 
   const { outcome } = replayResult;
+
+  /*
+   * How long the run was, compared first -- and it is a comparison, not a
+   * report, for the reason the whole layer exists: the replay is the
+   * authority and the claim is untrusted (ADR 0009). Two sides that disagree
+   * about the final tick disagree about the *run*, which is the same shape of
+   * disagreement `checkpointsAgree` and the final-hash comparison below
+   * already refuse.
+   *
+   * It sits ahead of them on both of the criteria ADR 0009 orders the
+   * pipeline by. It is the cheapest of the four agreement checks -- one
+   * integer, against a checkpoint walk and a metric-key walk -- and it is the
+   * most informative, because if the two runs are of different lengths then
+   * every per-field disagreement underneath is a *consequence* of that, and
+   * would otherwise be reported as though a hash or a metric were the finding.
+   *
+   * Its own code rather than a fold into `final-state-hash-mismatch`, for the
+   * same reason this vocabulary has twenty-four members and not one: the
+   * diagnostic value is in knowing which field disagreed
+   * (`rejection-codes.ts`), and a tick disagreement points at the run's
+   * length, where a hash disagreement points at its content.
+   *
+   * What it adds beyond the checks below, stated exactly, because the honest
+   * answer is narrower than "nothing else notices":
+   *
+   * - Nothing else in this pipeline reads `outcome.finalTick`. Every use of a
+   *   final tick above -- the `maxTicks` budget, `command-after-final-tick`,
+   *   the checkpoint cadence -- is computed from `evidence.finalTick`, the
+   *   claim. Before this check, the one number the budget is enforced against
+   *   was never contradicted by anything.
+   * - `checkpointsAgree` constrains a tick disagreement only to within one
+   *   `checkpointIntervalTicks`, and only *if* the runner emits checkpoints at
+   *   the definition's cadence up to its own final tick. `ChallengeReplayRunner`
+   *   neither states that nor can enforce it; it declares `finalTick` as an
+   *   output precisely because the replay is what decides when the run ended.
+   * - A final state hash taken over a kernel snapshot carries the tick
+   *   (`kernelSnapshotSchema`, src/persistence/save-schema.ts), so for such a
+   *   runner a differing tick usually also differs the hash. "Usually" is as
+   *   far as that goes: ADR 0009 says only "canonical state hash", the trusted
+   *   runner does not exist yet, and a verifier cannot see what went into
+   *   sixteen hex characters.
+   */
+  if (outcome.finalTick !== evidence.finalTick) {
+    return reject(
+      'final-tick-mismatch',
+      `The trusted replay ended at tick ${outcome.finalTick}; the submission claims tick ${evidence.finalTick}.`,
+    );
+  }
   if (!checkpointsAgree(evidence.checkpoints, outcome.checkpoints)) {
     return reject('checkpoint-hash-mismatch', 'A checkpoint hash disagrees with the trusted replay.');
   }
