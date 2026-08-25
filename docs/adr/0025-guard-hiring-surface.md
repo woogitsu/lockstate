@@ -9,10 +9,11 @@ what was chosen under that delegation. It is not accepted until they say so.
 
 **This is 0025 and not 0024**, which was the next free number when it was
 written. It moved because another unmerged branch had claimed 0024 for a
-different document, and the repository's own precedent — recorded in
-`docs/adr/README.md` for the kernel ADR — is to take the lowest number free
-*without coordinating with unmerged or held work*. The index carries the
-reason, and no citation of any other ADR moved.
+different document — since merged as
+[ADR 0024](./0024-protocol-fault-recoverability.md) — and the repository's own
+precedent, recorded in `docs/adr/README.md` for the kernel ADR, is to take the
+lowest number free *without coordinating with unmerged or held work*. The index
+carries the reason, and no citation of any other ADR moved.
 
 A reviewer is being asked to sign off on three things, and they are separable:
 

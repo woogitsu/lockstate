@@ -1,7 +1,7 @@
 import type { BuildOrderFailReason } from '../construction/build-order';
 import type { PurchaseRefusalReason } from '../economy/procurement';
 import type { RefusalReason, SimulationRefusal } from '../protocol/types';
-import type { ZoneRoomRefusalReason } from '../rooms/zoning';
+import type { UnzoneRoomRefusalReason, ZoneRoomRefusalReason } from '../rooms/zoning';
 import type { StaffHireRefusalReason } from '../staff/hiring';
 
 /**
@@ -150,10 +150,27 @@ export const PURCHASE_REFUSAL_REASONS: Readonly<Record<PurchaseRefusalReason, Re
  * *sentence*, because the player asked for a room and not a wall.
  */
 export const ZONE_REFUSAL_REASONS: Readonly<Record<ZoneRoomRefusalReason, RefusalReason>> = {
+  'below-minimum-size': 'zone.below-minimum-size',
   'duplicate-instance-id': 'zone.duplicate-instance-id',
   'invalid-area': 'zone.invalid-area',
   'out-of-bounds': 'zone.out-of-bounds',
   'overlaps-existing-room': 'zone.overlaps-existing-room',
   'unknown-room-type': 'zone.unknown-room-type',
   'unowned-land': 'zone.unowned-land',
+};
+
+/**
+ * `UnzoneRoomRefusalReason`, mapped onto the wire's. Exhaustive for the same
+ * reason as the tables above.
+ *
+ * `invalid-area` is spelled exactly like the zoning table's, and gets its own
+ * namespaced id for the reason `out-of-bounds` and `unowned-land` do: it is the
+ * same condition and a different sentence, because the player asked to remove a
+ * room rather than to create one, and a message that named the wrong command
+ * would send them to the wrong control.
+ */
+export const UNZONE_REFUSAL_REASONS: Readonly<Record<UnzoneRoomRefusalReason, RefusalReason>> = {
+  'invalid-area': 'unzone.invalid-area',
+  'nothing-to-remove': 'unzone.nothing-to-remove',
+  'room-occupied': 'unzone.room-occupied',
 };

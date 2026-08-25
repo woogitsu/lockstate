@@ -147,11 +147,11 @@ describe('PathRequestQueue: priority, aging fairness, budget and cancellation', 
 });
 
 /**
- * ADR 0007's deferred-status contract, which had no behavioural test at all.
+ * ADR 0007's deferred-status contract, restated over the mechanism that
+ * survived #177.
  *
- * The ADR does not describe `getPending`/`pendingIds` as conveniences. It
- * makes them the *answer* to the issue's "structured deferred status"
- * requirement, and says so in those terms
+ * The ADR as accepted named `getPending(id)`/`pendingIds()` as the answer to
+ * the issue's "structured deferred status" requirement
  * (`docs/adr/0007-navigation-work-budgets-and-flow-fields.md`):
  *
  * > `getPending(id)`/`pendingIds()` expose enqueue tick (hence age) and
@@ -160,85 +160,85 @@ describe('PathRequestQueue: priority, aging fairness, budget and cancellation', 
  * > issue's "structured deferred status" requirement without inventing a
  * > third state machine.
  *
- * Neither accessor has a caller in `src/` — by design, since the ADR names
- * the callers as "future regime/security systems" — and #177 item 2 recorded
- * that as a choice between wiring `pendingIds()` and amending the ADR to
- * delete it. Both of those need a decision. What did not need one is this:
- * measured, replacing `pendingIds()` with `return []` and `getPending()` with
- * `return undefined` left all 162 test files and 1,667 tests green. An
- * accessor an accepted ADR relies on to satisfy a requirement was free to
- * return nothing, and would have stayed that way until its first caller
- * arrived and read the emptiness as an empty queue.
+ * Both accessors are gone. That ADR's 2026-08-25 amendment records why: the
+ * decision is (a) cancellation is a no-op on an unknown id and (b) two states
+ * and no third, and both are satisfied by depth plus
+ * `NavigationSystem.getResult(id) === undefined`, which is what all six
+ * production callers of `requestRoute` actually read. The accessors were a
+ * second, weaker way to ask the same question, with no caller at all.
  *
- * So this pins the ADR's two sentences and nothing beyond them: what the
- * accessors report, and that "in the queue" and "resolved" are the only two
- * states either of them can show. It deliberately does not invent a
- * production consumer, which is the half that still needs the owner.
+ * #251's six cases were written against those accessors, so they could not be
+ * kept as they stood. What they were really pinning is restated below against
+ * `size()`, `waitedTicks` and `getMetrics()`, because the underlying claims
+ * did not go away with the accessors and were worth a test on their own
+ * evidence: measured at the time, replacing `pendingIds()` with `return []`
+ * and `getPending()` with `return undefined` left the whole suite green. The
+ * mutations those cases existed to catch are the ones these have to catch in
+ * their new form -- an `enqueue` that stamps a constant tick, a `cancel` that
+ * clears the queue, a `size()` that loses track of deferred work.
  *
- * The *ordering* half of `pendingIds` is not re-asserted here — dropping its
- * `.sort()` is already a demonstrated break in
- * `tests/determinism/canonical-iteration-contract.test.ts`. The one case
- * below that does depend on order is there because a sort over ids whose
- * enqueue order differs from their code-unit order is the only way to show
- * that the listing is not simply the insertion sequence.
+ * `tests/foundation/navigation-deferred-status-contract.test.ts` holds the
+ * other half: that no caller in `src/` needs the deleted pair, and that
+ * bringing either back is a change to the ADR.
  */
-describe('PathRequestQueue: the deferred status ADR 0007 says these accessors are', () => {
-  it('reports the enqueue tick, so a caller can derive the age of a request without a separate event stream', () => {
-    const { cellTiles, canteenTiles } = makeFixture();
-    const queue = new PathRequestQueue({ agingIntervalTicks: 10, flowFieldActivationThreshold: 1000 });
-    const request: PathRequestInput = { id: 'aging', origin: cellTiles[0]!, destination: canteenTiles[0]!, context: GUARD, priority: 0 };
-
-    queue.enqueue(request, 40);
-
-    const pending = queue.getPending('aging');
-    expect(pending).toBeDefined();
-    expect(pending?.enqueuedAtTick).toBe(40);
-    // "hence age": the ADR's parenthetical is only true if the tick is the
-    // enqueue tick and not the current one, so the subtraction is the claim.
-    expect(97 - pending!.enqueuedAtTick).toBe(57);
-    // The request itself comes back, not a copy of its id -- `priority` is
-    // what a caller deciding whether to re-prioritise would need next.
-    expect(pending?.request.priority).toBe(0);
-    expect(pending?.request.id).toBe('aging');
-  });
-
-  it('says nothing about an id it never held, rather than inventing an entry for it', () => {
+describe('PathRequestQueue: the two states ADR 0007 says a request can be in', () => {
+  it('carries the enqueue tick into the resolved payload as an age, not the tick it resolved on', () => {
+    const { world, doors, graph, routeCache, flowFieldCache, cellTiles, canteenTiles } = makeFixture(20);
     const queue = new PathRequestQueue({ agingIntervalTicks: 10, flowFieldActivationThreshold: 1000 });
 
-    expect(queue.getPending('never-enqueued')).toBeUndefined();
-    expect(queue.pendingIds()).toEqual([]);
+    queue.enqueue({ id: 'aging', origin: cellTiles[0]!, destination: canteenTiles[0]!, context: GUARD, priority: 0 }, 40);
+
+    const resolved = queue.processTick({ tick: 97, workBudget: 100_000, world, doors, graph, routeCache, flowFieldCache });
+
+    expect(resolved).toHaveLength(1);
+    // "hence age": only true if the recorded tick is the *enqueue* tick and
+    // not the current one, so the subtraction is the claim. An `enqueue` that
+    // stamped `0`, or a `processTick` that computed `tick - tick`, fails here.
+    expect(resolved[0]!.waitedTicks).toBe(57);
   });
 
-  it('lists exactly the queued ids, and lists them in id order rather than enqueue order', () => {
-    const { cellTiles, canteenTiles } = makeFixture();
-    const queue = new PathRequestQueue({ agingIntervalTicks: 1000, flowFieldActivationThreshold: 1000 });
-
-    // Enqueued deliberately against their sorted order.
-    for (const [index, id] of ['zulu', 'mike', 'alpha'].entries()) {
-      queue.enqueue({ id, origin: cellTiles[index]!, destination: canteenTiles[0]!, context: GUARD, priority: 0 }, 0);
-    }
-
-    expect(queue.pendingIds()).toEqual(['alpha', 'mike', 'zulu']);
-    // "queue depth directly": the listing and the count are the same queue,
-    // so a caller reading one cannot disagree with a caller reading the other.
-    expect(queue.pendingIds()).toHaveLength(queue.size());
-  });
-
-  it('drops a resolved request from both accessors, because resolved is the other of the two states', () => {
+  it('reports depth as the queued count and nothing else, so a deferred request is neither resolved nor lost', () => {
     const { world, doors, graph, routeCache, flowFieldCache, cellTiles, canteenTiles } = makeFixture(20);
     const queue = new PathRequestQueue({ agingIntervalTicks: 1000, flowFieldActivationThreshold: 1000 });
 
-    queue.enqueue({ id: 'resolve-me', origin: cellTiles[0]!, destination: canteenTiles[0]!, context: GUARD, priority: 0 }, 0);
-    expect(queue.pendingIds()).toEqual(['resolve-me']);
+    expect(queue.size()).toBe(0);
+    for (let index = 0; index < 6; index += 1) {
+      queue.enqueue({ id: `req-${index}`, origin: cellTiles[index]!, destination: canteenTiles[0]!, context: GUARD, priority: 0 }, 3);
+    }
+    expect(queue.size()).toBe(6);
 
-    const resolved = queue.processTick({ tick: 0, workBudget: 100_000, world, doors, graph, routeCache, flowFieldCache });
+    const resolved = queue.processTick({ tick: 3, workBudget: 1, world, doors, graph, routeCache, flowFieldCache });
 
-    expect(resolved.map((entry) => entry.id)).toEqual(['resolve-me']);
-    expect(queue.getPending('resolve-me')).toBeUndefined();
-    expect(queue.pendingIds()).toEqual([]);
+    // The whole of "structured deferred status": every request is in exactly
+    // one of the two states, and the two counts add back up to the six.
+    expect(resolved.length).toBeLessThan(6);
+    expect(queue.size()).toBe(6 - resolved.length);
+    expect(queue.getMetrics().resolvedCount).toBe(resolved.length);
   });
 
-  it('drops a cancelled request from both accessors, so cancellation is not a third state', () => {
+  it('keeps every deferred request across ticks and eventually resolves each exactly once', () => {
+    const { world, doors, graph, routeCache, flowFieldCache, cellTiles, canteenTiles } = makeFixture(20);
+    const queue = new PathRequestQueue({ agingIntervalTicks: 1000, flowFieldActivationThreshold: 1000 });
+
+    const enqueued = ['zulu', 'mike', 'alpha', 'bravo', 'yankee', 'charlie'];
+    for (const [index, id] of enqueued.entries()) {
+      queue.enqueue({ id, origin: cellTiles[index]!, destination: canteenTiles[0]!, context: GUARD, priority: 0 }, 0);
+    }
+
+    const seen: string[] = [];
+    for (let tick = 0; tick < 50 && queue.size() > 0; tick += 1) {
+      for (const outcome of queue.processTick({ tick, workBudget: 1, world, doors, graph, routeCache, flowFieldCache })) {
+        seen.push(outcome.id);
+      }
+    }
+
+    expect(queue.size()).toBe(0);
+    // Exactly once each: a request that was deferred rather than resolved is
+    // still there on the next tick, and one that resolved does not come back.
+    expect([...seen].sort()).toEqual([...enqueued].sort());
+  });
+
+  it('takes a cancelled request out of the queue without disturbing the rest, so cancellation is not a third state', () => {
     const { cellTiles, canteenTiles } = makeFixture();
     const queue = new PathRequestQueue({ agingIntervalTicks: 1000, flowFieldActivationThreshold: 1000 });
 
@@ -247,34 +247,33 @@ describe('PathRequestQueue: the deferred status ADR 0007 says these accessors ar
 
     expect(queue.cancel('drop')).toBe(true);
 
-    expect(queue.getPending('drop')).toBeUndefined();
-    expect(queue.pendingIds()).toEqual(['keep']);
-    // Still reported as pending, so cancelling one entry did not quietly
-    // clear the queue -- the failure mode a `pending.clear()` would produce.
-    expect(queue.getPending('keep')?.request.id).toBe('keep');
+    // A `cancel` that also called `this.pending.clear()` would leave 0 here --
+    // the mutation #251 added its last case for, kept in its new form.
+    expect(queue.size()).toBe(1);
+    expect(queue.getMetrics().cancelledCount).toBe(1);
+    // And the survivor is still a live entry, not a hollowed-out one.
+    expect(queue.cancel('keep')).toBe(true);
+    expect(queue.size()).toBe(0);
+    expect(queue.getMetrics().cancelledCount).toBe(2);
   });
 
-  it('keeps a deferred request visible in both accessors while it waits for budget', () => {
+  it('re-accepts an id once it has left the queue, because leaving is the only other state there is', () => {
     const { world, doors, graph, routeCache, flowFieldCache, cellTiles, canteenTiles } = makeFixture(20);
     const queue = new PathRequestQueue({ agingIntervalTicks: 1000, flowFieldActivationThreshold: 1000 });
+    const request: PathRequestInput = { id: 'reused', origin: cellTiles[0]!, destination: canteenTiles[0]!, context: GUARD, priority: 0 };
 
-    for (let index = 0; index < 6; index += 1) {
-      queue.enqueue({ id: `req-${index}`, origin: cellTiles[index]!, destination: canteenTiles[0]!, context: GUARD, priority: 0 }, 3);
-    }
+    queue.enqueue(request, 0);
+    expect(queue.processTick({ tick: 0, workBudget: 100_000, world, doors, graph, routeCache, flowFieldCache })).toHaveLength(1);
 
-    const resolved = queue.processTick({ tick: 3, workBudget: 1, world, doors, graph, routeCache, flowFieldCache });
-    expect(resolved.length).toBeLessThan(6);
+    // Resolved is not a retained state: nothing in the queue remembers the id,
+    // which is what lets `JobSystem.beginLeg` and `PatrolSystem.requestLeg`
+    // re-request after reading a result. A queue that held resolved entries as
+    // a third state would throw the duplicate-id error here.
+    expect(() => queue.enqueue(request, 5)).not.toThrow();
+    expect(queue.size()).toBe(1);
 
-    // This is the whole point of the accessors: a request that was deferred
-    // rather than resolved is still findable, and still carries the tick it
-    // arrived at, so a caller can tell "waiting" from "gone".
-    const survivors = queue.pendingIds();
-    expect(survivors).toHaveLength(6 - resolved.length);
-    for (const id of survivors) {
-      expect(queue.getPending(id)?.enqueuedAtTick).toBe(3);
-    }
-    for (const entry of resolved) {
-      expect(survivors).not.toContain(entry.id);
-    }
+    expect(queue.cancel('reused')).toBe(true);
+    expect(() => queue.enqueue(request, 9)).not.toThrow();
+    expect(queue.size()).toBe(1);
   });
 });

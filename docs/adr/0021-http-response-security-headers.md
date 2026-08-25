@@ -1,6 +1,6 @@
 # ADR-0021: HTTP response security headers for the static-asset deployment
 
-- Status: Proposed — pending human approval
+- Status: Accepted
 - Date: 2026-08-24
 - Related: issue #105 (finding 12), issue #138 (item 3), [ADR-0002](./0002-cloudflare-static-assets.md), [ADR-0008](./0008-trusted-service-boundary.md), [`docs/DEPLOYMENT.md`](../DEPLOYMENT.md), [`public/_headers`](../../public/_headers)
 

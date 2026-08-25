@@ -13,6 +13,7 @@ import { type ListRow, createListRow } from '../primitives/list-row';
 import { type Panel, createPanel } from '../primitives/panel';
 import { type TabButton, createTabButton } from '../primitives/tab-button';
 import { type BuildPanel, type BuildPanelTarget, createBuildPanel } from './build-panel';
+import { type RoomsPanel, createRoomsPanel } from './rooms-panel';
 import {
   HUD_PANEL_IDS,
   type HudPanelId,
@@ -33,6 +34,7 @@ import {
   type HudBuildViewModel,
   type HudClockMode,
   type HudLocalizer,
+  type HudRoomsViewModel,
   type HudSpeed,
   type HudStaffViewModel,
   type HudViewModel,
@@ -69,6 +71,7 @@ export interface HudTabDefinition {
 export const HUD_TABS: readonly HudTabDefinition[] = [
   { id: 'overview', icon: 'overview', labelKey: HUD_MESSAGE_KEY.tabOverview },
   { id: 'build', icon: 'build', labelKey: HUD_MESSAGE_KEY.tabBuild },
+  { id: 'rooms', icon: 'rooms', labelKey: HUD_MESSAGE_KEY.tabRooms },
   { id: 'security', icon: 'security', labelKey: HUD_MESSAGE_KEY.tabSecurity },
   { id: 'regime', icon: 'regime', labelKey: HUD_MESSAGE_KEY.tabRegime },
 ];
@@ -125,6 +128,49 @@ export interface HudBuildOrder {
 export interface HudWorldBuildSource {
   /** Points the finished-gesture report at the HUD. Called once, at mount. */
   attachOrders(place: (order: HudBuildOrder) => void): void;
+}
+
+/** A rectangle of tiles, as the HUD is willing to know one: four integers. */
+export interface HudRoomArea {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+/**
+ * A finished room gesture on the world.
+ *
+ * Two kinds rather than one carrying a flag, for the reason `undo` and `redo`
+ * are two intents rather than one with a direction: the HUD keys its gate and
+ * its refusal sentence on the kind, and a refused designation and a refused
+ * removal leave the prison in different states. A removal carries no room id at
+ * all, which a shared shape would have had to make optional and every reader
+ * would then have had to establish when it was present.
+ */
+export type HudRoomGesture =
+  | { readonly kind: 'designate'; readonly roomId: string; readonly area: HudRoomArea }
+  | { readonly kind: 'remove'; readonly area: HudRoomArea };
+
+/**
+ * The world's room gesture, as the HUD is willing to know it (ADR 0022).
+ *
+ * The same shape as `HudWorldBuildSource`, and for the same two reasons: the
+ * host builds the tool before the HUD exists, so the connection is made in this
+ * direction rather than by handing a callback out; and the gesture arrives as a
+ * *report*, never as a command, so the HUD dispatches its own intent and a
+ * refused designation reaches the refusal line by exactly the machinery a
+ * refused build order does.
+ *
+ * A **second source** beside `worldBuild` rather than a widened one, because
+ * the two carry different shapes -- edges against a rectangle -- and because a
+ * host may have one and not the other.
+ */
+export interface HudWorldRoomSource {
+  /** Points the finished-gesture report at the HUD. Called once, at mount. */
+  attachGestures(place: (gesture: HudRoomGesture) => void): void;
+  /** Points the live readout at the mounted panel. Called once, at mount. */
+  attachReadout(readout: (area: HudRoomArea | undefined) => void): void;
 }
 
 /** Which way along the edit history the player asked to move. */
@@ -228,7 +274,53 @@ export type HudIntent =
    * any more than it knows `PlaceBuildOrder` is.
    */
   | { readonly kind: 'undo' }
-  | { readonly kind: 'redo' };
+  | { readonly kind: 'redo' }
+  /**
+   * The player asked for an area to become a room (ADR 0022, amended).
+   *
+   * Ids and numbers only -- the host turns this into a `ZoneRoom` command; the
+   * HUD does not know that such a command exists, or that the field the wire
+   * format calls `roomId` holds a room *catalog* id rather than an instance id.
+   *
+   * **One intent is one gesture**, and here that is one rectangle rather than a
+   * run: the simulation validates every tile of the rectangle before writing
+   * any, so a 64x64 designation is one command with one outcome, unlike a wall
+   * run which is one command per edge.
+   */
+  | { readonly kind: 'zone-room'; readonly roomId: string; readonly area: HudRoomArea }
+  /**
+   * The player asked for the room designations in an area to be cleared.
+   *
+   * **No room id**, because a removal names no room type: what comes out is
+   * whatever is there. That is not a simplification of the designation intent
+   * -- it is what the command carries, and what makes removal usable as the
+   * recovery it exists to be, since a player fixing a stray drag does not have
+   * to first work out what they zoned.
+   *
+   * A separate intent from `zone-room` rather than one with an absent field, so
+   * the gate and the refusal sentence can differ: a refused designation leaves
+   * the prison with no new room, and a refused removal leaves the room exactly
+   * where it was.
+   */
+  | { readonly kind: 'unzone-room'; readonly area: HudRoomArea }
+  /**
+   * The player handed the world pointer to the room tool, or took it back.
+   *
+   * *Chrome*, exactly like `arm-build-tool`: it changes what a drag on the
+   * world means and asks the simulation for nothing, so it is never gated --
+   * blocking it while a designation was in flight would leave the player unable
+   * to put the pointer down.
+   *
+   * `removing` travels with `armed` rather than as a signal of its own, because
+   * the renderer needs both to choose a preview and a pair that could disagree
+   * would draw a removal preview for a designation gesture.
+   */
+  | {
+      readonly kind: 'arm-room-tool';
+      readonly armed: boolean;
+      readonly roomId: string | undefined;
+      readonly removing: boolean;
+    };
 
 /**
  * Why this page cannot run a simulation at all.
@@ -262,6 +354,17 @@ export interface MountHudOptions {
    * a coordinate field mid-edit.
    */
   readonly build?: HudBuildViewModel;
+  /**
+   * What the Rooms panel may offer (ADR 0022, amended).
+   *
+   * Omitted, the panel still renders and says there are no room types, which is
+   * the honest picture of a host that has published no catalogue. Content
+   * rather than session state, for the same reason `build` is: rebuilding the
+   * list every snapshot would drop the selection the player just made. What
+   * *is* session state -- what the simulation said about the last room
+   * designated -- travels on `HudViewModel.zoning`.
+   */
+  readonly rooms?: HudRoomsViewModel;
   /**
    * What the Staff panel may offer (ADR 0025).
    *
@@ -312,6 +415,21 @@ export interface MountHudOptions {
    * started, because `src/main.ts` builds no build tool for one either.
    */
   readonly editHistory?: HudEditHistorySource;
+  /**
+   * The world's room gesture, routed into the HUD's own intent path (ADR 0022).
+   *
+   * Supplied, the HUD attaches to it once at mount: each finished rectangle
+   * becomes a *pending* one in the Rooms panel rather than an intent, because a
+   * designation is confirmed rather than committed on release, and the intent
+   * leaves when the player presses the confirm control. So a refused
+   * designation reaches the refusal line on the control that was pressed,
+   * exactly as a refused *Place order* press does.
+   *
+   * Omitted, nothing at all happens and the HUD never hears about the world
+   * pointer -- the state of every harness in `tests/browser/` and of a page
+   * whose `Worker` never started.
+   */
+  readonly worldRooms?: HudWorldRoomSource;
   /**
    * Receives every player action, and may be async.
    *
@@ -701,15 +819,74 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     },
   });
   /*
+   * The Rooms panel, and the two commands it can issue (ADR 0022, amended).
+   *
+   * Both go through `dispatchCommand`, exactly as a build order does, and the
+   * confirm control is passed with each so a refusal lands on the control that
+   * was pressed as well as on the refusal line (#207). That is what makes
+   * "exactly one player-visible message per refusal" true of this surface: a
+   * designation the panel would not let through is never dispatched and
+   * produces none, and a designation it does dispatch produces exactly one --
+   * either the gate's, when the host throws before submitting, or the
+   * simulation's alert row, when the kernel accepts the command and
+   * `RoomZoningService` then refuses it. The two sit on opposite sides of
+   * `sender.submit` and cannot both fire for one press.
+   *
+   * `onArm` is chrome and is deliberately not gated: it changes what a drag on
+   * the world means and asks the host for nothing.
+   */
+  const roomsPanel: RoomsPanel = createRoomsPanel({
+    localizer,
+    model: options.rooms ?? { rooms: [] },
+    onDesignate: (intent) => {
+      dispatchCommand({ kind: 'zone-room', roomId: intent.roomId, area: intent.area }, roomsPanel.submitControl);
+    },
+    onRemove: (area) => {
+      dispatchCommand({ kind: 'unzone-room', area }, roomsPanel.submitControl);
+    },
+    onArm: (armed, armOptions) => {
+      runReported(
+        'arm-room-tool',
+        () =>
+          options.onIntent?.({
+            kind: 'arm-room-tool',
+            armed,
+            roomId: armOptions.roomId,
+            removing: armOptions.removing,
+          }),
+        reportError,
+      );
+    },
+  });
+
+  /*
+   * The world's room gesture, joined to the panel rather than to the gate.
+   *
+   * This is the one place the room surface differs from the build surface in
+   * shape rather than in payload, and it is the confirm step that makes the
+   * difference: a finished rectangle is *pending*, not placed, so a release
+   * dispatches nothing and the intent leaves when the player presses the
+   * confirm control above. A refusal therefore always has a control to be
+   * marked on, which a build drag never does.
+   */
+  options.worldRooms?.attachGestures((gesture) => {
+    roomsPanel.setPendingArea(gesture.area);
+  });
+  options.worldRooms?.attachReadout((area) => {
+    roomsPanel.setArea(area);
+  });
+
+  /*
    * The Security tab's first inhabitant (ADR 0025).
    *
-   * Three of the four tabs rendered no panel at all: this slot held the Build
-   * panel and nothing else, so selecting Security hid the Build panel and put
-   * nothing in its place. Hiring goes here rather than onto the Build panel
-   * because the two are never laid out at the same time -- so it costs that
-   * panel's measured height budget nothing, and the third button
-   * `.hud-build__actions` cannot hold is never needed -- and because a guard
-   * is not made of the material the selected buildable is made of.
+   * Three of the five tabs still render no panel at all -- Overview, Security
+   * and Regime -- and before this one Security was among them: selecting it hid
+   * the Build panel and put nothing in its place. Hiring goes here rather than
+   * onto the Build panel because no two of these panels are ever laid out at
+   * the same time -- so it costs the Build panel's measured height budget
+   * nothing, and the third button `.hud-build__actions` cannot hold is never
+   * needed -- and because a guard is not made of the material the selected
+   * buildable is made of.
    *
    * Hiring is a *command* for the same reasons placing an order and buying
    * are: it asks the host to change the simulation, the money leaves
@@ -725,7 +902,10 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     },
   });
 
-  const side = element('div', { className: 'hud__side', children: [buildPanel.element, staffPanel.element] });
+  const side = element('div', {
+    className: 'hud__side',
+    children: [buildPanel.element, roomsPanel.element, staffPanel.element],
+  });
 
   /**
    * The other route to the same command: a run dragged along the world
@@ -823,6 +1003,10 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   // command too, so a second tap while one is in flight must not queue a
   // duplicate build order.
   for (const control of buildPanel.controls) busy.add(control);
+  // And the Rooms panel's one command control, for the same reason: a second
+  // tap on the confirm while a designation is in flight must not queue a
+  // duplicate room.
+  for (const control of roomsPanel.controls) busy.add(control);
   // And so does the Staff panel's "Hire": one busy signal for every control
   // that issues a command, so they can never disagree about whether one is in
   // flight.
@@ -841,6 +1025,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // Hidden, not merely unstyled: a panel that is off-screen but still in the
     // tab order is a control a keyboard can reach and a player cannot see.
     buildPanel.setVisible(state.activeTab === 'build');
+    roomsPanel.setVisible(state.activeTab === 'rooms');
     staffPanel.setVisible(state.activeTab === 'security');
     for (const panel of HUD_PANEL_IDS) {
       const collapsed = isPanelCollapsed(state, panel);
@@ -912,6 +1097,11 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     viewModel = next;
     strip.update(next);
     paintAlerts();
+    // The enclosure readout is session state, so it arrives here rather than at
+    // mount. Passed straight through: the panel decides what to render and this
+    // line decides nothing, which is what keeps "what the simulation found"
+    // and "what the player is told about it" in one place each.
+    roomsPanel.setZoningNotice(next.zoning);
   };
 
   paintState();

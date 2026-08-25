@@ -164,6 +164,67 @@ export interface BuildLayoutProbe {
 }
 
 /**
+ * What the Rooms panel is showing (ADR 0022, amended).
+ *
+ * Every field is read from the production DOM. The four `*LaidOut` flags are
+ * deliberately about layout and not presence: `paintActions` swaps the arm pair
+ * for the confirm pair using `hidden`, so a control that is not showing must
+ * have no box at all -- a control that is off-screen but still in the tab order
+ * is one a keyboard can reach and a player cannot see.
+ */
+export interface RoomsProbe {
+  readonly panelLaidOut: boolean;
+  /** Room ids of the catalogue rows, in the order they are drawn. */
+  readonly rows: readonly string[];
+  readonly selected: string;
+  /** `data-area` on the readout block: `x,y,width,height`, or empty for none. */
+  readonly area: string;
+  readonly areaText: string;
+  /** The one note line: the arm hint, the removal hint, the too-small warning or the enclosure warning. */
+  readonly noteText: string;
+  /** `data-tone`, so a warning is distinguishable from a hint without matching prose. */
+  readonly noteTone: string;
+  /** The two rule lines: the authored minimum, and the enclosure requirement. */
+  readonly ruleText: readonly string[];
+  readonly enclosureText: string;
+  readonly armLaidOut: boolean;
+  readonly removeLaidOut: boolean;
+  readonly confirmLaidOut: boolean;
+  readonly cancelLaidOut: boolean;
+  readonly confirmText: string;
+  readonly confirmDisabled: boolean;
+  readonly armPressed: string;
+  readonly removePressed: string;
+}
+
+/**
+ * The Rooms panel's geometry, in the shape `BuildLayoutProbe` reports the Build
+ * panel's.
+ *
+ * `lastControlBottom` is the number the reachability assertion turns on. The
+ * last block in the panel is the status block, and a floor that is too small
+ * pushes it past `panelVisibleBottom` rather than clipping it visibly -- so
+ * comparing the enclosure readout's own bottom edge against the fold is what
+ * makes "the last control is reachable at 900x600" a measurement rather than a
+ * screenshot.
+ */
+export interface RoomsLayoutProbe {
+  readonly viewport: readonly [number, number];
+  readonly panel: LayoutBox | null;
+  /** The bottom of the panel's *client* box -- the fold, unaffected by scrolling. */
+  readonly panelVisibleBottom: number;
+  readonly panelOverflow: number;
+  readonly panelScrollTop: number;
+  /** `scrollHeight - clientHeight` on the panel body, which must never be positive. */
+  readonly bodyOverflow: number;
+  readonly list: LayoutBox | null;
+  /** `scrollHeight - clientHeight` on the catalogue list. Positive is correct here: eighteen rooms. */
+  readonly listOverflow: number;
+  readonly status: LayoutBox | null;
+  readonly lastControlBottom: number;
+}
+
+/**
  * What one HUD repaint costs the localization runtime (issue #136).
  *
  * `formatNumberCalls` is counted by the harness's own `HudLocalizer`;
@@ -327,6 +388,41 @@ export interface LockstateUiHarness {
    * asserting about a key press that never reached the HUD.
    */
   pressWorldUndo(direction: string): boolean;
+  /**
+   * A finished room gesture, as the HUD hears one (ADR 0022).
+   *
+   * It calls the sink the HUD registered on `MountHudOptions.worldRooms`, which
+   * is what `RoomTool.place()` calls in the running application. Driving a real
+   * canvas belongs to `app-shell.spec.ts`; what this exercises is the half that
+   * lives in `mountHud` and the panel -- and the difference from
+   * `dragWorldBuild` is the point of it: **a release dispatches nothing**. The
+   * rectangle becomes pending, and the intent leaves when the confirm control
+   * is pressed.
+   *
+   * Returns `false` when no sink is registered, so a spec cannot pass by
+   * asserting about a gesture that never happened.
+   */
+  dragWorldRoom(
+    area: { x: number; y: number; width: number; height: number },
+    removing?: boolean,
+  ): boolean;
+  /** The live readout as the pointer moves; `undefined` clears it. */
+  hoverWorldRoom(area: { x: number; y: number; width: number; height: number } | undefined): boolean;
+  clickRoomType(roomId: string): boolean;
+  /** A real click on one of the panel's four controls, so a disabled or hidden one does not fire. */
+  clickRoomsControl(control: 'arm' | 'remove' | 'confirm' | 'cancel'): boolean;
+  /**
+   * Publishes what the simulation said about the last room designated.
+   *
+   * In the running application this arrives on `simulation/status-counts` and
+   * reaches the view model through `hudZoningFromWorkerMessage`; here it is set
+   * directly, because what the specs exercise is what the *panel* does with it.
+   */
+  reportZoning(
+    notice: { readonly sequence: number; readonly enclosure: 'sealed' | 'open'; readonly requirement: 'enclosed' | 'outdoors' | 'none' } | undefined,
+  ): void;
+  roomsProbe(): RoomsProbe;
+  roomsLayoutProbe(): RoomsLayoutProbe;
   buildLayoutProbe(): BuildLayoutProbe;
   /** Repaints the HUD with a changed view model and reports what it cost the localizer. */
   measureRepaintFormatterCost(): RepaintFormatterCost;

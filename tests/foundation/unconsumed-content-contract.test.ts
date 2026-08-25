@@ -78,10 +78,19 @@ const PROTECTED_BY_DECISION: Readonly<Record<string, string>> = {
  */
 const AWAITING_CONSUMER: Readonly<Record<string, string>> = {
   // Rooms. No room id is referenced from anywhere at all -- not from another
-  // catalog, not from a test -- so these eleven are the rooms with no reader
-  // of any kind.
+  // catalog, not from a test -- so these are the rooms with no reader of any
+  // kind.
+  //
+  // `room.holding-cell` left this list with the Rooms tab, and by the narrow
+  // route ADR 0022 predicted for exactly this gate: *"a producer that projects
+  // the catalog generically names no room id, so it moves nothing by itself; a
+  // test that zones a particular room type moves that one id."* That is what
+  // happened. `roomCatalogue()` in `src/main.ts` projects all 18 rooms without
+  // naming one, and `tests/unit/rooms-zoning.test.ts` names this one because it
+  // is the room whose authored 2x2 minimum makes a rectangle `room.cell`
+  // refuses legal -- which is how that test proves the minimum comes from
+  // content rather than from a constant the service holds.
   'room.garbage-room': 'Declared with no reader anywhere; no build order, job, need or regime action names it.',
-  'room.holding-cell': 'Declared with no reader anywhere; intake has no admission path yet (#89).',
   'room.infirmary': 'Declared with no reader anywhere.',
   'room.kitchen': 'Declared with no reader anywhere.',
   'room.laundry': 'Declared with no reader anywhere.',
@@ -209,7 +218,13 @@ describe('every unconsumed content id is accounted for', () => {
       declared: declaredIds.length,
       unconsumedBySrcAndTests: unconsumedIds.length,
       unconsumedBySrcOnly: unconsumedBySrcOnly.length,
-    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 34, unconsumedBySrcOnly: 52 });
+      // 33, not 34: `room.holding-cell` gained a single-quoted literal in
+      // `tests/unit/rooms-zoning.test.ts` with the Rooms tab. That change left
+      // `unconsumedBySrcOnly` alone -- the producer projects the catalogue
+      // generically and names no room id, so nothing moved in `src/` -- and the
+      // 53 -> 52 below is ADR 0025's alone, for the reason above. The two
+      // measures moved on different changes and each is stated where it moved.
+    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 33, unconsumedBySrcOnly: 52 });
   });
 
   it('scans a non-trivial catalog and a non-trivial consumer set, so this cannot pass vacuously', () => {

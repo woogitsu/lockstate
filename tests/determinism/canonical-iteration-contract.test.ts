@@ -69,10 +69,16 @@ const SCANNED_ROOTS = ['src/simulation', 'src/content', 'src/persistence'] as co
  *
  * Entries the scan flagged are absent whenever they were fixed instead of
  * exempted, which is the right remedy whenever the sort costs nothing:
- * `DoorRegistry.all()` and `PathRequestQueue.pendingIds()` now sort by id,
- * and `MemoryLocalSaveStore`'s `listMetadata` now sorts by `prisonId`, which
+ * `DoorRegistry.all()` now sorts by id, and `MemoryLocalSaveStore`'s
+ * `listMetadata` now sorts by `prisonId`, which
  * is also the order the real IndexedDB store returns. `ownedParcelBounds`,
  * the walk that started #132, was already fixed the same way.
+ *
+ * `PathRequestQueue.pendingIds()` was in that list and is not any more. #177
+ * removed the accessor outright under a dated amendment to ADR 0007, so the
+ * sort this scanner made it grow was deleted with the method that needed it --
+ * the remedy above one step further on. The queue's remaining enumeration
+ * (`processTick`) sorts by effective priority and still passes here.
  */
 const ALLOWED: readonly CanonicalIterationExemption[] = [
   {
@@ -160,7 +166,24 @@ describe('the simulation iterates collections in a canonical order', () => {
     expect(SCANNED.map((entry) => entry.file)).toContain('src/persistence/save-schema.ts');
     // Non-vacuous: an empty violation list means nothing if nothing was found
     // to look at. Most of these sites sort, which is the point.
-    expect(REPORT.siteCount).toBeGreaterThan(40);
+    //
+    // A FLOOR AT THE MEASURED VALUE, on the model of the three in
+    // `tests/foundation/localization-key-completeness.test.ts` and for the
+    // reason #198 gave there: `toBeGreaterThan(40)` against 53 sites admitted
+    // the loss of a quarter of the corpus without a word. #278 was exactly
+    // that loss -- the shared stripper blanked 80 consecutive lines of
+    // `src/content/default-locale-en.ts`, a file in this scan, and a violation
+    // injected into them passed this gate. Adding an enumeration must stay
+    // free; losing one must fail, and at the measured value any loss does.
+    //
+    // 53 -> 52 when #297 deleted `PathRequestQueue.pendingIds()`, whose body
+    // was `[...this.pending.keys()].sort()` -- a real site in this scan, in a
+    // method ADR 0007's amendment records as having had no caller. Re-measured
+    // rather than relaxed: the whole point of a floor at the measured value is
+    // that it fails on a loss, so a deliberate deletion has to move it down by
+    // exactly the number of sites deleted, and one was. Lowering it further
+    // than the deletion accounts for would give back the slack #198 closed.
+    expect(REPORT.siteCount, 'fewer enumerations found than when this floor was set -- the scan lost corpus').toBeGreaterThanOrEqual(52);
   });
 
   it('reads the real array `.entries()` in save-schema.ts as the array it is', () => {

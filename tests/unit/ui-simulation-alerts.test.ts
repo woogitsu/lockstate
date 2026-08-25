@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_LOCALE } from '../../src/content/localization';
 import {
+  PROTOCOL_FAULT_CODES,
   REFUSAL_REASONS,
   SIMULATION_PROTOCOL_VERSION,
+  type ProtocolFaultCode,
   type RefusalReason,
   type WorkerToMainMessage,
 } from '../../src/simulation/protocol/types';
@@ -166,6 +168,175 @@ describe('what the player is told is a key, and the key is real', () => {
     for (const reason of REFUSAL_REASONS) {
       const row = hudAlertsFromWorkerMessage(publication({ sequence: 3, tick: 1, reason }))?.[0];
       expect(row?.labelKey).not.toBe(reason);
+      expect(row?.labelKey).not.toBe(localizer.format(String(row?.labelKey)));
+      expect(row?.labelKey).toMatch(/^[a-z][a-z0-9.-]*$/u);
+    }
+  });
+});
+
+/** A `protocol/error`, correlated to a request or not. */
+function fault(
+  code: ProtocolFaultCode,
+  options: { readonly recoverable?: boolean; readonly replyTo?: string } = {},
+): WorkerToMainMessage {
+  return {
+    protocolVersion: SIMULATION_PROTOCOL_VERSION,
+    messageId: `fault-message-${code}`,
+    ...(options.replyTo === undefined ? {} : { replyTo: options.replyTo }),
+    kind: 'protocol/error',
+    payload: { code, message: `rejected: ${code}`, recoverable: options.recoverable ?? false },
+  } as WorkerToMainMessage;
+}
+
+/**
+ * The second producer of alert rows: a protocol fault nobody else reads
+ * (#187).
+ *
+ * Before this, an uncorrelated `protocol/error` reached `SimulationClient`,
+ * was handed to every listener, and was dropped by all of them --
+ * `WorkerSessionHost` ignores a message with no `replyTo`, and this function
+ * returned `undefined` for it. That is the whole of finding 3's consequence
+ * on this side: the worker faults, says so on the wire, and the player is
+ * told nothing.
+ */
+describe('a protocol fault the worker raised becomes an alert row', () => {
+  it('turns an uncorrelated fault into a row carrying a message key and a severity', () => {
+    expect(hudAlertsFromWorkerMessage(fault('invalid-message', { recoverable: true }))).toEqual([
+      { id: 'fault-invalid-message', labelKey: 'hud.alert.fault.invalid-message', severity: 'warning' },
+    ]);
+  });
+
+  it('says nothing about a fault that answers a request, because its caller reports it', () => {
+    // `WorkerSessionHost` rejects the pending promise with a
+    // `WorkerFaultError` and the save panel names the action that failed. A
+    // row here would be the same failure told twice, in two places, with no
+    // way for the player to know it is one event.
+    expect(hudAlertsFromWorkerMessage(fault('snapshot-incompatible', { replyTo: 'load-request-1' }))).toBeUndefined();
+  });
+
+  it('grades a recoverable fault below an unrecoverable one', () => {
+    // The one difference between #187's two halves that a player can act on.
+    // A worker that rejected a message it never applied is still running the
+    // prison; a reply this thread could not read means it cannot say what the
+    // worker did at all.
+    expect(hudAlertsFromWorkerMessage(fault('invalid-payload', { recoverable: true }))?.[0]?.severity).toBe('warning');
+    expect(hudAlertsFromWorkerMessage(fault('invalid-payload', { recoverable: false }))?.[0]?.severity).toBe('danger');
+  });
+
+  it('keeps one row per code however many times that fault recurs', () => {
+    // A peer sending malformed messages in a loop must not grow the list
+    // without bound (`docs/HUD_PROJECTIONS.md` contract 5), and must not move
+    // the row a player is reading.
+    let alerts = hudAlertsFromWorkerMessage(fault('invalid-message', { recoverable: true })) ?? [];
+    alerts = hudAlertsFromWorkerMessage(fault('unknown-message-kind', { recoverable: true }), alerts) ?? [];
+    const positions = alerts.map((row) => row.id);
+    expect(positions).toEqual(['fault-invalid-message', 'fault-unknown-message-kind']);
+    for (let repeat = 0; repeat < 50; repeat += 1) {
+      alerts = hudAlertsFromWorkerMessage(fault('invalid-message', { recoverable: true }), alerts) ?? [];
+    }
+    expect(alerts.map((row) => row.id)).toEqual(positions);
+  });
+
+  it('empties the list when the session stops', () => {
+    const alerts = hudAlertsFromWorkerMessage(fault('internal-error')) ?? [];
+    expect(alerts).toHaveLength(1);
+    expect(
+      hudAlertsFromWorkerMessage(
+        {
+          protocolVersion: SIMULATION_PROTOCOL_VERSION,
+          messageId: 'stopped-1',
+          replyTo: 'shutdown-1',
+          kind: 'simulation/stopped',
+          payload: { tick: 900, reason: 'shutdown-requested' },
+        } as WorkerToMainMessage,
+        alerts,
+      ),
+    ).toEqual([]);
+  });
+});
+
+describe('the two producers of alert rows do not erase each other', () => {
+  it('keeps a standing fault row when a counts publication carries a refusal', () => {
+    // The publication arrives up to twice a second. A fault row that did not
+    // survive one would be visible for under 500 ms, which the player cannot
+    // tell apart from never being told at all -- #187 finding 3 with extra
+    // steps.
+    const withFault = hudAlertsFromWorkerMessage(fault('invalid-message', { recoverable: true })) ?? [];
+    const next = hudAlertsFromWorkerMessage(
+      publication({ sequence: 1, tick: 12, reason: 'build.unowned-land' }),
+      withFault,
+    );
+    expect(next?.map((row) => row.id)).toEqual(['fault-invalid-message', 'refusal-1']);
+  });
+
+  it('keeps a standing fault row when a counts publication carries no refusal', () => {
+    const withFault = hudAlertsFromWorkerMessage(fault('invalid-message', { recoverable: true })) ?? [];
+    expect(hudAlertsFromWorkerMessage(publication(), withFault)?.map((row) => row.id)).toEqual([
+      'fault-invalid-message',
+    ]);
+  });
+
+  it('replaces only the refusal row when the refusal changes', () => {
+    let alerts = hudAlertsFromWorkerMessage(fault('invalid-message', { recoverable: true })) ?? [];
+    alerts = hudAlertsFromWorkerMessage(publication({ sequence: 1, tick: 1, reason: 'build.unowned-land' }), alerts) ?? [];
+    alerts = hudAlertsFromWorkerMessage(publication({ sequence: 2, tick: 9, reason: 'zone.invalid-area' }), alerts) ?? [];
+    expect(alerts.map((row) => row.id)).toEqual(['fault-invalid-message', 'refusal-2']);
+  });
+
+  it('keeps a standing refusal row when a fault arrives', () => {
+    const withRefusal =
+      hudAlertsFromWorkerMessage(publication({ sequence: 3, tick: 4, reason: 'purchase.insufficient-funds' })) ?? [];
+    const next = hudAlertsFromWorkerMessage(fault('invalid-message', { recoverable: true }), withRefusal);
+    expect(next?.map((row) => row.id)).toEqual(['refusal-3', 'fault-invalid-message']);
+  });
+
+  it('is pure: the same arguments give the same answer and the list it was handed is untouched', () => {
+    const held = hudAlertsFromWorkerMessage(fault('invalid-message', { recoverable: true })) ?? [];
+    const before = JSON.stringify(held);
+    const first = hudAlertsFromWorkerMessage(publication({ sequence: 1, tick: 1, reason: 'build.unbuildable' }), held);
+    const second = hudAlertsFromWorkerMessage(publication({ sequence: 1, tick: 1, reason: 'build.unbuildable' }), held);
+    expect(first).toEqual(second);
+    expect(JSON.stringify(held)).toBe(before);
+  });
+});
+
+describe('what the player is told about a fault is a key, and the key is real', () => {
+  it('emits a distinct key for every code the protocol declares', () => {
+    // Exhaustive over the enum rather than over what is reachable today: a
+    // code that gains an uncorrelated emitter must already have a sentence,
+    // or it ships as its own raw dotted key.
+    const keys = PROTOCOL_FAULT_CODES.map((code) => hudAlertsFromWorkerMessage(fault(code))?.[0]?.labelKey);
+    expect(keys.filter((key) => key === undefined)).toEqual([]);
+    expect(new Set(keys).size).toBe(PROTOCOL_FAULT_CODES.length);
+  });
+
+  it('resolves every one of those keys to real text in the bundled default locale', () => {
+    const missing: string[] = [];
+    const localizer = new Localizer({
+      locale: DEFAULT_LOCALE,
+      catalogs: [defaultMessageCatalogEn],
+      onMissingKey: (report) => missing.push(`${report.kind}:${report.key}`),
+    });
+
+    for (const code of PROTOCOL_FAULT_CODES) {
+      const key = hudAlertsFromWorkerMessage(fault(code))?.[0]?.labelKey;
+      expect(key, `${code} produced no label key`).toBeDefined();
+      const text = localizer.format(String(key));
+      expect(text, `${String(key)} has no default-locale entry`).not.toBe(key);
+      expect(text.trim().length).toBeGreaterThan(0);
+    }
+    expect(missing).toEqual([]);
+  });
+
+  it('carries no fault code and no protocol text into the view model', () => {
+    // ADR 0011 at the same line the refusal case checks it: the wire
+    // vocabulary stops here, and `payload.message` -- which is protocol
+    // English, not a translated string -- never reaches a row.
+    const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
+    for (const code of PROTOCOL_FAULT_CODES) {
+      const row = hudAlertsFromWorkerMessage(fault(code))?.[0];
+      expect(row?.labelKey).not.toBe(code);
+      expect(row?.labelKey).not.toContain(`rejected: ${code}`);
       expect(row?.labelKey).not.toBe(localizer.format(String(row?.labelKey)));
       expect(row?.labelKey).toMatch(/^[a-z][a-z0-9.-]*$/u);
     }

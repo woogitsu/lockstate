@@ -1,6 +1,6 @@
 # ADR-0014: Art storage, generated-versus-source policy and runtime asset delivery
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-08-23
 - Related: issue #32, [ADR-0002](./0002-cloudflare-static-assets.md), [`docs/ART_PIPELINE.md`](../ART_PIPELINE.md)
 
