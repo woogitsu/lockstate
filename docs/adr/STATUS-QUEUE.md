@@ -11,8 +11,10 @@ declares, the evidence that the declaration and the code disagree, the exact
 line that would replace it, and what merging that line would commit the project
 to. Deciding is the owner's; this file only makes the decision cheap.
 
-Established at `main` @ `d2596ad` (v0.0.37). Every `path:line` was read from
-disk at that commit.
+Established at `main` @ `d2596ad` (v0.0.37). Every `path:line` in sections 2-7
+and 9 was read from disk at that commit. Section 8 was added later, with the
+change it records, and its citations are read against that change rather than
+against `d2596ad` — where the ADR it is about did not exist.
 
 ---
 
@@ -31,8 +33,13 @@ half-done flip cannot merge. Both lines are given verbatim in every entry below.
 
 ## 1. What is actually waiting on you
 
-Eight ADRs are `Proposed`. They are **not one queue** — they are two, and
+Nine ADRs are `Proposed`. They are **not one queue** — they are two, and
 conflating them is what makes the queue look longer and more urgent than it is.
+
+The ninth is 0024, added after this file was established at `d2596ad`. It is a
+Queue B entry by construction rather than by drift: it was written *with* the
+change that implements it, which is what `docs/adr/README.md` means by "not
+binding, whether or not code already implements it". Its own entry is §8.
 
 **Queue A — genuine open decisions. Nothing is shipped; a "no" costs nothing.**
 
@@ -91,6 +98,7 @@ which is the only reason it is recorded here.
 | [0021](./0021-http-response-security-headers.md) | HTTP response security headers | Fully | Yes |
 | [0013](./0013-free-tier-cloud-save-capacity.md) | Free-tier cloud-save capacity | **Partial** — §§1-4 yes, §§5-6 no | §§1-4 are in SQL |
 | [0012](./0012-derived-identifier-reproducibility.md) | Reproducibility of derived identifiers | **Partial** — taxonomy yes, remedy no | Taxonomy is cited from `src/` |
+| [0024](./0024-protocol-fault-recoverability.md) | Which protocol faults end a session | Fully | **Yes** — one argument at one call site |
 
 The rest of this file is Queue B, ordered by what a wrong answer costs.
 
@@ -384,7 +392,55 @@ no owner.
 
 ---
 
-## 8. What is *not* in this queue, and why
+## 8. ADR 0024 — shipped with the change that wrote it, and the only entry here that is reversible in one line
+
+**Declared** (`docs/adr/0024-protocol-fault-recoverability.md:5`):
+
+```
+**Proposed — pending human approval.** Not accepted.
+```
+
+**Why it is in Queue B and not Queue A.** Unlike 0022 and 0023, its decision is
+live on `main` the moment its own change merges: `src/simulation/worker/worker.ts`
+faults a decode failure with `{ recoverable: true }`, and
+`src/ui/simulation-alerts.ts` paints an uncorrelated `protocol/error` as an
+alert row. It is *not* drift — the ADR and the code were written together, which
+is the case `docs/adr/README.md` covers with "not binding, whether or not code
+already implements it".
+
+**What makes it different from every other entry above.** Reversing it is one
+argument at one call site. There is no save format, no SQL, no live database
+mechanism and no persisted field behind it; the reversal target is named in the
+ADR itself, and the tests that would have to be deleted alongside it are named
+too. So a "no" here costs a revert, not a migration.
+
+**What a "yes" commits to.** That a message the worker rejected before dispatch
+does not end the player's session, and that the fault is reported to the player
+instead of only to the console. It also settles issue #187 finding 1, which asks
+for exactly this and nothing else.
+
+**The line that would replace the status**, in `docs/adr/0024-protocol-fault-recoverability.md:5`:
+
+```
+**Accepted.**
+```
+
+and its row in `docs/adr/README.md`:
+
+```
+| [0024](./0024-protocol-fault-recoverability.md) | Which protocol faults end a session, and who is told | Accepted |
+```
+
+Accepting it also **deletes** the implementation note at
+`docs/adr/0006-simulation-worker-adapter.md` ("a protocol decode error no longer
+reaches state 5") and changes ADR 0006 state 5's clause to "an unhandled
+exception". That note exists precisely so an Accepted ADR is not amended on a
+Proposed one's authority, and it is the only thing in the corpus that has to
+move with this status.
+
+---
+
+## 9. What is *not* in this queue, and why
 
 Three Accepted ADRs describe mechanisms `main` does not exercise. **None of them
 is a status defect** — the decision was accepted and the code has not caught up,
