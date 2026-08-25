@@ -20,6 +20,7 @@ import {
   SIMULATION_PROTOCOL_VERSION 
 } from '../protocol/types';
 import type { JsonValue } from '../../shared/json';
+import { PROJECTION_CATALOG, type ProjectionRequest } from './projection-catalog';
 import { projectStatusCounts, statusCountsEqual } from './status-counts';
 
 export type WorkerState = 
@@ -429,6 +430,9 @@ export class SimulationWorkerStateMachine {
         case 'simulation/submit-command':
           this.handleSubmitCommand(msg);
           break;
+        case 'simulation/request-projection':
+          this.handleRequestProjection(msg);
+          break;
         case 'simulation/request-snapshot':
           this.handleRequestSnapshot(msg);
           break;
@@ -645,6 +649,121 @@ export class SimulationWorkerStateMachine {
           data: bundle as unknown as JsonValue,
         }
       }
+    });
+  }
+
+  /**
+   * Answers one request for one read model (#104, #157 finding 1).
+   *
+   * This is the general route the two special cases asked for. `simulation/clock-state`
+   * and `simulation/status-counts` are each a *publication* of one projection
+   * on a cadence, and each needed a message kind of its own to exist; the nine
+   * read models left over could not have nine more without the protocol
+   * growing with the read model. So this handler is written against
+   * `PROJECTION_CATALOG` rather than against any projection: the kind names
+   * the *family*, the payload's `projectionId` selects the member, and adding
+   * a twelfth is a catalog entry rather than a protocol change.
+   *
+   * **Pull, not push, and that is the design.** A level the player is always
+   * looking at belongs on a cadence -- which is why the counts stay where they
+   * are and are not moved onto this route. A list only an open panel cares
+   * about, in a window only that panel knows, belongs on a request; and
+   * requesting it is also what makes #157 finding 2 not arise, because
+   * `IncidentLog.all()` is unbounded and `ConfiscationLedger` has no windowed
+   * accessor, and on this route neither is read until something asks. Nothing
+   * in this file publishes a projection on a timer.
+   *
+   * **Three refusals before any projection runs**, all `invalid-payload` and
+   * all recoverable, because each rejects a request without touching
+   * simulation state:
+   *
+   * - a page window on a projection that has no list, which would otherwise be
+   *   silently ignored and leave a caller believing it had paged;
+   * - a target that is not the one the entry declares, so a request naming a
+   *   room instance on the staff roster fails rather than being dropped;
+   * - a missing target on a detail projection, which would otherwise reach the
+   *   catalog as a throw and be reported as `internal-error`.
+   *
+   * `limit` needs no ceiling check here: `MAX_PROJECTION_PAGE_LIMIT` is on the
+   * schema, so an over-large window never decodes.
+   *
+   * **Strictly a report**, exactly like `publishClockState` and
+   * `publishStatusCounts`. It reads `Kernel.tick` and runs a pure projection
+   * over the runtime's registries; it calls nothing on the kernel, steps
+   * nothing, advances no clock and writes nothing, so no number of requests can
+   * change what a tick computes
+   * (`tests/determinism/projection-request.test.ts`).
+   *
+   * The reply is **correlated** -- `replyTo` is required by the schema, not
+   * optional -- because unlike the two publications it is only ever an answer.
+   * ADR 0003 decision 2, read in the direction its 2026-08-23 amendment does
+   * not need to relax.
+   *
+   * It answers from `paused` as well as `running`: a panel opened while the
+   * simulation is paused must show the prison as it stands, not wait for the
+   * player to press play.
+   */
+  private handleRequestProjection(msg: Extract<MainToWorkerMessage, { kind: 'simulation/request-projection' }>): void {
+    if (!this._kernel || !this._runtime) {
+      return this.fault('not-initialized', 'Kernel is not initialized.', { replyTo: msg.messageId });
+    }
+
+    const { projectionId, offset, limit, target } = msg.payload;
+    const entry = PROJECTION_CATALOG[projectionId];
+
+    if (!entry.paged && (offset !== undefined || limit !== undefined)) {
+      return this.fault(
+        'invalid-payload',
+        `Projection "${projectionId}" has no list to page; drop offset/limit.`,
+        { replyTo: msg.messageId, recoverable: true },
+      );
+    }
+
+    const requestedTargetKind = target?.kind ?? 'none';
+    if (requestedTargetKind !== entry.target) {
+      return this.fault(
+        'invalid-payload',
+        `Projection "${projectionId}" takes a "${entry.target}" target, got "${requestedTargetKind}".`,
+        { replyTo: msg.messageId, recoverable: true },
+      );
+    }
+
+    const request: ProjectionRequest = {
+      ...(offset === undefined ? {} : { offset }),
+      ...(limit === undefined ? {} : { limit }),
+      ...(target === undefined ? {} : { target }),
+    };
+
+    const tick = this._kernel.tick;
+    const { view, page } = entry.project(this._runtime, tick, request);
+
+    this.post({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: crypto.randomUUID(),
+      replyTo: msg.messageId,
+      kind: 'simulation/projection',
+      payload: {
+        projectionId,
+        // The tick the projection was read at, so a reply that arrives after
+        // the simulation has moved on cannot be mistaken for a statement
+        // about the state that exists when it is painted.
+        tick,
+        // Spread rather than passed as `undefined`: `exactOptionalPropertyTypes`
+        // is on, and both fields are `.strict()`-optional. An absent `view` is
+        // "no such target", and an absent `page` is "this projection has no
+        // list" -- neither is a zero.
+        ...(page === undefined ? {} : { page }),
+        ...(view === undefined
+          ? {}
+          : {
+              view: {
+                transport: 'structured-clone' as const,
+                schemaId: entry.schemaId,
+                schemaVersion: entry.schemaVersion,
+                data: view,
+              },
+            }),
+      },
     });
   }
 
