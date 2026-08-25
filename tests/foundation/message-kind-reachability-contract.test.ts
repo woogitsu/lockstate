@@ -31,7 +31,7 @@ import {
  * [ADR 0006](../../docs/adr/0006-simulation-worker-adapter.md) state 1 --
  * *"The worker has loaded but is waiting for the `protocol/handshake`"* --
  * describe a negotiation that happens for nobody:
- * `WorkerSessionHost.initialize` (`src/persistence/session/worker-session-host.ts:142`)
+ * `WorkerSessionHost.initialize` (`worker-session-host.ts#initialize`)
  * sends `simulation/initialize` as the first message the worker ever receives.
  * Both findings were re-verified against this tree before this gate was
  * written, and the sweep found two more the audit did not name:
@@ -51,7 +51,7 @@ import {
  * and not a substring:
  *
  * ```ts
- * // src/simulation/worker/state-machine.ts:393
+ * // state-machine.ts#handleHandshake
  * private handleHandshake(msg: Extract<MainToWorkerMessage, { kind: 'protocol/handshake' }>): void {
  * ```
  *
@@ -97,9 +97,9 @@ import {
  * equivalent here is not coverage but **provocation**, and it is derived rather
  * than asserted by hand:
  *
- * `protocol/handshake-accepted` and `protocol/pong` *are* sent -- `state-machine.ts:402`
- * and `:416` construct them. Both sites sit inside `handleHandshake` and
- * `handlePing`, which run only in answer to `protocol/handshake` and
+ * `protocol/handshake-accepted` and `protocol/pong` *are* sent --
+ * `state-machine.ts#handleHandshake` and `state-machine.ts#handlePing`
+ * construct them. Both handlers run only in answer to `protocol/handshake` and
  * `protocol/ping`, which nothing sends. A send-only gate reports both fine.
  * They are dead in production for the same reason and by the same one line of
  * fix, and a gate that says so is worth more than one that counts them.
@@ -136,9 +136,9 @@ const ROOT = join(__dirname, '../..');
  */
 const UNSENT_MAIN_TO_WORKER_KINDS: Readonly<Record<string, string>> = {
   'protocol/handshake':
-    "#274 A2. Every occurrence in `src/` is the receiver (`state-machine.ts:366`, `:393`), the kind list, the schema or the transfer switch; `WorkerSessionHost.initialize` sends `simulation/initialize` as the worker's first message and `handleInitialize`'s guard accepts it because the state is still `uninitialized`. ADR 0003 decision 4's version and capability negotiation therefore runs for nobody, and `WorkerState`'s `'ready'` (`state-machine.ts:27`) is a state no `transition(...)` call reaches. Whether to send it, delete it, or fold it into `simulation/initialize` is an owner decision recorded on #274 and deliberately not taken here.",
+    "#274 A2. Every occurrence in `src/` is the receiver (`state-machine.ts#handleMessage`'s dispatch case and `state-machine.ts#handleHandshake`), the kind list, the schema or the transfer switch; `WorkerSessionHost.initialize` sends `simulation/initialize` as the worker's first message and `handleInitialize`'s guard accepts it because the state is still `uninitialized`. ADR 0003 decision 4's version and capability negotiation therefore runs for nobody, and `WorkerState`'s `'ready'` (`state-machine.ts#WorkerState`) is a state no `transition(...)` call reaches. Whether to send it, delete it, or fold it into `simulation/initialize` is an owner decision recorded on #274 and deliberately not taken here.",
   'protocol/ping':
-    'Found by this gate rather than by #274, which named only the handshake. The five occurrences in `src/` are the kind list (`types.ts:8`), the schema (`:221`), the transfer-list case (`transferables.ts:31`), the dispatch case (`state-machine.ts:369`) and the handler annotation (`:411`); no main-thread module constructs one. It is a liveness probe with no caller, and the main thread has a different answer to the question it asks: every request `WorkerSessionHost` makes carries its own `DEFAULT_REPLY_TIMEOUT_MS = 15_000` timer (`worker-session-host.ts:15`, `:83-86`).',
+    'Found by this gate rather than by #274, which named only the handshake. The five occurrences in `src/` are the kind list (`types.ts#MAIN_TO_WORKER_MESSAGE_KINDS`), the schema (`types.ts#pingMessageSchema`), the transfer-list case (`transferables.ts#collectProtocolTransferables`), and the dispatch case and handler annotation (`state-machine.ts#handleMessage`, `state-machine.ts#handlePing`); no main-thread module constructs one. It is a liveness probe with no caller, and the main thread has a different answer to the question it asks: every request `WorkerSessionHost` makes carries its own `DEFAULT_REPLY_TIMEOUT_MS = 15_000` timer (`worker-session-host.ts#DEFAULT_REPLY_TIMEOUT_MS`, armed in `worker-session-host.ts#request`).',
 };
 
 /**
@@ -149,9 +149,9 @@ const UNSENT_MAIN_TO_WORKER_KINDS: Readonly<Record<string, string>> = {
  */
 const UNSENT_WORKER_TO_MAIN_KINDS: Readonly<Record<string, string>> = {
   'simulation/delta':
-    '#274 A1, the half of that finding which holds. The kind has a full schema with a `superRefine` enforcing `tick > baseTick` (`types.ts:400-421`), is a member of `workerToMainMessageSchema` (`:576`) and has a transfer-list case (`transferables.ts:24`), and no module constructs one: the worker publishes whole snapshots on request and `simulation/status-counts` unprompted. `SimulationSnapshotFeed` says so in its own header -- "Only the snapshot path is implemented today -- nothing emits a delta".',
+    '#274 A1, the half of that finding which holds. The kind has a full schema with a `superRefine` enforcing `tick > baseTick` (`types.ts#deltaMessageSchema`), is a member of `types.ts#workerToMainMessageSchema` and has a transfer-list case (`transferables.ts#collectProtocolTransferables`), and no module constructs one: the worker publishes whole snapshots on request and `simulation/status-counts` unprompted. `SimulationSnapshotFeed` says so in its own header -- "Only the snapshot path is implemented today -- nothing emits a delta".',
   'simulation/event':
-    'Declared in the kind union with a schema (`types.ts:539`) and a transfer-list case that unwraps an `ArrayBuffer` payload (`transferables.ts:28`), and constructed by nothing. It has no main-thread reader either: the four main-thread modules that `switch (message.kind)` -- `simulation-snapshot-feed.ts:107`, `simulation-commands.ts:223`, `simulation-clock.ts:26` and `simulation-counts.ts:22`, the complete set in `src/` outside `transferables.ts` -- each have a `default` and no case for it, so one that did arrive would be dropped. ADR 0003 lists "asynchronous domain events" among the families the protocol must support.',
+    'Declared in the kind union with a schema (`types.ts#eventMessageSchema`) and a transfer-list case that unwraps an `ArrayBuffer` payload (`transferables.ts#collectProtocolTransferables`), and constructed by nothing. It has no main-thread reader either: the five main-thread modules that `switch (message.kind)` -- `simulation-snapshot-feed.ts`, `simulation-alerts.ts`, `simulation-clock.ts`, `simulation-commands.ts` and `simulation-counts.ts` -- each have a `default` and no case for it, so one that did arrive would be dropped. That enumeration is counted rather than asserted: KIND_SWITCHING_MODULES below is derived from the scan, and a sixth dispatcher, a rename, or a module that grows a `simulation/event` case fails this gate instead of quietly making this sentence false. ADR 0003 lists "asynchronous domain events" among the families the protocol must support.',
 };
 
 /**
@@ -164,9 +164,9 @@ const UNSENT_WORKER_TO_MAIN_KINDS: Readonly<Record<string, string>> = {
  */
 const UNREACHABLE_WORKER_TO_MAIN_KINDS: Readonly<Record<string, string>> = {
   'protocol/handshake-accepted':
-    "Constructed at `state-machine.ts:402`, inside `handleHandshake`, which the dispatch switch reaches only on a `protocol/handshake` -- a kind nothing in `src/` sends (see UNSENT_MAIN_TO_WORKER_KINDS). So the message exists, is schema-checked and is unreachable in production; it carries `selectedProtocolVersion` and `capabilities: []`, which is the negotiation ADR 0003 decision 4 describes. Deleting this entry is part of whatever answer #274's open decision gets.",
+    "Constructed inside `state-machine.ts#handleHandshake`, which the dispatch switch reaches only on a `protocol/handshake` -- a kind nothing in `src/` sends (see UNSENT_MAIN_TO_WORKER_KINDS). So the message exists, is schema-checked and is unreachable in production; it carries `selectedProtocolVersion` and `capabilities: []`, which is the negotiation ADR 0003 decision 4 describes. Deleting this entry is part of whatever answer #274's open decision gets.",
   'protocol/pong':
-    'Constructed at `state-machine.ts:416`, inside `handlePing`, whose only trigger is a `protocol/ping` that nothing sends. The reply echoes the request nonce, so it can be provoked by nothing else: there is no unprompted path to it and no other call site for `handlePing` than the dispatch switch at `state-machine.ts:369-370`.',
+    'Constructed inside `state-machine.ts#handlePing`, whose only trigger is a `protocol/ping` that nothing sends. The reply echoes the request nonce, so it can be provoked by nothing else: there is no unprompted path to it and no other call site for `handlePing` than the dispatch switch in `state-machine.ts#handleMessage`.',
 };
 
 /**
@@ -214,7 +214,7 @@ function read(path: string): ScannedSource {
     where: relative(ROOT, join(ROOT, path)).split(sep).join('/'),
     // Stripped with the shared stripper (#188), and **precautionary here
     // rather than load-bearing** -- said plainly because the difference
-    // matters and the honest answer is the weaker one. Measured across all 259
+    // matters and the honest answer is the weaker one. Measured across all 262
     // files under `src/`: no comment anywhere spells the send shape
     // `kind: '<K>',` at all, so replacing this with the identity function
     // leaves every assertion in this file green, and that mutation survives.
@@ -313,6 +313,139 @@ const unreachableWorkerToMain = WORKER_TO_MAIN_MESSAGE_KINDS.filter((kind) => {
   return !sites.some((site) => site.provokedBy === undefined || sentMainToWorker.has(site.provokedBy));
 });
 
+/**
+ * A module that dispatches on a protocol message's discriminant, as written:
+ * `switch (message.kind)`.
+ *
+ * This exists because the entry for `simulation/event` above makes a claim no
+ * assertion in the original gate could see go stale -- that a named list of
+ * modules is *the complete set* that reads a message kind. It went false one
+ * merge later: #283 added `src/ui/simulation-alerts.ts`, whose own header
+ * calls itself the third translator of worker messages, and the entry still
+ * said four. The conclusion survived (the new switch has a `default` and no
+ * `simulation/event` case), which is exactly why nobody noticed -- an absolute
+ * that is nearly true reads as true, the same failure
+ * `documentation-claims-contract.test.ts` was written for.
+ *
+ * So the enumeration is now derived and the prose is checked against it. The
+ * pattern is the literal dispatch form rather than a general "reads a kind":
+ * `message.kind === '...'` comparisons and `reply.kind !== '...'` guards are
+ * consumers too, and deliberately not counted, because what the entry claims
+ * is about the exhaustive `switch` whose `default` drops an unknown kind.
+ * `src/main.ts`'s `switch (intent.kind)` and `hud-state.ts`'s
+ * `switch (action.kind)` are not protocol dispatchers and do not match.
+ */
+const KIND_SWITCH = /switch\s*\(\s*message\.kind\s*\)/u;
+
+/** The transfer-list switch: a dispatcher, but not a main-thread reader. */
+const TRANSFER_SWITCH = 'src/simulation/protocol/transferables.ts';
+
+const KIND_SWITCHING_MODULES: readonly string[] = scanned
+  .filter((source) => KIND_SWITCH.test(source.text))
+  .map((source) => source.where);
+
+const MAIN_THREAD_KIND_SWITCHES: readonly string[] = KIND_SWITCHING_MODULES.filter(
+  (where) => where !== TRANSFER_SWITCH,
+);
+
+/**
+ * Numerals as this repository's prose writes them, so a count can be spelled
+ * from a measurement instead of typed beside one.
+ *
+ * The entries stop where the sentence stops being plausible: a protocol with
+ * ten main-thread dispatchers is not a protocol whose reader list belongs in
+ * one sentence, and an index miss reads as `undefined` in the failure message,
+ * which is the right thing to look at when it happens.
+ */
+const NUMERALS: readonly string[] = [
+  'zero',
+  'one',
+  'two',
+  'three',
+  'four',
+  'five',
+  'six',
+  'seven',
+  'eight',
+  'nine',
+];
+
+/**
+ * A citation written as `<basename>.ts#<symbol>` -- the form this file uses in
+ * place of a line number, and the reason it does.
+ *
+ * Every citation in this gate was a line number until they all rotted at once:
+ * #283 shifted `state-machine.ts` by +67 lines and `types.ts` by +98, and the
+ * identical citations in `docs/TESTING.md` and ADR 0003 were updated while the
+ * nine in this file were not. Nothing could have caught that, because a line
+ * number is not a fact about the code -- it is a fact about every insertion
+ * above it, and no gate can check one without re-deriving it.
+ *
+ * A symbol name is a fact about the code, so it can be checked, and it is:
+ * `ANCHORED_CITATIONS` below reads this file's own source and requires every
+ * anchor to name a declaration that still exists in the module it cites. A
+ * deleted or renamed handler now fails a test instead of silently pointing at
+ * whatever moved into its line. The scope is deliberately this file only --
+ * the same form would serve the rest of the repository, but adopting it
+ * repo-wide is a separate change with a separate review.
+ */
+const SELF_PATH = 'tests/foundation/message-kind-reachability-contract.test.ts';
+
+const CITED_MODULES: Readonly<Record<string, string>> = {
+  'state-machine.ts': 'src/simulation/worker/state-machine.ts',
+  'types.ts': 'src/simulation/protocol/types.ts',
+  'transferables.ts': 'src/simulation/protocol/transferables.ts',
+  'worker-session-host.ts': 'src/persistence/session/worker-session-host.ts',
+};
+
+const CITATION = /\b([\w-]+\.ts)#([A-Za-z_$][\w$]*)/gu;
+
+/**
+ * Where citations live in this file: its comments, and the allow-list reasons.
+ *
+ * Scoped to prose on purpose. Scanning the whole source would sweep up the
+ * expected-value list in the assertion below and make it self-satisfying -- a
+ * citation deleted from a sentence would still be found, in the list asserting
+ * that the sentence has it. Measured, by deleting the schema citation from the
+ * `simulation/event` entry: with the whole file scanned the check stays green,
+ * and with this surface it fails.
+ *
+ * That is also why no comment in this file may spell an anchor as an example.
+ * A comment *is* a citation surface, so an illustrative one would satisfy the
+ * check on its own -- the same self-vouching shape the scanned-surface control
+ * below refuses for `types.ts`.
+ */
+const CITATION_SURFACES: readonly string[] = [
+  ...(readFileSync(join(ROOT, SELF_PATH), 'utf8').match(/\/\*[\s\S]*?\*\//gu) ?? []),
+  ...(readFileSync(join(ROOT, SELF_PATH), 'utf8').match(/^\s*\/\/.*$/gmu) ?? []),
+  ...Object.values(UNSENT_MAIN_TO_WORKER_KINDS),
+  ...Object.values(UNSENT_WORKER_TO_MAIN_KINDS),
+  ...Object.values(UNREACHABLE_WORKER_TO_MAIN_KINDS),
+];
+
+interface AnchoredCitation {
+  readonly basename: string;
+  readonly symbol: string;
+}
+
+/**
+ * A declaration of `symbol`, in the forms the cited modules use: a top-level
+ * `const`/`type`/`interface`/`class`/`function`, or a class member with an
+ * access modifier. Not a general resolver -- it is a floor, and the thing it
+ * has to catch is a name that no longer exists at all.
+ */
+function declares(text: string, symbol: string): boolean {
+  const name = escapeForRegExp(symbol);
+  return new RegExp(
+    `^(?:export\\s+)?(?:declare\\s+)?(?:const|let|var|type|interface|class|function|enum)\\s+${name}\\b` +
+      `|^\\s+(?:public|private|protected)\\s+(?:readonly\\s+|static\\s+|async\\s+|get\\s+|set\\s+)*${name}\\b`,
+    'mu',
+  ).test(text);
+}
+
+const ANCHORED_CITATIONS: readonly AnchoredCitation[] = CITATION_SURFACES.flatMap((surface) =>
+  [...surface.matchAll(CITATION)].map((match) => ({ basename: match[1]!, symbol: match[2]! })),
+);
 
 const ALL_KINDS: readonly string[] = [...MAIN_TO_WORKER_MESSAGE_KINDS, ...WORKER_TO_MAIN_MESSAGE_KINDS];
 
@@ -387,6 +520,145 @@ describe('every protocol message kind has a sender, and every sent kind can be p
       UNSENT_WORKER_TO_MAIN_KINDS,
       'no module under `src/` constructs, so the main thread can never receive it',
     );
+  });
+
+  it('counts the modules that dispatch on a message kind, rather than listing them and hoping', () => {
+    /*
+     * The mechanical half of the `simulation/event` entry, and the reason this
+     * test exists rather than a corrected sentence: the entry named four
+     * modules as "the complete set", #283 made it five, and every assertion in
+     * this file stayed green because the entry's *conclusion* -- that
+     * `simulation/event` has no reader -- was still true. A gate cannot see its
+     * own evidence go stale unless it derives that evidence, so this derives
+     * it, in both directions:
+     *
+     * - the measured set is pinned, so a sixth dispatcher (or a fifth, or a
+     *   rename) fails here and sends the author to the entry;
+     * - every module the measured set contains must be *named in the entry*,
+     *   so updating the list without updating the prose fails too. That second
+     *   assertion is the one #283 would have failed.
+     *
+     * The claim's substance is checked as well, since it is what the entry
+     * concludes: each main-thread dispatcher has a `default`, so an unknown
+     * kind is dropped rather than crashing, and none of them has a case for
+     * `simulation/event`. The day one does, the entry is wrong in the way that
+     * matters and this fails.
+     */
+    expect(KIND_SWITCHING_MODULES).toEqual([
+      'src/rendering/feed/simulation-snapshot-feed.ts',
+      'src/simulation/protocol/transferables.ts',
+      'src/ui/simulation-alerts.ts',
+      'src/ui/simulation-clock.ts',
+      'src/ui/simulation-commands.ts',
+      'src/ui/simulation-counts.ts',
+    ]);
+    expect(KIND_SWITCHING_MODULES).toContain(TRANSFER_SWITCH);
+    expect(MAIN_THREAD_KIND_SWITCHES.length).toBe(5);
+
+    const reason = UNSENT_WORKER_TO_MAIN_KINDS['simulation/event']!;
+    // The count word is *derived* from the measurement rather than written
+    // here twice. Measured, the obvious form of this assertion --
+    // `toContain('the five main-thread modules ...')` -- is satisfiable by
+    // editing the number in the sentence and the number in the assertion
+    // together, which is one search-and-replace and exactly the edit a
+    // sixth dispatcher would prompt. Spelling the numeral from
+    // `MAIN_THREAD_KIND_SWITCHES.length` removes that option: the sentence
+    // has to agree with the scan, and there is nowhere to say five but here.
+    expect(
+      reason,
+      `the \`simulation/event\` entry does not say "${NUMERALS[MAIN_THREAD_KIND_SWITCHES.length]}", which is how many main-thread modules the scan actually found dispatching on a message kind`,
+    ).toContain(`the ${NUMERALS[MAIN_THREAD_KIND_SWITCHES.length]} main-thread modules that \`switch (message.kind)\``);
+    for (const where of MAIN_THREAD_KIND_SWITCHES) {
+      expect(
+        reason,
+        `${where} dispatches on a message kind and the \`simulation/event\` entry does not name it -- that entry claims to enumerate the complete set, which is the claim #283 made false`,
+      ).toContain(where.slice(where.lastIndexOf('/') + 1));
+    }
+
+    for (const where of MAIN_THREAD_KIND_SWITCHES) {
+      const source = scanned.find((candidate) => candidate.where === where)!;
+      expect(
+        source.text,
+        `${where} dispatches on a message kind with no \`default\`, so an unknown kind is no longer dropped`,
+      ).toContain('default:');
+      expect(
+        source.text,
+        `${where} now has a case for 'simulation/event', so the entry saying nothing reads it is false`,
+      ).not.toContain("case 'simulation/event':");
+    }
+  });
+
+  it('cites code by a symbol that still exists, not by a line number that moved', () => {
+    /*
+     * The gate for this file's own citations, and the reason they are written
+     * `<basename>.ts#<symbol>` instead of `<basename>.ts:<line>`.
+     *
+     * Nine citations here pointed at lines that #283 had moved -- +67 in
+     * `state-machine.ts`, +98 in `types.ts` -- while the identical citations in
+     * `docs/TESTING.md` and ADR 0003 were corrected in the same change. That
+     * asymmetry is the whole argument: the docs were updated because a human
+     * remembered them, and this file was not, and nothing in the suite could
+     * tell. A line number cannot be verified without re-deriving it, so a gate
+     * over line numbers is impossible; a symbol name is a fact about the code
+     * and this checks it.
+     *
+     * It fails in both useful directions. Rename or delete a cited handler and
+     * the citation fails here rather than silently pointing at whatever moved
+     * into its place. Cite a module this gate does not know and it fails too,
+     * rather than going unchecked -- which is what makes the map a declared
+     * surface rather than a convenience.
+     *
+     * Its bound, stated: `declares` is a floor. It proves the name is declared
+     * in the cited module, not that the declaration is the one the sentence
+     * means. That is strictly more than a line number could ever prove.
+     */
+    // The denominator, in the shape the rest of this file pins its figures:
+    // thirteen distinct symbols across four modules is what is being verified,
+    // so a citation that reverts to a line number reduces it and is visible
+    // rather than merely unchecked.
+    const distinct = new Set(ANCHORED_CITATIONS.map((citation) => `${citation.basename}#${citation.symbol}`));
+    expect(
+      [...distinct].sort(),
+      'the set of symbols this file cites has changed. If a citation was added, raise this list; if one went back to being a line number, put it back',
+    ).toEqual([
+      'state-machine.ts#WorkerState',
+      'state-machine.ts#handleHandshake',
+      'state-machine.ts#handleMessage',
+      'state-machine.ts#handlePing',
+      'transferables.ts#collectProtocolTransferables',
+      'types.ts#MAIN_TO_WORKER_MESSAGE_KINDS',
+      'types.ts#deltaMessageSchema',
+      'types.ts#eventMessageSchema',
+      'types.ts#pingMessageSchema',
+      'types.ts#workerToMainMessageSchema',
+      'worker-session-host.ts#DEFAULT_REPLY_TIMEOUT_MS',
+      'worker-session-host.ts#initialize',
+      'worker-session-host.ts#request',
+    ]);
+
+    const unknown = ANCHORED_CITATIONS.filter((citation) => CITED_MODULES[citation.basename] === undefined);
+    expect(
+      unknown.map((citation) => `${citation.basename}#${citation.symbol}`),
+      'this citation names a module CITED_MODULES does not map, so it is not being verified -- add the module or cite one that is mapped',
+    ).toEqual([]);
+
+    const dangling = ANCHORED_CITATIONS.filter(
+      (citation) => !declares(read(CITED_MODULES[citation.basename]!).text, citation.symbol),
+    );
+    expect(
+      dangling.map((citation) => `${citation.basename}#${citation.symbol}`),
+      'this citation names a symbol its module no longer declares -- the code moved and the sentence citing it did not',
+    ).toEqual([]);
+
+    // And the control that proves `declares` can say no, so the check above is
+    // a measurement rather than a function that returns true.
+    const stateMachine = read(CITED_MODULES['state-machine.ts']!).text;
+    expect(declares(stateMachine, 'handleHandshake')).toBe(true);
+    expect(declares(stateMachine, 'handleHandshakeAcceptedReply')).toBe(false);
+    // A name that is *used* in the module but declared elsewhere is not a
+    // declaration, which is the distinction that makes this worth running.
+    expect(stateMachine).toContain('MainToWorkerMessage');
+    expect(declares(stateMachine, 'MainToWorkerMessage')).toBe(false);
   });
 
   it('accounts for every sent kind that no production path can provoke', () => {

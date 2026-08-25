@@ -80,6 +80,41 @@ async function sourceFilesMatching(pattern: RegExp): Promise<readonly string[]> 
   return matches;
 }
 
+/**
+ * One comment's worth of prose, with the comment markers taken off.
+ *
+ * The deliberate inversion of `sourceFilesMatching`, which strips comments so
+ * that a sentence *about* a mechanism is not read as the mechanism. Sometimes
+ * the sentence **is** the subject: `docs/` is not the only place this
+ * repository states claims, and a false absolute in a `//` comment beside the
+ * code it describes is read by the next agent as settled fact just as readily.
+ *
+ * The markers have to come off before matching, because a claim that wraps
+ * across two comment lines has a `//` sitting in the middle of it -- which is
+ * exactly how the sentence this was written for is written, and a scan that
+ * missed it would be a scan that could not see the defect it exists for.
+ */
+function proseOf(text: string): string {
+  return text
+    .replace(/\r/gu, '')
+    .replace(/^[ \t]*(?:\/\/|\/\*+|\*+\/?)[ \t]*/gmu, ' ')
+    .replace(/\s+/gu, ' ');
+}
+
+async function sourceProseMatching(pattern: RegExp): Promise<readonly (readonly [string, string])[]> {
+  const files = await collectSourceFiles(path.join(repositoryRoot, 'src'));
+  expect(files.length, 'no TypeScript files found under src/; the walk is broken').toBeGreaterThan(100);
+
+  const hits: (readonly [string, string])[] = [];
+  for (const file of files) {
+    const prose = proseOf(await readFile(file, 'utf8'));
+    for (const match of prose.matchAll(pattern)) {
+      hits.push([path.relative(repositoryRoot, file), match[0]!]);
+    }
+  }
+  return hits;
+}
+
 describe('docs/ARCHITECTURE.md: what the persistence layer actually does', () => {
 
   /**
@@ -225,6 +260,60 @@ describe('docs/ARCHITECTURE.md: what the persistence layer actually does', () =>
       crediting,
       'something other than ProcurementSystem.cancel now credits the treasury. If that is an income line, say so in docs/HUD_PROJECTIONS.md gap 21 and in ADR 0017 in the same change',
     ).toEqual([path.join('src', 'simulation', 'economy', 'procurement.ts')]);
+  });
+
+  it('requires every sentence in src/ that denies a treasury credit to say "on a schedule"', async () => {
+    /*
+     * The other half of the check above, and the half that was missing.
+     *
+     * The `.credit(` scan guards the **code**: a second crediting site is the
+     * arrival of an income line and must not land silently. It cannot guard the
+     * **claim**, because the claim lives in prose it deliberately strips -- and
+     * the claim is what keeps going wrong. "Nothing credits the treasury at
+     * all" was written once, ruled a defect, and the gate above was written for
+     * it; #282 then wrote it again in `src/ui/hud/projection.ts`, in the same
+     * change that applied the correct qualifier to the clause beside it. The
+     * absolute is false and the qualified form is true, they differ by four
+     * words, and nothing in the suite could tell them apart.
+     *
+     * So this pins the four words. Every negated claim about crediting the
+     * treasury under `src/` must carry "on a schedule": `treasury.ts`,
+     * `view-model.ts`, `new-session.ts`, `default-locale-en.ts` and
+     * `projection.ts` all do, and `docs/HUD_PROJECTIONS.md` gap 21 does too.
+     * Measured against the tree before the fix: `projection.ts` was the single
+     * violation, so this is a gate over a defect that existed rather than one
+     * over a defect imagined.
+     *
+     * Its bound, stated rather than implied: this catches the *phrase*, not the
+     * idea. "The treasury has no income" carries the same absolute in words
+     * this cannot see, and a prose scan that tried to would be a scan of
+     * English rather than of a claim. What makes this one worth running is that
+     * the phrase itself has now been written wrong twice.
+     */
+    const denials = await sourceProseMatching(/\bnothing\s+(?:\w+\s+){0,2}credits\b[^.]*/giu);
+
+    // Denominator first, for the reason the sibling assertions state: a scan
+    // handed nothing reports no violations and reads exactly like compliance.
+    // Five modules state this claim, and one of them is the HUD chip whose
+    // comment #282 broke.
+    expect(
+      [...new Set(denials.map(([file]) => file))].sort(),
+      'the set of modules denying a treasury credit has changed. If a claim was added, list it; if one vanished, this check has lost its subject',
+    ).toEqual(
+      [
+        path.join('src', 'content', 'default-locale-en.ts'),
+        path.join('src', 'simulation', 'economy', 'treasury.ts'),
+        path.join('src', 'simulation', 'runtime', 'new-session.ts'),
+        path.join('src', 'ui', 'hud', 'projection.ts'),
+        path.join('src', 'ui', 'hud', 'view-model.ts'),
+      ].sort(),
+    );
+
+    const unqualified = denials.filter(([, sentence]) => !sentence.includes('on a schedule'));
+    expect(
+      unqualified.map(([file, sentence]) => `${file}: ${sentence.trim()}`),
+      'this sentence says nothing credits the treasury without the qualifier that makes it true. ProcurementSystem.cancel credits a refund; what does not exist is a credit *on a schedule* -- an income line. Say that, the way docs/HUD_PROJECTIONS.md gap 21 does',
+    ).toEqual([]);
   });
 
   it('agrees with itself about how many integers the status-counts channel carries', async () => {
