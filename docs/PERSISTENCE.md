@@ -1727,21 +1727,34 @@ Three decisions in that worth writing down:
   900x600 (108.7px, the `min-height: 25%` floor). Only 375x812 changes: the row
   goes from one line to two (44px → 92px) and the content from 177px to 225px
   in a 222.3px box, i.e. 5px of scroll in a panel that is a scroll container by
-  design. **The Build panel is untouched at all five**: body overflow 0,
-  `scrollTop` 0 on arrival, `buildPanelScrolls` false and "Enter coordinates"
-  inside the fold, with the same numbers before and after the button existed —
-  which is what the four #174 assertions in `app-shell.spec.ts` require, and
-  they pass unweakened.
+  design. **The Build panel is untouched at all five**: no box in its shrink
+  chain shorter than its own content, `scrollTop` 0 on arrival,
+  `buildPanelScrolls` false and "Enter coordinates" inside the fold, with the
+  same numbers before and after the button existed — which is what the four
+  #174 assertions in `app-shell.spec.ts` require, and they pass unweakened.
 
   The reason that holds is worth stating rather than inferring from the panel's
   own numbers: **the control costs the rail nothing.** `.hud__aside` measures
   173.1 / 353.1 / 221.1 / 120.7 / 230.3px at the five viewports both before and
   after — identical, because the slot's height comes from the rail and the panel
   absorbs its own content by scrolling. So none of this is spent out of the
-  rail's *always-visible* budget, which is the scarce quantity (measured
-  elsewhere at 12.2px at 900x600 and 38.2px at 1280x720, the two tightest
-  viewports — and not to be confused with `hud.css`'s 3.8px, which is residual
-  catalogue slack after #174's short-viewport fix and a different quantity).
+  rail's *always-visible* budget, which is the scarce quantity — **7.8px at
+  900x600 and 30.2px at 1280x720**, the two tightest viewports, against a 44px
+  `--tap-target`. Measured rather than derived: a spacer is grown above the
+  Build panel's last section until the section's bottom edge crosses the
+  panel's fold, to 0.05px.
+
+  Those figures were 11.8px and 38.2px until the second half of #174, and the
+  difference is not space that was lost. The catalogue section's floor did not
+  count the gutter under its own list, so 4px of the 11.8 at 900x600 was the
+  section laid over the map block's hairline rather than room anything could
+  use, and the 8px at 1280x720 was the same understatement not yet spent.
+  Correcting both floors and paying for the honest sum out of that gutter at
+  short viewports leaves 7.8px that is all real: the same run reports the
+  catalogue holding exactly its own content and the panel unscrolled on
+  arrival. Not to be confused with the 3.8px that used to be recorded in
+  `hud.css` as residual catalogue slack, which was that same understatement
+  seen from the other side and is gone.
   Had the button needed rail height, the answer would have been the disclosure
   Export sits behind rather than a relaxed `min-height: 25%`: that floor is
   documented in `hud.css` as the wrong lever, since dropping it leaves this

@@ -1035,9 +1035,13 @@ test.describe('the assembled application', () => {
       // every viewport here -- no exception, and 900x600 used to be one. The
       // rail there is 483px and the panel wanted 398px of it, which left less
       // than the save panel's floor, so the panel arrived already scrolled by
-      // 52px; `hud.css`'s `max-height: 700px` block trims 63.6px off the
-      // panel's fixed blocks and the catalogue's own slack covers the rest of
-      // the 67.7px shortfall (issue #174). The first #88 fix clipped the panel
+      // 52px. `hud.css`'s `max-height: 700px` block trims the panel's fixed
+      // blocks and its gutters until it fits, and measured there today the
+      // panel is 338.1px of content in a 338.1px slot with nothing scrolled
+      // (issue #174). The catalogue itself donates nothing any more: the 8px
+      // it used to "donate" was the gutter under its own list, and donating it
+      // meant laying that gutter over the map block's hairline, which is what
+      // the next assertion but one is about. The first #88 fix clipped the panel
       // at 1280x720 too, on arrival, and nothing said so -- which is what this
       // line is for.
       expect(
@@ -1089,28 +1093,53 @@ test.describe('the assembled application', () => {
         `"Enter coordinates" is below the unscrolled Build panel's fold at ${width}x${height}: it ends at y=${Math.round(lastSection?.bottom ?? 0)} in a panel clipped at y=${Math.round(lastSection?.fold ?? 0)}`,
       ).toBeLessThanOrEqual(lastSection?.fold ?? 0);
 
-      // And the body of that panel is never shorter than its own content. It
-      // was 283px of box over 335px of content at 900x600 (#174): harmless
-      // only because the one ancestor between it and the viewport that clips
-      // also scrolls, which is a property of today's box chain rather than a
-      // guarantee.
+      // And no box that carries the Build panel's height is ever shorter than
+      // its own content -- every box in the shrink chain, not only the one
+      // that was measured first.
       //
-      // Be exact about what makes this green. Today it is the layout above --
-      // `hud.css`'s summed floor under the body is 3.8px slack at 900x600 and
-      // further slack everywhere else, so nothing is currently resting on it.
-      // The floor is what holds once something does: with the `max-height`
-      // block disabled the body is pressed onto it and this reads 32 rather
-      // than the 52 it read before the floor existed. That is also why the
-      // assertion matters more than the sum -- a floor derived 9px short is a
-      // 9 here the moment the rail is tight enough to reach it, instead of a
-      // panel quietly clipping again.
+      // The body was 283px of box over 335px of content at 900x600 (#174) and
+      // got a summed floor for it. The catalogue section then turned out to
+      // have the identical defect one box lower and for the identical reason:
+      // its floor and the body's are both sums of a header plus a two-row
+      // list, and neither counted the gutter `primitives.css` puts under the
+      // list, so both were 8px light. At 900x600 the section sat 4.1px into
+      // that gap -- 135.9px of box holding 140px of content, the difference
+      // laid outside the box and over the hairline the map block draws --
+      // while every assertion here, including the body's own, stayed green.
+      // Asserting one box of a chain is asserting the box somebody happened to
+      // measure; this is the property.
+      //
+      // Both are "harmless" only because the one ancestor between them and
+      // the viewport that clips also scrolls, which is a property of today's
+      // box chain rather than a guarantee.
+      //
+      // Be exact about what makes this green. Today it is the layout in
+      // `hud.css`: the floors resolve to exactly the content at 900x600 -- the
+      // catalogue 136px on a 136px floor, the body 275.2px on a 275.2px floor
+      // -- so this viewport rests on them squarely and any term dropped from
+      // either sum shows up here as a number rather than as a panel quietly
+      // clipping again. That is why this assertion matters more than the sums
+      // it is guarding: the sums cannot be derived (see `hud.css` for the
+      // `min-content` and grid-track attempts, both measured failing), so
+      // something has to check them.
+      //
+      // `.hud-build__list` is deliberately absent: it is the one box here that
+      // is *meant* to hold more than it shows, and `ui-shell.spec.ts` asserts
+      // it absorbs the excess at twelve entries. Everything above it must
+      // contain what it holds.
       expect(
-        await page.evaluate(() => {
-          const body = document.querySelector('.hud-build > .ui-panel__body');
-          return body === null ? -1 : body.scrollHeight - body.clientHeight;
-        }),
-        `the Build panel's body is shorter than its own content at ${width}x${height}`,
-      ).toBe(0);
+        await page.evaluate(() =>
+          ['.hud-build > .ui-panel__body', '.hud-build__catalogue', '.hud-build__catalogue > .ui-section__body']
+            .map((selector) => {
+              const box = document.querySelector(selector);
+              if (box === null) return `${selector} has no box`;
+              const shortfall = box.scrollHeight - box.clientHeight;
+              return shortfall === 0 ? null : `${selector} is ${shortfall}px shorter than its own content`;
+            })
+            .filter((entry) => entry !== null),
+        ),
+        `boxes in the Build panel shorter than their own content at ${width}x${height}`,
+      ).toEqual([]);
 
       // The numeric fallback expanded: the tallest the Build panel gets, and
       // the state issue #88 was measured in.
