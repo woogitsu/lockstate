@@ -196,4 +196,24 @@
      itself, the catalogue's floor, the panel body's floor -- and the short
      viewports override it, which is where the honest floor is paid for. */
   --hud-build-catalogue-gutter: var(--space-2);
+  /* The floor under the Rooms panel's catalogue: **one** row, where the Build
+     panel's is two.
+     The difference is content's, not a preference. `BUILDABLE_REGISTRY` has two
+     entries, so the Build panel's two-row floor *is* its list's height and the
+     list donates nothing; the room catalogue has eighteen, so the list scrolls
+     at every viewport whatever floor it is given. A second row there would
+     spend 44px to reveal one more row of a list the player is going to scroll
+     anyway -- and those 44px are what pays for the confirm row, the rule lines
+     and the enclosure readout below it (ADR 0022's amendment).
+     One row plus a scrollbar is a legitimate list here for exactly the reason
+     it is not in the Build panel: the scrollbar is not a sign that something
+     was squeezed out, it is the list saying there are seventeen more. */
+  --hud-rooms-catalogue-floor: var(--tap-target);
+  /* The Rooms panel's vertical rhythm, held apart from the Build panel's for
+     the reason that one is a token at all: `hud.css` spends it in the map
+     block, in the status block and in the panel body's floor, and those three
+     are only correct while they agree. Equal to the Build panel's value today
+     and deliberately not an alias of it -- the two panels have different floors
+     to sum, so a change to one must not silently move the other. */
+  --hud-rooms-gutter: var(--space-2);
 }

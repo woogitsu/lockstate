@@ -523,6 +523,10 @@ export const REFUSAL_REASONS = [
   'purchase.insufficient-funds',
   'purchase.invalid-quantity',
   'purchase.unknown-material',
+  'unzone.invalid-area',
+  'unzone.nothing-to-remove',
+  'unzone.room-occupied',
+  'zone.below-minimum-size',
   'zone.duplicate-instance-id',
   'zone.invalid-area',
   'zone.out-of-bounds',
@@ -569,6 +573,47 @@ const refusalSchema = z
 export type SimulationRefusal = DeepReadonly<z.infer<typeof refusalSchema>>;
 
 /**
+ * What the last accepted room designation says about itself.
+ *
+ * A second sibling of `counts`, declared for the reason `refusal` is one: it
+ * is not a status-strip count -- it comes from `RoomZoningService` rather than
+ * from `src/simulation/presentation/` -- and it is absent, not zeroed, until
+ * this session has designated a room, because "no room has been zoned" and "a
+ * room was zoned" are different facts.
+ *
+ * **Two enums and two integers, and deliberately nothing else.** No room id,
+ * no tile, no text. `requirement` is what the room definition asks for
+ * (`enclosed`, `outdoors`, or `none` for a definition that carries neither)
+ * and `enclosure` is what the world answered for the rectangle that was zoned,
+ * so the notice is self-describing without the main thread having to remember
+ * what it asked for -- and ADR 0011's separation is untouched, because neither
+ * value is a message key and neither is a sentence.
+ *
+ * `enclosure` is the answer to a *narrower* question than "is this room
+ * indoors": `src/simulation/rooms/enclosure.ts` reads the perimeter of the
+ * rectangle and nothing else, and states in full what that does and does not
+ * mean. Nothing in the simulation gates on it -- it is reported to the player
+ * and not enforced -- which is why it travels on the readout channel rather
+ * than as a refusal.
+ *
+ * `sequence` is 1-based and increments once per accepted zoning, so it is both
+ * this notice's ordinal and how many rooms the session has designated; the main
+ * thread needs it to tell a republished notice from a new one, exactly as it
+ * does for a refusal. `tick` is the tick the room was zoned on, which is not
+ * necessarily the envelope's.
+ */
+const zoningNoticeSchema = z
+  .object({
+    sequence: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER),
+    tick: tickSchema,
+    enclosure: z.enum(['sealed', 'open']),
+    requirement: z.enum(['enclosed', 'outdoors', 'none']),
+  })
+  .strict();
+
+export type SimulationZoningNotice = DeepReadonly<z.infer<typeof zoningNoticeSchema>>;
+
+/**
  * The status-strip counts, as the worker sees them.
  *
  * **Always unsolicited.** Nothing requests it, so it has no `replyTo` field
@@ -601,6 +646,10 @@ export type SimulationRefusal = DeepReadonly<z.infer<typeof refusalSchema>>;
  * simulation has refused something, because "no refusal has happened" and "a
  * refusal happened" are different facts and an optional field is how this
  * schema already says so elsewhere.
+ *
+ * `zoning` is the third field of the payload and the second sibling of
+ * `counts`, for exactly the reasons `refusal` is one; `zoningNoticeSchema`
+ * above states them.
  */
 const statusCountsMessageSchema = z
   .object({
@@ -612,6 +661,7 @@ const statusCountsMessageSchema = z
         schemaVersion: schemaVersionSchema,
         counts: statusCountsSchema,
         refusal: refusalSchema.optional(),
+        zoning: zoningNoticeSchema.optional(),
       })
       .strict(),
   })

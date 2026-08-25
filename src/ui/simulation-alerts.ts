@@ -40,12 +40,16 @@ const REFUSAL_LABEL_KEYS: Readonly<Record<RefusalReason, LocalizationKey>> = {
   'purchase.insufficient-funds': 'hud.alert.refusal.purchase.insufficient-funds',
   'purchase.invalid-quantity': 'hud.alert.refusal.purchase.invalid-quantity',
   'purchase.unknown-material': 'hud.alert.refusal.purchase.unknown-material',
+  'zone.below-minimum-size': 'hud.alert.refusal.zone.below-minimum-size',
   'zone.duplicate-instance-id': 'hud.alert.refusal.zone.duplicate-instance-id',
   'zone.invalid-area': 'hud.alert.refusal.zone.invalid-area',
   'zone.out-of-bounds': 'hud.alert.refusal.zone.out-of-bounds',
   'zone.overlaps-existing-room': 'hud.alert.refusal.zone.overlaps-existing-room',
   'zone.unknown-room-type': 'hud.alert.refusal.zone.unknown-room-type',
   'zone.unowned-land': 'hud.alert.refusal.zone.unowned-land',
+  'unzone.invalid-area': 'hud.alert.refusal.unzone.invalid-area',
+  'unzone.nothing-to-remove': 'hud.alert.refusal.unzone.nothing-to-remove',
+  'unzone.room-occupied': 'hud.alert.refusal.unzone.room-occupied',
 };
 
 /**
@@ -94,7 +98,10 @@ const REFUSAL_LABEL_KEYS: Readonly<Record<RefusalReason, LocalizationKey>> = {
  * entries with separate sentences, and that is the point of the namespace:
  * the same condition refuses a wall and a room, and a player reading "the
  * build order failed" after zoning a canteen would go and look at the wrong
- * control.
+ * control. `unzone.invalid-area` is the third instance of the same rule --
+ * spelled identically to `zone.invalid-area` and carrying a different
+ * sentence, because a player told "the room was not zoned" after asking to
+ * *remove* a room would look at the wrong control for the same reason.
  */
 export function hudAlertsFromWorkerMessage(
   message: WorkerToMainMessage,

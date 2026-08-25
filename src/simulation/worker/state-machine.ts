@@ -173,6 +173,21 @@ export class SimulationWorkerStateMachine {
    * second time (#261).
    */
   private _publishedRefusalSequence = 0;
+  /**
+   * The `sequence` of the zoning notice the main thread was last told about,
+   * `0` for none.
+   *
+   * A second sequence beside the refusal's rather than one shared with it,
+   * because the two are independent: a session can refuse a purchase without
+   * zoning anything and zone a room without refusing anything, and a shared
+   * counter would make either open the other's gate. Tracked here for exactly
+   * the reason the refusal's is -- an accepted zoning *does* move the `rooms`
+   * count, so `statusCountsEqual` would carry it, but it does not move it on
+   * a **re-zoning of the same tiles after a removal**, where the count
+   * returns to a figure already published; the notice would be lost on the
+   * one gesture a player is most likely to repeat.
+   */
+  private _publishedZoningSequence = 0;
   /** When the counts were last *projected*, which bounds the projection's cost as well as the message rate. */
   private _countsProjectedAtMs = Number.NEGATIVE_INFINITY;
 
@@ -280,6 +295,13 @@ export class SimulationWorkerStateMachine {
    * `src/simulation/presentation/` -- the read-model layer written for
    * exactly this -- is unreachable from the interface.
    *
+   * It carries the session's last accepted room designation as well, and for
+   * the same reason it carries the last refusal: `RoomZoningService.zone`
+   * evaluates the room definition's `enclosed`/`outdoors` requirement against
+   * the rectangle's own perimeter and *reports* the answer rather than
+   * refusing on it (`src/simulation/rooms/enclosure.ts` states why), so the
+   * answer needs a way out and a command reply is not one.
+   *
    * It carries the session's last refusal too, since #261. A command the
    * kernel accepts and a system then refuses on its content -- a wall on
    * ground the player does not own, a purchase the treasury cannot cover, a
@@ -327,14 +349,26 @@ export class SimulationWorkerStateMachine {
     const refusal = this._runtime.refusals.last;
     const refusalSequence = refusal?.sequence ?? 0;
     const refusalIsNew = refusalSequence !== this._publishedRefusalSequence;
-    if (!refusalIsNew && nowMilliseconds - this._countsProjectedAtMs < STATUS_COUNTS_PUBLISH_INTERVAL_MS) return;
+    // A newly designated room opens the interval gate for the reason a
+    // refusal does, and with the same bound: both are player-initiated
+    // events rather than levels, both are a field access to test, and each
+    // can open the gate at most once because publishing records the sequence
+    // it published. So the cost stays "one extra projection per room the
+    // player designates", which is bounded by how fast a rectangle can be
+    // dragged.
+    const zoning = this._runtime.roomZoning.lastNotice;
+    const zoningSequence = zoning?.sequence ?? 0;
+    const zoningIsNew = zoningSequence !== this._publishedZoningSequence;
+    const eventIsNew = refusalIsNew || zoningIsNew;
+    if (!eventIsNew && nowMilliseconds - this._countsProjectedAtMs < STATUS_COUNTS_PUBLISH_INTERVAL_MS) return;
     this._countsProjectedAtMs = nowMilliseconds;
 
     const tick = this._kernel.tick;
     const counts = projectStatusCounts(this._runtime, tick);
-    if (!refusalIsNew && this._publishedCounts !== null && statusCountsEqual(this._publishedCounts, counts)) return;
+    if (!eventIsNew && this._publishedCounts !== null && statusCountsEqual(this._publishedCounts, counts)) return;
     this._publishedCounts = counts;
     this._publishedRefusalSequence = refusalSequence;
+    this._publishedZoningSequence = zoningSequence;
 
     this.post({
       protocolVersion: SIMULATION_PROTOCOL_VERSION,
@@ -360,6 +394,13 @@ export class SimulationWorkerStateMachine {
         // remember a message it saw, and a listener that starts late sees the
         // same state as one that was there all along.
         ...(refusal === undefined ? {} : { refusal }),
+        // The same snapshot discipline as `refusal`, one field over: absent
+        // until this session has designated a room, and then republished with
+        // every later readout for as long as it is still the most recent
+        // designation. "The last room designated was open ground against an
+        // enclosed requirement" is a statement a listener that starts late can
+        // read correctly; an event would not be.
+        ...(zoning === undefined ? {} : { zoning }),
       },
     });
   }

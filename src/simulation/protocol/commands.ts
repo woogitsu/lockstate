@@ -2,6 +2,7 @@ import { z } from 'zod';
 import type { JsonValue } from '../../shared/json';
 import { BUILD_EDGES } from '../construction/build-order';
 import { MAX_PURCHASE_QUANTITY } from '../economy';
+import { MAX_ZONE_DIMENSION_TILES } from '../rooms/zoning';
 import { identifierSchema, type VersionedPayload } from './types';
 
 /**
@@ -42,6 +43,38 @@ export const zoneRoomSchema = z.object({
   width: z.number().int(),
   height: z.number().int(),
   transactionId: z.string().optional(),
+}).strict();
+
+/**
+ * Clear the room designations a rectangle touches (#261's removal half).
+ *
+ * A rectangle and no room id, because removal names no room type: what comes
+ * out is whatever is there. `RoomZoningService.unzone` grows each covered
+ * zoned tile into its connected same-type run before clearing, and its own
+ * comment states both consequences of that.
+ *
+ * It carries no `transactionId`, where `ZoneRoom` has an optional one. Neither
+ * command produces a construction order, so `ConstructionSystem` has nothing
+ * to group either of them under and `Undo` cannot reach either -- which is
+ * exactly why removal is a command of its own rather than a use of undo. The
+ * field is on `ZoneRoom` because it was declared before any of that was
+ * settled, and a queued command in an existing save may carry it; adding a
+ * second unread field would be inventing a second one to explain.
+ *
+ * Both dimensions are bounded here as well as in the service, for the reason
+ * `PurchaseMaterials.quantity` is: this schema stops a malformed message
+ * reaching the system, and the service stops one arriving from a restored
+ * save's queue that never passed through this schema again. `ZoneRoom` bounds
+ * neither and is left as it is -- tightening it would change what an existing
+ * queued command decodes to, which is a save-compatibility change rather than
+ * a validation fix.
+ */
+export const unzoneRoomSchema = z.object({
+  type: z.literal('UnzoneRoom'),
+  x: z.number().int(),
+  y: z.number().int(),
+  width: z.number().int().positive().max(MAX_ZONE_DIMENSION_TILES),
+  height: z.number().int().positive().max(MAX_ZONE_DIMENSION_TILES),
 }).strict();
 
 /**
@@ -103,6 +136,7 @@ export const simulationCommandSchema = z.discriminatedUnion('type', [
   placeBuildOrderSchema,
   cancelBuildOrderSchema,
   zoneRoomSchema,
+  unzoneRoomSchema,
   purchaseMaterialsSchema,
   undoCommandSchema,
   redoCommandSchema,
@@ -139,6 +173,15 @@ function commandJson(command: SimulationCommand): JsonValue {
         ...(command.transactionId === undefined
           ? {}
           : { transactionId: command.transactionId }),
+      };
+
+    case 'UnzoneRoom':
+      return {
+        type: command.type,
+        x: command.x,
+        y: command.y,
+        width: command.width,
+        height: command.height,
       };
 
     case 'PurchaseMaterials':
