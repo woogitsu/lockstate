@@ -53,8 +53,9 @@ So the standing rules for anything added here:
 | [2026-08-25 room zoning gesture](./2026-08-25-room-zoning-gesture.md) | What gesture designates a room, and where does the control live? | ADR 0022 |
 | [2026-08-25 room occupancy](./2026-08-25-room-occupancy.md) | Where does a room's occupancy capacity come from? | ADR 0023 |
 | [2026-08-25 economy rate](./2026-08-25-economy-rate.md) | What does the state pay per prisoner-day, on what cadence, from what balance? | [#29](https://github.com/matmaxalez/lockstate/issues/29), within ADR 0017 |
+| [2026-08-25 concurrent-use capacity](./2026-08-25-concurrent-use-capacity.md) | Where does a room's occupancy capacity come from when the room type requires no object — and what is a single concurrent-use ceiling a ceiling on? | ADR 0028's amendment, and ADR 0030 |
 
-### Findings from these three that changed a decision
+### Findings that changed a decision
 
 Recorded here because each contradicted something the project believed, and a
 reader who only sees the resulting ADR will not know the belief was ever held.
@@ -82,3 +83,34 @@ reader who only sees the resulting ADR will not know the belief was ever held.
 - **Construction is effectively instantaneous** — a wall completes in about
   2.5 seconds, with no labour cap and every order in parallel. Money, not
   time, is the only constraint on building today.
+- **Prison Architect authors its object slot counts; it does not derive them
+  from footprints.** ADR 0028 said "in every case `NumSlots` equals the
+  object's tile length" and used that as the precedent for summing
+  `footprint.width`. Of the 41 objects carrying the field, 13 have a
+  `NumSlots` that is not `max(width, height)` and 8 have one that equals
+  neither dimension — `RiotVan` carries more slots than either. PA also gates
+  *the object* with that number and never sums slots into a room-level
+  ceiling. So the design's "nothing is authored anywhere" property is
+  Lockstate's own choice rather than the genre's practice, which is a
+  materially different argument for it.
+- **`room.yard` does not resolve to capacity 0 permanently.** The rule sums
+  every object's footprint width, so a yard with anything in it has a non-zero
+  ceiling — a delivery door in a yard admits three prisoners to outdoor
+  exercise and 64 tiles of open ground admit none. The yard is not a special
+  case; it is the room most often empty.
+- **The over-count is general, and it is measurable on ADR 0028's own worked
+  example.** A canteen with 2 dining tables and 4 benches correctly seats 14.
+  Add four toilets and a storage rack and the same gate admits **19 diners**,
+  because the capability is checked for presence while the headcount is checked
+  against the footprint total of everything in the room. One scalar cannot be a
+  correct ceiling for two actions that consume different objects.
+- **PA's Dormitory "÷ 4" is not in the shipped files.** The strings prove the
+  *grammar* of a per-prisoner area rule; `*X` is substituted at runtime and the
+  only literal 4 is in an object-to-prisoner ratio. The divisor ADR 0028 cites
+  as verified in shipped game files is wiki-only.
+- **No shipped implementation of capacity = area ÷ N could be opened at all.**
+  Area appears as a gate (a minimum, and in Oxygen Not Included a *maximum* on
+  the designation), as a capped stat (RimWorld clamps the reward at `350f`, and
+  outdoors short-circuits to that maximum), and as a classification cliff (past
+  60 regions a RimWorld room stops having a role). Never as a divisor producing
+  a headcount, outside one wiki-sourced claim about a *housing* room.

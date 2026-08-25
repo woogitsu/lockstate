@@ -105,8 +105,19 @@ describe('the two capacities a set of objects produces', () => {
       placedObjectAt('object.bed', TILE(4, 0), 0),
     ]);
     expect(derived.objectCapabilities).toEqual(['sanitation', 'sleep-surface']);
-    // Two sleep surfaces of width 1 each, and the toilet counts toward neither
-    // -- so residency and concurrent use come apart on the same set of objects.
+    // Two sleep surfaces of width 1 each give residency 2. The toilet carries
+    // no `'sleep-surface'`, so it is excluded from residency and included in
+    // concurrent use -- it *is* the difference between the two numbers, and
+    // that is what makes them come apart on the same set of objects.
+    //
+    // The previous version of this comment said "the toilet counts toward
+    // neither", which the second assertion falsifies: if it counted toward
+    // neither, both figures would be 2. Recorded rather than quietly reworded,
+    // because the sentence read as a description of the rule and it is the rule
+    // ADR 0030 asks about -- a concurrent-use ceiling summed over every object
+    // admits users the room cannot serve (19 diners in a 14-seat canteen, its
+    // §Context). The assertions below are correct descriptions of today's
+    // behaviour and are deliberately unchanged; only the sentence was wrong.
     expect(derived.residentCapacity).toBe(2);
     expect(derived.concurrentUseCapacity).toBe(3);
   });

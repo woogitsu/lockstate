@@ -968,3 +968,144 @@ Left open deliberately. Inventing an answer would be worse than naming the gap.
    neither.
 7. **Where an occupant is released from a `room-catalog-id` room's occupant
    set** — phase 6's own open question, named there.
+
+---
+
+## Amendment — 2026-08-25: the external precedent decision 2 cites for its concurrent-use rule does not exist, and two open questions have gone stale
+
+**Everything above this line is unchanged and stays unchanged.** The eight
+decisions, the phase order and the consequences are what was approved and are
+what still stands. This amendment corrects **facts** the document asserts about
+sources outside this repository and about the state of `main`, in the same shape
+[ADR 0023](./0023-room-occupancy-authority.md)'s amendment did and for the same
+reason: this ADR was kept accepted, so it must not be left asserting something
+that is not true.
+
+It decides nothing. Where a correction removes the argument for a rule, it says
+so and stops there; the rule itself is put to the owner separately in
+[ADR 0030](./0030-concurrent-use-ceiling-scope.md), which is where any change to
+decision 2 would have to be decided.
+
+The evidence is the research record
+[`docs/research/2026-08-25-concurrent-use-capacity.md`](../research/2026-08-25-concurrent-use-capacity.md),
+which opened Prison Architect's shipped `main/data/materials.txt`,
+`main/data/language/base-language.txt` and `main/data/needs.txt` first-hand
+rather than inheriting them, and which carries its own tier per claim. Where it
+is weaker than this section reads, the record says so and the record is the
+authority.
+
+### Correction 1: `NumSlots` is an authored per-object number, and it gates the object rather than the room
+
+Decision 2 states, as the justification for using `footprint.width` as the
+concurrent-use quantity:
+
+> And Prison Architect's `NumSlots` equals the object's tile length in every row
+> the research memo opened, including the trap where `BunkBed` carries the same
+> `NumSlots` as a single `Bed` (tier E) — so `footprint.width` is the right
+> quantity for concurrent use and the wrong one for residency in exactly the way
+> this split already separates.
+
+§*Context* repeats the same reading as "its object `NumSlots` is a separate
+footprint-derived usage count (tier E, all verified in shipped game files per the
+research memo)".
+
+**All 41 objects carrying the field were extracted from the shipped
+`main/data/materials.txt`. Thirteen have a `NumSlots` that is not
+`max(width, height)`, and eight have one that equals neither dimension.**
+`MedicalBed` is 2×2 with 1. `LibraryBookshelf` is 3×1 with 1. `PoolTable` is 3×2
+with 2. `VisitorTable` is 3×2 with 4. `RiotVan` and `TroopTruck` are 2×5 with
+**6** — more slots than either dimension. The `BunkBed`/`Bed` observation this
+ADR reports is accurate; the generalisation drawn from it is not. `NumSlots` is
+authored, correlates with footprint, and is not derived from it.
+
+Two further mismatches in the same citation:
+
+- **It is a per-object number, not a room-level sum.** Prison Architect's only
+  room-level occupancy machinery in the shipped strings is fifteen
+  `roomgrading_*` keys covering exactly three room types — `cell`, `dormitory`,
+  `sharedcell`. There is no `roomgrading_canteen_*` and no `roomgrading_yard_*`.
+  Nothing in the shipped data sums slots into a ceiling on a room.
+- **A single `Bed` carries `NumSlots 2`** while a Prison Architect cell houses
+  one prisoner, so whatever the number counts, it is not sleepers. What it does
+  count is UNKNOWN: that game's room logic is compiled, and there is no
+  `rooms.txt` in its data directory.
+
+**What this does to the argument, stated plainly.** Two claims in this ADR rest
+on that citation. The first — that `footprint.width` is the wrong quantity for
+residency and the right one for concurrent use — loses its external support; the
+*split* between the two capacities is argued independently and on this tree's own
+call sites in §*Context*, and is untouched. The second is §*What the evidence
+rests on*'s framing that the two arithmetically-shared rules "are used because
+they let this tree derive both numbers from footprints it already ships, so no
+capacity is authored anywhere in this design". That property is real and is a
+good reason to hold the rule. It is **Lockstate's own design choice rather than
+the genre's practice**, and the closest reference implementation authors exactly
+the number this design refuses to author. That is a materially different
+argument, and it is the honest form of it.
+
+**The decision is not changed here.** Decision 2's rule is what is implemented
+and what `src/simulation/objects/room-capacity.ts` states. Whether the
+concurrent-use sum should be scoped to the capability being asked for is
+ADR 0030's subject.
+
+### Correction 2: the Dormitory's "÷ 4" is not in the shipped game files
+
+§*Context* states that Prison Architect's "Dormitory uses `min(area ÷ 4, bed
+slots)`", cited "(tier E, all verified in shipped game files per the research
+memo)". The shipped strings contain the *grammar* and not the constant:
+
+```
+roomgrading_cell_roomsize            Room size at least *X Squares
+roomgrading_dormitory_roomsize       Room size at least *X Squares per Prisoner
+roomgrading_dormitory_item           Item : 1 *X per 4 Prisoners
+roomgrading_dormitory_outsidewindow  1 Outdoor Window per 8 Prisoners
+```
+
+`*X` is substituted at runtime, so the area figure is not in the data at all.
+The only literal `4` is in the *item* rule — an object-to-prisoner ratio, not an
+area divisor — and the research record flags the live possibility that "÷ 4"
+reached this document by reading that line as an area rule. What the strings do
+prove is that the Cell's rules are absolute and singular while the Dormitory's
+and Shared Cell's are per-prisoner and plural, which is genuine evidence that a
+per-prisoner area rule exists.
+
+So the tier on that citation was overstated: **the shape is VERIFIED from
+shipped strings; the divisor is SEARCH-SUMMARY and uncertain.** Anywhere this
+ADR leans on the Dormitory hybrid — §*Context*, and open question 2's
+`min(area ÷ N, object slots)` — read it as a shape whose constant is unverified.
+Prison Architect also applies that hybrid to *housing*, which is the far side of
+decision 3's own residency/concurrent-use line.
+
+### Two open questions that have gone stale
+
+Recorded here rather than edited above, because §*What this decision does not
+settle* is a record of what was open when this was written.
+
+- **Open question 3 is stale.** It says all 18 definitions carry a
+  `minimum-size` block and `zone` evaluates none of them. `zone` now refuses
+  `'below-minimum-size'` when `width < minWidth || height < minHeight ||
+  width * height < minTiles` (`src/simulation/rooms/zoning.ts`). The
+  consequence worth carrying forward: **every zoned yard is at least 64 tiles**,
+  so the undersized-yard pathology cannot be zoned. `enclosed` and `outdoors`
+  are reported by `zone` and remain unenforced, so the other half of the
+  question is still open.
+- **Open question 4 is stale in its premise, and understated in its
+  consequence.** It says `room.yard` "resolves to `concurrentUseCapacity: 0` for
+  ever". It does not. Decision 2's rule sums `footprint.width` over *every*
+  object in the rectangle and filters only `residentCapacity` on a capability,
+  so a yard's ceiling is 0 only while the yard is empty. Measured against this
+  tree: an 8×8 yard admits 0 users empty, 1 with a toilet in it, **3 with a
+  loading-dock door in it**, and 8 with four benches. Sixty-four tiles of open
+  ground contribute nothing and a delivery door contributes three. The same rule
+  measured on this ADR's own worked example admits **19 diners into a
+  fourteen-seat canteen** once four toilets and a storage rack stand in it. So
+  the yard is not the sharpest limitation of this design; it is the room where a
+  general over-count is most visible, and that is ADR 0030's subject.
+
+### Status of this amendment
+
+**A correction of fact. It decides nothing.** It authors no number, names no
+field, moves no phase, changes no decision, and does not move this ADR's own
+status, which stays `Accepted, 2026-08-25`. §*Decision*'s eight items and
+§*Consequences* are exactly as approved. Two items in §*What this decision does
+not settle* are recorded above as stale, and the rest stay open.

@@ -1,4 +1,4 @@
-# One decision is awaiting approval — and where an accepted decision contradicts the code
+# Two decisions are awaiting approval — and where an accepted decision contradicts the code
 
 This file is for the repository owner and nobody else. It exists because
 `docs/adr/README.md` reports statuses and `tests/foundation/adr-numbering-contract.test.ts`
@@ -8,8 +8,8 @@ implementation.
 
 **Nothing here changes a status.** A status moves in the ADR and in the index,
 never in this file. What changed with this revision is what the file is *for*:
-§1 records **all thirteen** flips, §2 holds **the one decision awaiting
-approval — ADR 0029** — above the account of why the queue had been emptied and
+§1 records **all thirteen** flips, §2 holds **the decisions awaiting approval —
+ADR 0029 and ADR 0030** — above the account of why the queue had been emptied and
 what that bought, and everything after it is the residue — one genuinely open
 decision, one watch item, and the gaps between an accepted decision and the
 code. §6 used to be the inventory of stale sentences the flips left behind;
@@ -143,15 +143,20 @@ gap, not a wrong status; §5 carries it, with what has and has not moved since
 
 ---
 
-## 2. The queue has exactly one entry: ADR 0029
+## 2. The queue has two entries: ADR 0029 and ADR 0030
 
-**This section's heading used to be "The queue is empty", and the entry below is
-the first thing to arrive since.** The rule that section states — *"any commit
-that adds a `Proposed` ADR adds an entry here in the same commit, giving the
-evidence, what settling it commits the project to, and the exact line that would
-replace the status"* — is followed, and the account of why the queue was emptied
-is kept below it unchanged, because it is the argument for why one row is worth
-reading.
+**This section's heading used to be "The queue is empty", and then "exactly one
+entry".** The rule that section states — *"any commit that adds a `Proposed` ADR
+adds an entry here in the same commit, giving the evidence, what settling it
+commits the project to, and the exact line that would replace the status"* — is
+followed by both entries below, and the account of why the queue was emptied is
+kept beneath them unchanged, because it is the argument for why a short list is
+worth reading.
+
+**The two are related and are deliberately separate rows.** 0029 settled what a
+concurrent-use claim *is*; 0030 asks what the ceiling that claim is counted
+against should *count*. 0030 can be refused without disturbing 0029, and 0029
+can be settled without prejudging 0030. Read 0029 first.
 
 ### ADR 0029 — concurrent-use claims on a room
 
@@ -191,8 +196,68 @@ reading.
   `**Accepted, YYYY-MM-DD.**`, and change that ADR's row in
   `docs/adr/README.md` from `Proposed — pending human approval` to
   `Accepted, YYYY-MM-DD`. Both in the same commit — the suite checks the pair.
-  The two paragraphs in `docs/adr/README.md` that now say one row is `Proposed`
-  go back to saying none is, and this entry is deleted.
+  The paragraphs in `docs/adr/README.md` and the root `README.md` that count the
+  `Proposed` rows lose 0029, and this entry is deleted.
+
+### ADR 0030 — what a room's concurrent-use ceiling counts
+
+- **What it is.** [ADR 0030](./0030-concurrent-use-ceiling-scope.md), *"What a
+  room's concurrent-use ceiling counts, and what an open room gets"*. It answers
+  the question [ADR 0028](./0028-object-placement-and-derived-room-capacity.md)
+  named as the sharpest single limitation of its design — its open question 4,
+  `room.yard` having no object requirement at all — and answers a wider one that
+  had to be uncovered first.
+- **It arrived the other way round from 0029: drafted against `main`, with
+  nothing implementing it.** That is the shape this file was written for, so
+  this entry is a request rather than a notification.
+- **The evidence is measured, not argued.** Driving the real
+  `deriveRoomCapacity` -> `register` -> `findAvailableForUse` -> `claimUse` path
+  on this tree: an 8x8 yard admits 0 users while empty, 1 with a toilet in it,
+  **3 with a loading-dock door in it**, and 8 with four benches. And on ADR
+  0028's own worked example — the canteen it states as seating 14 — four toilets
+  and a storage rack make the same gate admit **19 diners**, because the
+  capability is checked for presence *somewhere* in the room while the headcount
+  is checked against the footprint total of *everything* in it. A delivery door
+  grants three prisoners outdoor exercise; 64 tiles of open ground grant none.
+  The defect is filed as its own issue, so it is recorded whichever way this
+  decision goes.
+- **The precedent ADR 0028 gave for that rule does not hold.** Of the 41 objects
+  carrying `NumSlots` in Prison Architect's shipped `main/data/materials.txt`,
+  13 have a value that is not `max(width, height)` and 8 have one that equals
+  neither dimension; and it gates *the object*, since that game's only
+  room-level occupancy machinery is fifteen `roomgrading_*` keys covering
+  `cell`, `dormitory` and `sharedcell`. ADR 0028 carries this as a dated
+  amendment that corrects the fact and the argument resting on it and **changes
+  no decision and no status**; the evidence is
+  `docs/research/2026-08-25-concurrent-use-capacity.md`.
+- **What approving it commits the project to.** A concurrent-use ceiling scoped
+  to the capability being asked for — the shape `residentCapacity` already has,
+  with `'sleep-surface'` generalised — and therefore **no object-derived ceiling
+  at all for an action that names no capability**, which makes the yard
+  unbounded by derivation rather than by exemption. No authored number, no
+  content id, and **no save-format change**, because both derived fields left
+  the persisted room-instance row in V5. It also commits to a room no longer
+  having one occupancy figure, so ADR 0028 phase 5's Rooms-tab verdict has to
+  say capacity *for what*.
+- **What refusing it would cost, and the reading under which refusing is
+  right.** A single total is coherent if a room is a floor-space allocation
+  rather than a set of usable stations — nineteen in a fourteen-seat canteen is
+  then fourteen eating and five standing about in the space the toilets occupy.
+  Nothing in the ADR, the code or an issue takes that position, and nothing
+  rules it out either; the research record names this as the weakest link in its
+  own argument. **If the owner holds the floor-space reading, refuse 0030 and
+  answer open question 4 with area instead** — noting that
+  `MAX_ZONE_DIMENSION_TILES = 64` bounds one yard at 4,096 tiles, so every
+  plausible divisor is indistinguishable from no limit at the sizes players
+  build.
+- **The exact line that would replace the status.** In
+  `docs/adr/0030-concurrent-use-ceiling-scope.md`, replace
+  `**Proposed — pending human approval.** Not accepted.` with
+  `**Accepted, YYYY-MM-DD.**`, and change that ADR's row in
+  `docs/adr/README.md` from `Proposed — pending human approval` to
+  `Accepted, YYYY-MM-DD`. Both in the same commit — the suite checks the pair.
+  The paragraphs in `docs/adr/README.md` and the root `README.md` that count the
+  `Proposed` rows lose 0030, and this entry is deleted.
 
 ---
 
