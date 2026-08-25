@@ -8,6 +8,7 @@ import { NamedRngStreams } from '../../src/simulation/rng/streams';
 import { PrisonerColdState, PrisonerRecordComponent, classificationGroupIndex, intakeStageIndex } from '../../src/simulation/prisoners/components';
 import { IntakeSystem } from '../../src/simulation/prisoners/intake-system';
 import { RoomInstanceRegistry } from '../../src/simulation/prisoners/room-instance-registry';
+import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { buildPrisonerScenarioFixture } from '../helpers/prisoner-fixture';
 
 const RNG_STREAM = 'prisoners.classification';
@@ -160,6 +161,156 @@ describe('IntakeSystem: deterministic stage-by-stage pipeline', () => {
     expect(records.intakeStage[index]).toBe(5); // 'failed'
     expect(intakeSystem.getMetrics().failedCount).toBe(1);
     expect(intakeSystem.getMetrics().accommodationBacklogTicks).toBe(0); // structural failure, not backlog
+  });
+
+  describe('shared cells: allocation consults who is already in the room (#79)', () => {
+    /**
+     * A two-cell prison whose cells actually hold two people each.
+     *
+     * Built here rather than through `buildPrisonerScenarioFixture` because
+     * every cell that fixture registers is `capacity: 1`, and the live
+     * registrar is worse: `RoomZoningService` registers every instance with
+     * `capacity: 0` (`zoning.ts:259`, pinned by
+     * `tests/unit/rooms-zoning.test.ts:98`), so `occupancyOf >= capacity` is
+     * `0 >= 0` and `findAvailable` can never succeed through the shipped
+     * path at all. Co-occupancy is only reachable by registering it, which
+     * is what this does.
+     */
+    function sharedCellPrison() {
+      const capacity = 8;
+      const store = new EntityStore(capacity);
+      const bitset = new ComponentBitset(capacity);
+      const query = new EntityQuery(store, bitset);
+      query.mask.require(0);
+      const records = new PrisonerRecordComponent(capacity);
+      const coldState = new PrisonerColdState();
+      const roomInstances = new RoomInstanceRegistry();
+      // Registered in reverse id order on purpose: `allByRoomCatalogId`
+      // sorts, so registration order must not reach the outcome.
+      roomInstances.register({ instanceId: 'shared-b', roomCatalogId: 'room.cell', anchorTile: { x: tileCoordinate(1), y: tileCoordinate(0) }, capacity: 2, objectCapabilities: ['sleep-surface'] });
+      roomInstances.register({ instanceId: 'shared-a', roomCatalogId: 'room.cell', anchorTile: { x: tileCoordinate(0), y: tileCoordinate(0) }, capacity: 2, objectCapabilities: ['sleep-surface'] });
+      const intakeSystem = new IntakeSystem(store, query, records, coldState, roomInstances);
+
+      /** Puts a prisoner of a chosen risk tier into a cell, the way a completed intake would have. */
+      const seatResident = (instanceId: string, riskTier: number) => {
+        const entityId = store.spawn();
+        const index = store.getIndex(entityId);
+        records.riskTier[index] = riskTier;
+        records.intakeStage[index] = intakeStageIndex('completed');
+        roomInstances.assign(instanceId, entityId);
+        coldState.setAccommodation(entityId, instanceId);
+        return entityId;
+      };
+
+      const admit = (input: { sentenceLengthTicks: number; priorIncidents: number }) => {
+        const entityId = store.spawn();
+        bitset.add(store.getIndex(entityId), 0);
+        intakeSystem.submitIntake(entityId, input);
+        return entityId;
+      };
+
+      return { store, records, coldState, roomInstances, intakeSystem, seatResident, admit };
+    }
+
+    const LOW_RISK = { sentenceLengthTicks: 100, priorIncidents: 0 };
+
+    it('routes a low-risk arrival away from the cell holding a maximum-security prisoner, even though that cell sorts first and has a free bed', () => {
+      const prison = sharedCellPrison();
+      prison.seatResident('shared-a', 3);
+
+      // What the blind query still answers, so the difference is asserted
+      // rather than described: 'shared-a' sorts first and has a free bed, and
+      // an occupancy count is the only question it asks.
+      expect(prison.roomInstances.findAvailable('room.cell', 'sleep-surface')?.instanceId).toBe('shared-a');
+
+      const arrival = prison.admit(LOW_RISK);
+      const kernel = makeKernel();
+      kernel.registerSystem(prison.intakeSystem);
+      for (let i = 0; i < 20; i += 1) kernel.step();
+
+      const index = prison.store.getIndex(arrival);
+      expect(prison.records.intakeStage[index]).toBe(intakeStageIndex('completed'));
+      // `LOW_RISK` scores 0 and the screening draw is in {-1, 0, +1} clamped
+      // to 0..3, so the arrival is tier 0 or 1 whatever the seed does -- a
+      // distance of at least 2 from the tier-3 resident, and 0 from the
+      // empty cell.
+      expect(prison.records.riskTier[index]).toBeLessThanOrEqual(1);
+      expect(prison.coldState.getAccommodation(arrival)).toBe('shared-b');
+    });
+
+    it('pairs like with like: the same arrival takes the cell whose occupant is closest in classification', () => {
+      const prison = sharedCellPrison();
+      prison.seatResident('shared-a', 3);
+      prison.seatResident('shared-b', 0);
+
+      const arrival = prison.admit(LOW_RISK);
+      const kernel = makeKernel();
+      kernel.registerSystem(prison.intakeSystem);
+      for (let i = 0; i < 20; i += 1) kernel.step();
+
+      expect(prison.coldState.getAccommodation(arrival)).toBe('shared-b');
+    });
+
+    it('is advisory, not a refusal: a poor pairing is still taken when it is the only bed left', () => {
+      // Overriding and forbidding are ADR 0024's questions. Until one is
+      // answered, allocation ranks and never refuses -- so a full prison
+      // behaves exactly as it did, and this pins that no silent hard block
+      // was introduced along the way.
+      const prison = sharedCellPrison();
+      prison.seatResident('shared-a', 3);
+      prison.seatResident('shared-b', 3);
+      prison.seatResident('shared-b', 3);
+
+      const arrival = prison.admit(LOW_RISK);
+      const kernel = makeKernel();
+      kernel.registerSystem(prison.intakeSystem);
+      for (let i = 0; i < 20; i += 1) kernel.step();
+
+      expect(prison.records.intakeStage[prison.store.getIndex(arrival)]).toBe(intakeStageIndex('completed'));
+      expect(prison.coldState.getAccommodation(arrival)).toBe('shared-a');
+      expect(prison.intakeSystem.getMetrics().failedCount).toBe(0);
+    });
+
+    it('ignores an occupant that is no longer alive rather than reading a recycled slot', () => {
+      // `RoomInstanceRegistry.release` is never called for a destroyed
+      // prisoner (#31), so an occupant set can name an entity that no longer
+      // exists, and `EntityStore.getIndex` masks without checking. Reading
+      // that id's record would return whoever now holds the recycled index.
+      // With the liveness filter the dead tier-3 resident contributes
+      // nothing, so 'shared-a' rates 0 and wins the tie on instance id;
+      // without it, it would rate 3 and the arrival would be sent to
+      // 'shared-b'.
+      const prison = sharedCellPrison();
+      const dead = prison.seatResident('shared-a', 3);
+      prison.store.destroy(dead);
+      expect(prison.roomInstances.occupantsOf('shared-a')).toEqual([dead]);
+
+      const arrival = prison.admit(LOW_RISK);
+      const kernel = makeKernel();
+      kernel.registerSystem(prison.intakeSystem);
+      for (let i = 0; i < 20; i += 1) kernel.step();
+
+      expect(prison.coldState.getAccommodation(arrival)).toBe('shared-a');
+    });
+
+    it('is deterministic: the same scenario twice, and reversed assignment order, place every arrival identically', () => {
+      const placements = (reverseSeating: boolean) => {
+        const prison = sharedCellPrison();
+        const seats: readonly [string, number][] = reverseSeating
+          ? [['shared-b', 0], ['shared-a', 3]]
+          : [['shared-a', 3], ['shared-b', 0]];
+        for (const [instanceId, riskTier] of seats) prison.seatResident(instanceId, riskTier);
+
+        const arrivals = [prison.admit(LOW_RISK), prison.admit(LOW_RISK)];
+        const kernel = makeKernel();
+        kernel.registerSystem(prison.intakeSystem);
+        for (let i = 0; i < 40; i += 1) kernel.step();
+        return arrivals.map((id) => prison.coldState.getAccommodation(id));
+      };
+
+      expect(placements(false)).toEqual(placements(false));
+      expect(placements(true)).toEqual(placements(false));
+    });
   });
 
   it('starts an intake at "queued" whatever stage the slot already held', () => {

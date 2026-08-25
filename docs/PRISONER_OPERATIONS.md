@@ -183,6 +183,34 @@ prison holds an arriving prisoner because capacity may return, does not hold
 for a room with no beds in it. Nothing in the shipped application reaches
 that path yet: `ZoneRoom` has no producer and nothing calls `admitPrisoner`.
 
+**Who is already in the cell (#79).** `findAvailable` asks three questions
+-- room type, an occupancy *count*, an object capability -- and never asks
+who the arrival would be sharing with, so with shared cells a
+maximum-security prisoner and a minimal-risk one land together whenever that
+cell happens to sort first. `findBestAvailable` is the same query with the
+current occupants handed to a rating function: lowest rating wins, ties go
+to the lowest instance id, a non-finite rating means "not a permissible
+placement" and skips the instance, and the scan **stops at the first
+candidate rated 0** -- 0 is the contractual floor, an empty room rates 0, so
+on the common path the scan exits at the same candidate `findAvailable`'s
+`.find` would have, which is what keeps the performance note below true.
+`IntakeSystem` passes
+`cell-sharing.ts`'s `rateCellSharing`, a pure function whose one term is the
+worst classification distance (`|arrival.riskTier - occupant.riskTier|`)
+across the live occupants -- the only one of #79's four named inputs that is
+both populated and reachable from intake today.
+
+Two properties of that are load-bearing. **Occupants are handed over sorted
+ascending by entity id**, never `occupantsOf`'s insertion order: live
+insertion order is assignment order while a restored session's is ascending
+id, so a consumer folding them unsorted diverges across a save, and
+`canonical-iteration-contract.test.ts` structurally cannot see that
+expression. And the rating is **advisory** -- it ranks and never refuses, so
+a full prison behaves exactly as before. Whether a rating is ever recorded
+rather than recomputed, whether the player may override one, and how a
+cell-scoped risk reaches the sector-scoped trigger system are open questions
+in [ADR 0024](./adr/0024-cell-sharing-assessment.md), not settled in code.
+
 **Performance note:** `allByRoomCatalogId`/`findAvailable` are a per-tick,
 potentially-thousands-of-instances hot path (every pending intake and every
 action reconsideration queries them). They are grouped by room-catalog id
