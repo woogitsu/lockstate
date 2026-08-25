@@ -297,6 +297,10 @@ export function refusalMessageKey(actionId: string): LocalizationKey | undefined
       return HUD_MESSAGE_KEY.refusalUndo;
     case 'redo':
       return HUD_MESSAGE_KEY.refusalRedo;
+    case 'zone-room':
+      return HUD_MESSAGE_KEY.refusalZoneRoom;
+    case 'unzone-room':
+      return HUD_MESSAGE_KEY.refusalUnzoneRoom;
     default:
       return undefined;
   }

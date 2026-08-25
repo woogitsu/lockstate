@@ -151,7 +151,7 @@ const UNSENT_WORKER_TO_MAIN_KINDS: Readonly<Record<string, string>> = {
   'simulation/delta':
     '#274 A1, the half of that finding which holds. The kind has a full schema with a `superRefine` enforcing `tick > baseTick` (`types.ts#deltaMessageSchema`), is a member of `types.ts#workerToMainMessageSchema` and has a transfer-list case (`transferables.ts#collectProtocolTransferables`), and no module constructs one: the worker publishes whole snapshots on request and `simulation/status-counts` unprompted. `SimulationSnapshotFeed` says so in its own header -- "Only the snapshot path is implemented today -- nothing emits a delta".',
   'simulation/event':
-    'Declared in the kind union with a schema (`types.ts#eventMessageSchema`) and a transfer-list case that unwraps an `ArrayBuffer` payload (`transferables.ts#collectProtocolTransferables`), and constructed by nothing. It has no main-thread reader either: the five main-thread modules that `switch (message.kind)` -- `simulation-snapshot-feed.ts`, `simulation-alerts.ts`, `simulation-clock.ts`, `simulation-commands.ts` and `simulation-counts.ts` -- each have a `default` and no case for it, so one that did arrive would be dropped. That enumeration is counted rather than asserted: KIND_SWITCHING_MODULES below is derived from the scan, and a sixth dispatcher, a rename, or a module that grows a `simulation/event` case fails this gate instead of quietly making this sentence false. ADR 0003 lists "asynchronous domain events" among the families the protocol must support.',
+    'Declared in the kind union with a schema (`types.ts#eventMessageSchema`) and a transfer-list case that unwraps an `ArrayBuffer` payload (`transferables.ts#collectProtocolTransferables`), and constructed by nothing. It has no main-thread reader either: the six main-thread modules that `switch (message.kind)` -- `simulation-snapshot-feed.ts`, `simulation-alerts.ts`, `simulation-clock.ts`, `simulation-commands.ts`, `simulation-counts.ts` and `simulation-zoning.ts` -- each have a `default` and no case for it, so one that did arrive would be dropped. That enumeration is counted rather than asserted: KIND_SWITCHING_MODULES below is derived from the scan, and a seventh dispatcher, a rename, or a module that grows a `simulation/event` case fails this gate instead of quietly making this sentence false. It has already worked twice: #283 made four dispatchers five, and the Rooms tab (ADR 0022, amended) made five six with `simulation-zoning.ts`, which reads the enclosure notice off `simulation/status-counts` -- and neither could be landed without coming back to this sentence. ADR 0003 lists "asynchronous domain events" among the families the protocol must support.',
 };
 
 /**
@@ -551,9 +551,10 @@ describe('every protocol message kind has a sender, and every sent kind can be p
       'src/ui/simulation-clock.ts',
       'src/ui/simulation-commands.ts',
       'src/ui/simulation-counts.ts',
+      'src/ui/simulation-zoning.ts',
     ]);
     expect(KIND_SWITCHING_MODULES).toContain(TRANSFER_SWITCH);
-    expect(MAIN_THREAD_KIND_SWITCHES.length).toBe(5);
+    expect(MAIN_THREAD_KIND_SWITCHES.length).toBe(6);
 
     const reason = UNSENT_WORKER_TO_MAIN_KINDS['simulation/event']!;
     // The count word is *derived* from the measurement rather than written

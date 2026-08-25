@@ -137,6 +137,11 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.tab.build': 'Build',
   'hud.tab.security': 'Security',
   'hud.tab.regime': 'Regime',
+  // Six characters. ADR 0022 measured the tab bar at 375x812 spanning
+  // x = 1.8 .. 373.2 with a fifth tab injected -- 1.8px of margin per side --
+  // so a nine-character label such as "Logistics" would put the bar at
+  // x = -9.5 and fail the assertions in `tests/browser/ui-shell.spec.ts`.
+  'hud.tab.rooms': 'Rooms',
 
   'hud.minimap.title': 'Minimap',
   'hud.minimap.placeholder': 'Minimap is not available yet',
@@ -176,6 +181,20 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.alert.refusal.zone.overlaps-existing-room': 'The room was not zoned — it overlaps a room that is already there.',
   'hud.alert.refusal.zone.unknown-room-type': 'The room was not zoned — that is not a room type this prison knows.',
   'hud.alert.refusal.zone.unowned-land': 'The room was not zoned — you do not own all of that land.',
+  // The authored minimum, refused for the first time. Every one of the 18 room
+  // definitions carries a `minimum-size` requirement -- a cell is 2x3, a
+  // canteen 6x6, a yard 8x8 -- and until the Rooms panel existed nothing read
+  // one, so a 1x1 canteen was a legal room. The sentence names the rule rather
+  // than the numbers, because the numbers are per room type and the panel
+  // shows the selected room's own pair beside the drag.
+  'hud.alert.refusal.zone.below-minimum-size': 'The room was not zoned — that area is smaller than this room type allows.',
+  // Removal's own namespace. `unzone.invalid-area` is the same *condition* as
+  // `zone.invalid-area` and a different *sentence*: a player told "the room was
+  // not zoned" after asking to remove one would go and look at the wrong
+  // control.
+  'hud.alert.refusal.unzone.invalid-area': 'Nothing was removed — that area is not a valid rectangle.',
+  'hud.alert.refusal.unzone.nothing-to-remove': 'Nothing was removed — there is no room in that area.',
+  'hud.alert.refusal.unzone.room-occupied': 'Nothing was removed — somebody is using that room.',
 
   // A browser that cannot start a Worker gets a page with no simulation
   // behind it. Saying so is the whole point: the failure was previously
@@ -236,6 +255,48 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.refusal.purchase-materials': 'Nothing was bought — the purchase was refused and no money was spent.',
   'hud.refusal.undo': 'Nothing was undone — the request was refused.',
   'hud.refusal.redo': 'Nothing was redone — the request was refused.',
+  'hud.refusal.zone-room': 'The room was not designated — the request was refused.',
+  'hud.refusal.unzone-room': 'Nothing was removed — the request was refused.',
+
+  'hud.rooms.title': 'Rooms',
+  'hud.rooms.catalogue': 'Room type',
+  'hud.rooms.catalogue-empty': 'No room types are available',
+  'hud.rooms.selected': 'Selected',
+  'hud.rooms.arm': 'Draw on map',
+  'hud.rooms.disarm': 'Stop drawing',
+  'hud.rooms.arm-hint': 'Drag a rectangle across the tiles this room should cover.',
+  'hud.rooms.remove': 'Remove rooms',
+  'hud.rooms.remove-active': 'Stop removing',
+  // Says what a removal drag actually does, because it is not "clear the tiles
+  // you dragged over": each covered tile is grown into its whole connected
+  // same-type run before anything is cleared, so clipping a corner off a
+  // canteen takes the whole canteen. Telling the player that up front is the
+  // difference between a rule and a surprise.
+  'hud.rooms.remove-hint': 'Drag across any part of a room to remove all of it.',
+  'hud.rooms.area': 'Area',
+  'hud.rooms.area-none': 'Nothing selected',
+  'hud.rooms.area-value': '{width} × {height} tiles at {x}, {y}',
+  'hud.rooms.confirm': 'Designate {width} × {height}',
+  // Its own sentence, because a removal confirm reading "Designate" would name
+  // the opposite of what pressing it does.
+  'hud.rooms.confirm-remove': 'Remove {width} × {height}',
+  'hud.rooms.cancel': 'Discard',
+  'hud.rooms.minimum': 'Needs at least {width} × {height} tiles',
+  'hud.rooms.minimum-none': 'No minimum size',
+  'hud.rooms.too-small': 'Too small — this room needs at least {width} × {height} tiles.',
+  'hud.rooms.enclosure': 'Enclosure',
+  'hud.rooms.enclosure-none': 'Not evaluated yet',
+  'hud.rooms.enclosure-sealed': 'Walled in on every side',
+  'hud.rooms.enclosure-open': 'Open on at least one side',
+  // The one combination worth flagging rather than merely reporting: the room
+  // asked to be enclosed and its perimeter is not walled. It is not a refusal,
+  // and the sentence must not read as one -- the check is narrower than
+  // enclosure and a door cannot currently seal anything, so a room that is
+  // genuinely indoors can read open here.
+  'hud.rooms.enclosure-open-required': 'This room should be enclosed, and the area you drew is open on at least one side.',
+  'hud.rooms.requirement-enclosed': 'Must be enclosed',
+  'hud.rooms.requirement-outdoors': 'Must be outdoors',
+  'hud.rooms.requirement-none': 'No enclosure rule',
 
   'hud.severity.info': 'Info',
   'hud.severity.warning': 'Warning',

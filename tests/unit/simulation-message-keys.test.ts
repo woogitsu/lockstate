@@ -122,6 +122,24 @@ const UNLABELLED: readonly { readonly sourceFile: string; readonly declaration: 
       'Why `RoomZoningService.zone` refused a `ZoneRoom` -- unowned land, an overlap, a rectangle no room can be. It is the zoning counterpart of `BuildOrder.failReason`, which is likewise a stable id and likewise carries no key: #207 settled that a refusal a player sees is the UI layer\'s own `hud.refusal.*` string naming the outcome, never the simulation\'s code rendered verbatim. It never leaves the simulation under this spelling: `createSessionCommandHandler` maps every member onto a `RefusalReason` through an exhaustive `Record` before anything is published, and what the player reads is one authored `hud.alert.refusal.zone.*` sentence per reason rather than a two-word label this table could hold -- see the `REFUSAL_REASONS` entry above for that argument in full. Until #261 step 2 built the route this entry said "nothing projects this one at all yet -- it reaches `recentRefusals()` and stops there"; the reason it reaches now is mapped, and the window it also still fills is diagnosis.',
   },
   {
+    sourceFile: 'src/simulation/rooms/zoning.ts',
+    declaration: 'UnzoneRoomRefusalReason',
+    reason:
+      "Why `RoomZoningService.unzone` refused an `UnzoneRoom` -- an area that is not a rectangle, an area holding no room, a room somebody is using. Exempt for exactly the reason `ZoneRoomRefusalReason` above it is, and it is the same argument one command over: `createSessionCommandHandler` maps every member onto a `RefusalReason` through an exhaustive `Record` before anything is published, so this spelling never leaves the simulation, and what the player reads is one authored `hud.alert.refusal.unzone.*` sentence per reason rather than a two-word label this table could hold. The namespace exists precisely because the sentences differ where the ids do not: `invalid-area` is a member of both unions and the same condition, and a player told \"The room was not zoned\" after asking to *remove* a room would go and look at the wrong control.",
+  },
+  {
+    sourceFile: 'src/simulation/rooms/enclosure.ts',
+    declaration: 'RoomEnclosure',
+    reason:
+      "Whether a zoned rectangle's own perimeter is walled: `'sealed'` or `'open'`. It does reach the player, and this table is still the wrong place for it, for the reason `REFUSAL_REASONS` is exempt -- what the Rooms panel renders is a *sentence* about the answer, not a label of it. \"Walled in on every side\" and \"Open on at least one side\" are `hud.rooms.enclosure-*` keys authored in the HUD's own namespace, and the one combination worth flagging -- an `enclosed` room whose perimeter is open -- is a third sentence that no per-member label could produce, because it is about the *pair* of this enum and `RoomEnclosureRequirement` rather than about either member. A derived `room-enclosure.open.name` reading \"Open\" would have nowhere to be rendered.",
+  },
+  {
+    sourceFile: 'src/simulation/rooms/requirements.ts',
+    declaration: 'RoomEnclosureRequirement',
+    reason:
+      "What a room definition asks about being indoors: `'enclosed'`, `'outdoors'`, or `'none'` for a definition carrying neither. Exempt beside `RoomEnclosure` above and for the same reason, with one addition worth stating: `'none'` is not a state content is ever in today -- 17 of the 18 shipped rooms are `enclosed` and `room.yard` is `outdoors` -- so a labelled group here would author a word for a member no session can currently show, which is the failure `tests/foundation/unconsumed-content-contract.test.ts` exists to catch one layer over. The Rooms panel's three `hud.rooms.requirement-*` keys carry the sentences, including the one for `'none'`, because the panel renders it as a statement about the selected room rather than as that room's badge.",
+  },
+  {
     sourceFile: 'src/content/simulation-message-keys.ts',
     declaration: 'SimulationEnumForm',
     reason:
