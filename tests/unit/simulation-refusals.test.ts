@@ -8,6 +8,7 @@ import {
   HIRE_REFUSAL_REASONS,
   PLACE_OBJECT_REFUSAL_REASONS,
   PURCHASE_REFUSAL_REASONS,
+  REMOVE_OBJECT_REFUSAL_REASONS,
   RefusalLog,
   UNZONE_REFUSAL_REASONS,
   ZONE_REFUSAL_REASONS,
@@ -98,14 +99,15 @@ describe('RefusalLog: the snapshot shape a cadence channel can carry', () => {
   });
 });
 
-describe('the wire vocabulary is exactly what the seven domains can produce', () => {
-  it('maps every admission, build, hiring, placement, purchase, zoning and removal refusal onto a declared reason', () => {
+describe('the wire vocabulary is exactly what the eight domains can produce', () => {
+  it('maps every admission, build, hiring, placement, object removal, purchase and zoning refusal onto a declared reason', () => {
     const produced = [
       ...Object.values(ADMIT_REFUSAL_REASONS),
       ...Object.values(BUILD_REFUSAL_REASONS),
       ...Object.values(HIRE_REFUSAL_REASONS),
       ...Object.values(PLACE_OBJECT_REFUSAL_REASONS),
       ...Object.values(PURCHASE_REFUSAL_REASONS),
+      ...Object.values(REMOVE_OBJECT_REFUSAL_REASONS),
       ...Object.values(ZONE_REFUSAL_REASONS),
       ...Object.values(UNZONE_REFUSAL_REASONS),
     ];
@@ -135,7 +137,7 @@ describe('the wire vocabulary is exactly what the seven domains can produce', ()
     expect([...REFUSAL_REASONS]).toEqual([...REFUSAL_REASONS].sort());
   });
 
-  it('names the seven commands it can answer, so the vocabularies cannot collide', () => {
+  it('names the eight commands it can answer, so the vocabularies cannot collide', () => {
     // `unzone` is its own namespace and not more members of `zone`'s, because
     // `invalid-area` is the same *condition* for both and a different
     // *sentence*: a player told "the room was not zoned" after asking to remove
@@ -149,8 +151,21 @@ describe('the wire vocabulary is exactly what the seven domains can produce', ()
     // 1) and shares three spellings -- `out-of-bounds`, `unowned-land` and
     // `duplicate-order` -- with the build and purchase namespaces, which makes
     // it the strongest case of the three for keeping them apart.
+    // `remove-object` is the eighth (ADR 0028 phase 3) and it is the fourth
+    // demonstration: its one member is spelled `nothing-to-remove`, which is
+    // also `unzone`'s, and a player who pressed a tile with no object on it must
+    // not be told there was no room there.
     const prefixes = new Set(REFUSAL_REASONS.map((reason) => reason.split('.')[0]));
-    expect([...prefixes].sort()).toEqual(['admit', 'build', 'hire', 'place-object', 'purchase', 'unzone', 'zone']);
+    expect([...prefixes].sort()).toEqual([
+      'admit',
+      'build',
+      'hire',
+      'place-object',
+      'purchase',
+      'remove-object',
+      'unzone',
+      'zone',
+    ]);
   });
 
   it('keeps the one spelling zoning and removal share as two different wire ids', () => {
@@ -165,6 +180,24 @@ describe('the wire vocabulary is exactly what the seven domains can produce', ()
       const fromZone = ZONE_REFUSAL_REASONS[reason as keyof typeof ZONE_REFUSAL_REASONS];
       const fromUnzone = UNZONE_REFUSAL_REASONS[reason as keyof typeof UNZONE_REFUSAL_REASONS];
       expect(fromUnzone, `${reason} must not be one wire id for two commands`).not.toBe(fromZone);
+    }
+  });
+
+  it('keeps the one spelling un-zoning and object removal share as two different wire ids', () => {
+    // The same rule again, on the pair ADR 0028 phase 3 added.
+    // `nothing-to-remove` is a member of both `UnzoneRoomRefusalReason` and
+    // `RemoveObjectRefusalReason`, and it is the same *condition* -- the player
+    // pressed where there was nothing of theirs to take away -- reached from two
+    // different controls. A single flat id would tell somebody who pressed a
+    // bare tile with the object tool armed that there was no room there.
+    const shared = Object.keys(UNZONE_REFUSAL_REASONS).filter((reason) =>
+      Object.hasOwn(REMOVE_OBJECT_REFUSAL_REASONS, reason),
+    );
+    expect(shared.sort()).toEqual(['nothing-to-remove']);
+    for (const reason of shared) {
+      const fromUnzone = UNZONE_REFUSAL_REASONS[reason as keyof typeof UNZONE_REFUSAL_REASONS];
+      const fromRemoveObject = REMOVE_OBJECT_REFUSAL_REASONS[reason as keyof typeof REMOVE_OBJECT_REFUSAL_REASONS];
+      expect(fromRemoveObject, `${reason} must not be one wire id for two commands`).not.toBe(fromUnzone);
     }
   });
 

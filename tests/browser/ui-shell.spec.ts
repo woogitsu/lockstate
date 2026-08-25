@@ -1134,11 +1134,194 @@ test.describe('HUD shell', () => {
       const disarmedProbe = await page.evaluate(() => window.lockstateUiHarness.buildProbe());
       expect(disarmedProbe.armed).toBe(false);
 
+      // `removing: false` on both, because the intent describes one armed tool
+      // and the mode travels with the arming (ADR 0028 phase 3): a host that
+      // could see the two disagree would draw a removal ghost for a placing
+      // gesture. Asserted rather than loosened, so a field that started
+      // defaulting to `true` somewhere would fail here.
       expect(await page.evaluate(() => window.lockstateUiHarness.hudIntents())).toEqual([
         JSON.stringify({ kind: 'select-tab', tab: 'build' }),
-        JSON.stringify({ kind: 'arm-build-tool', armed: true, definitionId: 'wall-brick' }),
-        JSON.stringify({ kind: 'arm-build-tool', armed: false, definitionId: 'wall-brick' }),
+        JSON.stringify({ kind: 'arm-build-tool', armed: true, definitionId: 'wall-brick', removing: false }),
+        JSON.stringify({ kind: 'arm-build-tool', armed: false, definitionId: 'wall-brick', removing: false }),
       ]);
+    });
+
+    /**
+     * ADR 0028 phase 3: **the removal mode, which is the only route a touch
+     * player has to a misplaced object.**
+     *
+     * `Undo` is bound to `KeyZ` and nothing else, so before this control existed
+     * a placed object was permanent for the session on a phone -- a tile a
+     * standing object covers refuses every further placement, and the Build panel
+     * offers no per-order control. `AGENTS.md` boundary 10 is not satisfied by
+     * "it works with a keyboard".
+     *
+     * These are in a real browser because two of the three things worth
+     * measuring only exist in one: whether the browser gave the third button in
+     * `.hud-build__actions` a box, and whether it fits. ADR 0022 measured a third
+     * button in that exact row **overflowing by 37.9px**, which is why it is
+     * measured here rather than reasoned about.
+     */
+    test('offers a removal toggle beside the arm button, and reports the mode', async ({ page }) => {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+
+      const arrival = await page.evaluate(() => window.lockstateUiHarness.buildProbe());
+      // Laid out, not merely present: a control inside a box the browser gave no
+      // area is reachable by a keyboard and invisible to a player.
+      expect(arrival.removeLaidOut).toBe(true);
+      expect(arrival.removeLabel).toBe('Remove');
+      expect(arrival.removing).toBe(false);
+      // ADR 0011: an unresolved key renders as itself, so a raw `hud.` prefix
+      // anywhere on this panel is a missing catalogue entry.
+      expect(arrival.texts.filter((text) => text.startsWith('hud.'))).toEqual([]);
+
+      await page.evaluate(() => window.lockstateUiHarness.clickRemoveObject());
+      const removing = await page.evaluate(() => window.lockstateUiHarness.buildProbe());
+
+      expect(removing.removing).toBe(true);
+      expect(removing.removeLabel).toBe('Stop removing');
+      // Arming to remove *is* arming, so the world keeps the pointer -- but the
+      // arm button is not the control that is on, and its label must not claim
+      // to be. That split is `.hud-rooms__arm`'s against `.hud-rooms__remove`.
+      expect(removing.armed).toBe(false);
+      expect(removing.armLabel).toBe('Place on map');
+      // The note says what the armed gesture does, and it changed.
+      expect(removing.hint).toContain('take it away');
+      // The buy disclosure goes: a removal buys nothing, and hiding it is also
+      // what gives the row its width back while the mode is on.
+      expect(removing.buyToggleVisible).toBe(false);
+      // The numeric route -- removal's keyboard half -- follows the mode too.
+      await page.evaluate(() => window.lockstateUiHarness.expandBuildCoordinates());
+      expect(await page.evaluate(() => window.lockstateUiHarness.buildProbe())).toMatchObject({
+        submitDisabled: false,
+        // A removal has no edge, for the reason it has no buildable.
+        edgeChooserVisible: false,
+      });
+
+      const intents = await page.evaluate(() => window.lockstateUiHarness.hudIntents());
+      expect(intents).toContain(
+        JSON.stringify({ kind: 'arm-build-tool', armed: true, definitionId: 'wall-brick', removing: true }),
+      );
+    });
+
+    test('dispatches a removal from the numeric route, which is its keyboard half', async ({ page }) => {
+      // The world press is the gesture this exists for and it needs a canvas;
+      // `app-shell.spec.ts` drives that one. What this measures is the route a
+      // player with no pointer at all takes: reach the toggle, press it, open
+      // the coordinates, press the one submit button.
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+      await page.evaluate(() => window.lockstateUiHarness.clickRemoveObject());
+      await page.evaluate(() => window.lockstateUiHarness.expandBuildCoordinates());
+      await page.evaluate(() => window.lockstateUiHarness.stepBuildCoordinate('x', 'up'));
+      await page.evaluate(() => window.lockstateUiHarness.clickPlaceOrder());
+
+      // Origin is (16, 16) and X was stepped once. A `remove-object` intent and
+      // not a `place-object` one, and it carries no buildable id -- a removal
+      // names no object type.
+      expect(await page.evaluate(() => window.lockstateUiHarness.hudIntents())).toContain(
+        JSON.stringify({ kind: 'remove-object', x: 17, y: 16 }),
+      );
+    });
+
+    test('turning the removal mode off puts the pointer back to placing', async ({ page }) => {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+      await page.evaluate(() => window.lockstateUiHarness.clickRemoveObject());
+      await page.evaluate(() => window.lockstateUiHarness.clickRemoveObject());
+
+      const probe = await page.evaluate(() => window.lockstateUiHarness.buildProbe());
+      expect(probe.removing).toBe(false);
+      /*
+       * **Still armed, now to place** -- `armed = removing || armed` in both this
+       * panel and the Rooms panel, and it is the precedent rather than an
+       * accident. Turning the mode off is a statement about *what* the pointer
+       * does, not about whether the player still has it: the world keeps the
+       * pointer and the arm button says so.
+       *
+       * Which is why the label is asserted right beside it. A pointer that
+       * silently changed from removing to placing would be a real hazard -- one
+       * tap spends materials -- so what makes this safe is that the control
+       * reads "Stop placing" and announces itself pressed.
+       */
+      expect(probe.armed).toBe(true);
+      expect(probe.armLabel).toBe('Stop placing');
+      expect(probe.buyToggleVisible).toBe(true);
+      expect(probe.hint).toContain('Click a tile edge');
+
+      // And pressing the arm button while the mode is on is the other way out,
+      // reaching the same state in one press rather than two.
+      await page.evaluate(() => window.lockstateUiHarness.clickRemoveObject());
+      await page.evaluate(() => window.lockstateUiHarness.clickArmBuild());
+      const armed = await page.evaluate(() => window.lockstateUiHarness.buildProbe());
+      expect(armed.removing).toBe(false);
+      expect(armed.armed).toBe(true);
+      expect(armed.armLabel).toBe('Stop placing');
+    });
+
+    test('leaving the Build tab turns the removal mode off with the arming', async ({ page }) => {
+      // A latched removal mode behind a hidden panel is worse than a latched
+      // placement one: coming back to the tab would hand the player a pointer
+      // that deletes things they cannot see having armed.
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+      await page.evaluate(() => window.lockstateUiHarness.clickRemoveObject());
+      expect((await page.evaluate(() => window.lockstateUiHarness.buildProbe())).removing).toBe(true);
+
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
+      expect(await page.evaluate(() => window.lockstateUiHarness.hudIntents())).toContain(
+        JSON.stringify({ kind: 'arm-build-tool', armed: false, definitionId: 'wall-brick', removing: false }),
+      );
+
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+      expect((await page.evaluate(() => window.lockstateUiHarness.buildProbe())).removing).toBe(false);
+    });
+
+    test('fits three buttons in the actions row at every viewport, including 375px', async ({ page }) => {
+      /*
+       * The measurement ADR 0022 took when it rejected a third control here,
+       * taken again on the row that now has one.
+       *
+       * It rejected it on two grounds and only one of them was height: the row
+       * is `--tap-target` tall whether it holds one button or three, which is
+       * the argument #89's buy disclosure already made for joining it, so the
+       * always-visible budget is untouched. What it also measured was a third
+       * button **overflowing horizontally by 37.9px**, and what fixes that is
+       * `min-width: 0` on the growable arm button plus a one-word label on this
+       * one -- both properties only a browser can confirm.
+       *
+       * 375x812 is the one that matters and it is not the only one asserted: a
+       * row that fit on a phone and overflowed at 900x600 would be a stranger
+       * defect, not a smaller one.
+       */
+      for (const [width, height] of CATALOGUE_VIEWPORTS) {
+        await page.setViewportSize({ width, height });
+        await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+        await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+
+        const probe = await page.evaluate(() => window.lockstateUiHarness.buildProbe());
+        // The page rendered before anything here is trusted: a probe taken
+        // against a panel with no box would report 0px of overflow and mean
+        // nothing.
+        expect(probe.visible, `the Build panel is not laid out at ${width}x${height}`).toBe(true);
+        expect(probe.removeLaidOut, `the removal toggle has no box at ${width}x${height}`).toBe(true);
+        expect(probe.armLabel, `the arm button lost its label at ${width}x${height}`).toBe('Place on map');
+        expect(probe.actionsOverflowPx, `the actions row overflows at ${width}x${height}`).toBeLessThanOrEqual(0);
+        expect(
+          await page.evaluate(() => window.lockstateUiHarness.laidOut('.hud-build__arm')),
+          `the arm button has no box at ${width}x${height}`,
+        ).toBe(true);
+
+        // And with the mode on, where the buy toggle leaves the row.
+        await page.evaluate(() => window.lockstateUiHarness.clickRemoveObject());
+        const removing = await page.evaluate(() => window.lockstateUiHarness.buildProbe());
+        expect(removing.removeLaidOut, `no box while removing at ${width}x${height}`).toBe(true);
+        expect(
+          removing.actionsOverflowPx,
+          `the actions row overflows while removing at ${width}x${height}`,
+        ).toBeLessThanOrEqual(0);
+      }
     });
 
     test('leaving the Build tab hands the pointer back to the camera', async ({ page }) => {
@@ -1153,7 +1336,9 @@ test.describe('HUD shell', () => {
       const intents = await page.evaluate(() => window.lockstateUiHarness.hudIntents());
       // The disarm rides out with the tab change itself, so the host never
       // sees a window where the panel is hidden and the pointer is still ours.
-      expect(intents).toContain(JSON.stringify({ kind: 'arm-build-tool', armed: false, definitionId: 'wall-brick' }));
+      expect(intents).toContain(
+        JSON.stringify({ kind: 'arm-build-tool', armed: false, definitionId: 'wall-brick', removing: false }),
+      );
       expect((await page.evaluate(() => window.lockstateUiHarness.buildProbe())).armed).toBe(false);
     });
 

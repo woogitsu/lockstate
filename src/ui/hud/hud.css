@@ -763,8 +763,31 @@
   gap: var(--space-2);
 }
 
-.hud-build__actions > .hud-build__arm { flex: 1 1 auto; }
-.hud-build__actions > .hud-build__buy-toggle { flex: 0 0 auto; }
+/*
+ * Three buttons in one row since ADR 0028 phase 3: arm, remove, buy.
+ *
+ * `min-width: 0` on the growable one is what makes a third fit, and it is
+ * copied from `.hud-rooms__arm` rather than invented -- ADR 0022 measured a
+ * third button overflowing this exact row by 37.9px, and a flex item's default
+ * `min-width: auto` is why: without it the arm button cannot shrink below its
+ * own label and the overflow has nowhere to go. The two toggles stay
+ * `flex: 0 0 auto` so the label that shortens under pressure is the one whose
+ * text is longest and least load-bearing.
+ *
+ * The buy toggle is `hidden` while the removal mode is on (`paintBuy`), so the
+ * widest state of this row is the arrival one -- arm plus remove plus buy.
+ * Measured on the assembled page at all five viewports the browser suite
+ * visits; `tests/browser/app-shell.spec.ts` holds the assertions.
+ */
+.hud-build__actions > .hud-build__arm {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.hud-build__actions > .hud-build__remove,
+.hud-build__actions > .hud-build__buy-toggle {
+  flex: 0 0 auto;
+}
 
 /*
  * What the disclosure reveals: the quantity stepper and the button that

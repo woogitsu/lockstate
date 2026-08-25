@@ -635,11 +635,12 @@ export type SimulationStatusCounts = DeepReadonly<
  * message key in `src/ui/simulation-alerts.ts`; no text crosses the boundary.
  *
  * Declared in ascending code-unit order, and namespaced by the command the
- * refusal answers, so the six vocabularies behind it cannot collide:
+ * refusal answers, so the seven vocabularies behind it cannot collide:
  * `admit.*` mirrors `AdmitPrisonerRefusalReason`, `build.*` mirrors
  * `BuildOrder.failReason`, `hire.*` mirrors `StaffHireRefusalReason`,
  * `place-object.*` mirrors `PlaceObjectRefusalReason`,
- * `purchase.*` mirrors `PurchaseOutcome`'s refusal reasons, `unzone.*` mirrors
+ * `purchase.*` mirrors `PurchaseOutcome`'s refusal reasons,
+ * `remove-object.*` mirrors `RemoveObjectRefusalReason`, `unzone.*` mirrors
  * `UnzoneRoomRefusalReason` and `zone.*` mirrors `ZoneRoomRefusalReason`. The
  * namespace is doing real work rather than being tidy -- `out-of-bounds` and
  * `unowned-land` are members of *two* of those domain vocabularies, and
@@ -648,11 +649,17 @@ export type SimulationStatusCounts = DeepReadonly<
  * answers, so one flat id per spelling would put one sentence on several.
  *
  * `src/simulation/refusals/refusal-log.ts` maps each domain value onto one of
- * these through an exhaustive `Record`, so a reason added to any of the six
+ * these through an exhaustive `Record`, so a reason added to any of the seven
  * fails to compile until it is named here -- and
- * `tests/unit/simulation-refusals.test.ts` asserts the six tables between
+ * `tests/unit/simulation-refusals.test.ts` asserts the seven tables between
  * them cover this list exactly, so a member declared here and produced by
  * nothing is a failure too.
+ *
+ * `remove-object.nothing-to-remove` is spelled the way `unzone.nothing-to-remove`
+ * is because it is the same fact about a different gesture, and it is namespaced
+ * for exactly the reason this comment gives: "the player pressed where there was
+ * no room" and "the player pressed where there was no object" are two sentences,
+ * and one flat id would put one of them on both.
  */
 export const REFUSAL_REASONS = [
   'admit.no-accommodation',
@@ -676,6 +683,7 @@ export const REFUSAL_REASONS = [
   'purchase.insufficient-funds',
   'purchase.invalid-quantity',
   'purchase.unknown-material',
+  'remove-object.nothing-to-remove',
   'unzone.invalid-area',
   'unzone.nothing-to-remove',
   'unzone.room-occupied',

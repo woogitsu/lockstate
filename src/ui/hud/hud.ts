@@ -193,6 +193,22 @@ export interface HudObjectPlacement {
 }
 
 /**
+ * A finished object gesture on the world: a placement, or a removal (ADR 0028
+ * phase 3).
+ *
+ * A **union in the shape `HudRoomGesture` is a union**, and for the same reason:
+ * the two arms of one mode carry different fields, because a removal names no
+ * object type. What comes away is whatever is standing on the tile, so a
+ * `definitionId` here would be a field the consumer must be told to ignore.
+ *
+ * Discriminated rather than "a placement with an optional definition id", so
+ * `tsc` and not a reader decides which fields each arm has.
+ */
+export type HudObjectGesture =
+  | ({ readonly kind: 'place' } & HudObjectPlacement)
+  | { readonly kind: 'remove'; readonly x: number; readonly y: number };
+
+/**
  * The world's object gesture, as the HUD is willing to know it (ADR 0028).
  *
  * The same shape as `HudWorldBuildSource` and `HudWorldRoomSource`, and for the
@@ -213,8 +229,16 @@ export interface HudObjectPlacement {
  * `UnzoneRoom` existed.
  */
 export interface HudWorldObjectSource {
-  /** Points the finished-gesture report at the HUD. Called once, at mount. */
-  attachPlacements(place: (placement: HudObjectPlacement) => void): void;
+  /**
+   * Points the finished-gesture report at the HUD. Called once, at mount.
+   *
+   * Named `attachGestures`, matching `HudWorldRoomSource`, since the gesture
+   * gained its removing arm: `attachPlacements` was true of a source that could
+   * only place, and a name that says "placement" for a callback that also
+   * reports removals is the kind of half-truth this tree renames rather than
+   * documents.
+   */
+  attachGestures(report: (gesture: HudObjectGesture) => void): void;
 }
 
 /** Which way along the edit history the player asked to move. */
@@ -279,6 +303,23 @@ export type HudIntent =
    * one as an open question.
    */
   | ({ readonly kind: 'place-object' } & HudObjectPlacement)
+  /**
+   * Take away the object on one tile (ADR 0028 phase 3).
+   *
+   * A separate intent from `place-object` rather than a flag on it, for the
+   * reason the gesture is a union: a removal carries no `definitionId`, because
+   * it names no object type. Two producers reach it, exactly as two reach
+   * `place-object` -- the world gesture while the tool is armed to remove, and
+   * the Build panel's numeric fields while the same mode is on, which is what
+   * gives removal a keyboard route on the day it ships instead of leaving it as
+   * `Undo`'s keyboard-only chord.
+   *
+   * **Why this exists at all**, since `Undo` already took a placement back: undo
+   * is bound to `KeyZ` and nothing else, so on a touch device a misplaced object
+   * was permanent for the session. That is the trap the Rooms tab shipped with
+   * and had to fix in a follow-up, and it is not worth repeating.
+   */
+  | { readonly kind: 'remove-object'; readonly x: number; readonly y: number }
   /**
    * The player asked to buy materials (#89). Ids and numbers only -- the host
    * turns this into a `PurchaseMaterials` command and mints the order id it
@@ -350,11 +391,19 @@ export type HudIntent =
    * asks the simulation for nothing, so it is never gated -- blocking it
    * while a build order was in flight would leave the player unable to put
    * the pointer down.
+   *
+   * `removing` travels with `armed` rather than as a second signal, exactly as
+   * `arm-room-tool`'s does and for the same reason its comment gives: the two
+   * halves describe one armed tool, and a host that could see them disagree
+   * would draw a removal ghost for a placing gesture. It is `false` for every
+   * arming that places, and the field is required rather than optional so a
+   * producer cannot forget to answer.
    */
   | {
       readonly kind: 'arm-build-tool';
       readonly armed: boolean;
       readonly definitionId: string | undefined;
+      readonly removing: boolean;
     }
   /**
    * The player asked to reverse, or reapply, the last thing they did (#261).
@@ -917,6 +966,18 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
        * beside it, and not a judgement this function makes: the composition root
        * knows which buildables name an object and the HUD is handed the answer.
        */
+      if (intent.removing) {
+        /*
+         * The numeric route's removal, and the reason the mode is read here
+         * rather than from the row: a removal names no object type, so the
+         * selected row decides nothing about it (ADR 0028 phase 3). This is
+         * removal's keyboard half -- two number fields and one button -- and it
+         * is checked *before* `placesObject`, because a player who armed
+         * removal while a wall row was selected still meant to remove.
+         */
+        dispatchCommand({ kind: 'remove-object', x: intent.x, y: intent.y }, buildPanel.submitControl);
+        return;
+      }
       if (intent.placesObject) {
         dispatchCommand(
           { kind: 'place-object', definitionId: intent.definitionId, x: intent.x, y: intent.y },
@@ -936,8 +997,12 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
         buildPanel.submitControl,
       );
     },
-    onArm: (armed, definitionId) => {
-      runReported('arm-build-tool', () => options.onIntent?.({ kind: 'arm-build-tool', armed, definitionId }), reportError);
+    onArm: (armed, definitionId, removing) => {
+      runReported(
+        'arm-build-tool',
+        () => options.onIntent?.({ kind: 'arm-build-tool', armed, definitionId, removing }),
+        reportError,
+      );
     },
     // Buying is a *command* for the same reasons placing an order is: it asks
     // the host to change the simulation, the money leaves immediately, and a
@@ -1095,8 +1160,12 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * zoning plane, the placed objects or the order list, and the main thread
    * holds none of them.
    */
-  options.worldObjects?.attachPlacements((placement) => {
-    dispatchCommand({ kind: 'place-object', ...placement });
+  options.worldObjects?.attachGestures((gesture) => {
+    if (gesture.kind === 'remove') {
+      dispatchCommand({ kind: 'remove-object', x: gesture.x, y: gesture.y });
+      return;
+    }
+    dispatchCommand({ kind: 'place-object', definitionId: gesture.definitionId, x: gesture.x, y: gesture.y });
   });
 
   /**

@@ -280,6 +280,54 @@ export const placeObjectSchema = z.object({
   y: z.number().int(),
 }).strict();
 
+/**
+ * Take away the object standing on one tile
+ * ([ADR 0028](../../../docs/adr/0028-object-placement-and-derived-room-capacity.md)
+ * phase 3).
+ *
+ * ## Why it is a command of its own rather than a `CancelBuildOrder`
+ *
+ * Because the player is aiming at a *thing in the world*, not at a record in an
+ * order list. `CancelBuildOrder` needs the id of the order that built the
+ * object, which nothing on screen shows and no snapshot carries: the main thread
+ * would have to keep a tile-to-order map for the life of the session, and it
+ * would still be wrong for an object restored from a save, whose order is not in
+ * the session at all. A tile is what the player pressed and a tile is what the
+ * tile index can answer, so a tile is what this carries.
+ *
+ * ## What it carries: one tile, and deliberately nothing else
+ *
+ * **No `placedObjectId`.** The id is a pure function of the *anchor* tile, and
+ * the tile a player presses is usually not the anchor -- a bed is 1x2, so half
+ * of it answers to a different id. Computing it in the producer would mean the
+ * main thread holding the footprint of every object in the prison.
+ *
+ * **No `definitionId` and no `objectId`.** A removal names no object type: what
+ * comes out is whatever is standing there. That is the same asymmetry
+ * `UnzoneRoom` has against `ZoneRoom`, and `RoomTool`'s own comment gives the
+ * reason -- requiring a selection before the player could undo a mistake would
+ * be a rule with nothing behind it, and it would bite hardest in exactly the
+ * case removal exists for.
+ *
+ * **No `orderId`.** A removal mints no construction order, so there is no id for
+ * a producer to allocate and nothing for `submitOrder` to refuse as a duplicate.
+ * The one order id a removal can touch belongs to an order that already exists
+ * (a placement still in flight, cancelled rather than left claiming a tile
+ * nothing can use), and that id is found from the tile.
+ *
+ * **No `transactionId`.** One press is one object, exactly as for `PlaceObject`,
+ * so there is nothing to group. Removing a standing object writes no order and
+ * therefore nothing `Undo` can reverse -- which is stated here because it is the
+ * honest cost of this shape: a removal is not itself undoable, and the object
+ * has to be built again. Making it undoable means a removal writing something to
+ * the undo stack, which is `EditHistoryPort`'s question and not this command's.
+ */
+export const removeObjectSchema = z.object({
+  type: z.literal('RemoveObject'),
+  x: z.number().int(),
+  y: z.number().int(),
+}).strict();
+
 export const undoCommandSchema = z.object({
   type: z.literal('Undo'),
 }).strict();
@@ -297,6 +345,7 @@ export const simulationCommandSchema = z.discriminatedUnion('type', [
   admitPrisonerSchema,
   hireStaffSchema,
   placeObjectSchema,
+  removeObjectSchema,
   undoCommandSchema,
   redoCommandSchema,
 ]);
@@ -370,6 +419,9 @@ function commandJson(command: SimulationCommand): JsonValue {
         x: command.x,
         y: command.y,
       };
+
+    case 'RemoveObject':
+      return { type: command.type, x: command.x, y: command.y };
 
     case 'Undo':
     case 'Redo':

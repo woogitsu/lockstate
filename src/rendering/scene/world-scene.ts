@@ -904,7 +904,12 @@ export class WorldScene extends Phaser.Scene {
   }
 
   private paintObjectPreview(): void {
-    this.objectOverlay?.update(this.objectRect, this.objectTint?.());
+    // No tint while the gesture removes, exactly as the area preview passes none
+    // for a removal drag: `AreaOverlay.update` reads an absent colour as "this
+    // gesture takes something away" and draws its own removal fill and outline.
+    // So the removal look costs nothing new here, and the scene still learns
+    // only which preview to draw -- never which command the press becomes.
+    this.objectOverlay?.update(this.objectRect, this.objectTool?.isRemoving() === true ? undefined : this.objectTint?.());
     this.objectTool?.target?.(this.objectRect);
   }
 

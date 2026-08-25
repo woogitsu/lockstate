@@ -11,7 +11,8 @@ import { placedObjectAt, type PlacedObjectRegistry } from './placed-object-regis
 import { roomInstanceContaining, type RoomCapacityResolver } from './room-capacity';
 
 /**
- * The consumer of the `PlaceObject` command (ADR 0028 phase 1).
+ * The consumer of the `PlaceObject` and `RemoveObject` commands (ADR 0028
+ * phases 1 and 3).
  *
  * ## What placing an object actually is
  *
@@ -136,6 +137,107 @@ export interface PlaceObjectRefusal {
   readonly tick: number;
 }
 
+/**
+ * What a removal names: one tile, and nothing else.
+ *
+ * **No `placedObjectId` and no order id, deliberately.** The id is a pure
+ * function of the anchor tile (`placedObjectIdFor`), and the tile the player
+ * pressed is generally *not* the anchor -- a bed is 1x2, so half of it answers
+ * to `object:x:y-1`. Carrying the id would mean the producer computing it, which
+ * means the producer holding the footprint of every object standing in the
+ * prison; carrying the tile means the tile index answers the question, which is
+ * exactly what it is for.
+ *
+ * It is also the shape that makes the gesture honest on touch: what the player
+ * pressed is a tile, so what the command says is a tile.
+ */
+export interface RemoveObjectRequest {
+  readonly x: number;
+  readonly y: number;
+}
+
+/**
+ * Why a removal was refused.
+ *
+ * **One reason, and the shortness is the point.** Every other condition a
+ * removal could be refused for was considered and answered by *doing the
+ * removal*:
+ *
+ *   - **The room is occupied.** ADR 0028 decision 2 is explicit: nobody is
+ *     evicted, the room stops accepting new occupants and its requirement reads
+ *     missing. Refusing here would contradict the decision this phase exists to
+ *     implement.
+ *   - **The room is in use.** A prisoner performing an action holds a
+ *     concurrent-use claim (ADR 0029), and removing the object that gave the
+ *     room its capacity drops that capacity below the number of claims held.
+ *     That is the same over-capacity state, on the other collection, and it
+ *     drains by itself: see `remove` below for the argument in full.
+ *   - **The tile is outside every room.** `PlaceObject` refuses that, because a
+ *     placement there would spend a plank on a row nothing reads. A *removal*
+ *     there is the opposite: the object exists, it is in the player's way, and
+ *     refusing would strand it -- reachable today by un-zoning the room around
+ *     a bed, which `object-placement-loop.test.ts` already covers.
+ *   - **The land is not owned.** Same argument. An object can only have been
+ *     placed on owned land, and land can change hands; refusing to remove an
+ *     object because the ground under it changed would trap it there.
+ *   - **Out of bounds.** A tile in an unmaterialised chunk holds no object, so
+ *     it is `nothing-to-remove` and not a separate answer. Nothing here writes
+ *     to the world, so unlike `place` there is no chunk to accidentally
+ *     materialise on the way to refusing.
+ *
+ * Hyphenated and spelled `nothing-to-remove` to match
+ * `UnzoneRoomRefusalReason`'s member of the same name, because it is the same
+ * fact about the same kind of gesture: the player pressed somewhere there was
+ * nothing of theirs to take away.
+ */
+export type RemoveObjectRefusalReason = 'nothing-to-remove';
+
+export interface RemoveObjectRefusal {
+  readonly kind: 'refused';
+  readonly reason: RemoveObjectRefusalReason;
+  readonly request: RemoveObjectRequest;
+  /** The tile the request named, canonicalised. Always present -- a removal is about one tile and nothing else. */
+  readonly tile: TilePosition;
+  readonly tick: number;
+}
+
+/** An object that was standing in the world is gone, and the room it stood in has been re-derived. */
+export interface RemoveObjectRemoved {
+  readonly kind: 'removed';
+  readonly placedObjectId: string;
+  readonly objectId: string;
+  readonly anchorTile: TilePosition;
+  /** The room whose capacity was re-derived, absent for an object that stood in no room. */
+  readonly roomInstanceId?: string;
+}
+
+/**
+ * No object was standing there yet, but an order still building one was, and it
+ * has been cancelled.
+ *
+ * The second half of "remove the object at this tile", and it is not a
+ * convenience. Without it a tile under an order that cannot finish -- one
+ * waiting in `materials-pending` for a plank the player cannot afford -- is
+ * claimed for the rest of the session: `place` refuses `tile-occupied` against
+ * the footprints of orders in flight, and a removal that only looked at
+ * standing objects would answer `nothing-to-remove`. That is the same
+ * permanent-mistake trap this phase exists to close, one state earlier.
+ *
+ * It reuses `ConstructionSystem.cancelOrder`, which refunds the materials the
+ * order had allocated -- correctly, because nothing was built with them. A
+ * *standing* object is not refunded, and the asymmetry is the honest one: an
+ * order that never finished gives its materials back, and a thing that was
+ * built out of them does not.
+ */
+export interface RemoveObjectOrderCancelled {
+  readonly kind: 'order-cancelled';
+  readonly orderId: string;
+  readonly objectId: string;
+  readonly anchorTile: TilePosition;
+}
+
+export type RemoveObjectOutcome = RemoveObjectRemoved | RemoveObjectOrderCancelled | RemoveObjectRefusal;
+
 export interface PlaceObjectAccepted {
   readonly kind: 'ordered';
   readonly orderId: string;
@@ -161,6 +263,16 @@ export interface ObjectOrderSink {
   allOrders(): readonly BuildOrder[];
   submitOrder(order: BuildOrder): void;
   registerTransactionOrder(orderId: string, transactionId?: string): void;
+  /**
+   * Cancels an order and gives its allocated materials back.
+   *
+   * Added for removal (phase 3), and called only for an order this service has
+   * established is **not** `completed`, `cancelled` or `failed` -- so the throw
+   * `cancelOrder` makes for a terminal state is unreachable through here, and
+   * the geometry-reversing half of it never runs. A completed object order's
+   * object is in the registry, which is the branch that takes it.
+   */
+  cancelOrder(id: string): void;
 }
 
 /** The orientation every placement gets, until a rotate control exists. See `ObjectOrientation`. */
@@ -169,6 +281,8 @@ const DEFAULT_PLACEMENT_ORIENTATION: ObjectOrientation = 0;
 export class ObjectPlacementService {
   /** Oldest first. A bounded window, not a log; see `MAX_RECORDED_PLACEMENT_REFUSALS`. */
   private readonly refusals: PlaceObjectRefusal[] = [];
+  /** The same window for the other gesture; see `recentRemovalRefusals`. */
+  private readonly removalRefusals: RemoveObjectRefusal[] = [];
 
   public constructor(
     private readonly world: SparseWorld,
@@ -259,6 +373,137 @@ export class ObjectPlacementService {
   }
 
   /**
+   * Takes away whatever object the player pressed, or refuses because there was
+   * nothing there.
+   *
+   * ADR 0028 phase 3's command consumer, and the counterpart of `place` in the
+   * same class rather than in a class of its own: the collaborators are the same
+   * five, it holds no state, it has no `update`, and it runs only inside a
+   * command dispatch. A second service would restate `place`'s constructor and
+   * would put "which object is on this tile" in two files.
+   *
+   * ## The order of the two cases, and why it is that way round
+   *
+   * A **standing object** first, then an **order still building one**. The two
+   * cannot both be true of one tile -- a completed order's object is in the
+   * registry and `ordersBuildingObjects` skips `completed` -- so the order of
+   * the checks decides nothing, and it is written this way because the standing
+   * object is what the player can see.
+   *
+   * ## What happens to a room that was occupied or in use
+   *
+   * **Nothing is evicted and no claim is touched**, which is ADR 0028 decision
+   * 2 for residents and the same answer extended to the concurrent-use claims
+   * ADR 0029 added after that decision was written. Removal changes a capacity;
+   * it does not reach into anybody's action or anybody's accommodation.
+   *
+   * The consequence is a room whose claim count is above its capacity, and it is
+   * a **legal, named state on both collections**:
+   *
+   *  - `assign` refuses at `occupants.size >= residentCapacity` and
+   *    `findAvailableResidence` skips a full instance, so the room stops taking
+   *    new residents while the prisoner already living there keeps their
+   *    `accommodationInstanceId` and keeps sleeping.
+   *  - `claimUse` refuses at `claims.size >= concurrentUseCapacity` and
+   *    `findAvailableForUse` skips likewise, so the room stops taking new users
+   *    while the prisoners already performing there finish. Their claims drain
+   *    through `ActionSystem`'s three release sites, none of which consults a
+   *    capacity -- so a dropped capacity cannot leak a claim, and `releaseUse`
+   *    is total, so it cannot double-release one either.
+   *
+   * The two alternatives were considered and are worse, and the reason is the
+   * same for both. **Releasing the claims here** would leave prisoners
+   * performing in a room they no longer hold, which under-counts real use and
+   * lets the *next* prisoner in over the true ceiling -- the exact failure ADR
+   * 0029 exists to remove, reintroduced from the other end. **Refusing the
+   * removal while claims are held** would contradict decision 2 for residency
+   * (a cell with a prisoner in it could never have its bed taken back), and for
+   * use it would make the control fail for as long as lunch lasts, with nothing
+   * on screen saying when it would start working. `reinstateUseClaim` is the
+   * proof this was already the intended reading: it deliberately ignores the
+   * ceiling so a restore can reproduce a claim count above it, and its own
+   * comment names an over-capacity room as legal *because* of decision 2.
+   *
+   * `unregister` still refuses above zero claims of either kind, so a removal
+   * cannot open a route to dropping an instance somebody is holding: the
+   * `room-occupied` refusal a player gets from `unzone` is unchanged by this.
+   */
+  public remove(request: RemoveObjectRequest, tick: number): RemoveObjectOutcome {
+    const tile: TilePosition = { x: tileCoordinate(request.x), y: tileCoordinate(request.y) };
+
+    const object = this.placedObjects.objectAt(tile);
+    if (object !== undefined) {
+      this.placedObjects.remove(object.placedObjectId);
+      // Re-derived from the **anchor**, not from the pressed tile: containment
+      // is a statement about the anchor (ADR 0028 decision 2), and a bed whose
+      // second tile pokes out of the cell would otherwise re-derive whatever
+      // room that tile is in -- or none. The zoning plane and the instance are
+      // both untouched by the removal, so this resolves the same room the
+      // placement resolved.
+      const roomInstanceId = this.resolver.resolveContaining(object.anchorTile);
+      return {
+        kind: 'removed',
+        placedObjectId: object.placedObjectId,
+        objectId: object.objectId,
+        anchorTile: object.anchorTile,
+        ...(roomInstanceId === undefined ? {} : { roomInstanceId }),
+      };
+    }
+
+    const pending = this.orderBuildingObjectAt(tile);
+    if (pending !== undefined) {
+      this.orders.cancelOrder(pending.order.id);
+      return { kind: 'order-cancelled', orderId: pending.order.id, objectId: pending.objectId, anchorTile: pending.order.location };
+    }
+
+    const refusal: RemoveObjectRefusal = {
+      kind: 'refused',
+      reason: 'nothing-to-remove',
+      request: { ...request },
+      tile,
+      tick,
+    };
+    this.removalRefusals.push(refusal);
+    if (this.removalRefusals.length > MAX_RECORDED_PLACEMENT_REFUSALS) this.removalRefusals.shift();
+    return refusal;
+  }
+
+  /**
+   * The refused removals this session has produced, oldest first.
+   *
+   * A second window rather than a widened one, for the reason there are two
+   * refusal *vocabularies*: a reader asking "why did none of my last six beds
+   * appear" and a reader asking "why did none of my last six presses remove
+   * anything" are asking about different gestures, and a merged list would have
+   * every consumer discriminate before it could count either. Same cap, same
+   * "bounded window, not a log" contract, same deliberate absence from the
+   * snapshot -- it is a record of things that did not happen.
+   */
+  public recentRemovalRefusals(): readonly RemoveObjectRefusal[] {
+    return [...this.removalRefusals];
+  }
+
+  /**
+   * An object order still in flight whose footprint covers `tile`, or
+   * `undefined`.
+   *
+   * At most one can exist -- `place` refuses `tile-occupied` against exactly
+   * this set -- so the walk's order decides nothing. It is still taken over
+   * `allOrders()`, which `ConstructionSystem` keeps sorted by id, so the answer
+   * is a function of state rather than of insertion history even in a session
+   * whose invariant was somehow broken.
+   */
+  private orderBuildingObjectAt(tile: TilePosition): { readonly order: BuildOrder; readonly objectId: string } | undefined {
+    const key = tileKey(tile);
+    for (const entry of this.ordersBuildingObjects()) {
+      for (const covered of entry.tiles) {
+        if (tileKey(covered) === key) return { order: entry.order, objectId: entry.objectId };
+      }
+    }
+    return undefined;
+  }
+
+  /**
    * An object order finished: the object goes into the world and the room it
    * stands in is re-derived.
    *
@@ -287,11 +532,14 @@ export class ObjectPlacementService {
    * order is cancellable, so an object placement that could not be reversed
    * would make the first misplaced bed permanent while a misplaced wall is not.
    *
-   * This is **not** ADR 0028 phase 3. That phase ships a `RemoveObject` command
-   * -- a control the player can aim at an object that was built correctly -- and
-   * the verified over-capacity behaviour behind it. This is only the reversal of
-   * an order, which the construction system already promised for every
-   * buildable.
+   * This is **not** `remove` above, and the two are not redundant. This one
+   * reverses an *order*: it is reached from `Undo` and `cancelOrder`, keyed on
+   * the order's own tile and definition, and it refunds what the order
+   * allocated. `remove` is aimed by the player at an object that was built
+   * correctly, keyed on any tile of its footprint, and refunds nothing. Phase 3
+   * added the second without changing the first, because a pending order the
+   * player regrets and a standing object they regret are different facts with
+   * different answers.
    *
    * The object is identified by the tile it was anchored on rather than by an
    * id carried on the order, because the id *is* a function of that tile
@@ -326,6 +574,28 @@ export class ObjectPlacementService {
    */
   private tilesClaimedByOrdersInFlight(): ReadonlySet<string> {
     const claimed = new Set<string>();
+    for (const entry of this.ordersBuildingObjects()) {
+      for (const tile of entry.tiles) claimed.add(tileKey(tile));
+    }
+    return claimed;
+  }
+
+  /**
+   * Every order that is going to put an object somewhere and has not yet, with
+   * the tiles it will occupy.
+   *
+   * The one walk behind both "which tiles may a placement not use" and "which
+   * order is building the thing the player just pressed on". It was
+   * `tilesClaimedByOrdersInFlight`'s body until removal needed the *order* as
+   * well as the tiles; keeping two walks would have let the two questions
+   * disagree about which orders count, and the answer to that has to be
+   * identical or a tile could be un-removable and un-placeable at once.
+   *
+   * `'completed'` is excluded because a completed order's object is in the
+   * registry already, and `'cancelled'`/`'failed'` because both are terminal and
+   * hold nothing.
+   */
+  private *ordersBuildingObjects(): Generator<{ readonly order: BuildOrder; readonly objectId: string; readonly tiles: readonly TilePosition[] }> {
     for (const order of this.orders.allOrders()) {
       if (order.state === 'completed' || order.state === 'cancelled' || order.state === 'failed') continue;
       const definition = BUILDABLE_REGISTRY.get(order.definitionId);
@@ -333,11 +603,8 @@ export class ObjectPlacementService {
       if (objectId === undefined) continue;
       const objectDefinition = this.placedObjects.definitionOf(objectId);
       if (objectDefinition === undefined) continue;
-      for (const tile of objectFootprintTiles(objectDefinition, order.location, DEFAULT_PLACEMENT_ORIENTATION)) {
-        claimed.add(tileKey(tile));
-      }
+      yield { order, objectId, tiles: objectFootprintTiles(objectDefinition, order.location, DEFAULT_PLACEMENT_ORIENTATION) };
     }
-    return claimed;
   }
 
   /**

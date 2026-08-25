@@ -206,6 +206,16 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.alert.refusal.place-object.tile-occupied': 'The object was not placed — something is already standing there.',
   'hud.alert.refusal.place-object.unknown-buildable': 'The object was not placed — that is not something this prison knows how to build.',
   'hud.alert.refusal.place-object.unowned-land': 'The object was not placed — you do not own all of that land.',
+  /*
+   * The one `remove-object.*` sentence (ADR 0028 phase 3).
+   *
+   * It says what the press did *not* find rather than what the player did
+   * wrong, because a removal cannot be aimed wrongly -- there is nothing to
+   * select and no rule to break. Deliberately not "there is no object there":
+   * an object still being built is removed by this gesture too, so the honest
+   * sentence names both populations without listing them.
+   */
+  'hud.alert.refusal.remove-object.nothing-to-remove': 'Nothing was removed — there is no object on that tile, and none being built there.',
   'hud.alert.refusal.purchase.duplicate-order': 'The materials were not ordered — that order already exists.',
   'hud.alert.refusal.purchase.insufficient-funds': 'The materials were not ordered — there are not enough funds.',
   'hud.alert.refusal.purchase.invalid-quantity': 'The materials were not ordered — that quantity cannot be bought.',
@@ -298,6 +308,20 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.build.submit': 'Place order',
   'hud.build.note': 'An order is queued now and built while the clock runs.',
   'hud.build.arm': 'Place on map',
+  /*
+   * The removal mode (ADR 0028 phase 3). One word on the button, because
+   * `.hud-build__actions` already holds two and ADR 0022 measured a third
+   * overflowing that row by 37.9px with a longer label.
+   *
+   * The hint names both populations a press can take away -- a standing object
+   * and one still being built -- because they are one gesture with two outcomes,
+   * and the refund only applies to the second: a thing already built out of the
+   * materials does not give them back.
+   */
+  'hud.build.remove': 'Remove',
+  'hud.build.remove-active': 'Stop removing',
+  'hud.build.remove-hint': 'Press any tile of an object to take it away. One still being built is cancelled and its materials come back; a finished one is not refunded.',
+  'hud.build.remove-submit': 'Remove object here',
   'hud.build.disarm': 'Stop placing',
   'hud.build.arm-hint': 'Click a tile edge to place a wall. Drag along it to lay a run. Two fingers, the middle button or the arrow keys still move the camera.',
   'hud.build.target-none': 'Point at the world',

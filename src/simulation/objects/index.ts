@@ -19,6 +19,12 @@ export {
   type PlaceObjectRefusal,
   type PlaceObjectRefusalReason,
   type PlaceObjectRequest,
+  type RemoveObjectOrderCancelled,
+  type RemoveObjectOutcome,
+  type RemoveObjectRefusal,
+  type RemoveObjectRefusalReason,
+  type RemoveObjectRemoved,
+  type RemoveObjectRequest,
 } from './object-placement-service';
 export {
   deriveRoomCapacity,
