@@ -49,7 +49,6 @@ class FakeWorker {
 }
 
 interface Harness {
-  readonly client: SimulationClient;
   /** Everything a listener registered at construction was handed, in order. */
   readonly received: readonly WorkerToMainMessage[];
   /** Hands the client one inbound message, as the worker would. */
@@ -63,7 +62,6 @@ function harness(): Harness {
   const received: WorkerToMainMessage[] = [];
   client.addListener((message) => received.push(message));
   return {
-    client,
     received,
     deliver: (data: unknown) => {
       const handler = worker.onmessage;
