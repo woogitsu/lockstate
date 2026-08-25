@@ -16,8 +16,9 @@ import { tileCoordinate } from '../../src/simulation/world/coordinates';
  * Issue #261 step 4: **an `AdmitPrisoner` command puts a prisoner in the
  * prison, and the status strip's `Prisoners` count moves.**
  *
- * Ten of the eleven numbers on the status strip were structurally pinned to
- * zero before this; only `treasuryMinorUnits` could move. `Prisoners` is a
+ * `Prisoners` was one of the numbers on the status strip that no session could
+ * move -- `treasuryMinorUnits` was the only one that could, until #311's
+ * prisoner-day income line, which needs a prisoner and so needs this. It is a
  * real projection over live prisoner entities and nothing in `src/` created
  * one, because `PrisonerOperationsRuntime.admitPrisoner` had no caller
  * anywhere in the application -- three links were missing and none of them
@@ -28,9 +29,9 @@ import { tileCoordinate } from '../../src/simulation/world/coordinates';
  * Everything below goes through the real kernel, the real decoder, the real
  * session command router and the real save envelope, in the shape
  * `room-zoning-loop.test.ts` established for step 3. Nothing calls
- * `admitPrisoner` or `RoomInstanceRegistry.register` by hand: a test that did
- * would prove the pipeline works and say nothing about whether a command can
- * reach it.
+ * `admitPrisoner` or `RoomInstanceRegistry.register` by hand except the one
+ * test whose subject *is* the unguarded path: a test that did would prove the
+ * pipeline works and say nothing about whether a command can reach it.
  *
  * ## The one thing these tests are most for
  *
@@ -39,17 +40,28 @@ import { tileCoordinate } from '../../src/simulation/world/coordinates';
  * rather than a detail of it. `IntakeSystem` marks such an arrival `'failed'`,
  * and `'failed'` is *terminal*: no branch of `IntakeSystem.update` matches
  * that stage, `ActionSystem` gates on `'completed'`, and nothing in `src/`
- * releases a prisoner (#31). The third test below measures that terminality
- * directly -- registering a matching room afterwards does not rescue the
- * record -- which is why the boundary refuses instead of manufacturing one.
+ * releases a prisoner (#31). "is refusing something unrecoverable" below
+ * measures that terminality directly -- registering a matching room afterwards
+ * does not rescue the record -- which is why the boundary refuses instead of
+ * manufacturing one.
  *
  * The refusal is not the same thing as a *wait*. A zoned cell with no bed in
  * it has `capacity: 0`, so `findAvailable` returns nothing and the arrival
  * stays at `accommodation-assignment` and is retried for as long as it takes.
- * That state is honest scaffolding and is deliberately allowed; the fourth
- * test pins the difference, because collapsing the two would either refuse
- * every admission for ever or manufacture the broken record this change
+ * That state is honest scaffolding and is deliberately allowed; "waits rather
+ * than failing" pins the difference, because collapsing the two would either
+ * refuse every admission for ever or manufacture the broken record this change
  * exists to avoid.
+ *
+ * **Both sides of that line are reachable from the shipped application**, which
+ * they were not when this was written: the Rooms tab (#312) gave `ZoneRoom` a
+ * producer, so a player who has zoned a cell is admitted into the wait and a
+ * player who has zoned nothing -- or only a canteen -- is refused. Every test
+ * below reaches a room the same way a player does, through the `ZoneRoom`
+ * command, so this file measures the shipped route rather than a hand-built
+ * registry -- the one exception being "is refusing something unrecoverable",
+ * whose whole subject is what the unguarded entry point and a hand-registered
+ * room do, and which therefore has to bypass both.
  */
 
 const SEED = 11;

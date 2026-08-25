@@ -160,14 +160,17 @@ writing the hierarchy down.
   unchanged. The rate is #29's and not this ADR's, per decision 5, and it is
   recorded on that issue rather than here.
 
-  **It pays nothing in a session today, and the reason is population rather
-  than economy.** Nothing in `src/` calls `admitPrisoner`, and
-  `RoomZoningService` registers a zoned room with `capacity: 0`, so there is no
-  occupied place and 300 × 0 is 0 for as long as that holds. The mechanism is
-  real and tested against prisoners injected at the simulation level; wiring
-  admission is a separate workstream. So decision 3's *first* half is built and
-  its consequence — "income scales with population, and so does trouble" — is
-  not yet observable, which is a better position than the reverse and is not a
+  **It pays nothing in a session today, and the reason is room capacity rather
+  than economy.** Admission is wired (#261 step 4), so a prison can hold a
+  population, but `RoomZoningService` registers a zoned room with `capacity: 0`,
+  so no prisoner holds a unit of any declared capacity: there is no occupied
+  place and 300 × 0 is 0 for as long as that holds. Measured on the tree that
+  wired admission — a zoned `room.cell`, one admitted prisoner, 2,500 ticks —
+  the balance is still 25,000 and the accrual still 0. The mechanism is real and
+  tested against prisoners injected at the simulation level; giving a room a
+  capacity is ADR 0028's subject. So decision 3's *first* half is built and its
+  consequence — "income scales with population, and so does trouble" — is not
+  yet observable, which is a better position than the reverse and is not a
   licence to skip #79/#80/#81.
 
   One consequence of the daily cadence, stated here because it is a design

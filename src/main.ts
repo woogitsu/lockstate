@@ -243,9 +243,10 @@ new Phaser.Game(gameConfig);
  * `?actors=demo` puts scripted actors on screen.
  *
  * A fresh session genuinely has no actors -- the simulation fabricates no
- * default population and nothing in `src/` admits a prisoner. The renderer
- * does decode the prisoners a snapshot carries, but a prison with none stays
- * empty, and a snapshot carries no movement for the ones it does have. This
+ * default population, and the Intake panel is the only thing that adds one.
+ * The renderer does decode the prisoners a snapshot carries, but a prison the
+ * player has admitted nobody into stays empty, and a snapshot carries no
+ * movement for the ones it does have. This
  * flag is therefore still the way to look at the whole sprite path (manifest
  * -> atlas texture -> direction -> foot pivot -> depth), walk cycle included,
  * without inventing simulation state to do it. It is off by default and it

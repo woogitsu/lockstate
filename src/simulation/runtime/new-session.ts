@@ -74,10 +74,14 @@ export interface SimulationRuntime {
    * `treasury` holds a balance; `procurement` spends from it and delivers
    * later; `stateIncome` credits it once per in-game day, per occupied place,
    * which is ADR 0017 decision 3's primary income line on the basis decision 6
-   * settles. It pays nothing in a session today, and that is a population
-   * problem rather than an economy one: nothing in `src/` admits a prisoner and
-   * a zoned room is registered with `capacity: 0`, so there is no occupied
-   * place for it to pay for. `StateIncomeSystem` says so at length.
+   * settles. It pays nothing in a session today, and that is a room problem
+   * rather than an economy or a population one: `AdmitPrisoner` and the Intake
+   * panel put a prisoner in the prison (#261 step 4), and a zoned room is still
+   * registered with `capacity: 0`, so there is no occupied *place* for it to
+   * pay for. Measured on this tree: a zoned cell, one admitted prisoner and
+   * 2,500 ticks leave the balance at 25,000 and
+   * `stateIncomeAccruedTodayMinorUnits` at 0. `StateIncomeSystem` says so at
+   * length.
    */
   readonly treasury: Treasury;
   readonly procurement: ProcurementSystem;

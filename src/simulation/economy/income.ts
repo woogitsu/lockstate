@@ -26,20 +26,27 @@ import type { Treasury } from './treasury';
  *
  * ## What is *not* built, and why the income line is still invisible
  *
- * Nothing in `src/` can admit a prisoner: `PrisonerOperationsRuntime.admitPrisoner`
- * exists and no caller anywhere in `src/` reaches it (only tests and
- * scenarios do), which `src/rendering/feed/simulation-snapshot-feed.ts`
- * already records. And a room a player can actually zone is registered with
- * `capacity: 0` (`src/simulation/rooms/zoning.ts`, ADR 0023 open), so even a
- * wired admission would have no place to put anybody.
+ * Admission *is* built: `AdmitPrisoner`, its handler branch and the Intake
+ * panel reach `PrisonerOperationsRuntime.requestAdmission` (#261 step 4), so a
+ * player can put a prisoner in the prison. What is still missing is a *place*
+ * -- a room a player can actually zone is registered with `capacity: 0`
+ * (`src/simulation/rooms/zoning.ts`, ADR 0023 open, ADR 0028 proposed), and an
+ * occupied place is one unit of a declared capacity that somebody holds.
+ * `RoomInstanceRegistry.assign` refuses at `occupants >= capacity`, which for
+ * `capacity: 0` is every assignment, so the arrival waits at
+ * `accommodation-assignment` and occupies nothing.
  *
  * So in a real session today `occupiedPlaces` is `0`, this system credits
- * nothing, and the readout beside the balance stays at zero. That is the
- * honest state of it: the mechanism is real, tested against prisoners
- * injected at the simulation level, and joined to a population no interface
- * can create yet. Wiring admission is not this change's -- it is a separate
- * decided workstream, and faking an arrival to make the readout move would be
- * inventing the very population this comment says does not exist.
+ * nothing, and the readout beside the balance stays at zero. Measured rather
+ * than asserted: a zoned `room.cell`, one admitted prisoner and 2,500 ticks --
+ * past a whole 2,400-tick day boundary -- leave the balance at 25,000 and the
+ * accrual at 0, with `roomCapacity` and `roomOccupants` both 0. That is the
+ * honest state of it: the mechanism is real, tested against prisoners injected
+ * at the simulation level, and joined to a population an interface can now
+ * create into rooms that hold nobody. Giving a room a capacity is not this
+ * change's -- it is ADR 0028's subject -- and faking an occupancy to make the
+ * readout move would be inventing the very capacity this comment says does not
+ * exist.
  */
 
 /**

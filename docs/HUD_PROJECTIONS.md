@@ -534,13 +534,15 @@ decision about what to build next.
     - The refund has no *surface* (#285): no command in
       `simulationCommandSchema` cancels a purchase, so nothing in `src/` calls
       `ProcurementSystem.cancel`. Which surface is #285's open decision.
-    - The income line has no *population*. Nothing in `src/` calls
-      `admitPrisoner`, and `RoomZoningService` registers a zoned room with
-      `capacity: 0`, so there is no occupied place — and 300 × 0 is 0 for as
-      long as that holds. The mechanism is built and tested against prisoners
-      injected at the simulation level; wiring admission is a separate
-      workstream. Until it lands, both the balance and the "earned today"
-      readout beside it are flat.
+    - The income line has no occupied *place*. Admission is wired (#261 step
+      4), so a population is now reachable, but `RoomZoningService` registers a
+      zoned room with `capacity: 0`, so a prisoner holds no unit of any
+      declared capacity — and 300 × 0 is 0 for as long as that holds. Measured:
+      a zoned `room.cell`, one admitted prisoner and 2,500 ticks leave the
+      balance at 25,000, `stateIncomeAccruedTodayMinorUnits` at 0 and both
+      `roomCapacity` and `roomOccupants` at 0. Capacity is ADR 0028's subject,
+      not this change's. Until it lands, both the balance and the "earned
+      today" readout beside it are flat.
 
     So the balance a player can observe still only ever goes down. That is not
     a loss of money — a purchase buys stock, an undone build order returns the
