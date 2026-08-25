@@ -245,24 +245,35 @@ describe('search jobs and room instances are ordered canonically, not by registr
       runtime.prisoners.entityStore.getIdByIndex(index),
     );
 
+    // Four arrivals, the four lowest cell ids, in admission order -- which is
+    // the whole of what this case is named for, and it did not used to hold.
     // The second arrival classifies 'high-risk' under this seed, and
-    // `DEFAULT_ACCOMMODATION_POLICY` sends that group to
-    // `room.solitary-cell`, of which this scenario registers no instance at
-    // all -- a structural gap, so that intake ends 'failed' with no
-    // accommodation rather than taking a cell. The other three take the
-    // three lowest cell ids in turn, leaving `cell-4` free.
+    // `DEFAULT_ACCOMMODATION_POLICY` prefers `room.solitary-cell` for that
+    // group, of which this scenario registers no instance at all. That used to
+    // end the arrival in the terminal `'failed'` stage holding no
+    // accommodation, so this sequence read `['cell-1', undefined, 'cell-2',
+    // 'cell-3']` and left `cell-4` free -- a hole in the very front-to-back
+    // fill the case exists to measure.
+    //
+    // The policy now names an ordinary cell as high-risk's fallback, and
+    // `IntakeSystem.resolveExistingTarget` takes it because the prison holds
+    // no instance of the preferred type at all. So the arrival is housed
+    // rather than stranded, and the fill has no hole in it. Nothing about the
+    // *order* moved: each arrival still takes the lowest free instance in
+    // canonical order at the tick it is assigned.
     expect(admissionOrder.map((entityId) => runtime.prisoners.coldState.getAccommodation(entityId))).toEqual([
       'cell-1',
-      undefined,
       'cell-2',
       'cell-3',
+      'cell-4',
     ]);
 
-    // Which pins why that one is undefined: 'failed', not still queued or
-    // still waiting on a cell that never freed up.
+    // And each of them reached a real accommodation rather than being parked:
+    // `'completed'`, not `'failed'` and not still waiting on a cell that never
+    // freed up.
     expect(admissionOrder.map((entityId) => runtime.prisoners.records.intakeStage[runtime.prisoners.entityStore.getIndex(entityId)])).toEqual([
       intakeStageIndex('completed'),
-      intakeStageIndex('failed'),
+      intakeStageIndex('completed'),
       intakeStageIndex('completed'),
       intakeStageIndex('completed'),
     ]);
