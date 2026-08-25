@@ -1,7 +1,16 @@
 # ADR 0012: Reproducibility of Derived Simulation Identifiers
 
 ## Status
-Proposed. Extended by
+Accepted. The `GlobalTopologyId` remedy this ADR's Consequences left as a
+follow-up has landed: PR #295 (issue #112) made `nextGlobalId` a local of
+`recomputeGlobalTopology` (`src/simulation/rooms/topology.ts:213`, incremented
+at `:219`) instead of instance state, so ids are handed out from 1 in canonical
+sorted order on every recompute and `GlobalTopologyId` meets the category-2
+requirement below. What remains is the residue that change recorded rather than
+removed: `chunkTopologies` is never evicted, so an id is no longer a function of
+*recompute* history but is still a function of chunk *load* history — a world
+streaming question kept under "Known limitations" in `docs/DETERMINISM.md`, not
+a bar to accepting the taxonomy. Extended by
 [ADR 0015](./0015-actor-identity-allocation.md), which applies the taxonomy
 below to actor names and works the category-1 case through in detail.
 

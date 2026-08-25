@@ -6,29 +6,347 @@ keeps that report honest, but **neither can tell you whether a status is true
 about `main`** — the index compares a document to a table, not a decision to an
 implementation.
 
-**Nothing here changes a status.** Every entry below records what the ADR
-declares, the evidence that the declaration and the code disagree, the exact
-line that would replace it, and what merging that line would commit the project
-to. Deciding is the owner's; this file only makes the decision cheap.
+**Nothing here changes a status.** A status moves in the ADR and in the index,
+never in this file; §1 *records* six that moved and the rest is what is still
+open, each entry giving the evidence, what settling it commits the project to,
+and — where one is outstanding — the exact line that would replace it.
+Deciding is the owner's; this file only makes the decision cheap.
 
-Established at `main` @ `d2596ad` (v0.0.37); **entry 7 re-verified and
-corrected at `b653b93` (v0.0.40)** after #295 discharged ADR 0012's outstanding
-remedy. Every `path:line` was read from disk at the commit its entry names.
-Section 8 was added later, with the change it records, so its citations are read
-against that change rather than against `d2596ad` — where the ADR it is about
-did not yet exist.
+Re-anchored at `main` @ `f3ffe6d` (v0.0.45). Every `path:line` below was
+re-read from disk at that commit.
 
 A note on keeping this file true, since it is the kind of document that rots
-silently: an entry's evidence is a claim about `main`, so **landing the change an
-entry describes means updating that entry in the same commit**, exactly as
+silently: an entry's evidence is a claim about `main`, so **landing the change
+an entry describes means updating that entry in the same commit**, exactly as
 moving a status means moving its index row. #295 changed the code and ADR 0012
-and left this file behind, which is how entry 7 came to be false for two
-releases. Nothing mechanical can catch that — the gate checks statuses against
-documents, never against code — so it is a habit, not an assertion.
+and left this file behind, which is how the old entry 7 came to be false for two
+releases — a correction that itself had to be landed separately, at `b653b93`,
+before the entry could be acted on. Nothing mechanical can catch that: the gate
+checks statuses against documents, never against code. It is a habit, not an
+assertion, and this rewrite is that habit being kept — the six entries below
+were acted on, so they are recorded as decided rather than left standing as
+pending.
 
 ---
 
-## How to act on an entry, mechanically
+## 1. What was decided, and when
+
+The six retroactive-approval entries this file was written for are **done**.
+The owner was shown the evidence in each and approved all six on
+**2026-08-25**; the flips landed in one commit, each as the pair the suite
+requires — the `Status` line in the ADR and that ADR's row in
+`docs/adr/README.md`.
+
+| ADR | Was | Is |
+| --- | --- | --- |
+| [0012](./0012-derived-identifier-reproducibility.md) | Proposed | **Accepted** |
+| [0013](./0013-free-tier-cloud-save-capacity.md) | Proposed — pending human approval | **Accepted for §§1-4; §§5-6 remain Proposed** |
+| [0014](./0014-art-storage-and-runtime-asset-delivery.md) | Proposed | **Accepted** |
+| [0015](./0015-actor-identity-allocation.md) | Proposed | **Accepted** |
+| [0016](./0016-migration-delivery-mechanism.md) | Proposed — pending human approval | **Accepted**, retroactively |
+| [0021](./0021-http-response-security-headers.md) | Proposed — pending human approval | **Accepted** |
+
+Two of the six status lines say more than the one-line replacements this file
+carried, and in both cases because a bare replacement would have left a true
+status next to a stale sentence:
+
+- **0012.** The draft replacement was the minimum edit — *"Accepted. Extended
+  by"*, the old first line with one word changed. What landed states the fact
+  the old entry 7 got wrong and `b653b93` corrected, because the ADR's own
+  Consequences still open by calling the remedy a *"follow-up"* the ADR is
+  *"proposed rather than applied"* on account of. Re-verified at `f3ffe6d`:
+  PR #295 (issue #112) made `nextGlobalId` a local of `recomputeGlobalTopology`
+  (`src/simulation/rooms/topology.ts:213`, incremented at `:219`) rather than
+  instance state, so ids are handed out from 1 in canonical sorted order on
+  every recompute and `GlobalTopologyId` meets the category-2 requirement the
+  ADR sets — pinned by `tests/determinism/iteration-order.test.ts`, which the
+  comment at `topology.ts:212` names. The status line therefore records the
+  remedy as landed and names the **residue** #295 recorded instead:
+  `chunkTopologies` is never evicted (no `delete` on it anywhere in the file),
+  so ids are no longer a function of *recompute* history but are still a
+  function of chunk *load* history, under "Known limitations" in
+  `docs/DETERMINISM.md`. That residue is the part of the category-2 reading
+  still open in code, and it is now a limitation under an accepted ADR rather
+  than a proposed one. See §6.
+- **0015.** The draft replacement kept *"Extends ADR 0012, which is Proposed"*,
+  which the same commit falsified. Both were accepted together — which is what
+  the old §3 recommended — so the ordering trap it named is **resolved rather
+  than triggered**, and the status line says 0012 is Accepted.
+
+**0022 and 0023 were not touched.** They are the two ADRs in the corpus whose
+`Proposed` status is fully accurate, and they need a decision rather than a
+correction. See §2.
+
+---
+
+## 2. Genuine open decisions — nothing is shipped, so a "no" costs nothing
+
+| ADR | Subject | Implemented? |
+| --- | --- | --- |
+| [0022](./0022-room-zoning-surface.md) | Where a player zones a room, and with what gesture | **No** |
+| [0023](./0023-room-occupancy-authority.md) | Where a room's occupancy comes from | **No** |
+
+These two gate the next feature. Both re-verified unimplemented at `f3ffe6d`:
+
+- **0022** — `ZoneRoom` is still in the `AWAITING_PRODUCER` allow-list of
+  `tests/foundation/unconsumed-command-contract.test.ts:107-108`, and that list
+  is a gate: `:213-214` fails the build if a listed command *gains* a producer.
+  No member of `HudIntent` (`src/ui/hud/hud.ts:153-211`) is about a room.
+- **0023** — `RoomZoningService` still registers every instance with
+  `capacity: 0` (`src/simulation/rooms/zoning.ts:259`), and no room definition
+  in `src/content/room-catalog.ts` carries a capacity field at all.
+
+One thing is worth knowing before signing 0022, and it is about the evidence
+rather than the status. ADR 0022 was written against v0.0.30 and says so;
+PR #282's buy surface landed after it, and **four of its structural citations
+have drifted as a result** — the ADR anticipated the dependency but not the
+drift:
+
+| ADR 0022 says | `main` @ `f3ffe6d` |
+| --- | --- |
+| `HudIntent` (`src/ui/hud/hud.ts:153-195`) declares **seven** members | **eight**, at `:153-211` — `purchase-materials` (`:186`) is the new one |
+| `ZoneRoom` is one of **three** commands in `AWAITING_PRODUCER` (`:106-107`) | **two**, and `ZoneRoom` is at `:107-108` |
+| quotes that entry as *"…a build order, the build tool or the undo pair…"* | the entry now reads *"…a build order, **a materials purchase**, the build tool or the undo pair…"* |
+| the `onIntent` switch is at `src/main.ts:458-459`, `case 'place-build-order'` at `:511` | `:532` and `:585` |
+
+**None of this touches the decision.** The load-bearing facts still hold:
+`RoomZoningService.zone` is complete (`src/simulation/rooms/zoning.ts:203`), it
+validates every tile before writing any (`:225-241`), it paints the zoning
+plane (`:243-251`), the six refusal reasons are at `:140`,
+`session-commands.ts:46` routes the command, all 18 room definitions carry a
+`nameKey` (`src/content/room-catalog.ts:66-159`), `buildCatalogue()` is at
+`src/main.ts:332`, and **no member of `HudIntent` is about a room** — which is
+the fact the whole ADR rests on. The count moved; the conclusion did not.
+
+---
+
+## 3. Still outstanding: ADR 0013 §§5-6
+
+0013 is **Accepted for §§1-4 only**, and that is not a formality. Two of its
+six decisions are enforced in the database and two are explicitly absent:
+
+| ADR section | state | evidence |
+| --- | --- | --- |
+| §1 five free slots, enforced by the database | **shipped, accepted** | `base_save_slot_capacity()` `:45`, `account_save_slot_capacity(uuid)` `:91` |
+| §2 a trigger, with an RPC as the front door | **shipped, accepted** | `enforce_prison_slot_capacity()` `:150`, trigger `:186` |
+| §3 over-capacity degrades read-only | **shipped, accepted** | the exception's `hint` at `:178` |
+| §4 4 MiB per-save payload bound | **shipped, accepted** | `max_save_payload_bytes()` `:71-73` — `as $$ select 4194304 $$;` |
+| §5 256 MiB total per account | **absent, still Proposed** | no total-bytes function, trigger or column anywhere in `supabase/migrations/` |
+| §6 20 revisions retained per prison | **absent, still Proposed** | no retention or pruning logic anywhere in `supabase/migrations/` |
+
+Paths in that table are relative to
+`supabase/migrations/20260823100000_bound_free_tier_capacity.sql`. Both
+absences were re-verified by grepping the whole `supabase/migrations/` tree at
+`f3ffe6d`.
+
+**§5 — 256 MiB per account.** Undecided and unimplemented. The ADR's own §5
+records that it depends on the revision-depth decision below and on the
+JSONB-versus-Storage question, so it cannot be settled ahead of §6.
+
+**§6 — 20 revisions per prison.** Undecided and unimplemented, and the number
+*is* the decision. The arithmetic that originally justified it is wrong: 20
+revisions at `DEFAULT_AUTOSAVE_INTERVAL_MS`
+(`src/persistence/session/session-controller.ts:9`, `30_000`) is **ten
+minutes**, not *"roughly a day of ordinary autosaving"* — and §6 computes 2,880
+rows a day from that same constant five lines earlier, so a day of ordinary
+autosaving is 2,880 revisions, 144× the proposed number. The ADR already
+records this and withdraws the justification (`0013-…md:212-218`) while
+deliberately leaving the figure at 20, because moving it is the owner's call
+(issue #274, Q2). So what is open is not the discovery but the policy: keep 20
+and accept that "restore an earlier generation" means the last ten minutes of
+autosaving, or keep "roughly a day" as the requirement and raise the number.
+**Settle that before accepting §6.**
+
+Accepting §§1-4 deliberately did **not** approve 256 MiB or 20 revisions.
+
+---
+
+## 4. The live risk to watch: ADR 0016 §2 is now binding and nothing enforces it
+
+This is the one thing the 2026-08-25 flips *added* to the risk surface, and it
+belongs at the top of any future audit.
+
+Accepting 0016 makes §2 (`0016-…md:96-111`) a **binding constraint**:
+production is a separate Supabase project with a distinct project ref, and the
+Supabase GitHub integration is never reconfigured to point at it. The ADR says
+plainly why that is fragile (`:108`):
+
+> Recorded as a constraint precisely because nothing enforces it mechanically.
+
+The mechanism it constrains is live and irreversible. Migrations reach the
+hosted Supabase staging project *"automatically, on every merge to `main`"*
+with gating *"none"* (`docs/DEPLOYMENT.md:145`), rollback is not automated, and
+the trigger is the merge rather than the diff — PR #87 touched no file under
+`supabase/migrations/` and nine migrations were applied anyway. The half of the
+decision that *is* in this repository stays verified:
+`.github/workflows/migrate-database.yml:33` is `workflow_dispatch:` with no
+`push:`, `:40-41` requires a typed `confirm_project_ref`, and `:64` is
+environment-gated.
+
+So the constraint is now approved architecture whose only defence is a sentence
+in a document. Repointing the integration is a two-click change in a dashboard;
+it would violate an Accepted ADR with no code review and no trace in this
+repository. **There is nothing to decide here — this is a watch item**, and the
+thing to watch for is the creation of a second Supabase project.
+
+---
+
+## 5. Stale status references the 2026-08-25 flips left behind
+
+Flipping a status does not update every document that *reports* that status.
+The approval was scoped to the six status lines and their six index rows, so the
+references below were deliberately left alone and are recorded here so the next
+reader knows they are known rather than missed. None is a decision; each is a
+text correction.
+
+**Cannot be edited at all:**
+
+- `supabase/migrations/20260823100000_bound_free_tier_capacity.sql:58` —
+  *"PROPOSED, PENDING HUMAN APPROVAL (ADR 0013)"*, sitting above the 4 MiB
+  function that is now Accepted as §4. `:19` and `:25` carry the same framing.
+  Applied migrations are immutable, so this can only be corrected by a **new**
+  migration superseding the function, or left as a historical artefact.
+  Leaving it is the recommendation — it is a comment, not behaviour.
+
+**Editable, and each now false:**
+
+- `docs/DEPLOYMENT.md:163` — says ADR 0016 *"is **Proposed, not accepted**"*.
+- `docs/adr/0016-migration-delivery-mechanism.md:173` — quotes that
+  `DEPLOYMENT.md` sentence verbatim, so the two have to move together.
+- `docs/adr/0012-derived-identifier-reproducibility.md:108` — Consequences
+  clause (a), *"The status above stays Proposed"*, which the status line
+  above it now contradicts directly. `:57` (`## Decision (proposed)`) and
+  `:101` (*"which is why this ADR is proposed rather than applied"*) are
+  drafting-era phrasing in the same document. This is the most visible of
+  the entries here, because the contradiction is inside one file.
+- `docs/adr/0013-free-tier-cloud-save-capacity.md:15` and `:150` — the Status
+  table row and the §4 heading both still mark 4 MiB `PROPOSED`, and `:19-20`
+  says a reviewer is being asked to sign off on *three* numbers, now two.
+- `docs/adr/0015-actor-identity-allocation.md:145-146` — *"leaves the taxonomy it
+  argues in still Proposed"*, now describing a case that cannot arise.
+- `README.md:59` — ADR-0014's *"`Status` is `Proposed` … the decision has not
+  been approved"*. `:77` still warns a reader that several ADRs are `Proposed`,
+  which remains true of 0022 and 0023.
+- `docs/CLOUD_SAVE.md:1184` (*"the ADR is `Proposed`, not…"*) and `:1200` (the
+  4 MiB row, *"Proposed, pending approval"*), plus
+  `docs/TRUSTED_SERVICES.md:577` (*"the 4 MiB per-save figure is proposed, not
+  accepted"*). Deliberately **not** listed: `CLOUD_SAVE.md:1201-1202` and
+  `:1250` and `:1239`, which call the 20-revision, 256 MiB and §§5-7 items
+  proposed and unimplemented — those stay true, and a bulk find-and-replace
+  over these files would break them.
+- `.github/workflows/migrate-database.yml:20` — *"(ADR 0016 §2, Proposed)"*.
+- `src/simulation/rooms/zoning.ts:77` — ADR 0012 *"is still `Proposed`"*. The
+  surrounding reasoning is unaffected: a room-instance id needs neither
+  category answer.
+
+ADR 0017 is the precedent for how to clear these. When it was accepted its body
+was rewritten to say what it had said *while* it was `Proposed`
+(`0017-…md:13`, `:167`) rather than leaving present-tense drafting language in
+place.
+
+---
+
+## 6. What is *not* in this queue, and why
+
+Four Accepted ADRs describe mechanisms `main` does not exercise. **None of
+them is a status defect** — the decision was accepted and the code has not
+caught up, which is a code or wiring gap, not a wrong status. They are recorded
+here only so that reading this file does not leave the impression that the
+corpus was audited in one direction. The first three are unchanged; the fourth
+is new, and is here because accepting 0012 moved it into this category.
+
+- **ADR 0006 / ADR 0003 decision 4 — the handshake gates nothing.** `'ready'`
+  is a member of `WorkerState` (`src/simulation/worker/state-machine.ts:27`)
+  and no `transition()` call anywhere targets it — the four in the file go to
+  `'faulted'` (`:400`), `'paused'` (`:508`), `'paused'`/`'running'` (`:543`)
+  and `'shutting-down'` (`:652`). Nothing in `src/` sends a
+  `protocol/handshake` at all; every occurrence is the receiver, the kind list
+  or the schema. So ADR 0006's state 2 describes a state the machine cannot
+  occupy, and ADR 0003 decision 4's version negotiation runs for nobody.
+  Version compatibility does still fail closed, but by a different route — the
+  decoder's `protocolVersion: z.literal(...)` at
+  `src/simulation/protocol/types.ts:154`. This is issue #118 item 1 and issue
+  #274's A2, and the fix is in the code.
+- **ADR 0010 — the telemetry layer is inert.** Nothing outside
+  `src/services/telemetry/` imports it, so consent is never asked for and
+  `record()` is never called. The prohibition half of the ADR holds; the
+  sentence *"telemetry is fed from the main thread's orchestration layer"* does
+  not.
+- **ADR 0009 — "Accepted — implementation gated", and all four gates are
+  unmet.** `verifyChallengeSubmission` (`src/services/challenges/verification.ts:130`)
+  and `isPubliclyRankable` (`:270`) exist; no replay runner implements the
+  port, no endpoint exists, and nothing outside `src/services/` imports the
+  layer. **This status is the most accurate in the corpus** — it says "gated",
+  and the gates are genuinely shut. It is listed as a model, not a defect.
+- **ADR 0012 — `chunkTopologies` is never evicted.** New as of this commit,
+  because accepting 0012 turns the residue #295 recorded from a limitation
+  under a proposed ADR into one under an accepted one. `GlobalTopologyId` now
+  meets category 2 with respect to recompute history, but a chunk that has been
+  loaded still contributes nodes after unload, so an id remains a function of
+  chunk *load* history (`docs/DETERMINISM.md`, "Known limitations"). Whether a
+  retained topology is dropped on unload is a code question the ADR's
+  Consequences hand to a follow-up, not a status question, which is why it is
+  here and not in §3.
+
+Also not in this queue: **ADR 0002**, whose configuration matches the ADR
+exactly (`wrangler.jsonc:19-32`) while `docs/DEPLOYMENT.md` records that
+`lockstate.io` is in fact served by `lockstate-staging` and that Worker
+`lockstate` has never been deployed. That is a live operational trap, but it is
+a missing warning in the ADR body rather than a wrong status, and the
+deployment document already carries it.
+
+---
+
+## 7. ADR 0024 — Proposed, and reversible in one line
+
+Added after this file was re-anchored, by the change that implements it. It sits
+in neither of the two groups above: unlike 0022 and 0023 its decision is live on
+`main` the moment its own change merges, and unlike the six flipped on
+2026-08-25 that is not drift — the ADR and the code were written together, which
+is the case `docs/adr/README.md` covers with "not binding, whether or not code
+already implements it".
+
+**Declared** (`docs/adr/0024-protocol-fault-recoverability.md:5`):
+
+```
+**Proposed — pending human approval.** Not accepted.
+```
+
+**What is live.** `src/simulation/worker/worker.ts` faults a decode failure with
+`{ recoverable: true }`, and `src/ui/simulation-alerts.ts` paints an uncorrelated
+`protocol/error` as an alert row.
+
+**What makes it the cheapest entry ever to appear in this file.** Reversing it is
+one argument at one call site. No save format, no SQL, no live database
+mechanism, no persisted field. The reversal target is named in the ADR, and so
+are the tests that would go with it. A "no" here costs a revert, not a migration.
+
+**What a "yes" commits to.** That a message the worker rejected before dispatch
+does not end the player's session, and that the fault reaches the player rather
+than only the console. It settles issue #187 finding 1 and nothing wider.
+
+**The two lines**, in `docs/adr/0024-protocol-fault-recoverability.md:5`:
+
+```
+**Accepted.**
+```
+
+and in `docs/adr/README.md`:
+
+```
+| [0024](./0024-protocol-fault-recoverability.md) | Which protocol faults end a session, and who is told | Accepted |
+```
+
+**One thing moves with it, and only with it.** Accepting 0024 deletes the
+implementation note in `docs/adr/0006-simulation-worker-adapter.md` ("a protocol
+decode error no longer reaches state 5") and narrows ADR 0006 state 5's clause to
+an unhandled exception. That note exists precisely so an Accepted ADR is not
+amended on a Proposed one's authority, and it is the only thing in the corpus
+that has to move when this status does.
+
+---
+
+## How to act on a future entry, mechanically
 
 Each flip is **two lines, in one commit**, and the suite enforces the pairing:
 
@@ -37,465 +355,7 @@ Each flip is **two lines, in one commit**, and the suite enforces the pairing:
 
 `tests/foundation/adr-numbering-contract.test.ts` (*"reports each ADR with the
 status that ADR itself holds"*) fails if you move one and not the other, so a
-half-done flip cannot merge. Both lines are given verbatim in every entry below.
-
----
-
-## 1. What is actually waiting on you
-
-Nine ADRs are `Proposed`. They are **not one queue** — they are two, and
-conflating them is what makes the queue look longer and more urgent than it is.
-
-The ninth is 0024, added after this file was established at `d2596ad`. It is a
-Queue B entry by construction rather than by drift: it was written *with* the
-change that implements it, which is what `docs/adr/README.md` means by "not
-binding, whether or not code already implements it". Its own entry is §8.
-
-**Queue A — genuine open decisions. Nothing is shipped; a "no" costs nothing.**
-
-| ADR | Subject | Implemented? |
-| --- | --- | --- |
-| [0022](./0022-room-zoning-surface.md) | Where a player zones a room, and with what gesture | **No** |
-| [0023](./0023-room-occupancy-authority.md) | Where a room's occupancy comes from | **No** |
-
-These two are the only ADRs in the corpus whose `Proposed` status is fully
-accurate, and they are the two that gate the next feature. Both verified
-unimplemented at `d2596ad`:
-
-- **0022** — `ZoneRoom` is still in the `AWAITING_PRODUCER` allow-list of
-  `tests/foundation/unconsumed-command-contract.test.ts:107-108`, and that list
-  is a gate: `:212-213` fails the build if a listed command *gains* a producer.
-  No member of `HudIntent` (`src/ui/hud/hud.ts:153-211`) is about a room.
-- **0023** — `RoomZoningService` still registers every instance with
-  `capacity: 0` (`src/simulation/rooms/zoning.ts:259`), and no room definition
-  in `src/content/room-catalog.ts` carries a capacity field at all.
-
-**Nothing in this file asks you to change 0022's or 0023's status.** They need
-a decision, not a correction, and every entry below is about a different ADR.
-
-One thing is worth knowing before signing 0022, though, because it is about the
-evidence rather than the status. ADR 0022 was written against v0.0.30 and says
-so; PR #282's buy surface landed after it, and **four of its structural
-citations have drifted as a result** — the ADR anticipated the dependency but
-not the drift:
-
-| ADR 0022 says | `main` @ `d2596ad` |
-| --- | --- |
-| `HudIntent` (`src/ui/hud/hud.ts:153-195`) declares **seven** members | **eight**, at `:153-211` — `purchase-materials` (`:186`) is the new one |
-| `ZoneRoom` is one of **three** commands in `AWAITING_PRODUCER` (`:106-107`) | **two**, and `ZoneRoom` is at `:107-108` |
-| quotes that entry as *"…a build order, the build tool or the undo pair…"* | the entry now reads *"…a build order, **a materials purchase**, the build tool or the undo pair…"* |
-| the `onIntent` switch is at `src/main.ts:458-459`, `case 'place-build-order'` at `:511` | `:532` and `:585` |
-
-**None of this touches the decision.** The load-bearing facts still hold, re-read
-at `d2596ad`: `RoomZoningService.zone` is complete (`src/simulation/rooms/zoning.ts:203`),
-it validates every tile before writing any (`:225-241`), it paints the zoning
-plane (`:243-251`), the six refusal reasons are at `:140`, `session-commands.ts:46`
-routes the command, all 18 room definitions carry a `nameKey`
-(`src/content/room-catalog.ts:66-159`), `buildCatalogue()` is at
-`src/main.ts:332`, and **no member of `HudIntent` is about a room** — which is
-the fact the whole ADR rests on. The count moved; the conclusion did not.
-Reading `:153-195` and finding eight members where the ADR says seven is the
-kind of thing that makes a reviewer distrust a document that is in fact right,
-which is the only reason it is recorded here.
-
-**Queue B — retroactive approval. The decision has already shipped.**
-
-| ADR | Subject | Implemented? | Reversible? |
-| --- | --- | --- | --- |
-| [0016](./0016-migration-delivery-mechanism.md) | Which mechanism applies migrations | Mechanism live | **No** — rollback is not automated |
-| [0015](./0015-actor-identity-allocation.md) | Actor identity is allocated | Fully, incl. save format | No — a name is in every V3/V4 save |
-| [0014](./0014-art-storage-and-runtime-asset-delivery.md) | Art storage and asset delivery | Fully | Yes |
-| [0021](./0021-http-response-security-headers.md) | HTTP response security headers | Fully | Yes |
-| [0013](./0013-free-tier-cloud-save-capacity.md) | Free-tier cloud-save capacity | **Partial** — §§1-4 yes, §§5-6 no | §§1-4 are in SQL |
-| [0012](./0012-derived-identifier-reproducibility.md) | Reproducibility of derived identifiers | **Yes** — taxonomy in use, remedy landed in #295 | Taxonomy is cited from `src/` |
-| [0024](./0024-protocol-fault-recoverability.md) | Which protocol faults end a session | Fully | **Yes** — one argument at one call site |
-
-The rest of this file is Queue B, ordered by what a wrong answer costs.
-
----
-
-## 2. ADR 0016 — the mechanism is running, and it is the only one that can destroy data
-
-**Declared** (`docs/adr/0016-migration-delivery-mechanism.md:5`):
-
-```
-**Proposed — pending human approval.** Not accepted.
-```
-
-**Why that contradicts `main`.** The ADR's own decision §1 (`:87-89`) is written
-in the present indicative, not as a proposal:
-
-> The Supabase GitHub integration is connected to `matmaxalez/lockstate` with
-> **Deploy to production** enabled, pointed at the `lockstate` project.
-> Merging to `main` applies migrations to it without further approval.
-
-`docs/DEPLOYMENT.md` carries the same mechanism as a live table row —
-migrations to Supabase staging run *"automatically, on every merge to `main`"*
-with gating *"none"* — and records the window on 2026-08-23 in which nine
-migrations went from unapplied to applied around a merge.
-
-The half of the decision that is *in* this repository is verified: §3's
-workflow is dispatch-only and typed-ref gated —
-`.github/workflows/migrate-database.yml:33` (`workflow_dispatch:`, and no
-`push:`), `:40-41` (`confirm_project_ref`), `:64` (`environment:`). What is
-**not** verified from this repository, and cannot be, is the dashboard toggle
-in §1; the ADR says so itself at `:108`:
-
-> Recorded as a constraint precisely because nothing enforces it mechanically.
-
-So `main` simultaneously asserts that an ungated, merge-triggered, irreversible
-database mechanism is running and that nobody has approved it. §2's constraint —
-never point the integration at production — is currently enforced by that
-sentence and nothing else.
-
-**Exact replacement line** (`0016-migration-delivery-mechanism.md:5`):
-
-```
-**Accepted.** The §1 mechanism was already live when this was written; this accepts it retroactively.
-```
-
-**Matching README row:**
-
-```
-| [0016](./0016-migration-delivery-mechanism.md) | Which mechanism applies migrations, and to which project | Accepted |
-```
-
-**What merging that commits you to.** That merges to `main` may apply
-migrations to a hosted Supabase project with no approval step, and that §2 —
-production is a separate project the integration is never pointed at — becomes
-a binding constraint on a future you have not built yet, still unenforced by
-anything mechanical. If that is not acceptable, the other answer is **Rejected**
-plus disconnecting the integration in the Supabase dashboard; leaving the ADR
-`Proposed` is the one answer that changes nothing while the mechanism keeps
-running.
-
----
-
-## 3. ADR 0015 — approval is retroactive; an actor's name is already in the save format
-
-**Declared** (`docs/adr/0015-actor-identity-allocation.md:4-5`):
-
-```
-Proposed. Extends [ADR 0012](./0012-derived-identifier-reproducibility.md),
-which is itself Proposed — see **What this asks a human to accept**.
-```
-
-**Why that contradicts `main`.** Every part of the decision is wired, and the
-identity is persisted:
-
-| what | where |
-| --- | --- |
-| the named RNG stream is registered | `src/simulation/runtime/new-session.ts:204` |
-| the registry is constructed | `:213` |
-| prisoners are given it | `:215` |
-| guards mint through it | `:270` |
-| it is exposed on the session | `:391` |
-| it is a field of the save schema | `src/persistence/save-schema.ts:715` (`actorIdentitySnapshotSchema`), `:838` (V3), `:868` (V4) |
-
-The V3 and V4 payloads both carry `identity`, so the envelope checksum covers an
-actor's name. That is not a decision a later "no" can withdraw without a
-migration.
-
-**Exact replacement line** (`0015-actor-identity-allocation.md:4`):
-
-```
-Accepted. Extends [ADR 0012](./0012-derived-identifier-reproducibility.md), which is Proposed — see **What this asks a human to accept**.
-```
-
-**Matching README row:**
-
-```
-| [0015](./0015-actor-identity-allocation.md) | Actor Identity Is Allocated, Not Derived | Accepted |
-```
-
-**What merging that commits you to.** Names are allocated and carried, never
-re-derived from an entity id, and the `identity` section stays in the save
-format. Note the ordering trap the current line already names: 0015 extends
-0012, so accepting 0015 while 0012 stays `Proposed` accepts the taxonomy
-implicitly. Entry 7 below is the same decision one level down; taking them in
-one commit is cheaper than taking them apart.
-
----
-
-## 4. ADR 0014 — fully implemented, and the ADR does not say so
-
-**Declared** (`docs/adr/0014-art-storage-and-runtime-asset-delivery.md:3`):
-
-```
-- Status: Proposed
-```
-
-**Why that contradicts `main`.** Every mechanism the ADR decides is in place:
-
-- LFS tracking — `.gitattributes:1-4`, four patterns covering `*.png` under
-  three trees and `*.blend` under `assets/source/`.
-- Runtime asset headers — `public/_headers`.
-- The CI split the ADR argues for — `.github/workflows/ci.yml:155` (`assets:`),
-  `:159` (`needs: verify`), `:184` (`provision-git-lfs.sh`), `:206`
-  (`git lfs pull --include="public/assets/actors"`), and the `browser` job
-  pulling the same subset at `:328`.
-
-**Exact replacement line** (`0014-art-storage-and-runtime-asset-delivery.md:3`):
-
-```
-- Status: Accepted
-```
-
-**Matching README row:**
-
-```
-| [0014](./0014-art-storage-and-runtime-asset-delivery.md) | Art storage, generated-versus-source policy and runtime asset delivery | Accepted |
-```
-
-**What merging that commits you to.** The generated-versus-source split and the
-pointer-only `verify` checkout become binding. The ADR's one genuinely open
-question — whether `public/game-content/source-art/` should be published at all
-— is a *content* question inside the ADR and is not settled by accepting the
-storage policy; if you want it kept open, say so in the same commit rather than
-leaving the whole ADR `Proposed` to hold one paragraph.
-
----
-
-## 5. ADR 0021 — the headers are live in `public/_headers`
-
-**Declared** (`docs/adr/0021-http-response-security-headers.md:3`):
-
-```
-- Status: Proposed — pending human approval
-```
-
-**Why that contradicts `main`.** All ten decided headers are shipped, verbatim,
-at `public/_headers:1-10` — `X-Content-Type-Options`, `X-Frame-Options`,
-`Referrer-Policy`, `Permissions-Policy`, the full `Content-Security-Policy`,
-`Strict-Transport-Security`, and the three cross-origin isolation headers. The
-file's own comment block beginning at `:12` cites this ADR as the record of why each
-directive has the shape it has, which is a citation of a `Proposed` document as
-settled architecture.
-
-**Exact replacement line** (`0021-http-response-security-headers.md:3`):
-
-```
-- Status: Accepted
-```
-
-**Matching README row:**
-
-```
-| [0021](./0021-http-response-security-headers.md) | HTTP response security headers for the static-asset deployment | Accepted |
-```
-
-**What merging that commits you to.** The CSP as written, including the two
-allowances the ADR records as non-optional and measured (`img-src blob:` and
-`img-src data:`, both required by Phaser's loader and texture boot). Tightening
-either later is a renderer-breaking change, which the ADR already documents.
-
----
-
-## 6. ADR 0013 — half shipped, and the shipped half is the half already in SQL
-
-This is the entry to read slowly. **0013 cannot be flipped with one word**,
-because two of its six decisions are enforced in the database and two are
-explicitly absent — and the ADR's own section headings say which is which.
-
-**Declared** (`docs/adr/0013-free-tier-cloud-save-capacity.md:5`):
-
-```
-**Proposed — pending human approval.** Not accepted.
-```
-
-**What is implemented** — `supabase/migrations/20260823100000_bound_free_tier_capacity.sql`:
-
-| ADR section | state | evidence |
-| --- | --- | --- |
-| §1 five free slots, enforced by the database | **shipped** | `base_save_slot_capacity()` `:45`, `account_save_slot_capacity(uuid)` `:91` |
-| §2 a trigger, with an RPC as the front door | **shipped** | `enforce_prison_slot_capacity()` `:150`, trigger `:186` |
-| §3 over-capacity degrades read-only | **shipped** | the exception's `hint` at `:178` — *"Existing prisons stay listable, pullable and playable; only creating another slot is blocked."* |
-| §4 4 MiB per-save payload bound | **shipped** | `max_save_payload_bytes()` `:71-73` — `as $$ select 4194304 $$;` |
-| §5 256 MiB total per account | **absent** | no total-bytes function, trigger or column anywhere in `supabase/migrations/` |
-| §6 20 revisions retained per prison | **absent** | no retention or pruning logic anywhere in `supabase/migrations/` |
-
-The ADR is honest about this in its own headings — §5 and §6 both read
-**"Not implemented."** — which is why the defect here is *not* that the document
-lies. It is that a single-word status cannot describe a decision that is 4/6
-enforced in a hosted database, so the one word it does carry (`Proposed`)
-understates §§1-4 and the migration comment at `:58` propagates it:
-*"PROPOSED, PENDING HUMAN APPROVAL (ADR 0013)"* — in the file that enforces it.
-
-**Exact replacement line** (`0013-free-tier-cloud-save-capacity.md:5`):
-
-```
-**Accepted for §§1-4, which are enforced in SQL. §§5-6 remain Proposed and unimplemented.**
-```
-
-**Matching README row:**
-
-```
-| [0013](./0013-free-tier-cloud-save-capacity.md) | Free-tier cloud-save capacity and where it is enforced | Accepted — §§5-6 still proposed |
-```
-
-> **Check before merging this one.** The status parser in
-> `tests/foundation/adr-numbering-contract.test.ts` reads the first keyword of
-> the status and requires the index row to start with the same keyword. Both
-> lines above start with `Accepted`, so they agree and the suite stays green.
-> A replacement starting with any other word must change both lines the same way.
-
-**What merging that commits you to.** Five slots and a 4 MiB per-save bound as
-settled policy — they are already live in SQL, so this is retroactive — while
-leaving the two numbers that are genuinely undecided undecided. **Do not let
-this entry approve 256 MiB or 20 revisions by accident**; those are §5 and §6,
-neither exists, and §6's justification is separately wrong on `main`: the ADR
-argues 20 revisions is *"roughly a day of ordinary autosaving"* at
-`DEFAULT_AUTOSAVE_INTERVAL_MS` (`src/persistence/session/session-controller.ts:9`,
-`30_000`), which is ten minutes, not a day — and the ADR computes 2,880/day from
-that same constant five lines earlier. Settle the number before accepting §6,
-not after.
-
----
-
-## 7. ADR 0012 — the taxonomy is cited from `src/`, and its remedy has now landed
-
-> **Re-verified at `main` @ `b653b93` (v0.0.40).** This entry said the remedy was
-> outstanding, and #295 discharged it after this file was written. Corrected
-> below, including the replacement line, which changed as a result.
-
-**Declared** (`docs/adr/0012-derived-identifier-reproducibility.md:4`):
-
-```
-Proposed. Extended by
-```
-
-**Why that contradicts `main`.** The *taxonomy* is in use as settled
-architecture: `src/simulation/identity/actor-identity.ts:8` carries the heading
-*"## Category: allocated identity, not a derived value (ADR 0012 / ADR 0015)"*
-and `:16` says the category is declared *"explicitly because ADR 0012 forbids
-leaving the category implicit"*. A `Proposed` ADR is being obeyed as a rule.
-
-**The remedy is no longer outstanding.** `nextGlobalId` is now a local of
-`recomputeGlobalTopology` (`src/simulation/rooms/topology.ts:213`, incremented
-at `:219`) rather than instance state, so ids are handed out from 1 in canonical
-sorted order on every recompute and `GlobalTopologyId` meets the category-2
-requirement the ADR sets. #295 landed that and recorded it in the ADR's own
-Consequences, which now say the follow-up *"has landed"*.
-
-That change deliberately left two things for this ADR: the status, and whether
-`chunkTopologies` should be evicted on unload — ids are no longer a function of
-recompute history but are still a function of chunk *load* history, recorded
-under "Known limitations" in `docs/DETERMINISM.md`. So the remaining question is
-narrower than it was, and it is entirely a question about the status.
-
-Three things that were wrong here are **no longer wrong** and need no action:
-the path-request-id row of the identifier table records that the ids are
-persisted (`save-schema.ts:419`, `:468`), the Consequences record that the
-exception's escape clause has fired and that `JobRegistry.loadSnapshot`
-(`src/simulation/operations/job.ts:110`) and `GuardRoster.loadSnapshot`
-(`src/simulation/security/guard-roster.ts:198`) compensate on restore, and the
-`GlobalTopologyId` remedy above. All verified at `b653b93`.
-
-**Exact replacement line** (`0012-derived-identifier-reproducibility.md:4`):
-
-```
-Accepted. Extended by
-```
-
-**Matching README row:**
-
-```
-| [0012](./0012-derived-identifier-reproducibility.md) | Reproducibility of Derived Simulation Identifiers | Accepted |
-```
-
-**What merging that commits you to.** Every new id-minting subsystem must
-declare its category in its module doc and gain a pin under
-`tests/determinism/` — a rule the repository is following in one place and
-enforcing in none. It also settles the category-2 reading of `GlobalTopologyId`,
-which #295 explicitly declined to settle for you, and makes the open
-`chunkTopologies` eviction question a ruling under an accepted ADR rather than a
-limitation under a proposed one. This is now the **cheapest** entry in Queue B:
-the code already complies, and nothing about accepting it obliges a change.
-
----
-
-## 8. ADR 0024 — shipped with the change that wrote it, and the only entry here that is reversible in one line
-
-**Declared** (`docs/adr/0024-protocol-fault-recoverability.md:5`):
-
-```
-**Proposed — pending human approval.** Not accepted.
-```
-
-**Why it is in Queue B and not Queue A.** Unlike 0022 and 0023, its decision is
-live on `main` the moment its own change merges: `src/simulation/worker/worker.ts`
-faults a decode failure with `{ recoverable: true }`, and
-`src/ui/simulation-alerts.ts` paints an uncorrelated `protocol/error` as an
-alert row. It is *not* drift — the ADR and the code were written together, which
-is the case `docs/adr/README.md` covers with "not binding, whether or not code
-already implements it".
-
-**What makes it different from every other entry above.** Reversing it is one
-argument at one call site. There is no save format, no SQL, no live database
-mechanism and no persisted field behind it; the reversal target is named in the
-ADR itself, and the tests that would have to be deleted alongside it are named
-too. So a "no" here costs a revert, not a migration.
-
-**What a "yes" commits to.** That a message the worker rejected before dispatch
-does not end the player's session, and that the fault is reported to the player
-instead of only to the console. It also settles issue #187 finding 1, which asks
-for exactly this and nothing else.
-
-**The line that would replace the status**, in `docs/adr/0024-protocol-fault-recoverability.md:5`:
-
-```
-**Accepted.**
-```
-
-and its row in `docs/adr/README.md`:
-
-```
-| [0024](./0024-protocol-fault-recoverability.md) | Which protocol faults end a session, and who is told | Accepted |
-```
-
-Accepting it also **deletes** the implementation note at
-`docs/adr/0006-simulation-worker-adapter.md` ("a protocol decode error no longer
-reaches state 5") and changes ADR 0006 state 5's clause to "an unhandled
-exception". That note exists precisely so an Accepted ADR is not amended on a
-Proposed one's authority, and it is the only thing in the corpus that has to
-move with this status.
-
----
-
-## 9. What is *not* in this queue, and why
-
-Three Accepted ADRs describe mechanisms `main` does not exercise. **None of them
-is a status defect** — the decision was accepted and the code has not caught up,
-which is a code or wiring gap, not a wrong status. They are recorded here only
-so that reading this file does not leave the impression that the corpus was
-audited in one direction.
-
-- **ADR 0006 / ADR 0003 decision 4 — the handshake gates nothing.** `'ready'` is
-  a member of `WorkerState` (`src/simulation/worker/state-machine.ts:27`) and no
-  `transition()` call anywhere targets it — the four in the file go to
-  `'faulted'` (`:400`), `'paused'` (`:508`), `'paused'`/`'running'` (`:543`) and
-  `'shutting-down'` (`:652`). Nothing in `src/` sends a `protocol/handshake` at
-  all; every occurrence is the receiver, the kind list or the schema. So ADR
-  0006's state 2 describes a state the machine cannot occupy, and ADR 0003
-  decision 4's version negotiation runs for nobody. Version compatibility does
-  still fail closed, but by a different route — the decoder's
-  `protocolVersion: z.literal(...)` at `src/simulation/protocol/types.ts:154`.
-  This is issue #118 item 1 and issue #274's A2, and the fix is in the code.
-- **ADR 0010 — the telemetry layer is inert.** Nothing outside
-  `src/services/telemetry/` imports it, so consent is never asked for and
-  `record()` is never called. The prohibition half of the ADR holds; the
-  sentence *"telemetry is fed from the main thread's orchestration layer"* does
-  not.
-- **ADR 0009 — "Accepted — implementation gated", and all four gates are
-  unmet.** `verifyChallengeSubmission` (`src/services/challenges/verification.ts:130`)
-  and `isPubliclyRankable` (`:270`) exist; no replay runner implements the port,
-  no endpoint exists, and nothing outside `src/services/` imports the layer.
-  **This status is the most accurate in the corpus** — it says "gated", and the
-  gates are genuinely shut. It is listed as a model, not a defect.
-
-Also not in this queue: **ADR 0002**, whose configuration matches the ADR
-exactly (`wrangler.jsonc:19-32`) while `docs/DEPLOYMENT.md` records that
-`lockstate.io` is in fact served by `lockstate-staging` and that Worker
-`lockstate` has never been deployed. That is a live operational trap, but it is
-a missing warning in the ADR body rather than a wrong status, and the
-deployment document already carries it.
+half-done flip cannot merge. The parser reads the **first keyword** of each
+side — `Accepted`, `Proposed`, `Superseded`, `Deprecated` — and requires the
+two to agree, which is why 0013's split status opens with `Accepted` on both
+sides and qualifies only afterwards.
