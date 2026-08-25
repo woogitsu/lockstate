@@ -3,14 +3,22 @@
 ## Status
 Accepted. The `GlobalTopologyId` remedy this ADR's Consequences left as a
 follow-up has landed: PR #295 (issue #112) made `nextGlobalId` a local of
-`recomputeGlobalTopology` (`src/simulation/rooms/topology.ts:213`, incremented
-at `:219`) instead of instance state, so ids are handed out from 1 in canonical
+`recomputeGlobalTopology` (`src/simulation/rooms/topology.ts:256`, incremented
+at `:262`) instead of instance state, so ids are handed out from 1 in canonical
 sorted order on every recompute and `GlobalTopologyId` meets the category-2
-requirement below. What remains is the residue that change recorded rather than
-removed: `chunkTopologies` is never evicted, so an id is no longer a function of
-*recompute* history but is still a function of chunk *load* history — a world
-streaming question kept under "Known limitations" in `docs/DETERMINISM.md`, not
-a bar to accepting the taxonomy. Extended by
+requirement below. The residue that change recorded rather than removed —
+`chunkTopologies` was never evicted, so an id was no longer a function of
+*recompute* history but was still a function of chunk *load* history — has
+since been closed: `update()` now drops the retained topology of every chunk
+the world no longer has loaded, so the component walk sees only what is loaded.
+That does **not** settle the world-streaming ruling this ADR reserves below; it
+records that the reserved ruling had only one answer compatible with the
+category-2 requirement this ADR has already accepted. Retention is not
+reproducible from state at *all* — a restored `TopologyManager` cannot know
+which chunks a previous session once had loaded — and the state-derived
+alternative of walking every chunk the world knows about is not available,
+because `SparseWorld.fromSnapshot` gives edge storage only to loaded chunks, so
+an unloaded chunk's regions cannot be computed at all. Extended by
 [ADR 0015](./0015-actor-identity-allocation.md), which applies the taxonomy
 below to actor names and works the category-1 case through in detail.
 
@@ -107,11 +115,27 @@ module doc, and `tests/determinism/` gains a pin for it.
   things are deliberately *not* settled by that change, because they are this
   ADR's to settle and not an implementation's. **(a)** The status above stays
   Proposed; accepting the category-2 reading of `GlobalTopologyId` is the
-  owner's call. **(b)** `chunkTopologies` is never evicted, so an unloaded
-  chunk still contributes nodes and the id remains a function of chunk *load*
-  history even though it is no longer a function of *recompute* history.
-  Whether a retained topology is dropped on unload is recorded under "Known
-  limitations" in `docs/DETERMINISM.md` and belongs in the same ruling.
+  owner's call. **(b)** `chunkTopologies` was never evicted, so an unloaded
+  chunk still contributed nodes and the id remained a function of chunk *load*
+  history even though it was no longer a function of *recompute* history.
+  **That has since been closed too, and by the only conformant option**, per
+  the Status note above: the entry is dropped when the world reports the chunk
+  as no longer loaded, which was the sole reading under which an already
+  Accepted category-2 requirement could hold. It was a binding defect and not
+  a numbering one — three open chunks in a row have the outer two connected
+  only *through* the middle one, so a retained middle answered a different
+  connectivity question rather than shifting a label, and content-addressing
+  the ids would not have helped because the component being addressed was
+  itself wrong. What is still this ADR's to settle, and is deliberately left
+  open, is the broader world-streaming policy: whether an unloaded chunk should
+  be *representable* in a topology at all, and if so from what persisted
+  geometry. Nothing observable changed when the entry was dropped — no caller
+  in `src/` unloads a chunk (`SparseWorld.unload`'s only caller in the
+  repository is a `sparse-world` unit test asserting the lifecycle flip),
+  nothing in `src/` calls `TopologyManager.update`, and nothing reads
+  `getTopologyId` — so the fix is a guard against a defect that was latent on
+  three independent counts rather than a behaviour change to a live session.
+  Guarded by `tests/determinism/iteration-order.test.ts`.
 - Path-request ids were placed in category 2 by exception, on the ground that
   they are consumed only within one `NavigationSystem` lifetime, which a
   restore rebuilds empty
