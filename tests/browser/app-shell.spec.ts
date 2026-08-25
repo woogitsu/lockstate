@@ -497,7 +497,7 @@ async function dragOnWorld(page: Page): Promise<void> {
  * one-dimensional; `tileRectFromDrag` must not, because a rectangle is exactly
  * the shape that has two.
  *
- * ### Why it hit-tests its own aim, and why it can answer "nowhere"
+ * ### Why it hit-tests its own aim, and why it can still answer "nowhere"
  *
  * `dragOnWorld` above may press at the centre of the screen, because the
  * centre-click spec establishes that the centre belongs to the canvas. It
@@ -506,23 +506,31 @@ async function dragOnWorld(page: Page): Promise<void> {
  * stretches to the full width with the save panel above it and `.hud__side`
  * pushed to the bottom.
  *
- * Measured on the assembled page, Rooms tab, one prison saved:
+ * Measured on the assembled page, Rooms tab, one prison saved, with the panel
+ * expanded -- which is the state the page *arrives* in and no longer the state
+ * this helper is called in:
  *
  * | Viewport | Save panel | Rooms panel | Largest square of bare world |
  * | --- | --- | --- | --- |
  * | 1280x720 | 1004,60 264x139 | 1004,219 264x420 | 256px at 8,56 |
  * | 900x600  | 624,60 264x109  | 620,185 264x338  | 256px at 8,56 |
- * | 375x812  | 8,96 359x156    | 8,268 359x451    | **none at all** |
+ * | 375x812  | 8,96 359x156    | 8,268 359x451    | **16px at 8,720** |
  *
  * At 375x812 the two panels are full-width and between them, the 88px strip and
- * the tab bar they leave gaps of 8, 16 and 24 pixels -- so there is no square of
- * *any* size to drag in while both panels are expanded. That is a real property
- * of that viewport rather than a defect in this helper, and it is why this
- * returns a boolean instead of throwing: the caller records the two controls that
- * only a pending rectangle reveals as unreachable there, in the same way
- * `NEVER_LAID_OUT_BELOW_720` records the two the responsive rules drop. The panel
- * is collapsible, so a player on that phone can fold it, drag, and expand again;
- * pretending this helper could do it in one gesture would be the fiction.
+ * the tab bar they leave gaps of 8, 16 and 24 pixels, so the largest square of
+ * bare world on that page is 16px and no rectangle can be drawn in it at all.
+ * That used to be the end of the story here, and the caller recorded the two
+ * controls only a pending rectangle reveals as unreachable at that viewport.
+ * They are reachable now: **arming folds the Rooms panel to its header**, and
+ * the caller arms before it calls this. Measured in that state, same page, same
+ * prison: the panel is 47px at 8,672, the save panel takes 227px of the slack
+ * and the band the rail leaves between them is 348.8px tall and the full 375px
+ * wide -- a 336px square of bare world, which was the scan's own cap. See
+ * `rooms-panel.ts` and `.ui-panel__body[hidden]` in `primitives.css`.
+ *
+ * It still returns a boolean rather than throwing, because "how much world is
+ * there" is the measurement this helper exists to make and a caller that wants
+ * it to be true should have to say so.
  *
  * Both ends of the gesture are hit-tested, not just the press: a drag that begins
  * on the world and ends on a panel is one the scene never completes, and a
@@ -536,6 +544,144 @@ async function dragOnWorld(page: Page): Promise<void> {
  * and would not resemble a hand.
  */
 const ROOM_DRAG_DELTAS_PX = [192, 128] as const;
+
+/**
+ * The panel's arrival height, per viewport, so "the phone was not fixed by
+ * moving the desktop" is a number rather than a hope.
+ *
+ * Measured on the assembled page, Rooms tab, one prison saved, before and after
+ * the fold landed -- identical in both, which is the claim. The panel is the
+ * rail's flexible member, so its height is where any change to the save panel,
+ * the strip, the tab bar or either panel's floor would show up.
+ */
+const ARRIVAL_PANEL_HEIGHT_PX: Readonly<Record<string, number>> = {
+  '1280x720': 420.1,
+  '900x600': 338.1,
+  '375x812': 451.1,
+};
+
+/**
+ * The largest square of bare world this scan will look for.
+ *
+ * The answer saturates here rather than growing without bound, which is
+ * deliberate: every assertion against it is a floor ("at least this much world
+ * exists"), and scanning a 1280x720 page for a 1200px square would spend
+ * thousands of `elementFromPoint` calls to answer a question nobody asked.
+ * `TILE_SIZE_PX` is 64 at zoom 1, so this is five tiles and a bit.
+ */
+const BARE_WORLD_SCAN_MAX_PX = 336;
+
+/** One pending-rectangle control, measured as a tap target and hit-tested. */
+interface RoomControlHit {
+  readonly control: string;
+  /** Both axes against `--tap-target`, read from the token rather than typed here. */
+  readonly tapTarget: boolean;
+  /** Five points on the control resolve to the control, or to something inside it. */
+  readonly hittable: boolean;
+}
+
+interface RoomWorldGeometry {
+  readonly panel: { readonly top: number; readonly bottom: number; readonly height: number } | null;
+  /** `data-collapsed` on the panel, as the string the DOM carries. */
+  readonly collapsed: string;
+  /** Whether the body has a box at all -- not whether `hidden` is set on it. */
+  readonly bodyLaidOut: boolean;
+  /** The side of the largest square of bare canvas, saturating at `BARE_WORLD_SCAN_MAX_PX`. */
+  readonly largestBareSquare: number;
+  /** Strip to save panel, save panel to Rooms panel, Rooms panel to tab bar. */
+  readonly gapsBetweenPanels: readonly number[];
+  readonly pendingControls: readonly RoomControlHit[];
+}
+
+/**
+ * The Rooms tab's geometry, from the page rather than from the stylesheet.
+ *
+ * `largestBareSquare` is the number the whole fix turns on, and it is measured
+ * the way the player meets it: `elementFromPoint` at both ends and the midpoint
+ * of a diagonal, so a square that is bare at its corners and covered across the
+ * middle does not count. Coarse on purpose -- 8px steps -- because this is
+ * asking "is there room to drag", not measuring a boundary.
+ */
+async function roomWorldGeometry(page: Page): Promise<RoomWorldGeometry> {
+  return page.evaluate((scanMax) => {
+    const free = (x: number, y: number): boolean =>
+      document.elementFromPoint(x, y)?.tagName.toLowerCase() === 'canvas';
+
+    let largest = 0;
+    for (let side = scanMax; side >= 16 && largest === 0; side -= 16) {
+      for (let y = 8; y + side < window.innerHeight - 8 && largest === 0; y += 8) {
+        for (let x = 8; x + side < window.innerWidth - 8; x += 8) {
+          if (free(x, y) && free(x + side / 2, y + side / 2) && free(x + side, y + side)) {
+            largest = side;
+            break;
+          }
+        }
+      }
+    }
+
+    const panel = document.querySelector<HTMLElement>('.hud-rooms');
+    const body = document.querySelector<HTMLElement>('.hud-rooms > .ui-panel__body');
+    const strip = document.querySelector<HTMLElement>('.hud-strip');
+    const save = document.querySelector<HTMLElement>('.save-panel');
+    const tabs = document.querySelector<HTMLElement>('.hud-tabs__inner');
+    const round = (value: number): number => Math.round(value * 10) / 10;
+
+    const panelRect = panel === null ? null : panel.getBoundingClientRect();
+    const gaps =
+      panelRect === null || strip === null || save === null || tabs === null
+        ? []
+        : [
+            round(save.getBoundingClientRect().top - strip.getBoundingClientRect().bottom),
+            round(panelRect.top - save.getBoundingClientRect().bottom),
+            round(tabs.getBoundingClientRect().top - panelRect.bottom),
+          ];
+
+    // The token, not a literal: `--tap-target` is what every control in the HUD
+    // is sized from, and a test that typed 44 here would keep passing if the
+    // token moved and the controls did not follow it.
+    const tapTargetPx = Number.parseFloat(
+      getComputedStyle(document.documentElement).getPropertyValue('--tap-target'),
+    );
+
+    const measureControl = (selector: string): RoomControlHit => {
+      const node = document.querySelector<HTMLElement>(selector);
+      const control = selector.replace('.', '');
+      if (node === null || node.getClientRects().length === 0) {
+        return { control, tapTarget: false, hittable: false };
+      }
+      const rect = node.getBoundingClientRect();
+      // The centre plus four points a fifth of the way in from each edge -- the
+      // same five `controlReachability` uses, and for the same reason.
+      const points: readonly (readonly [number, number])[] = [
+        [rect.x + rect.width / 2, rect.y + rect.height / 2],
+        [rect.x + rect.width * 0.2, rect.y + rect.height / 2],
+        [rect.x + rect.width * 0.8, rect.y + rect.height / 2],
+        [rect.x + rect.width / 2, rect.y + rect.height * 0.2],
+        [rect.x + rect.width / 2, rect.y + rect.height * 0.8],
+      ];
+      return {
+        control,
+        tapTarget: Number.isFinite(tapTargetPx) && rect.width >= tapTargetPx && rect.height >= tapTargetPx,
+        hittable: points.every(([x, y]) => {
+          const hit = document.elementFromPoint(x, y);
+          return hit !== null && node.contains(hit);
+        }),
+      };
+    };
+
+    return {
+      panel:
+        panelRect === null
+          ? null
+          : { top: round(panelRect.top), bottom: round(panelRect.bottom), height: round(panelRect.height) },
+      collapsed: panel?.dataset['collapsed'] ?? '',
+      bodyLaidOut: body !== null && body.getClientRects().length > 0,
+      largestBareSquare: largest,
+      gapsBetweenPanels: gaps,
+      pendingControls: ['.hud-rooms__confirm', '.hud-rooms__cancel'].map(measureControl),
+    };
+  }, BARE_WORLD_SCAN_MAX_PX);
+}
 
 async function dragRectangleOnWorld(page: Page): Promise<boolean> {
   const viewport = page.viewportSize();
@@ -623,32 +769,26 @@ const NEVER_LAID_OUT_BELOW_720 = [
     'button.ui-section__header "Alerts"',
 ] as const;
 
-/**
- * The two controls a *pending room rectangle* reveals, and the one viewport where
- * this sweep cannot make one.
+/*
+ * There is no `NEVER_LAID_OUT_AT_375`, and the fact that there is not is an
+ * assertion rather than an absence.
  *
- * Unlike `NEVER_LAID_OUT_BELOW_720` above, these are not dropped by a responsive
- * rule: they are laid out at 375x812 the moment a rectangle is pending, and the
- * reason they are listed is that at that viewport there is **no bare world left
- * to drag one in**. Measured on the assembled page, Rooms tab, one prison saved:
- * the save panel occupies y 96..252 and the Rooms panel y 268..719, both the full
- * 375px width, and with the 88px status strip and the tab bar at y 743 the gaps
- * between them are 8, 16 and 24 pixels. `dragRectangleOnWorld` carries the whole
- * table.
+ * It used to hold the two controls a *pending room rectangle* reveals -- the
+ * confirm and the discard -- because at 375x812, with both rail panels expanded,
+ * the largest square of bare world on the page is 16px and there was nowhere to
+ * drag a rectangle to reveal them. The Rooms panel now folds itself to its header
+ * while the tool is armed, which is what the amendment to ADR 0022 left open, so
+ * the sweep below reaches those two controls at that viewport the same way it
+ * reaches them at every other: it arms the tool, drags a real rectangle on the
+ * real canvas, and hit-tests what appears. `NEVER_LAID_OUT_BELOW_720` is still
+ * the only exemption, and the accounting assertion at the foot of the sweep is
+ * what turns "these two are no longer exempt" into a claim that fails if they
+ * ever stop being reachable again.
  *
- * That is a real property of a 375px-wide phone with both panels expanded rather
- * than a hole in this test, and it is stated here rather than worked around
- * because it is a *product* observation: the Build panel has a numeric fallback
- * for exactly this situation and the Rooms panel has none, so on that phone the
- * player has to collapse a panel before they can draw. The ADR's amendment
- * records it as an open question rather than this file inventing an answer.
+ * The geometry either side of that change is measured numerically in "the Rooms
+ * panel yields the world it is drawn on" below, and `dragRectangleOnWorld` above
+ * carries the table.
  */
-const NEVER_LAID_OUT_AT_375 = [
-  'hud > hud__rail > hud__side > ui-panel hud-rooms > ui-panel__body > hud-rooms__map > ' +
-    'hud-rooms__actions > button.ui-action hud-rooms__confirm "Designate 0 × 0"',
-  'hud > hud__rail > hud__side > ui-panel hud-rooms > ui-panel__body > hud-rooms__map > ' +
-    'hud-rooms__actions > button.ui-action hud-rooms__cancel "Discard"',
-] as const;
 
 interface UnreachableControl {
   readonly control: string;
@@ -1405,43 +1545,47 @@ test.describe('the assembled application', () => {
        * weaker -- it fails, naming the confirm and discard controls, which is
        * the gate doing its job: a control the sweep can never see is a control
        * this test cannot claim is reachable.
+       *
+       * At 375x812 it *did* fail, and the exemption that made it pass is gone:
+       * arming folds the panel to its header, so the drag below has world to
+       * happen in at every viewport this loop visits. The band it uncovers is
+       * measured in "the Rooms panel yields the world it is drawn on" below.
        */
       await page.locator('.ui-tab[data-tab="rooms"]').click();
       const roomArm = page.locator('.hud-rooms__arm');
       await expect(roomArm, `the Rooms panel's arm control is missing at ${width}x${height}`).toBeVisible();
       await roomArm.click();
       const dragged = await dragRectangleOnWorld(page);
-      // The one viewport with no bare world to drag in, and the helper's own
-      // table says why. Asserted rather than tolerated, so a layout change that
-      // freed some world there -- or took it away somewhere else -- fails here
-      // instead of quietly changing what this test covers.
-      expect(dragged, `a room drag found no bare world at ${width}x${height}`).toBe(width > 375);
+      // Every viewport, 375x812 included, and that last one is the change:
+      // arming folds the panel to its header, so the world it is drawn on is
+      // there to be drawn on. Asserted rather than tolerated, so a layout change
+      // that took the world away again -- at any viewport -- fails here instead
+      // of quietly changing what this test covers.
+      expect(dragged, `a room drag found no bare world at ${width}x${height}`).toBe(true);
 
-      if (dragged) {
-        const roomConfirm = page.locator('.hud-rooms__confirm');
-        await expect(
-          roomConfirm,
-          `a rectangle dragged on the world did not reach the Rooms panel at ${width}x${height}`,
-        ).toBeVisible();
-        // Both axes survived the gesture, which is the property `dragOnWorld`'s
-        // one-axis run cannot show: a square drag committed to an axis would read
-        // `3 x 1` or `1 x 3` here.
-        await expect(
-          page.locator('.hud-rooms__area'),
-          `the dragged area is not a rectangle at ${width}x${height}`,
-        ).toHaveAttribute('data-area', /^-?\d+,-?\d+,[2-9]\d*,[2-9]\d*$/);
+      const roomConfirm = page.locator('.hud-rooms__confirm');
+      await expect(
+        roomConfirm,
+        `a rectangle dragged on the world did not reach the Rooms panel at ${width}x${height}`,
+      ).toBeVisible();
+      // Both axes survived the gesture, which is the property `dragOnWorld`'s
+      // one-axis run cannot show: a square drag committed to an axis would read
+      // `3 x 1` or `1 x 3` here.
+      await expect(
+        page.locator('.hud-rooms__area'),
+        `the dragged area is not a rectangle at ${width}x${height}`,
+      ).toHaveAttribute('data-area', /^-?\d+,-?\d+,[2-9]\d*,[2-9]\d*$/);
 
-        const roomsReachability = await controlReachability(page);
-        inventory = roomsReachability.controls;
-        for (const index of roomsReachability.measured) everMeasured.add(index);
-        expect(
-          roomsReachability.unreachable,
-          `controls covered by something else with a room pending at ${width}x${height}`,
-        ).toEqual([]);
+      const roomsReachability = await controlReachability(page);
+      inventory = roomsReachability.controls;
+      for (const index of roomsReachability.measured) everMeasured.add(index);
+      expect(
+        roomsReachability.unreachable,
+        `controls covered by something else with a room pending at ${width}x${height}`,
+      ).toEqual([]);
 
-        // Discarded, so the next viewport starts from the state this one did.
-        await page.locator('.hud-rooms__cancel').click();
-      }
+      // Discarded, so the next viewport starts from the state this one did.
+      await page.locator('.hud-rooms__cancel').click();
       await page.locator('.ui-tab[data-tab="build"]').click();
 
       // Nothing got a free pass by never being laid out. At desktop widths the
@@ -1451,10 +1595,7 @@ test.describe('the assembled application', () => {
       // those two controls genuinely cannot be reached at any tab. That is a
       // deliberate responsive decision (see `hud.css`), named here so it stays
       // one: it is the honest limit of what this test can claim about a phone.
-      const exempt =
-        width <= 720
-          ? [...NEVER_LAID_OUT_BELOW_720, ...(width <= 375 ? NEVER_LAID_OUT_AT_375 : [])]
-          : [];
+      const exempt = width <= 720 ? [...NEVER_LAID_OUT_BELOW_720] : [];
       const neverLaidOut = inventory.filter((_, index) => !everMeasured.has(index));
       expect(neverLaidOut, `controls never laid out in any state at ${width}x${height}`).toEqual(exempt);
       expect(
@@ -1577,6 +1718,167 @@ test.describe('the assembled application', () => {
         railInvariants(await railIntegrity(page)),
         `the rail on the Rooms tab at ${width}x${height}`,
       ).toEqual({ railOverflow: 0, offScreen: [], stuck: [] });
+    }
+  });
+
+  /**
+   * The world the Rooms panel is drawn on, measured in pixels at three
+   * viewports (ADR 0022, amended).
+   *
+   * ### What was wrong
+   *
+   * The whole Rooms interaction is "drag a rectangle across the tiles this room
+   * should cover", and the two controls the finished rectangle reveals -- the
+   * confirm and the discard -- exist only while one is pending. At 375x812 there
+   * was nowhere to drag. Measured on this page, Rooms tab, one prison saved,
+   * both rail panels expanded: the save panel occupies y 96..251.7 and the Rooms
+   * panel y 267.7..718.8, both the full 359px of a stretched rail, and with the
+   * 88px strip and the tab bar at y 742.8 the gaps between them are 8, 16 and 24
+   * pixels. The largest square of bare world anywhere on the page is **16px** --
+   * a quarter of one tile -- so the feature was unusable on a phone and #312
+   * recorded that rather than pretending otherwise.
+   *
+   * Two things were missing. The panel's own fold did nothing at all -- `hidden`
+   * on a body that `hud.css` gives a flex `display` is not hidden, so pressing
+   * "Collapse" flipped `data-collapsed`, announced `aria-expanded="false"` and
+   * left 404.1px of body on screen -- and nothing used the fold even once it
+   * worked. Arming now folds the panel to its header, and a finished rectangle
+   * brings it back.
+   *
+   * ### What this asserts, and why each number is here
+   *
+   * Three claims per viewport, none of them a screenshot:
+   *
+   *  1. **On arrival, nothing moved.** The panel is exactly where it was at
+   *     every viewport, so the phone was not fixed by rearranging the desktop.
+   *     At 375x812 that means the largest bare square is still under one tile,
+   *     which is the recording this test inherits from #312 -- kept as an
+   *     assertion, because it is the reason the fold exists.
+   *  2. **Armed, the world is there.** The panel is its header and nothing else
+   *     (no body box at all), and a square of bare world at least three tiles on
+   *     a side can be found by hit-testing. Measured: 336px at 375x812, which
+   *     was the scan's own cap, in a band 348.8px tall and the full width.
+   *  3. **Pending, both controls are hittable.** Not "present" and not "visible"
+   *     -- each is measured against `--tap-target` in *both* axes and hit-tested
+   *     at five points, because a control whose centre is clear while a fifth of
+   *     it is buried is a defect a player meets as a mis-click.
+   *
+   * The vacuity guards matter as much as the assertions: a page that failed to
+   * load reports plausible, meaningless geometry, and this file has been fooled
+   * by exactly that before. So the canvas is checked against the viewport, the
+   * catalogue is checked to hold all eighteen authored room types, and the drag
+   * is required to produce a rectangle with two real axes before anything is
+   * said about the controls it revealed.
+   */
+  test('the Rooms panel yields the world it is drawn on, and brings its confirm pair back', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await openApp(page);
+    // One prison in the list is what puts the save panel in the rail's aside
+    // slot, which is half of what consumes the height at 375x812.
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.save-panel__item-label').first()).toContainText('New Prison');
+
+    for (const [width, height] of [
+      [1280, 720],
+      [900, 600],
+      [375, 812],
+    ] as const) {
+      await page.setViewportSize({ width, height });
+      await expect
+        .poll(async () => (await canvasMetrics(page))?.cssWidth, { message: `canvas did not follow ${width}px` })
+        .toBe(width);
+      await page.locator('.ui-tab[data-tab="rooms"]').click();
+      await expect(page.locator('.hud-rooms')).toBeVisible();
+
+      // Vacuity guard, before a single pixel is trusted: the page really is
+      // showing the Rooms panel of the real application, with the real
+      // catalogue behind it. Eighteen is `ROOM_CATALOG`'s own length; a harness
+      // page has three.
+      expect(
+        await page.locator('.hud-rooms__list [data-room]').count(),
+        `the Rooms catalogue is not the shipped one at ${width}x${height}`,
+      ).toBe(18);
+
+      const arrival = await roomWorldGeometry(page);
+      expect(arrival.panel, `the Rooms panel has no box at ${width}x${height}`).not.toBeNull();
+      expect(arrival.bodyLaidOut, `the Rooms panel arrives folded at ${width}x${height}`).toBe(true);
+      expect(arrival.collapsed, `the Rooms panel arrives collapsed at ${width}x${height}`).toBe('false');
+      // 1. Arrival is untouched. The panel's own height is the number the fold
+      // trades away, so it is the number pinned here.
+      expect(
+        Math.round((arrival.panel?.height ?? 0) * 10) / 10,
+        `the Rooms panel's arrival height changed at ${width}x${height}`,
+      ).toBe(ARRIVAL_PANEL_HEIGHT_PX[`${width}x${height}`]);
+      if (width === 375) {
+        // The recording #312 shipped, kept as an assertion. `TILE_SIZE_PX` is 64
+        // at zoom 1, so "under 64" is "not even one tile", and every authored
+        // room needs at least 2x2 of them.
+        expect(
+          arrival.largestBareSquare,
+          `bare world appeared on arrival at ${width}x${height}, so the fold below may no longer be needed`,
+        ).toBeLessThan(64);
+        expect(arrival.gapsBetweenPanels, `the rail's gaps changed at ${width}x${height}`).toEqual([8, 16, 24]);
+      }
+
+      // ---- armed: the panel gets out of the way -----------------------
+      await page.locator('.hud-rooms__arm').click();
+      const drawing = await roomWorldGeometry(page);
+      expect(drawing.collapsed, `arming did not fold the Rooms panel at ${width}x${height}`).toBe('true');
+      // Folded to its header means *no body box*, not a body with nothing in
+      // it: `hidden` that does not hide is the defect this half of the change
+      // fixed, and it is invisible to anything that only reads the attribute.
+      expect(
+        drawing.bodyLaidOut,
+        `the folded Rooms panel still lays out its body at ${width}x${height}`,
+      ).toBe(false);
+      expect(
+        Math.round((drawing.panel?.height ?? 0) * 10) / 10,
+        `the folded Rooms panel is not its header at ${width}x${height}`,
+      ).toBe(47);
+      // 2. And the world is genuinely reachable: three tiles on a side, which is
+      // a rectangle with two real axes rather than a line.
+      expect(
+        drawing.largestBareSquare,
+        `no square of bare world to draw a room in at ${width}x${height}`,
+      ).toBeGreaterThanOrEqual(192);
+
+      // ---- pending: the panel comes back, and can be pressed ----------
+      expect(
+        await dragRectangleOnWorld(page),
+        `a room drag found no bare world at ${width}x${height}`,
+      ).toBe(true);
+      await expect(
+        page.locator('.hud-rooms__area'),
+        `the dragged area is not a rectangle at ${width}x${height}`,
+      ).toHaveAttribute('data-area', /^-?\d+,-?\d+,[2-9]\d*,[2-9]\d*$/);
+
+      const pending = await roomWorldGeometry(page);
+      expect(pending.collapsed, `a pending rectangle left the panel folded at ${width}x${height}`).toBe('false');
+      expect(pending.bodyLaidOut).toBe(true);
+      // 3. The two controls the rectangle revealed, measured and hit-tested.
+      // `--tap-target` is 44px and applied by CSS convention: nothing pins the
+      // rendered box, and a token test cannot, because a token is not a layout.
+      expect(
+        pending.pendingControls,
+        `the pending rectangle's controls are not hittable tap targets at ${width}x${height}`,
+      ).toEqual([
+        { control: 'hud-rooms__confirm', tapTarget: true, hittable: true },
+        { control: 'hud-rooms__cancel', tapTarget: true, hittable: true },
+      ]);
+
+      // The rail holds in the state nothing measured before this: one panel
+      // folded, the other grown into the slack it left. Discarding is what gets
+      // back there -- the tool stays armed, so the drawing pass resumes and the
+      // panel folds again, which is the loop a player designating a row of cells
+      // is actually in.
+      await page.locator('.hud-rooms__cancel').click();
+      await expect(page.locator('.hud-rooms')).toHaveAttribute('data-collapsed', 'true');
+      expect(
+        railInvariants(await railIntegrity(page)),
+        `the rail with the Rooms panel folded at ${width}x${height}`,
+      ).toEqual({ railOverflow: 0, offScreen: [], stuck: [] });
+
+      await page.locator('.ui-tab[data-tab="build"]').click();
     }
   });
 

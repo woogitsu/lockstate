@@ -1004,8 +1004,15 @@ window.lockstateUiHarness = {
     return true;
   },
 
-  clickRoomsControl(control: 'arm' | 'remove' | 'confirm' | 'cancel'): boolean {
-    const button = document.querySelector<HTMLButtonElement>(`.hud-rooms__${control}`);
+  clickRoomsControl(control: 'arm' | 'remove' | 'confirm' | 'cancel' | 'fold'): boolean {
+    // `fold` is the panel's own header control rather than one of the four in
+    // the actions row, and it is reached by class because that is what it is:
+    // `.ui-panel__toggle` is not unique on a mounted HUD, so it is scoped to
+    // this panel the same way every other selector here is.
+    const button =
+      control === 'fold'
+        ? document.querySelector<HTMLButtonElement>('.hud-rooms > .ui-panel__header > .ui-panel__toggle')
+        : document.querySelector<HTMLButtonElement>(`.hud-rooms__${control}`);
     if (button === null) return false;
     // A real click, so a disabled or `hidden` control genuinely does not fire.
     button.click();
@@ -1053,6 +1060,11 @@ window.lockstateUiHarness = {
       armPressed: document.querySelector<HTMLElement>('.hud-rooms__arm')?.getAttribute('aria-pressed') ?? '',
       removePressed:
         document.querySelector<HTMLElement>('.hud-rooms__remove')?.getAttribute('aria-pressed') ?? '',
+      folded: panel?.dataset['collapsed'] ?? '',
+      bodyLaidOut: (() => {
+        const body = document.querySelector<HTMLElement>('.hud-rooms > .ui-panel__body');
+        return body !== null && body.getClientRects().length > 0;
+      })(),
     };
   },
 

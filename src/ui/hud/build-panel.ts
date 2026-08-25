@@ -463,6 +463,16 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   // interaction is now "point at the world" -- so folding it to its header
   // while placing is not a nicety. Arming survives the fold: the tool is
   // still yours, you just want to see what you are doing.
+  //
+  // That paragraph was a claim about a control that did nothing for several
+  // releases. `createPanel` folds a panel by setting `hidden` on its body, and
+  // `.hud-build > .ui-panel__body`'s own flex `display` in `hud.css` outranks
+  // the user agent's `[hidden] { display: none }` -- so pressing "Collapse"
+  // stamped `data-collapsed`, announced `aria-expanded="false"` and left the
+  // body exactly where it was. Fixed in `primitives.css`
+  // (`.ui-panel > .ui-panel__body[hidden]`) and now asserted against the body's
+  // *box* in `tests/browser/ui-shell.spec.ts`, because an assertion on the
+  // attribute agreed with the defect.
   let panelCollapsed = false;
   const panel = createPanel({
     title: t(HUD_MESSAGE_KEY.buildTitle),

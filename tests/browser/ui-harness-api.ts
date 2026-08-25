@@ -212,6 +212,17 @@ export interface RoomsProbe {
   readonly confirmDisabled: boolean;
   readonly armPressed: string;
   readonly removePressed: string;
+  /**
+   * `data-collapsed` on the panel, and whether its body has a box at all.
+   *
+   * Both, because `hidden` on a body that carries its own `display` is not
+   * hidden: before `.ui-panel__body[hidden]` landed in `primitives.css` the
+   * attribute and the data flag both said "collapsed" while 404.1px of body
+   * stayed on screen, so a probe that read either one alone would have called
+   * that fold a success.
+   */
+  readonly folded: string;
+  readonly bodyLaidOut: boolean;
 }
 
 /**
@@ -434,8 +445,12 @@ export interface LockstateUiHarness {
   /** The live readout as the pointer moves; `undefined` clears it. */
   hoverWorldRoom(area: { x: number; y: number; width: number; height: number } | undefined): boolean;
   clickRoomType(roomId: string): boolean;
-  /** A real click on one of the panel's four controls, so a disabled or hidden one does not fire. */
-  clickRoomsControl(control: 'arm' | 'remove' | 'confirm' | 'cancel'): boolean;
+  /**
+   * A real click on one of the panel's controls, so a disabled or hidden one
+   * does not fire. Four of them are the actions row; `fold` is the panel's own
+   * header control.
+   */
+  clickRoomsControl(control: 'arm' | 'remove' | 'confirm' | 'cancel' | 'fold'): boolean;
   /**
    * Publishes what the simulation said about the last room designated.
    *

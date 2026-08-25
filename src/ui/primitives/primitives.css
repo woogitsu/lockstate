@@ -39,8 +39,30 @@
    declaration outranks it -- so a component that sets its own display stays
    on screen with the attribute set, still focusable and still clickable.
    Restating it at author level, with the attribute in the selector so it
-   outranks the component's own rule, is the whole fix. */
+   outranks the component's own rule, is the whole fix.
+
+   `.ui-panel__body` was the member of this list that was missing, and it was
+   missing for exactly the reason the paragraph above describes: `createPanel`
+   sets `body.hidden` to collapse a panel, but `hud.css` gives
+   `.hud-build > .ui-panel__body` and `.hud-rooms > .ui-panel__body` a flex
+   `display` of their own, so those two panels' collapse controls set the
+   attribute, flipped `data-collapsed`, announced `aria-expanded="false"` and
+   changed nothing on screen. Measured on the assembled page at 375x812, Rooms
+   tab, one prison saved: pressing "Collapse" left the panel 451.1px tall with
+   its body laid out at 404.1px and the largest square of bare world on the
+   page still 16px. Two classes are involved and neither of them owns the bug,
+   which is why the fix is here rather than a `:not([hidden])` on each -- a
+   third panel with its own `display` would have inherited the same defect.
+
+   That one entry carries `.ui-panel >` and the rest do not, and the prefix is
+   load-bearing rather than tidy: `.hud-rooms > .ui-panel__body` is two classes,
+   so a bare `.ui-panel__body[hidden]` ties it on specificity and loses on
+   source order -- `hud.css` is imported after this file. Measured with the bare
+   selector in place: the attribute was set, `data-collapsed` read `true`, and
+   the body was still laid out at 404.1px. The body is always the panel's own
+   child, so the prefix costs nothing and wins. */
 .ui-panel[hidden],
+.ui-panel > .ui-panel__body[hidden],
 .ui-choice[hidden],
 .ui-number[hidden],
 .ui-action[hidden],
