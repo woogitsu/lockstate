@@ -262,20 +262,67 @@ tick 1,000 with `failedCount: 0` and `accommodationBacklogTicks` at 196. A
 prison holding nothing zoned, or holding only a 6x6 canteen, is still refused
 -- visibly, as one alert row per press.
 
-**One hole this deliberately does not close.** `hasAccommodationTarget`
-answers about *any* classification group, because the group is a
-`prisoners.classification` draw made two stages later and asking for it at the
-command boundary would either move the draw or duplicate it
-(`docs/adr/0028-object-placement-and-derived-room-capacity.md`). So a prison
-holding a zoned `room.cell` and no `room.solitary-cell` admits an arrival that
-is then classified `high-risk`, whose target is `room.solitary-cell`, and which
-lands in the terminal `'failed'` stage. That is measured rather than inferred:
-with `priorIncidents: 5` and a 300,000-tick sentence, seeds 1, 4 and 12 reach
-tier 3, `failedCount` becomes 1, `counts.prisoners` reads 1 and
-`counts.prisonersInIntake` reads 0. It is **not reachable from the Intake
-panel**, whose `ADMISSION_REQUEST` sends 0 prior incidents and 10,000 ticks:
-that scores 0, the screening variance is `-1 | 0 | +1`, and across 300 seeds
-only tiers 0 and 1 occur. Closing it is owed work and is not done here.
+**The hole that used to be here is closed, and it was wider than it was
+recorded as being.** ADR 0028 decision 8 named a residual gap and left it as
+owed work: `hasAccommodationTarget` answered about *any* classification group,
+while the `accommodation-assignment` stage asked about *the* group the
+`prisoners.classification` draw returned two stages later, so the guard and the
+stage could disagree about the same prison. The ADR recorded one direction of
+that disagreement -- a zoned `room.cell`, no `room.solitary-cell`, an arrival
+classified `high-risk`, the terminal `'failed'` stage -- and recorded it as not
+reachable from the Intake panel. That much was right, and is provable rather
+than sampled: `classifyPrisoner` makes exactly one `nextInt(3)` draw, so
+`ADMISSION_REQUEST`'s 0 prior incidents and 10,000 ticks have three possible
+outcomes in total and all three clamp to tier 0 or 1.
+
+**The mirror direction was reachable, and certain rather than improbable.** A
+prison holding a zoned `room.solitary-cell` and no `room.cell` passed the same
+guard on high-risk's behalf, and every arrival the panel produces is
+`general-population` -- by the same arithmetic, and just as certainly -- so it
+resolved `room.cell`, found no instance, and was stranded in the terminal stage
+while the status strip counted it as a prisoner. Measured before the fix:
+2,000 of 2,000 seeds, no refusal recorded, `failedCount: 1`. The Rooms tab
+(#312) offers all 18 catalogued room types, so zoning a solitary cell before an
+ordinary one is an ordinary first move. The same trap was also in this
+repository's own determinism scenario, whose second arrival classifies
+`high-risk` into a prison of ordinary cells: on `origin/main` that arrival sat
+at `'failed'` with `failedCount: 1`, and the state-income test described it as
+one of four prisoners who "does not get" a place.
+
+**What closes it is one question asked in one place.**
+`IntakeSystem.resolveExistingTarget` is the first room type in a classification
+group's preference order of which the prison holds any instance, and both the
+boundary guard and the accommodation stage now call it -- so they cannot
+disagree. The guard asks it for *every* group rather than for some group, which
+is the only form that is true whatever the draw returns, and
+`DEFAULT_ACCOMMODATION_POLICY` names both housing types for both groups so that
+"every group" is satisfied by any prison holding either. The property this
+buys, asserted exhaustively over every subset of the accommodation room types
+crossed with every classification group in
+`tests/unit/prisoners-intake-system.test.ts`: **if
+`hasAccommodationTarget()` is true, no classification outcome can reach
+`'failed'`.**
+
+Two things it deliberately does not do. `'failed'` **stays terminal** -- no
+branch is added to `IntakeSystem.update` and `failedCount` still cannot go down
+(ADR 0028 decision 8) -- and the fallback fires only for a room type the prison
+holds **no instance of at all**, never for one that merely has no free place.
+A full preferred room stays a *wait* on that room, which keeps #306's
+distinction between "refused, and retrying cannot help" and "admitted, and
+waiting" intact in both directions. A prison holding both types is
+indistinguishable from before: high-risk still goes to solitary, everyone else
+to an ordinary cell.
+
+**The wider request shapes, for the record.** `admitPrisonerSchema` permits
+`priorIncidents` up to 255 and a sentence up to `0xffff_ffff`, which is far
+wider than the panel's constants, and high-risk needs only two prior incidents
+(or one plus a sentence at or over 200,000 ticks). A queued command is
+persisted in the save envelope as an unvalidated `jsonValue` and re-dispatched
+verbatim on restore, so that shape is a carrier that exists today rather than a
+hypothetical future producer -- measured: `priorIncidents: 5` with a
+300,000-tick sentence reached the terminal stage in 191 of 300 seeds before the
+fix, and in none after it. `priorIncidents` saturates rather than overflowing:
+`submitIntake` clamps to 255 and the classifier's term is `min(2, max(0, n))`.
 
 **Who is already in the cell (#79).** `findAvailable` asks three questions
 -- room type, an occupancy *count*, an object capability -- and never asks

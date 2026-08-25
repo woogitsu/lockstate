@@ -120,15 +120,26 @@ function step(runtime: SimulationRuntime, count: number): void {
  * How many occupied places this scenario actually settles at, read rather than
  * assumed.
  *
- * Three, not the four prisoners admitted: `IntakeSystem` houses an arrival
- * only when `findAvailable` returns an instance of the room type its
- * classification group resolves to, and one of the four does not get one. That
- * is precisely the distinction ADR 0017 decision 6 draws and this file exists
- * to respect -- the state pays for occupied *places*, so a prisoner who holds
- * no slot is not paid for, and a test that hard-coded "four prisoners means
- * four payments" would be asserting the wrong model while looking correct.
+ * Four, and the model this figure defends is unchanged: the state pays for
+ * occupied *places*, not for admitted prisoners (ADR 0017 decision 6), so this
+ * is read off `totalOccupancy` and never derived from a prisoner count. A test
+ * that hard-coded "four prisoners means four payments" would still be
+ * asserting the wrong model even now that the two numbers agree, which is why
+ * the first case below reads the registry rather than counting arrivals.
+ *
+ * It was 3 while the two numbers disagreed, and the reason they disagreed was
+ * a defect rather than the model: the second arrival classified `high-risk`,
+ * `DEFAULT_ACCOMMODATION_POLICY` sent that group to `room.solitary-cell`, this
+ * scenario registers no instance of one, and the arrival landed in the
+ * **terminal** `'failed'` stage -- a permanent, inert record the status strip
+ * still counted as a prisoner. The policy now names an ordinary cell as
+ * high-risk's fallback when the prison holds no solitary cell at all, so that
+ * arrival is housed and the scenario settles at four occupied places.
+ *
+ * The two numbers agreeing here is a property of this scenario, not a rule: it
+ * registers five cells for four arrivals. Nothing below assumes it.
  */
-const OCCUPIED_PLACES = 3;
+const OCCUPIED_PLACES = 4;
 const ONE_DAY_PAYMENT = STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS * OCCUPIED_PLACES;
 
 describe('a mid-day save neither loses the partial day nor pays for it twice', () => {
@@ -144,11 +155,12 @@ describe('a mid-day save neither loses the partial day nor pays for it twice', (
   it('restores the same accrual it had mid-day, because the accrual is recomputed from the tick', () => {
     const original = sessionAtTick(1_200);
     const accruedBefore = original.stateIncome.accruedThisDay(original.kernel.tick);
-    // Half a day at three places: `floor(300 x 3 x 1,201 / 2,400)`. Not half
-    // of `ONE_DAY_PAYMENT` exactly, because the day is prorated by ticks
-    // *served* including the one in progress -- which is the arithmetic the
-    // unit test pins and the reason this figure is spelled out.
-    expect(accruedBefore).toBe(450);
+    // Half a day at four places: `floor(300 x 4 x 1,201 / 2,400)`. Not half of
+    // `ONE_DAY_PAYMENT` exactly, because the day is prorated by ticks *served*
+    // including the one in progress, and the floor takes the trailing half
+    // minor unit -- which is the arithmetic the unit test pins and the reason
+    // this figure is spelled out rather than computed here.
+    expect(accruedBefore).toBe(600);
 
     const { restored } = saveAndLoad(original);
     expect(restored.kernel.tick).toBe(1_200);

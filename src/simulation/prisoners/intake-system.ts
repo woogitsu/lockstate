@@ -6,6 +6,7 @@ import { rateCellSharing, type CellSharingView } from './cell-sharing';
 import { classifyPrisoner, type ClassificationInput } from './classification';
 import {
   CLASSIFICATION_GROUP_IDS,
+  classificationGroupIdFromIndex,
   classificationGroupIndex,
   type PrisonerColdState,
   PrisonerRecordComponent,
@@ -21,17 +22,60 @@ export interface IntakeMetrics {
   readonly accommodationBacklogTicks: number;
 }
 
-export interface AccommodationPolicy {
-  /** Maps a classification group id to the room-catalog id and required object capability new arrivals of that group are assigned. */
-  resolveTarget(classificationGroupId: string): { readonly roomCatalogId: string; readonly requiredObjectCapability?: string };
+/** One room type an arrival of some classification group may be housed in, and the object capability that room must offer to hold them. */
+export interface AccommodationTarget {
+  readonly roomCatalogId: string;
+  readonly requiredObjectCapability?: string;
 }
 
+export interface AccommodationPolicy {
+  /**
+   * The room types new arrivals of a classification group may be housed in,
+   * **most preferred first**.
+   *
+   * An ordered list rather than the single target this returned before
+   * (#306), because a single target makes the terminal `'failed'` stage
+   * reachable from a prison the player built by hand and cannot un-build out
+   * of. See `IntakeSystem.resolveExistingTarget` for what consumes the order
+   * and, precisely, for the one condition under which a later entry is taken.
+   *
+   * Every entry is a real accommodation, not a consolation: an arrival housed
+   * against a fallback entry is `'completed'`, holds a room instance and is
+   * driven by `ActionSystem` exactly as one housed against the first entry is.
+   */
+  resolveTargets(classificationGroupId: string): readonly AccommodationTarget[];
+}
+
+const CELL: AccommodationTarget = { roomCatalogId: 'room.cell', requiredObjectCapability: 'sleep-surface' };
+const SOLITARY_CELL: AccommodationTarget = { roomCatalogId: 'room.solitary-cell', requiredObjectCapability: 'sleep-surface' };
+
+/**
+ * Both housing types, for both groups, each group's own type first.
+ *
+ * The preference is unchanged from #306 -- high-risk to solitary, everyone
+ * else to an ordinary cell -- and in a prison holding both types this policy
+ * is **indistinguishable** from the one it replaces, because a later entry is
+ * only ever consulted for a room type of which the prison holds no instance at
+ * all (`IntakeSystem.resolveExistingTarget`).
+ *
+ * The second entry is what makes the guard at the command boundary honest.
+ * `hasAccommodationTarget` cannot predict the classification draw -- it happens
+ * two stages later, on the `prisoners.classification` stream -- so the only
+ * guard it can offer that is true whatever that draw returns is "every group
+ * has somewhere to go". With one target per group that guard would refuse
+ * every admission into a prison holding a single housing type, including the
+ * ordinary-cell prison the shipped game is built around
+ * (`tests/integration/object-placement-loop.test.ts`). With both types listed
+ * for both groups it refuses none of them, and no draw can strand anybody.
+ *
+ * It is deliberately not a *balance* statement about who ought to sleep where:
+ * ADR 0028 decision 8 names the missing fallback as one of the two places this
+ * defect could be fixed, and this is the one that neither changes the stage
+ * machine nor takes accommodation away from a prison that already worked.
+ */
 export const DEFAULT_ACCOMMODATION_POLICY: AccommodationPolicy = {
-  resolveTarget(classificationGroupId) {
-    if (classificationGroupId === 'high-risk') {
-      return { roomCatalogId: 'room.solitary-cell', requiredObjectCapability: 'sleep-surface' };
-    }
-    return { roomCatalogId: 'room.cell', requiredObjectCapability: 'sleep-surface' };
+  resolveTargets(classificationGroupId) {
+    return classificationGroupId === 'high-risk' ? [SOLITARY_CELL, CELL] : [CELL, SOLITARY_CELL];
   },
 };
 
@@ -143,30 +187,89 @@ export class IntakeSystem implements SystemRegistration {
    * into -- that is a `prisoners.classification` draw made two stages later,
    * and asking for it here would either move the draw or duplicate it.
    *
-   * **That leaves one hole open, and open deliberately**
-   * (`docs/adr/0028-object-placement-and-derived-room-capacity.md`). Answering
-   * about *any* group means a prison holding a zoned `room.cell` and no
-   * `room.solitary-cell` passes this check, and an arrival then classified
-   * `high-risk` resolves to `room.solitary-cell`, finds no instance and lands
-   * in the terminal `'failed'` stage after all. Measured: with
-   * `priorIncidents: 5` and a 300,000-tick sentence, seeds 1, 4 and 12 reach
-   * tier 3 and `failedCount` becomes 1. It is not reachable from the Intake
-   * panel, whose figures score 0 against a screening variance of `-1 | 0 | +1`
-   * and so cannot produce tier 3 -- across 300 seeds only tiers 0 and 1 occur
-   * -- so it is owed work rather than a live defect, and closing it needs the
-   * per-group question this method must not ask.
+   * **The hole this used to leave open, and why it is closed rather than
+   * narrowed.** This asked whether *some* group had a target, which is not the
+   * question the boundary needs answered: the draw picks the group, so a guard
+   * that passes on one group's behalf promises nothing about the group the
+   * draw actually returns. Both directions were reachable and both were
+   * measured on this tree:
    *
-   * Cheap by construction: `CLASSIFICATION_GROUP_IDS` has two members and
-   * `allByRoomCatalogId` is the registry's cached, per-type lookup, so this is
-   * two map reads. It is called once per `AdmitPrisoner` command, never per
-   * tick.
+   * - A prison holding a zoned `room.solitary-cell` and no `room.cell` passed
+   *   the old check, and **every** arrival the Intake panel produces was then
+   *   classified `general-population`, resolved `room.cell`, found no instance
+   *   and landed in the terminal `'failed'` stage. Measured: 2,000 of 2,000
+   *   seeds, zero refusals recorded, `failedCount: 1`. Nothing about it was
+   *   improbable -- the panel's request scores 0 and the screening variance
+   *   clamps it to tier 0 or 1, so `general-population` is not merely likely
+   *   but certain, and the trap was certain with it. The Rooms tab (#312)
+   *   offers all 18 catalogued room types, `room.solitary-cell` among them,
+   *   so zoning one first is an ordinary thing for a player to do.
+   * - The mirror case, a `room.cell` prison and a `high-risk` arrival, is the
+   *   one ADR 0028 recorded. It is **not** reachable from the panel, and that
+   *   is provable rather than sampled: `classifyPrisoner` draws exactly one
+   *   `nextInt(3)`, so the panel's figures admit three outcomes in total and
+   *   all three clamp to tier 0 or 1. It is reachable from any wider
+   *   `AdmitPrisoner`, whose schema permits `priorIncidents` up to 255 -- and
+   *   a queued command is persisted in the save envelope as an unvalidated
+   *   `jsonValue` and re-dispatched verbatim on restore, so that shape is a
+   *   carrier that exists today rather than a future producer. Measured:
+   *   `priorIncidents: 5`, a 300,000-tick sentence, 191 of 300 seeds terminal.
+   *
+   * Both close the same way, and it is one line rather than a special case:
+   * **the guard and the stage now ask the same private question**
+   * (`resolveExistingTarget`), so they cannot disagree about a prison. The
+   * guard asks it for *every* group instead of some group, which is the only
+   * form that is true whatever the draw returns, and the policy lists a
+   * fallback per group so that "every group" is satisfied by any prison
+   * holding either housing type. The property that buys: **if this returns
+   * true, no classification outcome can reach `'failed'`** -- an arrival can
+   * only be housed or wait. `tests/unit/prisoners-intake-system.test.ts`
+   * asserts it over every combination of housing types and every group,
+   * exhaustively, so it fails if either side of the pair drifts.
+   *
+   * Cheap by construction: `CLASSIFICATION_GROUP_IDS` has two members, each
+   * resolves two targets and `allByRoomCatalogId` is the registry's cached,
+   * per-type lookup, so this is at most four map reads. It is called once per
+   * `AdmitPrisoner` command, never per tick.
    */
   public hasAccommodationTarget(): boolean {
     for (const classificationGroupId of CLASSIFICATION_GROUP_IDS) {
-      const target = this.accommodationPolicy.resolveTarget(classificationGroupId);
-      if (this.roomInstances.allByRoomCatalogId(target.roomCatalogId).length > 0) return true;
+      if (this.resolveExistingTarget(classificationGroupId) === undefined) return false;
     }
-    return false;
+    return true;
+  }
+
+  /**
+   * The first room type in a group's preference order of which this prison
+   * holds **any** instance, or `undefined` when it holds none of them.
+   *
+   * The single question behind both the boundary guard and the
+   * `accommodation-assignment` stage, which is the whole of the fix: two
+   * separate readings of "can this prison house this person" is what let the
+   * boundary admit somebody the stage then stranded.
+   *
+   * **"Any instance", never "an available instance", and the difference is
+   * load-bearing.** This is the structural test #306 drew the line on: a room
+   * type the prison holds no instance of can never accommodate anybody, and no
+   * amount of retrying changes that, so it is the one condition worth falling
+   * back from. A preferred room that *exists* but is full, or that lacks
+   * `'sleep-surface'` because no bed stands in it yet, is **not** fallen back
+   * from -- the caller keeps that target and waits on it, `findBestAvailable`
+   * returns nothing, `accommodationBacklogTicks` counts, and the arrival is
+   * housed the moment the player frees a place or places a bed. Falling back
+   * on a full room would quietly move a high-risk prisoner into general
+   * population for one tick's congestion, which is a balance decision this
+   * method is not entitled to make, and would erase the retryable/terminal
+   * distinction #306 exists to preserve.
+   *
+   * Draws nothing and iterates an authored array, so no named stream moves and
+   * no scenario fingerprint depends on it.
+   */
+  private resolveExistingTarget(classificationGroupId: string): AccommodationTarget | undefined {
+    for (const target of this.accommodationPolicy.resolveTargets(classificationGroupId)) {
+      if (this.roomInstances.allByRoomCatalogId(target.roomCatalogId).length > 0) return target;
+    }
+    return undefined;
   }
 
   public update(context: SimulationContext): void {
@@ -207,11 +310,28 @@ export class IntakeSystem implements SystemRegistration {
       }
 
       if (stage === 'accommodation-assignment') {
-        const groupId = ['general-population', 'high-risk'][this.records.classificationGroupIndex[index]!]!;
-        const target = this.accommodationPolicy.resolveTarget(groupId);
-        const availableAnywhere = this.roomInstances.allByRoomCatalogId(target.roomCatalogId);
+        // `classificationGroupIdFromIndex` rather than a second copy of
+        // `CLASSIFICATION_GROUP_IDS` written out as a literal here: the index
+        // is what the record stores and one of the two spellings would
+        // eventually be the stale one.
+        const groupId = classificationGroupIdFromIndex(this.records.classificationGroupIndex[index]!);
 
-        if (availableAnywhere.length === 0) {
+        // The same question `hasAccommodationTarget` asked at the command
+        // boundary, asked here about this arrival's own group now that the
+        // draw has happened. `undefined` means the prison holds no instance of
+        // any room type this group may be housed in -- the structural gap
+        // retrying can never close -- and it is the only route into `'failed'`,
+        // which stays terminal (ADR 0028 decision 8): no branch below matches
+        // it and none is added.
+        //
+        // Reaching it requires the boundary guard to have been bypassed or the
+        // prison to have lost every housing room since the admission, because
+        // the guard demands a target for *every* group and this needs one for
+        // one group. That is the intended relationship between the two, and
+        // `resolveExistingTarget`'s single definition is what keeps it true.
+        const target = this.resolveExistingTarget(groupId);
+
+        if (target === undefined) {
           this.records.intakeStage[index] = intakeStageIndex('failed');
           this.failedCount += 1;
           continue;

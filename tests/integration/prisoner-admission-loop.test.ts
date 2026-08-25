@@ -72,6 +72,7 @@ import { tileCoordinate } from '../../src/simulation/world/coordinates';
 const SEED = 11;
 const CELL = 'room.cell';
 const CANTEEN = 'room.canteen';
+const SOLITARY_CELL = 'room.solitary-cell';
 const PRISON_ID = 'admission-round-trip-prison';
 
 /** The tile `src/main.ts` admits at: the middle of the one chunk a new prison owns. */
@@ -259,6 +260,89 @@ describe('admitting a prisoner through the real command path (#261 step 4)', () 
     expect(projectStatusCounts(runtime, runtime.kernel.tick).prisoners).toBe(0);
     expect(runtime.refusals.count).toBe(1);
     expect(runtime.refusals.last?.reason).toBe('admit.no-accommodation');
+  });
+
+  it('admits into a solitary-cell-only prison and leaves the arrival waiting, where it used to be stranded for ever', () => {
+    /*
+     * The reproduction of the hole ADR 0028 decision 8 left open, taken from
+     * the direction nobody had looked in -- and the direction that was
+     * *certain* rather than improbable.
+     *
+     * The ADR recorded the mirror case: a `room.cell` prison and an arrival
+     * classified `high-risk`, whose target `room.solitary-cell` has no
+     * instance, landing in the terminal `'failed'` stage. It also recorded that
+     * this is unreachable from the Intake panel, which is true, and stronger
+     * than the 300-seed sweep it was measured with:
+     * `classifyPrisoner` makes exactly one `nextInt(3)` draw, so the panel's
+     * request has three possible outcomes in total and all three clamp to tier
+     * 0 or 1 (`tests/unit/prisoners-classification.test.ts` enumerates them).
+     *
+     * Reversing the prison reverses the conclusion. `hasAccommodationTarget`
+     * passed on high-risk's behalf; every arrival the panel produces is
+     * `general-population`, by the same arithmetic and just as certainly; its
+     * target `room.cell` had no instance; and it was stranded. Measured on the
+     * tree before the fix: 2,000 of 2,000 seeds reached `'failed'` with no
+     * refusal recorded and `failedCount: 1`, while `counts.prisoners` read 1.
+     * Nothing about the setup is exotic -- the Rooms tab (#312) offers all 18
+     * catalogued room types and `room.solitary-cell` is one of them, so zoning
+     * a solitary cell before an ordinary one is an ordinary first move.
+     *
+     * What it does now is the case #306 explicitly allows: admit, and wait.
+     * `DEFAULT_ACCOMMODATION_POLICY` names an ordinary cell and a solitary cell
+     * for both groups, and `resolveExistingTarget` takes the second when the
+     * prison holds no instance of the first, so the arrival holds a real target
+     * and waits on it for capacity -- retryable, counted, and left the moment a
+     * bed is placed.
+     */
+    const runtime = createNewSimulationRuntime(SEED);
+    // `room.solitary-cell`'s authored minimum is 2x2, read from the catalogue
+    // rather than assumed; the zoning service evaluates it since #312.
+    submit(runtime, 'cmd-zone-solitary', packCommand({ type: 'ZoneRoom', roomId: SOLITARY_CELL, x: 4, y: 6, width: 2, height: 2 }));
+    // Asserted before the admission so a solitary cell refused for its own
+    // reasons cannot pass for the admission behaviour under test.
+    expect(runtime.refusals.count, 'the solitary cell must actually be zoned').toBe(0);
+    expect(projectStatusCounts(runtime, runtime.kernel.tick).rooms).toBe(1);
+
+    admit(runtime, 'cmd-admit');
+
+    // Admitted, not refused: this prison does hold accommodation, so refusing
+    // would be the wrong answer and is not the fix.
+    expect(runtime.refusals.count, 'a prison with a solitary cell has somewhere to put somebody').toBe(0);
+    const counts = projectStatusCounts(runtime, runtime.kernel.tick);
+    expect(counts.prisoners).toBe(1);
+
+    const index = onlyPrisonerIndex(runtime);
+    stepTo(runtime, 400);
+
+    // The whole point. Not `'failed'`, and stated as the positive fact rather
+    // than only as the absence of the negative one.
+    expect(stageOf(runtime, index), 'the arrival must be waiting on a place, not stranded without a target').toBe(
+      'accommodation-assignment',
+    );
+    expect(runtime.prisoners.intakeSystem.getMetrics().failedCount).toBe(0);
+    expect(
+      runtime.prisoners.intakeSystem.getMetrics().accommodationBacklogTicks,
+      'the wait must be counted as unmet demand rather than being silent',
+    ).toBeGreaterThan(0);
+
+    // And it is the *retryable* wait, not a differently-spelled dead end: the
+    // arrivals-backlog readout counts it, which `'failed'` is excluded from.
+    expect(projectStatusCounts(runtime, runtime.kernel.tick).prisonersInIntake).toBe(1);
+
+    // The wait ends the way ADR 0028 decision 8 says it must -- by the room
+    // gaining capacity, with no change to the stage machine. Written onto the
+    // registry directly because the subject here is intake's exit from the
+    // wait; `tests/integration/object-placement-loop.test.ts` drives the real
+    // placement route into the same state.
+    const instance = runtime.prisoners.roomInstances.allByRoomCatalogId(SOLITARY_CELL)[0]!;
+    runtime.prisoners.roomInstances.updateDerived(instance.instanceId, {
+      residentCapacity: 1,
+      concurrentUseCapacity: 1,
+      objectCapabilities: ['sleep-surface'],
+    });
+    stepTo(runtime, 410);
+    expect(stageOf(runtime, index), 'a place freeing up must complete the arrival that was waiting for it').toBe('completed');
+    expect(runtime.prisoners.coldState.getAccommodation(runtime.prisoners.entityStore.getIdByIndex(index)!)).toBe(instance.instanceId);
   });
 
   it('is refusing something unrecoverable: an arrival that fails accommodation never recovers, even once a room exists', () => {

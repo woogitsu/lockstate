@@ -5,9 +5,17 @@ import { EntityStore } from '../../src/simulation/entity/entity-store';
 import { EntityQuery } from '../../src/simulation/entity/query';
 import { deriveXoshiroState } from '../../src/simulation/rng/seed';
 import { NamedRngStreams } from '../../src/simulation/rng/streams';
-import { PrisonerColdState, PrisonerRecordComponent, classificationGroupIndex, intakeStageIndex } from '../../src/simulation/prisoners/components';
-import { IntakeSystem } from '../../src/simulation/prisoners/intake-system';
+import {
+  CLASSIFICATION_GROUP_IDS,
+  PrisonerColdState,
+  PrisonerRecordComponent,
+  classificationGroupIndex,
+  intakeStageFromIndex,
+  intakeStageIndex,
+} from '../../src/simulation/prisoners/components';
+import { DEFAULT_ACCOMMODATION_POLICY, IntakeSystem } from '../../src/simulation/prisoners/intake-system';
 import { RoomInstanceRegistry } from '../../src/simulation/prisoners/room-instance-registry';
+import { defaultRoomContentRegistry } from '../../src/content/room-catalog';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
@@ -484,5 +492,229 @@ describe('IntakeSystem: deterministic stage-by-stage pipeline', () => {
     expect(fixture.prisoners.roomInstances.occupancyOf(firstCell!)).toBe(1);
     // DEFECT: and the metric counts one prisoner as two completed intakes.
     expect(fixture.prisoners.intakeSystem.getMetrics().completedCount).toBe(2);
+  });
+  /**
+   * The property the whole admission guard exists to provide, asserted over
+   * every prison shape rather than over the one a panel happens to produce.
+   *
+   * **If `hasAccommodationTarget()` is true, no classification outcome can
+   * reach `'failed'`.** That stage is terminal -- no branch of `update` matches
+   * it, `ActionSystem` gates on `'completed'`, and nothing in `src/` releases a
+   * prisoner (#31) -- so an admission the boundary allows and the stage machine
+   * then strands is a permanent, inert, undeletable record that the status
+   * strip still counts as a prisoner. The guard's only job is to make that
+   * combination impossible, and before this it did not: it answered about
+   * *some* classification group while the stage asked about *the* group the
+   * `prisoners.classification` draw returned two stages later, so the two could
+   * and did disagree about the same prison.
+   *
+   * Both directions of that disagreement were reachable and both are covered
+   * below by construction, because the sweep does not care which group is
+   * "the special one":
+   *
+   * - `room.solitary-cell` zoned and no `room.cell`: the guard passed on
+   *   high-risk's behalf, and every arrival the Intake panel produces is
+   *   `general-population` -- not merely usually, but provably, since the
+   *   panel's figures score 0 and one `nextInt(3)` cannot lift a 0 past tier 1
+   *   (`prisoners-classification.test.ts`). Measured before the fix: 2,000 of
+   *   2,000 seeds terminal, no refusal recorded.
+   * - `room.cell` zoned and no `room.solitary-cell`: the case ADR 0028
+   *   recorded. Unreachable from the panel, reachable from any wider
+   *   `AdmitPrisoner` -- the schema permits `priorIncidents` up to 255, and a
+   *   queued command is persisted in the save envelope as an unvalidated
+   *   `jsonValue` and re-dispatched verbatim on restore. Measured before the
+   *   fix: 191 of 300 seeds terminal.
+   *
+   * This is written as an exhaustive sweep and not as two cases on purpose. It
+   * enumerates every subset of the accommodation room types crossed with every
+   * classification group, drives the real `IntakeSystem` for each, and asserts
+   * the implication in both directions -- so it fails if a third room type
+   * enters the policy without a fallback, if a third classification group is
+   * added, or if either side of the guard/stage pair is ever edited without the
+   * other. It does not encode which subsets pass; it derives that from the
+   * guard and then checks the outcome against it.
+   */
+  describe('the guard and the stage cannot disagree about a prison', () => {
+    /** Every room type `DEFAULT_ACCOMMODATION_POLICY` can name, so the sweep covers the policy rather than a guess about it. */
+    const ACCOMMODATION_ROOM_IDS = ['room.cell', 'room.solitary-cell'] as const;
+
+    /**
+     * A prison holding one registered instance of each named room type, with a
+     * bed's worth of derived capacity so a reached instance is actually
+     * assignable.
+     *
+     * `residentCapacity: 1` and `'sleep-surface'` are what object placement
+     * derives from a placed bed (ADR 0028 decision 2); they are set directly
+     * here because the subject is the stage machine's target *resolution*, and
+     * a registry-wide capacity of 0 would make every case wait for a bed and
+     * hide the distinction being measured. The waiting case has its own test
+     * above.
+     */
+    function prisonHolding(roomCatalogIds: readonly string[]) {
+      const capacity = 8;
+      const store = new EntityStore(capacity);
+      const bitset = new ComponentBitset(capacity);
+      const query = new EntityQuery(store, bitset);
+      query.mask.require(0);
+      const records = new PrisonerRecordComponent(capacity);
+      const coldState = new PrisonerColdState();
+      const roomInstances = new RoomInstanceRegistry();
+      for (const roomCatalogId of roomCatalogIds) {
+        roomInstances.register({
+          instanceId: `${roomCatalogId}-1`,
+          roomCatalogId,
+          anchorTile: { x: tileCoordinate(0), y: tileCoordinate(0) },
+          width: 2,
+          height: 2,
+          residentCapacity: 1,
+          concurrentUseCapacity: 1,
+          objectCapabilities: ['sleep-surface'],
+        });
+      }
+      const intakeSystem = new IntakeSystem(store, query, records, coldState, roomInstances);
+      return { store, bitset, records, coldState, roomInstances, intakeSystem };
+    }
+
+    /**
+     * Runs one arrival all the way through intake and forces its
+     * classification group, so the sweep covers every group instead of
+     * whichever one the seed's draw happens to produce.
+     *
+     * The group is written onto the record *after* the classification stage has
+     * run and before the accommodation stage does. That is the only honest way
+     * to reach a specific group here: the draw is `IntakeSystem`'s own and
+     * must not be moved or duplicated to satisfy a test, and the stage under
+     * test reads `classificationGroupIndex` and nothing else. The classifier's
+     * own mapping from input to group is covered exhaustively by
+     * `prisoners-classification.test.ts`; what this needs is the stage's
+     * behaviour given a group.
+     */
+    function admitAs(prison: ReturnType<typeof prisonHolding>, classificationGroupId: string): string {
+      const kernel = makeKernel();
+      kernel.registerSystem(prison.intakeSystem);
+      const entityId = prison.store.spawn();
+      const index = prison.store.getIndex(entityId);
+      prison.bitset.add(index, 0);
+      prison.intakeSystem.submitIntake(entityId, { sentenceLengthTicks: 1_000, priorIncidents: 0 });
+
+      // Ticks 0, 5 and 10 carry the arrival 'queued' -> 'reception' ->
+      // 'classification' -> 'accommodation-assignment'.
+      for (let tick = 0; tick < 11; tick += 1) kernel.step();
+      expect(prison.records.intakeStage[index], 'the arrival must be waiting on accommodation before its group is set').toBe(
+        intakeStageIndex('accommodation-assignment'),
+      );
+      prison.records.classificationGroupIndex[index] = classificationGroupIndex(classificationGroupId);
+
+      // And enough further firings that a retryable wait is distinguishable
+      // from a terminal stage rather than merely slower to arrive.
+      for (let tick = 0; tick < 100; tick += 1) kernel.step();
+      return intakeStageFromIndex(prison.records.intakeStage[index]!);
+    }
+
+    /** Every subset of the accommodation room types, empty set included. */
+    const subsets: readonly (readonly string[])[] = Array.from(
+      { length: 1 << ACCOMMODATION_ROOM_IDS.length },
+      (_, mask) => ACCOMMODATION_ROOM_IDS.filter((_room, bit) => (mask & (1 << bit)) !== 0),
+    );
+
+    it('never lets a guarded admission reach the terminal stage, for any group in any prison', () => {
+      const observed: string[] = [];
+      for (const rooms of subsets) {
+        const guardAnswer = prisonHolding(rooms).intakeSystem.hasAccommodationTarget();
+        for (const classificationGroupId of CLASSIFICATION_GROUP_IDS) {
+          const stage = admitAs(prisonHolding(rooms), classificationGroupId);
+          observed.push(`[${rooms.join(',')}] ${classificationGroupId} guard=${String(guardAnswer)} -> ${stage}`);
+
+          if (guardAnswer) {
+            // The implication itself. `'completed'` or a retryable wait are
+            // both fine -- #306 keeps those distinct from each other and only
+            // the terminal stage is the trap.
+            expect(stage, `a guarded admission must never be stranded: [${rooms.join(',')}] as ${classificationGroupId}`).not.toBe('failed');
+          } else {
+            // The converse, so the guard cannot buy the implication by
+            // refusing everything: a prison it rejects is one where this group
+            // really has nowhere to go.
+            expect(stage, `an unguarded prison must be the structurally impossible one: [${rooms.join(',')}]`).toBe('failed');
+          }
+        }
+      }
+
+      // The shape of the sweep, pinned so a silently empty or halved
+      // enumeration cannot pass as a proof about every prison.
+      expect(observed).toEqual([
+        '[] general-population guard=false -> failed',
+        '[] high-risk guard=false -> failed',
+        '[room.cell] general-population guard=true -> completed',
+        '[room.cell] high-risk guard=true -> completed',
+        '[room.solitary-cell] general-population guard=true -> completed',
+        '[room.solitary-cell] high-risk guard=true -> completed',
+        '[room.cell,room.solitary-cell] general-population guard=true -> completed',
+        '[room.cell,room.solitary-cell] high-risk guard=true -> completed',
+      ]);
+    });
+
+    it('houses each group in its own preferred room type whenever the prison holds one', () => {
+      // The fallback must not become the *ordinary* path: a prison with both
+      // types has to keep sending high-risk to solitary and everyone else to an
+      // ordinary cell, or the fix would have quietly replaced the policy rather
+      // than extended it.
+      for (const classificationGroupId of CLASSIFICATION_GROUP_IDS) {
+        const prison = prisonHolding(ACCOMMODATION_ROOM_IDS);
+        const stage = admitAs(prison, classificationGroupId);
+        expect(stage).toBe('completed');
+        const expected = classificationGroupId === 'high-risk' ? 'room.solitary-cell-1' : 'room.cell-1';
+        expect(prison.roomInstances.instancesOccupiedBy(prison.store.getIdByIndex(0)!)).toEqual([expected]);
+      }
+    });
+
+    /**
+     * The policy names room ids as string literals, and content owns those
+     * strings -- so this is a content-to-code coupling with nothing holding it
+     * together, which is the third route by which the terminal stage was
+     * reachable and the only one that needs no code change at all.
+     *
+     * A content edit that renamed or dropped `room.cell` would leave the policy
+     * pointing at a room type no zoning gesture can ever produce. Since the
+     * guard now demands a target for *every* group, the failure mode that edit
+     * produces is "no admission is ever accepted" rather than "every arrival is
+     * stranded" -- which is a far better way to fail, and is a property of the
+     * fix rather than of content. It is still a broken game, and it should be a
+     * red test rather than something a player discovers, which is what this is.
+     *
+     * `defaultRoomContentRegistry` rather than a hand-written list of the two
+     * ids: a list here would be the same unheld coupling one layer further out.
+     */
+    it('names only room types the room catalogue actually defines', () => {
+      const catalogued = new Set([...defaultRoomContentRegistry.all()].map((definition) => definition.id));
+      for (const classificationGroupId of CLASSIFICATION_GROUP_IDS) {
+        const targets = DEFAULT_ACCOMMODATION_POLICY.resolveTargets(classificationGroupId);
+        expect(targets.length, `every group needs a fallback, or the guard refuses prisons it should admit: ${classificationGroupId}`).toBeGreaterThan(1);
+        for (const target of targets) {
+          expect(catalogued, `${classificationGroupId} is sent to ${target.roomCatalogId}, which content does not define`).toContain(target.roomCatalogId);
+        }
+      }
+    });
+
+    it('falls back only for a room type the prison holds no instance of, never for one that is merely full', () => {
+      // The line #306 drew, and the one thing this fix must not blur. A
+      // preferred room that exists but has no free place is a *wait* -- the
+      // arrival keeps that target, `accommodationBacklogTicks` counts, and a
+      // freed place or a placed bed completes it. Falling back here instead
+      // would move a high-risk prisoner into general population over one
+      // tick's congestion and would erase the retryable/terminal distinction.
+      const prison = prisonHolding(ACCOMMODATION_ROOM_IDS);
+
+      // Fill the only solitary cell, so high-risk's preferred target exists
+      // and is full while its fallback stands empty.
+      const resident = prison.store.spawn();
+      prison.roomInstances.assign('room.solitary-cell-1', resident);
+      expect(prison.roomInstances.occupancyOf('room.solitary-cell-1')).toBe(1);
+
+      const stage = admitAs(prison, 'high-risk');
+      expect(stage, 'a full preferred room is a wait, not a fallback and not a failure').toBe('accommodation-assignment');
+      expect(prison.roomInstances.occupancyOf('room.cell-1'), 'the empty ordinary cell must not have been taken').toBe(0);
+      expect(prison.intakeSystem.getMetrics().failedCount).toBe(0);
+      expect(prison.intakeSystem.getMetrics().accommodationBacklogTicks, 'the wait must be counted as unmet demand').toBeGreaterThan(0);
+    });
   });
 });
