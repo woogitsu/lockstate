@@ -50,7 +50,7 @@ import {
  * and `build-tool.ts:9-15` explains at length why it is the one module allowed
  * to know both halves.) So "must not import the simulation" would be false
  * here, and asserting a false rule with five exemptions produces the list
- * nobody reads that `src/content/validate-catalog.ts` argues against.
+ * nobody reads that `tests/helpers/simulation-enum-source.ts` argues against.
  *
  * What was missing is narrower and real: **the rule and its exception existed
  * only in prose.** Nothing distinguished "orchestration, allowed" from "a

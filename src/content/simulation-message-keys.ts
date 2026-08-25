@@ -51,7 +51,8 @@ import type { LocalizationKey } from './localization';
  * `tests/unit/simulation-message-keys.test.ts` reads each declaration out
  * of the real source text (the technique
  * `tests/determinism/ambient-nondeterminism-contract.test.ts` already uses,
- * with the rules themselves living in `validate-catalog.ts`) and fails when
+ * with the rules themselves living in
+ * `tests/helpers/simulation-enum-source.ts`) and fails when
  * a declared value has no label here -- so a need or an incident type added
  * to the simulation cannot ship without a key. The same test scans
  * `src/simulation/` and `src/content/` for enum-shaped declarations that no

@@ -87,8 +87,9 @@ describe('stripComments does not remove code that looks like a comment', () => {
   it('leaves a line-comment opener inside a regular expression literal alone', () => {
     // `/https:\/\//` ends in `\/` immediately followed by the closing `/`, so
     // the last two characters of the body read as `//` to anything that is not
-    // tracking the literal. `src/content/validate-catalog.ts:73` is exactly
-    // this shape and lost the rest of its line.
+    // tracking the literal. The `stripSourceComments` one-liner that used to
+    // sit in `src/content/validate-catalog.ts` was exactly this shape and lost
+    // the rest of its own line; #307 deleted it in favour of this scanner.
     const source = 'const re = /https:\\/\\//;\nconst kept = 8;';
     expect(stripComments(source)).toBe(source);
   });

@@ -23,7 +23,7 @@
  *
  * The rules live here rather than as regexes inside the test that runs them,
  * the same split `tests/helpers/canonical-iteration.ts` and
- * `src/content/validate-catalog.ts` use: reading the filesystem is the test's
+ * `tests/helpers/simulation-enum-source.ts` use: reading the filesystem is the test's
  * job, and keeping the scanning rules in an exported module means they are
  * typed and exercised against fixtures instead of only ever running against
  * real sources, where a pattern that quietly stopped matching would look
@@ -59,7 +59,7 @@
  * module-load loop is the clearest possible wiring -- it cannot be skipped by
  * a caller who forgets -- and flagging it would put a permanent allow-list
  * entry in the list whose reason is "this is not what the rule is about".
- * `src/content/validate-catalog.ts` makes that argument about enum discovery
+ * `tests/helpers/simulation-enum-source.ts` makes that argument about enum discovery
  * and `tests/helpers/canonical-iteration.ts` repeats it about locals: an
  * allow-list padded with non-hazards is the list nobody reads, and a list
  * nobody reads enforces nothing.
@@ -68,10 +68,10 @@
  *
  * - **Only the `assert*` prefix.** An enforcer named `ensureFoo` or
  *   `requireFoo` is invisible here. Measured on the current tree: `src/` has
- *   seven exported `validate*`/`check*`/`require*` functions and every one of
+ *   six exported `validate*`/`check*`/`require*` functions and every one of
  *   them *returns* a result rather than throwing
  *   (`validateRoomObjectReferences`, `checkDoorAccess`,
- *   `requirePrisonSlotMetadata`, ...), so widening the prefix would add seven
+ *   `requirePrisonSlotMetadata`, ...), so widening the prefix would add six
  *   entries whose reason is "this is not an invariant enforcer". The three
  *   throwing enforcers in `src/` all spell it `assert*`, which is why the
  *   naming convention is a usable proxy today; it stops being one the moment

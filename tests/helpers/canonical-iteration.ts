@@ -11,20 +11,24 @@
  * which point a save fingerprint diverges with no proximate cause.
  *
  * The rules live here rather than as regexes inside the test that runs them,
- * the same split `src/content/validate-catalog.ts` and
+ * the same split `tests/helpers/simulation-enum-source.ts` and
  * `tests/unit/simulation-message-keys.test.ts` use: reading files is the
  * test's job, and keeping the scanning rules in an exported module means they
  * are typed and exercised against fixtures instead of only ever running
  * against real sources, where they can quietly stop matching. This module is
  * test-only static analysis with no runtime consumer, so it lives under
  * `tests/helpers/` (still inside `tsconfig.json`'s `include`) rather than in
- * `src/`, which would ship it.
+ * `src/`, which would ship it. That is also why the enum-source rules named
+ * above are a sibling here rather than the back half of
+ * `src/content/validate-catalog.ts`, where they were until #307: they had no
+ * runtime importer either, and being in `src/` had cost them a second, broken
+ * copy of the stripper below.
  *
  * ## What is checked, and what is deliberately not
  *
  * Flagging every `for (const x of map)` in the repository would produce a
  * list nobody reads, and a list nobody reads enforces nothing --
- * `validate-catalog.ts` makes that argument about enum discovery and it
+ * `simulation-enum-source.ts` makes that argument about enum discovery and it
  * applies here too. So the scan recognises exactly the two shapes by which a
  * `Map`/`Set` in this codebase is actually enumerated:
  *
