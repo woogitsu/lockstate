@@ -160,7 +160,16 @@ describe('the simulation iterates collections in a canonical order', () => {
     expect(SCANNED.map((entry) => entry.file)).toContain('src/persistence/save-schema.ts');
     // Non-vacuous: an empty violation list means nothing if nothing was found
     // to look at. Most of these sites sort, which is the point.
-    expect(REPORT.siteCount).toBeGreaterThan(40);
+    //
+    // A FLOOR AT THE MEASURED VALUE, on the model of the three in
+    // `tests/foundation/localization-key-completeness.test.ts` and for the
+    // reason #198 gave there: `toBeGreaterThan(40)` against 53 sites admitted
+    // the loss of a quarter of the corpus without a word. #278 was exactly
+    // that loss -- the shared stripper blanked 80 consecutive lines of
+    // `src/content/default-locale-en.ts`, a file in this scan, and a violation
+    // injected into them passed this gate. Adding an enumeration must stay
+    // free; losing one must fail, and at the measured value any loss does.
+    expect(REPORT.siteCount, 'fewer enumerations found than when this floor was set -- the scan lost corpus').toBeGreaterThanOrEqual(53);
   });
 
   it('reads the real array `.entries()` in save-schema.ts as the array it is', () => {
