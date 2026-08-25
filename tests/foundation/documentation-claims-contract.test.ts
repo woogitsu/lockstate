@@ -399,3 +399,322 @@ describe('docs/ROADMAP.md: Phase 0 claims only what the repository has', () => {
     }
   });
 });
+
+/**
+ * Counts a document states about the code, asserted against the code.
+ *
+ * Every claim below is a **number in prose** that nothing recomputed. That is
+ * the failure mode this repository keeps paying for, and it has a shape: a
+ * figure is measured once, written into a sentence, and then the thing it
+ * counted grows. The sentence stays, reads as settled fact, and the next agent
+ * plans against it. Measured in one sweep at v0.0.37: the browser suite had
+ * gone from 101 tests to 126, the save panel from five buttons to six and from
+ * eighteen status sentences to twenty-five, the production bundle from 201
+ * modules to 285, and `docs/HUD_PROJECTIONS.md` claimed "the other nine
+ * projections" about a directory holding nine in total.
+ *
+ * None of those was caught by a test, because none of them *had* one. What
+ * follows is the gate, not the correction -- the corrections are in the
+ * documents. Each assertion reads the number **out of the document** and
+ * compares it with a measurement, so the only way to change the code is to
+ * change the sentence in the same commit, and both directions fail.
+ */
+
+/** Number words this file can read out of prose. */
+const NUMBER_WORDS: readonly string[] = [
+  'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+  'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen',
+  'nineteen', 'twenty', 'twenty-one', 'twenty-two', 'twenty-three', 'twenty-four', 'twenty-five',
+  'twenty-six', 'twenty-seven', 'twenty-eight', 'twenty-nine', 'thirty',
+];
+
+function numberWord(value: number): string {
+  const word = NUMBER_WORDS[value];
+  expect(word, `add ${value} to this file's number-word table`).toBeDefined();
+  return word!;
+}
+
+/**
+ * Whitespace-collapsed, lower-cased document text.
+ *
+ * Collapsed because prose wraps and a claim can straddle a line break -- the
+ * status-counts gate above failed its own first run on `carries eleven\ninteger
+ * s` in a document that said exactly the right thing. Lower-cased because
+ * several of these phrases open a sentence in one document and sit mid-sentence
+ * in another, and a gate that turned on a capital letter would be a gate about
+ * punctuation.
+ */
+async function collapsedDocument(relativePath: string): Promise<string> {
+  return (await readFile(path.join(repositoryRoot, relativePath), 'utf8')).replace(/\s+/gu, ' ').toLowerCase();
+}
+
+describe('the toolchain versions the documents tell a contributor to install', () => {
+  /*
+   * `README.md` and `docs/DEPENDENCY_POLICY.md` both state the Node and pnpm
+   * pins as literals, and nothing recomputed either. `repository-contract.test.ts`
+   * says in its own words why that matters -- "a fourth [literal pin] would go
+   * stale silently on the next bump" -- and then checks only
+   * `.claude/hooks/session-start.sh`, so these two were exactly the fourth and
+   * fifth.
+   *
+   * Both are right today; this is the gate, not a correction. It is also the
+   * highest-consequence pair in this file: they are the first instruction a
+   * contributor follows, and a stale one sends them to a Node that
+   * `engines` then refuses.
+   *
+   * Deliberately *not* every occurrence of the version string. `docs/PERSISTENCE.md`
+   * names "Node 24.19.0" as the machine a measurement ran on, and that sentence
+   * must **not** change when the pin moves -- it would stop describing the run
+   * it reports. What is pinned here is the sentences that tell someone what to
+   * install.
+   */
+  it('states the pinned Node and pnpm versions, and states the pinned ones', async () => {
+    const nodeVersion = (await readFile(path.join(repositoryRoot, '.node-version'), 'utf8')).trim();
+    const packageJson = JSON.parse(await readFile(path.join(repositoryRoot, 'package.json'), 'utf8')) as {
+      readonly packageManager: string;
+    };
+    const pnpmVersion = packageJson.packageManager.replace(/^pnpm@/u, '');
+
+    expect(nodeVersion, '.node-version is empty; this gate is measuring nothing').toMatch(/^\d+\.\d+\.\d+$/u);
+    expect(pnpmVersion, 'package.json packageManager is not pnpm@x.y.z').toMatch(/^\d+\.\d+\.\d+$/u);
+
+    const readme = await collapsedDocument('README.md');
+    for (const sentence of [
+      `required versions are node.js ${nodeVersion} and pnpm ${pnpmVersion}.`,
+      `corepack prepare pnpm@${pnpmVersion} --activate`,
+    ]) {
+      expect(readme.includes(sentence), `README.md must say "${sentence}"`).toBe(true);
+    }
+
+    const policy = await collapsedDocument(path.join('docs', 'DEPENDENCY_POLICY.md'));
+    for (const sentence of [
+      `node.js \`${nodeVersion}\` lts, recorded in \`.node-version\``,
+      `pnpm \`${pnpmVersion}\`, recorded in \`packagemanager\``,
+      `corepack prepare pnpm@${pnpmVersion} --activate`,
+    ]) {
+      expect(policy.includes(sentence), `docs/DEPENDENCY_POLICY.md must say "${sentence}"`).toBe(true);
+    }
+  });
+});
+
+describe('docs/CONTENT.md: the representative catalogs are the size it says', () => {
+  /*
+   * `docs/CONTENT.md`'s "Representative catalog scope" states three exact
+   * sizes -- 18 rooms, 20 objects, 8 staff roles -- and until this gate the
+   * only assertions over those catalogs were `toBeGreaterThanOrEqual(10)` and
+   * a department-set equality. A catalog could therefore grow or shrink by any
+   * amount, in either direction, with the whole suite green and the document
+   * wrong.
+   *
+   * The sizes are load-bearing rather than trivia: ADR 0017 decision 4 reasons
+   * about how many declared ids are unread and
+   * `tests/foundation/unconsumed-content-contract.test.ts` pins the
+   * denominator at 62, and both arguments are about *these* numbers.
+   */
+  it('states each catalog size, and states the one the code has', async () => {
+    const { defaultObjectRegistry, defaultRoomContentRegistry, defaultStaffRoleRegistry } = await import(
+      '../../src/content/index'
+    );
+    const content = await collapsedDocument(path.join('docs', 'CONTENT.md'));
+
+    const measured: Readonly<Record<string, number>> = {
+      rooms: defaultRoomContentRegistry.size(),
+      objects: defaultObjectRegistry.size(),
+      'staff roles': defaultStaffRoleRegistry.size(),
+    };
+
+    // Vacuity guard: a registry that failed to load would report 0, and the
+    // assertions below would then fail for the wrong reason. Say which.
+    for (const [what, count] of Object.entries(measured)) {
+      expect(count, `no ${what} loaded; the content registries are not what is being measured`).toBeGreaterThan(1);
+    }
+
+    for (const [what, count] of Object.entries(measured)) {
+      expect(
+        content.includes(`**${count} ${what}**`),
+        `docs/CONTENT.md's "Representative catalog scope" must say "**${count} ${what}**"; the catalog holds ${count}`,
+      ).toBe(true);
+    }
+  });
+});
+
+describe('docs/PERSISTENCE.md: the save panel has the strings it says it has', () => {
+  /*
+   * The panel's string inventory, which #287 moved without moving the
+   * sentence. `docs/PERSISTENCE.md` said "the five buttons ... and the
+   * seventeen status sentences" while `SAVE_PANEL_MESSAGE_KEY` held six
+   * `save.action.*` keys and twenty-five `save.status.*` ones -- Import plus
+   * the seven distinguishable outcomes it can report. The seventeen was wrong
+   * on the day it was typed as well: #208 shipped eighteen.
+   *
+   * Read off the frozen key object rather than off the panel's DOM, because
+   * that object is what `tests/foundation/localization-key-completeness.test.ts`
+   * already treats as the panel's whole vocabulary.
+   */
+  it('counts the buttons and the status sentences the way the panel declares them', async () => {
+    const { SAVE_PANEL_MESSAGE_KEYS } = await import('../../src/ui/save-panel-messages');
+    const persistence = await collapsedDocument(path.join('docs', 'PERSISTENCE.md'));
+
+    const buttons = SAVE_PANEL_MESSAGE_KEYS.filter((key) => key.startsWith('save.action.')).length;
+    const statuses = SAVE_PANEL_MESSAGE_KEYS.filter((key) => key.startsWith('save.status.')).length;
+    expect(buttons, 'no save.action.* keys found; this gate is measuring nothing').toBeGreaterThan(1);
+    expect(statuses, 'no save.status.* keys found; this gate is measuring nothing').toBeGreaterThan(1);
+
+    expect(
+      persistence.includes(`the ${numberWord(buttons)} buttons`),
+      `docs/PERSISTENCE.md must say "the ${numberWord(buttons)} buttons": SAVE_PANEL_MESSAGE_KEY declares ${buttons} save.action.* keys`,
+    ).toBe(true);
+    expect(
+      persistence.includes(`${numberWord(statuses)} status sentences`),
+      `docs/PERSISTENCE.md must say "${numberWord(statuses)} status sentences": SAVE_PANEL_MESSAGE_KEY declares ${statuses} save.status.* keys`,
+    ).toBe(true);
+  });
+});
+
+describe('docs/HUD_PROJECTIONS.md: the projection directory is the size it says', () => {
+  /*
+   * "the other nine projections in this directory still have no route" was
+   * arithmetically impossible: the directory holds nine projection modules in
+   * total, two of which have a route, so seven remain. It also contradicted
+   * `docs/ARCHITECTURE.md`, which says "two of them reach the status strip
+   * today" and is right.
+   *
+   * The unit is the **module**, which is what "in this directory" means. A
+   * count of exported `project*` functions is a different quantity -- thirteen
+   * today, of which nine are unrouted -- and reading one number as the other
+   * is how a reader ends up believing this directory has eleven projections
+   * in it.
+   */
+  it('counts the modules, how many have a route, and how many do not', async () => {
+    const directory = path.join(repositoryRoot, 'src', 'simulation', 'presentation');
+    // `index.ts` re-exports and `view-model.ts` holds the shared value types;
+    // neither projects anything.
+    const NOT_A_PROJECTION = ['index.ts', 'view-model.ts'];
+    const files = (await readdir(directory)).filter((name) => name.endsWith('.ts')).sort();
+    const modules = files.filter((name) => !NOT_A_PROJECTION.includes(name));
+
+    expect(modules.length, 'no projection modules found; the walk is broken').toBeGreaterThan(5);
+    for (const name of NOT_A_PROJECTION) {
+      expect(files, `${name} is no longer in src/simulation/presentation/; this gate's exclusion list is stale`).toContain(name);
+    }
+
+    // The two with a published route, named rather than derived: which
+    // projection the worker publishes is a protocol decision (ADR 0003), and a
+    // third one appearing is exactly the change this gate exists to surface.
+    const ROUTED = ['clock-projection.ts', 'status-strip-projection.ts'];
+    for (const routed of ROUTED) {
+      expect(modules, `${routed} is no longer in src/simulation/presentation/`).toContain(routed);
+    }
+    const unrouted = modules.length - ROUTED.length;
+
+    const hud = await collapsedDocument(path.join('docs', 'HUD_PROJECTIONS.md'));
+    expect(
+      hud.includes(`the other ${numberWord(unrouted)} projection modules in this directory`),
+      `docs/HUD_PROJECTIONS.md must say "the other ${numberWord(unrouted)} projection modules in this directory": ${modules.length} modules less the ${ROUTED.length} with a route`,
+    ).toBe(true);
+    expect(
+      hud.includes(`${numberWord(modules.length)} of the ${numberWord(files.length)} files here are projections`),
+      `docs/HUD_PROJECTIONS.md must say "${numberWord(modules.length)} of the ${numberWord(files.length)} files here are projections"`,
+    ).toBe(true);
+
+    // The other half of the same fact, in the other document. These two
+    // disagreed, which is what made the wrong one hard to see.
+    const architecture = await collapsedDocument(path.join('docs', 'ARCHITECTURE.md'));
+    expect(
+      architecture.includes(`${numberWord(ROUTED.length)} of them reach the status strip today`),
+      `docs/ARCHITECTURE.md must say "${numberWord(ROUTED.length)} of them reach the status strip today"`,
+    ).toBe(true);
+  });
+});
+
+describe('the browser suite is the size the documents say', () => {
+  async function browserSpecFiles(): Promise<readonly string[]> {
+    const directory = path.join(repositoryRoot, 'tests', 'browser');
+    return (await readdir(directory)).filter((name) => name.endsWith('.spec.ts')).sort();
+  }
+
+  /*
+   * `docs/TESTING.md` prints what `pnpm test:browser` reports, and it read
+   * "101 tests" against a run of 126. Playwright's own total cannot be
+   * computed here -- `camera-coordinates.spec.ts` parameterises two
+   * declarations over five zoom levels, and only Playwright expands them --
+   * so what this pins is the two quantities that *are* exact: how many spec
+   * files there are, and how many `test(...)` declarations they hold.
+   *
+   * That residual is deliberate and is stated in the document: changing the
+   * zoom list moves the printed total without moving either number here. What
+   * it does catch is the change that actually moved the figure by 25 -- tests
+   * being added -- and it forces the whole line, printed total included, to be
+   * rewritten when they are.
+   */
+  it('states the spec-file and declaration counts docs/TESTING.md claims', async () => {
+    const specs = await browserSpecFiles();
+    expect(specs.length, 'no browser spec files found; the walk is broken').toBeGreaterThan(5);
+
+    let declarations = 0;
+    for (const spec of specs) {
+      const source = stripComments(await readFile(path.join(repositoryRoot, 'tests', 'browser', spec), 'utf8'));
+      // `test(` and not `test.describe(`/`test.beforeEach(`: a group is not a
+      // test. Comment-stripped, so a `test(` written *about* in prose does not
+      // count as one declared.
+      declarations += [...source.matchAll(/(?:^|[^.\w])test\(/gu)].length;
+    }
+    expect(declarations, 'no test declarations parsed; the scanner is not reading the specs').toBeGreaterThan(50);
+
+    const testing = await collapsedDocument(path.join('docs', 'TESTING.md'));
+    expect(
+      testing.includes(`${declarations} \`test(...)\` declarations in the ${numberWord(specs.length)} spec files`),
+      `docs/TESTING.md must say "${declarations} \`test(...)\` declarations in the ${numberWord(specs.length)} spec files"`,
+    ).toBe(true);
+  });
+
+  /*
+   * A spec header that opens "<number> claims" is enumerating, and the number
+   * is its own list's length. Both files that do this have had it go wrong:
+   * `app-shell.spec.ts` says so in its own words ("it read 'six' while the
+   * list held seven"), and `world-scene-input.spec.ts` read "two" while #200,
+   * #209 and #261 had each added a group of tests to it without adding the
+   * sentence saying what the group is for.
+   *
+   * The number is not decorative. These lists are what a reader consults to
+   * decide whether a claim already has browser coverage, and a list that has
+   * quietly stopped being maintained is worse than no list, because it reads
+   * as exhaustive.
+   */
+  it('keeps every browser spec header claim count equal to its own list length', async () => {
+    const specs = await browserSpecFiles();
+    const checked: string[] = [];
+
+    for (const spec of specs) {
+      const source = await readFile(path.join(repositoryRoot, 'tests', 'browser', spec), 'utf8');
+      const header = /\/\*\*([\s\S]*?)\*\//u.exec(source)?.[1];
+      if (header === undefined) continue;
+
+      const claimed = new RegExp(`\\b(${NUMBER_WORDS.join('|')})\\b claims`, 'iu').exec(header.replace(/\s+/gu, ' '));
+      if (claimed === null) continue;
+
+      const items = [...header.matchAll(/^\s*\*\s*(\d+)\.\s/gmu)].map((match) => Number(match[1]));
+      expect(
+        items.length,
+        `${spec}'s header says "${claimed[1]} claims" but has no numbered list for this to count`,
+      ).toBeGreaterThan(0);
+      // Numbered 1..n as well as the right length: a duplicated or skipped
+      // ordinal would leave the length right and the list unreadable.
+      expect(items, `${spec}'s header list is not numbered 1..${items.length}`).toEqual(
+        Array.from({ length: items.length }, (_unused, index) => index + 1),
+      );
+      expect(
+        claimed[1]!.toLowerCase(),
+        `${spec}'s header says "${claimed[1]} claims" and its numbered list holds ${items.length}. The count is the list's own length: add the missing entry, or correct the word`,
+      ).toBe(numberWord(items.length));
+      checked.push(spec);
+    }
+
+    // Positive control. Both of these enumerate today, and a scanner that
+    // silently stopped finding either would make the loop above vacuous.
+    expect(
+      checked.sort(),
+      'a browser spec that used to enumerate its claims no longer does, or the header scanner has stopped matching',
+    ).toEqual(['app-shell.spec.ts', 'world-scene-input.spec.ts']);
+  });
+});

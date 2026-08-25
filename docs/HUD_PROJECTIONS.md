@@ -113,10 +113,17 @@ Measured at the actor tiers, page limit 25
 
 | Actors | Page JSON bytes | Page ms | Counts ms | Status strip ms |
 | --- | --- | --- | --- | --- |
-| 250 | 9,943 | 0.36 | 0.10 | 0.31 |
-| 1,000 | 9,926 | 0.06 | 0.11 | 0.18 |
-| 2,500 | 9,926 | 0.05 | 0.07 | 0.16 |
-| 5,000 | 9,926 | 0.04 | 0.15 | 0.19 |
+| 250 | 9,955 | 0.36 | 0.10 | 0.31 |
+| 1,000 | 9,938 | 0.06 | 0.11 | 0.18 |
+| 2,500 | 9,938 | 0.05 | 0.07 | 0.16 |
+| 5,000 | 9,938 | 0.04 | 0.15 | 0.19 |
+
+The byte column is re-measured and the millisecond columns are not, which is
+deliberate rather than sloppy: a page's serialized size is a property of the
+projection and reproduces exactly on any machine, while an elapsed time is a
+property of the container that ran it. The bytes stood at 9,943/9,926 until
+the row grew by twelve bytes at every tier; the millisecond figures are the
+original run's and stay labelled directional.
 
 Page size is flat in population, which is the property that matters.
 `projectPrisonerPopulationCounts` and `projectStatusStrip` allocate no
@@ -270,11 +277,19 @@ Two things deliberately do **not** cross:
   stays `0` and the strip omits the bar rather than drawing a wrong
   denominator.
 
-What this does **not** close: the other nine projections in this directory
-still have no route. Rosters, room lists, staff, security, contraband and
-incidents remain reachable only from their own tests, and each carries rows,
-so each needs the paging contract honoured (section 5) and a page *request*
-direction the protocol does not have yet — the counts needed neither.
+What this does **not** close: the other seven projection modules in this
+directory still have no route. Nine of the eleven files here are projections
+(`index.ts` and `view-model.ts` are not), and `clock-projection.ts` and
+`status-strip-projection.ts` are the two with a published one — which is the
+same count `docs/ARCHITECTURE.md` states from the simulation's side. Rosters,
+room lists, staff, security, contraband and incidents remain reachable only
+from their own tests, and each carries rows, so each needs the paging contract
+honoured (section 5) and a page *request* direction the protocol does not have
+yet — the counts needed neither. `world-projection.ts` is the seventh and the
+odd one out: `projectWorldForRendering` carries no rows, and it has no caller
+in `src/` at all — the renderer reads the world through
+`src/rendering/world/world-view.ts` off the snapshot bundle instead — so what
+it needs is a consumer rather than a channel.
 
 ## Gaps: fields a panel plausibly wants that the simulation does not have
 

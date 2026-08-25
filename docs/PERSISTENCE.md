@@ -1629,9 +1629,13 @@ the HUD may import neither (`AGENTS.md` boundary 1). The HUD supplies a box;
 the composition root supplies the panel.
 
 **Its strings are message keys, not literals.** Every player-facing string in
-the panel — the heading, the five buttons, the empty-list row and the
-seventeen status sentences — was a hard-coded English literal until issue
-#208, in the one UI module that no localization gate collected. They now go
+the panel — the heading, the six buttons, the empty-list row and the
+twenty-five status sentences — was a hard-coded English literal until issue
+#208, in the one UI module that no localization gate collected. (Five buttons
+and eighteen status sentences then. #287 added Import and the seven outcomes it
+can report, and this sentence said "five" and "seventeen" until it was counted
+off `SAVE_PANEL_MESSAGE_KEY` — where the seventeen had never been right either.)
+They now go
 through `SAVE_PANEL_MESSAGE_KEY` (`src/ui/save-panel-messages.ts`) and the
 bundled default locale, and the panel's mapping functions return a message key
 plus parameters rather than text, the same split the HUD uses between
@@ -1775,12 +1779,22 @@ bought the order is refused and both saves' construction sections are empty
 ### Bundle-size note
 
 Wiring persistence into `main.ts` grew the production bundle from
-1,384.01 kB to 1,607.50 kB (17 → 201 modules). This is the first time any
-simulation/persistence code is actually reachable from the entry point —
-every prior issue (#14–#28) shipped code that nothing imported yet, which
-is why the bundle had stayed flat. The increase is real product code, not
+1,384.01 kB to 1,607.50 kB (17 → 201 modules) **at the time of #19**. That was
+the first time any simulation/persistence code became reachable from the entry
+point — every prior issue (#14–#28) shipped code that nothing imported yet,
+which is why the bundle had stayed flat. The increase is real product code, not
 accidental inclusion; code-splitting it is a presentation-layer concern
 (#33/#34), not a persistence one.
+
+The delta above is kept because it is what that wiring cost, and it is not the
+current bundle. Measured with `npx vite build` at v0.0.37: **285 modules**, an
+entry chunk of **1,627.84 kB** (gzip 428.91 kB), a **234.84 kB** simulation
+worker chunk the sentence above predates entirely, and 21.65 kB of CSS. The
+worker chunk is `src/simulation/worker/worker.ts` and everything it pulls in;
+Vite emits it separately because `main.ts` imports it through the
+statically-analyzable `./simulation/worker/worker.ts?worker` form
+(`src/main.ts:13`), so simulation code is *not* all in the entry-chunk figure
+the #19 delta names.
 
 ## Two known costs worth their own issue
 

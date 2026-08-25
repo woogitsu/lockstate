@@ -4,10 +4,13 @@ import { expect, test, type Page } from '@playwright/test';
  * Real-browser verification for the keyboard listeners `WorldScene` registers on
  * `window`, and for the input-context set it supplies.
  *
- * Two claims live here because nothing a layer down can make them. The adapter's
+ * Six claims live here because nothing a layer down can make them, and the
+ * count is this list's own length: it read "two" while the list held two and
+ * the file held six, because #200, #209 and #261 each added a group of tests
+ * without adding the sentence that says what the group is for. The adapter's
  * behaviour is unit-tested thoroughly in `tests/unit/input.test.ts`; what was
- * never tested is what the **scene** does with it, and that gap is why two
- * player-visible defects survived every mutation the headless suite could apply:
+ * never tested is what the **scene** does with it, and that gap is why the
+ * first two below survived every mutation the headless suite could apply:
  *
  * 1. **A key held across focus loss must be released.** A `keyup` goes to
  *    whichever window has focus, so holding a camera key and alt-tabbing sent
@@ -27,8 +30,36 @@ import { expect, test, type Page } from '@playwright/test';
  *    units, both at once. The Build panel's two numeric fields are the exposure,
  *    and `inputmode="numeric"` means a phone has the soft keyboard up while
  *    `WASD`-shaped taps reach the camera.
+ * 3. **The arrow keys the Build panel promises must move the camera.**
+ *    `hud.build.arm-hint` is painted on screen whenever the map route is shown
+ *    and says the arrow keys pan; no `Arrow*` binding existed, and measured in
+ *    this file each arrow held for 400 ms moved the camera by exactly zero
+ *    while `KeyS` moved it 180.89 (issue #200). An advertised key that does
+ *    nothing reads as a broken build, and only a browser can hold a key down.
+ * 4. **A discrete key must reach the scene at all, once per press.** `isActive`
+ *    answers "is this key down right now", which cannot serve an action with no
+ *    duration -- so `Equal`, `Minus` and `Escape` were bound and did nothing.
+ *    `WorldScene.handleActionEvents` consumes the events `keyDown`/`keyUp`
+ *    return and acts on the `'started'` phase only. Measured before the fix:
+ *    `Equal`/`Minus` left `camera.zoom` at 1 across ten presses, and `Escape`
+ *    neither cleared a pending wall run nor stopped it committing (#200).
+ * 5. **`KeyZ` undoes and `KeyY` redoes, one per press.** The undo model has
+ *    existed since #108 with nothing able to reach it: no control, no binding,
+ *    no intent. The key reports through `EditHistoryPort` to `BuildTool` rather
+ *    than submitting a command, so a refused undo reaches a line on screen
+ *    instead of `console.warn` -- the shape of the defect #225 removed from the
+ *    build drag. A binding carries no modifier, so `Ctrl`+`Z` reaches the same
+ *    binding as a bare `Z`, and that is measured here rather than assumed
+ *    (#261).
+ * 6. **Three touch pointers reach the scene, beside the mouse.** Phaser tracks
+ *    one touch pointer by default, so without `this.input.addPointer(2)` a
+ *    second finger is never delivered and `TouchGestureTracker` never sees a
+ *    pinch. What that call produces was an inference from Phaser's source until
+ *    it was read live from `input.manager` in a real browser (#209), and the
+ *    default is measured too: deleting the call takes the scene to one touch
+ *    pointer and `addPointer(1)` to two.
  *
- * These assert the **camera**, not the context set. An earlier draft of the
+ * The first two assert the **camera**, not the context set. An earlier draft of the
  * harness also exposed the scene's active contexts, which meant reimplementing
  * the document check inside the harness -- a second implementation of the rule
  * under test, which would have agreed with itself while the real one was wrong.

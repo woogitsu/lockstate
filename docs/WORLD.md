@@ -28,10 +28,14 @@ Terrain definitions are data-driven records with stable string IDs, packed numer
 
 ## Wall geometry lives on tile edges
 
-A wall is not a tile. Each loaded chunk carries two more packed
-`Uint8Array(chunkSize * chunkSize)` layers beside terrain — `topEdge` and
-`leftEdge` — where a non-zero value means "a wall segment runs along this
-tile's north (respectively west) boundary". Only two of the four edges are
+A wall is not a tile. Each loaded chunk carries three more packed
+`Uint8Array(chunkSize * chunkSize)` layers beside terrain — `topEdge`,
+`leftEdge` and `zoning` — which is where the "four `size * size` byte planes"
+above comes from. Two of the three are the wall layers this section is about:
+a non-zero `topEdge`/`leftEdge` value means "a wall segment runs along this
+tile's north (respectively west) boundary". (`zoning` is the room-zoning plane,
+one room-catalog `numericId` per tile, written by `RoomZoningService`; see
+[ADR 0022](./adr/0022-room-zoning-surface.md).) Only two of the four edges are
 stored per tile, because the other two already have a home: the south edge of
 `(x, y)` *is* the north edge of `(x, y + 1)`, and the east edge of `(x, y)`
 *is* the west edge of `(x + 1, y)`. One edge, one slot, so a wall can never be
@@ -124,7 +128,8 @@ unowned land on the far side, and a prison is a perimeter.
 - `version`: snapshot format version (`1`),
 - `chunkSize`: chunk dimension (default `32`, at most `WORLD_CHUNK_SIZE_LIMIT`),
 - `ownedChunks`: sorted list of owned chunk positions,
-- `chunks`: sorted chunk records with revisions and optional RLE terrain,
+- `chunks`: sorted chunk records with revisions and, each optional, RLE
+  `terrain`, `topEdge`, `leftEdge` and `zoning` planes,
 - `parcels`: sorted registered parcel definitions,
 - `ownedParcels`: sorted list of owned parcel IDs.
 

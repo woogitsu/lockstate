@@ -259,8 +259,11 @@ building the region/portal graph took ~99 ms and a corner-to-corner route
 tiers) and `node --expose-gc scripts/run-navigation-actor-tier-report.mjs`
 (all four tiers — 250/1,000/2,500/5,000 — this script is not part of
 `pnpm benchmark` and never gates CI; see
-`docs/adr/0007-navigation-work-budgets-and-flow-fields.md`), on a
-synthetic 64-cell cell-block-plus-canteen layout, `workBudgetPerTick=400`,
+`docs/adr/0007-navigation-work-budgets-and-flow-fields.md`), on a synthetic
+cell-block-plus-canteen layout whose size scales with the tier —
+`Math.max(16, Math.ceil(actorCount / 8))` cells plus the one canteen region
+(`benchmarks/scenarios/navigation-actor-tiers.mjs`), so 32 cells at 250 actors
+and 625 at 5,000, never a fixed 64 — with `workBudgetPerTick=400`,
 `agingIntervalTicks=15`, `flowFieldActivationThreshold=6`, this development
 container:
 
