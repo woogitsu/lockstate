@@ -347,7 +347,7 @@ describe('UI orchestration boundaries', () => {
     expect(construction.scannedFiles).toBeGreaterThan(20);
     expect(
       construction.sites.map(describeConstructionSite),
-      'a UI module now builds a live simulation. The main thread owns rendering, browser UI and input orchestration (AGENTS.md boundary 3); the simulation worker owns authoritative in-session game state (boundary 4). A runtime built here is a second, divergent simulation -- the reason src/main.ts:41-52 gives for creating the worker exactly once',
+      'a UI module now builds a live simulation. The main thread owns rendering, browser UI and input orchestration (AGENTS.md boundary 3); the simulation worker owns authoritative in-session game state (boundary 4). A runtime built here is a second, divergent simulation -- the reason src/main.ts gives, at `simulationWorkers`, for there being at most one worker at a time',
     ).toEqual([]);
   });
 });

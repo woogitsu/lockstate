@@ -224,8 +224,21 @@ export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMe
       // No tone. "Low on money" is a threshold, and a threshold is a balance
       // decision -- the same reason `BoundedValue` carries no severity band.
       // There is also nothing to be low *for* on a schedule: buying materials
-      // is the only thing that spends (#89), and nothing credits the treasury
-      // at all, so a warning would describe a slope that does not exist yet.
+      // is the only thing that spends (#89), and the one thing that credits is
+      // a cancelled purchase's refund (`ProcurementSystem.cancel`) -- nothing
+      // credits the treasury on a schedule -- so a warning would describe a
+      // slope that does not exist yet.
+      //
+      // The qualifier is the whole sentence. This comment denied any credit
+      // whatsoever until #282's neighbour clause was corrected without it,
+      // which was false the day `ProcurementSystem.cancel` landed: a refund is
+      // a credit, it is just not an *income line*. `docs/HUD_PROJECTIONS.md`
+      // gap 21 and `src/simulation/economy/treasury.ts` both carry "on a
+      // schedule" for the same reason, and
+      // `tests/foundation/documentation-claims-contract.test.ts` now requires
+      // every sentence in `src/` that denies a credit to carry it too. The
+      // false absolute is deliberately not re-quoted here: a comment is the
+      // surface that check reads, so spelling it out would trip it.
       tone: undefined,
       badge: undefined,
     },

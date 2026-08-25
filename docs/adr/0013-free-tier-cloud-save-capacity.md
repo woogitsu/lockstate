@@ -226,7 +226,7 @@ earlier generation" should mean; or keep "roughly a day" as the requirement,
 in which case the number moves toward 2,880 and §5's 256 MiB — derived as 5
 slots × 20 retained revisions × ~2 MiB — moves with it. The nearest existing
 precedent in the repository is neither figure: the local repository (#19)
-retains **3** generations (`src/persistence/local/repository.ts:24`, "Current
+retains **3** generations (`PrisonSaveRepositoryOptions.keepGenerations` in `src/persistence/local/repository.ts`, "Current
 generation plus this many previous safe copies. Default 3") and does not keep
 them forever.
 
