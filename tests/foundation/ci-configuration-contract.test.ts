@@ -1235,3 +1235,291 @@ describe('version bump workflow contract', () => {
     ).toContain("'brand.build': 'v{version}");
   });
 });
+
+/**
+ * `.github/workflows/deploy.yml` publishes the site, and the whole value of
+ * its `workflow_run` trigger is that the commit it publishes is the commit CI
+ * judged. That property rests on one expression -- the `ref:` on the `staging`
+ * job's checkout -- and on two facts about the trigger that make the
+ * expression mean anything.
+ *
+ * Why the `ref:` is needed at all, since it looks redundant. A `workflow_run`
+ * run is NOT checked out at the commit that triggered it. With no `ref:`,
+ * `actions/checkout` takes the head of the default branch at the moment the
+ * job starts, which is a different commit from the one CI passed on as soon as
+ * anything else has landed on `main` -- a second merge, or the version bump
+ * this repository pushes after every merge. The site would then be built from
+ * a commit no gate had judged, which is the exact defect the `workflow_run`
+ * trigger replaced a `push` trigger to fix.
+ *
+ * Why nothing else catches it. Deleting the `ref:`, spelling it `ref: main`,
+ * or "simplifying" it to `ref: ${{ github.ref }}` are all silent: the workflow
+ * still parses, `pnpm verify` still passes, CI is still green, and the only
+ * evidence would be a deployed build whose contents nobody checked -- visible,
+ * if at all, as a version string on screen that does not match the commit that
+ * was merged. There is no test that would go red. The reasoning lives in a
+ * comment above the step, and a comment fails nothing.
+ *
+ * Why the three assertions below are one gate rather than three. The
+ * expression reads `head_sha` only when `github.event_name == 'workflow_run'`,
+ * and `github.event.workflow_run` exists only on that event, so a trigger
+ * changed to `push` would make the expression fall silently through to its
+ * `github.ref` branch and the checkout would be back to building the branch
+ * head. And `types: [completed]` fires for failed, cancelled and timed-out
+ * runs as readily as for passing ones, so without the `conclusion` term in the
+ * job's `if:` a red CI would deploy the commit it had just rejected. Each of
+ * the three is worthless on its own; asserted together they say "this
+ * deployment is of a commit that CI ran, and passed, on".
+ *
+ * Every expected string here is written out literally rather than derived from
+ * the file being checked, so this cannot degrade into the workflow agreeing
+ * with itself. The cross-file half is the same idiom as the version bump
+ * contract above: `workflows: [CI]` in deploy.yml and `name: CI` in ci.yml are
+ * pinned separately, because a `workflow_run` naming a workflow that no longer
+ * exists never fires at all -- which loses the deployment silently and
+ * completely, with no failed run anywhere to notice.
+ */
+describe('deploy trigger and checkout contract', () => {
+  const DEPLOY = '.github/workflows/deploy.yml';
+  const WORKFLOW_DIRECTORY = '.github/workflows';
+
+  /**
+   * The lines of one job's block under `jobs:`, up to the next job. Scoped
+   * rather than searched for across the file, because deploy.yml has two jobs
+   * and both have a step named `Checkout`: the `production` job's checkout
+   * deliberately carries no `ref:` (it is dispatched at a ref of its own), so
+   * a whole-file search could be satisfied by, or confused with, the wrong one.
+   */
+  function jobBlock(workflow: string, job: string): readonly string[] {
+    const lines = workflow.split(/\r?\n/u);
+    const start = lines.indexOf(`  ${job}:`);
+
+    expect(
+      start,
+      `${DEPLOY} has no \`${job}:\` job. Nothing below can be asserted about a job that is not there; if the job was renamed, rename it here in the same commit.`,
+    ).toBeGreaterThanOrEqual(0);
+
+    const body = lines.slice(start + 1);
+    const end = body.findIndex((line) => line.trim().length > 0 && line.search(/\S/u) <= 2);
+    const block = end === -1 ? body : body.slice(0, end);
+
+    // Vacuity guard: a block parsed down to nothing would make every check
+    // below fail rather than pass, but with a misleading message.
+    expect(
+      block.length,
+      `the \`${job}:\` job in ${DEPLOY} parsed to almost no lines; the job parser is broken.`,
+    ).toBeGreaterThan(10);
+
+    return block;
+  }
+
+  /**
+   * One step of a job: its `- name:` line and every line under it, up to the
+   * next step at the same indentation. Comments are kept, because the caller
+   * strips them where a comment must not be able to satisfy an assertion.
+   */
+  function step(jobLines: readonly string[], job: string, name: string): readonly string[] {
+    const start = jobLines.findIndex((line) => line.trim() === `- name: ${name}`);
+
+    expect(
+      start,
+      `the \`${job}:\` job in ${DEPLOY} has no step named \`${name}\`. If it was renamed, rename it here too; a step this test cannot find is a step this test does not check.`,
+    ).toBeGreaterThanOrEqual(0);
+
+    const indent = (jobLines[start] ?? '').search(/\S/u);
+    const body = jobLines.slice(start + 1);
+    const end = body.findIndex((line) => line.search(/\S/u) === indent && line.trim().startsWith('- '));
+
+    return [jobLines[start] ?? '', ...(end === -1 ? body : body.slice(0, end))];
+  }
+
+  /** The settings under `on:` -> `workflow_run:`, comments and blanks dropped. */
+  function workflowRunTrigger(workflow: string): readonly string[] {
+    const lines = workflow.split(/\r?\n/u);
+    const onStart = lines.indexOf('on:');
+
+    expect(
+      onStart,
+      `${DEPLOY} has no top-level \`on:\` block. A workflow with no trigger never deploys anything.`,
+    ).toBeGreaterThanOrEqual(0);
+
+    const afterOn = lines.slice(onStart + 1);
+    const onEnd = afterOn.findIndex((line) => line.length > 0 && !/^\s/u.test(line));
+    const onBlock = onEnd === -1 ? afterOn : afterOn.slice(0, onEnd);
+    const triggerStart = onBlock.findIndex((line) => line.trim() === 'workflow_run:');
+
+    expect(
+      triggerStart,
+      `${DEPLOY} no longer triggers on \`workflow_run:\`. The \`staging\` job's checkout resolves its ref from \`github.event.workflow_run.head_sha\`, and that payload exists on no other event: under any other trigger the expression falls through to \`github.ref\` and the deploy builds the branch head instead of the commit CI judged, with nothing failing. The trigger and that expression are one mechanism -- change both together, and change this test in the same commit.`,
+    ).toBeGreaterThanOrEqual(0);
+
+    const triggerIndent = (onBlock[triggerStart] ?? '').search(/\S/u);
+    const rest = onBlock.slice(triggerStart + 1);
+    const triggerEnd = rest.findIndex(
+      (line) => line.trim().length > 0 && line.search(/\S/u) <= triggerIndent,
+    );
+    const settings = (triggerEnd === -1 ? rest : rest.slice(0, triggerEnd))
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0 && !line.startsWith('#'));
+
+    // Vacuity guard: every `toContain` below would also fail against an empty
+    // list, and would blame the workflow rather than this parser.
+    expect(
+      settings.length,
+      `no settings parsed out of the \`workflow_run:\` trigger in ${DEPLOY}; the parser is broken.`,
+    ).toBeGreaterThan(0);
+    expect(
+      settings.length,
+      `the \`workflow_run:\` trigger in ${DEPLOY} parsed to more settings than it has; the parser is reading past the end of it.`,
+    ).toBeLessThan(6);
+
+    return settings;
+  }
+
+  /** A job-level `if:`, folded to the single line GitHub evaluates. */
+  function jobGuard(jobLines: readonly string[], job: string): string {
+    const start = jobLines.findIndex(
+      (line) => line.search(/\S/u) === 4 && /^if:/u.test(line.trim()),
+    );
+
+    expect(
+      start,
+      `the \`${job}:\` job in ${DEPLOY} has no job-level \`if:\` guard at all. Without one it runs on every event that reaches this workflow, including a CI run that failed.`,
+    ).toBeGreaterThanOrEqual(0);
+
+    const first = (jobLines[start] ?? '').trim().slice('if:'.length).trim();
+    const folded = first === '>-' || first === '>' || first === '|' ? [] : [first];
+    for (const line of jobLines.slice(start + 1)) {
+      if (line.trim().length === 0 || line.search(/\S/u) <= 4) {
+        break;
+      }
+      folded.push(line.trim());
+    }
+
+    const guard = folded.join(' ').replace(/\s+/gu, ' ');
+    expect(
+      guard.length,
+      `the \`if:\` guard on the \`${job}:\` job in ${DEPLOY} parsed to nothing; the parser is broken.`,
+    ).toBeGreaterThan(0);
+
+    return guard;
+  }
+
+  it('checks out the commit the triggering CI run tested, not the branch head', async () => {
+    const workflow = await readRepositoryFile(DEPLOY);
+    const checkout = step(jobBlock(workflow, 'staging'), 'staging', 'Checkout');
+
+    // Comments are dropped first: the reasoning above this step names
+    // `head_sha` in prose, and a step that only *describes* the ref must not
+    // be able to satisfy an assertion that it *sets* it. Same weakness the
+    // provisioning and version bump contracts above were rewritten to close.
+    const settings = checkout.filter((line) => !line.trim().startsWith('#')).map((line) => line.trim());
+
+    expect(
+      settings,
+      `the \`Checkout\` step in the \`staging\` job of ${DEPLOY} is no longer an \`actions/checkout\`. Its \`ref:\` is the only thing that decides which commit gets deployed, so a different mechanism here needs a different assertion -- written in the same commit.`,
+    ).toContain('uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6');
+
+    const ref = settings.find((line) => line.startsWith('ref:'));
+
+    // Absence is a failure, not a pass. This is the mutation that looks most
+    // like a tidy-up and costs the most: with no `ref:` at all,
+    // `actions/checkout` silently defaults to the head of the default branch,
+    // and every deploy builds whatever landed last instead of the commit CI
+    // judged.
+    expect(
+      ref,
+      `the \`Checkout\` step in the \`staging\` job of ${DEPLOY} sets no \`ref:\`. A \`workflow_run\` run is not checked out at the commit that triggered it -- with no \`ref:\`, \`actions/checkout\` takes the head of the default branch, so the deploy publishes a commit no gate has judged as soon as anything else has landed on \`main\` (a second merge, or this repository's own post-merge version bump). Restore \`ref: \${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.ref }}\`.`,
+    ).toBeDefined();
+
+    const expression = (ref ?? '').slice('ref:'.length).trim();
+
+    expect(
+      expression.startsWith('${{') && expression.endsWith('}}'),
+      `the \`ref:\` on the \`staging\` checkout in ${DEPLOY} is the literal \`${expression}\` rather than an expression. A fixed ref -- a branch name, a tag -- is by definition not the commit the triggering CI run tested: it resolves to whatever that ref points at when the job starts.`,
+    ).toBe(true);
+
+    // The load-bearing assertion, and the reason it is this whole substring
+    // rather than just `head_sha`: the point is not that the expression
+    // mentions the triggering commit somewhere, it is that the triggering
+    // commit is what the expression *chooses* when the event is a
+    // `workflow_run`. `${{ github.ref || github.event.workflow_run.head_sha }}`
+    // mentions it and deploys the branch head every time.
+    expect(
+      expression.replace(/\s+/gu, ' '),
+      `the \`ref:\` on the \`staging\` checkout in ${DEPLOY} no longer resolves to the commit the triggering CI run tested. On a \`workflow_run\` it must take \`github.event.workflow_run.head_sha\` -- not \`github.ref\`, not a branch name -- because that, and only that, is the commit CI passed on; the branch head is a different commit as soon as a second merge or the version bump lands. If the shape of the expression is being changed rather than its meaning, pin the new shape here in the same commit.`,
+    ).toContain("github.event_name == 'workflow_run' && github.event.workflow_run.head_sha");
+  });
+
+  it('is triggered only by a completed run of the workflow that actually exists', async () => {
+    const settings = workflowRunTrigger(await readRepositoryFile(DEPLOY));
+
+    expect(
+      settings,
+      `the \`workflow_run:\` trigger in ${DEPLOY} no longer names \`CI\`. It must name the workflow whose completion is the gate, exactly as ci.yml spells its own \`name:\`: a \`workflow_run\` that names a workflow which does not exist never fires, so the site would simply stop being deployed with no failed run anywhere to say so.`,
+    ).toContain('workflows: [CI]');
+
+    // `head_sha` and `conclusion` both come from the *triggering* run, and
+    // that payload only exists on a completed one. `types:` is therefore not a
+    // free choice here: narrowing it away, or widening it to `requested`,
+    // leaves the two expressions this file turns on reading a payload that is
+    // absent or not yet meaningful.
+    expect(
+      settings,
+      `the \`workflow_run:\` trigger in ${DEPLOY} no longer uses \`types: [completed]\`. The \`staging\` job reads \`github.event.workflow_run.head_sha\` and \`.conclusion\` off the triggering run, and neither is settled before it completes.`,
+    ).toContain('types: [completed]');
+
+    // Not a detail of the same fact: ci.yml also runs on `pull_request`, so
+    // without this filter every green CI run on an unmerged branch would
+    // deploy that branch to staging -- and, because a custom domain is
+    // attached to the staging Worker, to the public site.
+    expect(
+      settings,
+      `the \`workflow_run:\` trigger in ${DEPLOY} no longer restricts itself to \`main\`. ci.yml runs on \`pull_request\` as well as on a push to \`main\`, so without this filter a green CI on any open branch deploys that branch to staging -- which is what serves lockstate.io. See docs/DEPLOYMENT.md, "What currently serves lockstate.io".`,
+    ).toContain('branches: [main]');
+  });
+
+  it('names a workflow that some workflow in this repository declares', async () => {
+    const directory = path.join(repositoryRoot, WORKFLOW_DIRECTORY);
+    const files = (await readdir(directory)).filter((file) => /\.ya?ml$/u.test(file)).sort();
+
+    // Vacuity guard: an empty directory listing would make the check below
+    // fail for the wrong reason.
+    expect(
+      files.length,
+      `no workflow files found in ${WORKFLOW_DIRECTORY}; this test is not reading what it thinks it is.`,
+    ).toBeGreaterThan(1);
+
+    const declared = await Promise.all(
+      files.map(async (file) => {
+        const source = await readRepositoryFile(path.posix.join(WORKFLOW_DIRECTORY, file));
+        return /^name:\s*(.+?)\s*$/mu.exec(source)?.[1] ?? '';
+      }),
+    );
+
+    // The other half of `workflows: [CI]`, asserted from the other file so a
+    // rename of either one fails here rather than on `main`. The failure mode
+    // is the quietest one in this repository: GitHub does not warn about a
+    // `workflow_run` naming a workflow that does not exist, the trigger simply
+    // never fires, and the symptom is deploys that stop happening.
+    expect(
+      declared,
+      `no workflow in ${WORKFLOW_DIRECTORY} declares \`name: CI\`, but ${DEPLOY} triggers on \`workflow_run\` of a workflow called \`CI\`. GitHub matches that trigger by workflow *name*, not by file path, and says nothing when the name matches nothing: the trigger would never fire again and staging would silently stop being deployed. Either restore the name, or rename it on both sides -- in ci.yml, in ${DEPLOY}, and here -- in one commit.`,
+    ).toContain('CI');
+  });
+
+  it('deploys only a CI run that passed, not merely one that finished', async () => {
+    const guard = jobGuard(jobBlock(await readRepositoryFile(DEPLOY), 'staging'), 'staging');
+
+    // `types: [completed]` is satisfied by failure, cancellation and timeout
+    // as well as success, so this term is the whole difference between "CI has
+    // finished" and "CI has passed". Deleting it deploys the commit CI just
+    // rejected, and the run stays green: the job did exactly what it was told.
+    expect(
+      guard,
+      `the \`if:\` guard on the \`staging\` job in ${DEPLOY} no longer requires the triggering CI run to have *succeeded*. \`types: [completed]\` fires for a failed, cancelled or timed-out run too -- "completed" is not "passed" -- so without \`github.event.workflow_run.conclusion == 'success'\` a red CI publishes the commit it had just rejected, and the deploy run is green while it does it. If the guard is being restructured, keep the term and pin its new spelling here in the same commit.`,
+    ).toContain(
+      "github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'",
+    );
+  });
+});
