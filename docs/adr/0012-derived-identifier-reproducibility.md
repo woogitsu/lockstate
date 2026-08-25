@@ -54,7 +54,7 @@ Issue-level work on economy, progression and events will mint more identifiers
 (contracts, orders, unlocks, event instances). Deciding this once is cheaper
 than deciding it five times inconsistently.
 
-## Decision (proposed)
+## Decision
 
 Every identifier that can influence simulation state, cross a save boundary, or
 appear in challenge evidence must fall into exactly one of two categories, and
@@ -98,20 +98,23 @@ module doc, and `tests/determinism/` gains a pin for it.
   recompute, or key ids off the canonical component seed. That is a behaviour
   change to a public accessor (`getTopologyId`) and belongs in its own issue
   with its own tests, not smuggled into determinism hardening — which is why
-  this ADR is proposed rather than applied.
+  this ADR separated the taxonomy from its application instead of carrying the
+  change itself.
   **That follow-up is #112 and has landed.** The first of the two mechanisms
   was taken: the counter is now local to `recomputeGlobalTopology`, which is
   numerically the same thing as keying ids off the canonical component seed
   (ids are handed out in sorted-seed order), and avoids the
   content-addressed form this ADR's own Alternatives section rejects. Two
-  things are deliberately *not* settled by that change, because they are this
-  ADR's to settle and not an implementation's. **(a)** The status above stays
-  Proposed; accepting the category-2 reading of `GlobalTopologyId` is the
-  owner's call. **(b)** `chunkTopologies` is never evicted, so an unloaded
+  things were deliberately *not* settled by that change, because they were this
+  ADR's to settle and not an implementation's. **(a)** The category-2 reading
+  of `GlobalTopologyId` — the owner's call, and taken: the status above is now
+  Accepted. **(b)** `chunkTopologies` is never evicted, so an unloaded
   chunk still contributes nodes and the id remains a function of chunk *load*
   history even though it is no longer a function of *recompute* history.
   Whether a retained topology is dropped on unload is recorded under "Known
-  limitations" in `docs/DETERMINISM.md` and belongs in the same ruling.
+  limitations" in `docs/DETERMINISM.md` and **the acceptance did not settle
+  it** — it stays a code question for a follow-up, and
+  `docs/adr/STATUS-QUEUE.md` §5 carries it.
 - Path-request ids were placed in category 2 by exception, on the ground that
   they are consumed only within one `NavigationSystem` lifetime, which a
   restore rebuilds empty
@@ -127,8 +130,8 @@ module doc, and `tests/determinism/` gains a pin for it.
   the same for a `'travelling'` guard
   (`src/simulation/security/guard-roster.ts:198`), so no restored session
   consumes an id minted by a previous one. Whether the taxonomy should now move
-  these to category 1, and what that obliges, is left open for whoever accepts
-  this ADR rather than settled here.
+  these to category 1, and what that obliges, is left open rather than settled
+  here; the acceptance above did not take it either.
 - Future gameplay systems get a decision to follow instead of a precedent to
   guess at.
 

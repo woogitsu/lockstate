@@ -99,18 +99,18 @@ import {
  * tile that was unzoned a moment earlier and is zoned afterwards, so no
  * later room can anchor on it.
  *
- * This deliberately does **not** decide ADR 0012
- * (`docs/adr/0012-derived-identifier-reproducibility.md`), which is still
- * `Proposed`. That ADR asks whether a minted identifier is an *allocated
- * identity* (a snapshotted counter) or a *derived value* (recomputed, never
+ * This deliberately takes **no** position under ADR 0012
+ * (`docs/adr/0012-derived-identifier-reproducibility.md`), which is Accepted.
+ * That ADR sorts a minted identifier into an *allocated identity* (a
+ * snapshotted counter) or a *derived value* (recomputed, never
  * persisted). A room-instance id needs neither answer: it is reproducible
  * from state like a derived value, and stable across ticks and carried in
  * the save like an allocated identity, because the state it is derived from
  * -- the anchor tile -- cannot change while the instance exists. Nothing
  * moves or resizes a room. **If a future feature does move or resize one,
- * this scheme stops being neutral and ADR 0012 has to be settled first**,
- * because the id would then either have to be re-derived (breaking every
- * save that carries the old one, and every prisoner's
+ * this scheme stops being neutral and ADR 0012's taxonomy has to be applied
+ * to this id**, because the id would then either have to be re-derived
+ * (breaking every save that carries the old one, and every prisoner's
  * `accommodationInstanceId` cold-state reference) or kept while describing a
  * tile the room no longer occupies.
  */

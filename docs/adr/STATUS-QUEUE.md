@@ -10,14 +10,18 @@ implementation.
 never in this file. What changed with this revision is what the file is *for*:
 §1 records **all thirteen** flips, §2 holds **the one decision awaiting
 approval — ADR 0029** — above the account of why the queue had been emptied and
-what that bought, and everything after it is the residue — one genuinely open decision, one watch item, the gaps between an
-accepted decision and the code, and the stale sentences the flips left behind.
-Deciding is still the owner's; this file only makes the next decision cheap.
+what that bought, and everything after it is the residue — one genuinely open
+decision, one watch item, and the gaps between an accepted decision and the
+code. §6 used to be the inventory of stale sentences the flips left behind;
+**they are corrected, and that class is now asserted by a test**, so what it
+holds instead is the account of what moved, what may not be touched, and what
+the test cannot see. Deciding is still the owner's; this file only makes the
+next decision cheap.
 
-Re-anchored at `main` @ `4ed571f` (v0.0.58), plus the four flips in the commit
-that carries this revision. Every claim below was re-read from disk at that
-commit, and entries cite symbols rather than line numbers where a citation would
-otherwise drift on the next edit (the precedent is #309).
+Re-anchored at `main` @ `4e3976d` (v0.0.65), plus the text corrections in the
+commit that carries this revision. Every claim below was re-read from disk at
+that commit, and entries cite symbols rather than line numbers where a citation
+would otherwise drift on the next edit (the precedent is #309).
 
 A note on keeping this file true, since it is the kind of document that rots
 silently: an entry's evidence is a claim about `main`, so **landing the change
@@ -25,9 +29,10 @@ an entry describes means updating that entry in the same commit**, exactly as
 moving a status means moving its index row. #295 changed the code and ADR 0012
 and left this file behind, which is how the old entry 7 came to be false for two
 releases — a correction that itself had to be landed separately, at `b653b93`,
-before the entry could be acted on. Nothing mechanical can catch that: the gate
-checks statuses against documents, never against code. It is a habit, not an
-assertion.
+before the entry could be acted on. Nothing mechanical can catch that: both
+gates over `docs/adr/` check statuses against documents — the index against the
+ADR, and now every sentence in the corpus against the ADR — and neither checks a
+status against code. It is a habit, not an assertion.
 
 ---
 
@@ -410,112 +415,160 @@ document already carries it.
 
 ---
 
-## 6. Stale status references the flips left behind
+## 6. Stale status references: cleared, and now asserted
 
-Flipping a status does not update every document that *reports* that status. Each
-approval was scoped to the status lines and their index rows, so the references
-below were deliberately left alone and are recorded here so the next reader knows
-they are known rather than missed. None is a decision; each is a text correction.
+Flipping a status does not update every document that *reports* that status.
+Each approval was scoped to the status lines and their index rows, so the
+references this section used to list were deliberately left alone and recorded
+here as known rather than missed. **They have since been corrected, in one
+change of their own, and the class is now under a test.** What is left below is
+the account of what moved, what could not move and why, and what the test can
+and cannot see — because the residue is the part a future reader needs.
 
-**Corrected in this commit, because each claimed a queue rather than a single
-status.** That is the line drawn, and it is drawn deliberately: a sentence about
-the *set* of ADRs is a claim about a mechanism that no longer exists, while a
-sentence about one ADR is an ordinary stale reference and stays on the list
-below.
+### The gate
 
-- `docs/adr/README.md`, *Status values in this table* — said "several ADRs are
-  `Proposed`" and pointed at issue #118 for whether any should be promoted. Now
-  states that none is, keeps the definition for the next one, and says what a
-  lone `Proposed` row will mean.
-- `README.md`, governance list item 4 — said "several are `Proposed`, which means
-  the decision is still awaiting the owner's approval". Now says none is, and
-  points at this file for where an accepted decision and the code disagree.
-- `docs/adr/0027-cell-sharing-assessment.md` — *"(**ADR 0028**, itself
-  Proposed)"*, which the previous revision of this file left for "whoever next
-  touches 0027". That is this commit, so it was fixed here.
+`tests/foundation/adr-status-reference-contract.test.ts` reads every ADR's own
+status statement and every sentence in `src/`, `tests/`, `docs/`, `README.md`
+and `.github/` that predicates a status of an ADR, and fails when the two
+disagree. It is the layer between the index check and this file:
+`adr-numbering-contract.test.ts` compares a document to a table, this file
+compares a decision to an implementation, and the new test compares a *sentence*
+to a document.
 
-**Cannot be edited at all:**
+Three properties it was built to have, stated here because a `toEqual([])`
+gate that lacks them reads exactly like compliance:
+
+- **Non-vacuous.** It asserts floors — more than 300 corpus files walked and
+  more than 15 status claims actually parsed and compared (33 on the tree that
+  landed it) — so a scanner that read nothing, or a claim pattern that stopped
+  matching prose, fails instead of passing quietly. Its positive control runs
+  the checker against text whose verdict is known, in both directions.
+- **It bites.** Proved by reintroducing `"ADR 0017 is still Proposed"` into
+  `src/ui/hud/messages.ts` and watching it fail with that file and that
+  sentence named.
+- **It does not fire on history.** Past tense is not matched, so *"while this
+  ADR was `Proposed` it said…"* is left alone; an ADR's `Amendment` sections are
+  skipped, which is what lets ADR 0022's *Status of this amendment* keep its
+  `**Proposed.**`; and `docs/research/` is exempt for the reason that directory's
+  README gives.
+
+**What it cannot catch**, and this is the honest boundary rather than a
+formality: a claim that names no ADR. `src/simulation/economy/income.ts` said *"a
+ninth `Proposed` document in `docs/adr/`"* — false, and about the *count* rather
+than about any one ADR, with no number in it for a subject. The same goes for a
+`##` heading with no subject (ADR 0012's `## Decision (proposed)`) and for a
+table cell whose ADR is cited only in the sentence introducing the table. All
+three shapes existed in this corpus and all three were corrected by hand. The
+test also exempts itself, because its header and its positive control quote
+false claims on purpose, exactly as this file does.
+
+### Corrected, with what each said and what is true
+
+**Comments calling an Accepted ADR proposed.** Older than the thirteen flips and
+never recorded before this round:
+
+- `src/ui/hud/messages.ts` — *"ADR 0017 is still Proposed"*. 0017 has been
+  Accepted since `a786b64`, with all three answers. Now says it is Accepted and
+  names no currency either, which is what the label rests on.
+- `src/ui/hud/projection.ts` — *"ADR 0017 is Proposed."* Same correction; the
+  chip still prints minor units, for the same reason.
+- `src/content/procurement-catalog.ts` — ADR 0017 answers #96's three questions
+  *"**as recommendations pending approval**"*, and *"ADR 0017's recommendation on
+  the buffer question"*, and *"When the owner takes ADR 0017's answers, this
+  table is where a real economy starts"*. They are its decisions 6, 7 and 8 and
+  they are accepted. The placeholder argument is unaffected and it needed the
+  better reason it now carries: **decision 5** reserves prices to issue #29, so
+  every figure here is provisional with nothing left to approve.
+- `tests/unit/entity-generation-wrap.test.ts` — *"ADR 0026 states all three at
+  Proposed"*. 0026 is Accepted as the framing and the tripwire, and leaves all
+  three open, which is what the file needed to say. The tests are untouched.
+- `tests/unit/prisoners-intake-system.test.ts` — *"it is stated at Proposed in
+  ADR 0026 rather than settled here"*, on the re-intake case. Now names it as
+  0026's question 3, left open by an Accepted ADR.
+- `src/simulation/economy/income.ts` — *"a ninth `Proposed` document in
+  `docs/adr/`"*. There is exactly one, and it is 0029; the argument for keeping
+  the rate on issue #29 never depended on the count, so the count is gone from
+  it. **The other half of this entry was already fixed before this change**: the
+  *"ADR 0023 open, ADR 0028 proposed"* parenthesis is no longer in the file,
+  which ADR 0028's phase 1 rewrote along with the measurement around it.
+- `src/simulation/rooms/zoning.ts` — ADR 0012 *"is still `Proposed`"*, plus
+  *"ADR 0012 has to be settled first"* in the move-or-resize clause. 0012 is
+  Accepted, so what a future resize would force is its **taxonomy being applied
+  to this id**, not the ADR being settled. The reasoning is unaffected: a
+  room-instance id still needs neither category answer.
+
+**The single-ADR stale statuses this section used to list:**
+
+- `docs/DEPLOYMENT.md:163` — ADR 0016 *"is **Proposed, not accepted**"*. Now
+  records it as Accepted, retroactively for the §1 mechanism, and says what the
+  acceptance makes binding: §2, with nothing enforcing it mechanically. That is
+  §4 of this file, and the deployment document is where a reader meets it.
+- `docs/adr/0016-migration-delivery-mechanism.md:173` — quoted that sentence
+  verbatim, so the two moved together, as this section said they would have to.
+- `docs/adr/0012-derived-identifier-reproducibility.md` — the self-contradiction,
+  and the most visible entry this section ever held. `## Decision (proposed)`,
+  *"which is why this ADR is proposed rather than applied"* and Consequences
+  clause (a) *"The status above stays Proposed"* all sat under a status line
+  reading `Accepted`. Clause (a) now records that the category-2 reading **was**
+  taken; clause (b) — `chunkTopologies` is never evicted — is unchanged in
+  substance and now says plainly that the acceptance did not settle it, which
+  §5 of this file carries. A fourth sentence went with them, not previously
+  listed: the path-request-id clause said its question was *"left open for
+  whoever accepts this ADR"*, and the acceptance did not take it either.
+- `docs/adr/0013-free-tier-cloud-save-capacity.md:15` and `:150` — the Status
+  table row and the §4 heading both marked 4 MiB `PROPOSED`; `:19-20` asked a
+  reviewer for *three* numbers. §4 is Accepted, the heading and the row say so,
+  and the ask is now two — 20 revisions (§6) and 256 MiB (§5). One more in the
+  same document, not previously listed: §4's headroom bullet asked that *"the
+  approval asked for in the Status table above should be given or withheld
+  against these figures"*, which is a request that has been answered; it now
+  says these are the figures §4's bound stands on.
+- `docs/adr/0015-actor-identity-allocation.md:145-146` — *"Accepting 0015
+  without 0012 leaves the taxonomy it argues in still Proposed"*, describing a
+  case that cannot arise. Both were accepted in the same commit, so item 1 of
+  *What this asks a human to accept* is discharged and says so.
+- `README.md:59` — ADR-0014's *"`Status` is `Proposed` … the decision has not
+  been approved"*. Now Accepted, and the pipeline the repository implements is
+  the approved one rather than a proposal it happens to match.
+- `docs/CLOUD_SAVE.md:1184` (*"the ADR is `Proposed`, not…"*) and `:1200` (the
+  4 MiB row). The prose now states the split — Accepted for §§1-4, §§5-6 still
+  Proposed — and the row reads Accepted as §4. **`:1201-1202` were true and
+  stayed true**, and they gained their ADR section numbers so that a reader (and
+  the gate) can tell a §-scoped `Proposed` from a claim about the whole
+  document. `:1239` and `:1250` were already §-scoped and are untouched.
+- `docs/TRUSTED_SERVICES.md:577` — *"the 4 MiB per-save figure is proposed, not
+  accepted"*, and *"ADR 0013 is in `Proposed` status"*. Both corrected; the two
+  numbers that genuinely remain open are named as §§5-6 and the churn lever as
+  §7.
+- `.github/workflows/migrate-database.yml:20` — *"(ADR 0016 §2, Proposed)"*.
+  Now `Accepted`, and the comment says the constraint is binding with nothing
+  enforcing it mechanically, which is the sentence that made the flip worth
+  landing here at all.
+
+### Cannot be edited at all
 
 - `supabase/migrations/20260823100000_bound_free_tier_capacity.sql` —
   *"PROPOSED, PENDING HUMAN APPROVAL (ADR 0013)"* above the 4 MiB function that
-  is now Accepted as §4, and the same framing twice more in the file's header.
-  Applied migrations are immutable, so this can only be corrected by a **new**
-  migration superseding the function, or left as a historical artefact. Leaving
-  it is the recommendation — it is a comment, not behaviour.
+  is now Accepted as §4, and the same framing twice more in the file's header
+  (`:19`, `:25`). **Re-verified at this commit: all three are still there and
+  were not touched.** Applied migrations are immutable, so this can only be
+  corrected by a **new** migration superseding the function, or left as a
+  historical artefact. Leaving it is the recommendation — it is a comment, not
+  behaviour. The gate does not scan `supabase/`, deliberately: it could only
+  ever report something nobody is allowed to fix.
 
-**Left by the six retroactive approvals, and each still false:**
+### Deliberately left, and to stay left
 
-- `docs/DEPLOYMENT.md:163` — says ADR 0016 *"is **Proposed, not accepted**"*.
-- `docs/adr/0016-migration-delivery-mechanism.md:173` — quotes that
-  `DEPLOYMENT.md` sentence verbatim, so the two have to move together.
-- `docs/adr/0012-derived-identifier-reproducibility.md:108` — Consequences clause
-  (a), *"The status above stays Proposed"*, which the status line above it now
-  contradicts directly. `:57` (`## Decision (proposed)`) and `:101` (*"which is
-  why this ADR is proposed rather than applied"*) are drafting-era phrasing in the
-  same document. This is the most visible of the entries here, because the
-  contradiction is inside one file.
-- `docs/adr/0013-free-tier-cloud-save-capacity.md:15` and `:150` — the Status
-  table row and the §4 heading both still mark 4 MiB `PROPOSED`, and `:19-20` says
-  a reviewer is being asked to sign off on *three* numbers, now two.
-- `docs/adr/0015-actor-identity-allocation.md:145-146` — *"leaves the taxonomy it
-  argues in still Proposed"*, now describing a case that cannot arise.
-- `README.md:59` — ADR-0014's *"`Status` is `Proposed` … the decision has not
-  been approved"*. Deliberately **not** fixed with item 4 above: it is a claim
-  about one ADR, which is this list's business rather than §2's.
-- `docs/CLOUD_SAVE.md:1184` (*"the ADR is `Proposed`, not…"*) and `:1200` (the
-  4 MiB row, *"Proposed, pending approval"*), plus `docs/TRUSTED_SERVICES.md:577`
-  (*"the 4 MiB per-save figure is proposed, not accepted"*). Deliberately **not**
-  listed: `CLOUD_SAVE.md:1201-1202`, `:1239` and `:1250`, which call the
-  20-revision, 256 MiB and §§5-7 items proposed and unimplemented — those stay
-  true, and a bulk find-and-replace over these files would break them.
-- `.github/workflows/migrate-database.yml:20` — *"(ADR 0016 §2, Proposed)"*.
-- `src/simulation/rooms/zoning.ts` — ADR 0012 *"is still `Proposed`"*, in the
-  instance-id section of the module header. The surrounding reasoning is
-  unaffected: a room-instance id needs neither category answer.
-
-**Left by the three room flips:**
-
-- `src/simulation/economy/income.ts` — *"ADR 0023 open, ADR 0028 proposed"*, in
-  the module header's account of why the income line is still invisible. Both
-  halves of that parenthesis are wrong; **everything else in that paragraph is
-  still exactly right**, including the measurement it rests on, which is why this
-  is a two-word correction and not a rewrite.
 - `docs/research/2026-08-25-economy-rate.md:443` and `:630` — call ADR 0023
   *"Proposed, not accepted"* and *"(Proposed …)"*. These are **dated research
   records** and the repository treats them as records: they were true on
   2026-08-25 when the memo was written, the memo says what it was measuring and
   when, and **editing a research record to match a later decision would make it
-  stop being one.** Recorded as known, and the recommendation is to leave both.
-  The same rule applies to every dated memo under `docs/research/`.
+  stop being one.** `docs/research/README.md` states the rule. Both stay, and
+  the gate exempts that directory for exactly this reason rather than by
+  oversight.
 
-**Left by the four flips in this commit, and each now false. All three are in
-code comments, and all three were found by grep rather than by being
-remembered — 0024, 0025 and 0027 left none at all:**
-
-- `tests/unit/entity-generation-wrap.test.ts` — *"ADR 0026 states all three at
-  Proposed"*, in the file header's account of why the wrong answer is asserted.
-  The substance survives the flip exactly — all three options genuinely are still
-  open, which is what 0026 was accepted as — so this is one word, and the tests
-  themselves are untouched.
-- `tests/unit/prisoners-intake-system.test.ts` — *"it is stated at Proposed in
-  ADR 0026 rather than settled here"*, on the re-intake case. Same correction,
-  same reason.
-- `src/simulation/economy/income.ts` — *"a ninth `Proposed` document in
-  `docs/adr/`"*, in the argument for keeping the income rate on issue #29 rather
-  than in an ADR. The argument is unaffected and the count is now zero rather
-  than eight, which makes the phrasing wrong in a way that reads as a fossil.
-
-**Found in passing and older than any of these flips**, listed because they are
-the same defect class and nobody has recorded them before: `src/ui/hud/messages.ts`
-says *"ADR 0017 is still Proposed"*, `src/ui/hud/projection.ts` says *"ADR 0017 is
-Proposed"*, and `src/content/procurement-catalog.ts` says ADR 0017 answers three
-questions *"**as recommendations pending approval**"*. ADR 0017 has been Accepted
-since `a786b64`, which flipped it with all three answers. In all three the
-surrounding reasoning holds — a label that names no
-currency, a balance printed in minor units, placeholder prices — because each
-rests on issue #96 and issue #29 rather than on the ADR's status.
-
-ADR 0017 is the precedent for how to clear the editable ones: when it was
+ADR 0017 is the precedent for how the editable ones were cleared: when it was
 accepted its body was rewritten to say what it had said *while* it was
 `Proposed`, rather than leaving present-tense drafting language in place. 0022's
 `## Status` section uses the narrower half of the same move, pointing forward at
@@ -533,7 +586,11 @@ Each flip is **two lines, in one commit**, and the suite enforces the pairing:
 
 `tests/foundation/adr-numbering-contract.test.ts` (*"reports each ADR with the
 status that ADR itself holds"*) fails if you move one and not the other, so a
-half-done flip cannot merge. The parser reads the **first keyword** of each side
+half-done flip cannot merge. **A third file now fails too, and it is the one
+that will bite:** `tests/foundation/adr-status-reference-contract.test.ts` reads
+every sentence in `src/`, `tests/`, `docs/`, `README.md` and `.github/` that
+predicates a status of an ADR, so a flip whose *reporting* sentences are left
+behind cannot merge either. §6 records what it sees and what it does not. The parser reads the **first keyword** of each side
 — `Accepted`, `Proposed`, `Superseded`, `Deprecated` — and requires the two to
 agree, which is why 0013's split status opens with `Accepted` on both sides and
 qualifies only afterwards, and why 0022's, 0023's, 0026's and 0027's qualified

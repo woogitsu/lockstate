@@ -170,8 +170,9 @@ a credential that does not need to exist is the cheapest one to secure.
   and this consequence is **discharged**: its staging migrations row now reads
   "automatically, on every merge to `main`, through Supabase's own GitHub
   integration" (`:145`), and the prose below it records the observed 71-second
-  window and states that this ADR is "**Proposed, not accepted**"
-  (`:149-163`).
+  window and, since this ADR was accepted, states that it is "**Accepted**"
+  and that §2's constraint is what the acceptance makes binding (`:149-163`).
+  The two sentences have to move together: that one reports this status.
 - A merge to `main` becomes capable of changing a hosted database. Reviewing
   a pull request that touches `supabase/migrations/` is now reviewing a
   deployment, and should be treated as one.

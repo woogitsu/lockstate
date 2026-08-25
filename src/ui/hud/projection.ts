@@ -207,10 +207,12 @@ export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMe
       // formatted by the strip like every other count.
       //
       // **Not divided into a major unit, and not given a symbol.** #96
-      // settled that money is the primary resource and named no currency;
-      // ADR 0017 is Proposed. Dividing by 100 and printing a symbol would
-      // decide both by implication, in a chip. A plain number under a label
-      // reading "Funds" is the honest rendering of a quantity whose unit
+      // settled that money is the primary resource and named no currency, and
+      // ADR 0017 is Accepted without naming one either -- so the unit and the
+      // symbol are nobody's decision yet rather than a decision waiting on an
+      // approval. Dividing by 100 and printing a symbol would take both by
+      // implication, in a chip. A plain number under a label reading "Funds"
+      // is the honest rendering of a quantity whose unit
       // nobody has chosen -- and every price in
       // `src/content/procurement-catalog.ts` is a whole number of these, so
       // the figure the player compares against is in the same units.

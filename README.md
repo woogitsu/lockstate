@@ -56,8 +56,8 @@ pnpm verify:assets
 
 See [`docs/ART_PIPELINE.md`](./docs/ART_PIPELINE.md) and
 [ADR-0014](./docs/adr/0014-art-storage-and-runtime-asset-delivery.md), whose `Status`
-is `Proposed` — it describes the pipeline the repository implements, but the
-decision has not been approved.
+is `Accepted` — it describes the pipeline the repository implements, and that
+pipeline is now the approved one rather than a proposal it happens to match.
 
 Production-like local preview:
 

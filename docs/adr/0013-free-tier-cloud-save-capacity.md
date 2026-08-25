@@ -12,12 +12,13 @@ matters more than anything else in it:
 | **Decided already** | Five free save slots; an absolute ceiling of 50 total | Existing product rules (`README.md`, `src/services/entitlements/products.ts`). Issue #57 implements them at the database tier. **No approval is being asked for.** |
 | **Decided already** | Over-capacity degrades read-only | Existing commitment (`docs/TRUSTED_SERVICES.md`, ADR 0008 threat T7). Implemented here. |
 | **Decided here** | The enforcement mechanism (trigger + RPC) | An engineering decision inside the boundary ADR 0008 already set. Implemented; reviewable as code. |
-| **PROPOSED** | 4 MiB per stored save version | **Implemented with the proposed figure**, in one function, so approving a different number is a one-line change. |
+| **ACCEPTED**, as §4 | 4 MiB per stored save version | **Implemented**, in one function, so moving the number later is still a one-line change. |
 | **PROPOSED** | 20 retained revisions per prison | **Not implemented.** Needs a retention mechanism, which is its own change. |
 | **PROPOSED** | 256 MiB of stored payload per account | **Not implemented.** Depends on the revision-depth decision and on the JSONB-vs-Storage question. |
 
-A reviewer is being asked to sign off on three numbers — 4 MiB, 20
-revisions, 256 MiB — and on nothing else.
+A reviewer was asked to sign off on three numbers — 4 MiB, 20 revisions,
+256 MiB — and on nothing else. **4 MiB has been signed off, as §4.** Two are
+still open: 20 revisions (§6) and 256 MiB (§5).
 
 ## Context
 
@@ -147,7 +148,7 @@ judgement: destroying or locking a player's saves because their capacity
 shrank would be a far worse failure than briefly carrying an over-capacity
 account.
 
-### 4. Per-save payload bound — **PROPOSED: 4 MiB (4,194,304 bytes)**
+### 4. Per-save payload bound — **ACCEPTED: 4 MiB (4,194,304 bytes)**
 
 Enforced by `save_versions_enforce_size`, a `BEFORE INSERT` trigger, which
 also **measures** the stored bytes for a JSONB-backed version and overwrites
@@ -175,10 +176,9 @@ Reasoning for the figure:
   only about **1.4×** over the largest tier already measured — a little less
   once V4's delta is counted. **That is a materially weaker position than the
   "roughly an order of magnitude of headroom" this bullet claimed on the
-  superseded numbers, and the approval asked for in the Status table above
-  should be given or withheld against these figures rather than those.** What
-  the bound still does unambiguously is cap the worst case a hostile client can
-  force into a single row.
+  superseded numbers, and it is these figures, not those, that §4's accepted
+  bound stands on.** What the bound still does unambiguously is cap the worst
+  case a hostile client can force into a single row.
 - It sits below the size at which JSONB stops being a reasonable home. A
   payload approaching this bound is precisely the signal that the Storage
   path is needed — which is the still-open question in `docs/CLOUD_SAVE.md`,

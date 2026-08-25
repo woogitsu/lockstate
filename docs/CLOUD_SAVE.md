@@ -1181,8 +1181,8 @@ any part of a value — see "What has and has not been executed" above.
 This used to be an open question here, recorded by the security review and
 deliberately not fixed inside a privilege change. It is now answered by
 [ADR 0013](./adr/0013-free-tier-cloud-save-capacity.md), and the answer is
-partly decided and partly proposed -- **the ADR is `Proposed`, not
-`Accepted`**, and the split matters.
+partly accepted and partly still proposed -- **that ADR is `Accepted` for its
+§§1-4 and its §§5-6 remain `Proposed`**, and the split matters.
 
 The problem it closes. `[auth] enable_anonymous_sign_ins = true` is this
 project's identity model, so `authenticated` is effectively "anyone who can
@@ -1197,9 +1197,9 @@ player's data from another is untouched.
 | Limit | State | Where the number lives |
 | --- | --- | --- |
 | 5 free slots, ceiling 50 total | **Decided already** — an existing product rule (`README.md`, `BASE_SAVE_SLOTS`/`MAX_TOTAL_SAVE_SLOTS`). #57 only makes it authoritative. | `public.base_save_slot_capacity()`, `public.max_save_slot_capacity()` |
-| 4 MiB per stored save version | **Proposed, pending approval.** Implemented with the proposed figure. | `public.max_save_payload_bytes()` |
-| 20 retained revisions per prison | **Proposed. Not implemented** — needs a pruner. | — |
-| 256 MiB of payload per account | **Proposed. Not implemented** — depends on the two above. | — |
+| 4 MiB per stored save version | **Accepted** as ADR 0013 §4. Implemented, in one function. | `public.max_save_payload_bytes()` |
+| 20 retained revisions per prison | ADR 0013 §6, **still Proposed. Not implemented** — needs a pruner. | — |
+| 256 MiB of payload per account | ADR 0013 §5, **still Proposed. Not implemented** — depends on the two above. | — |
 
 How it is enforced:
 

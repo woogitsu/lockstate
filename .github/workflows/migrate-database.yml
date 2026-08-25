@@ -17,7 +17,8 @@ name: Database migrations
 #
 # So this workflow is not the staging path any more; it is two other things.
 # It is the ONLY path to a production project -- the integration has one
-# target and must never be repointed at production (ADR 0016 §2, Proposed) --
+# target and must never be repointed at production (ADR 0016 §2, Accepted;
+# binding, and nothing enforces it mechanically) --
 # and its dry-run mode is the only way to inspect what a hosted project
 # actually has applied without changing anything. It also remains a recovery
 # path for staging: `supabase db push` skips already-applied migrations, so
