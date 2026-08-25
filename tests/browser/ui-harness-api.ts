@@ -183,6 +183,21 @@ export interface RepaintFormatterCost {
   readonly numberFormatConstructions: number;
 }
 
+/**
+ * The outcomes the stub importer can report, one per branch
+ * `describeImportResult` distinguishes (#287). Named rather than passed as a
+ * `SaveImportResult`, so a spec cannot accidentally assert against a shape it
+ * built itself.
+ */
+export type ImportOutcomeName =
+  | 'ok'
+  | 'ok-migrated'
+  | 'not-a-save'
+  | 'unsupported-version'
+  | 'invalid-shape'
+  | 'checksum-mismatch'
+  | 'quota-exceeded';
+
 export interface LockstateUiHarness {
   /**
    * Whether every element matching `selector` was actually laid out.
@@ -209,6 +224,24 @@ export interface LockstateUiHarness {
   createCalls(): number;
   prisonRowCount(): number;
   releaseCreate(outcome: 'ok' | 'worker-timeout'): void;
+  /**
+   * Gives the stub an active session, which is the state an import needs: a
+   * save file goes into a prison, and `SessionController.importInto` requires
+   * one that exists (#287).
+   */
+  activateSession(prisonId: string): void;
+  /** What the stub's `importInto` will report next. */
+  setImportOutcome(outcome: ImportOutcomeName): void;
+  /**
+   * Every value the panel has handed to `importInto`, as JSON.
+   *
+   * The proof that the control is not inert: an Import button that read the
+   * file and dropped it would leave this empty while every rendered-text
+   * assertion still passed.
+   */
+  importedRaw(): readonly string[];
+  /** Whether the panel called `loadPrison` after an import, and for which prison. */
+  loadedPrisons(): readonly string[];
   /** Re-reads the slot list, which is what paints the list rows and the empty-list row. */
   refreshSavePanel(): Promise<void>;
   settleSavePanel(): Promise<void>;

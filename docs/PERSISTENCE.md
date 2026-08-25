@@ -1243,7 +1243,27 @@ best-effort lifecycle save this section describes.
 `exportSave` returns the current generation's already-validated envelope.
 `importSave` runs an arbitrary value through `decodeSaveEnvelope` (schema +
 migration + checksum) before it can reach `save()` — an invalid import never
-touches storage.
+touches storage. Migration is not a separate step a caller has to remember:
+`decodeSaveEnvelope` walks the chain, so a V1/V2/V3 file becomes a V4 envelope
+on the way in and `save()` only ever sees the current version.
+
+**A refused import says which of four things went wrong (#287).** It returns
+`SaveImportResult`, not `SaveResult`, for two reasons the save path does not
+have. `SaveWriteError` has three codes and all three are about *storage*, so
+folding a decode failure into `unknown-error` — which this method did while
+nothing called it — leaves a caller with one sentence for "not a save file",
+"a save from a newer build", "a structurally invalid save" and "a save whose
+checksum does not match". Those are four different things to tell a player, so
+the `SaveDecodeError` travels beside the write error as `rejected`; it is
+absent exactly when the envelope decoded and the write is what failed, which
+is the arm `describeSaveResult` already handles. The second addition is
+`migrated` on the success arm: whether the chain ran is a fact about the file
+worth reporting, and the save panel reports it.
+
+`tests/unit/persistence-local-repository.test.ts` holds both — the four
+refusals as one table (the property is the *distinction*), and the checked-in
+V1 fixture importing as `migrated: true` and loading back at the current
+version.
 
 ### Errors
 
@@ -1666,6 +1686,67 @@ code rather than the defect, and the defect was the composition root not handing
 one over. That is pinned by
 `tests/foundation/composition-root-contract.test.ts` instead.
 
+**Import is the other half of Export, and the panel is where it was missing
+(#287).** `SessionController.importInto` was written, exported and reachable,
+and `git grep -n importInto -- src` returned exactly one line: its own
+definition. The application offered a download it could not read back. The
+control is a fourth button in the same always-visible actions row, next to
+Export, and pressing it opens a file chooser; the panel parses the bytes,
+hands the value to `importInto` (which validates, migrates and checksums it
+before anything reaches storage), and then *loads* the prison, because an
+import that only wrote a generation would leave the player looking at their
+old game. Each half reports for itself: the status line carries the import
+outcome — including whether the file was migrated from an older version — and
+the detail line carries what the restore actually carried, from
+`describeRestoredScope`, the same as a Load.
+
+Three decisions in that worth writing down:
+
+- **Into the active prison, as a new generation.** That is the symmetry
+  `exportActive` sets, and `importInto` needs a slot that exists in any case.
+  Nothing is destroyed: the pre-import state stays in the retained generation
+  window. With no active prison the panel says so in the sentence it already
+  has for that state, so a player starting from empty storage creates a prison
+  first — the honest smallest version of this, and the place to revisit if
+  "import into a new prison" is wanted later.
+- **The `<input type="file">` lives for one gesture.** It is created on the
+  press and removed when the choice lands. A permanent hidden input would be a
+  permanent *control* that is never laid out, and
+  `tests/browser/app-shell.spec.ts`'s reachability sweep accounts for every
+  control on the page and fails on one that is laid out in no state it visits.
+  Picking the file is also deliberately **outside** the action gate: a file
+  dialog stays open as long as the player likes and can be dismissed without
+  producing an event, so gating it would disable the whole panel for an
+  unbounded time. The gate opens when the bytes arrive.
+- **It fits in the row that already exists, measured rather than assumed.**
+  The rail's panel width already wraps three buttons onto two lines at the four
+  desktop viewports the browser suite visits, so the fourth costs nothing
+  there: with one prison saved on the Build tab, `.save-panel__actions` is 92px
+  and the panel's content 225px both before and after, at 1280x720
+  (161.1px box), 1440x900 (227px box, no scroll), 1024x768 (209.1px) and
+  900x600 (108.7px, the `min-height: 25%` floor). Only 375x812 changes: the row
+  goes from one line to two (44px → 92px) and the content from 177px to 225px
+  in a 222.3px box, i.e. 5px of scroll in a panel that is a scroll container by
+  design. **The Build panel is untouched at all five**: body overflow 0,
+  `scrollTop` 0 on arrival, `buildPanelScrolls` false and "Enter coordinates"
+  inside the fold, with the same numbers before and after the button existed —
+  which is what the four #174 assertions in `app-shell.spec.ts` require, and
+  they pass unweakened.
+
+  The reason that holds is worth stating rather than inferring from the panel's
+  own numbers: **the control costs the rail nothing.** `.hud__aside` measures
+  173.1 / 353.1 / 221.1 / 120.7 / 230.3px at the five viewports both before and
+  after — identical, because the slot's height comes from the rail and the panel
+  absorbs its own content by scrolling. So none of this is spent out of the
+  rail's *always-visible* budget, which is the scarce quantity (measured
+  elsewhere at 12.2px at 900x600 and 38.2px at 1280x720, the two tightest
+  viewports — and not to be confused with `hud.css`'s 3.8px, which is residual
+  catalogue slack after #174's short-viewport fix and a different quantity).
+  Had the button needed rail height, the answer would have been the disclosure
+  Export sits behind rather than a relaxed `min-height: 25%`: that floor is
+  documented in `hud.css` as the wrong lever, since dropping it leaves this
+  panel a 41.1px box over 240px of content.
+
 `describeSaveResult` maps each failure code to its **own** state and
 advice, satisfying "quota, private-mode and transaction-abort errors are
 distinct recoverable states" — quota tells the player to free space,
@@ -1674,6 +1755,22 @@ intact (a guarantee the repository genuinely provides). A storage-open
 failure (private browsing with IndexedDB blocked) is caught in `main.ts`
 and degrades to a playable-but-unsaveable session rather than a blank
 screen.
+
+**The round trip is asserted through the player's own path.**
+`tests/determinism/snapshot-restore-fidelity.test.ts` has proven the
+serialization layer round-trips since long before this control existed — which
+is precisely why the missing piece was reachability, not fidelity. So the guard
+for #287 is in `tests/browser/app-shell.spec.ts`: play a session, pause, save,
+Export (a real download), create a second empty prison, Import the downloaded
+bytes through a real file chooser, then Save now — which captures from the
+worker the import restored into — and Export again. The final payload equals
+the exported one, so what the second worker holds is what the first one wrote.
+The second prison is what keeps that non-vacuous: it is day one, tick zero, so
+an Import that did nothing would leave the comparison against a fresh prison.
+Elapsed simulation time is the distinguishing state because a player can
+produce it with one press; laying a wall would not do, since with no materials
+bought the order is refused and both saves' construction sections are empty
+(measured).
 
 ### Bundle-size note
 

@@ -260,6 +260,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'save.action.create': 'New prison',
   'save.action.save': 'Save now',
   'save.action.export': 'Export',
+  'save.action.import': 'Import',
   'save.action.load': 'Load',
   'save.action.delete': 'Delete',
 
@@ -296,11 +297,28 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'save.status.nothing-to-export': 'Nothing to export — no valid active save.',
   'save.status.exported': 'Exported the current save.',
 
+  // Import (#287). Five outcomes and five sentences, because the action a
+  // player should take differs in each: pick a different file, update the
+  // game, or accept that this copy of the save is damaged. `importSave`
+  // reports the four refusals apart (`SaveImportResult.rejected`), so
+  // flattening them here would discard a distinction the layer below makes.
+  'save.status.importing': 'Reading the save file…',
+  'save.status.imported': 'Imported the save file into this prison (generation {generation}).',
+  'save.status.imported-migrated':
+    'Imported a save from an older version of Lockstate and brought it up to date (generation {generation}).',
+  'save.status.import-not-a-save': 'That file is not a Lockstate save — choose a file exported from this game.',
+  'save.status.import-unsupported-version':
+    'That save was written by a newer version of Lockstate than this one. Update the game, then import it again.',
+  'save.status.import-corrupt':
+    'That save does not match its own checksum — it was damaged or edited after it was exported, so it was not imported.',
+  'save.status.import-invalid': 'That save file could not be read: {detail}',
+
   'save.failure.create': 'Creating the prison failed: {detail}',
   'save.failure.save': 'Saving failed: {detail}',
   'save.failure.load': 'Loading failed: {detail}',
   'save.failure.delete': 'Deleting failed: {detail}',
   'save.failure.export': 'Exporting failed: {detail}',
+  'save.failure.import': 'Importing failed: {detail}',
   'save.failure.unknown': 'The action failed: {detail}',
 
   // `{restored}` and `{notCarried}` are the `save.scope.*` lines below,

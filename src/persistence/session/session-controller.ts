@@ -1,6 +1,6 @@
 import { restoredScopeFor, type RestoredScope, type SessionSnapshotBundle } from '../../simulation/runtime/restore-session';
 import { AutosaveScheduler } from '../local/autosave';
-import type { PrisonSaveRepository, SaveResult } from '../local/repository';
+import type { PrisonSaveRepository, SaveImportResult, SaveResult } from '../local/repository';
 import type { PrisonSlotMetadata } from '../local/store';
 import { createSaveEnvelope, type SaveEnvelope, type TrustedSaveEnvelope } from '../save-schema';
 import { SnapshotRestoreRejectedError, type SessionRuntimeHost } from './runtime-host';
@@ -302,8 +302,21 @@ export class SessionController {
     return this.session === undefined ? undefined : this.repository.exportSave(this.session.prisonId);
   }
 
-  /** Import routes through schema/migration/checksum validation before anything reaches storage (`PrisonSaveRepository.importSave`). */
-  public async importInto(prisonId: string, raw: unknown): Promise<SaveResult> {
+  /**
+   * Import routes through schema/migration/checksum validation before anything
+   * reaches storage (`PrisonSaveRepository.importSave`).
+   *
+   * It writes a new generation of `prisonId` and nothing else: the imported
+   * save does not become the live session here, because making it live is
+   * `loadPrison`'s job and doing both in one call would hide a failed restore
+   * behind a successful write. A caller that wants the file to become the
+   * game -- the save panel's Import control (#287) -- imports and then loads,
+   * and reports each half.
+   *
+   * `SaveImportResult` rather than `SaveResult` because a refused import has
+   * more to say than a failed write; see the type.
+   */
+  public async importInto(prisonId: string, raw: unknown): Promise<SaveImportResult> {
     return this.repository.importSave(prisonId, raw);
   }
 

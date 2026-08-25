@@ -6,6 +6,7 @@ import { Kernel } from '../../src/simulation/kernel/kernel';
 import { SparseWorld } from '../../src/simulation/world/sparse-world';
 import { ConstructionSystem } from '../../src/simulation/construction/system';
 import { chunkCoordinate } from '../../src/simulation/world/coordinates';
+import v1InProgressFixture from '../fixtures/persistence/save-v1-in-progress.json';
 
 function buildEnvelope(revision: number, tick = revision): SaveEnvelope {
   const world = new SparseWorld(32);
@@ -277,7 +278,7 @@ describe('PrisonSaveRepository: export/import', () => {
     const destinationRepo = new PrisonSaveRepository(new MemoryLocalSaveStore(), { generateGenerationId: idSequence('imported') });
     await destinationRepo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0' });
     const importResult = await destinationRepo.importSave('prison-1', exported);
-    expect(importResult).toEqual({ ok: true, generationId: 'imported-1' });
+    expect(importResult).toEqual({ ok: true, generationId: 'imported-1', migrated: false });
 
     const loaded = await destinationRepo.loadCurrent('prison-1');
     expect(loaded).toMatchObject({ ok: true, envelope: exported });
@@ -290,6 +291,84 @@ describe('PrisonSaveRepository: export/import', () => {
     const result = await repo.importSave('prison-1', { garbage: true });
     expect(result.ok).toBe(false);
     expect(await repo.loadCurrent('prison-1')).toEqual({ ok: false, reason: 'no-valid-generation' });
+  });
+
+  /**
+   * Issue #287: the import path is what a player reaches through the save
+   * panel's Import control, and the four ways a chosen file can be refused are
+   * four different things to tell them. `SaveWriteError` can express none of
+   * them -- it has three storage codes -- so the decode error travels beside it
+   * on `rejected`, and this is the test that says so.
+   *
+   * Written as one table rather than four cases because the property is the
+   * *distinction*: a change that collapsed any two of these into one code would
+   * leave the panel with one sentence for both, which is exactly what issue #19
+   * refused for quota and abort.
+   */
+  it('reports why an import was refused, distinguishably, and writes nothing in any of the four cases', async () => {
+    const repo = new PrisonSaveRepository(new MemoryLocalSaveStore());
+    await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0' });
+
+    const valid = buildEnvelope(1);
+    const cases = [
+      // Not a Lockstate save at all: nothing in it declares a version. No
+      // `atVersion`, because no version was ever read -- which is the fact the
+      // panel uses to tell this from the case below.
+      { name: 'no declared version', raw: { garbage: true }, code: 'invalid-shape', atVersion: undefined },
+      // A save from a build that is newer than this one. The save is fine.
+      { name: 'a newer schema version', raw: { ...valid, saveSchemaVersion: 99 }, code: 'unsupported-version', atVersion: 99 },
+      // Declares a version this build knows, and its payload does not hold up.
+      {
+        name: 'structurally invalid at a known version',
+        raw: { ...valid, payload: { ...valid.payload, kernel: undefined } },
+        code: 'invalid-shape',
+        atVersion: valid.saveSchemaVersion,
+      },
+      // Intact shape, wrong checksum: edited or damaged after export.
+      { name: 'a checksum that does not match', raw: { ...valid, checksum: '0000000000000000' }, code: 'checksum-mismatch', atVersion: valid.saveSchemaVersion },
+    ] as const;
+
+    for (const { name, raw, code, atVersion } of cases) {
+      const result = await repo.importSave('prison-1', JSON.parse(JSON.stringify(raw)));
+      expect(result.ok, name).toBe(false);
+      if (result.ok) continue;
+      expect(result.rejected?.code, name).toBe(code);
+      expect(result.rejected?.atVersion, name).toBe(atVersion);
+      // The write error stays a write error's shape, so a caller that only
+      // knows `SaveResult` still gets something honest.
+      expect(result.error.code, name).toBe('unknown-error');
+    }
+
+    // Four distinct codes rather than four spellings of one.
+    expect(new Set(cases.map((entry) => `${entry.code}:${String(entry.atVersion)}`)).size).toBe(4);
+    // And nothing reached storage in any of them.
+    expect(await repo.loadCurrent('prison-1')).toEqual({ ok: false, reason: 'no-valid-generation' });
+  });
+
+  /**
+   * The requirement that makes the import path worth having at all: a save
+   * exported by an older build still loads.
+   *
+   * The V1 fixture is the checked-in one `tests/migrations/` uses, unedited, so
+   * this cannot pass by migrating something it invented. `migrated: true` is
+   * the observable half -- the panel reports it to the player -- and the stored
+   * generation coming back at the current version is the durable half.
+   */
+  it('migrates an older save on the way in and says that it did', async () => {
+    const repo = new PrisonSaveRepository(new MemoryLocalSaveStore(), { generateGenerationId: idSequence('imported') });
+    await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0' });
+
+    const result = await repo.importSave('prison-1', v1InProgressFixture);
+    expect(result).toEqual({ ok: true, generationId: 'imported-1', migrated: true });
+
+    const loaded = await repo.loadCurrent('prison-1');
+    expect(loaded.ok).toBe(true);
+    if (!loaded.ok) return;
+    expect(loaded.envelope.saveSchemaVersion).toBe(buildEnvelope(1).saveSchemaVersion);
+    // The migrated payload, not the V1 one: `revision` crosses unchanged and
+    // the entity ledger is the current shape.
+    expect(loaded.envelope.revision).toBe(v1InProgressFixture.revision);
+    expect(Object.keys(loaded.envelope.payload.entities ?? {})).not.toContain('freeCount');
   });
 });
 

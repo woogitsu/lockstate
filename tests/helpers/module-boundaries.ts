@@ -59,8 +59,20 @@ export interface ImportSite {
 }
 
 const FROM_SPECIFIER = /\bfrom\s*['"]([^'"]+)['"]/g;
-/** `import './register';` -- a side-effect import, which has no `from`. */
-const SIDE_EFFECT_IMPORT = /(?<![\w$.])(import)\s*['"]([^'"]+)['"]/g;
+/**
+ * `import './register';` -- a side-effect import, which has no `from`.
+ *
+ * The lookbehind excludes a preceding quote as well as an identifier
+ * character, because `'import'` as a *string* is not an import keyword. The
+ * scanner used to read `this.start('import', ...)` in `src/ui/save-panel.ts`
+ * (#287) as a side-effect import of everything up to the next quote, and
+ * reported that file as importing a package. Comments were already handled --
+ * `stripComments` exists for exactly this class of false positive -- and a
+ * quoted occurrence is the same mistake one syntax over. No real side-effect
+ * import can be preceded by a quote: the keyword opens a statement, so what
+ * precedes it is a line start, a `;` or a `}`.
+ */
+const SIDE_EFFECT_IMPORT = /(?<![\w$.'"])(import)\s*['"]([^'"]+)['"]/g;
 /** `await import('./lazy')` -- anywhere in an expression, so not anchored to a line start. */
 const DYNAMIC_IMPORT = /(?<![\w$.])(import)\s*\(\s*['"]([^'"]+)['"]/g;
 const DECLARATION_KEYWORD = /(?:^|\n)[ \t]*(import|export)\b/g;
