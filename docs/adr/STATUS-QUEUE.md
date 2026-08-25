@@ -53,8 +53,33 @@ unimplemented at `d2596ad`:
   `capacity: 0` (`src/simulation/rooms/zoning.ts:259`), and no room definition
   in `src/content/room-catalog.ts` carries a capacity field at all.
 
-**Nothing in this file asks you to do anything about 0022 or 0023.** They need
-a decision, not a correction, and the entries below are not about them.
+**Nothing in this file asks you to change 0022's or 0023's status.** They need
+a decision, not a correction, and every entry below is about a different ADR.
+
+One thing is worth knowing before signing 0022, though, because it is about the
+evidence rather than the status. ADR 0022 was written against v0.0.30 and says
+so; PR #282's buy surface landed after it, and **four of its structural
+citations have drifted as a result** — the ADR anticipated the dependency but
+not the drift:
+
+| ADR 0022 says | `main` @ `d2596ad` |
+| --- | --- |
+| `HudIntent` (`src/ui/hud/hud.ts:153-195`) declares **seven** members | **eight**, at `:153-211` — `purchase-materials` (`:186`) is the new one |
+| `ZoneRoom` is one of **three** commands in `AWAITING_PRODUCER` (`:106-107`) | **two**, and `ZoneRoom` is at `:107-108` |
+| quotes that entry as *"…a build order, the build tool or the undo pair…"* | the entry now reads *"…a build order, **a materials purchase**, the build tool or the undo pair…"* |
+| the `onIntent` switch is at `src/main.ts:458-459`, `case 'place-build-order'` at `:511` | `:532` and `:585` |
+
+**None of this touches the decision.** The load-bearing facts still hold, re-read
+at `d2596ad`: `RoomZoningService.zone` is complete (`src/simulation/rooms/zoning.ts:203`),
+it validates every tile before writing any (`:225-241`), it paints the zoning
+plane (`:243-251`), the six refusal reasons are at `:140`, `session-commands.ts:46`
+routes the command, all 18 room definitions carry a `nameKey`
+(`src/content/room-catalog.ts:66-159`), `buildCatalogue()` is at
+`src/main.ts:332`, and **no member of `HudIntent` is about a room** — which is
+the fact the whole ADR rests on. The count moved; the conclusion did not.
+Reading `:153-195` and finding eight members where the ADR says seven is the
+kind of thing that makes a reviewer distrust a document that is in fact right,
+which is the only reason it is recorded here.
 
 **Queue B — retroactive approval. The decision has already shipped.**
 
