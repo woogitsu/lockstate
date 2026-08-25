@@ -2,29 +2,32 @@
 
 ## Status
 
-**Proposed — pending human approval. Superseded in part by the amendment of
-2026-08-25 below.** Not accepted.
+**Accepted, 2026-08-25 — as amended. Decision §1 and §3's *location* are
+superseded in part by the amendment of 2026-08-25 below.**
 
-The owner delegated the choice of surface, and this document is the record of
-what was chosen under that delegation. It is not accepted until they say so,
-and nothing in `src/` implements it yet.
+**What was accepted is the amendment, not the *Decision* section.** The owner
+delegated the choice of surface, exercised the reversal this document names, and
+chose **alternative B, the Rooms tab** — which is what shipped in #312. The
+approval covers that choice; §*Amendment — 2026-08-25* is the operative part of
+this file, and §*Status of this amendment* at the foot of it records the state
+the amendment was written in, before this approval, rather than the state it is
+in now.
 
-**Read the amendment first.** The owner has since exercised the reversal this
-document names in the paragraph after next: the surface is **alternative B, the
-Rooms tab**, and that is what is implemented. Everything from *Decision* down to
-*Consequences* is left exactly as it was written, because an ADR is a historical
-record of a decision and not a description of the current build; the amendment
-is the only part of this file that describes what shipped.
+Everything from *Decision* down to *Consequences* is left exactly as it was
+written, because an ADR is a historical record of a decision and not a
+description of the current build. Read the amendment first: it is the only part
+of this file that describes what shipped.
 
-A reviewer is being asked to sign off on one thing: **a room type is a row in
-the Build catalogue, and a room is zoned by dragging a rectangle across tiles
-on the world canvas** — rather than by a new "Rooms" tab beside Build, or by a
-new always-visible block inside the Build panel.
+The thing a reviewer was asked to sign off on, and did not: **a room type is a
+row in the Build catalogue, and a room is zoned by dragging a rectangle across
+tiles on the world canvas** — rather than by a new "Rooms" tab beside Build, or
+by a new always-visible block inside the Build panel. The gesture half of that
+was kept; the catalogue-row half was not.
 
-If that goes the other way, the alternative it goes to is the Rooms tab
-(alternative B below), which is measured as costing the Build panel nothing and
-is named here as this ADR's intended successor rather than as a discarded idea.
-The always-visible block (alternative C) does not survive a reversal either: it
+It went the other way, to the alternative named here for that purpose: the Rooms
+tab (alternative B below), which is measured as costing the Build panel nothing
+and is named as this ADR's intended successor rather than as a discarded idea.
+The always-visible block (alternative C) did not survive the reversal either: it
 is refused by measurement, not by preference.
 
 ### What the evidence rests on, stated because it bounds every figure below

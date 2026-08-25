@@ -2,7 +2,8 @@
 
 ## Status
 
-**Proposed — pending human approval.** Not accepted.
+**Accepted, 2026-08-25.** The eight decisions and the phase order below are
+approved as written, unchanged by the approval; phase 1 is unblocked.
 
 The owner was shown three ways to give a room an occupancy — derive it from the
 catalogue's existing `requirements` block, author two fields per room type, or
