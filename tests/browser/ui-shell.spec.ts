@@ -1377,3 +1377,357 @@ test.describe('HUD shell', () => {
     expect(await page.evaluate(() => window.lockstateUiHarness.takeUnhandledRejections())).toEqual([]);
   });
 });
+
+/*
+ * The Rooms panel (ADR 0022, amended).
+ *
+ * Everything here needs a browser and says why. The panel's *decisions* are
+ * headless and live in `tests/unit/ui-room-tool.test.ts` and
+ * `tests/unit/rooms-zoning.test.ts`; what only a browser can answer is whether
+ * the controls are laid out, whether the confirm pair really replaces the arm
+ * pair rather than joining it, and whether the last block in the panel is inside
+ * the panel's fold at 900x600 -- which is the measurement the owner's choice of
+ * a tab over a Build-panel block rests on.
+ */
+test.describe('the Rooms panel', () => {
+  /**
+   * The five viewports the browser suite visits, in the shape the Build panel's
+   * catalogue tests use them. Declared here rather than shared, because that
+   * list is scoped inside another describe and hoisting it would widen a
+   * constant two unrelated suites would then both own.
+   */
+  const ROOMS_VIEWPORTS = [
+    [1280, 720],
+    [1440, 900],
+    [1024, 768],
+    [900, 600],
+    [375, 812],
+  ] as const;
+
+  // The file's own `beforeEach` has already navigated and waited for the
+  // harness; this only mounts and opens the tab.
+  test.beforeEach(async ({ page }) => {
+    await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+    await page.evaluate(() => window.lockstateUiHarness.clickTab('rooms'));
+  });
+
+  /**
+   * Only the intents that ask the simulation for something.
+   *
+   * `select-tab` and `arm-room-tool` are *chrome* -- the first is recorded by
+   * this suite's own `beforeEach`, the second by arming -- and neither is a
+   * command. Filtering them out is what lets an assertion say "the release
+   * dispatched nothing" about the thing that would actually change the prison,
+   * rather than about the bookkeeping of getting to the tab.
+   */
+  async function roomCommands(page: Page): Promise<readonly string[]> {
+    const intents = await page.evaluate(() => window.lockstateUiHarness.hudIntents());
+    return intents.filter((intent) => intent.includes('"zone-room"') || intent.includes('"unzone-room"'));
+  }
+
+  test('offers the room catalogue, with the first row selected and its authored rule on screen', async ({ page }) => {
+    const probe = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+
+    expect(probe.panelLaidOut, 'the Rooms panel is not laid out on its own tab').toBe(true);
+    expect(probe.rows).toEqual(['room.cell', 'room.canteen', 'room.yard']);
+    expect(probe.selected, 'the first row is the default selection').toBe('room.cell');
+    // The rule is readable *before* the drag, which is the whole reason the
+    // catalogue comes first: a player choosing a canteen should not learn its
+    // 6x6 floor from the refusal after dragging 2x2.
+    expect(probe.ruleText).toEqual(['Needs at least 2 × 3 tiles', 'Must be enclosed']);
+    expect(probe.areaText, 'nothing is selected yet').toBe('Nothing selected');
+    expect(probe.enclosureText, 'nothing has been designated yet').toBe('Not evaluated yet');
+    await expectLaidOut(page, '.hud-rooms__list [data-room]', "the panel's room rows");
+  });
+
+  test('follows the selection, so the rule shown is the rule of the room picked', async ({ page }) => {
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomType('room.yard'));
+
+    const probe = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    expect(probe.selected).toBe('room.yard');
+    // The one room in the shipped catalogue that is not `enclosed`. A panel
+    // rendering a constant would pass every other assertion in this file.
+    expect(probe.ruleText).toEqual(['Needs at least 8 × 8 tiles', 'Must be outdoors']);
+  });
+
+  test('shows the removal control beside the arm control, without folding it away', async ({ page }) => {
+    // It is the recovery from every mistake this panel can make, and a recovery
+    // folded behind a disclosure is one a player in trouble has to find. Before
+    // `UnzoneRoom` existed a designation was permanent for the session, with no
+    // recovery at all on touch.
+    const probe = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    expect(probe.armLaidOut).toBe(true);
+    expect(probe.removeLaidOut).toBe(true);
+    expect(probe.confirmLaidOut, 'the confirm control shows before anything is pending').toBe(false);
+    expect(probe.cancelLaidOut).toBe(false);
+    await expectLaidOut(page, '.hud-rooms__remove', 'the removal control');
+  });
+
+  test('a finished drag designates nothing until the confirm is pressed', async ({ page }) => {
+    // The confirm step, which is the reason a release is not a command. A
+    // designation can cover 4,096 tiles; removal now makes that recoverable, and
+    // "recoverable" is not "costless".
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('arm'));
+    const dragged = await page.evaluate(() =>
+      window.lockstateUiHarness.dragWorldRoom({ x: 4, y: 6, width: 2, height: 3 }),
+    );
+    expect(dragged, 'the HUD registered no room-gesture sink').toBe(true);
+
+    const pending = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    expect(pending.area, 'the rectangle is held, not sent').toBe('4,6,2,3');
+    expect(pending.areaText).toBe('2 × 3 tiles at 4, 6');
+    // The confirm pair *replaces* the arm pair rather than joining it, which is
+    // what makes the confirm step cost the panel no height -- and it is why the
+    // two hidden controls must have no box at all.
+    expect(pending.armLaidOut).toBe(false);
+    expect(pending.removeLaidOut).toBe(false);
+    expect(pending.confirmLaidOut).toBe(true);
+    expect(pending.cancelLaidOut).toBe(true);
+    // The control names the action and the size, so it says what pressing it
+    // will do to how many tiles.
+    expect(pending.confirmText).toContain('Designate 2 × 3');
+
+    // And nothing has been dispatched. This is the assertion the confirm step
+    // exists for: a release is not a command.
+    expect(await roomCommands(page), 'a release dispatched a command').toEqual([]);
+
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('confirm'));
+
+    // One command, and only now.
+    expect(await roomCommands(page)).toEqual([
+      JSON.stringify({ kind: 'zone-room', roomId: 'room.cell', area: { x: 4, y: 6, width: 2, height: 3 } }),
+    ]);
+    const after = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    expect(after.armLaidOut, 'the panel returns to its arm state').toBe(true);
+    expect(after.confirmLaidOut).toBe(false);
+  });
+
+  test('discarding a pending rectangle asks the host for nothing', async ({ page }) => {
+    await page.evaluate(() => window.lockstateUiHarness.dragWorldRoom({ x: 0, y: 0, width: 4, height: 4 }));
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('cancel'));
+
+    const probe = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    expect(probe.area, 'the rectangle is gone').toBe('');
+    expect(probe.armLaidOut).toBe(true);
+    expect(await roomCommands(page), 'discarding asked the host for something').toEqual([]);
+  });
+
+  test('refuses to confirm a rectangle under the authored minimum, and says why exactly once', async ({ page }) => {
+    // A 2x3 rectangle is a legal cell and an illegal canteen. The panel holds it
+    // either way -- the player drew it -- and the control that would designate
+    // it is disabled with the reason beside it, so there is no state in which a
+    // pending rectangle has no visible reason for having no way forward.
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomType('room.canteen'));
+    await page.evaluate(() => window.lockstateUiHarness.dragWorldRoom({ x: 0, y: 0, width: 2, height: 3 }));
+
+    const probe = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    expect(probe.confirmDisabled, 'a too-small rectangle can be confirmed').toBe(true);
+    expect(probe.noteTone).toBe('warning');
+    expect(probe.noteText).toBe('Too small — this room needs at least 6 × 6 tiles.');
+    await expectLaidOut(page, '.hud-rooms__note', 'the too-small warning');
+
+    // Exactly one message: the note. A press that does not dispatch is not a
+    // refusal, so the refusal line must stay down and no second sentence may
+    // appear anywhere.
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('confirm'));
+    expect(await roomCommands(page), 'a disabled confirm dispatched a command').toEqual([]);
+    const refusal = await page.evaluate(() => window.lockstateUiHarness.refusalProbe());
+    expect(refusal.visible, 'a disabled control painted a refusal line as well as the note').toBe(false);
+
+    // And the rule follows the selection back: the same rectangle is a legal
+    // cell, so the warning goes and the control comes back.
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomType('room.cell'));
+    const legal = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    expect(legal.confirmDisabled).toBe(false);
+    expect(legal.noteTone).toBe('');
+  });
+
+  test('a removal drag confirms as a removal, and says what it will really take', async ({ page }) => {
+    // On touch this whole sequence is drag, read, tap -- which is the point:
+    // undo is a keyboard chord, so before this there was no recovery of any kind
+    // on a touch device.
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('remove'));
+
+    const armed = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    expect(armed.removePressed).toBe('true');
+    // The hint says what a removal drag actually does, because it is not "clear
+    // the tiles you dragged over": each covered tile is grown into its whole
+    // connected same-type run.
+    expect(armed.noteText).toBe('Drag across any part of a room to remove all of it.');
+
+    await page.evaluate(() => window.lockstateUiHarness.dragWorldRoom({ x: 7, y: 7, width: 1, height: 1 }, true));
+
+    const pending = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    // Not "Designate", which would name the opposite of what pressing it does.
+    expect(pending.confirmText).toContain('Remove 1 × 1');
+
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('confirm'));
+
+    expect(await roomCommands(page), 'a removal carries no room id').toEqual([
+      JSON.stringify({ kind: 'unzone-room', area: { x: 7, y: 7, width: 1, height: 1 } }),
+    ]);
+  });
+
+  test('switching to removal discards a pending designation rather than reinterpreting it', async ({ page }) => {
+    // The same four numbers mean "designate this" or "remove whatever is here",
+    // and silently changing which would be the panel deciding something the
+    // player did not say.
+    await page.evaluate(() => window.lockstateUiHarness.dragWorldRoom({ x: 2, y: 2, width: 2, height: 3 }));
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('remove'));
+
+    const probe = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    expect(probe.area).toBe('');
+    expect(probe.confirmLaidOut).toBe(false);
+  });
+
+  test('a refused designation is reported on the control that was pressed', async ({ page }) => {
+    // The confirm step's other benefit, and the one a build drag cannot have: a
+    // room designation always has a control to be marked on, because the player
+    // pressed one.
+    await page.evaluate(() => window.lockstateUiHarness.failIntents(true));
+    await page.evaluate(() => window.lockstateUiHarness.dragWorldRoom({ x: 0, y: 0, width: 2, height: 3 }));
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('confirm'));
+
+    const refusal = await page.evaluate(() => window.lockstateUiHarness.refusalProbe());
+    expect(refusal.visible).toBe(true);
+    expect(refusal.action).toBe('zone-room');
+    expect(refusal.text).toBe('The room was not designated — the request was refused.');
+    // One message, not two: the marked control and the line are one report
+    // about one press, and the line's own id is what describes the control.
+    expect(refusal.failedControls).toHaveLength(1);
+    expect(refusal.describedByRefusal).toBe(true);
+  });
+
+  test('a refused removal says something different from a refused designation', async ({ page }) => {
+    // The two leave the prison in different states -- no new room, against a
+    // room still exactly where it was -- so they must not share a sentence.
+    await page.evaluate(() => window.lockstateUiHarness.failIntents(true));
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('remove'));
+    await page.evaluate(() => window.lockstateUiHarness.dragWorldRoom({ x: 0, y: 0, width: 1, height: 1 }, true));
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('confirm'));
+
+    const refusal = await page.evaluate(() => window.lockstateUiHarness.refusalProbe());
+    expect(refusal.visible).toBe(true);
+    expect(refusal.action).toBe('unzone-room');
+    expect(refusal.text).toBe('Nothing was removed — the request was refused.');
+  });
+
+  test('reads out what the simulation found about the room, and warns only when it disagrees', async ({ page }) => {
+    // A readout, never a refusal. `RoomZoningService` accepts a room drawn in
+    // open ground either way, because the check it can honestly make is narrower
+    // than enclosure and a door cannot currently seal anything -- so refusing
+    // would block a legitimate designation. The panel's job is to *say so*.
+    await page.evaluate(() =>
+      window.lockstateUiHarness.reportZoning({ sequence: 1, enclosure: 'open', requirement: 'enclosed' }),
+    );
+
+    const warned = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    expect(warned.enclosureText).toBe('Open on at least one side');
+    expect(warned.noteTone, 'an enclosed room reported open is the one pair worth flagging').toBe('warning');
+    expect(warned.noteText).toBe(
+      'This room should be enclosed, and the area you drew is open on at least one side.',
+    );
+    await expectLaidOut(page, '.hud-rooms__enclosure', 'the enclosure readout');
+
+    // The yard is authored `outdoors` and is *correct* when it is open, so the
+    // same answer must not be warned about. A panel that toned the answer itself
+    // rather than the pair would fail here.
+    await page.evaluate(() =>
+      window.lockstateUiHarness.reportZoning({ sequence: 2, enclosure: 'open', requirement: 'outdoors' }),
+    );
+    const fine = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    expect(fine.enclosureText).toBe('Open on at least one side');
+    expect(fine.noteTone).toBe('');
+
+    await page.evaluate(() =>
+      window.lockstateUiHarness.reportZoning({ sequence: 3, enclosure: 'sealed', requirement: 'enclosed' }),
+    );
+    const sealed = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    expect(sealed.enclosureText).toBe('Walled in on every side');
+    expect(sealed.noteTone).toBe('');
+  });
+
+  test('hands the pointer back when the player leaves the tab', async ({ page }) => {
+    // A tool that stayed armed behind a hidden panel would swallow every click
+    // on a world the player thought they were only looking at.
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('arm'));
+    await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+
+    const intents = await page.evaluate(() => window.lockstateUiHarness.hudIntents());
+    expect(intents).toContain(
+      JSON.stringify({ kind: 'arm-room-tool', armed: false, roomId: 'room.cell', removing: false }),
+    );
+  });
+
+  test('shows the live area as the pointer moves, without holding it pending', async ({ page }) => {
+    await page.evaluate(() => window.lockstateUiHarness.hoverWorldRoom({ x: 1, y: 2, width: 6, height: 6 }));
+
+    const hovering = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    expect(hovering.areaText).toBe('6 × 6 tiles at 1, 2');
+    expect(hovering.confirmLaidOut, 'a hover is not a finished gesture').toBe(false);
+
+    await page.evaluate(() => window.lockstateUiHarness.hoverWorldRoom(undefined));
+    expect((await page.evaluate(() => window.lockstateUiHarness.roomsProbe())).areaText).toBe('Nothing selected');
+  });
+
+  test('renders no unresolved message key anywhere in the panel', async ({ page }) => {
+    // ADR 0011's own failure mode: an unresolved key renders as itself, which is
+    // visible and obviously wrong -- and only if something looks.
+    await page.evaluate(() => window.lockstateUiHarness.dragWorldRoom({ x: 0, y: 0, width: 2, height: 3 }));
+    await page.evaluate(() =>
+      window.lockstateUiHarness.reportZoning({ sequence: 1, enclosure: 'open', requirement: 'enclosed' }),
+    );
+
+    const text = await page.locator('.hud-rooms').innerText();
+    expect(text.length, 'the panel rendered nothing at all').toBeGreaterThan(20);
+    expect(text, `an unresolved message key is on screen: ${text}`).not.toMatch(/\bhud\.[a-z0-9.-]+/);
+    expect(text).not.toMatch(/\broom\.[a-z0-9.-]+\.name\b/);
+  });
+
+  test('keeps the last control inside the panel at every viewport, 900x600 included', async ({ page }) => {
+    // **The measurement the owner's decision rests on.** The Build panel's
+    // always-visible budget at 900x600 is 7.81px -- the corrected figure; it read
+    // 11.82px before #174's second half, of which 4px was overlap rather than
+    // space -- and this surface needs a confirm row, a removal control, a
+    // too-small warning and an enclosure readout. On the aside it gets a 291.2px
+    // body instead, and this is the assertion that the panel actually fits in it.
+    //
+    // The number that decides it is the *last block's* bottom edge against the
+    // panel's fold. A floor that is too small pushes the status block past the
+    // fold rather than clipping it visibly, so a screenshot would not show it and
+    // a page that failed to load would report plausible, meaningless geometry --
+    // which is why the panel's own layout is asserted first.
+    for (const [width, height] of ROOMS_VIEWPORTS) {
+      await page.setViewportSize({ width, height });
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('rooms'));
+
+      const probe = await page.evaluate(() => window.lockstateUiHarness.roomsLayoutProbe());
+      const panel = probe.panel;
+      expect(panel, `the Rooms panel has no box at ${width}x${height}`).not.toBeNull();
+      if (panel === null) continue;
+      expect(panel.height, `the Rooms panel is not laid out at ${width}x${height}`).toBeGreaterThan(100);
+      expect(probe.status, `the panel's last block has no box at ${width}x${height}`).not.toBeNull();
+
+      // Nothing has scrolled anything: this is the state the panel arrives in.
+      expect(probe.panelScrollTop, `the Rooms panel is pre-scrolled at ${width}x${height}`).toBe(0);
+      expect(
+        probe.lastControlBottom,
+        `the enclosure readout is below the Rooms panel's fold at ${width}x${height}: it ends at y=${probe.lastControlBottom} in a panel clipped at y=${probe.panelVisibleBottom}`,
+      ).toBeLessThanOrEqual(probe.panelVisibleBottom);
+      expect(
+        probe.lastControlBottom,
+        `the last control is off the bottom of the viewport at ${width}x${height}`,
+      ).toBeLessThanOrEqual(height);
+      // The body may never be shorter than its own content: that is the failure
+      // #174 measured on the Build panel, where a floor missing one term let a
+      // block paint outside its own box.
+      expect(probe.bodyOverflow, `the Rooms panel body is shorter than its content at ${width}x${height}`)
+        .toBeLessThanOrEqual(0);
+      // And the excess went to the catalogue, which is the mechanism the last
+      // block staying put depends on. Eighteen rooms -- three in the harness --
+      // against a one-row floor, so the list is the thing that scrolls.
+      expect(probe.listOverflow, `the room list absorbed nothing at ${width}x${height}`).toBeGreaterThanOrEqual(0);
+    }
+  });
+});

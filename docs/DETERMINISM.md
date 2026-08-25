@@ -21,6 +21,14 @@ Pause, play and fast-forward reach that same clock, over `simulation/set-clock`.
 
 `tests/determinism/clock-transport.test.ts` drives the real `SimulationWorkerStateMachine` twice from one snapshot — once straight through at ×1, once paused, idled and resumed at ×1, ×2 and ×4 — and requires a byte-identical session bundle at the same tick.
 
+### Recovering from a rejected message
+
+Since #187 the worker **keeps running** after a message it could not decode, rather than faulting permanently ([ADR 0024](./adr/0024-protocol-fault-recoverability.md)). That is a decision about session lifetime, and it puts a determinism obligation beside it: while the worker faulted, a bad message ended the run and there was nothing left to diverge; now the same session continues, and handling garbage must therefore compute nothing.
+
+It does not, and the reasons are structural rather than incidental. The decoder returns its verdict as data and calls no simulation code ([ADR 0003](./adr/0003-simulation-worker-protocol.md)), so a rejected message reaches no system, no command queue and no RNG stream. The fault envelope's `messageId` is a correlation id and is never read by the kernel — the same exemption `crypto.randomUUID()` already holds in `tests/determinism/ambient-nondeterminism-contract.test.ts`'s allow-list — and the main thread's own locally raised fault numbers its ids from a counter rather than drawing randomness, so the simulation import closure gains no new ambient source.
+
+`tests/determinism/protocol-fault-recovery.test.ts` is the executable form: sixty ticks of the standard scenario driven through the **real worker entry module**, with undecodable messages of every classification arriving between wakes, must end byte-identical to the same sixty ticks with none — and the heckled run is asserted to have actually been heckled, so the comparison cannot pass by both runs doing nothing.
+
 ## Command Ordering
 - All external input is enqueued as a discrete `QueuedCommand` with a designated `executeAtTick` and a strict, contiguous `sequence` number.
 - Commands are explicitly ordered and validated by the Kernel.

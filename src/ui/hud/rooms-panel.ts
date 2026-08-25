@@ -1,0 +1,592 @@
+import type { LocalizationKey } from '../../content/localization';
+import type { MessageParameters } from '../../services/localization/format';
+import { createActionButton, type ActionButton } from '../primitives/action-button';
+import { createCollapsibleSection, type CollapsibleSection } from '../primitives/collapsible-section';
+import { element, eyebrowText, valueText } from '../primitives/dom';
+import { createListRow, type ListRow } from '../primitives/list-row';
+import { createPanel } from '../primitives/panel';
+import { HUD_MESSAGE_KEY } from './messages';
+import type {
+  HudLocalizer,
+  HudRoomEnclosureRequirement,
+  HudRoomViewModel,
+  HudRoomsViewModel,
+  HudZoningNoticeViewModel,
+} from './view-model';
+
+/**
+ * The Rooms panel.
+ *
+ * ### Why this is a tab and not a block in the Build panel
+ *
+ * ADR 0022 decided that a room type would be a row in the Build catalogue and
+ * named a Rooms tab as the alternative it rejected. The owner chose the
+ * alternative, and the panel is built to the budget that choice buys. The
+ * numbers are the whole of the argument: the Build panel's *always-visible*
+ * headroom at 900x600 is 7.81px -- measured to 0.05px, and about 4px smaller
+ * than the figure the decision was taken against, because part of what that
+ * figure counted was a gutter laid over a hairline rather than space (#174) --
+ * and this surface needs a confirm step, a removal control, a too-small warning
+ * and an enclosure readout. On the aside the panel inherits a 291.2px body at
+ * the same viewport. There was no version of this that fitted inside Build.
+ *
+ * It is the fifth and last tab: `HUD_TAB_IDS` had four, and ADR 0022 measured
+ * a sixth as foreclosed at 375x812, where a five-tab bar already leaves 1.8px
+ * of margin per side.
+ *
+ * ### Purpose first, then the rectangle
+ *
+ * Pick what the room is *for* from the catalogue, then drag the tiles it
+ * covers. That order is what the content model already assumes -- a room
+ * definition carries a `nameKey`, a minimum size and an enclosure rule, all of
+ * which the player wants to read *before* choosing where to put it -- and it is
+ * what the genre converges on (ADR 0022's evidence section). The reverse order,
+ * drag-then-classify, would have to show the minimum-size rule after the drag
+ * that broke it.
+ *
+ * ### The confirm step, and why it takes the arm row's place
+ *
+ * A release does not designate anything. It leaves a *pending* rectangle, and
+ * the one 44px row that held "Draw on map" and "Remove rooms" becomes
+ * "Designate 6 x 6" and "Discard". Two things follow from that, both wanted:
+ *
+ *   - **It costs no height.** The row is `--tap-target` tall whichever pair is
+ *     in it, which is the same trick `.hud-build__actions` uses for the buy
+ *     disclosure. A confirm step in a *third* block would have cost 52px the
+ *     panel does have and did not need to spend.
+ *   - **The choice is unambiguous while it is pending.** There is no state in
+ *     which the panel offers "arm the tool" and "confirm this rectangle" at
+ *     once, so there is no reading in which the arm button is what confirms.
+ *
+ * The tool stays armed while a rectangle is pending, so dragging again replaces
+ * it rather than needing a discard first -- which is how a player actually
+ * corrects a rectangle that came out 6x5.
+ *
+ * **The confirm gates removals too**, and that is deliberate rather than
+ * uniformity for its own sake. A removal drag grows every tile it covers into
+ * that tile's whole connected same-type run, so clipping the corner of a 6x6
+ * canteen removes all 36 tiles. That is the right behaviour -- the alternative
+ * leaves the zoning plane painted where the registry has no instance -- and it
+ * is exactly the behaviour a confirm step should be shown for. It is also what
+ * makes removal usable on touch: drag, read the area, tap once more.
+ *
+ * ### Boundaries
+ *
+ * A *composer*, like the Build panel. It holds which room type is selected,
+ * whether the tool is armed, whether the armed gesture removes and which
+ * rectangle is pending, and it turns those into intents. It never touches the
+ * world, never inspects a snapshot, and imports nothing from
+ * `src/simulation/**` -- so it does not know that a `ZoneRoom` or an
+ * `UnzoneRoom` command exists, only that it asked the host to designate or
+ * remove something.
+ */
+
+/** A rectangle of tiles, as the panel names one. Ids and numbers only. */
+export interface RoomsPanelArea {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+export interface RoomsPanelDesignateIntent {
+  readonly roomId: string;
+  readonly area: RoomsPanelArea;
+}
+
+export interface RoomsPanelOptions {
+  readonly localizer: HudLocalizer;
+  readonly model: HudRoomsViewModel;
+  /** Designate the pending rectangle as the selected room type. */
+  readonly onDesignate: (intent: RoomsPanelDesignateIntent) => void;
+  /** Clear every room designation the pending rectangle touches. */
+  readonly onRemove: (area: RoomsPanelArea) => void;
+  /**
+   * Hand the world pointer to the room tool, or take it back.
+   *
+   * `removing` travels with `armed` rather than as a second signal, because the
+   * renderer needs both to decide which preview to draw and a pair that could
+   * disagree would draw a removal preview for a designation gesture.
+   */
+  readonly onArm: (armed: boolean, options: { readonly roomId?: string; readonly removing: boolean }) => void;
+}
+
+export interface RoomsPanel {
+  readonly element: HTMLElement;
+  /**
+   * The controls to disable while a command is in flight -- the two that issue
+   * one, and nothing else.
+   *
+   * Choosing a room type, arming the tool, switching to removal and discarding
+   * a pending rectangle are *chrome*: they change what the next command would
+   * say and ask the host for nothing. The Build panel's own `controls` comment
+   * records what disabling more than that cost when it was measured.
+   */
+  readonly controls: readonly (HTMLButtonElement | HTMLInputElement)[];
+  /** The confirm control, so a refused designation is reported on the control that was pressed (#207). */
+  readonly submitControl: HTMLButtonElement;
+  /** Which room type is selected, exposed so a test can assert it without reading the DOM. */
+  getSelectedRoomId(): string | undefined;
+  /** The rectangle awaiting confirmation, or `undefined`. */
+  getPendingArea(): RoomsPanelArea | undefined;
+  isArmed(): boolean;
+  isRemoving(): boolean;
+  /** Live feedback from the world. `undefined` clears the readout and the pending rectangle. */
+  setArea(area: RoomsPanelArea | undefined): void;
+  /** A finished gesture: the rectangle is now pending confirmation. */
+  setPendingArea(area: RoomsPanelArea | undefined): void;
+  /** What the simulation said about the last room designated. */
+  setZoningNotice(notice: HudZoningNoticeViewModel | undefined): void;
+  setVisible(visible: boolean): void;
+}
+
+function requirementLabelKey(requirement: HudRoomEnclosureRequirement): LocalizationKey {
+  switch (requirement) {
+    case 'enclosed':
+      return HUD_MESSAGE_KEY.roomsRequirementEnclosed;
+    case 'outdoors':
+      return HUD_MESSAGE_KEY.roomsRequirementOutdoors;
+    case 'none':
+      return HUD_MESSAGE_KEY.roomsRequirementNone;
+  }
+}
+
+export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
+  const { localizer, model } = options;
+  const t = (key: LocalizationKey, parameters?: MessageParameters): string =>
+    parameters === undefined ? localizer.format(key) : localizer.format(key, parameters);
+
+  let selectedId = model.rooms[0]?.roomId;
+  let armed = false;
+  let removing = false;
+  /** The rectangle the pointer is currently over, whether or not the gesture has finished. */
+  let area: RoomsPanelArea | undefined;
+  /** The finished rectangle awaiting a confirm. */
+  let pending: RoomsPanelArea | undefined;
+  let notice: HudZoningNoticeViewModel | undefined;
+
+  const selectedRoom = (): HudRoomViewModel | undefined =>
+    model.rooms.find((entry) => entry.roomId === selectedId);
+
+  // ---- what kind of room -------------------------------------------
+  const catalogueList = element('div', { className: 'hud-rooms__list' });
+  const rows = new Map<string, ListRow>();
+
+  const paintCatalogue = (): void => {
+    for (const [id, row] of rows) {
+      row.setBadge(id === selectedId ? { tone: 'info', text: t(HUD_MESSAGE_KEY.roomsSelected) } : undefined);
+      row.element.dataset['selected'] = id === selectedId ? 'true' : 'false';
+    }
+  };
+
+  for (const room of model.rooms) {
+    const row = createListRow({
+      icon: 'rooms',
+      label: t(room.labelKey),
+      onActivate: () => {
+        selectedId = room.roomId;
+        // Choosing a different room type invalidates a pending rectangle's
+        // *judgement*, not the rectangle: 6x6 is enough for a canteen and not
+        // for a yard, so the too-small warning and the minimum readout have to
+        // be recomputed. The rectangle itself is kept, because the player
+        // dragged it deliberately and re-dragging it to change one word in the
+        // panel would be work the surface created for itself.
+        paintCatalogue();
+        paintRule();
+        paintActions();
+        // A designation gesture already in progress has to follow the
+        // selection, or the map would keep designating whatever was chosen
+        // when it was armed.
+        if (armed && !removing) options.onArm(true, { roomId: selectedId, removing: false });
+      },
+    });
+    row.element.dataset['room'] = room.roomId;
+    rows.set(room.roomId, row);
+    catalogueList.append(row.element);
+  }
+
+  // An empty list must say so. A blank rectangle is indistinguishable from a
+  // broken one -- the same rule the Build panel's catalogue follows. Reachable
+  // only from a host that passes no rooms; the shipped catalogue has 18.
+  if (model.rooms.length === 0) {
+    catalogueList.append(
+      createListRow({ icon: 'check', label: t(HUD_MESSAGE_KEY.roomsCatalogueEmpty) }).element,
+    );
+  }
+
+  const catalogue: CollapsibleSection = createCollapsibleSection({
+    eyebrow: t(HUD_MESSAGE_KEY.roomsCatalogue),
+    onToggle: (collapsed) => catalogue.setCollapsed(collapsed),
+  });
+  // The one section allowed to take space from the panel's height budget, and
+  // named so `hud.css` can say which one it is. Unlike the Build panel's, this
+  // list is 18 rows long and therefore always scrolls, which is why its floor
+  // is one row rather than two: a two-row floor would spend 44px to show a
+  // second row of a list the player is going to scroll anyway.
+  catalogue.element.classList.add('hud-rooms__catalogue');
+  catalogue.body.append(catalogueList);
+
+  // ---- the rule, read before the drag ------------------------------
+  /*
+   * The authored minimum and the enclosure requirement, stated for the
+   * *selected* room type.
+   *
+   * Both are content the simulation refuses or reports on, and neither was
+   * readable anywhere before this panel: `minimum-size` is authored on all 18
+   * definitions and was evaluated nowhere, so a 1x1 canteen was zonable, and
+   * `enclosed`/`outdoors` is carried by all 18 and evaluated nowhere either.
+   * Showing the rule here is what makes the refusal that enforces it a
+   * reminder rather than a surprise.
+   *
+   * Two eyebrow lines rather than two rows: at 13.2px each they cost 30.4px
+   * including the block's own gutters, against 88px for a pair of rows, and
+   * neither is interactive.
+   */
+  const ruleMinimum = eyebrowText(t(HUD_MESSAGE_KEY.roomsMinimumNone), 'hud-rooms__rule');
+  const ruleEnclosure = eyebrowText(t(HUD_MESSAGE_KEY.roomsRequirementNone), 'hud-rooms__rule');
+  const ruleBlock = element('div', {
+    className: 'hud-rooms__rule-block',
+    children: [ruleMinimum, ruleEnclosure],
+  });
+
+  function paintRule(): void {
+    const room = selectedRoom();
+    const minimum = room?.minimum;
+    ruleMinimum.textContent =
+      minimum === undefined
+        ? t(HUD_MESSAGE_KEY.roomsMinimumNone)
+        : t(HUD_MESSAGE_KEY.roomsMinimum, { width: minimum.width, height: minimum.height });
+    ruleEnclosure.textContent = t(requirementLabelKey(room?.enclosure ?? 'none'));
+  }
+
+  // ---- the map route -----------------------------------------------
+  const armButton: ActionButton = createActionButton({
+    label: t(HUD_MESSAGE_KEY.roomsArm),
+    tone: 'primary',
+    icon: 'rooms',
+    disabled: selectedId === undefined,
+    onActivate: () => {
+      // Arming to designate turns removal off. The two modes are one armed
+      // tool, and a player pressing "Draw on map" while removal was on has
+      // said which of the two they want.
+      removing = false;
+      armed = !armed;
+      paintActions();
+      options.onArm(armed, { ...(selectedId === undefined ? {} : { roomId: selectedId }), removing: false });
+    },
+  });
+  armButton.element.classList.add('hud-rooms__arm');
+
+  /*
+   * Removal, and the reason it is a peer of the arm button rather than a
+   * disclosure.
+   *
+   * It is the recovery from every mistake this panel can make, and a recovery
+   * folded behind a toggle is a recovery a player in trouble has to find.
+   * Before `UnzoneRoom` existed a designation was permanent for the life of the
+   * session -- `zone` refuses any tile already painted, zoning writes no
+   * construction order so `Undo` cannot reach it, and on touch there is no undo
+   * key at all -- so one stray drag could put up to 4,096 tiles beyond use with
+   * no recovery of any kind. That is the defect this control closes, and it is
+   * why it is always visible.
+   *
+   * It needs no selected room type, and that asymmetry is real rather than an
+   * oversight: a removal names no room type, because what comes out is whatever
+   * the rectangle covers.
+   */
+  const removeButton: ActionButton = createActionButton({
+    label: t(HUD_MESSAGE_KEY.roomsRemove),
+    onActivate: () => {
+      removing = !removing;
+      // Switching mode discards a pending rectangle rather than reinterpreting
+      // it. The same four numbers mean "designate this" or "remove whatever is
+      // here", and silently changing which would be the panel deciding
+      // something the player did not say.
+      pending = undefined;
+      armed = removing || armed;
+      paintActions();
+      options.onArm(armed, { ...(selectedId === undefined ? {} : { roomId: selectedId }), removing });
+    },
+  });
+  removeButton.element.classList.add('hud-rooms__remove');
+
+  const confirmButton: ActionButton = createActionButton({
+    label: t(HUD_MESSAGE_KEY.roomsConfirm, { width: 0, height: 0 }),
+    tone: 'primary',
+    icon: 'check',
+    onActivate: () => {
+      const rectangle = pending;
+      if (rectangle === undefined) return;
+      if (removing) {
+        pending = undefined;
+        paintActions();
+        options.onRemove(rectangle);
+        return;
+      }
+      const roomId = selectedId;
+      // Unreachable while the tool cannot be armed to designate without a
+      // selection, and returning rather than asserting keeps a designation of
+      // `undefined` impossible rather than merely unlikely.
+      if (roomId === undefined) return;
+      pending = undefined;
+      paintActions();
+      options.onDesignate({ roomId, area: rectangle });
+    },
+  });
+  confirmButton.element.classList.add('hud-rooms__confirm');
+
+  const cancelButton: ActionButton = createActionButton({
+    label: t(HUD_MESSAGE_KEY.roomsCancel),
+    onActivate: () => {
+      pending = undefined;
+      paintActions();
+    },
+  });
+  cancelButton.element.classList.add('hud-rooms__cancel');
+
+  const areaValue = valueText(t(HUD_MESSAGE_KEY.roomsAreaNone), 'hud-rooms__area-value');
+  const areaBlock = element('div', {
+    className: 'hud-rooms__area',
+    children: [eyebrowText(t(HUD_MESSAGE_KEY.roomsArea)), areaValue],
+  });
+
+  /*
+   * One line, three jobs, and it is one line rather than three because the
+   * three cannot be true at once.
+   *
+   * It is the arm hint while nothing is pending, the too-small warning when the
+   * pending rectangle is under the selected room's authored minimum, and the
+   * enclosure warning when the simulation reports an accepted room as open
+   * against an `enclosed` requirement. A line per state would cost 26.4px to
+   * show two sentences that are never both relevant.
+   *
+   * The too-small warning wins over the enclosure one, because it is about the
+   * rectangle the player is still holding while the other is about a room they
+   * already made.
+   */
+  const note = eyebrowText(t(HUD_MESSAGE_KEY.roomsArmHint), 'hud-rooms__note');
+
+  const actionsRow = element('div', {
+    className: 'hud-rooms__actions',
+    children: [armButton.element, removeButton.element, confirmButton.element, cancelButton.element],
+  });
+
+  /** True when the pending rectangle is smaller than the selected room's authored floor. */
+  function pendingIsTooSmall(): boolean {
+    if (pending === undefined || removing) return false;
+    const minimum = selectedRoom()?.minimum;
+    if (minimum === undefined) return false;
+    return pending.width < minimum.width || pending.height < minimum.height;
+  }
+
+  function paintNote(): void {
+    const minimum = selectedRoom()?.minimum;
+    if (pendingIsTooSmall() && minimum !== undefined) {
+      note.textContent = t(HUD_MESSAGE_KEY.roomsTooSmall, {
+        width: minimum.width,
+        height: minimum.height,
+      });
+      note.dataset['tone'] = 'warning';
+      return;
+    }
+    if (
+      pending === undefined &&
+      notice !== undefined &&
+      notice.requirement === 'enclosed' &&
+      notice.enclosure === 'open'
+    ) {
+      note.textContent = t(HUD_MESSAGE_KEY.roomsEnclosureOpenRequired);
+      note.dataset['tone'] = 'warning';
+      return;
+    }
+    note.textContent = t(removing ? HUD_MESSAGE_KEY.roomsRemoveHint : HUD_MESSAGE_KEY.roomsArmHint);
+    delete note.dataset['tone'];
+  }
+
+  /**
+   * The enclosure readout: what the simulation actually found, for the last
+   * room designated.
+   *
+   * A *readout* and never a refusal, and the panel is where that distinction is
+   * made visible. `RoomZoningService` evaluates the requirement and accepts the
+   * room either way, because the check it can honestly make is narrower than
+   * enclosure -- a room drawn inside a larger sealed building reads as open --
+   * and because a completed door order writes nothing into the world, so
+   * refusing every unsealed `enclosed` room would make 17 of the 18 room types
+   * designatable only as a box with no way in.
+   */
+  const enclosureValue = valueText(t(HUD_MESSAGE_KEY.roomsEnclosureNone), 'hud-rooms__enclosure-value');
+  const enclosureBlock = element('div', {
+    className: 'hud-rooms__enclosure',
+    children: [eyebrowText(t(HUD_MESSAGE_KEY.roomsEnclosure)), enclosureValue],
+  });
+
+  function paintEnclosure(): void {
+    if (notice === undefined) {
+      enclosureValue.textContent = t(HUD_MESSAGE_KEY.roomsEnclosureNone);
+      delete enclosureBlock.dataset['enclosure'];
+      return;
+    }
+    enclosureValue.textContent = t(
+      notice.enclosure === 'sealed'
+        ? HUD_MESSAGE_KEY.roomsEnclosureSealed
+        : HUD_MESSAGE_KEY.roomsEnclosureOpen,
+    );
+    enclosureBlock.dataset['enclosure'] = notice.enclosure;
+  }
+
+  /**
+   * Which pair of controls the one 44px row holds, and everything that follows
+   * from the pending rectangle.
+   *
+   * `hidden` rather than `display: none` in a stylesheet, for the reason the
+   * HUD hides a whole panel that way: a control that is off-screen but still in
+   * the tab order is one a keyboard can reach and a player cannot see.
+   */
+  function paintActions(): void {
+    const confirming = pending !== undefined;
+
+    armButton.element.hidden = confirming;
+    removeButton.element.hidden = confirming;
+    confirmButton.element.hidden = !confirming;
+    cancelButton.element.hidden = !confirming;
+
+    armButton.setLabel(t(armed && !removing ? HUD_MESSAGE_KEY.roomsDisarm : HUD_MESSAGE_KEY.roomsArm));
+    armButton.element.dataset['armed'] = armed && !removing ? 'true' : 'false';
+    // `aria-pressed` says these are toggles rather than one-shot actions;
+    // without it a screen reader announces "Stop drawing" with no way to tell
+    // that the mode is currently on.
+    armButton.element.setAttribute('aria-pressed', armed && !removing ? 'true' : 'false');
+    armButton.setDisabled(selectedId === undefined);
+
+    removeButton.setLabel(t(removing ? HUD_MESSAGE_KEY.roomsRemoveActive : HUD_MESSAGE_KEY.roomsRemove));
+    removeButton.element.dataset['removing'] = removing ? 'true' : 'false';
+    removeButton.element.setAttribute('aria-pressed', removing ? 'true' : 'false');
+
+    /*
+     * The label names the action *and* the size, so the control says what
+     * pressing it will do to how many tiles rather than leaving the player to
+     * read that off the area line above it. A removal gets its own sentence:
+     * "Designate 6 x 6" on the control that removes would name the opposite of
+     * what it does.
+     *
+     * Set unconditionally, so it is a function of the pending rectangle and not
+     * of whichever rectangle was pending last. A player only ever reads it while
+     * the control is showing -- `hidden` decides that -- but a control whose text
+     * outlived the rectangle it described is a stale readout, and
+     * `tests/browser/app-shell.spec.ts` names controls by their label, so a
+     * leftover one makes that test depend on the order its viewports run in.
+     */
+    confirmButton.setLabel(
+      t(removing ? HUD_MESSAGE_KEY.roomsConfirmRemove : HUD_MESSAGE_KEY.roomsConfirm, {
+        width: pending?.width ?? 0,
+        height: pending?.height ?? 0,
+      }),
+    );
+
+    if (pending !== undefined) {
+      // A rectangle under the authored minimum can be *held* but not
+      // confirmed. Disabled rather than absent: the rectangle is real and the
+      // player drew it, so the control that would designate it stays where it
+      // is and the note beside it says what is wrong. Removing the control
+      // would leave a pending rectangle with no visible reason for having no
+      // way forward.
+      //
+      // The simulation refuses the same case independently
+      // (`zone.below-minimum-size`), so this is a *report* and not the only
+      // guard: a `ZoneRoom` composed anywhere else is still refused. It is also
+      // why the disabled control produces no message: a press that does not
+      // dispatch is not a refusal, and the note beside it is already saying
+      // what is wrong -- so the "exactly one message per refusal" rule is not
+      // in play until a command is actually sent.
+      confirmButton.setDisabled(pendingIsTooSmall());
+    }
+
+    paintArea();
+    paintRule();
+    paintNote();
+  }
+
+  function paintArea(): void {
+    const shown = pending ?? area;
+    if (shown === undefined) {
+      areaValue.textContent = t(HUD_MESSAGE_KEY.roomsAreaNone);
+      delete areaBlock.dataset['area'];
+      return;
+    }
+    areaValue.textContent = t(HUD_MESSAGE_KEY.roomsAreaValue, {
+      width: shown.width,
+      height: shown.height,
+      x: shown.x,
+      y: shown.y,
+    });
+    areaBlock.dataset['area'] = `${shown.x},${shown.y},${shown.width},${shown.height}`;
+  }
+
+  let panelCollapsed = false;
+  const panel = createPanel({
+    title: t(HUD_MESSAGE_KEY.roomsTitle),
+    icon: 'rooms',
+    className: 'hud-rooms',
+    collapse: {
+      collapseLabel: t(HUD_MESSAGE_KEY.panelCollapse),
+      expandLabel: t(HUD_MESSAGE_KEY.panelExpand),
+      collapsed: false,
+      onToggle: () => {
+        panelCollapsed = !panelCollapsed;
+        panel.setCollapsed(panelCollapsed);
+      },
+    },
+  });
+  panel.body.append(
+    catalogue.element,
+    element('div', { className: 'hud-rooms__map', children: [actionsRow, areaBlock, note] }),
+    element('div', { className: 'hud-rooms__status', children: [ruleBlock, enclosureBlock] }),
+  );
+  paintCatalogue();
+  paintActions();
+  paintEnclosure();
+
+  return {
+    element: panel.element,
+    controls: [confirmButton.element],
+    submitControl: confirmButton.element,
+    getSelectedRoomId: () => selectedId,
+    getPendingArea: () => pending,
+    isArmed: () => armed,
+    isRemoving: () => removing,
+    setArea(next: RoomsPanelArea | undefined): void {
+      area = next;
+      paintArea();
+    },
+    setPendingArea(next: RoomsPanelArea | undefined): void {
+      pending = next;
+      area = undefined;
+      paintActions();
+    },
+    setZoningNotice(next: HudZoningNoticeViewModel | undefined): void {
+      notice = next;
+      paintEnclosure();
+      paintNote();
+    },
+    setVisible(visible: boolean): void {
+      panel.element.hidden = !visible;
+      // Leaving the tab must hand the pointer back to the camera, exactly as
+      // the Build panel does: a tool that stayed armed behind a hidden panel
+      // would swallow every click on a world the player thought they were only
+      // looking at. The pending rectangle goes too -- confirming a rectangle
+      // from a surface that is no longer on screen is a command with no visible
+      // origin.
+      if (!visible) {
+        pending = undefined;
+        area = undefined;
+        if (armed) {
+          armed = false;
+          removing = false;
+          options.onArm(false, { ...(selectedId === undefined ? {} : { roomId: selectedId }), removing: false });
+        }
+        paintActions();
+      }
+    },
+  };
+}

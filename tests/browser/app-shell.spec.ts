@@ -6,6 +6,7 @@ import { procurableMaterial } from '../../src/content/procurement-catalog';
 import { SAVE_SCHEMA_VERSION } from '../../src/persistence/save-schema';
 import { defaultMessageCatalogEn, formatNumber } from '../../src/services/localization';
 import { TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
+import { HUD_TAB_IDS } from '../../src/ui/hud';
 
 /**
  * Real-browser verification for the *assembled application* — `index.html`
@@ -488,6 +489,91 @@ async function dragOnWorld(page: Page): Promise<void> {
 }
 
 /**
+ * A rectangle drag on the world, in real pointer events (ADR 0022, amended).
+ *
+ * The sibling of `dragOnWorld` above, and the difference is the whole reason the
+ * renderer needed a second gesture: this one moves on **both** axes.
+ * `edgeRunFromDrag` commits a drag to one axis because a wall is
+ * one-dimensional; `tileRectFromDrag` must not, because a rectangle is exactly
+ * the shape that has two.
+ *
+ * ### Why it hit-tests its own aim, and why it can answer "nowhere"
+ *
+ * `dragOnWorld` above may press at the centre of the screen, because the
+ * centre-click spec establishes that the centre belongs to the canvas. It
+ * establishes that on the *arrival* tab, with the arrival panels, and neither
+ * holds here: the Rooms panel is the tallest in the HUD, and below 720px the rail
+ * stretches to the full width with the save panel above it and `.hud__side`
+ * pushed to the bottom.
+ *
+ * Measured on the assembled page, Rooms tab, one prison saved:
+ *
+ * | Viewport | Save panel | Rooms panel | Largest square of bare world |
+ * | --- | --- | --- | --- |
+ * | 1280x720 | 1004,60 264x139 | 1004,219 264x420 | 256px at 8,56 |
+ * | 900x600  | 624,60 264x109  | 620,185 264x338  | 256px at 8,56 |
+ * | 375x812  | 8,96 359x156    | 8,268 359x451    | **none at all** |
+ *
+ * At 375x812 the two panels are full-width and between them, the 88px strip and
+ * the tab bar they leave gaps of 8, 16 and 24 pixels -- so there is no square of
+ * *any* size to drag in while both panels are expanded. That is a real property
+ * of that viewport rather than a defect in this helper, and it is why this
+ * returns a boolean instead of throwing: the caller records the two controls that
+ * only a pending rectangle reveals as unreachable there, in the same way
+ * `NEVER_LAID_OUT_BELOW_720` records the two the responsive rules drop. The panel
+ * is collapsible, so a player on that phone can fold it, drag, and expand again;
+ * pretending this helper could do it in one gesture would be the fiction.
+ *
+ * Both ends of the gesture are hit-tested, not just the press: a drag that begins
+ * on the world and ends on a panel is one the scene never completes, and a
+ * plausible pixel figure taken from a page that was not showing what the test
+ * assumed is exactly the failure this file exists to avoid.
+ *
+ * `TILE_SIZE_PX` is 64 and the camera starts at zoom 1, so 192px is a three-tile
+ * side and 128px a two-tile one -- both rectangles with two real axes, which is
+ * what is being proven. `steps` matters for the same reason it does above: the
+ * scene reads the gesture from pointer *movement*, so a single jump would work
+ * and would not resemble a hand.
+ */
+const ROOM_DRAG_DELTAS_PX = [192, 128] as const;
+
+async function dragRectangleOnWorld(page: Page): Promise<boolean> {
+  const viewport = page.viewportSize();
+  if (viewport === null) throw new Error('the viewport size is needed to aim the drag');
+
+  // A coarse scan of the world: the first point whose whole gesture -- press,
+  // midpoint and release -- lands on the canvas wins. Coarse on purpose; this is
+  // aiming at open ground, not measuring a boundary, and a fine grid would spend
+  // hundreds of round trips to find the same point.
+  const aim = await page.evaluate(
+    ({ width, height, deltas }) => {
+      const free = (x: number, y: number): boolean =>
+        document.elementFromPoint(x, y)?.tagName.toLowerCase() === 'canvas';
+      for (const delta of deltas) {
+        for (let y = 8; y + delta < height - 8; y += 16) {
+          for (let x = 8; x + delta < width - 8; x += 16) {
+            if (free(x, y) && free(x + delta / 2, y + delta / 2) && free(x + delta, y + delta)) {
+              return { x, y, delta };
+            }
+          }
+        }
+      }
+      return null;
+    },
+    { width: viewport.width, height: viewport.height, deltas: [...ROOM_DRAG_DELTAS_PX] },
+  );
+
+  if (aim === null) return false;
+
+  await page.mouse.move(aim.x, aim.y);
+  await page.mouse.down({ button: 'left' });
+  await page.mouse.move(aim.x + aim.delta / 2, aim.y + aim.delta / 2, { steps: 6 });
+  await page.mouse.move(aim.x + aim.delta, aim.y + aim.delta, { steps: 6 });
+  await page.mouse.up({ button: 'left' });
+  return true;
+}
+
+/**
  * Every element a player can press, anywhere on the assembled page.
  *
  * Deliberately not scoped to `.hud`: the collision issue #88 reported was
@@ -535,6 +621,33 @@ const NEVER_LAID_OUT_BELOW_720 = [
     'button.ui-icon-button ui-icon-button--quiet ui-panel__toggle "Collapse"',
   'hud > hud__corner > ui-panel hud-minimap > ui-panel__body > ui-section > ' +
     'button.ui-section__header "Alerts"',
+] as const;
+
+/**
+ * The two controls a *pending room rectangle* reveals, and the one viewport where
+ * this sweep cannot make one.
+ *
+ * Unlike `NEVER_LAID_OUT_BELOW_720` above, these are not dropped by a responsive
+ * rule: they are laid out at 375x812 the moment a rectangle is pending, and the
+ * reason they are listed is that at that viewport there is **no bare world left
+ * to drag one in**. Measured on the assembled page, Rooms tab, one prison saved:
+ * the save panel occupies y 96..252 and the Rooms panel y 268..719, both the full
+ * 375px width, and with the 88px status strip and the tab bar at y 743 the gaps
+ * between them are 8, 16 and 24 pixels. `dragRectangleOnWorld` carries the whole
+ * table.
+ *
+ * That is a real property of a 375px-wide phone with both panels expanded rather
+ * than a hole in this test, and it is stated here rather than worked around
+ * because it is a *product* observation: the Build panel has a numeric fallback
+ * for exactly this situation and the Rooms panel has none, so on that phone the
+ * player has to collapse a panel before they can draw. The ADR's amendment
+ * records it as an open question rather than this file inventing an answer.
+ */
+const NEVER_LAID_OUT_AT_375 = [
+  'hud > hud__rail > hud__side > ui-panel hud-rooms > ui-panel__body > hud-rooms__map > ' +
+    'hud-rooms__actions > button.ui-action hud-rooms__confirm "Designate 0 × 0"',
+  'hud > hud__rail > hud__side > ui-panel hud-rooms > ui-panel__body > hud-rooms__map > ' +
+    'hud-rooms__actions > button.ui-action hud-rooms__cancel "Discard"',
 ] as const;
 
 interface UnreachableControl {
@@ -994,11 +1107,18 @@ test.describe('the assembled application', () => {
       // Which controls this viewport managed to hit-test at all, across every
       // state it visits. Accumulated so the "never laid out anywhere" check
       // below is about the viewport, not about one tab: the Build panel is
-      // legitimately absent on three of the four tabs.
+      // legitimately absent on four of the five tabs, and the Rooms panel on
+      // the other four.
       const everMeasured = new Set<number>();
       let inventory: readonly string[] = [];
 
-      for (const tab of ['overview', 'build', 'security', 'regime'] as const) {
+      // Every tab, and the list is  rather than a copy of it: this
+      // loop was a hard-coded four when the Rooms tab landed, so the whole Rooms
+      // panel was outside the sweep and the "never laid out anywhere" check
+      // below reported all 26 of its controls as unreachable -- correctly, since
+      // nothing had opened the tab they live on. Reading the real list means a
+      // sixth tab cannot repeat that.
+      for (const tab of HUD_TAB_IDS) {
         await page.locator(`.ui-tab[data-tab="${tab}"]`).click();
         const reachability = await controlReachability(page);
         inventory = reachability.controls;
@@ -1269,6 +1389,61 @@ test.describe('the assembled application', () => {
         if (panel !== null) panel.scrollTop = 0;
       });
 
+      /*
+       * The Rooms panel's confirm state, which is that panel's equivalent of
+       * the buy row above and reached the same way: explicitly, because the
+       * two controls in it exist in the DOM at every moment and are laid out at
+       * none of the states visited so far.
+       *
+       * It is driven through the *world* rather than through a harness hook,
+       * because this file drives the assembled application -- so this is also
+       * the only place the whole room gesture is exercised end to end: a real
+       * drag on a real Phaser canvas, arbitrated by the real scene, reported
+       * through the real `RoomTool`, held by the real panel.
+       *
+       * Without this state the `neverLaidOut` check below does not merely get
+       * weaker -- it fails, naming the confirm and discard controls, which is
+       * the gate doing its job: a control the sweep can never see is a control
+       * this test cannot claim is reachable.
+       */
+      await page.locator('.ui-tab[data-tab="rooms"]').click();
+      const roomArm = page.locator('.hud-rooms__arm');
+      await expect(roomArm, `the Rooms panel's arm control is missing at ${width}x${height}`).toBeVisible();
+      await roomArm.click();
+      const dragged = await dragRectangleOnWorld(page);
+      // The one viewport with no bare world to drag in, and the helper's own
+      // table says why. Asserted rather than tolerated, so a layout change that
+      // freed some world there -- or took it away somewhere else -- fails here
+      // instead of quietly changing what this test covers.
+      expect(dragged, `a room drag found no bare world at ${width}x${height}`).toBe(width > 375);
+
+      if (dragged) {
+        const roomConfirm = page.locator('.hud-rooms__confirm');
+        await expect(
+          roomConfirm,
+          `a rectangle dragged on the world did not reach the Rooms panel at ${width}x${height}`,
+        ).toBeVisible();
+        // Both axes survived the gesture, which is the property `dragOnWorld`'s
+        // one-axis run cannot show: a square drag committed to an axis would read
+        // `3 x 1` or `1 x 3` here.
+        await expect(
+          page.locator('.hud-rooms__area'),
+          `the dragged area is not a rectangle at ${width}x${height}`,
+        ).toHaveAttribute('data-area', /^-?\d+,-?\d+,[2-9]\d*,[2-9]\d*$/);
+
+        const roomsReachability = await controlReachability(page);
+        inventory = roomsReachability.controls;
+        for (const index of roomsReachability.measured) everMeasured.add(index);
+        expect(
+          roomsReachability.unreachable,
+          `controls covered by something else with a room pending at ${width}x${height}`,
+        ).toEqual([]);
+
+        // Discarded, so the next viewport starts from the state this one did.
+        await page.locator('.hud-rooms__cancel').click();
+      }
+      await page.locator('.ui-tab[data-tab="build"]').click();
+
       // Nothing got a free pass by never being laid out. At desktop widths the
       // Build tab with its coordinates expanded shows every control there is,
       // so the list is empty; at 720px and below the responsive rules drop
@@ -1276,14 +1451,132 @@ test.describe('the assembled application', () => {
       // those two controls genuinely cannot be reached at any tab. That is a
       // deliberate responsive decision (see `hud.css`), named here so it stays
       // one: it is the honest limit of what this test can claim about a phone.
+      const exempt =
+        width <= 720
+          ? [...NEVER_LAID_OUT_BELOW_720, ...(width <= 375 ? NEVER_LAID_OUT_AT_375 : [])]
+          : [];
       const neverLaidOut = inventory.filter((_, index) => !everMeasured.has(index));
-      expect(neverLaidOut, `controls never laid out in any state at ${width}x${height}`).toEqual(
-        width <= 720 ? [...NEVER_LAID_OUT_BELOW_720] : [],
-      );
+      expect(neverLaidOut, `controls never laid out in any state at ${width}x${height}`).toEqual(exempt);
       expect(
         everMeasured.size,
         `hit-tested only ${everMeasured.size} of ${inventory.length} controls at ${width}x${height}`,
-      ).toBe(inventory.length - (width <= 720 ? NEVER_LAID_OUT_BELOW_720.length : 0));
+      ).toBe(inventory.length - exempt.length);
+    }
+  });
+
+  /**
+   * The Rooms panel's own geometry, on the assembled page (ADR 0022, amended).
+   *
+   * **This has to be here rather than in `ui-shell.spec.ts` for the reason the
+   * Build panel's last-section measurement above does**, and it is the same
+   * reason stated one panel over: that harness leaves the rail's aside slot
+   * empty, `.hud__aside:empty { display: none }` then hands the panel the whole
+   * rail, and the class of defect this test is about cannot be reproduced there.
+   * Measured: dropping the status block's three terms from
+   * `.hud-rooms > .ui-panel__body`'s floor -- the exact shape of #174's defect --
+   * leaves every assertion in the harness spec green.
+   *
+   * What it measures is the number the owner's choice of a tab over a
+   * Build-panel block rests on. The Build panel's *always-visible* budget at
+   * 900x600 is 7.81px; this panel needs a confirm row, a removal control, a
+   * too-small warning and an enclosure readout, and on the aside it gets a
+   * 291.2px body instead. The assertion is that the last block in the panel --
+   * the status block, holding the two rule lines and the enclosure readout -- is
+   * inside the panel's own fold, unscrolled, in a rail that really holds the
+   * save panel.
+   *
+   * `scrollTop` is read before the block is measured and then reset, exactly as
+   * the Build panel's is: a panel left scrolled by an earlier interaction would
+   * carry the block back inside the fold and make the measurement pass for the
+   * very reason the defect is a defect.
+   */
+  test("the Rooms panel's last block is inside its fold at every viewport (ADR 0022)", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await openApp(page);
+    // A prison in the list is the state a player reaches with the first thing
+    // they do, and it is what puts the save panel in the rail's aside slot --
+    // which is the whole point of measuring here rather than in the harness.
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.save-panel__item-label').first()).toContainText('New Prison');
+
+    for (const [width, height] of [
+      [1280, 720],
+      [1440, 900],
+      [1024, 768],
+      [900, 600],
+      [375, 812],
+    ] as const) {
+      await page.setViewportSize({ width, height });
+      await page.locator('.ui-tab[data-tab="rooms"]').click();
+      await expect(page.locator('.hud-rooms')).toBeVisible();
+
+      const geometry = await page.evaluate(() => {
+        const panel = document.querySelector('.hud-rooms');
+        const status = document.querySelector('.hud-rooms__status');
+        const last = document.querySelector('.hud-rooms__enclosure');
+        if (panel === null || status === null || last === null) return null;
+        const scrollTop = panel.scrollTop;
+        panel.scrollTop = 0;
+        const p = panel.getBoundingClientRect();
+        return {
+          scrollTop,
+          panelHeight: Math.round(p.height),
+          statusBottom: status.getBoundingClientRect().bottom,
+          lastBottom: last.getBoundingClientRect().bottom,
+          fold: p.top + panel.clientTop + panel.clientHeight,
+          panelTop: p.top,
+          panelBottom: p.bottom,
+        };
+      });
+
+      expect(geometry, `the Rooms panel has no box at ${width}x${height}`).not.toBeNull();
+      if (geometry === null) continue;
+      // Vacuity guard: a panel that failed to lay out reports plausible,
+      // meaningless numbers, and every comparison below would hold.
+      expect(geometry.panelHeight, `the Rooms panel is not laid out at ${width}x${height}`).toBeGreaterThan(150);
+      expect(
+        geometry.scrollTop,
+        `something had already scrolled the Rooms panel at ${width}x${height}`,
+      ).toBe(0);
+      expect(
+        geometry.lastBottom,
+        `the enclosure readout is below the unscrolled Rooms panel's fold at ${width}x${height}: it ends at y=${Math.round(geometry.lastBottom)} in a panel clipped at y=${Math.round(geometry.fold)}`,
+      ).toBeLessThanOrEqual(geometry.fold);
+      expect(
+        geometry.statusBottom,
+        `the Rooms panel's last block is below its fold at ${width}x${height}`,
+      ).toBeLessThanOrEqual(geometry.fold);
+      // And the panel itself is on screen, which is the rail's claim rather
+      // than the panel's and is why it is asserted separately.
+      expect(geometry.panelTop, `the Rooms panel starts above the viewport at ${width}x${height}`)
+        .toBeGreaterThanOrEqual(-0.5);
+      expect(geometry.panelBottom, `the Rooms panel runs past the viewport at ${width}x${height}`)
+        .toBeLessThanOrEqual(height + 0.5);
+
+      // No box that carries the panel's height is ever shorter than its own
+      // content -- the property, not the one box somebody happened to measure.
+      // `.hud-rooms__list` is deliberately absent: it is the one box here that is
+      // *meant* to hold more than it shows, and with eighteen room types against
+      // a one-row floor it always does.
+      expect(
+        await page.evaluate(() =>
+          ['.hud-rooms > .ui-panel__body', '.hud-rooms__catalogue', '.hud-rooms__catalogue > .ui-section__body']
+            .map((selector) => {
+              const box = document.querySelector(selector);
+              if (box === null) return `${selector} has no box`;
+              const shortfall = box.scrollHeight - box.clientHeight;
+              return shortfall === 0 ? null : `${selector} is ${shortfall}px shorter than its own content`;
+            })
+            .filter((entry) => entry !== null),
+        ),
+        `boxes in the Rooms panel shorter than their own content at ${width}x${height}`,
+      ).toEqual([]);
+
+      // The rail still holds with the tallest panel in the HUD showing.
+      expect(
+        railInvariants(await railIntegrity(page)),
+        `the rail on the Rooms tab at ${width}x${height}`,
+      ).toEqual({ railOverflow: 0, offScreen: [], stuck: [] });
     }
   });
 

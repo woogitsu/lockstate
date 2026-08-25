@@ -6,6 +6,7 @@ import {
   BUILD_REFUSAL_REASONS,
   PURCHASE_REFUSAL_REASONS,
   RefusalLog,
+  UNZONE_REFUSAL_REASONS,
   ZONE_REFUSAL_REASONS,
 } from '../../src/simulation/refusals';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
@@ -100,6 +101,7 @@ describe('the wire vocabulary is exactly what the three domains can produce', ()
       ...Object.values(BUILD_REFUSAL_REASONS),
       ...Object.values(PURCHASE_REFUSAL_REASONS),
       ...Object.values(ZONE_REFUSAL_REASONS),
+      ...Object.values(UNZONE_REFUSAL_REASONS),
     ];
     for (const reason of produced) {
       expect(REFUSAL_REASONS, `${reason} is produced but not declared on the wire`).toContain(reason);
@@ -127,9 +129,28 @@ describe('the wire vocabulary is exactly what the three domains can produce', ()
     expect([...REFUSAL_REASONS]).toEqual([...REFUSAL_REASONS].sort());
   });
 
-  it('names the three commands it can answer, so the vocabularies cannot collide', () => {
+  it('names the four commands it can answer, so the vocabularies cannot collide', () => {
+    // `unzone` is the fourth. It is its own namespace and not more members of
+    // `zone`'s, because `invalid-area` is the same *condition* for both and a
+    // different *sentence*: a player told "the room was not zoned" after asking
+    // to remove one would go and look at the wrong control.
     const prefixes = new Set(REFUSAL_REASONS.map((reason) => reason.split('.')[0]));
-    expect([...prefixes].sort()).toEqual(['build', 'purchase', 'zone']);
+    expect([...prefixes].sort()).toEqual(['build', 'purchase', 'unzone', 'zone']);
+  });
+
+  it('keeps the one spelling zoning and removal share as two different wire ids', () => {
+    // The same rule the build/zone pair below is about, on the pair this change
+    // added. `invalid-area` is a member of both `ZoneRoomRefusalReason` and
+    // `UnzoneRoomRefusalReason`.
+    const shared = Object.keys(ZONE_REFUSAL_REASONS).filter((reason) =>
+      Object.hasOwn(UNZONE_REFUSAL_REASONS, reason),
+    );
+    expect(shared.sort()).toEqual(['invalid-area']);
+    for (const reason of shared) {
+      const fromZone = ZONE_REFUSAL_REASONS[reason as keyof typeof ZONE_REFUSAL_REASONS];
+      const fromUnzone = UNZONE_REFUSAL_REASONS[reason as keyof typeof UNZONE_REFUSAL_REASONS];
+      expect(fromUnzone, `${reason} must not be one wire id for two commands`).not.toBe(fromZone);
+    }
   });
 
   it('keeps a spelling that two domains share as two different wire ids', () => {
@@ -246,7 +267,11 @@ describe('a zoning rectangle the simulation refuses reaches the session log', ()
     submit(
       runtime,
       0,
-      packCommand({ type: 'ZoneRoom', roomId: 'room.cell', x: 100, y: 100, width: 2, height: 2 }),
+      // 2x3, `room.cell`'s authored `minimum-size`. It was 2x2 while nothing
+      // evaluated that requirement; the assertion is unchanged, and the
+      // rectangle is now refused for being outside the map rather than for
+      // being too small.
+      packCommand({ type: 'ZoneRoom', roomId: 'room.cell', x: 100, y: 100, width: 2, height: 3 }),
     );
 
     expect(runtime.refusals.last?.reason).toBe('zone.out-of-bounds');
@@ -294,7 +319,7 @@ describe('a zoning rectangle the simulation refuses reaches the session log', ()
     submit(
       runtime,
       1,
-      packCommand({ type: 'ZoneRoom', roomId: 'room.cell', x: 100, y: 100, width: 2, height: 2 }),
+      packCommand({ type: 'ZoneRoom', roomId: 'room.cell', x: 100, y: 100, width: 2, height: 3 }),
     );
     expect(runtime.refusals.last?.reason).toBe('zone.out-of-bounds');
   });
@@ -309,12 +334,71 @@ describe('a zoning rectangle the simulation refuses reaches the session log', ()
     submit(
       runtime,
       0,
-      packCommand({ type: 'ZoneRoom', roomId: 'room.cell', x: 100, y: 100, width: 2, height: 2 }),
+      packCommand({ type: 'ZoneRoom', roomId: 'room.cell', x: 100, y: 100, width: 2, height: 3 }),
     );
 
     expect(runtime.roomZoning.recentRefusals()).toHaveLength(1);
     expect(runtime.roomZoning.recentRefusals()[0]?.reason).toBe('out-of-bounds');
     expect(runtime.refusals.last?.reason).toBe('zone.out-of-bounds');
+  });
+});
+
+describe('a removal the simulation refuses reaches the same session log', () => {
+  it('records a rectangle holding no room, under its own wire id', () => {
+    // The route removal needed and did not have: `UnzoneRoom` is dispatched by
+    // the kernel, `RoomZoningService.unzone` refuses it, and the reason has to
+    // reach the player down the one channel every other refusal uses.
+    const runtime = createNewSimulationRuntime(0x261);
+    submit(runtime, 0, packCommand({ type: 'UnzoneRoom', x: 2, y: 2, width: 4, height: 4 }));
+
+    expect(runtime.refusals.last).toEqual({ sequence: 1, tick: 0, reason: 'unzone.nothing-to-remove' });
+  });
+
+  it('says nothing about a removal the simulation carried out', () => {
+    // The direction that makes the assertion above mean something.
+    const runtime = createNewSimulationRuntime(0x261);
+    submit(
+      runtime,
+      0,
+      packCommand({ type: 'ZoneRoom', roomId: 'room.cell', x: 2, y: 2, width: 2, height: 3 }),
+    );
+    submit(runtime, 1, packCommand({ type: 'UnzoneRoom', x: 2, y: 2, width: 2, height: 3 }));
+
+    expect(runtime.refusals.last).toBeUndefined();
+    expect(runtime.refusals.count).toBe(0);
+  });
+
+  it('frees the tiles, so the room the player meant to draw can be drawn', () => {
+    // The whole reason the command exists, asserted end to end through the
+    // kernel rather than against the service: before it, a stray designation
+    // was refused as `overlaps-existing-room` for ever.
+    const runtime = createNewSimulationRuntime(0x261);
+    submit(
+      runtime,
+      0,
+      packCommand({ type: 'ZoneRoom', roomId: 'room.cell', x: 2, y: 2, width: 2, height: 3 }),
+    );
+    expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.cell')).toHaveLength(1);
+
+    submit(
+      runtime,
+      1,
+      packCommand({ type: 'ZoneRoom', roomId: 'room.holding-cell', x: 2, y: 2, width: 2, height: 2 }),
+    );
+    expect(runtime.refusals.last?.reason, 'the tiles are taken').toBe('zone.overlaps-existing-room');
+
+    submit(runtime, 2, packCommand({ type: 'UnzoneRoom', x: 2, y: 2, width: 1, height: 1 }));
+    submit(
+      runtime,
+      3,
+      packCommand({ type: 'ZoneRoom', roomId: 'room.holding-cell', x: 2, y: 2, width: 2, height: 2 }),
+    );
+
+    expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.cell')).toHaveLength(0);
+    expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.holding-cell')).toHaveLength(1);
+    // One refusal in the whole sequence -- the middle one -- so the removal and
+    // the re-designation each produced no message at all.
+    expect(runtime.refusals.count).toBe(1);
   });
 });
 

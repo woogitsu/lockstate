@@ -223,9 +223,19 @@ export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMe
       capacity: undefined,
       // No tone. "Low on money" is a threshold, and a threshold is a balance
       // decision -- the same reason `BoundedValue` carries no severity band.
-      // There is still nothing to be low *for* on a schedule: since #29 the
-      // state pays in once a day, and nothing at all is charged, so a warning
-      // would describe a slope that runs the wrong way.
+      // There is still nothing to be low *for* on a schedule, but the reason
+      // inverted with #29 rather than going away: the state now pays in once a
+      // day and nothing at all is charged, so a warning here would describe a
+      // slope that runs the wrong way.
+      //
+      // Worth recording, because this comment used to say the opposite. Until
+      // #29 it had to carry the qualifier "on a schedule" -- the unqualified
+      // form was false from the day `ProcurementSystem.cancel` landed, and
+      // `tests/foundation/documentation-claims-contract.test.ts` was written
+      // for exactly that defect. A scheduled credit now exists, so the claim
+      // this comment once made is simply untrue and is gone rather than
+      // qualified. The phrase itself is deliberately not spelled out here: that
+      // check reads comments, so quoting the thing it hunts for would trip it.
       tone: undefined,
       badge: undefined,
     },
@@ -247,6 +257,7 @@ export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMe
       capacity: undefined,
       // No tone and no badge, for the same reason `funds` has neither: "a good
       // day" is a threshold, and nobody has set one.
+
       tone: undefined,
       badge: undefined,
     },
@@ -305,6 +316,10 @@ export function refusalMessageKey(actionId: string): LocalizationKey | undefined
       return HUD_MESSAGE_KEY.refusalUndo;
     case 'redo':
       return HUD_MESSAGE_KEY.refusalRedo;
+    case 'zone-room':
+      return HUD_MESSAGE_KEY.refusalZoneRoom;
+    case 'unzone-room':
+      return HUD_MESSAGE_KEY.refusalUnzoneRoom;
     default:
       return undefined;
   }

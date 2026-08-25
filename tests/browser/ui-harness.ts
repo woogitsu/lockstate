@@ -14,7 +14,11 @@ import {
   type HudHistoryDirection,
   type HudIntent,
   type HudLocalizer,
+  type HudRoomArea,
+  type HudRoomGesture,
+  type HudRoomsViewModel,
   type HudViewModel,
+  type HudZoningNoticeViewModel,
   mountHud,
 } from '../../src/ui/hud';
 import { SavePanel, type SavePanelSessions } from '../../src/ui/save-panel';
@@ -31,6 +35,8 @@ import type {
   LockstateUiHarness,
   RefusalProbe,
   RepaintFormatterCost,
+  RoomsLayoutProbe,
+  RoomsProbe,
 } from './ui-harness-api';
 import { HUD_MESSAGE_KEY, type HudBuildViewModel } from '../../src/ui/hud';
 import '../../src/styles.css';
@@ -261,6 +267,48 @@ const BASE_VIEW_MODEL: HudViewModel = {
 };
 
 /**
+ * A room catalogue in the shape `roomCatalogue()` in `src/main.ts` projects,
+ * written out here rather than imported so the specs exercise the *panel* and
+ * not the content catalogue -- the same rule `BUILD_MODEL` below follows.
+ *
+ * Three entries and not eighteen, chosen so every branch of the panel's rule
+ * rendering is reachable: a room with a minimum bigger than one tile
+ * (`room.cell`, 2x3, `enclosed`), a room with a much bigger one (`room.canteen`,
+ * 6x6, `enclosed`) and a room that is authored `outdoors` (`room.yard`, 8x8).
+ * The real eighteen are driven in `tests/browser/app-shell.spec.ts`, which is
+ * where the real projection runs.
+ *
+ * The tints are the categories' own from `src/rendering/world/appearance.ts`,
+ * because the panel puts them on screen and a wrong number here would make a
+ * legend assertion pass against the wrong colour.
+ */
+const ROOMS_MODEL: HudRoomsViewModel = {
+  rooms: [
+    {
+      roomId: 'room.cell',
+      labelKey: 'room.cell.name',
+      tint: 0x4f7fd0,
+      minimum: { width: 2, height: 3 },
+      enclosure: 'enclosed',
+    },
+    {
+      roomId: 'room.canteen',
+      labelKey: 'room.canteen.name',
+      tint: 0xd0854f,
+      minimum: { width: 6, height: 6 },
+      enclosure: 'enclosed',
+    },
+    {
+      roomId: 'room.yard',
+      labelKey: 'room.yard.name',
+      tint: 0x76d04f,
+      minimum: { width: 8, height: 8 },
+      enclosure: 'outdoors',
+    },
+  ],
+};
+
+/**
  * The same two entries `src/main.ts` projects out of `BUILDABLE_REGISTRY`,
  * as plain view-model data. Kept here rather than imported from the registry
  * so the spec exercises the *panel*, not the catalog.
@@ -363,6 +411,25 @@ let worldBuildPlace: ((order: HudBuildOrder) => void) | undefined;
  * is: it belongs to the HUD that registered it.
  */
 let worldHistoryRequest: ((direction: HudHistoryDirection) => void) | undefined;
+/**
+ * The two sinks `mountHud` registers for world room gestures (ADR 0022).
+ *
+ * Module-level and cleared on every mount, for the reason the two above are:
+ * they belong to the HUD that registered them.
+ *
+ * Two rather than one, matching the port: a finished rectangle and the live
+ * readout are different reports, and the confirm step is why -- a release does
+ * not designate anything, so the finished-gesture sink makes the rectangle
+ * *pending* and the intent leaves later, from the control the player presses.
+ */
+let worldRoomPlace: ((gesture: HudRoomGesture) => void) | undefined;
+let worldRoomReadout: ((area: HudRoomArea | undefined) => void) | undefined;
+
+/** Which room row the panel currently shows as selected, read off the DOM. */
+function roomsPanelSelection(): string | undefined {
+  const row = document.querySelector<HTMLElement>('.hud-rooms__list [data-selected="true"]');
+  return row?.dataset['room'];
+}
 
 function findSaveButton(label: string): HTMLButtonElement | undefined {
   const buttons = [...document.querySelectorAll<HTMLButtonElement>('.save-panel__button')];
@@ -480,6 +547,8 @@ window.lockstateUiHarness = {
     // it would report intents into a shell that is no longer on the page.
     worldBuildPlace = undefined;
     worldHistoryRequest = undefined;
+    worldRoomPlace = undefined;
+    worldRoomReadout = undefined;
     hud = mountHud(root, {
       // Stands in for `BuildTool`, which is the only implementation in the
       // application: the composition root hands the HUD a source, the HUD
@@ -498,11 +567,24 @@ window.lockstateUiHarness = {
           worldHistoryRequest = request;
         },
       },
+      // Stands in for `RoomTool`, the only implementation in the application,
+      // under the port `mountHud` asks for: the scene reports the rectangle a
+      // drag covered, the tool reports it here, and the panel holds it pending
+      // a confirm (ADR 0022).
+      worldRooms: {
+        attachGestures: (place) => {
+          worldRoomPlace = place;
+        },
+        attachReadout: (readout) => {
+          worldRoomReadout = readout;
+        },
+      },
       localizer: countingLocalizer,
       // `empty` mounts the shipped default instead of a populated prison --
       // the state the real app paints before any session exists.
       viewModel: options?.empty === true ? EMPTY_HUD_VIEW_MODEL : BASE_VIEW_MODEL,
       build: options?.buildables === undefined ? BUILD_MODEL : buildModelWithCatalogueOf(options.buildables),
+      rooms: ROOMS_MODEL,
       onIntent: (intent: HudIntent) => {
         intents.push(JSON.stringify(intent));
         // Stands in for a host that refuses -- which in the real app is
@@ -819,6 +901,138 @@ window.lockstateUiHarness = {
       edges: edges.map((edge) => ({ x: edge.x, y: edge.y, edge: edge.edge as HudBuildEdge })),
     });
     return true;
+  },
+
+  /**
+   * A finished room gesture, in the shape the scene reports one.
+   *
+   * The rectangle becomes *pending*: nothing is dispatched, which is the whole
+   * of the confirm step and the reason this returns without an intent. The spec
+   * then reads the panel and presses the confirm control.
+   */
+  dragWorldRoom(area: { x: number; y: number; width: number; height: number }, removing = false): boolean {
+    if (worldRoomPlace === undefined) return false;
+    worldRoomPlace(
+      removing
+        ? { kind: 'remove', area }
+        : { kind: 'designate', roomId: roomsPanelSelection() ?? 'room.cell', area },
+    );
+    return true;
+  },
+
+  /** The live readout, as the pointer moves. `undefined` clears it. */
+  hoverWorldRoom(area: { x: number; y: number; width: number; height: number } | undefined): boolean {
+    if (worldRoomReadout === undefined) return false;
+    worldRoomReadout(area);
+    return true;
+  },
+
+  clickRoomType(roomId: string): boolean {
+    const row = document.querySelector<HTMLButtonElement>(`.hud-rooms__list [data-room="${roomId}"]`);
+    if (row === null) return false;
+    row.click();
+    return true;
+  },
+
+  clickRoomsControl(control: 'arm' | 'remove' | 'confirm' | 'cancel'): boolean {
+    const button = document.querySelector<HTMLButtonElement>(`.hud-rooms__${control}`);
+    if (button === null) return false;
+    // A real click, so a disabled or `hidden` control genuinely does not fire.
+    button.click();
+    return true;
+  },
+
+  /** Publishes a zoning notice, which in the real app arrives on `simulation/status-counts`. */
+  reportZoning(notice: HudZoningNoticeViewModel | undefined): void {
+    hud?.update({
+      ...BASE_VIEW_MODEL,
+      ...(notice === undefined ? {} : { zoning: notice }),
+    });
+  },
+
+  roomsProbe(): RoomsProbe {
+    const panel = document.querySelector<HTMLElement>('.hud-rooms');
+    const note = document.querySelector<HTMLElement>('.hud-rooms__note');
+    const laidOut = (selector: string): boolean => {
+      const node = document.querySelector<HTMLElement>(selector);
+      return node !== null && node.getClientRects().length > 0;
+    };
+    return {
+      panelLaidOut: panel !== null && panel.getClientRects().length > 0,
+      rows: [...document.querySelectorAll<HTMLElement>('.hud-rooms__list [data-room]')].map(
+        (row) => row.dataset['room'] ?? '',
+      ),
+      selected: roomsPanelSelection() ?? '',
+      area: document.querySelector<HTMLElement>('.hud-rooms__area')?.dataset['area'] ?? '',
+      areaText: document.querySelector<HTMLElement>('.hud-rooms__area-value')?.textContent?.trim() ?? '',
+      noteText: note?.textContent?.trim() ?? '',
+      noteTone: note?.dataset['tone'] ?? '',
+      ruleText: [...document.querySelectorAll<HTMLElement>('.hud-rooms__rule')].map(
+        (line) => line.textContent?.trim() ?? '',
+      ),
+      enclosureText:
+        document.querySelector<HTMLElement>('.hud-rooms__enclosure-value')?.textContent?.trim() ?? '',
+      // Laid out, not merely present: `paintActions` uses `hidden`, so a control
+      // that is not showing must have no box at all and be out of the tab order.
+      armLaidOut: laidOut('.hud-rooms__arm'),
+      removeLaidOut: laidOut('.hud-rooms__remove'),
+      confirmLaidOut: laidOut('.hud-rooms__confirm'),
+      cancelLaidOut: laidOut('.hud-rooms__cancel'),
+      confirmText: document.querySelector<HTMLElement>('.hud-rooms__confirm')?.textContent?.trim() ?? '',
+      confirmDisabled: document.querySelector<HTMLButtonElement>('.hud-rooms__confirm')?.disabled ?? false,
+      armPressed: document.querySelector<HTMLElement>('.hud-rooms__arm')?.getAttribute('aria-pressed') ?? '',
+      removePressed:
+        document.querySelector<HTMLElement>('.hud-rooms__remove')?.getAttribute('aria-pressed') ?? '',
+    };
+  },
+
+  /**
+   * The Rooms panel's geometry, in the shape `buildLayoutProbe` reports the
+   * Build panel's.
+   *
+   * `lastControlBottom` is the number the reachability assertion turns on: the
+   * *last block in the panel* is the status block, and a floor that is too small
+   * pushes it past `panelVisibleBottom` rather than clipping it visibly. Reading
+   * the enclosure readout's own bottom edge is what makes "the last control is
+   * reachable" a measurement instead of a screenshot.
+   */
+  roomsLayoutProbe(): RoomsLayoutProbe {
+    const panel = document.querySelector<HTMLElement>('.hud-rooms');
+    const list = document.querySelector<HTMLElement>('.hud-rooms__list');
+    const status = document.querySelector<HTMLElement>('.hud-rooms__status');
+    const body = document.querySelector<HTMLElement>('.hud-rooms > .ui-panel__body');
+
+    const box = (node: Element | null): LayoutBox | null => {
+      if (node === null) return null;
+      const rect = node.getBoundingClientRect();
+      if (rect.width === 0 && rect.height === 0) return null;
+      return {
+        x: Math.round(rect.x),
+        y: Math.round(rect.y),
+        width: Math.round(rect.width),
+        height: Math.round(rect.height),
+        right: Math.round(rect.right),
+        bottom: Math.round(rect.bottom),
+      };
+    };
+
+    const panelRect = panel?.getBoundingClientRect();
+
+    return {
+      viewport: [window.innerWidth, window.innerHeight],
+      panel: box(panel),
+      panelVisibleBottom:
+        panel === null || panelRect === undefined
+          ? 0
+          : Math.round(panelRect.top + panel.clientTop + panel.clientHeight),
+      panelOverflow: panel === null ? 0 : panel.scrollHeight - panel.clientHeight,
+      panelScrollTop: panel?.scrollTop ?? 0,
+      bodyOverflow: body === null ? 0 : body.scrollHeight - body.clientHeight,
+      list: box(list),
+      listOverflow: list === null ? 0 : list.scrollHeight - list.clientHeight,
+      status: box(status),
+      lastControlBottom: box(document.querySelector('.hud-rooms__enclosure'))?.bottom ?? 0,
+    };
   },
 
   pressWorldUndo(direction: string): boolean {

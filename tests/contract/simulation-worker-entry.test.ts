@@ -139,3 +139,107 @@ describe('the worker entry point reports why a message was rejected', () => {
     },
   );
 });
+
+/**
+ * What a malformed message costs the *session*, as opposed to what it is
+ * called (#187 finding 1).
+ *
+ * The block above pins the fault code. This one pins the consequence, which
+ * is the half the issue says was "deliberately not asserted there, because
+ * asserting the current behaviour would pin a default nobody chose".
+ *
+ * The default is `SimulationWorkerStateMachine.fault`'s: `recoverable` is
+ * `false` unless a call site says otherwise, and `false` transitions the
+ * worker to `faulted`. `faulted` stops the tick loop and makes
+ * `handleSubmitCommand` return without answering, so after one undecodable
+ * envelope the prison stops advancing and every later command is dropped in
+ * silence -- for a message that, by construction, never reached simulation
+ * state at all. `decodeMainToWorkerMessage` returns its verdict as data and
+ * calls nothing in the kernel (ADR 0003, "Validation errors are returned as
+ * data and do not call simulation code"), so there is nothing half-applied
+ * to protect.
+ */
+describe('a message the worker could not decode does not end the session', () => {
+  /** A worker with a live simulation in it, and everything it has posted so far. */
+  async function initializedWorker(): Promise<LoadedWorkerEntry> {
+    const worker = await loadWorkerEntry();
+    worker.deliver({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: 'initialize-1',
+      kind: 'simulation/initialize',
+      payload: { sessionId: 'session-1', source: { kind: 'new', masterSeed: 7 } },
+    });
+    expect(
+      worker.posted.map((message) => (message as { kind: string }).kind),
+      'the session did not start, so what follows would prove nothing',
+    ).toContain('simulation/ready');
+    return worker;
+  }
+
+  const kindsOf = (worker: LoadedWorkerEntry): readonly string[] =>
+    worker.posted.map((message) => (message as { kind: string }).kind);
+
+  it('reports the fault as recoverable, because the message reached no simulation state', async () => {
+    const worker = await initializedWorker();
+
+    worker.deliver(null);
+
+    const fault = worker.posted.at(-1) as { kind: string; payload: { code: string; recoverable: boolean } };
+    expect(fault.kind).toBe('protocol/error');
+    expect(fault.payload.code).toBe('invalid-message');
+    expect(
+      fault.payload.recoverable,
+      'a message that never reached simulation state was reported as an unrecoverable fault',
+    ).toBe(true);
+  });
+
+  it('still answers a valid command after one undecodable envelope', async () => {
+    const worker = await initializedWorker();
+
+    worker.deliver(null);
+
+    const before = worker.posted.length;
+    worker.deliver({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: 'command-1',
+      kind: 'simulation/submit-command',
+      payload: {
+        commandId: 'command-1',
+        sequence: 0,
+        executeAtTick: 4,
+        command: { transport: 'structured-clone', schemaId: 'test', schemaVersion: 1, data: null },
+      },
+    });
+
+    const answers = worker.posted.slice(before) as readonly { kind: string; replyTo?: string }[];
+    expect(
+      answers.map((answer) => answer.kind),
+      'the worker answered nothing at all -- `handleSubmitCommand` returns silently once the state is `faulted`',
+    ).toContain('simulation/command-result');
+    expect(answers.find((answer) => answer.kind === 'simulation/command-result')?.replyTo).toBe('command-1');
+  });
+
+  it('still takes clock control after one undecodable envelope', async () => {
+    const worker = await initializedWorker();
+
+    worker.deliver({ protocolVersion: SIMULATION_PROTOCOL_VERSION, messageId: 'nope', kind: 'not/a/kind', payload: {} });
+
+    const before = worker.posted.length;
+    worker.deliver({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: 'clock-1',
+      kind: 'simulation/set-clock',
+      payload: { mode: 'running', speed: 1 },
+    });
+
+    const answer = worker.posted.slice(before).at(0) as { kind: string; payload: Record<string, unknown> };
+    // `handleSetClock` faults with `invalid-state` outside `paused`/`running`,
+    // so a faulted worker answers the play button with a second fault: the
+    // prison cannot be restarted for the rest of the page's life.
+    expect(answer.kind, `the clock request was answered with ${JSON.stringify(answer.payload)}`).toBe(
+      'simulation/clock-state',
+    );
+
+    expect(kindsOf(worker).filter((kind) => kind === 'protocol/error')).toHaveLength(1);
+  });
+});
