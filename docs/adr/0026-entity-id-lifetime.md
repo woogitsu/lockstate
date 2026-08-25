@@ -2,19 +2,30 @@
 
 ## Status
 
-**Proposed — pending human approval.** Not accepted.
+**Accepted, 2026-08-25 — as the framing and the tripwire, not as an answer.**
+What the approval settles is what this document actually does: the three
+questions below are one decision rather than three, the defect they describe is
+recorded and pinned in the suite rather than fixed quietly, and **none of the
+three answers is chosen.** Options A, B and C under question 1 and the three
+shapes under question 3 are exactly as open after this status as before it; #31
+is where they become load-bearing and where they get taken.
+
+Read the rest of this document as approved architecture in that narrow sense: it
+is binding about *how* the questions are answered — together, at a labelled test,
+with the RNG consequence stated — and about nothing else.
 
 Nothing in `src/` implements any decision in this document, and nothing in
 `src/` changed to accompany it. What landed alongside is a set of test cases
 that *pin the current, defective behaviour* as a tripwire, so that none of the
 options below can be taken without arriving at those files and stating which
 one was taken. That is described in §*What landed, and why it asserts the
-wrong answer on purpose*.
+wrong answer on purpose*. Accepting this ADR approves that arrangement; it does
+not approve the behaviour those cases pin, which they label `DEFECT` for the
+reason given there.
 
-A reviewer is being asked to settle three questions. They are filed together
-because they have one root — this codebase has no point at which a prisoner
-stops existing — and answering any one of them in isolation forces a guess at
-the other two.
+The three questions are filed together because they have one root — this
+codebase has no point at which a prisoner stops existing — and answering any one
+of them in isolation forces a guess at the other two.
 
 1. **What happens when an index's generation counter is exhausted?**
 2. **What must `release` drop, and how does it stay complete?**

@@ -32,12 +32,21 @@ change to settle it. It changes no status either.
 
 The `Status` column reproduces what each ADR's own document says, not a
 normalised judgement. Two heading styles are in use — some ADRs carry a
-`- Status:` bullet and others a `## Status` section — and several ADRs are
-`Proposed` rather than `Accepted`. A `Proposed` ADR is awaiting the owner's
-approval and is not binding, whether or not code already implements it.
+`- Status:` bullet and others a `## Status` section — and every ADR in the table
+above is now `Accepted` in some form, several with a qualifier the ADR itself
+carries.
 
-Whether any `Proposed` ADR should be promoted is open issue #118's subject, not
-this index's. Nothing here changes a status; this table only reports them.
+**No ADR in this directory is `Proposed`, as of 2026-08-25.** The definition is
+kept because the next ADR drafted against `main` will need it: a `Proposed` ADR
+is one awaiting the owner's approval, and is not binding whether or not code
+already implements it. What has changed is what such a row *means* — it is now a
+signal on its own rather than one of a crowd, and the count of ADRs awaiting
+approval is zero rather than a number nobody tracks.
+
+Promoting the statuses that had drifted was open issue #118's subject and is
+done for every document on disk. Where an *accepted* decision and the code
+disagree is [`STATUS-QUEUE.md`](./STATUS-QUEUE.md)'s, and it lists those gaps.
+Nothing here changes a status; this table only reports them.
 
 | # | Title | Status |
 | --- | --- | --- |
@@ -64,10 +73,10 @@ this index's. Nothing here changes a status; this table only reports them.
 | [0021](./0021-http-response-security-headers.md) | HTTP response security headers for the static-asset deployment | Accepted |
 | [0022](./0022-room-zoning-surface.md) | Where a player zones a room, and with what gesture | Accepted, 2026-08-25 — as amended (the owner chose the Rooms tab; Decision §1 is superseded by that amendment) |
 | [0023](./0023-room-occupancy-authority.md) | Where a room's occupancy comes from | Accepted, 2026-08-25 — as amended (a capacity-only fallback is a no-op); not superseded by 0028 |
-| [0024](./0024-protocol-fault-recoverability.md) | Which protocol faults end a session, and who is told | Proposed — pending human approval |
-| [0025](./0025-guard-hiring-surface.md) | Where a player hires a guard, and what the hire costs | Proposed — pending human approval |
-| [0026](./0026-entity-id-lifetime.md) | The lifetime of `EntityId`-keyed state — generation exhaustion, release, and re-intake | Proposed — pending human approval |
-| [0027](./0027-cell-sharing-assessment.md) | Cell-sharing assessment — what is recorded, who may override, and how a cell-scoped risk reaches a sector-scoped trigger | Proposed — pending human approval |
+| [0024](./0024-protocol-fault-recoverability.md) | Which protocol faults end a session, and who is told | Accepted, 2026-08-25 |
+| [0025](./0025-guard-hiring-surface.md) | Where a player hires a guard, and what the hire costs | Accepted, 2026-08-25 |
+| [0026](./0026-entity-id-lifetime.md) | The lifetime of `EntityId`-keyed state — generation exhaustion, release, and re-intake | Accepted, 2026-08-25 — as the framing and the tripwire; its three questions stay open |
+| [0027](./0027-cell-sharing-assessment.md) | Cell-sharing assessment — what is recorded, who may override, and how a cell-scoped risk reaches a sector-scoped trigger | Accepted, 2026-08-25 — as the mechanism; its three questions stay open, and its subject is unreachable until 0028 ships |
 | [0028](./0028-object-placement-and-derived-room-capacity.md) | What a placed object is, and how a room's capacity comes from it | Accepted, 2026-08-25 |
 
 **Next free number: 0029.**
