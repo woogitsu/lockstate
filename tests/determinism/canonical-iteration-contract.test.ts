@@ -69,10 +69,16 @@ const SCANNED_ROOTS = ['src/simulation', 'src/content', 'src/persistence'] as co
  *
  * Entries the scan flagged are absent whenever they were fixed instead of
  * exempted, which is the right remedy whenever the sort costs nothing:
- * `DoorRegistry.all()` and `PathRequestQueue.pendingIds()` now sort by id,
- * and `MemoryLocalSaveStore`'s `listMetadata` now sorts by `prisonId`, which
+ * `DoorRegistry.all()` now sorts by id, and `MemoryLocalSaveStore`'s
+ * `listMetadata` now sorts by `prisonId`, which
  * is also the order the real IndexedDB store returns. `ownedParcelBounds`,
  * the walk that started #132, was already fixed the same way.
+ *
+ * `PathRequestQueue.pendingIds()` was in that list and is not any more. #177
+ * removed the accessor outright under a dated amendment to ADR 0007, so the
+ * sort this scanner made it grow was deleted with the method that needed it --
+ * the remedy above one step further on. The queue's remaining enumeration
+ * (`processTick`) sorts by effective priority and still passes here.
  */
 const ALLOWED: readonly CanonicalIterationExemption[] = [
   {

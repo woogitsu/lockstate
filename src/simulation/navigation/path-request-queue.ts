@@ -20,7 +20,20 @@ export interface PathRequestInput {
   readonly priority: PathRequestPriority;
 }
 
-export interface PendingPathRequest {
+/**
+ * A request that has been enqueued and not yet resolved or cancelled.
+ *
+ * Module-internal on purpose: ADR 0007 originally exposed this shape through
+ * `PathRequestQueue.getPending(id)`, and its 2026-08-25 amendment (#177)
+ * removed that accessor because the decision it served -- "a request's status
+ * is simply 'in the queue' or 'resolved'" -- is answered by
+ * `NavigationSystem.getResult(id)` instead. Nothing outside this module can
+ * obtain one, so exporting the type would advertise a surface that no longer
+ * exists. `enqueuedAtTick` is still load-bearing: it is what
+ * `effectivePriority` ages a waiting request by, and what `waitedTicks`
+ * reports on the resolved payload.
+ */
+interface PendingPathRequest {
   readonly request: PathRequestInput;
   readonly enqueuedAtTick: number;
 }
@@ -104,24 +117,22 @@ export class PathRequestQueue {
     return removed;
   }
 
+  /**
+   * Queue depth: the ADR's "structured deferred status" made observable, and
+   * the whole of what this class exposes about pending work.
+   *
+   * ADR 0007 as accepted named `getPending(id)`/`pendingIds()` here too. Its
+   * 2026-08-25 amendment (#177) removed both: the decision they were named to
+   * satisfy -- two states, no deferred event stream, no third state machine --
+   * is satisfied by depth plus `NavigationSystem.getResult(id)`, which every
+   * one of the six production callers of `requestRoute` already reads as
+   * "undefined means still in the queue". A per-id listing would have been a
+   * second, weaker way to ask the same question, and an unread one:
+   * `tests/foundation/navigation-deferred-status-contract.test.ts` is the gate
+   * that keeps it from coming back without amending the ADR again.
+   */
   public size(): number {
     return this.pending.size;
-  }
-
-  public getPending(id: string): PendingPathRequest | undefined {
-    return this.pending.get(id);
-  }
-
-  /**
-   * The ids still queued, in ascending code-unit order rather than the order
-   * they were enqueued in. `processTick` decides *processing* order by
-   * effective priority with a total tie-break of its own; this accessor is a
-   * plain listing, and a listing that leaked `Map` insertion order would be
-   * the trap `docs/DETERMINISM.md` ("Canonical iteration order") rules out
-   * for whichever caller reads it first. It has none today.
-   */
-  public pendingIds(): readonly string[] {
-    return [...this.pending.keys()].sort();
   }
 
   public getMetrics(): PathRequestQueueMetrics {

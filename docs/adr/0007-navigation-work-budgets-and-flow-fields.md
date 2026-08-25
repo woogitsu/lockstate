@@ -225,3 +225,93 @@ in spirit by this ADR.
   tradeoff this repository already made for every prior benchmark
   scenario; kept honest by referencing the exact TypeScript files it
   mirrors in its own file header.
+
+## Amendment, 2026-08-25: the two accessors named for deferred status are removed; the decision is not
+
+*Issue #177, item 2. The "Cancellation and deferred status are explicit, not
+implicit" section above is left exactly as accepted — an ADR is the record of
+what was decided, not a description of the current tree — and this amendment
+records what the tree does instead, and why that is the same decision rather
+than a departure from it.*
+
+`PathRequestQueue.getPending(id)` and `PathRequestQueue.pendingIds()` are
+deleted. `size()` stays, and `NavigationSystem.getResult(id)` is what a caller
+reads to tell the two states apart.
+
+### What the decision above actually decides
+
+Three things, and only the first two are decisions:
+
+1. `cancel(id)` is a no-op on an id that is unknown or already resolved.
+2. There is **no separate "deferred" event stream and no third state
+   machine**: a request's status is "in the queue" or "resolved".
+3. `getPending(id)`/`pendingIds()` are the accessors through which (2) is
+   observed, "expos[ing] enqueue tick (hence age) and queue depth directly".
+
+(1) and (2) are the architecture. (3) is a claim about *mechanism*, written
+when the section was drafted and when — as the Context section above already
+records — no real prisoner or staff entity model existed to read it. It was
+never re-checked against the callers that arrived afterwards.
+
+### What the tree does instead, per clause
+
+**"In the queue" versus "resolved" — satisfied, by every caller there is.**
+All six production callers of `NavigationSystem.requestRoute` named in the
+Context section keep their own request id and read status as
+`getResult(id) === undefined` → still queued, defined → resolved. Their own
+comments say it in the ADR's words: *"still queued/deferred"*
+(`operations/job-system.ts`, `security/patrol-system.ts`). That is two states,
+polled, with no event stream and no third state — the decision, implemented,
+six times over.
+
+**"Queue depth" — satisfied, and still exposed.** `PathRequestQueue.size()`,
+surfaced on the system as `NavigationSystem.pendingCount()`. `pendingIds()`
+was a strictly weaker duplicate of it; the tests that pinned it asserted
+`pendingIds().length === size()`, which is the admission in test form.
+
+**"Enqueue tick (hence age)" — the one clause that loses its accessor, and
+the aging rule above is why it can.** `enqueuedAtTick` is still recorded on
+every pending entry, still the input to `effectivePriority`, and still
+reported to the caller as `ResolvedPathRequest.waitedTicks` when the request
+resolves. What is gone is reading a *waiting* request's age from outside. The
+fairness decision two sections above is what makes that unnecessary: aging
+guarantees any request's effective priority eventually exceeds any fixed
+tier, so an old request is promoted by the queue automatically. An external
+observer watching for one and intervening would be re-implementing aging by
+hand, on top of the mechanism built to remove the need for it.
+
+**The one case where "in the queue" could have been ambiguous is closed
+structurally, not by asking.** A snapshot restored into a freshly constructed
+`NavigationSystem` leaves a consumer holding an id that the new queue never
+received, which would poll `getResult` forever. `getPending(id)` is exactly
+the accessor that would diagnose it. It is not what the code does: three
+independent `loadSnapshot` implementations — `operations/job.ts`,
+`security/guard-roster.ts` and `prisoners/components.ts` — clear the stale id
+and re-request on the next scheduled tick, each with the reasoning written
+out. The situation the accessor would have reported is prevented instead of
+queried, which is the stronger fix and the one already shipped.
+
+### Why deleting rather than wiring
+
+The honest alternative was to give the accessors a consumer. There is none to
+give them: the "future regime/security systems" the section anticipates have
+since arrived — incidents, jobs, contraband searches, prisoner actions,
+deployment and patrol — and not one of them needs a pending request's age or
+a listing of ids, because each already knows the single id it is waiting on.
+Inventing a consumer to justify an accessor is the inversion of this
+repository's rule that implementation follows the decision, and it would have
+added a reader whose only purpose was to be read.
+
+Measured before deleting, and the reason this could not simply be left alone:
+replacing `pendingIds()` with `return []` and `getPending()` with
+`return undefined` left the entire suite green before #251 added
+`tests/unit/navigation-path-request-queue.test.ts`. An accessor an accepted
+ADR relies on was free to return nothing. Unused *and* unguarded is how a
+decision record drifts away from the code it records.
+
+### The gate
+
+`tests/foundation/navigation-deferred-status-contract.test.ts` fails if either
+name reappears anywhere in `src/`, and fails if this amendment or the original
+sentence it amends is removed from this file. Bringing either accessor back is
+therefore a change to this ADR, which is what it was in the first place.
