@@ -45,7 +45,7 @@ function buildCarriedScopeSession(): SimulationRuntime {
   const runtime = createNewSimulationRuntime(SEED);
   reapplySessionSetup(runtime);
 
-  runtime.prisoners.roomInstances.register({ instanceId: 'cell-1', roomCatalogId: 'room.cell', anchorTile: { x: tileCoordinate(6), y: tileCoordinate(6) }, capacity: 4, objectCapabilities: ['sleep-surface', 'sanitation'] });
+  runtime.prisoners.roomInstances.register({ instanceId: 'cell-1', roomCatalogId: 'room.cell', anchorTile: { x: tileCoordinate(6), y: tileCoordinate(6) }, residentCapacity: 4, concurrentUseCapacity: 4, objectCapabilities: ['sleep-surface', 'sanitation'] });
 
   const ids = [
     runtime.prisoners.admitPrisoner({ sentenceLengthTicks: 900, priorIncidents: 0 }, { x: tileCoordinate(1), y: tileCoordinate(1) }),
@@ -314,8 +314,8 @@ describe('subsystem snapshot / restore fidelity', () => {
     const runtime = createNewSimulationRuntime(10);
     const tile = { x: tileCoordinate(5), y: tileCoordinate(5) };
 
-    runtime.prisoners.roomInstances.register({ instanceId: 'cell-a', roomCatalogId: 'room.cell', anchorTile: tile, capacity: 1, objectCapabilities: [] });
-    runtime.prisoners.roomInstances.register({ instanceId: 'cell-b', roomCatalogId: 'room.cell', anchorTile: tile, capacity: 1, objectCapabilities: [] });
+    runtime.prisoners.roomInstances.register({ instanceId: 'cell-a', roomCatalogId: 'room.cell', anchorTile: tile, residentCapacity: 1, concurrentUseCapacity: 1, objectCapabilities: [] });
+    runtime.prisoners.roomInstances.register({ instanceId: 'cell-b', roomCatalogId: 'room.cell', anchorTile: tile, residentCapacity: 1, concurrentUseCapacity: 1, objectCapabilities: [] });
     runtime.contraband.introduce('item-a', 'contraband.phone', { kind: 'cell', id: 'cell-a' }, { sourceType: 'room-object', sourceId: 'workshop', introducedAtTick: 0 });
     runtime.contraband.introduce('item-b', 'contraband.phone', { kind: 'cell', id: 'cell-b' }, { sourceType: 'room-object', sourceId: 'workshop', introducedAtTick: 0 });
     runtime.searchPolicies.push({ scope: 'cell', requiredGuardCount: 1, dwellTicksPerTarget: 5, baseDetectionProbability: 0.5, concealmentPenaltyPerPoint: 0, intelligenceConfidenceBonus: 0 });

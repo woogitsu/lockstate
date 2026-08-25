@@ -85,16 +85,41 @@ function v3EnvelopeWithPrisoner(): { readonly envelope: SaveEnvelopeV3; readonly
     NEED_IDS.map((needId) => [needId, new Array<number>(activeLength).fill(V3_LEVELS[needId])]),
   ) as unknown as Record<NeedId, readonly number[]>;
 
+  /*
+   * The capture is a *current* one, so two things about it are newer than V3
+   * and have to be undone here for this to be a genuine V3 payload. Undone
+   * rather than tolerated, because the point of building the input from a real
+   * session is that it is the byte shape an older build wrote -- and
+   * `sessionSystemsV3Schema` is `.strict()`, so an `objects` key or a room
+   * instance carrying a rectangle instead of a `capacity` would be rejected by
+   * the very schema this test is walking a save forward from.
+   *
+   *   - `objects` did not exist before V5 and is dropped.
+   *   - a room instance carried an authored `capacity` and
+   *     `objectCapabilities` and no rectangle, so each row is rewritten into
+   *     that shape. `0` and `[]` are not chosen here: they are what
+   *     `RoomZoningService` wrote unconditionally for every instance any V3 or
+   *     V4 build could produce, which is the same fact
+   *     `migrateSaveEnvelopeV4ToV5` relies on in the other direction.
+   */
+  const { objects: _objects, ...simulationWithoutObjects } = bundle.simulation;
   const payload = {
     kernel: bundle.kernel,
     world: bundle.world,
     construction: bundle.construction,
     ...(bundle.entities === undefined ? {} : { entities: bundle.entities }),
     simulation: {
-      ...bundle.simulation,
+      ...simulationWithoutObjects,
       prisoners: {
         ...bundle.simulation.prisoners,
         components: { ...components, needs: wholeLevelNeeds },
+        roomInstanceDefinitions: bundle.simulation.prisoners.roomInstanceDefinitions.map((instance) => ({
+          instanceId: instance.instanceId,
+          roomCatalogId: instance.roomCatalogId,
+          anchorTile: instance.anchorTile,
+          capacity: 0,
+          objectCapabilities: [],
+        })),
       },
     },
     ...(bundle.identity === undefined ? {} : { identity: bundle.identity }),

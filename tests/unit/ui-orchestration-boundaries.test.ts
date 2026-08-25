@@ -242,6 +242,13 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
       'Type-only: `LocalizationKey` from `src/content/localization`. A frozen registry of the badge\'s message keys and nothing else, in the shape `src/ui/hud/messages.ts` and `src/ui/save-panel-messages.ts` both use; naming the key type is what lets `satisfies Readonly<Record<string, LocalizationKey>>` check every entry at compile time. Erased, and it names no other layer.',
   },
   {
+    file: 'src/ui/object-tool.ts',
+    tree: 'rendering',
+    kind: 'type-only',
+    reason:
+      'Type-only: `ObjectToolPort` and `TileRect` from `src/rendering/build/area-picking`. The exact shape of `room-tool.ts`\'s entry below and the same argument one gesture over again: `ObjectToolPort` is a port the renderer *offers* -- the scene reports the tile a press landed on and asks this module for the footprint to draw -- so the direction is UI-onto-a-renderer-contract rather than UI-into-renderer-internals, and it is erased. It is a third module rather than more methods on `BuildTool` because the three ports carry different shapes and this one holds a footprint, which the class that lays walls has no concept of; `src/ui/object-tool.ts`\'s header states that rule against `BuildTool`\'s own. A value import here would mean the orchestrator had started calling into the renderer, which is what both of the other two entries say too.',
+  },
+  {
     file: 'src/ui/room-tool.ts',
     tree: 'rendering',
     kind: 'type-only',
@@ -271,6 +278,7 @@ describe('UI orchestration boundaries', () => {
       'src/ui/brand-badge.ts',
       'src/ui/brand-messages.ts',
       'src/ui/build-tool.ts',
+      'src/ui/object-tool.ts',
       'src/ui/room-tool.ts',
       'src/ui/save-panel-messages.ts',
       'src/ui/save-panel.ts',

@@ -5,12 +5,14 @@ import { unpackCommand } from '../protocol/commands';
 import {
   ADMIT_REFUSAL_REASONS,
   HIRE_REFUSAL_REASONS,
+  PLACE_OBJECT_REFUSAL_REASONS,
   PURCHASE_REFUSAL_REASONS,
   UNZONE_REFUSAL_REASONS,
   ZONE_REFUSAL_REASONS,
   type RefusalLog,
 } from '../refusals';
 import type { ConstructionSystem } from '../construction/system';
+import type { ObjectPlacementService } from '../objects';
 import type { PrisonerOperationsRuntime } from '../prisoners/prisoner-operations-runtime';
 import type { RoomZoningService } from '../rooms/zoning';
 import type { StaffHiringService } from '../staff/hiring';
@@ -42,12 +44,17 @@ import { tileCoordinate } from '../world/coordinates';
  * `unpackCommand` returning `null` is the decoder's business and is left to
  * the handler that owns it.
  *
- * `refusals` is the session's `RefusalLog`, and all six routes write to the
+ * `PlaceObject` is the sixth, and it is the one command here that *turns into*
+ * a construction order rather than avoiding being one: `ObjectPlacementService`
+ * decides whether the footprint is legal and then submits a `BuildOrder`
+ * through `construction`, which is ADR 0028 decision 4's whole mechanism.
+ *
+ * `refusals` is the session's `RefusalLog`, and all seven routes write to the
  * same one: a refused wall, a refused purchase, a refused zoning rectangle, a
- * refused removal, a refused hire and a refused admission are the same kind of
- * fact about the session -- the kernel took the command and a system then
- * declined to carry it out -- and they reach the player down one channel
- * (#261).
+ * refused removal, a refused hire, a refused admission and a refused object
+ * placement are the same kind of fact about the session -- the kernel took the
+ * command and a system then declined to carry it out -- and they reach the
+ * player down one channel (#261).
  */
 export function createSessionCommandHandler(
   construction: ConstructionSystem,
@@ -55,6 +62,7 @@ export function createSessionCommandHandler(
   roomZoning: RoomZoningService,
   staffHiring: StaffHiringService,
   runtimePrisoners: PrisonerOperationsRuntime,
+  objectPlacement: ObjectPlacementService,
   refusals: RefusalLog,
 ): CommandHandler {
   const constructionCommands = createConstructionCommandHandler(construction, refusals);
@@ -256,6 +264,50 @@ export function createSessionCommandHandler(
         originTile: { x: tileCoordinate(simCommand.x), y: tileCoordinate(simCommand.y) },
       });
       if (outcome.kind === 'refused') refusals.record(HIRE_REFUSAL_REASONS[outcome.reason], context.tick);
+      return;
+    }
+
+    if (simCommand !== null && simCommand.type === 'PlaceObject') {
+      /*
+       * The sixth command that is not a construction order -- and the one that
+       * *becomes* one (ADR 0028 decision 4).
+       *
+       * It is routed here rather than into `construction/handler.ts` for the
+       * reason `ZoneRoom` is: the decision this command needs is about rooms and
+       * objects, not about walls. `ObjectPlacementService.place` validates the
+       * whole footprint against the world, the objects already standing and the
+       * footprints of orders still in flight, and only then submits a
+       * `BuildOrder` through the construction system -- so from that point on a
+       * bed waits for materials and advances on the same schedule a wall does.
+       *
+       * `definitionId` is a `BUILDABLE_REGISTRY` id (`bed-wooden`), not an
+       * object-catalog id: the buildable is what carries the material
+       * requirement and the work, and it names the object it places. The
+       * distinction matters at exactly one refusal --
+       * `not-a-placeable-object` -- which is what a producer gets for sending
+       * this command for `wall-brick`.
+       *
+       * **`src/main.ts` refuses nothing before submitting**, unlike a purchase,
+       * a hire or an admission. There is no pre-flight check to make: every one
+       * of the seven reasons is about the world at the tick the command
+       * executes, and the main thread holds no copy of the zoning plane, the
+       * placed objects or the order list. So this line is the *only* route a
+       * refused placement reaches the player by, which is why the whole union
+       * is mapped rather than the subset a panel can provoke.
+       *
+       * The lookup is exhaustive over `PlaceObjectRefusalReason`, so an eighth
+       * reason fails to compile until it has a wire id and a message key.
+       */
+      const outcome = objectPlacement.place(
+        {
+          definitionId: simCommand.definitionId,
+          orderId: simCommand.orderId,
+          x: simCommand.x,
+          y: simCommand.y,
+        },
+        context.tick,
+      );
+      if (outcome.kind === 'refused') refusals.record(PLACE_OBJECT_REFUSAL_REASONS[outcome.reason], context.tick);
       return;
     }
 

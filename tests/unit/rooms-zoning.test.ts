@@ -98,8 +98,14 @@ describe('zoning a room registers a room instance', () => {
     const outcome = zoning.zone({ roomCatalogId: CELL, x: 0, y: 0, width: 4, height: 4 }, 0);
     if (outcome.kind !== 'zoned') throw new Error('the zone must be accepted for this test to mean anything');
 
-    expect(outcome.instance.capacity).toBe(0);
+    expect(outcome.instance.residentCapacity).toBe(0);
+    expect(outcome.instance.concurrentUseCapacity).toBe(0);
     expect(outcome.instance.objectCapabilities).toEqual([]);
+    // And the rectangle *is* recorded, which is the one new persisted field
+    // ADR 0028 decision 6 adds: without it "is this tile in this room" has no
+    // answer and no capacity rule has a domain.
+    expect(outcome.instance.width).toBe(4);
+    expect(outcome.instance.height).toBe(4);
   });
 });
 
@@ -228,7 +234,8 @@ describe('a zoning request the prison cannot honour is refused, with a reason', 
       instanceId: roomInstanceIdFor(CELL, tile(5, 5)),
       roomCatalogId: CELL,
       anchorTile: tile(5, 5),
-      capacity: 1,
+      residentCapacity: 1,
+      concurrentUseCapacity: 1,
       objectCapabilities: ['sleep-surface'],
     });
     const { zoning } = service(world, registry);
@@ -236,7 +243,7 @@ describe('a zoning request the prison cannot honour is refused, with a reason', 
     const outcome = zoning.zone({ roomCatalogId: CELL, x: 5, y: 5, width: 2, height: 3 }, 4);
 
     expect(outcome).toMatchObject({ kind: 'refused', reason: 'duplicate-instance-id' });
-    expect(registry.getById(roomInstanceIdFor(CELL, tile(5, 5)))?.capacity, 'the existing instance must be untouched').toBe(1);
+    expect(registry.getById(roomInstanceIdFor(CELL, tile(5, 5)))?.residentCapacity, 'the existing instance must be untouched').toBe(1);
     expect(world.getZoning(tile(5, 5))).toBe(0);
   });
 });
@@ -416,10 +423,13 @@ describe('a designation can be removed, which is what makes one recoverable', ()
     const { zoning } = service(world, registry);
     const zoned = zoning.zone({ roomCatalogId: CELL, x: 0, y: 0, width: 2, height: 3 }, 0);
     if (zoned.kind !== 'zoned') throw new Error('the zone must be accepted for this test to mean anything');
-    // A zoned room has `capacity: 0`, so `assign` refuses to fill it -- this is
-    // the restored-save shape, where an instance was registered with a capacity.
+    // A zoned room with nothing in it derives `residentCapacity: 0`, so
+    // `assign` refuses to fill it. Given a capacity by hand here rather than by
+    // placing a bed, so this test stays about `unzone` and not about placement
+    // -- `tests/integration/object-placement-loop.test.ts` drives the real
+    // route, and this is the same shape a restored save produces.
     registry.unregister(zoned.instance.instanceId);
-    registry.register({ ...zoned.instance, capacity: 1 });
+    registry.register({ ...zoned.instance, residentCapacity: 1, concurrentUseCapacity: 1 });
     registry.assign(zoned.instance.instanceId, 1 as never);
 
     const removed = zoning.unzone({ x: 0, y: 0, width: 2, height: 3 }, 1);

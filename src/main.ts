@@ -40,10 +40,12 @@ import { hudCountsFromWorkerMessage } from './ui/simulation-counts';
 import { hudZoningFromWorkerMessage } from './ui/simulation-zoning';
 import { SimulationCommandSender } from './ui/simulation-commands';
 import { BuildTool } from './ui/build-tool';
+import { ObjectTool } from './ui/object-tool';
 import { RoomTool } from './ui/room-tool';
+import { defaultObjectRegistry } from './content/object-catalog';
 import { defaultRoomContentRegistry } from './content/room-catalog';
-import { zoningTint } from './rendering/world/appearance';
-import { BUILDABLE_REGISTRY } from './simulation/construction';
+import { PLANNED_OBJECT_TINT, zoningTint } from './rendering/world/appearance';
+import { BUILDABLE_REGISTRY, type BuildableDefinition } from './simulation/construction';
 // The one reader of the room catalogue's *area* requirements outside the
 // simulation, and it is the composition root by design: three layers ask this
 // question and none may re-derive the answer. See `roomCatalogue()` below.
@@ -178,6 +180,47 @@ const buildTool = commandSender === undefined ? undefined : new BuildTool();
  * give nothing back.
  */
 const roomTool = commandSender === undefined ? undefined : new RoomTool();
+/**
+ * The object tool, built beside the other two and for the same reasons (ADR
+ * 0028 phase 1).
+ *
+ * A third object rather than a third mode on `BuildTool`: the ports carry
+ * different shapes -- a run of edges, one dragged rectangle, one pressed tile
+ * plus a footprint -- and this one holds a footprint, which the renderer asks
+ * for on every paint and which the class that lays walls has no concept of.
+ * `src/ui/object-tool.ts` states the rule it is following.
+ *
+ * It is armed from the **Build panel**, not from a fourth tab: an object
+ * placement is a construction order on the same system, with the same
+ * materials, the same lifecycle and the same refusal route as a wall, and
+ * `CATEGORY_RANK` already ranks `object` rows second in that catalogue. Which
+ * of the two tools a row arms is decided in the `arm-build-tool` branch below.
+ */
+const objectTool = commandSender === undefined ? undefined : new ObjectTool();
+
+/**
+ * The footprint of the object a buildable places, in tiles, or `undefined` for
+ * a buildable that places none.
+ *
+ * Two vocabularies meet here and nowhere else, which is why it is at the
+ * composition root: `BuildableDefinition.placesObjectId` says *which* object a
+ * completed order puts in the world, and `src/content/object-catalog.ts` says
+ * how big that object is. The renderer may hold neither
+ * (`tests/unit/rendering-module-boundaries.test.ts`) and the HUD may hold
+ * neither (`AGENTS.md` boundary 1), so the two numbers travel to both as plain
+ * integers.
+ *
+ * The **authored** footprint, not a rotated one: nothing in the application can
+ * express a rotation yet (see `ObjectOrientation`), so the preview draws what a
+ * placement will actually claim.
+ */
+function objectFootprintOf(definitionId: string): { readonly width: number; readonly height: number } | undefined {
+  const objectId = BUILDABLE_REGISTRY.get(definitionId)?.placesObjectId;
+  if (objectId === undefined) return undefined;
+  const definition = defaultObjectRegistry.getById(objectId);
+  if (definition === undefined) return undefined;
+  return { width: definition.footprint.width, height: definition.footprint.height };
+}
 
 // The entry point supplies the key/value store, which is what `docs/INPUT.md`
 // has always described and what the renderer had stopped doing: it read
@@ -216,6 +259,11 @@ const worldScene = new WorldScene({
           return zoningTint(definition.numericId);
         },
       }),
+  // The object tool and the colour to preview a pending object in. A function
+  // for the reason `roomTint` is one -- the player can change the selected row
+  // without disarming -- and one colour for every object rather than a table:
+  // `PLANNED_OBJECT_TINT` says what it is and why it is not the room's.
+  ...(objectTool === undefined ? {} : { objectTool, objectTint: (): number => PLANNED_OBJECT_TINT }),
 });
 
 const gameConfig: Phaser.Types.Core.GameConfig = {
@@ -316,6 +364,28 @@ const BUILDABLE_LABEL_KEY: Readonly<Record<string, LocalizationKey>> = {
   'door-wooden': HUD_MESSAGE_KEY.buildableDoorWooden,
 };
 
+/**
+ * What the Build panel calls a row.
+ *
+ * **A buildable that places an object is labelled by that object's own content
+ * key**, and only a buildable that places nothing needs an entry in the table
+ * above. That is not a shortcut around gap 32 -- it is the gap not applying:
+ * `object.bed` carries a real `nameKey` and `object.bed.name` ships in the
+ * default catalog, exactly as all 18 room definitions do (which is why
+ * `roomCatalogue()` needs no mapping table at all). Adding a
+ * `hud.build.buildable.bed-wooden` key would author a second English word for
+ * the same thing and let the two drift.
+ *
+ * The table stays for `wall-brick` and `door-wooden`, whose ids name no content
+ * entry. Its own comment records why it exists; this function records why it is
+ * not growing.
+ */
+function buildableLabelKey(definition: BuildableDefinition): LocalizationKey | undefined {
+  const objectId = definition.placesObjectId;
+  if (objectId !== undefined) return defaultObjectRegistry.getById(objectId)?.nameKey;
+  return BUILDABLE_LABEL_KEY[definition.id];
+}
+
 /** Walls first, then everything else: the first row is also the default selection. */
 const CATEGORY_RANK: Readonly<Record<string, number>> = { wall: 0, object: 1, utility: 2 };
 
@@ -404,13 +474,18 @@ function buildCatalogue(): HudBuildViewModel {
     (a, b) => rank(a.category) - rank(b.category) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
   );
   for (const definition of ordered) {
-    const labelKey = BUILDABLE_LABEL_KEY[definition.id];
+    const labelKey = buildableLabelKey(definition);
     if (labelKey === undefined) continue;
     const material = purchasableMaterialFor(definition.materialsRequired);
     buildables.push({
       definitionId: definition.id,
       labelKey,
       occupiesEdge: definition.category === 'wall',
+      // Whether the row arms the object tool and produces a `PlaceObject`
+      // rather than a `PlaceBuildOrder`. A shape fact the HUD is handed, like
+      // `occupiesEdge` above it, because what a buildable places is simulation
+      // content the interface may not read.
+      placesObject: definition.placesObjectId !== undefined,
       // Spread rather than passed as `undefined`: `exactOptionalPropertyTypes`
       // is on, so a buildable made of nothing purchasable has to have no
       // property at all -- which is what makes the panel hide its buy control
@@ -571,6 +646,15 @@ interface InterfaceHost {
    * dependencies separately.
    */
   readonly rooms?: RoomTool;
+  /**
+   * The object tool, absent for the reason `tool` and `rooms` are: with no
+   * worker there is nothing to place an object in, so the pointer keeps its
+   * camera meaning.
+   *
+   * A third field rather than a widened `tool`, matching the three ports the
+   * scene is given.
+   */
+  readonly objects?: ObjectTool;
 }
 
 /**
@@ -644,7 +728,7 @@ const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMess
 const SIMULATION_UNAVAILABLE_NOTICE: HudUnavailableNotice = { labelKey: 'hud.unavailable.simulation' };
 
 function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
-  const { client, commands, tool, rooms } = host;
+  const { client, commands, tool, rooms, objects } = host;
   const simulationUnavailable = client === undefined;
 
   let hud: HudHandle | undefined;
@@ -772,6 +856,17 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
      * cannot manage because the player pressed nothing.
      */
     ...(rooms === undefined ? {} : { worldRooms: rooms }),
+    /*
+     * The world's object gesture (ADR 0028 phase 1), dispatched on release like
+     * a build order rather than confirmed like a room designation.
+     *
+     * The difference is what each one can take back. A designation could not be
+     * reversed at all until `UnzoneRoom` existed, so the Rooms panel gates it
+     * behind a confirm; a placement writes a construction order, and `Undo`
+     * reverses one -- including a completed one, whose object leaves the world
+     * with it. So the cheaper gesture is the safe one here.
+     */
+    ...(objects === undefined ? {} : { worldObjects: objects }),
     onIntent: (intent: HudIntent) => {
       switch (intent.kind) {
         // Chrome: the HUD has already applied it locally and there is nothing
@@ -780,11 +875,36 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
         case 'toggle-panel':
           return;
 
-        case 'arm-build-tool':
-          // Also chrome, but it has a second half outside the HUD: it decides
-          // whether a click on the *world* builds or moves the camera.
+        case 'arm-build-tool': {
+          /*
+           * Also chrome, but it has a second half outside the HUD: it decides
+           * whether a click on the *world* builds or moves the camera -- and,
+           * since ADR 0028 phase 1, *which of two tools* it hands the pointer
+           * to.
+           *
+           * One control, two tools, and the row decides. A buildable that names
+           * an object arms the object tool with that object's footprint; every
+           * other row arms the build tool. The other tool is disarmed in the
+           * same call rather than left holding the pointer, which is what makes
+           * the scene's three-way arbitration a formality instead of a
+           * tie-break: switching from `wall-brick` to `bed-wooden` while armed
+           * changes the gesture rather than layering a second one under it.
+           *
+           * `definitionId` is optional on the intent -- the panel omits it when
+           * disarming -- so a bare disarm turns both tools off and neither
+           * forgets its selection: each tool keeps the last one it was given,
+           * exactly as `BuildTool.setArmed` always has.
+           */
+          const footprint = intent.definitionId === undefined ? undefined : objectFootprintOf(intent.definitionId);
+          if (footprint !== undefined && intent.definitionId !== undefined) {
+            tool?.setArmed(false);
+            objects?.setArmed(intent.armed, { definitionId: intent.definitionId, footprint });
+            return;
+          }
+          objects?.setArmed(false);
           tool?.setArmed(intent.armed, intent.definitionId);
           return;
+        }
 
         case 'arm-room-tool':
           // The same, one tool over. Arming the room tool does *not* disarm the
@@ -883,6 +1003,49 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           }
           return;
         }
+
+        /*
+         * The `PlaceObject` producer (ADR 0028 phase 1), and the tenth command
+         * `tests/foundation/unconsumed-command-contract.test.ts` counts.
+         *
+         * It arrives *with* its producer, which that gate's own header calls
+         * "the only way a new command should land": the schema member, the
+         * `createSessionCommandHandler` branch, the `HudIntent` member, the two
+         * routes that emit it and this dispatch are one change.
+         *
+         * Two routes reach it and both come through the HUD, so there is one
+         * answer to "was the player told": the world gesture (the object tool,
+         * `worldObjects` above) and the Build panel's numeric fields, which is
+         * the keyboard route `AGENTS.md` boundary 10 asks for -- ADR 0022's
+         * amendment records the Rooms panel shipping without one as an open
+         * question, and this does not repeat it.
+         *
+         * A fresh `orderId` per press, exactly as `place-build-order` mints one
+         * per order: the construction system refuses a duplicate id, and a
+         * stable one would make the second bed a no-op. **No `transactionId`**,
+         * and that is the schema's decision rather than an omission here -- one
+         * press is one object, so a transaction of one is what the absent field
+         * already produces, and `Undo` reaches the order either way.
+         *
+         * **Nothing is checked before submitting**, unlike a purchase, a hire or
+         * an admission. Each of those compares a figure the worker last
+         * published against what the player asked for, so the refusal lands on
+         * the control they pressed. There is no such figure here: every one of
+         * the seven refusal reasons is about the zoning plane, the objects
+         * already standing or the orders in flight, and this thread holds none
+         * of them. So the refusal arrives on the alerts line from the worker,
+         * once, and a pre-flight check that guessed would be a second answer
+         * that could disagree with it.
+         */
+        case 'place-object':
+          requireSimulation(commands).submit({
+            type: 'PlaceObject',
+            orderId: `object-${crypto.randomUUID()}`,
+            definitionId: intent.definitionId,
+            x: intent.x,
+            y: intent.y,
+          });
+          return;
 
         /*
          * The producer ADR 0022 was written to decide, and the one
@@ -1302,6 +1465,7 @@ const mountedHud =
         ...(commandSender === undefined ? {} : { commands: commandSender }),
         ...(buildTool === undefined ? {} : { tool: buildTool }),
         ...(roomTool === undefined ? {} : { rooms: roomTool }),
+        ...(objectTool === undefined ? {} : { objects: objectTool }),
       });
 
 // The save panel is laid out by the HUD, so there is nowhere to put it until

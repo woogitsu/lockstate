@@ -638,6 +638,7 @@ export type SimulationStatusCounts = DeepReadonly<
  * refusal answers, so the six vocabularies behind it cannot collide:
  * `admit.*` mirrors `AdmitPrisonerRefusalReason`, `build.*` mirrors
  * `BuildOrder.failReason`, `hire.*` mirrors `StaffHireRefusalReason`,
+ * `place-object.*` mirrors `PlaceObjectRefusalReason`,
  * `purchase.*` mirrors `PurchaseOutcome`'s refusal reasons, `unzone.*` mirrors
  * `UnzoneRoomRefusalReason` and `zone.*` mirrors `ZoneRoomRefusalReason`. The
  * namespace is doing real work rather than being tidy -- `out-of-bounds` and
@@ -664,6 +665,13 @@ export const REFUSAL_REASONS = [
   'hire.insufficient-funds',
   'hire.roster-full',
   'hire.unknown-role',
+  'place-object.duplicate-order',
+  'place-object.not-a-placeable-object',
+  'place-object.out-of-bounds',
+  'place-object.outside-room',
+  'place-object.tile-occupied',
+  'place-object.unknown-buildable',
+  'place-object.unowned-land',
   'purchase.duplicate-order',
   'purchase.insufficient-funds',
   'purchase.invalid-quantity',

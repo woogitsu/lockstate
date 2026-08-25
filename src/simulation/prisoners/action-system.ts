@@ -213,6 +213,13 @@ export class ActionSystem implements SystemRegistration {
       const instanceId = this.coldState.getAccommodation(entityId);
       return instanceId === undefined ? undefined : this.roomInstances.getById(instanceId);
     }
-    return this.roomInstances.findAvailable(action.target.roomCatalogId, action.requiredObjectCapability);
+    // `findAvailableForUse`, not `findAvailableResidence`: this asks "can this
+    // prisoner use this room now", which is bounded by the room's
+    // concurrent-use capacity and not by how many live there (ADR 0028
+    // decision 3). The `own-accommodation` branch above re-checks neither gate
+    // -- it resolves by id -- which is why a prisoner who holds a cell keeps
+    // sleeping, eating in cell and using the toilet whatever stands in the
+    // room, and why the first bed placed buys three needs rather than one.
+    return this.roomInstances.findAvailableForUse(action.target.roomCatalogId, action.requiredObjectCapability);
   }
 }

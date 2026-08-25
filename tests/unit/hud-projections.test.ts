@@ -402,7 +402,7 @@ describe('room list and detail', () => {
       instanceId: 'cell-bare',
       roomCatalogId: 'room.cell',
       anchorTile: { x: 12, y: 12 } as never,
-      capacity: 1,
+      residentCapacity: 1, concurrentUseCapacity: 1,
       objectCapabilities: ['sleep-surface'],
     });
     const detail = projectRoomDetail(runtime.prisoners, 'cell-bare')!;

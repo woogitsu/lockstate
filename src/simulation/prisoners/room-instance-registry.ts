@@ -2,34 +2,83 @@ import type { EntityId } from '../entity/entity-store';
 import type { TilePosition } from '../world/coordinates';
 
 /**
- * A concrete, placed instance of a #23 room-catalog definition, with a
- * navigable anchor tile and occupancy capacity.
+ * A concrete, placed instance of a #23 room-catalog definition: its rectangle,
+ * and the two capacities and capability list **derived from the objects
+ * standing inside it**.
  *
- * **Explicit scope assumption** (AGENTS.md: "state assumptions when
- * requirements are underspecified"): #23's content catalog does not track
- * individual placed room instances or which objects physically sit in which
- * room, and real object-placement tracking does not exist yet. (#17's
- * `RoomSystem` did not either: it validated an ad-hoc topology/zoning pair
- * with a mocked body, and #123 item 2 deleted it.)
- * `RoomInstanceRegistry` is the minimal, real (not mocked) layer #24
- * needs to make cell/room assignment meaningful: instances are registered
- * explicitly, with `objectCapabilities` stated up front rather than
- * derived from a placement system that doesn't exist. Building the real
- * object-placement/instance-discovery system belongs to construction/rooms
- * work, not this issue.
+ * ## What changed, and what the previous version of this comment claimed
+ *
+ * It said that instances are registered "with `objectCapabilities` stated up
+ * front rather than derived from a placement system that doesn't exist", and
+ * that building the real placement system "belongs to construction/rooms
+ * work". That work is
+ * [ADR 0028](../../../docs/adr/0028-object-placement-and-derived-room-capacity.md),
+ * and phase 1 of it falsifies the sentence: nothing states a capacity or a
+ * capability any more. `RoomZoningService.zone` registers an instance with
+ * zeroes and an empty list, and `RoomCapacityResolver` writes the real figures
+ * through `updateDerived` whenever the set of objects inside the rectangle can
+ * have changed. So an instance is still **registered once** -- `register` still
+ * throws on a duplicate id -- and its derived fields are now updated on object
+ * events.
+ *
+ * ## Why two capacities and not one
+ *
+ * `capacity` was asked to be two different quantities (ADR 0028 decision 3): a
+ * *residency* ceiling, which is what `IntakeSystem` asks before a prisoner
+ * lives here, and a *concurrent use* ceiling, which is what `ActionSystem`
+ * asks before a prisoner uses the room now. A canteen that seats fourteen
+ * houses nobody, and a cell that holds one prisoner is not a statement about
+ * how many can stand in it. They are two fields and two `findAvailable*`
+ * methods rather than one field and a mode flag, because the call sites are
+ * already distinct.
+ *
+ * **The occupant set is deliberately not split.** "Who is inside this room
+ * right now" is a fact rather than a role, and the two capacities are two
+ * ceilings on the same count. Note what follows from that and is measured
+ * rather than assumed: nothing in `src/` adds an actor to a non-accommodation
+ * room's occupant set -- `ActionSystem` calls neither `assign` nor `release`
+ * -- so `concurrentUseCapacity` is today a correct ceiling on a number that is
+ * always zero. Making it bite is ADR 0028 phase 6, and saying so is better
+ * than shipping a gate that looks enforced and is not.
+ *
+ * ## The bounds, and why they are optional
+ *
+ * `width`/`height` are the rectangle `zone` receives and used to discard.
+ * Without them "is this tile in this room" is unanswerable and every rule in
+ * ADR 0028 decision 2 has no domain. They are **optional** because a V4 save
+ * genuinely does not record them and there is no honest default: `1x1` asserts
+ * a room the player did not zone and `64x64` asserts one that overlaps its
+ * neighbours. An instance with no bounds contains no objects, so its capacity
+ * stays 0 -- exactly the pre-object-placement behaviour, and therefore not a
+ * regression.
  */
 export interface RoomInstance {
   readonly instanceId: string;
   readonly roomCatalogId: string;
   readonly anchorTile: TilePosition;
-  readonly capacity: number;
+  /** Width of the zoned rectangle in tiles, with `anchorTile` as its left edge. Absent for an instance restored from a save written before bounds were recorded. */
+  readonly width?: number;
+  /** Height of the zoned rectangle in tiles, with `anchorTile` as its top edge. Absent for the same reason `width` is. */
+  readonly height?: number;
+  /** How many prisoners may *live* here. Derived: the summed footprint width of the sleep surfaces standing inside the rectangle. */
+  readonly residentCapacity: number;
+  /** How many actors may *use* the room at once. Derived: the summed footprint width of every object standing inside the rectangle. */
+  readonly concurrentUseCapacity: number;
+  /** The union of the capabilities of the objects inside the rectangle, deduplicated, ascending by code unit. Derived. */
+  readonly objectCapabilities: readonly string[];
+}
+
+/** The three fields `RoomCapacityResolver` computes and `updateDerived` writes. */
+export interface RoomDerivedCapacity {
+  readonly residentCapacity: number;
+  readonly concurrentUseCapacity: number;
   readonly objectCapabilities: readonly string[];
 }
 
 export class RoomInstanceRegistry {
   private readonly instances = new Map<string, RoomInstance>();
   private readonly occupants = new Map<string, Set<EntityId>>();
-  /** Grouped by room-catalog id so `allByRoomCatalogId`/`findAvailable` never scan instances of other room types. */
+  /** Grouped by room-catalog id so `allByRoomCatalogId`/`findAvailable*` never scan instances of other room types. */
   private readonly instancesByRoomCatalogId = new Map<string, RoomInstance[]>();
   /** Lazily rebuilt, sorted-by-instanceId cache per room-catalog id; invalidated only for the affected type on `register`, never on assign/release (those don't change which instances exist). */
   private readonly sortedCache = new Map<string, readonly RoomInstance[]>();
@@ -47,6 +96,53 @@ export class RoomInstanceRegistry {
     if (group === undefined) this.instancesByRoomCatalogId.set(instance.roomCatalogId, [instance]);
     else group.push(instance);
     this.sortedCache.delete(instance.roomCatalogId);
+  }
+
+  /**
+   * Writes the three derived fields for one instance, or answers `false` when
+   * there is no such instance.
+   *
+   * The one mutation an instance admits, and the reason `register` keeps
+   * throwing on a duplicate id (ADR 0028 decision 2): re-registering to change
+   * a capacity would make "registered once" false and would silently accept a
+   * second instance for the same room. This changes three fields and nothing
+   * else -- not the id, not the catalogue id, not the anchor, not the bounds --
+   * so no index that is keyed on any of those can go stale.
+   *
+   * Its only caller is `RoomCapacityResolver`, which runs at the three moments
+   * the set of objects inside a rectangle can have changed: an object build
+   * order completing, that order being reverted, and `zone` registering a new
+   * instance. **It is never called from a scheduled `update`.** A resolver on a
+   * tick would make capacity a value that changes between a `findAvailable*`
+   * and its `assign`, which is the failure mode ADR 0023 named.
+   *
+   * The row is replaced rather than mutated, because `RoomInstance` is
+   * readonly and every reader holds the object rather than an id. All three
+   * places `register` wrote are rewritten -- the id map, the per-room-type
+   * group, and that type's sorted cache, which is dropped so `findAvailable*`
+   * cannot keep answering from a row whose capacity has moved. That last one is
+   * the failure this method would have if it were only a `Map.set`, and it is
+   * the same one `unregister` documents.
+   */
+  public updateDerived(instanceId: string, derived: RoomDerivedCapacity): boolean {
+    const instance = this.instances.get(instanceId);
+    if (instance === undefined) return false;
+
+    const next: RoomInstance = {
+      ...instance,
+      residentCapacity: derived.residentCapacity,
+      concurrentUseCapacity: derived.concurrentUseCapacity,
+      objectCapabilities: [...derived.objectCapabilities],
+    };
+    this.instances.set(instanceId, next);
+
+    const group = this.instancesByRoomCatalogId.get(instance.roomCatalogId);
+    if (group !== undefined) {
+      const index = group.findIndex((entry) => entry.instanceId === instanceId);
+      if (index >= 0) group[index] = next;
+    }
+    this.sortedCache.delete(instance.roomCatalogId);
+    return true;
   }
 
   /**
@@ -69,7 +165,7 @@ export class RoomInstanceRegistry {
    *
    * Every index `register` writes is undone: the id map, the occupancy map,
    * the per-room-type group and that type's sorted cache. Leaving the cache
-   * would keep the removed instance visible to `findAvailable` -- the one
+   * would keep the removed instance visible to `findAvailable*` -- the one
    * reader on the intake hot path -- which is the failure this method would
    * have if it were only a `Map.delete`.
    */
@@ -149,8 +245,8 @@ export class RoomInstanceRegistry {
 
   /**
    * Deterministic: sorted by `instanceId`, never Map iteration order.
-   * Scoped to just this room type and cached until the next `register` of
-   * that same type -- a per-tick, potentially-thousands-of-instances query
+   * Scoped to just this room type and cached until the next `register`,
+   * `unregister` or `updateDerived` of that same type -- a per-tick, potentially-thousands-of-instances query
    * hot path (see docs/PRISONER_OPERATIONS.md's actor-tier note) must never
    * re-filter/re-sort every registered instance of every room type on
    * every call.
@@ -165,10 +261,49 @@ export class RoomInstanceRegistry {
     return sorted;
   }
 
-  /** First (by sorted instance id) instance of `roomCatalogId` with free capacity and, if given, the required object capability. Deterministic given identical registry state. */
-  public findAvailable(roomCatalogId: string, requiredObjectCapability?: string): RoomInstance | undefined {
+  /**
+   * First (by sorted instance id) instance of `roomCatalogId` a prisoner could
+   * **live** in: free residency and, if given, the required object capability.
+   *
+   * One caller: `IntakeSystem`, through `findBestAvailable` below. It gates on
+   * `residentCapacity`, which is derived from the sleep surfaces standing in
+   * the room -- so a zoned cell with no bed answers `undefined` here and the
+   * arrival waits at `accommodation-assignment`, which is retryable, rather
+   * than reaching the terminal `'failed'` (ADR 0028 decision 8).
+   *
+   * Two methods rather than one with a mode flag (ADR 0028 decision 3), and
+   * `EditHistoryPort`'s own comment makes the same argument one layer out: the
+   * two answer different questions.
+   */
+  public findAvailableResidence(roomCatalogId: string, requiredObjectCapability?: string): RoomInstance | undefined {
     return this.allByRoomCatalogId(roomCatalogId).find((instance) => {
-      if (this.occupancyOf(instance.instanceId) >= instance.capacity) return false;
+      if (this.occupancyOf(instance.instanceId) >= instance.residentCapacity) return false;
+      if (requiredObjectCapability !== undefined && !instance.objectCapabilities.includes(requiredObjectCapability)) return false;
+      return true;
+    });
+  }
+
+  /**
+   * First (by sorted instance id) instance of `roomCatalogId` an actor could
+   * **use right now**: free concurrent-use capacity and, if given, the required
+   * object capability.
+   *
+   * One caller: `ActionSystem.resolveTargetInstance`'s `room-catalog-id`
+   * branch.
+   *
+   * **The capacity half of this gate is a ceiling on a number that is always
+   * zero**, and that is measured rather than assumed: nothing in `src/` calls
+   * `assign` or `release` for a non-accommodation room, so `occupancyOf` counts
+   * only the prisoners `IntakeSystem` housed there. So for a canteen this
+   * compares the canteen's *resident* count against its concurrent-use
+   * capacity, and any capacity of 1 or more admits unlimited simultaneous
+   * users. That was equally true of the single `capacity` field this replaced;
+   * what changes is that the number being compared is now the right one, before
+   * anything counts against it (ADR 0028 phase 6).
+   */
+  public findAvailableForUse(roomCatalogId: string, requiredObjectCapability?: string): RoomInstance | undefined {
+    return this.allByRoomCatalogId(roomCatalogId).find((instance) => {
+      if (this.occupancyOf(instance.instanceId) >= instance.concurrentUseCapacity) return false;
       if (requiredObjectCapability !== undefined && !instance.objectCapabilities.includes(requiredObjectCapability)) return false;
       return true;
     });
@@ -178,7 +313,7 @@ export class RoomInstanceRegistry {
    * The free instance of `roomCatalogId` whose **current occupants** rate
    * best for `rate`, rather than merely the first one with a free bed.
    *
-   * `findAvailable` above asks three questions -- room type, an occupancy
+   * `findAvailableResidence` above asks three questions -- room type, an occupancy
    * *count*, an object capability -- and never asks who is already in
    * there, so a maximum-security prisoner and a minimal-risk one land in
    * the same cell whenever that cell happens to sort first (#79). This is
@@ -191,9 +326,9 @@ export class RoomInstanceRegistry {
    *   `allByRoomCatalogId`'s sorted order and the comparison is a strict
    *   `<`. With a rating that is constant -- an empty prison, or
    *   single-occupancy cells, where every free instance holds nobody --
-   *   this therefore returns exactly what `findAvailable` returns.
+   *   this therefore returns exactly what `findAvailableResidence` returns.
    * - **The scan stops at the first candidate rated `0`.** That is what
-   *   keeps this the same *cost* as `findAvailable` and not merely the same
+   *   keeps this the same *cost* as `findAvailableResidence` and not merely the same
    *   answer: `docs/PRISONER_OPERATIONS.md`'s performance note records that
    *   this is a per-tick, potentially-thousands-of-instances hot path which
    *   has already caused a severe super-linear slowdown once, and turning
@@ -227,7 +362,7 @@ export class RoomInstanceRegistry {
     let bestRating = Number.POSITIVE_INFINITY;
 
     for (const instance of this.allByRoomCatalogId(roomCatalogId)) {
-      if (this.occupancyOf(instance.instanceId) >= instance.capacity) continue;
+      if (this.occupancyOf(instance.instanceId) >= instance.residentCapacity) continue;
       if (requiredObjectCapability !== undefined && !instance.objectCapabilities.includes(requiredObjectCapability)) continue;
 
       const occupants = [...(this.occupants.get(instance.instanceId) ?? [])].sort((a, b) => a - b);
@@ -247,7 +382,11 @@ export class RoomInstanceRegistry {
     const instance = this.instances.get(instanceId);
     const occupants = this.occupants.get(instanceId);
     if (instance === undefined || occupants === undefined) throw new RangeError(`Unknown room instance id "${instanceId}".`);
-    if (occupants.size >= instance.capacity) return false;
+    // `residentCapacity`, because the only caller is `IntakeSystem` housing a
+    // prisoner. When `ActionSystem` starts claiming a place for the duration of
+    // an action (ADR 0028 phase 6) it needs the other ceiling, and this line is
+    // where that decision lands.
+    if (occupants.size >= instance.residentCapacity) return false;
     // `Set.add` is idempotent, so the counter follows the size change rather
     // than the call: re-assigning an entity already in this instance must not
     // invent a second occupied place for it.

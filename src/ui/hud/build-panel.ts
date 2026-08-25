@@ -58,6 +58,18 @@ export interface BuildPanelIntent {
   readonly x: number;
   readonly y: number;
   readonly edge: HudBuildEdge;
+  /**
+   * Whether the selected row places a discrete object rather than a wall
+   * segment (ADR 0028 phase 1), which decides *which* command the press
+   * becomes.
+   *
+   * Carried on the intent rather than looked up by the caller, because the
+   * caller is the HUD's own dispatch and the answer is on the view model the
+   * panel already holds. `edge` stays populated for such a row for the reason
+   * it always was: the field has one shape and the simulation ignores it for
+   * anything that is not a wall.
+   */
+  readonly placesObject: boolean;
 }
 
 /** What one press of the buy control asks for: ids and numbers only. */
@@ -509,6 +521,11 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       // the command carries one shape; the simulation ignores it for anything
       // that is not a wall.
       edge,
+      // Which of the two placement commands this row needs. A shape fact the
+      // catalogue carried in, exactly like `occupiesEdge` -- the panel does not
+      // decide it and cannot derive it, because what a buildable places is
+      // simulation content the HUD may not read.
+      placesObject: buildable.placesObject === true,
     };
   }
 

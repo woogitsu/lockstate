@@ -18,9 +18,10 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  *
  * ## What it found on the first run, and what it has moved since
  *
- * Six commands were declared. **One had a producer.** (There are eight now:
- * `UnzoneRoom` arrived with the Rooms tab, `HireStaff` with the Staff panel and
- * `AdmitPrisoner` with the Intake panel, and each arrived with a producer.)
+ * Six commands were declared. **One had a producer.** (There are ten now:
+ * `UnzoneRoom` arrived with the Rooms tab, `HireStaff` with the Staff panel,
+ * `AdmitPrisoner` with the Intake panel and `PlaceObject` with the object tool,
+ * and each arrived with a producer.)
  *
  * `src/main.ts` dispatched `{ type: 'PlaceBuildOrder', ... }` from the
  * `'place-build-order'` HUD intent. `CancelBuildOrder`, `ZoneRoom`,
@@ -29,7 +30,7 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  * cancel, a zone, a purchase or an undo, and no other module built a
  * command object at all.
  *
- * ## What it reads today: eight of nine
+ * ## What it reads today: nine of ten
  *
  * `Undo` and `Redo` gained producers with #261's step 6, and their entries came
  * out of the list below in the same change -- which is the direction this file
@@ -81,8 +82,16 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  * -- which is worth naming because the alternative, declaring the command first
  * and wiring it later, is exactly how the six before these three got here.
  *
+ * `PlaceObject` is the tenth and landed the same way again (ADR 0028 phase 1):
+ * the schema member, the `createSessionCommandHandler` branch, the `HudIntent`
+ * member, the object tool that emits it from a world press and the Build panel's
+ * numeric fields that emit it from the keyboard, all in one change. Its consumer
+ * did not pre-exist it at all, which is the one respect in which it differs from
+ * the three before it -- `ObjectPlacementService` is new in the same commit, so
+ * there was never a window in which a complete consumer sat unreachable.
+ *
  * So `CancelBuildOrder` is the whole of what the list below still holds, and
- * the count is measured, not carried: eight producers all in `src/main.ts`, one
+ * the count is measured, not carried: nine producers all in `src/main.ts`, one
  * command with none.
  *
  * ## What counts as a producer
@@ -116,8 +125,8 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  *
  * ## Why the list comes out of the schema
  *
- * `simulationCommandSchema.options` is the discriminated union itself, so a
- * tenth member is in scope the moment it is added. A hand-written array
+ * `simulationCommandSchema.options` is the discriminated union itself, so an
+ * eleventh member is in scope the moment it is added. A hand-written array
  * here would be a second list to forget, which is the failure this whole
  * family of gates exists to prevent.
  */
@@ -178,7 +187,7 @@ describe('every declared simulation command either has a producer or is accounte
     // where it is -- all eight in `src/main.ts`, which is the composition root
     // and the only place in `src/` that builds a command object.
     expect(producerSources.length).toBeGreaterThan(50);
-    expect(COMMAND_TYPES.length).toBe(9);
+    expect(COMMAND_TYPES.length).toBe(10);
 
     expect(producersOf('PlaceBuildOrder')).toEqual(['src/main.ts']);
     expect(producersOf('PurchaseMaterials')).toEqual(['src/main.ts']);
@@ -190,6 +199,9 @@ describe('every declared simulation command either has a producer or is accounte
     // still keep the count green.
     expect(producersOf('ZoneRoom')).toEqual(['src/main.ts']);
     expect(producersOf('UnzoneRoom')).toEqual(['src/main.ts']);
+    // The tenth, added by ADR 0028 phase 1 and by the same route: arriving
+    // *with* its producer rather than spending time on the list below.
+    expect(producersOf('PlaceObject')).toEqual(['src/main.ts']);
     const main = producerSources.find((source) => source.where === 'src/main.ts');
     expect(main, 'the production producers of a simulation command are no longer where this gate looks for them').toBeDefined();
     expect(main!.text).toContain(`type: 'PlaceBuildOrder'`);
@@ -200,12 +212,13 @@ describe('every declared simulation command either has a producer or is accounte
     expect(main!.text).toContain(`type: 'Redo'`);
     expect(main!.text).toContain(`type: 'ZoneRoom'`);
     expect(main!.text).toContain(`type: 'UnzoneRoom'`);
+    expect(main!.text).toContain(`type: 'PlaceObject'`);
   });
 
   it('separates producing from consuming, so a handler branch is not mistaken for a dispatch', () => {
     // The rule the whole measurement rests on. `construction/handler.ts`
     // switches on all four of the commands it handles; if `case 'X':` counted
-    // as producing an `X`, this gate would report all eight commands as
+    // as producing an `X`, this gate would report every command as
     // reachable and be exactly wrong about the one that is not.
     //
     // Demonstrated on `CancelBuildOrder`, which is handled there and produced
@@ -261,7 +274,7 @@ describe('every declared simulation command either has a producer or is accounte
     ).toEqual([]);
   });
 
-  it('measures eight produced and one unproduced, which is where #261 step 4 left the command surface', () => {
+  it('measures nine produced and one unproduced, which is where ADR 0028 phase 1 left the command surface', () => {
     // The denominator, stated so the gate reports a fact rather than only
     // guarding one, and exact in both directions. A command that quietly
     // stopped being reachable would otherwise only have to be added to the
@@ -273,13 +286,15 @@ describe('every declared simulation command either has a producer or is accounte
     // the undo pair its keys, two and four on #89's branch before that merged
     // in, one and six once the Rooms tab gave `ZoneRoom` a producer and brought
     // `UnzoneRoom` with one, one and seven once ADR 0025 added `HireStaff`
-    // *with* its producer, and one and eight once #261 step 4 added
-    // `AdmitPrisoner` the same way. Both numbers move in the same change as a
-    // producer, which is the point of asserting the count as well as the list:
-    // neither can be edited alone and stay green. Note the denominator moves
-    // too, so a tenth command added with no producer fails here as well as
-    // failing the accounting above.
+    // *with* its producer, one and eight once #261 step 4 added
+    // `AdmitPrisoner` the same way, and one and nine once ADR 0028 phase 1
+    // added `PlaceObject` -- also with its producer, from two routes: the
+    // object tool's world gesture and the Build panel's numeric fields. Both
+    // numbers move in the same change as a producer, which is the point of
+    // asserting the count as well as the list: neither can be edited alone and
+    // stay green. Note the denominator moves too, so an eleventh command added
+    // with no producer fails here as well as failing the accounting above.
     expect(unproducedTypes.length).toBe(1);
-    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(8);
+    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(9);
   });
 });

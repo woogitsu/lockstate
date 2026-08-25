@@ -23,7 +23,7 @@ import {
   PrisonerRecordComponent,
 } from '../prisoners/components';
 import { NEED_IDS, NeedsComponent, type NeedId } from '../prisoners/needs';
-import type { RoomInstance } from '../prisoners/room-instance-registry';
+import type { PlacedObject } from '../objects';
 import type { DeploymentSchedule } from '../security/deployment-schedule';
 import type { GuardRecord, GuardRoster } from '../security/guard-roster';
 import type { SecuritySectorDefinition } from '../security/sector';
@@ -146,8 +146,31 @@ export interface EncodedPrisoners {
    * definitions are part of the payload, and the assumption that made them
    * excludable no longer holds once a save is the thing doing the restoring.
    */
-  readonly roomInstanceDefinitions: readonly RoomInstance[];
+  readonly roomInstanceDefinitions: readonly PersistedRoomInstance[];
   readonly roomInstanceOccupancy: readonly (readonly [string, readonly number[]])[];
+}
+
+/**
+ * A room instance as the save carries it: identity, anchor and the rectangle.
+ *
+ * **Not `RoomInstance`**, and the difference is the whole of ADR 0028 decision
+ * 6's removal half. `residentCapacity`, `concurrentUseCapacity` and
+ * `objectCapabilities` are pure functions of (placed objects, room bounds, the
+ * two catalogues), and a persisted derived value can disagree with the state
+ * that produced it -- so they are recomputed on restore by
+ * `RoomCapacityResolver.resolveAll` instead of being carried. A payload that
+ * carried them would also make `snapshot() -> restore() -> run N ticks` land on
+ * the same state by *agreement* rather than by construction.
+ *
+ * `width`/`height` are optional here because they are optional in the schema:
+ * a V4 save recorded no rectangle and the migration invents none.
+ */
+export interface PersistedRoomInstance {
+  readonly instanceId: string;
+  readonly roomCatalogId: string;
+  readonly anchorTile: TilePosition;
+  readonly width?: number;
+  readonly height?: number;
 }
 
 // --- Operations ---------------------------------------------------------
@@ -249,6 +272,33 @@ export interface EncodedSessionSystems {
    * the only record that the money bought anything.
    */
   readonly economy?: EncodedEconomy;
+  /**
+   * Everything standing in the prison
+   * ([ADR 0028](../../../docs/adr/0028-object-placement-and-derived-room-capacity.md)
+   * decision 6).
+   *
+   * **Optional, and absence means "no object has been placed"** -- which is
+   * what every save written before V5 meant, because no such build could place
+   * one. That is why the V4 -> V5 migration adds no section and needs no step:
+   * it is the optional-field pattern `docs/PERSISTENCE.md` describes, exactly.
+   *
+   * A section beside `economy` rather than a field on `prisoners`: an object is
+   * not prisoner state, it stands in a room whether or not anyone lives there,
+   * and `door-wooden`'s existence is the reminder that an object need not
+   * belong to a room at all. Nesting it under a room instance was rejected
+   * outright by decision 1 -- deleting a room would then delete its furniture
+   * from the save with no record it existed.
+   *
+   * Note what is **not** here: no capacity, no capability, no room id. All
+   * three are derived at restore, which is the same removal that took
+   * `capacity` off a room instance.
+   */
+  readonly objects?: EncodedObjects;
+}
+
+export interface EncodedObjects {
+  /** Ascending `(anchorTile.y, anchorTile.x)`, never by `placedObjectId` -- see `PlacedObjectRegistry`. */
+  readonly placedObjects: readonly PlacedObject[];
 }
 
 export interface EncodedEconomy {
@@ -377,7 +427,7 @@ function doorsSnapshot(runtime: SimulationRuntime): readonly DoorDefinition[] {
     .map((door) => ({ ...door, state: baseline.get(door.id) ?? door.state }));
 }
 
-function roomInstanceDefinitions(runtime: SimulationRuntime): readonly RoomInstance[] {
+function roomInstanceDefinitions(runtime: SimulationRuntime): readonly PersistedRoomInstance[] {
   // `getSnapshot()` emits one entry per *registered* instance (occupancy is
   // seeded on `register`), so its keys are the complete, already-sorted
   // instance-id list -- no second enumeration path is needed.
@@ -386,7 +436,22 @@ function roomInstanceDefinitions(runtime: SimulationRuntime): readonly RoomInsta
     .map(([instanceId]) => {
       const instance = runtime.prisoners.roomInstances.getById(instanceId);
       if (instance === undefined) throw new Error(`Invariant violated: room instance "${instanceId}" has occupancy but no definition.`);
-      return { ...instance, objectCapabilities: [...instance.objectCapabilities] };
+      // Field by field rather than a spread, and deliberately: a spread would
+      // carry the three derived fields into the payload, where
+      // `roomInstanceSchemaV5` is `.strict()` and would reject them -- so the
+      // shape is stated once, here, and the schema checks it.
+      return {
+        instanceId: instance.instanceId,
+        roomCatalogId: instance.roomCatalogId,
+        anchorTile: { ...instance.anchorTile },
+        // Spread rather than an explicit `undefined`, for the reason
+        // `ConstructionSnapshot` spreads its open gesture: a key holding
+        // `undefined` reaches `computeSaveChecksum` but does not survive the
+        // JSON round trip into storage, so the reloaded payload would hash
+        // differently from the one that was checksummed.
+        ...(instance.width === undefined ? {} : { width: instance.width }),
+        ...(instance.height === undefined ? {} : { height: instance.height }),
+      };
     });
 }
 
@@ -467,6 +532,13 @@ export function captureSessionSystems(runtime: SimulationRuntime): EncodedSessio
       treasury: runtime.treasury.snapshot(),
       procurement: runtime.procurement.snapshot(),
     },
+    // Emitted unconditionally by a live capture, empty array and all: a session
+    // that has placed nothing writes `{ placedObjects: [] }`, which says "this
+    // prison has none", where an *absent* section says "this save does not
+    // know". The optionality exists for the migration, which genuinely does not
+    // know -- the same distinction `migrateSaveEnvelopeV2ToV3` draws for the
+    // `simulation` section itself.
+    objects: { placedObjects: runtime.placedObjects.getSnapshot() },
     incidents: {
       log: runtime.incidents.getSnapshot(),
       sectorRisk: runtime.sectorRisk.getSnapshot(),
@@ -516,7 +588,40 @@ export function restoreSessionSystems(
   runtime.securitySectors.loadSnapshot(systems.security.sectorControlStates);
 
   // 2. Definitions that other snapshots reference by id.
-  for (const instance of systems.prisoners.roomInstanceDefinitions) runtime.prisoners.roomInstances.register({ ...instance });
+  //
+  //    A room instance is registered with **zero derived capacity**, because
+  //    the payload no longer carries any (ADR 0028 decision 6): the three
+  //    fields are recomputed a few lines below, from the objects placed in the
+  //    same step. Registering zeroes first and resolving after is what makes
+  //    the restore order stated rather than implicit -- and it has to be this
+  //    way round, because a capacity is a fact about the objects inside a
+  //    rectangle and the rectangle has to exist first.
+  for (const instance of systems.prisoners.roomInstanceDefinitions) {
+    runtime.prisoners.roomInstances.register({
+      ...instance,
+      anchorTile: { ...instance.anchorTile },
+      residentCapacity: 0,
+      concurrentUseCapacity: 0,
+      objectCapabilities: [],
+    });
+  }
+
+  //    The objects, then the capacities they imply. **Before step 3**, which is
+  //    the ordering constraint decision 6 names: prisoner occupancy is loaded
+  //    there, and `RoomInstanceRegistry.loadSnapshot` refills occupant sets
+  //    without consulting a capacity -- but `IntakeSystem`'s first scheduled
+  //    tick after the restore reads one, and an instance whose capacity had not
+  //    been resolved yet would look full and refuse an arrival that a live
+  //    session would have housed.
+  //
+  //    An absent section leaves the registry empty, which is what a pre-V5 save
+  //    means. `resolveAll` still runs: with no objects it writes the zeroes
+  //    that are already there, which is the value a V4 save carried and is why
+  //    the migration can drop the field knowing what it was.
+  if (systems.objects !== undefined) {
+    runtime.placedObjects.loadSnapshot(systems.objects.placedObjects.map((object) => ({ ...object, anchorTile: { ...object.anchorTile } })));
+  }
+  runtime.roomCapacity.resolveAll();
   for (const [containerId] of systems.operations.containers) {
     if (runtime.containers.getById(containerId) === undefined) runtime.containers.register(new Container(containerId));
   }

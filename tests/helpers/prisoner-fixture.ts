@@ -64,13 +64,13 @@ export function buildPrisonerScenarioFixture(options: {
 
   generalCellTiles.forEach((tile, index) => {
     prisoners.roomInstances.register({
-      instanceId: `cell-${index}`, roomCatalogId: 'room.cell', anchorTile: tile, capacity: 1,
+      instanceId: `cell-${index}`, roomCatalogId: 'room.cell', anchorTile: tile, residentCapacity: 1, concurrentUseCapacity: 1,
       objectCapabilities: ['sleep-surface', 'sanitation'],
     });
   });
   solitaryCellTiles.forEach((tile, index) => {
     prisoners.roomInstances.register({
-      instanceId: `solitary-cell-${index}`, roomCatalogId: 'room.solitary-cell', anchorTile: tile, capacity: 1,
+      instanceId: `solitary-cell-${index}`, roomCatalogId: 'room.solitary-cell', anchorTile: tile, residentCapacity: 1, concurrentUseCapacity: 1,
       objectCapabilities: ['sleep-surface', 'sanitation'],
     });
   });
@@ -80,11 +80,11 @@ export function buildPrisonerScenarioFixture(options: {
     throw new Error('Fixture invariant violated: expected at least 5 distinct canteen-block tiles.');
   }
 
-  prisoners.roomInstances.register({ instanceId: 'canteen-0', roomCatalogId: 'room.canteen', anchorTile: canteenTile, capacity: 40, objectCapabilities: ['dining'] });
-  prisoners.roomInstances.register({ instanceId: 'yard-0', roomCatalogId: 'room.yard', anchorTile: yardTile, capacity: 60, objectCapabilities: [] });
-  prisoners.roomInstances.register({ instanceId: 'shower-room-0', roomCatalogId: 'room.shower-room', anchorTile: showerTile, capacity: 8, objectCapabilities: ['hygiene'] });
-  prisoners.roomInstances.register({ instanceId: 'common-room-0', roomCatalogId: 'room.common-room', anchorTile: commonRoomTile, capacity: 30, objectCapabilities: [] });
-  prisoners.roomInstances.register({ instanceId: 'classroom-0', roomCatalogId: 'room.classroom', anchorTile: classroomTile, capacity: 20, objectCapabilities: [] });
+  prisoners.roomInstances.register({ instanceId: 'canteen-0', roomCatalogId: 'room.canteen', anchorTile: canteenTile, residentCapacity: 40, concurrentUseCapacity: 40, objectCapabilities: ['dining'] });
+  prisoners.roomInstances.register({ instanceId: 'yard-0', roomCatalogId: 'room.yard', anchorTile: yardTile, residentCapacity: 60, concurrentUseCapacity: 60, objectCapabilities: [] });
+  prisoners.roomInstances.register({ instanceId: 'shower-room-0', roomCatalogId: 'room.shower-room', anchorTile: showerTile, residentCapacity: 8, concurrentUseCapacity: 8, objectCapabilities: ['hygiene'] });
+  prisoners.roomInstances.register({ instanceId: 'common-room-0', roomCatalogId: 'room.common-room', anchorTile: commonRoomTile, residentCapacity: 30, concurrentUseCapacity: 30, objectCapabilities: [] });
+  prisoners.roomInstances.register({ instanceId: 'classroom-0', roomCatalogId: 'room.classroom', anchorTile: classroomTile, residentCapacity: 20, concurrentUseCapacity: 20, objectCapabilities: [] });
 
   return {
     navigation,

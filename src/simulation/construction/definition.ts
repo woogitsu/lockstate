@@ -1,4 +1,5 @@
 import { defaultItemRegistry } from '../../content/item-catalog';
+import { defaultObjectRegistry } from '../../content/object-catalog';
 
 export type BuildableCategory = 'wall' | 'object' | 'utility';
 
@@ -13,6 +14,23 @@ export interface BuildableDefinition {
   readonly name: string;
   readonly workRequired: number; // Simulated ticks or work units
   readonly materialsRequired: readonly MaterialRequirement[];
+  /**
+   * The `src/content/object-catalog.ts` id a completed order for this
+   * buildable puts in the world, for a buildable that places a discrete
+   * object ([ADR 0028](../../../docs/adr/0028-object-placement-and-derived-room-capacity.md)
+   * decision 4).
+   *
+   * Absent means "this buildable places no object", which is what every
+   * buildable before phase 1 meant and what `door-wooden` still means -- see
+   * `edgeNumericIdFor` below for why that one is unchanged.
+   *
+   * A **content id**, not a numeric id and not a message key: the footprint,
+   * the capabilities and the label all come from the catalogue entry, so
+   * nothing about an object is authored twice.
+   * `validateBuildableObjectReferences` checks the reference at import time,
+   * exactly as `validateBuildableItemReferences` checks the material one.
+   */
+  readonly placesObjectId?: string;
 }
 
 export const BUILDABLE_REGISTRY = new Map<string, BuildableDefinition>([
@@ -29,6 +47,44 @@ export const BUILDABLE_REGISTRY = new Map<string, BuildableDefinition>([
     name: 'Wooden Door',
     workRequired: 30,
     materialsRequired: [{ itemId: 'item.wood-plank', quantity: 1 }],
+  }],
+  /*
+   * The first buildable that puts a discrete object in the world (ADR 0028
+   * phase 1), and the reason `placesObjectId` exists.
+   *
+   * **Every number here is a placeholder and none of them is decided by this
+   * change.** ADR 0017 decision 5 reserves all pricing and balance to #29, and
+   * a `materialsRequired` quantity is a balance value in exactly the sense a
+   * `unitPriceMinorUnits` is -- so this follows the shape
+   * `src/content/procurement-catalog.ts` already uses for its two prices and
+   * says so at the declaration rather than in a commit message.
+   *
+   *   - **One material, and that is a constraint rather than a taste.**
+   *     `purchasableMaterialFor` in `src/main.ts` offers a stepper for the
+   *     *first* priced requirement only, and states that a two-material
+   *     buildable would get a control for one of them and no way to buy the
+   *     other. So the first object requires one material until a
+   *     multi-material buy surface is designed.
+   *   - **`item.wood-plank` rather than `item.brick`**, because it is the one
+   *     of the two priced materials a bed is plausibly made of, and because
+   *     `door-wooden` already proves the plank route works end to end.
+   *   - **`workRequired: 30`** is `door-wooden`'s figure, taken rather than
+   *     chosen: at `+10` per scheduled tick on a 10-tick schedule that is three
+   *     progress ticks plus three state transitions, about 60 ticks or 3s at
+   *     1x. Whether furniture should take longer than a door is a balance
+   *     question with the same owner as the quantity.
+   *
+   * `category: 'object'` is what it already was for a door -- the category has
+   * had three members since #16 and this is the first row where the third one
+   * finishes meaningfully.
+   */
+  ['bed-wooden', {
+    id: 'bed-wooden',
+    category: 'object',
+    name: 'Bed',
+    workRequired: 30,
+    materialsRequired: [{ itemId: 'item.wood-plank', quantity: 1 }],
+    placesObjectId: 'object.bed',
   }],
 ]);
 
@@ -82,6 +138,46 @@ if (buildableItemReferenceErrors.length > 0) {
   throw new Error(`Buildable definitions reference unknown items: ${JSON.stringify(buildableItemReferenceErrors)}`);
 }
 
+export type BuildableObjectReferenceError = {
+  readonly kind: 'missing-object-reference';
+  readonly buildableId: string;
+  readonly objectId: string;
+};
+
+/**
+ * Every object a buildable claims to place must be a real object definition.
+ *
+ * The sibling of `validateBuildableItemReferences`, added for the same reason
+ * and against the same measured failure. A `placesObjectId` naming an id the
+ * catalogue does not declare produces no error anywhere: the placement service
+ * refuses the command with `unknown-object`, and the row sits in the Build
+ * panel refusing every press -- indistinguishable from the object tool not
+ * working. Checking at import time makes the failure loud and puts it next to
+ * its cause.
+ *
+ * Ids are walked in sorted order so a build with two broken rows reports them
+ * in a stable order rather than in `Map` insertion order.
+ */
+export function validateBuildableObjectReferences(): readonly BuildableObjectReferenceError[] {
+  const errors: BuildableObjectReferenceError[] = [];
+
+  for (const id of [...BUILDABLE_REGISTRY.keys()].sort()) {
+    const objectId = BUILDABLE_REGISTRY.get(id)!.placesObjectId;
+    if (objectId === undefined) continue;
+    if (!defaultObjectRegistry.has(objectId)) {
+      errors.push({ kind: 'missing-object-reference', buildableId: id, objectId });
+    }
+  }
+
+  return errors;
+}
+
+const buildableObjectReferenceErrors = validateBuildableObjectReferences();
+
+if (buildableObjectReferenceErrors.length > 0) {
+  throw new Error(`Buildable definitions reference unknown objects: ${JSON.stringify(buildableObjectReferenceErrors)}`);
+}
+
 /**
  * What a completed wall writes into the world's `topEdge` / `leftEdge` layer.
  *
@@ -111,9 +207,19 @@ export const WALL_EDGE_NUMERIC_ID = 1;
  * door would build a solid wall where the player asked for a door -- worse
  * than today, not a fix. What is actually missing is a placement model for a
  * door, not a different category for one, and until that exists a completed
- * `door-wooden` order changes nothing in the simulation. It is the one
- * buildable the registry offers that cannot finish meaningfully; see #261 for
- * the decisions that blocks on.
+ * `door-wooden` order changes nothing in the simulation.
+ *
+ * **The placement model now exists and `door-wooden` still does nothing, which
+ * is a correction to what ADR 0028 phase 1 predicted.** That phase claims it
+ * "also fixes a shipped defect: `door-wooden` stops being a catalogue row that
+ * consumes a plank and does nothing". It does not, and cannot: a placed object
+ * is a row naming an id in `src/content/object-catalog.ts`, and that catalogue
+ * declares no wooden door -- `object.loading-dock-door` is a three-tile
+ * delivery door with a `'delivery-access'` capability, not this. A door's own
+ * state lives in `DoorRegistry` (`src/simulation/navigation/door.ts`) and
+ * connecting a completed order to it is navigation work with its own
+ * consequences for `TopologyManager`. So `door-wooden` is left exactly as it
+ * was found, with no `placesObjectId`, and the defect is still open.
  */
 export function edgeNumericIdFor(definition: BuildableDefinition): number {
   return definition.category === 'wall' ? WALL_EDGE_NUMERIC_ID : 0;

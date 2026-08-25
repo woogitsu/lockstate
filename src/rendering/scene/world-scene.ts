@@ -25,9 +25,11 @@ import { registerAtlasTextures } from '../phaser/atlas-textures';
 import { BuildOverlay } from '../phaser/build-overlay';
 import { AreaOverlay } from '../phaser/area-overlay';
 import {
+  footprintRectAt,
   pickTileAtWorld,
   tileRectFromDrag,
   tileRectsEqual,
+  type ObjectToolPort,
   type RoomToolPort,
   type TileRect,
 } from '../build/area-picking';
@@ -121,6 +123,30 @@ export interface WorldSceneOptions {
   readonly roomTool?: RoomToolPort;
 
   /**
+   * Where an object-placement gesture goes (ADR 0028 phase 1).
+   *
+   * A third port beside `buildTool` and `roomTool`, for the reason
+   * `area-picking.ts` states: the three carry different shapes -- a run of
+   * edges, one dragged rectangle, one pressed tile with a footprint. Absent,
+   * every pointer gesture keeps exactly the meaning it had, the same as an
+   * absent `buildTool`.
+   *
+   * The scene reports a *tile*, never a command: this file may not construct
+   * one (`tests/unit/rendering-module-boundaries.test.ts`).
+   */
+  readonly objectTool?: ObjectToolPort;
+
+  /**
+   * The tint to preview a pending object in.
+   *
+   * A function for the reason `roomTint` is one: the player can change the
+   * selected catalogue row without disarming, and the scene reads it on every
+   * paint. It is a *colour*, not a buildable id -- which object is selected
+   * lives in the HUD.
+   */
+  readonly objectTint?: () => number | undefined;
+
+  /**
    * The tint to preview a pending room in, or `undefined` while the armed
    * gesture removes rather than creates.
    *
@@ -182,6 +208,8 @@ export class WorldScene extends Phaser.Scene {
   private readonly editHistory: EditHistoryPort | undefined;
   private readonly roomTool: RoomToolPort | undefined;
   private readonly roomTint: (() => number | undefined) | undefined;
+  private readonly objectTool: ObjectToolPort | undefined;
+  private readonly objectTint: (() => number | undefined) | undefined;
   /** The pointer currently drawing a wall run, and the world point it pressed. */
   private buildPointerId: number | undefined;
   private buildPress: WorldPoint | undefined;
@@ -203,6 +231,19 @@ export class WorldScene extends Phaser.Scene {
   private areaRect: TileRect | undefined;
   private hoveredTile: TileRect | undefined;
   private areaOverlay: AreaOverlay | undefined;
+
+  /*
+   * The object gesture's state, mirroring the area gesture's fields for the
+   * same reason those do not share the build tool's: a build or area release
+   * must not place an object, and the previews have to be clearable
+   * independently. It gets its own `AreaOverlay` too -- one more `Graphics`
+   * object, against the alternative of two tools writing to one buffer and
+   * clearing each other's marks.
+   */
+  private objectPointerId: number | undefined;
+  private objectRect: TileRect | undefined;
+  private hoveredObjectTile: TileRect | undefined;
+  private objectOverlay: AreaOverlay | undefined;
   private framedOnWorld = false;
 
   public constructor(options: WorldSceneOptions) {
@@ -212,6 +253,8 @@ export class WorldScene extends Phaser.Scene {
     this.editHistory = options.editHistory;
     this.roomTool = options.roomTool;
     this.roomTint = options.roomTint;
+    this.objectTool = options.objectTool;
+    this.objectTint = options.objectTint;
     this.keyboard = new KeyboardInputAdapter(
       loadInputSettings(options.keyValueStore).keyboardBindings,
       // Answered from the document rather than by a literal. This was
@@ -249,6 +292,7 @@ export class WorldScene extends Phaser.Scene {
     this.tiles = new TileLayer(this);
     this.buildOverlay = new BuildOverlay(this);
     this.areaOverlay = new AreaOverlay(this);
+    this.objectOverlay = new AreaOverlay(this);
 
     // Phaser tracks exactly one touch pointer unless told otherwise, so a
     // second finger was never delivered and `TouchGestureTracker` could not
@@ -315,12 +359,17 @@ export class WorldScene extends Phaser.Scene {
         // camera (see `pointermove`).
         if (this.activeTouchCount() === 1) {
           if (this.isBuildArmed()) this.beginBuild(pointer);
+          else if (this.isObjectArmed()) this.beginObject(pointer);
           else if (this.isRoomArmed()) this.beginArea(pointer);
         }
         return;
       }
       if (pointer.button === 0 && this.isBuildArmed()) {
         this.beginBuild(pointer);
+        return;
+      }
+      if (pointer.button === 0 && this.isObjectArmed()) {
+        this.beginObject(pointer);
         return;
       }
       if (pointer.button === 0 && this.isRoomArmed()) {
@@ -339,6 +388,7 @@ export class WorldScene extends Phaser.Scene {
           // cannot be true at once, which is the whole reason arming is
           // explicit rather than inferred from a drag threshold.
           if (this.extendBuild(pointer)) return;
+          if (this.extendObject(pointer)) return;
           if (this.extendArea(pointer)) return;
           const camera = this.cameras.main;
           camera.scrollX -= gesture.deltaX / camera.zoom;
@@ -349,6 +399,7 @@ export class WorldScene extends Phaser.Scene {
           // A second finger abandons any run in progress rather than
           // committing a wall the player was actually trying to scroll past.
           this.cancelBuild();
+          this.cancelObject();
           this.cancelArea();
           const camera = this.cameras.main;
           const panned = this.cameraState();
@@ -370,11 +421,16 @@ export class WorldScene extends Phaser.Scene {
         return;
       }
       if (this.extendBuild(pointer)) return;
+      if (this.extendObject(pointer)) return;
       if (this.extendArea(pointer)) return;
       // Nothing is being built and no button is down: keep the ghost under
       // the cursor so the edge rule is legible before the first click. Touch
       // never reaches here, which is why the drag preview exists as well.
       if (this.panPointerId === undefined && this.isBuildArmed()) this.previewHover(pointer);
+      // The same, one tool over, and here the preview says something the other
+      // two cannot: a bed is 1x2, so the footprint rectangle is how the player
+      // learns which *two* tiles a press will claim before they press.
+      else if (this.panPointerId === undefined && this.isObjectArmed()) this.previewObjectHover(pointer);
       // The same, one tool over: a single-tile mark under the cursor, so the
       // armed area tool is visibly armed before the first press. It says less
       // than the wall ghost does -- there is no rule to teach -- but an armed
@@ -389,6 +445,7 @@ export class WorldScene extends Phaser.Scene {
     const finishPointer = (pointer: Phaser.Input.Pointer): void => {
       if (pointer.wasTouch) this.touchGestures.end(pointer.id);
       if (this.commitBuild(pointer)) return;
+      if (this.commitObject(pointer)) return;
       if (this.commitArea(pointer)) return;
       if (pointer.wasTouch) return;
       if (this.panPointerId !== pointer.id) return;
@@ -406,10 +463,12 @@ export class WorldScene extends Phaser.Scene {
       this.actors?.destroy();
       this.buildOverlay?.destroy();
       this.areaOverlay?.destroy();
+      this.objectOverlay?.destroy();
       this.tiles = undefined;
       this.actors = undefined;
       this.buildOverlay = undefined;
       this.areaOverlay = undefined;
+      this.objectOverlay = undefined;
     });
 
     // Art is not correctness: a batch that fails to load must leave a playable,
@@ -441,6 +500,12 @@ export class WorldScene extends Phaser.Scene {
       this.areaRect = undefined;
       this.hoveredTile = undefined;
       this.areaOverlay?.clear();
+    }
+    if (!this.isObjectArmed() && (this.objectPointerId !== undefined || this.objectRect !== undefined)) {
+      this.cancelObject();
+      this.objectRect = undefined;
+      this.hoveredObjectTile = undefined;
+      this.objectOverlay?.clear();
     }
 
     const nowSeconds = time / 1000;
@@ -507,6 +572,7 @@ export class WorldScene extends Phaser.Scene {
           // and leaving a tab disarms its tool -- and each is a no-op with
           // nothing to abandon, so `Escape` cannot cancel the wrong one.
           this.cancelBuild();
+          this.cancelObject();
           this.cancelArea();
           break;
         /*
@@ -586,7 +652,33 @@ export class WorldScene extends Phaser.Scene {
    * one gesture happens rather than two interleaved ones.
    */
   private isRoomArmed(): boolean {
-    return this.buildTool?.isArmed() !== true && this.roomTool?.isArmed() === true;
+    return (
+      this.buildTool?.isArmed() !== true &&
+      this.objectTool?.isArmed() !== true &&
+      this.roomTool?.isArmed() === true
+    );
+  }
+
+  /**
+   * Whether the world pointer places an object.
+   *
+   * Asked *after* `isBuildArmed()` and *before* `isRoomArmed()` at every call
+   * site, which is what keeps the three-way arbitration total. The build and
+   * object tools are both armed from the Build panel and the panel arms exactly
+   * one of them -- whichever the selected row needs -- so both being true at
+   * once cannot happen; if it ever did, the build tool wins and one gesture
+   * happens rather than two interleaved ones.
+   *
+   * A tool armed with nothing selected is not armed: `footprint()` answering
+   * `undefined` would leave the preview with no size to draw, and an armed tool
+   * that shows nothing reads as a broken world.
+   */
+  private isObjectArmed(): boolean {
+    return (
+      this.buildTool?.isArmed() !== true &&
+      this.objectTool?.isArmed() === true &&
+      this.objectTool.footprint() !== undefined
+    );
   }
 
   private activeTouchCount(): number {
@@ -731,6 +823,89 @@ export class WorldScene extends Phaser.Scene {
     this.areaRect = undefined;
     this.areaOverlay?.clear();
     this.roomTool?.target?.(undefined);
+  }
+
+  /**
+   * The press that will place an object.
+   *
+   * Unlike `beginArea` this keeps no press *point*: the gesture is one press on
+   * one tile (ADR 0028 decision 5), so there is no second corner for a drag to
+   * move and nothing to re-derive from. What a drag does instead is carry the
+   * ghost with the pointer -- `extendObject` -- so a player who presses one tile
+   * short can slide onto the right one before releasing, which is the forgiving
+   * behaviour and the one a touch player needs.
+   */
+  private beginObject(pointer: Phaser.Input.Pointer): void {
+    this.objectPointerId = pointer.id;
+    this.objectRect = this.footprintUnder(pointer);
+    this.paintObjectPreview();
+  }
+
+  /** True when the move belonged to an object gesture and the camera must not act on it. */
+  private extendObject(pointer: Phaser.Input.Pointer): boolean {
+    if (this.objectPointerId !== pointer.id) return false;
+    this.objectRect = this.footprintUnder(pointer);
+    this.paintObjectPreview();
+    return true;
+  }
+
+  /** True when the release completed an object gesture. */
+  private commitObject(pointer: Phaser.Input.Pointer): boolean {
+    if (this.objectPointerId !== pointer.id) return false;
+    const rect = this.objectRect;
+    this.objectPointerId = undefined;
+    this.objectRect = undefined;
+    this.hoveredObjectTile = undefined;
+    this.objectOverlay?.clear();
+    this.objectTool?.target?.(undefined);
+    // The *anchor*, not the rectangle: the tool and the command both take one
+    // tile, and the rectangle only ever existed so the player could see what a
+    // press would claim.
+    if (rect !== undefined) this.objectTool?.place({ tileX: rect.tileX, tileY: rect.tileY });
+    return true;
+  }
+
+  /**
+   * Abandons an object gesture without placing anything.
+   *
+   * The same three ways in as `cancelBuild` and `cancelArea`, the same early
+   * return for the same reason, and it leaves the pointer down -- so a player
+   * who presses `Escape` mid-drag and keeps dragging places nothing on release,
+   * because `commitObject` matches on an `objectPointerId` this has cleared.
+   */
+  private cancelObject(): void {
+    if (this.objectPointerId === undefined) return;
+    this.objectPointerId = undefined;
+    this.objectRect = undefined;
+    this.objectOverlay?.clear();
+    this.objectTool?.target?.(undefined);
+  }
+
+  private previewObjectHover(pointer: Phaser.Input.Pointer): void {
+    const rect = this.footprintUnder(pointer);
+    if (tileRectsEqual(rect, this.hoveredObjectTile)) return;
+    this.hoveredObjectTile = rect;
+    this.objectRect = rect;
+    this.paintObjectPreview();
+  }
+
+  /**
+   * The footprint rectangle under a pointer, or `undefined` when the tool has
+   * no size to draw.
+   *
+   * `undefined` is unreachable from every call site, because `isObjectArmed()`
+   * already requires a footprint -- and it is answered rather than asserted
+   * because the alternative is a non-null assertion inside a pointer handler.
+   */
+  private footprintUnder(pointer: Phaser.Input.Pointer): TileRect | undefined {
+    const footprint = this.objectTool?.footprint();
+    if (footprint === undefined) return undefined;
+    return footprintRectAt(pickTileAtWorld(this.worldPointOf(pointer)), footprint);
+  }
+
+  private paintObjectPreview(): void {
+    this.objectOverlay?.update(this.objectRect, this.objectTint?.());
+    this.objectTool?.target?.(this.objectRect);
   }
 
   private previewAreaHover(pointer: Phaser.Input.Pointer): void {

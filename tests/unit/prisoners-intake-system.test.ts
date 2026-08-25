@@ -191,8 +191,8 @@ describe('IntakeSystem: deterministic stage-by-stage pipeline', () => {
       const roomInstances = new RoomInstanceRegistry();
       // Registered in reverse id order on purpose: `allByRoomCatalogId`
       // sorts, so registration order must not reach the outcome.
-      roomInstances.register({ instanceId: 'shared-b', roomCatalogId: 'room.cell', anchorTile: { x: tileCoordinate(1), y: tileCoordinate(0) }, capacity: 2, objectCapabilities: ['sleep-surface'] });
-      roomInstances.register({ instanceId: 'shared-a', roomCatalogId: 'room.cell', anchorTile: { x: tileCoordinate(0), y: tileCoordinate(0) }, capacity: 2, objectCapabilities: ['sleep-surface'] });
+      roomInstances.register({ instanceId: 'shared-b', roomCatalogId: 'room.cell', anchorTile: { x: tileCoordinate(1), y: tileCoordinate(0) }, residentCapacity: 2, concurrentUseCapacity: 2, objectCapabilities: ['sleep-surface'] });
+      roomInstances.register({ instanceId: 'shared-a', roomCatalogId: 'room.cell', anchorTile: { x: tileCoordinate(0), y: tileCoordinate(0) }, residentCapacity: 2, concurrentUseCapacity: 2, objectCapabilities: ['sleep-surface'] });
       const intakeSystem = new IntakeSystem(store, query, records, coldState, roomInstances);
 
       /** Puts a prisoner of a chosen risk tier into a cell, the way a completed intake would have. */
@@ -260,15 +260,16 @@ describe('IntakeSystem: deterministic stage-by-stage pipeline', () => {
       }
 
       // Zoning worked. It is what a zoned room *holds* that is the problem.
-      expect(cell.instance.capacity).toBe(0);
+      expect(cell.instance.residentCapacity).toBe(0);
+      expect(cell.instance.concurrentUseCapacity).toBe(0);
       expect(cell.instance.objectCapabilities).toEqual([]);
-      expect(solitary.instance.capacity).toBe(0);
+      expect(solitary.instance.residentCapacity).toBe(0);
       expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.cell')).toHaveLength(1);
 
       // So both queries the allocator has come back empty, with or without
       // the capability filter.
-      expect(runtime.prisoners.roomInstances.findAvailable('room.cell')).toBeUndefined();
-      expect(runtime.prisoners.roomInstances.findAvailable('room.cell', 'sleep-surface')).toBeUndefined();
+      expect(runtime.prisoners.roomInstances.findAvailableResidence('room.cell')).toBeUndefined();
+      expect(runtime.prisoners.roomInstances.findAvailableResidence('room.cell', 'sleep-surface')).toBeUndefined();
       expect(
         runtime.prisoners.roomInstances.findBestAvailable('room.cell', () => 0, 'sleep-surface'),
       ).toBeUndefined();
@@ -309,7 +310,7 @@ describe('IntakeSystem: deterministic stage-by-stage pipeline', () => {
       // What the blind query still answers, so the difference is asserted
       // rather than described: 'shared-a' sorts first and has a free bed, and
       // an occupancy count is the only question it asks.
-      expect(prison.roomInstances.findAvailable('room.cell', 'sleep-surface')?.instanceId).toBe('shared-a');
+      expect(prison.roomInstances.findAvailableResidence('room.cell', 'sleep-surface')?.instanceId).toBe('shared-a');
 
       const arrival = prison.admit(LOW_RISK);
       const kernel = makeKernel();

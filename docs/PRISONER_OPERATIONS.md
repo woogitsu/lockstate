@@ -153,13 +153,32 @@ topology/zoning pair with a mocked body, and #123 item 2 deleted it, leaving
 `room-instance-registry.ts`'s
 `RoomInstanceRegistry` is the minimal, real (not mocked) layer this issue
 needs to make cell/room assignment meaningful: instances are registered
-explicitly (id, #23 room-catalog id, anchor tile, capacity, the object
-capabilities present), with occupancy tracked and `findAvailable` picking
-the first (by sorted instance id) instance with free capacity and, if
-required, the right capability. This is an explicit, stated scope
-assumption (AGENTS.md: "state assumptions when requirements are
-underspecified") -- building the real object-placement/instance-discovery
-system is construction/rooms work, not this issue's.
+explicitly (id, #23 room-catalog id, anchor tile, the zoned rectangle), with
+occupancy tracked and the two `findAvailable*` methods picking the first (by
+sorted instance id) instance with free capacity of the kind being asked about
+and, if required, the right capability.
+
+**The capacity is no longer registered, and that used to be a stated scope
+assumption.** This paragraph read "instances are registered explicitly (id,
+room-catalog id, anchor tile, capacity, the object capabilities present)" and
+went on to call building the real object-placement system "construction/rooms
+work, not this issue's". That work is
+[ADR 0028](adr/0028-object-placement-and-derived-room-capacity.md) and its
+phase 1 has landed: `PlacedObjectRegistry` holds the objects,
+`RoomCapacityResolver` derives a room's two capacities and its capability list
+from the ones inside its rectangle, and nothing authors any of the three.
+
+**Two capacities, not one** (ADR 0028 decision 3).
+`findAvailableResidence(roomCatalogId, capability?)` gates on
+`residentCapacity` -- the summed footprint width of the sleep surfaces in the
+room -- and is what `IntakeSystem` asks before a prisoner *lives* somewhere.
+`findAvailableForUse` gates on `concurrentUseCapacity` -- the summed footprint
+width of every object -- and is what `ActionSystem` asks before a prisoner
+*uses* a room now. A canteen that seats fourteen houses nobody, and the single
+field could not say both. Note the honest limit that comes with it: nothing in
+`src/` adds an actor to a non-accommodation room's occupant set, so
+`concurrentUseCapacity` is a correct ceiling on a number that is always zero
+until phase 6 makes `ActionSystem` claim a place.
 
 **Who registers an instance (#261).** For as long as `ZoneRoom` had a no-op
 consumer, nothing in `src/` registered one except the *restore* path -- so
@@ -169,20 +188,32 @@ create, and the status strip's `Rooms` count was structurally zero.
 `runtime/session-commands.ts`, is the registrar for a live session: it paints
 the world's per-tile zoning plane with the room catalog's `numericId` and
 registers one instance anchored at the zoned rectangle's top-left tile, or
-refuses the request (unowned land, an overlap, an unknown room type) with a
-reason it keeps in a bounded window. It registers that instance with
-**capacity `0` and no object capabilities**, because object placement still
-does not exist and an empty rectangle accommodates nobody -- that module's
-header argues why this is a measurement rather than a placeholder, and #261
-records the content addition a usable capacity would need.
+refuses the request (unowned land, an overlap, an unknown room type, a
+rectangle below the room's authored minimum) with a reason it keeps in a
+bounded window. It registers that instance with **zero capacity and no object
+capabilities and then resolves it immediately**, so a rectangle drawn around a
+bed that was already standing there is zoned with that bed's capacity rather
+than with zero.
 
-That zero has one consequence worth stating next to the intake stage machine
-below: a zoned cell is a *matching* instance that can never free up, so
+**A zoned cell with nothing in it still resolves to zero, and that is now a
+state the player can leave.** This section used to say the zero meant "a zoned
+cell is a *matching* instance that can never free up, so
 `accommodation-assignment` keeps retrying against it rather than failing
-fast. The rule itself is unchanged -- it fails only when no instance of the
-required type exists at all -- but its stated justification, that a real
-prison holds an arriving prisoner because capacity may return, does not hold
-for a room with no beds in it.
+fast", and that the rule's justification -- a real prison holds an arriving
+prisoner because capacity may return -- "does not hold for a room with no beds
+in it". It holds now: capacity *does* return, when the player places a bed, and
+the arrival completes on the next scheduled intake tick with no change to the
+stage machine at all. The retrying wait is the correct behaviour for the
+in-between state rather than a permanent trap.
+
+**What a placement costs and how long it takes.** An object is a
+`BuildableDefinition` with a `placesObjectId`, ordered through
+`ConstructionSystem` exactly as a wall is (ADR 0028 decision 4): it waits for
+materials `ProcurementSystem` delivered, advances on the construction
+schedule, and the object appears when the order completes. Measured on a fresh
+session: buy one plank at tick 1, zone at tick 2, place at tick 3, and the bed
+is standing at tick 150 -- 100 ticks of delivery delay plus three progress
+ticks on a ten-tick schedule.
 
 **Both halves of that are reachable, and the difference between them is where
 #261 step 4 drew its line.** An `AdmitPrisoner` command exists,

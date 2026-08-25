@@ -321,6 +321,7 @@ const BUILD_MODEL: HudBuildViewModel = {
       definitionId: 'wall-brick',
       labelKey: HUD_MESSAGE_KEY.buildableWallBrick,
       occupiesEdge: true,
+      placesObject: false,
       // The same figures `src/main.ts` projects for this buildable: two
       // bricks per wall at 40 minor units each, bounded by the simulation's
       // own `MAX_PURCHASE_QUANTITY`. Written out rather than imported for the
@@ -339,6 +340,11 @@ const BUILD_MODEL: HudBuildViewModel = {
       definitionId: 'door-wooden',
       labelKey: HUD_MESSAGE_KEY.buildableDoorWooden,
       occupiesEdge: false,
+      // `false`, and the one row in the catalogue where that is worth a line:
+      // a door is `category: 'object'` and sits on no edge, and it still places
+      // no object (`edgeNumericIdFor` records why ADR 0028 phase 1 leaves it
+      // exactly as it found it). So the two flags are not opposites.
+      placesObject: false,
       material: {
         itemId: 'item.wood-plank',
         labelKey: 'item.wood-plank.name',
@@ -385,6 +391,10 @@ function buildModelWithCatalogueOf(count: number): HudBuildViewModel {
       definitionId: index === 0 ? 'wall-brick' : index === 1 ? 'door-wooden' : `buildable-${index}`,
       labelKey: index % 2 === 0 ? HUD_MESSAGE_KEY.buildableWallBrick : HUD_MESSAGE_KEY.buildableDoorWooden,
       occupiesEdge: index % 2 === 0,
+      // Every row is a wall route here: what this function varies is the row
+      // *count*, and a mixture of gestures would make the measurement about
+      // something else.
+      placesObject: false,
       // The first two entries are the real ones and carry the real priced
       // material, so the panel this measures has the controls the
       // application's does -- the buy disclosure costs no height either way,

@@ -140,6 +140,18 @@ const UNLABELLED: readonly { readonly sourceFile: string; readonly declaration: 
       'Why `RoomZoningService.zone` refused a `ZoneRoom` -- unowned land, an overlap, a rectangle no room can be. It is the zoning counterpart of `BuildOrder.failReason`, which is likewise a stable id and likewise carries no key: #207 settled that a refusal a player sees is the UI layer\'s own `hud.refusal.*` string naming the outcome, never the simulation\'s code rendered verbatim. It never leaves the simulation under this spelling: `createSessionCommandHandler` maps every member onto a `RefusalReason` through an exhaustive `Record` before anything is published, and what the player reads is one authored `hud.alert.refusal.zone.*` sentence per reason rather than a two-word label this table could hold -- see the `REFUSAL_REASONS` entry above for that argument in full. Until #261 step 2 built the route this entry said "nothing projects this one at all yet -- it reaches `recentRefusals()` and stops there"; the reason it reaches now is mapped, and the window it also still fills is diagnosis.',
   },
   {
+    sourceFile: 'src/simulation/objects/object-placement-service.ts',
+    declaration: 'PlaceObjectRefusalReason',
+    reason:
+      "Why `ObjectPlacementService.place` refused a `PlaceObject` -- a tile something is already standing on, a tile in no room, land the player does not own. Exempt for exactly the reason `ZoneRoomRefusalReason` and `UnzoneRoomRefusalReason` below it are, and it is the same argument one command over: `createSessionCommandHandler` maps every member onto a `RefusalReason` through an exhaustive `Record` before anything is published, so this spelling never leaves the simulation, and what the player reads is one authored `hud.alert.refusal.place-object.*` sentence per reason rather than a two-word label this table could hold. Three of the seven -- `out-of-bounds`, `unowned-land`, `duplicate-order` -- are spellings the build and purchase vocabularies also use, which is why the namespace exists and why a shared label would be wrong for at least two of the three commands.",
+  },
+  {
+    sourceFile: 'src/simulation/objects/placed-object.ts',
+    declaration: 'ObjectOrientation',
+    reason:
+      "Quarter turns clockwise from the footprint as content authored it: `0 | 1 | 2 | 3`. Not a label and not a projection -- it is read by `orientedFootprint` to decide which tiles a placement reserves and by the renderer to decide which way to draw, and neither of those is text. Nothing in `src/` writes anything but `0` yet, because the rotate control ADR 0028 decision 5 describes needs an `ACTION_IDS` member phase 1 does not ship; a label for a value no player can produce and no panel can show would be a caption for a field rather than for anything in the prison. If a rotation ever becomes something the interface *states* rather than something it draws, that is a HUD string with its own key, exactly as `BUILD_EDGES` gets one through `deriveSimulationMessageKey('build-edge', ...)`.",
+  },
+  {
     sourceFile: 'src/simulation/rooms/zoning.ts',
     declaration: 'UnzoneRoomRefusalReason',
     reason:
