@@ -12,8 +12,26 @@ export interface ChunkTopology {
   readonly tileRegions: Uint16Array;
 }
 
+/**
+ * `GlobalTopologyId` is a **category 2 derived value** under
+ * [ADR 0012](../../../docs/adr/0012-derived-identifier-reproducibility.md):
+ * a label for a current property of world geometry, recomputed whenever that
+ * geometry changes. It is therefore computed as a pure function of the
+ * geometry it describes, is never carried in a snapshot, and no consumer may
+ * treat it as stable across recomputes, persist it, hash it or compare it
+ * across a save boundary.
+ *
+ * The counter that mints ids is deliberately **local to one recompute**
+ * (`recomputeGlobalTopology`) rather than instance state. An instance-level
+ * counter is the exact failure ADR 0012 exists to name: it made the id a
+ * function of how many times geometry had changed since the manager was
+ * constructed, so a manager that had lived through edits and a manager
+ * rebuilt over the identical world disagreed -- and disagreed by
+ * *association*, not merely by offset, with the same integer naming
+ * different regions in the two. Pinned by
+ * `tests/determinism/iteration-order.test.ts`.
+ */
 export class TopologyManager {
-  private nextGlobalId: GlobalTopologyId = 1;
   private chunkTopologies = new Map<string, ChunkTopology>();
   
   // Maps a global room ID to the set of chunk regions that compose it
@@ -174,19 +192,31 @@ export class TopologyManager {
     // Now find connected components
     this.tileToGlobalId.clear();
     const visited = new Set<string>();
-    
-    // Canonical seed order (sorted `chunkKey:localRegionId`), never `Set`
-    // insertion order. `allNodes` is populated by walking
-    // `this.chunkTopologies`, whose insertion order is the order chunks
-    // happened to be processed -- so without this sort the *values* handed
-    // out by `nextGlobalId++` depend on chunk-processing history rather
-    // than on world geometry, and two managers built over an identical
-    // world could disagree. Pinned by
-    // `tests/determinism/iteration-order.test.ts`.
+
+    // The counter is scoped to this recompute, never to the manager. Two
+    // things have to hold together for an id to be a function of geometry
+    // rather than of history, and each covers a failure the other does not:
+    //
+    // 1. Canonical seed order (sorted `chunkKey:localRegionId`), never `Set`
+    //    insertion order. `allNodes` is populated by walking
+    //    `this.chunkTopologies`, whose insertion order is the order chunks
+    //    happened to be processed -- so without this sort the values handed
+    //    out below would depend on chunk-processing order within a single
+    //    recompute.
+    // 2. Starting from 1 every time. An instance-level counter survived the
+    //    recompute that used it, so the ids a world ended up with depended on
+    //    how many times its geometry had changed. Mirrors the sibling
+    //    connectivity subsystem, whose `nextRegionId` is function-local for
+    //    the same reason (`../navigation/region-graph.ts`).
+    //
+    // Both are pinned by `tests/determinism/iteration-order.test.ts`.
+    let nextGlobalId: GlobalTopologyId = 1;
+
     for (const node of [...allNodes].sort()) {
       if (visited.has(node)) continue;
 
-      const globalId = this.nextGlobalId++;
+      const globalId = nextGlobalId;
+      nextGlobalId += 1;
       const stack = [node];
       
       while (stack.length > 0) {

@@ -403,6 +403,16 @@ decision about what to build next.
     (per prisoner-day, accrued per occupied place) and no system accrues it,
     so the balance only ever goes down. Nothing wage-related may be rendered
     as a live figure; it is still a content hook for a future issue.
+
+    **And that one credit is unreachable from a session** (#285): no command
+    in `simulationCommandSchema` cancels a purchase, so nothing in `src/`
+    calls `ProcurementSystem.cancel` and the balance a player can observe only
+    ever goes down. That is not a loss of money — a purchase buys stock, an
+    undone build order returns the stock it had allocated (#97), and the two
+    together conserve value exactly, which
+    `tests/integration/economy-money-conservation.test.ts` asserts in integer
+    minor units over the sequences a player can produce. What is missing is a
+    *surface*, and which surface is #285's open decision.
 22. **`'on-search'` conflates two duties.** A guard pulled onto a
     contraband search and a guard dispatched to an incident share one
     deployment phase, and neither `SearchSystem` nor
