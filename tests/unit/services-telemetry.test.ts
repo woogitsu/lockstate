@@ -3,6 +3,8 @@ import type { KeyValueStore } from '../../src/shared/key-value-store';
 import { SENSITIVE_VALUE_PATTERNS } from '../../src/services/telemetry/redaction';
 import {
   BatchingTelemetrySink,
+  MAX_STACK_FRAMES,
+  MAX_TELEMETRY_STRING_LENGTH,
   MemoryTelemetryTransport,
   REDACTED,
   TELEMETRY_CONSENT_VERSION,
@@ -351,6 +353,48 @@ describe('crash diagnostics', () => {
     expect(frames[0]).toBe('tickWorld(index-abc123.js:1024:17)');
     expect(frames.join(' ')).not.toContain('/home/matt');
     expect(frames.join(' ')).not.toContain('lockstate.io');
+  });
+
+  it('cuts a deep stack to a bounded number of frames, and reports the bound it applied', () => {
+    /*
+     * Issue #264 S14: `MAX_STACK_FRAMES` could be raised from 12 to 100,000
+     * with the whole suite green. The bound is not a privacy control -- the
+     * joined `frames` string is truncated by `redactText` either way -- it is a
+     * work bound and an attribute bound. A crash handler is the worst place to
+     * run unbounded work: a stack-overflow crash arrives with tens of thousands
+     * of frames, each of which costs a regex reduction plus a redaction pass,
+     * and `frameCount` then reports the recursion depth as a number nothing
+     * bounds.
+     *
+     * `DEEP_STACK_FRAMES` is a literal and must stay one. Deriving it from
+     * `MAX_STACK_FRAMES` -- the obvious-looking `MAX_STACK_FRAMES + 5` -- makes
+     * every assertion here true for *any* bound, which is the unfalsifiable
+     * shape this whole issue is about: at a bound of 100,000 the fixture would
+     * simply grow to 100,005 frames and the cut would still be "the bound".
+     */
+    const DEEP_STACK_FRAMES = 200;
+    expect(MAX_STACK_FRAMES, 'the fixture must be deeper than the bound it is testing').toBeLessThan(
+      DEEP_STACK_FRAMES,
+    );
+
+    const stack = [
+      'RangeError: Maximum call stack size exceeded',
+      ...Array.from(
+        { length: DEEP_STACK_FRAMES },
+        (_unused, index) => `    at recurse (https://lockstate.io/assets/index-abc123.js:${index + 1}:7)`,
+      ),
+    ].join('\n');
+
+    expect(reduceStack(stack)).toHaveLength(MAX_STACK_FRAMES);
+
+    const attributes = buildCrashDiagnosticAttributes(
+      { name: 'RangeError', message: 'Maximum call stack size exceeded', stack },
+      { area: 'renderer' },
+    );
+    expect(attributes.frameCount).toBe(MAX_STACK_FRAMES);
+    // And the attribute that carries them stays inside what the envelope
+    // schema accepts, so a deep stack is never the reason an event is dropped.
+    expect(String(attributes.frames).length).toBeLessThanOrEqual(MAX_TELEMETRY_STRING_LENGTH);
   });
 
   it('builds diagnostic attributes without a save payload or account identity', () => {
