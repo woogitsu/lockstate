@@ -112,6 +112,95 @@ describe('global topology ids are derived from world geometry, not from chunk-pr
     // global region, so there was an id-assignment choice to get wrong.
     expect(new Set(inOrder).size).toBeGreaterThan(1);
   });
+
+  /**
+   * The test above varies only chunk order *within one recompute*, so it
+   * cannot see the second half of the property: every variant it builds gets
+   * a fresh `TopologyManager`, and a fresh manager starts its counter at 1
+   * however the counter is scoped. Issue #112 is what that blind spot hid --
+   * the counter was instance state that no recompute reset, so the ids a
+   * world ended up with were a function of how many times its geometry had
+   * changed rather than of the geometry.
+   *
+   * These pin the missing axis: identical geometry reached by different
+   * recompute histories, and a manager rebuilt over a world another manager
+   * has been living on (the restore path, where `TopologyManager` is
+   * reconstructed from scratch while the world is not).
+   */
+  function seal(world: SparseWorld, sealed: boolean): void {
+    for (let y = 0; y < 8; y += 1) world.setLeftEdge(TILE(4, y), sealed ? 1 : 0);
+  }
+
+  function openFourChunkWorld(): SparseWorld {
+    const world = fourChunkWorld();
+    seal(world, false);
+    return world;
+  }
+
+  function readIds(manager: TopologyManager): readonly number[] {
+    const ids: number[] = [];
+    for (let y = 0; y < 8; y += 1) for (let x = 0; x < 8; x += 1) ids.push(manager.getTopologyId(TILE(x, y)));
+    return ids;
+  }
+
+  function loadedChunks(world: SparseWorld) {
+    return chunkPositions().map((position) => world.getChunk(position)!);
+  }
+
+  it('assigns the same ids whether the geometry was reached in one recompute or four', () => {
+    const direct = fourChunkWorld();
+    const directManager = new TopologyManager(direct);
+    directManager.update(loadedChunks(direct));
+
+    // Same end geometry, reached the long way: open -> sealed -> open ->
+    // sealed, on one manager, so four recomputes have run against it.
+    const lived = openFourChunkWorld();
+    const livedManager = new TopologyManager(lived);
+    livedManager.update(loadedChunks(lived));
+    seal(lived, true);
+    livedManager.update(loadedChunks(lived));
+    seal(lived, false);
+    livedManager.update(loadedChunks(lived));
+    seal(lived, true);
+    livedManager.update(loadedChunks(lived));
+
+    // The two worlds really are the same world, edge by edge -- otherwise
+    // this would be pinning a geometry difference and calling it determinism.
+    for (let y = 0; y < 8; y += 1) {
+      for (let x = 0; x < 9; x += 1) {
+        expect(lived.getLeftEdge(TILE(x, y))).toBe(direct.getLeftEdge(TILE(x, y)));
+        expect(lived.getTopEdge(TILE(x, y))).toBe(direct.getTopEdge(TILE(x, y)));
+      }
+    }
+
+    expect(readIds(livedManager)).toEqual(readIds(directManager));
+
+    // Non-vacuous in the same way as above, and additionally: the ids must
+    // start from 1, because "a function of the geometry" is what makes a
+    // rebuilt manager agree with a lived one at all.
+    expect([...new Set(readIds(directManager))].sort()).toEqual([1, 2]);
+  });
+
+  it('agrees with a manager rebuilt over a world an older manager has been living on', () => {
+    const world = openFourChunkWorld();
+    const lived = new TopologyManager(world);
+    lived.update(loadedChunks(world));
+    seal(world, true);
+    lived.update(loadedChunks(world));
+
+    const rebuilt = new TopologyManager(world);
+    rebuilt.update(loadedChunks(world));
+
+    // Not merely a shifted numbering. Before the fix the lived manager
+    // reported left=2 / right=3 and the rebuilt one left=1 / right=2, so the
+    // integer 2 named the left half in one and the right half in the other --
+    // an association defect, which is why asserting on the whole id vector
+    // rather than on its shape is the point of this test.
+    expect(rebuilt.getTopologyId(TILE(0, 0))).toBe(lived.getTopologyId(TILE(0, 0)));
+    expect(rebuilt.getTopologyId(TILE(7, 0))).toBe(lived.getTopologyId(TILE(7, 0)));
+    expect(readIds(rebuilt)).toEqual(readIds(lived));
+    expect(new Set(readIds(rebuilt)).size).toBeGreaterThan(1);
+  });
 });
 
 describe('search jobs and room instances are ordered canonically, not by registration history', () => {

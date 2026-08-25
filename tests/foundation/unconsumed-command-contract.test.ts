@@ -18,7 +18,8 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  *
  * ## What it found on the first run, and what it has moved since
  *
- * Six commands are declared. **One had a producer.**
+ * Six commands were declared. **One had a producer.** (There are seven now:
+ * `UnzoneRoom` arrived with the Rooms tab, and arrived with a producer.)
  *
  * `src/main.ts` dispatched `{ type: 'PlaceBuildOrder', ... }` from the
  * `'place-build-order'` HUD intent. `CancelBuildOrder`, `ZoneRoom`,
@@ -51,9 +52,19 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  * directions by design, which is why closing #89 had to change this file: a
  * record of unreachability cannot outlive the fact.
  *
- * So `CancelBuildOrder` and `ZoneRoom` are what the list below still holds,
- * and the count is measured, not carried: four producers all in `src/main.ts`,
- * two commands with none.
+ * `ZoneRoom` is the one this gate moved most recently, and it had been on the
+ * list longest. Its consumer stopped being a no-op in #261's zoning step, so
+ * what was missing was only the producer -- and the entry recorded the reason in
+ * the terms ADR 0022 was then written to settle: *"every member of `HudIntent`
+ * is a tab, a panel, the clock, a build order, the build tool or the undo pair,
+ * and none is about a room."* The Rooms tab is the producer, `HudIntent` now
+ * declares a `zone-room` member, and the entry came out of the list below in the
+ * same change. `UnzoneRoom` arrived in that change *with* a producer and was
+ * never on the list at all, which is the only way a new command should land.
+ *
+ * So `CancelBuildOrder` is the whole of what the list below still holds, and
+ * the count is measured, not carried: six producers all in `src/main.ts`, one
+ * command with none.
  *
  * ## What counts as a producer
  *
@@ -104,8 +115,6 @@ const ROOT = resolve(__dirname, '../..');
 const AWAITING_PRODUCER: Readonly<Record<string, string>> = {
   CancelBuildOrder:
     'Handled at `construction/handler.ts` and reachable from `ConstructionSystem.cancelOrder`, but nothing in the application constructs the command. The Build panel places an order and offers no way to withdraw a *particular* one: since #261 a misplaced run can be taken back whole, by `KeyZ`, because undo pops the last transaction -- which is not the same control. Cancelling the third order of a twelve-segment run still needs a per-order control on the panel, which is #174 territory since that panel is already over its height budget.',
-  ZoneRoom:
-    'Declared, schema-bounded and handled, with no producer. Its consumer stopped being a no-op in #261\'s zoning step -- `RoomZoningService` paints the world\'s zoning plane and registers a room instance, which is what finally moves the status strip\'s `Rooms` count -- so what is missing here is only the producer. Room zoning still has no interface at all: every member of `HudIntent` is a tab, a panel, the clock, a build order, a materials purchase, the build tool or the undo pair, and none is about a room, so the whole zoning vocabulary is reachable only from a test. This is the command shape a room-designation tool would use when one exists.',
 };
 
 function collectTypeScriptFiles(directory: string): readonly string[] {
@@ -147,20 +156,27 @@ describe('every declared simulation command either has a producer or is accounte
     // loud. A pattern that matched nothing, or a stripper that blanked every
     // file, would do the same in a way the file count cannot see, so the
     // positive control names every command that genuinely has a producer and
-    // where it is -- all four in `src/main.ts`, which is the composition root
+    // where it is -- all six in `src/main.ts`, which is the composition root
     // and the only place in `src/` that builds a command object.
     expect(producerSources.length).toBeGreaterThan(50);
-    expect(COMMAND_TYPES.length).toBe(6);
+    expect(COMMAND_TYPES.length).toBe(7);
 
     expect(producersOf('PlaceBuildOrder')).toEqual(['src/main.ts']);
     expect(producersOf('PurchaseMaterials')).toEqual(['src/main.ts']);
     expect(producersOf('Redo')).toEqual(['src/main.ts']);
+    // The two the Rooms tab added, asserted by name rather than only by the
+    // count: a producer that had drifted out of the composition root would
+    // still keep the count green.
+    expect(producersOf('ZoneRoom')).toEqual(['src/main.ts']);
+    expect(producersOf('UnzoneRoom')).toEqual(['src/main.ts']);
     const main = producerSources.find((source) => source.where === 'src/main.ts');
     expect(main, 'the production producers of a simulation command are no longer where this gate looks for them').toBeDefined();
     expect(main!.text).toContain(`type: 'PlaceBuildOrder'`);
     expect(main!.text).toContain(`type: 'PurchaseMaterials'`);
     expect(main!.text).toContain(`type: 'Undo'`);
     expect(main!.text).toContain(`type: 'Redo'`);
+    expect(main!.text).toContain(`type: 'ZoneRoom'`);
+    expect(main!.text).toContain(`type: 'UnzoneRoom'`);
   });
 
   it('separates producing from consuming, so a handler branch is not mistaken for a dispatch', () => {
@@ -222,7 +238,7 @@ describe('every declared simulation command either has a producer or is accounte
     ).toEqual([]);
   });
 
-  it('measures four produced and two unproduced, which is where #89 left the command surface', () => {
+  it('measures six produced and one unproduced, which is where the Rooms tab left the command surface', () => {
     // The denominator, stated so the gate reports a fact rather than only
     // guarding one, and exact in both directions. A command that quietly
     // stopped being reachable would otherwise only have to be added to the
@@ -231,11 +247,12 @@ describe('every declared simulation command either has a producer or is accounte
     // application.
     //
     // It read five and one on the first run, three and three once #261 gave
-    // the undo pair its keys, and two and four on #89's branch before that
-    // merged in. Both numbers move in the same change as a producer, which is
-    // the point of asserting the count as well as the list: neither can be
-    // edited alone and stay green.
-    expect(unproducedTypes.length).toBe(2);
-    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(4);
+    // the undo pair its keys, two and four on #89's branch before that merged
+    // in, and one and six once the Rooms tab gave `ZoneRoom` a producer and
+    // brought `UnzoneRoom` with one. Both numbers move in the same change as a
+    // producer, which is the point of asserting the count as well as the list:
+    // neither can be edited alone and stay green.
+    expect(unproducedTypes.length).toBe(1);
+    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(6);
   });
 });

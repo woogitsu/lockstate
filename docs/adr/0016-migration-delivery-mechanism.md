@@ -2,7 +2,7 @@
 
 ## Status
 
-**Proposed — pending human approval.** Not accepted.
+**Accepted.** The §1 mechanism was already live when this was written; this accepts it retroactively.
 
 The owner has asked for migrations to be applied automatically rather than
 by hand. That preference is taken as given and is **not** what this ADR asks
