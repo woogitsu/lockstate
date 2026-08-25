@@ -667,3 +667,19 @@ decision about what to build next.
     currently bound to a control that was pressed (`data-action`,
     `aria-describedby`), and a refusal decided several ticks later has no
     control to attach to.
+
+    **Since #187 this gap has two producers, and the second raises the stakes
+    on the placement half.** An uncorrelated `protocol/error` now paints a row
+    here too — the worker rejecting a message it could not decode, the worker's
+    own `internal-error` from inside the tick loop, and the main thread's
+    inability to read a worker reply (`src/ui/simulation-alerts.ts`,
+    [ADR 0024](./adr/0024-protocol-fault-recoverability.md)). Both halves of
+    this gap apply to it unchanged: a fault row cannot be dismissed either, and
+    it carries no location because a protocol fault has none. What is different
+    is what a missed row costs. A missed refusal means the player does not learn
+    why one wall was not built; a missed `danger` fault means they do not learn
+    that the interface can no longer say what the simulation is doing. ADR 0024
+    deliberately does not decide that placement question here — deciding a HUD
+    question on the back of a worker one is how the folded row got its second
+    producer without anyone re-asking whether folding is right — but it names
+    this gap as where the answer belongs.

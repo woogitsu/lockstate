@@ -336,6 +336,55 @@ deployment document already carries it.
 
 ---
 
+## 7. ADR 0024 — Proposed, and reversible in one line
+
+Added after this file was re-anchored, by the change that implements it. It sits
+in neither of the two groups above: unlike 0022 and 0023 its decision is live on
+`main` the moment its own change merges, and unlike the six flipped on
+2026-08-25 that is not drift — the ADR and the code were written together, which
+is the case `docs/adr/README.md` covers with "not binding, whether or not code
+already implements it".
+
+**Declared** (`docs/adr/0024-protocol-fault-recoverability.md:5`):
+
+```
+**Proposed — pending human approval.** Not accepted.
+```
+
+**What is live.** `src/simulation/worker/worker.ts` faults a decode failure with
+`{ recoverable: true }`, and `src/ui/simulation-alerts.ts` paints an uncorrelated
+`protocol/error` as an alert row.
+
+**What makes it the cheapest entry ever to appear in this file.** Reversing it is
+one argument at one call site. No save format, no SQL, no live database
+mechanism, no persisted field. The reversal target is named in the ADR, and so
+are the tests that would go with it. A "no" here costs a revert, not a migration.
+
+**What a "yes" commits to.** That a message the worker rejected before dispatch
+does not end the player's session, and that the fault reaches the player rather
+than only the console. It settles issue #187 finding 1 and nothing wider.
+
+**The two lines**, in `docs/adr/0024-protocol-fault-recoverability.md:5`:
+
+```
+**Accepted.**
+```
+
+and in `docs/adr/README.md`:
+
+```
+| [0024](./0024-protocol-fault-recoverability.md) | Which protocol faults end a session, and who is told | Accepted |
+```
+
+**One thing moves with it, and only with it.** Accepting 0024 deletes the
+implementation note in `docs/adr/0006-simulation-worker-adapter.md` ("a protocol
+decode error no longer reaches state 5") and narrows ADR 0006 state 5's clause to
+an unhandled exception. That note exists precisely so an Accepted ADR is not
+amended on a Proposed one's authority, and it is the only thing in the corpus
+that has to move when this status does.
+
+---
+
 ## How to act on a future entry, mechanically
 
 Each flip is **two lines, in one commit**, and the suite enforces the pairing:

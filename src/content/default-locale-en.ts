@@ -196,6 +196,42 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.alert.refusal.unzone.nothing-to-remove': 'Nothing was removed — there is no room in that area.',
   'hud.alert.refusal.unzone.room-occupied': 'Nothing was removed — somebody is using that room.',
 
+  // A protocol fault nobody else reads, in the alerts list (#187).
+  //
+  // Two producers on opposite sides of the boundary raise these: the worker
+  // rejecting a message the interface sent, and the interface rejecting a
+  // message the worker sent. Each sentence is written to be true of both --
+  // it says which message was rejected and why, never which end rejected it
+  // -- because the direction is not something a player can act on and the
+  // severity of the row already carries the part that is. See
+  // `PROTOCOL_FAULT_LABEL_KEYS` in `src/ui/simulation-alerts.ts`.
+  //
+  // Namespaced `hud.alert.fault.*` beside `hud.alert.refusal.*` and not under
+  // it: a refusal is the prison declining to carry out an order it received,
+  // a fault is the order never arriving intact, and the two are different
+  // things to be told even when they follow the same button press.
+  //
+  // Every one of the twelve `ProtocolFaultCode` members has an entry, because
+  // the table that reads them is exhaustive over the enum. Not all twelve can
+  // reach this list today -- a fault that answers a request is reported by
+  // the caller that made it and is deliberately not painted here -- and the
+  // entries exist anyway rather than being trimmed to the reachable set: a
+  // code that gains an uncorrelated emitter would otherwise ship as its own
+  // raw dotted key, which is precisely the failure ADR 0011 and
+  // `tests/foundation/localization-key-completeness.test.ts` exist to stop.
+  'hud.alert.fault.invalid-message': 'A simulation message was rejected — it was not a message this game understands.',
+  'hud.alert.fault.unsupported-protocol-version': 'A simulation message was rejected — it was written for a different version of the game.',
+  'hud.alert.fault.unknown-message-kind': 'A simulation message was rejected — this build does not know that kind of message.',
+  'hud.alert.fault.invalid-payload': 'A simulation message was rejected — its contents were not what that message must carry.',
+  'hud.alert.fault.not-initialized': 'A simulation request was refused — no prison is loaded yet.',
+  'hud.alert.fault.already-initialized': 'A simulation request was refused — this session already has a prison loaded.',
+  'hud.alert.fault.duplicate-message': 'A command was refused — it had already been sent.',
+  'hud.alert.fault.sequence-gap': 'A command was refused — a command sent before it never arrived.',
+  'hud.alert.fault.invalid-state': 'A simulation request was refused — the simulation cannot do that right now.',
+  'hud.alert.fault.snapshot-incompatible': 'The save could not be loaded — this build does not understand its format.',
+  'hud.alert.fault.shutting-down': 'A simulation request was refused — the session is shutting down.',
+  'hud.alert.fault.internal-error': 'The simulation hit an internal error.',
+
   // A browser that cannot start a Worker gets a page with no simulation
   // behind it. Saying so is the whole point: the failure was previously
   // reported to the console only, so the player saw an empty world and had
