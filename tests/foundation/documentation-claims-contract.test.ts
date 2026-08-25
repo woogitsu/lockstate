@@ -203,11 +203,10 @@ describe('docs/ARCHITECTURE.md: what the persistence layer actually does', () =>
     ).toEqual([]);
   });
 
-  it('is the only thing that credits the treasury, as the HUD projections gap list claims', async () => {
+  it('names every thing that credits the treasury, as the HUD projections gap list claims', async () => {
     /*
-     * The claim being pinned, from `docs/HUD_PROJECTIONS.md`'s gap 21: that
-     * the only thing crediting the treasury is a cancelled purchase's refund,
-     * and that there is therefore no income line.
+     * The claim being pinned, from `docs/HUD_PROJECTIONS.md`'s gap 21: which
+     * things credit the treasury, and whether any of them is an income line.
      *
      * It said "nothing credits the treasury at all" until this gate was
      * written, which was false the day `ProcurementSystem.cancel` landed --
@@ -215,16 +214,29 @@ describe('docs/ARCHITECTURE.md: what the persistence layer actually does', () =>
      * *point* survived the error, which is exactly why nobody noticed: an
      * absolute that is nearly true reads as true.
      *
-     * A second crediting site is not a typo. It is **the arrival of an income
-     * line** -- the single most significant thing ADR 0017 decision 6 is
-     * waiting on -- and it must not be able to land while a document still
-     * says there is none.
+     * **The second crediting site has now arrived, and it is the income
+     * line.** `StateIncomeSystem` (#29) implements ADR 0017 decision 3 on
+     * decision 6's basis: the state pays per prisoner-day, per occupied place,
+     * at the end of each in-game day. That is exactly the event this gate was
+     * written to make undeniable, so the allow-list grows by one **and** gap
+     * 21 was rewritten in the same change, along with ADR 0017's own
+     * "what is implemented" bullet -- which is what the failure message below
+     * asked for, and the reason this list is an enumeration rather than a cap
+     * of one.
+     *
+     * A third entry is still a real event and still has to pass through here.
+     * ADR 0017 decision 3 names grants and prison labour as the *secondary*
+     * lines, and neither exists; the degradation ladder of decision 8 debits
+     * rather than credits.
      */
     const crediting = await sourceFilesMatching(/\.\s*credit\s*\(/u);
     expect(
       crediting,
-      'something other than ProcurementSystem.cancel now credits the treasury. If that is an income line, say so in docs/HUD_PROJECTIONS.md gap 21 and in ADR 0017 in the same change',
-    ).toEqual([path.join('src', 'simulation', 'economy', 'procurement.ts')]);
+      'something other than ProcurementSystem.cancel and StateIncomeSystem now credits the treasury. If that is a new income line, say so in docs/HUD_PROJECTIONS.md gap 21 and in ADR 0017 in the same change',
+    ).toEqual([
+      path.join('src', 'simulation', 'economy', 'income.ts'),
+      path.join('src', 'simulation', 'economy', 'procurement.ts'),
+    ]);
   });
 
   it('agrees with itself about how many integers the status-counts channel carries', async () => {

@@ -104,7 +104,7 @@ export function transportPressedStates(clock: HudClockViewModel): TransportPress
   return { pause: false, play: !fast, fastForward: fast };
 }
 
-export type HudMetricId = 'prisoners' | 'staff' | 'rooms' | 'incidents' | 'contraband' | 'funds';
+export type HudMetricId = 'prisoners' | 'staff' | 'rooms' | 'incidents' | 'contraband' | 'funds' | 'earned-today';
 
 export interface HudMetricBadge {
   readonly tone: BadgeTone;
@@ -223,9 +223,30 @@ export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMe
       capacity: undefined,
       // No tone. "Low on money" is a threshold, and a threshold is a balance
       // decision -- the same reason `BoundedValue` carries no severity band.
-      // There is also nothing to be low *for* on a schedule: buying materials
-      // is the only thing that spends (#89), and nothing credits the treasury
-      // at all, so a warning would describe a slope that does not exist yet.
+      // There is still nothing to be low *for* on a schedule: since #29 the
+      // state pays in once a day, and nothing at all is charged, so a warning
+      // would describe a slope that runs the wrong way.
+      tone: undefined,
+      badge: undefined,
+    },
+    {
+      id: 'earned-today',
+      // The clock's own icon, because this figure is a statement about the
+      // in-game day rather than about money: it resets when the day does.
+      icon: 'clock',
+      labelKey: HUD_MESSAGE_KEY.earnedToday,
+      // What this day has earned so far, in the same minor units as the
+      // balance above -- so the two chips sit beside each other and can be
+      // read against each other without a conversion nobody has chosen.
+      //
+      // **Appended after `funds` deliberately.** The strip's descriptor list is
+      // the single definition of which metrics exist and in what order
+      // (`status-strip.ts` walks it to build the DOM), so a new chip at the end
+      // adds a column without moving one.
+      value: counts.stateIncomeAccruedTodayMinorUnits,
+      capacity: undefined,
+      // No tone and no badge, for the same reason `funds` has neither: "a good
+      // day" is a threshold, and nobody has set one.
       tone: undefined,
       badge: undefined,
     },

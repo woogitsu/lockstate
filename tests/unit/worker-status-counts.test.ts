@@ -218,6 +218,13 @@ describe('publishing the status counts', () => {
       roomOccupants: 0,
       activeIncidents: 0,
       contrabandDiscovered: 0,
+      // Zero, and not because the day has just started: this scenario's four
+      // prisoners are all still in intake (`prisonersInIntake: 4` above), so
+      // none of them holds an occupancy slot -- `roomOccupants: 0` says the
+      // same thing -- and an occupied place is what the state pays for (#29).
+      // Six registered room instances with twenty places between them earn
+      // nothing while they are empty.
+      stateIncomeAccruedTodayMinorUnits: 0,
     });
     expect(first?.payload.schemaVersion).toBe(HUD_VIEW_MODEL_SCHEMA_VERSION);
   });
@@ -567,15 +574,16 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       expect(counts.prisoners).toBe(actorCount);
       expect(counts.rooms).toBe(CELL_COUNT);
       expect(counts.staff).toBe(GUARD_COUNT);
-      // Eleven integers, whatever the population. It was ten until the
-      // treasury balance joined them (#96); the exact count is pinned rather
+      // Twelve integers, whatever the population. It was ten until the
+      // treasury balance joined them (#96) and eleven until #29's
+      // "earned today" accrual did; the exact count is pinned rather
       // than bounded so that a *list* arriving here -- the thing this channel
       // is shaped to exclude -- cannot slip in as "one more field". A scalar
       // being added is a one-line, visible edit; that is the point.
       //
       // This is what a status-counts
       // payload is, and why it needs no paging.
-      expect(Object.keys(counts)).toHaveLength(11);
+      expect(Object.keys(counts)).toHaveLength(12);
       // And the refusal beside them is one fixed record of three scalars, not
       // a queue: exactly the shape a snapshot channel can carry honestly
       // (`RefusalLog`). A queue would put the one growing thing this channel

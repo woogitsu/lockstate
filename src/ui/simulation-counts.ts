@@ -42,6 +42,7 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
         activeIncidents: counts.activeIncidents,
         contrabandFound: counts.contrabandDiscovered,
         treasuryMinorUnits: counts.treasuryMinorUnits,
+        stateIncomeAccruedTodayMinorUnits: counts.stateIncomeAccruedTodayMinorUnits,
       };
     }
 
