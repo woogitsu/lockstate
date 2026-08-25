@@ -1,5 +1,6 @@
 export * from './action-system';
 export * from './actions';
+export * from './cell-sharing';
 export * from './classification';
 export * from './components';
 export * from './intake-system';

@@ -2,6 +2,7 @@ import type { SimulationContext, SystemRegistration } from '../kernel/system';
 import type { EntityId, EntityStore } from '../entity/entity-store';
 import { EntityQuery } from '../entity/query';
 import { ACTOR_IDENTITY_RNG_STREAM, type ActorIdentityMinter } from '../identity/actor-identity';
+import { rateCellSharing, type CellSharingView } from './cell-sharing';
 import { classifyPrisoner, type ClassificationInput } from './classification';
 import {
   classificationGroupIndex,
@@ -77,6 +78,32 @@ export class IntakeSystem implements SystemRegistration {
     this.records.intakeStage[index] = intakeStageIndex('queued');
   }
 
+  /** The arrival's own placement-relevant record. `index` is the caller's, so the hot path does not re-derive it. */
+  private sharingViewOf(entityId: EntityId, index: number): CellSharingView {
+    return { entityId, riskTier: this.records.riskTier[index]! };
+  }
+
+  /**
+   * Placement-relevant records for a cell's current occupants, **skipping
+   * any id that is no longer alive**.
+   *
+   * The liveness filter is required rather than defensive. `release` is
+   * never called for a destroyed prisoner (#31), so `occupants` can hold
+   * the id of an entity that no longer exists, and `EntityStore.getIndex`
+   * masks without checking -- reading that id's record would silently
+   * return whoever currently occupies the recycled slot. The caller's
+   * ascending-entity-id order is preserved: this appends in input order and
+   * only ever drops.
+   */
+  private sharingViewsOf(occupants: readonly EntityId[]): readonly CellSharingView[] {
+    const views: CellSharingView[] = [];
+    for (const occupant of occupants) {
+      if (!this.store.isAlive(occupant)) continue;
+      views.push({ entityId: occupant, riskTier: this.records.riskTier[this.store.getIndex(occupant)]! });
+    }
+    return views;
+  }
+
   public getMetrics(): IntakeMetrics {
     return { completedCount: this.completedCount, failedCount: this.failedCount, accommodationBacklogTicks: this.accommodationBacklogTicks };
   }
@@ -129,7 +156,19 @@ export class IntakeSystem implements SystemRegistration {
           continue;
         }
 
-        const instance = this.roomInstances.findAvailable(target.roomCatalogId, target.requiredObjectCapability);
+        // Not `findAvailable`: that asks room type, an occupancy *count* and
+        // an object capability, and never asks who is already in the cell
+        // (#79). `findBestAvailable` hands the current occupants to a rating
+        // and takes the best-rated free instance, ties going to the lowest
+        // instance id -- so in a prison of single-occupancy cells, where
+        // every free instance holds nobody, the choice is identical to
+        // `findAvailable`'s.
+        const arrival = this.sharingViewOf(entityId, index);
+        const instance = this.roomInstances.findBestAvailable(
+          target.roomCatalogId,
+          (occupants) => rateCellSharing(arrival, this.sharingViewsOf(occupants)),
+          target.requiredObjectCapability,
+        );
         if (instance === undefined) {
           this.accommodationBacklogTicks += 1;
           continue; // stay in accommodation-assignment; retried next scheduled tick
