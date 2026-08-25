@@ -489,17 +489,32 @@ decision about what to build next.
 ### Staff
 
 19. **`GuardRoster` is the only staff store**, and there is no employment,
-    hiring, shift or scheduling system. Staffing "by time" exists only as
-    `DeploymentSchedule`'s required headcount per sector.
+    shift or scheduling system. Staffing "by time" exists only as
+    `DeploymentSchedule`'s required headcount per sector. **Hiring is the one
+    part of this that now exists** ([ADR 0025](./adr/0025-guard-hiring-surface.md)):
+    a `HireStaff` command reaches `StaffHiringService`, which spends from the
+    treasury and calls `GuardRoster.hire`, and the Staff panel on the Security
+    tab is what sends it. Nothing dismisses, promotes, schedules or pays
+    anybody, and there is still no employment record beyond the `GuardRecord`
+    the roster writes.
 20. **No per-staff skill level or fatigue.** `staff-role-catalog` declares
-    skill *requirements* per role, but no staff entity carries a skill.
-21. **`wageBand` exists in content, and there is no payroll.** There is a
-    treasury and a procurement system since #96/#89 — money buys materials —
-    and since #29 there is an income line, but nothing pays anyone: no wage is
-    ever debited. Nothing wage-related may be rendered as a live figure; it is
-    still a content hook for a future issue. So the schedule runs one way
-    only: money arrives and nothing recurring takes it away, which is also why
-    ADR 0017 decision 8's insolvency ladder is still unreachable.
+    skill *requirements* per role, but no staff entity carries a skill. This
+    is also why hiring reads the *bottom* of a role's wage band and not a
+    point inside it: where in the band an individual sits would need a skill
+    or negotiation model, and there is none.
+21. **`wageBand` is read once, at hire, and there is still no payroll.** A
+    hire debits the treasury by the role's `wageBand.minPerDay`
+    ([ADR 0025](./adr/0025-guard-hiring-surface.md) decision 2), and the Staff
+    panel renders that figure on the button that will spend it — so the
+    earlier form of this gap, "no wage is ever debited" and "nothing
+    wage-related may be rendered as a live figure", is no longer true. What is
+    still true is everything else: **nothing recurring**. The charge happens
+    once, at the tick the command executes, and no system pays anyone on a
+    schedule — so ADR 0017 decision 3's standing cost and decision 8's
+    insolvency ladder are as unbuilt as before, and a one-off charge
+    `Treasury.spend` refuses rather than overdrawing keeps the ladder
+    unreachable. A *rate* — a per-day wage bill, a payroll forecast, a running
+    cost — is still a figure no system produces and must not be rendered.
 
     **The two things that credit the treasury, and which of them is an income
     line.** `StateIncomeSystem` (`src/simulation/economy/income.ts`) is the
@@ -525,11 +540,14 @@ decision about what to build next.
       workstream. Until it lands, both the balance and the "earned today"
       readout beside it are flat.
 
-    So the balance a player can observe still only ever goes down. That is not
-    a loss of money — a purchase buys stock, an undone build order returns the
+    So the balance a player can observe still only ever goes down, and a hire
+    is now one of the two ways it does. That is not a loss of money in the
+    procurement half — a purchase buys stock, an undone build order returns the
     stock it had allocated (#97), and the two together conserve value exactly,
     which `tests/integration/economy-money-conservation.test.ts` asserts in
-    integer minor units over the sequences a player can produce.
+    integer minor units over the sequences a player can produce. A hire is
+    deliberately outside that property rather than a hole in it: what the money
+    bought is a staff member, and no command destroys one.
 22. **`'on-search'` conflates two duties.** A guard pulled onto a
     contraband search and a guard dispatched to an incident share one
     deployment phase, and neither `SearchSystem` nor

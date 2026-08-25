@@ -312,6 +312,48 @@ export interface HudZoningNoticeViewModel {
   readonly requirement: HudRoomEnclosureRequirement;
 }
 
+/**
+ * A staff role the player may hire, and what one hire will spend
+ * ([ADR 0025](../../../docs/adr/0025-guard-hiring-surface.md)).
+ *
+ * Both figures are **content the host passes through**, never something the
+ * HUD knows: the label is the role's own `nameKey` from
+ * `src/content/staff-role-catalog.ts`, and the charge is that role's
+ * `wageBand.minPerDay` read through the simulation's own
+ * `staffHireCostMinorUnits`, so the number on the button and the number the
+ * treasury is debited come from one definition. A copy of either on this side
+ * of the boundary would silently disagree with the simulation the day a band
+ * moved -- the same rule `HudBuildMaterialViewModel` follows for a unit price.
+ */
+export interface HudStaffRoleViewModel {
+  /** Stable content id. Travels back out unchanged in the intent. */
+  readonly staffRoleId: string;
+  /** A message key, never text. */
+  readonly labelKey: LocalizationKey;
+  /**
+   * What one hire costs, in the same minor units
+   * `HudCountsViewModel.treasuryMinorUnits` is counted in -- so the figure the
+   * panel renders and the balance the strip renders are the same scale, and
+   * the player can compare them without a conversion nobody has chosen.
+   */
+  readonly hireChargeMinorUnits: number;
+}
+
+/**
+ * What the Staff panel can offer.
+ *
+ * Supplied once at mount rather than per snapshot, for the reason
+ * `HudBuildViewModel` is: the staff-role catalogue is content, not session
+ * state, and rebuilding the list on every frame would move the selection under
+ * somebody's finger.
+ *
+ * An empty list is a real state and the panel says so rather than rendering a
+ * blank box: a host that published no roles offers no hire.
+ */
+export interface HudStaffViewModel {
+  readonly roles: readonly HudStaffRoleViewModel[];
+}
+
 export interface HudViewModel {
   readonly counts: HudCountsViewModel;
   readonly clock: HudClockViewModel;
