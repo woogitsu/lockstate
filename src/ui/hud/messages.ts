@@ -107,6 +107,23 @@ export const HUD_MESSAGE_KEY = {
   buildTargetRun: 'hud.build.target-run',
   buildCoordinates: 'hud.build.coordinates',
   buildCoordinatesHint: 'hud.build.coordinates-hint',
+  /*
+   * The removal mode's four keys (ADR 0028 phase 3).
+   *
+   * `buildRemove` and `buildRemoveActive` are the two labels of one toggle,
+   * spelled the way `roomsRemove`/`roomsRemoveActive` are because they are the
+   * same control on a different surface: the button says what pressing it will
+   * do, so it reads "Remove" while off and "Stop removing" while on.
+   * `buildRemoveHint` replaces the arm hint in the note line, which is one line
+   * tall either way so the controls under it cannot move. `buildRemoveSubmit`
+   * relabels the numeric route's one submit button, because that route is
+   * removal's keyboard half and a button saying "Place order" must not clear a
+   * tile.
+   */
+  buildRemove: 'hud.build.remove',
+  buildRemoveActive: 'hud.build.remove-active',
+  buildRemoveHint: 'hud.build.remove-hint',
+  buildRemoveSubmit: 'hud.build.remove-submit',
 
   /**
    * The purchase surface (#89).

@@ -900,13 +900,32 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
            * forgets its selection: each tool keeps the last one it was given,
            * exactly as `BuildTool.setArmed` always has.
            */
+          if (intent.removing) {
+            // Removal is the object tool's, whatever row is selected, and it
+            // needs no footprint: a removal names no object type -- what goes is
+            // whatever the player pressed on -- so `ObjectTool.setArmed` arms on
+            // the mode alone and draws a one-tile ghost. The build tool is
+            // disarmed in the same call, so a player who armed a wall and then
+            // pressed Remove gets one gesture rather than two layered ones.
+            //
+            // There is no wall removal behind this and the control does not
+            // claim one: `hud.build.remove-hint` says "any tile of an object",
+            // and taking a *wall* down is still `Undo` or a per-order control
+            // the Build panel does not have
+            // (`tests/foundation/unconsumed-command-contract.test.ts` records
+            // why `CancelBuildOrder` has no producer).
+            tool?.setArmed(false);
+            objects?.setArmed(intent.armed, { removing: true });
+            return;
+          }
+
           const footprint = intent.definitionId === undefined ? undefined : objectFootprintOf(intent.definitionId);
           if (footprint !== undefined && intent.definitionId !== undefined) {
             tool?.setArmed(false);
-            objects?.setArmed(intent.armed, { definitionId: intent.definitionId, footprint });
+            objects?.setArmed(intent.armed, { definitionId: intent.definitionId, footprint, removing: false });
             return;
           }
-          objects?.setArmed(false);
+          objects?.setArmed(false, { removing: false });
           tool?.setArmed(intent.armed, intent.definitionId);
           return;
         }
@@ -1050,6 +1069,33 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
             x: intent.x,
             y: intent.y,
           });
+          return;
+
+        /*
+         * The `RemoveObject` producer (ADR 0028 phase 3), and the eleventh
+         * command `tests/foundation/unconsumed-command-contract.test.ts` counts.
+         *
+         * It arrives *with* its producer, like the ten before it, from the same
+         * two routes as `place-object`: the world gesture while the Build panel's
+         * removal mode is on, and that panel's numeric fields with the same mode
+         * on -- which is the keyboard route `AGENTS.md` boundary 10 asks for. The
+         * gesture route is the one that matters here, because the whole reason
+         * this command exists is that the only way to take an object back was
+         * `Undo` on `KeyZ`, and a touch device has no `KeyZ`.
+         *
+         * **No order id and nothing minted.** A removal writes no construction
+         * order, so there is no id to allocate. It can *cancel* one -- a
+         * placement still in flight whose tile would otherwise stay claimed --
+         * and the simulation finds that order from the tile, because the main
+         * thread holds no order list.
+         *
+         * **Nothing is checked before submitting**, for the reason a placement
+         * is not: the one refusal reason is about the placed objects and the
+         * order list, and this thread holds neither. So the refusal arrives on
+         * the alerts line from the worker, once.
+         */
+        case 'remove-object':
+          requireSimulation(commands).submit({ type: 'RemoveObject', x: intent.x, y: intent.y });
           return;
 
         /*

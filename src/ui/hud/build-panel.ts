@@ -70,6 +70,18 @@ export interface BuildPanelIntent {
    * anything that is not a wall.
    */
   readonly placesObject: boolean;
+  /**
+   * Whether this intent *removes* the object at the coordinates instead of
+   * placing anything (ADR 0028 phase 3).
+   *
+   * The numeric route's half of the removal mode, and it is what gives removal a
+   * keyboard route on the day it ships rather than in a follow-up: with the mode
+   * on, the same two number fields and the same submit button name a tile to
+   * clear. `definitionId` is still carried because the intent has one shape, and
+   * a removal names no object type -- the consumer ignores it exactly as the
+   * simulation ignores `edge` for anything that is not a wall.
+   */
+  readonly removing: boolean;
 }
 
 /** What one press of the buy control asks for: ids and numbers only. */
@@ -92,8 +104,14 @@ export interface BuildPanelOptions {
   readonly model: HudBuildViewModel;
   /** The numeric route: place exactly one order at the coordinates shown. */
   readonly onPlace: (intent: BuildPanelIntent) => void;
-  /** The map route: hand the pointer to the build tool, or take it back. */
-  readonly onArm: (armed: boolean, definitionId: string | undefined) => void;
+  /**
+   * The map route: hand the pointer to a tool, or take it back.
+   *
+   * `removing` travels with `armed` for the reason `RoomsPanelOptions.onArm`'s
+   * does: the two describe one armed tool, and a host that saw them disagree
+   * would draw a removal ghost for a placing gesture.
+   */
+  readonly onArm: (armed: boolean, definitionId: string | undefined, removing: boolean) => void;
   /** Buy the selected buildable's material, in the quantity the stepper shows (#89). */
   readonly onPurchase: (intent: BuildPanelPurchaseIntent) => void;
 }
@@ -128,6 +146,8 @@ export interface BuildPanel {
   /** Current numeric-route selection, exposed so a test can assert it without reading the DOM. */
   getSelection(): BuildPanelIntent | undefined;
   isArmed(): boolean;
+  /** Whether the armed gesture removes rather than places. Exposed for the same reason `isArmed` is: a test should not have to read the DOM. */
+  isRemoving(): boolean;
   /** Live feedback from the world. `undefined` clears the readout. */
   setTarget(target: BuildPanelTarget | undefined): void;
   setVisible(visible: boolean): void;
@@ -161,6 +181,8 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   let tileY = Math.trunc(model.origin.y);
   let edge: HudBuildEdge = 'north';
   let armed = false;
+  /** Whether the armed gesture takes an object away instead of placing one (ADR 0028 phase 3). */
+  let removing = false;
   /** Whether the buy row is disclosed. Closed on arrival -- see `.hud-build__buy` in `hud.css`. */
   let buying = false;
   /** How many units the next purchase asks for, and which material it was last set for. */
@@ -194,8 +216,13 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
         // sells.
         paintBuy();
         // The armed tool has to follow the selection, or the map would keep
-        // placing whatever was chosen when it was armed.
-        options.onArm(armed, selectedId);
+        // placing whatever was chosen when it was armed. Choosing a row is a
+        // statement about *placing*, so it turns removal off -- the two modes
+        // are one armed tool, and a player who picked a bed while removal was on
+        // asked to place a bed.
+        removing = false;
+        paintArmed();
+        options.onArm(armed, selectedId, removing);
       },
     });
     row.element.dataset['buildable'] = buildable.definitionId;
@@ -229,9 +256,14 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     icon: 'build',
     disabled: selectedId === undefined,
     onActivate: () => {
-      armed = !armed && selectedId !== undefined;
+      // Arming to place turns removal off, for the reason the Rooms panel's arm
+      // button does: pressing "Place on map" while removal was on is a request
+      // to place, not a request to keep removing with a different label.
+      const wasRemoving = removing;
+      removing = false;
+      armed = (wasRemoving || !armed) && selectedId !== undefined;
       paintArmed();
-      options.onArm(armed, selectedId);
+      options.onArm(armed, selectedId, removing);
     },
   });
   armButton.element.dataset['armed'] = 'false';
@@ -239,6 +271,57 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   // row below are `.ui-action`, and `.hud-build__map .ui-action` used to be
   // the arm button by being the only one.
   armButton.element.classList.add('hud-build__arm');
+
+  /**
+   * Removal, and the reason it is a peer of the arm button rather than a row of
+   * its own (ADR 0028 phase 3).
+   *
+   * ### Why it is here at all
+   *
+   * Because until it existed a placed object could be taken back only by `Undo`,
+   * and `Undo` is `KeyZ`. So on a touch device a misplaced bed was **permanent
+   * for the session**: the Build panel offers no per-order control (the
+   * `CancelBuildOrder` entry in
+   * `tests/foundation/unconsumed-command-contract.test.ts` records why), and a
+   * tile under a standing object refuses every further placement. That is
+   * precisely the state the Rooms tab shipped in and had to fix in a follow-up,
+   * and `AGENTS.md` boundary 10 is not satisfied by "it works with a keyboard"
+   * any more than by "it works with a mouse".
+   *
+   * ### Why it costs the height budget nothing
+   *
+   * It shares `.hud-build__actions` with the arm button and the buy disclosure,
+   * and that row is `--tap-target` tall whether it holds one button or three --
+   * the same argument #89's buy toggle made for joining it. What a third button
+   * *can* cost is horizontal room, and ADR 0022 measured exactly that: a third
+   * button in this row overflowed by 37.9px with the labels it tried. So the
+   * arm button is allowed to shrink (`min-width: 0` in `hud.css`, as
+   * `.hud-rooms__arm` already is) and this one is labelled with one word.
+   * Measured on the assembled page at all five viewports the browser suite
+   * visits -- see `tests/browser/app-shell.spec.ts`.
+   *
+   * ### Why arming to remove needs no selection
+   *
+   * A removal names no object type: what goes is whatever the player pressed on.
+   * `RoomTool.setArmed` records the same asymmetry for un-designating, and the
+   * reason is the same -- requiring a selection before a mistake can be undone
+   * would be a rule with nothing behind it, and it would bite hardest in the
+   * case removal exists for.
+   */
+  const removeButton: ActionButton = createActionButton({
+    label: t(HUD_MESSAGE_KEY.buildRemove),
+    onActivate: () => {
+      removing = !removing;
+      // Arming to remove is arming. The tool stays armed while the mode is on
+      // and the world keeps the pointer, so the player presses one control and
+      // then presses tiles -- which is the whole gesture on a touch device.
+      armed = removing || armed;
+      paintArmed();
+      paintBuy();
+      options.onArm(armed, selectedId, removing);
+    },
+  });
+  removeButton.element.classList.add('hud-build__remove');
 
   const targetValue = valueText(t(HUD_MESSAGE_KEY.buildTargetNone), 'hud-build__target-value');
   const targetBlock = element('div', {
@@ -249,12 +332,34 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   const armHint = eyebrowText(t(HUD_MESSAGE_KEY.buildArmHint), 'hud-build__note');
 
   function paintArmed(): void {
-    armButton.setLabel(t(armed ? HUD_MESSAGE_KEY.buildDisarm : HUD_MESSAGE_KEY.buildArm));
-    armButton.element.dataset['armed'] = armed ? 'true' : 'false';
+    // "Armed" on the arm button means armed *to place*, which is what its label
+    // and its pressed state are about. A tool armed to remove is armed, and this
+    // button is not the control that is on -- the same split `.hud-rooms__arm`
+    // makes against `.hud-rooms__remove`.
+    const placing = armed && !removing;
+    armButton.setLabel(t(placing ? HUD_MESSAGE_KEY.buildDisarm : HUD_MESSAGE_KEY.buildArm));
+    armButton.element.dataset['armed'] = placing ? 'true' : 'false';
     // `aria-pressed` says it is a toggle, not a one-shot action; without it a
     // screen reader announces "Stop placing" with no way to tell that the
     // mode is currently on.
-    armButton.element.setAttribute('aria-pressed', armed ? 'true' : 'false');
+    armButton.element.setAttribute('aria-pressed', placing ? 'true' : 'false');
+
+    removeButton.setLabel(t(removing ? HUD_MESSAGE_KEY.buildRemoveActive : HUD_MESSAGE_KEY.buildRemove));
+    removeButton.element.dataset['removing'] = removing ? 'true' : 'false';
+    removeButton.element.setAttribute('aria-pressed', removing ? 'true' : 'false');
+
+    // One line either way, so the controls under it never move: the hint says
+    // what the armed gesture does, and a removal does something else.
+    armHint.textContent = t(removing ? HUD_MESSAGE_KEY.buildRemoveHint : HUD_MESSAGE_KEY.buildArmHint);
+
+    // The numeric route follows the mode too, or the one submit button would
+    // say "Place order" and clear a tile.
+    submit.setLabel(t(removing ? HUD_MESSAGE_KEY.buildRemoveSubmit : HUD_MESSAGE_KEY.buildSubmit));
+    paintPlacement();
+    // Removal names no buildable, so it is offered even for an empty catalogue
+    // -- the one case where the numeric route works with nothing selected.
+    submit.setDisabled(!removing && selectedId === undefined);
+
     if (!armed) setTarget(undefined);
   }
 
@@ -380,8 +485,14 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
 
   function paintBuy(): void {
     const material = selectedMaterial();
-    if (material === undefined) buying = false;
-    buyToggle.element.hidden = material === undefined;
+    if (material === undefined || removing) buying = false;
+    // Hidden while removing, for the same reason it is hidden for a buildable
+    // nothing sells: a control that claims a purchase belongs to the gesture the
+    // player is performing, and a removal buys nothing. It is *hidden* and not
+    // disabled -- `paintPlacement` follows the same rule for the edge chooser --
+    // and hiding it is also what gives the third button in
+    // `.hud-build__actions` its room back while the mode is on.
+    buyToggle.element.hidden = material === undefined || removing;
     buyToggle.element.setAttribute('aria-expanded', buying ? 'true' : 'false');
     buyToggle.element.dataset['open'] = buying ? 'true' : 'false';
     const opening = buying && buyRow.hidden;
@@ -394,7 +505,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     // the player cannot see; the panel is a scroll container
     // (`.ui-panel.hud-build`), so this scrolls the panel and nothing else.
     if (opening) buyRow.scrollIntoView({ block: 'nearest' });
-    if (material === undefined) return;
+    if (material === undefined || removing) return;
     // A different material is a different purchase, so the quantity goes back
     // to one placement's worth rather than carrying 200 bricks over onto a
     // door. It is content's number, not one chosen here.
@@ -465,8 +576,10 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
 
   function paintPlacement(): void {
     // The edge chooser is hidden, not disabled, for a buildable that does not
-    // sit on an edge: a disabled control still claims the setting exists.
-    edgeChoice.element.hidden = selectedBuildable()?.occupiesEdge !== true;
+    // sit on an edge: a disabled control still claims the setting exists. A
+    // removal has no edge for the same reason it has no buildable -- what goes
+    // is whatever is on the tile -- so the mode hides it too.
+    edgeChoice.element.hidden = removing || selectedBuildable()?.occupiesEdge !== true;
   }
   paintPlacement();
 
@@ -508,7 +621,10 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
         // Two buttons in one row rather than two rows: the row is
         // `--tap-target` tall either way, so the buy disclosure joins the
         // panel at no cost to the height budget issue #174 closed.
-        element('div', { className: 'hud-build__actions', children: [armButton.element, buyToggle.element] }),
+        element('div', {
+          className: 'hud-build__actions',
+          children: [armButton.element, removeButton.element, buyToggle.element],
+        }),
         targetBlock,
         armHint,
         buyRow,
@@ -522,7 +638,14 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
 
   function readSelection(): BuildPanelIntent | undefined {
     const buildable = selectedBuildable();
-    if (buildable === undefined) return undefined;
+    // A removal names no object type, so it is the one intent this panel can
+    // read with nothing selected -- and it has to be, or a player whose only
+    // mistake was placing the single row in an empty catalogue could not undo it.
+    if (buildable === undefined) {
+      return removing
+        ? { definitionId: '', x: tileX, y: tileY, edge, placesObject: false, removing: true }
+        : undefined;
+    }
     return {
       definitionId: buildable.definitionId,
       x: tileX,
@@ -536,6 +659,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       // decide it and cannot derive it, because what a buildable places is
       // simulation content the HUD may not read.
       placesObject: buildable.placesObject === true,
+      removing,
     };
   }
 
@@ -564,6 +688,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     purchaseControl: buySubmit.element,
     getSelection: readSelection,
     isArmed: () => armed,
+    isRemoving: () => removing,
     setTarget,
     setVisible(visible: boolean): void {
       panel.element.hidden = !visible;
@@ -572,8 +697,13 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       // world the player thought they were only looking at.
       if (!visible && armed) {
         armed = false;
+        // The mode leaves with the tab too. Coming back to a panel whose
+        // "Remove" was still latched would hand the player a pointer that
+        // deletes things they cannot see having armed.
+        removing = false;
         paintArmed();
-        options.onArm(false, selectedId);
+        paintBuy();
+        options.onArm(false, selectedId, false);
       }
     },
   };

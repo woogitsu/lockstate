@@ -7,6 +7,7 @@ import {
   HIRE_REFUSAL_REASONS,
   PLACE_OBJECT_REFUSAL_REASONS,
   PURCHASE_REFUSAL_REASONS,
+  REMOVE_OBJECT_REFUSAL_REASONS,
   UNZONE_REFUSAL_REASONS,
   ZONE_REFUSAL_REASONS,
   type RefusalLog,
@@ -49,12 +50,16 @@ import { tileCoordinate } from '../world/coordinates';
  * decides whether the footprint is legal and then submits a `BuildOrder`
  * through `construction`, which is ADR 0028 decision 4's whole mechanism.
  *
- * `refusals` is the session's `RefusalLog`, and all seven routes write to the
+ * `RemoveObject` is the seventh, and it is the same service's other half: a
+ * placement and a removal are one gesture with a mode, exactly as a designation
+ * and an un-designation are, so they are routed side by side (ADR 0028 phase 3).
+ *
+ * `refusals` is the session's `RefusalLog`, and all eight routes write to the
  * same one: a refused wall, a refused purchase, a refused zoning rectangle, a
- * refused removal, a refused hire, a refused admission and a refused object
- * placement are the same kind of fact about the session -- the kernel took the
- * command and a system then declined to carry it out -- and they reach the
- * player down one channel (#261).
+ * refused un-zoning, a refused hire, a refused admission, a refused object
+ * placement and a refused object removal are the same kind of fact about the
+ * session -- the kernel took the command and a system then declined to carry it
+ * out -- and they reach the player down one channel (#261).
  */
 export function createSessionCommandHandler(
   construction: ConstructionSystem,
@@ -308,6 +313,35 @@ export function createSessionCommandHandler(
         context.tick,
       );
       if (outcome.kind === 'refused') refusals.record(PLACE_OBJECT_REFUSAL_REASONS[outcome.reason], context.tick);
+      return;
+    }
+
+    if (simCommand !== null && simCommand.type === 'RemoveObject') {
+      /*
+       * The seventh command routed here, and the other half of the gesture the
+       * sixth one is (ADR 0028 phase 3).
+       *
+       * It reaches the same service as `PlaceObject` and takes the same route
+       * out: one call, one outcome, and a refusal recorded on the session's
+       * `RefusalLog` through an exhaustive lookup, so a second removal refusal
+       * reason fails to compile until it has a wire id and a message key. That
+       * sameness is the point -- a player who is told why a bed could not be
+       * placed and left guessing why one could not be removed would be reading
+       * two different interfaces.
+       *
+       * **`src/main.ts` refuses nothing before submitting**, for the reason it
+       * refuses nothing before a placement: the only condition a removal can be
+       * refused for is about the placed objects and the order list, and the main
+       * thread holds neither. So this line is the only route a refused removal
+       * reaches the player by.
+       *
+       * The command carries no order id and mints none. What it can do is
+       * *cancel* one -- a placement still in flight, whose tile would otherwise
+       * stay claimed with nothing standing on it -- and the order it cancels is
+       * found from the tile rather than named on the wire.
+       */
+      const outcome = objectPlacement.remove({ x: simCommand.x, y: simCommand.y }, context.tick);
+      if (outcome.kind === 'refused') refusals.record(REMOVE_OBJECT_REFUSAL_REASONS[outcome.reason], context.tick);
       return;
     }
 

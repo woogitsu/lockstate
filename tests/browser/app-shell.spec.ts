@@ -257,6 +257,9 @@ interface SubmittedCommand {
         readonly transactionId?: string;
         readonly itemId?: string;
         readonly quantity?: number;
+        /** The anchor tile a `PlaceObject` or `RemoveObject` names (ADR 0028). */
+        readonly x?: number;
+        readonly y?: number;
       };
     };
   };
@@ -394,6 +397,75 @@ function unitPriceOf(itemId: string): number {
   const priced = procurableMaterial(itemId);
   if (priced === undefined) throw new Error(`${itemId} is not for sale, so no purchase of it can be driven.`);
   return priced.unitPriceMinorUnits;
+}
+
+/**
+ * Every object command of one type the page has posted to the worker, with the
+ * tile each one names (ADR 0028).
+ *
+ * The sibling of `purchasesSent` above and it exists for the sharper half of the
+ * same argument: a *gesture* is the only producer of an object command that a
+ * player on a touch device can reach, so "the press became a command" is the
+ * whole claim, and the tee is the only place it can be read. A refusal cannot
+ * stand in for it -- `.hud__corner` is `display: none` at 720px and below, so
+ * the alerts list the worker's refusals arrive in does not exist at the one
+ * viewport this is most worth measuring at.
+ */
+async function objectCommandsSent(
+  page: Page,
+  type: 'PlaceObject' | 'RemoveObject',
+): Promise<readonly { x: number; y: number }[]> {
+  return page.evaluate(
+    (commandType) =>
+      ((window as unknown as CommandTeeWindow).lockstateSentToWorker ?? [])
+        .map((message) => message as SubmittedCommand)
+        .filter((message) => message.kind === 'simulation/submit-command')
+        .filter((message) => message.payload?.command?.data?.type === commandType)
+        .map((message) => ({
+          x: message.payload?.command?.data?.x ?? Number.NaN,
+          y: message.payload?.command?.data?.y ?? Number.NaN,
+        })),
+    type,
+  );
+}
+
+/**
+ * One press and release on bare world, in real pointer events.
+ *
+ * The object gesture is one press on one tile (ADR 0028 decision 5), so unlike
+ * `dragOnWorld` and `dragRectangleOnWorld` there is nothing to drag -- and
+ * unlike both of them the aim only has to clear the HUD at a single point, which
+ * is why this scan is one hit-test rather than three.
+ *
+ * It still hit-tests rather than pressing the centre of the screen. The
+ * centre-click spec establishes that the centre belongs to the canvas on the
+ * *arrival* tab with the arrival panels, and neither holds here: this is the
+ * Build tab, and at 375x812 the rail is full-width. `false` means the HUD left
+ * no bare world at this viewport, which every caller asserts against rather than
+ * tolerating -- a press that never reached the canvas would report a gesture
+ * this test never made.
+ */
+async function pressOnWorld(page: Page): Promise<boolean> {
+  const viewport = page.viewportSize();
+  if (viewport === null) throw new Error('the viewport size is needed to aim the press');
+
+  const aim = await page.evaluate(
+    ({ width, height }) => {
+      for (let y = 8; y < height - 8; y += 16) {
+        for (let x = 8; x < width - 8; x += 16) {
+          if (document.elementFromPoint(x, y)?.tagName.toLowerCase() === 'canvas') return { x, y };
+        }
+      }
+      return null;
+    },
+    { width: viewport.width, height: viewport.height },
+  );
+  if (aim === null) return false;
+
+  await page.mouse.move(aim.x, aim.y);
+  await page.mouse.down({ button: 'left' });
+  await page.mouse.up({ button: 'left' });
+  return true;
 }
 
 /**
@@ -2582,6 +2654,151 @@ test.describe('the assembled application', () => {
     expect(measured.width).toBeGreaterThan(0);
     expect(measured.height).toBeGreaterThan(0);
     expect(measured.hudMentionsIt).toBe(true);
+  });
+
+  /**
+   * ADR 0028 phase 3: **removing an object with no keyboard, on a phone.**
+   *
+   * This is the claim the whole phase exists for, and it is the one nothing
+   * below the assembled page can settle. Before this, taking a placed object
+   * back meant `Undo`, and `Undo` is bound to `KeyZ` and to nothing else
+   * (`docs/INPUT.md`) -- so a device with no keyboard had no route at all, and a
+   * tile a standing object covers refuses every further placement. A misplaced
+   * bed was permanent for the session.
+   *
+   * It needs a real browser for the ordinary reason and a real *page* for a
+   * sharper one: the gesture is a press on a real Phaser canvas, arbitrated by
+   * the real scene against the real camera, reported through the real
+   * `ObjectTool`, dispatched by the real HUD and posted by the real composition
+   * root. Every one of those halves has its own test; only this joins them.
+   *
+   * **Measured off the command tee, not off a refusal.** `.hud__corner` is
+   * `display: none` at 720px and below (`hud.css`), so the alerts list the
+   * worker's refusals arrive in does not exist at 375x812 -- which is a
+   * pre-existing gap this phase neither widens nor closes, and the reason the
+   * observable here is the message the page posted rather than the sentence it
+   * got back. The refusal *sentence* is covered at a viewport that has the
+   * region, below.
+   */
+  test('removes an object from a world press at 375x812, with no key ever pressed', async ({ page }) => {
+    await installCommandTee(page);
+    await page.setViewportSize({ width: 375, height: 812 });
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+
+    // Nothing is trusted before the page has actually rendered: `openApp` waits
+    // for the canvas and the HUD, and this is the canvas having real area at
+    // this viewport rather than merely existing in the DOM. A press aimed at a
+    // zero-area canvas would report a gesture that never happened.
+    const canvasBox = await page.locator('#game-root canvas').boundingBox();
+    expect(canvasBox, 'the world canvas has no box at 375x812').not.toBeNull();
+    expect(canvasBox?.width ?? 0).toBeGreaterThan(0);
+    expect(canvasBox?.height ?? 0).toBeGreaterThan(0);
+
+    await page.locator('.ui-tab[data-tab="build"]').click();
+    const remove = page.locator('.hud-build__remove');
+    await expect(remove, 'the removal toggle is not laid out at 375x812').toBeVisible();
+
+    // Tappable, not merely visible: the control has to be what a finger at its
+    // own centre actually lands on. A button under the save panel or under the
+    // tab bar is reachable by a keyboard and unreachable by a thumb, which is
+    // the whole class of defect this viewport is checked for.
+    const box = await remove.boundingBox();
+    expect(box, 'the removal toggle has no box at 375x812').not.toBeNull();
+    if (box === null) return;
+    const topmostIsToggle = await page.evaluate(
+      ({ x, y }) => document.elementFromPoint(x, y)?.closest('.hud-build__remove') !== null,
+      { x: Math.round(box.x + box.width / 2), y: Math.round(box.y + box.height / 2) },
+    );
+    expect(topmostIsToggle, 'something covers the removal toggle at 375x812').toBe(true);
+    // A tap target, at the size the tokens promise one.
+    expect(box.height).toBeGreaterThanOrEqual(40);
+
+    // Nothing has been sent yet, so the press below is the only thing that can
+    // have produced what is asserted after it.
+    expect(await objectCommandsSent(page, 'RemoveObject')).toEqual([]);
+
+    await remove.click();
+    await expect(remove).toHaveAttribute('aria-pressed', 'true');
+    const pressed = await pressOnWorld(page);
+    expect(pressed, 'the HUD left no bare world to press at 375x812').toBe(true);
+
+    // **One press, one removal command, and no keyboard anywhere in this test.**
+    const removals = await objectCommandsSent(page, 'RemoveObject');
+    expect(removals).toHaveLength(1);
+    expect(Number.isInteger(removals[0]?.x)).toBe(true);
+    expect(Number.isInteger(removals[0]?.y)).toBe(true);
+    // And the armed mode decided which command it was: a press that had gone to
+    // the other half of the same tool would have spent materials.
+    expect(await objectCommandsSent(page, 'PlaceObject')).toEqual([]);
+
+    // Turning the mode off hands the world back, so a second press posts no
+    // second removal. Without this the assertion above is also true of a tool
+    // that never stops removing.
+    await remove.click();
+    await expect(remove).toHaveAttribute('aria-pressed', 'false');
+    await page.locator('.hud-build__arm').click();
+    await expect(page.locator('.hud-build__arm')).toHaveAttribute('aria-pressed', 'false');
+    expect(await pressOnWorld(page)).toBe(true);
+    expect(await objectCommandsSent(page, 'RemoveObject')).toHaveLength(1);
+  });
+
+  /**
+   * The other half: what the player is *told* when the press removed nothing.
+   *
+   * At 1280x800, because that is where the alerts region exists -- see the test
+   * above for why 375x812 cannot carry this half. The refusal is the simulation's
+   * own, decided at the command's tick and carried back on
+   * `simulation/status-counts`, so this needs a real worker, a running clock and
+   * `src/main.ts`'s own listener, exactly as #261's build-refusal test does.
+   */
+  test('tells the player when a world press had no object to remove (ADR 0028 phase 3)', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    // A running clock: the command is dispatched at a tick, so a paused
+    // simulation would leave it queued and refuse nothing.
+    await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
+    await expect
+      .poll(async () => page.locator('.hud-clock__day-progress').textContent(), {
+        message: 'the simulation never advanced, so no command could be dispatched',
+        timeout: 15_000,
+      })
+      .not.toBe('0%');
+
+    const emptyRow = page.locator('.hud-alerts__list [data-alert="empty"]');
+    await expect(emptyRow).toHaveCount(1);
+
+    await page.locator('.ui-tab[data-tab="build"]').click();
+    await page.locator('.hud-build__remove').click();
+    expect(await pressOnWorld(page), 'the HUD left no bare world to press at 1280x800').toBe(true);
+
+    // The command was accepted, so the thread-local refusal line stays hidden:
+    // this is a refusal *on content*, decided by the simulation, and it travels
+    // the alerts route. If this ever lit up the test would be measuring the
+    // wrong refusal entirely.
+    await expect(page.locator('.hud__refusal')).toBeHidden();
+
+    const alertRow = page.locator('.hud-alerts__list [data-alert]:not([data-alert="empty"])');
+    await expect
+      .poll(async () => alertRow.count(), {
+        message: 'the simulation refused the removal and the alerts list never heard about it',
+        timeout: 20_000,
+      })
+      .toBe(1);
+
+    // Opened, because the alerts section arrives folded and a `toContainText`
+    // against a 0x0 box proves nothing.
+    await page.locator('.hud-minimap .ui-section__header').click();
+    await expect(alertRow).toBeVisible();
+    // The sentence the bundled catalogue gives the id the worker sent, read out
+    // of that catalogue rather than typed here: ADR 0011 puts the key on one
+    // side of the boundary and the text on the other, so a test that hard-coded
+    // the English would stay green while the player read something else.
+    await expect(alertRow).toContainText(localeText('hud.alert.refusal.remove-object.nothing-to-remove'));
+    // A localized sentence, not the wire vocabulary (ADR 0011).
+    await expect(alertRow).not.toContainText('remove-object.');
+    await expect(alertRow).not.toContainText('nothing-to-remove');
   });
 
   /**

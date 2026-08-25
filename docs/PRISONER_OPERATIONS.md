@@ -270,6 +270,86 @@ None of the five `room-catalog-id` actions becomes reachable either: they name
 canteen, shower room, yard, common room and classroom, and a cell is none of
 them.
 
+**An object can now be taken away again, and the room it stood in is not
+repaired behind the player's back.** ADR 0028 phase 3 adds a `RemoveObject`
+command carrying one tile: the object covering that tile is deleted from
+`PlacedObjectRegistry`, the resolver re-derives the room the object's *anchor*
+was in, and nothing else moves. A press on a tile with neither a standing object
+nor an object still being built is refused as
+`remove-object.nothing-to-remove`. Measured on a fresh session
+(`tests/integration/object-removal-loop.test.ts`): a cell reading
+`residentCapacity: 1`, `concurrentUseCapacity: 2` and
+`['sanitation', 'sleep-surface']` reads `0`, `1` and `['sanitation']` the tick
+after the bed is removed, and the tile accepts a new bed immediately.
+
+Three consequences are worth stating here rather than leaving to be discovered.
+
+- **A removal reverses no order and refunds nothing.** The order that built the
+  object stays `completed`; the materials became an object and do not un-become
+  one. What a removal *can* cancel is an order still building something on that
+  tile, and that half does give the materials back, because nothing was built
+  with them. Without it a bed ordered against money the player did not have
+  claimed its tile for the session -- the order sits in `materials-pending`,
+  `PlaceObject` refuses `tile-occupied` against orders in flight, and no gesture
+  could reach it.
+- **A removal is not itself undoable.** It writes no construction order, so
+  there is nothing for `Undo` to pop; the object has to be built again. Making a
+  removal undoable means putting something on the undo stack that is not an
+  order, which is `EditHistoryPort`'s question rather than this phase's.
+- **It is reachable without a keyboard, which is the whole reason the phase
+  exists.** `Undo` is bound to `KeyZ` and nothing else, so before this a
+  misplaced object was permanent for the session on a touch device -- the same
+  trap the Rooms tab shipped with (#312) and fixed in a follow-up (#317). The
+  Build panel gains a `Remove` toggle beside `Place on map`, which arms the
+  object tool to remove; one press on a tile then removes. The numeric fields
+  under it dispatch the same command, so the keyboard route arrives with the
+  gesture rather than after it.
+
+**Removing an object from a room that is occupied or in use evicts nobody, and
+the claim count is allowed to stand above the new capacity.** This is ADR 0028
+decision 2 for residency and the same answer extended to the concurrent-use
+claims ADR 0029 added *after* that decision was written -- so it is worth
+recording as one rule over two collections rather than as two rules:
+
+- **Residency.** `assign` refuses at `occupants.size >= residentCapacity` and
+  `findAvailableResidence` skips a full instance, so the room stops taking new
+  residents. The prisoner already living there keeps their
+  `accommodationInstanceId` and keeps sleeping, because `own-accommodation`
+  resolves by id and re-checks neither gate. Measured: remove the bed from an
+  occupied cell and the prisoner is still `completed`, still housed, still
+  performing `action.sleep` in that cell 2,500 ticks later, while the cell's
+  `object` requirement reads `'missing-capability'` and a second cell is what
+  `findAvailableResidence` now answers with.
+- **Concurrent use.** `claimUse` refuses at
+  `claims.size >= concurrentUseCapacity` and `findAvailableForUse` skips
+  likewise, so the room stops taking new users while the prisoners already
+  performing there finish. Their claims drain through `ActionSystem`'s three
+  release sites, none of which consults a capacity -- which is what makes a
+  dropped capacity unable to leak a claim -- and `releaseUse` is total, so it
+  cannot double-release one either. Measured on a yard seating one:
+  `concurrentUseCapacity` goes 1 to 0 with a claim held, the holder keeps
+  performing, `findAvailableForUse` answers nothing, and `totalUseClaims` is back
+  to 0 when the action ends and still 0 after five in-game days.
+
+**The two alternatives were considered and are worse, for the same reason.**
+Releasing the claims at the removal would leave prisoners performing in a room
+they no longer hold, which under-counts real use and lets the next prisoner in
+over the true ceiling -- the exact failure ADR 0029 exists to remove,
+reintroduced from the other end. Refusing the removal while claims are held would
+contradict decision 2 for residency outright (a cell with a prisoner in it could
+never have its bed taken back) and, for use, would make the control fail for as
+long as lunch lasts with nothing on screen saying when it would start working.
+`reinstateUseClaim` is the evidence this was already the intended reading: it
+deliberately ignores the ceiling so a restore can reproduce a claim count above
+it, and it says so citing decision 2. **`unregister` still refuses above zero
+claims of either kind**, so a removal opens no route to dropping an instance
+somebody is holding: `unzone` answers `room-occupied` exactly as before.
+
+**The save does not move.** A removal deletes a row from the optional objects
+section phase 1 added, and neither capacity nor the capability list is persisted,
+so a restored over-capacity room is the resolver reaching the same answer from
+the same objects rather than a remembered figure.
+
 **Both halves of that are reachable, and the difference between them is where
 #261 step 4 drew its line.** An `AdmitPrisoner` command exists,
 `createSessionCommandHandler` routes it, and the Intake panel on the Overview

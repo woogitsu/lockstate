@@ -810,6 +810,10 @@ window.lockstateUiHarness = {
     const inputs = [...document.querySelectorAll<HTMLInputElement>('.hud-build__coords .ui-number__input')];
     const edgeChooser = document.querySelector<HTMLElement>('.hud-build .ui-choice');
     const arm = document.querySelector<HTMLButtonElement>('.hud-build__arm');
+    const remove = document.querySelector<HTMLButtonElement>('.hud-build__remove');
+    const actions = document.querySelector<HTMLElement>('.hud-build__actions');
+    const body = document.querySelector<HTMLElement>('.hud-build > .ui-panel__body');
+    const hint = document.querySelector<HTMLElement>('.hud-build__map > .hud-build__note');
     const submit = document.querySelector<HTMLButtonElement>('.hud-build .ui-section__body .ui-action');
     const buyToggle = document.querySelector<HTMLButtonElement>('.hud-build__buy-toggle');
     const buyRow = document.querySelector<HTMLElement>('.hud-build__buy');
@@ -842,6 +846,26 @@ window.lockstateUiHarness = {
         [...document.querySelectorAll<HTMLElement>('.hud-build .ui-action')].filter(
           (button) => button.dataset['tone'] === 'primary',
         ).length === 1,
+      removeLabel: remove?.textContent?.trim() ?? '',
+      // A box the browser actually gave it, not an attribute: the row this sits
+      // in is the one ADR 0022 measured a third button overflowing.
+      removeLaidOut: remove !== null && remove.getClientRects().length > 0,
+      removing: remove?.getAttribute('aria-pressed') === 'true',
+      // How far past the panel body's content edge the actions row's last
+      // laid-out button reaches. Read off the *buttons* rather than off the
+      // row's `scrollWidth`, because a flex row that overflows still reports its
+      // own width as the container's -- which is exactly how a third button can
+      // overflow without the row saying so.
+      actionsOverflowPx: ((): number => {
+        if (actions === null || body === null) return 0;
+        const limit = body.getBoundingClientRect().right;
+        const buttons = [...actions.querySelectorAll<HTMLElement>('.ui-action')].filter(
+          (button) => button.getClientRects().length > 0,
+        );
+        const rightmost = buttons.reduce((widest, button) => Math.max(widest, button.getBoundingClientRect().right), 0);
+        return buttons.length === 0 ? 0 : Math.round((rightmost - limit) * 10) / 10;
+      })(),
+      hint: hint?.textContent?.trim() ?? '',
       coordinatesCollapsed: coordinates?.dataset['collapsed'] === 'true',
       targetReadout: target?.dataset['target'] ?? null,
       targetText: target?.querySelector('.hud-build__target-value')?.textContent?.trim() ?? '',
@@ -890,6 +914,15 @@ window.lockstateUiHarness = {
     const arm = document.querySelector<HTMLButtonElement>('.hud-build__arm');
     if (arm === null) return false;
     arm.click();
+    return true;
+  },
+
+  clickRemoveObject(): boolean {
+    const remove = document.querySelector<HTMLButtonElement>('.hud-build__remove');
+    if (remove === null) return false;
+    // A real click, so a disabled button genuinely does not fire -- the same
+    // path a player's tap takes.
+    remove.click();
     return true;
   },
 

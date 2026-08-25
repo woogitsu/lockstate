@@ -1,6 +1,6 @@
 import type { BuildOrderFailReason } from '../construction/build-order';
 import type { PurchaseRefusalReason } from '../economy/procurement';
-import type { PlaceObjectRefusalReason } from '../objects/object-placement-service';
+import type { PlaceObjectRefusalReason, RemoveObjectRefusalReason } from '../objects/object-placement-service';
 import type { AdmitPrisonerRefusalReason } from '../prisoners/prisoner-operations-runtime';
 import type { RefusalReason, SimulationRefusal } from '../protocol/types';
 import type { UnzoneRoomRefusalReason, ZoneRoomRefusalReason } from '../rooms/zoning';
@@ -174,6 +174,27 @@ export const PLACE_OBJECT_REFUSAL_REASONS: Readonly<Record<PlaceObjectRefusalRea
   'tile-occupied': 'place-object.tile-occupied',
   'unknown-buildable': 'place-object.unknown-buildable',
   'unowned-land': 'place-object.unowned-land',
+};
+
+/**
+ * `RemoveObjectRefusalReason`, mapped onto the wire's. Exhaustive for the same
+ * reason as above (ADR 0028 phase 3).
+ *
+ * **One entry, and the table exists anyway.** A single-member union could have
+ * been recorded with a literal at the call site, and the reason it is not is
+ * that this table is what makes a *second* reason a compile error rather than a
+ * silent `undefined` on the wire: whoever decides that a removal can also be
+ * refused for some new condition is made to give it a sentence in the same
+ * change. Every other command's refusals arrived that way and this one should
+ * not be the exception because it started small.
+ *
+ * `nothing-to-remove` is spelled exactly like `UNZONE_REFUSAL_REASONS`'s member
+ * of the same name -- the fourth demonstration of why the wire ids are
+ * namespaced rather than flat. A player who pressed a tile with no object on it
+ * must not be told there was no room there.
+ */
+export const REMOVE_OBJECT_REFUSAL_REASONS: Readonly<Record<RemoveObjectRefusalReason, RefusalReason>> = {
+  'nothing-to-remove': 'remove-object.nothing-to-remove',
 };
 
 /** `PurchaseOutcome`'s refusal reasons, mapped onto the wire's. Exhaustive for the same reason as above. */

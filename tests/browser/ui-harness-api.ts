@@ -101,6 +101,28 @@ export interface BuildProbe {
   readonly armLabel: string;
   readonly armed: boolean;
   readonly armIsPrimary: boolean;
+  /**
+   * The removal toggle (ADR 0028 phase 3): its label, whether it is laid out,
+   * and whether the mode is on.
+   *
+   * `removeLaidOut` is a `getClientRects()` answer and not an attribute, for the
+   * reason `buyToggleVisible` is: this is the third button in a row ADR 0022
+   * measured a third button overflowing, so "the browser gave it a box" is the
+   * only assertion worth making about it.
+   */
+  readonly removeLabel: string;
+  readonly removeLaidOut: boolean;
+  readonly removing: boolean;
+  /**
+   * The right edge of the actions row's last laid-out button against the panel
+   * body's right edge, in CSS pixels: positive means it overflows.
+   *
+   * The measurement ADR 0022 took when it rejected a third control here, taken
+   * again on the row that now has one.
+   */
+  readonly actionsOverflowPx: number;
+  /** The note line under the controls, which says what the armed gesture does. */
+  readonly hint: string;
   /** True while the numeric fallback section is folded away. */
   readonly coordinatesCollapsed: boolean;
   /** The `data-target` readout, or null when nothing is aimed at. */
@@ -384,6 +406,8 @@ export interface LockstateUiHarness {
   /** Presses the hire button. A real click, so a disabled button genuinely does nothing. */
   clickHireStaff(): boolean;
   clickArmBuild(): boolean;
+  /** Turns the Build panel's removal mode on or off (ADR 0028 phase 3). A real click. */
+  clickRemoveObject(): boolean;
   expandBuildCoordinates(): boolean;
   clickBuildable(definitionId: string): boolean;
   stepBuildCoordinate(axis: 'x' | 'y', direction: 'up' | 'down'): boolean;

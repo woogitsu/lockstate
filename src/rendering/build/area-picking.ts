@@ -184,11 +184,36 @@ export interface RoomToolPort {
  * actually left was this interface and one preview call.
  */
 export interface ObjectToolPort {
-  /** True while world pointer input places an object instead of panning. */
+  /** True while world pointer input places or removes an object instead of panning. */
   isArmed(): boolean;
-  /** The armed object's footprint in tiles, or `undefined` while nothing is selected. */
+  /**
+   * True while the armed gesture *removes* an object rather than placing one
+   * (ADR 0028 phase 3).
+   *
+   * The same shape as `RoomToolPort.isRemoving` and read for the same one
+   * purpose: which preview to draw. `AreaOverlay.update` already takes an
+   * `undefined` tint to mean "this gesture removes", so the scene passes no
+   * colour while this is true and the removal look costs nothing new.
+   *
+   * The scene learns nothing else from it. What a press *means* is decided
+   * where the tool lives, because that is the layer that knows the HUD's
+   * vocabulary; a scene that branched on this would be deciding which command
+   * the player sent, which it may not do.
+   */
+  isRemoving(): boolean;
+  /**
+   * The armed object's footprint in tiles, or `undefined` while nothing is
+   * selected.
+   *
+   * While removing it is `1x1`, and that is honest rather than a placeholder: a
+   * removal names one tile and the tile index finds whatever covers it, so the
+   * footprint of the thing that will actually go is not knowable here -- it
+   * lives in the simulation, in the worker, and the object under the pointer may
+   * be 3x2. A preview that guessed would draw a rectangle the press does not
+   * mean.
+   */
   footprint(): { readonly width: number; readonly height: number } | undefined;
-  /** The player pressed and released. One object, one order, one command. */
+  /** The player pressed and released. One tile: one object placed, or one removed. */
   place(tile: { readonly tileX: number; readonly tileY: number }): void;
   /** Live feedback for the panel's readout. `undefined` when nothing is targeted. */
   target?(rect: TileRect | undefined): void;

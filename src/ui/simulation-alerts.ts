@@ -52,6 +52,7 @@ const REFUSAL_LABEL_KEYS: Readonly<Record<RefusalReason, LocalizationKey>> = {
   'purchase.insufficient-funds': 'hud.alert.refusal.purchase.insufficient-funds',
   'purchase.invalid-quantity': 'hud.alert.refusal.purchase.invalid-quantity',
   'purchase.unknown-material': 'hud.alert.refusal.purchase.unknown-material',
+  'remove-object.nothing-to-remove': 'hud.alert.refusal.remove-object.nothing-to-remove',
   'zone.below-minimum-size': 'hud.alert.refusal.zone.below-minimum-size',
   'zone.duplicate-instance-id': 'hud.alert.refusal.zone.duplicate-instance-id',
   'zone.invalid-area': 'hud.alert.refusal.zone.invalid-area',
