@@ -667,22 +667,54 @@ Left open deliberately, and none of them decided in code.
    and the Build panel's folded coordinates section exists for exactly that
    reason — its own comment calls deleting the numeric fields "the easy half of
    this change and the wrong half". The Rooms panel shipped without an
-   equivalent, so a rectangle can only be expressed by dragging.
+   equivalent, so a rectangle can only be expressed by dragging. **Still open.**
 
-   This has a measured consequence rather than only a principled one. On the
-   assembled page at **375×812** on the Rooms tab, with the save panel above
-   and the Rooms panel below, **there is no square of bare world of any size**:
-   the two panels are full-width at y 96–252 and y 268–719, the strip takes 88px
-   and the tab bar starts at y 743, so the gaps between them are 8, 16 and 24
-   pixels. A player on that phone must collapse a panel before they can draw,
-   and the panel is collapsible so they can — but the confirm control is inside
-   the panel they just folded. `tests/browser/app-shell.spec.ts` records the two
-   controls a pending rectangle reveals as unreachable at that viewport rather
-   than pretending otherwise.
+   The *phone* half of this question is closed, and closing it did not need a
+   numeric route. It is recorded here in full because the answer is a different
+   one from the one this item expected.
 
-   What the answer is — a numeric fallback like the Build panel's, a
-   collapse-aware confirm, or a different phone layout — is a design decision
-   and is not made here.
+   As measured when this amendment was written: on the assembled page at
+   **375×812** on the Rooms tab, with the save panel above and the Rooms panel
+   below, there is no square of bare world of any usable size — the two panels
+   are full-width at y 96–252 and y 268–719, the strip takes 88px and the tab bar
+   starts at y 743, so the gaps between them are 8, 16 and 24 pixels and the
+   largest square of bare canvas anywhere on the page is **16px**, a quarter of
+   one tile. This item said a player "must collapse a panel before they can draw,
+   and the panel is collapsible so they can". **The second half of that was
+   false.** `createPanel` collapses a panel by setting `hidden` on its body, and
+   `hud.css` gives `.hud-build > .ui-panel__body` and
+   `.hud-rooms > .ui-panel__body` a flex `display` of their own — which outranks
+   the user agent's `[hidden] { display: none }`. Pressing "Collapse" on either
+   panel flipped `data-collapsed`, announced `aria-expanded="false"` and left the
+   whole body on screen: measured at 375×812, a 451.1px panel with a 404.1px body
+   and the same 16px of bare world. So there was no escape hatch, and the feature
+   was unusable on a phone rather than merely awkward.
+
+   Both halves are fixed. `.ui-panel > .ui-panel__body[hidden]` in
+   `primitives.css` makes the fold real (the selector carries `.ui-panel >`
+   because a bare `.ui-panel__body[hidden]` ties `.hud-rooms > .ui-panel__body`
+   on specificity and loses on source order), and the Rooms panel now uses that
+   fold on the player's behalf: **arming folds it to its header, and a finished
+   rectangle brings it back.** Measured in the drawing state at 375×812, same
+   page, same prison: the panel is 47px at y 672, the save panel takes 227px of
+   the slack it left, and the band between them is 348.8px tall and the full
+   375px wide — a 336px square of bare world, which was the measuring scan's own
+   cap. Arrival geometry is unchanged at 1280×720, 900×600 and 375×812, so no
+   desktop viewport paid for it. The two controls a pending rectangle reveals are
+   now hit-tested at 44px in both axes at all three, and
+   `tests/browser/app-shell.spec.ts` asserts that geometry numerically where it
+   used to record the controls as unreachable.
+
+   What is *not* answered is the part this item leads with: there is still no
+   keyboard or numeric route to a rectangle. A fallback mirroring the Build
+   panel's was weighed and rejected for now on a measurement — the Rooms panel's
+   always-visible budget at 900×600 is **7.9px**, the distance from the status
+   block's bottom edge to the panel's own fold, and a collapsed section of its own
+   is 45px; the actions row cannot host the disclosure toggle either, since at the
+   rail's 264px that row is already over-subscribed (the arm button renders 98.7px
+   wide for 104px of content). So a numeric route needs somewhere to live that
+   costs no always-visible height, and finding one is a design decision that is
+   still not made here.
 
 2. **Two adjacent same-type rectangles are still two `RoomInstance`s, and
    removal treats them as one region.** Unchanged in the first direction and

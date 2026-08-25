@@ -62,6 +62,17 @@ import type {
  * it rather than needing a discard first -- which is how a player actually
  * corrects a rectangle that came out 6x5.
  *
+ * ### The panel gets out of the way of the thing it operates on
+ *
+ * Arming folds the panel to its header; a finished rectangle brings it back.
+ * That is the answer to the question ADR 0022's amendment left open, and it is
+ * a measurement rather than a taste: at 375x812 with both rail panels expanded
+ * the largest square of bare world on the whole page is 16px, so there was
+ * nowhere to drag and therefore no way to reach the confirm pair. See the
+ * `drawingFolded` declaration for the geometry either side of the change, and
+ * `.ui-panel__body[hidden]` in `primitives.css` for why this fold did nothing
+ * at all before it.
+ *
  * **The confirm gates removals too**, and that is deliberate rather than
  * uniformity for its own sake. A removal drag grows every tile it covers into
  * that tile's whole connected same-type run, so clipping the corner of a 6x6
@@ -159,6 +170,38 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
   let selectedId = model.rooms[0]?.roomId;
   let armed = false;
   let removing = false;
+  /*
+   * Whether the panel is folded, in two parts, because the answer depends on
+   * what the player is doing.
+   *
+   * `playerFolded` is the panel's own fold: what the header control means at
+   * every other moment. `drawingFolded` is the fold *during a drawing pass* --
+   * armed, with nothing yet to confirm -- and it starts folded on every arm
+   * press, because a panel that covers the thing it operates on is not a panel
+   * the player can draw on.
+   *
+   * That is not a preference, it is the measurement in `hud.css`'s Rooms block
+   * read the other way round. On the assembled page at 375x812, Rooms tab, one
+   * prison saved, both panels expanded: the save panel occupies y 96..251.7 and
+   * this panel y 267.7..718.8, both the full width, and the gaps between them,
+   * the 88px strip and the tab bar are 8, 16 and 24 pixels. The largest square
+   * of bare world anywhere on that page is **16px**, and the whole interaction
+   * is "drag a rectangle across the tiles this room should cover" -- so the two
+   * controls a pending rectangle reveals could not be reached at all, which is
+   * what ADR 0022's amendment recorded and left open.
+   *
+   * Folded, the panel is 47px -- its 45px header plus its own hairlines -- and
+   * the band the rail then leaves between the two panels is 348.8px tall and the
+   * full 375px wide. So the fix
+   * is not new chrome, and it could not have been: the panel's *always-visible*
+   * budget at 900x600 is 7.9px, measured as the distance from the status
+   * block's bottom edge to the panel's own fold, and a collapsed section of its
+   * own is 45px. What was missing was that this fold be used, and that it work
+   * at all -- see `.ui-panel__body[hidden]` in `primitives.css`, which is why
+   * pressing "Collapse" here used to change nothing on screen.
+   */
+  let playerFolded = false;
+  let drawingFolded = true;
   /** The rectangle the pointer is currently over, whether or not the gesture has finished. */
   let area: RoomsPanelArea | undefined;
   /** The finished rectangle awaiting a confirm. */
@@ -167,6 +210,19 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
 
   const selectedRoom = (): HudRoomViewModel | undefined =>
     model.rooms.find((entry) => entry.roomId === selectedId);
+
+  /**
+   * A drawing pass: the tool is armed and there is nothing to confirm yet, so
+   * the player's attention is on the world rather than on this panel.
+   *
+   * A *pending* rectangle ends the pass even though the tool stays armed --
+   * dragging again replaces the rectangle, so the tool has to stay armed -- and
+   * that is the whole reason this reads `pending === undefined` rather than
+   * `armed`: the moment there is something to confirm, the panel is the only
+   * place the player can confirm it.
+   */
+  const drawing = (): boolean => armed && pending === undefined;
+  const folded = (): boolean => (drawing() ? drawingFolded : playerFolded);
 
   // ---- what kind of room -------------------------------------------
   const catalogueList = element('div', { className: 'hud-rooms__list' });
@@ -270,7 +326,14 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
       // tool, and a player pressing "Draw on map" while removal was on has
       // said which of the two they want.
       removing = false;
+      const wasArmed = armed;
       armed = !armed;
+      // A fresh press of "Draw on map" is a fresh statement of intent, so the
+      // panel goes back out of the way even if the player pulled it open during
+      // the last pass. Only on the transition: re-folding a panel the player
+      // opened, on a press that did not arm anything, would be the surface
+      // arguing with them.
+      if (armed && !wasArmed) drawingFolded = true;
       paintActions();
       options.onArm(armed, { ...(selectedId === undefined ? {} : { roomId: selectedId }), removing: false });
     },
@@ -303,7 +366,11 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
       // here", and silently changing which would be the panel deciding
       // something the player did not say.
       pending = undefined;
+      const wasArmed = armed;
       armed = removing || armed;
+      // Arming to remove is arming, so it starts a drawing pass on the same
+      // terms as the button beside it.
+      if (armed && !wasArmed) drawingFolded = true;
       paintActions();
       options.onArm(armed, { ...(selectedId === undefined ? {} : { roomId: selectedId }), removing });
     },
@@ -505,6 +572,10 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
     paintArea();
     paintRule();
     paintNote();
+    // Last, and from here rather than from each of the six call sites: the fold
+    // is a function of `armed` and `pending`, and every state change that
+    // touches either already comes through this function.
+    paintFold();
   }
 
   function paintArea(): void {
@@ -523,7 +594,6 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
     areaBlock.dataset['area'] = `${shown.x},${shown.y},${shown.width},${shown.height}`;
   }
 
-  let panelCollapsed = false;
   const panel = createPanel({
     title: t(HUD_MESSAGE_KEY.roomsTitle),
     icon: 'rooms',
@@ -533,11 +603,23 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
       expandLabel: t(HUD_MESSAGE_KEY.panelExpand),
       collapsed: false,
       onToggle: () => {
-        panelCollapsed = !panelCollapsed;
-        panel.setCollapsed(panelCollapsed);
+        // The player's press always wins; which of the two states it moves is
+        // decided by whether a drawing pass is in progress. Inside one it moves
+        // the panel for the rest of that pass -- so a player who wants to read
+        // the rule while the tool is armed keeps the panel open until they arm
+        // again -- and outside one it is the panel's own fold, as on every other
+        // panel in the HUD.
+        if (drawing()) drawingFolded = !folded();
+        else playerFolded = !playerFolded;
+        paintFold();
       },
     },
   });
+
+  /** The fold, as a function of what the player is doing rather than of history. */
+  function paintFold(): void {
+    panel.setCollapsed(folded());
+  }
   panel.body.append(
     catalogue.element,
     element('div', { className: 'hud-rooms__map', children: [actionsRow, areaBlock, note] }),
@@ -562,6 +644,16 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
     setPendingArea(next: RoomsPanelArea | undefined): void {
       pending = next;
       area = undefined;
+      // A finished rectangle opens the panel, whatever was folded before it.
+      // `drawing()` already ends the pass, which covers the fold this surface
+      // applied itself; this line covers the other one -- a player who had
+      // folded the panel by hand before arming would otherwise be holding a
+      // rectangle whose only two controls are inside a body that is not on
+      // screen, which is the defect being fixed rather than a variant of it.
+      // It is an *event*, not an invariant: the header control still folds the
+      // panel while a rectangle is pending, because a control that did nothing
+      // would be worse than a panel in the way.
+      if (next !== undefined) playerFolded = false;
       paintActions();
     },
     setZoningNotice(next: HudZoningNoticeViewModel | undefined): void {

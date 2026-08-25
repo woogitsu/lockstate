@@ -1339,6 +1339,43 @@ test.describe('HUD shell', () => {
         ).toBeLessThanOrEqual(probe.panelVisibleBottom);
       }
     });
+
+    test('folds to its header, which its own comment relies on at 375px', async ({ page }) => {
+      // `build-panel.ts` says the panel is collapsible because "at 375px it
+      // covers most of the world, and the whole interaction is now point at the
+      // world -- so folding it to its header while placing is not a nicety".
+      // That was not true: `createPanel` collapses by setting `hidden` on the
+      // body, and `.hud-build > .ui-panel__body`'s own flex `display` outranks
+      // the user agent's `[hidden] { display: none }`, so the control stamped
+      // `data-collapsed`, announced `aria-expanded="false"` and left the body
+      // exactly where it was. `.ui-panel > .ui-panel__body[hidden]` in
+      // `primitives.css` is the fix, and this is the assertion that keeps it.
+      //
+      // The box, not the attribute: an assertion on `hidden` or on
+      // `data-collapsed` agreed with the defect, because both were already
+      // correct.
+      await page.setViewportSize({ width: 375, height: 812 });
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+
+      const bodyHeight = async (): Promise<number> =>
+        page.evaluate(() => {
+          const body = document.querySelector<HTMLElement>('.hud-build > .ui-panel__body');
+          if (body === null || body.getClientRects().length === 0) return 0;
+          return Math.round(body.getBoundingClientRect().height * 10) / 10;
+        });
+
+      expect(await bodyHeight(), 'the Build panel arrives folded').toBeGreaterThan(100);
+      const panel = page.locator('.hud-build');
+      const toggle = page.locator('.hud-build > .ui-panel__header > .ui-panel__toggle');
+      await toggle.click();
+      await expect(panel).toHaveAttribute('data-collapsed', 'true');
+      expect(await bodyHeight(), 'folding the Build panel left its body laid out').toBe(0);
+      // And it is a fold rather than a one-way door.
+      await toggle.click();
+      await expect(panel).toHaveAttribute('data-collapsed', 'false');
+      expect(await bodyHeight(), 'the Build panel did not come back').toBeGreaterThan(100);
+    });
   });
 
   /**
@@ -1587,8 +1624,86 @@ test.describe('the Rooms panel', () => {
       JSON.stringify({ kind: 'zone-room', roomId: 'room.cell', area: { x: 4, y: 6, width: 2, height: 3 } }),
     ]);
     const after = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
-    expect(after.armLaidOut, 'the panel returns to its arm state').toBe(true);
-    expect(after.confirmLaidOut).toBe(false);
+    // The confirm pair is gone, so the row is back to holding the arm pair --
+    // and the panel is back to being folded, because the tool is still armed and
+    // there is nothing left to confirm. That is the loop: draw, confirm, draw
+    // again, with the panel out of the way for the parts that happen on the
+    // world. The arm control is inside the folded body and so is not laid out,
+    // which is why this reads the pair rather than the button.
+    expect(after.confirmLaidOut, 'the panel returns to its arm state').toBe(false);
+    expect(after.cancelLaidOut).toBe(false);
+    expect(after.folded, 'confirming did not resume the drawing pass').toBe('true');
+    expect(after.armLaidOut, 'the arm control is inside the folded body').toBe(false);
+  });
+
+  /**
+   * The fold, which is this panel's answer to a measurement made one layer up.
+   *
+   * On the assembled page at 375x812 the two rail panels leave a largest square
+   * of bare world of 16px, so the drag this whole surface is built around had
+   * nowhere to happen and the two controls a finished rectangle reveals could not
+   * be reached at all -- the state ADR 0022's amendment recorded and left open.
+   * `app-shell.spec.ts` owns that geometry, because this harness leaves the
+   * rail's aside slot empty and the class of defect cannot be reproduced here.
+   *
+   * What belongs *here* is the state machine, which is the panel's own decision
+   * and is about no viewport at all: when the panel folds itself, when it comes
+   * back, and what happens when the player disagrees. The last of those is the
+   * one most worth a test -- a surface that folds itself is a surface that can
+   * fight its owner, and the rule is that the player's press wins until they arm
+   * again.
+   */
+  test('folds itself while the player draws, comes back to be confirmed, and yields to the player', async ({
+    page,
+  }) => {
+    const probe = async () => page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+
+    // It arrives open: the catalogue is the first thing the player needs.
+    const arrival = await probe();
+    expect(arrival.folded, 'the panel arrives folded').toBe('false');
+    expect(arrival.bodyLaidOut).toBe(true);
+
+    // Arming is the moment the panel is in the way of the thing it operates on.
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('arm'));
+    const drawing = await probe();
+    expect(drawing.folded, 'arming did not fold the panel').toBe('true');
+    // Folded means *no box*, not `hidden` set on a body that lays out anyway --
+    // which is exactly what this was. See `.ui-panel__body[hidden]`.
+    expect(drawing.bodyLaidOut, 'the folded body is still laid out').toBe(false);
+
+    // A finished rectangle brings it back, because the panel is the only place
+    // the rectangle can be confirmed.
+    await page.evaluate(() => window.lockstateUiHarness.dragWorldRoom({ x: 4, y: 6, width: 2, height: 3 }));
+    const pending = await probe();
+    expect(pending.folded, 'a pending rectangle left the panel folded').toBe('false');
+    expect(pending.confirmLaidOut).toBe(true);
+    expect(pending.cancelLaidOut).toBe(true);
+
+    // Discarding resumes the drawing pass, so the panel goes back out of the way.
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('cancel'));
+    expect((await probe()).folded, 'discarding did not resume the drawing pass').toBe('true');
+
+    // And the player wins. Pulling the panel open mid-pass -- to re-read an
+    // authored minimum, say -- keeps it open for the rest of that pass rather
+    // than being undone by the next repaint. Picking a room type is a repaint
+    // that goes through the same paint path the fold does, which is why it is
+    // what this presses.
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('fold'));
+    expect((await probe()).folded, "the player's own press did not open the panel").toBe('false');
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomType('room.yard'));
+    const repainted = await probe();
+    expect(repainted.selected, 'the repaint did not happen').toBe('room.yard');
+    expect(repainted.folded, 'a repaint closed a panel the player had opened').toBe('false');
+
+    // Until they arm again, which is a fresh statement of intent. Disarming
+    // first, because the arm control is a toggle and the panel is open, so both
+    // presses are ones a player can actually make.
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('arm'));
+    const disarmed = await probe();
+    expect(disarmed.armPressed, 'the tool did not disarm').toBe('false');
+    expect(disarmed.folded, 'disarming left the panel folded').toBe('false');
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('arm'));
+    expect((await probe()).folded, 'a fresh arm press did not fold the panel').toBe('true');
   });
 
   test('discarding a pending rectangle asks the host for nothing', async ({ page }) => {
