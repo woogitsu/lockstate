@@ -480,6 +480,15 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
    * thing that calls it, which is why
    * `tests/foundation/composition-root-contract.test.ts` pins it.
    *
+   * It is handed the list it is updating, exactly as the clock translator is
+   * handed the clock it is updating, because the alerts list has had two
+   * producers since #187: a refusal the simulation decided, and an
+   * uncorrelated `protocol/error` that nothing else on this thread reads. The
+   * two arrive on separate messages and neither may erase the other -- and a
+   * status-counts publication arrives up to twice a second, so a fault row
+   * that did not survive one would be painted over within 500 ms, which the
+   * player cannot tell apart from the swallowing #187 finding 3 reported.
+   *
    * One listener for all three, because they land on one view model: a
    * message that says nothing about any of them leaves the HUD alone rather
    * than triggering a repaint.
@@ -487,7 +496,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   client?.addListener((message) => {
     const clock = hudClockFromWorkerMessage(message, viewModel.clock);
     const counts = hudCountsFromWorkerMessage(message);
-    const alerts = hudAlertsFromWorkerMessage(message);
+    const alerts = hudAlertsFromWorkerMessage(message, viewModel.alerts);
     if (clock === undefined && counts === undefined && alerts === undefined) return;
     viewModel = {
       ...viewModel,

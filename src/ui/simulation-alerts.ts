@@ -1,5 +1,5 @@
 import type { LocalizationKey } from '../content/localization';
-import type { RefusalReason, WorkerToMainMessage } from '../simulation/protocol/types';
+import type { ProtocolFaultCode, RefusalReason, WorkerToMainMessage } from '../simulation/protocol/types';
 import type { HudAlertViewModel } from './hud/view-model';
 
 /**
@@ -49,6 +49,62 @@ const REFUSAL_LABEL_KEYS: Readonly<Record<RefusalReason, LocalizationKey>> = {
 };
 
 /**
+ * What the player is told about each protocol fault the worker can raise.
+ *
+ * A `Record` over the closed `ProtocolFaultCode` union for the same reason
+ * `REFUSAL_LABEL_KEYS` is one: a thirteenth code added to the protocol fails
+ * to compile here until somebody decides what it says to a player, which is
+ * the property a lookup with a fallback would not have. Every key is resolved
+ * against the bundled catalog by `tests/unit/ui-simulation-alerts.test.ts`.
+ *
+ * ## Why one sentence per code serves both directions
+ *
+ * These rows have two producers, and they are on opposite sides of the
+ * boundary: the worker rejecting a message the main thread sent
+ * (`src/simulation/worker/worker.ts`, `recoverable: true` since ADR 0024), and
+ * the main thread rejecting a message the worker sent
+ * (`SimulationClient.handleMessage`, `recoverable: false`). Each sentence is
+ * therefore written to be true of both -- "a simulation message was rejected
+ * because ...", never "the worker said" or "this page could not read" -- and
+ * the direction is carried by `severity`, which is the part of the difference
+ * a player can act on.
+ *
+ * Splitting them would need twenty-four keys to express a distinction whose
+ * player-facing content is "can I keep playing", and that is already said.
+ * The *diagnostic* difference is not lost either: both producers write the
+ * direction into `payload.message`, which reaches the console.
+ */
+const PROTOCOL_FAULT_LABEL_KEYS: Readonly<Record<ProtocolFaultCode, LocalizationKey>> = {
+  'invalid-message': 'hud.alert.fault.invalid-message',
+  'unsupported-protocol-version': 'hud.alert.fault.unsupported-protocol-version',
+  'unknown-message-kind': 'hud.alert.fault.unknown-message-kind',
+  'invalid-payload': 'hud.alert.fault.invalid-payload',
+  'not-initialized': 'hud.alert.fault.not-initialized',
+  'already-initialized': 'hud.alert.fault.already-initialized',
+  'duplicate-message': 'hud.alert.fault.duplicate-message',
+  'sequence-gap': 'hud.alert.fault.sequence-gap',
+  'invalid-state': 'hud.alert.fault.invalid-state',
+  'snapshot-incompatible': 'hud.alert.fault.snapshot-incompatible',
+  'shutting-down': 'hud.alert.fault.shutting-down',
+  'internal-error': 'hud.alert.fault.internal-error',
+};
+
+/**
+ * The two row families this module produces, as prefixes on
+ * `HudAlertViewModel.id`.
+ *
+ * The list is a single flat array on the view model, and the two producers
+ * update it independently -- a status-counts publication replaces the refusal
+ * row and must leave a standing fault alone, and a fault must leave the
+ * refusal alone. The id already has to be stable and unique per row, so it is
+ * also the cheapest place to record which family a row belongs to; the
+ * alternative is a second field on `HudAlertViewModel` that only this module
+ * would ever read, and that the HUD would have to ignore.
+ */
+const REFUSAL_ROW_PREFIX = 'refusal-';
+const FAULT_ROW_PREFIX = 'fault-';
+
+/**
  * Turns what the worker said it refused into the rows the HUD's alerts list
  * paints.
  *
@@ -68,13 +124,26 @@ const REFUSAL_LABEL_KEYS: Readonly<Record<RefusalReason, LocalizationKey>> = {
  * `.hud__unavailable` -- and #261 the only assignment to the field anywhere in
  * `src/` was the literal `[]` in `EMPTY_HUD_VIEW_MODEL`.
  *
- * ## Why a list of at most one
+ * ## Two producers, and why `previous` is a parameter
  *
- * The channel is a snapshot on a cadence and carries the *last* refusal, so
- * there is exactly one row to paint or none -- see `RefusalLog` for why a
- * queue could not be carried honestly here. The return type is still a list
- * because `HudViewModel.alerts` is one and the HUD orders what it is given;
- * a second producer of alerts merges into this list rather than replacing it.
+ * The refusal channel is a snapshot on a cadence carrying the *last* refusal,
+ * so it contributes exactly one row or none -- see `RefusalLog` for why a
+ * queue could not be carried honestly there. Since #187 there is a second
+ * producer: an uncorrelated `protocol/error`, which is the fault nobody else
+ * reads.
+ *
+ * They arrive on separate messages and neither may erase the other. Returning
+ * the complete list from the message alone cannot express that -- a
+ * status-counts publication arrives up to twice a second, so a fault row
+ * returned on its own would be painted over within 500 ms, which is
+ * indistinguishable from the swallowing this change exists to remove. So the
+ * caller passes the list it is holding and gets the next one back, exactly as
+ * it already does for `hudClockFromWorkerMessage(message, viewModel.clock)`.
+ * The function stays pure: same arguments, same result, no state of its own.
+ *
+ * The list stays bounded -- at most one refusal row and at most one row per
+ * fault code -- so `docs/HUD_PROJECTIONS.md` contract 5 still has nothing to
+ * page here.
  *
  * ## Why it stays up
  *
@@ -98,33 +167,84 @@ const REFUSAL_LABEL_KEYS: Readonly<Record<RefusalReason, LocalizationKey>> = {
  */
 export function hudAlertsFromWorkerMessage(
   message: WorkerToMainMessage,
+  previous: readonly HudAlertViewModel[] = [],
 ): readonly HudAlertViewModel[] | undefined {
   switch (message.kind) {
     case 'simulation/status-counts': {
       const { refusal } = message.payload;
-      if (refusal === undefined) return [];
+      const standing = previous.filter((row) => !row.id.startsWith(REFUSAL_ROW_PREFIX));
+      if (refusal === undefined) return standing;
       return [
+        ...standing,
         {
           // The refusal's own ordinal, so a readout that repeats an
           // unchanged refusal beside a changed count updates the row the
           // player is looking at instead of rebuilding it -- which is what
           // `HudAlertViewModel.id` exists for -- while a *new* refusal is a
           // new row rather than the old one silently rewritten.
-          id: `refusal-${refusal.sequence}`,
+          id: `${REFUSAL_ROW_PREFIX}${refusal.sequence}`,
           labelKey: REFUSAL_LABEL_KEYS[refusal.reason],
           severity: 'warning',
         },
       ];
     }
 
+    case 'protocol/error': {
+      // A fault that answers a request is already reported by whoever made
+      // the request, and reporting it twice is worse than not reporting it
+      // here: `WorkerSessionHost` rejects the pending promise with a
+      // `WorkerFaultError`, and the save panel names the action that failed.
+      // What has never had a reader is the *uncorrelated* fault -- and it is
+      // uncorrelated for a reason in every case that can produce one, which
+      // is what makes this rule a boundary rather than a filter.
+      if (message.replyTo !== undefined) return undefined;
+      const { code, recoverable } = message.payload;
+      return replaceOrAppend(previous, {
+        // Keyed by code, not by occurrence, and that is what keeps the list
+        // bounded: a peer emitting malformed messages in a loop updates one
+        // row rather than growing the alerts list without limit, which is
+        // `docs/HUD_PROJECTIONS.md` contract 5. There are twelve fault codes,
+        // so there are at most twelve of these rows in a session.
+        id: `${FAULT_ROW_PREFIX}${code}`,
+        labelKey: PROTOCOL_FAULT_LABEL_KEYS[code],
+        // The two halves of #187 differ here and nowhere else. A worker that
+        // rejected a message it never applied stays usable and says so
+        // (`recoverable: true`, ADR 0024); a reply this thread could not read
+        // leaves it unable to say what the worker did at all. That is the
+        // difference between "something you asked for did not happen" and
+        // "stop trusting what you are looking at", and it is the one thing
+        // about a fault a player can act on.
+        severity: recoverable ? 'warning' : 'danger',
+      });
+    }
+
     // The session is over. A refusal by a simulation that no longer exists is
-    // not something the player can act on, so the list empties -- the same
-    // thing the counts do with `EMPTY_HUD_VIEW_MODEL.counts` and the clock
-    // does with `UNKNOWN_HUD_CLOCK`.
+    // not something the player can act on, and neither is a fault raised by a
+    // worker that has stopped, so the list empties -- the same thing the
+    // counts do with `EMPTY_HUD_VIEW_MODEL.counts` and the clock does with
+    // `UNKNOWN_HUD_CLOCK`.
     case 'simulation/stopped':
       return [];
 
     default:
       return undefined;
   }
+}
+
+/**
+ * `row` in place of the row sharing its id, or appended if there is none.
+ *
+ * In place rather than moved to the end, because the position of a row the
+ * player is already reading must not change under them when the same fault
+ * recurs -- the same property `HudAlertViewModel.id` exists for. Rebuilt as a
+ * new array rather than mutated: the view model is a value, and `src/main.ts`
+ * replaces the whole field.
+ */
+function replaceOrAppend(
+  previous: readonly HudAlertViewModel[],
+  row: HudAlertViewModel,
+): readonly HudAlertViewModel[] {
+  return previous.some((existing) => existing.id === row.id)
+    ? previous.map((existing) => (existing.id === row.id ? row : existing))
+    : [...previous, row];
 }

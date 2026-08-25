@@ -430,10 +430,23 @@ describe('every protocol message kind has a sender, and every sent kind can be p
     ]);
 
     // And the control that proves the derivation is not vacuously true of
-    // everything: `protocol/error` is sent from `fault`, which is not a
-    // handler, so it is provoked by nothing and reachable by every path.
-    expect(sendSites('protocol/error').map((site) => site.member)).toEqual(['fault']);
-    expect(sendSites('protocol/error').map((site) => site.provokedBy)).toEqual([undefined]);
+    // everything: neither sender of `protocol/error` is a handler, so both
+    // are provoked by nothing and the kind is reachable by every path.
+    //
+    // There are two of them, and the second is not in the worker at all
+    // (#187 finding 3). `SimulationClient.localFault` raises a
+    // `protocol/error` on the *main* thread for a worker message this thread
+    // could not decode: the message that failed is unreadable, so nothing can
+    // route it, and before this it reached `console.error` and no listener.
+    // Restating it as the protocol message every reader already handles is
+    // what keeps that a report rather than a second reporting channel -- and
+    // it is worth this gate naming, because a main-thread module minting a
+    // worker-to-main message is exactly the kind of thing that should not be
+    // able to appear without a reviewer seeing it.
+    expect(sendSites('protocol/error')).toEqual([
+      { file: 'src/simulation/worker/client.ts', member: 'localFault', provokedBy: undefined },
+      { file: 'src/simulation/worker/state-machine.ts', member: 'fault', provokedBy: undefined },
+    ]);
   });
 
   it('does not read a receiver\'s type annotation as a send, which is how this gate would have been born green', () => {
