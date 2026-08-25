@@ -163,7 +163,9 @@ constructs an empty `SecuritySectorRegistry` (bound to the session's own
 on the kernel -- all exposed on `SimulationRuntime`. Exactly like
 #19/#22/#24/#25 before it: this wires real infrastructure with no
 fabricated default content. No sectors, no hired guards and no deployment
-requirements exist until an actual session/scenario registers them;
+requirements exist until an actual session/scenario registers them -- or,
+for a guard, until a `HireStaff` command arrives
+([ADR 0025](./adr/0025-guard-hiring-surface.md));
 `securitySchedules` stays a plain mutable array specifically so scenario
 setup can `push` staffing requirements into it after construction --
 `DeploymentSystem` reads the array live on every scheduled tick.
@@ -200,5 +202,8 @@ available guard -- the access-policy *resolver* for an already-decided
 escort ships here, the scheduling decision does not); final UI/visual
 effects (a session UI exists -- the HUD and save panel -- but the only thing
 it surfaces is a headcount of hired guards and how many are unassigned
-(#104); no sector, no patrol and no deployment state reaches a panel); alarms, cameras or any detection
+(#104), beside the Staff panel that hires one
+([ADR 0025](./adr/0025-guard-hiring-surface.md)) and lists hireable roles
+rather than hired people; no sector, no patrol and no deployment state
+reaches a panel); alarms, cameras or any detection
 mechanic beyond the access-control/patrol substrate itself.

@@ -280,6 +280,8 @@ export function refusalMessageKey(actionId: string): LocalizationKey | undefined
       return HUD_MESSAGE_KEY.refusalPlaceBuildOrder;
     case 'purchase-materials':
       return HUD_MESSAGE_KEY.refusalPurchaseMaterials;
+    case 'hire-staff':
+      return HUD_MESSAGE_KEY.refusalHireStaff;
     case 'undo':
       return HUD_MESSAGE_KEY.refusalUndo;
     case 'redo':

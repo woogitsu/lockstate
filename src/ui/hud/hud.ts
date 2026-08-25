@@ -25,6 +25,7 @@ import {
 } from './hud-state';
 import { HUD_MESSAGE_KEY } from './messages';
 import { nextFastForwardSpeed, refusalMessageKey, severityLabelKey, severityTone } from './projection';
+import { createStaffPanel, type StaffPanel } from './staff-panel';
 import { type TransportIntentKind, createStatusStrip } from './status-strip';
 import {
   EMPTY_HUD_VIEW_MODEL,
@@ -33,6 +34,7 @@ import {
   type HudClockMode,
   type HudLocalizer,
   type HudSpeed,
+  type HudStaffViewModel,
   type HudViewModel,
 } from './view-model';
 
@@ -185,6 +187,24 @@ export type HudIntent =
    */
   | { readonly kind: 'purchase-materials'; readonly itemId: string; readonly quantity: number }
   /**
+   * The player asked to hire a staff member
+   * ([ADR 0025](../../../docs/adr/0025-guard-hiring-surface.md)). One stable
+   * role id and nothing else -- the host turns this into a `HireStaff` command
+   * and supplies the tile the new hire stands on, which is not part of the
+   * gesture and which the HUD could not know: no session instantiates a
+   * reception, a gate or a staff room, so where somebody arrives is the
+   * composition root's placeholder rather than something the player chooses.
+   *
+   * A *command*, so it goes through the same gate as a build order and a
+   * purchase: a second tap while one is in flight must not hire twice, and the
+   * money leaves immediately. Like a purchase its refusal can be about money
+   * -- the host refuses a wage the balance it last heard about cannot cover --
+   * and it needs no new reporting route for that, because the refusal line
+   * already says "this control's action did not happen" for every command
+   * (issue #207).
+   */
+  | { readonly kind: 'hire-staff'; readonly staffRoleId: string }
+  /**
    * The player handed the world pointer to the build tool, or took it back.
    *
    * *Chrome*, not a command: it changes what a click on the world means and
@@ -242,6 +262,16 @@ export interface MountHudOptions {
    * a coordinate field mid-edit.
    */
   readonly build?: HudBuildViewModel;
+  /**
+   * What the Staff panel may offer (ADR 0025).
+   *
+   * Omitted, the panel still renders on the Security tab and says there is
+   * nobody it can hire, which is the honest picture of a host that has
+   * published no roles. Deliberately not part of `HudViewModel`, for the
+   * reason `build` is not: the staff-role catalogue is content, and rebuilding
+   * the list on every snapshot would move the selection under a finger.
+   */
+  readonly staff?: HudStaffViewModel;
   /**
    * A standing sentence about the page itself, in a band of its own directly
    * under the status strip (issue #220).
@@ -670,7 +700,32 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       );
     },
   });
-  const side = element('div', { className: 'hud__side', children: [buildPanel.element] });
+  /*
+   * The Security tab's first inhabitant (ADR 0025).
+   *
+   * Three of the four tabs rendered no panel at all: this slot held the Build
+   * panel and nothing else, so selecting Security hid the Build panel and put
+   * nothing in its place. Hiring goes here rather than onto the Build panel
+   * because the two are never laid out at the same time -- so it costs that
+   * panel's measured height budget nothing, and the third button
+   * `.hud-build__actions` cannot hold is never needed -- and because a guard
+   * is not made of the material the selected buildable is made of.
+   *
+   * Hiring is a *command* for the same reasons placing an order and buying
+   * are: it asks the host to change the simulation, the money leaves
+   * immediately, and a second tap while one is in flight would hire twice. The
+   * button is passed so a refusal lands on it as well as on the refusal line
+   * (issue #207).
+   */
+  const staffPanel: StaffPanel = createStaffPanel({
+    localizer,
+    model: options.staff ?? { roles: [] },
+    onHire: (intent) => {
+      dispatchCommand({ kind: 'hire-staff', staffRoleId: intent.staffRoleId }, staffPanel.hireControl);
+    },
+  });
+
+  const side = element('div', { className: 'hud__side', children: [buildPanel.element, staffPanel.element] });
 
   /**
    * The other route to the same command: a run dragged along the world
@@ -768,6 +823,10 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   // command too, so a second tap while one is in flight must not queue a
   // duplicate build order.
   for (const control of buildPanel.controls) busy.add(control);
+  // And so does the Staff panel's "Hire": one busy signal for every control
+  // that issues a command, so they can never disagree about whether one is in
+  // flight.
+  for (const control of staffPanel.controls) busy.add(control);
 
   // ---- state application -------------------------------------------
   function applyState(next: HudShellState): void {
@@ -782,6 +841,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // Hidden, not merely unstyled: a panel that is off-screen but still in the
     // tab order is a control a keyboard can reach and a player cannot see.
     buildPanel.setVisible(state.activeTab === 'build');
+    staffPanel.setVisible(state.activeTab === 'security');
     for (const panel of HUD_PANEL_IDS) {
       const collapsed = isPanelCollapsed(state, panel);
       if (panel === 'minimap') minimapPanel.setCollapsed(collapsed);

@@ -2,6 +2,7 @@ import type { BuildOrderFailReason } from '../construction/build-order';
 import type { PurchaseRefusalReason } from '../economy/procurement';
 import type { RefusalReason, SimulationRefusal } from '../protocol/types';
 import type { ZoneRoomRefusalReason } from '../rooms/zoning';
+import type { StaffHireRefusalReason } from '../staff/hiring';
 
 /**
  * What the simulation last refused, and how many times it has refused.
@@ -113,6 +114,22 @@ export const BUILD_REFUSAL_REASONS: Readonly<Record<BuildOrderFailReason, Refusa
   'unbuildable-terrain': 'build.unbuildable-terrain',
   'unowned-land': 'build.unowned-land',
   'water-blocked': 'build.water-blocked',
+};
+
+/**
+ * `StaffHireRefusalReason`, mapped onto the wire's. Exhaustive for the same
+ * reason as above.
+ *
+ * `insufficient-funds` is spelled exactly like one of `PURCHASE_REFUSAL_REASONS`'s,
+ * which is the second demonstration of why the wire ids are namespaced rather
+ * than flat: the treasury refuses a purchase and a hire for the same reason and
+ * the player is doing two different things, and somebody who pressed Hire must
+ * not read that the materials were not ordered.
+ */
+export const HIRE_REFUSAL_REASONS: Readonly<Record<StaffHireRefusalReason, RefusalReason>> = {
+  'insufficient-funds': 'hire.insufficient-funds',
+  'roster-full': 'hire.roster-full',
+  'unknown-role': 'hire.unknown-role',
 };
 
 /** `PurchaseOutcome`'s refusal reasons, mapped onto the wire's. Exhaustive for the same reason as above. */

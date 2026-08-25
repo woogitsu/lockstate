@@ -102,6 +102,20 @@ export interface BuildProbe {
   readonly texts: readonly string[];
 }
 
+/** The Staff panel on the Security tab (ADR 0025). */
+export interface StaffProbe {
+  /** False while the Security tab is not the active one. */
+  readonly visible: boolean;
+  /** `data-staff-role` of every offered row, in the order they are drawn. */
+  readonly options: readonly string[];
+  readonly selected: string | null;
+  /** The hire button's whole label, which states the role and what the press will spend. */
+  readonly hireLabel: string;
+  readonly hireDisabled: boolean;
+  /** Every visible label in the panel, so an unresolved `hud.*` key is caught. */
+  readonly texts: readonly string[];
+}
+
 export interface LayoutProbe {
   readonly viewport: readonly [number, number];
   readonly strip: LayoutBox | null;
@@ -268,6 +282,10 @@ export interface LockstateUiHarness {
   layoutProbe(): LayoutProbe;
 
   buildProbe(): BuildProbe;
+  /** The Staff panel on the Security tab (ADR 0025). */
+  staffProbe(): StaffProbe;
+  /** Presses the hire button. A real click, so a disabled button genuinely does nothing. */
+  clickHireStaff(): boolean;
   clickArmBuild(): boolean;
   expandBuildCoordinates(): boolean;
   clickBuildable(definitionId: string): boolean;

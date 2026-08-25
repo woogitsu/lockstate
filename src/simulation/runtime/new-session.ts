@@ -26,6 +26,7 @@ import {
 } from '../incidents';
 import { ProcurementSystem, Treasury } from '../economy';
 import { RefusalLog } from '../refusals';
+import { StaffHiringService } from '../staff';
 import { createSessionCommandHandler } from './session-commands';
 import { ACTOR_IDENTITY_RNG_STREAM, ActorIdentityRegistry } from '../identity';
 import { Kernel } from '../kernel';
@@ -122,6 +123,17 @@ export interface SimulationRuntime {
   readonly water: UtilityNetwork;
   readonly securitySectors: SecuritySectorRegistry;
   readonly securityGuards: GuardRoster;
+  /**
+   * The `HireStaff` consumer (ADR 0025). Owns no tick work and no state of its
+   * own, so it is a service on the runtime rather than a registered system --
+   * like `roomZoning` and `treasury`, and unlike `deploymentSystem`.
+   *
+   * It is what finally gives `GuardRoster.hire` a caller in `src/`. Before it,
+   * every call in the repository was in a test, so the four systems below that
+   * read the roster iterated an empty collection in every session a player
+   * could start.
+   */
+  readonly staffHiring: StaffHiringService;
   /** Mutable and empty until session/scenario setup pushes entries -- the same "no fabricated content" convention `containers`/`jobs`/`electricity`/`water` follow. `DeploymentSystem` reads this array live, so pushing into it after construction is how a scenario adds staffing requirements. */
   readonly securitySchedules: DeploymentSchedule[];
   readonly deploymentSystem: DeploymentSystem;
@@ -268,6 +280,10 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   // parallel/bypassing door model.
   const securitySectors = new SecuritySectorRegistry(navigation.doors);
   const securityGuards = new GuardRoster(DEFAULT_GUARD_CAPACITY, actorIdentity, () => rng.get(ACTOR_IDENTITY_RNG_STREAM));
+  // ADR 0025's `HireStaff` consumer. It fabricates nobody -- the roster is
+  // still empty until a command arrives, the same convention as every registry
+  // above -- and it holds no state, so nothing here joins the save.
+  const staffHiring = new StaffHiringService(securityGuards, treasury);
   const securitySchedules: DeploymentSchedule[] = [];
   const deploymentSystem = new DeploymentSystem(securitySectors, securityGuards, navigation, securitySchedules);
   const patrolSystem = new PatrolSystem(securitySectors, securityGuards, navigation);
@@ -379,7 +395,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   kernel.registerSystem(incidentTriggerSystem);
   kernel.registerSystem(searchSystem);
   kernel.registerSystem(incidentResponseSystem);
-  kernel.setCommandHandler(createSessionCommandHandler(construction, procurement, roomZoning, refusals));
+  kernel.setCommandHandler(createSessionCommandHandler(construction, procurement, roomZoning, staffHiring, refusals));
 
   return {
     kernel,
@@ -401,6 +417,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     water,
     securitySectors,
     securityGuards,
+    staffHiring,
     securitySchedules,
     deploymentSystem,
     patrolSystem,

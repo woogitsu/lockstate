@@ -12,7 +12,7 @@ resolves to a file that exists. Since #118's follow-up it also checks this
 table: the row count must equal the number of ADR files, and each row's status
 keyword must equal the one the ADR itself carries, so a status edit that does
 not update the row here fails. It does **not** check the Title column or the
-`0018` row, which has no link and is maintained by hand.
+two rows that carry no link — `0018` and `0024` — which are maintained by hand.
 
 ## Status values in this table
 
@@ -50,8 +50,36 @@ this index's. Nothing here changes a status; this table only reports them.
 | [0021](./0021-http-response-security-headers.md) | HTTP response security headers for the static-asset deployment | Proposed — pending human approval |
 | [0022](./0022-room-zoning-surface.md) | Where a player zones a room, and with what gesture | Proposed — pending human approval |
 | [0023](./0023-room-occupancy-authority.md) | Where a room's occupancy comes from | Proposed — pending human approval |
+| 0024 | *Claimed by an unmerged branch — see "0024, and why this branch skipped it"* | — |
+| [0025](./0025-guard-hiring-surface.md) | Where a player hires a guard, and what the hire costs | Proposed — pending human approval |
 
-**Next free number: 0024.**
+**Next free number: 0026.**
+
+## 0024, and why this branch skipped it
+
+0024 was the next free number when the guard-hiring ADR was written, and it
+was taken *for* that ADR — the file, the heading and this row all said 0024.
+It moved to 0025 before the branch was opened for review, on the discovery
+that another unmerged branch had already claimed 0024 for a different
+document.
+
+This is the same choice, made for the same reason, as the one recorded further
+down for the kernel ADR: **take the lowest number free without
+coordinating with unmerged or held work.** 0024 was claimed *at the time*, so
+it was not free, and the alternative was two ADRs numbered 0024 arriving on
+`main` — which is exactly issue #117's defect and the reason
+`tests/foundation/adr-numbering-contract.test.ts` exists.
+
+The row above has no link on purpose. It is maintained by hand, exactly like
+the 0018 row, and the numbering gate ignores it: `INDEX_ROW` only matches rows
+that link to a file, and the row-count assertion counts only those. So this
+branch's table has 23 linked rows for its 23 ADR files and stays green whether
+or not the other branch lands.
+
+**If that branch is closed or renumbers, 0024 becomes free** and should be
+treated exactly as 0018 is below: available, not preferential, and not worth
+reaching for over the next number in sequence. Delete this section and the row
+above when it resolves either way.
 
 ## 0018, and why it is free again
 
@@ -66,7 +94,7 @@ opening balance, which is ADR 0017 decision 1 — so this table releases the
 number, exactly as the previous version of this section said it should on that
 outcome.
 
-**0018 is therefore available.** It is not the next free number (0024 is), and
+**0018 is therefore available.** It is not the next free number (0026 is), and
 it should not be reached for preferentially: a gap in the sequence is easier to
 read than a number reused years apart. Take it only if a future ADR is a direct
 successor to what #91 proposed, where sharing the number would be

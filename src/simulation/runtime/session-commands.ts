@@ -2,9 +2,11 @@ import { createConstructionCommandHandler } from '../construction';
 import type { ProcurementSystem } from '../economy';
 import type { CommandHandler } from '../kernel/kernel';
 import { unpackCommand } from '../protocol/commands';
-import { PURCHASE_REFUSAL_REASONS, ZONE_REFUSAL_REASONS, type RefusalLog } from '../refusals';
+import { HIRE_REFUSAL_REASONS, PURCHASE_REFUSAL_REASONS, ZONE_REFUSAL_REASONS, type RefusalLog } from '../refusals';
 import type { ConstructionSystem } from '../construction/system';
 import type { RoomZoningService } from '../rooms/zoning';
+import type { StaffHiringService } from '../staff/hiring';
+import { tileCoordinate } from '../world/coordinates';
 
 /**
  * The session's one command handler.
@@ -27,16 +29,17 @@ import type { RoomZoningService } from '../rooms/zoning';
  * `unpackCommand` returning `null` is the decoder's business and is left to
  * the handler that owns it.
  *
- * `refusals` is the session's `RefusalLog`, and all three routes write to the
- * same one: a refused wall, a refused purchase and a refused zoning
- * rectangle are the same kind of fact about the session -- the kernel took
- * the command and a system then declined to carry it out -- and they reach
- * the player down one channel (#261).
+ * `refusals` is the session's `RefusalLog`, and all four routes write to the
+ * same one: a refused wall, a refused purchase, a refused zoning rectangle
+ * and a refused hire are the same kind of fact about the session -- the
+ * kernel took the command and a system then declined to carry it out -- and
+ * they reach the player down one channel (#261).
  */
 export function createSessionCommandHandler(
   construction: ConstructionSystem,
   procurement: ProcurementSystem,
   roomZoning: RoomZoningService,
+  staffHiring: StaffHiringService,
   refusals: RefusalLog,
 ): CommandHandler {
   const constructionCommands = createConstructionCommandHandler(construction, refusals);
@@ -120,6 +123,43 @@ export function createSessionCommandHandler(
       if (!outcome.ok) refusals.record(PURCHASE_REFUSAL_REASONS[outcome.reason], context.tick);
       return;
     }
+
+    if (simCommand !== null && simCommand.type === 'HireStaff') {
+      // The `GuardRoster.hire` producer (ADR 0025). Until this branch
+      // existed, `hire` had zero callers anywhere in `src/` and every call in
+      // the repository was in a test -- so `DeploymentSystem`, `PatrolSystem`,
+      // `IncidentResponseSystem` and `SearchSystem` all iterated an empty
+      // roster in every session a player could start.
+      //
+      // The tile is reconstructed with `tileCoordinate` rather than passed
+      // through as a pair of numbers, exactly as `PlaceBuildOrder`'s is in
+      // `construction/handler.ts`: the schema proves the values are integers
+      // and this proves they are *tile* coordinates, which is the branded type
+      // `GuardRoster.hire` takes.
+      //
+      // A refused hire travels the same route as a refused purchase, and the
+      // same two-sided dispatch applies: `src/main.ts` checks the wage against
+      // the balance the worker last published and throws instead of
+      // submitting, so one press produces exactly one player-visible message
+      // -- from the pre-flight or from this line, never both and never
+      // neither. Of the three reasons, only `insufficient-funds` currently
+      // arrives here from the Staff panel, and only in the two cases that
+      // check cannot see: several hires inside one tick measured against a
+      // balance none of them has been deducted from yet, and a balance that
+      // moved since the last publication. `unknown-role` is pre-empted by the
+      // panel offering catalogue rows only, and `roster-full` needs 500 hires.
+      // All three stay reachable from a `HireStaff` composed anywhere else --
+      // a queued command in a restored save, a future producer -- which is why
+      // this maps the whole union rather than the one reason a panel can
+      // provoke.
+      const outcome = staffHiring.hire({
+        staffRoleId: simCommand.staffRoleId,
+        originTile: { x: tileCoordinate(simCommand.x), y: tileCoordinate(simCommand.y) },
+      });
+      if (outcome.kind === 'refused') refusals.record(HIRE_REFUSAL_REASONS[outcome.reason], context.tick);
+      return;
+    }
+
     constructionCommands(command, context);
   };
 }

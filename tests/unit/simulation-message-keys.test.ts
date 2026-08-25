@@ -110,6 +110,12 @@ const UNLABELLED: readonly { readonly sourceFile: string; readonly declaration: 
       'The procurement system\'s own spelling of why it refused a purchase, exempt for exactly the reason `BUILD_ORDER_FAIL_REASONS` above is: `createSessionCommandHandler` maps every member onto a `RefusalReason` through an exhaustive `Record` before anything crosses the worker boundary, and nothing projects or persists it. Newly *discovered* rather than newly written -- the union used to sit inline inside `PurchaseOutcome`, where no scan could see it, and #261 named it so the mapping could be checked exhaustively at compile time.',
   },
   {
+    sourceFile: 'src/simulation/staff/hiring.ts',
+    declaration: 'StaffHireRefusalReason',
+    reason:
+      'Why `StaffHiringService.hire` refused a `HireStaff` -- a role the catalogue does not declare, a wage the treasury cannot cover, a roster at the capacity its `EntityStore` was built with. Exempt for exactly the reason `PurchaseRefusalReason` above is: `createSessionCommandHandler` maps every member onto a `RefusalReason` through an exhaustive `Record` before anything crosses the worker boundary, and nothing projects or persists it. What the player reads is one authored `hud.alert.refusal.hire.*` sentence per reason (ADR 0025), not a two-word label this table could hold.',
+  },
+  {
     sourceFile: 'src/simulation/kernel/kernel.ts',
     declaration: 'CommandRejectionKind',
     reason:

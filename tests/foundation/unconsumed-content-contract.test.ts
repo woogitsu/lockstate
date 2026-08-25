@@ -39,8 +39,8 @@ import { defaultStaffRoleRegistry } from '../../src/content/staff-role-catalog';
  *
  * Counting `tests/` is a deliberate weakening. The stricter measure -- no
  * consumer in `src/` outside the catalogs -- is the honest answer to "does
- * the game use this", and it covers 53 of the 62 declared ids. Gating that
- * would mean 53 allowlist entries whose reason is uniformly "the system that
+ * the game use this", and it covers 52 of the 62 declared ids. Gating that
+ * would mean 52 allowlist entries whose reason is uniformly "the system that
  * would use it is not wired yet", edited on every feature that wires one.
  * (Both figures are computed and asserted in the first case below, because
  * this sentence carried 58 for as long as it did without anything
@@ -115,9 +115,11 @@ const AWAITING_CONSUMER: Readonly<Record<string, string>> = {
   // a content decision, so it is reported in #141 rather than guessed at here.
   'object.sink': 'Required by NO room definition, so nothing references it at all. The room-to-object validator does not check this direction.',
 
-  // Staff roles. Three of the eight (guard, nurse, warden) are referenced by
-  // tests; these five are referenced by nothing.
-  'staff-role.administrator': 'Declared with no reader anywhere; hiring reads the department, not the role id.',
+  // Staff roles. Three of the eight (guard, nurse, warden) are referenced
+  // outside the catalogue -- and since ADR 0025 the guard is the one of those
+  // three with a reader in `src/`, because it is the only role the Staff panel
+  // offers. These five are referenced by nothing.
+  'staff-role.administrator': 'Declared with no reader anywhere. Hiring exists since ADR 0025 and does not reach it: the Staff panel offers `staff-role.guard` alone, because every system that reads `GuardRoster` claims from `unassignedGuardIds()` without filtering on role, so anyone else hired into it would be sent to a patrol post. The command itself accepts any declared role, so this id needs no code change to become reachable -- it needs a system that reads its department.',
   'staff-role.doctor': 'Declared with no reader anywhere.',
   'staff-role.kitchen-staff': 'Declared with no reader anywhere.',
   'staff-role.maintenance-worker': 'Declared with no reader anywhere.',
@@ -188,18 +190,26 @@ describe('every unconsumed content id is accounted for', () => {
      * The denominator, exact in every direction. The docblock's argument for
      * gating the narrower set only holds against real numbers, and it was
      * made against a wrong one: it said the stricter measure "covers 58 of
-     * the 62 declared ids" when it covers 53, because nine ids already had a
+     * the 62 declared ids" when it covered 53, because nine ids already had a
      * `src/` consumer when that sentence was written.
      *
      * Exact rather than `toBeGreaterThan`, because the failure mode this
      * guards is a number drifting quietly. A catalog gaining an id, or an id
      * gaining its first consumer, should be a visible change here.
+     *
+     * `unconsumedBySrcOnly` moved 53 -> 52 when ADR 0025 gave
+     * `staff-role.guard` its first `src/` consumer: the Staff panel's
+     * projection at the composition root names the one role a hire can
+     * usefully create, because every system that reads the roster claims from
+     * it without filtering on role. `unconsumedBySrcAndTests` did not move --
+     * the id already had test consumers, so it is in neither allowlist and no
+     * entry was added or deleted with it.
      */
     expect({
       declared: declaredIds.length,
       unconsumedBySrcAndTests: unconsumedIds.length,
       unconsumedBySrcOnly: unconsumedBySrcOnly.length,
-    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 34, unconsumedBySrcOnly: 53 });
+    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 34, unconsumedBySrcOnly: 52 });
   });
 
   it('scans a non-trivial catalog and a non-trivial consumer set, so this cannot pass vacuously', () => {

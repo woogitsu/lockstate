@@ -1,0 +1,136 @@
+import type { ContentRegistry } from '../../content/registry';
+import type { StaffRoleDefinition } from '../../content/staff-role-catalog';
+import { defaultStaffRoleRegistry } from '../../content/staff-role-catalog';
+import type { Treasury } from '../economy/treasury';
+import type { EntityId } from '../entity/entity-store';
+import type { GuardRoster } from '../security/guard-roster';
+import type { TilePosition } from '../world/coordinates';
+
+/**
+ * Hiring a staff member: the `HireStaff` consumer
+ * ([ADR 0025](../../../docs/adr/0025-guard-hiring-surface.md)).
+ *
+ * ## What this closes
+ *
+ * `GuardRoster.hire` was complete and had **zero callers anywhere in `src/`**.
+ * Every call in the repository was in `tests/`, so the four systems that read
+ * the roster -- `DeploymentSystem`, `PatrolSystem`, `IncidentResponseSystem`
+ * and `SearchSystem` -- iterated an empty collection in every session a player
+ * could start, and the status strip's `Staff` count was structurally zero. The
+ * roster is still the only staff store there is; this is the way to put
+ * somebody in it.
+ *
+ * ## A service, not a system
+ *
+ * It owns no tick work, exactly like `RoomZoningService` and `Treasury`: a
+ * hire happens at the tick its command is dispatched and nothing about it
+ * needs revisiting on a later one. So it is constructed on the runtime and
+ * called from the session's command handler rather than registered on the
+ * kernel.
+ *
+ * It holds **no state of its own** either, which is why nothing here is
+ * snapshotted: the money is the treasury's and the staff are the roster's, and
+ * both are already in the save.
+ *
+ * ## What it costs, and who owns that number
+ *
+ * One day at the bottom of the role's authored wage band -- `wageBand.minPerDay`
+ * from `src/content/staff-role-catalog.ts`, read as the treasury's minor units
+ * because that is the only money scale in this tree. **No number is chosen
+ * here.** ADR 0025 decision 2 records which authored field is read and states
+ * that what the field holds is content owned by issue #29, which the
+ * catalogue's own comment on `wageBand` says as well.
+ *
+ * It is an engagement charge and **not a payroll**: it does not recur, it
+ * creates no schedule, and it is therefore not
+ * [ADR 0017](../../../docs/adr/0017-money-primary-resource-model.md) decision
+ * 3's standing cost. That matters beyond tidiness -- decision 8's insolvency
+ * ladder is unreachable precisely because no charge a player cannot decline
+ * exists, and `Treasury.spend` refusing rather than overdrawing keeps it that
+ * way. Nothing here can produce a negative balance.
+ */
+
+/**
+ * Why a hire was refused.
+ *
+ * Three, and they are the three this service can produce. Mapped onto the wire
+ * through an exhaustive `Record` in `src/simulation/refusals/refusal-log.ts`,
+ * so a fourth added here fails to compile until somebody decides what the
+ * player is told about it.
+ */
+export type StaffHireRefusalReason = 'unknown-role' | 'insufficient-funds' | 'roster-full';
+
+/** What a hire did. `hired` is not a refusal. */
+export type StaffHireOutcome =
+  | { readonly kind: 'hired'; readonly entityId: EntityId; readonly paidMinorUnits: number }
+  | { readonly kind: 'refused'; readonly reason: StaffHireRefusalReason };
+
+export interface StaffHireRequest {
+  /** A stable `staff-role.*` id from the staff-role catalogue, never a message key. */
+  readonly staffRoleId: string;
+  /** Where the new staff member first stands. See ADR 0025 decision 4 for why the producer, and not this service, decides it. */
+  readonly originTile: TilePosition;
+}
+
+/**
+ * What one hire costs, in the treasury's minor units.
+ *
+ * Exported so a producer can render the figure it is about to spend without
+ * reaching into the catalogue and re-deciding which end of the band to read --
+ * one definition of the charge, on both sides of the worker boundary.
+ * `undefined` for a role the registry does not declare, which is the same
+ * answer `hire` refuses on.
+ */
+export function staffHireCostMinorUnits(
+  staffRoleId: string,
+  staffRoles: ContentRegistry<StaffRoleDefinition> = defaultStaffRoleRegistry,
+): number | undefined {
+  return staffRoles.getById(staffRoleId)?.wageBand.minPerDay;
+}
+
+export class StaffHiringService {
+  public constructor(
+    private readonly roster: GuardRoster,
+    private readonly treasury: Treasury,
+    private readonly staffRoles: ContentRegistry<StaffRoleDefinition> = defaultStaffRoleRegistry,
+  ) {}
+
+  /**
+   * Hires, or refuses and changes nothing.
+   *
+   * The order of the three checks is the whole of the correctness argument:
+   * every refusal has to leave the treasury, the roster and the entity store
+   * exactly as it found them, so the money is spent only once the role has
+   * resolved and the roster has been shown to have room. There is no ordering
+   * of these in which money leaves and nobody arrives.
+   */
+  public hire(request: StaffHireRequest): StaffHireOutcome {
+    const role = this.staffRoles.getById(request.staffRoleId);
+    if (role === undefined) return { kind: 'refused', reason: 'unknown-role' };
+
+    /*
+     * A guard against a throw, not a policy.
+     *
+     * `EntityStore.spawn()` throws `'EntityStore capacity exhausted'`, and a
+     * throw out of the kernel's command handler is not a refusal -- it is a
+     * crashed tick, on a command the worker has already acknowledged as
+     * queued. Comparing the headcount with the capacity turns that structural
+     * fault into the ordinary refusal the player is told about, which is the
+     * reading `Treasury.spend` already takes of a purchase nobody can afford.
+     *
+     * `allGuardIds().length` is the live headcount rather than a high-water
+     * mark: nothing in `src/` destroys an entity (#31), so it cannot yet
+     * disagree with the store's own occupancy -- and if a destroy path
+     * arrives, a count of live records is the reading that stays correct while
+     * a spawn counter would not.
+     */
+    if (this.roster.allGuardIds().length >= this.roster.entityStore.capacity) {
+      return { kind: 'refused', reason: 'roster-full' };
+    }
+
+    const paidMinorUnits = role.wageBand.minPerDay;
+    if (!this.treasury.spend(paidMinorUnits)) return { kind: 'refused', reason: 'insufficient-funds' };
+
+    return { kind: 'hired', entityId: this.roster.hire(role.id, request.originTile), paidMinorUnits };
+  }
+}

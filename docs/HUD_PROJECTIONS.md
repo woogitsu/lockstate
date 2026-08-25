@@ -390,19 +390,36 @@ decision about what to build next.
 ### Staff
 
 19. **`GuardRoster` is the only staff store**, and there is no employment,
-    hiring, shift or scheduling system. Staffing "by time" exists only as
-    `DeploymentSchedule`'s required headcount per sector.
+    shift or scheduling system. Staffing "by time" exists only as
+    `DeploymentSchedule`'s required headcount per sector. **Hiring is the one
+    part of this that now exists** ([ADR 0025](./adr/0025-guard-hiring-surface.md)):
+    a `HireStaff` command reaches `StaffHiringService`, which spends from the
+    treasury and calls `GuardRoster.hire`, and the Staff panel on the Security
+    tab is what sends it. Nothing dismisses, promotes, schedules or pays
+    anybody, and there is still no employment record beyond the `GuardRecord`
+    the roster writes.
 20. **No per-staff skill level or fatigue.** `staff-role-catalog` declares
-    skill *requirements* per role, but no staff entity carries a skill.
-21. **`wageBand` exists in content, and there is no payroll.** There is a
-    treasury and a procurement system since #96/#89 — money buys materials —
-    but nothing pays anyone: no wage is ever debited, and the only thing that
-    credits the treasury is a cancelled purchase's refund
-    (`ProcurementSystem.cancel`), which is not an income line: nothing credits
-    it on a schedule. ADR 0017 decision 6 settles what the state pays *for*
-    (per prisoner-day, accrued per occupied place) and no system accrues it,
-    so the balance only ever goes down. Nothing wage-related may be rendered
-    as a live figure; it is still a content hook for a future issue.
+    skill *requirements* per role, but no staff entity carries a skill. This
+    is also why hiring reads the *bottom* of a role's wage band and not a
+    point inside it: where in the band an individual sits would need a skill
+    or negotiation model, and there is none.
+21. **`wageBand` is read once, at hire, and there is still no payroll.** A
+    hire debits the treasury by the role's `wageBand.minPerDay`
+    ([ADR 0025](./adr/0025-guard-hiring-surface.md) decision 2), and the Staff
+    panel renders that figure on the button that will spend it — so the
+    earlier form of this gap, "no wage is ever debited" and "nothing
+    wage-related may be rendered as a live figure", is no longer true. What is
+    still true is everything else: **nothing recurring**. The charge happens
+    once, at the tick the command executes; no system pays anyone on a
+    schedule, and the only thing that credits the treasury is a cancelled
+    purchase's refund (`ProcurementSystem.cancel`), which is not an income
+    line. ADR 0017 decision 6 settles what the state pays *for* (per
+    prisoner-day, accrued per occupied place) and no system accrues it, so the
+    balance only ever goes down; decision 3's standing cost and decision 8's
+    insolvency ladder are unbuilt, and a one-off charge `Treasury.spend`
+    refuses rather than overdrawing keeps the ladder unreachable. A *rate* —
+    a per-day wage bill, a payroll forecast, a running cost — is still a
+    figure no system produces and must not be rendered.
 22. **`'on-search'` conflates two duties.** A guard pulled onto a
     contraband search and a guard dispatched to an incident share one
     deployment phase, and neither `SearchSystem` nor

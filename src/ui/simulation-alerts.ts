@@ -36,6 +36,9 @@ const REFUSAL_LABEL_KEYS: Readonly<Record<RefusalReason, LocalizationKey>> = {
   'build.unbuildable-terrain': 'hud.alert.refusal.build.unbuildable-terrain',
   'build.unowned-land': 'hud.alert.refusal.build.unowned-land',
   'build.water-blocked': 'hud.alert.refusal.build.water-blocked',
+  'hire.insufficient-funds': 'hud.alert.refusal.hire.insufficient-funds',
+  'hire.roster-full': 'hud.alert.refusal.hire.roster-full',
+  'hire.unknown-role': 'hud.alert.refusal.hire.unknown-role',
   'purchase.duplicate-order': 'hud.alert.refusal.purchase.duplicate-order',
   'purchase.insufficient-funds': 'hud.alert.refusal.purchase.insufficient-funds',
   'purchase.invalid-quantity': 'hud.alert.refusal.purchase.invalid-quantity',
@@ -94,7 +97,9 @@ const REFUSAL_LABEL_KEYS: Readonly<Record<RefusalReason, LocalizationKey>> = {
  * entries with separate sentences, and that is the point of the namespace:
  * the same condition refuses a wall and a room, and a player reading "the
  * build order failed" after zoning a canteen would go and look at the wrong
- * control.
+ * control. `hire.insufficient-funds` and `purchase.insufficient-funds` are the
+ * second such pair (ADR 0025): the treasury refuses both, and only the command
+ * says which panel the player should be looking at.
  */
 export function hudAlertsFromWorkerMessage(
   message: WorkerToMainMessage,
