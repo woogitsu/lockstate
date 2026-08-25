@@ -13,7 +13,8 @@ to. Deciding is the owner's; this file only makes the decision cheap.
 
 Established at `main` @ `d2596ad` (v0.0.37); **entry 7 re-verified and
 corrected at `b653b93` (v0.0.40)** after #295 discharged ADR 0012's outstanding
-remedy. Every `path:line` was read from disk at the commit its entry names.
+remedy; **queue A gained ADR 0028 at `f3ffe6d` (v0.0.45)**. Every `path:line`
+was read from disk at the commit its entry names.
 
 A note on keeping this file true, since it is the kind of document that rots
 silently: an entry's evidence is a claim about `main`, so **landing the change an
@@ -40,7 +41,7 @@ half-done flip cannot merge. Both lines are given verbatim in every entry below.
 
 ## 1. What is actually waiting on you
 
-Eight ADRs are `Proposed`. They are **not one queue** — they are two, and
+Nine ADRs are `Proposed`. They are **not one queue** — they are two, and
 conflating them is what makes the queue look longer and more urgent than it is.
 
 **Queue A — genuine open decisions. Nothing is shipped; a "no" costs nothing.**
@@ -49,10 +50,25 @@ conflating them is what makes the queue look longer and more urgent than it is.
 | --- | --- | --- |
 | [0022](./0022-room-zoning-surface.md) | Where a player zones a room, and with what gesture | **No** |
 | [0023](./0023-room-occupancy-authority.md) | Where a room's occupancy comes from | **No** |
+| [0028](./0028-object-placement-and-derived-room-capacity.md) | What a placed object is, and how a room's capacity comes from it | **No** |
 
-These two are the only ADRs in the corpus whose `Proposed` status is fully
-accurate, and they are the two that gate the next feature. Both verified
-unimplemented at `d2596ad`:
+These three are the only ADRs in the corpus whose `Proposed` status is fully
+accurate, and they are the ones that gate the next feature. 0022 and 0023 were
+verified unimplemented at `d2596ad`; **0028 was added at `f3ffe6d` (v0.0.45)**
+and is verified unimplemented by the same measurement 0023's entry rests on plus
+one more: no `'object.*'` id appears as a literal anywhere under `src/` outside
+`src/content/`, so nothing places, builds or reads an object.
+
+**0028 is the decision 0023 becomes if you take it.** 0023 asks where a room's
+occupancy comes from and offers a fallback figure; the owner answered that
+question by choosing object placement, and 0028 is the design for that answer.
+Signing 0028 therefore makes 0023's authored-fallback field unnecessary, and
+signing 0023 as written does *not* dispose of 0028 — the two overlap and a
+reviewer should read 0028 first, because it corrects 0023's central practical
+claim (0023 treats the decision as being about `capacity`; `findAvailable` gates
+on capacity **and** capability, so a capacity-only change is a no-op).
+
+Both verified unimplemented at `d2596ad`:
 
 - **0022** — `ZoneRoom` is still in the `AWAITING_PRODUCER` allow-list of
   `tests/foundation/unconsumed-command-contract.test.ts:107-108`, and that list
@@ -62,8 +78,9 @@ unimplemented at `d2596ad`:
   `capacity: 0` (`src/simulation/rooms/zoning.ts:259`), and no room definition
   in `src/content/room-catalog.ts` carries a capacity field at all.
 
-**Nothing in this file asks you to change 0022's or 0023's status.** They need
-a decision, not a correction, and every entry below is about a different ADR.
+**Nothing in this file asks you to change 0022's, 0023's or 0028's status.**
+They need a decision, not a correction, and every entry below is about a
+different ADR.
 
 One thing is worth knowing before signing 0022, though, because it is about the
 evidence rather than the status. ADR 0022 was written against v0.0.30 and says
