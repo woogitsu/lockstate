@@ -30,6 +30,19 @@ export interface ChunkTopology {
  * *association*, not merely by offset, with the same integer naming
  * different regions in the two. Pinned by
  * `tests/determinism/iteration-order.test.ts`.
+ *
+ * The same argument applies one level up, to *which chunks* contribute nodes
+ * at all. `chunkTopologies` used to be append-only -- `update()` skipped a
+ * non-loaded chunk rather than dropping it -- so a chunk that had been
+ * processed and then unloaded kept contributing regions to the component walk.
+ * That made the node set a function of chunk **load** history rather than of
+ * what is loaded now, and it was an association defect rather than a numbering
+ * one: a retained middle chunk bridges two loaded chunks that are not
+ * connected through loaded space, so one id named their union in a manager
+ * that had lived through the unload and named only one of them in a manager
+ * rebuilt over the identical world. `update()` therefore reconciles
+ * `chunkTopologies` against the world's current lifecycles
+ * (`evictUnloadedTopologies`) before recomputing.
  */
 export class TopologyManager {
   private chunkTopologies = new Map<string, ChunkTopology>();
@@ -51,10 +64,40 @@ export class TopologyManager {
         globalTopologyDirty = true;
       }
     }
-    
+
+    // After the processing loop, not before it: the caller hands us cloned
+    // `ChunkState`s, which may be stale relative to the world. Reconciling
+    // last makes the world's own lifecycle the authority, so a stale
+    // `'loaded'` clone cannot re-admit a chunk the world has since unloaded.
+    if (this.evictUnloadedTopologies()) globalTopologyDirty = true;
+
     if (globalTopologyDirty) {
       this.recomputeGlobalTopology();
     }
+  }
+
+  /**
+   * Drops the retained topology of every chunk the world no longer has
+   * loaded, and reports whether anything was dropped -- an unload changes the
+   * component walk's input with no geometry revision moving, so it has to be
+   * able to dirty the global topology on its own.
+   *
+   * No ordering decision lives here, and the sorted key walk is what makes
+   * that checkable rather than merely argued. Whether a key is evicted is
+   * decided per key from `world.getChunk(...).lifecycle` alone, so the
+   * *set* of survivors is the same in any walk order, and deleting from a
+   * `Map` leaves the insertion order of the rest untouched. The one
+   * order-dependent step downstream -- which node seeds which connected
+   * component -- reads `[...allNodes].sort()` in `recomputeGlobalTopology`,
+   * so eviction cannot reach it either way.
+   */
+  private evictUnloadedTopologies(): boolean {
+    const stale = [...this.chunkTopologies.keys()]
+      .sort()
+      .filter((key) => this.world.getChunk(this.chunkTopologies.get(key)!.position)?.lifecycle !== 'loaded');
+
+    for (const key of stale) this.chunkTopologies.delete(key);
+    return stale.length > 0;
   }
 
   private processChunk(chunk: import('../world/sparse-world').ChunkState): void {

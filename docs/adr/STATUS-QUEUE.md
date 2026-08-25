@@ -61,8 +61,10 @@ Two of those status lines say more than a bare keyword, because a bare
 replacement would have left a true status next to a stale sentence. **0012**
 records the remedy #295 landed (`nextGlobalId` is a local of
 `recomputeGlobalTopology`, so ids are handed out from 1 in canonical sorted order
-on every recompute) and names the residue that is still open in code —
-`chunkTopologies` is never evicted, so §5 carries it. **0015** says 0012 is
+on every recompute) and names the residue that was still open in code. That
+residue — `chunkTopologies` was never evicted — has since closed too, in #324,
+so §5 no longer carries it and what remains open there is the world-streaming
+policy rather than the eviction. **0015** says 0012 is
 Accepted, because the same commit falsified its old "Extends ADR 0012, which is
 Proposed".
 
@@ -133,10 +135,11 @@ as before. 0027 approves the mechanism that landed — the rating seam on
 `findBestAvailable`, one term, occupants sorted ascending by entity id, advisory
 and stateless — and leaves its three questions open. **0027's subject is
 unreachable in any session a player can start**, which the owner was told when
-approving it: `RoomZoningService` still registers every instance with
-`capacity: 0`, so nobody shares a cell and the decision's effects are not
-observable until object placement lands. That is a code gap, not a wrong status;
-§5 carries it.
+approving it: a zoned room still derives capacity zero while nothing is placed
+in it, so nobody shares a cell and the decision's effects are not observable
+until a shipped session can place an object into a zoned room. That is a code
+gap, not a wrong status; §5 carries it, with what has and has not moved since
+0028's phases 1-2 landed.
 
 ---
 
@@ -318,23 +321,37 @@ documents state different numbers, which is a docs-truth job. They are recorded
 so that reading this file does not leave the impression that the corpus was
 audited in one direction.
 
-- **ADR 0023 and ADR 0028 are Accepted and unimplemented, and that is the
-  schedule rather than a defect.** Re-verified at `4ed571f`: `RoomZoningService`
-  registers every instance with `capacity: 0` and `objectCapabilities: []`, no
-  room definition in `src/content/room-catalog.ts` carries a capacity field at
-  all, and no `'object.*'` id appears as a literal anywhere under `src/` outside
-  `src/content/`, so nothing places, builds or reads an object. 0028 is the design
-  for closing exactly that and its own *What this costs* is the honest schedule.
+- **ADR 0023 and ADR 0028 are Accepted and now partly implemented, on the
+  schedule 0028 set.** This entry read "Accepted and unimplemented", re-verified
+  at `4ed571f` on three grounds: that `RoomZoningService` registered every
+  instance with `capacity: 0` and `objectCapabilities: []`, that no room
+  definition carries a capacity field, and that no `'object.*'` id appeared as a
+  literal under `src/` outside `src/content/`. The first and third have since
+  moved. `RoomZoningService` no longer hardcodes the zero — it resolves a
+  derived figure through a collaborator (`src/simulation/rooms/zoning.ts:330`,
+  called at `:444`) — and two object ids are now built by construction
+  definitions (`placesObjectId: 'object.bed'` and `'object.toilet'`,
+  `src/simulation/construction/definition.ts:87` and `:147`), so something does
+  place, build and read an object. What has **not** moved is the second ground
+  and the observable outcome: no room definition authors a capacity, and an
+  empty zoned room still derives zero, which is why ADR 0027's tripwire below
+  is still green rather than fired. Phases 1-2 of 0028 landed in #320, #321 and
+  #323; the remaining phases are the rest of its own *What this costs*.
 - **ADR 0027's subject is unreachable, so its effects are not observable.** New
   as of this commit and the reason its status line is qualified. The rating seam
-  that was approved is live, and it is inert: with `capacity: 0` on every zoned
-  instance, `findBestAvailable` returns `undefined` for `room.cell` with and
-  without the `sleep-surface` filter, and `prisoners-intake-system.test.ts`'s
-  "houses nobody at all through the shipped session path" is the tripwire that
-  fails the day 0028's phase work derives capacity from placed objects. Approving
-  a decision whose effects are not yet observable was the deliberate choice the
-  owner was shown; the gap belongs here rather than in §3 because nothing is
-  awaiting a decision.
+  that was approved is live, and it is inert: a zoned room with nothing placed in
+  it still derives capacity zero, so `findBestAvailable` returns `undefined` for
+  `room.cell` with and without the `sleep-surface` filter, and
+  `prisoners-intake-system.test.ts`'s "houses nobody at all through the shipped
+  session path" still passes. That tripwire is the notice this entry is waiting
+  on and it has **not** fired: it was written to fail the day capacity is derived
+  from placed objects *in a shipped session*, and while 0028's phases 1-2 have
+  landed the shipped path still zones an empty room, so the derivation returns
+  the same zero the hardcoded one did. When it does fire, the failure is the
+  notice that ADR 0027's stated precondition has expired and #79 is reachable for
+  real — do not re-baseline it to green. Approving a decision whose effects are
+  not yet observable was the deliberate choice the owner was shown; the gap
+  belongs here rather than in §3 because nothing is awaiting a decision.
 - **ADR 0026's three questions are open under an Accepted ADR**, and the only
   thing holding them is a pair of tests that assert the wrong answer on purpose
   (`tests/unit/entity-generation-wrap.test.ts`, and one case in
@@ -345,13 +362,19 @@ audited in one direction.
   any of it: mutating the wrap period from `& 0xFFF` to `& 0xF` leaves the suite
   green except one case in `actor-identity.test.ts`, which pins the arithmetic
   period and not one of its consequences.
-- **ADR 0012 — `chunkTopologies` is never evicted.** Re-verified at `4ed571f`:
-  there is no `delete` on that map anywhere in `src/simulation/rooms/topology.ts`.
-  `GlobalTopologyId` meets ADR 0012's category 2 with respect to *recompute*
-  history, but a chunk that has been loaded still contributes nodes after unload,
-  so an id remains a function of chunk *load* history (`docs/DETERMINISM.md`,
-  "Known limitations"). Whether a retained topology is dropped on unload is a
-  code question the ADR's Consequences hand to a follow-up.
+- **ADR 0012 — a retained topology is now evicted; the streaming policy is what
+  is left.** This entry read "`chunkTopologies` is never evicted", re-verified at
+  `4ed571f` on the ground that no `delete` existed on that map. **#324 closed
+  it**: `update()` drops the retained topology of every chunk the world no longer
+  reports as loaded (`this.chunkTopologies.delete(key)`,
+  `src/simulation/rooms/topology.ts:99`), so the component walk sees only loaded
+  chunks and an id is no longer a function of chunk *load* history either.
+  `GlobalTopologyId` therefore meets ADR 0012's category 2 outright rather than
+  only with respect to *recompute* history. What this section still carries is
+  the ruling the ADR reserves and #324 deliberately did not take: whether an
+  unloaded chunk should be *representable* in a topology at all, and if so from
+  what persisted geometry. That is a decision, not a code gap — which is why it
+  belongs here and the eviction no longer does.
 - **ADR 0006 / ADR 0003 decision 4 — the handshake gates nothing.** `'ready'` is
   a member of `WorkerState` (`src/simulation/worker/state-machine.ts`) and no
   `transition()` call targets it; the calls in the file reach `'faulted'`,
@@ -510,9 +533,10 @@ never recorded before this round:
   *"which is why this ADR is proposed rather than applied"* and Consequences
   clause (a) *"The status above stays Proposed"* all sat under a status line
   reading `Accepted`. Clause (a) now records that the category-2 reading **was**
-  taken; clause (b) — `chunkTopologies` is never evicted — is unchanged in
-  substance and now says plainly that the acceptance did not settle it, which
-  §5 of this file carries. A fourth sentence went with them, not previously
+  taken; clause (b) — `chunkTopologies` is never evicted — was true when this
+  entry was written and #324 has since falsified it, so the clause now records
+  the eviction as closed and reserves only the world-streaming ruling. A fourth
+  sentence went with them, not previously
   listed: the path-request-id clause said its question was *"left open for
   whoever accepts this ADR"*, and the acceptance did not take it either.
 - `docs/adr/0013-free-tier-cloud-save-capacity.md:15` and `:150` — the Status
