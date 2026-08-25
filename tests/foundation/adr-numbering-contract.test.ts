@@ -118,8 +118,15 @@ const NEXT_FREE_NUMBER = /\*\*Next free number:\s*(\d{4})\.?\*\*/u;
  */
 const LABELLED_ADR_LINK = /\[([^\]]*)\]\((\.\/(?:adr\/)?(\d{4})-[a-z0-9-]+\.md)\)/g;
 
-/** The `ADR 0007` / `ADR-0007` shape inside a link label. */
-const ADR_NUMBER_IN_LABEL = /ADR[\s-]*(\d{4})/iu;
+/**
+ * The `ADR 0007` / `ADR-0007` shape inside a link label. Global, and every
+ * match is collected rather than only the first: a label may legitimately name
+ * more than one ADR -- *"supersedes ADR 0012 and ADR 0015"* -- and taking the
+ * first number would report such a link as mislabelled whichever of the two it
+ * pointed at. The link is accepted when **any** number in its label is the one
+ * it resolves to.
+ */
+const ADR_NUMBERS_IN_LABEL = /ADR[\s-]*(\d{4})/giu;
 
 interface IndexRow {
   readonly target: string;
@@ -344,8 +351,8 @@ describe('ADR numbering contract', () => {
       for (const match of body.matchAll(LABELLED_ADR_LINK)) {
         const [, label, target, targetNumber] = match;
         if (label === undefined || targetNumber === undefined) continue;
-        const labelled = ADR_NUMBER_IN_LABEL.exec(label)?.[1];
-        if (labelled === undefined || labelled === targetNumber) continue;
+        const labelled = [...label.matchAll(ADR_NUMBERS_IN_LABEL)].map((named) => named[1]);
+        if (labelled.length === 0 || labelled.includes(targetNumber)) continue;
         mislabelled.push(`${relative(REPOSITORY_ROOT, file)}: "${label}" links to ${target ?? ''}`);
       }
     }
