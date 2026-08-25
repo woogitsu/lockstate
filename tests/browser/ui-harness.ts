@@ -311,9 +311,16 @@ const ROOMS_MODEL: HudRoomsViewModel = {
 };
 
 /**
- * The same two entries `src/main.ts` projects out of `BUILDABLE_REGISTRY`,
+ * Two of the four entries `src/main.ts` projects out of `BUILDABLE_REGISTRY`,
  * as plain view-model data. Kept here rather than imported from the registry
  * so the spec exercises the *panel*, not the catalog.
+ *
+ * Two rather than four, and unchanged as the registry grew: the other two are
+ * the object rows ADR 0028 phases 1 and 2 added, and every measurement in this
+ * harness is about the panel's controls and its height budget rather than about
+ * how many things a prison can build. `tests/browser/app-shell.spec.ts` drives
+ * the real projection, and `buildModelWithCatalogueOf` below is how a longer
+ * list is measured.
  */
 const BUILD_MODEL: HudBuildViewModel = {
   buildables: [
@@ -373,9 +380,9 @@ const STAFF_MODEL: HudStaffViewModel = {
 /**
  * A catalogue of `count` entries, for issue #143.
  *
- * `BUILDABLE_REGISTRY` holds two buildables, and two is one fewer than it
- * takes to push the panel's last section below the fold at 1280x720, so the
- * condition cannot be reached through the real app at all today. The panel
+ * `BUILDABLE_REGISTRY` holds four buildables, and four is still three fewer
+ * than it takes to push the panel's last section below the fold at 1280x720, so
+ * the condition cannot be reached through the real app at all today. The panel
  * takes its option list as view-model data, so the honest way to reach it is
  * to hand the real panel a longer list -- which is what the economy work
  * (#29) will do to it for real.

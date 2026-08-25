@@ -546,6 +546,21 @@ decision about what to build next.
     toilet, which is exactly why ADR 0028 names phase 2 as the milestone
     rather than phase 1.
 
+    **Phase 2 has landed and both of `room.cell`'s `object` requirements can
+    now read `'satisfied-by-capability'`** — measured in
+    `tests/integration/furnished-cell-loop.test.ts`, off two real construction
+    orders rather than a hand-registered instance. What is worth recording
+    here, because it is a projection fact rather than a simulation one: **no
+    HUD surface consumes either verdict.** `projectRoomList` and
+    `projectRoomDetail` answer `requirementStatus` over the worker's projection
+    catalogue, and nothing in `src/ui/` requests either — the Rooms tab is the
+    zoning gesture (ADR 0022), not the readout. So the difference between a
+    finished cell and an unfinished one is computable and off screen until ADR
+    0028 phase 5, and the phase order's argument that shipping "a room that is
+    visibly incomplete" was worse rests on a readout that does not exist yet.
+    What a player *does* see from phase 2 is a second object row in the Build
+    panel and a toilet drawn on the tile they pressed.
+
     **Two of the three area requirements this gap listed as
     `'not-evaluated'` are now evaluated**, and by the zoning service rather
     than by a projection — which is why they are recorded here rather than

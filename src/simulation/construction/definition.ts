@@ -86,6 +86,66 @@ export const BUILDABLE_REGISTRY = new Map<string, BuildableDefinition>([
     materialsRequired: [{ itemId: 'item.wood-plank', quantity: 1 }],
     placesObjectId: 'object.bed',
   }],
+  /*
+   * The second object buildable, and the one that finishes a cell (ADR 0028
+   * phase 2).
+   *
+   * **This row is the whole of that phase's mechanism**, which is what the ADR
+   * predicted: "ships `object.toilet` as a second buildable, and nothing
+   * structural". Every part of the route it travels already existed --
+   * `PlaceObject` validates a footprint against the world, the standing objects
+   * and the orders in flight without naming an object id; `RoomCapacityResolver`
+   * sums `footprint.width` over whatever is standing in the rectangle and
+   * unions the capabilities; `buildableLabelKey` in `src/main.ts` reads the
+   * label off `object.toilet`'s own `nameKey`; and `structureAppearance` reads
+   * the footprint through `placesObjectId`. So a toilet needs no code and no
+   * content id: `object.toilet` has been declared since the object catalogue
+   * shipped, and `'object.toilet.name'` has been in the default locale just as
+   * long.
+   *
+   * What it changes is the one thing phase 1 could not: a zoned `room.cell`
+   * requires `object.bed` **and** `object.toilet`
+   * (`src/content/room-catalog.ts`), so a cell with only a bed reads
+   * `'missing-capability'` on a requirement the catalogue itself declares.
+   * With this row the cell's derived capabilities become
+   * `['sanitation', 'sleep-surface']` and both requirements read
+   * `'satisfied-by-capability'`.
+   *
+   * **Every number here is a placeholder, exactly as the bed's are**, and none
+   * of them is decided by this change: ADR 0017 decision 5 reserves all pricing
+   * and balance to #29, and a `materialsRequired` quantity is a balance value in
+   * the same sense a `unitPriceMinorUnits` is.
+   *
+   *   - **One material**, for the constraint the bed's comment states rather
+   *     than for taste: `purchasableMaterialFor` in `src/main.ts` offers a
+   *     stepper for the *first* priced requirement only, so a two-material
+   *     buildable would get a control for one of them and no way to buy the
+   *     other.
+   *   - **`item.brick` rather than `item.wood-plank`**, by the bed's own
+   *     reasoning applied to a sanitary fixture: it is the fired-clay one of the
+   *     two materials `src/content/procurement-catalog.ts` prices, and it is the
+   *     one of the two a toilet is plausibly made of. It also means the two
+   *     object rows consume *different* materials, so the object route is
+   *     measurably not wired to one item.
+   *   - **The id's second token names the material this row consumes**, as
+   *     `wall-brick`, `door-wooden` and `bed-wooden` all do. It is not a claim
+   *     about porcelain: the catalogue prices two materials and neither is
+   *     ceramic, and authoring a third with a price is the decision reserved to
+   *     #29. The id is never shown to a player -- the Build panel's label is
+   *     `object.toilet.name`, "Toilet".
+   *   - **`workRequired: 30`**, `bed-wooden`'s and `door-wooden`'s figure, taken
+   *     rather than chosen, so nothing here says a toilet takes longer or less
+   *     time to install than a bed. Whether furniture should differ is a balance
+   *     question with the same owner as the quantity.
+   */
+  ['toilet-brick', {
+    id: 'toilet-brick',
+    category: 'object',
+    name: 'Toilet',
+    workRequired: 30,
+    materialsRequired: [{ itemId: 'item.brick', quantity: 1 }],
+    placesObjectId: 'object.toilet',
+  }],
 ]);
 
 export type BuildableItemReferenceError = {

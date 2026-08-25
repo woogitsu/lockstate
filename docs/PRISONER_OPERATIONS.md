@@ -164,7 +164,7 @@ room-catalog id, anchor tile, capacity, the object capabilities present)" and
 went on to call building the real object-placement system "construction/rooms
 work, not this issue's". That work is
 [ADR 0028](adr/0028-object-placement-and-derived-room-capacity.md) and its
-phase 1 has landed: `PlacedObjectRegistry` holds the objects,
+phases 1 and 2 have landed: `PlacedObjectRegistry` holds the objects,
 `RoomCapacityResolver` derives a room's two capacities and its capability list
 from the ones inside its rectangle, and nothing authors any of the three.
 
@@ -214,6 +214,30 @@ schedule, and the object appears when the order completes. Measured on a fresh
 session: buy one plank at tick 1, zone at tick 2, place at tick 3, and the bed
 is standing at tick 150 -- 100 ticks of delivery delay plus three progress
 ticks on a ten-tick schedule.
+
+**A cell can now hold both the objects its catalogue entry requires, and that
+changes the room's report rather than the prisoner's behaviour.** ADR 0028
+phase 2 added one `BUILDABLE_REGISTRY` row for `object.toilet` and no mechanism
+at all. Measured on a fresh session
+(`tests/integration/furnished-cell-loop.test.ts`): buy one plank and one brick,
+zone the 2x3 cell, place a bed at (4,6) and a toilet at (5,6), and at tick 200
+the instance reads `residentCapacity: 1`, `concurrentUseCapacity: 2` and
+`objectCapabilities: ['sanitation', 'sleep-surface']`, with both of
+`room.cell`'s `object` requirements `'satisfied-by-capability'` where the toilet
+read `'missing-capability'` before. Admit at tick 200 and the arrival is
+`completed` and housed by tick 240, treasury 24,895 rising to 25,195 at tick
+2,400 and 25,495 at 4,800.
+
+**The needs loop is byte-for-byte unchanged by the toilet, and this is worth
+knowing before reading the phase order as a promise about behaviour.** Every
+need level of the housed prisoner is identical at ticks 240, 400, 1,200, 2,400
+and 4,800 in a cell with a bed and a toilet and in a cell with only a bed --
+because `action.sleep`, `action.eat-in-cell` and `action.use-toilet` all resolve
+through `own-accommodation`, which re-checks neither the capacity nor the
+capability gate, so a prisoner in a toiletless cell was already using a toilet.
+None of the five `room-catalog-id` actions becomes reachable either: they name
+canteen, shower room, yard, common room and classroom, and a cell is none of
+them.
 
 **Both halves of that are reachable, and the difference between them is where
 #261 step 4 drew its line.** An `AdmitPrisoner` command exists,

@@ -153,7 +153,15 @@ export const HUD_MESSAGE_KEY = {
   securityStaffHint: 'hud.security.hire-hint',
 
   /**
-   * Labels for the two entries `BUILDABLE_REGISTRY` holds.
+   * Labels for the two `BUILDABLE_REGISTRY` entries whose ids name no content
+   * entry.
+   *
+   * Two of four since ADR 0028 phase 2, and it is these two that stay: a
+   * buildable with a `placesObjectId` is labelled by that object's own
+   * `nameKey` (`buildableLabelKey` in `src/main.ts` records why), so `bed-wooden`
+   * reads `object.bed.name` and `toilet-brick` reads `object.toilet.name` and
+   * neither needs a key here. `wall-brick` and `door-wooden` place no object and
+   * therefore still do.
    *
    * They live here, in the HUD's own namespace, because that registry carries
    * a hard-coded English `name` and no `nameKey` -- an ADR 0011 gap issue #74
