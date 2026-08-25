@@ -23,8 +23,9 @@ import {
  *
  * There were five such modules when this file was written (869 lines);
  * `save-panel-messages.ts` (#208) made six, `brand-badge.ts` with
- * `brand-messages.ts` made eight, and `simulation-alerts.ts` (#261) makes
- * nine. The vacuity guard below is the list a new one has to be added to.
+ * `brand-messages.ts` made eight, `simulation-alerts.ts` (#261) made nine, and
+ * `simulation-projections.ts` (#104) makes ten. The vacuity guard below is the
+ * list a new one has to be added to.
  *
  * ## Why this is a separate file, and not a widening of the HUD gate
  *
@@ -108,10 +109,10 @@ const orchestrationFiles = allUiFiles.filter((entry) => subtreeOf(entry) === und
  * Every layer outside `src/ui/` that a top-level UI module is allowed to know,
  * and how.
  *
- * Thirteen entries, which is the whole cross-layer dependency surface of the
+ * Sixteen entries, which is the whole cross-layer dependency surface of the
  * composition tier. Written down rather than inferred, because the point of
  * the list is that it converts "we know `build-tool.ts` is special" from
- * folklore into a line CI reads -- and because a reviewer can audit thirteen
+ * folklore into a line CI reads -- and because a reviewer can audit sixteen
  * facts. The count is the list's own length and is corrected whenever an
  * entry is added or removed: it read "ten" while the list held fourteen, and
  * the last change to it removed `build-tool.ts -> simulation`, which the
@@ -206,6 +207,13 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
       'Type-only: `WorkerToMainMessage` from `src/simulation/protocol/types`. It reads counts off snapshot messages into a HUD view model and nothing else; 57 lines, no simulation code runs because of it.',
   },
   {
+    file: 'src/ui/simulation-projections.ts',
+    tree: 'simulation',
+    kind: 'value',
+    reason:
+      'Value: `SIMULATION_PROTOCOL_VERSION` from `src/simulation/protocol/types`, plus the `MainToWorkerMessage`, `WorkerToMainMessage`, `ProjectionId` and `ProjectionTarget` types. It is the only module here that *sends* on the projection channel, and everything it imports is protocol vocabulary -- one version constant and four type names -- which is the same dependency `simulation-commands.ts` beside it carries and for the same reason: turning a panel\'s request into a message on the worker is the orchestration half of `AGENTS.md` boundary 3. It owns no simulation state and caches nothing, deliberately: a cache here would be a second, stale copy of the prison on this thread, which is the boundary the whole projection channel exists to keep (#104). It constructs no runtime, which the construction assertion below checks rather than trusts.',
+  },
+  {
     file: 'src/ui/brand-badge.ts',
     tree: 'content',
     kind: 'type-only',
@@ -270,6 +278,7 @@ describe('UI orchestration boundaries', () => {
       'src/ui/simulation-clock.ts',
       'src/ui/simulation-commands.ts',
       'src/ui/simulation-counts.ts',
+      'src/ui/simulation-projections.ts',
       'src/ui/simulation-zoning.ts',
     ]);
     // And the import scanner really is reading them.
