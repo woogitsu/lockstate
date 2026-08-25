@@ -161,15 +161,17 @@ order -- the canonical order `EntityQuery.execute` walks (ADR 0005). The decode
 runs once per applied snapshot, seconds apart, never per frame; culling stays
 the layer's single range test, because this side of the seam has no camera.
 
-**On the shipped app this draws nothing today, and the reason is not the
-renderer.** It is no longer that nothing can admit a prisoner: #261 step 4
-wired the `AdmitPrisoner` command, its handler branch and the Intake panel
-that produces it. It is that the admission is *refused* -- the boundary
-declines an admission into a prison with no room instance of an accommodation
-target, because `IntakeSystem` would mark that arrival terminally `'failed'`,
-and `ZoneRoom` still has no producer, so no room instance can exist in a
-prison a player can reach. The day one can, this draws the arrival with no
-change here. A bundle that carries prisoners is drawn already --
+**On the shipped app this draws nothing in a prison the player has not zoned a
+room in, and the reason is not the renderer.** It is no longer that nothing can
+admit a prisoner: #261 step 4 wired the `AdmitPrisoner` command, its handler
+branch and the Intake panel that produces it. It is that an admission into a
+prison with no room instance of an accommodation target is *refused* at the
+boundary, because `IntakeSystem` would mark that arrival terminally `'failed'`.
+Once the player has zoned a cell -- which the Rooms tab (#312) is the producer
+for -- the admission is accepted and this draws the arrival with no change
+here; measured on the merged tree, the prisoner exists from the tick the
+command runs and waits at `accommodation-assignment`. A bundle that carries
+prisoners is drawn already --
 `tests/unit/rendering-feed.test.ts` admits through the real runtime and
 asserts the decoded frame.
 

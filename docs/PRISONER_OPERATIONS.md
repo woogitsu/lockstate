@@ -184,19 +184,43 @@ required type exists at all -- but its stated justification, that a real
 prison holds an arriving prisoner because capacity may return, does not hold
 for a room with no beds in it.
 
-**Both halves of that are now reachable in principle and only one of them in
-practice, and the difference is where #261 step 4 drew its line.** An
-`AdmitPrisoner` command exists, `createSessionCommandHandler` routes it, and
-the Intake panel on the Overview tab produces it -- so a prisoner can be
-admitted, and the retrying wait above is exactly the state a zoned cell puts
-them in. What cannot happen is the *other* branch: the boundary refuses an
-admission when no room instance of any accommodation target exists, rather
-than allowing the terminal `'failed'` that branch produces, because
-`'failed'` is matched by no stage below and is therefore unrecoverable even
-after a room is zoned. See `PrisonerOperationsRuntime.requestAdmission` and
-`IntakeSystem.hasAccommodationTarget`. `ZoneRoom` still has no producer, so
-in the shipped application there is never a room instance to admit into and
-every admission is refused -- visibly, as one alert row per press.
+**Both halves of that are reachable, and the difference between them is where
+#261 step 4 drew its line.** An `AdmitPrisoner` command exists,
+`createSessionCommandHandler` routes it, and the Intake panel on the Overview
+tab produces it -- so a prisoner can be admitted, and the retrying wait above
+is exactly the state a zoned cell puts them in. What cannot happen is the
+*other* branch: the boundary refuses an admission when no room instance of any
+accommodation target exists, rather than allowing the terminal `'failed'` that
+branch produces, because `'failed'` is matched by no stage below and is
+therefore unrecoverable even after a room is zoned. See
+`PrisonerOperationsRuntime.requestAdmission` and
+`IntakeSystem.hasAccommodationTarget`.
+
+Which of the two a press meets is now a fact about the prison rather than
+about the application, because the Rooms tab (#312) gave `ZoneRoom` a
+producer. Measured on the merged tree, seed 11: a `room.cell` zoned at its
+authored 2x3 minimum registers an instance with `capacity: 0` and no object
+capabilities, `hasAccommodationTarget()` answers `true`, the admission is
+**accepted**, and the arrival advances `queued -> reception ->
+classification -> accommodation-assignment` and is still waiting there at
+tick 1,000 with `failedCount: 0` and `accommodationBacklogTicks` at 196. A
+prison holding nothing zoned, or holding only a 6x6 canteen, is still refused
+-- visibly, as one alert row per press.
+
+**One hole this deliberately does not close.** `hasAccommodationTarget`
+answers about *any* classification group, because the group is a
+`prisoners.classification` draw made two stages later and asking for it at the
+command boundary would either move the draw or duplicate it
+(`docs/adr/0028-object-placement-and-derived-room-capacity.md`). So a prison
+holding a zoned `room.cell` and no `room.solitary-cell` admits an arrival that
+is then classified `high-risk`, whose target is `room.solitary-cell`, and which
+lands in the terminal `'failed'` stage. That is measured rather than inferred:
+with `priorIncidents: 5` and a 300,000-tick sentence, seeds 1, 4 and 12 reach
+tier 3, `failedCount` becomes 1, `counts.prisoners` reads 1 and
+`counts.prisonersInIntake` reads 0. It is **not reachable from the Intake
+panel**, whose `ADMISSION_REQUEST` sends 0 prior incidents and 10,000 ticks:
+that scores 0, the screening variance is `-1 | 0 | +1`, and across 300 seeds
+only tiers 0 and 1 occur. Closing it is owed work and is not done here.
 
 **Performance note:** `allByRoomCatalogId`/`findAvailable` are a per-tick,
 potentially-thousands-of-instances hot path (every pending intake and every

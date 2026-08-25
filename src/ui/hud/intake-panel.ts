@@ -22,32 +22,31 @@ import type { HudLocalizer } from './view-model';
  * scrollbar because `.ui-panel` is `overflow: hidden` on the x axis. So
  * neither fits, at the roomiest viewport or the tightest.
  *
- * A fifth tab does not fit either, and for a recorded reason rather than a
- * pixel one: ADR 0022 measured `.hud-tabs__inner` spanning 1.8 ... 373.2 at
- * 375x812 with a fifth tab injected -- 1.8px of margin per side -- so a
- * **sixth tab is foreclosed**, and it named the one remaining slot as
- * belonging to the Rooms surface that supersedes it. Spending it on a single
- * button would take that slot for something that is not a place to list and
- * manage anything.
+ * A tab of its own is not available at all, and for a recorded reason rather
+ * than a pixel one: ADR 0022 measured `.hud-tabs__inner` spanning 1.8 ... 373.2
+ * at 375x812 with a fifth tab injected -- 1.8px of margin per side -- so a
+ * **sixth tab is foreclosed**, and it named the one remaining slot as belonging
+ * to the Rooms surface. The Rooms tab (#312) has since taken it, so
+ * `HUD_TAB_IDS` holds five and there is no slot left to spend on a single
+ * button.
  *
  * What is left costs nothing at all: **the Overview tab shows nothing.**
- * `hud.ts` binds exactly one panel to a tab -- `buildPanel.setVisible(activeTab
- * === 'build')` -- so `overview`, `security` and `regime` are three tabs bound
- * to no panel, and on any of them `.hud__side` is an empty box. This panel
- * takes that box on `overview` and is `hidden` everywhere else, so it and the
- * Build panel are never laid out at the same time and the budget ADR 0022
- * measured is untouched at every viewport. The tab is also the default
- * (`hud-state.ts`), so the control is the first thing a player sees rather
- * than something to go looking for.
+ * `hud.ts` binds one panel to `build` and one to `rooms`, so `overview`,
+ * `security` and `regime` are three tabs bound to no panel, and on any of them
+ * `.hud__side` is an empty box. This panel takes that box on `overview` and is
+ * `hidden` everywhere else, so it is never laid out at the same time as either
+ * of the other two and the budget ADR 0022 measured is untouched at every
+ * viewport. The tab is also the default (`hud-state.ts`), so the control is the
+ * first thing a player sees rather than something to go looking for.
  *
  * ### Boundaries
  *
  * Like `build-panel.ts`, it is a composer: it holds nothing, inspects no
  * snapshot, and imports nothing from `src/simulation/**`, so it does not know
  * that an `AdmitPrisoner` command exists -- only that it asked the host to
- * admit somebody. The sentence explaining why an admission is currently
- * impossible is a message key like every other (ADR 0011); the panel renders
- * no text of its own.
+ * admit somebody. The sentence naming the condition an admission needs is a
+ * message key like every other (ADR 0011); the panel renders no text of its
+ * own.
  *
  * ### What it does not offer, and why
  *

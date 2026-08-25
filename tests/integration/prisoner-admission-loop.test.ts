@@ -72,8 +72,22 @@ function admit(runtime: SimulationRuntime, id: string): void {
   submit(runtime, id, packCommand({ type: 'AdmitPrisoner', ...ADMISSION, ...ARRIVAL }));
 }
 
+/**
+ * `room.cell`'s authored minimum size, and the smallest rectangle the zoning
+ * service will accept for one.
+ *
+ * A dimension, not a magic pair: since #312 `RoomZoningService` evaluates the
+ * authored `minimum-size` requirement, so a rectangle is refused
+ * `zone.below-minimum-size` rather than quietly accepted, and each room type
+ * has its own floor. Measured: `room.cell` is 2x3 and `room.canteen` is 6x6.
+ */
+const CELL_MINIMUM = { width: 2, height: 3 } as const;
+/** `room.canteen`'s, which is why the canteen below is not zoned at the cell's size. */
+const CANTEEN_MINIMUM = { width: 6, height: 6 } as const;
+
 function zoneCell(runtime: SimulationRuntime, id: string, roomId: string = CELL): void {
-  submit(runtime, id, packCommand({ type: 'ZoneRoom', roomId, x: 4, y: 6, width: 2, height: 3 }));
+  const size = roomId === CANTEEN ? CANTEEN_MINIMUM : CELL_MINIMUM;
+  submit(runtime, id, packCommand({ type: 'ZoneRoom', roomId, x: 4, y: 6, ...size }));
 }
 
 function stepTo(runtime: SimulationRuntime, tick: number): void {
@@ -216,6 +230,11 @@ describe('admitting a prisoner through the real command path (#261 step 4)', () 
     // two checks to exactly one message between them rather than to none.
     const runtime = createNewSimulationRuntime(SEED);
     zoneCell(runtime, 'cmd-zone-canteen', CANTEEN);
+    // The designation itself was accepted, asserted before the admission so a
+    // canteen refused for its own reasons -- `room.canteen`'s authored
+    // 6x6 minimum, which #312 made the zoning service evaluate -- cannot pass
+    // for the admission refusal this test is about.
+    expect(runtime.refusals.count, 'the canteen must actually be zoned').toBe(0);
     expect(projectStatusCounts(runtime, runtime.kernel.tick).rooms).toBe(1);
 
     admit(runtime, 'cmd-admit');

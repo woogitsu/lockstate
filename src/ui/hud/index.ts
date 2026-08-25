@@ -11,5 +11,6 @@ export * from './hud';
 export * from './hud-state';
 export * from './messages';
 export * from './projection';
+export * from './rooms-panel';
 export * from './status-strip';
 export * from './view-model';

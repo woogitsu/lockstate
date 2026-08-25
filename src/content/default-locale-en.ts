@@ -137,6 +137,11 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.tab.build': 'Build',
   'hud.tab.security': 'Security',
   'hud.tab.regime': 'Regime',
+  // Six characters. ADR 0022 measured the tab bar at 375x812 spanning
+  // x = 1.8 .. 373.2 with a fifth tab injected -- 1.8px of margin per side --
+  // so a nine-character label such as "Logistics" would put the bar at
+  // x = -9.5 and fail the assertions in `tests/browser/ui-shell.spec.ts`.
+  'hud.tab.rooms': 'Rooms',
 
   'hud.minimap.title': 'Minimap',
   'hud.minimap.placeholder': 'Minimap is not available yet',
@@ -157,9 +162,9 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // and is bound to the control that was pressed. These are rows in the
   // alerts list about something the simulation decided later, with no control
   // to attach to.
-  // `admit.no-accommodation` is the sentence every admission gets today, and
-  // it says the thing the player can act on rather than the thing that is
-  // technically true. "There is no room instance of an accommodation target"
+  // `admit.no-accommodation` is the sentence an admission into a prison with
+  // no accommodation room gets, and it says the thing the player can act on
+  // rather than the thing that is technically true. "There is no room instance of an accommodation target"
   // is the condition; "nowhere to put them" is what to do about it. Refusing
   // here is deliberate: with no room, `IntakeSystem` marks the arrival
   // terminally `'failed'`, and a permanent inert record counted on the strip
@@ -186,6 +191,56 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.alert.refusal.zone.overlaps-existing-room': 'The room was not zoned — it overlaps a room that is already there.',
   'hud.alert.refusal.zone.unknown-room-type': 'The room was not zoned — that is not a room type this prison knows.',
   'hud.alert.refusal.zone.unowned-land': 'The room was not zoned — you do not own all of that land.',
+  // The authored minimum, refused for the first time. Every one of the 18 room
+  // definitions carries a `minimum-size` requirement -- a cell is 2x3, a
+  // canteen 6x6, a yard 8x8 -- and until the Rooms panel existed nothing read
+  // one, so a 1x1 canteen was a legal room. The sentence names the rule rather
+  // than the numbers, because the numbers are per room type and the panel
+  // shows the selected room's own pair beside the drag.
+  'hud.alert.refusal.zone.below-minimum-size': 'The room was not zoned — that area is smaller than this room type allows.',
+  // Removal's own namespace. `unzone.invalid-area` is the same *condition* as
+  // `zone.invalid-area` and a different *sentence*: a player told "the room was
+  // not zoned" after asking to remove one would go and look at the wrong
+  // control.
+  'hud.alert.refusal.unzone.invalid-area': 'Nothing was removed — that area is not a valid rectangle.',
+  'hud.alert.refusal.unzone.nothing-to-remove': 'Nothing was removed — there is no room in that area.',
+  'hud.alert.refusal.unzone.room-occupied': 'Nothing was removed — somebody is using that room.',
+
+  // A protocol fault nobody else reads, in the alerts list (#187).
+  //
+  // Two producers on opposite sides of the boundary raise these: the worker
+  // rejecting a message the interface sent, and the interface rejecting a
+  // message the worker sent. Each sentence is written to be true of both --
+  // it says which message was rejected and why, never which end rejected it
+  // -- because the direction is not something a player can act on and the
+  // severity of the row already carries the part that is. See
+  // `PROTOCOL_FAULT_LABEL_KEYS` in `src/ui/simulation-alerts.ts`.
+  //
+  // Namespaced `hud.alert.fault.*` beside `hud.alert.refusal.*` and not under
+  // it: a refusal is the prison declining to carry out an order it received,
+  // a fault is the order never arriving intact, and the two are different
+  // things to be told even when they follow the same button press.
+  //
+  // Every one of the twelve `ProtocolFaultCode` members has an entry, because
+  // the table that reads them is exhaustive over the enum. Not all twelve can
+  // reach this list today -- a fault that answers a request is reported by
+  // the caller that made it and is deliberately not painted here -- and the
+  // entries exist anyway rather than being trimmed to the reachable set: a
+  // code that gains an uncorrelated emitter would otherwise ship as its own
+  // raw dotted key, which is precisely the failure ADR 0011 and
+  // `tests/foundation/localization-key-completeness.test.ts` exist to stop.
+  'hud.alert.fault.invalid-message': 'A simulation message was rejected — it was not a message this game understands.',
+  'hud.alert.fault.unsupported-protocol-version': 'A simulation message was rejected — it was written for a different version of the game.',
+  'hud.alert.fault.unknown-message-kind': 'A simulation message was rejected — this build does not know that kind of message.',
+  'hud.alert.fault.invalid-payload': 'A simulation message was rejected — its contents were not what that message must carry.',
+  'hud.alert.fault.not-initialized': 'A simulation request was refused — no prison is loaded yet.',
+  'hud.alert.fault.already-initialized': 'A simulation request was refused — this session already has a prison loaded.',
+  'hud.alert.fault.duplicate-message': 'A command was refused — it had already been sent.',
+  'hud.alert.fault.sequence-gap': 'A command was refused — a command sent before it never arrived.',
+  'hud.alert.fault.invalid-state': 'A simulation request was refused — the simulation cannot do that right now.',
+  'hud.alert.fault.snapshot-incompatible': 'The save could not be loaded — this build does not understand its format.',
+  'hud.alert.fault.shutting-down': 'A simulation request was refused — the session is shutting down.',
+  'hud.alert.fault.internal-error': 'The simulation hit an internal error.',
 
   // A browser that cannot start a Worker gets a page with no simulation
   // behind it. Saying so is the whole point: the failure was previously
@@ -230,10 +285,11 @@ const authoredMessages: Readonly<Record<string, string>> = {
 
   // The intake surface (#261 step 4). The hint states the prison's actual
   // situation rather than a feature disclaimer, because it *is* the prison's
-  // situation: nothing in the application can zone a room yet, so there is
-  // nowhere for an arrival to be accommodated and every press is refused.
-  // When a room can be zoned the sentence stops being true of a prison that
-  // has one, which is why it names the condition and not the build.
+  // situation: an arrival needs somewhere to be accommodated, and a prison
+  // holding none refuses the press. It names the condition and not the build
+  // for exactly that reason, and that is what makes it still true now the
+  // Rooms tab (#312) exists -- a player who has zoned a cell is admitted, and
+  // a player who has not is told why not, from the one sentence.
   'hud.intake.title': 'Intake',
   'hud.intake.admit': 'Admit a prisoner',
   'hud.intake.hint': 'A prisoner can only be admitted into a prison that has a room to hold them.',
@@ -256,7 +312,49 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.refusal.purchase-materials': 'Nothing was bought — the purchase was refused and no money was spent.',
   'hud.refusal.undo': 'Nothing was undone — the request was refused.',
   'hud.refusal.redo': 'Nothing was redone — the request was refused.',
+  'hud.refusal.zone-room': 'The room was not designated — the request was refused.',
+  'hud.refusal.unzone-room': 'Nothing was removed — the request was refused.',
   'hud.refusal.admit-prisoner': 'Nobody was admitted — the request was refused.',
+
+  'hud.rooms.title': 'Rooms',
+  'hud.rooms.catalogue': 'Room type',
+  'hud.rooms.catalogue-empty': 'No room types are available',
+  'hud.rooms.selected': 'Selected',
+  'hud.rooms.arm': 'Draw on map',
+  'hud.rooms.disarm': 'Stop drawing',
+  'hud.rooms.arm-hint': 'Drag a rectangle across the tiles this room should cover.',
+  'hud.rooms.remove': 'Remove rooms',
+  'hud.rooms.remove-active': 'Stop removing',
+  // Says what a removal drag actually does, because it is not "clear the tiles
+  // you dragged over": each covered tile is grown into its whole connected
+  // same-type run before anything is cleared, so clipping a corner off a
+  // canteen takes the whole canteen. Telling the player that up front is the
+  // difference between a rule and a surprise.
+  'hud.rooms.remove-hint': 'Drag across any part of a room to remove all of it.',
+  'hud.rooms.area': 'Area',
+  'hud.rooms.area-none': 'Nothing selected',
+  'hud.rooms.area-value': '{width} × {height} tiles at {x}, {y}',
+  'hud.rooms.confirm': 'Designate {width} × {height}',
+  // Its own sentence, because a removal confirm reading "Designate" would name
+  // the opposite of what pressing it does.
+  'hud.rooms.confirm-remove': 'Remove {width} × {height}',
+  'hud.rooms.cancel': 'Discard',
+  'hud.rooms.minimum': 'Needs at least {width} × {height} tiles',
+  'hud.rooms.minimum-none': 'No minimum size',
+  'hud.rooms.too-small': 'Too small — this room needs at least {width} × {height} tiles.',
+  'hud.rooms.enclosure': 'Enclosure',
+  'hud.rooms.enclosure-none': 'Not evaluated yet',
+  'hud.rooms.enclosure-sealed': 'Walled in on every side',
+  'hud.rooms.enclosure-open': 'Open on at least one side',
+  // The one combination worth flagging rather than merely reporting: the room
+  // asked to be enclosed and its perimeter is not walled. It is not a refusal,
+  // and the sentence must not read as one -- the check is narrower than
+  // enclosure and a door cannot currently seal anything, so a room that is
+  // genuinely indoors can read open here.
+  'hud.rooms.enclosure-open-required': 'This room should be enclosed, and the area you drew is open on at least one side.',
+  'hud.rooms.requirement-enclosed': 'Must be enclosed',
+  'hud.rooms.requirement-outdoors': 'Must be outdoors',
+  'hud.rooms.requirement-none': 'No enclosure rule',
 
   'hud.severity.info': 'Info',
   'hud.severity.warning': 'Warning',

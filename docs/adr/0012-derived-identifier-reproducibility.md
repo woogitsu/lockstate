@@ -1,7 +1,16 @@
 # ADR 0012: Reproducibility of Derived Simulation Identifiers
 
 ## Status
-Proposed. Extended by
+Accepted. The `GlobalTopologyId` remedy this ADR's Consequences left as a
+follow-up has landed: PR #295 (issue #112) made `nextGlobalId` a local of
+`recomputeGlobalTopology` (`src/simulation/rooms/topology.ts:213`, incremented
+at `:219`) instead of instance state, so ids are handed out from 1 in canonical
+sorted order on every recompute and `GlobalTopologyId` meets the category-2
+requirement below. What remains is the residue that change recorded rather than
+removed: `chunkTopologies` is never evicted, so an id is no longer a function of
+*recompute* history but is still a function of chunk *load* history — a world
+streaming question kept under "Known limitations" in `docs/DETERMINISM.md`, not
+a bar to accepting the taxonomy. Extended by
 [ADR 0015](./0015-actor-identity-allocation.md), which applies the taxonomy
 below to actor names and works the category-1 case through in detail.
 
@@ -90,6 +99,19 @@ module doc, and `tests/determinism/` gains a pin for it.
   change to a public accessor (`getTopologyId`) and belongs in its own issue
   with its own tests, not smuggled into determinism hardening — which is why
   this ADR is proposed rather than applied.
+  **That follow-up is #112 and has landed.** The first of the two mechanisms
+  was taken: the counter is now local to `recomputeGlobalTopology`, which is
+  numerically the same thing as keying ids off the canonical component seed
+  (ids are handed out in sorted-seed order), and avoids the
+  content-addressed form this ADR's own Alternatives section rejects. Two
+  things are deliberately *not* settled by that change, because they are this
+  ADR's to settle and not an implementation's. **(a)** The status above stays
+  Proposed; accepting the category-2 reading of `GlobalTopologyId` is the
+  owner's call. **(b)** `chunkTopologies` is never evicted, so an unloaded
+  chunk still contributes nodes and the id remains a function of chunk *load*
+  history even though it is no longer a function of *recompute* history.
+  Whether a retained topology is dropped on unload is recorded under "Known
+  limitations" in `docs/DETERMINISM.md` and belongs in the same ruling.
 - Path-request ids were placed in category 2 by exception, on the ground that
   they are consumed only within one `NavigationSystem` lifetime, which a
   restore rebuilds empty

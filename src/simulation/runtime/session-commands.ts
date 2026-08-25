@@ -2,7 +2,13 @@ import { createConstructionCommandHandler } from '../construction';
 import type { ProcurementSystem } from '../economy';
 import type { CommandHandler } from '../kernel/kernel';
 import { unpackCommand } from '../protocol/commands';
-import { ADMIT_REFUSAL_REASONS, PURCHASE_REFUSAL_REASONS, ZONE_REFUSAL_REASONS, type RefusalLog } from '../refusals';
+import {
+  ADMIT_REFUSAL_REASONS,
+  PURCHASE_REFUSAL_REASONS,
+  UNZONE_REFUSAL_REASONS,
+  ZONE_REFUSAL_REASONS,
+  type RefusalLog,
+} from '../refusals';
 import type { ConstructionSystem } from '../construction/system';
 import type { PrisonerOperationsRuntime } from '../prisoners/prisoner-operations-runtime';
 import type { RoomZoningService } from '../rooms/zoning';
@@ -21,18 +27,21 @@ import type { RoomZoningService } from '../rooms/zoning';
  * such command and took the same route (#261): it used to reach a no-op
  * branch in `construction/handler.ts` under a comment correctly saying that
  * zoning is not a construction order, and it now reaches `RoomZoningService`
- * from here instead.
+ * from here instead. `UnzoneRoom` is the third, and it is routed beside
+ * `ZoneRoom` because it is the same service's other half. `AdmitPrisoner` is
+ * the fourth (#261 step 4), and it reaches `PrisonerOperationsRuntime` for the
+ * same reason: an admission is not a construction order either.
  *
  * **The delegation is total, not a fallback.** Every command this does not
  * handle is passed through unchanged, including ones neither layer handles --
  * `unpackCommand` returning `null` is the decoder's business and is left to
  * the handler that owns it.
  *
- * `refusals` is the session's `RefusalLog`, and all four routes write to the
- * same one: a refused wall, a refused purchase, a refused zoning rectangle
- * and a refused admission are the same kind of fact about the session -- the
- * kernel took the command and a system then declined to carry it out -- and
- * they reach the player down one channel (#261).
+ * `refusals` is the session's `RefusalLog`, and all five routes write to the
+ * same one: a refused wall, a refused purchase, a refused zoning rectangle, a
+ * refused removal and a refused admission are the same kind of fact about the
+ * session -- the kernel took the command and a system then declined to carry it
+ * out -- and they reach the player down one channel (#261).
  */
 export function createSessionCommandHandler(
   construction: ConstructionSystem,
@@ -73,9 +82,46 @@ export function createSessionCommandHandler(
       return;
     }
 
+    if (simCommand !== null && simCommand.type === 'UnzoneRoom') {
+      // The other half of designating a room, and the reason it is a command
+      // rather than a use of `Undo`: zoning writes no construction order, so
+      // `ConstructionSystem` has no transaction to reverse and `Undo` cannot
+      // reach a zone at all. Before this branch a room, once designated, was
+      // permanent for the life of the session -- `zone` refuses
+      // `overlaps-existing-room` for any tile already painted -- so one stray
+      // drag could put up to 4,096 tiles beyond use with no recovery of any
+      // kind, and none whatsoever on touch, where undo is a keyboard chord.
+      //
+      // It carries no room id, because removal names no room type: what comes
+      // out is whatever the rectangle covers. `RoomZoningService.unzone`
+      // states what "covers" means -- each covered zoned tile is grown into
+      // its connected same-type run before anything is cleared -- and both
+      // consequences of that choice.
+      //
+      // The refusal takes the same route a refused zoning does and lands in
+      // the same `RefusalLog`, under its own `unzone.*` ids: the same
+      // condition refusing a removal and a designation is a different
+      // sentence, because a player told "the room overlaps another" after
+      // asking to *remove* one would go and look at the wrong control. The
+      // lookup is exhaustive over `UnzoneRoomRefusalReason`, so a fourth
+      // reason fails to compile until it has a wire id and a message key.
+      const outcome = roomZoning.unzone(
+        {
+          x: simCommand.x,
+          y: simCommand.y,
+          width: simCommand.width,
+          height: simCommand.height,
+        },
+        context.tick,
+      );
+      if (outcome.kind === 'refused') refusals.record(UNZONE_REFUSAL_REASONS[outcome.reason], context.tick);
+      return;
+    }
+
     if (simCommand !== null && simCommand.type === 'AdmitPrisoner') {
-      // The third command that is not a construction order, routed here for
-      // the reason `ZoneRoom` and `PurchaseMaterials` are (#261 step 4).
+      // The fourth command that is not a construction order, routed here for
+      // the reason `ZoneRoom`, `UnzoneRoom` and `PurchaseMaterials` are
+      // (#261 step 4).
       //
       // `requestAdmission` rather than `admitPrisoner`, and the difference is
       // the whole of what this branch decides. The unguarded call throws when
@@ -83,12 +129,14 @@ export function createSessionCommandHandler(
       // command handler may do -- and it allocates a prisoner even when
       // `IntakeSystem` is certain to mark the arrival terminally `'failed'`,
       // which happens whenever no room instance of any accommodation target
-      // exists. That is every prison a player can currently build, because
-      // the only thing in `src/` that registers an instance is
-      // `RoomZoningService` and `ZoneRoom` still has no producer. Admitting
-      // anyway would put a permanent, undeletable, inert record in the save
-      // and count it on the status strip as a prisoner; refusing says so
-      // instead. See `PrisonerOperationsRuntime.requestAdmission`.
+      // exists. That is every prison in which the player has zoned nothing,
+      // which is where every prison starts: `RoomZoningService` is still the
+      // only thing in `src/` that registers an instance, and since the Rooms
+      // tab (#312) `ZoneRoom` has a producer, so this is the state before the
+      // first designation rather than a permanent one. Admitting anyway would
+      // put a permanent, undeletable, inert record in the save and count it on
+      // the status strip as a prisoner; refusing says so instead. See
+      // `PrisonerOperationsRuntime.requestAdmission`.
       //
       // Nothing here draws. Identity comes from `identity.actor-name` at the
       // reception stage and the risk tier from `prisoners.classification` at

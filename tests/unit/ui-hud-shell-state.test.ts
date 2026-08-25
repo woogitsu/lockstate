@@ -27,8 +27,13 @@ describe('initial shell state', () => {
     expect(isPanelCollapsed(INITIAL_HUD_SHELL_STATE, 'minimap')).toBe(false);
   });
 
-  it('exposes four tabs and the panels the shell owns', () => {
-    expect([...HUD_TAB_IDS]).toEqual(['overview', 'build', 'security', 'regime']);
+  it('exposes five tabs and the panels the shell owns', () => {
+    // Five, and the bar is now full: ADR 0022 measured a sixth as foreclosed at
+    // 375x812, where the five-tab bar already leaves 1.8px of margin per side.
+    // `rooms` sits after `build` rather than at the end because the order is the
+    // order a player reaches for them -- look, build the walls, say what the
+    // rooms inside them are for.
+    expect([...HUD_TAB_IDS]).toEqual(['overview', 'build', 'rooms', 'security', 'regime']);
     expect([...HUD_PANEL_IDS]).toEqual(['minimap', 'alerts']);
   });
 });

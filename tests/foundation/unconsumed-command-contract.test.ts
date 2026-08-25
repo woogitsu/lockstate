@@ -18,7 +18,9 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  *
  * ## What it found on the first run, and what it has moved since
  *
- * Six commands are declared. **One had a producer.**
+ * Six commands were declared. **One had a producer.** (There are eight now:
+ * `UnzoneRoom` arrived with the Rooms tab and `AdmitPrisoner` with the Intake
+ * panel, and each arrived with a producer.)
  *
  * `src/main.ts` dispatched `{ type: 'PlaceBuildOrder', ... }` from the
  * `'place-build-order'` HUD intent. `CancelBuildOrder`, `ZoneRoom`,
@@ -27,13 +29,13 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  * cancel, a zone, a purchase or an undo, and no other module built a
  * command object at all.
  *
- * ## What it reads today: five of seven
+ * ## What it reads today: seven of eight
  *
  * `Undo` and `Redo` gained producers with #261's step 6, and their entries came
  * out of the list below in the same change -- which is the direction this file
  * exists to force. The transaction model itself is older than either: it has
  * been in `ConstructionSystem` since #108, and what #261 added was the way to
- * reach it. `HudIntent` now declares eight members, two of which are `undo` and
+ * reach it. `HudIntent` now declares twelve members, two of which are `undo` and
  * `redo`: the world's `KeyZ`/`KeyY` bindings report through `BuildTool` to the
  * HUD, the HUD dispatches its own intent, and `src/main.ts` turns it into the
  * command.
@@ -51,17 +53,27 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  * directions by design, which is why closing #89 had to change this file: a
  * record of unreachability cannot outlive the fact.
  *
- * `AdmitPrisoner` is the seventh member and never appeared on the list below,
- * because it arrived with its producer in the same change (#261 step 4): the
- * schema member, the `createSessionCommandHandler` branch, the `HudIntent`
- * member and the Intake panel that emits it landed together. That is the
- * direction this gate wants a command to arrive from, and it is worth naming
- * because the alternative -- declaring the command first and wiring it later
- * -- is exactly how the other six got here.
+ * `ZoneRoom` is the one this gate moved most recently, and it had been on the
+ * list longest. Its consumer stopped being a no-op in #261's zoning step, so
+ * what was missing was only the producer -- and the entry recorded the reason in
+ * the terms ADR 0022 was then written to settle: *"every member of `HudIntent`
+ * is a tab, a panel, the clock, a build order, the build tool or the undo pair,
+ * and none is about a room."* The Rooms tab (#312) is the producer, `HudIntent`
+ * now declares a `zone-room` member, and the entry came out of the list below in
+ * the same change. `UnzoneRoom` arrived in that change *with* a producer and was
+ * never on the list at all, which is the only way a new command should land.
  *
- * So `CancelBuildOrder` and `ZoneRoom` are what the list below still holds,
- * and the count is measured, not carried: five producers all in `src/main.ts`,
- * two commands with none.
+ * `AdmitPrisoner` is the eighth member and never appeared on the list below
+ * either, for the same reason: it arrived with its producer in the same change
+ * (#261 step 4), the schema member, the `createSessionCommandHandler` branch,
+ * the `HudIntent` member and the Intake panel that emits it landing together.
+ * That is the direction this gate wants a command to arrive from, and it is
+ * worth naming because the alternative -- declaring the command first and
+ * wiring it later -- is exactly how the six before those two got here.
+ *
+ * So `CancelBuildOrder` is the whole of what the list below still holds, and
+ * the count is measured, not carried: seven producers all in `src/main.ts`, one
+ * command with none.
  *
  * ## What counts as a producer
  *
@@ -78,13 +90,13 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  * writes `{ type: 'PlaceBuildOrder', orderId, ... }`, while a consumer writes
  * `case 'PlaceBuildOrder':` (`src/simulation/construction/handler.ts`) or
  * `command.type === 'PlaceBuildOrder'`. Matching the bare literal would count
- * all six handler branches as producers and report the opposite of the truth.
+ * all eight handler branches as producers and report the opposite of the truth.
  *
  * Two limits, stated rather than left to be discovered:
  *
  * - A producer that assembles the object from a variable (`{ type: kind, ... }`)
  *   is invisible to a text scan. None exists today, and the positive control
- *   below fails loudly if any of the four that do exist stops being found.
+ *   below fails loudly if any of the seven that do exist stops being found.
  * - The scan cannot tell a live dispatch from dead code inside `src/`. It
  *   answers "can this command be constructed anywhere in the application",
  *   which is the weaker and checkable half of "can a player send it".
@@ -95,7 +107,7 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  * ## Why the list comes out of the schema
  *
  * `simulationCommandSchema.options` is the discriminated union itself, so a
- * seventh member is in scope the moment it is added. A hand-written array
+ * ninth member is in scope the moment it is added. A hand-written array
  * here would be a second list to forget, which is the failure this whole
  * family of gates exists to prevent.
  */
@@ -112,8 +124,6 @@ const ROOT = resolve(__dirname, '../..');
 const AWAITING_PRODUCER: Readonly<Record<string, string>> = {
   CancelBuildOrder:
     'Handled at `construction/handler.ts` and reachable from `ConstructionSystem.cancelOrder`, but nothing in the application constructs the command. The Build panel places an order and offers no way to withdraw a *particular* one: since #261 a misplaced run can be taken back whole, by `KeyZ`, because undo pops the last transaction -- which is not the same control. Cancelling the third order of a twelve-segment run still needs a per-order control on the panel, which is #174 territory since that panel is already over its height budget.',
-  ZoneRoom:
-    'Declared, schema-bounded and handled, with no producer. Its consumer stopped being a no-op in #261\'s zoning step -- `RoomZoningService` paints the world\'s zoning plane and registers a room instance, which is what finally moves the status strip\'s `Rooms` count -- so what is missing here is only the producer. Room zoning still has no interface at all: every member of `HudIntent` is a tab, a panel, the clock, a build order, a materials purchase, the build tool or the undo pair, and none is about a room, so the whole zoning vocabulary is reachable only from a test. This is the command shape a room-designation tool would use when one exists.',
 };
 
 function collectTypeScriptFiles(directory: string): readonly string[] {
@@ -155,15 +165,20 @@ describe('every declared simulation command either has a producer or is accounte
     // loud. A pattern that matched nothing, or a stripper that blanked every
     // file, would do the same in a way the file count cannot see, so the
     // positive control names every command that genuinely has a producer and
-    // where it is -- all four in `src/main.ts`, which is the composition root
+    // where it is -- all seven in `src/main.ts`, which is the composition root
     // and the only place in `src/` that builds a command object.
     expect(producerSources.length).toBeGreaterThan(50);
-    expect(COMMAND_TYPES.length).toBe(7);
+    expect(COMMAND_TYPES.length).toBe(8);
 
     expect(producersOf('PlaceBuildOrder')).toEqual(['src/main.ts']);
     expect(producersOf('PurchaseMaterials')).toEqual(['src/main.ts']);
     expect(producersOf('AdmitPrisoner')).toEqual(['src/main.ts']);
     expect(producersOf('Redo')).toEqual(['src/main.ts']);
+    // The two the Rooms tab added, asserted by name rather than only by the
+    // count: a producer that had drifted out of the composition root would
+    // still keep the count green.
+    expect(producersOf('ZoneRoom')).toEqual(['src/main.ts']);
+    expect(producersOf('UnzoneRoom')).toEqual(['src/main.ts']);
     const main = producerSources.find((source) => source.where === 'src/main.ts');
     expect(main, 'the production producers of a simulation command are no longer where this gate looks for them').toBeDefined();
     expect(main!.text).toContain(`type: 'PlaceBuildOrder'`);
@@ -171,13 +186,15 @@ describe('every declared simulation command either has a producer or is accounte
     expect(main!.text).toContain(`type: 'AdmitPrisoner'`);
     expect(main!.text).toContain(`type: 'Undo'`);
     expect(main!.text).toContain(`type: 'Redo'`);
+    expect(main!.text).toContain(`type: 'ZoneRoom'`);
+    expect(main!.text).toContain(`type: 'UnzoneRoom'`);
   });
 
   it('separates producing from consuming, so a handler branch is not mistaken for a dispatch', () => {
     // The rule the whole measurement rests on. `construction/handler.ts`
     // switches on all four of the commands it handles; if `case 'X':` counted
-    // as producing an `X`, this gate would report five of six commands as
-    // reachable and be exactly wrong.
+    // as producing an `X`, this gate would report all eight commands as
+    // reachable and be exactly wrong about the one that is not.
     //
     // Demonstrated on `CancelBuildOrder`, which is handled there and produced
     // nowhere. It used to be `Undo` -- a stronger example while `Undo` was the
@@ -232,7 +249,7 @@ describe('every declared simulation command either has a producer or is accounte
     ).toEqual([]);
   });
 
-  it('measures five produced and two unproduced, which is where #261 step 4 left the command surface', () => {
+  it('measures seven produced and one unproduced, which is where #261 step 4 left the command surface', () => {
     // The denominator, stated so the gate reports a fact rather than only
     // guarding one, and exact in both directions. A command that quietly
     // stopped being reachable would otherwise only have to be added to the
@@ -241,15 +258,15 @@ describe('every declared simulation command either has a producer or is accounte
     // application.
     //
     // It read five and one on the first run, three and three once #261 gave
-    // the undo pair its keys, two and four on #89's branch before that
-    // merged in, and four and two after it did. `AdmitPrisoner` arrived
-    // *with* its producer -- a seventh declared command and a fifth
-    // dispatch in the same change -- so the denominator moved and the
-    // numerator did not, which is the one direction this gate wants a new
-    // command to arrive from. Both numbers move in the same change as a
-    // producer, which is the point of asserting the count as well as the
-    // list: neither can be edited alone and stay green.
-    expect(unproducedTypes.length).toBe(2);
-    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(5);
+    // the undo pair its keys, two and four on #89's branch before that merged
+    // in, and one and six once the Rooms tab gave `ZoneRoom` a producer and
+    // brought `UnzoneRoom` with one. `AdmitPrisoner` then arrived *with* its
+    // producer -- an eighth declared command and a seventh dispatch in the same
+    // change -- so the denominator moved and the numerator did not, which is the
+    // one direction this gate wants a new command to arrive from. Both numbers
+    // move in the same change as a producer, which is the point of asserting the
+    // count as well as the list: neither can be edited alone and stay green.
+    expect(unproducedTypes.length).toBe(1);
+    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(7);
   });
 });

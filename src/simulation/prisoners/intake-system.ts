@@ -113,6 +113,19 @@ export class IntakeSystem implements SystemRegistration {
    * into -- that is a `prisoners.classification` draw made two stages later,
    * and asking for it here would either move the draw or duplicate it.
    *
+   * **That leaves one hole open, and open deliberately**
+   * (`docs/adr/0028-object-placement-and-derived-room-capacity.md`). Answering
+   * about *any* group means a prison holding a zoned `room.cell` and no
+   * `room.solitary-cell` passes this check, and an arrival then classified
+   * `high-risk` resolves to `room.solitary-cell`, finds no instance and lands
+   * in the terminal `'failed'` stage after all. Measured: with
+   * `priorIncidents: 5` and a 300,000-tick sentence, seeds 1, 4 and 12 reach
+   * tier 3 and `failedCount` becomes 1. It is not reachable from the Intake
+   * panel, whose figures score 0 against a screening variance of `-1 | 0 | +1`
+   * and so cannot produce tier 3 -- across 300 seeds only tiers 0 and 1 occur
+   * -- so it is owed work rather than a live defect, and closing it needs the
+   * per-group question this method must not ask.
+   *
    * Cheap by construction: `CLASSIFICATION_GROUP_IDS` has two members and
    * `allByRoomCatalogId` is the registry's cached, per-type lookup, so this is
    * two map reads. It is called once per `AdmitPrisoner` command, never per

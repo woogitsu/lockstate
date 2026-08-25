@@ -173,12 +173,14 @@ describe('no module in src/ui/ renders a hard-coded sentence (issue #208)', () =
     'brand-badge.ts',
     'brand-messages.ts',
     'build-tool.ts',
+    'room-tool.ts',
     'save-panel.ts',
     'save-panel-messages.ts',
     'simulation-alerts.ts',
     'simulation-clock.ts',
     'simulation-commands.ts',
     'simulation-counts.ts',
+    'simulation-zoning.ts',
   ] as const;
 
   /** Source with comments removed, so prose about a rule cannot trip the rule. */

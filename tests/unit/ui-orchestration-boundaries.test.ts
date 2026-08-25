@@ -233,6 +233,20 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
     reason:
       'Type-only: `LocalizationKey` from `src/content/localization`. A frozen registry of the badge\'s message keys and nothing else, in the shape `src/ui/hud/messages.ts` and `src/ui/save-panel-messages.ts` both use; naming the key type is what lets `satisfies Readonly<Record<string, LocalizationKey>>` check every entry at compile time. Erased, and it names no other layer.',
   },
+  {
+    file: 'src/ui/room-tool.ts',
+    tree: 'rendering',
+    kind: 'type-only',
+    reason:
+      'Type-only: `RoomToolPort` and `TileRect` from `src/rendering/build/area-picking`. The exact shape of `build-tool.ts`\'s entry above and the same argument one gesture over: `RoomToolPort` is a port the renderer *offers* -- the scene reports the rectangle of tiles a drag covered and this module turns it into something the HUD can dispatch -- so the direction is UI-onto-a-renderer-contract rather than UI-into-renderer-internals, and it is erased. It is a second module rather than more methods on `BuildTool` because the two ports carry different shapes and the room tool carries a removal mode; `src/ui/room-tool.ts`\'s header states that rule against `BuildTool`\'s own. A value import here would mean the orchestrator had started calling into the renderer, which is what that entry says too.',
+  },
+  {
+    file: 'src/ui/simulation-zoning.ts',
+    tree: 'simulation',
+    kind: 'type-only',
+    reason:
+      'Type-only: `WorkerToMainMessage` from `src/simulation/protocol/types`. The fourth of the translators outside `src/ui/hud/`, the same shape as `simulation-counts.ts` and `simulation-alerts.ts` beside it and for the same reason: the HUD may not import the simulation (`AGENTS.md` boundary 1), so the module that has to know both a protocol message and a view model sits outside `src/ui/hud/`. It reads what the last accepted zoning said about itself off a status-counts publication and returns three plain fields; no simulation code runs because of it, and unlike the other three it names no `content` dependency at all, because it maps no id onto a message key -- the Rooms panel decides which sentence the enum pair deserves.',
+  },
 ];
 
 const dependencies = findCrossTreeDependencies(orchestrationFiles, OWN_TREE);
@@ -249,12 +263,14 @@ describe('UI orchestration boundaries', () => {
       'src/ui/brand-badge.ts',
       'src/ui/brand-messages.ts',
       'src/ui/build-tool.ts',
+      'src/ui/room-tool.ts',
       'src/ui/save-panel-messages.ts',
       'src/ui/save-panel.ts',
       'src/ui/simulation-alerts.ts',
       'src/ui/simulation-clock.ts',
       'src/ui/simulation-commands.ts',
       'src/ui/simulation-counts.ts',
+      'src/ui/simulation-zoning.ts',
     ]);
     // And the import scanner really is reading them.
     expect(orchestrationFiles.flatMap(({ source }) => findImports(source)).length).toBeGreaterThan(15);
@@ -347,7 +363,7 @@ describe('UI orchestration boundaries', () => {
     expect(construction.scannedFiles).toBeGreaterThan(20);
     expect(
       construction.sites.map(describeConstructionSite),
-      'a UI module now builds a live simulation. The main thread owns rendering, browser UI and input orchestration (AGENTS.md boundary 3); the simulation worker owns authoritative in-session game state (boundary 4). A runtime built here is a second, divergent simulation -- the reason src/main.ts:41-52 gives for creating the worker exactly once',
+      'a UI module now builds a live simulation. The main thread owns rendering, browser UI and input orchestration (AGENTS.md boundary 3); the simulation worker owns authoritative in-session game state (boundary 4). A runtime built here is a second, divergent simulation -- the reason src/main.ts gives, at `simulationWorkers`, for there being at most one worker at a time',
     ).toEqual([]);
   });
 });
