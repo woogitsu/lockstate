@@ -254,6 +254,39 @@ changes without the list being updated, which is the right guard.
 
 ---
 
+### 7. Un-zoning one of two adjacent same-type rooms removes both
+
+**Tier:** VERIFIED · **Category:** correctness / lifecycle
+· **Where:** `src/simulation/rooms/zoning.ts:60-62`, `collectZonedRegion` at `:665`,
+`removedInstanceIds` at `:254`
+
+The zoning plane narrows a tile to a room **type**, not to an instance. The
+instance is then named by its own rectangle. Quoted from the service's header:
+
+> Two adjacent same-type rectangles are still two instances and `unzone` still
+> treats them as one region -- neither is changed here.
+
+`collectZonedRegion` is a flood fill over same-type tiles, and the result type
+carries `removedInstanceIds` as a **plural** sorted list, so the asymmetry is
+visible in the signature: zoning creates one instance, un-zoning removes every
+instance the flood fill reaches.
+
+**Concrete failure:** a player zones two cells side by side, as separate drags,
+then un-zones one of them. Both disappear. Any occupant of the second cell has
+its `accommodationInstanceId` left naming a room that no longer exists, and the
+second cell's capacity and occupancy go with it.
+
+**Proposed fix:** store an instance id per tile in the zoning plane and have
+un-zoning operate on that rather than on the type, or keep the region behaviour
+and make it an explicit ADR decision with the plural removal surfaced to the
+player before it happens. This changes a persisted plane, so it is a schema
+question and not a local fix.
+
+**Credit:** raised by an external reviewer working from source text alone; I
+verified it and found the repository documents it.
+
+---
+
 ## Claims from external reviews that do not survive
 
 Four external reviews of this snapshot were adjudicated. Three claims fail, and
@@ -286,6 +319,37 @@ which after `version.yml`'s bump is always a `chore(release)` commit; the patter
 is identical across all 169 Deploy runs. **REFUTED.** The real hole was that
 nothing *asserted* the `ref:` expression, which #327 has now closed with ten
 mutations each observed red.
+
+**The message-kind reachability gate is not evaded by a reshaped sender —
+measured.** The claim was that the gate detects senders by matching source text
+(`\bkind:\s*'<kind>'\s*,`), so a semantically identical but syntactically
+different construction would slip past it and silently lose coverage. The
+reviewer named the experiment that would settle it, so I ran it: I rewrote a real
+sender, `src/ui/simulation-commands.ts:217`, from `kind: 'simulation/set-clock',`
+to double quotes — valid TypeScript, no linter in this repository enforces quote
+style, behaviour identical — and ran the gate.
+
+**It went red, on two assertions, naming the exact kind:**
+
+```
+× accounts for every main-to-worker kind nothing sends
+  AssertionError: a protocol message kind no module under `src/` constructs, so
+  the worker can never receive it. Wire a sender, or record it with what is true
+  about it today: expected [ 'simulation/set-clock' ] to deeply equal []
+× measures the state #274 A1 and A2 describe, exactly
+```
+
+The premise about the mechanism is right and the conclusion does not follow. The
+gate is not "find senders and trust the count" — it is a **closed-world equality**
+between the set of kinds nothing sends and a recorded list. A reshape that the
+regex cannot see does not quietly reduce coverage; it moves that kind into the
+unsent set and breaks the equality. Losing a sender fails *louder* than the
+reviewer feared, and it fails with the kind's name in the message. An AST rewrite
+would add nothing here. **REFUTED by measurement**, and the mutation was reverted.
+
+Worth noting, since it fell out of the same run: the second failure shows
+`protocol/handshake` sitting in the recorded unsent list, independently
+corroborating Finding 6.
 
 One further correction, to a premise this project itself circulated: **`room.yard`
 is not "capacity 0 permanently"**. Finding 1's measurements disprove it. That
