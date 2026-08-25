@@ -15,6 +15,27 @@ import { RoomInstanceRegistry } from './room-instance-registry';
 
 const PRISONER_COMPONENT_ID = 0;
 
+/**
+ * Why an admission the player asked for was not carried out (#261 step 4).
+ *
+ * Two reasons, and both are conditions the runtime can state about itself
+ * before it allocates anything -- not a guess about what intake will decide.
+ *
+ * - `no-accommodation`: no room instance exists that any classification
+ *   group's accommodation target names. See
+ *   `IntakeSystem.hasAccommodationTarget` for why this and not "the arrival's
+ *   own target" and why the refusal is worth more than the admission.
+ * - `population-full`: `EntityStore` has no index left, so `spawn()` would
+ *   throw out of the kernel's tick.
+ */
+export const ADMIT_PRISONER_REFUSAL_REASONS = ['no-accommodation', 'population-full'] as const;
+export type AdmitPrisonerRefusalReason = (typeof ADMIT_PRISONER_REFUSAL_REASONS)[number];
+
+/** `requestAdmission`'s answer: the entity that now exists, or why none does. Shaped like `ZoneRoomOutcome`, for the same reason -- a command handler returns `void`, so the outcome has to be a value the caller can put on the refusal route. */
+export type AdmitPrisonerOutcome =
+  | { readonly kind: 'admitted'; readonly entityId: EntityId }
+  | { readonly kind: 'refused'; readonly reason: AdmitPrisonerRefusalReason };
+
 export interface PrisonerOperationsRuntimeOptions {
   readonly capacity: number;
   readonly navigation: NavigationSystem;
@@ -159,7 +180,50 @@ export class PrisonerOperationsRuntime {
     }
   }
 
-  /** Allocates a new prisoner entity and submits it to intake. Accommodation, classification and action selection happen over subsequent scheduled ticks -- there is no synchronous "spawn fully processed" shortcut. */
+  /**
+   * The guarded admission a player's `AdmitPrisoner` command reaches (#261
+   * step 4), as opposed to `admitPrisoner` below, which is the unguarded
+   * allocation a scenario or a test drives directly.
+   *
+   * Two things separate them, and both are about the boundary rather than
+   * about the simulation:
+   *
+   * 1. **It cannot throw into `Kernel.step()`.** `admitPrisoner` calls
+   *    `EntityStore.spawn`, which throws when the store is exhausted. A
+   *    command handler that throws unwinds the tick loop, so the boundary
+   *    answers `population-full` instead.
+   * 2. **It refuses an admission that is certain to end in a terminal
+   *    `'failed'`.** With no room instance of any accommodation target,
+   *    `IntakeSystem` marks the arrival `'failed'` -- and no branch of
+   *    `IntakeSystem.update` matches that stage, so the record never
+   *    recovers, not even once a room is zoned (measured). Nothing releases a
+   *    prisoner either (#31). Allocating in that state hands the player a
+   *    permanent, undeletable, inert record while the status strip counts it
+   *    as a prisoner, which is a worse answer than saying no. See
+   *    `IntakeSystem.hasAccommodationTarget` for the full line between "not
+   *    yet" and "never".
+   *
+   * What it deliberately does **not** do is pre-empt any other outcome. A
+   * zoned cell with no bed in it makes the admission *succeed* here and then
+   * wait at `accommodation-assignment` for as long as it takes -- a retryable
+   * state the simulation already models and counts
+   * (`IntakeMetrics.accommodationBacklogTicks`), and the state ADR 0023
+   * describes for a room whose occupancy no object supplies. Refusing that
+   * too would be this boundary deciding a product question the ADRs have not
+   * settled.
+   *
+   * Deterministic: it reads registry contents and store occupancy, draws
+   * nothing, and calls `admitPrisoner` unchanged -- so identity and
+   * classification still come from `identity.actor-name` and
+   * `prisoners.classification` at the intake stages that own them.
+   */
+  public requestAdmission(input: ClassificationInput, originTile: { readonly x: number; readonly y: number }): AdmitPrisonerOutcome {
+    if (!this.intakeSystem.hasAccommodationTarget()) return { kind: 'refused', reason: 'no-accommodation' };
+    if (!this.entityStore.canSpawn) return { kind: 'refused', reason: 'population-full' };
+    return { kind: 'admitted', entityId: this.admitPrisoner(input, originTile) };
+  }
+
+  /** Allocates a new prisoner entity and submits it to intake. Accommodation, classification and action selection happen over subsequent scheduled ticks -- there is no synchronous "spawn fully processed" shortcut. Unguarded: `requestAdmission` is what a player's command reaches. */
   public admitPrisoner(input: ClassificationInput, originTile: { readonly x: number; readonly y: number }): EntityId {
     const entityId = this.entityStore.spawn();
     const index = this.entityStore.getIndex(entityId);

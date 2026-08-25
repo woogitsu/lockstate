@@ -31,6 +31,8 @@ import type { HudAlertViewModel } from './hud/view-model';
  * for `labelKey: '...'` literals, and these are `Record` values.
  */
 const REFUSAL_LABEL_KEYS: Readonly<Record<RefusalReason, LocalizationKey>> = {
+  'admit.no-accommodation': 'hud.alert.refusal.admit.no-accommodation',
+  'admit.population-full': 'hud.alert.refusal.admit.population-full',
   'build.out-of-bounds': 'hud.alert.refusal.build.out-of-bounds',
   'build.unbuildable': 'hud.alert.refusal.build.unbuildable',
   'build.unbuildable-terrain': 'hud.alert.refusal.build.unbuildable-terrain',

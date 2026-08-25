@@ -157,6 +157,16 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // and is bound to the control that was pressed. These are rows in the
   // alerts list about something the simulation decided later, with no control
   // to attach to.
+  // `admit.no-accommodation` is the sentence every admission gets today, and
+  // it says the thing the player can act on rather than the thing that is
+  // technically true. "There is no room instance of an accommodation target"
+  // is the condition; "nowhere to put them" is what to do about it. Refusing
+  // here is deliberate: with no room, `IntakeSystem` marks the arrival
+  // terminally `'failed'`, and a permanent inert record counted on the strip
+  // as a prisoner would be a worse answer than a sentence
+  // (`src/simulation/prisoners/prisoner-operations-runtime.ts`).
+  'hud.alert.refusal.admit.no-accommodation': 'Nobody was admitted — there is no room to put a prisoner in yet.',
+  'hud.alert.refusal.admit.population-full': 'Nobody was admitted — this prison is holding as many people as it can.',
   'hud.alert.refusal.build.out-of-bounds': 'The build order failed — that tile is outside the map.',
   'hud.alert.refusal.build.unbuildable': 'The build order failed — nothing can be built on that tile.',
   'hud.alert.refusal.build.unbuildable-terrain': 'The build order failed — the ground there cannot be built on.',
@@ -218,6 +228,16 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.build.buildable.wall-brick': 'Brick wall',
   'hud.build.buildable.door-wooden': 'Wooden door',
 
+  // The intake surface (#261 step 4). The hint states the prison's actual
+  // situation rather than a feature disclaimer, because it *is* the prison's
+  // situation: nothing in the application can zone a room yet, so there is
+  // nowhere for an arrival to be accommodated and every press is refused.
+  // When a room can be zoned the sentence stops being true of a prison that
+  // has one, which is why it names the condition and not the build.
+  'hud.intake.title': 'Intake',
+  'hud.intake.admit': 'Admit a prisoner',
+  'hud.intake.hint': 'A prisoner can only be admitted into a prison that has a room to hold them.',
+
   // What a refused control says (issue #207). Four comments in `src/` claimed
   // the HUD reported a refusal "on the control that was pressed" while the
   // only consumer of the failure was a `console.warn`, so a "Place order" with
@@ -236,6 +256,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.refusal.purchase-materials': 'Nothing was bought — the purchase was refused and no money was spent.',
   'hud.refusal.undo': 'Nothing was undone — the request was refused.',
   'hud.refusal.redo': 'Nothing was redone — the request was refused.',
+  'hud.refusal.admit-prisoner': 'Nobody was admitted — the request was refused.',
 
   'hud.severity.info': 'Info',
   'hud.severity.warning': 'Warning',

@@ -68,6 +68,23 @@ export interface LayoutBox {
   readonly bottom: number;
 }
 
+/**
+ * What the Intake panel is showing (#261 step 4).
+ *
+ * `laidOut` rather than `visible`: the panel and the Build panel share one
+ * rail slot and exactly one of them is `hidden` at any time, so what has to be
+ * proven is that the browser gave this one a box -- not merely that the node
+ * is in the document.
+ */
+export interface IntakeProbe {
+  readonly laidOut: boolean;
+  readonly admitLaidOut: boolean;
+  readonly admitLabel: string;
+  readonly admitDisabled: boolean | null;
+  /** The sentence that says an admission needs somewhere to put the arrival. */
+  readonly hint: string;
+}
+
 export interface BuildProbe {
   /** False while the Build tab is not the active one. */
   readonly visible: boolean;
@@ -266,6 +283,14 @@ export interface LockstateUiHarness {
   hudText(): string;
   transportDisabled(): boolean;
   layoutProbe(): LayoutProbe;
+
+  /**
+   * The Intake panel (#261 step 4), which shares `.hud__side` with the Build
+   * panel and is shown on the Overview tab instead of it.
+   */
+  intakeProbe(): IntakeProbe;
+  /** Presses the admit button. A real click, so a disabled button genuinely does nothing. */
+  clickAdmitPrisoner(): boolean;
 
   buildProbe(): BuildProbe;
   clickArmBuild(): boolean;

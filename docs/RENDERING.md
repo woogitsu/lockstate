@@ -162,11 +162,16 @@ runs once per applied snapshot, seconds apart, never per frame; culling stays
 the layer's single range test, because this side of the seam has no camera.
 
 **On the shipped app this draws nothing today, and the reason is not the
-renderer.** Nothing in `src/` calls `admitPrisoner`, so a prison a player can
-currently reach holds no prisoners to draw. A bundle that carries some is drawn
--- `tests/unit/rendering-feed.test.ts` admits through the real runtime and
-asserts the decoded frame. Admitting a prisoner in the shipped app is a
-separate step (#31).
+renderer.** It is no longer that nothing can admit a prisoner: #261 step 4
+wired the `AdmitPrisoner` command, its handler branch and the Intake panel
+that produces it. It is that the admission is *refused* -- the boundary
+declines an admission into a prison with no room instance of an accommodation
+target, because `IntakeSystem` would mark that arrival terminally `'failed'`,
+and `ZoneRoom` still has no producer, so no room instance can exist in a
+prison a player can reach. The day one can, this draws the arrival with no
+change here. A bundle that carries prisoners is drawn already --
+`tests/unit/rendering-feed.test.ts` admits through the real runtime and
+asserts the decoded frame.
 
 `?actors=demo` still puts scripted actors on screen. They are a renderer-side
 demonstration of the sprite path, clearly labelled as such in `DemoActorFeed`,

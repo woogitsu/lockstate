@@ -122,6 +122,12 @@ const UNLABELLED: readonly { readonly sourceFile: string; readonly declaration: 
       'Why `RoomZoningService.zone` refused a `ZoneRoom` -- unowned land, an overlap, a rectangle no room can be. It is the zoning counterpart of `BuildOrder.failReason`, which is likewise a stable id and likewise carries no key: #207 settled that a refusal a player sees is the UI layer\'s own `hud.refusal.*` string naming the outcome, never the simulation\'s code rendered verbatim. It never leaves the simulation under this spelling: `createSessionCommandHandler` maps every member onto a `RefusalReason` through an exhaustive `Record` before anything is published, and what the player reads is one authored `hud.alert.refusal.zone.*` sentence per reason rather than a two-word label this table could hold -- see the `REFUSAL_REASONS` entry above for that argument in full. Until #261 step 2 built the route this entry said "nothing projects this one at all yet -- it reaches `recentRefusals()` and stops there"; the reason it reaches now is mapped, and the window it also still fills is diagnosis.',
   },
   {
+    sourceFile: 'src/simulation/prisoners/prisoner-operations-runtime.ts',
+    declaration: 'ADMIT_PRISONER_REFUSAL_REASONS',
+    reason:
+      'Why `PrisonerOperationsRuntime.requestAdmission` refused an `AdmitPrisoner` -- no room instance any accommodation target names, or an exhausted entity store. It is the admission counterpart of `ZoneRoomRefusalReason` above and carries no key for the identical reason: it never leaves the simulation under this spelling, because `createSessionCommandHandler` maps both members onto a `RefusalReason` through an exhaustive `Record` before anything is published, and what the player reads is one authored `hud.alert.refusal.admit.*` sentence per reason rather than a two-word label. See the `REFUSAL_REASONS` entry above for that argument in full.',
+  },
+  {
     sourceFile: 'src/content/simulation-message-keys.ts',
     declaration: 'SimulationEnumForm',
     reason:

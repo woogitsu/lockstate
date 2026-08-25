@@ -13,6 +13,7 @@ import { type ListRow, createListRow } from '../primitives/list-row';
 import { type Panel, createPanel } from '../primitives/panel';
 import { type TabButton, createTabButton } from '../primitives/tab-button';
 import { type BuildPanel, type BuildPanelTarget, createBuildPanel } from './build-panel';
+import { type IntakePanel, createIntakePanel } from './intake-panel';
 import {
   HUD_PANEL_IDS,
   type HudPanelId,
@@ -184,6 +185,32 @@ export type HudIntent =
    * control's action did not happen" for every command (issue #207).
    */
   | { readonly kind: 'purchase-materials'; readonly itemId: string; readonly quantity: number }
+  /**
+   * The player asked for a prisoner to be admitted (#261 step 4).
+   *
+   * **Payload-free, and that is the whole of the boundary here.** An
+   * admission is described by a sentence length, a prior-incident count and
+   * an arrival tile; the host fills all three, because none of them is a
+   * figure the HUD could obtain honestly. Two are `ClassificationInput`, whose
+   * meaning lives in `src/simulation/prisoners/classification.ts` -- a module
+   * the HUD may not import (`AGENTS.md` boundary 1) -- and the third is the
+   * middle of the one chunk a new prison owns, which the host already knows
+   * because it is the same origin the Build panel's numeric fields start at.
+   *
+   * Nothing about *who* arrives is here either, and nothing about who arrives
+   * may ever be: the name and the risk tier are drawn inside the simulation
+   * from `identity.actor-name` and `prisoners.classification` at the intake
+   * stages that own them. A field on this intent carrying either would be the
+   * interface deciding simulation state from an unseeded source.
+   *
+   * A *command*, so it goes through the same gate as a build order and a
+   * purchase: a second tap while one is in flight must not hand a busy host
+   * two admissions, and a refusal has to reach the player. Today every
+   * admission is refused -- nothing in the application can zone a room, so
+   * there is nowhere to accommodate an arrival -- which is exactly why it is
+   * dispatched through the gate rather than fired and forgotten.
+   */
+  | { readonly kind: 'admit-prisoner' }
   /**
    * The player handed the world pointer to the build tool, or took it back.
    *
@@ -670,7 +697,25 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       );
     },
   });
-  const side = element('div', { className: 'hud__side', children: [buildPanel.element] });
+  // ---- bottom-right intake panel (Overview tab) ---------------------
+  // Shares `.hud__side` with the Build panel and is never laid out beside
+  // it: exactly one of the two is visible, keyed on the active tab, so the
+  // always-visible budget ADR 0022 measured for the Build tab is unchanged
+  // and the three tabs that were bound to no panel become two. See
+  // `intake-panel.ts` for why the Overview tab rather than a Build-panel row
+  // or a fifth tab, with the measurements behind it.
+  const intakePanel: IntakePanel = createIntakePanel({
+    localizer,
+    // Admitting is a *command*: it asks the host to change the simulation,
+    // and a refusal has to reach the player rather than being dropped. The
+    // button is passed so the refusal lands on it as well as on the refusal
+    // line (issue #207).
+    onAdmit: () => {
+      dispatchCommand({ kind: 'admit-prisoner' }, intakePanel.submitControl);
+    },
+  });
+
+  const side = element('div', { className: 'hud__side', children: [intakePanel.element, buildPanel.element] });
 
   /**
    * The other route to the same command: a run dragged along the world
@@ -768,6 +813,9 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   // command too, so a second tap while one is in flight must not queue a
   // duplicate build order.
   for (const control of buildPanel.controls) busy.add(control);
+  // And the Intake panel's, for the same reason: admitting is a command, so a
+  // second tap while one is in flight must not hand the host two admissions.
+  for (const control of intakePanel.controls) busy.add(control);
 
   // ---- state application -------------------------------------------
   function applyState(next: HudShellState): void {
@@ -782,6 +830,10 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // Hidden, not merely unstyled: a panel that is off-screen but still in the
     // tab order is a control a keyboard can reach and a player cannot see.
     buildPanel.setVisible(state.activeTab === 'build');
+    // The other occupant of `.hud__side`, and the reason the pair can share
+    // one box: the two conditions are mutually exclusive, so exactly one
+    // panel is ever laid out there and neither pays for the other's height.
+    intakePanel.setVisible(state.activeTab === 'overview');
     for (const panel of HUD_PANEL_IDS) {
       const collapsed = isPanelCollapsed(state, panel);
       if (panel === 'minimap') minimapPanel.setCollapsed(collapsed);

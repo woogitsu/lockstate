@@ -284,6 +284,8 @@ export function refusalMessageKey(actionId: string): LocalizationKey | undefined
       return HUD_MESSAGE_KEY.refusalUndo;
     case 'redo':
       return HUD_MESSAGE_KEY.refusalRedo;
+    case 'admit-prisoner':
+      return HUD_MESSAGE_KEY.refusalAdmitPrisoner;
     default:
       return undefined;
   }

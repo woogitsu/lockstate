@@ -728,6 +728,37 @@
 .hud-build__note { white-space: normal; text-transform: none; letter-spacing: 0; }
 
 /* ------------------------------------------------------------------ */
+/* Bottom-right intake panel (Overview tab)                            */
+/* ------------------------------------------------------------------ */
+
+/*
+ * The Intake panel shares `.hud__side` with the Build panel and is never laid
+ * out beside it -- `paintState` shows exactly one of the two, keyed on the
+ * active tab -- so it asks nothing of the height budget the Build panel is
+ * measured against and needs almost no rules of its own.
+ *
+ * Two rules, and both are borrowed rather than invented: the panel takes the
+ * same fixed rail width every panel in this column takes, and its hint
+ * wraps like `.hud-build__note` does, because an eyebrow's default
+ * single-line uppercase treatment would clip a sentence.
+ */
+.hud-intake {
+  width: var(--hud-rail-panel-width);
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.hud-intake__actions {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-2);
+}
+
+.hud-intake__actions > .hud-intake__admit { flex: 1 1 auto; }
+
+.hud-intake__note { white-space: normal; text-transform: none; letter-spacing: 0; }
+
+/* ------------------------------------------------------------------ */
 /* Bottom-centre tab bar                                               */
 /* ------------------------------------------------------------------ */
 
@@ -858,6 +889,11 @@
      desktop width -- measured, at 375x812, as a 264px panel in a 343px rail
      and an arm hint wrapping to an extra line. */
   .ui-panel.hud-build { width: 100%; }
+
+  /* The Intake panel occupies the same rail slot on the Overview tab and has
+     to follow it: two classes for the same specificity reason, or it would
+     stay 264px in a 343px rail. */
+  .ui-panel.hud-intake { width: 100%; }
 
   .hud-strip {
     flex-wrap: wrap;

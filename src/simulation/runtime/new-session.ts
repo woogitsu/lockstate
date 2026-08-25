@@ -379,7 +379,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   kernel.registerSystem(incidentTriggerSystem);
   kernel.registerSystem(searchSystem);
   kernel.registerSystem(incidentResponseSystem);
-  kernel.setCommandHandler(createSessionCommandHandler(construction, procurement, roomZoning, refusals));
+  kernel.setCommandHandler(createSessionCommandHandler(construction, procurement, roomZoning, prisoners, refusals));
 
   return {
     kernel,

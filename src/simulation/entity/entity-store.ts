@@ -90,6 +90,22 @@ export class EntityStore {
   }
 
   /**
+   * Whether `spawn()` would succeed, asked without calling it.
+   *
+   * `spawn` *throws* when the store is exhausted, and a throw out of a
+   * command handler is a throw out of `Kernel.step()` -- so a boundary that
+   * turns a player's request into a spawn needs to be able to refuse rather
+   * than to let the tick loop unwind (#261 step 4,
+   * `src/simulation/prisoners/prisoner-operations-runtime.ts`). This is
+   * exactly the condition the `throw` below tests, and it is deliberately not
+   * a live-population count: a recycled index is a spawn this can allow and a
+   * headcount would not.
+   */
+  public get canSpawn(): boolean {
+    return this.freeCount > 0 || this.nextAvailableIndex < this.capacity;
+  }
+
+  /**
    * Spawns a new entity and returns its stable ID.
    */
   public spawn(): EntityId {

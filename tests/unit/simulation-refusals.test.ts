@@ -3,6 +3,7 @@ import { BUILD_ORDER_FAIL_REASONS } from '../../src/simulation/construction/buil
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { REFUSAL_REASONS, type RefusalReason } from '../../src/simulation/protocol/types';
 import {
+  ADMIT_REFUSAL_REASONS,
   BUILD_REFUSAL_REASONS,
   PURCHASE_REFUSAL_REASONS,
   RefusalLog,
@@ -94,9 +95,10 @@ describe('RefusalLog: the snapshot shape a cadence channel can carry', () => {
   });
 });
 
-describe('the wire vocabulary is exactly what the three domains can produce', () => {
-  it('maps every build, purchase and zoning refusal onto a declared reason', () => {
+describe('the wire vocabulary is exactly what the four domains can produce', () => {
+  it('maps every admission, build, purchase and zoning refusal onto a declared reason', () => {
     const produced = [
+      ...Object.values(ADMIT_REFUSAL_REASONS),
       ...Object.values(BUILD_REFUSAL_REASONS),
       ...Object.values(PURCHASE_REFUSAL_REASONS),
       ...Object.values(ZONE_REFUSAL_REASONS),
@@ -127,9 +129,9 @@ describe('the wire vocabulary is exactly what the three domains can produce', ()
     expect([...REFUSAL_REASONS]).toEqual([...REFUSAL_REASONS].sort());
   });
 
-  it('names the three commands it can answer, so the vocabularies cannot collide', () => {
+  it('names the four commands it can answer, so the vocabularies cannot collide', () => {
     const prefixes = new Set(REFUSAL_REASONS.map((reason) => reason.split('.')[0]));
-    expect([...prefixes].sort()).toEqual(['build', 'purchase', 'zone']);
+    expect([...prefixes].sort()).toEqual(['admit', 'build', 'purchase', 'zone']);
   });
 
   it('keeps a spelling that two domains share as two different wire ids', () => {

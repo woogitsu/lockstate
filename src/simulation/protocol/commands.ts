@@ -2,6 +2,7 @@ import { z } from 'zod';
 import type { JsonValue } from '../../shared/json';
 import { BUILD_EDGES } from '../construction/build-order';
 import { MAX_PURCHASE_QUANTITY } from '../economy';
+import { MAX_PRIOR_INCIDENTS, MAX_SENTENCE_LENGTH_TICKS } from '../prisoners/components';
 import { identifierSchema, type VersionedPayload } from './types';
 
 /**
@@ -91,6 +92,57 @@ export const purchaseMaterialsSchema = z.object({
   quantity: z.number().int().positive().max(MAX_PURCHASE_QUANTITY),
 }).strict();
 
+/**
+ * Admit one prisoner (#261 step 4).
+ *
+ * ## What it carries, and what it deliberately does not
+ *
+ * `sentenceLengthTicks` and `priorIncidents` are `ClassificationInput`
+ * (`src/simulation/prisoners/classification.ts`) and nothing else: the two
+ * figures `classifyPrisoner` reads. The risk tier, the classification group
+ * and the prisoner's name are **not** here and must never be -- they are
+ * drawn inside the simulation from the `prisoners.classification` and
+ * `identity.actor-name` streams at the intake stages that own them, so the
+ * same command at the same tick of the same seed produces the same prisoner.
+ * A command that carried a name or a tier would be the main thread deciding
+ * simulation state, and `crypto.randomUUID()` is not a seeded stream.
+ *
+ * `x`/`y` are the tile the arrival stands on, in the same shape `ZoneRoom`
+ * and `PlaceBuildOrder` carry a tile. The composition root supplies the
+ * middle of the one owned chunk -- the same origin the Build panel's numeric
+ * fields start at -- because nothing in `PrisonerOperationsRuntime` derives a
+ * reception point and inventing one here would be a simulation decision made
+ * in a schema.
+ *
+ * ## No id, unlike `PlaceBuildOrder` and `PurchaseMaterials`
+ *
+ * Both of those mint one because something downstream is *keyed* by it: an
+ * order id names the order a later command cancels, and a purchase id is
+ * what `ProcurementSystem.purchase` refuses a duplicate of, so a replayed
+ * command must not buy the same delivery twice. Nothing is keyed by an
+ * admission. `EntityStore.spawn` allocates the identity, and a queued
+ * `AdmitPrisoner` restored from a save *should* admit when it is dispatched
+ * -- it had not run yet. An id here would be a field with no reader.
+ *
+ * ## The bounds are the components', not a taste
+ *
+ * `sentenceLengthTicks` is written into a `Uint32Array`
+ * (`PrisonerRecordComponent.sentenceLengthTicks`) and added to `context.tick`
+ * to form `sentenceEndTick` in another, so it is bounded here at the same
+ * ceiling the save's own `tickSchema` uses rather than left to wrap.
+ * `priorIncidents` is a `Uint8Array` slot and `submitIntake` already clamps
+ * it with `Math.min(255, ...)`; refusing an out-of-range value at the
+ * boundary means the clamp never has to silently rewrite what a player asked
+ * for.
+ */
+export const admitPrisonerSchema = z.object({
+  type: z.literal('AdmitPrisoner'),
+  sentenceLengthTicks: z.number().int().positive().max(MAX_SENTENCE_LENGTH_TICKS),
+  priorIncidents: z.number().int().min(0).max(MAX_PRIOR_INCIDENTS),
+  x: z.number().int(),
+  y: z.number().int(),
+}).strict();
+
 export const undoCommandSchema = z.object({
   type: z.literal('Undo'),
 }).strict();
@@ -104,6 +156,7 @@ export const simulationCommandSchema = z.discriminatedUnion('type', [
   cancelBuildOrderSchema,
   zoneRoomSchema,
   purchaseMaterialsSchema,
+  admitPrisonerSchema,
   undoCommandSchema,
   redoCommandSchema,
 ]);
@@ -147,6 +200,15 @@ function commandJson(command: SimulationCommand): JsonValue {
         orderId: command.orderId,
         itemId: command.itemId,
         quantity: command.quantity,
+      };
+
+    case 'AdmitPrisoner':
+      return {
+        type: command.type,
+        sentenceLengthTicks: command.sentenceLengthTicks,
+        priorIncidents: command.priorIncidents,
+        x: command.x,
+        y: command.y,
       };
 
     case 'Undo':

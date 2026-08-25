@@ -27,7 +27,7 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  * cancel, a zone, a purchase or an undo, and no other module built a
  * command object at all.
  *
- * ## What it reads today: four of six
+ * ## What it reads today: five of seven
  *
  * `Undo` and `Redo` gained producers with #261's step 6, and their entries came
  * out of the list below in the same change -- which is the direction this file
@@ -51,8 +51,16 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  * directions by design, which is why closing #89 had to change this file: a
  * record of unreachability cannot outlive the fact.
  *
+ * `AdmitPrisoner` is the seventh member and never appeared on the list below,
+ * because it arrived with its producer in the same change (#261 step 4): the
+ * schema member, the `createSessionCommandHandler` branch, the `HudIntent`
+ * member and the Intake panel that emits it landed together. That is the
+ * direction this gate wants a command to arrive from, and it is worth naming
+ * because the alternative -- declaring the command first and wiring it later
+ * -- is exactly how the other six got here.
+ *
  * So `CancelBuildOrder` and `ZoneRoom` are what the list below still holds,
- * and the count is measured, not carried: four producers all in `src/main.ts`,
+ * and the count is measured, not carried: five producers all in `src/main.ts`,
  * two commands with none.
  *
  * ## What counts as a producer
@@ -150,15 +158,17 @@ describe('every declared simulation command either has a producer or is accounte
     // where it is -- all four in `src/main.ts`, which is the composition root
     // and the only place in `src/` that builds a command object.
     expect(producerSources.length).toBeGreaterThan(50);
-    expect(COMMAND_TYPES.length).toBe(6);
+    expect(COMMAND_TYPES.length).toBe(7);
 
     expect(producersOf('PlaceBuildOrder')).toEqual(['src/main.ts']);
     expect(producersOf('PurchaseMaterials')).toEqual(['src/main.ts']);
+    expect(producersOf('AdmitPrisoner')).toEqual(['src/main.ts']);
     expect(producersOf('Redo')).toEqual(['src/main.ts']);
     const main = producerSources.find((source) => source.where === 'src/main.ts');
     expect(main, 'the production producers of a simulation command are no longer where this gate looks for them').toBeDefined();
     expect(main!.text).toContain(`type: 'PlaceBuildOrder'`);
     expect(main!.text).toContain(`type: 'PurchaseMaterials'`);
+    expect(main!.text).toContain(`type: 'AdmitPrisoner'`);
     expect(main!.text).toContain(`type: 'Undo'`);
     expect(main!.text).toContain(`type: 'Redo'`);
   });
@@ -222,7 +232,7 @@ describe('every declared simulation command either has a producer or is accounte
     ).toEqual([]);
   });
 
-  it('measures four produced and two unproduced, which is where #89 left the command surface', () => {
+  it('measures five produced and two unproduced, which is where #261 step 4 left the command surface', () => {
     // The denominator, stated so the gate reports a fact rather than only
     // guarding one, and exact in both directions. A command that quietly
     // stopped being reachable would otherwise only have to be added to the
@@ -231,11 +241,15 @@ describe('every declared simulation command either has a producer or is accounte
     // application.
     //
     // It read five and one on the first run, three and three once #261 gave
-    // the undo pair its keys, and two and four on #89's branch before that
-    // merged in. Both numbers move in the same change as a producer, which is
-    // the point of asserting the count as well as the list: neither can be
-    // edited alone and stay green.
+    // the undo pair its keys, two and four on #89's branch before that
+    // merged in, and four and two after it did. `AdmitPrisoner` arrived
+    // *with* its producer -- a seventh declared command and a fifth
+    // dispatch in the same change -- so the denominator moved and the
+    // numerator did not, which is the one direction this gate wants a new
+    // command to arrive from. Both numbers move in the same change as a
+    // producer, which is the point of asserting the count as well as the
+    // list: neither can be edited alone and stay green.
     expect(unproducedTypes.length).toBe(2);
-    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(4);
+    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(5);
   });
 });

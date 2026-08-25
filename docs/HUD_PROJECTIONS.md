@@ -350,6 +350,18 @@ decision about what to build next.
     is this prisoner standing in" is unanswerable.
 12. **No release date in player units.** `sentenceEndTick` exists but only
     after classification, and there is no served/remaining breakdown.
+12a. **Nothing projects why an admission failed, or how long one has been
+    waiting.** `IntakeMetrics` (`completedCount`, `failedCount`,
+    `accommodationBacklogTicks`) has no reader anywhere in `src/` outside
+    `IntakeSystem` itself, so a prisoner stuck at
+    `accommodation-assignment` for an in-game week is indistinguishable on
+    screen from one who arrived a tick ago. This is why #261 step 4 puts the
+    admission *refusal* on the `RefusalLog` route instead: a refusal is a
+    fact about a press and reaches the player, while the backlog is a
+    condition of the prison and reaches nothing. Prison Architect's answer
+    to the same state is a persistent top-bar counter
+    (`interfacetopbar_prisoners_nocells`, quoted in ADR 0023); this tree has
+    no channel that could carry one.
 
 ### Rooms
 

@@ -351,10 +351,46 @@ function buildCatalogue(): HudBuildViewModel {
     });
   }
 
-  // A new session owns exactly chunk (0,0) of a 32-tile world, so the middle
-  // of owned land is the least surprising place for the fields to start.
-  return { buildables, origin: { x: 16, y: 16 } };
+  return { buildables, origin: STARTING_ORIGIN_TILE };
 }
+
+/**
+ * The middle of the one chunk a new prison owns.
+ *
+ * A new session owns exactly chunk (0,0) of a 32-tile world, so this is the
+ * least surprising place for the Build panel's numeric fields to start -- and
+ * it is the arrival tile an admitted prisoner is placed on, for the same
+ * reason and from the same constant rather than from a second copy of the
+ * number. Nothing in `PrisonerOperationsRuntime` derives a reception point
+ * (`docs/PRISONER_OPERATIONS.md`), so the composition root supplies one, which
+ * is where the world's shape is already known.
+ */
+const STARTING_ORIGIN_TILE = { x: 16, y: 16 } as const;
+
+/**
+ * What one press of the admit control asks the simulation for (#261 step 4).
+ *
+ * `ClassificationInput`'s two figures, chosen here because the interface
+ * offers no field for either and could not label one honestly: a sentence
+ * length is quoted in ticks and nothing on screen renders a sentence, and a
+ * prior-incident count feeds a risk tier the HUD never shows
+ * (`docs/HUD_PROJECTIONS.md`). A control with three steppers for numbers with
+ * no readout would be three controls a player cannot use.
+ *
+ * Neither number is a balance decision this file is entitled to make, so both
+ * are deliberately the least eventful values in range rather than
+ * interesting ones: `0` prior incidents is the bottom of the
+ * `priorIncidentsAtIntake` slot, and 10,000 ticks is well under
+ * `LONG_SENTENCE_THRESHOLD_TICKS` (200,000), so neither adds to
+ * `classifyPrisoner`'s score. The tier that results is therefore the
+ * screening draw alone -- which is the point: the variation comes from
+ * `prisoners.classification`, seeded, and not from a figure picked here.
+ *
+ * They are constants and not a random draw for the same reason: `Math.random`
+ * on this thread would make two runs of the same seed produce different
+ * prisoners, which is exactly what `docs/DETERMINISM.md` forbids.
+ */
+const ADMISSION_REQUEST = { sentenceLengthTicks: 10_000, priorIncidents: 0 } as const;
 
 interface InterfaceHost {
   /**
@@ -699,6 +735,82 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
             orderId: `order-${crypto.randomUUID()}`,
             itemId: intent.itemId,
             quantity: intent.quantity,
+          });
+          return;
+        }
+
+        case 'admit-prisoner': {
+          const sender = requireSimulation(commands);
+          /*
+           * The producer #261 step 4 was missing, and the check in front of
+           * it is the most important line in this case.
+           *
+           * `admitPrisoner` and the whole intake pipeline have existed since
+           * #24. What did not exist was any way for the application to reach
+           * them: no command, no handler branch, no intent and no control.
+           * Those are wired now, and `tests/foundation/unconsumed-command-contract.test.ts`
+           * is the gate that measures it.
+           *
+           * **A prison with no room may not admit anybody, and this refuses
+           * rather than admitting into one.** `IntakeSystem` marks an arrival
+           * `'failed'` when no room instance of its accommodation target
+           * exists, and `'failed'` is terminal: no branch of
+           * `IntakeSystem.update` matches it, so zoning a cell afterwards
+           * does not rescue the record (measured), `ActionSystem` never runs
+           * for it because it gates on `'completed'`, and nothing in `src/`
+           * releases a prisoner (#31). Admitting into a roomless prison
+           * therefore does not produce a prisoner who will start behaving
+           * once rooms arrive -- it produces a permanent, undeletable, inert
+           * record that the status strip counts as a prisoner and that the
+           * arrivals-backlog readout excludes, because `prisonersInIntake`
+           * filters `'failed'` out. That is a worse answer than saying no.
+           *
+           * The check is here rather than in the HUD, and it is a *report*,
+           * not a second registry, exactly as the affordability check above
+           * is a report and not a second treasury: throwing rejects the HUD's
+           * gated action, which paints the refusal line and marks the button
+           * the player pressed. `src/simulation/runtime/session-commands.ts`
+           * refuses the same condition on the far side of `sender.submit`,
+           * from the registry itself, so one press produces exactly one
+           * player-visible message -- this throw, or that alert row, never
+           * both and never neither.
+           *
+           * Why the check has to be here as well as there: a new session
+           * starts paused (`FixedStepClock`, `mode: 'paused'`), and a command
+           * queued against a paused clock is not dispatched, so the worker's
+           * refusal would not arrive until the player started the clock. On
+           * the one press a player can make today that is the difference
+           * between an answer and nothing at all.
+           *
+           * `counts.rooms` is the room-*instance* count the worker last
+           * published, at most 500ms old and published once on
+           * `simulation/ready` before any tick. It is an echo and not the
+           * authority, and it is deliberately coarser than the condition the
+           * worker applies: it counts instances of every room type, while the
+           * worker asks whether any *accommodation target* has one. A prison
+           * holding only a zoned canteen therefore passes here and is refused
+           * there -- still exactly one message, from the other side.
+           *
+           * **Today it is always zero.** `RoomZoningService` is the only
+           * thing in `src/` that registers an instance and `ZoneRoom` has no
+           * producer, so every press is refused until the room surface ADR
+           * 0022 describes exists. That is stated plainly on the panel as
+           * well (`hud.intake.hint`) rather than left for the player to
+           * discover by pressing.
+           */
+          if (viewModel.counts.rooms === 0) {
+            throw new Error('This prison has no room to hold a prisoner, so nobody can be admitted into it.');
+          }
+          sender.submit({
+            type: 'AdmitPrisoner',
+            sentenceLengthTicks: ADMISSION_REQUEST.sentenceLengthTicks,
+            priorIncidents: ADMISSION_REQUEST.priorIncidents,
+            // The arrival tile, from the same constant the Build panel's
+            // fields start at. No id is minted: nothing downstream is keyed
+            // by an admission, so unlike an order id or a purchase id there
+            // would be nothing to read it.
+            x: STARTING_ORIGIN_TILE.x,
+            y: STARTING_ORIGIN_TILE.y,
           });
           return;
         }

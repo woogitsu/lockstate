@@ -2,8 +2,9 @@ import { createConstructionCommandHandler } from '../construction';
 import type { ProcurementSystem } from '../economy';
 import type { CommandHandler } from '../kernel/kernel';
 import { unpackCommand } from '../protocol/commands';
-import { PURCHASE_REFUSAL_REASONS, ZONE_REFUSAL_REASONS, type RefusalLog } from '../refusals';
+import { ADMIT_REFUSAL_REASONS, PURCHASE_REFUSAL_REASONS, ZONE_REFUSAL_REASONS, type RefusalLog } from '../refusals';
 import type { ConstructionSystem } from '../construction/system';
+import type { PrisonerOperationsRuntime } from '../prisoners/prisoner-operations-runtime';
 import type { RoomZoningService } from '../rooms/zoning';
 
 /**
@@ -27,16 +28,17 @@ import type { RoomZoningService } from '../rooms/zoning';
  * `unpackCommand` returning `null` is the decoder's business and is left to
  * the handler that owns it.
  *
- * `refusals` is the session's `RefusalLog`, and all three routes write to the
- * same one: a refused wall, a refused purchase and a refused zoning
- * rectangle are the same kind of fact about the session -- the kernel took
- * the command and a system then declined to carry it out -- and they reach
- * the player down one channel (#261).
+ * `refusals` is the session's `RefusalLog`, and all four routes write to the
+ * same one: a refused wall, a refused purchase, a refused zoning rectangle
+ * and a refused admission are the same kind of fact about the session -- the
+ * kernel took the command and a system then declined to carry it out -- and
+ * they reach the player down one channel (#261).
  */
 export function createSessionCommandHandler(
   construction: ConstructionSystem,
   procurement: ProcurementSystem,
   roomZoning: RoomZoningService,
+  runtimePrisoners: PrisonerOperationsRuntime,
   refusals: RefusalLog,
 ): CommandHandler {
   const constructionCommands = createConstructionCommandHandler(construction, refusals);
@@ -68,6 +70,51 @@ export function createSessionCommandHandler(
         context.tick,
       );
       if (outcome.kind === 'refused') refusals.record(ZONE_REFUSAL_REASONS[outcome.reason], context.tick);
+      return;
+    }
+
+    if (simCommand !== null && simCommand.type === 'AdmitPrisoner') {
+      // The third command that is not a construction order, routed here for
+      // the reason `ZoneRoom` and `PurchaseMaterials` are (#261 step 4).
+      //
+      // `requestAdmission` rather than `admitPrisoner`, and the difference is
+      // the whole of what this branch decides. The unguarded call throws when
+      // the entity store is exhausted -- out of `Kernel.step()`, which no
+      // command handler may do -- and it allocates a prisoner even when
+      // `IntakeSystem` is certain to mark the arrival terminally `'failed'`,
+      // which happens whenever no room instance of any accommodation target
+      // exists. That is every prison a player can currently build, because
+      // the only thing in `src/` that registers an instance is
+      // `RoomZoningService` and `ZoneRoom` still has no producer. Admitting
+      // anyway would put a permanent, undeletable, inert record in the save
+      // and count it on the status strip as a prisoner; refusing says so
+      // instead. See `PrisonerOperationsRuntime.requestAdmission`.
+      //
+      // Nothing here draws. Identity comes from `identity.actor-name` at the
+      // reception stage and the risk tier from `prisoners.classification` at
+      // the classification stage, both inside `IntakeSystem` -- so the same
+      // command at the same tick of the same seed produces the same prisoner,
+      // and this branch could not perturb either stream if it tried.
+      //
+      // **`src/main.ts` refuses one of these two cases before it submits**,
+      // exactly as it does for a purchase: it compares the room count the
+      // worker last published against zero and throws instead of submitting,
+      // so the player is answered on the control they pressed rather than
+      // whenever the clock next runs. The `throw` there and this line sit on
+      // opposite sides of `sender.submit`, so one press produces exactly one
+      // player-visible message -- from one side or the other, never both and
+      // never neither. What reaches this line from the panel is the case that
+      // check cannot see: a prison holding rooms of some other type, or a
+      // balance of rooms that changed since the last publication. Both
+      // reasons stay reachable from an `AdmitPrisoner` composed anywhere else
+      // -- a queued command in a restored save, a future producer -- which is
+      // why this maps the whole union rather than the one reason a panel can
+      // provoke.
+      const outcome = runtimePrisoners.requestAdmission(
+        { sentenceLengthTicks: simCommand.sentenceLengthTicks, priorIncidents: simCommand.priorIncidents },
+        { x: simCommand.x, y: simCommand.y },
+      );
+      if (outcome.kind === 'refused') refusals.record(ADMIT_REFUSAL_REASONS[outcome.reason], context.tick);
       return;
     }
 

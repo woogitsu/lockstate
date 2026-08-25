@@ -95,7 +95,9 @@ and `decayNeed` rounded per call, so the ten-tick interval produced a step of
 at most `0.5` for five of the six needs -- and `Math.round(n - d) === n` for
 any integer `n` and any such `d`. Those five needs never decayed at all, at
 any level, so the utility AI had only `bladder`'s deficit to score with. It
-was latent only because nothing in `src/` calls `admitPrisoner` yet. See
+was latent only because nothing in `src/` could admit a prisoner at the time
+(#261 step 4 has since wired the command, the handler branch and the Intake
+panel that produces it). See
 `needs.ts`'s `NEED_SCALE` comment for why 200, `docs/PERSISTENCE.md`'s V4
 section for the save-format consequence, and
 `tests/unit/prisoners-needs.test.ts` plus
@@ -180,8 +182,21 @@ below: a zoned cell is a *matching* instance that can never free up, so
 fast. The rule itself is unchanged -- it fails only when no instance of the
 required type exists at all -- but its stated justification, that a real
 prison holds an arriving prisoner because capacity may return, does not hold
-for a room with no beds in it. Nothing in the shipped application reaches
-that path yet: `ZoneRoom` has no producer and nothing calls `admitPrisoner`.
+for a room with no beds in it.
+
+**Both halves of that are now reachable in principle and only one of them in
+practice, and the difference is where #261 step 4 drew its line.** An
+`AdmitPrisoner` command exists, `createSessionCommandHandler` routes it, and
+the Intake panel on the Overview tab produces it -- so a prisoner can be
+admitted, and the retrying wait above is exactly the state a zoned cell puts
+them in. What cannot happen is the *other* branch: the boundary refuses an
+admission when no room instance of any accommodation target exists, rather
+than allowing the terminal `'failed'` that branch produces, because
+`'failed'` is matched by no stage below and is therefore unrecoverable even
+after a room is zoned. See `PrisonerOperationsRuntime.requestAdmission` and
+`IntakeSystem.hasAccommodationTarget`. `ZoneRoom` still has no producer, so
+in the shipped application there is never a room instance to admit into and
+every admission is refused -- visibly, as one alert row per press.
 
 **Performance note:** `allByRoomCatalogId`/`findAvailable` are a per-tick,
 potentially-thousands-of-instances hot path (every pending intake and every
@@ -254,7 +269,16 @@ the `Kernel`'s `NamedRngStreams` with `PRISONER_CLASSIFICATION_RNG_STREAM`
 first named RNG stream consumer. No prisoner is admitted by default;
 `createNewSimulationRuntime` wires the *infrastructure*, exactly like
 #19/#22 before it wire theirs without fabricating default content -- an
-actual session/scenario still needs to call `admitPrisoner`.
+actual session, scenario or `AdmitPrisoner` command still has to ask for one.
+
+**Where an arrival stands.** Nothing here derives a reception point, so the
+tile an admitted prisoner is placed on comes from the caller:
+`admitPrisoner`'s `originTile`, carried by `AdmitPrisoner` as `x`/`y` and
+filled by `src/main.ts` from the same `STARTING_ORIGIN_TILE` the Build
+panel's numeric fields start at -- the middle of the one chunk a new prison
+owns. A reception room, a door the arrival walks through, or any other
+derived arrival point would be a feature to build rather than a default to
+inherit.
 
 ## Actor-tier performance
 
