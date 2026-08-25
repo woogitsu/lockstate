@@ -170,6 +170,16 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // and is bound to the control that was pressed. These are rows in the
   // alerts list about something the simulation decided later, with no control
   // to attach to.
+  // `admit.no-accommodation` is the sentence an admission into a prison with
+  // no accommodation room gets, and it says the thing the player can act on
+  // rather than the thing that is technically true. "There is no room instance of an accommodation target"
+  // is the condition; "nowhere to put them" is what to do about it. Refusing
+  // here is deliberate: with no room, `IntakeSystem` marks the arrival
+  // terminally `'failed'`, and a permanent inert record counted on the strip
+  // as a prisoner would be a worse answer than a sentence
+  // (`src/simulation/prisoners/prisoner-operations-runtime.ts`).
+  'hud.alert.refusal.admit.no-accommodation': 'Nobody was admitted — there is no room to put a prisoner in yet.',
+  'hud.alert.refusal.admit.population-full': 'Nobody was admitted — this prison is holding as many people as it can.',
   'hud.alert.refusal.build.out-of-bounds': 'The build order failed — that tile is outside the map.',
   'hud.alert.refusal.build.unbuildable': 'The build order failed — nothing can be built on that tile.',
   'hud.alert.refusal.build.unbuildable-terrain': 'The build order failed — the ground there cannot be built on.',
@@ -289,6 +299,17 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.build.buildable.wall-brick': 'Brick wall',
   'hud.build.buildable.door-wooden': 'Wooden door',
 
+  // The intake surface (#261 step 4). The hint states the prison's actual
+  // situation rather than a feature disclaimer, because it *is* the prison's
+  // situation: an arrival needs somewhere to be accommodated, and a prison
+  // holding none refuses the press. It names the condition and not the build
+  // for exactly that reason, and that is what makes it still true now the
+  // Rooms tab (#312) exists -- a player who has zoned a cell is admitted, and
+  // a player who has not is told why not, from the one sentence.
+  'hud.intake.title': 'Intake',
+  'hud.intake.admit': 'Admit a prisoner',
+  'hud.intake.hint': 'A prisoner can only be admitted into a prison that has a room to hold them.',
+
   // The Staff panel on the Security tab (ADR 0025). `hud.security.hire` names
   // the role and states what the press will spend in one sentence, so the
   // figure is a statement about the button rather than a price list the HUD
@@ -323,6 +344,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.refusal.redo': 'Nothing was redone — the request was refused.',
   'hud.refusal.zone-room': 'The room was not designated — the request was refused.',
   'hud.refusal.unzone-room': 'Nothing was removed — the request was refused.',
+  'hud.refusal.admit-prisoner': 'Nobody was admitted — the request was refused.',
 
   'hud.rooms.title': 'Rooms',
   'hud.rooms.catalogue': 'Room type',

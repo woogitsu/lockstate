@@ -6,13 +6,14 @@ import type { RenderActor, RenderFeed, RenderFrame } from './render-feed';
  *
  * **This is not game state and never becomes game state.** A fresh Lockstate
  * session contains no actors at all: the simulation deliberately fabricates no
- * default content, and nothing in `src/` admits a prisoner, so a prison a
- * player can currently reach holds nobody to draw.
+ * default content, so a prison holds nobody to draw until the player admits
+ * somebody through the Intake panel (#261 step 4).
  *
  * `SimulationSnapshotFeed` does now decode the prisoners a bundle carries
  * (`actors-from-snapshot.ts`), so this is no longer the only path to a sprite
  * -- it is the only one that works on an *empty* prison, which is every prison
- * today. A snapshot also carries no velocity and no facing, so a decoded
+ * before its first admission. A snapshot also carries no velocity and no
+ * facing, so a decoded
  * prisoner stands still; the scripted walk below is what shows the walk cycle
  * and the eight authored directions at all.
  *

@@ -60,6 +60,21 @@ function resetOneSlot(defaults: readonly SlotDefault[], index: number): void {
 }
 
 /**
+ * The widest values `PrisonerRecordComponent`'s two intake-input slots can
+ * hold, exported so the boundary that accepts an admission can refuse an
+ * out-of-range figure instead of letting a typed array wrap or a clamp
+ * silently rewrite it (#261 step 4).
+ *
+ * Neither is a balance number and neither was chosen: they are
+ * `Uint32Array`'s and `Uint8Array`'s ceilings, which is what the two slots
+ * below are. `submitIntake` already clamps `priorIncidents` to the second
+ * with `Math.min`; `admitPrisonerSchema` refusing the same value at the wire
+ * means the clamp is a belt to a brace rather than the only guard.
+ */
+export const MAX_SENTENCE_LENGTH_TICKS = 0xffff_ffff;
+export const MAX_PRIOR_INCIDENTS = 255;
+
+/**
  * Hot, frequently-queried per-prisoner fields as flat typed arrays (ADR
  * 0005: "separate hot typed-array component data from cold/rare
  * metadata"). Everything here is small, fixed-width and numeric.

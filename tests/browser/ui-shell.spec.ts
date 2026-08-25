@@ -954,6 +954,128 @@ test.describe('HUD shell', () => {
    * primary action -- produces exactly one intent carrying exactly what was
    * on screen.
    */
+  /**
+   * Issue #261 step 4: **the surface that admits a prisoner.**
+   *
+   * The panel exists at all because the Build panel measurably cannot hold a
+   * control -- ADR 0022 took the always-visible budget at 12.2px at 900x600
+   * and 38.2px at 1280x720 against a 44px tap target, and measured a third
+   * button in `.hud-build__actions` overflowing horizontally by 37.9px. What
+   * was free was the Overview tab, which showed nothing at all. So these
+   * tests are about two things a unit test cannot answer: that the browser
+   * actually lays the panel out on the tab it belongs to, and that it and the
+   * Build panel never occupy the shared rail slot at the same time.
+   */
+  test.describe('intake panel (issue #261 step 4)', () => {
+    test('is laid out on the Overview tab, which is where a player arrives', async ({ page }) => {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+
+      // Overview is the default tab (`hud-state.ts`), so no click is needed:
+      // this is the arrival state.
+      expect((await page.evaluate(() => window.lockstateUiHarness.hudProbe())).activeTab).toBe('overview');
+      const probe = await page.evaluate(() => window.lockstateUiHarness.intakeProbe());
+
+      // Laid out, not merely present: a control inside a `hidden` panel is
+      // reachable by a keyboard and invisible to a player.
+      expect(probe.laidOut).toBe(true);
+      expect(probe.admitLaidOut).toBe(true);
+      expect(probe.admitLabel).toBe('Admit a prisoner');
+      expect(probe.admitDisabled).toBe(false);
+      // The sentence that says why an admission can be refused, on screen
+      // before the player presses anything rather than only after. ADR 0011:
+      // an unresolved key renders as itself, so a raw `hud.` prefix here is a
+      // missing catalog entry.
+      expect(probe.hint).toContain('room to hold them');
+      expect(probe.hint.startsWith('hud.')).toBe(false);
+    });
+
+    test('never shares the rail slot with the Build, Rooms or Staff panel', async ({ page }) => {
+      // The whole reason this panel costs the measured budget nothing. If any
+      // two were ever laid out together, one panel's height would have to pay
+      // for the other's, which is the overflow ADR 0022 refused. All four
+      // occupants of `.hud__side` are asserted on every tab that owns one, so
+      // adding a fifth panel to the rail cannot go unnoticed here.
+      const rail = async (): Promise<Record<string, boolean>> => ({
+        intake: (await page.evaluate(() => window.lockstateUiHarness.intakeProbe())).laidOut,
+        build: (await page.evaluate(() => window.lockstateUiHarness.buildProbe())).visible,
+        rooms: (await page.evaluate(() => window.lockstateUiHarness.roomsProbe())).panelLaidOut,
+        staff: (await page.evaluate(() => window.lockstateUiHarness.staffProbe())).visible,
+      });
+
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      // Overview is the default tab, so the Intake panel is the one with a box.
+      expect(await rail()).toEqual({ intake: true, build: false, rooms: false, staff: false });
+
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+      expect(await rail()).toEqual({ intake: false, build: true, rooms: false, staff: false });
+
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('rooms'));
+      expect(await rail()).toEqual({ intake: false, build: false, rooms: true, staff: false });
+
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
+      expect(await rail()).toEqual({ intake: false, build: false, rooms: false, staff: true });
+
+      // And none is laid out on the one tab that still owns no panel.
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('regime'));
+      expect(await rail()).toEqual({ intake: false, build: false, rooms: false, staff: false });
+
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('overview'));
+      expect(await rail()).toEqual({ intake: true, build: false, rooms: false, staff: false });
+    });
+
+    test('one press is one gated intent carrying nothing', async ({ page }) => {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+
+      expect(await page.evaluate(() => window.lockstateUiHarness.clickAdmitPrisoner())).toBe(true);
+
+      // Payload-free by design: the sentence length, the prior-incident count
+      // and the arrival tile are the host's, and who arrives is the
+      // simulation's seeded business.
+      await expect
+        .poll(() => page.evaluate(() => window.lockstateUiHarness.hudIntents()))
+        .toEqual([JSON.stringify({ kind: 'admit-prisoner' })]);
+      expect(await page.evaluate(() => window.lockstateUiHarness.takeUnhandledRejections())).toEqual([]);
+    });
+
+    test('a refused admission is reported on the button that was pressed, exactly once', async ({ page }) => {
+      // The behaviour the change is built around: an admission into a prison
+      // with no accommodation room is refused, which is the state every prison
+      // starts in. A control whose answer is a refusal has to say so loudly, or
+      // it is the silent no-op #207 and #225 exist to remove. This mounts the
+      // shell with intents forced to fail, so it measures the reporting route
+      // rather than the prison -- see
+      // `tests/integration/prisoner-admission-loop.test.ts` for which prison
+      // states produce which answer.
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(() => window.lockstateUiHarness.failIntents(true));
+
+      expect(await page.evaluate(() => window.lockstateUiHarness.refusalProbe())).toMatchObject({
+        visible: false,
+        action: null,
+        failedControls: [],
+      });
+
+      await page.evaluate(() => window.lockstateUiHarness.clickAdmitPrisoner());
+
+      await expect
+        .poll(() => page.evaluate(() => window.lockstateUiHarness.refusalProbe().visible), {
+          message: 'the HUD never reported the refused admission',
+        })
+        .toBe(true);
+      const probe = await page.evaluate(() => window.lockstateUiHarness.refusalProbe());
+      expect(probe.action).toBe('admit-prisoner');
+      // A sentence about the outcome, not the thrown `Error` -- which is
+      // English raised on the main thread and may not reach the screen.
+      expect(probe.text).toContain('Nobody was admitted');
+      expect(probe.text).not.toContain('ui-harness: the host refused');
+      // One message and one marked control, not two: the refusal line is
+      // single-slot and the marked control is the one that was pressed.
+      expect(probe.failedControls).toEqual(['Admit a prisoner']);
+      expect(probe.describedByRefusal).toBe(true);
+      expect(await page.evaluate(() => window.lockstateUiHarness.takeUnhandledRejections())).toEqual([]);
+    });
+  });
+
   test.describe('build panel (issue #74)', () => {
     test('is reachable from the Build tab and hidden from every other one', async ({ page }) => {
       await page.evaluate(() => window.lockstateUiHarness.mountHudShell());

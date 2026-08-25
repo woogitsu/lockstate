@@ -635,25 +635,27 @@ export type SimulationStatusCounts = DeepReadonly<
  * message key in `src/ui/simulation-alerts.ts`; no text crosses the boundary.
  *
  * Declared in ascending code-unit order, and namespaced by the command the
- * refusal answers, so the five vocabularies behind it cannot collide:
- * `build.*` mirrors `BuildOrder.failReason`, `hire.*` mirrors
- * `StaffHireRefusalReason`, `purchase.*` mirrors `PurchaseOutcome`'s refusal
- * reasons, `unzone.*` mirrors `UnzoneRoomRefusalReason` and `zone.*` mirrors
- * `ZoneRoomRefusalReason`. The namespace is doing real work rather than being
- * tidy -- `out-of-bounds` and `unowned-land` are members of *two* of those
- * domain vocabularies, and `insufficient-funds` and `invalid-area` are each a
- * member of two others, and each means something different to a player
- * depending on which command it answers, so one flat id per spelling would put
- * one sentence on both.
+ * refusal answers, so the six vocabularies behind it cannot collide:
+ * `admit.*` mirrors `AdmitPrisonerRefusalReason`, `build.*` mirrors
+ * `BuildOrder.failReason`, `hire.*` mirrors `StaffHireRefusalReason`,
+ * `purchase.*` mirrors `PurchaseOutcome`'s refusal reasons, `unzone.*` mirrors
+ * `UnzoneRoomRefusalReason` and `zone.*` mirrors `ZoneRoomRefusalReason`. The
+ * namespace is doing real work rather than being tidy -- `out-of-bounds` and
+ * `unowned-land` are members of *two* of those domain vocabularies, and
+ * `insufficient-funds` and `invalid-area` are each a member of two others, and
+ * each means something different to a player depending on which command it
+ * answers, so one flat id per spelling would put one sentence on several.
  *
  * `src/simulation/refusals/refusal-log.ts` maps each domain value onto one of
- * these through an exhaustive `Record`, so a reason added to any of the five
+ * these through an exhaustive `Record`, so a reason added to any of the six
  * fails to compile until it is named here -- and
- * `tests/unit/simulation-refusals.test.ts` asserts the five tables between
+ * `tests/unit/simulation-refusals.test.ts` asserts the six tables between
  * them cover this list exactly, so a member declared here and produced by
  * nothing is a failure too.
  */
 export const REFUSAL_REASONS = [
+  'admit.no-accommodation',
+  'admit.population-full',
   'build.out-of-bounds',
   'build.unbuildable',
   'build.unbuildable-terrain',

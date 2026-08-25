@@ -1,5 +1,6 @@
 import type { BuildOrderFailReason } from '../construction/build-order';
 import type { PurchaseRefusalReason } from '../economy/procurement';
+import type { AdmitPrisonerRefusalReason } from '../prisoners/prisoner-operations-runtime';
 import type { RefusalReason, SimulationRefusal } from '../protocol/types';
 import type { UnzoneRoomRefusalReason, ZoneRoomRefusalReason } from '../rooms/zoning';
 import type { StaffHireRefusalReason } from '../staff/hiring';
@@ -114,6 +115,21 @@ export const BUILD_REFUSAL_REASONS: Readonly<Record<BuildOrderFailReason, Refusa
   'unbuildable-terrain': 'build.unbuildable-terrain',
   'unowned-land': 'build.unowned-land',
   'water-blocked': 'build.water-blocked',
+};
+
+/**
+ * `AdmitPrisonerRefusalReason`, mapped onto the wire's. Exhaustive for the
+ * same reason as above.
+ *
+ * Both members are reachable, and from different sides: `no-accommodation` is
+ * what an admission into a prison with no accommodation room meets, and
+ * `population-full` is `EntityStore`'s ceiling. Neither is a prediction about
+ * what intake will decide -- see
+ * `PrisonerOperationsRuntime.requestAdmission`.
+ */
+export const ADMIT_REFUSAL_REASONS: Readonly<Record<AdmitPrisonerRefusalReason, RefusalReason>> = {
+  'no-accommodation': 'admit.no-accommodation',
+  'population-full': 'admit.population-full',
 };
 
 /**

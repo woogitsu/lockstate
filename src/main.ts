@@ -247,9 +247,10 @@ new Phaser.Game(gameConfig);
  * `?actors=demo` puts scripted actors on screen.
  *
  * A fresh session genuinely has no actors -- the simulation fabricates no
- * default population and nothing in `src/` admits a prisoner. The renderer
- * does decode the prisoners a snapshot carries, but a prison with none stays
- * empty, and a snapshot carries no movement for the ones it does have. This
+ * default population, and the Intake panel is the only thing that adds one.
+ * The renderer does decode the prisoners a snapshot carries, but a prison the
+ * player has admitted nobody into stays empty, and a snapshot carries no
+ * movement for the ones it does have. This
  * flag is therefore still the way to look at the whole sprite path (manifest
  * -> atlas texture -> direction -> foot pivot -> depth), walk cycle included,
  * without inventing simulation state to do it. It is off by default and it
@@ -326,14 +327,18 @@ const CATEGORY_RANK: Readonly<Record<string, number>> = { wall: 0, object: 1, ut
  * fields to start -- which is what this used to be, inline, and only that.
  *
  * It is now also **where a hired staff member first stands** (ADR 0025
- * decision 4), and the two share one definition rather than two copies of
- * `16`. That is honestly a placeholder in both uses: there is no reception, no
- * gate and no staff room in any session a player can start, so there is no
- * better answer to derive. A constant inside the simulation would be worse --
- * it would make an arrival point look like a rule -- so it sits here, at the
- * composition root, and when a session can contain a room a staff member
- * belongs in, the arrival tile becomes that room's anchor and the change is to
- * this file alone: the command already carries a tile.
+ * decision 4) and **the tile an admitted prisoner arrives on** (#261 step 4),
+ * and all three share one definition rather than three copies of `16`. That is
+ * honestly a placeholder in every use: there is no reception, no gate and no
+ * staff room in any session a player can start, and nothing in
+ * `PrisonerOperationsRuntime` derives a reception point either
+ * (`docs/PRISONER_OPERATIONS.md`), so there is no better answer to derive. A
+ * constant inside the simulation would be worse -- it would make an arrival
+ * point look like a rule -- so it sits here, at the composition root, where the
+ * world's shape is already known; and when a session can contain a room a
+ * staff member or an arrival belongs in, the arrival tile becomes that room's
+ * anchor and the change is to this file alone: both commands already carry a
+ * tile.
  */
 const NEW_PRISON_ORIGIN_TILE = { x: 16, y: 16 } as const;
 
@@ -454,6 +459,31 @@ function staffRoster(): HudStaffViewModel {
   }
   return { roles };
 }
+
+/**
+ * What one press of the admit control asks the simulation for (#261 step 4).
+ *
+ * `ClassificationInput`'s two figures, chosen here because the interface
+ * offers no field for either and could not label one honestly: a sentence
+ * length is quoted in ticks and nothing on screen renders a sentence, and a
+ * prior-incident count feeds a risk tier the HUD never shows
+ * (`docs/HUD_PROJECTIONS.md`). A control with three steppers for numbers with
+ * no readout would be three controls a player cannot use.
+ *
+ * Neither number is a balance decision this file is entitled to make, so both
+ * are deliberately the least eventful values in range rather than
+ * interesting ones: `0` prior incidents is the bottom of the
+ * `priorIncidentsAtIntake` slot, and 10,000 ticks is well under
+ * `LONG_SENTENCE_THRESHOLD_TICKS` (200,000), so neither adds to
+ * `classifyPrisoner`'s score. The tier that results is therefore the
+ * screening draw alone -- which is the point: the variation comes from
+ * `prisoners.classification`, seeded, and not from a figure picked here.
+ *
+ * They are constants and not a random draw for the same reason: `Math.random`
+ * on this thread would make two runs of the same seed produce different
+ * prisoners, which is exactly what `docs/DETERMINISM.md` forbids.
+ */
+const ADMISSION_REQUEST = { sentenceLengthTicks: 10_000, priorIncidents: 0 } as const;
 
 /**
  * What the Rooms panel may offer, projected from the room catalogue.
@@ -1003,6 +1033,88 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
             orderId: `order-${crypto.randomUUID()}`,
             itemId: intent.itemId,
             quantity: intent.quantity,
+          });
+          return;
+        }
+
+        case 'admit-prisoner': {
+          const sender = requireSimulation(commands);
+          /*
+           * The producer #261 step 4 was missing, and the check in front of
+           * it is the most important line in this case.
+           *
+           * `admitPrisoner` and the whole intake pipeline have existed since
+           * #24. What did not exist was any way for the application to reach
+           * them: no command, no handler branch, no intent and no control.
+           * Those are wired now, and `tests/foundation/unconsumed-command-contract.test.ts`
+           * is the gate that measures it.
+           *
+           * **A prison with no room may not admit anybody, and this refuses
+           * rather than admitting into one.** `IntakeSystem` marks an arrival
+           * `'failed'` when no room instance of its accommodation target
+           * exists, and `'failed'` is terminal: no branch of
+           * `IntakeSystem.update` matches it, so zoning a cell afterwards
+           * does not rescue the record (measured), `ActionSystem` never runs
+           * for it because it gates on `'completed'`, and nothing in `src/`
+           * releases a prisoner (#31). Admitting into a roomless prison
+           * therefore does not produce a prisoner who will start behaving
+           * once rooms arrive -- it produces a permanent, undeletable, inert
+           * record that the status strip counts as a prisoner and that the
+           * arrivals-backlog readout excludes, because `prisonersInIntake`
+           * filters `'failed'` out. That is a worse answer than saying no.
+           *
+           * The check is here rather than in the HUD, and it is a *report*,
+           * not a second registry, exactly as the affordability check above
+           * is a report and not a second treasury: throwing rejects the HUD's
+           * gated action, which paints the refusal line and marks the button
+           * the player pressed. `src/simulation/runtime/session-commands.ts`
+           * refuses the same condition on the far side of `sender.submit`,
+           * from the registry itself, so one press produces exactly one
+           * player-visible message -- this throw, or that alert row, never
+           * both and never neither.
+           *
+           * Why the check has to be here as well as there: a new session
+           * starts paused (`FixedStepClock`, `mode: 'paused'`), and a command
+           * queued against a paused clock is not dispatched, so the worker's
+           * refusal would not arrive until the player started the clock. For a
+           * player who presses this before touching the clock that is the
+           * difference between an answer and nothing at all.
+           *
+           * `counts.rooms` is the room-*instance* count the worker last
+           * published, at most 500ms old and published once on
+           * `simulation/ready` before any tick. It is an echo and not the
+           * authority, and it is deliberately coarser than the condition the
+           * worker applies: it counts instances of every room type, while the
+           * worker asks whether any *accommodation target* has one. A prison
+           * holding only a zoned canteen therefore passes here and is refused
+           * there -- still exactly one message, from the other side.
+           *
+           * **It is zero until the player zones something**, because
+           * `RoomZoningService` is still the only thing in `src/` that
+           * registers an instance -- and since the Rooms tab (#312) that is a
+           * gesture a player has, so this is a real branch rather than a
+           * permanent one. Measured on the merged tree: a zoned `room.cell`
+           * takes `counts.rooms` to 1, the worker finds an instance of an
+           * accommodation target and admits, and the arrival waits at
+           * `accommodation-assignment` because zoning registers `capacity: 0`
+           * (ADR 0023). A prison with nothing zoned is still refused here, and
+           * the panel says so before the press as well
+           * (`hud.intake.hint`) rather than leaving the player to discover it
+           * by pressing.
+           */
+          if (viewModel.counts.rooms === 0) {
+            throw new Error('This prison has no room to hold a prisoner, so nobody can be admitted into it.');
+          }
+          sender.submit({
+            type: 'AdmitPrisoner',
+            sentenceLengthTicks: ADMISSION_REQUEST.sentenceLengthTicks,
+            priorIncidents: ADMISSION_REQUEST.priorIncidents,
+            // The arrival tile, from the same constant the Build panel's
+            // fields start at and a hire's first tile comes from. No id is
+            // minted: nothing downstream is keyed by an admission, so unlike an
+            // order id or a purchase id there would be nothing to read it.
+            x: NEW_PRISON_ORIGIN_TILE.x,
+            y: NEW_PRISON_ORIGIN_TILE.y,
           });
           return;
         }

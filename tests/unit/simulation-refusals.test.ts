@@ -3,6 +3,7 @@ import { BUILD_ORDER_FAIL_REASONS } from '../../src/simulation/construction/buil
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { REFUSAL_REASONS, type RefusalReason } from '../../src/simulation/protocol/types';
 import {
+  ADMIT_REFUSAL_REASONS,
   BUILD_REFUSAL_REASONS,
   HIRE_REFUSAL_REASONS,
   PURCHASE_REFUSAL_REASONS,
@@ -96,9 +97,10 @@ describe('RefusalLog: the snapshot shape a cadence channel can carry', () => {
   });
 });
 
-describe('the wire vocabulary is exactly what the five domains can produce', () => {
-  it('maps every build, hiring, purchase, zoning and removal refusal onto a declared reason', () => {
+describe('the wire vocabulary is exactly what the six domains can produce', () => {
+  it('maps every admission, build, hiring, purchase, zoning and removal refusal onto a declared reason', () => {
     const produced = [
+      ...Object.values(ADMIT_REFUSAL_REASONS),
       ...Object.values(BUILD_REFUSAL_REASONS),
       ...Object.values(HIRE_REFUSAL_REASONS),
       ...Object.values(PURCHASE_REFUSAL_REASONS),
@@ -131,20 +133,24 @@ describe('the wire vocabulary is exactly what the five domains can produce', () 
     expect([...REFUSAL_REASONS]).toEqual([...REFUSAL_REASONS].sort());
   });
 
-  it('names the five commands it can answer, so the vocabularies cannot collide', () => {
+  it('names the six commands it can answer, so the vocabularies cannot collide', () => {
     // `unzone` is its own namespace and not more members of `zone`'s, because
     // `invalid-area` is the same *condition* for both and a different
     // *sentence*: a player told "the room was not zoned" after asking to remove
     // one would go and look at the wrong control. `hire` is a namespace for the
     // same reason against `purchase`: the treasury refuses both for
     // `insufficient-funds` and only the command says which panel to look at.
+    // `admit` is its own for a weaker but sufficient reason -- it shares no
+    // spelling with any of the others -- and keeping it namespaced is what
+    // stops the next reason added to it from having to be checked against five
+    // other vocabularies first.
     const prefixes = new Set(REFUSAL_REASONS.map((reason) => reason.split('.')[0]));
-    expect([...prefixes].sort()).toEqual(['build', 'hire', 'purchase', 'unzone', 'zone']);
+    expect([...prefixes].sort()).toEqual(['admit', 'build', 'hire', 'purchase', 'unzone', 'zone']);
   });
 
   it('keeps the one spelling zoning and removal share as two different wire ids', () => {
-    // The same rule the build/zone pair below is about, on the pair this change
-    // added. `invalid-area` is a member of both `ZoneRoomRefusalReason` and
+    // The same rule the build/zone pair below is about, on the pair #312 added.
+    // `invalid-area` is a member of both `ZoneRoomRefusalReason` and
     // `UnzoneRoomRefusalReason`.
     const shared = Object.keys(ZONE_REFUSAL_REASONS).filter((reason) =>
       Object.hasOwn(UNZONE_REFUSAL_REASONS, reason),

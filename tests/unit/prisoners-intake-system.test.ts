@@ -8,6 +8,7 @@ import { NamedRngStreams } from '../../src/simulation/rng/streams';
 import { PrisonerColdState, PrisonerRecordComponent, classificationGroupIndex, intakeStageIndex } from '../../src/simulation/prisoners/components';
 import { IntakeSystem } from '../../src/simulation/prisoners/intake-system';
 import { RoomInstanceRegistry } from '../../src/simulation/prisoners/room-instance-registry';
+import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { buildPrisonerScenarioFixture } from '../helpers/prisoner-fixture';
@@ -222,13 +223,14 @@ describe('IntakeSystem: deterministic stage-by-stage pipeline', () => {
        * The precondition every case below is built around, end to end
        * through the real session rather than asserted in prose.
        *
-       * This became testable with #312. Before the Rooms tab, `ZoneRoom` had
-       * no producer, so no room instance could be created by anything except
-       * the restore path and there was no live prison to observe -- the
-       * reason the original version of this suite could only state the
-       * precondition in a comment. A player can now zone and un-zone rooms,
-       * so a session with real room instances in it exists; what has *not*
-       * changed is what those instances can hold.
+       * This became testable with #312 and complete with #261 step 4. Before
+       * the Rooms tab, `ZoneRoom` had no producer, so no room instance could be
+       * created by anything except the restore path and there was no live
+       * prison to observe -- the reason the original version of this suite
+       * could only state the precondition in a comment. A player can now zone
+       * and un-zone rooms, and since the Intake panel a player can admit into
+       * them, so both halves of the shipped path exist; what has *not* changed
+       * is what those instances can hold.
        *
        * Measured here, not assumed: both cells zone successfully through
        * `RoomZoningService` (the Rooms tab's only consumer), both register
@@ -271,7 +273,21 @@ describe('IntakeSystem: deterministic stage-by-stage pipeline', () => {
         runtime.prisoners.roomInstances.findBestAvailable('room.cell', () => 0, 'sleep-surface'),
       ).toBeUndefined();
 
-      const arrival = runtime.prisoners.admitPrisoner(LOW_RISK, { x: tileCoordinate(0), y: tileCoordinate(0) });
+      // Through the `AdmitPrisoner` command rather than `admitPrisoner`
+      // directly, so "the shipped session path" in this test's name is the
+      // whole route a player takes: #261 step 4 gave the command a producer,
+      // and the boundary guard it added answers this prison's state rather
+      // than refusing it -- an instance of an accommodation target exists, so
+      // the admission is accepted and lands in the wait this case is about.
+      runtime.kernel.submitCommand(
+        'cmd-admit',
+        runtime.kernel.expectedSequence,
+        runtime.kernel.tick,
+        packCommand({ type: 'AdmitPrisoner', ...LOW_RISK, x: 0, y: 0 }),
+      );
+      runtime.kernel.step();
+      expect(runtime.refusals.count, 'a prison with a zoned cell must not refuse the admission').toBe(0);
+      const arrival = runtime.prisoners.entityStore.getIdByIndex(0);
       for (let i = 0; i < 60; i += 1) runtime.kernel.step();
 
       const metrics = runtime.prisoners.intakeSystem.getMetrics();

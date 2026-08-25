@@ -158,6 +158,12 @@ const UNLABELLED: readonly { readonly sourceFile: string; readonly declaration: 
       "What a room definition asks about being indoors: `'enclosed'`, `'outdoors'`, or `'none'` for a definition carrying neither. Exempt beside `RoomEnclosure` above and for the same reason, with one addition worth stating: `'none'` is not a state content is ever in today -- 17 of the 18 shipped rooms are `enclosed` and `room.yard` is `outdoors` -- so a labelled group here would author a word for a member no session can currently show, which is the failure `tests/foundation/unconsumed-content-contract.test.ts` exists to catch one layer over. The Rooms panel's three `hud.rooms.requirement-*` keys carry the sentences, including the one for `'none'`, because the panel renders it as a statement about the selected room rather than as that room's badge.",
   },
   {
+    sourceFile: 'src/simulation/prisoners/prisoner-operations-runtime.ts',
+    declaration: 'ADMIT_PRISONER_REFUSAL_REASONS',
+    reason:
+      'Why `PrisonerOperationsRuntime.requestAdmission` refused an `AdmitPrisoner` -- no room instance any accommodation target names, or an exhausted entity store. It is the admission counterpart of `ZoneRoomRefusalReason` and `UnzoneRoomRefusalReason` above and carries no key for the identical reason: it never leaves the simulation under this spelling, because `createSessionCommandHandler` maps both members onto a `RefusalReason` through an exhaustive `Record` before anything is published, and what the player reads is one authored `hud.alert.refusal.admit.*` sentence per reason rather than a two-word label. See the `REFUSAL_REASONS` entry above for that argument in full.',
+  },
+  {
     sourceFile: 'src/content/simulation-message-keys.ts',
     declaration: 'SimulationEnumForm',
     reason:

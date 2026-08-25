@@ -5,6 +5,7 @@ import { ACTOR_IDENTITY_RNG_STREAM, type ActorIdentityMinter } from '../identity
 import { rateCellSharing, type CellSharingView } from './cell-sharing';
 import { classifyPrisoner, type ClassificationInput } from './classification';
 import {
+  CLASSIFICATION_GROUP_IDS,
   classificationGroupIndex,
   type PrisonerColdState,
   PrisonerRecordComponent,
@@ -106,6 +107,63 @@ export class IntakeSystem implements SystemRegistration {
 
   public getMetrics(): IntakeMetrics {
     return { completedCount: this.completedCount, failedCount: this.failedCount, accommodationBacklogTicks: this.accommodationBacklogTicks };
+  }
+
+  /**
+   * Whether *any* classification group's accommodation target has at least
+   * one registered room instance -- the precondition that decides whether an
+   * arrival can end up waiting or is certain to fail (#261 step 4).
+   *
+   * It is the same predicate `update` applies at `accommodation-assignment`,
+   * asked one stage earlier and about every group rather than about the one
+   * this arrival was classified into. The difference between the two answers
+   * is the whole reason this exists, and it is a difference in *kind*:
+   *
+   * - `allByRoomCatalogId(...).length === 0` is `'failed'`, and `'failed'` is
+   *   **terminal**. No branch of `update` matches it, so a prisoner who
+   *   reaches it stays there for the rest of the session -- measured:
+   *   registering a matching room instance four hundred ticks later leaves
+   *   the stage at `'failed'`. `ActionSystem` gates on `'completed'`
+   *   (`action-system.ts`), and nothing in `src/` releases a prisoner (#31),
+   *   so that record is inert and undeletable.
+   * - An instance that exists but is full or lacks the capability is a
+   *   *wait*: the stage is kept and retried, `accommodationBacklogTicks`
+   *   counts it, and the arrival completes the moment a place frees up. That
+   *   is the state a zoned-but-empty cell produces today, because
+   *   `RoomZoningService` registers `capacity: 0`
+   *   (`docs/adr/0023-room-occupancy-authority.md`).
+   *
+   * So this is the line between "the prison cannot take this person yet" and
+   * "the prison can never take this person", and the command boundary refuses
+   * on the second rather than manufacturing an unrecoverable record. It does
+   * not, and must not, predict *which* group the arrival will be classified
+   * into -- that is a `prisoners.classification` draw made two stages later,
+   * and asking for it here would either move the draw or duplicate it.
+   *
+   * **That leaves one hole open, and open deliberately**
+   * (`docs/adr/0028-object-placement-and-derived-room-capacity.md`). Answering
+   * about *any* group means a prison holding a zoned `room.cell` and no
+   * `room.solitary-cell` passes this check, and an arrival then classified
+   * `high-risk` resolves to `room.solitary-cell`, finds no instance and lands
+   * in the terminal `'failed'` stage after all. Measured: with
+   * `priorIncidents: 5` and a 300,000-tick sentence, seeds 1, 4 and 12 reach
+   * tier 3 and `failedCount` becomes 1. It is not reachable from the Intake
+   * panel, whose figures score 0 against a screening variance of `-1 | 0 | +1`
+   * and so cannot produce tier 3 -- across 300 seeds only tiers 0 and 1 occur
+   * -- so it is owed work rather than a live defect, and closing it needs the
+   * per-group question this method must not ask.
+   *
+   * Cheap by construction: `CLASSIFICATION_GROUP_IDS` has two members and
+   * `allByRoomCatalogId` is the registry's cached, per-type lookup, so this is
+   * two map reads. It is called once per `AdmitPrisoner` command, never per
+   * tick.
+   */
+  public hasAccommodationTarget(): boolean {
+    for (const classificationGroupId of CLASSIFICATION_GROUP_IDS) {
+      const target = this.accommodationPolicy.resolveTarget(classificationGroupId);
+      if (this.roomInstances.allByRoomCatalogId(target.roomCatalogId).length > 0) return true;
+    }
+    return false;
   }
 
   public update(context: SimulationContext): void {

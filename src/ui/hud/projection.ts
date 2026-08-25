@@ -322,6 +322,8 @@ export function refusalMessageKey(actionId: string): LocalizationKey | undefined
       return HUD_MESSAGE_KEY.refusalZoneRoom;
     case 'unzone-room':
       return HUD_MESSAGE_KEY.refusalUnzoneRoom;
+    case 'admit-prisoner':
+      return HUD_MESSAGE_KEY.refusalAdmitPrisoner;
     default:
       return undefined;
   }

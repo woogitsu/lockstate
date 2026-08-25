@@ -223,9 +223,13 @@ export class SimulationSnapshotFeed implements RenderFeed {
         // reports them under `restored` as `save.scope.prisoners`). Empty
         // whenever the bundle omits either section -- a V2 save does -- and
         // empty on a fresh session for a reason that is not this feed's:
-        // nothing in `src/` calls `admitPrisoner`, so a prison a player can
-        // currently reach holds no prisoners to draw. What this feed no longer
-        // does is discard the ones a bundle carries.
+        // since #261 step 4 an `AdmitPrisoner` command exists and the Intake
+        // panel produces it, but the boundary refuses an admission into a
+        // prison with no accommodation room -- so a prison in which the player
+        // has zoned nothing holds no prisoners to draw. Once a cell is zoned
+        // (the Rooms tab, #312) the admission is accepted and the arrival is
+        // here from that tick. What this feed no longer does is discard the
+        // ones a bundle carries.
         //
         // Positions only. The bundle publishes no velocity and no facing, so
         // every prisoner is drawn with the idle clip and the pose module's

@@ -31,6 +31,7 @@ import type {
   StaffProbe,
   ImportOutcomeName,
   HudProbe,
+  IntakeProbe,
   LayoutBox,
   LayoutProbe,
   LockstateUiHarness,
@@ -912,6 +913,31 @@ window.lockstateUiHarness = {
     if (header === undefined || header === null) return false;
     header.click();
     return true;
+  },
+
+  clickAdmitPrisoner(): boolean {
+    // The Intake panel's only control, and the only `.ui-action` in it.
+    const button = document.querySelector<HTMLButtonElement>('.hud-intake .hud-intake__admit');
+    if (button === null) return false;
+    button.click();
+    return true;
+  },
+
+  intakeProbe(): IntakeProbe {
+    const panel = document.querySelector<HTMLElement>('.hud-intake');
+    const admit = document.querySelector<HTMLButtonElement>('.hud-intake .hud-intake__admit');
+    return {
+      // `offsetParent` is null for an element that is `hidden` or inside one,
+      // which is what `setVisible(false)` leaves the panel in. Presence alone
+      // would prove nothing: a `hidden` panel is still found by
+      // `querySelector`, and a control a keyboard could reach inside one is
+      // the defect `paintState` calls out.
+      laidOut: panel !== null && panel.offsetParent !== null,
+      admitLaidOut: admit !== null && admit.offsetParent !== null,
+      admitLabel: admit?.textContent ?? '',
+      admitDisabled: admit?.disabled ?? null,
+      hint: document.querySelector<HTMLElement>('.hud-intake__note')?.textContent ?? '',
+    };
   },
 
   clickBuildable(definitionId: string): boolean {

@@ -166,6 +166,21 @@ export const HUD_MESSAGE_KEY = {
   buildableDoorWooden: 'hud.build.buildable.door-wooden',
 
   /**
+   * The intake surface (#261 step 4).
+   *
+   * `intakeHint` is not decoration and is not a disclaimer. Until something
+   * in the application can zone a room, every press of the admit control is
+   * refused, and a control that can only be refused has to say why *before*
+   * it is pressed as well as after -- the refusal line answers "that did not
+   * happen", and the hint answers "and it will not until you have somewhere
+   * to put them". The two sentences are different jobs and neither replaces
+   * the other.
+   */
+  intakeTitle: 'hud.intake.title',
+  intakeAdmit: 'hud.intake.admit',
+  intakeHint: 'hud.intake.hint',
+
+  /**
    * What the player is told when a control's action was refused (issue #207).
    *
    * One key per *command* intent rather than one generic sentence, because
@@ -267,6 +282,13 @@ export const HUD_MESSAGE_KEY = {
    */
   refusalZoneRoom: 'hud.refusal.zone-room',
   refusalUnzoneRoom: 'hud.refusal.unzone-room',
+  /**
+   * Covers both ways an admission is refused before it is sent -- no session
+   * at all, and a prison the last published counts say holds no room -- for
+   * the reason `refusalPurchaseMaterials` covers both of its: they leave the
+   * prison in the same state and there is nothing different to do about them.
+   */
+  refusalAdmitPrisoner: 'hud.refusal.admit-prisoner',
 
   severityInfo: 'hud.severity.info',
   severityWarning: 'hud.severity.warning',

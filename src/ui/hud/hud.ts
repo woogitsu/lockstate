@@ -13,6 +13,7 @@ import { type ListRow, createListRow } from '../primitives/list-row';
 import { type Panel, createPanel } from '../primitives/panel';
 import { type TabButton, createTabButton } from '../primitives/tab-button';
 import { type BuildPanel, type BuildPanelTarget, createBuildPanel } from './build-panel';
+import { type IntakePanel, createIntakePanel } from './intake-panel';
 import { type RoomsPanel, createRoomsPanel } from './rooms-panel';
 import {
   HUD_PANEL_IDS,
@@ -232,6 +233,36 @@ export type HudIntent =
    * control's action did not happen" for every command (issue #207).
    */
   | { readonly kind: 'purchase-materials'; readonly itemId: string; readonly quantity: number }
+  /**
+   * The player asked for a prisoner to be admitted (#261 step 4).
+   *
+   * **Payload-free, and that is the whole of the boundary here.** An
+   * admission is described by a sentence length, a prior-incident count and
+   * an arrival tile; the host fills all three, because none of them is a
+   * figure the HUD could obtain honestly. Two are `ClassificationInput`, whose
+   * meaning lives in `src/simulation/prisoners/classification.ts` -- a module
+   * the HUD may not import (`AGENTS.md` boundary 1) -- and the third is the
+   * middle of the one chunk a new prison owns, which the host already knows
+   * because it is the same origin the Build panel's numeric fields start at.
+   *
+   * Nothing about *who* arrives is here either, and nothing about who arrives
+   * may ever be: the name and the risk tier are drawn inside the simulation
+   * from `identity.actor-name` and `prisoners.classification` at the intake
+   * stages that own them. A field on this intent carrying either would be the
+   * interface deciding simulation state from an unseeded source.
+   *
+   * A *command*, so it goes through the same gate as a build order and a
+   * purchase: a second tap while one is in flight must not hand a busy host
+   * two admissions, and a refusal has to reach the player. Whether a press is
+   * refused is a fact about the prison rather than about the application: an
+   * admission into a prison with no accommodation room is refused, and since
+   * the Rooms tab (#312) a player can zone one -- so a prison holding a zoned
+   * cell admits, and the arrival then waits at `accommodation-assignment`
+   * while the room has nothing to sleep on. Either way the answer has to reach
+   * the control that was pressed, which is why this is dispatched through the
+   * gate rather than fired and forgotten.
+   */
+  | { readonly kind: 'admit-prisoner' }
   /**
    * The player asked to hire a staff member
    * ([ADR 0025](../../../docs/adr/0025-guard-hiring-surface.md)). One stable
@@ -879,14 +910,14 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   /*
    * The Security tab's first inhabitant (ADR 0025).
    *
-   * Three of the five tabs still render no panel at all -- Overview, Security
-   * and Regime -- and before this one Security was among them: selecting it hid
-   * the Build panel and put nothing in its place. Hiring goes here rather than
-   * onto the Build panel because no two of these panels are ever laid out at
-   * the same time -- so it costs the Build panel's measured height budget
-   * nothing, and the third button `.hud-build__actions` cannot hold is never
-   * needed -- and because a guard is not made of the material the selected
-   * buildable is made of.
+   * Two of the five tabs still render no panel at all -- Overview, until the
+   * Intake panel below, and Regime -- and before this one Security was among
+   * them: selecting it hid the Build panel and put nothing in its place. Hiring
+   * goes here rather than onto the Build panel because no two of these panels
+   * are ever laid out at the same time -- so it costs the Build panel's
+   * measured height budget nothing, and the third button
+   * `.hud-build__actions` cannot hold is never needed -- and because a guard is
+   * not made of the material the selected buildable is made of.
    *
    * Hiring is a *command* for the same reasons placing an order and buying
    * are: it asks the host to change the simulation, the money leaves
@@ -902,9 +933,27 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     },
   });
 
+  // ---- bottom-right intake panel (Overview tab) ---------------------
+  // Shares `.hud__side` with the Build, Rooms and Staff panels and is never
+  // laid out beside any of them: exactly one of the four is visible, keyed on
+  // the active tab, so the always-visible budget ADR 0022 measured for the
+  // Build tab is unchanged and the last tab bound to no panel is Regime. See
+  // `intake-panel.ts` for why the Overview tab rather than a Build-panel row
+  // or a tab of its own, with the measurements behind it.
+  const intakePanel: IntakePanel = createIntakePanel({
+    localizer,
+    // Admitting is a *command*: it asks the host to change the simulation,
+    // and a refusal has to reach the player rather than being dropped. The
+    // button is passed so the refusal lands on it as well as on the refusal
+    // line (issue #207).
+    onAdmit: () => {
+      dispatchCommand({ kind: 'admit-prisoner' }, intakePanel.submitControl);
+    },
+  });
+
   const side = element('div', {
     className: 'hud__side',
-    children: [buildPanel.element, roomsPanel.element, staffPanel.element],
+    children: [intakePanel.element, buildPanel.element, roomsPanel.element, staffPanel.element],
   });
 
   /**
@@ -1011,6 +1060,10 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   // that issues a command, so they can never disagree about whether one is in
   // flight.
   for (const control of staffPanel.controls) busy.add(control);
+  // And the Intake panel's "Admit", for the same reason: admitting is a
+  // command, so a second tap while one is in flight must not hand the host two
+  // admissions.
+  for (const control of intakePanel.controls) busy.add(control);
 
   // ---- state application -------------------------------------------
   function applyState(next: HudShellState): void {
@@ -1027,6 +1080,10 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     buildPanel.setVisible(state.activeTab === 'build');
     roomsPanel.setVisible(state.activeTab === 'rooms');
     staffPanel.setVisible(state.activeTab === 'security');
+    // The fourth occupant of `.hud__side`, and the reason the four can share
+    // one box: the conditions are mutually exclusive, so exactly one panel is
+    // ever laid out there and none pays for the others' height.
+    intakePanel.setVisible(state.activeTab === 'overview');
     for (const panel of HUD_PANEL_IDS) {
       const collapsed = isPanelCollapsed(state, panel);
       if (panel === 'minimap') minimapPanel.setCollapsed(collapsed);
