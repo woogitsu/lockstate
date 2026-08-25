@@ -209,7 +209,7 @@ expression. And the rating is **advisory** -- it ranks and never refuses, so
 a full prison behaves exactly as before. Whether a rating is ever recorded
 rather than recomputed, whether the player may override one, and how a
 cell-scoped risk reaches the sector-scoped trigger system are open questions
-in [ADR 0024](./adr/0024-cell-sharing-assessment.md), not settled in code.
+in [ADR 0027](./adr/0027-cell-sharing-assessment.md), not settled in code.
 
 **Performance note:** `allByRoomCatalogId`/`findAvailable` are a per-tick,
 potentially-thousands-of-instances hot path (every pending intake and every

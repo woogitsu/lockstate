@@ -30,7 +30,7 @@ export interface CellSharingView {
  * A number is that rating. What it deliberately is *not* is a named band
  * ("safe"/"unwise"/"forbidden"): naming bands is a product decision, it
  * needs message keys under `src/content/simulation-message-keys.ts`'s
- * completeness gate, and it is one of the questions ADR 0024 leaves open.
+ * completeness gate, and it is one of the questions ADR 0027 leaves open.
  *
  * ## Why classification distance, and only classification distance
  *

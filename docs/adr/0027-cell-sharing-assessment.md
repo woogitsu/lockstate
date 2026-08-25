@@ -1,4 +1,4 @@
-# ADR 0024: Cell-sharing assessment — what is recorded, who may override, and how a cell-scoped risk reaches a sector-scoped trigger
+# ADR 0027: Cell-sharing assessment — what is recorded, who may override, and how a cell-scoped risk reaches a sector-scoped trigger
 
 ## Status
 
@@ -49,6 +49,17 @@ per-participant index, so a participant query is a full scan of the log on a
 per-tick path; vulnerability has no field, no flag, and no occurrence
 anywhere in `src/`. Classification distance is the one input that is
 populated, indexed, and in hand at the moment allocation runs.
+
+**The occupants this reads are only as trustworthy as an `EntityId` is.**
+Reading an occupant's record means resolving a stored `EntityId` back to a
+slot, and what that resolution is worth is
+[ADR 0026](./0026-entity-id-lifetime.md)'s question, not this one:
+`IntakeSystem` filters occupants through `EntityStore.isAlive` before rating
+them, and at a generation wrap `isAlive` reports a stale handle as live, so
+the rating would read whoever now holds the recycled index. That is why this
+ADR takes the higher number of the pair — every question below assumes an
+occupant list that means what it says, and 0026 is where that assumption is
+settled.
 
 ## What already landed, and why it is not a decision
 

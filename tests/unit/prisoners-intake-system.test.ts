@@ -252,7 +252,7 @@ describe('IntakeSystem: deterministic stage-by-stage pipeline', () => {
     });
 
     it('is advisory, not a refusal: a poor pairing is still taken when it is the only bed left', () => {
-      // Overriding and forbidding are ADR 0024's questions. Until one is
+      // Overriding and forbidding are ADR 0027's questions. Until one is
       // answered, allocation ranks and never refuses -- so a full prison
       // behaves exactly as it did, and this pins that no silent hard block
       // was introduced along the way.
@@ -365,7 +365,7 @@ describe('IntakeSystem: deterministic stage-by-stage pipeline', () => {
     // Whether the fix is to guard `submitIntake`, to release the existing
     // accommodation first, or to make the method private and give re-intake
     // its own entry point is a design decision about the intake pipeline's
-    // contract, and it is stated at Proposed in ADR 0025 rather than settled
+    // contract, and it is stated at Proposed in ADR 0026 rather than settled
     // here. Whichever is taken changes an assertion below.
     const fixture = buildPrisonerScenarioFixture({ cellCount: 4, capacity: 10 });
     const kernel = makeKernel();

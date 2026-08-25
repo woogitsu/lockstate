@@ -1,4 +1,4 @@
-# ADR 0025: The lifetime of `EntityId`-keyed state — generation exhaustion, release, and re-intake
+# ADR 0026: The lifetime of `EntityId`-keyed state — generation exhaustion, release, and re-intake
 
 ## Status
 

@@ -137,7 +137,7 @@ export class RoomInstanceRegistry {
    * - **A non-finite rating means "not a permissible placement"** and the
    *   instance is skipped. That is the mechanism a policy which forbids
    *   some pairing outright would use; no policy in `src/` returns one
-   *   today, and whether any should is ADR 0024's question, not this
+   *   today, and whether any should is ADR 0027's question, not this
    *   method's.
    * - **It must be pure.** No RNG, no clock, no `Map`/`Set` iteration --
    *   this runs inside a simulation tick.

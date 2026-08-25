@@ -50,10 +50,10 @@ this index's. Nothing here changes a status; this table only reports them.
 | [0021](./0021-http-response-security-headers.md) | HTTP response security headers for the static-asset deployment | Proposed — pending human approval |
 | [0022](./0022-room-zoning-surface.md) | Where a player zones a room, and with what gesture | Proposed — pending human approval |
 | [0023](./0023-room-occupancy-authority.md) | Where a room's occupancy comes from | Proposed — pending human approval |
-| [0024](./0024-cell-sharing-assessment.md) | Cell-sharing assessment: recorded rating, override authority, and cell-to-sector routing | Proposed — pending human approval |
-| [0025](./0025-entity-id-lifetime.md) | The lifetime of `EntityId`-keyed state: generation exhaustion, release, and re-intake | Proposed — pending human approval |
+| [0026](./0026-entity-id-lifetime.md) | The lifetime of `EntityId`-keyed state — generation exhaustion, release, and re-intake | Proposed — pending human approval |
+| [0027](./0027-cell-sharing-assessment.md) | Cell-sharing assessment — what is recorded, who may override, and how a cell-scoped risk reaches a sector-scoped trigger | Proposed — pending human approval |
 
-**Next free number: 0026.**
+**Next free number: 0028.**
 
 ## 0018, and why it is free again
 
@@ -68,7 +68,7 @@ opening balance, which is ADR 0017 decision 1 — so this table releases the
 number, exactly as the previous version of this section said it should on that
 outcome.
 
-**0018 is therefore available.** It is not the next free number (0024 is), and
+**0018 is therefore available.** It is not the next free number (0028 is), and
 it should not be reached for preferentially: a gap in the sequence is easier to
 read than a number reused years apart. Take it only if a future ADR is a direct
 successor to what #91 proposed, where sharing the number would be

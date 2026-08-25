@@ -66,7 +66,7 @@ to a derived name:
    it in prose.
    That pin observes the arithmetic *period* and none of its consequences,
    which are worse than a repeated name and are stated in
-   [ADR 0025](./0025-entity-id-lifetime.md): at the wrap `isAlive` reports a
+   [ADR 0026](./0026-entity-id-lifetime.md): at the wrap `isAlive` reports a
    stale handle as live, `destroy` through one kills the entity now in the
    slot, and the three `EntityId`-keyed stores — including this registry —
    stop missing and start inheriting. Which of the three available fixes is
