@@ -10,6 +10,7 @@ export const MAIN_TO_WORKER_MESSAGE_KINDS = [
   'simulation/set-clock',
   'simulation/submit-command',
   'simulation/request-snapshot',
+  'simulation/request-projection',
   'simulation/shutdown',
 ] as const;
 
@@ -21,6 +22,7 @@ export const WORKER_TO_MAIN_MESSAGE_KINDS = [
   'simulation/command-result',
   'simulation/delta',
   'simulation/status-counts',
+  'simulation/projection',
   'simulation/snapshot',
   'simulation/event',
   'simulation/stopped',
@@ -284,6 +286,121 @@ const shutdownMessageSchema = z
   })
   .strict();
 
+/**
+ * Every read model the worker will publish, as a closed wire vocabulary.
+ *
+ * One id per exported projection in `src/simulation/presentation/` that a
+ * panel can ask for. The list is here rather than in the presentation layer
+ * because it is a *protocol* vocabulary: it is what a request is allowed to
+ * name, and `z.enum` over it is what makes an unknown id fail at the decoder
+ * instead of reaching a lookup that would answer `undefined`.
+ *
+ * A `const` tuple with the schema derived from it, for the same reason
+ * `PROTOCOL_FAULT_CODES` and `REFUSAL_REASONS` are shaped this way: a test
+ * cannot enumerate the members of a schema that is not exported, so a
+ * vocabulary that lived only inside `z.enum([...])` could not be gated for
+ * reachability. `tests/foundation/projection-reachability-contract.test.ts`
+ * is what enumerates it, and `tests/contract/worker-projection-channel.test.ts`
+ * drives every member through a real state machine -- so an id added here
+ * without a catalog entry behind it fails rather than becoming the next
+ * unreachable projection (#104).
+ *
+ * `hud/clock-position` is deliberately absent. `projectClockPosition` is a
+ * pure function of a tick with no simulation state behind it, and the main
+ * thread already has the tick from `simulation/clock-state`, so
+ * `src/ui/simulation-clock.ts` computes it on its own side of the boundary
+ * rather than paying a round trip for arithmetic.
+ */
+export const PROJECTION_IDS = [
+  'hud/status-strip',
+  'hud/prisoner-population',
+  'hud/prisoner-roster',
+  'hud/prisoner-detail',
+  'hud/room-list',
+  'hud/room-detail',
+  'hud/staff',
+  'hud/security',
+  'hud/contraband',
+  'hud/incidents',
+  'hud/incident-detail',
+  'world/render-snapshot',
+] as const;
+
+export type ProjectionId = (typeof PROJECTION_IDS)[number];
+
+const projectionIdSchema = z.enum(PROJECTION_IDS);
+
+/**
+ * The largest window one request may ask for.
+ *
+ * `docs/HUD_PROJECTIONS.md` contract 5 requires a projection to take
+ * `offset`/`limit` rather than return an unbounded list, and #157 finding 1
+ * is that the protocol had no direction those two inputs could arrive from.
+ * They arrive here -- and a ceiling on `limit` is what stops the direction
+ * from re-opening the hole it closes: without one, "the UI may choose the
+ * window" and "the UI may ask for all five thousand rows" are the same
+ * request.
+ *
+ * Five times `DEFAULT_VIEW_MODEL_PAGE_LIMIT` (100). Large enough that a panel
+ * showing a long list scrolls without paging on every screenful, small enough
+ * that the largest legal response is bounded by a constant rather than by the
+ * population.
+ */
+export const MAX_PROJECTION_PAGE_LIMIT = 500;
+
+/**
+ * Which row a *detail* projection is about.
+ *
+ * Two kinds rather than one loose string, because the two id spaces are
+ * genuinely different types: `projectPrisonerDetail` takes an `EntityId`
+ * (a number, minted per `EntityStore`), while `projectRoomDetail` and
+ * `projectIncidentDetail` take a string id. A single field would have had to
+ * carry a number as text and parse it back, and a parse at a trust boundary
+ * is exactly what this protocol validates in order to avoid.
+ *
+ * A projection that takes no target must be requested with none: the catalog
+ * entry declares what it accepts and the worker rejects a mismatch as
+ * `invalid-payload`, so a request naming a room instance on the staff roster
+ * fails loudly instead of being ignored.
+ */
+const projectionTargetSchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('entity'), entityId: sequenceSchema }).strict(),
+  z.object({ kind: z.literal('id'), id: identifierSchema }).strict(),
+]);
+
+export type ProjectionTarget = DeepReadonly<z.infer<typeof projectionTargetSchema>>;
+
+/**
+ * Ask the worker for one read model (#104, #157 finding 1).
+ *
+ * A **request**, correlated by `messageId`, and answered by exactly one
+ * `simulation/projection` carrying the same id as `replyTo` -- ADR 0003
+ * decision 2's correlated pair, not the unsolicited publication
+ * `simulation/clock-state` and `simulation/status-counts` use. The reason is
+ * the reason those two are publications: a level that changes on its own and
+ * that the player is always looking at belongs on a cadence, and a list that
+ * only a panel that is open cares about, in a window only that panel knows,
+ * belongs on a pull. Pulling also means #157 finding 2 does not arise --
+ * `IncidentLog.all()` is unbounded and `ConfiscationLedger` has no windowed
+ * accessor, and neither is read at all until something asks.
+ */
+const requestProjectionMessageSchema = z
+  .object({
+    ...requestEnvelopeFields,
+    kind: z.literal('simulation/request-projection'),
+    payload: z
+      .object({
+        projectionId: projectionIdSchema,
+        /** Rows to skip, in the projection's canonical order. Rejected on a projection that has no list. */
+        offset: z.number().int().min(0).max(Number.MAX_SAFE_INTEGER).optional(),
+        /** Rows to build, capped by `MAX_PROJECTION_PAGE_LIMIT`. Rejected on a projection that has no list. */
+        limit: z.number().int().min(0).max(MAX_PROJECTION_PAGE_LIMIT).optional(),
+        target: projectionTargetSchema.optional(),
+      })
+      .strict(),
+  })
+  .strict();
+
 export const mainToWorkerMessageSchema = z.discriminatedUnion('kind', [
   handshakeMessageSchema,
   pingMessageSchema,
@@ -291,6 +408,7 @@ export const mainToWorkerMessageSchema = z.discriminatedUnion('kind', [
   setClockMessageSchema,
   submitCommandMessageSchema,
   requestSnapshotMessageSchema,
+  requestProjectionMessageSchema,
   shutdownMessageSchema,
 ]);
 
@@ -617,6 +735,80 @@ const statusCountsMessageSchema = z
   })
   .strict();
 
+/**
+ * The window a paged projection actually built.
+ *
+ * Declared and `.strict()` on the envelope even though the paged view models
+ * carry a `ViewModelPage` of their own, because this is the half of
+ * `docs/HUD_PROJECTIONS.md` contract 5 that a boundary can check: the body is
+ * an opaque `versionedPayload` (see below), so without these three integers
+ * "the projection honoured the window it was asked for" would be unverifiable
+ * from outside the projection. `total` is the full row count, so a panel can
+ * size a scrollbar without asking for every row.
+ *
+ * Absent -- not zeroed -- on a projection that has no list, because "this
+ * projection does not page" and "this page is empty" are different facts.
+ */
+const projectionPageSchema = z
+  .object({
+    total: countSchema,
+    offset: countSchema,
+    limit: countSchema,
+  })
+  .strict();
+
+/**
+ * One read model, in answer to one `simulation/request-projection`.
+ *
+ * **Only ever a reply**, so `replyTo` is required rather than optional --
+ * the other side of the rule ADR 0003's 2026-08-23 amendment states.
+ * `simulation/status-counts` has no `replyTo` field at all because it is only
+ * ever a publication; this one always has it because it is only ever an
+ * answer. Nothing publishes a `simulation/projection` on a timer, and that is
+ * the design rather than an omission: see the ADR amendment this message
+ * carries.
+ *
+ * `tick` is the tick the projection was read at, for the reason every readout
+ * on this boundary carries one -- a view model that arrived late must not be
+ * mistaken for a statement about the state that exists when it is painted.
+ *
+ * `view` is a `versionedPayload`, and that is a deliberate difference from
+ * `simulation/status-counts`, which declares every field. The argument that
+ * settled that one -- "the message kind already names which schema the
+ * payload follows, so declare it" -- does not hold here: this kind names a
+ * *family* and `projectionId` selects the member, so declaring every field
+ * would mean a second copy of all 2,446 lines of `src/simulation/presentation/`
+ * written in Zod, and a copy that drifts is the failure the `.strict()` there
+ * exists to prevent, reproduced eleven times over. `versionedPayloadSchema`
+ * is the type this protocol already has for an opaque body carried with its
+ * own `schemaId` and `schemaVersion` (ADR 0003 decision 5), and its
+ * `jsonValueSchema` still enforces at the boundary the property that actually
+ * matters here: finite numbers, no cycles, no class instances, bounded depth
+ * -- structured-clone safety, which is `docs/HUD_PROJECTIONS.md` contract 1's
+ * own guarantee restated where it can be checked.
+ *
+ * `view` is **absent** when a detail projection was asked about a target that
+ * does not exist -- `projectPrisonerDetail` and its two siblings return
+ * `undefined` for an unknown or destroyed id, and an absent field is how this
+ * schema says "no such thing" elsewhere too. It is not an error: asking about
+ * a prisoner who was released between the click and the reply is a race the
+ * UI is expected to handle, not a protocol fault.
+ */
+const projectionMessageSchema = z
+  .object({
+    ...correlatedResponseEnvelopeFields,
+    kind: z.literal('simulation/projection'),
+    payload: z
+      .object({
+        projectionId: projectionIdSchema,
+        tick: tickSchema,
+        page: projectionPageSchema.optional(),
+        view: versionedPayloadSchema.optional(),
+      })
+      .strict(),
+  })
+  .strict();
+
 const snapshotMessageSchema = z
   .object({
     ...correlatedResponseEnvelopeFields,
@@ -673,6 +865,7 @@ export const workerToMainMessageSchema = z.discriminatedUnion('kind', [
   commandResultMessageSchema,
   deltaMessageSchema,
   statusCountsMessageSchema,
+  projectionMessageSchema,
   snapshotMessageSchema,
   eventMessageSchema,
   stoppedMessageSchema,

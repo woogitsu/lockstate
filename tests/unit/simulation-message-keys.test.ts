@@ -80,6 +80,18 @@ const UNLABELLED: readonly { readonly sourceFile: string; readonly declaration: 
       'Wire protocol message kinds (ADR 0003), same as the main-to-worker set: transport vocabulary, not text a panel displays.',
   },
   {
+    sourceFile: 'src/simulation/protocol/types.ts',
+    declaration: 'PROJECTION_IDS',
+    reason:
+      'Which read model a `simulation/request-projection` names (#104). Wire vocabulary in the same sense as the two message-kind lists above -- it selects a payload shape, it is not a payload. A panel already knows which projection it asked for, because it named it; nothing renders "hud/prisoner-roster", and a label for it would be a caption for a request rather than for anything in the prison. The *contents* of each projection do carry labels, through the groups this table already holds -- `IntakeStage`, `IncidentType`, `DeploymentPhase` and the rest -- which is where the words a roster or an incident list shows actually come from.',
+  },
+  {
+    sourceFile: 'src/simulation/worker/projection-catalog.ts',
+    declaration: 'ProjectionTargetKind',
+    reason:
+      'Whether a catalogued projection takes no target, an entity id or a string id (#104). It is a property of the *catalog entry*, read only by the worker\'s own request validation to decide whether a request named the right kind of thing, and it never crosses the boundary in either direction: the wire carries `ProjectionTarget`, which is the target itself, and never this classification of it. Nothing projects it and no panel could render it.',
+  },
+  {
     sourceFile: 'src/simulation/protocol/decode.ts',
     declaration: 'PROTOCOL_DECODE_ERROR_CODES',
     reason:

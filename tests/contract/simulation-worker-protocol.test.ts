@@ -98,6 +98,15 @@ describe('simulation worker protocol', () => {
       },
       {
         ...requestEnvelope,
+        kind: 'simulation/request-projection',
+        payload: {
+          projectionId: 'hud/prisoner-roster',
+          offset: 20,
+          limit: 25,
+        },
+      },
+      {
+        ...requestEnvelope,
         kind: 'simulation/shutdown',
         payload: { reason: 'user-request' },
       },
@@ -169,6 +178,16 @@ describe('simulation worker protocol', () => {
             contrabandDiscovered: 7,
             treasuryMinorUnits: 24_920,
           },
+        },
+      },
+      {
+        ...responseEnvelope,
+        kind: 'simulation/projection',
+        payload: {
+          projectionId: 'hud/prisoner-roster',
+          tick: 12,
+          page: { total: 140, offset: 20, limit: 25 },
+          view: structuredPayload,
         },
       },
       {

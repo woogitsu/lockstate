@@ -11,6 +11,8 @@ export { collectProtocolTransferables } from './transferables';
 export * from './commands';
 export {
   MAIN_TO_WORKER_MESSAGE_KINDS,
+  MAX_PROJECTION_PAGE_LIMIT,
+  PROJECTION_IDS,
   SIMULATION_PROTOCOL_VERSION,
   WORKER_TO_MAIN_MESSAGE_KINDS,
   clockControlSchema,
@@ -25,6 +27,8 @@ export {
   type ProtocolFault,
   PROTOCOL_FAULT_CODES,
   type ProtocolFaultCode,
+  type ProjectionId,
+  type ProjectionTarget,
   REFUSAL_REASONS,
   type RefusalReason,
   type SimulationProtocolMessage,

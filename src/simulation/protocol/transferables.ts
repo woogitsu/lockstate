@@ -27,10 +27,21 @@ export function collectProtocolTransferables(
       return collectPayloadBuffer(message.payload.snapshot);
     case 'simulation/event':
       return collectPayloadBuffer(message.payload.event);
+    // A projection reply carries an optional `versionedPayload`, so it may in
+    // principle be an `ArrayBuffer` -- the same treatment `simulation/delta`
+    // and `simulation/snapshot` get. Nothing builds one today: every catalog
+    // entry posts `transport: 'structured-clone'`, which
+    // `collectPayloadBuffer` correctly reports as nothing to transfer.
+    case 'simulation/projection':
+      return message.payload.view === undefined ? [] : collectPayloadBuffer(message.payload.view);
     case 'protocol/handshake':
     case 'protocol/ping':
     case 'simulation/set-clock':
     case 'simulation/request-snapshot':
+    // A projection id, at most two integers and at most one target. There is
+    // no buffer here to transfer, and ADR 0003's transferable policy reserves
+    // ownership transfer for payloads profiling shows need it.
+    case 'simulation/request-projection':
     case 'simulation/shutdown':
     case 'protocol/handshake-accepted':
     case 'protocol/pong':
