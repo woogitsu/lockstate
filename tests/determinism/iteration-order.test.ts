@@ -201,6 +201,170 @@ describe('global topology ids are derived from world geometry, not from chunk-pr
     expect(readIds(rebuilt)).toEqual(readIds(lived));
     expect(new Set(readIds(rebuilt)).size).toBeGreaterThan(1);
   });
+
+  /**
+   * The third axis, and the one #112's fix recorded under "Known limitations"
+   * rather than closed: not the counter, and not chunk-processing order within
+   * a recompute, but *which chunks contribute nodes at all*. `chunkTopologies`
+   * was append-only -- `update()` skipped a non-loaded chunk instead of
+   * dropping it -- so an unloaded chunk's regions stayed in the component walk
+   * and the node set was a function of chunk **load** history.
+   *
+   * That is an association defect, not a numbering one, and the first test
+   * below is built so the two cannot be confused: three chunks in a row, all
+   * open, so LEFT and RIGHT are connected *only through* MIDDLE. A retained
+   * MIDDLE therefore does not shift a label, it answers a different
+   * connectivity question -- two loaded chunks bridged through space that is
+   * not loaded. Content-addressing the ids would not have helped, because the
+   * component being addressed is itself wrong.
+   */
+  const ROW = {
+    left: { x: chunkCoordinate(0), y: chunkCoordinate(0) },
+    middle: { x: chunkCoordinate(1), y: chunkCoordinate(0) },
+    right: { x: chunkCoordinate(2), y: chunkCoordinate(0) },
+  } as const;
+
+  /**
+   * Writes every edge *inside* one chunk, and no edge outside it. Staying
+   * inside matters: `SparseWorld.setLeftEdge` loads the chunk it writes to, so
+   * a helper that reached one tile past the boundary would silently load a
+   * fourth chunk -- and, worse, could re-load a chunk the test had just
+   * unloaded.
+   */
+  function openChunk(world: SparseWorld, position: { readonly x: number; readonly y: number }): void {
+    for (let ly = 0; ly < 4; ly += 1) {
+      for (let lx = 0; lx < 4; lx += 1) {
+        const tile = TILE(position.x * 4 + lx, position.y * 4 + ly);
+        world.setLeftEdge(tile, 0);
+        world.setTopEdge(tile, 0);
+      }
+    }
+  }
+
+  function rowWorld(): SparseWorld {
+    const world = new SparseWorld(4);
+    for (const position of [ROW.left, ROW.middle, ROW.right]) {
+      world.load(position);
+      world.setOwned(position, true);
+      openChunk(world, position);
+    }
+    return world;
+  }
+
+  const rowChunks = (world: SparseWorld) => [ROW.left, ROW.middle, ROW.right].map((position) => world.getChunk(position)!);
+
+  const rowIds = (manager: TopologyManager) => ({
+    left: manager.getTopologyId(TILE(0, 0)),
+    middle: manager.getTopologyId(TILE(5, 0)),
+    right: manager.getTopologyId(TILE(9, 0)),
+  });
+
+  it('does not bridge two loaded chunks through a chunk that has since unloaded', () => {
+    // Lived: the manager processed MIDDLE while it was loaded, and MIDDLE
+    // then unloaded with no geometry revision moving anywhere.
+    const livedWorld = rowWorld();
+    const lived = new TopologyManager(livedWorld);
+    lived.update(rowChunks(livedWorld));
+    livedWorld.unload(ROW.middle);
+    lived.update(rowChunks(livedWorld));
+
+    // Fresh: the identical world, with the manager built after the unload --
+    // which is exactly the restore path, where `TopologyManager` is
+    // reconstructed from scratch over a world that is not.
+    const freshWorld = rowWorld();
+    freshWorld.unload(ROW.middle);
+    const fresh = new TopologyManager(freshWorld);
+    fresh.update(rowChunks(freshWorld));
+
+    // The two really are one world, so this pins a manager difference and not
+    // a geometry difference smuggled in by the build order.
+    expect(freshWorld.snapshot()).toEqual(livedWorld.snapshot());
+    expect(rowIds(lived)).toEqual(rowIds(fresh));
+
+    // Non-vacuous, and the substance rather than the shape: LEFT and RIGHT
+    // are reachable from each other only through MIDDLE, so a retained
+    // MIDDLE gives them one id and dropping it gives them two. Before
+    // eviction the lived manager answered left=1 / right=1 against the fresh
+    // manager's left=1 / right=2 -- the integer 1 naming LEFT-with-RIGHT in
+    // one and LEFT alone in the other.
+    const ids = rowIds(lived);
+    expect(ids.left).toBeGreaterThan(0);
+    expect(ids.right).toBeGreaterThan(0);
+    expect(ids.left).not.toBe(ids.right);
+
+    // And an unloaded chunk is named in neither. `getTopologyId` already
+    // answered 0 for a chunk it had no topology for; the point is that it now
+    // has none.
+    expect(ids.middle).toBe(0);
+  });
+
+  it('assigns the same ids whether a chunk was loaded and dropped first or never processed', () => {
+    // The load order the residue was recorded against, literally: load a
+    // chunk, process it, unload it, load another -- versus reaching the same
+    // loaded set without the manager ever seeing the first.
+    const processedWorld = new SparseWorld(4);
+    processedWorld.load(ROW.left);
+    processedWorld.setOwned(ROW.left, true);
+    openChunk(processedWorld, ROW.left);
+    const processed = new TopologyManager(processedWorld);
+    processed.update([processedWorld.getChunk(ROW.left)!]);
+    processedWorld.unload(ROW.left);
+    processedWorld.load(ROW.right);
+    processedWorld.setOwned(ROW.right, true);
+    openChunk(processedWorld, ROW.right);
+    processed.update([processedWorld.getChunk(ROW.left)!, processedWorld.getChunk(ROW.right)!]);
+
+    const skippedWorld = new SparseWorld(4);
+    skippedWorld.load(ROW.left);
+    skippedWorld.setOwned(ROW.left, true);
+    openChunk(skippedWorld, ROW.left);
+    skippedWorld.unload(ROW.left);
+    skippedWorld.load(ROW.right);
+    skippedWorld.setOwned(ROW.right, true);
+    openChunk(skippedWorld, ROW.right);
+    const skipped = new TopologyManager(skippedWorld);
+    skipped.update([skippedWorld.getChunk(ROW.left)!, skippedWorld.getChunk(ROW.right)!]);
+
+    expect(skippedWorld.snapshot()).toEqual(processedWorld.snapshot());
+
+    // Before eviction the processed run answered right=2 / left=1 and the
+    // skipped run right=1 / left=0: the integer 1 named RIGHT in one world
+    // and the unloaded LEFT in the other.
+    expect(processed.getTopologyId(TILE(9, 0))).toBe(skipped.getTopologyId(TILE(9, 0)));
+    expect(processed.getTopologyId(TILE(0, 0))).toBe(skipped.getTopologyId(TILE(0, 0)));
+
+    // Pinned as values too, so a change that made both sides agree on the
+    // wrong answer would still fail: the only loaded chunk is the first
+    // component, and the dropped one is named by nothing.
+    expect(processed.getTopologyId(TILE(9, 0))).toBe(1);
+    expect(processed.getTopologyId(TILE(0, 0))).toBe(0);
+  });
+
+  it('re-admits a chunk that is loaded again, with the ids it would have had all along', () => {
+    // Eviction must not be a one-way door: a streaming world reloads chunks,
+    // and a reloaded chunk has to rejoin the walk. The revision guard in
+    // `update()` is what makes this worth pinning -- a reloaded chunk's
+    // `geometryRevision` has not moved, so it is only re-processed because
+    // eviction removed its retained entry.
+    const world = rowWorld();
+    const manager = new TopologyManager(world);
+    manager.update(rowChunks(world));
+    const whole = rowIds(manager);
+
+    world.unload(ROW.middle);
+    manager.update(rowChunks(world));
+    expect(rowIds(manager).middle).toBe(0);
+
+    world.load(ROW.middle);
+    manager.update(rowChunks(world));
+
+    expect(rowIds(manager)).toEqual(whole);
+    // Non-vacuous: with all three loaded the row is one region, so this is
+    // asserting a real merge and not three zeroes.
+    expect(whole.left).toBe(1);
+    expect(whole.middle).toBe(1);
+    expect(whole.right).toBe(1);
+  });
 });
 
 describe('search jobs and room instances are ordered canonically, not by registration history', () => {
