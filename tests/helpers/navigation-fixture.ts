@@ -139,10 +139,10 @@ export function buildCellBlockFixture(cellCount: number, canteenCols = 3): CellB
     world.load(position);
     // Owned as well as loaded. `ConstructionSystem.submitOrder` refuses an
     // order on land the player does not own (#215), and a prison block is by
-    // construction land the player owns -- `createNewSimulationRuntime` owns
-    // the starting chunk (`new-session.ts:153`). A loaded-but-unowned chunk is
-    // not a state a session reaches, so leaving it that way would make this
-    // fixture describe a world the game cannot be in.
+    // construction land the player owns -- `createNewSimulationRuntime`
+    // (`src/simulation/runtime/new-session.ts`) owns the starting chunk. A
+    // loaded-but-unowned chunk is not a state a session reaches, so leaving it
+    // that way would make this fixture describe a world the game cannot be in.
     world.setOwned(position, true);
     chunkPositions.push(position);
   }

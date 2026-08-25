@@ -15,10 +15,11 @@ test('ConstructionSystem handles undo and redo of transactions', () => {
   world.load(chunkPos);
   // Owned, because `ConstructionSystem.submitOrder` refuses an order on land
   // the player does not own (#215) and this fixture is about the order
-  // lifecycle rather than about ownership. `createNewSimulationRuntime` owns
-  // the starting chunk (`new-session.ts:153`), so an owned chunk is what a
-  // real session's first build gesture actually lands on -- this makes the
-  // fixture match it instead of relying on a check that used to be absent.
+  // lifecycle rather than about ownership. `createNewSimulationRuntime`
+  // (`src/simulation/runtime/new-session.ts`) owns the starting chunk, so an
+  // owned chunk is what a real session's first build gesture actually lands on
+  // -- this makes the fixture match it instead of relying on a check that used
+  // to be absent.
   world.setOwned(chunkPos, true);
   
   const construction = new ConstructionSystem(world);
