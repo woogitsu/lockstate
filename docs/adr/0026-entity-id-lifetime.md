@@ -26,7 +26,8 @@ the other two.
 ### The mechanism, and what it actually does at the wrap
 
 `EntityStore.destroy` does `generations[index] = (generations[index] + 1) &
-0xFFF` (`src/simulation/entity/entity-store.ts:148-149`). The residues are
+0xFFF` (`EntityStore.destroy`, `src/simulation/entity/entity-store.ts`).
+The residues are
 `0..4095` and the increment is unconditional, so one index's generation
 returns to its starting value after **exactly 4,096 destroy/spawn cycles of
 that index**. The period is per index: `generations` is a `Uint16Array`, and
@@ -51,9 +52,10 @@ generation — having silently come back around to agreeing.
 
 ### The three stores whose entire safety is "the key changes"
 
-`PrisonerColdState` (`components.ts:258-261`), `GangRegistry`
-(`gangs.ts:19`) and `ActorIdentityRegistry` (`actor-identity.ts:178`) are all
-plain `Map<EntityId, …>`. #111 was about *index*-keyed component arrays
+`PrisonerColdState`'s three maps (`prisoners/components.ts`),
+`GangRegistry.gangIdByMember` (`incidents/gangs.ts`) and
+`ActorIdentityRegistry.byKind`'s inner maps (`identity/actor-identity.ts`)
+are all plain `Map<EntityId, …>`. #111 was about *index*-keyed component arrays
 inheriting a released prisoner's state, and PR #150 fixed that by resetting
 every component when an index is allocated. These three were never exposed to
 #111 for a different reason: a recycled index gets a new generation, so the
@@ -128,7 +130,10 @@ concurrent load; both pass on a re-run with the same patch applied. They are
 not consequences of the change.)
 
 That one failing case is the **only** guard this project has on this counter,
-and it is load-bearing for ADR 0015's argument rather than incidental. It is
+and it is load-bearing for ADR 0015's argument rather than incidental — and
+since #308 that ADR is **Accepted**, so the argument the pin supports is a
+settled decision rather than a pending one, which raises what re-baselining it
+costs rather than lowering it. It is
 also not obviously wrong after the change: the id genuinely no longer comes
 back, so a name still cannot be derived from an id, and the case's stated
 purpose survives even though its assertion does not. **Whether that
@@ -198,7 +203,7 @@ already produced once.
 
 ## Question 3 — may `submitIntake` be called for an already-admitted prisoner?
 
-`IntakeSystem.submitIntake` (`intake-system.ts:73-78`) is `public`, takes an
+`IntakeSystem.submitIntake` (`prisoners/intake-system.ts`) is `public`, takes an
 `EntityId`, and performs three writes: sentence length, prior incidents, and
 `intakeStage = 'queued'`. It checks nothing — not liveness, not the stage it
 is overwriting, not whether the prisoner already has a cell.

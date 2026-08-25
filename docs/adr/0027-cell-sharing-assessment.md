@@ -27,13 +27,14 @@ the room. It proposes a Cell Sharing Risk Assessment: a compatibility check
 consulted at placement, producing a rating rather than a boolean, visible to
 the player, overridable, and feeding the existing incident trigger system.
 
-Two preconditions bound everything below, and both are structural rather than
-incidental.
+Three preconditions bound everything below, and all three are structural
+rather than incidental.
 
 **Co-occupancy is not reachable in a shipped session.** `RoomZoningService`
 registers every room instance with `capacity: 0`
-(`src/simulation/rooms/zoning.ts:259`, pinned by
-`tests/unit/rooms-zoning.test.ts:98`), because object placement does not exist
+(`RoomZoningService.zone`, `src/simulation/rooms/zoning.ts`, pinned by
+`rooms-zoning.test.ts`'s "gives a freshly zoned room no capacity and no
+object capabilities"), because object placement does not exist
 and an empty rectangle accommodates nobody — ADR 0023 §1 records that as the
 decision rather than as an oversight. So `occupancyOf(instanceId) >=
 instance.capacity` is `0 >= 0` for every zoned room, `findAvailable` can never
@@ -41,6 +42,25 @@ succeed through the live path, and no session this codebase can produce has
 two prisoners in one cell. Every claim about shared cells here, and every test
 of the code that landed, is reachable only by registering an instance
 directly.
+
+**Re-measured after #312, because that is the change that could have expired
+it.** The Rooms tab gave `ZoneRoom` its first producer, so a player can now
+create and destroy room instances and a live session containing real rooms
+exists for the first time — which is exactly the shape of change that turns a
+precondition into a stale sentence. It did not: zoning two cells through the
+real service still yields `capacity: 0` and an empty capability list,
+`findAvailable` and `findBestAvailable` both return `undefined` for
+`room.cell` with and without the `sleep-surface` filter, an admitted prisoner
+is never housed (`completedCount` 0, `failedCount` 0, the backlog counter
+climbing, because the room type exists and retrying is correct), and
+`assign` on a zoned instance returns `false`. What #312 *did* change is that
+this is now observable end to end rather than only argued: it is
+`prisoners-intake-system.test.ts`'s "houses nobody at all through the shipped
+session path, because a zoned room has no capacity", which before the Rooms
+tab could not have been written at all. That case is a tripwire, not
+decoration — it fails the day capacity is derived from placed objects
+(**ADR 0028**, itself Proposed), which is the day this precondition expires and
+#79 becomes reachable for real.
 
 **Three of #79's four named inputs do not exist to be read.** Gang membership
 exists as a registry but `new-session.ts` constructs it empty and
@@ -77,10 +97,16 @@ That is a mechanism, not a policy, on four counts:
 - **It adds no state.** Nothing is stored, nothing is saved, no schema moves.
 - **It refuses nothing.** It reorders a candidate list whose members are all
   already permissible. A full prison behaves exactly as it did.
-- **It changes no existing outcome.** Every cell in this repository outside
-  one determinism fixture is `capacity: 1`, so every *free* instance holds
-  nobody, every rating is 0, and the tie-break returns what `findAvailable`
-  returned.
+- **It changes no existing outcome**, and the reason is counted rather than
+  asserted: 36 of the cell registrations in this tree are `capacity: 1`, so
+  every *free* instance holds nobody, every rating is 0, and the tie-break
+  returns exactly what `findAvailable` returned. Two determinism fixtures do
+  register a cell above 1 — `snapshot-restore-fidelity.test.ts` at 4, which
+  genuinely houses several prisoners together through `admitPrisoner`, and
+  `projection-ordering.test.ts` at 8 — and in both that instance is the only
+  one of its room type, so a ranking has nothing to reorder. The remaining
+  shared cells are the ones this branch's own tests register, which is the
+  point of them.
 - **It names no rating bands.** A number is not a vocabulary. Naming bands
   would require message keys under `src/content/simulation-message-keys.ts`'s
   completeness gate, and which bands exist is question 2's business.
@@ -110,8 +136,8 @@ an audit trail exists for, and the only form that can become *stale* — which
 is what makes reassessment a mechanic rather than a recomputation.
 
 The cost is concrete and is why this is not an implementation detail.
-`SAVE_SCHEMA_VERSION` is 3 (`src/persistence/save-schema.ts`); a recorded
-rating is a V4 payload section, a migration in the chain, and a new
+`SAVE_SCHEMA_VERSION` is 4 (`src/persistence/save-schema.ts`); a recorded
+rating is a V5 payload section, a migration in the chain, and a new
 snapshotted registry with `getSnapshot`/`loadSnapshot` in canonical order.
 `AGENTS.md` boundary 7 requires that decision to be taken deliberately.
 
@@ -127,8 +153,10 @@ one.
 
 Making it binding is not a flag. `IntakeSystem` is fully autonomous: there is
 no player input to placement at all. The entire command surface is
-`PlaceBuildOrder`, `CancelBuildOrder`, `ZoneRoom`, `PurchaseMaterials`, `Undo`
-and `Redo` (`src/simulation/protocol/commands.ts`), so an override needs a new
+`PlaceBuildOrder`, `CancelBuildOrder`, `ZoneRoom`, `UnzoneRoom`,
+`PurchaseMaterials`, `Undo` and `Redo`
+(`src/simulation/protocol/commands.ts`) — seven, since #312 added the
+removal half — and not one of them concerns a prisoner, so an override needs a new
 command type, its codec case, a handler branch, and a decision about whether
 intake *blocks* waiting for a human or proceeds and reports. Commands sit in
 the kernel's snapshotted pending queue, so a new type touches ADR 0009's

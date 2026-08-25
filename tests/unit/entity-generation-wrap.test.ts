@@ -12,7 +12,7 @@ import { Xoshiro128StarStar } from '../../src/simulation/rng/xoshiro128starstar'
  *
  * `destroy()` does `generations[index] = (generations[index] + 1) & 0xFFF`,
  * so one index's generation returns to where it started after exactly 4,096
- * destroy/spawn cycles of that index (`entity-store.ts:148-149`). At that
+ * destroy/spawn cycles of that index (`EntityStore.destroy`). At that
  * moment a handle to an entity that died 4,096 lifetimes ago starts naming
  * the entity currently in the slot: `isAlive` says true, `getIndex` and
  * `getGeneration` both agree, and no record anywhere can tell the two apart.

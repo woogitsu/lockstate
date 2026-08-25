@@ -180,8 +180,13 @@ below: a zoned cell is a *matching* instance that can never free up, so
 fast. The rule itself is unchanged -- it fails only when no instance of the
 required type exists at all -- but its stated justification, that a real
 prison holds an arriving prisoner because capacity may return, does not hold
-for a room with no beds in it. Nothing in the shipped application reaches
-that path yet: `ZoneRoom` has no producer and nothing calls `admitPrisoner`.
+for a room with no beds in it. Half of that is now reachable and half is
+not: since #312 the Rooms tab produces `ZoneRoom`, so a player can put real
+room instances into a live session, but nothing calls `admitPrisoner`, so no
+arrival ever meets one. Measured through the real session in
+`prisoners-intake-system.test.ts`'s "houses nobody at all through the shipped
+session path": two zoned cells, one admitted prisoner, no placement, and the
+backlog counter -- not the failure counter -- moving.
 
 **Who is already in the cell (#79).** `findAvailable` asks three questions
 -- room type, an occupancy *count*, an object capability -- and never asks
@@ -210,6 +215,17 @@ a full prison behaves exactly as before. Whether a rating is ever recorded
 rather than recomputed, whether the player may override one, and how a
 cell-scoped risk reaches the sector-scoped trigger system are open questions
 in [ADR 0027](./adr/0027-cell-sharing-assessment.md), not settled in code.
+
+None of it changes an outcome today, and that is stated rather than left to be
+discovered: 36 of the cell registrations in this tree are `capacity: 1` and a
+zoned one is `capacity: 0`, so every *free* instance holds nobody, every rating
+is 0, and the tie-break returns exactly what `findAvailable` returned. The two
+determinism fixtures that do register a cell above 1 each register only one
+instance of that room type, so there is nothing for a ranking to reorder
+there either. Occupant-aware allocation becomes observable in a
+session on the day room capacity is derived from placed objects
+([ADR 0028](./adr/0028-object-placement-and-derived-room-capacity.md)), which is
+also the day the tripwire above starts failing.
 
 **Performance note:** `allByRoomCatalogId`/`findAvailable` are a per-tick,
 potentially-thousands-of-instances hot path (every pending intake and every

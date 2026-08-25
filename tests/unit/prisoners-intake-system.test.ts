@@ -8,6 +8,7 @@ import { NamedRngStreams } from '../../src/simulation/rng/streams';
 import { PrisonerColdState, PrisonerRecordComponent, classificationGroupIndex, intakeStageIndex } from '../../src/simulation/prisoners/components';
 import { IntakeSystem } from '../../src/simulation/prisoners/intake-system';
 import { RoomInstanceRegistry } from '../../src/simulation/prisoners/room-instance-registry';
+import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { buildPrisonerScenarioFixture } from '../helpers/prisoner-fixture';
 
@@ -169,12 +170,14 @@ describe('IntakeSystem: deterministic stage-by-stage pipeline', () => {
      *
      * Built here rather than through `buildPrisonerScenarioFixture` because
      * every cell that fixture registers is `capacity: 1`, and the live
-     * registrar is worse: `RoomZoningService` registers every instance with
-     * `capacity: 0` (`zoning.ts:259`, pinned by
-     * `tests/unit/rooms-zoning.test.ts:98`), so `occupancyOf >= capacity` is
-     * `0 >= 0` and `findAvailable` can never succeed through the shipped
-     * path at all. Co-occupancy is only reachable by registering it, which
-     * is what this does.
+     * registrar is worse: `RoomZoningService.zone` registers every instance
+     * with `capacity: 0` and no object capabilities, so
+     * `occupancyOf >= capacity` is `0 >= 0` and neither `findAvailable` nor
+     * `findBestAvailable` can succeed through the shipped path at all.
+     * Co-occupancy is only reachable by registering it, which is what this
+     * does -- and the case immediately below is the executable statement of
+     * that precondition, so it does not have to be taken on trust from a
+     * comment.
      */
     function sharedCellPrison() {
       const capacity = 8;
@@ -213,6 +216,75 @@ describe('IntakeSystem: deterministic stage-by-stage pipeline', () => {
     }
 
     const LOW_RISK = { sentenceLengthTicks: 100, priorIncidents: 0 };
+
+    it('houses nobody at all through the shipped session path, because a zoned room has no capacity', () => {
+      /*
+       * The precondition every case below is built around, end to end
+       * through the real session rather than asserted in prose.
+       *
+       * This became testable with #312. Before the Rooms tab, `ZoneRoom` had
+       * no producer, so no room instance could be created by anything except
+       * the restore path and there was no live prison to observe -- the
+       * reason the original version of this suite could only state the
+       * precondition in a comment. A player can now zone and un-zone rooms,
+       * so a session with real room instances in it exists; what has *not*
+       * changed is what those instances can hold.
+       *
+       * Measured here, not assumed: both cells zone successfully through
+       * `RoomZoningService` (the Rooms tab's only consumer), both register
+       * with `capacity: 0` and no object capabilities, and the arrival that
+       * follows is therefore never housed. `room.solitary-cell` is zoned
+       * alongside `room.cell` so the outcome does not depend on which
+       * classification group the RNG puts the arrival in: both targets
+       * exist, so the stage stays retryable rather than going to `'failed'`
+       * for a structurally absent room type, and the backlog counter is the
+       * one that moves.
+       *
+       * Which makes this a tripwire and not a restatement of
+       * `rooms-zoning.test.ts`'s `capacity: 0` pin. That pin is about one
+       * registration; this is about the consequence three systems later --
+       * occupant-aware allocation (#79) cannot be exercised in a shipped
+       * session, so every other case in this describe registers its
+       * instances by hand. The day capacity is derived from placed objects
+       * (ADR 0028), this case fails, and the failure is the notice that
+       * ADR 0027's stated precondition has expired and #79 is now reachable
+       * for real.
+       */
+      const runtime = createNewSimulationRuntime(7);
+      const cell = runtime.roomZoning.zone({ roomCatalogId: 'room.cell', x: 2, y: 2, width: 3, height: 3 }, 0);
+      const solitary = runtime.roomZoning.zone({ roomCatalogId: 'room.solitary-cell', x: 8, y: 2, width: 3, height: 3 }, 0);
+      if (cell.kind !== 'zoned' || solitary.kind !== 'zoned') {
+        throw new Error('both rooms must be accepted for this test to mean anything');
+      }
+
+      // Zoning worked. It is what a zoned room *holds* that is the problem.
+      expect(cell.instance.capacity).toBe(0);
+      expect(cell.instance.objectCapabilities).toEqual([]);
+      expect(solitary.instance.capacity).toBe(0);
+      expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.cell')).toHaveLength(1);
+
+      // So both queries the allocator has come back empty, with or without
+      // the capability filter.
+      expect(runtime.prisoners.roomInstances.findAvailable('room.cell')).toBeUndefined();
+      expect(runtime.prisoners.roomInstances.findAvailable('room.cell', 'sleep-surface')).toBeUndefined();
+      expect(
+        runtime.prisoners.roomInstances.findBestAvailable('room.cell', () => 0, 'sleep-surface'),
+      ).toBeUndefined();
+
+      const arrival = runtime.prisoners.admitPrisoner(LOW_RISK, { x: tileCoordinate(0), y: tileCoordinate(0) });
+      for (let i = 0; i < 60; i += 1) runtime.kernel.step();
+
+      const metrics = runtime.prisoners.intakeSystem.getMetrics();
+      expect(runtime.prisoners.coldState.getAccommodation(arrival)).toBeUndefined();
+      expect(metrics.completedCount).toBe(0);
+      expect(metrics.failedCount).toBe(0);
+      // Waiting, not failing: the room type exists, so retrying is correct
+      // and the unmet demand is visible rather than swallowed.
+      expect(metrics.accommodationBacklogTicks).toBeGreaterThan(0);
+      expect(runtime.prisoners.roomInstances.occupancyOf(cell.instance.instanceId)).toBe(0);
+      // And the registry refuses to be talked into it directly.
+      expect(runtime.prisoners.roomInstances.assign(cell.instance.instanceId, arrival)).toBe(false);
+    });
 
     it('routes a low-risk arrival away from the cell holding a maximum-security prisoner, even though that cell sorts first and has a free bed', () => {
       const prison = sharedCellPrison();
@@ -349,7 +421,7 @@ describe('IntakeSystem: deterministic stage-by-stage pipeline', () => {
     // `submitIntake` be called for a prisoner who is already admitted?
     //
     // The method is `public`, takes an `EntityId`, and does exactly three
-    // writes (`intake-system.ts:73-78`): sentence length, prior incidents,
+    // writes (`IntakeSystem.submitIntake`): sentence length, prior incidents,
     // and the stage. It checks nothing -- not liveness, not the stage it is
     // overwriting, not whether the prisoner already has a cell. So the
     // answer today is "yes, and here is what that does", which is what this
