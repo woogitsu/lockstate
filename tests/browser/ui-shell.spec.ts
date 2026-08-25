@@ -347,11 +347,22 @@ test.describe('HUD shell', () => {
     await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
     const probe = await page.evaluate(() => window.lockstateUiHarness.hudProbe());
 
-    expect(probe.metricIds).toEqual(['prisoners', 'staff', 'rooms', 'incidents', 'contraband', 'funds']);
+    expect(probe.metricIds).toEqual([
+      'prisoners',
+      'staff',
+      'rooms',
+      'incidents',
+      'contraband',
+      'funds',
+      'earned-today',
+    ]);
     // `24,920` and not `249.20`: the balance is shown in the units the
     // simulation holds it in, because #96 named no currency and dividing by a
-    // hundred would decide one in a chip (#96, ADR 0017).
-    expect(probe.metricValues).toEqual(['142', '27', '61', '0', '4', '24,920']);
+    // hundred would decide one in a chip (#96, ADR 0017). `10,667` is the same
+    // units and the same treatment, and it is the accrual this fixture's own
+    // clock and population imply rather than a round number (#29) -- so a chip
+    // that reformatted or rescaled either figure is visible here.
+    expect(probe.metricValues).toEqual(['142', '27', '61', '0', '4', '24,920', '10,667']);
     expect(probe.activeTab).toBe('overview');
     // Paused on day 3, a quarter of the way through it: exactly one transport
     // control is pressed, and the clock reads the simulation's own units.
@@ -414,7 +425,7 @@ test.describe('HUD shell', () => {
 
     await page.evaluate(() =>
       window.lockstateUiHarness.setHudViewModel({
-        counts: { prisoners: 179, prisonerCapacity: 180, staff: 27, rooms: 61, activeIncidents: 2, contrabandFound: 4, treasuryMinorUnits: 0 },
+        counts: { prisoners: 179, prisonerCapacity: 180, staff: 27, rooms: 61, activeIncidents: 2, contrabandFound: 4, treasuryMinorUnits: 0, stateIncomeAccruedTodayMinorUnits: 0 },
         clock: { day: 3, tickOfDay: 1_800, dayLengthTicks: 2_400, mode: 'running', speed: 2 },
         alerts: [],
       }),
@@ -820,7 +831,7 @@ test.describe('HUD shell', () => {
     const ALERT_LABEL_KEY = 'hud.alerts.title';
 
     const withAlerts = (ids: readonly string[]): HudViewModel => ({
-      counts: { prisoners: 142, prisonerCapacity: 180, staff: 27, rooms: 61, activeIncidents: 0, contrabandFound: 4, treasuryMinorUnits: 24_920 },
+      counts: { prisoners: 142, prisonerCapacity: 180, staff: 27, rooms: 61, activeIncidents: 0, contrabandFound: 4, treasuryMinorUnits: 24_920, stateIncomeAccruedTodayMinorUnits: 10_667 },
       clock: { day: 3, tickOfDay: 600, dayLengthTicks: 2_400, mode: 'paused', speed: 1 },
       alerts: ids.map((id, index) => ({
         id,

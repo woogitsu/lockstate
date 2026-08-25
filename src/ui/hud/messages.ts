@@ -30,6 +30,26 @@ export const HUD_MESSAGE_KEY = {
    * inventing one.
    */
   funds: 'hud.status.funds',
+  /**
+   * The rising "earned today" chip beside the balance (#29).
+   *
+   * Named for what the number is -- what this in-game day has earned so far --
+   * rather than for the flow behind it, and the distinction is not cosmetic.
+   * The state pays per prisoner-day at the end of the day (ADR 0017 decisions
+   * 3 and 6), so the figure beside the balance is *this day's accrual*. A
+   * label reading "Income", "Budget" or "Projected" would each name something
+   * no system produces: there is no rate to display, no budget to spend
+   * against, and nothing that forecasts past the current day.
+   *
+   * The one honest caveat, since the accrual prorates *current* occupancy
+   * across the ticks already served (`stateIncomeAccruedByTick`): if occupancy
+   * changes mid-day the figure restates the whole elapsed day at the new
+   * occupancy rather than tracking what each tick actually held. "Earned
+   * today" is still the right name for it -- it is what the day will pay -- and
+   * nothing in `src/` can change occupancy mid-day today, because nothing can
+   * admit a prisoner.
+   */
+  earnedToday: 'hud.status.earned-today',
   occupancy: 'hud.status.occupancy',
   occupancyValue: 'hud.status.occupancy-value',
   incidentsClear: 'hud.status.incidents-clear',

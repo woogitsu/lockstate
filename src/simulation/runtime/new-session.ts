@@ -24,7 +24,7 @@ import {
   type SectorOccupantResolver,
   type SectorRiskSampler,
 } from '../incidents';
-import { ProcurementSystem, Treasury } from '../economy';
+import { ProcurementSystem, StateIncomeSystem, Treasury } from '../economy';
 import { RefusalLog } from '../refusals';
 import { StaffHiringService } from '../staff';
 import { createSessionCommandHandler } from './session-commands';
@@ -69,15 +69,20 @@ export interface SimulationRuntime {
   readonly world: SparseWorld;
   readonly construction: ConstructionSystem;
   /**
-   * The prison's money, and the deliveries it has bought (#96, #89).
+   * The prison's money, what it has bought, and what the state pays for
+   * running the place (#96, #89, #29).
    *
-   * `treasury` holds a balance and nothing credits it on a schedule: there is
-   * no income line. ADR 0017 decision 6 settles the basis -- per prisoner-day,
-   * accrued per occupied place -- but no system accrues it, so the balance only
-   * ever goes down. `procurement` spends from it and delivers later.
+   * `treasury` holds a balance; `procurement` spends from it and delivers
+   * later; `stateIncome` credits it once per in-game day, per occupied place,
+   * which is ADR 0017 decision 3's primary income line on the basis decision 6
+   * settles. It pays nothing in a session today, and that is a population
+   * problem rather than an economy one: nothing in `src/` admits a prisoner and
+   * a zoned room is registered with `capacity: 0`, so there is no occupied
+   * place for it to pay for. `StateIncomeSystem` says so at length.
    */
   readonly treasury: Treasury;
   readonly procurement: ProcurementSystem;
+  readonly stateIncome: StateIncomeSystem;
   /**
    * What the simulation last refused, and how many times (#261).
    *
@@ -256,6 +261,13 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   const treasury = new Treasury();
   const procurement = new ProcurementSystem(treasury, constructionMaterials);
 
+  // ADR 0017 decision 3's income line, on decision 6's basis: the state pays
+  // per prisoner-day, accrued per occupied place, at the end of each in-game
+  // day (#29). It reads `prisoners.roomInstances` -- an occupied place is an
+  // occupancy slot there -- so it is constructed after the prisoner runtime,
+  // and it holds no state of its own, which is why nothing new enters the save.
+  const stateIncome = new StateIncomeSystem(treasury, prisoners.roomInstances);
+
   // Issue #261's route out for a command the simulation accepts and then
   // refuses on its content. Empty for a new session and for a restored one
   // alike -- it is not snapshotted.
@@ -386,6 +398,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
 
   kernel.registerSystem(construction);
   kernel.registerSystem(procurement);
+  kernel.registerSystem(stateIncome);
   kernel.registerSystem(navigation);
   prisoners.registerOn(kernel);
   kernel.registerSystem(jobSystem);
@@ -403,6 +416,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     construction,
     treasury,
     procurement,
+    stateIncome,
     refusals,
     actorIdentity,
     topology,

@@ -45,16 +45,19 @@ function counts(overrides: Partial<HudCountsViewModel> = {}): HudCountsViewModel
     activeIncidents: 0,
     contrabandFound: 0,
     treasuryMinorUnits: 0,
+    stateIncomeAccruedTodayMinorUnits: 0,
     ...overrides,
   };
 }
 
 describe('status strip: which metrics exist, in what order', () => {
-  it('projects exactly the six declared metrics, in a fixed order', () => {
+  it('projects exactly the seven declared metrics, in a fixed order', () => {
     // Order is part of the contract: a HUD whose metrics move between builds
     // is one a player has to re-read every time. It was five until the
-    // treasury balance joined them (#96), and `funds` is last so the five a
-    // player already knows keep their positions.
+    // treasury balance joined them (#96), and six until #29's "earned today"
+    // joined it. Each new chip goes on the **end**, so every metric a player
+    // already knows keeps its position -- which is why `funds` is still sixth
+    // rather than being pushed along by the figure that belongs beside it.
     expect(projectStatusMetrics(counts()).map((metric) => metric.id)).toEqual([
       'prisoners',
       'staff',
@@ -62,6 +65,7 @@ describe('status strip: which metrics exist, in what order', () => {
       'incidents',
       'contraband',
       'funds',
+      'earned-today',
     ]);
   });
 
@@ -76,6 +80,7 @@ describe('status strip: which metrics exist, in what order', () => {
       HUD_MESSAGE_KEY.incidents,
       HUD_MESSAGE_KEY.contraband,
       HUD_MESSAGE_KEY.funds,
+      HUD_MESSAGE_KEY.earnedToday,
     ]);
     for (const label of labels) expect(label).toMatch(/^hud\.[a-z.-]+$/);
   });
@@ -106,10 +111,20 @@ describe('status strip: which metrics exist, in what order', () => {
   });
 
   it('passes the counts through unchanged', () => {
+    // Every figure distinct, and the accrual deliberately not a round
+    // fraction of the balance: two chips carrying the same units are exactly
+    // where a projection that read the wrong field would still look right.
     const metrics = projectStatusMetrics(
-      counts({ prisoners: 142, staff: 27, rooms: 61, contrabandFound: 8, treasuryMinorUnits: 24_920 }),
+      counts({
+        prisoners: 142,
+        staff: 27,
+        rooms: 61,
+        contrabandFound: 8,
+        treasuryMinorUnits: 24_920,
+        stateIncomeAccruedTodayMinorUnits: 10_667,
+      }),
     );
-    expect(metrics.map((metric) => metric.value)).toEqual([142, 27, 61, 0, 8, 24_920]);
+    expect(metrics.map((metric) => metric.value)).toEqual([142, 27, 61, 0, 8, 24_920, 10_667]);
   });
 });
 

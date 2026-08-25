@@ -9,6 +9,7 @@ import {
   type ActionCategory,
   type RegimeSchedule,
 } from '../prisoners/regime';
+import { stateIncomeAccruedByTick } from '../economy/income';
 import { projectClockPosition } from './clock-projection';
 import type { ContrabandSearchSource } from './contraband-projection';
 import { projectPrisonerPopulationCounts, type PrisonerProjectionSource } from './prisoner-projection';
@@ -113,6 +114,28 @@ export interface StatusStripViewModel {
     readonly contrabandDiscovered: number;
     /** The treasury balance in minor units (#96). `0` when no treasury was supplied. */
     readonly treasuryMinorUnits: number;
+    /**
+     * What the in-game day in progress has earned the prison so far, in the
+     * same minor units, at `tick` (#29, ADR 0017 decision 3).
+     *
+     * The rising readout beside the balance: the state pays per prisoner-day at
+     * the **end** of each day, and a day is 2,400 ticks -- two minutes of real
+     * time at 1x -- which is too long for the only visible sign of an income
+     * line to be a number that jumps once and then sits still.
+     *
+     * **Derived, not accumulated, and derived here rather than on the main
+     * thread.** `stateIncomeAccruedByTick` is a pure function of the tick and
+     * the occupied-place count, so nothing is stored, nothing can drift out of
+     * step with the balance, and at the payment tick it equals exactly what
+     * `StateIncomeSystem` credits (pinned by
+     * `tests/unit/economy-state-income.test.ts`). The HUD may not compute a
+     * simulation figure, so this is the projection's to produce.
+     *
+     * `0` when no room source was supplied: no registry, no occupied places,
+     * nothing earned -- the same reading as the treasury's own absent case
+     * rather than a guess.
+     */
+    readonly stateIncomeAccruedTodayMinorUnits: number;
   };
 }
 
@@ -197,6 +220,13 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
       activeIncidents: source.incidents?.openIncidents().length ?? 0,
       contrabandDiscovered: source.searchSystem?.getMetrics().itemsDiscovered ?? 0,
       treasuryMinorUnits: source.treasury?.balanceMinorUnits ?? 0,
+      // The registry's own total, not `roomOccupants` above: that count is
+      // built from the catalog fan-out and cannot see an instance registered
+      // under an unknown room-catalog id (gap 15), while the income line is
+      // paid on every slot the registry holds. `RoomInstanceRegistry.totalOccupancy`
+      // documents the difference.
+      stateIncomeAccruedTodayMinorUnits:
+        source.rooms === undefined ? 0 : stateIncomeAccruedByTick(source.rooms.roomInstances.totalOccupancy, source.tick),
     },
   };
 }

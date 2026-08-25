@@ -474,6 +474,26 @@ export const statusCountsSchema = z
      * be wrong about three of the four.
      */
     treasuryMinorUnits: countSchema,
+    /**
+     * What the in-game day in progress has earned so far, in the same minor
+     * units (#29, ADR 0017 decision 3).
+     *
+     * A twelfth count on a channel that carried eleven. It is an integer like
+     * every other member, has no maximum to be a share of, and adds no row --
+     * so `docs/HUD_PROJECTIONS.md` contract 5 (paging) still has nothing to
+     * bound here, which is the property that number is load-bearing for.
+     *
+     * `countSchema`'s floor of `0` is this figure's own invariant rather than
+     * an assumption: it is `rate x occupied places x ticks served / day
+     * length`, and none of the three factors can be negative.
+     *
+     * **`HUD_VIEW_MODEL_SCHEMA_VERSION` is deliberately not bumped**, for the
+     * reason spelled out on `treasuryMinorUnits` above: one constant covers
+     * every projection in `src/simulation/presentation/`, so raising it because
+     * the status strip gained a field would assert that the other three changed
+     * too.
+     */
+    stateIncomeAccruedTodayMinorUnits: countSchema,
   })
   .strict();
 
