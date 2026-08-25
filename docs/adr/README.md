@@ -51,8 +51,9 @@ this index's. Nothing here changes a status; this table only reports them.
 | [0022](./0022-room-zoning-surface.md) | Where a player zones a room, and with what gesture | Proposed — pending human approval |
 | [0023](./0023-room-occupancy-authority.md) | Where a room's occupancy comes from | Proposed — pending human approval |
 | [0024](./0024-cell-sharing-assessment.md) | Cell-sharing assessment: recorded rating, override authority, and cell-to-sector routing | Proposed — pending human approval |
+| [0025](./0025-entity-id-lifetime.md) | The lifetime of `EntityId`-keyed state: generation exhaustion, release, and re-intake | Proposed — pending human approval |
 
-**Next free number: 0025.**
+**Next free number: 0026.**
 
 ## 0018, and why it is free again
 

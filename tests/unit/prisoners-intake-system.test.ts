@@ -340,4 +340,60 @@ describe('IntakeSystem: deterministic stage-by-stage pipeline', () => {
 
     expect(records.intakeStage[index]).toBe(intakeStageIndex('queued'));
   });
+
+  it('DEFECT (#169 item 3): re-submitting an already-housed prisoner leaves them occupying two cells', () => {
+    // **This pins a defect, not an intention.** The test above records that
+    // `submitIntake`'s stage write is what lets a caller which is *not*
+    // `admitPrisoner` restart the pipeline, and that nothing in `src/` is
+    // such a caller. #169 asks the question that leaves open: may
+    // `submitIntake` be called for a prisoner who is already admitted?
+    //
+    // The method is `public`, takes an `EntityId`, and does exactly three
+    // writes (`intake-system.ts:73-78`): sentence length, prior incidents,
+    // and the stage. It checks nothing -- not liveness, not the stage it is
+    // overwriting, not whether the prisoner already has a cell. So the
+    // answer today is "yes, and here is what that does", which is what this
+    // case shows: the pipeline runs a second time and `assign` puts the same
+    // prisoner in a second room instance while the first still holds them.
+    //
+    // The first occupancy is then unreachable. `coldState.getAccommodation`
+    // points only at the newer cell, and `RoomInstanceRegistry.release` has
+    // no caller anywhere in `src/` (#31), so that bed is occupied by someone
+    // who does not live there for the rest of the session -- a capacity leak
+    // that no later intake can recover.
+    //
+    // Whether the fix is to guard `submitIntake`, to release the existing
+    // accommodation first, or to make the method private and give re-intake
+    // its own entry point is a design decision about the intake pipeline's
+    // contract, and it is stated at Proposed in ADR 0025 rather than settled
+    // here. Whichever is taken changes an assertion below.
+    const fixture = buildPrisonerScenarioFixture({ cellCount: 4, capacity: 10 });
+    const kernel = makeKernel();
+    fixture.prisoners.registerOn(kernel);
+
+    const entityId = fixture.prisoners.admitPrisoner({ sentenceLengthTicks: 1_000, priorIncidents: 0 }, fixture.originTile);
+    for (let i = 0; i < 20; i += 1) kernel.step();
+
+    const firstCell = fixture.prisoners.coldState.getAccommodation(entityId);
+    expect(firstCell).toBeDefined();
+    expect(fixture.prisoners.roomInstances.instancesOccupiedBy(entityId)).toEqual([firstCell]);
+    expect(fixture.prisoners.intakeSystem.getMetrics().completedCount).toBe(1);
+
+    // A second intake for the same, already-housed prisoner. Nothing refuses.
+    fixture.prisoners.intakeSystem.submitIntake(entityId, { sentenceLengthTicks: 250_000, priorIncidents: 4 });
+    expect(fixture.prisoners.records.intakeStage[fixture.prisoners.entityStore.getIndex(entityId)]).toBe(intakeStageIndex('queued'));
+
+    for (let i = 0; i < 20; i += 1) kernel.step();
+
+    const secondCell = fixture.prisoners.coldState.getAccommodation(entityId);
+    expect(secondCell).toBeDefined();
+    expect(secondCell).not.toBe(firstCell);
+
+    // DEFECT: one prisoner, two beds. The registry is the authority on
+    // occupancy and it says both.
+    expect(fixture.prisoners.roomInstances.instancesOccupiedBy(entityId)).toEqual([firstCell, secondCell].sort());
+    expect(fixture.prisoners.roomInstances.occupancyOf(firstCell!)).toBe(1);
+    // DEFECT: and the metric counts one prisoner as two completed intakes.
+    expect(fixture.prisoners.intakeSystem.getMetrics().completedCount).toBe(2);
+  });
 });
