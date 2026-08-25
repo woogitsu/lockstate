@@ -147,17 +147,21 @@ const FAULT_ROW_PREFIX = 'fault-';
  *
  * ## Why it stays up
  *
- * Nothing clears the row: "the last refusal was X" stays true until another
- * refusal replaces it or the session ends. This channel has no way to say
+ * Nothing clears a row: "the last refusal was X" stays true until another
+ * refusal replaces it or the session ends, and the same holds of a fault --
+ * "this session has seen an `invalid-message` fault" does not stop being true. This channel has no way to say
  * "dismissed" -- that would be a main-to-worker message and a piece of
  * simulation state to hold it, which is a decision rather than a detail, so
  * it is recorded in `docs/HUD_PROJECTIONS.md` instead of guessed at here.
  *
- * `severity` is `'warning'` for every reason, and uniformly rather than
- * arbitrarily: each of these says the same thing -- the player asked for
- * something and the prison is not doing it -- and grading one refusal above
- * another would be a balance judgement this layer has no basis for, exactly
- * as `docs/HUD_PROJECTIONS.md` contract 4 refuses to band a need bar.
+ * For a **refusal**, `severity` is `'warning'` for every reason, and
+ * uniformly rather than arbitrarily: each of these says the same thing -- the
+ * player asked for something and the prison is not doing it -- and grading one
+ * refusal above another would be a balance judgement this layer has no basis
+ * for, exactly as `docs/HUD_PROJECTIONS.md` contract 4 refuses to band a need
+ * bar. A **fault** is the one case where this layer does grade, and it grades
+ * on a fact the sender reported rather than on a judgement of its own: see the
+ * `protocol/error` branch.
  *
  * Note that `build.out-of-bounds` and `zone.out-of-bounds` are separate
  * entries with separate sentences, and that is the point of the namespace:
