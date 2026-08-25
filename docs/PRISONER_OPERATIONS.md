@@ -175,10 +175,41 @@ room -- and is what `IntakeSystem` asks before a prisoner *lives* somewhere.
 `findAvailableForUse` gates on `concurrentUseCapacity` -- the summed footprint
 width of every object -- and is what `ActionSystem` asks before a prisoner
 *uses* a room now. A canteen that seats fourteen houses nobody, and the single
-field could not say both. Note the honest limit that comes with it: nothing in
-`src/` adds an actor to a non-accommodation room's occupant set, so
-`concurrentUseCapacity` is a correct ceiling on a number that is always zero
-until phase 6 makes `ActionSystem` claim a place.
+field could not say both.
+
+**And the concurrent-use ceiling now binds** (ADR 0028 phase 6,
+[ADR 0029](adr/0029-concurrent-room-use-claims.md)). This paragraph used to end
+by recording the limit that came with the split: nothing in `src/` added an
+actor to a non-accommodation room's occupant set, so `concurrentUseCapacity`
+was "a correct ceiling on a number that is always zero". Measured on that code,
+through `tests/unit/prisoners-concurrent-room-use.test.ts`'s fixture: 40
+prisoners entered a canteen whose `concurrentUseCapacity` was 1, in one
+reconsideration tick, because `findAvailableForUse` compared the canteen's
+*resident* count -- permanently zero -- against its concurrent-use capacity.
+Any capacity above zero admitted an unlimited number of simultaneous users.
+
+`ActionSystem` now claims a place when a prisoner starts performing an action
+in a `room-catalog-id` room and releases it when the action ends or is
+abandoned, and `findAvailableForUse` gates on that count. Three things follow
+that are worth stating here rather than leaving to be discovered:
+
+- **A claim carries its kind.** There are two claim collections, not one
+  occupant set, so `occupancyOf` and `totalOccupancy` still mean *residency* --
+  which is why no room projection and no income figure moved. `StateIncomeSystem`
+  pays per residency slot and a prisoner at lunch earns one prisoner-day, not
+  two; `src/simulation/economy/income.ts` had named that exact condition as one
+  that had to be settled before this landed.
+- **Contention is decided by ascending entity index**, which is
+  `EntityQuery.execute`'s order and therefore the order the reconsideration scan
+  already runs in. There is no queue and no rotation: when more prisoners want a
+  room than it seats, the ones later in the scan are refused, counted in
+  `unmetDemandCycles`, and retry on the next cycle.
+- **Nothing a player can build is affected yet, and that is the honest
+  reading.** Every room type whose actions resolve by catalogue id derives
+  `concurrentUseCapacity` from the objects in it, and phase 1 ships one object
+  (`object.bed`), so a canteen, shower room, common room and classroom all
+  derive 0 and their actions were already unreachable. The ceiling becomes
+  observable in phase 4, when those objects become placeable.
 
 **Who registers an instance (#261).** For as long as `ZoneRoom` had a no-op
 consumer, nothing in `src/` registered one except the *restore* path -- so

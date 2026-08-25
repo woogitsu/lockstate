@@ -107,6 +107,12 @@ const ALLOWED: readonly CanonicalIterationExemption[] = [
   },
   {
     file: 'src/simulation/prisoners/room-instance-registry.ts',
+    expression: 'this.useClaims.values()',
+    reason:
+      "`loadSnapshot` clears every concurrent-use claim set, for the same reason and with the same argument as `this.occupants.values()` above: emptying all of them touches each set once and leaves no residue an order could depend on. It is not refilled from the payload at all -- use claims are derived rather than persisted (ADR 0029), and `ActionSystem.reinstateUseClaims` rebuilds them afterwards over `EntityQuery.execute`'s ascending index order, which is a total order derived from state.",
+  },
+  {
+    file: 'src/simulation/prisoners/room-instance-registry.ts',
     expression: 'this.occupants',
     reason:
       '`instancesOccupiedBy` collects the instance ids holding one entity and returns `result.sort()`, so the walk order cannot reach a caller. Membership is a per-set question, so no earlier ordering decision is folded into the answer either.',
