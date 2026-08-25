@@ -185,6 +185,7 @@ describe('message keys live in one registry', () => {
       activeIncidents: 1,
       contrabandFound: 1,
       treasuryMinorUnits: 0,
+      stateIncomeAccruedTodayMinorUnits: 0,
     })) {
       expect(registry.has(metric.labelKey), metric.labelKey).toBe(true);
       if (metric.badge !== undefined) expect(registry.has(metric.badge.textKey), metric.badge.textKey).toBe(true);

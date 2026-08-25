@@ -70,6 +70,16 @@ export const CLOCK_STATE_PUBLISH_INTERVAL_MS = 250;
  * publication when nothing it reports has changed, so a session in which
  * nothing happens posts nothing at all after the first readout.
  *
+ * **#29 narrows that, deliberately.** `stateIncomeAccruedTodayMinorUnits` is
+ * the first count here that is not a level -- it rises on every tick that any
+ * place is occupied -- so once the prison holds anybody the skip stops firing
+ * and the channel runs at its full two messages a second for the rest of the
+ * session. The ceiling still bounds it, which is the reason this is acceptable
+ * and the reason the cadence is expressed as one. It is not being paid yet:
+ * nothing in `src/` can admit a prisoner, so the accrual is a constant zero
+ * and the skip still applies. `docs/HUD_PROJECTIONS.md` records the trade
+ * beside the paging contract it bears on.
+ *
  * Wall-clock milliseconds rather than a count of ticks, for the same reason
  * the clock's interval is: it governs how often the *main thread* is told,
  * so it must be bounded in the units the main thread's frame budget is in.
@@ -339,9 +349,12 @@ export class SimulationWorkerStateMachine {
    *
    * Every payload carries the tick it was read at, so a readout can never be
    * mistaken for a statement about a later state, and no list crosses at all
-   * -- eleven integers of counts beside at most one refusal record, which is
+   * -- twelve integers of counts beside at most one refusal record, which is
    * why `docs/HUD_PROJECTIONS.md` contract 5 (paging) has nothing to bound
-   * here yet.
+   * here yet. It was eleven until #29's income line added
+   * `stateIncomeAccruedTodayMinorUnits`, and the number is checked against the
+   * projection's own schema rather than trusted
+   * (`tests/foundation/documentation-claims-contract.test.ts`).
    */
   private publishStatusCounts(nowMilliseconds: number): void {
     if (this._kernel === null || this._runtime === null) return;

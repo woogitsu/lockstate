@@ -124,11 +124,24 @@ per-prisoner object at all, so the always-visible strip is safe to
 re-project every frame at the stretch tier.
 
 The always-visible counts have no rows at all, which is what makes them
-publishable on a timer: `simulation/status-counts` (section 8) carries eleven
+publishable on a timer: `simulation/status-counts` (section 8) carries twelve
 integers and at most one three-field refusal record, so there is nothing here
 for this contract to bound. A projection that carries rows must be paged
 before it may be published on a cadence — a per-send cost that grows with the
 prison is exactly the failure that cadence was chosen to avoid.
+
+The twelfth is #29's "earned today" accrual, and it is the first count here
+that is not a *level*. Every other one moves only when a discrete event moves
+it, which is what lets `publishStatusCounts` skip a publication whose counts
+are unchanged — the reason `STATUS_COUNTS_PUBLISH_INTERVAL_MS` is documented as
+a ceiling rather than a rate. The accrual rises every tick that any place is
+occupied, so **once the prison holds anybody this channel goes from
+silent-when-idle to its full two messages a second for the rest of the
+session.** That is the price of the readout, it is bounded by the same 500 ms
+ceiling as everything else on the channel, and it is named here so it is paid
+deliberately rather than discovered. It is not being paid yet: with no
+occupied place the accrual is a constant zero and the skip still applies
+(gap 21).
 
 Rows are **not** sortable by an arbitrary column. Sorting 5,000 prisoners
 by need or by cell is `O(n log n)` plus a full materialisation each time the
@@ -482,23 +495,41 @@ decision about what to build next.
     skill *requirements* per role, but no staff entity carries a skill.
 21. **`wageBand` exists in content, and there is no payroll.** There is a
     treasury and a procurement system since #96/#89 — money buys materials —
-    but nothing pays anyone: no wage is ever debited, and the only thing that
-    credits the treasury is a cancelled purchase's refund
-    (`ProcurementSystem.cancel`), which is not an income line: nothing credits
-    it on a schedule. ADR 0017 decision 6 settles what the state pays *for*
-    (per prisoner-day, accrued per occupied place) and no system accrues it,
-    so the balance only ever goes down. Nothing wage-related may be rendered
-    as a live figure; it is still a content hook for a future issue.
+    and since #29 there is an income line, but nothing pays anyone: no wage is
+    ever debited. Nothing wage-related may be rendered as a live figure; it is
+    still a content hook for a future issue. So the schedule runs one way
+    only: money arrives and nothing recurring takes it away, which is also why
+    ADR 0017 decision 8's insolvency ladder is still unreachable.
 
-    **And that one credit is unreachable from a session** (#285): no command
-    in `simulationCommandSchema` cancels a purchase, so nothing in `src/`
-    calls `ProcurementSystem.cancel` and the balance a player can observe only
-    ever goes down. That is not a loss of money — a purchase buys stock, an
-    undone build order returns the stock it had allocated (#97), and the two
-    together conserve value exactly, which
-    `tests/integration/economy-money-conservation.test.ts` asserts in integer
-    minor units over the sequences a player can produce. What is missing is a
-    *surface*, and which surface is #285's open decision.
+    **The two things that credit the treasury, and which of them is an income
+    line.** `StateIncomeSystem` (`src/simulation/economy/income.ts`) is the
+    income line: ADR 0017 decision 3, on decision 6's basis — the state pays
+    per prisoner-day, accrued per occupied place — at 300 minor units a
+    prisoner-day, credited once per in-game day on its last tick. The other is
+    a cancelled purchase's refund (`ProcurementSystem.cancel`), which is not
+    an income line and never was.
+    `tests/foundation/documentation-claims-contract.test.ts` pins that this
+    paragraph names both.
+
+    **Neither is reachable from a session a player can drive**, for two
+    different reasons, and this is the honest state of the money loop:
+
+    - The refund has no *surface* (#285): no command in
+      `simulationCommandSchema` cancels a purchase, so nothing in `src/` calls
+      `ProcurementSystem.cancel`. Which surface is #285's open decision.
+    - The income line has no *population*. Nothing in `src/` calls
+      `admitPrisoner`, and `RoomZoningService` registers a zoned room with
+      `capacity: 0`, so there is no occupied place — and 300 × 0 is 0 for as
+      long as that holds. The mechanism is built and tested against prisoners
+      injected at the simulation level; wiring admission is a separate
+      workstream. Until it lands, both the balance and the "earned today"
+      readout beside it are flat.
+
+    So the balance a player can observe still only ever goes down. That is not
+    a loss of money — a purchase buys stock, an undone build order returns the
+    stock it had allocated (#97), and the two together conserve value exactly,
+    which `tests/integration/economy-money-conservation.test.ts` asserts in
+    integer minor units over the sequences a player can produce.
 22. **`'on-search'` conflates two duties.** A guard pulled onto a
     contraband search and a guard dispatched to an incident share one
     deployment phase, and neither `SearchSystem` nor

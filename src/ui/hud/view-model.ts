@@ -78,11 +78,14 @@ export interface HudClockViewModel {
  *
  * That line is exactly where the honest boundary falls. There **is** a
  * treasury: a balance a purchase spends from, carried in the save, published
- * by the same channel as every other count. There is **no** budget, forecast,
- * income or running cost, because nothing credits the treasury on a schedule.
- * ADR 0017 decision 6 now settles what the state pays for -- per prisoner-day,
- * accrued per occupied place -- and nothing implements it, which is the state
- * this line describes: the answer exists, the accrual does not.
+ * by the same channel as every other count -- and, since #29, what the state
+ * pays for running the place. ADR 0017 decision 6 settles the basis (per
+ * prisoner-day, accrued per occupied place) and `StateIncomeSystem` implements
+ * it, crediting the balance at the end of each in-game day, so the second
+ * figure below is a day's accrual against a real payment rather than a number
+ * with nothing behind it. There is still **no** budget, forecast, payroll or
+ * running cost: nothing debits the treasury on a schedule, and nothing
+ * projects anything forward.
  *
  * It is no longer the only money *the HUD* carries, and the difference is
  * #89's: `HudBuildMaterialViewModel` below carries a unit price, so the Build
@@ -111,6 +114,18 @@ export interface HudCountsViewModel {
    * is, which is what keeps a currency decision out of the view model.
    */
   readonly treasuryMinorUnits: number;
+  /**
+   * What the in-game day in progress has earned so far, in the same minor
+   * units (#29).
+   *
+   * The rising readout beside the balance. It is **published, never
+   * computed here**: the simulation derives it from the tick and the
+   * occupied-place count (`stateIncomeAccruedByTick`) and sends it on the
+   * status-counts channel, because a HUD that computed a simulation figure
+   * from a tick it happens to hold would be a second, drifting authority on
+   * what the prison has earned.
+   */
+  readonly stateIncomeAccruedTodayMinorUnits: number;
 }
 
 export type HudSeverity = 'info' | 'warning' | 'danger';
@@ -352,6 +367,7 @@ export const EMPTY_HUD_VIEW_MODEL: HudViewModel = {
     activeIncidents: 0,
     contrabandFound: 0,
     treasuryMinorUnits: 0,
+    stateIncomeAccruedTodayMinorUnits: 0,
   },
   clock: UNKNOWN_HUD_CLOCK,
   alerts: [],
