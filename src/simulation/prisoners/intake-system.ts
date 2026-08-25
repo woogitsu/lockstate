@@ -129,9 +129,12 @@ export class IntakeSystem implements SystemRegistration {
    * - An instance that exists but is full or lacks the capability is a
    *   *wait*: the stage is kept and retried, `accommodationBacklogTicks`
    *   counts it, and the arrival completes the moment a place frees up. That
-   *   is the state a zoned-but-empty cell produces today, because
-   *   `RoomZoningService` registers `capacity: 0`
-   *   (`docs/adr/0023-room-occupancy-authority.md`).
+   *   is still the state a zoned-but-*empty* cell produces, because a room with
+   *   no bed derives `residentCapacity: 0` and no `'sleep-surface'` -- and it is
+   *   now a state the player can leave: **placing a bed makes this find succeed
+   *   on the next scheduled intake tick, with no change to the stage machine at
+   *   all** (`docs/adr/0028-object-placement-and-derived-room-capacity.md`
+   *   decision 8).
    *
    * So this is the line between "the prison cannot take this person yet" and
    * "the prison can never take this person", and the command boundary refuses

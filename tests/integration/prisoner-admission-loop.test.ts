@@ -46,12 +46,17 @@ import { tileCoordinate } from '../../src/simulation/world/coordinates';
  * manufacturing one.
  *
  * The refusal is not the same thing as a *wait*. A zoned cell with no bed in
- * it has `capacity: 0`, so `findAvailable` returns nothing and the arrival
- * stays at `accommodation-assignment` and is retried for as long as it takes.
- * That state is honest scaffolding and is deliberately allowed; "waits rather
- * than failing" pins the difference, because collapsing the two would either
- * refuse every admission for ever or manufacture the broken record this change
- * exists to avoid.
+ * it derives `residentCapacity: 0`, so `findAvailableResidence` returns nothing
+ * and the arrival stays at `accommodation-assignment` and is retried for as
+ * long as it takes. "waits rather than failing" pins that difference, because
+ * collapsing the two would either refuse every admission for ever or
+ * manufacture the broken record this change exists to avoid.
+ *
+ * That wait used to be permanent scaffolding and is now an in-between state: ADR
+ * 0028 phase 1 lets the player place a bed, which makes the same find succeed on
+ * the next scheduled intake tick with no change to the stage machine.
+ * `tests/integration/object-placement-loop.test.ts` drives the far side of it;
+ * what this file still pins is the near side, which is unchanged.
  *
  * **Both sides of that line are reachable from the shipped application**, which
  * they were not when this was written: the Rooms tab (#312) gave `ZoneRoom` a
@@ -270,13 +275,15 @@ describe('admitting a prisoner through the real command path (#261 step 4)', () 
     expect(stageOf(runtime, index)).toBe('failed');
     expect(runtime.prisoners.intakeSystem.getMetrics()).toMatchObject({ completedCount: 0, failedCount: 1 });
 
-    // A cell arrives, with real capacity and a real bed capability -- more
-    // than zoning can currently give it -- and four hundred further ticks run.
+    // A cell arrives, registered by hand with a capacity and a bed capability
+    // rather than furnished through the real route, because the subject here is
+    // the *terminality* of `'failed'` and not the placement path. Four hundred
+    // further ticks run.
     runtime.prisoners.roomInstances.register({
       instanceId: 'room-cell-1',
       roomCatalogId: CELL,
       anchorTile: { x: tileCoordinate(10), y: tileCoordinate(10) },
-      capacity: 4,
+      residentCapacity: 4, concurrentUseCapacity: 4,
       objectCapabilities: ['sleep-surface'],
     });
     stepTo(runtime, 440);
@@ -293,11 +300,12 @@ describe('admitting a prisoner through the real command path (#261 step 4)', () 
   });
 
   it('waits rather than failing when the room exists but holds nobody, which is what a zoned cell is today', () => {
-    // The other side of the line the guard draws. `RoomZoningService`
-    // registers `capacity: 0` (ADR 0023), so `findAvailable` refuses the
-    // instance and the arrival stays where it is and is retried -- a state the
-    // simulation already counts. This must not be refused: it is the state
-    // that becomes a completed intake the day a room's occupancy has a source.
+    // The other side of the line the guard draws. A zoned cell contains
+    // nothing, so it derives `residentCapacity: 0` and
+    // `findAvailableResidence` refuses it: the arrival stays where it is and is
+    // retried, a state the simulation counts. This must not be refused -- it is
+    // the state that becomes a completed intake the moment a bed is placed in
+    // that cell, which is what ADR 0028 phase 1 made reachable.
     const runtime = createNewSimulationRuntime(SEED);
     zoneCell(runtime, 'cmd-zone');
     admit(runtime, 'cmd-admit');

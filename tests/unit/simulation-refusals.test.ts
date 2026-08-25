@@ -6,6 +6,7 @@ import {
   ADMIT_REFUSAL_REASONS,
   BUILD_REFUSAL_REASONS,
   HIRE_REFUSAL_REASONS,
+  PLACE_OBJECT_REFUSAL_REASONS,
   PURCHASE_REFUSAL_REASONS,
   RefusalLog,
   UNZONE_REFUSAL_REASONS,
@@ -97,12 +98,13 @@ describe('RefusalLog: the snapshot shape a cadence channel can carry', () => {
   });
 });
 
-describe('the wire vocabulary is exactly what the six domains can produce', () => {
-  it('maps every admission, build, hiring, purchase, zoning and removal refusal onto a declared reason', () => {
+describe('the wire vocabulary is exactly what the seven domains can produce', () => {
+  it('maps every admission, build, hiring, placement, purchase, zoning and removal refusal onto a declared reason', () => {
     const produced = [
       ...Object.values(ADMIT_REFUSAL_REASONS),
       ...Object.values(BUILD_REFUSAL_REASONS),
       ...Object.values(HIRE_REFUSAL_REASONS),
+      ...Object.values(PLACE_OBJECT_REFUSAL_REASONS),
       ...Object.values(PURCHASE_REFUSAL_REASONS),
       ...Object.values(ZONE_REFUSAL_REASONS),
       ...Object.values(UNZONE_REFUSAL_REASONS),
@@ -133,7 +135,7 @@ describe('the wire vocabulary is exactly what the six domains can produce', () =
     expect([...REFUSAL_REASONS]).toEqual([...REFUSAL_REASONS].sort());
   });
 
-  it('names the six commands it can answer, so the vocabularies cannot collide', () => {
+  it('names the seven commands it can answer, so the vocabularies cannot collide', () => {
     // `unzone` is its own namespace and not more members of `zone`'s, because
     // `invalid-area` is the same *condition* for both and a different
     // *sentence*: a player told "the room was not zoned" after asking to remove
@@ -143,9 +145,12 @@ describe('the wire vocabulary is exactly what the six domains can produce', () =
     // `admit` is its own for a weaker but sufficient reason -- it shares no
     // spelling with any of the others -- and keeping it namespaced is what
     // stops the next reason added to it from having to be checked against five
-    // other vocabularies first.
+    // other vocabularies first. `place-object` is the seventh (ADR 0028 phase
+    // 1) and shares three spellings -- `out-of-bounds`, `unowned-land` and
+    // `duplicate-order` -- with the build and purchase namespaces, which makes
+    // it the strongest case of the three for keeping them apart.
     const prefixes = new Set(REFUSAL_REASONS.map((reason) => reason.split('.')[0]));
-    expect([...prefixes].sort()).toEqual(['admit', 'build', 'hire', 'purchase', 'unzone', 'zone']);
+    expect([...prefixes].sort()).toEqual(['admit', 'build', 'hire', 'place-object', 'purchase', 'unzone', 'zone']);
   });
 
   it('keeps the one spelling zoning and removal share as two different wire ids', () => {

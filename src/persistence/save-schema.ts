@@ -16,15 +16,21 @@ import { MigrationChain, type MigrationError, type MigrationErrorCode } from './
 import { zodVersionSchema } from './zod-version-schema';
 import { computeSaveChecksum } from './checksum';
 import type { EncodedEntityStoreSnapshot } from './entity-codec';
-import { migrateSaveEnvelopeV1ToV2, migrateSaveEnvelopeV2ToV3, migrateSaveEnvelopeV3ToV4 } from './save-migrations';
+import {
+  migrateSaveEnvelopeV1ToV2,
+  migrateSaveEnvelopeV2ToV3,
+  migrateSaveEnvelopeV3ToV4,
+  migrateSaveEnvelopeV4ToV5,
+} from './save-migrations';
 import type { KernelSnapshot } from '../simulation/kernel/kernel';
 import type { WorldSnapshotV1 } from '../simulation/world/sparse-world';
 import type { ConstructionSnapshot } from '../simulation/construction/system';
 import type { EncodedSessionSystems } from '../simulation/runtime/session-systems';
+import { MAX_ZONE_DIMENSION_TILES } from '../simulation/rooms/zoning';
 import { ACTOR_IDENTITY_SNAPSHOT_VERSION, ACTOR_KINDS, type ActorIdentitySnapshot } from '../simulation/identity/actor-identity';
 
 /** The version every newly written save carries. Older versions are still readable via `saveMigrationChain`. */
-export const SAVE_SCHEMA_VERSION = 4 as const;
+export const SAVE_SCHEMA_VERSION = 5 as const;
 
 // --- Kernel / RNG ---
 
@@ -367,7 +373,19 @@ const prisonerComponentsSchemaFor = (needLevelMax: number) =>
     for (const [needId, levels] of Object.entries(value.needs)) check(`needs.${needId}`, levels);
   });
 
-const roomInstanceSchema = z
+/**
+ * Frozen V1-V4 room-instance shape: an anchor tile, an authored capacity and an
+ * authored capability list, with no rectangle.
+ *
+ * Never edited. Every V4 save on disk carries exactly this, and -- because
+ * `RoomZoningService` was the only thing in `src/` that ever registered an
+ * instance and it registered `capacity: 0` with `objectCapabilities: []`
+ * unconditionally -- every one of those rows holds `0` and `[]`. That is the
+ * fact `migrateSaveEnvelopeV4ToV5` rests on, and it is re-verified rather than
+ * remembered: `tests/migrations/save-v4-to-v5.test.ts` reads it off a real
+ * captured session.
+ */
+const roomInstanceSchemaV4 = z
   .object({
     instanceId: z.string().min(1),
     roomCatalogId: z.string().min(1),
@@ -377,7 +395,101 @@ const roomInstanceSchema = z
   })
   .strict();
 
-const prisonersSectionSchemaFor = (needLevelMax: number) =>
+/**
+ * V5's room-instance shape: identity, anchor and the **rectangle**, with both
+ * derived fields gone.
+ *
+ * `capacity` and `objectCapabilities` are not here, and that removal is what
+ * forces V5 ([ADR 0028](../../docs/adr/0028-object-placement-and-derived-room-capacity.md)
+ * decision 6). Both are now pure functions of (placed objects, room bounds, the
+ * object and room catalogues), and a persisted derived value can disagree with
+ * the state that produced it -- so they are recomputed at restore, which makes
+ * `snapshot() -> restore() -> run N ticks` land on the same state by
+ * construction rather than by agreement. `capacity` was a *required* field
+ * here, so removing it changes the shape, which is the condition
+ * `docs/PERSISTENCE.md` names for a version bump.
+ *
+ * `width`/`height` are **optional**, and that is a decision rather than
+ * caution: a V4 row genuinely does not record the rectangle and there is no
+ * honest default -- `1x1` asserts a room the player did not zone, `64x64`
+ * asserts one that overlaps its neighbours. An instance with no rectangle
+ * contains no objects and therefore resolves to zero capacity, which is
+ * precisely the pre-object-placement behaviour and so not a regression.
+ *
+ * Bounded at `MAX_ZONE_DIMENSION_TILES` on both sides, which is the bound
+ * `RoomZoningService.zone` refuses `invalid-area` above, so a hand-edited save
+ * cannot describe a room the command could not have created.
+ */
+const roomInstanceSchemaV5 = z
+  .object({
+    instanceId: z.string().min(1),
+    roomCatalogId: z.string().min(1),
+    anchorTile: tilePositionSchema,
+    width: z.number().int().min(1).max(MAX_ZONE_DIMENSION_TILES).optional(),
+    height: z.number().int().min(1).max(MAX_ZONE_DIMENSION_TILES).optional(),
+  })
+  .strict();
+
+/**
+ * One placed object (ADR 0028 decision 1): four fields, and no capacity or
+ * capability of its own.
+ *
+ * Those come from `src/content/object-catalog.ts` at read time, by `objectId`,
+ * exactly as a room instance's definition comes from the room catalogue. A row
+ * that carried its own footprint or capabilities could disagree with the
+ * content the build ships.
+ *
+ * `placedObjectId` is carried even though it is derivable from `anchorTile`
+ * (`placedObjectIdFor`), for the reason a room instance id is: it is a
+ * reproducible-from-state value that other state may reference by name, and a
+ * save that omitted it would make the restore path the authority on an
+ * identifier rather than the record. `PlacedObjectRegistry.loadSnapshot`
+ * re-derives it anyway, so the two can never disagree.
+ *
+ * `orientation` is bounded at `0..3` and nothing in the application writes
+ * anything but `0` yet -- see `ObjectOrientation` for why the field is declared
+ * before its producer exists. Carrying the full range now is what makes adding
+ * the rotate control a change to the producer alone.
+ */
+const placedObjectSchema = z
+  .object({
+    placedObjectId: z.string().min(1),
+    objectId: z.string().min(1),
+    anchorTile: tilePositionSchema,
+    orientation: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]),
+  })
+  .strict();
+
+/**
+ * V5's optional objects section.
+ *
+ * Optional, and absence means "no object has been placed" -- which is what
+ * every V4 build meant, because no V4 build could place one. So the V4 -> V5
+ * migration adds no objects section and invents nothing, the same reasoning
+ * `migrateSaveEnvelopeV2ToV3` gives for its two optional sections. The key
+ * still has to be *declared*, because every object in this schema is
+ * `.strict()`.
+ *
+ * It sits inside `simulation` beside `economy` rather than at the top of the
+ * payload beside `identity`, which is a narrower reading of ADR 0028 decision
+ * 6's "a new optional payload section" than that sentence suggests, and is
+ * chosen for two reasons. `economy` is the precedent -- an optional subsystem
+ * section added inside `simulation` with no version bump of its own -- and the
+ * restore *ordering* constraint decision 6 names (objects and room bounds in
+ * place before the first `findAvailable*`) is satisfied for free there:
+ * `restoreSessionSystems` registers room instances and places objects in its
+ * step 2, before any prisoner state arrives in step 3.
+ */
+const objectsSectionSchema = z
+  .object({
+    placedObjects: z.array(placedObjectSchema),
+  })
+  .strict();
+
+const prisonersSectionSchemaFor = <RoomInstance extends z.ZodTypeAny>(
+  needLevelMax: number,
+  roomInstance: RoomInstance,
+) =>
   z.object({
     components: prisonerComponentsSchemaFor(needLevelMax),
     coldState: z
@@ -386,7 +498,7 @@ const prisonersSectionSchemaFor = (needLevelMax: number) =>
         currentActionTargetInstanceId: z.array(z.tuple([entityIdSchema, z.string().min(1)])),
       })
       .strict(),
-    roomInstanceDefinitions: z.array(roomInstanceSchema),
+    roomInstanceDefinitions: z.array(roomInstance),
     roomInstanceOccupancy: z.array(z.tuple([z.string().min(1), z.array(entityIdSchema)])),
   })
   .strict();
@@ -781,22 +893,40 @@ const economySectionSchema = z
   })
   .strict();
 
-const sessionSystemsSchemaFor = (needLevelMax: number) =>
-  z.object({
-    prisoners: prisonersSectionSchemaFor(needLevelMax),
+/**
+ * The shared shape of the `simulation` section, parameterised by the two things
+ * that differ between versions: the need-level bound (V3 vs V4) and the
+ * room-instance row (V4 vs V5).
+ *
+ * A factory over both axes rather than three copies of several hundred lines,
+ * which is what `docs/PERSISTENCE.md`'s "Adding a V5 later" step 1 asks for:
+ * the historical version is frozen by the arguments it is instantiated with,
+ * and the shapes cannot drift apart in any other respect. Generic in the
+ * room-instance schema rather than taking a `z.ZodTypeAny`, so the inferred
+ * payload type keeps the row's real shape instead of widening to `any`.
+ */
+const sessionSystemsShapeFor = <RoomInstance extends z.ZodTypeAny>(
+  needLevelMax: number,
+  roomInstance: RoomInstance,
+) =>
+  ({
+    prisoners: prisonersSectionSchemaFor(needLevelMax, roomInstance),
     operations: operationsSectionSchema,
     navigation: navigationSectionSchema,
     security: securitySectionSchema,
     contraband: contrabandSectionSchema,
     incidents: incidentsSectionSchema,
     economy: economySectionSchema.optional(),
-  })
-  .strict();
+  }) as const;
 
 /** Frozen historical shape: whole-level needs, as every V3 save on disk carries them. */
-const sessionSystemsV3Schema = sessionSystemsSchemaFor(NEED_LEVEL_MAX_V3);
-/** Current shape: scaled needs (#259). Identical to V3 in every other respect. */
-const sessionSystemsV4Schema = sessionSystemsSchemaFor(NEED_LEVEL_MAX_V4);
+const sessionSystemsV3Schema = z.object(sessionSystemsShapeFor(NEED_LEVEL_MAX_V3, roomInstanceSchemaV4)).strict();
+/** Frozen historical shape: scaled needs (#259), authored room capacity, no objects section. */
+const sessionSystemsV4Schema = z.object(sessionSystemsShapeFor(NEED_LEVEL_MAX_V4, roomInstanceSchemaV4)).strict();
+/** Current shape: room instances carry their rectangle and no derived fields, and placed objects have a section (ADR 0028). */
+const sessionSystemsV5Schema = z
+  .object({ ...sessionSystemsShapeFor(NEED_LEVEL_MAX_V4, roomInstanceSchemaV5), objects: objectsSectionSchema.optional() })
+  .strict();
 
 // --- Envelope ---
 
@@ -869,15 +999,54 @@ const savePayloadV4Schema = z
   })
   .strict();
 
+/**
+ * V5 (ADR 0028 phase 1): a room instance carries its **rectangle** and stops
+ * carrying its capacity, and placed objects get a section.
+ *
+ * Three changes and only one of them would have needed a bump on its own:
+ *
+ * - **The objects section is the optional-field pattern exactly.** Absence
+ *   means "no object has been placed", which is what every V4 build meant, so
+ *   no migration step is needed and none is added.
+ * - **`width`/`height` fail the "absence is unambiguous" condition.** A V4 room
+ *   instance genuinely does not record its rectangle and there is no honest
+ *   default, so the field is optional *at V5* and absence keeps its own
+ *   meaning: this room's rectangle was not recorded, so nothing can be
+ *   attributed to it.
+ * - **The removal of `capacity` crosses the line V4 itself crossed.** It was a
+ *   *required* field, so dropping it changes the shape.
+ *
+ * The migration is total and lossless because of a fact rather than an
+ * argument: `RoomZoningService` is the only thing in `src/` that has ever
+ * registered an instance, and it registered `capacity: 0` and
+ * `objectCapabilities: []` unconditionally -- so `migrateSaveEnvelopeV4ToV5`
+ * drops both fields knowing exactly what they were, and the recomputed values
+ * equal the dropped ones.
+ *
+ * Everything outside `simulation` is byte-identical to V4.
+ */
+const savePayloadV5Schema = z
+  .object({
+    kernel: kernelSnapshotSchema,
+    world: worldSnapshotSchema,
+    construction: constructionSnapshotSchema,
+    entities: entityStoreSnapshotV2Schema.optional(),
+    simulation: sessionSystemsV5Schema.optional(),
+    identity: actorIdentitySnapshotSchema.optional(),
+  })
+  .strict();
+
 /** Historical V1 payload shape, retained so V1 saves can still be validated and migrated. */
 export type SavePayloadV1 = DeepReadonly<z.infer<typeof savePayloadV1Schema>>;
 /** Historical V2 payload shape. Only the migration chain and `migrateSaveEnvelopeV2ToV3` should name this. */
 export type SavePayloadV2 = DeepReadonly<z.infer<typeof savePayloadV2Schema>>;
 /** Historical V3 payload shape. Only the migration chain and `migrateSaveEnvelopeV3ToV4` should name this. */
 export type SavePayloadV3 = DeepReadonly<z.infer<typeof savePayloadV3Schema>>;
+/** Historical V4 payload shape. Only the migration chain and `migrateSaveEnvelopeV4ToV5` should name this. */
 export type SavePayloadV4 = DeepReadonly<z.infer<typeof savePayloadV4Schema>>;
+export type SavePayloadV5 = DeepReadonly<z.infer<typeof savePayloadV5Schema>>;
 /** The payload shape newly written saves use. Prefer this over the versioned alias at call sites that just mean "a save payload". */
-export type SavePayload = SavePayloadV4;
+export type SavePayload = SavePayloadV5;
 
 /**
  * The envelope's own fields, without `payload`. Kept separate so the two
@@ -931,13 +1100,19 @@ const saveEnvelopeV3ObjectSchema = z
 const saveEnvelopeV3Schema = withOrderedTimestamps(saveEnvelopeV3ObjectSchema);
 
 const saveEnvelopeV4ObjectSchema = z
-  .object({ ...saveEnvelopeMetadataShape(SAVE_SCHEMA_VERSION), payload: savePayloadV4Schema })
+  .object({ ...saveEnvelopeMetadataShape(4), payload: savePayloadV4Schema })
   .strict();
 
 const saveEnvelopeV4Schema = withOrderedTimestamps(saveEnvelopeV4ObjectSchema);
 
-/** Validates only the envelope's own fields; `payload` is validated separately by `savePayloadV4Schema`. */
-const saveEnvelopeMetadataV4Schema = withOrderedTimestamps(
+const saveEnvelopeV5ObjectSchema = z
+  .object({ ...saveEnvelopeMetadataShape(SAVE_SCHEMA_VERSION), payload: savePayloadV5Schema })
+  .strict();
+
+const saveEnvelopeV5Schema = withOrderedTimestamps(saveEnvelopeV5ObjectSchema);
+
+/** Validates only the envelope's own fields; `payload` is validated separately by `savePayloadV5Schema`. */
+const saveEnvelopeMetadataV5Schema = withOrderedTimestamps(
   z.object(saveEnvelopeMetadataShape(SAVE_SCHEMA_VERSION)).strict(),
 );
 
@@ -947,13 +1122,15 @@ export type SaveEnvelopeV1 = DeepReadonly<z.infer<typeof saveEnvelopeV1ObjectSch
 export type SaveEnvelopeV2 = DeepReadonly<z.infer<typeof saveEnvelopeV2ObjectSchema>>;
 /** Historical V3 envelope shape. Only the migration chain and the two migrations that touch it should name this. */
 export type SaveEnvelopeV3 = DeepReadonly<z.infer<typeof saveEnvelopeV3ObjectSchema>>;
+/** Historical V4 envelope shape. Only the migration chain and `migrateSaveEnvelopeV4ToV5` should name this. */
 export type SaveEnvelopeV4 = DeepReadonly<z.infer<typeof saveEnvelopeV4ObjectSchema>>;
+export type SaveEnvelopeV5 = DeepReadonly<z.infer<typeof saveEnvelopeV5ObjectSchema>>;
 /**
  * The envelope shape newly written saves use. Call sites that simply mean "a
  * save envelope" use this alias, so the next version bump does not sweep a
  * rename through the repository the way bumping to V2 did.
  */
-export type SaveEnvelope = SaveEnvelopeV4;
+export type SaveEnvelope = SaveEnvelopeV5;
 
 // --- Migration chain ---
 // Every historical version registers its schema once and is never edited;
@@ -965,7 +1142,8 @@ export const saveMigrationChain = new MigrationChain(SAVE_SCHEMA_VERSION);
 saveMigrationChain.registerSchema(zodVersionSchema(1, saveEnvelopeV1Schema));
 saveMigrationChain.registerSchema(zodVersionSchema(2, saveEnvelopeV2Schema));
 saveMigrationChain.registerSchema(zodVersionSchema(3, saveEnvelopeV3Schema));
-saveMigrationChain.registerSchema(zodVersionSchema(SAVE_SCHEMA_VERSION, saveEnvelopeV4Schema));
+saveMigrationChain.registerSchema(zodVersionSchema(4, saveEnvelopeV4Schema));
+saveMigrationChain.registerSchema(zodVersionSchema(SAVE_SCHEMA_VERSION, saveEnvelopeV5Schema));
 saveMigrationChain.registerMigration({
   fromVersion: 1,
   toVersion: 2,
@@ -980,6 +1158,11 @@ saveMigrationChain.registerMigration({
   fromVersion: 3,
   toVersion: 4,
   migrate: (input) => migrateSaveEnvelopeV3ToV4(input as SaveEnvelopeV3),
+});
+saveMigrationChain.registerMigration({
+  fromVersion: 4,
+  toVersion: 5,
+  migrate: (input) => migrateSaveEnvelopeV4ToV5(input as SaveEnvelopeV4),
 });
 
 export type SaveDecodeErrorCode = MigrationErrorCode | 'checksum-mismatch';
@@ -1181,7 +1364,7 @@ export interface CreateSaveEnvelopeInput {
  * live runtime snapshots.
  *
  * The payload is validated **exactly once** here. The envelope's own fields
- * are validated separately by `saveEnvelopeMetadataV4Schema`, which does not
+ * are validated separately by `saveEnvelopeMetadataV5Schema`, which does not
  * re-walk the payload it was just handed; the composed result is then marked
  * trusted so `PrisonSaveRepository.save` does not walk it a third time (#49).
  *
@@ -1189,7 +1372,7 @@ export interface CreateSaveEnvelopeInput {
  * before — validity is still proven, just not proven repeatedly.
  */
 export function createSaveEnvelope(input: CreateSaveEnvelopeInput): TrustedSaveEnvelope {
-  const payload = savePayloadV4Schema.parse({
+  const payload = savePayloadV5Schema.parse({
     kernel: input.kernel,
     world: input.world,
     construction: input.construction,
@@ -1198,7 +1381,7 @@ export function createSaveEnvelope(input: CreateSaveEnvelopeInput): TrustedSaveE
     ...(input.identity === undefined ? {} : { identity: input.identity }),
   });
 
-  const metadata = saveEnvelopeMetadataV4Schema.parse({
+  const metadata = saveEnvelopeMetadataV5Schema.parse({
     saveSchemaVersion: SAVE_SCHEMA_VERSION,
     gameVersion: input.gameVersion,
     prisonId: input.prisonId,

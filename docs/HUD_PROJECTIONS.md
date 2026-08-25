@@ -483,10 +483,20 @@ decision about what to build next.
     onto the destination anchor tile when a route resolves and never in
     between, so a travelling prisoner's projected tile is stale and a map
     dot will jump rather than walk.
-11. **Room membership is not derivable from position.** A `RoomInstance`
-    carries an anchor tile, not bounds or a tile set. The detail projection
-    reports the room a prisoner is *performing an action in*; "which room
-    is this prisoner standing in" is unanswerable.
+11. **Room membership is not derivable from position** *— narrowed by ADR
+    0028 phase 1, not closed.* A `RoomInstance` now carries `width` and
+    `height`, so "is this tile inside this room" *is* answerable, and
+    `roomInstanceContaining` (`src/simulation/objects/room-capacity.ts`)
+    answers it by narrowing the tile to a room type through the zoning plane
+    and then testing the rectangle. That is what gives object placement a
+    containment rule.
+
+    What is still unanswered is the *projection* question: nothing projects
+    the room a prisoner is standing in. The detail projection still reports
+    the room a prisoner is *performing an action in*, which is a different
+    fact — a prisoner walking to the canteen is in neither room by that
+    reading — and joining the two would mean projecting a position against
+    every rectangle on a cadence.
 12. **No release date in player units.** `sentenceEndTick` exists but only
     after classification, and there is no served/remaining breakdown.
 12a. **Nothing projects why an admission failed, or how long one has been
@@ -509,21 +519,32 @@ decision about what to build next.
 
 ### Rooms
 
-13. **Object placement does not exist.** No system tracks which objects are
-    physically in which room; `RoomInstance.objectCapabilities` is declared
-    at registration. So an `object` requirement can only be checked as
-    "instance declares the required object's capabilities", never against
-    `minQuantity`, and `enclosed` / `outdoors` / `minimum-size` are
-    projected as `'not-evaluated'`.
+13. **Object placement exists, and `minQuantity` is still unchecked** *—
+    the first half of this gap is closed and the second is not.*
 
-    Since #261 this is visible on the strip rather than only in a test.
-    `RoomZoningService` is the first thing in `src/` that registers an
-    instance, and it registers a *zoned* room -- an empty rectangle -- so it
-    declares capacity `0` and no capabilities at all. `Rooms` therefore
-    counts the room while `roomCapacity` stays `0`, and every `object`
-    requirement on it reads `'missing-capability'`. Both are the room's true
-    state, not a projection defect: nothing has been placed in it, and
-    nothing can be until object placement exists.
+    It read "object placement does not exist. No system tracks which objects
+    are physically in which room; `RoomInstance.objectCapabilities` is
+    declared at registration." Both sentences are now false.
+    `PlacedObjectRegistry` holds one row per object with a tile index over
+    every footprint tile, `RoomCapacityResolver` turns the objects inside a
+    room's rectangle into its two capacities and its capability list, and
+    nothing declares any of the three at registration — ADR 0028 phase 1.
+
+    So `roomCapacity` on the strip moves for the first time: a zoned cell
+    with a bed in it reads `1`, and a zoned cell with nothing in it still
+    reads `0`, which is the same true state it always was. What a player sees
+    is in that ADR's phase 1 section.
+
+    **`minQuantity` is still uncheckable, and the reason has changed.**
+    Objects are individuated, so counting the beds in a cell is possible for
+    the first time; what is missing is that `room-projection.ts` is not handed
+    the placed objects, only the instance's derived capability list. Wiring
+    that is phase 4's, which is when a second object type makes a *quantity*
+    mean something. Until then an `object` requirement still reads
+    `'satisfied-by-capability'` or `'missing-capability'` and never a count —
+    so a cell with a bed and no toilet reads `'missing-capability'` on the
+    toilet, which is exactly why ADR 0028 names phase 2 as the milestone
+    rather than phase 1.
 
     **Two of the three area requirements this gap listed as
     `'not-evaluated'` are now evaluated**, and by the zoning service rather
@@ -542,7 +563,9 @@ decision about what to build next.
       `edgeNumericIdFor` writes `0` for `door-wooden`, so no sealed room can
       currently have a way in. Gap 14 below is the wider question.
 
-    `object` requirements are unchanged and still gated on placement.
+    `object` requirements are gated on the *derived* capability list since
+    ADR 0028 phase 1 rather than on a declared one, which changes where the
+    answer comes from and not what it can say.
 14. **Nothing validates room geometry at all** *— narrowed, not closed.*
     There is no real room-geometry *validation system* to project. Until
     #123 item 2 there was a *mocked* one — `RoomSystem.validateRoom` reported
@@ -557,8 +580,12 @@ decision about what to build next.
     rectangle is zoned** (gap 13 above), against the rectangle the player
     drew, not against a registered instance. So `requirementStatus` still
     answers `'not-evaluated'` for a room that already exists, and asking "is
-    *this* room still big enough / still enclosed" has no answer, because a
-    `RoomInstance` carries an anchor tile rather than bounds (gap 11).
+    *this* room still big enough / still enclosed" has no answer. The
+    *geometry* is no longer the obstacle — a `RoomInstance` carries its
+    rectangle since ADR 0028 phase 1 (gap 11) — so re-checking the authored
+    minimum against a registered instance is now cheap rather than blocked;
+    what is missing is a decision about what a room that has become too small
+    should do, which that ADR leaves open.
 
     The wider enclosure question is unanswered and its two obstacles are
     worth naming: `TopologyManager` does region *detection* and exposes no

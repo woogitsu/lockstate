@@ -24,29 +24,37 @@ import type { Treasury } from './treasury';
  * in `docs/adr/` for one integer would put a balance figure into the
  * architecture record that ADR 0017 deliberately kept out of it.
  *
- * ## What is *not* built, and why the income line is still invisible
+ * ## It pays, and this is the measurement that used to say it could not
  *
- * Admission *is* built: `AdmitPrisoner`, its handler branch and the Intake
- * panel reach `PrisonerOperationsRuntime.requestAdmission` (#261 step 4), so a
- * player can put a prisoner in the prison. What is still missing is a *place*
- * -- a room a player can actually zone is registered with `capacity: 0`
- * (`src/simulation/rooms/zoning.ts`, ADR 0023 open, ADR 0028 proposed), and an
- * occupied place is one unit of a declared capacity that somebody holds.
- * `RoomInstanceRegistry.assign` refuses at `occupants >= capacity`, which for
- * `capacity: 0` is every assignment, so the arrival waits at
- * `accommodation-assignment` and occupies nothing.
+ * This section read: "What is still missing is a *place* -- a room a player can
+ * actually zone is registered with `capacity: 0`... So in a real session today
+ * `occupiedPlaces` is `0`, this system credits nothing, and the readout beside
+ * the balance stays at zero", measured as a balance still at 25,000 after 2,500
+ * ticks with `roomCapacity` and `roomOccupants` both 0. It named ADR 0028 as
+ * whose subject giving a room a capacity was.
  *
- * So in a real session today `occupiedPlaces` is `0`, this system credits
- * nothing, and the readout beside the balance stays at zero. Measured rather
- * than asserted: a zoned `room.cell`, one admitted prisoner and 2,500 ticks --
- * past a whole 2,400-tick day boundary -- leave the balance at 25,000 and the
- * accrual at 0, with `roomCapacity` and `roomOccupants` both 0. That is the
- * honest state of it: the mechanism is real, tested against prisoners injected
- * at the simulation level, and joined to a population an interface can now
- * create into rooms that hold nobody. Giving a room a capacity is not this
- * change's -- it is ADR 0028's subject -- and faking an occupancy to make the
- * readout move would be inventing the very capacity this comment says does not
- * exist.
+ * That ADR's phase 1 has landed and the figures are re-measured on the same
+ * shape of session -- one zoned `room.cell`, one admitted prisoner -- with one
+ * command added, the `PlaceObject` that puts a bed in the cell:
+ *
+ * | tick | balance | accrued today | roomCapacity | roomOccupants |
+ * | --- | --- | --- | --- | --- |
+ * | 0 (fresh session) | 25,000 | 0 | 0 | 0 |
+ * | 1 (one plank bought) | 24,935 | 0 | 0 | 0 |
+ * | 150 (bed built) | 24,935 | 0 | **1** | 0 |
+ * | 200 (prisoner housed) | 24,935 | 25 | 1 | **1** |
+ * | 2,399 (day about to end) | 24,935 | 300 | 1 | 1 |
+ * | **2,400 (day paid)** | **25,235** | 0 | 1 | 1 |
+ * | 4,800 (second day paid) | 25,535 | 0 | 1 | 1 |
+ *
+ * So the balance moves **upward** for the first time from something other than
+ * a refund: 300 minor units a day, per occupied place, exactly as decision 6
+ * specifies. `tests/integration/object-placement-loop.test.ts` drives that
+ * whole path through the real kernel and the real command router.
+ *
+ * The mechanism here is unchanged by any of it -- this system holds no state,
+ * reads `RoomInstanceRegistry.totalOccupancy` and knew nothing about why the
+ * number was zero. What changed is the number.
  */
 
 /**
@@ -99,9 +107,12 @@ export const STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS = 300;
  * *per prisoner in existence*:** an occupied place is one unit of a registered
  * room instance's declared capacity that a prisoner currently holds -- an
  * occupancy slot in `RoomInstanceRegistry`. `RoomInstanceRegistry.assign`
- * refuses past `capacity`, so the count can never exceed the capacity the
- * prison has actually built, and it counts neither of the two things the ADR
- * rules out:
+ * refuses past `residentCapacity` -- the summed footprint width of the sleep
+ * surfaces standing in the room since ADR 0028 phase 1 -- so the count can
+ * never exceed the capacity the prison has actually *furnished*, which is a
+ * stronger statement than it used to be: before object placement the ceiling
+ * was a field somebody could have authored, and it is now a fact about what is
+ * in the room. It counts neither of the two things the ADR rules out:
  *
  * - **not empty capacity** -- an unoccupied cell contributes nothing, which is
  *   what makes "per occupied place" different from "per place";

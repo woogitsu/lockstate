@@ -174,6 +174,49 @@ export interface HudWorldRoomSource {
   attachReadout(readout: (area: HudRoomArea | undefined) => void): void;
 }
 
+/**
+ * A finished object placement on the world, as the HUD is willing to know it.
+ *
+ * One buildable id and one tile. Not a rectangle, because the gesture is one
+ * press on one tile (ADR 0028 decision 5) and the footprint the preview drew is
+ * content the HUD does not hold -- the *anchor* is the whole of what the
+ * simulation needs, and it derives the footprint from the object catalogue.
+ *
+ * No orientation, because nothing can produce one: the rotate control that
+ * decision 5 describes needs an input action phase 1 does not ship, and a field
+ * the interface always sets to the same value would be a field with no reader.
+ */
+export interface HudObjectPlacement {
+  readonly definitionId: string;
+  readonly x: number;
+  readonly y: number;
+}
+
+/**
+ * The world's object gesture, as the HUD is willing to know it (ADR 0028).
+ *
+ * The same shape as `HudWorldBuildSource` and `HudWorldRoomSource`, and for the
+ * same two reasons: the host builds the tool before the HUD exists, so the
+ * connection is made in this direction rather than by handing a callback out;
+ * and the gesture arrives as a *report*, never as a command, so the HUD
+ * dispatches its own intent and a refused placement reaches the refusal line by
+ * exactly the machinery a refused build order does.
+ *
+ * A **third source** rather than a widened one, because the three carry
+ * different shapes -- edges, a rectangle, a tile -- and because a host may have
+ * one and not the others.
+ *
+ * Unlike the room source there is no confirm step: a placement is committed on
+ * release, as a build order is, because it *is* a build order and can be taken
+ * back by `Undo` the moment it is regretted. The Rooms panel needs a confirm
+ * because an accepted designation could not be reversed at all until
+ * `UnzoneRoom` existed.
+ */
+export interface HudWorldObjectSource {
+  /** Points the finished-gesture report at the HUD. Called once, at mount. */
+  attachPlacements(place: (placement: HudObjectPlacement) => void): void;
+}
+
 /** Which way along the edit history the player asked to move. */
 export type HudHistoryDirection = 'undo' | 'redo';
 
@@ -217,6 +260,25 @@ export type HudIntent =
    * paint a refusal line about a wall the player drew once.
    */
   | ({ readonly kind: 'place-build-order' } & HudBuildOrder)
+  /**
+   * Put one object on one tile (ADR 0028 phase 1).
+   *
+   * A separate intent from `place-build-order` even though both end in a
+   * construction order, because the two carry different shapes and are refused
+   * for different reasons: a wall order names an edge and is checked against one
+   * tile, and a placement names a tile and is checked against a footprint, the
+   * objects already standing, the orders still in flight and the room the tile
+   * is in. Folding them together would make `edges` optional and every reader
+   * would have to establish which kind it was holding.
+   *
+   * Two producers reach it, exactly as two reach `place-build-order`: the world
+   * gesture (`worldObjects`) and the Build panel's numeric fields, which is what
+   * gives object placement a keyboard route on the day it ships rather than
+   * later -- `AGENTS.md` boundary 10 is not satisfied by "it works with a
+   * mouse", and ADR 0022's amendment records the Rooms panel shipping without
+   * one as an open question.
+   */
+  | ({ readonly kind: 'place-object' } & HudObjectPlacement)
   /**
    * The player asked to buy materials (#89). Ids and numbers only -- the host
    * turns this into a `PurchaseMaterials` command and mints the order id it
@@ -461,6 +523,22 @@ export interface MountHudOptions {
    * whose `Worker` never started.
    */
   readonly worldRooms?: HudWorldRoomSource;
+  /**
+   * The world's object gesture, routed into the HUD's own intent path (ADR
+   * 0028).
+   *
+   * Supplied, the HUD attaches to it once at mount and turns each finished
+   * press into a `place-object` intent of its own -- so a refused placement
+   * reaches the refusal line by exactly the path a refused *Place order* press
+   * does. Unlike `worldRooms` there is no pending state to hold: a placement is
+   * committed on release, because it writes a construction order that `Undo`
+   * can take back.
+   *
+   * Omitted, nothing at all happens and the HUD never hears about the world
+   * pointer -- the state of every harness in `tests/browser/` and of a page
+   * whose `Worker` never started.
+   */
+  readonly worldObjects?: HudWorldObjectSource;
   /**
    * Receives every player action, and may be async.
    *
@@ -823,6 +901,29 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     localizer,
     model: options.build ?? { buildables: [], origin: { x: 0, y: 0 } },
     onPlace: (intent) => {
+      /*
+       * Two commands from one control, chosen by what the selected row *is*
+       * rather than by a second button (ADR 0028 phase 1).
+       *
+       * A row that places an object cannot be ordered as a wall: a
+       * `PlaceBuildOrder` for `bed-wooden` would reach `ConstructionSystem`
+       * with no footprint check, no room check and no claim on the tile, spend
+       * the plank and finish having placed nothing -- which is exactly the
+       * defect `door-wooden` already is. So the panel's numeric fields dispatch
+       * `place-object` for such a row, which is also what gives object
+       * placement a keyboard and numeric route from the day it ships.
+       *
+       * `placesObject` is a shape fact on the view model, like `occupiesEdge`
+       * beside it, and not a judgement this function makes: the composition root
+       * knows which buildables name an object and the HUD is handed the answer.
+       */
+      if (intent.placesObject) {
+        dispatchCommand(
+          { kind: 'place-object', definitionId: intent.definitionId, x: intent.x, y: intent.y },
+          buildPanel.submitControl,
+        );
+        return;
+      }
       // A run of one. The numeric route names exactly one edge, and it says
       // so in the same shape a drag does so that the host has one case to
       // handle and the gate has one action id to key on.
@@ -980,6 +1081,22 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    */
   options.worldBuild?.attachOrders((order) => {
     dispatchCommand({ kind: 'place-build-order', ...order });
+  });
+
+  /**
+   * The object gesture, joined to the same gate (ADR 0028 phase 1).
+   *
+   * No control is passed, for the reason the build gesture passes none: the
+   * player pressed the world, not a button, so there is nothing on screen for a
+   * refusal to be marked on. The refusal line still says what happened -- and
+   * for a placement that line is the *only* report there is, because unlike a
+   * purchase, a hire or an admission there is no pre-flight check the main
+   * thread could make: every one of the seven refusal reasons is about the
+   * zoning plane, the placed objects or the order list, and the main thread
+   * holds none of them.
+   */
+  options.worldObjects?.attachPlacements((placement) => {
+    dispatchCommand({ kind: 'place-object', ...placement });
   });
 
   /**

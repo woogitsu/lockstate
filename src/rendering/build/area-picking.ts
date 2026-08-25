@@ -134,12 +134,13 @@ export function tileRectToRange(rect: TileRect): TileRange {
  * does not use, and would still leave `isArmed()` unable to say which preview
  * to draw.
  *
- * Two ports also make the arbitration statable: at most one of
- * `BuildToolPort.isArmed()` and `RoomToolPort.isArmed()` is true, because both
- * are armed from panels on different tabs and leaving a tab disarms its tool.
- * The scene asks the build tool first and the room tool second, so even a
- * caller that armed both by hand gets one defined answer rather than an
- * interleaved gesture.
+ * Separate ports also make the arbitration statable: at most one of the three
+ * `isArmed()` answers is true -- the third is `ObjectToolPort` below (ADR 0028
+ * phase 1) -- because all three are armed from panels and leaving a tab, or
+ * selecting a different catalogue row, disarms the tool that was armed. The
+ * scene asks the build tool first, the object tool second and the room tool
+ * third, so even a caller that armed two by hand gets one defined answer rather
+ * than an interleaved gesture.
  */
 export interface RoomToolPort {
   /** True while world pointer input designates an area instead of panning. */
@@ -150,4 +151,66 @@ export interface RoomToolPort {
   place(rect: TileRect): void;
   /** Live feedback for the panel's readout. `undefined` when nothing is targeted. */
   target?(rect: TileRect | undefined): void;
+}
+
+/**
+ * What the renderer needs from whoever owns the object tool.
+ *
+ * A **third port**, beside `BuildToolPort` and `RoomToolPort`, for the reason
+ * `RoomToolPort` is a second one rather than a mode on the first: the three are
+ * asked different questions and carry different shapes. An edge tool reports a
+ * *run of edges*, an area tool reports *one rectangle the player dragged*, and
+ * this reports *one tile the player pressed* together with the footprint the
+ * thing standing on it will occupy. Folding the third into the second would
+ * mean a `TileRect` whose `width`/`height` sometimes come from the drag and
+ * sometimes from content, and every reader would have to establish which.
+ *
+ * `footprint()` exists because **the preview is not the gesture**. The gesture
+ * is one press on one tile ([ADR 0028](../../../docs/adr/0028-object-placement-and-derived-room-capacity.md)
+ * decision 5); the rectangle drawn under the pointer is as wide and as tall as
+ * the selected object, which is content the scene may not read
+ * (`tests/unit/rendering-module-boundaries.test.ts` forbids importing
+ * `src/simulation/**` here). So the scene is handed the two numbers it needs to
+ * draw, exactly as `roomTint` hands it a colour rather than a room id.
+ * `undefined` means nothing is selected, and the scene draws nothing.
+ *
+ * ADR 0028 §5 expected this to be most of phase 1's renderer work, on the
+ * strength of ADR 0022 §4's inventory: "no area preview or selection rectangle
+ * exists anywhere in the tree", `BuildOverlay`'s signature is not reusable, and
+ * `BuildToolPort` "carries no shape". **Two of those three stopped being true
+ * when the Rooms tab shipped.** `AreaOverlay` draws a tile rectangle with a
+ * per-tile hairline already, `TileRect`/`pickTileAtWorld` are already this
+ * module's, and `RoomToolPort` is already the second-port precedent. What was
+ * actually left was this interface and one preview call.
+ */
+export interface ObjectToolPort {
+  /** True while world pointer input places an object instead of panning. */
+  isArmed(): boolean;
+  /** The armed object's footprint in tiles, or `undefined` while nothing is selected. */
+  footprint(): { readonly width: number; readonly height: number } | undefined;
+  /** The player pressed and released. One object, one order, one command. */
+  place(tile: { readonly tileX: number; readonly tileY: number }): void;
+  /** Live feedback for the panel's readout. `undefined` when nothing is targeted. */
+  target?(rect: TileRect | undefined): void;
+}
+
+/**
+ * The footprint rectangle to draw for an object hovered at `tile`.
+ *
+ * The anchor is the rectangle's top-left corner and the footprint grows right
+ * and down, which is the convention `objectFootprintTiles` uses on the
+ * simulation side -- so what the player sees under the pointer is the set of
+ * tiles the placement will actually claim, rather than a centred box that would
+ * be a tile out at every even width.
+ */
+export function footprintRectAt(
+  tile: { readonly tileX: number; readonly tileY: number },
+  footprint: { readonly width: number; readonly height: number },
+): TileRect {
+  return {
+    tileX: tile.tileX,
+    tileY: tile.tileY,
+    width: Math.max(1, Math.trunc(footprint.width)),
+    height: Math.max(1, Math.trunc(footprint.height)),
+  };
 }

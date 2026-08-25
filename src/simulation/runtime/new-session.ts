@@ -1,4 +1,5 @@
 import { defaultContrabandRegistry } from '../../content/contraband-catalog';
+import { defaultRoomContentRegistry } from '../../content/room-catalog';
 import {
   ConfiscationLedger,
   ContrabandRegistry,
@@ -33,6 +34,7 @@ import { Kernel } from '../kernel';
 import { NavigationSystem, type NavigationSystemOptions } from '../navigation';
 import { Container, ContainerMaterialsProvider, ContainerRegistry, JobBoard, JobSystem, JobWorkerPool, UtilityNetwork } from '../operations';
 import { NEED_MAX, PrisonerJobWorkerAdapter, PrisonerOperationsRuntime } from '../prisoners';
+import { ObjectPlacementService, PlacedObjectRegistry, RoomCapacityResolver } from '../objects';
 import { TopologyManager } from '../rooms/topology';
 import { RoomZoningService } from '../rooms/zoning';
 import { deriveXoshiroState } from '../rng/seed';
@@ -75,14 +77,14 @@ export interface SimulationRuntime {
    * `treasury` holds a balance; `procurement` spends from it and delivers
    * later; `stateIncome` credits it once per in-game day, per occupied place,
    * which is ADR 0017 decision 3's primary income line on the basis decision 6
-   * settles. It pays nothing in a session today, and that is a room problem
-   * rather than an economy or a population one: `AdmitPrisoner` and the Intake
-   * panel put a prisoner in the prison (#261 step 4), and a zoned room is still
-   * registered with `capacity: 0`, so there is no occupied *place* for it to
-   * pay for. Measured on this tree: a zoned cell, one admitted prisoner and
-   * 2,500 ticks leave the balance at 25,000 and
-   * `stateIncomeAccruedTodayMinorUnits` at 0. `StateIncomeSystem` says so at
-   * length.
+   * settles. **It pays**, since ADR 0028 phase 1 gave a room a capacity derived
+   * from the objects standing in it: measured on this tree, a prison with one
+   * zoned cell, one plank bought, one bed placed and one prisoner admitted
+   * holds 24,935 after the purchase and 25,235 at tick 2,400 -- the first time
+   * the balance moves upward from anything but a refund. `StateIncomeSystem`
+   * carries the whole trace, and it says at length what this comment used to
+   * say instead: that the line paid nothing because a zoned room was registered
+   * with `capacity: 0`.
    */
   readonly treasury: Treasury;
   readonly procurement: ProcurementSystem;
@@ -122,6 +124,19 @@ export interface SimulationRuntime {
    * documented on `recentRefusals`.
    */
   readonly roomZoning: RoomZoningService;
+  /**
+   * Everything standing in the prison, the rule that turns it into a room's
+   * capacity, and the `PlaceObject` consumer (ADR 0028 phase 1).
+   *
+   * Session state, like `roomZoning` and `treasury`: `placedObjects` is
+   * snapshotted (as `simulation.objects`), and the other two hold no state at
+   * all -- `roomCapacity` recomputes from the registry and `objectPlacement`
+   * keeps only a bounded window of refusals for diagnosis, which is
+   * deliberately not saved for the reason `RefusalLog` is not.
+   */
+  readonly placedObjects: PlacedObjectRegistry;
+  readonly roomCapacity: RoomCapacityResolver;
+  readonly objectPlacement: ObjectPlacementService;
   readonly navigation: NavigationSystem;
   readonly prisoners: PrisonerOperationsRuntime;
   readonly containers: ContainerRegistry;
@@ -235,11 +250,39 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
 
   const prisoners = new PrisonerOperationsRuntime({ capacity: DEFAULT_PRISONER_CAPACITY, navigation, identity: actorIdentity });
 
+  /*
+   * ADR 0028 phase 1's three collaborators, and the knot between two of them.
+   *
+   * `placedObjects` is the registry of everything standing in the prison;
+   * `roomCapacity` derives a room instance's two capacities and its capability
+   * list from the objects inside its rectangle; `objectPlacement` (below,
+   * after `construction`) validates a `PlaceObject` command and mints its
+   * construction order. All three start empty, the same "no fabricated default
+   * content" convention every registry here follows -- a fresh prison has no
+   * objects until an order for one finishes.
+   *
+   * The knot: `ObjectPlacementService` needs `ConstructionSystem` to submit an
+   * order and to read which tiles orders in flight have claimed, and
+   * `ConstructionSystem` needs the service to hand a completed object order to.
+   * It is tied with a forwarding sink rather than by making either side
+   * optional at its own layer, so the *arrow* stays one-way in both files: the
+   * construction system knows only `ObjectPlacementSink`, and the placement
+   * service knows only `ObjectOrderSink`. The forwarder's `?? false` is
+   * unreachable in this function -- nothing steps the kernel between the two
+   * statements -- and answering `false` rather than throwing is what makes that
+   * true rather than merely likely.
+   */
+  const placedObjects = new PlacedObjectRegistry();
+  const roomCapacity = new RoomCapacityResolver(world, prisoners.roomInstances, placedObjects);
+  let objectPlacement: ObjectPlacementService | undefined;
+
   // Issue #261's `ZoneRoom` consumer. No default room is zoned here -- the
   // same "no fabricated default content" convention every registry below
   // follows -- so a fresh prison still has no rooms until a `ZoneRoom`
-  // command arrives.
-  const roomZoning = new RoomZoningService(world, prisoners.roomInstances);
+  // command arrives. It is handed the capacity resolver because a newly zoned
+  // rectangle has to count the objects already standing in it (ADR 0028
+  // decision 2).
+  const roomZoning = new RoomZoningService(world, prisoners.roomInstances, defaultRoomContentRegistry, roomCapacity);
 
   // Issue #25's job/inventory substrate. Starts empty -- no default stock,
   // no default containers beyond the one construction draws from, no
@@ -248,7 +291,17 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   const containers = new ContainerRegistry();
   const constructionMaterials = new Container(CONSTRUCTION_MATERIALS_CONTAINER_ID);
   containers.register(constructionMaterials);
-  const construction = new ConstructionSystem(world, new ContainerMaterialsProvider(constructionMaterials));
+  const construction = new ConstructionSystem(world, new ContainerMaterialsProvider(constructionMaterials), {
+    onOrderCompleted: (objectId, anchor) => objectPlacement?.onOrderCompleted(objectId, anchor) ?? false,
+    onOrderReverted: (objectId, anchor) => objectPlacement?.onOrderReverted(objectId, anchor) ?? false,
+  });
+  objectPlacement = new ObjectPlacementService(
+    world,
+    prisoners.roomInstances,
+    placedObjects,
+    roomCapacity,
+    construction,
+  );
 
   // Issue #96's money-first resource model, and the half of its loop that
   // exists (#89). A purchase spends now and delivers later; the delivery
@@ -413,7 +466,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   kernel.registerSystem(searchSystem);
   kernel.registerSystem(incidentResponseSystem);
   kernel.setCommandHandler(
-    createSessionCommandHandler(construction, procurement, roomZoning, staffHiring, prisoners, refusals),
+    createSessionCommandHandler(construction, procurement, roomZoning, staffHiring, prisoners, objectPlacement, refusals),
   );
 
   return {
@@ -427,6 +480,9 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     actorIdentity,
     topology,
     roomZoning,
+    placedObjects,
+    roomCapacity,
+    objectPlacement,
     navigation,
     prisoners,
     containers,

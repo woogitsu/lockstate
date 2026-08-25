@@ -104,6 +104,32 @@ const SUBMISSION_FAIL_REASONS: Readonly<Record<string, BuildOrderFailReason>> = 
   water_blocked: 'water-blocked',
 };
 
+/**
+ * What a completed order for an object buildable hands off to, and what a
+ * reverted one hands back.
+ *
+ * A **structural port declared here rather than an import of
+ * `src/simulation/objects/`**, so the dependency arrow between construction and
+ * object placement points one way: the objects module knows what a build order
+ * is, and this module knows only that something may want to be told. That is
+ * the same shape `ConstructionMaterialsProvider` has, and for the same reason --
+ * `ConstructionSystem` is not the place object placement is decided.
+ *
+ * Optional on the constructor. Absent, a completed object order behaves exactly
+ * as it did before ADR 0028 phase 1: it bumps the chunk's geometry revision and
+ * writes nothing, which is what every test that constructs a bare
+ * `ConstructionSystem` still gets.
+ *
+ * Both methods answer `boolean` and neither may throw: they are called from
+ * inside `update`, and a throw out of a scheduled system update faults the
+ * worker. `false` means "the world had moved on", and
+ * `ObjectPlacementService` documents the one interleaving that produces it.
+ */
+export interface ObjectPlacementSink {
+  onOrderCompleted(objectId: string, anchor: TilePosition): boolean;
+  onOrderReverted(objectId: string, anchor: TilePosition): boolean;
+}
+
 export class ConstructionSystem implements SystemRegistration {
   public readonly id = 'construction';
   public readonly order = 100;
@@ -122,6 +148,14 @@ export class ConstructionSystem implements SystemRegistration {
   public constructor(
     private readonly world: SparseWorld,
     private readonly materialsProvider: ConstructionMaterialsProvider = UNLIMITED_MATERIALS_PROVIDER,
+    /**
+     * Where a completed object order puts its object (ADR 0028 phase 1).
+     *
+     * Third and optional, so every existing caller -- `createNewSimulationRuntime`
+     * aside -- constructs the system exactly as before. See
+     * `ObjectPlacementSink`.
+     */
+    private readonly objectPlacement?: ObjectPlacementSink,
   ) {}
 
   /**
@@ -283,6 +317,22 @@ export class ConstructionSystem implements SystemRegistration {
     );
   }
 
+  /**
+   * Every order, in the same ascending-id order every internal walk uses.
+   *
+   * Public because the object placement boundary has to know which tiles orders
+   * *in flight* have already claimed: two beds ordered onto one tile inside the
+   * sixty ticks a bed takes to build would otherwise both be accepted, and the
+   * second would silently fail to appear when it finished
+   * (`ObjectPlacementService.place`). Nothing else reads it, and it hands out
+   * the live order objects rather than copies for the same reason
+   * `getOrder` does -- the caller reads `state`, `definitionId` and `location`
+   * and writes none of them.
+   */
+  public allOrders(): readonly BuildOrder[] {
+    return this.orderedOrders();
+  }
+
   public update(context: SimulationContext): void {
     for (const order of this.orderedOrders()) {
       const def = getBuildableDefinition(order.definitionId);
@@ -341,14 +391,24 @@ export class ConstructionSystem implements SystemRegistration {
    * `TopologyManager` recompute -- so the revision still moves, it is simply
    * no longer the *only* thing that moves.
    *
-   * A buildable that is not edge geometry (an object, a utility) has nothing
-   * to write yet; it still bumps the revision, exactly as before, so a future
-   * object placement model changes this function rather than its callers.
+   * A buildable that names a `placesObjectId` writes a row in the placed-object
+   * registry instead of an edge, through the optional `ObjectPlacementSink`
+   * (ADR 0028 decision 4). One that names neither -- `door-wooden`, every
+   * `'utility'` row -- still has nothing to write and still bumps the revision,
+   * exactly as before.
    */
   private finalizeConstruction(order: BuildOrder): void {
     const definition = getBuildableDefinition(order.definitionId);
     const edgeValue = edgeNumericIdFor(definition);
     if (edgeValue === 0) {
+      // The branch this comment used to end at with "a future object placement
+      // model changes this function rather than its callers". This is that
+      // change: a buildable that names an object puts one in the world here,
+      // and the room it stands in has its capacity re-derived on the same call
+      // (ADR 0028 decision 2, moment one of three).
+      if (definition.placesObjectId !== undefined) {
+        this.objectPlacement?.onOrderCompleted(definition.placesObjectId, order.location);
+      }
       this.markGeometryChanged(order.location);
       return;
     }
@@ -373,6 +433,14 @@ export class ConstructionSystem implements SystemRegistration {
     const definition = getBuildableDefinition(order.definitionId);
     const edgeValue = edgeNumericIdFor(definition);
     if (edgeValue === 0) {
+      // The object leaves with the order, for the reason a wall's edge does:
+      // `completed` is cancellable *because* completing changes the world, and
+      // a placement that could not be reversed would make the first misplaced
+      // bed permanent while a misplaced wall is not. Moment two of the
+      // resolver's three.
+      if (definition.placesObjectId !== undefined) {
+        this.objectPlacement?.onOrderReverted(definition.placesObjectId, order.location);
+      }
       this.markGeometryChanged(order.location);
       return;
     }

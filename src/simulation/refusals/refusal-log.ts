@@ -1,5 +1,6 @@
 import type { BuildOrderFailReason } from '../construction/build-order';
 import type { PurchaseRefusalReason } from '../economy/procurement';
+import type { PlaceObjectRefusalReason } from '../objects/object-placement-service';
 import type { AdmitPrisonerRefusalReason } from '../prisoners/prisoner-operations-runtime';
 import type { RefusalReason, SimulationRefusal } from '../protocol/types';
 import type { UnzoneRoomRefusalReason, ZoneRoomRefusalReason } from '../rooms/zoning';
@@ -146,6 +147,33 @@ export const HIRE_REFUSAL_REASONS: Readonly<Record<StaffHireRefusalReason, Refus
   'insufficient-funds': 'hire.insufficient-funds',
   'roster-full': 'hire.roster-full',
   'unknown-role': 'hire.unknown-role',
+};
+
+/**
+ * `PlaceObjectRefusalReason`, mapped onto the wire's. Exhaustive for the same
+ * reason as above.
+ *
+ * Three of these -- `out-of-bounds`, `unowned-land` and `duplicate-order` --
+ * are spelled exactly like members of the build and purchase tables, which is
+ * the third demonstration of why the wire ids are namespaced rather than flat:
+ * the same condition refusing a wall, a delivery and a bed is three different
+ * sentences, and a player who pressed the bed row must not read that the
+ * materials were not ordered.
+ *
+ * All seven are reachable from the Build panel or the world gesture, and unlike
+ * every other table here **none of them is pre-empted by a main-thread check**:
+ * `src/main.ts` holds no copy of the zoning plane, the placed objects or the
+ * order list, so there is nothing it could honestly refuse before submitting.
+ * This is the only route a refused placement reaches the player by.
+ */
+export const PLACE_OBJECT_REFUSAL_REASONS: Readonly<Record<PlaceObjectRefusalReason, RefusalReason>> = {
+  'duplicate-order': 'place-object.duplicate-order',
+  'not-a-placeable-object': 'place-object.not-a-placeable-object',
+  'out-of-bounds': 'place-object.out-of-bounds',
+  'outside-room': 'place-object.outside-room',
+  'tile-occupied': 'place-object.tile-occupied',
+  'unknown-buildable': 'place-object.unknown-buildable',
+  'unowned-land': 'place-object.unowned-land',
 };
 
 /** `PurchaseOutcome`'s refusal reasons, mapped onto the wire's. Exhaustive for the same reason as above. */

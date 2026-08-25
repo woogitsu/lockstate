@@ -37,7 +37,7 @@ function registryWithOccupiedCells(occupied: number, freeCells = 0): RoomInstanc
       instanceId: `cell-${String(index)}`,
       roomCatalogId: 'room.cell',
       anchorTile: TILE(index, 0),
-      capacity: 1,
+      residentCapacity: 1, concurrentUseCapacity: 1,
       objectCapabilities: ['sleep-surface'],
     });
   }
@@ -130,7 +130,7 @@ describe('an occupied place is an occupancy slot a prisoner holds, not a prisone
       instanceId: 'shared-cell',
       roomCatalogId: 'room.cell',
       anchorTile: TILE(0, 0),
-      capacity: 2,
+      residentCapacity: 2, concurrentUseCapacity: 2,
       objectCapabilities: ['sleep-surface'],
     });
     expect(registry.assign('shared-cell', 7)).toBe(true);

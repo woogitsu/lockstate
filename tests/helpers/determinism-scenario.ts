@@ -1,3 +1,4 @@
+import { placedObjectAt } from '../../src/simulation/objects';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { Container } from '../../src/simulation/operations/inventory';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
@@ -55,24 +56,82 @@ export function buildDeterminismScenario(masterSeed: number = SCENARIO_SEED, opt
   const incidental = <T>(entries: readonly T[]): readonly T[] =>
     options.reverseIncidentalRegistrationOrder === true ? [...entries].reverse() : entries;
 
-  // -- rooms: registered out of id order on purpose, so anything that
-  //    iterates the registry by insertion order rather than canonically
-  //    diverges from a snapshot-restored session.
+  /*
+   * -- rooms: registered out of id order on purpose, so anything that
+   *    iterates the registry by insertion order rather than canonically
+   *    diverges from a snapshot-restored session.
+   *
+   *    Every instance is registered with **zero derived capacity and a
+   *    rectangle**, and the objects standing in those rectangles are placed
+   *    below. That is not decoration: since ADR 0028 phase 1 a capacity is
+   *    derived rather than persisted, so a scenario that registered
+   *    `residentCapacity: 1` directly would have a live session and a
+   *    snapshot-restored one disagree -- the restore recomputes from the
+   *    objects, finds none, and writes 0. Placing real objects is what makes
+   *    this scenario's rooms survive `snapshot() -> restore()`, which is the
+   *    property every test in `tests/determinism/` is built on.
+   *
+   *    The four cells share one rectangle, as they already shared one anchor
+   *    tile before this change. That is a fixture and not a state `zone` can
+   *    produce (it refuses `overlaps-existing-room`); what matters here is that
+   *    four instances exist, that each derives its capacity from the same two
+   *    objects, and that no anchor tile moved -- so no prisoner's route
+   *    changed and this scenario plays exactly as it did.
+   */
   for (const instanceId of incidental(['cell-3', 'cell-1', 'cell-4', 'cell-2'])) {
     runtime.prisoners.roomInstances.register({
       instanceId,
       roomCatalogId: 'room.cell',
       anchorTile: TILE(6, 6),
-      capacity: 1,
-      objectCapabilities: ['sleep-surface', 'sanitation'],
+      width: 2,
+      height: 3,
+      residentCapacity: 0,
+      concurrentUseCapacity: 0,
+      objectCapabilities: [],
     });
   }
   for (const instance of incidental([
-    { instanceId: 'yard-1', roomCatalogId: 'room.yard', anchorTile: TILE(8, 8), capacity: 8, objectCapabilities: [] },
-    { instanceId: 'canteen-1', roomCatalogId: 'room.canteen', anchorTile: TILE(9, 9), capacity: 8, objectCapabilities: ['dining'] },
+    { instanceId: 'yard-1', roomCatalogId: 'room.yard', anchorTile: TILE(8, 8), width: 2, height: 1, residentCapacity: 0, concurrentUseCapacity: 0, objectCapabilities: [] },
+    { instanceId: 'canteen-1', roomCatalogId: 'room.canteen', anchorTile: TILE(9, 9), width: 3, height: 2, residentCapacity: 0, concurrentUseCapacity: 0, objectCapabilities: ['dining'] },
   ])) {
     runtime.prisoners.roomInstances.register(instance);
   }
+
+  /*
+   * -- objects: placed directly rather than built, and placed out of tile
+   *    order on purpose.
+   *
+   *    Directly, because a construction order takes sixty ticks and procured
+   *    materials, and this scenario is about iteration order rather than about
+   *    the build pipeline (`tests/integration/object-placement-loop.test.ts`
+   *    drives the real route end to end). `PlacedObjectRegistry.place` is the
+   *    same call `ObjectPlacementService` makes when an order finishes, so what
+   *    is skipped is the waiting and not the writing.
+   *
+   *    A toilet as well as a bed in the cell, so the derived capability set is
+   *    `['sanitation', 'sleep-surface']` -- exactly the pair this scenario
+   *    registered by hand before, sorted by the resolver rather than by the
+   *    author. The cell therefore derives `residentCapacity: 1` (the bed's
+   *    footprint width) and `concurrentUseCapacity: 2`.
+   *
+   *    Out of tile order because the registry sorts by `(y, x)` and nothing may
+   *    depend on insertion order: reversing these two lines must change
+   *    nothing, which is what `reverseIncidentalRegistrationOrder` asserts for
+   *    every other registry here.
+   */
+  for (const object of incidental([
+    placedObjectAt('object.toilet', TILE(7, 6), 0),
+    placedObjectAt('object.bed', TILE(6, 6), 0),
+    placedObjectAt('object.bench', TILE(8, 8), 0),
+    placedObjectAt('object.dining-table', TILE(9, 9), 0),
+  ])) {
+    if (!runtime.placedObjects.place(object)) {
+      throw new Error(`the scenario's object at (${object.anchorTile.x}, ${object.anchorTile.y}) must be placeable`);
+    }
+  }
+  // Event-driven, exactly as a completed build order would drive it: the
+  // objects exist, so every room that contains one is re-derived once.
+  runtime.roomCapacity.resolveAll();
 
   // -- prisoners: classification draws from `prisoners.classification`.
   const prisonerIds = [

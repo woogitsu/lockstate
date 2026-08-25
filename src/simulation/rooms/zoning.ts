@@ -46,29 +46,50 @@ import {
  *
  * **What the plane does not carry is an instance id.** A zoned tile holds a
  * room *type*, so two adjacent cells are indistinguishable in the plane and
- * "which instance is this tile part of" is still unanswerable -- the same
- * shape of gap `docs/HUD_PROJECTIONS.md` records for room membership. The
- * overlap check below needs only "is this tile already claimed", which the
- * plane does answer.
+ * "which instance is this tile part of" is still unanswerable *from the plane
+ * alone* -- the same shape of gap `docs/HUD_PROJECTIONS.md` records for room
+ * membership. The overlap check below needs only "is this tile already
+ * claimed", which the plane does answer.
  *
- * ## Capacity and object capabilities: zero and none, and that is measured
+ * What closes the other half is the instance's own **rectangle**, which this
+ * service used to receive and discard: `width` and `height` are now written
+ * onto the `RoomInstance`, so the plane narrows a tile to a room *type* and the
+ * rectangle then names the instance (`roomInstanceContaining`,
+ * `src/simulation/objects/room-capacity.ts`). That is the one new persisted
+ * field ADR 0028 decision 6 pays for, and it is what gives every rule about a
+ * room's contents a domain. Two adjacent same-type rectangles are still two
+ * instances and `unzone` still treats them as one region -- neither is changed
+ * here.
  *
- * `RoomInstance` carries a `capacity` and an `objectCapabilities` list, and
- * in this codebase both come from the objects standing in the room: a cell
- * holds as many prisoners as it has beds, and `IntakeSystem`/`ActionSystem`
- * gate on capability tags that `src/content/object-catalog.ts` puts on
- * objects. **Object placement does not exist** (`docs/HUD_PROJECTIONS.md`
- * gap 13), so a freshly zoned room contains nothing, and the honest reading
- * of nothing is `0` and `[]`. They are not a constant chosen to make a
- * feature work -- they are what an empty rectangle accommodates, and they
- * start being non-zero on their own the day something tracks placed objects.
+ * ## Capacity and object capabilities: derived, and no longer aspirational
  *
- * The room catalog carries no capacity of its own and none is invented here
- * (`AGENTS.md` boundary 6: content lives in data modules). Giving a zoned
- * room a usable capacity before object placement exists needs a content
- * addition -- the smallest being one authored occupancy figure per room
- * definition -- and that is a product decision, recorded on #261 rather than
- * taken inside a command handler.
+ * `RoomInstance` carries a `residentCapacity`, a `concurrentUseCapacity` and an
+ * `objectCapabilities` list, and in this codebase all three come from the
+ * objects standing in the room: a cell holds as many prisoners as it has beds,
+ * and `IntakeSystem`/`ActionSystem` gate on capability tags that
+ * `src/content/object-catalog.ts` puts on objects.
+ *
+ * This paragraph used to end differently. It said that object placement **does
+ * not exist**, that the honest reading of an empty rectangle is therefore `0`
+ * and `[]`, and that giving a zoned room a usable capacity would need a content
+ * addition -- "the smallest being one authored occupancy figure per room
+ * definition" -- which was "a product decision, recorded on #261 rather than
+ * taken inside a command handler".
+ *
+ * **That decision has been taken, and it went the other way.** The owner was
+ * shown three options and chose real object placement;
+ * [ADR 0028](../../../docs/adr/0028-object-placement-and-derived-room-capacity.md)
+ * is the design and its phase 1 is what this file now depends on. So no
+ * occupancy figure is authored anywhere: capacity is the summed footprint width
+ * of the objects inside the rectangle, and `RoomCapacityResolver` computes it.
+ *
+ * What `zone` writes is still `0` and `[]`, and that is now a different
+ * statement. It is the value of an instance before its first resolution, not
+ * the value of every instance for ever -- and `zone` calls the resolver
+ * immediately afterwards, so a rectangle drawn *around* an existing bed is
+ * zoned with that bed's capacity rather than with zero. Refusing to count what
+ * was already standing there would make the order of two player gestures change
+ * the outcome, which is the same class of defect as iterating a `Map`.
  *
  * ## The instance id
  *
@@ -296,6 +317,17 @@ export class RoomZoningService {
     private readonly world: SparseWorld,
     private readonly roomInstances: RoomInstanceRegistry,
     private readonly rooms: ContentRegistry<RoomCatalogDefinition> = defaultRoomContentRegistry,
+    /**
+     * Where a newly registered instance gets its derived capacity from (ADR
+     * 0028 decision 2, moment three of three).
+     *
+     * Optional and fourth, so every existing caller constructs the service
+     * unchanged. Absent, a zoned room keeps the zeroes `register` wrote --
+     * which is exactly what a session with no placed objects would resolve to
+     * anyway, and is why a test that never places an object does not need to
+     * supply one.
+     */
+    private readonly capacity?: { resolveInstance(instanceId: string): unknown },
   ) {}
 
   /**
@@ -389,17 +421,28 @@ export class RoomZoningService {
       }
     }
 
-    const instance: RoomInstance = {
+    const registered: RoomInstance = {
       instanceId,
       roomCatalogId: definition.id,
       anchorTile: anchor,
-      // Zero and empty, and measured rather than chosen -- see this module's
-      // header. An empty room accommodates nobody and offers no object
-      // capability, because nothing has been placed in it.
-      capacity: 0,
+      // The rectangle, kept rather than discarded. `anchor` is its left/top
+      // edge, so the four numbers together are the room's extent and nothing
+      // downstream has to re-derive it from the plane.
+      width: request.width,
+      height: request.height,
+      // Zeroes before the resolver runs, never as the final answer -- see this
+      // module's header. An instance has to exist before anything can ask what
+      // is standing inside it, and `updateDerived` is the only thing that may
+      // change these three.
+      residentCapacity: 0,
+      concurrentUseCapacity: 0,
       objectCapabilities: [],
     };
-    this.roomInstances.register(instance);
+    this.roomInstances.register(registered);
+    // Immediately, and inside the same command dispatch, so no tick exists in
+    // which the new room reads as empty while an object stands in it.
+    this.capacity?.resolveInstance(instanceId);
+    const instance = this.roomInstances.getById(instanceId) ?? registered;
 
     /*
      * The enclosure requirement, evaluated -- and deliberately not enforced.
@@ -511,11 +554,15 @@ export class RoomZoningService {
    * `accommodationInstanceId` in cold state, so unregistering an instance
    * underneath them would leave a reference to a room that no longer exists --
    * and unlike the geometry, that is not something another drag can repair. It
-   * is unreachable from a session zoned only through this service, because a
-   * zoned room has `capacity: 0` and `RoomInstanceRegistry.assign` refuses to
-   * fill it; it is reachable from a restored save whose instances were
-   * registered with a capacity, which is the same shape
-   * `duplicate-instance-id` exists for on the other side.
+   * used to be unreachable from a session zoned only through this service,
+   * because a zoned room had `capacity: 0` and `RoomInstanceRegistry.assign`
+   * refuses to fill it. **It is reachable now**: a cell with a bed in it has a
+   * `residentCapacity` of 1, `IntakeSystem` houses an arrival there, and a
+   * player who then drags a removal across that cell is told
+   * `unzone.room-occupied` rather than having the prisoner's
+   * `accommodationInstanceId` left naming a room that no longer exists. So this
+   * refusal moved from a corruption guard to a rule a player meets, which is
+   * what ADR 0028 phase 1 turns on.
    */
   public unzone(request: UnzoneRoomRequest, tick: number): UnzoneRoomOutcome {
     if (

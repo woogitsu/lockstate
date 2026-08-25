@@ -101,11 +101,23 @@ const AWAITING_CONSUMER: Readonly<Record<string, string>> = {
 
   // Objects. All but one of these is required by some room definition, so
   // the catalogs agree; nothing places, builds or reads the object.
-  'object.bench': "Required by a room definition; no code places or reads it.",
+  //
+  // `object.bench` and `object.dining-table` left this list with ADR 0028 phase
+  // 1, and by the narrow route this gate's own docblock describes: the
+  // placement mechanism it added names no object id, so it moves nothing by
+  // itself, and `tests/helpers/determinism-scenario.ts` names those two because
+  // they are what give a yard and a canteen a *concurrent-use* capacity that
+  // survives a snapshot round trip -- a bed would have made them sleepable. So
+  // both are now placed by something, in a test, which is consumption by this
+  // gate's deliberately weakened measure. Neither has a `src/` consumer and
+  // neither is a buildable: phase 4 is what offers them to a player.
+  // `object.bed` did not move either list -- three test files already named it,
+  // and its new `src/` consumer moves `unconsumedBySrcOnly` instead.
+
   'object.bookshelf': "Required by a room definition; no code places or reads it.",
   'object.chair': "Required by a room definition; no code places or reads it.",
   'object.desk': "Required by a room definition; no code places or reads it.",
-  'object.dining-table': "Required by a room definition; no code places or reads it.",
+
   'object.fridge': "Required by a room definition; no code places or reads it.",
   'object.medical-bed': "Required by a room definition; no code places or reads it.",
   'object.medicine-cabinet': "Required by a room definition; no code places or reads it.",
@@ -213,18 +225,32 @@ describe('every unconsumed content id is accounted for', () => {
      * it without filtering on role. `unconsumedBySrcAndTests` did not move --
      * the id already had test consumers, so it is in neither allowlist and no
      * entry was added or deleted with it.
+     *
+     * It moved 52 -> 51 the same way when ADR 0028 phase 1 gave `object.bed`
+     * its first `src/` consumer: `BUILDABLE_REGISTRY`'s `bed-wooden` row names
+     * it as the object a completed order places, which is the first time any
+     * `object.*` id is read by anything outside `src/content/`. And
+     * `unconsumedBySrcAndTests` again did not move -- three test files already
+     * named the bed, which is why it was in neither allowlist and why no entry
+     * is added or deleted here either. That is the shape ADR 0028 predicted for
+     * this gate: "`object.bed` holds no `AWAITING_CONSUMER` entry to delete, so
+     * what moves is `unconsumedBySrcOnly` as it gains its first `src/`
+     * consumer."
      */
     expect({
       declared: declaredIds.length,
       unconsumedBySrcAndTests: unconsumedIds.length,
       unconsumedBySrcOnly: unconsumedBySrcOnly.length,
-      // 33, not 34: `room.holding-cell` gained a single-quoted literal in
+      // 31, not 33: `object.bench` and `object.dining-table` gained one in
+      // `tests/helpers/determinism-scenario.ts`, which places both so a yard and
+      // a canteen have a derived concurrent-use capacity (see their note in the
+      // list above). It was 33, not 34, because `room.holding-cell` gained a single-quoted literal in
       // `tests/unit/rooms-zoning.test.ts` with the Rooms tab. That change left
       // `unconsumedBySrcOnly` alone -- the producer projects the catalogue
       // generically and names no room id, so nothing moved in `src/` -- and the
       // 53 -> 52 below is ADR 0025's alone, for the reason above. The two
       // measures moved on different changes and each is stated where it moved.
-    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 33, unconsumedBySrcOnly: 52 });
+    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 31, unconsumedBySrcOnly: 51 });
   });
 
   it('scans a non-trivial catalog and a non-trivial consumer set, so this cannot pass vacuously', () => {

@@ -91,12 +91,20 @@ describe('the catalog-driven registry resolves a room type by its numeric zoning
  * this pins what it can and cannot answer -- so the next agent to implement
  * object placement inherits one answer rather than two.
  *
- * `RoomInstance` carries an anchor tile, a capacity and capability tags; no
- * bounds, no tile set, no wall topology. So `object` requirements are
- * evaluated for real against the instance's capabilities, and `enclosed` /
- * `minimum-size` are reported `'not-evaluated'` rather than guessed. The mock
- * answered those two anyway -- always-missing for objects, always-satisfied
- * for size -- which is precisely why it could not be kept alongside this one.
+ * `RoomInstance` carries an anchor tile, its rectangle, two derived capacities
+ * and a derived capability list; no tile set and no wall topology. So `object`
+ * requirements are evaluated for real against the instance's capabilities, and
+ * `enclosed` / `minimum-size` are reported `'not-evaluated'` rather than
+ * guessed. The mock answered those two anyway -- always-missing for objects,
+ * always-satisfied for size -- which is precisely why it could not be kept
+ * alongside this one.
+ *
+ * The capabilities are **derived** rather than declared since ADR 0028 phase 1,
+ * which changes where the projection's answer comes from and not what it can
+ * say: the instances below are registered with a capability list by hand,
+ * because the subject is the projection and not the placement path
+ * (`tests/unit/objects-room-capacity.test.ts` is where the derivation is
+ * pinned).
  */
 describe('one evaluator answers room requirements, and says what it cannot answer', () => {
   it('evaluates a cell object requirement by capability and leaves geometry not-evaluated', () => {
@@ -109,7 +117,7 @@ describe('one evaluator answers room requirements, and says what it cannot answe
       instanceId: 'cell-1',
       roomCatalogId: 'room.cell',
       anchorTile: { x: tileCoordinate(0), y: tileCoordinate(0) },
-      capacity: 1,
+      residentCapacity: 1, concurrentUseCapacity: 1,
       objectCapabilities: toilet.capabilities,
     });
 
@@ -133,7 +141,7 @@ describe('one evaluator answers room requirements, and says what it cannot answe
       instanceId: 'cell-2',
       roomCatalogId: 'room.cell',
       anchorTile: { x: tileCoordinate(0), y: tileCoordinate(0) },
-      capacity: 1,
+      residentCapacity: 1, concurrentUseCapacity: 1,
       objectCapabilities: [],
     });
 

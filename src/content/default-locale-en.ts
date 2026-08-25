@@ -193,6 +193,19 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.alert.refusal.hire.insufficient-funds': 'Nobody was hired — there are not enough funds.',
   'hud.alert.refusal.hire.roster-full': 'Nobody was hired — this prison cannot hold any more staff.',
   'hud.alert.refusal.hire.unknown-role': 'Nobody was hired — that is not a role this prison knows.',
+  // The seven `place-object.*` sentences (ADR 0028 phase 1). Three of them name
+  // a condition the `build.*` and `purchase.*` rows also name, and each says
+  // "the bed was not placed" instead, for the reason the ids are namespaced: a
+  // player who pressed the object row and read that the materials were not
+  // ordered would go and look at the wrong control. They say "object" rather
+  // than "bed" because the same seven sentences serve every object phase 4 adds.
+  'hud.alert.refusal.place-object.duplicate-order': 'The object was not placed — that order already exists.',
+  'hud.alert.refusal.place-object.not-a-placeable-object': 'The object was not placed — that is not something built by placing it on a tile.',
+  'hud.alert.refusal.place-object.out-of-bounds': 'The object was not placed — part of it would be outside the map.',
+  'hud.alert.refusal.place-object.outside-room': 'The object was not placed — it has to stand in a room you have zoned.',
+  'hud.alert.refusal.place-object.tile-occupied': 'The object was not placed — something is already standing there.',
+  'hud.alert.refusal.place-object.unknown-buildable': 'The object was not placed — that is not something this prison knows how to build.',
+  'hud.alert.refusal.place-object.unowned-land': 'The object was not placed — you do not own all of that land.',
   'hud.alert.refusal.purchase.duplicate-order': 'The materials were not ordered — that order already exists.',
   'hud.alert.refusal.purchase.insufficient-funds': 'The materials were not ordered — there are not enough funds.',
   'hud.alert.refusal.purchase.invalid-quantity': 'The materials were not ordered — that quantity cannot be bought.',

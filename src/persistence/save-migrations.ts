@@ -2,7 +2,16 @@ import { computeSaveChecksum } from './checksum';
 import { encodeEntityStoreSnapshot, type EncodedEntityStoreSnapshot } from './entity-codec';
 import type { JsonValue } from '../shared/json';
 import { NEED_IDS, NEED_MAX_SCALED, NEED_SCALE } from '../simulation/prisoners/needs';
-import type { SaveEnvelopeV1, SaveEnvelopeV2, SaveEnvelopeV3, SaveEnvelopeV4, SavePayloadV1, SavePayloadV3 } from './save-schema';
+import type {
+  SaveEnvelopeV1,
+  SaveEnvelopeV2,
+  SaveEnvelopeV3,
+  SaveEnvelopeV4,
+  SaveEnvelopeV5,
+  SavePayloadV1,
+  SavePayloadV3,
+  SavePayloadV4,
+} from './save-schema';
 
 /**
  * Forward migrations between save-schema versions.
@@ -222,4 +231,110 @@ export function migrateSaveEnvelopeV3ToV4(input: SaveEnvelopeV3): SaveEnvelopeV4
     checksum: computeSaveChecksum(migratedPayload as unknown as JsonValue),
     payload: migratedPayload,
   } as SaveEnvelopeV4;
+}
+
+/** V4's room-instance rows, the only part of the payload V4 -> V5 reshapes. */
+type RoomInstancesV4 = NonNullable<SavePayloadV4['simulation']>['prisoners']['roomInstanceDefinitions'];
+
+/** V5's rows: identity, anchor, and an optional rectangle a V4 save cannot supply. */
+type RoomInstancesV5 = readonly {
+  readonly instanceId: string;
+  readonly roomCatalogId: string;
+  readonly anchorTile: { readonly x: number; readonly y: number };
+}[];
+
+/**
+ * Drops `capacity` and `objectCapabilities` from every room-instance row, and
+ * adds no rectangle.
+ *
+ * **It invents nothing, and that rests on a fact rather than on an argument.**
+ * `RoomZoningService` is the only thing in `src/` that has ever registered a
+ * room instance, and it registered `capacity: 0` with `objectCapabilities: []`
+ * unconditionally -- so every row any shipped build has ever written holds
+ * exactly those two values. Dropping them therefore loses nothing that can be
+ * missed: `RoomCapacityResolver` recomputes both at restore from the placed
+ * objects (of which a V4 save has none) and the rectangle (which a V4 row does
+ * not record), and lands on `0` and `[]` -- the values that were dropped.
+ * `tests/migrations/save-v4-to-v5.test.ts` re-verifies the premise off a real
+ * captured session rather than trusting this paragraph.
+ *
+ * **No `width`/`height` is fabricated.** They are optional at V5 precisely so
+ * that this step does not have to choose: `1x1` would assert a room the player
+ * did not zone and `64x64` one that overlaps its neighbours, and either is the
+ * invented-consequence defect. An instance with no rectangle is attributed no
+ * objects, so its capacity stays 0 -- which is what it was.
+ *
+ * And the hard case is unreachable in practice for a *player's* save: while
+ * `ZoneRoom` had no producer no save could contain a room instance at all, and
+ * the producer arrived in the same release train as this migration. What this
+ * handles honestly is a save written by a build that had the Rooms tab and not
+ * object placement, plus any hand-authored one.
+ */
+function dropDerivedRoomFields(instances: RoomInstancesV4): RoomInstancesV5 {
+  return instances.map((instance) => ({
+    instanceId: instance.instanceId,
+    roomCatalogId: instance.roomCatalogId,
+    anchorTile: { x: instance.anchorTile.x, y: instance.anchorTile.y },
+  }));
+}
+
+/**
+ * V4 -> V5: a room instance stops carrying its capacity and its capability list,
+ * and placed objects gain a section
+ * ([ADR 0028](../../docs/adr/0028-object-placement-and-derived-room-capacity.md)
+ * decision 6).
+ *
+ * Two of the three V5 changes need nothing here. The `objects` section is
+ * optional and **absent means "no object has been placed"**, which is exactly
+ * what every V4 build meant because no V4 build could place one -- so no
+ * section is added, on the same reasoning `migrateSaveEnvelopeV2ToV3` gives for
+ * declining to fabricate a `simulation` section. `width`/`height` are optional
+ * and stay absent, for the reason `dropDerivedRoomFields` states.
+ *
+ * What is done is the removal, and it is done by rebuilding each row rather
+ * than by deleting keys from it: `roomInstanceSchemaV5` is `.strict()`, so a
+ * carried-over `capacity` would fail validation at the end of the chain rather
+ * than being ignored.
+ *
+ * `simulation` stays optional and an absent section stays absent -- a V4 save
+ * written by a build with no subsystem state genuinely has none, and this
+ * function may no more invent one than the two steps before it may.
+ *
+ * The checksum is recomputed for the reason V1 -> V2 recomputes it, and with the
+ * same guarantee: `decodeSaveEnvelope` compares the *stored* checksum against
+ * the payload as written, at its declared version, only after the whole chain
+ * has run -- so this function's output is never the value that comparison
+ * examines.
+ *
+ * Pure: builds new objects and never mutates `input`.
+ */
+export function migrateSaveEnvelopeV4ToV5(input: SaveEnvelopeV4): SaveEnvelopeV5 {
+  const { saveSchemaVersion: _version, checksum: _checksum, payload, ...metadata } = input;
+
+  const simulation =
+    payload.simulation === undefined
+      ? undefined
+      : {
+          ...payload.simulation,
+          prisoners: {
+            ...payload.simulation.prisoners,
+            roomInstanceDefinitions: dropDerivedRoomFields(payload.simulation.prisoners.roomInstanceDefinitions),
+          },
+        };
+
+  const migratedPayload = {
+    kernel: payload.kernel,
+    world: payload.world,
+    construction: payload.construction,
+    ...(payload.entities === undefined ? {} : { entities: payload.entities }),
+    ...(simulation === undefined ? {} : { simulation }),
+    ...(payload.identity === undefined ? {} : { identity: payload.identity }),
+  };
+
+  return {
+    saveSchemaVersion: 5,
+    ...metadata,
+    checksum: computeSaveChecksum(migratedPayload as unknown as JsonValue),
+    payload: migratedPayload,
+  } as SaveEnvelopeV5;
 }

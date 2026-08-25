@@ -211,6 +211,75 @@ export const hireStaffSchema = z.object({
   y: z.number().int(),
 }).strict();
 
+/**
+ * Place one object on one tile ([ADR 0028](../../../docs/adr/0028-object-placement-and-derived-room-capacity.md)
+ * phase 1).
+ *
+ * ## Why it is not a `PlaceBuildOrder`
+ *
+ * Because both halves of that command are wrong for an object. `edge` answers
+ * "which of the two stored tile edges did you mean", which a thing standing on
+ * a tile never asks; and a wall order is validated against one tile, while a
+ * placement is validated against a whole footprint and can be refused for
+ * reasons a wall has no concept of -- a tile another object already covers, a
+ * tile in no room. Reusing the command would have every existing producer
+ * carry a field it does not use and would leave the footprint rules inside a
+ * handler whose name says nothing about them.
+ *
+ * It still *becomes* a build order: `ObjectPlacementService` submits one, so an
+ * object waits for procured materials and advances on `ConstructionSystem`'s
+ * schedule exactly as a wall does (ADR 0028 decision 4). What this command
+ * decides is only whether the placement is legal.
+ *
+ * ## What it carries
+ *
+ * `definitionId` is a `BUILDABLE_REGISTRY` id (`bed-wooden`), spelled the way
+ * `PlaceBuildOrder.definitionId` is and for the same reason: the buildable is
+ * what carries the material requirement and the work, and it names the object
+ * it places. `z.string()` rather than `identifierSchema`, matching
+ * `PlaceBuildOrder`, because a buildable id is not a content id -- `wall-brick`
+ * would fail a dotted-identifier rule.
+ *
+ * `orderId` is the caller's, exactly like `PlaceBuildOrder`'s: the main thread
+ * mints it so a refusal can be matched to the press that caused it, and so a
+ * command replayed from a restored queue cannot submit the same order twice --
+ * `ObjectPlacementService` refuses a duplicate id rather than letting
+ * `submitOrder` throw out of a command dispatch.
+ *
+ * `x`/`y` are the anchor tile: the footprint's top-left corner, in the same
+ * shape `ZoneRoom`, `PlaceBuildOrder` and `AdmitPrisoner` all carry a tile.
+ *
+ * ## No orientation, and no `transactionId`
+ *
+ * **No `orientation`, deliberately.** `PlacedObject` carries one and the save
+ * carries it at full range, so a rotated bed needs no format change -- but
+ * nothing in the application can *express* a rotation: the gesture is one press
+ * (ADR 0028 decision 5) and the rotate half of that decision needs a new
+ * `ACTION_IDS` member, a default binding and a description key, none of which
+ * phase 1 ships. A field on the wire that no producer sets and no consumer
+ * varies would be exactly the dead vocabulary
+ * `tests/foundation/unconsumed-command-contract.test.ts` exists to catch, one
+ * level down. It arrives with the control.
+ *
+ * **No `transactionId`.** An object placement *does* write a construction
+ * order, so unlike `ZoneRoom` there is something for
+ * `registerTransactionOrder` to group -- and `ObjectPlacementService` groups it,
+ * under the **order id**, so one press is one undo step. What a field here
+ * would buy is grouping several placements into one step, which needs a gesture
+ * that places several; the drag that would do it is refused by decision 5 as
+ * needing a fill rule, a per-object orientation and a per-tile overlap policy.
+ * So there is nothing for a producer to group, and sending an id nothing groups
+ * by would be inventing a grouping to explain -- the argument `ZoneRoom` records
+ * for the same absence.
+ */
+export const placeObjectSchema = z.object({
+  type: z.literal('PlaceObject'),
+  orderId: z.string(),
+  definitionId: z.string(),
+  x: z.number().int(),
+  y: z.number().int(),
+}).strict();
+
 export const undoCommandSchema = z.object({
   type: z.literal('Undo'),
 }).strict();
@@ -227,6 +296,7 @@ export const simulationCommandSchema = z.discriminatedUnion('type', [
   purchaseMaterialsSchema,
   admitPrisonerSchema,
   hireStaffSchema,
+  placeObjectSchema,
   undoCommandSchema,
   redoCommandSchema,
 ]);
@@ -291,6 +361,15 @@ function commandJson(command: SimulationCommand): JsonValue {
       };
     case 'HireStaff':
       return { type: command.type, staffRoleId: command.staffRoleId, x: command.x, y: command.y };
+
+    case 'PlaceObject':
+      return {
+        type: command.type,
+        orderId: command.orderId,
+        definitionId: command.definitionId,
+        x: command.x,
+        y: command.y,
+      };
 
     case 'Undo':
     case 'Redo':

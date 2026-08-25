@@ -63,7 +63,7 @@ describe('ActionSystem: end-to-end selection, travel and performance', () => {
 
     // Gate the canteen entrance behind a clearance no RouteContext this test issues will ever have.
     cellBlock.doors.setState(cellBlock.canteenEntranceDoorId, 'locked');
-    roomInstances.register({ instanceId: 'canteen-0', roomCatalogId: 'room.canteen', anchorTile: cellBlock.canteenTiles[0]!, capacity: 10, objectCapabilities: ['dining'] });
+    roomInstances.register({ instanceId: 'canteen-0', roomCatalogId: 'room.canteen', anchorTile: cellBlock.canteenTiles[0]!, residentCapacity: 10, concurrentUseCapacity: 10, objectCapabilities: ['dining'] });
 
     const actionSystem = new ActionSystem(store, query, records, needs, currentAction, position, coldState, roomInstances, navigation, DEFAULT_REGIME_SCHEDULES, () => ({
       role: 'prisoner', securityClearance: 0, permissions: [],

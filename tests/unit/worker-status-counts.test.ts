@@ -214,7 +214,16 @@ describe('publishing the status counts', () => {
       // rather than as an arbitrary constant (#96).
       treasuryMinorUnits: TREASURY_STARTING_BALANCE_MINOR_UNITS,
       rooms: 6,
-      roomCapacity: 20,
+      // The **resident** capacity, derived from the objects standing in the
+      // scenario's rooms rather than authored on the instances (ADR 0028
+      // decision 2): four cells with one bed each. The yard and the canteen
+      // contribute nothing to *this* number even though both hold furniture,
+      // because a bench and a dining table are not sleep surfaces -- they raise
+      // `concurrentUseCapacity`, which the strip does not yet read (that is
+      // phase 5's readout). It was 20 while the scenario authored a capacity of
+      // 8 on each of those two rooms, which is the figure that stopped being
+      // expressible: nothing authors an occupancy any more.
+      roomCapacity: 4,
       roomOccupants: 0,
       activeIncidents: 0,
       contrabandDiscovered: 0,
@@ -222,7 +231,7 @@ describe('publishing the status counts', () => {
       // prisoners are all still in intake (`prisonersInIntake: 4` above), so
       // none of them holds an occupancy slot -- `roomOccupants: 0` says the
       // same thing -- and an occupied place is what the state pays for (#29).
-      // Six registered room instances with twenty places between them earn
+      // Six registered room instances with four beds between them earn
       // nothing while they are empty.
       stateIncomeAccruedTodayMinorUnits: 0,
     });
@@ -540,7 +549,7 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
           instanceId: `cell-${String(index).padStart(4, '0')}`,
           roomCatalogId: 'room.cell',
           anchorTile: { x: tileCoordinate(index % 30), y: tileCoordinate(Math.floor(index / 30)) },
-          capacity: 1,
+          residentCapacity: 1, concurrentUseCapacity: 1,
           objectCapabilities: ['sleep-surface', 'sanitation'],
         });
       }

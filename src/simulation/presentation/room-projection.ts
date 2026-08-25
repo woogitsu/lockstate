@@ -65,11 +65,20 @@ export interface RoomProjectionOptions {
  *   (`requiredObjectCapability`), so it is real, load-bearing state.
  * - `'missing-capability'` -- an `object` requirement whose capabilities
  *   are not declared on the instance.
- * - `'not-evaluated'` -- `enclosed`, `outdoors` and `minimum-size`. A
- *   `RoomInstance` carries an anchor tile and nothing else: no bounds, no
- *   tile set, no wall topology, so there is nothing truthful to project.
- *   `minQuantity` is likewise uncheckable -- object *placement* does not
- *   exist, only capability tags.
+ * - `'not-evaluated'` -- `enclosed`, `outdoors` and `minimum-size`. Both of
+ *   those are evaluated *at zoning time* (`RoomZoningService`: the minimum size
+ *   is refused, the enclosure is reported on a notice) and neither answer is
+ *   recorded on the instance, so there is still nothing for this projection to
+ *   read.
+ *
+ *   `minQuantity` is likewise still uncheckable, and the reason has changed.
+ *   Object placement now exists (ADR 0028 phase 1) and objects *are*
+ *   individuated, so counting the beds in a cell is possible for the first
+ *   time -- what is missing is that this projection is not handed the placed
+ *   objects. Wiring that is phase 4's, which is when a second object type makes
+ *   a *quantity* mean something; until then every `object` requirement is
+ *   answered from the instance's derived capability list exactly as before.
+ *   `docs/HUD_PROJECTIONS.md` gap 13 narrows rather than closes.
  *
  * These three statuses are the **only** answers the codebase gives to "does
  * this room satisfy its catalog requirements" (#123 item 2). There used to be
@@ -96,8 +105,24 @@ export interface RoomRequirementViewModel {
 
 export interface RoomOccupancyViewModel {
   readonly current: number;
+  /**
+   * The **resident** capacity: how many prisoners may live here.
+   *
+   * `RoomInstance` carries two capacities since ADR 0028 decision 3, and this
+   * is the one occupancy is a share of -- `current` counts the prisoners
+   * `IntakeSystem` housed, and `free`/`utilization` are statements about
+   * housing. Projecting `concurrentUseCapacity` here instead would make a
+   * canteen that seats fourteen read as a dormitory for fourteen.
+   *
+   * The concurrent-use figure is **not projected at all yet**, and that is a
+   * gap rather than a decision: it is the Rooms tab readout ADR 0028 phase 5
+   * owes, along with "over capacity" -- which this shape still cannot say,
+   * because `free` clamps at zero and `utilization` clamps at 1. An
+   * over-capacity room therefore reads as full at 100 %, which is tolerable
+   * and is exactly what that phase is for.
+   */
   readonly capacity: number;
-  /** Absent for an instance registered with zero capacity -- a share of nothing has no meaning. */
+  /** Absent for an instance whose resident capacity is zero -- a share of nothing has no meaning. */
   readonly utilization?: BoundedValue;
   readonly free: number;
 }
@@ -221,9 +246,9 @@ function projectOccupancy(source: RoomProjectionSource, instance: RoomInstance):
   const current = source.roomInstances.occupancyOf(instance.instanceId);
   return {
     current,
-    capacity: instance.capacity,
-    free: Math.max(0, instance.capacity - current),
-    ...(instance.capacity > 0 ? { utilization: toBoundedValue(current, instance.capacity) } : {}),
+    capacity: instance.residentCapacity,
+    free: Math.max(0, instance.residentCapacity - current),
+    ...(instance.residentCapacity > 0 ? { utilization: toBoundedValue(current, instance.residentCapacity) } : {}),
   };
 }
 
@@ -332,7 +357,7 @@ export function projectRoomList(
       let typeCapacity = 0;
       for (const instance of ofType) {
         typeOccupants += source.roomInstances.occupancyOf(instance.instanceId);
-        typeCapacity += instance.capacity;
+        typeCapacity += instance.residentCapacity;
       }
       return {
         roomCatalogId: definition.id,

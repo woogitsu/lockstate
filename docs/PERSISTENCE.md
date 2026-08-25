@@ -449,22 +449,26 @@ save versions; the real upgrades are covered in
 V1 fixture the whole way in one decode, which is what a save from the first
 release actually gets.
 
-### Adding a V5 later
+### Adding a V6 later
 
-The steps below are what V4 (#259) did, and are the pattern to follow.
+The steps below are what V4 (#259) and V5 (ADR 0028) both did, and are the
+pattern to follow.
 
 1. Add the new interface/type and a `.strict()` Zod schema for it, alongside
    the existing ones — never edit a historical schema to match new code.
    Where two versions differ only in a bound or a leaf type, make the shared
    part a **factory** parameterised by that difference (as
-   `sessionSystemsSchemaFor` is) rather than copying several hundred lines:
-   the historical version is then frozen by the argument it is instantiated
-   with, and the two shapes cannot drift apart in any other respect.
-2. `saveMigrationChain.registerSchema(zodVersionSchema(5, v5Schema))`.
-3. `saveMigrationChain.registerMigration({ fromVersion: 4, toVersion: 5, migrate })`,
+   `sessionSystemsShapeFor` is, over two axes since V5: the need-level bound
+   and the room-instance row) rather than copying several hundred lines: the
+   historical version is then frozen by the arguments it is instantiated with,
+   and the two shapes cannot drift apart in any other respect. Make the
+   factory *generic* in a schema it takes, so the inferred payload type keeps
+   the real shape instead of widening to `any`.
+2. `saveMigrationChain.registerSchema(zodVersionSchema(6, v6Schema))`.
+3. `saveMigrationChain.registerMigration({ fromVersion: 5, toVersion: 6, migrate })`,
    pure and side-effect-free, in `src/persistence/save-migrations.ts`. If it
    changes the payload, recompute `checksum` in the step (see "Checksum").
-4. Bump `SAVE_SCHEMA_VERSION` to `5`. Call sites use the version-neutral
+4. Bump `SAVE_SCHEMA_VERSION` to `6`. Call sites use the version-neutral
    `SaveEnvelope`/`SavePayload`/`TrustedSaveEnvelope` aliases, so this step no
    longer sweeps a rename through the repository the way V2 did — but a test
    that hand-writes an envelope with a *literal* version does not benefit, so
@@ -486,6 +490,51 @@ The steps below are what V4 (#259) did, and are the pattern to follow.
    authoritative or derived — recording the answer under "What is deliberately
    excluded from the payload" above. An undecided subsystem is the failure
    mode #70 existed to fix.
+7. If the new version *removes* a field because it has become derived, make
+   the restore path recompute it and say where. V5 is the worked example: it
+   drops `capacity` and `objectCapabilities` from a room instance and
+   `restoreSessionSystems` calls `RoomCapacityResolver.resolveAll()` in its
+   step 2, before any prisoner state is loaded in step 3. A removal is only
+   lossless if the recomputation is *proved* to land on the value that was
+   dropped — `tests/migrations/save-v4-to-v5.test.ts` measures the premise it
+   rests on rather than citing it.
+
+## V5: a room instance carries its rectangle, not its capacity (ADR 0028)
+
+Three changes, and only one of them would have needed a bump on its own:
+
+- **`simulation.objects` is new and optional.** One row per placed object:
+  `placedObjectId`, `objectId`, `anchorTile`, `orientation`. Absence means "no
+  object has been placed", which is what every V4 build meant because no V4
+  build could place one — so this is the optional-field pattern above, exactly,
+  and the V4 → V5 migration adds no section.
+- **A room instance gains optional `width`/`height`.** The rectangle
+  `RoomZoningService.zone` used to receive and discard. Without it "is this
+  tile in this room" is unanswerable and no rule about a room's contents has a
+  domain. Optional, because a V4 row genuinely does not record it and there is
+  no honest default: `1×1` asserts a room the player did not zone, `64×64`
+  asserts one that overlaps its neighbours. An instance with no rectangle is
+  attributed no objects, so its capacity stays `0` — its
+  pre-object-placement behaviour, and therefore not a regression.
+- **A room instance loses `capacity` and `objectCapabilities`.** This is what
+  forces the bump: `capacity` was a *required* field, so removing it changes
+  the shape. Both are now pure functions of (placed objects, room bounds, the
+  object and room catalogues), and a persisted derived value can disagree with
+  the state that produced it. Recomputing at restore makes
+  `snapshot() → restore() → run N ticks` land on the same state **by
+  construction** rather than by agreement.
+
+**The migration is total and lossless because of a fact, not an argument.**
+`RoomZoningService` is the only thing in `src/` that has ever registered a room
+instance, and it registered `capacity: 0` with `objectCapabilities: []`
+unconditionally — so every row any shipped build has ever written holds exactly
+those two values, and the recomputed values equal the dropped ones.
+`tests/migrations/save-v4-to-v5.test.ts` re-measures that premise off the real
+command path, so a future change that gave a zoned room an authored capacity
+fails the test instead of quietly migrating a value it had assumed away.
+
+`supabase/migrations/` is untouched: a save-schema version is a client-side
+payload shape and nothing about it reaches the database.
 
 ## V4: need levels are stored scaled (#259)
 

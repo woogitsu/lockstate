@@ -204,6 +204,21 @@ export interface HudBuildableViewModel {
    * whose value would be ignored.
    */
   readonly occupiesEdge: boolean;
+  /**
+   * Whether this buildable puts a discrete object on a tile (ADR 0028 phase 1).
+   *
+   * The sibling of `occupiesEdge`, and a *shape* fact in the same sense: it
+   * decides which gesture the world pointer performs (a footprint press rather
+   * than an edge run) and which command the panel's numeric fields produce.
+   * Both are answers the composition root supplies, because what a buildable
+   * places is simulation content the HUD may not read (`AGENTS.md` boundary 1).
+   *
+   * The two are not opposites. `door-wooden` is neither -- it sits on no edge
+   * and places no object, which is a shipped defect this phase deliberately
+   * leaves as it found it (see `edgeNumericIdFor`) -- so a row can answer
+   * `false` to both and the panel offers it the wall route, unchanged.
+   */
+  readonly placesObject: boolean;
   /** Absent when nothing this buildable is made of can be bought. */
   readonly material?: HudBuildMaterialViewModel;
 }

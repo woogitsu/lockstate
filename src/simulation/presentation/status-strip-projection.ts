@@ -175,7 +175,13 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
   if (source.rooms !== undefined) {
     for (const instance of collectRoomInstances(source.rooms, rooms)) {
       roomCount += 1;
-      roomCapacity += instance.capacity;
+      // The resident capacity, because this counter sits beside the prisoner
+      // population: the strip's `Rooms` block reads "N rooms, M of C occupied",
+      // and C has to be the number M can grow to. Before ADR 0028 phase 1 this
+      // could only ever be zero in a real session, because `zone` registered
+      // every room with `capacity: 0`; a cell with a bed in it now makes it
+      // move for the first time.
+      roomCapacity += instance.residentCapacity;
       roomOccupants += source.rooms.roomInstances.occupancyOf(instance.instanceId);
     }
   }

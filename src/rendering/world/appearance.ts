@@ -172,12 +172,33 @@ const CATEGORY_FALLBACK: Readonly<Record<BuildableCategory, StructureAppearance>
 export function structureAppearance(definitionId: string): StructureAppearance {
   const explicit = STRUCTURE_APPEARANCE[definitionId];
   const buildable = BUILDABLE_REGISTRY.get(definitionId);
-  const catalogued = defaultObjectRegistry.getById(definitionId);
+  // Two ways a buildable id reaches an object definition, tried in this order.
+  // The first is the id *being* one, which is what this function was written
+  // for. The second is the buildable **naming** one through `placesObjectId`
+  // (ADR 0028 phase 1), which is how a real placement works: `bed-wooden`
+  // places `object.bed`, and without this line a finished bed would draw 1x1
+  // where the simulation reserved 1x2 -- the renderer disagreeing with the tile
+  // index about the same object.
+  const catalogued =
+    defaultObjectRegistry.getById(definitionId) ??
+    (buildable?.placesObjectId === undefined ? undefined : defaultObjectRegistry.getById(buildable.placesObjectId));
   const base = explicit ?? CATEGORY_FALLBACK[buildable?.category ?? 'object'];
 
   if (catalogued === undefined) return base;
   return { ...base, footprintTiles: { width: catalogued.footprint.width, height: catalogued.footprint.height } };
 }
+
+/**
+ * The colour a pending object placement is previewed in.
+ *
+ * The `'object'` category's own top fill rather than a colour chosen here, so
+ * the ghost under the pointer and the thing that appears when the order
+ * finishes are the same colour at two alphas -- the rule `BuildOverlay` follows
+ * for a wall. It is deliberately **not** the room's `zoningTint`: the
+ * designation and the furniture standing in it are two different marks, and
+ * tinting the preview with the room's colour would read as re-zoning the tile.
+ */
+export const PLANNED_OBJECT_TINT = CATEGORY_FALLBACK.object.topFill;
 
 /** Walls stored as tile edges in the world's own `topEdge`/`leftEdge` layers. */
 export const EDGE_WALL_APPEARANCE: StructureAppearance = CATEGORY_FALLBACK.wall;

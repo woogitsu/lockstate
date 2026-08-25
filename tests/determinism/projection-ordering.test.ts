@@ -26,7 +26,7 @@ const ROOM: RoomInstance = {
   instanceId: 'room.cell#1',
   roomCatalogId: 'room.cell',
   anchorTile: { x: tileCoordinate(0), y: tileCoordinate(0) },
-  capacity: 8,
+  residentCapacity: 8, concurrentUseCapacity: 8,
   objectCapabilities: [],
 };
 
