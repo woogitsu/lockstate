@@ -2,7 +2,7 @@
 
 ## Status
 
-**Proposed — pending human approval.** Not accepted.
+**Accepted for §§1-4, which are enforced in SQL. §§5-6 remain Proposed and unimplemented.**
 
 This ADR deliberately mixes two kinds of statement, and the difference
 matters more than anything else in it:
