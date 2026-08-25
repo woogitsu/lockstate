@@ -175,7 +175,15 @@ describe('the simulation iterates collections in a canonical order', () => {
     // `src/content/default-locale-en.ts`, a file in this scan, and a violation
     // injected into them passed this gate. Adding an enumeration must stay
     // free; losing one must fail, and at the measured value any loss does.
-    expect(REPORT.siteCount, 'fewer enumerations found than when this floor was set -- the scan lost corpus').toBeGreaterThanOrEqual(53);
+    //
+    // 53 -> 52 when #297 deleted `PathRequestQueue.pendingIds()`, whose body
+    // was `[...this.pending.keys()].sort()` -- a real site in this scan, in a
+    // method ADR 0007's amendment records as having had no caller. Re-measured
+    // rather than relaxed: the whole point of a floor at the measured value is
+    // that it fails on a loss, so a deliberate deletion has to move it down by
+    // exactly the number of sites deleted, and one was. Lowering it further
+    // than the deletion accounts for would give back the slack #198 closed.
+    expect(REPORT.siteCount, 'fewer enumerations found than when this floor was set -- the scan lost corpus').toBeGreaterThanOrEqual(52);
   });
 
   it('reads the real array `.entries()` in save-schema.ts as the array it is', () => {
