@@ -130,6 +130,13 @@ for this contract to bound. A projection that carries rows must be paged
 before it may be published on a cadence — a per-send cost that grows with the
 prison is exactly the failure that cadence was chosen to avoid.
 
+`offset` and `limit` now have a direction to arrive from:
+`simulation/request-projection` carries them (section 9), which is what
+closes #157 finding 1. The ceiling is `MAX_PROJECTION_PAGE_LIMIT` (500), on
+the schema rather than in the handler, so an over-large window never decodes —
+without one, "the UI may choose the window" and "the UI may ask for all five
+thousand rows" would be the same request.
+
 The twelfth is #29's "earned today" accrual, and it is the first count here
 that is not a *level*. Every other one moves only when a discrete event moves
 it, which is what lets `publishStatusCounts` skip a publication whose counts
@@ -333,11 +340,80 @@ Two things deliberately do **not** cross:
   stays `0` and the strip omits the bar rather than drawing a wrong
   denominator.
 
-What this does **not** close: the other nine projections in this directory
-still have no route. Rosters, room lists, staff, security, contraband and
-incidents remain reachable only from their own tests, and each carries rows,
-so each needs the paging contract honoured (section 5) and a page *request*
-direction the protocol does not have yet — the counts needed neither.
+What this did **not** close, and section 9 does: the other nine projections
+in this directory had no route at all. Rosters, room lists, staff, security,
+contraband and incidents were reachable only from their own tests, and each
+carries rows, so each needed the paging contract honoured (section 5) and a
+page *request* direction the protocol did not have — the counts needed
+neither.
+
+### 9. The general channel the rest use (#104, #157 finding 1)
+
+Section 8's pipe was the second **special case**, not the pipe: the clock had
+its own message kind and the counts had another, so the nine read models left
+over were nine more protocol changes away. Section 9 is the change that stops
+the protocol growing with the read model.
+
+One request and one reply carry all of them:
+
+1. The main thread sends `simulation/request-projection` naming a
+   `projectionId` from a closed vocabulary (`PROJECTION_IDS`, twelve members),
+   optionally with `offset`/`limit` and optionally with a `target` — an entity
+   id or a string id — for a detail projection.
+2. The worker looks the id up in `PROJECTION_CATALOG`
+   (`src/simulation/worker/projection-catalog.ts`), which is the only place
+   that knows which registry of a live `SimulationRuntime` answers which
+   projection's source shape. It is a `Record<ProjectionId, …>`, so a newly
+   declared id **does not compile** until it has a binding.
+3. It replies with one correlated `simulation/projection`: the id, the tick it
+   read, the window it built, and the view model as a `versionedPayload` under
+   the projection's own `schemaId`/`schemaVersion`.
+4. `SimulationProjectionRequester` (`src/ui/simulation-projections.ts`) is the
+   main thread's side. Like the clock's and the counts' translators it lives
+   outside `src/ui/hud/`, because the HUD may not import the simulation.
+
+Four properties are worth stating because each is a decision:
+
+- **Pull, not push, and the two publications stay publications.** A level the
+  player is always looking at belongs on a cadence; a list only an open panel
+  cares about, in a window only that panel knows, belongs on a request.
+  Nothing publishes a `simulation/projection` on a timer.
+- **Which is why #157 finding 2 does not arise.** `ConfiscationLedger` has no
+  windowed accessor and `IncidentLog.all()` materialises every incident ever
+  recorded — both unsafe to read twice a second, and neither read at all until
+  something asks. The catalog reads the ledger through the non-consuming
+  `all()` and never `drain()`s;
+  `tests/determinism/projection-request.test.ts` asserts that ten reads report
+  the same ledger.
+- **The window is the caller's** (contract 5). `offset`/`limit` are on the
+  request, capped by `MAX_PROJECTION_PAGE_LIMIT` (500), and the reply echoes
+  the window it actually built beside the true `total`. A worker-chosen window
+  is not paging, it is truncation the UI cannot scroll.
+- **Still a read.** Sixty ticks with every projection requested on every
+  tick-loop wake end byte-identical to sixty ticks with none requested.
+
+**Cost, measured rather than assumed.** The production worker chunk grows
+234.84 kB → 254.44 kB (+19.6 kB, uncompressed) and the main chunk 1,627.84 kB
+→ 1,628.66 kB (+0.82 kB). The worker's share is where it should be and is
+almost all of it: the worker now imports every module in this directory and
+the content registries they resolve `nameKey`s against, where before it
+imported only the status strip's. It is a worker chunk, so it blocks no first
+paint. Per-request cost is not reported here as a timing figure —
+`docs/BENCHMARKING.md` forbids timing assertions and the shapes are what make
+the route safe: a paged reply is bounded by `MAX_PROJECTION_PAGE_LIMIT` rather
+than by the population, and nothing is projected unless something asks.
+
+`tests/foundation/projection-reachability-contract.test.ts` is the gate: it
+reads the exported projections out of this directory and fails if one has
+neither a catalog entry nor a recorded route of its own. `projectClockPosition`
+is the one recorded exception — it is a pure function of a tick and the main
+thread already has the tick, so it is computed there rather than requested.
+
+What this does **not** close: **no panel calls the requester yet.** The route
+is reachable, every projection answers over it, and the first consumer is a
+separate issue — #104 scopes it out in those words ("Not in scope: what to
+*do* with the data"). The gate above records that state and fails the day a
+module under `src/ui/` starts using it, so the entry cannot go quietly stale.
 
 ## Gaps: fields a panel plausibly wants that the simulation does not have
 
@@ -489,17 +565,32 @@ decision about what to build next.
 ### Staff
 
 19. **`GuardRoster` is the only staff store**, and there is no employment,
-    hiring, shift or scheduling system. Staffing "by time" exists only as
-    `DeploymentSchedule`'s required headcount per sector.
+    shift or scheduling system. Staffing "by time" exists only as
+    `DeploymentSchedule`'s required headcount per sector. **Hiring is the one
+    part of this that now exists** ([ADR 0025](./adr/0025-guard-hiring-surface.md)):
+    a `HireStaff` command reaches `StaffHiringService`, which spends from the
+    treasury and calls `GuardRoster.hire`, and the Staff panel on the Security
+    tab is what sends it. Nothing dismisses, promotes, schedules or pays
+    anybody, and there is still no employment record beyond the `GuardRecord`
+    the roster writes.
 20. **No per-staff skill level or fatigue.** `staff-role-catalog` declares
-    skill *requirements* per role, but no staff entity carries a skill.
-21. **`wageBand` exists in content, and there is no payroll.** There is a
-    treasury and a procurement system since #96/#89 — money buys materials —
-    and since #29 there is an income line, but nothing pays anyone: no wage is
-    ever debited. Nothing wage-related may be rendered as a live figure; it is
-    still a content hook for a future issue. So the schedule runs one way
-    only: money arrives and nothing recurring takes it away, which is also why
-    ADR 0017 decision 8's insolvency ladder is still unreachable.
+    skill *requirements* per role, but no staff entity carries a skill. This
+    is also why hiring reads the *bottom* of a role's wage band and not a
+    point inside it: where in the band an individual sits would need a skill
+    or negotiation model, and there is none.
+21. **`wageBand` is read once, at hire, and there is still no payroll.** A
+    hire debits the treasury by the role's `wageBand.minPerDay`
+    ([ADR 0025](./adr/0025-guard-hiring-surface.md) decision 2), and the Staff
+    panel renders that figure on the button that will spend it — so the
+    earlier form of this gap, "no wage is ever debited" and "nothing
+    wage-related may be rendered as a live figure", is no longer true. What is
+    still true is everything else: **nothing recurring**. The charge happens
+    once, at the tick the command executes, and no system pays anyone on a
+    schedule — so ADR 0017 decision 3's standing cost and decision 8's
+    insolvency ladder are as unbuilt as before, and a one-off charge
+    `Treasury.spend` refuses rather than overdrawing keeps the ladder
+    unreachable. A *rate* — a per-day wage bill, a payroll forecast, a running
+    cost — is still a figure no system produces and must not be rendered.
 
     **The two things that credit the treasury, and which of them is an income
     line.** `StateIncomeSystem` (`src/simulation/economy/income.ts`) is the
@@ -525,11 +616,14 @@ decision about what to build next.
       workstream. Until it lands, both the balance and the "earned today"
       readout beside it are flat.
 
-    So the balance a player can observe still only ever goes down. That is not
-    a loss of money — a purchase buys stock, an undone build order returns the
+    So the balance a player can observe still only ever goes down, and a hire
+    is now one of the two ways it does. That is not a loss of money in the
+    procurement half — a purchase buys stock, an undone build order returns the
     stock it had allocated (#97), and the two together conserve value exactly,
     which `tests/integration/economy-money-conservation.test.ts` asserts in
-    integer minor units over the sequences a player can produce.
+    integer minor units over the sequences a player can produce. A hire is
+    deliberately outside that property rather than a hole in it: what the money
+    bought is a staff member, and no command destroys one.
 22. **`'on-search'` conflates two duties.** A guard pulled onto a
     contraband search and a guard dispatched to an incident share one
     deployment phase, and neither `SearchSystem` nor

@@ -280,6 +280,150 @@ nothing on this channel able to dismiss it. `docs/PERSISTENCE.md` records the
 exclusion and `docs/HUD_PROJECTIONS.md` gap 33 lists it alongside the other
 counters that do not survive a restore.
 
+## Amendment, 2026-08-25: `simulation/request-projection` and `simulation/projection` are the general route
+
+The amendment above gave the status-strip counts a message. It did not give
+the read-model layer a *channel*, and the difference is what issue #104 was
+filed about: the clock had a kind of its own and the counts had another, so
+the nine remaining projections in `src/simulation/presentation/` were nine
+more protocol changes away. Two special cases in place of a pipe. A third and
+fourth bespoke kind would have made this protocol grow with the read model
+rather than with the boundary.
+
+So the protocol grows **once**, and the catalogue behind it grows instead:
+
+- `simulation/request-projection` (main-to-worker) names a `projectionId` from
+  a closed vocabulary — `PROJECTION_IDS` in `src/simulation/protocol/types.ts`,
+  twelve members today — with optional `offset`/`limit` and an optional
+  `target` (an entity id, or a string id) for the three detail projections.
+- `simulation/projection` (worker-to-main) answers exactly one of those. It
+  carries the id, the tick it was read at, the page window it actually built,
+  and the view model.
+- `src/simulation/worker/projection-catalog.ts` binds each id to the registries
+  of a live `SimulationRuntime` that answer that projection's source shape. It
+  is a `Record<ProjectionId, ProjectionCatalogEntry>`, so a member added to the
+  vocabulary does not compile until it has a binding.
+
+### Correlated, not published, and why the two publications stay published
+
+This is a **request/response pair** under decision 2, and it is the first
+worker-to-main message this ADR has added whose `replyTo` is *required*. The
+2026-08-23 amendment states the rule in the other direction — `replyTo` is
+optional on exactly those messages the worker may emit unprompted, and absent
+from those that are never replies. `simulation/projection` is never anything
+but a reply, so it always carries one.
+
+Nothing publishes a projection on a timer, and `simulation/clock-state` and
+`simulation/status-counts` are deliberately **not** moved onto this route. The
+line is not which projection it is, it is what kind of fact it is: a level the
+player is always looking at, that changes on its own, belongs on a cadence —
+nobody can ask for a number they are already reading. A list that only an open
+panel cares about, in a window only that panel knows, belongs on a pull. The
+two publications are the first kind. Everything the catalogue carries is the
+second.
+
+That distinction also disposes of three of the four obstacles #157 raised
+against the next slice, without deciding any of them:
+
+- **Finding 1, no page-request direction — closed.** `offset` and `limit` are
+  on the request, and the reply echoes the window it built beside the true
+  `total`, so "the projection honoured the window" is checkable from outside
+  the projection. `MAX_PROJECTION_PAGE_LIMIT` (500) is on the schema rather
+  than in the handler: without a ceiling, "the UI may choose the window" and
+  "the UI may ask for all five thousand rows" are the same request.
+- **Finding 2, two accessors unsafe on a timer — does not arise.**
+  `ConfiscationLedger` has no windowed accessor and `IncidentLog.all()`
+  materialises every incident ever recorded. Both are unsafe to read twice a
+  second and neither is read at all until something asks. The catalogue reads
+  the ledger through the non-consuming `all()` the projection source already
+  requires and never `drain()`s; `tests/determinism/projection-request.test.ts`
+  asserts that ten reads report the same ledger. **Who drains, and when,
+  remains undecided** — nothing in `src/` or `tests/` calls `drain()` — and a
+  pull channel does not force that decision, which is why it is not taken here.
+- **Finding 3, `statusCountsEqual` does not generalise — moot on this route.**
+  "Publish only what changed" is a property of a cadence. A pull channel sends
+  exactly what was asked for, so there is nothing to diff and no revision
+  counter is needed. Should a *row* projection ever want a cadence, finding 3's
+  argument for a revision counter on the source registry stands untouched.
+
+Finding 4 — no cell-only capacity — is unaffected: it is a gap in the
+simulation, not in the channel, and `HudCountsViewModel.prisonerCapacity`
+still reports `0` so the strip omits the bar rather than drawing a wrong
+denominator.
+
+Decision 9 is untouched and is worth restating because this route sits next to
+it: a `simulation/command-result` of `status: 'queued'` means the message was
+**received**, never that it took effect. A projection reply says what the
+prison looks like at a tick; it is not an acknowledgement of anything, and it
+must not be read as one.
+
+### Why the body is a `versionedPayload` and the counts' body is not
+
+The 2026-08-24 amendment declares every field of `simulation/status-counts` and
+argues against `versionedPayload` there: "the message kind already names which
+schema the payload follows". That argument does not transfer. **This kind names
+a family**, and `projectionId` selects the member — so declaring every field
+would mean a second copy of all of `src/simulation/presentation/` written in
+Zod, and a copy that drifts is precisely what the `.strict()` there exists to
+prevent, reproduced eleven times over.
+
+`versionedPayloadSchema` is the type this protocol already has for an opaque
+body carried with its own `schemaId` and `schemaVersion` (decision 5), and its
+`jsonValueSchema` still enforces at the boundary the property that actually
+matters: finite numbers, no cycles, no class instances, bounded depth — which
+is `docs/HUD_PROJECTIONS.md` contract 1's own structured-clone guarantee,
+restated where it can be checked. What *is* declared and `.strict()` is the
+envelope: the id against a closed enum, the tick, and the page window as three
+non-negative integers.
+
+`view` is **absent** — not null, not an error — when a detail projection was
+asked about a target that no longer exists. Asking about a prisoner released
+between the click and the reply is a race the UI handles.
+
+### Publication is still a read
+
+The handler reads `Kernel.tick` and runs a pure projection over the runtime's
+registries. It calls nothing on the kernel, steps nothing, advances no clock
+and writes nothing, so no number of requests can change what a tick computes.
+`tests/determinism/projection-request.test.ts` requires sixty ticks driven
+through the real worker **with every declared projection requested on every
+tick-loop wake** to end byte-identical to the same sixty ticks stepped with no
+worker at all — which is far more traffic than any panel would generate, and
+deliberately so.
+
+Three refusals happen before any projection runs, all `invalid-payload` and
+all recoverable, because each rejects a request without touching simulation
+state: a page window on a projection with no list, a target of the wrong kind,
+and a missing target on a detail projection.
+
+### Compatibility
+
+The envelope version stays at `1`, by the same argument the 2026-08-24
+amendment makes for adding a kind rather than changing one: an old peer reads
+the `kind` first, does not know it, and classifies it as
+`unknown-message-kind`, so the decoder fails closed before dispatch and the
+outcome is a readout that never appears rather than a payload interpreted as
+something else. Both peers are emitted from one build in any case.
+
+`simulation/delta` is still not adopted and still has no sender. A projection
+reply is a **level** read at a tick, not a diff from a base tick, so nothing
+here needs `baseTick`, a base-tick contract, or an answer for a receiver that
+missed the base — the three things #157 finding 5 says a delta sender would
+still require beyond the schema that already exists.
+
+### What this does not do
+
+It does not paint anything. No panel calls the requester yet, and the first
+consumer is a separate issue — #104 draws that line itself ("Not in scope:
+what to *do* with the data"). What is closed is that the read models are no
+longer structurally unreachable, and that the next one added cannot quietly
+join them: `PROJECTION_CATALOG` refuses to compile without a binding,
+`tests/contract/worker-projection-channel.test.ts` drives every declared id
+through a real state machine, and
+`tests/foundation/projection-reachability-contract.test.ts` reads the exported
+projections out of the read-model directory and fails on one that has no route
+at all.
+
 ## Compatibility strategy
 
 Envelope protocol version 1 is the only accepted version initially. Adding an optional domain field may remain compatible if old peers can ignore it through an explicitly versioned domain payload. Adding or changing an envelope message in a way an old peer cannot safely interpret requires either a compatibility path or an envelope-version increment with fixtures covering both sides.

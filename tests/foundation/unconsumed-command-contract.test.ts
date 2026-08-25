@@ -18,8 +18,9 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  *
  * ## What it found on the first run, and what it has moved since
  *
- * Six commands were declared. **One had a producer.** (There are seven now:
- * `UnzoneRoom` arrived with the Rooms tab, and arrived with a producer.)
+ * Six commands were declared. **One had a producer.** (There are eight now:
+ * `UnzoneRoom` arrived with the Rooms tab and `HireStaff` with the Staff panel,
+ * and both arrived with a producer.)
  *
  * `src/main.ts` dispatched `{ type: 'PlaceBuildOrder', ... }` from the
  * `'place-build-order'` HUD intent. `CancelBuildOrder`, `ZoneRoom`,
@@ -28,7 +29,7 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  * cancel, a zone, a purchase or an undo, and no other module built a
  * command object at all.
  *
- * ## What it reads today: four of six
+ * ## What it reads today: seven of eight
  *
  * `Undo` and `Redo` gained producers with #261's step 6, and their entries came
  * out of the list below in the same change -- which is the direction this file
@@ -62,8 +63,18 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  * same change. `UnzoneRoom` arrived in that change *with* a producer and was
  * never on the list at all, which is the only way a new command should land.
  *
+ * `HireStaff` is the eighth command and landed the same way: with its producer,
+ * so it never spent a day on the list below either. Its consumer was in the
+ * position `PurchaseMaterials`'s had been in, one layer down: `GuardRoster.hire`
+ * was complete, snapshotted and restored, and **every call in the repository was
+ * in a test**, so the four systems that read the roster -- deployment, patrol,
+ * incident response and contraband search -- iterated an empty collection in
+ * every session a player could start. ADR 0025 records the surface that closed
+ * it, and `src/main.ts` dispatches the command from the Staff panel's one
+ * button.
+ *
  * So `CancelBuildOrder` is the whole of what the list below still holds, and
- * the count is measured, not carried: six producers all in `src/main.ts`, one
+ * the count is measured, not carried: seven producers all in `src/main.ts`, one
  * command with none.
  *
  * ## What counts as a producer
@@ -81,13 +92,13 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  * writes `{ type: 'PlaceBuildOrder', orderId, ... }`, while a consumer writes
  * `case 'PlaceBuildOrder':` (`src/simulation/construction/handler.ts`) or
  * `command.type === 'PlaceBuildOrder'`. Matching the bare literal would count
- * all six handler branches as producers and report the opposite of the truth.
+ * every handler branch as a producer and report the opposite of the truth.
  *
  * Two limits, stated rather than left to be discovered:
  *
  * - A producer that assembles the object from a variable (`{ type: kind, ... }`)
  *   is invisible to a text scan. None exists today, and the positive control
- *   below fails loudly if any of the four that do exist stops being found.
+ *   below fails loudly if any of the seven that do exist stops being found.
  * - The scan cannot tell a live dispatch from dead code inside `src/`. It
  *   answers "can this command be constructed anywhere in the application",
  *   which is the weaker and checkable half of "can a player send it".
@@ -98,7 +109,7 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  * ## Why the list comes out of the schema
  *
  * `simulationCommandSchema.options` is the discriminated union itself, so a
- * seventh member is in scope the moment it is added. A hand-written array
+ * ninth member is in scope the moment it is added. A hand-written array
  * here would be a second list to forget, which is the failure this whole
  * family of gates exists to prevent.
  */
@@ -156,13 +167,14 @@ describe('every declared simulation command either has a producer or is accounte
     // loud. A pattern that matched nothing, or a stripper that blanked every
     // file, would do the same in a way the file count cannot see, so the
     // positive control names every command that genuinely has a producer and
-    // where it is -- all six in `src/main.ts`, which is the composition root
+    // where it is -- all seven in `src/main.ts`, which is the composition root
     // and the only place in `src/` that builds a command object.
     expect(producerSources.length).toBeGreaterThan(50);
-    expect(COMMAND_TYPES.length).toBe(7);
+    expect(COMMAND_TYPES.length).toBe(8);
 
     expect(producersOf('PlaceBuildOrder')).toEqual(['src/main.ts']);
     expect(producersOf('PurchaseMaterials')).toEqual(['src/main.ts']);
+    expect(producersOf('HireStaff')).toEqual(['src/main.ts']);
     expect(producersOf('Redo')).toEqual(['src/main.ts']);
     // The two the Rooms tab added, asserted by name rather than only by the
     // count: a producer that had drifted out of the composition root would
@@ -173,6 +185,7 @@ describe('every declared simulation command either has a producer or is accounte
     expect(main, 'the production producers of a simulation command are no longer where this gate looks for them').toBeDefined();
     expect(main!.text).toContain(`type: 'PlaceBuildOrder'`);
     expect(main!.text).toContain(`type: 'PurchaseMaterials'`);
+    expect(main!.text).toContain(`type: 'HireStaff'`);
     expect(main!.text).toContain(`type: 'Undo'`);
     expect(main!.text).toContain(`type: 'Redo'`);
     expect(main!.text).toContain(`type: 'ZoneRoom'`);
@@ -238,7 +251,7 @@ describe('every declared simulation command either has a producer or is accounte
     ).toEqual([]);
   });
 
-  it('measures six produced and one unproduced, which is where the Rooms tab left the command surface', () => {
+  it('measures seven produced and one unproduced, which is where ADR 0025 left the command surface', () => {
     // The denominator, stated so the gate reports a fact rather than only
     // guarding one, and exact in both directions. A command that quietly
     // stopped being reachable would otherwise only have to be added to the
@@ -248,11 +261,14 @@ describe('every declared simulation command either has a producer or is accounte
     //
     // It read five and one on the first run, three and three once #261 gave
     // the undo pair its keys, two and four on #89's branch before that merged
-    // in, and one and six once the Rooms tab gave `ZoneRoom` a producer and
-    // brought `UnzoneRoom` with one. Both numbers move in the same change as a
-    // producer, which is the point of asserting the count as well as the list:
-    // neither can be edited alone and stay green.
+    // in, one and six once the Rooms tab gave `ZoneRoom` a producer and brought
+    // `UnzoneRoom` with one, and one and seven once ADR 0025 added `HireStaff`
+    // *with* its producer. Both numbers move in the same change as a producer,
+    // which is the point of asserting the count as well as the list: neither can
+    // be edited alone and stay green. Note the denominator moves too, so a
+    // ninth command added with no producer fails here as well as failing the
+    // accounting above.
     expect(unproducedTypes.length).toBe(1);
-    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(6);
+    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(7);
   });
 });

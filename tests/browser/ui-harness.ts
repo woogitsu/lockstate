@@ -28,6 +28,7 @@ import type {
   BuildLayoutProbe,
   BuildProbe,
   ButtonState,
+  StaffProbe,
   ImportOutcomeName,
   HudProbe,
   LayoutBox,
@@ -38,7 +39,7 @@ import type {
   RoomsLayoutProbe,
   RoomsProbe,
 } from './ui-harness-api';
-import { HUD_MESSAGE_KEY, type HudBuildViewModel } from '../../src/ui/hud';
+import { HUD_MESSAGE_KEY, type HudBuildViewModel, type HudStaffViewModel } from '../../src/ui/hud';
 import '../../src/styles.css';
 
 /**
@@ -350,6 +351,19 @@ const BUILD_MODEL: HudBuildViewModel = {
 };
 
 /**
+ * The one role `src/main.ts` projects out of the staff-role catalogue, as
+ * plain view-model data (ADR 0025).
+ *
+ * The wage is the guard's authored `wageBand.minPerDay`, written out rather
+ * than imported for the reason `BUILD_MODEL` writes its prices out: the spec
+ * exercises the *panel*, not the catalogue, and
+ * `tests/browser/app-shell.spec.ts` is where the real projection is driven.
+ */
+const STAFF_MODEL: HudStaffViewModel = {
+  roles: [{ staffRoleId: 'staff-role.guard', labelKey: 'staff-role.guard.name', hireChargeMinorUnits: 80 }],
+};
+
+/**
  * A catalogue of `count` entries, for issue #143.
  *
  * `BUILDABLE_REGISTRY` holds two buildables, and two is one fewer than it
@@ -585,6 +599,10 @@ window.lockstateUiHarness = {
       viewModel: options?.empty === true ? EMPTY_HUD_VIEW_MODEL : BASE_VIEW_MODEL,
       build: options?.buildables === undefined ? BUILD_MODEL : buildModelWithCatalogueOf(options.buildables),
       rooms: ROOMS_MODEL,
+      // `empty` is about the *view model* -- a prison with nothing in it --
+      // and not about content, so the Staff panel is offered its one role in
+      // both states, exactly as the Build panel is offered its catalogue.
+      staff: STAFF_MODEL,
       onIntent: (intent: HudIntent) => {
         intents.push(JSON.stringify(intent));
         // Stands in for a host that refuses -- which in the real app is
@@ -822,6 +840,32 @@ window.lockstateUiHarness = {
         .map((node) => (node.textContent ?? '').trim())
         .filter((text) => text.length > 0),
     };
+  },
+
+  staffProbe(): StaffProbe {
+    const panel = document.querySelector<HTMLElement>('.hud-staff');
+    const rows = [...document.querySelectorAll<HTMLElement>('.hud-staff__list [data-staff-role]')];
+    const hire = document.querySelector<HTMLButtonElement>('.hud-staff__hire');
+
+    return {
+      // `hidden` is inherited through the DOM, so `offsetParent` is what the
+      // browser actually decided -- not what the attribute claims.
+      visible: panel !== null && panel.offsetParent !== null,
+      options: rows.map((row) => row.dataset['staffRole'] ?? ''),
+      selected: rows.find((row) => row.dataset['selected'] === 'true')?.dataset['staffRole'] ?? null,
+      hireLabel: hire?.textContent?.trim() ?? '',
+      hireDisabled: hire?.disabled ?? true,
+      texts: [...(panel?.querySelectorAll<HTMLElement>('button, label, span, h2') ?? [])]
+        .map((node) => (node.textContent ?? '').trim())
+        .filter((text) => text.length > 0),
+    };
+  },
+
+  clickHireStaff(): boolean {
+    const hire = document.querySelector<HTMLButtonElement>('.hud-staff__hire');
+    if (hire === null) return false;
+    hire.click();
+    return true;
   },
 
   clickArmBuild(): boolean {

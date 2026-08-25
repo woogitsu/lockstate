@@ -4,6 +4,7 @@ import { packCommand } from '../../src/simulation/protocol/commands';
 import { REFUSAL_REASONS, type RefusalReason } from '../../src/simulation/protocol/types';
 import {
   BUILD_REFUSAL_REASONS,
+  HIRE_REFUSAL_REASONS,
   PURCHASE_REFUSAL_REASONS,
   RefusalLog,
   UNZONE_REFUSAL_REASONS,
@@ -95,10 +96,11 @@ describe('RefusalLog: the snapshot shape a cadence channel can carry', () => {
   });
 });
 
-describe('the wire vocabulary is exactly what the three domains can produce', () => {
-  it('maps every build, purchase and zoning refusal onto a declared reason', () => {
+describe('the wire vocabulary is exactly what the five domains can produce', () => {
+  it('maps every build, hiring, purchase, zoning and removal refusal onto a declared reason', () => {
     const produced = [
       ...Object.values(BUILD_REFUSAL_REASONS),
+      ...Object.values(HIRE_REFUSAL_REASONS),
       ...Object.values(PURCHASE_REFUSAL_REASONS),
       ...Object.values(ZONE_REFUSAL_REASONS),
       ...Object.values(UNZONE_REFUSAL_REASONS),
@@ -129,13 +131,15 @@ describe('the wire vocabulary is exactly what the three domains can produce', ()
     expect([...REFUSAL_REASONS]).toEqual([...REFUSAL_REASONS].sort());
   });
 
-  it('names the four commands it can answer, so the vocabularies cannot collide', () => {
-    // `unzone` is the fourth. It is its own namespace and not more members of
-    // `zone`'s, because `invalid-area` is the same *condition* for both and a
-    // different *sentence*: a player told "the room was not zoned" after asking
-    // to remove one would go and look at the wrong control.
+  it('names the five commands it can answer, so the vocabularies cannot collide', () => {
+    // `unzone` is its own namespace and not more members of `zone`'s, because
+    // `invalid-area` is the same *condition* for both and a different
+    // *sentence*: a player told "the room was not zoned" after asking to remove
+    // one would go and look at the wrong control. `hire` is a namespace for the
+    // same reason against `purchase`: the treasury refuses both for
+    // `insufficient-funds` and only the command says which panel to look at.
     const prefixes = new Set(REFUSAL_REASONS.map((reason) => reason.split('.')[0]));
-    expect([...prefixes].sort()).toEqual(['build', 'purchase', 'unzone', 'zone']);
+    expect([...prefixes].sort()).toEqual(['build', 'hire', 'purchase', 'unzone', 'zone']);
   });
 
   it('keeps the one spelling zoning and removal share as two different wire ids', () => {
@@ -168,6 +172,13 @@ describe('the wire vocabulary is exactly what the three domains can produce', ()
       const fromZone = ZONE_REFUSAL_REASONS[reason as keyof typeof ZONE_REFUSAL_REASONS];
       expect(fromZone, `${reason} must not be one wire id for two commands`).not.toBe(fromBuild);
     }
+
+    // And the second such pair, which arrived with hiring (ADR 0025): the
+    // treasury refuses a purchase and a hire for the same reason, and only the
+    // command says which panel the player should be looking at.
+    expect(HIRE_REFUSAL_REASONS['insufficient-funds']).not.toBe(
+      PURCHASE_REFUSAL_REASONS['insufficient-funds'],
+    );
   });
 });
 
