@@ -2,16 +2,34 @@
 
 ## Status
 
-**Proposed — pending human approval.** Not accepted.
+**Accepted, 2026-08-25 — as the mechanism and the boundary, not as an answer to
+the three questions.** What the approval settles is what landed and why it is
+allowed to have landed without a decision: a rating seam on
+`RoomInstanceRegistry.findBestAvailable`, one term in the rating, occupants
+sorted ascending by entity id before the rating sees them, and a rating that
+ranks permissible candidates and refuses nothing. The three questions below are
+**not** answered by this status and stay open, each for the reason its own
+section gives.
 
-Nothing in `src/` implements any decision in this document. What *is* in
+**The subject of this decision is unreachable in a shipped session, and
+accepting it does not change that.** `RoomZoningService` registers every room
+instance with `capacity: 0`, so no session this codebase can produce puts two
+prisoners in one cell: this is an approved decision whose effects are not yet
+observable through any path a player can take. They become observable on the day
+capacity is derived from placed objects
+([ADR 0028](./0028-object-placement-and-derived-room-capacity.md), Accepted
+2026-08-25), which is the same day the tripwire in §*Context* fails. The
+approval is deliberate on that basis rather than in spite of it — the mechanism
+is inert until then, which is exactly what makes approving it cheap.
+
+Nothing in `src/` implements any of the three answers. What *is* in
 `src/` is deliberately the part that needed no decision, and it is described
-in §*What already landed, and why it is not a decision* so that a reviewer
+in §*What already landed, and why it is not a decision* so that a reader
 can tell the two apart without reading the diff.
 
-A reviewer is being asked to settle three questions. They are separable and
-can be answered independently, but they are filed together because answering
-one in isolation forces a guess at the other two.
+The three questions are separable and can be answered independently, but they
+are filed together because answering one in isolation forces a guess at the
+other two.
 
 1. **Is a cell-sharing rating recomputed on demand, or recorded state?**
 2. **Is the rating advisory or binding — and if binding, who may override it?**
@@ -59,7 +77,7 @@ this is now observable end to end rather than only argued: it is
 session path, because a zoned room has no capacity", which before the Rooms
 tab could not have been written at all. That case is a tripwire, not
 decoration — it fails the day capacity is derived from placed objects
-(**ADR 0028**, itself Proposed), which is the day this precondition expires and
+(**ADR 0028**, Accepted 2026-08-25), which is the day this precondition expires and
 #79 becomes reachable for real.
 
 **Three of #79's four named inputs do not exist to be read.** Gang membership

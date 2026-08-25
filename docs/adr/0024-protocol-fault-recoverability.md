@@ -2,26 +2,37 @@
 
 ## Status
 
-**Proposed — pending human approval.** Not accepted.
+**Accepted, 2026-08-25.** The decision below is approved as written, unchanged
+by the approval.
 
-Issue #187 finding 1 asks for this decision in those words: *"is faulting what
-we meant, for a message that provably touched nothing?"* — and says it "needs a
-session-lifetime answer, not an implementation tweak". The owner is being asked
-to sign off on one sentence:
+Issue #187 finding 1 asked for this decision in those words: *"is faulting what
+we meant, for a message that provably touched nothing?"* — and said it "needs a
+session-lifetime answer, not an implementation tweak". What the owner signed off
+on is one sentence:
 
 > **A message that failed to decode never reached simulation state, so it must
 > not end the session — but it must be reported to the player, and the two are
 > one decision rather than two.**
 
-The code on the branch that proposes this ADR implements it, which the index
-notes is permitted and does not make it binding
-([`docs/adr/README.md`](./README.md): "A `Proposed` ADR is awaiting the owner's
-approval and is not binding, whether or not code already implements it").
+The code on the branch that proposed this ADR already implemented it, which the
+index notes is permitted and did not make it binding while this document was
+`Proposed`. The approval is what makes it binding, and `main` needs no change to
+comply: this status flip is the whole of what the acceptance costs in `src/`.
 
-If the decision goes the other way, the reversal target is named below and is
-one argument: `worker.ts`'s `fault(...)` call drops `{ recoverable: true }` and
-[ADR 0006](./0006-simulation-worker-adapter.md) state 5 stands unamended. The
-*reporting* half is not part of that reversal, and section 4 says why.
+**One thing moved with this status, in the same commit, and it was owed.**
+[ADR 0006](./0006-simulation-worker-adapter.md) state 5 said `faulted` is
+reached by "an unhandled exception **or protocol decode error**", and carried an
+implementation note of 2026-08-25 recording that `main` no longer does the
+second half. That note existed precisely so an Accepted ADR would not be amended
+on a Proposed one's authority; with this ADR accepted that authority exists, so
+the note is deleted and state 5's clause is narrowed to an unhandled exception.
+See §*Follow-up*.
+
+Reversal is still one argument at one call site — `worker.ts`'s `fault(...)` call
+dropping `{ recoverable: true }`, named in §*Alternatives considered* — but it is
+now the reversal of an accepted decision, and it would have to restore ADR 0006
+state 5's clause along with it. The *reporting* half is not part of that
+reversal, and section 4 says why.
 
 ## Context
 
@@ -270,8 +281,10 @@ question on the back of a worker one.
 - Nothing here dismisses a fault row: it stands until the session ends, for the
   same reason a refusal row does, and dismissal needs the same main-to-worker
   message that gap is already open on.
-- [ADR 0006](./0006-simulation-worker-adapter.md) state 5 says `faulted` is
-  "reached when an unhandled exception **or protocol decode error** occurs". If
-  this ADR is accepted, that clause is what changes; an implementation note at
-  that state records the disagreement in the meantime rather than rewriting an
-  Accepted ADR on a Proposed one's authority.
+- [ADR 0006](./0006-simulation-worker-adapter.md) state 5 said `faulted` is
+  "reached when an unhandled exception **or protocol decode error** occurs".
+  **Done, in the commit that accepted this ADR:** the clause now reads "an
+  unhandled exception" and cross-references this document for where a decode
+  error goes instead, and the implementation note that recorded the disagreement
+  while this ADR was `Proposed` is deleted. Nothing else in the corpus depended
+  on that note.

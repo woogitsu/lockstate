@@ -2,10 +2,12 @@
 
 ## Status
 
-**Proposed — pending human approval.** Not accepted.
+**Accepted, 2026-08-25.** The three things below are approved as written, and the
+surface that shipped with this document (#302) is binding rather than merely
+present.
 
 The owner delegated the choice of surface, and this document is the record of
-what was chosen under that delegation. It is not accepted until they say so.
+what was chosen under that delegation. This status is the owner saying so.
 
 **This is 0025 and not 0024**, which was the next free number when it was
 written. It moved because another unmerged branch had claimed 0024 for a
@@ -15,7 +17,7 @@ precedent, recorded in `docs/adr/README.md` for the kernel ADR, is to take the
 lowest number free *without coordinating with unmerged or held work*. The index
 carries the reason, and no citation of any other ADR moved.
 
-A reviewer is being asked to sign off on three things, and they are separable:
+What was signed off is three things, and they are separable:
 
 1. **The gesture is a press on a Staff panel occupying the rail slot of the
    existing, currently empty Security tab** — rather than a row in the Build
@@ -31,13 +33,23 @@ A reviewer is being asked to sign off on three things, and they are separable:
    further filtering: the command's vocabulary is the catalogue's, and the
    producer's is one row of it.
 
-If (1) goes the other way, the alternative it goes to is **alternative B**, a
+**No wage figure is approved by this, because none is set here.** Decision 2
+chooses which authored field is read and on what scale; what that field *holds*
+stays with issue #29, exactly as
+[ADR 0017](./0017-money-primary-resource-model.md) decision 5 requires. The
+seven items in §*What this decision does not settle* are untouched by the
+approval and stay open — payroll, where in a band an individual sits, dismissal
+and refunds, undoability, which roles the surface offers, whether the panel
+lists who is hired, and whether the arrival tile must be owned, in bounds or
+reachable.
+
+Were (1) reversed, the alternative it goes to is **alternative B**, a
 disclosure on the Build panel in the shape #282 gave the buy control. That is
 named here as the reversal target rather than as a discarded idea, because it
 is the cheapest thing to build and the honest reason to refuse it is a
 measurement somebody else already took, not a preference.
 
-If (2) goes the other way, the alternative is **no charge at all** —
+Were (2) reversed, the alternative is **no charge at all** —
 alternative D — which is coherent, is one line smaller, and is refused because
 [ADR 0017](./0017-money-primary-resource-model.md) decision 1 says every
 meaningful decision costs money and a free guard is the clearest possible

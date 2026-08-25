@@ -74,7 +74,7 @@ Before making changes, read:
 1. [`AGENTS.md`](./AGENTS.md) — canonical rules for all coding agents
 2. [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) — runtime architecture
 3. [`docs/ROADMAP.md`](./docs/ROADMAP.md) — development order
-4. [`docs/adr/`](./docs/adr/) — architectural decision records. Read the `Status` line of any ADR before treating it as settled: several are `Proposed`, which means the decision is still awaiting the owner's approval and is not binding, whether or not code already implements it.
+4. [`docs/adr/`](./docs/adr/) — architectural decision records. Read the `Status` line of any ADR before treating it as settled. Since 2026-08-25 **none is `Proposed`**: every ADR on disk is `Accepted`, several with a qualifier the document itself carries, and [`docs/adr/STATUS-QUEUE.md`](./docs/adr/STATUS-QUEUE.md) records where an accepted decision and the code still disagree. A future `Proposed` ADR means the decision is awaiting the owner's approval and is not binding, whether or not code already implements it.
 
 Claude Code uses `CLAUDE.md`. Google Antigravity uses `.agents/rules/`. Both defer to `AGENTS.md` so agent-specific instructions cannot drift apart.
 
