@@ -178,6 +178,16 @@ export class PrisonerOperationsRuntime {
       this.coldState.setActionTarget(entityId, undefined);
       this.coldState.setPathRequestId(entityId, undefined);
     }
+
+    // Concurrent-use claims are derived, not persisted (ADR 0029), so they are
+    // rebuilt here from the phase and action target the snapshot did carry.
+    // **Order is load-bearing and this is the last step for a reason**: the
+    // registry's `loadSnapshot` above cleared every claim, and the loop above
+    // has just dropped every `travelling` prisoner to `idle` and cleared their
+    // target -- so this scan sees exactly the prisoners who are genuinely still
+    // performing, and cannot reinstate a claim for a journey that no longer
+    // exists.
+    this.actionSystem.reinstateUseClaims();
   }
 
   /**

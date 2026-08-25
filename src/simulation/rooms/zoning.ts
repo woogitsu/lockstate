@@ -623,7 +623,16 @@ export class RoomZoningService {
       if (definition === undefined) continue;
       const instance = this.roomInstances.getById(roomInstanceIdFor(definition.id, tile));
       if (instance === undefined) continue;
-      if (this.roomInstances.occupancyOf(instance.instanceId) > 0) {
+      // `claimCountOf` and not `occupancyOf`: since ADR 0029 a prisoner can
+      // hold this instance because they are *using* it for an action rather
+      // than living in it, and that reference dangles in exactly the same way
+      // if the instance is unregistered underneath it. It is also the same
+      // predicate `RoomInstanceRegistry.unregister` throws on, and the two must
+      // agree or a refusal the player should have seen becomes an exception out
+      // of `Kernel.step()`. The use-claim half of the refusal is transient by
+      // construction -- a claim lasts one action -- so a canteen a prisoner is
+      // eating in can be un-zoned a moment later.
+      if (this.roomInstances.claimCountOf(instance.instanceId) > 0) {
         return { kind: 'refused', reason: 'room-occupied', request: { ...request }, tick };
       }
       removed.push(instance);

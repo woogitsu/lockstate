@@ -36,12 +36,17 @@ normalised judgement. Two heading styles are in use — some ADRs carry a
 above is now `Accepted` in some form, several with a qualifier the ADR itself
 carries.
 
-**No ADR in this directory is `Proposed`, as of 2026-08-25.** The definition is
-kept because the next ADR drafted against `main` will need it: a `Proposed` ADR
-is one awaiting the owner's approval, and is not binding whether or not code
-already implements it. What has changed is what such a row *means* — it is now a
-signal on its own rather than one of a crowd, and the count of ADRs awaiting
-approval is zero rather than a number nobody tracks.
+**Exactly one ADR in this directory is `Proposed`: 0029.** A `Proposed` ADR is
+one awaiting the owner's approval, and is not binding whether or not code
+already implements it — 0029's implementing change is on the same branch, and
+that does not make it accepted.
+
+This paragraph used to read *"No ADR in this directory is `Proposed`, as of
+2026-08-25"*, and the property it was recording is the one that still matters:
+a `Proposed` row is now **a signal on its own rather than one of a crowd**, so
+one row reads as a request addressed to the owner rather than as background.
+The count of ADRs awaiting approval is one, and it is tracked rather than
+untracked, which was the point.
 
 Promoting the statuses that had drifted was open issue #118's subject and is
 done for every document on disk. Where an *accepted* decision and the code
@@ -78,8 +83,15 @@ Nothing here changes a status; this table only reports them.
 | [0026](./0026-entity-id-lifetime.md) | The lifetime of `EntityId`-keyed state — generation exhaustion, release, and re-intake | Accepted, 2026-08-25 — as the framing and the tripwire; its three questions stay open |
 | [0027](./0027-cell-sharing-assessment.md) | Cell-sharing assessment — what is recorded, who may override, and how a cell-scoped risk reaches a sector-scoped trigger | Accepted, 2026-08-25 — as the mechanism; its three questions stay open, and its subject is unreachable until 0028 ships |
 | [0028](./0028-object-placement-and-derived-room-capacity.md) | What a placed object is, and how a room's capacity comes from it | Accepted, 2026-08-25 |
+| [0029](./0029-concurrent-room-use-claims.md) | What a concurrent-use claim on a room is — when it is taken, when it ends, and who waits | Proposed — pending human approval |
 
-**Next free number: 0029.**
+**Next free number: 0030.**
+
+**One row is `Proposed`, and it is the only one.** 0029 arrived with the change
+that implements it, which is the shape [`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2
+names as the fragile case; its queue entry is in the same commit, per that
+file's rule. The sentences below about the queue being empty were true when they
+were written and §2 of that file records what this costs.
 
 ## Why nothing between 0024 and 0028 is missing any more, and 0028 was allocated out of band
 
@@ -119,6 +131,13 @@ the open branch's cost rather than this file's. And **the stated next-free numbe
 is still a ceiling**: whoever writes the ADR after 0028 should check the open
 pull requests before taking 0029, exactly as 0028's author had to, and exactly
 as the two authors who did not are the reason this section exists.
+
+**0029's author did that check, and it came back empty.** `gh pr list --state
+open` returned no open pull requests on this repository, so no unmerged branch
+was holding the stated next-free number and 0029 was taken without a collision
+— the first time since this section was written that the ceiling and the free
+number were the same thing. That is a fact about one day, not a reason to stop
+checking.
 
 ## 0018, and why it is free again
 

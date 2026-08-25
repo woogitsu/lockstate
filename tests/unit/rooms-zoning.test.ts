@@ -439,6 +439,38 @@ describe('a designation can be removed, which is what makes one recoverable', ()
     expect(world.getZoning(tile(0, 0)), 'and so must its tiles').toBe(CELL_NUMERIC_ID);
   });
 
+  it('refuses to strand a prisoner who is only *using* the room, not living in it', () => {
+    // The other half of `unzone`'s occupancy guard since ADR 0029. A prisoner
+    // performing an action here holds a concurrent-use claim and a
+    // `currentActionTargetInstanceId` naming this instance, which dangles in
+    // exactly the way a resident's `accommodationInstanceId` would -- so the
+    // guard asks `claimCountOf` and not `occupancyOf`. It must also agree with
+    // `RoomInstanceRegistry.unregister`, which throws on the same predicate: if
+    // the guard were the narrower of the two, a refusal the player should have
+    // seen would be an exception out of `Kernel.step()` instead.
+    const world = ownedWorld();
+    const registry = new RoomInstanceRegistry();
+    const { zoning } = service(world, registry);
+    const zoned = zoning.zone({ roomCatalogId: CELL, x: 0, y: 0, width: 2, height: 3 }, 0);
+    if (zoned.kind !== 'zoned') throw new Error('the zone must be accepted for this test to mean anything');
+    registry.unregister(zoned.instance.instanceId);
+    registry.register({ ...zoned.instance, residentCapacity: 1, concurrentUseCapacity: 1 });
+    expect(registry.claimUse(zoned.instance.instanceId, 1 as never)).toBe(true);
+    // Nobody *lives* here, so the narrower predicate would have allowed this.
+    expect(registry.occupancyOf(zoned.instance.instanceId)).toBe(0);
+
+    const removed = zoning.unzone({ x: 0, y: 0, width: 2, height: 3 }, 1);
+
+    expect(removed).toMatchObject({ kind: 'refused', reason: 'room-occupied', tick: 1 });
+    expect(registry.getById(zoned.instance.instanceId), 'the instance must survive').toBeDefined();
+    expect(world.getZoning(tile(0, 0)), 'and so must its tiles').toBe(CELL_NUMERIC_ID);
+
+    // Transient, and that is the whole cost of the wider predicate: a use claim
+    // lasts one action, so the same drag succeeds once the meal is over.
+    registry.releaseUse(zoned.instance.instanceId, 1 as never);
+    expect(zoning.unzone({ x: 0, y: 0, width: 2, height: 3 }, 2)).toMatchObject({ kind: 'unzoned' });
+  });
+
   it('is deterministic in what it reports, whichever corner the drag started from', () => {
     const forwards = service(ownedWorld());
     const backwards = service(ownedWorld());

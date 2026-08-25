@@ -139,12 +139,23 @@ export const STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS = 300;
  * projection can see. `RoomZoningService` only ever registers a catalog-defined
  * id, so the two agree in any session a player can produce.
  *
- * **The stated assumption**, per `AGENTS.md`: today a slot is always an
- * *accommodation* slot, because `IntakeSystem` is the only caller of
- * `assign` anywhere in `src/`. If a future system registers occupancy that is
- * not somewhere a prisoner is housed -- a canteen tracking diners, a workshop
+ * **The stated assumption has been discharged rather than restated**, and it is
+ * worth recording that it did its job. It read: "today a slot is always an
+ * *accommodation* slot, because `IntakeSystem` is the only caller of `assign`
+ * anywhere in `src/`. If a future system registers occupancy that is not
+ * somewhere a prisoner is housed -- a canteen tracking diners, a workshop
  * tracking workers -- this definition would pay twice for one prisoner-day and
- * has to be narrowed to accommodation before that lands.
+ * has to be narrowed to accommodation before that lands."
+ *
+ * **A canteen tracking diners is exactly what ADR 0028 phase 6 landed**, and
+ * [ADR 0029](../../../docs/adr/0029-concurrent-room-use-claims.md) is the
+ * narrowing this paragraph asked for: a concurrent-use claim is held in its own
+ * collection in `RoomInstanceRegistry`, counted by `totalUseClaims`, and
+ * `totalOccupancy` still counts residency and nothing else. So `ActionSystem`
+ * now assigns and releases a place for the duration of an action and **this
+ * system did not change and pays no differently**: a prisoner eating lunch
+ * still earns one prisoner-day, in the cell they live in. Nothing here needs to
+ * know that concurrent use exists, which is the property the narrowing was for.
  */
 export interface OccupiedPlaceSource {
   readonly totalOccupancy: number;

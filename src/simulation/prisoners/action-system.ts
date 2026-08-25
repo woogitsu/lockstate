@@ -114,11 +114,83 @@ export class ActionSystem implements SystemRegistration {
     }
   }
 
+  /**
+   * Re-takes the concurrent-use claim of every prisoner a restored snapshot
+   * left mid-performance in a `room-catalog-id` room.
+   *
+   * **A restore is the one path where the claim has to be rebuilt rather than
+   * carried**, and the reason it is rebuilt rather than saved is ADR 0028
+   * decision 6's, one system over: a use claim is a pure function of two values
+   * the save already holds -- `CurrentActionComponent.phase` and the cold
+   * state's `currentActionTargetInstanceId` -- so persisting it would put a
+   * derived value in the payload that can disagree with the state that produced
+   * it. Deriving it makes `snapshot() -> restore()` land on the same claim set
+   * by construction, adds no save-schema key, and moves no save version.
+   *
+   * Both failure directions are closed:
+   *
+   * - **Leak.** `RoomInstanceRegistry.loadSnapshot` clears every use claim, so
+   *   a claim held by the registry before the restore cannot survive it. Any
+   *   claim standing afterwards was rebuilt from a prisoner who is genuinely
+   *   still performing.
+   * - **Duplicate.** The rebuild is idempotent -- claims are a `Set` and the
+   *   scan visits each live index once -- so restoring the same snapshot twice
+   *   into the same registry produces the same count, not double.
+   *
+   * Deterministic: `EntityQuery.execute` is ascending index order, so the
+   * rebuild is a total order derived from state. It uses `reinstateUseClaim`
+   * rather than `claimUse`, because reproducing a claim that was already
+   * granted is not a grant and has no ceiling to check; see that method for why
+   * silently dropping the excess would be the worse of the two errors.
+   *
+   * `travelling` needs no equivalent and must not have one: the caller has
+   * already dropped those prisoners back to `idle` (their path request died
+   * with the previous `NavigationSystem`), and a traveller holds no claim in a
+   * live session either.
+   */
+  public reinstateUseClaims(): void {
+    const performingPhase = phaseIndex('performing');
+    for (const entityId of this.query.execute()) {
+      const index = this.store.getIndex(entityId);
+      if (this.currentAction.phase[index] !== performingPhase) continue;
+
+      const action = DEFAULT_ACTIONS[this.currentAction.actionIndex[index]!];
+      if (action === undefined || action.target.kind !== 'room-catalog-id') continue;
+
+      const targetInstanceId = this.coldState.getActionTarget(entityId);
+      if (targetInstanceId === undefined) continue;
+      this.roomInstances.reinstateUseClaim(targetInstanceId, entityId);
+    }
+  }
+
   private continuePerforming(entityId: number, index: number, tick: number): void {
     const action = DEFAULT_ACTIONS[this.currentAction.actionIndex[index]!];
     if (action === undefined) {
+      // An unreadable action index is the one exit from `performing` that is
+      // not a completion, and it has to release too: the claim was taken
+      // against an action this method can no longer identify, and leaving it
+      // held would cost the room a seat for the rest of the session.
+      this.releaseUseClaim(entityId);
       this.currentAction.phase[index] = phaseIndex('idle');
+      this.coldState.setActionTarget(entityId, undefined);
       return;
+    }
+
+    // A claimed instance that has stopped existing. Unreachable through
+    // `unzone`, which refuses on `claimCountOf` before it can unregister an
+    // instance anybody is using -- and defended anyway, because "the claim
+    // outlived the room" is the shape of leak that would otherwise be silent,
+    // and the first path that removes an instance without asking would
+    // introduce it without touching this file.
+    if (action.target.kind === 'room-catalog-id') {
+      const targetInstanceId = this.coldState.getActionTarget(entityId);
+      if (targetInstanceId === undefined || this.roomInstances.getById(targetInstanceId) === undefined) {
+        this.releaseUseClaim(entityId);
+        this.currentAction.phase[index] = phaseIndex('idle');
+        this.coldState.setActionTarget(entityId, undefined);
+        this.unmetDemandCycles += 1;
+        return;
+      }
     }
 
     applyNeedEffects(this.needs, index, action, this.schedule.intervalTicks);
@@ -126,10 +198,35 @@ export class ActionSystem implements SystemRegistration {
 
     const elapsed = tick - this.currentAction.phaseStartedAtTick[index]!;
     if (elapsed >= action.minDurationTicks) {
+      // Released before the target is cleared, because the release needs the
+      // instance id the target holds. ADR 0029 settles ADR 0028's own open
+      // question 7 here: the claim ends when the *action* ends, not when the
+      // actor leaves the tile, because an abstracted arrival gives this model
+      // no departure event to hang the other answer on.
+      this.releaseUseClaim(entityId);
       this.currentAction.phase[index] = phaseIndex('idle');
       this.coldState.setActionTarget(entityId, undefined);
       this.actionsCompleted += 1;
     }
+  }
+
+  /**
+   * Releases whatever concurrent-use claim this prisoner holds on the instance
+   * its action currently targets. **Every exit from `performing` calls it, and
+   * that is the whole leak argument**: one release site per exit, asked
+   * unconditionally, so no path can be the one that forgot.
+   *
+   * Deliberately *not* gated on the action's `target.kind`. Gating would make
+   * the release read as the exact mirror of the claim, and would also make the
+   * one case where the action index cannot be read -- the case that most needs
+   * a release -- the case that skips it. `releaseUse` is total instead: an
+   * unknown instance, an entity holding no claim, and a second release are all
+   * no-ops, so asking about an id that never took one costs a map lookup and
+   * cannot be wrong. An `own-accommodation` target is exactly that case.
+   */
+  private releaseUseClaim(entityId: number): void {
+    const targetInstanceId = this.coldState.getActionTarget(entityId);
+    if (targetInstanceId !== undefined) this.roomInstances.releaseUse(targetInstanceId, entityId);
   }
 
   private continueTravelling(entityId: number, index: number, tick: number): void {
@@ -160,6 +257,21 @@ export class ActionSystem implements SystemRegistration {
       return;
     }
 
+    // The seat is claimed **before** the arrival is applied, so a prisoner who
+    // is refused never enters the room: they keep the tile they were standing
+    // on and go back to idle, and the next reconsideration cycle re-selects.
+    // Between selecting this instance and arriving here the room genuinely can
+    // have filled up -- `findAvailableForUse` answers a question and holds
+    // nothing -- and this is the point that makes the ceiling true rather than
+    // advisory.
+    const action = DEFAULT_ACTIONS[this.currentAction.actionIndex[index]!];
+    if (action === undefined || !this.claimUseIfNeeded(entityId, action, instance.instanceId)) {
+      this.currentAction.phase[index] = phaseIndex('idle');
+      this.coldState.setActionTarget(entityId, undefined);
+      this.unmetDemandCycles += 1;
+      return;
+    }
+
     // Abstracted arrival: teleport onto the destination anchor tile. Real
     // tile-by-tile locomotion/rendering is out of scope here -- see #21's
     // docs/NAVIGATION.md and the ADR/doc note for this issue.
@@ -167,6 +279,28 @@ export class ActionSystem implements SystemRegistration {
     this.position.tileY[index] = instance.anchorTile.y;
     this.currentAction.phase[index] = phaseIndex('performing');
     this.currentAction.phaseStartedAtTick[index] = tick;
+  }
+
+  /**
+   * Takes the concurrent-use claim for an action about to start in `instanceId`,
+   * or answers `false` when the room is already at `concurrentUseCapacity`.
+   *
+   * `true` for an `own-accommodation` action without claiming anything, which
+   * is the asymmetry ADR 0028's §*Context* measured and this method preserves
+   * deliberately: that branch resolves by id and re-checks neither gate, so a
+   * prisoner who holds a cell keeps sleeping, eating in cell and using the
+   * toilet whatever else is happening. Bounding a prisoner's own cell by its
+   * concurrent-use capacity would make the first bed buy one need instead of
+   * three, which is a product change and not a leak fix.
+   *
+   * Takes the action and the instance id as arguments rather than reading them
+   * back out of component storage, so a caller can ask *before* it has written
+   * anything about the action it is starting -- which is what lets a refusal
+   * leave no trace.
+   */
+  private claimUseIfNeeded(entityId: number, action: ActionDefinition, instanceId: string): boolean {
+    if (action.target.kind !== 'room-catalog-id') return true;
+    return this.roomInstances.claimUse(instanceId, entityId);
   }
 
   private beginNextAction(entityId: number, index: number, tick: number): void {
@@ -189,11 +323,23 @@ export class ActionSystem implements SystemRegistration {
 
     const currentTile: TilePosition = { x: tileCoordinate(this.position.tileX[index]!), y: tileCoordinate(this.position.tileY[index]!) };
 
+    // The no-travel path into `performing` is the second of the two places a
+    // claim is taken, and it is settled *before* anything is written: a refusal
+    // must not leave an action index, a target or an `actionsStarted` behind for
+    // an action that never began. It can only be refused when several prisoners
+    // reconsider on the same tick, since `findAvailableForUse` was consulted two
+    // statements ago and nothing else moves in between.
+    const arrivesImmediately = sameTile(currentTile, target.anchorTile);
+    if (arrivesImmediately && !this.claimUseIfNeeded(entityId, chosen, target.instanceId)) {
+      this.unmetDemandCycles += 1;
+      return;
+    }
+
     this.currentAction.actionIndex[index] = actionIndexOf(chosen.id);
     this.coldState.setActionTarget(entityId, target.instanceId);
     this.actionsStarted += 1;
 
-    if (sameTile(currentTile, target.anchorTile)) {
+    if (arrivesImmediately) {
       this.currentAction.phase[index] = phaseIndex('performing');
       this.currentAction.phaseStartedAtTick[index] = tick;
       return;

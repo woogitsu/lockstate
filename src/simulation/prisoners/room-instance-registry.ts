@@ -32,14 +32,34 @@ import type { TilePosition } from '../world/coordinates';
  * methods rather than one field and a mode flag, because the call sites are
  * already distinct.
  *
- * **The occupant set is deliberately not split.** "Who is inside this room
- * right now" is a fact rather than a role, and the two capacities are two
- * ceilings on the same count. Note what follows from that and is measured
- * rather than assumed: nothing in `src/` adds an actor to a non-accommodation
- * room's occupant set -- `ActionSystem` calls neither `assign` nor `release`
- * -- so `concurrentUseCapacity` is today a correct ceiling on a number that is
- * always zero. Making it bite is ADR 0028 phase 6, and saying so is better
- * than shipping a gate that looks enforced and is not.
+ * **A claim now records which of the two it is, and the previous version of
+ * this comment said it would not.** It said the occupant set is "deliberately
+ * not split" because "who is inside this room right now" is a fact rather than
+ * a role, and that `concurrentUseCapacity` was "a correct ceiling on a number
+ * that is always zero" until `ActionSystem` started calling `assign`/`release`.
+ * The second half was true and is what ADR 0028 phase 6 fixed; the first half
+ * did not survive contact with it, and
+ * [ADR 0029](../../../docs/adr/0029-concurrent-room-use-claims.md) is the
+ * correction. Two measured reasons, neither of which is tidiness:
+ *
+ * 1. **`totalOccupancy` is an economy input.** `StateIncomeSystem` pays per
+ *    occupied place, and `src/simulation/economy/income.ts` states the
+ *    precondition in its own words -- if occupancy is ever registered
+ *    "somewhere a prisoner is *not* housed -- a canteen tracking diners", the
+ *    definition "would pay twice for one prisoner-day and has to be narrowed to
+ *    accommodation before that lands". One undifferentiated set cannot narrow
+ *    it: a prisoner eating lunch would earn a second prisoner-day.
+ * 2. **One `Set` cannot hold two claims by the same entity.** `Set.add` is
+ *    idempotent, so a resident who also claimed use of the same instance would
+ *    have one membership and two releases, and the first release would evict
+ *    their residency.
+ *
+ * So there are two claim collections and two counts, and each capacity bounds
+ * the count of its own kind. `occupancyOf` and `totalOccupancy` keep exactly
+ * the meaning they have always had -- residency -- which is why no projection
+ * and no income figure moves. `useOccupancyOf` is the new count, and
+ * `claimCountOf` is the union, for the one question that genuinely means
+ * "is anybody holding this instance at all": whether it can be unregistered.
  *
  * ## The bounds, and why they are optional
  *
@@ -78,12 +98,26 @@ export interface RoomDerivedCapacity {
 export class RoomInstanceRegistry {
   private readonly instances = new Map<string, RoomInstance>();
   private readonly occupants = new Map<string, Set<EntityId>>();
+  /**
+   * Concurrent-use claims: who is *using* this instance for an action right
+   * now, as opposed to who lives in it. A second collection rather than a tag
+   * inside `occupants`, per ADR 0029 -- see the type comment above for the two
+   * measurements that forced it apart.
+   *
+   * Not persisted. A use claim is a pure function of state the save already
+   * carries (a prisoner's action phase and its target instance), so it is
+   * rebuilt at restore rather than written down; `getSnapshot` therefore still
+   * emits residency only and the save format does not move.
+   */
+  private readonly useClaims = new Map<string, Set<EntityId>>();
   /** Grouped by room-catalog id so `allByRoomCatalogId`/`findAvailable*` never scan instances of other room types. */
   private readonly instancesByRoomCatalogId = new Map<string, RoomInstance[]>();
   /** Lazily rebuilt, sorted-by-instanceId cache per room-catalog id; invalidated only for the affected type on `register`, never on assign/release (those don't change which instances exist). */
   private readonly sortedCache = new Map<string, readonly RoomInstance[]>();
   /** Backing field for `totalOccupancy`; every mutation of `occupants` maintains it. */
   private occupiedPlaceCount = 0;
+  /** Backing field for `totalUseClaims`; every mutation of `useClaims` maintains it, for the same reason `occupiedPlaceCount` exists. */
+  private useClaimCount = 0;
 
   public register(instance: RoomInstance): void {
     if (this.instances.has(instance.instanceId)) {
@@ -91,6 +125,7 @@ export class RoomInstanceRegistry {
     }
     this.instances.set(instance.instanceId, instance);
     this.occupants.set(instance.instanceId, new Set());
+    this.useClaims.set(instance.instanceId, new Set());
 
     const group = this.instancesByRoomCatalogId.get(instance.roomCatalogId);
     if (group === undefined) this.instancesByRoomCatalogId.set(instance.roomCatalogId, [instance]);
@@ -155,16 +190,23 @@ export class RoomInstanceRegistry {
    * zoned by mistake stayed in every projection, in the status strip's `Rooms`
    * count and in `allByRoomCatalogId` for as long as the session lasted.
    *
-   * **It refuses to remove an occupied instance rather than orphaning its
-   * occupants.** A prisoner holds an `accommodationInstanceId` in cold state,
-   * and dropping the instance underneath them would leave that reference
-   * naming a room that does not exist. The caller is expected to have checked
-   * `occupancyOf` and to have reported a refusal to the player;
-   * `RoomZoningService.unzone` does exactly that, and this `RangeError` is the
-   * guard behind it, in the same spirit as `register`'s duplicate-id throw.
+   * **It refuses to remove a claimed instance rather than orphaning the claim.**
+   * A prisoner holds an `accommodationInstanceId` in cold state, and dropping
+   * the instance underneath them would leave that reference naming a room that
+   * does not exist. The caller is expected to have checked `claimCountOf` and
+   * to have reported a refusal to the player; `RoomZoningService.unzone` does
+   * exactly that, and this `RangeError` is the guard behind it, in the same
+   * spirit as `register`'s duplicate-id throw.
    *
-   * Every index `register` writes is undone: the id map, the occupancy map,
-   * the per-room-type group and that type's sorted cache. Leaving the cache
+   * **`claimCountOf` and not `occupancyOf`, since ADR 0029.** A prisoner
+   * performing an action here holds a use claim and a
+   * `currentActionTargetInstanceId` naming this instance, which is the same
+   * dangling reference for the same reason -- so a canteen cannot be unzoned
+   * out from under a diner either. That refusal is transient by construction: a
+   * use claim lasts one action, so the next attempt succeeds.
+   *
+   * Every index `register` writes is undone: the id map, both claim maps, the
+   * per-room-type group and that type's sorted cache. Leaving the cache
    * would keep the removed instance visible to `findAvailable*` -- the one
    * reader on the intake hot path -- which is the failure this method would
    * have if it were only a `Map.delete`.
@@ -172,12 +214,13 @@ export class RoomInstanceRegistry {
   public unregister(instanceId: string): boolean {
     const instance = this.instances.get(instanceId);
     if (instance === undefined) return false;
-    if ((this.occupants.get(instanceId)?.size ?? 0) > 0) {
+    if (this.claimCountOf(instanceId) > 0) {
       throw new RangeError(`Room instance "${instanceId}" still has occupants.`);
     }
 
     this.instances.delete(instanceId);
     this.occupants.delete(instanceId);
+    this.useClaims.delete(instanceId);
 
     const group = this.instancesByRoomCatalogId.get(instance.roomCatalogId);
     if (group !== undefined) {
@@ -193,16 +236,53 @@ export class RoomInstanceRegistry {
     return this.instances.get(instanceId);
   }
 
+  /**
+   * How many prisoners *live* here -- residency claims only, which is exactly
+   * what this has always counted and why nothing that reads it moved when
+   * concurrent use started being counted (ADR 0029). Its readers are the room
+   * and status-strip projections, which pair it with `residentCapacity`, and
+   * `findAvailableResidence`/`findBestAvailable`.
+   */
   public occupancyOf(instanceId: string): number {
     return this.occupants.get(instanceId)?.size ?? 0;
   }
 
+  /** How many actors are *using* this instance for an action right now. The count `findAvailableForUse` gates against `concurrentUseCapacity`. */
+  public useOccupancyOf(instanceId: string): number {
+    return this.useClaims.get(instanceId)?.size ?? 0;
+  }
+
   /**
-   * Every occupancy slot currently held, across every registered instance.
+   * Claims of either kind on this instance -- "is anybody holding a reference
+   * to this room at all".
+   *
+   * One question, one caller each side of the same guard: `unregister` refuses
+   * above zero, and `RoomZoningService.unzone` checks it first so the player
+   * gets a `room-occupied` refusal instead of a throw out of the tick. It is
+   * deliberately a sum and not a set union: an entity that somehow held both
+   * kinds on one instance is two reasons not to remove it, not one, and this
+   * number is never compared against a capacity.
+   */
+  public claimCountOf(instanceId: string): number {
+    return this.occupancyOf(instanceId) + this.useOccupancyOf(instanceId);
+  }
+
+  /**
+   * Every **residency** slot currently held, across every registered instance.
    *
    * Maintained on `assign`/`release`/`loadSnapshot` rather than summed on
    * demand, because its reader is a per-day economy system and a twice-a-second
    * projection, and neither should walk the registry to learn one integer.
+   *
+   * **Residency and not every claim, which is what discharges `income.ts`'s
+   * stated precondition** (ADR 0029). That file names the condition in its own
+   * words: if occupancy is ever registered somewhere a prisoner is not housed,
+   * "a canteen tracking diners", the definition "would pay twice for one
+   * prisoner-day and has to be narrowed to accommodation before that lands".
+   * `ActionSystem` now registers exactly that, and the narrowing is that use
+   * claims live in their own collection and are counted by `totalUseClaims`
+   * below, which no economy system reads. So a prisoner at lunch earns one
+   * prisoner-day, not two.
    *
    * **Registry-wide, which is the point.** The status strip's `roomOccupants`
    * is built by fanning out over catalog room ids
@@ -217,6 +297,21 @@ export class RoomInstanceRegistry {
    */
   public get totalOccupancy(): number {
     return this.occupiedPlaceCount;
+  }
+
+  /**
+   * Every concurrent-use claim currently held, across every registered
+   * instance -- the mirror of `totalOccupancy` for the other kind of claim.
+   *
+   * **Deliberately not an economy or projection input.** It exists so the
+   * registry-wide invariant "no claim outlives the action that took it" is one
+   * integer to assert rather than a walk over every instance, which is what
+   * makes a leaked claim a test failure instead of a slow drift in a capacity
+   * nobody is watching (ADR 0029). A leaked claim is worse than no counting at
+   * all: it silently reduces a room's capacity for the rest of the session.
+   */
+  public get totalUseClaims(): number {
+    return this.useClaimCount;
   }
 
   /**
@@ -291,19 +386,25 @@ export class RoomInstanceRegistry {
    * One caller: `ActionSystem.resolveTargetInstance`'s `room-catalog-id`
    * branch.
    *
-   * **The capacity half of this gate is a ceiling on a number that is always
-   * zero**, and that is measured rather than assumed: nothing in `src/` calls
-   * `assign` or `release` for a non-accommodation room, so `occupancyOf` counts
-   * only the prisoners `IntakeSystem` housed there. So for a canteen this
-   * compares the canteen's *resident* count against its concurrent-use
-   * capacity, and any capacity of 1 or more admits unlimited simultaneous
-   * users. That was equally true of the single `capacity` field this replaced;
-   * what changes is that the number being compared is now the right one, before
-   * anything counts against it (ADR 0028 phase 6).
+   * **`useOccupancyOf` and not `occupancyOf`, and that swap is the whole of
+   * ADR 0028 phase 6's gate half.** The previous version of this comment
+   * recorded the defect it left behind: with nothing calling `assign` for a
+   * non-accommodation room, `occupancyOf` counted only the prisoners
+   * `IntakeSystem` had *housed* there, so for a canteen this compared the
+   * canteen's resident count -- permanently zero -- against its concurrent-use
+   * capacity, making the gate a pure zero-check. Measured on that code: five
+   * prisoners and 40 prisoners both entered a canteen whose
+   * `concurrentUseCapacity` was 2 and 1 respectively, in one reconsideration
+   * tick, while `occupancyOf` stayed 0.
+   *
+   * **This is an answer, not a reservation.** Nothing is held by asking; the
+   * claim is taken by `claimUse` when the actor actually arrives (ADR 0029), so
+   * two actors selecting in the same tick can both be answered this instance
+   * and only the first `concurrentUseCapacity` of them will get in.
    */
   public findAvailableForUse(roomCatalogId: string, requiredObjectCapability?: string): RoomInstance | undefined {
     return this.allByRoomCatalogId(roomCatalogId).find((instance) => {
-      if (this.occupancyOf(instance.instanceId) >= instance.concurrentUseCapacity) return false;
+      if (this.useOccupancyOf(instance.instanceId) >= instance.concurrentUseCapacity) return false;
       if (requiredObjectCapability !== undefined && !instance.objectCapabilities.includes(requiredObjectCapability)) return false;
       return true;
     });
@@ -378,14 +479,14 @@ export class RoomInstanceRegistry {
     return best;
   }
 
+  /** Houses `entityId` in this instance, bounded by `residentCapacity`. One caller: `IntakeSystem`. Its counterpart for the other kind of claim is `claimUse`. */
   public assign(instanceId: string, entityId: EntityId): boolean {
     const instance = this.instances.get(instanceId);
     const occupants = this.occupants.get(instanceId);
     if (instance === undefined || occupants === undefined) throw new RangeError(`Unknown room instance id "${instanceId}".`);
     // `residentCapacity`, because the only caller is `IntakeSystem` housing a
-    // prisoner. When `ActionSystem` starts claiming a place for the duration of
-    // an action (ADR 0028 phase 6) it needs the other ceiling, and this line is
-    // where that decision lands.
+    // prisoner. `claimUse` is where the other ceiling is applied, to its own
+    // collection -- see the type comment for why the two are not one set.
     if (occupants.size >= instance.residentCapacity) return false;
     // `Set.add` is idempotent, so the counter follows the size change rather
     // than the call: re-assigning an entity already in this instance must not
@@ -403,7 +504,84 @@ export class RoomInstanceRegistry {
     if (this.occupants.get(instanceId)?.delete(entityId) === true) this.occupiedPlaceCount -= 1;
   }
 
-  /** Every instance currently holding this entity -- normally at most one for accommodation, but the registry does not assume that for every use. */
+  /**
+   * Claims a concurrent-use place for `entityId`, or answers `false` when the
+   * instance is already at `concurrentUseCapacity`.
+   *
+   * The mirror of `assign` for the other kind of claim (ADR 0029): same throw
+   * on an unknown id, same idempotent add, same "answers `false` rather than
+   * evicting anyone" contract. One caller, `ActionSystem`, at the moment an
+   * actor actually starts performing in the room -- **not** when it selects the
+   * room, because a use claim means "is inside this room right now" and a
+   * traveller is not. The consequence of that choice is that a refusal here is
+   * reachable and must leave the actor outside the room; ADR 0029 records why
+   * it was preferred to a selection-time reservation.
+   *
+   * `false` is not an error: it is the answer "somebody else took the last
+   * seat", and the fairness rule that decides who did is the caller's ascending
+   * entity-index scan.
+   */
+  public claimUse(instanceId: string, entityId: EntityId): boolean {
+    const instance = this.instances.get(instanceId);
+    const claims = this.useClaims.get(instanceId);
+    if (instance === undefined || claims === undefined) throw new RangeError(`Unknown room instance id "${instanceId}".`);
+    if (claims.size >= instance.concurrentUseCapacity) return false;
+    const before = claims.size;
+    claims.add(entityId);
+    this.useClaimCount += claims.size - before;
+    return true;
+  }
+
+  /**
+   * Releases `entityId`'s concurrent-use claim on this instance, if it holds
+   * one.
+   *
+   * Total, on purpose, in all three directions a release can be wrong:
+   * releasing a claim that was never taken, releasing twice, and releasing on
+   * an instance that has since been unregistered are all no-ops rather than
+   * throws. Every one of those is reachable from a caller that is trying to
+   * *avoid* leaking a claim, and a throw would turn the safe half of a leak
+   * fix into an exception out of `Kernel.step()`.
+   */
+  public releaseUse(instanceId: string, entityId: EntityId): void {
+    if (this.useClaims.get(instanceId)?.delete(entityId) === true) this.useClaimCount -= 1;
+  }
+
+  /**
+   * Reinstates a use claim that already existed, ignoring
+   * `concurrentUseCapacity`. Answers `false` when there is no such instance.
+   *
+   * The restore path's method, and the one place the ceiling is deliberately
+   * not applied. A claim being rebuilt was granted once already, under whatever
+   * capacity stood then, so this is not a grant and has no ceiling to check. If
+   * it went through `claimUse` instead, a saved state holding more performers
+   * than the room's current capacity -- legal, since ADR 0028 decision 2 makes
+   * over-capacity a named state and evicts nobody -- would silently drop the
+   * excess claims while those prisoners kept performing, and the room would
+   * then over-admit for the rest of the session. Under-counting a claim is the
+   * failure mode this whole change exists to remove, so the restore path
+   * reproduces the count exactly and lets it be above the ceiling.
+   */
+  public reinstateUseClaim(instanceId: string, entityId: EntityId): boolean {
+    const claims = this.useClaims.get(instanceId);
+    if (claims === undefined) return false;
+    const before = claims.size;
+    claims.add(entityId);
+    this.useClaimCount += claims.size - before;
+    return true;
+  }
+
+  /**
+   * Every instance this entity **lives** in -- normally at most one for
+   * accommodation, but the registry does not assume that.
+   *
+   * Residency only, matching `occupancyOf` rather than `claimCountOf`, and
+   * deliberately: the question it is asked is "where does this prisoner live",
+   * and a room they are eating lunch in is not an answer to it. A caller that
+   * wants the transient one asks the instance it already has in hand, since a
+   * use claim is only ever taken on the instance the actor's own
+   * `currentActionTargetInstanceId` already names.
+   */
   public instancesOccupiedBy(entityId: EntityId): readonly string[] {
     const result: string[] = [];
     for (const [instanceId, occupants] of this.occupants) {
@@ -429,6 +607,16 @@ export class RoomInstanceRegistry {
    * (`src/simulation/rooms/zoning.ts`), which registers an instance when a
    * `ZoneRoom` command is accepted (#261). Before that, the restore path was
    * the only registrar anywhere in `src/`.
+   *
+   * **Residency only, and concurrent-use claims are deliberately absent**
+   * (ADR 0029). A use claim is a pure function of two things the save already
+   * carries -- a prisoner's action phase and its
+   * `currentActionTargetInstanceId` -- so writing it down would persist a
+   * derived value that can disagree with the state that produced it, which is
+   * the argument ADR 0028 decision 6 already made for the two derived
+   * capacities. `PrisonerOperationsRuntime.loadSnapshot` rebuilds them from
+   * that state instead, so the save format does not move and a restore cannot
+   * carry a stale claim forward.
    */
   public getSnapshot(): readonly (readonly [string, readonly EntityId[]])[] {
     return [...this.occupants.entries()]
@@ -439,6 +627,12 @@ export class RoomInstanceRegistry {
   public loadSnapshot(snapshot: readonly (readonly [string, readonly EntityId[]])[]): void {
     for (const occupants of this.occupants.values()) occupants.clear();
     this.occupiedPlaceCount = 0;
+    // Use claims are cleared and never refilled from here: they are not in the
+    // payload (see `getSnapshot`), and clearing them is what makes the rebuild
+    // in `PrisonerOperationsRuntime.loadSnapshot` idempotent -- restoring the
+    // same snapshot twice into the same registry cannot double a claim.
+    for (const claims of this.useClaims.values()) claims.clear();
+    this.useClaimCount = 0;
     for (const [instanceId, occupants] of snapshot) {
       const target = this.occupants.get(instanceId);
       if (target === undefined) throw new RangeError(`Snapshot references unknown room instance id "${instanceId}".`);
