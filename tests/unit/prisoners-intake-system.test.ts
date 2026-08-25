@@ -462,8 +462,9 @@ describe('IntakeSystem: deterministic stage-by-stage pipeline', () => {
     // Whether the fix is to guard `submitIntake`, to release the existing
     // accommodation first, or to make the method private and give re-intake
     // its own entry point is a design decision about the intake pipeline's
-    // contract, and it is stated at Proposed in ADR 0026 rather than settled
-    // here. Whichever is taken changes an assertion below.
+    // contract, and it is ADR 0026's question 3 -- left open by that ADR,
+    // which is Accepted as the framing and not as an answer -- rather than
+    // settled here. Whichever is taken changes an assertion below.
     const fixture = buildPrisonerScenarioFixture({ cellCount: 4, capacity: 10 });
     const kernel = makeKernel();
     fixture.prisoners.registerOn(kernel);

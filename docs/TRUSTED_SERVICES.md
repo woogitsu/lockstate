@@ -574,12 +574,13 @@ to them. `supabase/tests/004_free_tier_capacity.test.sql` asserts exactly
 that, including after a revocation leaves an account holding seven prisons
 with an entitlement to five.
 
-**The 4 MiB per-save figure is proposed, not accepted** — ADR 0013 is in
-`Proposed` status and names the three numbers a reviewer is being asked to
-sign off on. Revision-history depth and a total-bytes-per-account cap are
-proposed and deliberately unimplemented, and anonymous-identity churn stays
-a separate lever (GoTrue rate limits, cleanup of abandoned anonymous
-accounts) that #57 names and ADR 0013 records rather than closes.
+**The 4 MiB per-save figure is accepted** — ADR 0013 §4, and the ADR is
+`Accepted` for §§1-4, which is the half enforced in SQL. Two of the three
+numbers it originally put to a reviewer are still open: revision-history depth
+and a total-bytes-per-account cap are ADR 0013 §§5-6, still `Proposed` and
+deliberately unimplemented. Anonymous-identity churn stays a separate lever
+(GoTrue rate limits, cleanup of abandoned anonymous accounts) that #57 names
+and ADR 0013 §7 records rather than closes.
 
 ## Data retention and account deletion
 

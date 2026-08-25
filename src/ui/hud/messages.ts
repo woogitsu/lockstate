@@ -25,9 +25,9 @@ export const HUD_MESSAGE_KEY = {
    * The treasury balance chip (#96).
    *
    * "Funds" rather than a currency name, because #96 decided that money is
-   * the primary resource and did not name one, and ADR 0017 is still Proposed.
-   * A label that names no currency lets the number be shown honestly without
-   * inventing one.
+   * the primary resource and did not name one, and ADR 0017 -- Accepted, and
+   * Accepted in full -- names none either. A label that names no currency lets
+   * the number be shown honestly without inventing one.
    */
   funds: 'hud.status.funds',
   /**

@@ -10,14 +10,18 @@
  *
  * Issue #96 decided the *hierarchy* -- money is primary, materials are
  * procured -- and that decision needs no approval. It left three questions
- * open, and ADR 0017 answers them **as recommendations pending approval**.
- * These figures decide none of them: they exist to make the loop run, and
- * they are chosen to be obviously provisional rather than obviously balanced.
+ * open, and ADR 0017 answers them: they are its decisions 6, 7 and 8, and the
+ * owner has accepted them, so that ADR is Accepted in full. **What it still
+ * decides is no price and no balance value** -- its own decision 5 reserves
+ * those to issue #29, which is why every figure here is a placeholder even
+ * with nothing left to approve. These figures decide none of #29's questions:
+ * they exist to make the loop run, and they are chosen to be obviously
+ * provisional rather than obviously balanced.
  *
  * Specifically, and deliberately:
  *
- * - **One price per unit, and it never moves.** ADR 0017's recommendation on
- *   the buffer question is "just-in-time by default, with holding permitted
+ * - **One price per unit, and it never moves.** ADR 0017's decision 7 on the
+ *   buffer question is "just-in-time by default, with holding permitted
  *   but never required", and a price that does not vary is what makes that
  *   true rather than merely stated: there is nothing to gain by buying early.
  *   Price variation is the addition that would make a buffer a real choice,
@@ -26,8 +30,8 @@
  *   start rewarding somebody for planning ahead, which is the same decision
  *   under another name.
  *
- * When the owner takes ADR 0017's answers, this table is where a real economy
- * starts, and none of it is load-bearing for anything else.
+ * When #29 sets real prices, this table is where a real economy starts, and
+ * none of it is load-bearing for anything else.
  */
 
 export interface ProcurableMaterial {

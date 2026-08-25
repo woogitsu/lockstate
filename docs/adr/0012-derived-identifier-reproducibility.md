@@ -62,7 +62,7 @@ Issue-level work on economy, progression and events will mint more identifiers
 (contracts, orders, unlocks, event instances). Deciding this once is cheaper
 than deciding it five times inconsistently.
 
-## Decision (proposed)
+## Decision
 
 Every identifier that can influence simulation state, cross a save boundary, or
 appear in challenge evidence must fall into exactly one of two categories, and
@@ -106,22 +106,23 @@ module doc, and `tests/determinism/` gains a pin for it.
   recompute, or key ids off the canonical component seed. That is a behaviour
   change to a public accessor (`getTopologyId`) and belongs in its own issue
   with its own tests, not smuggled into determinism hardening — which is why
-  this ADR is proposed rather than applied.
+  this ADR separated the taxonomy from its application instead of carrying the
+  change itself.
   **That follow-up is #112 and has landed.** The first of the two mechanisms
   was taken: the counter is now local to `recomputeGlobalTopology`, which is
   numerically the same thing as keying ids off the canonical component seed
   (ids are handed out in sorted-seed order), and avoids the
   content-addressed form this ADR's own Alternatives section rejects. Two
-  things are deliberately *not* settled by that change, because they are this
-  ADR's to settle and not an implementation's. **(a)** The status above stays
-  Proposed; accepting the category-2 reading of `GlobalTopologyId` is the
-  owner's call. **(b)** `chunkTopologies` was never evicted, so an unloaded
+  things were deliberately *not* settled by that change, because they were this
+  ADR's to settle and not an implementation's. **(a)** The category-2 reading
+  of `GlobalTopologyId` — the owner's call, and taken: the status above is now
+  Accepted. **(b)** `chunkTopologies` was never evicted, so an unloaded
   chunk still contributed nodes and the id remained a function of chunk *load*
   history even though it was no longer a function of *recompute* history.
   **That has since been closed too, and by the only conformant option**, per
   the Status note above: the entry is dropped when the world reports the chunk
-  as no longer loaded, which was the sole reading under which an already
-  Accepted category-2 requirement could hold. It was a binding defect and not
+  as no longer loaded, which was the sole reading under which the category-2
+  requirement accepted in (a) could hold. It was a binding defect and not
   a numbering one — three open chunks in a row have the outer two connected
   only *through* the middle one, so a retained middle answered a different
   connectivity question rather than shifting a label, and content-addressing
@@ -151,8 +152,8 @@ module doc, and `tests/determinism/` gains a pin for it.
   the same for a `'travelling'` guard
   (`src/simulation/security/guard-roster.ts:198`), so no restored session
   consumes an id minted by a previous one. Whether the taxonomy should now move
-  these to category 1, and what that obliges, is left open for whoever accepts
-  this ADR rather than settled here.
+  these to category 1, and what that obliges, is left open rather than settled
+  here; the acceptance above did not take it either.
 - Future gameplay systems get a decision to follow instead of a precedent to
   guess at.
 

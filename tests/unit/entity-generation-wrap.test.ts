@@ -34,9 +34,10 @@ import { Xoshiro128StarStar } from '../../src/simulation/rng/xoshiro128starstar'
  * generation field costs index bits out of the same 32-bit word (halving
  * addressable entities per bit) *and* a save migration; clearing the three
  * stores on release needs a release path that does not exist (#31) and
- * reintroduces the "list every store" problem #111 was about. ADR 0026
- * states all three at Proposed. Deciding one inside a test would be the
- * quietest possible way to make that choice.
+ * reintroduces the "list every store" problem #111 was about. ADR 0026 is
+ * Accepted as the framing and the tripwire, not as an answer, and leaves all
+ * three open. Deciding one inside a test would be the quietest possible way
+ * to make that choice.
  *
  * ## What these cases are for, then
  *

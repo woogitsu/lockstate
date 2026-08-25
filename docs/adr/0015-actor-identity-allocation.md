@@ -147,12 +147,13 @@ another property the derived route could not offer.
 
 ## What this asks a human to accept
 
-Three things, and they are deliberately separated because only the first is
-blocking:
+Three things, and they are deliberately separated because only the first was
+blocking — and that one is now discharged:
 
 1. **ADR 0012 itself.** This ADR applies 0012's taxonomy and is only as
-   settled as 0012 is. Accepting 0015 without 0012 leaves the taxonomy it
-   argues in still Proposed.
+   settled as 0012 is. **Both were accepted in the same commit**, so the
+   taxonomy this ADR argues in is settled and the case this item guarded
+   against — 0015 accepted while 0012 was not — cannot arise.
 2. **That a name entering the save envelope is wanted.** The engineering
    argument above says a name cannot be a function of an entity id. It does
    not by itself say the game should have names at all, or that identity

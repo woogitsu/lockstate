@@ -20,8 +20,8 @@ import type { Treasury } from './treasury';
  * pricing (`src/content/procurement-catalog.ts` holds the material prices the
  * same way, and `TREASURY_STARTING_BALANCE_MINOR_UNITS` holds the opening
  * balance). It is not recorded as an ADR: ADR 0017 decision 5 reserved values
- * to the issue rather than to a successor ADR, and a ninth `Proposed` document
- * in `docs/adr/` for one integer would put a balance figure into the
+ * to the issue rather than to a successor ADR, and a further ADR in
+ * `docs/adr/` for one integer would put a balance figure into the
  * architecture record that ADR 0017 deliberately kept out of it.
  *
  * ## It pays, and this is the measurement that used to say it could not
