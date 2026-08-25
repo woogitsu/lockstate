@@ -1,3 +1,10 @@
+export {
+  STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS,
+  StateIncomeSystem,
+  stateIncomeAccruedByTick,
+  stateIncomeForCompletedDay,
+  type OccupiedPlaceSource,
+} from './income';
 export { Treasury, TREASURY_STARTING_BALANCE_MINOR_UNITS, type TreasurySnapshot } from './treasury';
 export {
   MAX_PURCHASE_QUANTITY,

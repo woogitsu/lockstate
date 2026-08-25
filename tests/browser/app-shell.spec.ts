@@ -304,6 +304,13 @@ const INJECTED_STATUS_COUNTS = {
       activeIncidents: 2,
       contrabandDiscovered: 5,
       treasuryMinorUnits: 31_500,
+      // Derived from this payload's own `tick` and `roomOccupants` rather than
+      // picked: thirty occupied places, 1,235 ticks of the day served,
+      // `floor(300 x 30 x 1235 / 2400)` = 4,631 (#29). Required, not optional
+      // -- the counts payload is `.strict()`, so a fixture missing this field
+      // is dropped by `decodeWorkerToMainMessage` and every assertion below it
+      // fails on a strip that was never updated at all.
+      stateIncomeAccruedTodayMinorUnits: 4_631,
     },
   },
 } as const;
@@ -1987,6 +1994,12 @@ test.describe('the assembled application', () => {
     // the value arrives in minor units and no layer between the worker and
     // the formatter converts or re-denominates it (#96).
     await expect(metric('funds')).toHaveText('31,500');
+    // The same treatment for the accrual beside it, and the reason this
+    // assertion is here rather than only in the unit tests: the figure has to
+    // arrive from the worker. A HUD that recomputed it from a tick it happens
+    // to hold would be a second authority on what the prison has earned, and
+    // would show something other than 4,631 here (#29).
+    await expect(metric('earned-today')).toHaveText('4,631');
     // The badge follows the count, so the colour is never the only signal.
     // The badge is the non-colour carrier of the incident state, so a badge
     // that is present and not painted defeats its own purpose.

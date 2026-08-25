@@ -255,8 +255,12 @@ const countingLocalizer: HudLocalizer = {
   },
 };
 
+// `stateIncomeAccruedTodayMinorUnits` is what this fixture's own clock and
+// population would actually have earned by now, rather than a round number:
+// 142 occupied places at 300 minor units a prisoner-day, a quarter of the way
+// through a 2,400-tick day, is `floor(300 x 142 x 601 / 2400)` = 10,667 (#29).
 const BASE_VIEW_MODEL: HudViewModel = {
-  counts: { prisoners: 142, prisonerCapacity: 180, staff: 27, rooms: 61, activeIncidents: 0, contrabandFound: 4, treasuryMinorUnits: 24_920 },
+  counts: { prisoners: 142, prisonerCapacity: 180, staff: 27, rooms: 61, activeIncidents: 0, contrabandFound: 4, treasuryMinorUnits: 24_920, stateIncomeAccruedTodayMinorUnits: 10_667 },
   // Day 3, a quarter of the way through a 2,400-tick day, paused.
   clock: { day: 3, tickOfDay: 600, dayLengthTicks: 2_400, mode: 'paused', speed: 1 },
   alerts: [],
