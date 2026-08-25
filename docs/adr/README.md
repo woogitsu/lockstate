@@ -65,8 +65,32 @@ this index's. Nothing here changes a status; this table only reports them.
 | [0022](./0022-room-zoning-surface.md) | Where a player zones a room, and with what gesture | Proposed — pending human approval; amended 2026-08-25 (the owner chose the Rooms tab) |
 | [0023](./0023-room-occupancy-authority.md) | Where a room's occupancy comes from | Proposed — pending human approval |
 | [0024](./0024-protocol-fault-recoverability.md) | Which protocol faults end a session, and who is told | Proposed — pending human approval |
+| [0028](./0028-object-placement-and-derived-room-capacity.md) | What a placed object is, and how a room's capacity comes from it | Proposed — pending human approval |
 
-**Next free number: 0025.**
+**Next free number: 0029.**
+
+## Why 0025 through 0027 are absent, and 0028 is not the next number after 0024
+
+Three numbers are skipped here and none of them is free. `0025` is claimed by
+PR #302, and `0026` and `0027` by PR #299 — both open at the time of writing, and
+therefore both invisible to this table, which is a statement about `main` and can
+never be anything else. `0024` was in that list until it merged, which is what
+closing the gap from below looks like.
+
+That invisibility is the whole reason the gap exists. This file says of itself
+that "the number is not reserved until it appears below", which is true and is
+also the trap: three agents collided over 0024 and 0025 before 0028 was taken,
+because each read the stated next-free number on `main` and each was right. So
+0028 was allocated out of band — by the owner, across the open branches — and
+`0029` is stated above because
+`tests/foundation/adr-numbering-contract.test.ts` derives the next free number
+from the highest number on disk rather than from the lowest unused one.
+
+Two consequences worth stating rather than leaving to be rediscovered. **The gap
+closes from below as those PRs merge**, and each merge is a row added here, not a
+renumbering. And **the stated next-free number is a ceiling, not a reservation**:
+whoever writes the ADR after 0028 should check the open pull requests before
+taking 0029, exactly as 0028's author had to.
 
 ## 0018, and why it is free again
 
