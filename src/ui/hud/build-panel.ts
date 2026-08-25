@@ -39,7 +39,7 @@ import { HUD_BUILD_EDGES, type HudBuildEdge, type HudBuildViewModel, type HudLoc
  * recipe and no ceiling of its own.
  *
  * It is a **disclosure**, closed on arrival, and that is a measurement rather
- * than a preference: see the comment on `buyToggle` for the 3.9px the panel
+ * than a preference: see the comment on `buyToggle` for the 7.8px the panel
  * had to spend at 900x600 and what each always-visible alternative cost.
  *
  * ### Boundaries
@@ -253,10 +253,16 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
    *
    * Measured on the assembled page at 900x600, Build tab, one prison saved,
    * coordinates folded -- the state a player arrives in -- with this row
-   * absent: the panel's body holds 291px of content in a 291px box, its
-   * summed floor resolves to 271.2px, and the catalogue is 3.9px above its
-   * own two-row floor. So 3.9px is the entire budget a new always-visible
-   * block has there, and every candidate was measured against it: a
+   * absent: the panel's body holds 291.2px of content in a 291.2px box, its
+   * summed floor resolves to 275.2px and the catalogue is sitting exactly on
+   * its own floor, so nothing in the panel has anything left to donate. What
+   * is left is the 7.8px between the last section's bottom edge and the panel's
+   * fold, measured by growing a spacer above that section until the header
+   * crosses the fold. So 7.8px is the entire budget a new always-visible block
+   * has there -- and it read 11.8px before #174's second half corrected the
+   * floors, of which 4px was the catalogue laying its own gutter over the map
+   * block's hairline rather than space anything could have used. Every
+   * candidate was measured against it: a
    * collapsed section of its own is 45px (1px border plus a 44px header), a
    * bare row of controls is 44px, and neither the arm hint (13.2px at that
    * viewport) nor a one-row catalogue floor can pay for either without

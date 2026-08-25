@@ -180,4 +180,20 @@
      of it in the panel body's floor, and overrides it at short viewports --
      three places that are only correct while they hold the same value. */
   --hud-build-map-gutter: var(--space-2);
+  /* The gutter under the Build panel's catalogue list, between the last row
+     and the hairline the map block draws above itself.
+     `primitives.css` gives every `.ui-section__body` this space as part of a
+     padding shorthand, which is exactly how it went missing from the two
+     floors below it: the catalogue section's floor and the panel body's floor
+     are both sums of the blocks they may shrink, both were written from the
+     header and the list, and neither counted the padding under the list. So
+     the catalogue section was allowed to be 8px shorter than its own content
+     -- measured on the assembled page at 900x600 as a 135.9px box holding
+     140px, with 4.1px of it laid outside the box and over the map block's
+     hairline (issue #174).
+     A token, and named after the space rather than after the rule that
+     happens to draw it, because three places have to agree on it: the padding
+     itself, the catalogue's floor, the panel body's floor -- and the short
+     viewports override it, which is where the honest floor is paid for. */
+  --hud-build-catalogue-gutter: var(--space-2);
 }
