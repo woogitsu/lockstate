@@ -6,12 +6,8 @@ import {
   type SimulationEnumGroup,
   defaultLocaleEnCatalog,
   deriveSimulationMessageKey,
-  extractEnumDeclarationIds,
-  findEnumShapedDeclarations,
   simulationEnumMessageKeys,
   simulationEnumMessages,
-  stripSourceComments,
-  validateSimulationEnumGroupSource,
   validateSimulationEnumGroups,
 } from '../../src/content';
 import {
@@ -20,6 +16,12 @@ import {
   buildPseudoLocaleCatalog,
   defaultMessageCatalogEn,
 } from '../../src/services/localization';
+import { stripComments } from '../helpers/canonical-iteration';
+import {
+  extractEnumDeclarationIds,
+  findEnumShapedDeclarations,
+  validateSimulationEnumGroupSource,
+} from '../helpers/simulation-enum-source';
 
 /**
  * The completeness contract for `src/content/simulation-message-keys.ts`.
@@ -32,10 +34,34 @@ import {
  * hand-maintained list of expected values, which would be the same table
  * written twice and would rot in exactly the same way.
  *
- * The rules live in `src/content/validate-catalog.ts` (exported, typed and
- * exercised against fixtures below); this file is the part that has to touch
- * the filesystem, mirroring the split in
+ * The rules live in `tests/helpers/simulation-enum-source.ts` (exported,
+ * typed and exercised against fixtures below); this file is the part that has
+ * to touch the filesystem, mirroring the split in
  * `tests/determinism/ambient-nondeterminism-contract.test.ts`.
+ *
+ * ## Why the scan is measured here and not merely trusted (#307)
+ *
+ * Until #307 those rules were the back half of `src/content/validate-catalog.ts`
+ * and carried their own comment stripper, a two-regex `stripSourceComments`
+ * with exactly the defect #278 reported: block comments removed before line
+ * comments, so a `//` comment containing `/*` -- a glob, a regex, a URL --
+ * opened a block comment that closed at the next `*` `/` anywhere below.
+ * Measured over the files this scan reads it blanked **81 lines of real code
+ * in two of them**, 80 of them consecutive locale lines in
+ * `src/content/default-locale-en.ts` reached from a comment naming
+ * `src/persistence/**`. Nothing here failed. The discovery below simply read
+ * less corpus than it claimed to and stayed green, which is the worst shape a
+ * defect in a gate can take.
+ *
+ * So the corpus itself is now asserted, in both directions, against an oracle
+ * built from each line's first two characters rather than from the scanner
+ * being checked -- an oracle that shared the scanner's idea of where a comment
+ * starts would agree with it about the lines it got wrong. That is the check
+ * `tests/foundation/comment-stripping-contract.test.ts` makes over `src/` and
+ * `tests/` for `stripComments` generally; it is repeated here over *this*
+ * gate's own corpus, because "the shared helper is correct" and "this gate saw
+ * every file it says it scans" are different claims and only the second one
+ * is what makes the discovery below mean anything.
  */
 
 const REPOSITORY_ROOT = resolve(__dirname, '../..');
@@ -163,12 +189,11 @@ const UNLABELLED: readonly { readonly sourceFile: string; readonly declaration: 
     reason:
       'Metadata of the labelling mechanism itself -- how a declaration is written in source. It describes the table, it is not a value the simulation projects.',
   },
-  {
-    sourceFile: 'src/content/validate-catalog.ts',
-    declaration: 'EnumIdExtractionFailure',
-    reason:
-      'Failure codes of the completeness check in this same test file. They appear in a test assertion message, never in the game.',
-  },
+  // `src/content/validate-catalog.ts::EnumIdExtractionFailure` was exempted
+  // here until #307. It is not a new omission: the declaration left the
+  // scanned roots with the rest of the source-scanning rules, so an exemption
+  // for it would now be a claim about a file this scan does not read -- which
+  // the honesty check below rejects, deliberately.
 ];
 
 const groupKey = (sourceFile: string, declaration: string): string => `${sourceFile}::${declaration}`;
@@ -243,6 +268,116 @@ describe('every labelled group agrees with the source declaration it names', () 
       expect(validateSimulationEnumGroupSource(group, readSource(group.sourceFile))).toEqual([]);
     },
   );
+});
+
+/**
+ * A line the discovery below stops seeing must *look* like a comment line to
+ * a reader.
+ *
+ * Deliberately dumb, and deliberately not built on the scanner it checks: an
+ * oracle that shared the scanner's idea of where a comment starts would agree
+ * with it about the lines it got wrong, which is the whole failure mode of
+ * #278 and #307. This one only asks what the line's first two characters are.
+ */
+const LOOKS_LIKE_A_COMMENT_LINE = /^(?:\/\/|\/\*|\*)/;
+
+interface CorpusLine {
+  readonly where: string;
+  /** The line as written, trimmed. */
+  readonly before: string;
+  /** The same line after stripping, trimmed. `stripComments` preserves every newline, so the two index the same line. */
+  readonly after: string;
+}
+
+const corpusLines: CorpusLine[] = [];
+let corpusFilesWhoseLengthChanged = 0;
+
+for (const file of SCANNED_FILES) {
+  const source = readFileSync(file, 'utf8');
+  const stripped = stripComments(source);
+  if (stripped.length !== source.length) corpusFilesWhoseLengthChanged += 1;
+  const where = repoPath(file);
+  const before = source.split('\n');
+  const after = stripped.split('\n');
+  for (let index = 0; index < before.length; index += 1) {
+    corpusLines.push({
+      where: `${where}:${index + 1}`,
+      before: before[index]!.trim(),
+      after: (after[index] ?? '').trim(),
+    });
+  }
+}
+
+const blankedLines = corpusLines.filter((line) => line.before !== '' && line.after === '');
+const survivingLines = corpusLines.filter((line) => line.after !== '');
+
+describe('the enum discovery sees the whole corpus it claims to scan (#307)', () => {
+  it('reads a corpus large enough for the two assertions below to mean something', () => {
+    // Floors at the values measured when this gate was written. A gate over a
+    // corpus is only as good as the corpus: a walk that silently collected
+    // nothing, or a stripper that silently blanked everything, would satisfy
+    // "no code line was blanked" perfectly.
+    expect(
+      SCANNED_FILES.length,
+      'fewer .ts files under the scanned roots than when this floor was set; the walk is broken',
+    ).toBeGreaterThanOrEqual(141);
+    expect(
+      blankedLines.length,
+      'far fewer comment lines removed than when this floor was set; the stripper has stopped stripping',
+    ).toBeGreaterThanOrEqual(6_900);
+    expect(
+      survivingLines.length,
+      'far fewer code lines survive than when this floor was set; the stripper is eating the corpus',
+    ).toBeGreaterThanOrEqual(13_000);
+    // The old `stripSourceComments` failed exactly here: it replaced a block
+    // comment with one space, so 116 of these 141 files came back a different
+    // length and every offset and line number taken from the result was wrong.
+    expect(
+      corpusFilesWhoseLengthChanged,
+      'stripping changed a file length, so offsets into the stripped text no longer index the source',
+    ).toBe(0);
+  });
+
+  it('blanks no line that is not a comment line -- the #307 direction, which is silent', () => {
+    const eaten = blankedLines.filter((line) => !LOOKS_LIKE_A_COMMENT_LINE.test(line.before));
+    expect(
+      eaten.map((line) => `${line.where}  ${line.before.slice(0, 100)}`),
+      'a line of real code was blanked before the enum discovery below ever saw it. That discovery will not fail -- it will find fewer enums and stay green, which is #307',
+    ).toEqual([]);
+  });
+
+  it('blanks every whole-line comment -- the other direction, which is loud but wrong', () => {
+    const left = survivingLines.filter((line) => line.before.startsWith('//'));
+    expect(
+      left.map((line) => `${line.where}  ${line.after.slice(0, 100)}`),
+      'a whole-line comment survived stripping, so prose discussing an enum now reads to the discovery as a declaration',
+    ).toEqual([]);
+  });
+
+  it('exercises the oracle on both answers, so an empty violation list is not merely a filter that never matches', () => {
+    expect(LOOKS_LIKE_A_COMMENT_LINE.test("'save.panel.title': 'Prisons',")).toBe(false);
+    expect(LOOKS_LIKE_A_COMMENT_LINE.test("export const NEED_IDS = ['hunger'] as const;")).toBe(false);
+    expect(LOOKS_LIKE_A_COMMENT_LINE.test('// a line comment')).toBe(true);
+    expect(LOOKS_LIKE_A_COMMENT_LINE.test('/** a doc comment')).toBe(true);
+    expect(LOOKS_LIKE_A_COMMENT_LINE.test('* a continuation')).toBe(true);
+  });
+
+  it('reaches the span the old stripper blanked, rather than merely reaching the file', () => {
+    // The 80 consecutive locale lines of `src/content/default-locale-en.ts`
+    // that #307 measured as lost, named rather than counted: the phantom
+    // block comment opened at the `src/persistence/**` in a `//` comment above
+    // them and closed 173 lines later. A count alone would pass on a corpus
+    // walk that had quietly stopped including this file.
+    const localeFile = 'src/content/default-locale-en.ts';
+    expect(SCANNED_FILES.map(repoPath), `${localeFile} is no longer in the scanned corpus`).toContain(localeFile);
+
+    const stripped = stripComments(readSource(localeFile));
+    for (const key of ['save.panel.title', 'save.action.create', 'brand.description']) {
+      expect(stripped, `${key} is inside the span the two-pass stripper blanked and must survive stripping`).toContain(
+        key,
+      );
+    }
+  });
 });
 
 describe('no enum reaches the HUD without a group covering it', () => {
@@ -337,8 +472,31 @@ describe('the extraction rules are exercised, not merely trusted', () => {
   });
 
   it('ignores declarations that only appear inside comments', () => {
-    expect(stripSourceComments("// export const IDS = ['a'] as const;\nconst ok = 1;")).not.toContain('IDS');
+    expect(stripComments("// export const IDS = ['a'] as const;\nconst ok = 1;")).not.toContain('IDS');
     expect(findEnumShapedDeclarations("/* export type T = 'a' | 'b'; */\nconst ok = 1;")).toEqual([]);
+  });
+
+  it('still sees a declaration below a line comment containing a block-comment opener (#307)', () => {
+    // The reported shape, at the size that matters: a `//` comment naming a
+    // glob, then a real enum below it. Under the old two-regex stripper the
+    // glob's `/` `*` opened a block comment that ran to the next terminator
+    // anywhere below, so the declaration was blanked and discovery returned
+    // nothing -- silently, because "no enum here" is a passing answer.
+    const source = [
+      '// ids thrown from `src/persistence/**` are diagnostics, never copy',
+      "export const DEMO_IDS = ['a', 'b'] as const;",
+      '/** and the terminator that closed the phantom block comment lives here. */',
+      "export type DemoUnion = 'x' | 'y';",
+    ].join('\n');
+
+    expect(findEnumShapedDeclarations(source)).toEqual([
+      { declaration: 'DEMO_IDS', form: 'const-array', ids: ['a', 'b'] },
+      { declaration: 'DemoUnion', form: 'string-union', ids: ['x', 'y'] },
+    ]);
+    expect(extractEnumDeclarationIds(stripComments(source), 'DEMO_IDS', 'const-array')).toEqual({
+      ok: true,
+      ids: ['a', 'b'],
+    });
   });
 
   it('would catch an id added to a declaration with no label, and a label for an id that no longer exists', () => {

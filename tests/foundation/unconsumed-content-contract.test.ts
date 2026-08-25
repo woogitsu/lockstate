@@ -46,7 +46,7 @@ import { defaultStaffRoleRegistry } from '../../src/content/staff-role-catalog';
  * this sentence carried 58 for as long as it did without anything
  * recomputing it -- nine ids already had a `src/` consumer when it was
  * written.)
- * `src/content/validate-catalog.ts` already argues this trade-off for enum
+ * `tests/helpers/simulation-enum-source.ts` already argues this trade-off for enum
  * discovery, and its conclusion applies here: "a list nobody reads enforces
  * nothing". So the gate is the narrower set, and the wider number is a
  * measurement reported in #141 rather than a list maintained here.

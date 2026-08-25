@@ -31,7 +31,7 @@ import {
  * `tests/helpers/canonical-iteration.ts` (exported and exercised against
  * fixtures below); this file walks the filesystem and owns the allow-list,
  * the same split `tests/unit/simulation-message-keys.test.ts` and
- * `src/content/validate-catalog.ts` use.
+ * `tests/helpers/simulation-enum-source.ts` use.
  *
  * **Scope: `src/simulation/`, `src/content/` and `src/persistence/`.** The
  * first two are the roots `simulation-message-keys.test.ts` also scans,

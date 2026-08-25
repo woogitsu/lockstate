@@ -28,7 +28,7 @@ import { describe, expect, it } from 'vitest';
  * prose: `` `foo.ts` `` in a sentence may be a module, a concept, a file that
  * is about to exist or an example, and a check that flagged all of them would
  * produce a list nobody reads -- which is the argument
- * `src/content/validate-catalog.ts` already makes about enum discovery.
+ * `tests/helpers/simulation-enum-source.ts` already makes about enum discovery.
  *
  * That argument is about a *bare filename*, and the second describe block
  * below covers the one subset it does not reach: a backticked token that is
