@@ -11,10 +11,20 @@ declares, the evidence that the declaration and the code disagree, the exact
 line that would replace it, and what merging that line would commit the project
 to. Deciding is the owner's; this file only makes the decision cheap.
 
-Established at `main` @ `d2596ad` (v0.0.37). Every `path:line` in sections 2-7
-and 9 was read from disk at that commit. Section 8 was added later, with the
-change it records, and its citations are read against that change rather than
-against `d2596ad` — where the ADR it is about did not exist.
+Established at `main` @ `d2596ad` (v0.0.37); **entry 7 re-verified and
+corrected at `b653b93` (v0.0.40)** after #295 discharged ADR 0012's outstanding
+remedy. Every `path:line` was read from disk at the commit its entry names.
+Section 8 was added later, with the change it records, so its citations are read
+against that change rather than against `d2596ad` — where the ADR it is about
+did not yet exist.
+
+A note on keeping this file true, since it is the kind of document that rots
+silently: an entry's evidence is a claim about `main`, so **landing the change an
+entry describes means updating that entry in the same commit**, exactly as
+moving a status means moving its index row. #295 changed the code and ADR 0012
+and left this file behind, which is how entry 7 came to be false for two
+releases. Nothing mechanical can catch that — the gate checks statuses against
+documents, never against code — so it is a habit, not an assertion.
 
 ---
 
@@ -97,7 +107,7 @@ which is the only reason it is recorded here.
 | [0014](./0014-art-storage-and-runtime-asset-delivery.md) | Art storage and asset delivery | Fully | Yes |
 | [0021](./0021-http-response-security-headers.md) | HTTP response security headers | Fully | Yes |
 | [0013](./0013-free-tier-cloud-save-capacity.md) | Free-tier cloud-save capacity | **Partial** — §§1-4 yes, §§5-6 no | §§1-4 are in SQL |
-| [0012](./0012-derived-identifier-reproducibility.md) | Reproducibility of derived identifiers | **Partial** — taxonomy yes, remedy no | Taxonomy is cited from `src/` |
+| [0012](./0012-derived-identifier-reproducibility.md) | Reproducibility of derived identifiers | **Yes** — taxonomy in use, remedy landed in #295 | Taxonomy is cited from `src/` |
 | [0024](./0024-protocol-fault-recoverability.md) | Which protocol faults end a session | Fully | **Yes** — one argument at one call site |
 
 The rest of this file is Queue B, ordered by what a wrong answer costs.
@@ -342,7 +352,11 @@ not after.
 
 ---
 
-## 7. ADR 0012 — the taxonomy is cited from `src/`, the remedy it requires is not done
+## 7. ADR 0012 — the taxonomy is cited from `src/`, and its remedy has now landed
+
+> **Re-verified at `main` @ `b653b93` (v0.0.40).** This entry said the remedy was
+> outstanding, and #295 discharged it after this file was written. Corrected
+> below, including the replacement line, which changed as a result.
 
 **Declared** (`docs/adr/0012-derived-identifier-reproducibility.md:4`):
 
@@ -350,30 +364,37 @@ not after.
 Proposed. Extended by
 ```
 
-**Why that contradicts `main`, in one direction only.** The *taxonomy* is in
-use as settled architecture: `src/simulation/identity/actor-identity.ts:8`
-carries the heading *"## Category: allocated identity, not a derived value
-(ADR 0012 / ADR 0015)"* and `:16` says the category is declared *"explicitly
-because ADR 0012 forbids leaving the category implicit"*. A `Proposed` ADR is
-being obeyed as a rule.
+**Why that contradicts `main`.** The *taxonomy* is in use as settled
+architecture: `src/simulation/identity/actor-identity.ts:8` carries the heading
+*"## Category: allocated identity, not a derived value (ADR 0012 / ADR 0015)"*
+and `:16` says the category is declared *"explicitly because ADR 0012 forbids
+leaving the category implicit"*. A `Proposed` ADR is being obeyed as a rule.
 
-The *remedy* the same ADR requires is not done. `GlobalTopologyId` is category 2
-and still does not meet category 2: `src/simulation/rooms/topology.ts:16`
-initialises `nextGlobalId` to 1 and `:189` increments it, with no reset per
-recompute, exactly as the ADR's Consequences say must change.
+**The remedy is no longer outstanding.** `nextGlobalId` is now a local of
+`recomputeGlobalTopology` (`src/simulation/rooms/topology.ts:213`, incremented
+at `:219`) rather than instance state, so ids are handed out from 1 in canonical
+sorted order on every recompute and `GlobalTopologyId` meets the category-2
+requirement the ADR sets. #295 landed that and recorded it in the ADR's own
+Consequences, which now say the follow-up *"has landed"*.
 
-Two things that were wrong here are **no longer wrong** and need no action: the
-path-request-id row of the identifier table now records that the ids are
-persisted (`save-schema.ts:419`, `:468` — both verified at `d2596ad`), and the
-Consequences record that the exception's escape clause has fired and that
-`JobRegistry.loadSnapshot` (`src/simulation/operations/job.ts:110`) and
-`GuardRoster.loadSnapshot` (`src/simulation/security/guard-roster.ts:198`)
-compensate on restore. Both verified.
+That change deliberately left two things for this ADR: the status, and whether
+`chunkTopologies` should be evicted on unload — ids are no longer a function of
+recompute history but are still a function of chunk *load* history, recorded
+under "Known limitations" in `docs/DETERMINISM.md`. So the remaining question is
+narrower than it was, and it is entirely a question about the status.
+
+Three things that were wrong here are **no longer wrong** and need no action:
+the path-request-id row of the identifier table records that the ids are
+persisted (`save-schema.ts:419`, `:468`), the Consequences record that the
+exception's escape clause has fired and that `JobRegistry.loadSnapshot`
+(`src/simulation/operations/job.ts:110`) and `GuardRoster.loadSnapshot`
+(`src/simulation/security/guard-roster.ts:198`) compensate on restore, and the
+`GlobalTopologyId` remedy above. All verified at `b653b93`.
 
 **Exact replacement line** (`0012-derived-identifier-reproducibility.md:4`):
 
 ```
-Accepted. The `GlobalTopologyId` remedy in Consequences is outstanding. Extended by
+Accepted. Extended by
 ```
 
 **Matching README row:**
@@ -384,11 +405,12 @@ Accepted. The `GlobalTopologyId` remedy in Consequences is outstanding. Extended
 
 **What merging that commits you to.** Every new id-minting subsystem must
 declare its category in its module doc and gain a pin under
-`tests/determinism/` — a rule the repository is already following in one place
-and enforcing in none. It also makes the `TopologyManager` reset a committed
-follow-up rather than a suggestion, which is the only reason to prefer this over
-leaving 0012 `Proposed`: today the rule binds nobody and the defect it names has
-no owner.
+`tests/determinism/` — a rule the repository is following in one place and
+enforcing in none. It also settles the category-2 reading of `GlobalTopologyId`,
+which #295 explicitly declined to settle for you, and makes the open
+`chunkTopologies` eviction question a ruling under an accepted ADR rather than a
+limitation under a proposed one. This is now the **cheapest** entry in Queue B:
+the code already complies, and nothing about accepting it obliges a change.
 
 ---
 

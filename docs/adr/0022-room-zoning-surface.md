@@ -102,29 +102,46 @@ Always-visible pixels actually available, measured on the #282+#283 merge by
 injecting blocks of known height into the assembled page and reading the
 resulting overflow — four independent probes (a 44px button, a 45px collapsed
 header, a 63.2px choice group, a 71.2px coordinates row) agreeing to within
-0.2px:
+0.2px — and **re-measured after #174's second half corrected the catalogue's
+floor**, by growing a spacer above the panel's last section until that
+section's bottom edge crosses the panel's fold:
 
-| Viewport | Always-visible pixels available |
-| --- | --- |
-| 1440×900 | 173.3 |
-| 375×812 | 79.1 |
-| 1024×768 | 74.3 |
-| 1280×720 | 38.2 |
-| 900×600 | 12.2 |
+| Viewport | Then | Now |
+| --- | --- | --- |
+| 1440×900 | 173.3 | 165 |
+| 375×812 | 79.1 | 74 |
+| 1024×768 | 74.3 | 66 |
+| 1280×720 | 38.2 | 30.2 |
+| 900×600 | 12.2 | 7.8 |
 
 `--tap-target` is 44px (`src/ui/tokens.css:150`). So **a single always-visible
 control fits at three of the five viewports and at neither 1280×720 nor
 900×600** — and the desktop 1280×720 is the second-tightest of the five,
 tighter than the phone. That inversion is why the number had to be measured
-rather than reasoned about from viewport size.
+rather than reasoned about from viewport size. Every figure moved down and none
+moved across that 44px line, so **this section's conclusion is unchanged and
+the decision below stands**; it is simply tighter than it was written.
 
-At 900×600 the 12.2px is 7.9px of body slack plus the catalogue's 3.9px
-donation (`.hud-build__catalogue` 135.9 → its 132px floor) and nothing else,
-because `.hud__aside` is already pinned at its floor there. The panel's floor
-is derived rather than tuned and accounts for every pixel: `hud.css:505-517`
-sets it out as 132 catalogue + 94.2 map + 45 collapsed section, and `:528-529`
-records it resolving to 271.2px against a 275px content box at 900×600. The
-`min-height` that expresses it is `hud.css:542-546`.
+**Why the numbers dropped, since it is not space that was lost.** The `Then`
+column counted 8px the catalogue could not really give. Its floor did not
+include the gutter under its own list, so "donating" that 8px meant laying the
+gutter over the hairline the map block draws rather than freeing anything
+(issue #174, second half). Correcting the floor removes the 8px from every
+viewport — hence the uniform −8.3, −5.1, −8.3 and −8.0 above — except 900×600,
+which loses only 4.4 because half of its 8px had already been spent as that
+overlap and was therefore never available twice. The `Now` column for 1280×720
+and 900×600 is measured to 0.05px (30.22 and 7.81); the other three rows are to
+the whole pixel. The 375×812 pair is the one that does not reconcile cleanly —
+79.1 → 74 rather than → 71.1 — and the residual is method, not layout: the two
+columns were measured by different probes on different trees, and the same
+probe reads 82 → 74 across this change at that viewport.
+
+At 900×600 the 7.8px is body slack and nothing else: `.hud__aside` is pinned at
+its floor there and the catalogue now sits exactly on its own, so nothing in
+the panel has anything left to donate. The panel's floor is derived rather than
+tuned and accounts for every pixel: `hud.css` sets it out as 140 catalogue
+(two rows + its 44px header + its gutter) + 94.2 map + 45 collapsed section,
+resolving to 275.2px against a 275.2px content box at 900×600.
 
 Relaxing `.hud__aside`'s floor is not the lever, and that is already recorded
 rather than newly argued: `hud.css:719-722` measured it — with `min-height: 0`
@@ -272,9 +289,10 @@ B is not the weaker design for the Rooms surface itself, and pretending
 otherwise would misrepresent the decision. Measured on the #282+#283 merge, a
 fifth tab injected into the tab bar left the Build panel's layout
 byte-identical at all five viewports: B costs the Build panel **nothing**. And a
-Rooms panel would inherit the whole aside box — 338.1px with a 291px body at
-900×600 — instead of sharing the 12.2px of §*The height budget*. That is a 24×
-larger budget for the surface that needs it.
+Rooms panel would inherit the whole aside box — 338.1px with a 291.2px body at
+900×600 — instead of sharing the 7.8px of §*The height budget*. That is a 37×
+larger budget for the surface that needs it, and the multiplier grew rather
+than shrank when that section's figures were corrected.
 
 Most of the pieces exist. The `rooms` icon is already declared
 (`src/ui/primitives/icon.ts:16`). A room catalogue projection would be

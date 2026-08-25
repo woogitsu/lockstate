@@ -432,10 +432,13 @@
  * present, reachable by scrolling, and invisible on arrival (#174). The
  * catalogue's two-row floor is why issue #143's expectation that making the
  * list scroll would also fix this viewport did not hold: with the two shipped
- * buildables the catalogue can hand back the 8px between its content and its
- * floor and no more. What #143 fixed is the panel's dependence on how many
- * buildables exist; a rail too short for the panel's *fixed* parts is a
- * different problem, and the short-viewport block is what pays for it.
+ * buildables the catalogue's content *is* its floor, so it can hand back
+ * nothing at all. (It looked like 8px for a while, and that 8px was the gutter
+ * under its own list, missing from its floor -- handing it back meant laying
+ * it over the map block's hairline rather than freeing it. See the floors
+ * below.) What #143 fixed is the panel's dependence on how many buildables
+ * exist; a rail too short for the panel's *fixed* parts is a different
+ * problem, and the short-viewport block is what pays for it.
  *
  * Written `.ui-panel.hud-build` rather than `.hud-build`, and that is not
  * decoration. `.ui-panel` sets `overflow: hidden`; this rule overrides it on
@@ -506,9 +509,19 @@
    * derived rather than tuned, and each term is the smallest that block is
    * ever laid out at:
    *
-   *   132px  the catalogue section at its own floor -- two rows
-   *          (`--hud-build-catalogue-floor`) plus its 44px header. It is
+   *   140px  the catalogue section at its own floor -- two rows
+   *          (`--hud-build-catalogue-floor`), its 44px header and the gutter
+   *          under the list (`--hud-build-catalogue-gutter`). It is
    *          `:first-child`, so `primitives.css` gives it no border-top.
+   *          The gutter used to be missing from this term and from the
+   *          catalogue's own floor below, which is issue #174's second half:
+   *          both sums were 8px light, so the section was allowed to be 8px
+   *          shorter than its own content and at 900x600 it was -- a 135.9px
+   *          box holding 140px, 4.1px of it laid outside the box and over the
+   *          hairline the map block draws. Nothing clipped, because the
+   *          overflowing 8px is padding rather than a row; the point is that
+   *          a floor which does not count a block's own padding is not that
+   *          block's floor.
    *    94.2  the map block, which never shrinks: its 1px `--hairline`
    *          border-top, four gutters (two padding edges and the two gaps
    *          between the three children it lays out in the arrival state),
@@ -530,22 +543,36 @@
    * 264px, three at the 375px phone width -- and the map block is that much
    * taller than this sum says. So this is a true floor everywhere and a tight
    * one only at the short viewports, which are the ones that press on it.
-   * Measured on the assembled page: it resolves to 271.2px against a 275px
-   * content box at 900x600 -- the catalogue is 4.2px into its 8px of slack
-   * there and this is what it would stop at -- and to 287.2px against 334.75px
-   * at 1280x720, where nothing is being squeezed at all.
+   * Measured on the assembled page: it resolves to 275.2px against a 275.2px
+   * content box at 900x600 -- the catalogue is exactly on its floor there and
+   * the body is exactly on this one -- and to 295.2px against 334.8px at
+   * 1280x720, where nothing is being squeezed at all.
    *
-   * Not `min-content` or `fit-content`. Chrome resolves a column flex
-   * container's `min-content` height as the sum of its items' content
-   * heights, ignoring their own `min-height` floors -- so the catalogue's
-   * floor is not what it stops at, the body stops shrinking altogether, and
-   * #143's mechanism is gone. Measured in the harness at twelve entries,
-   * where the list absorbs 259px at 1280x720 today: with `min-content` the
-   * "Enter coordinates" header lands at y=889 in a panel clipped at y=638.
-   * `tests/browser/ui-shell.spec.ts` is red on exactly that.
+   * Not `min-content` or `fit-content`, and not a grid track's own minimum
+   * either. Chrome resolves a column flex container's `min-content` height as
+   * the sum of its items' content heights, ignoring their own `min-height`
+   * floors -- so the catalogue's floor is not what it stops at, the body
+   * stops shrinking altogether, and #143's mechanism is gone. Measured in the
+   * harness at twelve entries, where the list absorbs 259px at 1280x720
+   * today: with `min-content` the "Enter coordinates" header lands at y=889
+   * in a panel clipped at y=638. `tests/browser/ui-shell.spec.ts` is red on
+   * exactly that.
+   *
+   * Rewriting this body as a grid -- `grid-auto-rows: auto` plus
+   * `min-height: min-content`, so the browser sums the floors instead of this
+   * comment -- fails for the same reason and was measured failing before it
+   * was rejected: a scroll container's min-content contribution in its scroll
+   * axis is its *content*, not its `min-height`, so the catalogue track's
+   * minimum came out at the full twelve-row list and the derived floor was
+   * 580px rather than 140px. Harness, twelve entries: the header landed
+   * 250.8px below the fold at 1280x720 and 307.2px below it at 900x600. The
+   * sum has to be written out, so what keeps it honest is the assertion in
+   * `tests/browser/app-shell.spec.ts` that no box in this chain is ever
+   * shorter than its own content -- a term dropped from this sum shows up
+   * there as a number.
    */
   min-height: calc(
-    var(--hud-build-catalogue-floor) + var(--tap-target) + var(--hairline) +
+    var(--hud-build-catalogue-floor) + var(--tap-target) + var(--hud-build-catalogue-gutter) + var(--hairline) +
       4 * var(--hud-build-map-gutter) + var(--tap-target) + var(--space-5) +
       var(--text-size-label) * var(--label-line-height) + var(--hairline) + var(--tap-target)
   );
@@ -562,15 +589,24 @@
   display: flex;
   flex-direction: column;
   flex: 0 1 auto;
-  /* Its own header plus the two-row floor below. Every shrinkable box in this
-     chain carries the same floor, and none of them may be left to `0`: only
-     the list clips, so a section or a body shrunk under its content lets the
-     rows paint *behind* the map block below instead of scrolling. Observed
-     exactly that way -- with the floor on the list alone, the #88
-     reachability sweep in `tests/browser/app-shell.spec.ts` found the
-     catalogue header and both rows hit-testing to "Place on map" and the
-     placement readout at 1280x720 with the coordinates expanded. */
-  min-height: calc(var(--hud-build-catalogue-floor) + var(--tap-target));
+  /* Its own header, the two-row floor below it and the gutter under that.
+     Every shrinkable box in this chain carries the same floor, and none of
+     them may be left to `0`: only the list clips, so a section or a body
+     shrunk under its content lets the rows paint *behind* the map block below
+     instead of scrolling. Observed exactly that way -- with the floor on the
+     list alone, the #88 reachability sweep in
+     `tests/browser/app-shell.spec.ts` found the catalogue header and both
+     rows hit-testing to "Place on map" and the placement readout at 1280x720
+     with the coordinates expanded.
+
+     `--hud-build-catalogue-gutter` is the term that was missing (#174). The
+     section's content is its header, its list and the padding under the list;
+     a floor that counts the first two is a floor 8px under the box it is
+     meant to hold up, and at 900x600 the section sat 4.1px into that gap with
+     its bottom padding laid over the map block's hairline. */
+  min-height: calc(
+    var(--hud-build-catalogue-floor) + var(--tap-target) + var(--hud-build-catalogue-gutter)
+  );
 }
 
 .hud-build__catalogue > .ui-section__header { flex: 0 0 auto; }
@@ -588,6 +624,12 @@
      `min-height` under the default `content-box` sizes the content box, so
      this floor is exactly the list's rather than the list's plus padding. */
   min-height: var(--hud-build-catalogue-floor);
+  /* Spent from the token rather than inherited from `primitives.css`'s
+     shorthand, because the two floors above have to sum it and a number only
+     one of three places knows about is the number that goes missing -- which
+     is exactly how it went missing (#174). Same reasoning as
+     `--hud-build-map-gutter` in the map block below. */
+  padding-bottom: var(--hud-build-catalogue-gutter);
 }
 
 /*
@@ -668,10 +710,10 @@
  * spends (#89).
  *
  * `hidden` in the arrival state, so it has no box at all there -- which is
- * the whole reason it is allowed to exist. The panel's body had 3.9px of
- * donatable slack at 900x600 with the two shipped buildables, and this row is
- * about 108px; opened, the panel scrolls at that viewport exactly as it does
- * with the numeric fallback expanded, and `overflow-y: auto` on
+ * the whole reason it is allowed to exist. The panel has 7.8px of room for an
+ * always-visible block at 900x600 with the two shipped buildables, and this
+ * row is about 108px; opened, the panel scrolls at that viewport exactly as
+ * it does with the numeric fallback expanded, and `overflow-y: auto` on
  * `.ui-panel.hud-build` above is what makes that a scroll the player can
  * perform rather than a clip.
  */
@@ -778,15 +820,43 @@
  * floor, which leaves 7.8px of the header still below the fold and is a worse
  * list. Measured, both of them.
  *
- * So the three declarations below, which close it -- panel overflow 52 -> 0,
- * the header 51.8px below the fold -> 7.9px inside it:
+ * So the four declarations below, which close it -- panel overflow 52 -> 0,
+ * the header 51.8px below the fold -> 7.8px inside it:
  *
  *   - the arm hint clamped to one line, 52.8px of type down to 13.2px;
  *   - `.hud__side`'s padding at `--space-2` rather than `--space-3`, 8px;
- *   - the map block's gutter at `--space-1` rather than `--space-2`, 16px.
+ *   - the map block's gutter at `--space-1` rather than `--space-2`, 16px;
+ *   - the catalogue's gutter at `--space-1` rather than `--space-2`, 4px.
  *
- * 63.6px between them, and the catalogue's 8px of donatable slack covers the
- * rest of the 67.7 with 3.8px to spare.
+ * 67.6px between them, and the panel arrives at 338.1px of content in a
+ * 338.1px slot with nothing scrolled anywhere.
+ *
+ * **Why the fourth one, and what it buys back.** The first three were once
+ * enough, on the reading that only 63.6px had to be trimmed because the
+ * catalogue had 8px of donatable slack. 4.1px of that "slack" was not slack:
+ * the catalogue's floor did not count the gutter under its list, so the
+ * section was 135.9px of box holding 140px of content and the difference was
+ * laid over the map block's hairline. Counting the gutter in both floors --
+ * which is the honest sum, and the second half of #174 -- costs the panel that
+ * 4.1px back, and at this viewport the panel had none to give: with the floors
+ * corrected and nothing else changed the panel arrives scrolled by 4px, which
+ * is the defect returning by the front door.
+ *
+ * So the gutter itself is what pays, at `--space-1` here rather than
+ * `--space-2`. It is the one piece of pure space left in the panel: it sits
+ * directly above the map block's own top gutter with the hairline between
+ * them, so at this viewport the two of them are 4 + 1 + 4 rather than 8 + 1 +
+ * 4, and no control, no row and no sentence is smaller for it. Measured on the
+ * assembled page at 900x600: the catalogue is 136px of box holding 136px, the
+ * panel is 338.1px in a 338.1px slot with nothing scrolled, and "Enter
+ * coordinates" ends 7.8px above the fold.
+ *
+ * The alternative that was measured and rejected: `.hud-build > .ui-panel__body`
+ * at `padding: var(--space-1)` here, which pays 8px rather than 4px and leaves
+ * the header 3.8px inside the fold instead of 7.8px. It buys the same fit for
+ * twice the space and takes it from the panel's outer inset on all four edges,
+ * where nothing was doubled up -- so it makes the panel look cramped to close a
+ * gap that only exists on one edge.
  *
  * **What the clamp costs, stated rather than discovered.** The hint reads
  * "Click a tile edge to place a wall. Drag along it to lay a run. Two
@@ -812,6 +882,7 @@
 @media (max-height: 700px) {
   :root {
     --hud-build-map-gutter: var(--space-1);
+    --hud-build-catalogue-gutter: var(--space-1);
   }
 
   .hud__side { padding: var(--space-2); }
