@@ -185,11 +185,12 @@ describe('message keys live in one registry', () => {
       activeIncidents: 1,
       contrabandFound: 1,
       treasuryMinorUnits: 0,
+      stateIncomeAccruedTodayMinorUnits: 0,
     })) {
       expect(registry.has(metric.labelKey), metric.labelKey).toBe(true);
       if (metric.badge !== undefined) expect(registry.has(metric.badge.textKey), metric.badge.textKey).toBe(true);
     }
-    expect(HUD_TABS.map((tab) => tab.id)).toEqual(['overview', 'build', 'security', 'regime']);
+    expect(HUD_TABS.map((tab) => tab.id)).toEqual(['overview', 'build', 'rooms', 'security', 'regime']);
     for (const tab of HUD_TABS) expect(registry.has(tab.labelKey), tab.labelKey).toBe(true);
   });
 });

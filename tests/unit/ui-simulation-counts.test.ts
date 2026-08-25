@@ -26,6 +26,11 @@ const COUNTS = {
   activeIncidents: 1,
   contrabandDiscovered: 5,
   treasuryMinorUnits: 24_920,
+  // Deliberately a different figure from the balance beside it, and not a
+  // round fraction of it (#29): two count fields in the same minor units are
+  // exactly where an adapter that read the wrong one would still look
+  // plausible.
+  stateIncomeAccruedTodayMinorUnits: 9_300,
 } as const;
 
 function statusCounts(counts: Record<string, number> = { ...COUNTS }): WorkerToMainMessage {
@@ -54,6 +59,12 @@ describe('the HUD counts are read from the worker', () => {
       // formatter knows what a major unit is (#96). A conversion here would
       // put a currency decision in a message adapter.
       treasuryMinorUnits: 24_920,
+      // Straight through as well, and for the stronger reason: the HUD may
+      // not derive this figure. It is `300 x occupied places x ticks served
+      // / day length`, and a main thread that recomputed it from a tick it
+      // happens to hold would be a second authority on what the prison has
+      // earned (#29).
+      stateIncomeAccruedTodayMinorUnits: 9_300,
     });
   });
 

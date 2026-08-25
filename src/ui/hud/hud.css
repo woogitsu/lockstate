@@ -432,10 +432,13 @@
  * present, reachable by scrolling, and invisible on arrival (#174). The
  * catalogue's two-row floor is why issue #143's expectation that making the
  * list scroll would also fix this viewport did not hold: with the two shipped
- * buildables the catalogue can hand back the 8px between its content and its
- * floor and no more. What #143 fixed is the panel's dependence on how many
- * buildables exist; a rail too short for the panel's *fixed* parts is a
- * different problem, and the short-viewport block is what pays for it.
+ * buildables the catalogue's content *is* its floor, so it can hand back
+ * nothing at all. (It looked like 8px for a while, and that 8px was the gutter
+ * under its own list, missing from its floor -- handing it back meant laying
+ * it over the map block's hairline rather than freeing it. See the floors
+ * below.) What #143 fixed is the panel's dependence on how many buildables
+ * exist; a rail too short for the panel's *fixed* parts is a different
+ * problem, and the short-viewport block is what pays for it.
  *
  * Written `.ui-panel.hud-build` rather than `.hud-build`, and that is not
  * decoration. `.ui-panel` sets `overflow: hidden`; this rule overrides it on
@@ -506,9 +509,19 @@
    * derived rather than tuned, and each term is the smallest that block is
    * ever laid out at:
    *
-   *   132px  the catalogue section at its own floor -- two rows
-   *          (`--hud-build-catalogue-floor`) plus its 44px header. It is
+   *   140px  the catalogue section at its own floor -- two rows
+   *          (`--hud-build-catalogue-floor`), its 44px header and the gutter
+   *          under the list (`--hud-build-catalogue-gutter`). It is
    *          `:first-child`, so `primitives.css` gives it no border-top.
+   *          The gutter used to be missing from this term and from the
+   *          catalogue's own floor below, which is issue #174's second half:
+   *          both sums were 8px light, so the section was allowed to be 8px
+   *          shorter than its own content and at 900x600 it was -- a 135.9px
+   *          box holding 140px, 4.1px of it laid outside the box and over the
+   *          hairline the map block draws. Nothing clipped, because the
+   *          overflowing 8px is padding rather than a row; the point is that
+   *          a floor which does not count a block's own padding is not that
+   *          block's floor.
    *    94.2  the map block, which never shrinks: its 1px `--hairline`
    *          border-top, four gutters (two padding edges and the two gaps
    *          between the three children it lays out in the arrival state),
@@ -530,22 +543,36 @@
    * 264px, three at the 375px phone width -- and the map block is that much
    * taller than this sum says. So this is a true floor everywhere and a tight
    * one only at the short viewports, which are the ones that press on it.
-   * Measured on the assembled page: it resolves to 271.2px against a 275px
-   * content box at 900x600 -- the catalogue is 4.2px into its 8px of slack
-   * there and this is what it would stop at -- and to 287.2px against 334.75px
-   * at 1280x720, where nothing is being squeezed at all.
+   * Measured on the assembled page: it resolves to 275.2px against a 275.2px
+   * content box at 900x600 -- the catalogue is exactly on its floor there and
+   * the body is exactly on this one -- and to 295.2px against 334.8px at
+   * 1280x720, where nothing is being squeezed at all.
    *
-   * Not `min-content` or `fit-content`. Chrome resolves a column flex
-   * container's `min-content` height as the sum of its items' content
-   * heights, ignoring their own `min-height` floors -- so the catalogue's
-   * floor is not what it stops at, the body stops shrinking altogether, and
-   * #143's mechanism is gone. Measured in the harness at twelve entries,
-   * where the list absorbs 259px at 1280x720 today: with `min-content` the
-   * "Enter coordinates" header lands at y=889 in a panel clipped at y=638.
-   * `tests/browser/ui-shell.spec.ts` is red on exactly that.
+   * Not `min-content` or `fit-content`, and not a grid track's own minimum
+   * either. Chrome resolves a column flex container's `min-content` height as
+   * the sum of its items' content heights, ignoring their own `min-height`
+   * floors -- so the catalogue's floor is not what it stops at, the body
+   * stops shrinking altogether, and #143's mechanism is gone. Measured in the
+   * harness at twelve entries, where the list absorbs 259px at 1280x720
+   * today: with `min-content` the "Enter coordinates" header lands at y=889
+   * in a panel clipped at y=638. `tests/browser/ui-shell.spec.ts` is red on
+   * exactly that.
+   *
+   * Rewriting this body as a grid -- `grid-auto-rows: auto` plus
+   * `min-height: min-content`, so the browser sums the floors instead of this
+   * comment -- fails for the same reason and was measured failing before it
+   * was rejected: a scroll container's min-content contribution in its scroll
+   * axis is its *content*, not its `min-height`, so the catalogue track's
+   * minimum came out at the full twelve-row list and the derived floor was
+   * 580px rather than 140px. Harness, twelve entries: the header landed
+   * 250.8px below the fold at 1280x720 and 307.2px below it at 900x600. The
+   * sum has to be written out, so what keeps it honest is the assertion in
+   * `tests/browser/app-shell.spec.ts` that no box in this chain is ever
+   * shorter than its own content -- a term dropped from this sum shows up
+   * there as a number.
    */
   min-height: calc(
-    var(--hud-build-catalogue-floor) + var(--tap-target) + var(--hairline) +
+    var(--hud-build-catalogue-floor) + var(--tap-target) + var(--hud-build-catalogue-gutter) + var(--hairline) +
       4 * var(--hud-build-map-gutter) + var(--tap-target) + var(--space-5) +
       var(--text-size-label) * var(--label-line-height) + var(--hairline) + var(--tap-target)
   );
@@ -562,15 +589,24 @@
   display: flex;
   flex-direction: column;
   flex: 0 1 auto;
-  /* Its own header plus the two-row floor below. Every shrinkable box in this
-     chain carries the same floor, and none of them may be left to `0`: only
-     the list clips, so a section or a body shrunk under its content lets the
-     rows paint *behind* the map block below instead of scrolling. Observed
-     exactly that way -- with the floor on the list alone, the #88
-     reachability sweep in `tests/browser/app-shell.spec.ts` found the
-     catalogue header and both rows hit-testing to "Place on map" and the
-     placement readout at 1280x720 with the coordinates expanded. */
-  min-height: calc(var(--hud-build-catalogue-floor) + var(--tap-target));
+  /* Its own header, the two-row floor below it and the gutter under that.
+     Every shrinkable box in this chain carries the same floor, and none of
+     them may be left to `0`: only the list clips, so a section or a body
+     shrunk under its content lets the rows paint *behind* the map block below
+     instead of scrolling. Observed exactly that way -- with the floor on the
+     list alone, the #88 reachability sweep in
+     `tests/browser/app-shell.spec.ts` found the catalogue header and both
+     rows hit-testing to "Place on map" and the placement readout at 1280x720
+     with the coordinates expanded.
+
+     `--hud-build-catalogue-gutter` is the term that was missing (#174). The
+     section's content is its header, its list and the padding under the list;
+     a floor that counts the first two is a floor 8px under the box it is
+     meant to hold up, and at 900x600 the section sat 4.1px into that gap with
+     its bottom padding laid over the map block's hairline. */
+  min-height: calc(
+    var(--hud-build-catalogue-floor) + var(--tap-target) + var(--hud-build-catalogue-gutter)
+  );
 }
 
 .hud-build__catalogue > .ui-section__header { flex: 0 0 auto; }
@@ -588,6 +624,12 @@
      `min-height` under the default `content-box` sizes the content box, so
      this floor is exactly the list's rather than the list's plus padding. */
   min-height: var(--hud-build-catalogue-floor);
+  /* Spent from the token rather than inherited from `primitives.css`'s
+     shorthand, because the two floors above have to sum it and a number only
+     one of three places knows about is the number that goes missing -- which
+     is exactly how it went missing (#174). Same reasoning as
+     `--hud-build-map-gutter` in the map block below. */
+  padding-bottom: var(--hud-build-catalogue-gutter);
 }
 
 /*
@@ -668,10 +710,10 @@
  * spends (#89).
  *
  * `hidden` in the arrival state, so it has no box at all there -- which is
- * the whole reason it is allowed to exist. The panel's body had 3.9px of
- * donatable slack at 900x600 with the two shipped buildables, and this row is
- * about 108px; opened, the panel scrolls at that viewport exactly as it does
- * with the numeric fallback expanded, and `overflow-y: auto` on
+ * the whole reason it is allowed to exist. The panel has 7.8px of room for an
+ * always-visible block at 900x600 with the two shipped buildables, and this
+ * row is about 108px; opened, the panel scrolls at that viewport exactly as
+ * it does with the numeric fallback expanded, and `overflow-y: auto` on
  * `.ui-panel.hud-build` above is what makes that a scroll the player can
  * perform rather than a clip.
  */
@@ -778,15 +820,43 @@
  * floor, which leaves 7.8px of the header still below the fold and is a worse
  * list. Measured, both of them.
  *
- * So the three declarations below, which close it -- panel overflow 52 -> 0,
- * the header 51.8px below the fold -> 7.9px inside it:
+ * So the four declarations below, which close it -- panel overflow 52 -> 0,
+ * the header 51.8px below the fold -> 7.8px inside it:
  *
  *   - the arm hint clamped to one line, 52.8px of type down to 13.2px;
  *   - `.hud__side`'s padding at `--space-2` rather than `--space-3`, 8px;
- *   - the map block's gutter at `--space-1` rather than `--space-2`, 16px.
+ *   - the map block's gutter at `--space-1` rather than `--space-2`, 16px;
+ *   - the catalogue's gutter at `--space-1` rather than `--space-2`, 4px.
  *
- * 63.6px between them, and the catalogue's 8px of donatable slack covers the
- * rest of the 67.7 with 3.8px to spare.
+ * 67.6px between them, and the panel arrives at 338.1px of content in a
+ * 338.1px slot with nothing scrolled anywhere.
+ *
+ * **Why the fourth one, and what it buys back.** The first three were once
+ * enough, on the reading that only 63.6px had to be trimmed because the
+ * catalogue had 8px of donatable slack. 4.1px of that "slack" was not slack:
+ * the catalogue's floor did not count the gutter under its list, so the
+ * section was 135.9px of box holding 140px of content and the difference was
+ * laid over the map block's hairline. Counting the gutter in both floors --
+ * which is the honest sum, and the second half of #174 -- costs the panel that
+ * 4.1px back, and at this viewport the panel had none to give: with the floors
+ * corrected and nothing else changed the panel arrives scrolled by 4px, which
+ * is the defect returning by the front door.
+ *
+ * So the gutter itself is what pays, at `--space-1` here rather than
+ * `--space-2`. It is the one piece of pure space left in the panel: it sits
+ * directly above the map block's own top gutter with the hairline between
+ * them, so at this viewport the two of them are 4 + 1 + 4 rather than 8 + 1 +
+ * 4, and no control, no row and no sentence is smaller for it. Measured on the
+ * assembled page at 900x600: the catalogue is 136px of box holding 136px, the
+ * panel is 338.1px in a 338.1px slot with nothing scrolled, and "Enter
+ * coordinates" ends 7.8px above the fold.
+ *
+ * The alternative that was measured and rejected: `.hud-build > .ui-panel__body`
+ * at `padding: var(--space-1)` here, which pays 8px rather than 4px and leaves
+ * the header 3.8px inside the fold instead of 7.8px. It buys the same fit for
+ * twice the space and takes it from the panel's outer inset on all four edges,
+ * where nothing was doubled up -- so it makes the panel look cramped to close a
+ * gap that only exists on one edge.
  *
  * **What the clamp costs, stated rather than discovered.** The hint reads
  * "Click a tile edge to place a wall. Drag along it to lay a run. Two
@@ -812,6 +882,14 @@
 @media (max-height: 700px) {
   :root {
     --hud-build-map-gutter: var(--space-1);
+    --hud-build-catalogue-gutter: var(--space-1);
+    /* The Rooms panel pays for the short viewports the same way, and it has
+       more terms to trim: its body's floor spends this gutter nine times over
+       (four in the map block, three in the status block, one under the
+       catalogue list and one in the catalogue's own floor), so halving it here
+       is what keeps the enclosure readout -- the last block in the panel --
+       inside the panel's unscrolled box at 900x600. */
+    --hud-rooms-gutter: var(--space-1);
   }
 
   .hud__side { padding: var(--space-2); }
@@ -828,7 +906,250 @@
     -webkit-line-clamp: 1;
     overflow: hidden;
   }
+
+  /* The same clamp, and the same reason it is four declarations rather than
+     one. The Rooms panel's note carries the longest sentence either panel has
+     -- the enclosure warning -- and the body's floor above counts it as one
+     line, so this is what makes that term true rather than optimistic. The
+     text node stays in the DOM in full, clipped by the box rather than
+     replaced, so every one of the four strings this line can hold is still one
+     localized string. */
+  .hud-rooms__note {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    overflow: hidden;
+  }
 }
+
+/* ------------------------------------------------------------------ */
+/* Rooms panel                                                         */
+/* ------------------------------------------------------------------ */
+
+/*
+ * The panel ADR 0022 rejected and the owner chose.
+ *
+ * The whole of the layout argument is two measurements at 900x600, the
+ * tightest of the five viewports the browser suite visits. Inside the Build
+ * panel the *always-visible* budget for a new block is 7.81px -- the corrected
+ * figure, measured to 0.05px after #174's second half; before it the budget
+ * read 11.8px in `build-panel.ts` and 12.2px in ADR 0022's own table, which
+ * disagree and are recorded as disagreeing in that ADR's amendment. Roughly 4px
+ * of whichever it was had never been space at all: it was the catalogue laying
+ * its own gutter over the map block's hairline. On the aside this panel gets a
+ * 291.2px body instead. A confirm row, a removal control, a too-small warning
+ * and an enclosure readout do not fit in 7.81px under any arrangement, and they
+ * fit with room to spare in 291.2px.
+ *
+ * Structurally it is the Build panel's shape, deliberately: `.ui-panel` plus
+ * two classes, its own `overflow-y: auto`, a flex-column body, one shrinkable
+ * catalogue and fixed blocks below it. Reusing the shape rather than the rules
+ * is the honest split -- the two panels have different floors to sum, and an
+ * `.hud-build, .hud-rooms` selector list would make every future change to one
+ * a change to both.
+ */
+.ui-panel.hud-rooms {
+  width: var(--hud-rail-panel-width);
+  max-width: 100%;
+  /* `border-box`, so this panel, the Build panel and the save panel render at
+     exactly the same width from the same token -- see `.ui-panel.hud-build`. */
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: var(--surface-raised);
+}
+
+/*
+ * The body's floor, summed the same way the Build panel's is and for the same
+ * reason: Chrome resolves a column flex container's `min-content` height as
+ * the sum of its items' content heights and ignores their `min-height` floors,
+ * so the sum has to be written out. What keeps it honest is the assertion in
+ * `tests/browser/app-shell.spec.ts` that no box in this chain is ever shorter
+ * than its own content.
+ *
+ * Each term is the smallest that block is ever laid out at:
+ *
+ *      97  the catalogue section at its own floor -- one row
+ *          (`--hud-rooms-catalogue-floor`), its 44px header, the gutter under
+ *          the list, and no border-top, being `:first-child`.
+ *   110.2  the map block: its 1px `--hairline` border-top, four gutters (two
+ *          padding edges and the two gaps between its three children), the
+ *          44px action row, the 20px area readout and one line of the note.
+ *          The action row is 44px whichever pair of controls is in it, which is
+ *          what makes the confirm step free -- the same trick
+ *          `.hud-build__actions` uses for the buy disclosure.
+ *    47.4  the status block: 1px border-top, two padding edges and one gap of
+ *          the gutter, and three label lines -- the two rule lines and the
+ *          enclosure readout.
+ *
+ * `.ui-panel__body` is `content-box`, so this sizes the content box and its
+ * own 8px padding is deliberately not in the sum.
+ *
+ * **What this floor is and is not, measured rather than assumed.** It is
+ * *defensive*: at all five viewports the browser suite visits, the rail today
+ * has room for the panel's whole content, so nothing is being squeezed and the
+ * floor is not what decides the layout. Measured on the assembled page --
+ * dropping the status block's three terms from this sum leaves every assertion
+ * in `tests/browser/app-shell.spec.ts` and `tests/browser/ui-shell.spec.ts`
+ * green. That is stated here rather than left to be discovered, because the
+ * Build panel's equivalent sum *is* binding at 900x600 and a reader who assumed
+ * the same of this one would be wrong about why it exists.
+ *
+ * It exists for the case the Build panel's floor already met: a rail that cannot
+ * afford the panel. Without a floor a flex item shrinks to its content and then
+ * past it, and #174 measured what that costs one panel over -- a block painting
+ * outside its own box, over the hairline below it. What actually guards *this*
+ * panel today is the pair of assertions in `app-shell.spec.ts`: the last block's
+ * bottom edge against the panel's fold, and no box in this chain ever being
+ * shorter than its own content. The first was proven to bite by making the status
+ * block 240px taller than budgeted -- the enclosure readout then ended at y=649
+ * in a panel clipped at y=638 at 1280x720.
+ */
+.hud-rooms > .ui-panel__body {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(
+    var(--hud-rooms-catalogue-floor) + var(--tap-target) + var(--hud-rooms-gutter) + var(--hairline) +
+      4 * var(--hud-rooms-gutter) + var(--tap-target) + var(--space-5) +
+      var(--text-size-label) * var(--label-line-height) + var(--hairline) + 3 * var(--hud-rooms-gutter) +
+      3 * var(--text-size-label) * var(--label-line-height)
+  );
+}
+
+/* Every block keeps its content height; the catalogue is the one exception.
+   Written from `.hud-rooms` down so the exception outranks the rule -- `> *`
+   adds no specificity of its own. */
+.hud-rooms > .ui-panel__body > * { flex: 0 0 auto; }
+
+.hud-rooms > .ui-panel__body > .hud-rooms__catalogue {
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 auto;
+  min-height: calc(
+    var(--hud-rooms-catalogue-floor) + var(--tap-target) + var(--hud-rooms-gutter)
+  );
+}
+
+.hud-rooms__catalogue > .ui-section__header { flex: 0 0 auto; }
+
+/* `:not([hidden])` because this section folds, and an author `display: flex`
+   beats the `display: none` a user agent gives `[hidden]` -- the same trap
+   `.hud-build__catalogue`'s body rule and `.ui-panel[hidden]` exist to close. */
+.hud-rooms__catalogue > .ui-section__body:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  min-height: var(--hud-rooms-catalogue-floor);
+  padding-bottom: var(--hud-rooms-gutter);
+}
+
+/*
+ * The list is the scroll region, and unlike the Build panel's it genuinely
+ * scrolls at every viewport: eighteen room types against a one-row floor. That
+ * is what the floor is for -- the scrollbar here means "there are seventeen
+ * more", not "something was squeezed out".
+ */
+.hud-rooms__list {
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 auto;
+  min-height: var(--hud-rooms-catalogue-floor);
+  overflow-y: auto;
+}
+
+/* The gesture block: arm or confirm, the area readout, and the one note line. */
+.hud-rooms__map {
+  display: flex;
+  flex-direction: column;
+  /* One token for the gap and the vertical padding, because the body's floor
+     above sums four of them -- a block whose gap and padding had drifted apart
+     would make that sum wrong rather than merely uneven. */
+  gap: var(--hud-rooms-gutter);
+  padding: var(--hud-rooms-gutter) var(--space-1);
+  border-top: var(--hairline) solid var(--border-hairline);
+}
+
+/*
+ * One row, two pairs of controls, never both.
+ *
+ * `[Draw on map | Remove rooms]` while nothing is pending, and
+ * `[Designate 6 x 6 | Discard]` once a rectangle is. The row is
+ * `--tap-target` tall either way, so the confirm step spends none of the
+ * panel's height -- and the members it is not showing are `hidden`, so they
+ * lay out no box, leave no gap and are out of the tab order.
+ *
+ * The primary control grows and its partner does not, so at the rail's 264px
+ * the destructive or escaping control stays the size of its own word.
+ */
+.hud-rooms__actions {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-2);
+}
+
+.hud-rooms__actions > .hud-rooms__arm,
+.hud-rooms__actions > .hud-rooms__confirm {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.hud-rooms__actions > .hud-rooms__remove,
+.hud-rooms__actions > .hud-rooms__cancel {
+  flex: 0 0 auto;
+}
+
+/* Pinned, exactly as `.hud-build__target` is, so a longer readout cannot move
+   the controls under it: the area line goes from "Nothing selected" to
+   "64 x 64 tiles at 128, 128" as the player drags, and a block that grew with
+   the text would shift the confirm button under their finger mid-gesture. */
+.hud-rooms__area {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: var(--space-5);
+}
+
+.hud-rooms__area-value { font-variant-numeric: tabular-nums; }
+
+/* The note is one line's worth of space whatever it is saying, because it says
+   one of four things -- the arm hint, the removal hint, the too-small warning
+   or the enclosure warning -- and a panel whose controls moved when the warning
+   appeared would move them at the exact moment the player was reading it. */
+.hud-rooms__note { display: block; }
+
+.hud-rooms__note[data-tone='warning'] { color: var(--status-warning); }
+
+/* The authored rule and what the simulation found: three label lines and no
+   controls. Last in the panel, because it is the block a player reads rather
+   than presses -- and being last is what the browser suite's reachability
+   sweep checks, since the last block is the one a floor that is too small
+   pushes out of the panel. */
+.hud-rooms__status {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hud-rooms-gutter);
+  padding: var(--hud-rooms-gutter) var(--space-1);
+  border-top: var(--hairline) solid var(--border-hairline);
+}
+
+.hud-rooms__rule-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.hud-rooms__enclosure {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+/* Sealed is not "good" and open is not "bad" -- `room.yard` is authored
+   `outdoors` and is correct when it is open -- so nothing here is toned by the
+   answer itself. The value carries the answer as data for a test to read; only
+   the note line above is ever coloured, and only when the requirement and the
+   answer actually disagree. */
+.hud-rooms__enclosure-value { font-variant-numeric: tabular-nums; }
 
 /* ------------------------------------------------------------------ */
 /* Narrow viewports                                                    */
@@ -858,6 +1179,12 @@
      desktop width -- measured, at 375x812, as a 264px panel in a 343px rail
      and an arm hint wrapping to an extra line. */
   .ui-panel.hud-build { width: 100%; }
+
+  /* Two classes, matching `.ui-panel.hud-rooms` above, for the same reason the
+     line above it is written that way: a single-class selector would lose on
+     specificity and leave the panel at its desktop width inside a stretched
+     rail. */
+  .ui-panel.hud-rooms { width: 100%; }
 
   .hud-strip {
     flex-wrap: wrap;

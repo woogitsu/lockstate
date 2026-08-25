@@ -127,24 +127,37 @@ rather than one on each of the ~66 tick-loop wakes -- and posts nothing at
 all when none of the counts has changed. The tick stamp is what stops a
 readout from being taken for a statement about a later state than the one
 it describes. Measured per publication at 300 room instances and 40 guards:
-0.23-0.58 ms to project and 0.02-0.07 ms to structured-clone a 342-344 byte
-payload -- the largest form the channel can send, carrying eleven counts, a
+0.22-4.18 ms to project and 0.03-0.09 ms to structured-clone a 380-382 byte
+payload -- the largest form the channel can send, carrying twelve counts, a
 refusal and the longest declared reason -- flat from 250 to 5,000 actors
 (`tests/unit/worker-status-counts.test.ts`, reported not asserted).
 
-That byte figure **replaces** the `~229` this paragraph used to state, and it
-replaces it by re-measurement rather than by re-labelling. The old one was
-taken when the payload carried **ten** counts; `treasuryMinorUnits` (#96) made
-it eleven and the sentence below was updated without the measurement being
-re-run, so `~229` had already stopped being a current reading *before* #261
-added the refusal. The difference between the two numbers is therefore not the
-refusal's cost and is not offered as one. The timing is a range over repeated
-runs on one container, and an earlier reported run on it recorded a single
-2.13 ms projection under load; that spread is why `docs/BENCHMARKING.md` keeps
-this evidence reported rather than gated. What the test *asserts* is the shape
-and not either number -- eleven count keys, a refusal of exactly three scalars,
-and a serialized payload under 400 bytes -- because the shape is the property
-that makes the cadence safe, and the population cannot move it.
+That byte figure **replaces** the `342-344` this paragraph used to state, and
+it replaces it by re-measurement rather than by re-labelling -- the whole point
+of the paragraph that follows. #29's `stateIncomeAccruedTodayMinorUnits` made
+the count twelve, so the run above was re-executed and its logged
+`payloadJsonBytes` read off, rather than the word "eleven" being edited to
+"twelve" and the number left alone.
+
+The `342-344` had itself replaced a `~229`, and that replacement is why this
+paragraph exists. The `~229` was taken when the payload carried **ten**
+counts; `treasuryMinorUnits` (#96) made it eleven and the sentence above was
+updated without the measurement being re-run, so `~229` had already stopped
+being a current reading *before* #261 added the refusal. The difference between
+any two of these numbers is therefore not attributable to one change and is
+not offered as such. The timing is a range over repeated runs on one container
+and it is wide -- eight runs of the same case spanned 0.22 ms to 4.18 ms with
+the byte figure never moving off 380-382 -- which is exactly why
+`docs/BENCHMARKING.md` keeps this evidence reported rather than gated, and why
+the byte figure is the half of it worth quoting.
+
+What the test *asserts* is the shape and not any of these numbers -- twelve
+count keys, a refusal of exactly three scalars, and a serialized payload under
+400 bytes -- because the shape is the property that makes the cadence safe, and
+the population cannot move it. The 400-byte assertion now has 18 bytes of head
+room rather than 56: a thirteenth count with a name as long as the twelfth
+would breach it, and should be read as this channel's soft limit making itself
+felt rather than as an arbitrary threshold to raise.
 
 It calls nothing on the kernel and advances nothing, which is what keeps
 ADR 0009's determinism guarantee intact:
@@ -152,7 +165,7 @@ ADR 0009's determinism guarantee intact:
 driven through the real worker, publishing as it goes, to end byte-identical
 to the same sixty ticks stepped with no worker at all.
 
-No list crosses this channel: the payload is eleven integers beside at most
+No list crosses this channel: the payload is twelve integers beside at most
 one three-field refusal record, so `docs/HUD_PROJECTIONS.md` contract 5 has
 nothing to bound here yet. A projection with rows in it must be paged before
 it may be published on a timer, because a per-send cost that grows with the

@@ -78,11 +78,14 @@ export interface HudClockViewModel {
  *
  * That line is exactly where the honest boundary falls. There **is** a
  * treasury: a balance a purchase spends from, carried in the save, published
- * by the same channel as every other count. There is **no** budget, forecast,
- * income or running cost, because nothing credits the treasury on a schedule.
- * ADR 0017 decision 6 now settles what the state pays for -- per prisoner-day,
- * accrued per occupied place -- and nothing implements it, which is the state
- * this line describes: the answer exists, the accrual does not.
+ * by the same channel as every other count -- and, since #29, what the state
+ * pays for running the place. ADR 0017 decision 6 settles the basis (per
+ * prisoner-day, accrued per occupied place) and `StateIncomeSystem` implements
+ * it, crediting the balance at the end of each in-game day, so the second
+ * figure below is a day's accrual against a real payment rather than a number
+ * with nothing behind it. There is still **no** budget, forecast, payroll or
+ * running cost: nothing debits the treasury on a schedule, and nothing
+ * projects anything forward.
  *
  * It is no longer the only money *the HUD* carries, and the difference is
  * #89's: `HudBuildMaterialViewModel` below carries a unit price, so the Build
@@ -111,6 +114,18 @@ export interface HudCountsViewModel {
    * is, which is what keeps a currency decision out of the view model.
    */
   readonly treasuryMinorUnits: number;
+  /**
+   * What the in-game day in progress has earned so far, in the same minor
+   * units (#29).
+   *
+   * The rising readout beside the balance. It is **published, never
+   * computed here**: the simulation derives it from the tick and the
+   * occupied-place count (`stateIncomeAccruedByTick`) and sends it on the
+   * status-counts channel, because a HUD that computed a simulation figure
+   * from a tick it happens to hold would be a second, drifting authority on
+   * what the prison has earned.
+   */
+  readonly stateIncomeAccruedTodayMinorUnits: number;
 }
 
 export type HudSeverity = 'info' | 'warning' | 'danger';
@@ -206,10 +221,103 @@ export interface HudBuildViewModel {
   readonly origin: { readonly x: number; readonly y: number };
 }
 
+/**
+ * The authored floor on a room's area, as the panel reads it.
+ *
+ * Three numbers rather than two, because content authors three: a room asks
+ * for a minimum width, a minimum height *and* a minimum tile count, and while
+ * every shipped definition sets the third to the product of the first two, a
+ * future room could ask for six tiles in any 2x4 shape. The panel shows the
+ * two sides, because those are what a drag controls; the third is what the
+ * simulation refuses on, and the refusal says so in its own sentence.
+ */
+export interface HudRoomMinimumViewModel {
+  readonly width: number;
+  readonly height: number;
+}
+
+/**
+ * What the room definition asks about being indoors.
+ *
+ * `'none'` is a real answer -- the catalogue entry carries neither
+ * requirement -- and not a fallback, which is why it is a third member rather
+ * than an absent field.
+ */
+export type HudRoomEnclosureRequirement = 'enclosed' | 'outdoors' | 'none';
+
+/**
+ * One row of the Rooms panel's catalogue.
+ *
+ * Simpler than `HudBuildableViewModel`, and the difference is content's rather
+ * than this layer's: every one of the 18 room definitions carries a real
+ * `nameKey`, so there is no id-to-key mapping table on the host side at all.
+ * `BUILDABLE_LABEL_KEY` in `src/main.ts` exists only because the buildable
+ * registry carries a hard-coded English `name` and no key
+ * (`docs/HUD_PROJECTIONS.md` gap 32); rooms have no such gap.
+ */
+export interface HudRoomViewModel {
+  /** Stable simulation id (`room.cell`). Travels back out unchanged in the intent. */
+  readonly roomId: string;
+  /** A message key, never text. */
+  readonly labelKey: LocalizationKey;
+  /**
+   * The colour the world tints this room's tiles, so the catalogue row and the
+   * designation on the map agree without the player having to learn a legend.
+   *
+   * A number, not a class name: the tint lives in
+   * `src/rendering/world/appearance.ts` and is keyed on the room's *category*,
+   * so a stylesheet copy of it would be a second table to drift.
+   */
+  readonly tint: number;
+  /** Absent when the definition authors no minimum, which is content's statement and not a default. */
+  readonly minimum?: HudRoomMinimumViewModel;
+  readonly enclosure: HudRoomEnclosureRequirement;
+}
+
+/**
+ * What the Rooms panel can offer.
+ *
+ * Supplied once at mount, exactly as `HudBuildViewModel` is and for the same
+ * reason: the room catalogue is content rather than session state, and
+ * rebuilding the list every frame would drop the selection the player just
+ * made.
+ */
+export interface HudRoomsViewModel {
+  readonly rooms: readonly HudRoomViewModel[];
+}
+
+/**
+ * What the simulation said about the last room the player designated.
+ *
+ * Session state, unlike `HudRoomsViewModel`: it arrives on
+ * `simulation/status-counts` and changes as the player works, so it lives on
+ * `HudViewModel` rather than being passed at mount.
+ *
+ * It is a **readout, not a refusal**, and the distinction is the whole reason
+ * this field exists rather than a seventh zoning refusal reason. The
+ * simulation evaluates the room definition's `enclosed`/`outdoors` requirement
+ * against the rectangle's own perimeter and accepts the room either way,
+ * because the check is narrower than enclosure -- a room drawn inside a larger
+ * sealed building reads as open -- and because a door cannot currently seal
+ * anything. So the honest surface is one that *tells* the player what they
+ * designated. See `src/simulation/rooms/enclosure.ts`.
+ *
+ * `sequence` is the notice's ordinal, so a repeated publication of an
+ * unchanged notice updates the row the player is looking at instead of
+ * rebuilding it -- the same job `HudAlertViewModel.id` does.
+ */
+export interface HudZoningNoticeViewModel {
+  readonly sequence: number;
+  readonly enclosure: 'sealed' | 'open';
+  readonly requirement: HudRoomEnclosureRequirement;
+}
+
 export interface HudViewModel {
   readonly counts: HudCountsViewModel;
   readonly clock: HudClockViewModel;
   readonly alerts: readonly HudAlertViewModel[];
+  /** Absent until this session has designated a room. Not zeroed -- see the interface. */
+  readonly zoning?: HudZoningNoticeViewModel;
 }
 
 /**
@@ -259,6 +367,7 @@ export const EMPTY_HUD_VIEW_MODEL: HudViewModel = {
     activeIncidents: 0,
     contrabandFound: 0,
     treasuryMinorUnits: 0,
+    stateIncomeAccruedTodayMinorUnits: 0,
   },
   clock: UNKNOWN_HUD_CLOCK,
   alerts: [],

@@ -101,15 +101,301 @@
  * in prose without the prose reading as code -- several of the modules this
  * scans explain in a doc comment why they sort.
  *
- * A block comment is replaced by its own newlines rather than by a space, so
- * every reported line number is the line in the real file. Reporting a line
- * that is dozens of lines off the offending code would make the failure
- * message worse than no line number at all.
+ * Every removed character is replaced by a space and every newline is kept, so
+ * the stripped text has the same length and the same line structure as the
+ * real file: an offset into the result is an offset into the source, and every
+ * reported line number is the line in the real file. Reporting a line that is
+ * dozens of lines off the offending code would make the failure message worse
+ * than no line number at all.
+ *
+ * ## Why this is one pass and not two `replace`s (#278)
+ *
+ * The previous implementation removed block comments with one regex and then
+ * line comments with another. Two-pass stripping is not merely untidy, it is
+ * wrong in a direction nothing can see: whichever comment form is removed
+ * first, the other form's delimiters inside it are read as real. Removing
+ * block comments first meant that a line comment containing a block-comment
+ * opener -- which is what any glob (`src/rendering/**`) or path looks like --
+ * opened a block comment that ran to the next terminator anywhere below,
+ * blanking every line of real code in between. Reordering only mirrors the
+ * defect onto block comments containing `//`. No order is correct, because
+ * "is this a delimiter" is answerable only by knowing what construct the
+ * scanner is already inside.
+ *
+ * That is what this does: one walk over the text that always knows whether it
+ * is in code, a line comment, a block comment, a string, a template literal
+ * (including the code inside `${...}`, at any nesting depth) or a regular
+ * expression literal. A delimiter found inside any of the latter is text.
+ *
+ * ## Why a scanner here rather than a parser
+ *
+ * The repository pins `typescript@7`, whose compiler is native; the JavaScript
+ * package exports `version` plus explicitly `unstable/` subpaths and no
+ * parser. The one usable piece, `typescript/unstable/ast/scanner`, is a
+ * scanner, and a scanner alone cannot lex JavaScript: whether `/` opens a
+ * regular expression or divides, and whether `}` resumes a template literal,
+ * are decided by the parser in that design (`reScanSlashToken`,
+ * `reScanTemplateToken`). Driven without one it mis-lexes precisely the
+ * constructs at issue -- measured, it reads the trailing `//;` of
+ * `const re = /https:\/\//;` as a line comment, and the tail of
+ * `` const t = `a ${x} // b`; `` as another. Adopting it would mean
+ * re-implementing the parser's token-context tracking anyway, on top of an API
+ * the package labels unstable, for a test-only helper. `rolldown`/`oxc` reach
+ * the tree only as a transitive dependency of Vite, are not resolvable from
+ * this package, and promoting a native parser to a direct dependency in order
+ * to strip comments is the kind of dependency `AGENTS.md` rules out.
+ *
+ * So: a scanner here, pinned by
+ * `tests/foundation/comment-stripping-contract.test.ts` in both directions --
+ * that comments go, that code which merely looks like a delimiter stays, and
+ * that neither claim is only true of the fixtures: that file also strips every
+ * `.ts` file under `src/` and `tests/` and checks each line against an
+ * independent oracle, which is the check that would have failed the day #278
+ * was introduced.
+ *
+ * ## The one genuine ambiguity, and which way it is resolved
+ *
+ * `/` can begin a regular expression or divide, and telling those apart after
+ * `)` or `}` needs a parse. This takes the conventional lexer heuristic -- a
+ * regular expression may begin wherever an expression may begin, that is,
+ * after anything that is not a value -- plus a backstop that matters more than
+ * the heuristic does: a regular expression literal cannot contain a newline,
+ * so a candidate that reaches the end of its line unclosed is abandoned and
+ * the `/` re-read as an operator. A residual mis-read therefore costs a
+ * comment left *in* the stripped text, never code taken *out* of it -- the
+ * direction that makes a gate flag something rather than the direction that
+ * makes it silently see nothing, which is the failure #278 was about.
  */
 export function stripComments(source: string): string {
-  return source
-    .replace(/\/\*[\s\S]*?\*\//g, (comment) => comment.replace(/[^\n]/g, ' '))
-    .replace(/(^|[^:])\/\/[^\n]*/g, '$1');
+  /** Flat `[from, to, from, to, ...]` of the comment ranges found, in order. */
+  const comments: number[] = [];
+  const length = source.length;
+
+  /**
+   * The last significant token: `START` before the first one, `VALUE` for a
+   * literal, an identifier or keyword in full, and the character itself for a
+   * punctuator. Comments and whitespace are trivia and never change it.
+   */
+  let previous: string = START;
+  /**
+   * Brace depth inside each open `${...}`, innermost last. A `}` at depth 0
+   * closes the substitution and resumes the template it interrupted; an empty
+   * stack means no template substitution is open.
+   */
+  const substitutions: number[] = [];
+  let inTemplate = false;
+  let cursor = 0;
+
+  while (cursor < length) {
+    const character = source[cursor]!;
+
+    if (inTemplate) {
+      if (character === '\\') cursor += 2;
+      else if (character === '`') {
+        inTemplate = false;
+        previous = VALUE;
+        cursor += 1;
+      } else if (character === '$' && source[cursor + 1] === '{') {
+        inTemplate = false;
+        substitutions.push(0);
+        previous = '{';
+        cursor += 2;
+      } else cursor += 1;
+      continue;
+    }
+
+    if (character === '/' && source[cursor + 1] === '/') {
+      const newline = source.indexOf('\n', cursor);
+      const end = newline === -1 ? length : newline;
+      comments.push(cursor, end);
+      cursor = end;
+      continue;
+    }
+
+    if (character === '/' && source[cursor + 1] === '*') {
+      const close = source.indexOf('*/', cursor + 2);
+      // An unterminated block comment runs to the end of the file, which is
+      // how `tsc` reads it too.
+      const end = close === -1 ? length : close + 2;
+      comments.push(cursor, end);
+      cursor = end;
+      continue;
+    }
+
+    if (character === '"' || character === "'") {
+      cursor = endOfString(source, cursor);
+      previous = VALUE;
+      continue;
+    }
+
+    if (character === '`') {
+      inTemplate = true;
+      cursor += 1;
+      continue;
+    }
+
+    if (character === '/' && regularExpressionMayStartAfter(previous)) {
+      const end = endOfRegularExpression(source, cursor);
+      if (end !== undefined) {
+        cursor = end;
+        previous = VALUE;
+        continue;
+      }
+    }
+
+    if (character === '{') {
+      const depth = substitutions[substitutions.length - 1];
+      if (depth !== undefined) substitutions[substitutions.length - 1] = depth + 1;
+      previous = '{';
+      cursor += 1;
+      continue;
+    }
+
+    if (character === '}') {
+      const depth = substitutions[substitutions.length - 1];
+      if (depth === 0) {
+        substitutions.pop();
+        inTemplate = true;
+        cursor += 1;
+        continue;
+      }
+      if (depth !== undefined) substitutions[substitutions.length - 1] = depth - 1;
+      previous = '}';
+      cursor += 1;
+      continue;
+    }
+
+    const code = source.charCodeAt(cursor);
+
+    if (isIdentifierStart(code)) {
+      let end = cursor + 1;
+      while (end < length && isIdentifierPart(source.charCodeAt(end))) end += 1;
+      previous = source.slice(cursor, end);
+      cursor = end;
+      continue;
+    }
+
+    if (isDigit(code)) {
+      previous = VALUE;
+      cursor += 1;
+      continue;
+    }
+
+    if (!isWhitespace(code)) previous = character;
+    cursor += 1;
+  }
+
+  if (comments.length === 0) return source;
+
+  // Assembled from slices rather than by mutating a character array: the
+  // corpus this runs over is four megabytes across four hundred files and
+  // several gates strip all of it, so the difference is seconds of suite time.
+  const pieces: string[] = [];
+  let copied = 0;
+  for (let index = 0; index < comments.length; index += 2) {
+    const from = comments[index]!;
+    const to = comments[index + 1]!;
+    pieces.push(source.slice(copied, from), source.slice(from, to).replace(NOT_A_NEWLINE, ' '));
+    copied = to;
+  }
+  pieces.push(source.slice(copied));
+  return pieces.join('');
+}
+
+/** No token has been seen yet, so an expression -- and a regular expression -- may begin. */
+const START = '';
+/** A literal ended here: a string, a template, a number or a regular expression. `/` after one divides. */
+const VALUE = '\0';
+
+/** Every character of a comment becomes a space; its newlines stay, so line numbers and offsets survive. */
+const NOT_A_NEWLINE = /[^\n]/g;
+
+const isDigit = (code: number): boolean => code >= 48 && code <= 57;
+/** `A-Z`, `a-z`, `_`, `$`. Astral identifier characters are not identifier *starts* in this codebase and cost a lookup per character to admit. */
+const isIdentifierStart = (code: number): boolean =>
+  (code >= 65 && code <= 90) || (code >= 97 && code <= 122) || code === 95 || code === 36;
+const isIdentifierPart = (code: number): boolean => isIdentifierStart(code) || isDigit(code);
+/** Space, tab, newline, carriage return, form feed, vertical tab -- the only whitespace this repository's sources use between tokens. */
+const isWhitespace = (code: number): boolean => code === 32 || (code >= 9 && code <= 13);
+
+/**
+ * Keywords after which an expression, and so a regular expression literal, may
+ * begin. Any other word is a value or a name, after which `/` divides.
+ */
+const OPERATOR_KEYWORDS = new Set([
+  'await',
+  'case',
+  'default',
+  'delete',
+  'do',
+  'else',
+  'in',
+  'instanceof',
+  'new',
+  'of',
+  'return',
+  'throw',
+  'typeof',
+  'void',
+  'yield',
+]);
+
+/** Punctuators that can end a value, after which `/` divides. */
+const VALUE_ENDING_PUNCTUATION = new Set([')', ']']);
+
+function regularExpressionMayStartAfter(previous: string): boolean {
+  if (previous === START) return true;
+  if (previous === VALUE) return false;
+  if (isIdentifierStart(previous.charCodeAt(0))) return OPERATOR_KEYWORDS.has(previous);
+  return !VALUE_ENDING_PUNCTUATION.has(previous);
+}
+
+/**
+ * Offset just past the string literal starting at `start`.
+ *
+ * An unterminated literal ends at the newline rather than running on: a string
+ * cannot contain a raw line break, so treating the rest of the file as quoted
+ * would be the same swallow-everything failure this module exists to remove.
+ */
+function endOfString(source: string, start: number): number {
+  const quote = source[start]!;
+  for (let cursor = start + 1; cursor < source.length; cursor += 1) {
+    const character = source[cursor]!;
+    if (character === '\\') cursor += 1;
+    else if (character === quote) return cursor + 1;
+    else if (character === '\n') return cursor;
+  }
+  return source.length;
+}
+
+/**
+ * Offset just past the regular expression literal starting at `start`, or
+ * `undefined` when the candidate is not one -- it reached the end of its line
+ * or of the file without closing, so the `/` was an operator after all.
+ */
+function endOfRegularExpression(source: string, start: number): number | undefined {
+  let inCharacterClass = false;
+  for (let cursor = start + 1; cursor < source.length; cursor += 1) {
+    const character = source[cursor]!;
+    if (character === '\n') return undefined;
+    if (character === '\\') {
+      cursor += 1;
+      continue;
+    }
+    if (inCharacterClass) {
+      if (character === ']') inCharacterClass = false;
+      continue;
+    }
+    // A `/` inside `[...]` is a literal slash, which is how this repository's
+    // own path patterns are written.
+    if (character === '[') inCharacterClass = true;
+    else if (character === '/') {
+      let end = cursor + 1;
+      while (end < source.length && isIdentifierPart(source.charCodeAt(end))) end += 1;
+      return end;
+    }
+  }
+  return undefined;
 }
 
 export type EnumerationShape =

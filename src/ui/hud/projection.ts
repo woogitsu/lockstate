@@ -104,7 +104,7 @@ export function transportPressedStates(clock: HudClockViewModel): TransportPress
   return { pause: false, play: !fast, fastForward: fast };
 }
 
-export type HudMetricId = 'prisoners' | 'staff' | 'rooms' | 'incidents' | 'contraband' | 'funds';
+export type HudMetricId = 'prisoners' | 'staff' | 'rooms' | 'incidents' | 'contraband' | 'funds' | 'earned-today';
 
 export interface HudMetricBadge {
   readonly tone: BadgeTone;
@@ -223,9 +223,41 @@ export function projectStatusMetrics(counts: HudCountsViewModel): readonly HudMe
       capacity: undefined,
       // No tone. "Low on money" is a threshold, and a threshold is a balance
       // decision -- the same reason `BoundedValue` carries no severity band.
-      // There is also nothing to be low *for* on a schedule: buying materials
-      // is the only thing that spends (#89), and nothing credits the treasury
-      // at all, so a warning would describe a slope that does not exist yet.
+      // There is still nothing to be low *for* on a schedule, but the reason
+      // inverted with #29 rather than going away: the state now pays in once a
+      // day and nothing at all is charged, so a warning here would describe a
+      // slope that runs the wrong way.
+      //
+      // Worth recording, because this comment used to say the opposite. Until
+      // #29 it had to carry the qualifier "on a schedule" -- the unqualified
+      // form was false from the day `ProcurementSystem.cancel` landed, and
+      // `tests/foundation/documentation-claims-contract.test.ts` was written
+      // for exactly that defect. A scheduled credit now exists, so the claim
+      // this comment once made is simply untrue and is gone rather than
+      // qualified. The phrase itself is deliberately not spelled out here: that
+      // check reads comments, so quoting the thing it hunts for would trip it.
+      tone: undefined,
+      badge: undefined,
+    },
+    {
+      id: 'earned-today',
+      // The clock's own icon, because this figure is a statement about the
+      // in-game day rather than about money: it resets when the day does.
+      icon: 'clock',
+      labelKey: HUD_MESSAGE_KEY.earnedToday,
+      // What this day has earned so far, in the same minor units as the
+      // balance above -- so the two chips sit beside each other and can be
+      // read against each other without a conversion nobody has chosen.
+      //
+      // **Appended after `funds` deliberately.** The strip's descriptor list is
+      // the single definition of which metrics exist and in what order
+      // (`status-strip.ts` walks it to build the DOM), so a new chip at the end
+      // adds a column without moving one.
+      value: counts.stateIncomeAccruedTodayMinorUnits,
+      capacity: undefined,
+      // No tone and no badge, for the same reason `funds` has neither: "a good
+      // day" is a threshold, and nobody has set one.
+
       tone: undefined,
       badge: undefined,
     },
@@ -284,6 +316,10 @@ export function refusalMessageKey(actionId: string): LocalizationKey | undefined
       return HUD_MESSAGE_KEY.refusalUndo;
     case 'redo':
       return HUD_MESSAGE_KEY.refusalRedo;
+    case 'zone-room':
+      return HUD_MESSAGE_KEY.refusalZoneRoom;
+    case 'unzone-room':
+      return HUD_MESSAGE_KEY.refusalUnzoneRoom;
     default:
       return undefined;
   }

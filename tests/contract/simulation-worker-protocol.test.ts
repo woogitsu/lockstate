@@ -177,6 +177,12 @@ describe('simulation worker protocol', () => {
             activeIncidents: 0,
             contrabandDiscovered: 7,
             treasuryMinorUnits: 24_920,
+            // Derived from this payload's own `tick` and `roomOccupants`
+            // rather than picked: three occupied places, thirteen ticks of the
+            // day served, `floor(300 x 3 x 13 / 2400)` = 4 (#29). A fixture
+            // that claimed a rounder figure would be asserting a state no tick
+            // in this envelope could produce.
+            stateIncomeAccruedTodayMinorUnits: 4,
           },
         },
       },
@@ -375,6 +381,12 @@ describe('simulation worker protocol', () => {
       // projection and to the fixture at the top of this file, and this local
       // copy was left behind).
       treasuryMinorUnits: 24_920,
+      // Present for the same reason `treasuryMinorUnits` is: without it every
+      // payload below is already invalid for a *missing count*, so each
+      // refusal would pass while proving nothing about the thing it names
+      // (#29 added this field to the projection). Same figure as the fixture
+      // at the top of this file, for the same reason it is that figure there.
+      stateIncomeAccruedTodayMinorUnits: 4,
     };
 
     // Nothing ever requests this message, so ADR 0003 decision 2 says it must
@@ -455,6 +467,7 @@ describe('simulation worker protocol', () => {
       activeIncidents: 0,
       contrabandDiscovered: 0,
       treasuryMinorUnits: 25_000,
+      stateIncomeAccruedTodayMinorUnits: 0,
     };
     const withRefusal = (refusal: unknown): unknown => ({
       ...eventEnvelope,

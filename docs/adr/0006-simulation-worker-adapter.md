@@ -27,6 +27,27 @@ The Positive consequence below — "main thread cannot send commands before the 
 
 Whether to send the handshake and make `'ready'` real, or to delete `protocol/handshake`, `protocol/handshake-accepted` and `'ready'` and amend items 1-2 above, is an open decision for the owner (issue #274, Q4; issue #118 item 1). This note records the gap rather than closing it.
 
+### Implementation note, 2026-08-25: a protocol decode error no longer reaches state 5
+
+State 5's clause "or protocol decode error" is what
+[ADR 0024](./0024-protocol-fault-recoverability.md) proposes changing, and
+`src/simulation/worker/worker.ts` implements that proposal: a message the
+decoder rejects is faulted with `recoverable: true`, so the worker posts the
+`protocol/error` and stays in the state it was already in.
+
+The clause is **left standing rather than rewritten**, because ADR 0024 is
+`Proposed` and an Accepted ADR is not amended on a Proposed one's authority
+(the same treatment the note above gives its own two gaps). Read
+state 5 as the design and this note as what `main` does. If ADR 0024 is
+accepted, this note is deleted and the clause becomes "an unhandled exception".
+
+The rest of state 5 is unchanged and still describes what `faulted` costs, which
+is the whole reason the decode case was moved out of it: the tick loop stops,
+`handleSetClock` answers with `invalid-state`, and `handleSubmitCommand` returns
+without replying — for a message that, per
+[ADR 0003](./0003-simulation-worker-protocol.md)'s validation rules, reached no
+simulation state at all.
+
 ### Loop Pacing
 Because `requestAnimationFrame` is unavailable in standard Dedicated Web Workers, we use `setInterval(loop, 15)` to wake the worker. During each wake, the `FixedStepClock` calculates how many 50ms ticks are owed based on monotonic time `performance.now()`. The kernel runs up to 5 ticks per wake (budgeting) to avoid long blocking if the worker falls behind.
 

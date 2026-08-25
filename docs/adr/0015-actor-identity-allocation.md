@@ -1,8 +1,9 @@
 # ADR 0015: Actor Identity Is Allocated, Not Derived
 
 ## Status
-Proposed. Extends [ADR 0012](./0012-derived-identifier-reproducibility.md),
-which is itself Proposed — see **What this asks a human to accept**.
+Accepted. Extends [ADR 0012](./0012-derived-identifier-reproducibility.md),
+which is Accepted as of the same commit, so the taxonomy this ADR applies is
+settled rather than pending — see **What this asks a human to accept**.
 
 ## Context
 

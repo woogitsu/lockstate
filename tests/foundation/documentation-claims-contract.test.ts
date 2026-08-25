@@ -80,6 +80,41 @@ async function sourceFilesMatching(pattern: RegExp): Promise<readonly string[]> 
   return matches;
 }
 
+/**
+ * One comment's worth of prose, with the comment markers taken off.
+ *
+ * The deliberate inversion of `sourceFilesMatching`, which strips comments so
+ * that a sentence *about* a mechanism is not read as the mechanism. Sometimes
+ * the sentence **is** the subject: `docs/` is not the only place this
+ * repository states claims, and a false absolute in a `//` comment beside the
+ * code it describes is read by the next agent as settled fact just as readily.
+ *
+ * The markers have to come off before matching, because a claim that wraps
+ * across two comment lines has a `//` sitting in the middle of it -- which is
+ * exactly how the sentence this was written for is written, and a scan that
+ * missed it would be a scan that could not see the defect it exists for.
+ */
+function proseOf(text: string): string {
+  return text
+    .replace(/\r/gu, '')
+    .replace(/^[ \t]*(?:\/\/|\/\*+|\*+\/?)[ \t]*/gmu, ' ')
+    .replace(/\s+/gu, ' ');
+}
+
+async function sourceProseMatching(pattern: RegExp): Promise<readonly (readonly [string, string])[]> {
+  const files = await collectSourceFiles(path.join(repositoryRoot, 'src'));
+  expect(files.length, 'no TypeScript files found under src/; the walk is broken').toBeGreaterThan(100);
+
+  const hits: (readonly [string, string])[] = [];
+  for (const file of files) {
+    const prose = proseOf(await readFile(file, 'utf8'));
+    for (const match of prose.matchAll(pattern)) {
+      hits.push([path.relative(repositoryRoot, file), match[0]!]);
+    }
+  }
+  return hits;
+}
+
 describe('docs/ARCHITECTURE.md: what the persistence layer actually does', () => {
 
   /**
@@ -203,11 +238,10 @@ describe('docs/ARCHITECTURE.md: what the persistence layer actually does', () =>
     ).toEqual([]);
   });
 
-  it('is the only thing that credits the treasury, as the HUD projections gap list claims', async () => {
+  it('names every thing that credits the treasury, as the HUD projections gap list claims', async () => {
     /*
-     * The claim being pinned, from `docs/HUD_PROJECTIONS.md`'s gap 21: that
-     * the only thing crediting the treasury is a cancelled purchase's refund,
-     * and that there is therefore no income line.
+     * The claim being pinned, from `docs/HUD_PROJECTIONS.md`'s gap 21: which
+     * things credit the treasury, and whether any of them is an income line.
      *
      * It said "nothing credits the treasury at all" until this gate was
      * written, which was false the day `ProcurementSystem.cancel` landed --
@@ -215,16 +249,86 @@ describe('docs/ARCHITECTURE.md: what the persistence layer actually does', () =>
      * *point* survived the error, which is exactly why nobody noticed: an
      * absolute that is nearly true reads as true.
      *
-     * A second crediting site is not a typo. It is **the arrival of an income
-     * line** -- the single most significant thing ADR 0017 decision 6 is
-     * waiting on -- and it must not be able to land while a document still
-     * says there is none.
+     * **The second crediting site has now arrived, and it is the income
+     * line.** `StateIncomeSystem` (#29) implements ADR 0017 decision 3 on
+     * decision 6's basis: the state pays per prisoner-day, per occupied place,
+     * at the end of each in-game day. That is exactly the event this gate was
+     * written to make undeniable, so the allow-list grows by one **and** gap
+     * 21 was rewritten in the same change, along with ADR 0017's own
+     * "what is implemented" bullet -- which is what the failure message below
+     * asked for, and the reason this list is an enumeration rather than a cap
+     * of one.
+     *
+     * A third entry is still a real event and still has to pass through here.
+     * ADR 0017 decision 3 names grants and prison labour as the *secondary*
+     * lines, and neither exists; the degradation ladder of decision 8 debits
+     * rather than credits.
      */
     const crediting = await sourceFilesMatching(/\.\s*credit\s*\(/u);
     expect(
       crediting,
-      'something other than ProcurementSystem.cancel now credits the treasury. If that is an income line, say so in docs/HUD_PROJECTIONS.md gap 21 and in ADR 0017 in the same change',
-    ).toEqual([path.join('src', 'simulation', 'economy', 'procurement.ts')]);
+      'something other than ProcurementSystem.cancel and StateIncomeSystem now credits the treasury. If that is a new income line, say so in docs/HUD_PROJECTIONS.md gap 21 and in ADR 0017 in the same change',
+    ).toEqual([
+      path.join('src', 'simulation', 'economy', 'income.ts'),
+      path.join('src', 'simulation', 'economy', 'procurement.ts'),
+    ]);
+  });
+
+  it('requires every sentence in src/ that denies a treasury credit to say "on a schedule"', async () => {
+    /*
+     * The other half of the check above, and the half that was missing.
+     *
+     * The `.credit(` scan guards the **code**: a second crediting site is the
+     * arrival of an income line and must not land silently. It cannot guard the
+     * **claim**, because the claim lives in prose it deliberately strips -- and
+     * the claim is what keeps going wrong. "Nothing credits the treasury at
+     * all" was written once, ruled a defect, and the gate above was written for
+     * it; #282 then wrote it again in `src/ui/hud/projection.ts`, in the same
+     * change that applied the correct qualifier to the clause beside it. The
+     * absolute is false and the qualified form is true, they differ by four
+     * words, and nothing in the suite could tell them apart.
+     *
+     * So this pins the four words -- and since #29 it pins something stronger.
+     * The qualifier existed because a refund credited while an income line did
+     * not; the state now pays per occupied place once a day, so a *scheduled*
+     * credit exists too and the negated claim is false in every form, qualified
+     * or not. The five modules that carried it (`treasury.ts`,
+     * `view-model.ts`, `new-session.ts`, `default-locale-en.ts`,
+     * `projection.ts`) no longer make it, so the assertion is that **no module
+     * under `src/` makes it at all** rather than that each one qualifies it.
+     *
+     * That is a narrower subject, so it is guarded against going vacuous in the
+     * one way it could: the scan finding nothing is indistinguishable from the
+     * scan being broken, so the pattern is exercised against a sample of the
+     * exact prose it exists to catch. If the regex stops matching, that control
+     * fails and says so, rather than this check quietly passing for ever.
+     *
+     * Measured against the tree before the fix: `projection.ts` was the single
+     * violation of the qualifier rule, so this began as a gate over a defect
+     * that existed rather than one over a defect imagined.
+     *
+     * Its bound, stated rather than implied: this catches the *phrase*, not the
+     * idea. "The treasury has no income" carries the same absolute in words
+     * this cannot see, and a prose scan that tried to would be a scan of
+     * English rather than of a claim. What makes this one worth running is that
+     * the phrase itself has now been written wrong twice.
+     */
+    const denials = await sourceProseMatching(/\bnothing\s+(?:\w+\s+){0,2}credits\b[^.]*/giu);
+
+    // Non-vacuity first, for the reason the sibling assertions state: a scan
+    // handed nothing reports no violations and reads exactly like compliance.
+    // The subject is now empty by design, so the denominator moves from "five
+    // modules state this" to "the pattern still recognises the claim".
+    const CONTROL = 'Nothing credits the treasury at all, so the balance only falls.';
+    expect(
+      CONTROL.match(/\bnothing\s+(?:\w+\s+){0,2}credits\b[^.]*/giu),
+      'the pattern no longer recognises the sentence this check exists to catch, so its empty result below proves nothing',
+    ).not.toBeNull();
+
+    expect(
+      denials.map(([file, sentence]) => `${file}: ${sentence.trim()}`),
+      'this sentence denies that anything credits the treasury. Since #29 that is false however it is qualified: the state pays per occupied place once a day, so an income line exists and a refund is not the only credit. Delete the claim rather than adding "on a schedule" to it',
+    ).toEqual([]);
   });
 
   it('agrees with itself about how many integers the status-counts channel carries', async () => {

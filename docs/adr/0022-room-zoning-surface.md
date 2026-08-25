@@ -2,11 +2,19 @@
 
 ## Status
 
-**Proposed — pending human approval.** Not accepted.
+**Proposed — pending human approval. Superseded in part by the amendment of
+2026-08-25 below.** Not accepted.
 
 The owner delegated the choice of surface, and this document is the record of
 what was chosen under that delegation. It is not accepted until they say so,
 and nothing in `src/` implements it yet.
+
+**Read the amendment first.** The owner has since exercised the reversal this
+document names in the paragraph after next: the surface is **alternative B, the
+Rooms tab**, and that is what is implemented. Everything from *Decision* down to
+*Consequences* is left exactly as it was written, because an ADR is a historical
+record of a decision and not a description of the current build; the amendment
+is the only part of this file that describes what shipped.
 
 A reviewer is being asked to sign off on one thing: **a room type is a row in
 the Build catalogue, and a room is zoned by dragging a rectangle across tiles
@@ -102,29 +110,46 @@ Always-visible pixels actually available, measured on the #282+#283 merge by
 injecting blocks of known height into the assembled page and reading the
 resulting overflow — four independent probes (a 44px button, a 45px collapsed
 header, a 63.2px choice group, a 71.2px coordinates row) agreeing to within
-0.2px:
+0.2px — and **re-measured after #174's second half corrected the catalogue's
+floor**, by growing a spacer above the panel's last section until that
+section's bottom edge crosses the panel's fold:
 
-| Viewport | Always-visible pixels available |
-| --- | --- |
-| 1440×900 | 173.3 |
-| 375×812 | 79.1 |
-| 1024×768 | 74.3 |
-| 1280×720 | 38.2 |
-| 900×600 | 12.2 |
+| Viewport | Then | Now |
+| --- | --- | --- |
+| 1440×900 | 173.3 | 165 |
+| 375×812 | 79.1 | 74 |
+| 1024×768 | 74.3 | 66 |
+| 1280×720 | 38.2 | 30.2 |
+| 900×600 | 12.2 | 7.8 |
 
 `--tap-target` is 44px (`src/ui/tokens.css:150`). So **a single always-visible
 control fits at three of the five viewports and at neither 1280×720 nor
 900×600** — and the desktop 1280×720 is the second-tightest of the five,
 tighter than the phone. That inversion is why the number had to be measured
-rather than reasoned about from viewport size.
+rather than reasoned about from viewport size. Every figure moved down and none
+moved across that 44px line, so **this section's conclusion is unchanged and
+the decision below stands**; it is simply tighter than it was written.
 
-At 900×600 the 12.2px is 7.9px of body slack plus the catalogue's 3.9px
-donation (`.hud-build__catalogue` 135.9 → its 132px floor) and nothing else,
-because `.hud__aside` is already pinned at its floor there. The panel's floor
-is derived rather than tuned and accounts for every pixel: `hud.css:505-517`
-sets it out as 132 catalogue + 94.2 map + 45 collapsed section, and `:528-529`
-records it resolving to 271.2px against a 275px content box at 900×600. The
-`min-height` that expresses it is `hud.css:542-546`.
+**Why the numbers dropped, since it is not space that was lost.** The `Then`
+column counted 8px the catalogue could not really give. Its floor did not
+include the gutter under its own list, so "donating" that 8px meant laying the
+gutter over the hairline the map block draws rather than freeing anything
+(issue #174, second half). Correcting the floor removes the 8px from every
+viewport — hence the uniform −8.3, −5.1, −8.3 and −8.0 above — except 900×600,
+which loses only 4.4 because half of its 8px had already been spent as that
+overlap and was therefore never available twice. The `Now` column for 1280×720
+and 900×600 is measured to 0.05px (30.22 and 7.81); the other three rows are to
+the whole pixel. The 375×812 pair is the one that does not reconcile cleanly —
+79.1 → 74 rather than → 71.1 — and the residual is method, not layout: the two
+columns were measured by different probes on different trees, and the same
+probe reads 82 → 74 across this change at that viewport.
+
+At 900×600 the 7.8px is body slack and nothing else: `.hud__aside` is pinned at
+its floor there and the catalogue now sits exactly on its own, so nothing in
+the panel has anything left to donate. The panel's floor is derived rather than
+tuned and accounts for every pixel: `hud.css` sets it out as 140 catalogue
+(two rows + its 44px header + its gutter) + 94.2 map + 45 collapsed section,
+resolving to 275.2px against a 275.2px content box at 900×600.
 
 Relaxing `.hud__aside`'s floor is not the lever, and that is already recorded
 rather than newly argued: `hud.css:719-722` measured it — with `min-height: 0`
@@ -272,9 +297,10 @@ B is not the weaker design for the Rooms surface itself, and pretending
 otherwise would misrepresent the decision. Measured on the #282+#283 merge, a
 fifth tab injected into the tab bar left the Build panel's layout
 byte-identical at all five viewports: B costs the Build panel **nothing**. And a
-Rooms panel would inherit the whole aside box — 338.1px with a 291px body at
-900×600 — instead of sharing the 12.2px of §*The height budget*. That is a 24×
-larger budget for the surface that needs it.
+Rooms panel would inherit the whole aside box — 338.1px with a 291.2px body at
+900×600 — instead of sharing the 7.8px of §*The height budget*. That is a 37×
+larger budget for the surface that needs it, and the multiplier grew rather
+than shrank when that section's figures were corrected.
 
 Most of the pieces exist. The `rooms` icon is already declared
 (`src/ui/primitives/icon.ts:16`). A room catalogue projection would be
@@ -489,3 +515,207 @@ most effort on.
   and no gate can assert that a room type is a catalogue row rather than a tab.
   What the implementation owes is listed above; the choice itself is held by
   this document and by the index row that reports its status.
+
+---
+
+## Amendment — 2026-08-25: the owner chose alternative B, the Rooms tab
+
+**Everything above this line is unchanged and stays unchanged.** The *Decision*
+section still records what was chosen under the delegation, and the reasoning
+for it was sound at the time it was written. This section records that the owner
+reviewed it and chose the alternative, and why — which is the case an ADR's
+history is for.
+
+### What changed
+
+The surface is **alternative B**: a fifth tab in `HUD_TAB_IDS`, holding a
+`Rooms` panel of its own. Decisions §1 (a room type is a row in the Build
+catalogue) and §3's *location* are superseded. Decision §2 — the gesture is an
+axis-aligned rectangle drag on the world canvas — is **unchanged and
+implemented**, and so is the shape of §3's intent, which was written to be
+independent of which surface emits it and turned out to be.
+
+### The owner's reasoning, and why the measurement strengthened it
+
+The owner's argument was the vertical budget: a dedicated tab gives the surface
+roughly **24×** the space, which is enough for a confirm step, a removal
+control, a too-small-room warning and an enclosure readout — four things that do
+not fit in the Build panel under any arrangement.
+
+Since that decision was taken the panel geometry was re-measured (issue #174's
+second half, landed in #300) and the case got **stronger, not weaker**:
+
+| | Build panel's always-visible budget at 900×600 | Rooms panel body at 900×600 | Multiplier |
+| --- | --- | --- | --- |
+| As the owner decided | 11.8–12.2px | 291.2px | ~24× |
+| After the re-measurement | **7.81px** | 291.2px | **~37×** |
+
+**The pre-correction figure is recorded as a range because the repository does
+not agree with itself about it, and that is worth saying rather than resolving
+by picking one.** §*The height budget*'s table above says `12.2`;
+`src/ui/hud/build-panel.ts`'s comment on `buyToggle` says `11.8`. They were
+measured on the same tree by different probes and neither was re-derived when the
+other was written. The multiplier is ~24× either way — 291.2 ÷ 11.8 is 24.7 and
+÷ 12.2 is 23.9 — so nothing in the owner's reasoning turns on which is right,
+which is exactly why it has survived unnoticed. Reconciling the two is a
+docs-truth task of its own and is not done here; this amendment adds no third
+figure.
+
+Of that budget, **4px was never space at all**: it was the catalogue laying the
+gutter under its own list over the hairline the map block draws, so "donating" it
+moved a boundary rather than freeing a pixel. The correction removes it and
+about 4.4px of real slack besides. So the four controls the owner wanted were
+being weighed against a budget roughly a third larger than the one that actually
+exists, and the tab's advantage is half again what they were told. The `Now`
+column is the one figure here measured to 0.05px, and §*The height budget* says
+so. Nothing in this file's §*The height budget* changes as a result — its own
+`Then`/`Now` table already carries the corrected figures and states that its
+conclusion is unchanged — and the decision this amendment records is the one
+that gets better.
+
+### What the implementation found that this ADR did not predict
+
+Recorded because the ADR's own §*What this decision does not settle* is where
+three of these were left open, and because two of them are things the ADR
+asserted and the implementation had to correct.
+
+1. **Removal was a blocker, not a nicety.** §*What this does not settle* item 1
+   left "whether a room can be re-zoned or un-zoned" open. It could not stay
+   open: `zone` refuses `overlaps-existing-room` for any painted tile, zoning
+   writes no construction order so `Undo` reaches nothing, and undo is a
+   keyboard chord — so one stray drag could put up to 4,096 tiles beyond use for
+   the life of the session, with **no recovery of any kind on a touch device**.
+   Shipping a producer without removal would have shipped that. `UnzoneRoom` is
+   a new command, and the panel's confirm step is the second half of the answer.
+
+   It does **not** need [ADR 0012](./0012-derived-identifier-reproducibility.md)
+   settled first, which is what `zoning.ts`'s header warned about: removal
+   neither moves nor resizes an instance, so no id is re-derived. That warning
+   stands for a future move or resize.
+
+2. **`TopologyManager` is further from an enclosure query than "would be used
+   later" suggests.** This ADR did not mention enclosure at all. Evaluating the
+   `enclosed`/`outdoors` requirement — carried by all 18 room definitions and
+   read by nothing — turned out to have two obstacles rather than one:
+   `TopologyManager` does region detection and exposes no enclosure query, *and*
+   `TopologyManager.update()` has no caller anywhere in `src/`, so
+   `getTopologyId` answers `0` for every tile in a running session. A region id
+   would not be enough on its own either: a region that reaches the edge of the
+   materialised world is indistinguishable from one bounded by walls there.
+
+   So what shipped is the narrower predicate that can be stated honestly —
+   whether the *rectangle's own perimeter* is walled — and it **refuses
+   nothing**. Two facts make a refusal wrong: the check is narrower than
+   enclosure, so a room inside a larger sealed building reads `open` while being
+   indoors; and `edgeNumericIdFor` writes `0` for the `'object'`-category
+   `door-wooden`, so a completed door order changes nothing in the world and
+   refusing every unsealed `enclosed` room would make 17 of the 18 room types
+   designatable only as a box with no way in. The answer is *reported* on a new
+   `zoning` field of `simulation/status-counts` and read out in the panel.
+
+3. **The authored minimum size was enforceable immediately, and was not
+   enforced.** Not mentioned in this ADR either. All 18 definitions carry a
+   `minimum-size` requirement — a cell 2×3, a canteen 6×6, a yard 8×8 — and
+   nothing read one, so a 1×1 canteen was a legal room. It is now a seventh
+   zoning refusal reason, checked ahead of every per-tile check because the size
+   is a fact about what the player asked for while ownership is a fact about
+   where, and the size is the one they can fix by dragging again.
+
+4. **§*Alternative B*'s scope argument was answered by the removal command, not
+   waived.** B was rejected on scope — "spending the last tab slot on the first
+   room feature, before rooms have a lifecycle to manage, is premature… today
+   there is one create gesture and nothing to list". That was true when it was
+   written and is not true of what shipped: there are two gestures, one of them
+   destructive and one of them the recovery from it, plus a rule to read before
+   drawing and an answer to read after. That is a lifecycle to manage, and it is
+   what the confirm step and the removal control are for.
+
+5. **B's tab-bar constraint held exactly as measured, and the bar is now full.**
+   `HUD_TAB_IDS` has five members. `hud-state.ts` and
+   `src/content/default-locale-en.ts` both carry the measurement forward: a
+   sixth tab is foreclosed at 375×812, and `Rooms` is short enough where a
+   nine-character label would not be.
+
+6. **The `test.slow()` estimate was in the right place.** B was also charged
+   with widening the #88 tab sweep, estimated at "roughly 55s" for a fifth tab
+   against a tripled 180s budget. Measured on this branch, with the sweep also
+   driving a real rectangle drag per viewport: 32.1s. The estimate was
+   pessimistic and the budget was never in question.
+
+### On reusing an existing tab instead of spending the last slot
+
+Three of the four existing tabs render no panel, so the obvious question is
+whether one of them was free. It was not, and the reason is worth stating
+because "renders no panel" and "unclaimed" are different facts:
+
+- `overview` is the landing tab (`INITIAL_HUD_SHELL_STATE.activeTab`).
+- `security` is where the Staff panel lands — `claude/guard-hiring-surface`
+  (PR #302) adds it on that tab, so it is claimed by work in flight.
+- `regime` is the schedule.
+
+Each already carries its own label message key naming its own planned feature,
+so reusing one would have put a Rooms panel behind a tab whose label says
+something else — an ADR 0011 problem, not a layout one. A fifth tab was
+measured as free for the Build panel and is what B always proposed.
+
+### Open questions this amendment does not answer
+
+Left open deliberately, and none of them decided in code.
+
+1. **The Rooms panel has no keyboard or numeric route, and the Build panel
+   does.** `AGENTS.md` boundary 10 is not satisfied by "it works with a mouse",
+   and the Build panel's folded coordinates section exists for exactly that
+   reason — its own comment calls deleting the numeric fields "the easy half of
+   this change and the wrong half". The Rooms panel shipped without an
+   equivalent, so a rectangle can only be expressed by dragging.
+
+   This has a measured consequence rather than only a principled one. On the
+   assembled page at **375×812** on the Rooms tab, with the save panel above
+   and the Rooms panel below, **there is no square of bare world of any size**:
+   the two panels are full-width at y 96–252 and y 268–719, the strip takes 88px
+   and the tab bar starts at y 743, so the gaps between them are 8, 16 and 24
+   pixels. A player on that phone must collapse a panel before they can draw,
+   and the panel is collapsible so they can — but the confirm control is inside
+   the panel they just folded. `tests/browser/app-shell.spec.ts` records the two
+   controls a pending rectangle reveals as unreachable at that viewport rather
+   than pretending otherwise.
+
+   What the answer is — a numeric fallback like the Build panel's, a
+   collapse-aware confirm, or a different phone layout — is a design decision
+   and is not made here.
+
+2. **Two adjacent same-type rectangles are still two `RoomInstance`s, and
+   removal treats them as one region.** Unchanged in the first direction and
+   newly visible in the second: `unzone` grows each covered tile into its
+   connected same-type run, so clipping one corner of one of two touching cells
+   removes both. Both ends need the zoning plane to carry an *instance id* per
+   tile rather than a room type, which is a persistence-format decision
+   (`docs/HUD_PROJECTIONS.md` gap 11). `tests/unit/rooms-zoning.test.ts` pins
+   both directions so that changing either is a visible decision.
+
+3. **Whether a zone gesture should carry a `transactionId`** — still open, and
+   the implementation sends none. The reasoning in §3 is unchanged: zoning
+   writes no construction order, so `registerTransactionOrder` has nothing to
+   group, and sending an id nothing groups by would be inventing a grouping to
+   explain. Removal is the reversal instead.
+
+4. **Whether a room type with unmet prerequisites should read differently in
+   the list** — §*What this does not settle* item 4, still open. The panel shows
+   every room type identically and states each one's *rule* (its minimum size
+   and its enclosure requirement) rather than a judgement about whether the
+   prison can currently satisfy it, because `requirementStatus` answers
+   `'missing-capability'` or `'not-evaluated'` for most rooms while no object
+   placement exists (`docs/HUD_PROJECTIONS.md` gaps 13 and 14).
+
+5. **Whether the enclosure readout should ever become a refusal.** It cannot
+   honestly be one today, for the two reasons in item 2 above. The day something
+   *gates* on enclosure — an occupancy rule, an intake requirement — the region
+   query is the thing to build first, and this decision should be revisited then.
+
+### Status of this amendment
+
+**Proposed.** Setting an ADR to Accepted is the owner's, and this amendment does
+not do it. What it records is that the owner chose alternative B under the same
+delegation the original decision was made under, that the implementation on
+`claude/rooms-tab-zoning` follows it, and that the re-measured geometry supports
+it more strongly than the figures the choice was made against.

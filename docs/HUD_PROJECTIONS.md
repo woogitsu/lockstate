@@ -124,7 +124,7 @@ per-prisoner object at all, so the always-visible strip is safe to
 re-project every frame at the stretch tier.
 
 The always-visible counts have no rows at all, which is what makes them
-publishable on a timer: `simulation/status-counts` (section 8) carries eleven
+publishable on a timer: `simulation/status-counts` (section 8) carries twelve
 integers and at most one three-field refusal record, so there is nothing here
 for this contract to bound. A projection that carries rows must be paged
 before it may be published on a cadence — a per-send cost that grows with the
@@ -136,6 +136,19 @@ closes #157 finding 1. The ceiling is `MAX_PROJECTION_PAGE_LIMIT` (500), on
 the schema rather than in the handler, so an over-large window never decodes —
 without one, "the UI may choose the window" and "the UI may ask for all five
 thousand rows" would be the same request.
+
+The twelfth is #29's "earned today" accrual, and it is the first count here
+that is not a *level*. Every other one moves only when a discrete event moves
+it, which is what lets `publishStatusCounts` skip a publication whose counts
+are unchanged — the reason `STATUS_COUNTS_PUBLISH_INTERVAL_MS` is documented as
+a ceiling rather than a rate. The accrual rises every tick that any place is
+occupied, so **once the prison holds anybody this channel goes from
+silent-when-idle to its full two messages a second for the rest of the
+session.** That is the price of the readout, it is bounded by the same 500 ms
+ceiling as everything else on the channel, and it is named here so it is paid
+deliberately rather than discovered. It is not being paid yet: with no
+occupied place the accrual is a constant zero and the skip still applies
+(gap 21).
 
 Rows are **not** sortable by an arbitrary column. Sorting 5,000 prisoners
 by need or by cell is `O(n log n)` plus a full materialisation each time the
@@ -207,9 +220,9 @@ There is now, and it is the same shape as the clock's:
    registries (`src/simulation/worker/status-counts.ts`) and **publishes**
    an uncorrelated `simulation/status-counts`. Nothing requests it, so ADR
    0003 gives it no `replyTo` field at all.
-2. It publishes at most every 500 ms, and only when a count has changed or
-   the session has refused something new — so a steady prison costs the
-   boundary nothing. The interval is checked before the projection runs, so
+2. It publishes at most every 500 ms, and only when a count has changed, the
+   session has refused something new, or a room has just been designated — so a
+   steady prison costs the boundary nothing. The interval is checked before the projection runs, so
    the *projection* is rate-limited too, not just the message.
 3. Every payload carries the tick it was read at, so a readout cannot drift
    away from the state it claims to describe.
@@ -257,6 +270,56 @@ that reached a bounded in-worker window and stopped there.
   message and simulation state to hold it. Recorded as gap 34 below rather
   than invented here.
 - **Not snapshotted.** A restored session starts with none — see gap 33.
+
+#### The zoning notice it also carries (ADR 0022, amended)
+
+A third field beside `counts` and `refusal`, and the reason it is not a fourth
+kind of refusal is the whole point of it: an accepted designation of a cell in
+open ground is **not** a refusal. The room exists, it is painted on the map and
+it is in the `Rooms` count. What the player needs to be told is a *fact about*
+the room they just made, which is a readout and belongs beside the control that
+made it.
+
+That distinction is not cosmetic. The alerts section starts folded
+(`INITIAL_HUD_SHELL_STATE`), so a warning routed to the alerts list after a
+designation would be in the DOM and painted at no viewport — the exact defect
+#220 moved "simulation unavailable" out of that list to fix.
+
+- **Two enums and two integers, and no room id.** `{ sequence, tick,
+  enclosure, requirement }`, where `enclosure` is what the world answered for
+  the rectangle (`'sealed'` / `'open'`) and `requirement` is what the room
+  definition asked for (`'enclosed'` / `'outdoors'` / `'none'`). The pair is
+  what makes the notice self-describing: the main thread does not have to
+  remember which room type was selected when the player released the pointer.
+  Neither value is a message key and neither is a sentence, so ADR 0011's
+  separation is untouched — `src/ui/hud/rooms-panel.ts` decides which sentence
+  the pair deserves, and the one combination worth warning about (`enclosed`
+  asked for, `open` found) is about the pair rather than either member.
+- **Snapshot-shaped, for the reason `refusal` is.** "The last room designated
+  was open against an enclosed requirement" is true of the session at any tick;
+  an event would not be, and this publication is rate-limited and skippable.
+  `sequence` is 1-based and counts *accepted designations*, so it is both the
+  notice's ordinal and how many rooms the session has designated — and it is
+  what tells a republished notice from a new one.
+- **It opens the interval gate, like a refusal, and is bounded the same way.**
+  A designation is a player-initiated event rather than a level, and publishing
+  records the sequence it published, so the cost is one extra projection per
+  room designated. It needs its own sequence rather than sharing the refusal's:
+  re-zoning the same tiles after a removal returns the `Rooms` count to a figure
+  already published, so `statusCountsEqual` alone would suppress the notice on
+  the one gesture a player is most likely to repeat.
+- **Not snapshotted**, like `RefusalLog`: it is a notice about something the
+  player did moments ago rather than a condition of the prison, so a restored
+  session starts with none.
+- **It refuses nothing.** `src/simulation/rooms/enclosure.ts` states in full why
+  the simulation cannot honestly refuse on this answer; gap 14 below records the
+  wider question it is narrower than.
+
+`hudZoningFromWorkerMessage` (`src/ui/simulation-zoning.ts`) is the translator,
+and it returns three states rather than two: `undefined` for "this message says
+nothing about zoning", `'none'` for "it does, and no room has been designated",
+and the notice otherwise. Collapsing the first two would leave a readout from an
+ended session on screen.
 
 Two things deliberately do **not** cross:
 
@@ -444,14 +507,50 @@ decision about what to build next.
     requirement on it reads `'missing-capability'`. Both are the room's true
     state, not a projection defect: nothing has been placed in it, and
     nothing can be until object placement exists.
-14. **Nothing validates room geometry at all.** There is no real
-    room-geometry validation to project. Until #123 item 2 there was a
-    *mocked* one — `RoomSystem.validateRoom` reported every `object`
-    requirement as missing and treated `minimum-size` as always satisfied,
-    saying so in its own body — which made this gap look half-filled while
-    production never called it. It is deleted, so `requirementStatus` in
-    `room-projection.ts` is the single evaluator and gap 13 above is the
-    whole of what can be answered.
+
+    **Two of the three area requirements this gap listed as
+    `'not-evaluated'` are now evaluated**, and by the zoning service rather
+    than by a projection — which is why they are recorded here rather than
+    removing the gap. The Rooms tab (ADR 0022, amended) needed both:
+
+    - `minimum-size` is *enforced*. `RoomZoningService.zone` reads the
+      authored `minWidth`, `minHeight` and `minTiles` through
+      `src/simulation/rooms/requirements.ts` and refuses
+      `below-minimum-size`. Before it, a 1×1 canteen was a legal room.
+    - `enclosed` / `outdoors` is *reported*, not enforced.
+      `src/simulation/rooms/enclosure.ts` answers whether the rectangle's own
+      perimeter is walled and the answer travels on
+      `simulation/status-counts`'s new `zoning` field. It refuses nothing,
+      because the check is narrower than enclosure and because
+      `edgeNumericIdFor` writes `0` for `door-wooden`, so no sealed room can
+      currently have a way in. Gap 14 below is the wider question.
+
+    `object` requirements are unchanged and still gated on placement.
+14. **Nothing validates room geometry at all** *— narrowed, not closed.*
+    There is no real room-geometry *validation system* to project. Until
+    #123 item 2 there was a *mocked* one — `RoomSystem.validateRoom` reported
+    every `object` requirement as missing and treated `minimum-size` as
+    always satisfied, saying so in its own body — which made this gap look
+    half-filled while production never called it. It is deleted, so
+    `requirementStatus` in `room-projection.ts` is the single evaluator of a
+    *room instance's* requirements.
+
+    What is now answered is narrower and sits on the other side of the
+    boundary: the two area requirements are checked **at the moment a
+    rectangle is zoned** (gap 13 above), against the rectangle the player
+    drew, not against a registered instance. So `requirementStatus` still
+    answers `'not-evaluated'` for a room that already exists, and asking "is
+    *this* room still big enough / still enclosed" has no answer, because a
+    `RoomInstance` carries an anchor tile rather than bounds (gap 11).
+
+    The wider enclosure question is unanswered and its two obstacles are
+    worth naming: `TopologyManager` does region *detection* and exposes no
+    enclosure query, and `TopologyManager.update()` has **no caller anywhere
+    in `src/`** — it is constructed in `runtime/new-session.ts` and absent
+    from the `registerSystem` block beside it, so `getTopologyId` answers `0`
+    for every tile in a running session. A region id alone would not be
+    enough either: a region reaching the edge of the materialised world is
+    indistinguishable from one bounded by walls there.
 15. **`RoomInstanceRegistry` has no `all()` or `size()`.** Enumeration
     fans out over catalog room ids, so an instance registered under a
     room-catalog id the catalog does not define is invisible to the room
@@ -472,13 +571,41 @@ decision about what to build next.
     skill *requirements* per role, but no staff entity carries a skill.
 21. **`wageBand` exists in content, and there is no payroll.** There is a
     treasury and a procurement system since #96/#89 — money buys materials —
-    but nothing pays anyone: no wage is ever debited, and the only thing that
-    credits the treasury is a cancelled purchase's refund
-    (`ProcurementSystem.cancel`), which is not an income line: nothing credits
-    it on a schedule. ADR 0017 decision 6 settles what the state pays *for*
-    (per prisoner-day, accrued per occupied place) and no system accrues it,
-    so the balance only ever goes down. Nothing wage-related may be rendered
-    as a live figure; it is still a content hook for a future issue.
+    and since #29 there is an income line, but nothing pays anyone: no wage is
+    ever debited. Nothing wage-related may be rendered as a live figure; it is
+    still a content hook for a future issue. So the schedule runs one way
+    only: money arrives and nothing recurring takes it away, which is also why
+    ADR 0017 decision 8's insolvency ladder is still unreachable.
+
+    **The two things that credit the treasury, and which of them is an income
+    line.** `StateIncomeSystem` (`src/simulation/economy/income.ts`) is the
+    income line: ADR 0017 decision 3, on decision 6's basis — the state pays
+    per prisoner-day, accrued per occupied place — at 300 minor units a
+    prisoner-day, credited once per in-game day on its last tick. The other is
+    a cancelled purchase's refund (`ProcurementSystem.cancel`), which is not
+    an income line and never was.
+    `tests/foundation/documentation-claims-contract.test.ts` pins that this
+    paragraph names both.
+
+    **Neither is reachable from a session a player can drive**, for two
+    different reasons, and this is the honest state of the money loop:
+
+    - The refund has no *surface* (#285): no command in
+      `simulationCommandSchema` cancels a purchase, so nothing in `src/` calls
+      `ProcurementSystem.cancel`. Which surface is #285's open decision.
+    - The income line has no *population*. Nothing in `src/` calls
+      `admitPrisoner`, and `RoomZoningService` registers a zoned room with
+      `capacity: 0`, so there is no occupied place — and 300 × 0 is 0 for as
+      long as that holds. The mechanism is built and tested against prisoners
+      injected at the simulation level; wiring admission is a separate
+      workstream. Until it lands, both the balance and the "earned today"
+      readout beside it are flat.
+
+    So the balance a player can observe still only ever goes down. That is not
+    a loss of money — a purchase buys stock, an undone build order returns the
+    stock it had allocated (#97), and the two together conserve value exactly,
+    which `tests/integration/economy-money-conservation.test.ts` asserts in
+    integer minor units over the sequences a player can produce.
 22. **`'on-search'` conflates two duties.** A guard pulled onto a
     contraband search and a guard dispatched to an incident share one
     deployment phase, and neither `SearchSystem` nor
@@ -647,3 +774,19 @@ decision about what to build next.
     currently bound to a control that was pressed (`data-action`,
     `aria-describedby`), and a refusal decided several ticks later has no
     control to attach to.
+
+    **Since #187 this gap has two producers, and the second raises the stakes
+    on the placement half.** An uncorrelated `protocol/error` now paints a row
+    here too — the worker rejecting a message it could not decode, the worker's
+    own `internal-error` from inside the tick loop, and the main thread's
+    inability to read a worker reply (`src/ui/simulation-alerts.ts`,
+    [ADR 0024](./adr/0024-protocol-fault-recoverability.md)). Both halves of
+    this gap apply to it unchanged: a fault row cannot be dismissed either, and
+    it carries no location because a protocol fault has none. What is different
+    is what a missed row costs. A missed refusal means the player does not learn
+    why one wall was not built; a missed `danger` fault means they do not learn
+    that the interface can no longer say what the simulation is doing. ADR 0024
+    deliberately does not decide that placement question here — deciding a HUD
+    question on the back of a worker one is how the folded row got its second
+    producer without anyone re-asking whether folding is right — but it names
+    this gap as where the answer belongs.
