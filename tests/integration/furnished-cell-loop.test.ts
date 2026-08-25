@@ -364,6 +364,36 @@ describe('what the toilet does and does not change in the running prison', () =>
     expect(JSON.stringify(captureSessionSnapshot(right))).toBe(JSON.stringify(captureSessionSnapshot(left)));
   });
 
+  it('emits the objects section in tile order rather than in the order the orders finished', () => {
+    /*
+     * The toilet is ordered first *and* finishes first -- `allOrders()` is
+     * sorted by order id, and `a-toilet` precedes `b-bed` -- while its anchor
+     * tile sorts *after* the bed's. So registry insertion order and payload
+     * order genuinely disagree here, which is what makes this an assertion
+     * about the key rather than a coincidence of the fixture.
+     *
+     * The key is `(anchorTile.y, anchorTile.x)` and deliberately **not**
+     * `placedObjectId`: the id is a string over two decimal integers, so
+     * code-unit order would put `object:10:6` before `object:9:6`.
+     * `computeSaveChecksum` hashes array order, so a walk that put insertion
+     * history into the save would make the checksum a function of the order the
+     * player happened to build in.
+     */
+    const runtime = createNewSimulationRuntime(SEED);
+    submit(runtime, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 1 }));
+    submit(runtime, 'buy-brick', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-2', itemId: 'item.brick', quantity: 1 }));
+    submit(runtime, 'zone-cell', packCommand({ type: 'ZoneRoom', roomId: CELL, ...CELL_RECT }));
+    submit(runtime, 'place-toilet', packCommand({ type: 'PlaceObject', orderId: 'a-toilet', definitionId: 'toilet-brick', x: 5, y: 6 }));
+    submit(runtime, 'place-bed', packCommand({ type: 'PlaceObject', orderId: 'b-bed', definitionId: 'bed-wooden', x: 4, y: 6 }));
+    stepTo(runtime, 200);
+
+    expect(runtime.placedObjects.size).toBe(2);
+    expect(captureSessionSnapshot(runtime).simulation?.objects?.placedObjects.map((object) => object.placedObjectId)).toEqual([
+      'object:4:6',
+      'object:5:6',
+    ]);
+  });
+
   it('carries both objects through a V5 save and derives the same capacity again on load', () => {
     const runtime = prisonWithBedAndToiletOrdered();
     stepTo(runtime, 200);
