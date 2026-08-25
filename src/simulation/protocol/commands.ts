@@ -176,6 +176,41 @@ export const admitPrisonerSchema = z.object({
   y: z.number().int(),
 }).strict();
 
+/**
+ * Hire a staff member ([ADR 0025](../../../docs/adr/0025-guard-hiring-surface.md)).
+ *
+ * `staffRoleId` is a stable `staff-role.*` id from
+ * `src/content/staff-role-catalog.ts`, never a message key and never an
+ * instance id -- `GuardRoster` records the role a staff member was hired into
+ * and there is no separate employment record to name.
+ *
+ * `identifierSchema` rather than `z.string()`, for the reason
+ * `PurchaseMaterials.itemId` is: a malformed id refused here never reaches the
+ * kernel, which is the only place a fix can sit next to its cause. Unlike the
+ * purchase case there is no save-side counterpart to disagree with -- a hire
+ * writes a `GuardRecord`, whose `staffRoleId` the save schema already carries
+ * -- so this is the stricter of the two boundaries rather than the looser.
+ *
+ * `x` and `y` are the tile the new staff member first stands on.
+ * `GuardRoster.hire` takes one and nothing in the simulation can derive one:
+ * no session instantiates a reception, a gate or a staff room. ADR 0025
+ * decision 4 records that the producer supplies it and that this is a
+ * placeholder tied to `buildCatalogue()`'s existing one, so that when a room a
+ * staff member belongs in exists, the change is to the producer alone and
+ * neither this schema nor any save moves.
+ *
+ * No `transactionId`. A hire writes no construction order, so
+ * `ConstructionSystem.registerTransactionOrder` has nothing to group; whether
+ * hiring should be undoable at all is left open by ADR 0025, exactly as
+ * zoning's is by ADR 0022, and it should be answered once for both.
+ */
+export const hireStaffSchema = z.object({
+  type: z.literal('HireStaff'),
+  staffRoleId: identifierSchema,
+  x: z.number().int(),
+  y: z.number().int(),
+}).strict();
+
 export const undoCommandSchema = z.object({
   type: z.literal('Undo'),
 }).strict();
@@ -191,6 +226,7 @@ export const simulationCommandSchema = z.discriminatedUnion('type', [
   unzoneRoomSchema,
   purchaseMaterialsSchema,
   admitPrisonerSchema,
+  hireStaffSchema,
   undoCommandSchema,
   redoCommandSchema,
 ]);
@@ -253,6 +289,8 @@ function commandJson(command: SimulationCommand): JsonValue {
         x: command.x,
         y: command.y,
       };
+    case 'HireStaff':
+      return { type: command.type, staffRoleId: command.staffRoleId, x: command.x, y: command.y };
 
     case 'Undo':
     case 'Redo':

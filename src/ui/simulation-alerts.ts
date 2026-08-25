@@ -38,6 +38,9 @@ const REFUSAL_LABEL_KEYS: Readonly<Record<RefusalReason, LocalizationKey>> = {
   'build.unbuildable-terrain': 'hud.alert.refusal.build.unbuildable-terrain',
   'build.unowned-land': 'hud.alert.refusal.build.unowned-land',
   'build.water-blocked': 'hud.alert.refusal.build.water-blocked',
+  'hire.insufficient-funds': 'hud.alert.refusal.hire.insufficient-funds',
+  'hire.roster-full': 'hud.alert.refusal.hire.roster-full',
+  'hire.unknown-role': 'hud.alert.refusal.hire.unknown-role',
   'purchase.duplicate-order': 'hud.alert.refusal.purchase.duplicate-order',
   'purchase.insufficient-funds': 'hud.alert.refusal.purchase.insufficient-funds',
   'purchase.invalid-quantity': 'hud.alert.refusal.purchase.invalid-quantity',
@@ -176,7 +179,10 @@ const FAULT_ROW_PREFIX = 'fault-';
  * control. `unzone.invalid-area` is the third instance of the same rule --
  * spelled identically to `zone.invalid-area` and carrying a different
  * sentence, because a player told "the room was not zoned" after asking to
- * *remove* a room would look at the wrong control for the same reason.
+ * *remove* a room would look at the wrong control for the same reason. And
+ * `hire.insufficient-funds` and `purchase.insufficient-funds` are the fourth
+ * (ADR 0025): the treasury refuses both, and only the command says which panel
+ * the player should be looking at.
  */
 export function hudAlertsFromWorkerMessage(
   message: WorkerToMainMessage,

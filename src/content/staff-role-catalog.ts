@@ -34,7 +34,21 @@ export const staffRoleDefinitionSchema = z
     baseSecurityClearance: z.number().int().min(0).max(10),
     /** Compatible with `RouteContext.permissions` -- plain named permission strings, not a role-specific enum. */
     permissions: z.array(identifierSchema).max(16),
-    /** A wage/skill hook, not a real economy -- issue #29 owns pricing/payroll. */
+    /**
+     * A wage/skill hook, not a real economy -- issue #29 owns pricing/payroll.
+     *
+     * **The figures are the treasury's minor units**, and that is stated here
+     * rather than left to be inferred because one reader now depends on it:
+     * `staffHireCostMinorUnits` reads `minPerDay` as the charge for one hire
+     * ([ADR 0025](../../docs/adr/0025-guard-hiring-surface.md) decision 2).
+     * There is exactly one money scale in this tree -- `Treasury`,
+     * `ProcurableMaterial.unitPriceMinorUnits` and the status strip all count
+     * in it -- and a second would be a conversion nobody has chosen.
+     *
+     * That reader takes the *bottom* of the band and nothing else, and it
+     * chooses no number: which figure a band holds stays #29's, and moving
+     * one moves what a hire costs with no code change.
+     */
     wageBand: wageBandSchema,
     skills: z.array(skillRequirementSchema).max(16),
   })

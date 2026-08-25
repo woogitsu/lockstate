@@ -29,6 +29,8 @@ import {
   type HudIntent,
   type HudRoomViewModel,
   type HudRoomsViewModel,
+  type HudStaffRoleViewModel,
+  type HudStaffViewModel,
   type HudUnavailableNotice,
   type HudViewModel,
 } from './ui/hud';
@@ -47,6 +49,8 @@ import { BUILDABLE_REGISTRY } from './simulation/construction';
 // question and none may re-derive the answer. See `roomCatalogue()` below.
 import { enclosureRequirement, minimumSizeRequirement } from './simulation/rooms/requirements';
 import { MAX_PURCHASE_QUANTITY } from './simulation/economy';
+import { staffHireCostMinorUnits } from './simulation/staff';
+import { defaultStaffRoleRegistry } from './content/staff-role-catalog';
 import { defaultItemRegistry } from './content/item-catalog';
 import { procurableMaterial } from './content/procurement-catalog';
 import type { LocalizationKey } from './content/localization';
@@ -316,6 +320,29 @@ const BUILDABLE_LABEL_KEY: Readonly<Record<string, LocalizationKey>> = {
 const CATEGORY_RANK: Readonly<Record<string, number>> = { wall: 0, object: 1, utility: 2 };
 
 /**
+ * The tile a new prison's interface starts from.
+ *
+ * A new session owns exactly chunk (0,0) of a 32-tile world, so the middle of
+ * owned land is the least surprising place for the Build panel's coordinate
+ * fields to start -- which is what this used to be, inline, and only that.
+ *
+ * It is now also **where a hired staff member first stands** (ADR 0025
+ * decision 4) and **the tile an admitted prisoner arrives on** (#261 step 4),
+ * and all three share one definition rather than three copies of `16`. That is
+ * honestly a placeholder in every use: there is no reception, no gate and no
+ * staff room in any session a player can start, and nothing in
+ * `PrisonerOperationsRuntime` derives a reception point either
+ * (`docs/PRISONER_OPERATIONS.md`), so there is no better answer to derive. A
+ * constant inside the simulation would be worse -- it would make an arrival
+ * point look like a rule -- so it sits here, at the composition root, where the
+ * world's shape is already known; and when a session can contain a room a
+ * staff member or an arrival belongs in, the arrival tile becomes that room's
+ * anchor and the change is to this file alone: both commands already carry a
+ * tile.
+ */
+const NEW_PRISON_ORIGIN_TILE = { x: 16, y: 16 } as const;
+
+/**
  * What a buildable is made of, priced, for the panel's buy control (#89).
  *
  * Three vocabularies meet here and nowhere else, which is why this is at the
@@ -392,21 +419,46 @@ function buildCatalogue(): HudBuildViewModel {
     });
   }
 
-  return { buildables, origin: STARTING_ORIGIN_TILE };
+  return { buildables, origin: NEW_PRISON_ORIGIN_TILE };
 }
 
 /**
- * The middle of the one chunk a new prison owns.
+ * What the Staff panel may offer, projected from the staff-role catalogue
+ * ([ADR 0025](../docs/adr/0025-guard-hiring-surface.md)).
  *
- * A new session owns exactly chunk (0,0) of a 32-tile world, so this is the
- * least surprising place for the Build panel's numeric fields to start -- and
- * it is the arrival tile an admitted prisoner is placed on, for the same
- * reason and from the same constant rather than from a second copy of the
- * number. Nothing in `PrisonerOperationsRuntime` derives a reception point
- * (`docs/PRISONER_OPERATIONS.md`), so the composition root supplies one, which
- * is where the world's shape is already known.
+ * **One role, and the reason is not that the other seven are wrong.**
+ * `DeploymentSystem`, `PatrolSystem`, `IncidentResponseSystem` and
+ * `SearchSystem` all claim staff from `GuardRoster.unassignedGuardIds()` with
+ * no filter on role, so a nurse hired into that roster is sent to a patrol
+ * post by the next scheduled deployment tick. Offering the other seven would
+ * ship seven ways to put the wrong person on a wall. The *simulation* is
+ * deliberately given no whitelist -- it accepts any declared role, exactly as
+ * `GuardRoster` has stored any since #26 -- so this list is a producer's
+ * judgement about what is useful today, and it grows the day a system reads a
+ * department or a permission.
+ *
+ * Every figure crosses as content the HUD is handed: the label is the role's
+ * own `nameKey`, so no id→key mapping table of the `BUILDABLE_LABEL_KEY` kind
+ * is needed here, and the charge comes from the simulation's own
+ * `staffHireCostMinorUnits` rather than being re-derived from the band --
+ * one definition of what a hire costs, on both sides of the worker boundary.
+ *
+ * A role the registry does not declare is omitted rather than rendered
+ * without a charge: the same reading `buildCatalogue()` takes of a buildable
+ * with no authored label.
  */
-const STARTING_ORIGIN_TILE = { x: 16, y: 16 } as const;
+const HIREABLE_STAFF_ROLE_IDS: readonly string[] = ['staff-role.guard'];
+
+function staffRoster(): HudStaffViewModel {
+  const roles: HudStaffRoleViewModel[] = [];
+  for (const staffRoleId of HIREABLE_STAFF_ROLE_IDS) {
+    const role = defaultStaffRoleRegistry.getById(staffRoleId);
+    const hireChargeMinorUnits = staffHireCostMinorUnits(staffRoleId);
+    if (role === undefined || hireChargeMinorUnits === undefined) continue;
+    roles.push({ staffRoleId, labelKey: role.nameKey, hireChargeMinorUnits });
+  }
+  return { roles };
+}
 
 /**
  * What one press of the admit control asks the simulation for (#261 step 4).
@@ -688,6 +740,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     // is on, so an absent notice has to be an absent property.
     ...(simulationUnavailable ? { unavailable: SIMULATION_UNAVAILABLE_NOTICE } : {}),
     build: buildCatalogue(),
+    staff: staffRoster(),
     /*
      * The room catalogue, passed at mount for the reason the buildable one is:
      * it is content rather than session state, and rebuilding the list on every
@@ -1057,11 +1110,64 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
             sentenceLengthTicks: ADMISSION_REQUEST.sentenceLengthTicks,
             priorIncidents: ADMISSION_REQUEST.priorIncidents,
             // The arrival tile, from the same constant the Build panel's
-            // fields start at. No id is minted: nothing downstream is keyed
-            // by an admission, so unlike an order id or a purchase id there
-            // would be nothing to read it.
-            x: STARTING_ORIGIN_TILE.x,
-            y: STARTING_ORIGIN_TILE.y,
+            // fields start at and a hire's first tile comes from. No id is
+            // minted: nothing downstream is keyed by an admission, so unlike an
+            // order id or a purchase id there would be nothing to read it.
+            x: NEW_PRISON_ORIGIN_TILE.x,
+            y: NEW_PRISON_ORIGIN_TILE.y,
+          });
+          return;
+        }
+
+        case 'hire-staff': {
+          const sender = requireSimulation(commands);
+          /*
+           * The producer `GuardRoster.hire` never had
+           * ([ADR 0025](../docs/adr/0025-guard-hiring-surface.md)).
+           *
+           * `hire` was complete, snapshotted and restored, and **every call in
+           * the repository was in a test**. So `DeploymentSystem`,
+           * `PatrolSystem`, `IncidentResponseSystem` and `SearchSystem` all
+           * iterated an empty roster in every session a player could start,
+           * and the status strip's `Staff` count was structurally zero. This
+           * dispatch is what takes `HireStaff` off
+           * `tests/foundation/unconsumed-command-contract.test.ts`'s list.
+           *
+           * The affordability check is the same shape as the purchase one
+           * above and is there for the same reason: it is a *report*, not a
+           * second treasury. `Treasury.spend` refuses rather than overdrawing
+           * either way; throwing here rejects the HUD's gated action, which
+           * paints the refusal line and marks the button the player pressed
+           * instead of answering some ticks later on the alerts list. It is an
+           * echo of the balance the worker last published, so the same two
+           * cases get past it -- several hires inside one tick, and a balance
+           * that moved in the last 500ms -- and both are answered by the
+           * worker-side route in `session-commands.ts`. The `throw` and that
+           * alert row sit on opposite sides of `sender.submit`, so one press
+           * produces exactly one of them and never both.
+           *
+           * The wage is read through `staffHireCostMinorUnits` rather than off
+           * the view model's rendered figure, so the number checked here and
+           * the number the treasury is debited come from one definition even
+           * if a caller passed a role the panel never rendered.
+           */
+          const hireChargeMinorUnits = staffHireCostMinorUnits(intent.staffRoleId);
+          if (hireChargeMinorUnits === undefined) {
+            throw new Error(`No staff role ${intent.staffRoleId} is declared, so nobody can be hired into it.`);
+          }
+          if (hireChargeMinorUnits > viewModel.counts.treasuryMinorUnits) {
+            throw new Error(
+              `The last reported balance of ${viewModel.counts.treasuryMinorUnits} cannot cover ${hireChargeMinorUnits}.`,
+            );
+          }
+          sender.submit({
+            type: 'HireStaff',
+            staffRoleId: intent.staffRoleId,
+            // Where a new hire stands is not part of the gesture: see
+            // `NEW_PRISON_ORIGIN_TILE` for why the composition root supplies
+            // it and why that is a placeholder rather than a rule.
+            x: NEW_PRISON_ORIGIN_TILE.x,
+            y: NEW_PRISON_ORIGIN_TILE.y,
           });
           return;
         }

@@ -185,6 +185,14 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.alert.refusal.build.unbuildable-terrain': 'The build order failed — the ground there cannot be built on.',
   'hud.alert.refusal.build.unowned-land': 'The build order failed — you do not own that land.',
   'hud.alert.refusal.build.water-blocked': 'The build order failed — there is water on that tile.',
+  // `hire.insufficient-funds` describes the same condition as
+  // `purchase.insufficient-funds` below and gets its own sentence, for the
+  // reason the `zone.*` pair further down does: the treasury refuses a hire
+  // and a purchase alike, and somebody who pressed Hire must not be told the
+  // materials were not ordered.
+  'hud.alert.refusal.hire.insufficient-funds': 'Nobody was hired — there are not enough funds.',
+  'hud.alert.refusal.hire.roster-full': 'Nobody was hired — this prison cannot hold any more staff.',
+  'hud.alert.refusal.hire.unknown-role': 'Nobody was hired — that is not a role this prison knows.',
   'hud.alert.refusal.purchase.duplicate-order': 'The materials were not ordered — that order already exists.',
   'hud.alert.refusal.purchase.insufficient-funds': 'The materials were not ordered — there are not enough funds.',
   'hud.alert.refusal.purchase.invalid-quantity': 'The materials were not ordered — that quantity cannot be bought.',
@@ -302,6 +310,19 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.intake.admit': 'Admit a prisoner',
   'hud.intake.hint': 'A prisoner can only be admitted into a prison that has a room to hold them.',
 
+  // The Staff panel on the Security tab (ADR 0025). `hud.security.hire` names
+  // the role and states what the press will spend in one sentence, so the
+  // figure is a statement about the button rather than a price list the HUD
+  // keeps -- the same shape, and the same reason, as `hud.build.buy-submit`.
+  // The number is the role's own wage band read as the treasury's minor units
+  // and divided by nothing: #96 named no currency.
+  'hud.security.staff': 'Staff',
+  'hud.security.roles': 'Who to hire',
+  'hud.security.roles-empty': 'Nobody can be hired yet.',
+  'hud.security.selected': 'Selected',
+  'hud.security.hire': 'Hire {role} · {total}',
+  'hud.security.hire-hint': 'Taken from the treasury on hire. A new guard starts unassigned.',
+
   // What a refused control says (issue #207). Four comments in `src/` claimed
   // the HUD reported a refusal "on the control that was pressed" while the
   // only consumer of the failure was a `console.warn`, so a "Place order" with
@@ -318,6 +339,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.refusal.set-clock': 'The clock did not change — the request was refused.',
   'hud.refusal.place-build-order': 'The build order was not placed — the request was refused.',
   'hud.refusal.purchase-materials': 'Nothing was bought — the purchase was refused and no money was spent.',
+  'hud.refusal.hire-staff': 'Nobody was hired — the request was refused and no money was spent.',
   'hud.refusal.undo': 'Nothing was undone — the request was refused.',
   'hud.refusal.redo': 'Nothing was redone — the request was refused.',
   'hud.refusal.zone-room': 'The room was not designated — the request was refused.',

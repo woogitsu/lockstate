@@ -3,6 +3,7 @@ import type { PurchaseRefusalReason } from '../economy/procurement';
 import type { AdmitPrisonerRefusalReason } from '../prisoners/prisoner-operations-runtime';
 import type { RefusalReason, SimulationRefusal } from '../protocol/types';
 import type { UnzoneRoomRefusalReason, ZoneRoomRefusalReason } from '../rooms/zoning';
+import type { StaffHireRefusalReason } from '../staff/hiring';
 
 /**
  * What the simulation last refused, and how many times it has refused.
@@ -121,7 +122,7 @@ export const BUILD_REFUSAL_REASONS: Readonly<Record<BuildOrderFailReason, Refusa
  * same reason as above.
  *
  * Both members are reachable, and from different sides: `no-accommodation` is
- * what every admission in a prison with no zoned room meets, and
+ * what an admission into a prison with no accommodation room meets, and
  * `population-full` is `EntityStore`'s ceiling. Neither is a prediction about
  * what intake will decide -- see
  * `PrisonerOperationsRuntime.requestAdmission`.
@@ -129,6 +130,22 @@ export const BUILD_REFUSAL_REASONS: Readonly<Record<BuildOrderFailReason, Refusa
 export const ADMIT_REFUSAL_REASONS: Readonly<Record<AdmitPrisonerRefusalReason, RefusalReason>> = {
   'no-accommodation': 'admit.no-accommodation',
   'population-full': 'admit.population-full',
+};
+
+/**
+ * `StaffHireRefusalReason`, mapped onto the wire's. Exhaustive for the same
+ * reason as above.
+ *
+ * `insufficient-funds` is spelled exactly like one of `PURCHASE_REFUSAL_REASONS`'s,
+ * which is the second demonstration of why the wire ids are namespaced rather
+ * than flat: the treasury refuses a purchase and a hire for the same reason and
+ * the player is doing two different things, and somebody who pressed Hire must
+ * not read that the materials were not ordered.
+ */
+export const HIRE_REFUSAL_REASONS: Readonly<Record<StaffHireRefusalReason, RefusalReason>> = {
+  'insufficient-funds': 'hire.insufficient-funds',
+  'roster-full': 'hire.roster-full',
+  'unknown-role': 'hire.unknown-role',
 };
 
 /** `PurchaseOutcome`'s refusal reasons, mapped onto the wire's. Exhaustive for the same reason as above. */
@@ -160,7 +177,7 @@ export const ZONE_REFUSAL_REASONS: Readonly<Record<ZoneRoomRefusalReason, Refusa
 
 /**
  * `UnzoneRoomRefusalReason`, mapped onto the wire's. Exhaustive for the same
- * reason as the four above.
+ * reason as the tables above.
  *
  * `invalid-area` is spelled exactly like the zoning table's, and gets its own
  * namespaced id for the reason `out-of-bounds` and `unowned-land` do: it is the

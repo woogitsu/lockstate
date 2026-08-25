@@ -657,6 +657,67 @@
   overflow-y: auto;
 }
 
+/* ------------------------------------------------------------------ */
+/* Staff panel (ADR 0025)                                              */
+/* ------------------------------------------------------------------ */
+
+/*
+ * The Security tab's panel, in the same rail slot as the Build panel and
+ * never laid out at the same time as it: `mountHud` shows exactly one of the
+ * two, keyed on the active tab. So this panel spends none of the height
+ * budget `.hud-build` below has been fixed for twice (#143, #174), and it
+ * needs no measurement to justify -- there is nothing on the Security tab for
+ * it to compete with.
+ *
+ * Written `.ui-panel.hud-staff` rather than `.hud-staff` for the reason
+ * `.ui-panel.hud-build` is: `.ui-panel` sets `overflow: hidden` and this
+ * overrides it on one axis, and two single-class selectors would leave the
+ * winner to the order `styles.css` happens to import the two files in
+ * (issue #143).
+ *
+ * `overflow-y: auto` for the same reason too: whatever the rail cannot give
+ * this panel is the panel's own to scroll, rather than the rail's to hang off
+ * its edge. It is not reached at today's one-role list -- the panel is a
+ * header, one list row and one button -- and it is what holds when the list
+ * grows.
+ */
+.ui-panel.hud-staff {
+  width: var(--hud-rail-panel-width);
+  max-width: 100%;
+  /* `border-box`, so this panel and the save panel above it render at exactly
+     the same width from the same token -- the rail's one-width invariant that
+     `tests/browser/app-shell.spec.ts` asserts. */
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: var(--surface-raised);
+}
+
+/* The list of hireable roles is the region that grows with the catalogue, so
+   it is the region that scrolls -- the same split `.hud-build__catalogue` and
+   `.hud-build__list` make, and the same two-row floor under it, so a taller
+   panel cannot squeeze the list down to a scrollbar with no rows. */
+.hud-staff__list {
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 auto;
+  min-height: var(--hud-build-catalogue-floor);
+  overflow-y: auto;
+}
+
+/* The one action, and the sentence under it. Mirrors `.hud-build__map`'s
+   gutter and hairline so the two panels in one slot do not read as two
+   different designs. */
+.hud-staff__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hud-build-map-gutter);
+  padding: var(--hud-build-map-gutter) var(--space-1);
+  border-top: var(--hairline) solid var(--border-hairline);
+}
+
+.hud-staff__note { white-space: normal; text-transform: none; letter-spacing: 0; }
+
 .hud-build__coords {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -931,7 +992,8 @@
      untouched -- the text node stays in the DOM in full, clipped by the box
      rather than replaced, so `hud.build.arm-hint` is still one localized
      string and nothing downstream of it has to know about this rule. */
-  .hud-build__note {
+  .hud-build__note,
+  .hud-staff__note {
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 1;
@@ -1210,6 +1272,11 @@
      desktop width -- measured, at 375x812, as a 264px panel in a 343px rail
      and an arm hint wrapping to an extra line. */
   .ui-panel.hud-build { width: 100%; }
+  /* And the Staff panel with it, for the same reason and by the same
+     two-class selector: it shares the slot and must share the width, or the
+     rail's one column would render at two different widths depending on which
+     tab is showing. */
+  .ui-panel.hud-staff { width: 100%; }
 
   /* Two classes, matching `.ui-panel.hud-build` above, for the same reason the
      line above it is written that way: a single-class selector would lose on

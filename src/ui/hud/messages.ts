@@ -130,6 +130,29 @@ export const HUD_MESSAGE_KEY = {
   buildBuyHint: 'hud.build.buy-hint',
 
   /**
+   * The Staff panel on the Security tab
+   * ([ADR 0025](../../../docs/adr/0025-guard-hiring-surface.md)).
+   *
+   * `securityStaffTitle` names the panel and `securityStaffRoles` the list of
+   * roles it can hire; `securityStaffHire` is the one action, and it states
+   * the role and what the press will spend in a single sentence so that the
+   * figure is a statement about the button rather than a standalone readout
+   * -- exactly the distinction `hud.build.buy-submit` draws, and the reason
+   * neither key carries a money word.
+   *
+   * None of them names a currency, for the reason `funds` does not: #96
+   * decided money is the primary resource and named no currency, so the
+   * figure is rendered as the plain minor units the treasury, the procurement
+   * catalogue and the staff-role catalogue's wage bands are all quoted in.
+   */
+  securityStaffTitle: 'hud.security.staff',
+  securityStaffRoles: 'hud.security.roles',
+  securityStaffRolesEmpty: 'hud.security.roles-empty',
+  securityStaffSelected: 'hud.security.selected',
+  securityStaffHire: 'hud.security.hire',
+  securityStaffHint: 'hud.security.hire-hint',
+
+  /**
    * Labels for the two entries `BUILDABLE_REGISTRY` holds.
    *
    * They live here, in the HUD's own namespace, because that registry carries
@@ -240,6 +263,15 @@ export const HUD_MESSAGE_KEY = {
   refusalSetClock: 'hud.refusal.set-clock',
   refusalPlaceBuildOrder: 'hud.refusal.place-build-order',
   refusalPurchaseMaterials: 'hud.refusal.purchase-materials',
+  /**
+   * A hire the host refused before it was sent -- no session at all, or a wage
+   * the last published balance cannot cover. Its own key rather than sharing
+   * `refusalPurchaseMaterials`, because the two leave the prison in states a
+   * player would act on differently: one has no new staff member, the other
+   * has no materials on the way, and reading the wrong one sends them to the
+   * wrong panel.
+   */
+  refusalHireStaff: 'hud.refusal.hire-staff',
   refusalUndo: 'hud.refusal.undo',
   refusalRedo: 'hud.refusal.redo',
   /**

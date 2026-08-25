@@ -13,7 +13,8 @@ import {
  * `challenge-rejection-code-reachability-contract.test.ts` (twenty-three
  * rejection codes). `tests/foundation/` gates commands, content ids, input
  * actions, fault codes and challenge rejection codes, and has never gated the
- * eighteen **protocol message kinds** that carry all of them -- which #274 A2
+ * **protocol message kinds** that carry all of them -- twenty of them today,
+ * eighteen when this was written -- which #274 A2
  * called *"the single highest-value test this audit found missing"*, asking
  * for it as `unconsumed-message-kind-contract.test.ts`. It is named for the
  * family it belongs to instead, because what it measures is reachability and
@@ -56,9 +57,9 @@ import {
  * ```
  *
  * That line contains the exact substring `kind: 'protocol/handshake'`. So does
- * the handler for every other main-to-worker kind -- seven annotations, seven
- * kinds, all of them **receivers**. A gate that looked for `kind: '<K>'` would
- * report all seven sent, from inside the worker, which is the one place that by
+ * the handler for every other main-to-worker kind -- one annotation per kind,
+ * all of them **receivers**. A gate that looked for `kind: '<K>'` would
+ * report every one of them sent, from inside the worker, which is the one place that by
  * construction can never send them. It would have been **green on A2 the day it
  * was written**, and green in exactly the "proves a symbol is named rather than
  * used" shape this family exists to prevent -- the same lesson its challenge-code
@@ -66,8 +67,8 @@ import {
  * that motivated it.
  *
  * So a **send** here is `kind: '<K>'` **terminated by a comma** -- an object
- * literal property, the shape every one of the seventeen real send sites in
- * `src/` (fourteen distinct kinds) is written in. That excludes, mechanically:
+ * literal property, the shape every one of the nineteen real send sites in
+ * `src/` (sixteen distinct kinds) is written in. That excludes, mechanically:
  *
  * - `{ kind: 'protocol/handshake' }` in an `Extract<...>` type position, which
  *   ends in `}` and not `,` (the trap above, asserted below);
@@ -491,9 +492,9 @@ describe('every protocol message kind has a sender, and every sent kind can be p
     // send shape -- would do the same in a way a file count cannot see, so the
     // positive control names a sender on each side of the boundary and the
     // kind it must be found constructing.
-    expect(MAIN_TO_WORKER_MESSAGE_KINDS.length).toBe(7);
-    expect(WORKER_TO_MAIN_MESSAGE_KINDS.length).toBe(11);
-    expect(new Set(ALL_KINDS).size).toBe(18);
+    expect(MAIN_TO_WORKER_MESSAGE_KINDS.length).toBe(8);
+    expect(WORKER_TO_MAIN_MESSAGE_KINDS.length).toBe(12);
+    expect(new Set(ALL_KINDS).size).toBe(20);
     expect(scanned.length).toBeGreaterThanOrEqual(200);
 
     expect(sendingFiles('simulation/initialize')).toEqual(['src/persistence/session/worker-session-host.ts']);
@@ -877,19 +878,26 @@ describe('every protocol message kind has a sender, and every sent kind can be p
 
   it('measures the state #274 A1 and A2 describe, exactly', () => {
     // The denominators, stated so the gate reports a fact and not only guards
-    // one. Four of eighteen kinds have no sender and two more are sent but
-    // unprovokable, so a third of the protocol is declared and dead. Making
-    // the figures exact means a kind that quietly loses its last sender cannot
-    // be settled by adding a list entry alone -- the count has to change too,
-    // and a reviewer sees that the protocol got emptier.
+    // one. Four of twenty kinds have no sender and two more are sent but
+    // unprovokable, so a third of the protocol was declared and dead when this
+    // was written and a fifth of it still is. Making the figures exact means a
+    // kind that quietly loses its last sender cannot be settled by adding a
+    // list entry alone -- the count has to change too, and a reviewer sees
+    // that the protocol got emptier.
+    //
+    // The two kinds #104's projection channel added -- `simulation/request-projection`
+    // and `simulation/projection` -- moved every figure below and none of the
+    // three lists: both are sent from `src/`, and the reply is provoked by a
+    // request the main thread really constructs, so neither needed an entry.
+    // That is the outcome this gate exists to require of a new kind.
     expect([...unsentMainToWorker]).toEqual(['protocol/handshake', 'protocol/ping']);
     expect([...unsentWorkerToMain]).toEqual(['simulation/delta', 'simulation/event']);
     expect([...unreachableWorkerToMain]).toEqual(['protocol/handshake-accepted', 'protocol/pong']);
 
     const sent = ALL_KINDS.filter((kind) => sendingFiles(kind).length > 0);
-    expect(sent.length).toBe(14);
+    expect(sent.length).toBe(16);
     expect(ALL_KINDS.length - sent.length).toBe(4);
-    expect(sent.length - unreachableWorkerToMain.length).toBe(12);
+    expect(sent.length - unreachableWorkerToMain.length).toBe(14);
   });
 
   it('names only kinds the protocol declares, in both lists and in the union itself', () => {

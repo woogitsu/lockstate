@@ -989,36 +989,38 @@ test.describe('HUD shell', () => {
       expect(probe.hint.startsWith('hud.')).toBe(false);
     });
 
-    test('never shares the rail slot with the Build or Rooms panel', async ({ page }) => {
+    test('never shares the rail slot with the Build, Rooms or Staff panel', async ({ page }) => {
       // The whole reason this panel costs the measured budget nothing. If any
       // two were ever laid out together, one panel's height would have to pay
-      // for the other's, which is the overflow ADR 0022 refused. All three
-      // occupants of `.hud__side` are asserted, because the Rooms panel (#312)
-      // is the third and is the tallest of them.
+      // for the other's, which is the overflow ADR 0022 refused. All four
+      // occupants of `.hud__side` are asserted on every tab that owns one, so
+      // adding a fifth panel to the rail cannot go unnoticed here.
+      const rail = async (): Promise<Record<string, boolean>> => ({
+        intake: (await page.evaluate(() => window.lockstateUiHarness.intakeProbe())).laidOut,
+        build: (await page.evaluate(() => window.lockstateUiHarness.buildProbe())).visible,
+        rooms: (await page.evaluate(() => window.lockstateUiHarness.roomsProbe())).panelLaidOut,
+        staff: (await page.evaluate(() => window.lockstateUiHarness.staffProbe())).visible,
+      });
+
       await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
-      expect((await page.evaluate(() => window.lockstateUiHarness.buildProbe())).visible).toBe(false);
-      expect((await page.evaluate(() => window.lockstateUiHarness.roomsProbe())).panelLaidOut).toBe(false);
+      // Overview is the default tab, so the Intake panel is the one with a box.
+      expect(await rail()).toEqual({ intake: true, build: false, rooms: false, staff: false });
 
       await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
-      expect((await page.evaluate(() => window.lockstateUiHarness.intakeProbe())).laidOut).toBe(false);
-      expect((await page.evaluate(() => window.lockstateUiHarness.buildProbe())).visible).toBe(true);
-      expect((await page.evaluate(() => window.lockstateUiHarness.roomsProbe())).panelLaidOut).toBe(false);
+      expect(await rail()).toEqual({ intake: false, build: true, rooms: false, staff: false });
 
       await page.evaluate(() => window.lockstateUiHarness.clickTab('rooms'));
-      expect((await page.evaluate(() => window.lockstateUiHarness.intakeProbe())).laidOut).toBe(false);
-      expect((await page.evaluate(() => window.lockstateUiHarness.buildProbe())).visible).toBe(false);
-      expect((await page.evaluate(() => window.lockstateUiHarness.roomsProbe())).panelLaidOut).toBe(true);
+      expect(await rail()).toEqual({ intake: false, build: false, rooms: true, staff: false });
 
-      // And none is shown on a tab that owns no panel.
       await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
-      expect((await page.evaluate(() => window.lockstateUiHarness.intakeProbe())).laidOut).toBe(false);
-      expect((await page.evaluate(() => window.lockstateUiHarness.buildProbe())).visible).toBe(false);
-      expect((await page.evaluate(() => window.lockstateUiHarness.roomsProbe())).panelLaidOut).toBe(false);
+      expect(await rail()).toEqual({ intake: false, build: false, rooms: false, staff: true });
+
+      // And none is laid out on the one tab that still owns no panel.
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('regime'));
+      expect(await rail()).toEqual({ intake: false, build: false, rooms: false, staff: false });
 
       await page.evaluate(() => window.lockstateUiHarness.clickTab('overview'));
-      expect((await page.evaluate(() => window.lockstateUiHarness.intakeProbe())).laidOut).toBe(true);
-      expect((await page.evaluate(() => window.lockstateUiHarness.buildProbe())).visible).toBe(false);
-      expect((await page.evaluate(() => window.lockstateUiHarness.roomsProbe())).panelLaidOut).toBe(false);
+      expect(await rail()).toEqual({ intake: true, build: false, rooms: false, staff: false });
     });
 
     test('one press is one gated intent carrying nothing', async ({ page }) => {
@@ -1460,6 +1462,95 @@ test.describe('HUD shell', () => {
       }
     });
   });
+
+  /**
+   * The Staff panel on the Security tab
+   * ([ADR 0025](../../docs/adr/0025-guard-hiring-surface.md)).
+   *
+   * Three of the four tabs rendered no panel at all before this: `mountHud`
+   * built one panel for the rail slot and showed it on `build` alone, so
+   * selecting Security hid the Build panel and put nothing in its place. That
+   * is why hiring is here and not a third button on the Build panel's action
+   * row, which ADR 0022 measured as overflowing that panel horizontally by
+   * 37.9px.
+   *
+   * A real browser is the lowest layer that can settle any of this: Vitest
+   * runs in the `node` environment with no DOM, so a real click on a real
+   * button, an `offsetParent` that says what the browser decided rather than
+   * what the `hidden` attribute claims, and a rendered label that is text
+   * rather than an unresolved key are all only observable here.
+   */
+  test.describe('staff panel (ADR 0025)', () => {
+    test('is reachable from the Security tab and hidden from every other one', async ({ page }) => {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+
+      // The tab a player arrives on. The panel exists in the DOM from the
+      // mount and must not be laid out here.
+      expect((await page.evaluate(() => window.lockstateUiHarness.staffProbe())).visible).toBe(false);
+
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
+      const probe = await page.evaluate(() => window.lockstateUiHarness.staffProbe());
+
+      expect(probe.visible).toBe(true);
+      expect(probe.options).toEqual(['staff-role.guard']);
+      expect(probe.selected).toBe('staff-role.guard');
+      expect(probe.hireDisabled).toBe(false);
+      // The button states the role and what pressing it will spend, from the
+      // view model -- the panel holds no wage table of its own.
+      expect(probe.hireLabel).toBe('Hire Guard · 80');
+      // ADR 0011: an unresolved key renders as itself. Nothing on this panel
+      // may be a raw `hud.*` identifier.
+      expect(probe.texts.filter((text) => text.startsWith('hud.'))).toEqual([]);
+      expect(probe.texts).toContain('Guard');
+
+      // And the two panels share one rail slot: showing this one hides the
+      // other, in both directions.
+      expect((await page.evaluate(() => window.lockstateUiHarness.buildProbe())).visible).toBe(false);
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+      expect((await page.evaluate(() => window.lockstateUiHarness.staffProbe())).visible).toBe(false);
+      expect((await page.evaluate(() => window.lockstateUiHarness.buildProbe())).visible).toBe(true);
+    });
+
+    test('hiring dispatches one gated intent, and a refusal is reported on the button', async ({ page }) => {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
+      expect(await page.evaluate(() => window.lockstateUiHarness.clickHireStaff())).toBe(true);
+
+      // One stable id and nothing else. The HUD does not know a `HireStaff`
+      // command exists, and it does not decide where the new hire stands --
+      // that is `src/main.ts`'s, and `app-shell.spec.ts` is where the wire is
+      // observed.
+      const intents = await page.evaluate(() => window.lockstateUiHarness.hudIntents());
+      expect(intents.filter((intent) => intent.includes('hire-staff'))).toEqual([
+        JSON.stringify({ kind: 'hire-staff', staffRoleId: 'staff-role.guard' }),
+      ]);
+
+      // A refused hire reaches the player, on the line #207 built and on the
+      // control that was pressed -- because hiring is a command, and a button
+      // that reports success and hires nobody is the failure #82 is about.
+      await page.evaluate(() => window.lockstateUiHarness.failIntents(true));
+      await page.evaluate(() => window.lockstateUiHarness.clickHireStaff());
+      await expect
+        .poll(() => page.evaluate(() => window.lockstateUiHarness.refusalProbe().visible), {
+          message: 'a refused hire said nothing on screen',
+        })
+        .toBe(true);
+      const probe = await page.evaluate(() => window.lockstateUiHarness.refusalProbe());
+      expect(probe.action).toBe('hire-staff');
+      expect(probe.text).toContain('Nobody was hired');
+      // Its own sentence, not the purchase one: the two commands leave the
+      // prison in different states, and a player acting on the message needs
+      // to know which.
+      expect(probe.text).not.toContain('Nothing was bought');
+      // The thrown `Error` is diagnostic English and never reaches the screen
+      // (ADR 0011).
+      expect(probe.text).not.toContain('ui-harness: the host refused');
+      expect(probe.failedControls).toEqual(['Hire Guard · 80']);
+
+      expect(await page.evaluate(() => window.lockstateUiHarness.takeUnhandledRejections())).toEqual([]);
+    });
+  });
+
 
   /**
    * Issue #136: one repaint reuses its formatters instead of rebuilding them.

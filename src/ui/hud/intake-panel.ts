@@ -31,13 +31,15 @@ import type { HudLocalizer } from './view-model';
  * button.
  *
  * What is left costs nothing at all: **the Overview tab shows nothing.**
- * `hud.ts` binds one panel to `build` and one to `rooms`, so `overview`,
- * `security` and `regime` are three tabs bound to no panel, and on any of them
- * `.hud__side` is an empty box. This panel takes that box on `overview` and is
- * `hidden` everywhere else, so it is never laid out at the same time as either
- * of the other two and the budget ADR 0022 measured is untouched at every
- * viewport. The tab is also the default (`hud-state.ts`), so the control is the
- * first thing a player sees rather than something to go looking for.
+ * `hud.ts` binds one panel to `build`, one to `rooms` and, since ADR 0025, one
+ * to `security`, so `overview` and `regime` are the two tabs bound to no panel
+ * and on either of them `.hud__side` is an empty box. This panel takes that box
+ * on `overview` and is `hidden` everywhere else, so it is never laid out at the
+ * same time as any of the other three -- `paintState` keys all four on the
+ * active tab and the tab is one value -- and the budget ADR 0022 measured is
+ * untouched at every viewport. The tab is also the default (`hud-state.ts`), so
+ * the control is the first thing a player sees rather than something to go
+ * looking for.
  *
  * ### Boundaries
  *
