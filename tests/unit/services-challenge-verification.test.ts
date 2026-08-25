@@ -6,6 +6,7 @@ import {
   type ChallengeReplayRunner,
   authenticateChallengeDefinition,
   canonicalChallengeDefinitionJson,
+  CHALLENGE_REJECTION_CODES,
   challengeDefinitionBytes,
   challengeDefinitionHash,
   challengeEvidenceHash,
@@ -705,6 +706,205 @@ describe('challenge submission verification', () => {
       );
       expect(result.status).not.toBe('verified');
       expect(isPubliclyRankable(result)).toBe(false);
+    });
+  });
+
+  /*
+   * Disagreement about *how long the run was*, which is the one field of the
+   * outcome that reached the result and was never compared (issue #318).
+   *
+   * `outcome.finalTick` is the replay's own answer to "when did this run end".
+   * It was reported as `replayedTick` and contradicted by nothing, while every
+   * other number the replay produced was checked against the claim. The owner's
+   * ruling on #318 is that this is a missing check and not a deliberate
+   * non-check: the replay is the authority and the claim is untrusted, so two
+   * sides that disagree about the final tick disagree about the run, which is
+   * exactly what `checkpointsAgree` and `metricsAgree` exist to refuse.
+   *
+   * These runners state their outcome as literals for the reason the group
+   * above them does, and here the trap is sharper than it was there. Every
+   * mirror stub in this file writes `finalTick: evidence.finalTick`, so a
+   * mirror agrees about the tick *by construction* -- for every submission,
+   * including one whose claim a test has edited by hand, because editing the
+   * claim moves both sides together. A test of this check written with a mirror
+   * stub would pass with the comparison deleted and guard nothing at all. The
+   * control at the end of this group measures that rather than asserting it.
+   */
+  describe('the trusted replay disagrees about how long the run was', () => {
+    /**
+     * The claim these outcomes are written against, as a literal.
+     *
+     * Deriving it -- `finalTick: evidence.finalTick + 1` -- would rebuild the
+     * mirror this group exists to break, and a bound derived from the value
+     * under test is the failure #316 recorded as the worse one of the two. So
+     * the number is stated, and `keeps its literals pinned to the fixture`
+     * below is what stops a stated number from quietly drifting out of
+     * agreement with the fixture and taking the group's meaning with it.
+     */
+    const CLAIMED_FINAL_TICK = 200;
+
+    /**
+     * The trusted side of an honest run: an outcome nothing in this file
+     * derived from a submission. Every field is a literal, so it can disagree
+     * with a claim about something no test thought to name.
+     */
+    const honestOutcome: ChallengeReplayOutcome = {
+      finalTick: CLAIMED_FINAL_TICK,
+      finalStateHash: 'cccccccccccccccc',
+      checkpoints: [
+        { tick: 100, stateHash: 'aaaaaaaaaaaaaaaa' },
+        { tick: 200, stateHash: 'bbbbbbbbbbbbbbbb' },
+      ],
+      metrics: { 'metric.prisoners-processed': 12 },
+    };
+
+    const runnerProducing = (outcome: ChallengeReplayOutcome): ChallengeReplayRunner => ({
+      replay: () => ({ ok: true, outcome }),
+    });
+
+    it('keeps its literals pinned to the fixture, so a stated outcome cannot drift into agreeing by accident', () => {
+      // The fail-fast guard for the whole group, and the reason it is an
+      // assertion rather than a derivation. If `buildEvidence()` moves -- a
+      // different final tick, a different hash, another checkpoint -- the
+      // literals above stop describing an honest replay of it, and the cases
+      // below would start failing (or passing) for a reason that has nothing to
+      // do with the tick. That has to be loud here rather than silent there.
+      const evidence = buildEvidence();
+      expect(evidence.finalTick).toBe(CLAIMED_FINAL_TICK);
+      expect(honestOutcome.checkpoints).toEqual(evidence.checkpoints);
+      expect(honestOutcome.finalStateHash).toBe(evidence.finalStateHash);
+      expect(honestOutcome.metrics).toEqual(evidence.claimedMetrics);
+    });
+
+    it('verifies a replay that ends at the tick the run claims, and reports that tick', async () => {
+      // The negative control: every rejection below has to be about the tick,
+      // not about a stated outcome being unable to verify at all.
+      const result = await verify(buildEvidence(), runnerProducing(honestOutcome));
+      expect(result).toMatchObject({ status: 'verified', rankedScore: 12, replayedTick: CLAIMED_FINAL_TICK });
+      expect(isPubliclyRankable(result)).toBe(true);
+    });
+
+    /**
+     * The closed set the comparison declares: an integer can disagree in two
+     * directions, and both are refused with the same code. Enumerated rather
+     * than sampled, which is #316's cure -- and each outcome is internally
+     * consistent, so neither case is a shape only a broken runner could return.
+     *
+     * The later case is the one no other comparison in the pipeline can see:
+     * 250 and 200 sit inside the same `checkpointIntervalTicks` bucket, so a
+     * runner that checkpoints on the definition's cadence produces exactly the
+     * checkpoints the claim carries. The earlier case is self-consistent the
+     * other way -- a run that ended at 150 has one checkpoint, not two -- so it
+     * also pins the *order*: the checkpoint walk would have something to say
+     * about it, and the tick comparison speaks first because a run of a
+     * different length is the finding.
+     */
+    const tickDisagreements: readonly {
+      readonly label: string;
+      readonly outcome: ChallengeReplayOutcome;
+    }[] = [
+      {
+        label: 'the replay ran on past the tick the run claims',
+        outcome: { ...honestOutcome, finalTick: 250 },
+      },
+      {
+        label: 'the replay stopped before the tick the run claims',
+        outcome: { ...honestOutcome, finalTick: 150, checkpoints: [{ tick: 100, stateHash: 'aaaaaaaaaaaaaaaa' }] },
+      },
+    ];
+
+    for (const { label, outcome } of tickDisagreements) {
+      it(`rejects when ${label}`, async () => {
+        expect(outcome.finalTick).not.toBe(CLAIMED_FINAL_TICK);
+
+        const result = await verify(buildEvidence(), runnerProducing(outcome));
+        expect(result).toMatchObject({ status: 'rejected', code: 'final-tick-mismatch' });
+        expect(isPubliclyRankable(result)).toBe(false);
+      });
+    }
+
+    it('names the tick as the disagreement rather than the fields the tick made disagree', async () => {
+      /*
+       * Why the code is its own and where the check sits, as one assertion.
+       *
+       * This outcome disagrees about everything: it ended later, its final
+       * state hash is another run's, and it carries a metric the claim never
+       * mentions. All three of the other agreement checks would refuse it. The
+       * one that must report is the tick, because if the two runs are of
+       * different lengths then the hash and the metric disagree *as a
+       * consequence* -- and "the final state hash disagrees with the trusted
+       * replay" sends a reader after a determinism bug in a run that simply is
+       * not the same run.
+       *
+       * Folding the tick into an existing code would lose exactly this. #316
+       * measured that failures in this layer are hard to localise, and the
+       * distinct code is the whole point of the change.
+       */
+      const result = await verify(
+        buildEvidence(),
+        runnerProducing({
+          finalTick: 250,
+          finalStateHash: 'dddddddddddddddd',
+          checkpoints: [{ tick: 100, stateHash: 'eeeeeeeeeeeeeeee' }],
+          metrics: { 'metric.prisoners-processed': 12, 'metric.zz-unclaimed': 3 },
+        }),
+      );
+
+      expect(result).toMatchObject({ status: 'rejected', code: 'final-tick-mismatch' });
+      const code = result.status === 'rejected' ? result.code : undefined;
+      expect(['checkpoint-hash-mismatch', 'final-state-hash-mismatch', 'metrics-mismatch']).not.toContain(code);
+      expect(CHALLENGE_REJECTION_CODES.filter((candidate) => candidate === code)).toEqual(['final-tick-mismatch']);
+    });
+
+    it('never ranks a run the replay says outran the tick budget the claim fits inside', async () => {
+      /*
+       * The consequence, said as a consequence, because it is what makes the
+       * comparison worth a code of its own.
+       *
+       * Every tick bound in this pipeline is enforced against
+       * `evidence.finalTick`: the `maxTicks` budget of ADR 0009 step 4, the
+       * `command-after-final-tick` structure check, and the checkpoint cadence.
+       * All three read the claim. So a submitter who declares a run that fits
+       * the budget, and supplies the real hashes and metrics of a longer one,
+       * had a `verified` row -- the one tier eligible for public ranking -- for
+       * a run the definition's own limit would have refused. Nothing else reads
+       * the replay's own tick.
+       */
+      const REPLAY_RAN_TO = 1_400;
+      const evidence = buildEvidence();
+      expect(evidence.finalTick).toBeLessThanOrEqual(definition.limits.maxTicks);
+      expect(REPLAY_RAN_TO).toBeGreaterThan(definition.limits.maxTicks);
+
+      const result = await verify(evidence, runnerProducing({ ...honestOutcome, finalTick: REPLAY_RAN_TO }));
+      expect(result.status).not.toBe('verified');
+      expect(isPubliclyRankable(result)).toBe(false);
+    });
+
+    it('records what a mirror stub can and cannot do here, which is why these runners are literals', async () => {
+      /*
+       * A measurement, not a guard, and it says so: this test stays green with
+       * the tick comparison deleted from the pipeline. What it is for is the
+       * trap #316 named. `agreeingRunner` writes `finalTick: evidence.finalTick`,
+       * so the trusted side is a function of the untrusted one and the two
+       * agree about the tick for *every* submission -- including this one,
+       * whose claim is edited by hand to a wholly different run length, because
+       * editing the claim moves both sides together. A mirror can be made to
+       * disagree about a field a test overrides on one side only; the tick is
+       * not such a field, so a test of this check built on `agreeingRunner`
+       * would pass whatever the pipeline did.
+       */
+      const longerRun = buildEvidence({
+        finalTick: 300,
+        checkpoints: [
+          { tick: 100, stateHash: 'aaaaaaaaaaaaaaaa' },
+          { tick: 200, stateHash: 'bbbbbbbbbbbbbbbb' },
+          { tick: 300, stateHash: 'dddddddddddddddd' },
+        ],
+      });
+      expect(longerRun.finalTick).not.toBe(CLAIMED_FINAL_TICK);
+
+      const mirrored = await verify(longerRun, agreeingRunner);
+      expect(mirrored).toMatchObject({ status: 'verified', replayedTick: 300 });
     });
   });
 

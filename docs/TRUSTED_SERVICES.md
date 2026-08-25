@@ -339,13 +339,28 @@ widening the read rule fails the gate and comes back to this function.
    must equal it (`evidence-hash-mismatch`);
 7. duplicate evidence (optional port);
 8. replay through `ChallengeReplayRunner`;
-9. agreement — every checkpoint, the final hash and the claimed metrics.
+9. agreement — the final tick first, then every checkpoint, the final hash
+   and the claimed metrics.
 
 Each failure has its own code (`build-not-allowed`,
 `final-state-hash-mismatch`, `metrics-mismatch`, …) so "your build is too
 old" is never confused with "these hashes disagree with the replay".
 
-The twenty-three codes are declared as an array in
+The final tick is the newest of these and the reason it is a comparison at
+all is worth recording, because for a while it was not one. `outcome.finalTick`
+came back from the replay, reached the result as `replayedTick`, and was
+contradicted by nothing (issue #318) — while every other number the replay
+produced was checked. Every tick bound in the pipeline reads
+`evidence.finalTick`, the claim: the `maxTicks` budget, the
+`command-after-final-tick` structure check and the checkpoint cadence. So a
+submission could declare a run that fits the budget, supply the hashes and
+metrics of a longer one, and be `verified` — the one tier eligible for public
+ranking. It is now `final-tick-mismatch`, checked first among the agreement
+comparisons: it is the cheapest of them, and if the two sides ran to different
+ticks then a hash disagreement underneath is a consequence rather than the
+finding.
+
+The twenty-four codes are declared as an array in
 `src/services/challenges/rejection-codes.ts`, not only as a union type, so
 the vocabulary can be enumerated rather than merely type-checked.
 `tests/foundation/challenge-rejection-code-reachability-contract.test.ts`
