@@ -148,11 +148,38 @@ writing the hierarchy down.
   balance is on the HUD status strip. An integration test drives a real kernel
   from purchase through delivery to a wall in the world.
 
-  That is decisions 1, 2 and 7. Decision 3's income line and decision 8's
-  degradation ladder are **not** built, and decision 4's physical route is not
-  either — a delivery is deposited at no tile, which `docs/OPERATIONS.md` now
-  records as the second deliberate exception to its no-teleport rule, along with
-  what is still missing.
+  That is decisions 1, 2 and 7. Decision 8's degradation ladder is **not**
+  built, and decision 4's physical route is not either — a delivery is
+  deposited at no tile, which `docs/OPERATIONS.md` now records as the second
+  deliberate exception to its no-teleport rule, along with what is still
+  missing.
+
+- **Decision 3's income line, as of #29.** `StateIncomeSystem`
+  (`src/simulation/economy/income.ts`) credits the treasury once per in-game
+  day, on the day's last tick, per occupied place — decision 6's basis,
+  unchanged. The rate is #29's and not this ADR's, per decision 5, and it is
+  recorded on that issue rather than here.
+
+  **It pays nothing in a session today, and the reason is population rather
+  than economy.** Nothing in `src/` calls `admitPrisoner`, and
+  `RoomZoningService` registers a zoned room with `capacity: 0`, so there is no
+  occupied place and 300 × 0 is 0 for as long as that holds. The mechanism is
+  real and tested against prisoners injected at the simulation level; wiring
+  admission is a separate workstream. So decision 3's *first* half is built and
+  its consequence — "income scales with population, and so does trouble" — is
+  not yet observable, which is a better position than the reverse and is not a
+  licence to skip #79/#80/#81.
+
+  One consequence of the daily cadence, stated here because it is a design
+  property rather than an implementation detail: occupancy is read at the day
+  boundary, not integrated across the day, so a place occupied at the boundary
+  is paid as a whole day and one vacated before it as nothing. That is what
+  keeps the system stateless and out of the save. The research record for #29
+  (`docs/research/2026-08-25-economy-rate.md`) recommended integrating instead,
+  with a carried remainder; the owner's chosen cadence
+  (`intervalTicks: 2,400`, `phaseTicks: 2,399` — one scheduled call a day)
+  cannot integrate, and the divergence is recorded rather than quietly
+  resolved.
 
 - **#89 is still open, and its cause has changed.** No longer "nothing can
   supply materials" — the store link is closed and verified by mutation — but
@@ -228,10 +255,13 @@ The order the questions gate work in, unchanged by their being answered:
 
 - **Answer 2 was all that purchase and delivery needed**, and that half is
   built.
-- **Answer 1 is what #29's income line waits on.** With it settled, a
-  per-prisoner-day accrual can be specified — and it inherits answer 1's stated
-  consequence: income scales with population, so overcrowding must be punished
-  elsewhere (#79, #80, #81) or the optimum is to pack the prison.
+- **Answer 1 was what #29's income line waited on, and it has now been
+  built on it.** The accrual is specified and implemented (see the
+  Consequences bullet above) — and it inherits answer 1's stated consequence:
+  income scales with population, so overcrowding must be punished elsewhere
+  (#79, #80, #81) or the optimum is to pack the prison. That debt is now
+  *incurred* rather than merely anticipated, even though no population exists
+  to collect it yet.
 - **Answer 3 is not reachable yet.** `Treasury.spend` refuses rather than
   overdrawing, so there is no negative balance for a degradation ladder to
   respond to. It becomes reachable when a recurring charge exists that the

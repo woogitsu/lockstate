@@ -144,9 +144,24 @@ describe('kernel system ordering', () => {
    * per ADR 0009, by retiring incompatible challenge submissions through
    * the definition allow-lists.
    *
-   * ## The one time this list has changed, and what the ADR 0009 step came to
+   * ## The two times this list has changed, and what the ADR 0009 step came to
    *
-   * `procurement` (order 110) was added with the purchase loop (#96, #89).
+   * `procurement` (order 110) was added with the purchase loop (#96, #89), and
+   * `economy.state-income` (order 120) with the state's per-prisoner-day
+   * payment (#29, ADR 0017 decision 3). Both are reviewed edits, and the
+   * ADR 0009 finding below applies unchanged to the second.
+   *
+   * **What the second one does and does not disturb.** `economy.state-income`
+   * is appended *after* `procurement` and before `navigation` (150), so no
+   * existing system moves. It is scheduled once per in-game day
+   * (`intervalTicks: 2,400`, `phaseTicks: 2,399`), and every determinism test
+   * in this directory runs the scenario for 400 ticks -- so it is registered,
+   * pinned here, and never actually fires in any of them. That is worth
+   * stating rather than leaving to be rediscovered: the reason the recorded
+   * scenario's outcome is byte-identical is the schedule, not the system being
+   * inert. A test that ran past tick 2,399 would see the treasury move, and
+   * should.
+   *
    * The retirement the sentence above requires was looked for and **there is
    * nothing in this repository to retire**, which is worth recording so the
    * next person does not go hunting for a list that does not exist:
@@ -170,6 +185,7 @@ describe('kernel system ordering', () => {
       { id: 'prisoners.needs-decay', order: 60 },
       { id: 'construction', order: 100 },
       { id: 'procurement', order: 110 },
+      { id: 'economy.state-income', order: 120 },
       { id: 'navigation', order: 150 },
       { id: 'prisoners.actions', order: 250 },
       { id: 'operations.jobs', order: 260 },

@@ -238,11 +238,10 @@ describe('docs/ARCHITECTURE.md: what the persistence layer actually does', () =>
     ).toEqual([]);
   });
 
-  it('is the only thing that credits the treasury, as the HUD projections gap list claims', async () => {
+  it('names every thing that credits the treasury, as the HUD projections gap list claims', async () => {
     /*
-     * The claim being pinned, from `docs/HUD_PROJECTIONS.md`'s gap 21: that
-     * the only thing crediting the treasury is a cancelled purchase's refund,
-     * and that there is therefore no income line.
+     * The claim being pinned, from `docs/HUD_PROJECTIONS.md`'s gap 21: which
+     * things credit the treasury, and whether any of them is an income line.
      *
      * It said "nothing credits the treasury at all" until this gate was
      * written, which was false the day `ProcurementSystem.cancel` landed --
@@ -250,16 +249,29 @@ describe('docs/ARCHITECTURE.md: what the persistence layer actually does', () =>
      * *point* survived the error, which is exactly why nobody noticed: an
      * absolute that is nearly true reads as true.
      *
-     * A second crediting site is not a typo. It is **the arrival of an income
-     * line** -- the single most significant thing ADR 0017 decision 6 is
-     * waiting on -- and it must not be able to land while a document still
-     * says there is none.
+     * **The second crediting site has now arrived, and it is the income
+     * line.** `StateIncomeSystem` (#29) implements ADR 0017 decision 3 on
+     * decision 6's basis: the state pays per prisoner-day, per occupied place,
+     * at the end of each in-game day. That is exactly the event this gate was
+     * written to make undeniable, so the allow-list grows by one **and** gap
+     * 21 was rewritten in the same change, along with ADR 0017's own
+     * "what is implemented" bullet -- which is what the failure message below
+     * asked for, and the reason this list is an enumeration rather than a cap
+     * of one.
+     *
+     * A third entry is still a real event and still has to pass through here.
+     * ADR 0017 decision 3 names grants and prison labour as the *secondary*
+     * lines, and neither exists; the degradation ladder of decision 8 debits
+     * rather than credits.
      */
     const crediting = await sourceFilesMatching(/\.\s*credit\s*\(/u);
     expect(
       crediting,
-      'something other than ProcurementSystem.cancel now credits the treasury. If that is an income line, say so in docs/HUD_PROJECTIONS.md gap 21 and in ADR 0017 in the same change',
-    ).toEqual([path.join('src', 'simulation', 'economy', 'procurement.ts')]);
+      'something other than ProcurementSystem.cancel and StateIncomeSystem now credits the treasury. If that is a new income line, say so in docs/HUD_PROJECTIONS.md gap 21 and in ADR 0017 in the same change',
+    ).toEqual([
+      path.join('src', 'simulation', 'economy', 'income.ts'),
+      path.join('src', 'simulation', 'economy', 'procurement.ts'),
+    ]);
   });
 
   it('requires every sentence in src/ that denies a treasury credit to say "on a schedule"', async () => {
@@ -276,13 +288,24 @@ describe('docs/ARCHITECTURE.md: what the persistence layer actually does', () =>
      * absolute is false and the qualified form is true, they differ by four
      * words, and nothing in the suite could tell them apart.
      *
-     * So this pins the four words. Every negated claim about crediting the
-     * treasury under `src/` must carry "on a schedule": `treasury.ts`,
-     * `view-model.ts`, `new-session.ts`, `default-locale-en.ts` and
-     * `projection.ts` all do, and `docs/HUD_PROJECTIONS.md` gap 21 does too.
+     * So this pins the four words -- and since #29 it pins something stronger.
+     * The qualifier existed because a refund credited while an income line did
+     * not; the state now pays per occupied place once a day, so a *scheduled*
+     * credit exists too and the negated claim is false in every form, qualified
+     * or not. The five modules that carried it (`treasury.ts`,
+     * `view-model.ts`, `new-session.ts`, `default-locale-en.ts`,
+     * `projection.ts`) no longer make it, so the assertion is that **no module
+     * under `src/` makes it at all** rather than that each one qualifies it.
+     *
+     * That is a narrower subject, so it is guarded against going vacuous in the
+     * one way it could: the scan finding nothing is indistinguishable from the
+     * scan being broken, so the pattern is exercised against a sample of the
+     * exact prose it exists to catch. If the regex stops matching, that control
+     * fails and says so, rather than this check quietly passing for ever.
+     *
      * Measured against the tree before the fix: `projection.ts` was the single
-     * violation, so this is a gate over a defect that existed rather than one
-     * over a defect imagined.
+     * violation of the qualifier rule, so this began as a gate over a defect
+     * that existed rather than one over a defect imagined.
      *
      * Its bound, stated rather than implied: this catches the *phrase*, not the
      * idea. "The treasury has no income" carries the same absolute in words
@@ -292,27 +315,19 @@ describe('docs/ARCHITECTURE.md: what the persistence layer actually does', () =>
      */
     const denials = await sourceProseMatching(/\bnothing\s+(?:\w+\s+){0,2}credits\b[^.]*/giu);
 
-    // Denominator first, for the reason the sibling assertions state: a scan
+    // Non-vacuity first, for the reason the sibling assertions state: a scan
     // handed nothing reports no violations and reads exactly like compliance.
-    // Five modules state this claim, and one of them is the HUD chip whose
-    // comment #282 broke.
+    // The subject is now empty by design, so the denominator moves from "five
+    // modules state this" to "the pattern still recognises the claim".
+    const CONTROL = 'Nothing credits the treasury at all, so the balance only falls.';
     expect(
-      [...new Set(denials.map(([file]) => file))].sort(),
-      'the set of modules denying a treasury credit has changed. If a claim was added, list it; if one vanished, this check has lost its subject',
-    ).toEqual(
-      [
-        path.join('src', 'content', 'default-locale-en.ts'),
-        path.join('src', 'simulation', 'economy', 'treasury.ts'),
-        path.join('src', 'simulation', 'runtime', 'new-session.ts'),
-        path.join('src', 'ui', 'hud', 'projection.ts'),
-        path.join('src', 'ui', 'hud', 'view-model.ts'),
-      ].sort(),
-    );
+      CONTROL.match(/\bnothing\s+(?:\w+\s+){0,2}credits\b[^.]*/giu),
+      'the pattern no longer recognises the sentence this check exists to catch, so its empty result below proves nothing',
+    ).not.toBeNull();
 
-    const unqualified = denials.filter(([, sentence]) => !sentence.includes('on a schedule'));
     expect(
-      unqualified.map(([file, sentence]) => `${file}: ${sentence.trim()}`),
-      'this sentence says nothing credits the treasury without the qualifier that makes it true. ProcurementSystem.cancel credits a refund; what does not exist is a credit *on a schedule* -- an income line. Say that, the way docs/HUD_PROJECTIONS.md gap 21 does',
+      denials.map(([file, sentence]) => `${file}: ${sentence.trim()}`),
+      'this sentence denies that anything credits the treasury. Since #29 that is false however it is qualified: the state pays per occupied place once a day, so an income line exists and a refund is not the only credit. Delete the claim rather than adding "on a schedule" to it',
     ).toEqual([]);
   });
 

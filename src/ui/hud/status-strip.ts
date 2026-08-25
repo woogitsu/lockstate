@@ -90,7 +90,9 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
     staff: 0,
     rooms: 0,
     activeIncidents: 0,
-    contrabandFound: 0, treasuryMinorUnits: 0,
+    contrabandFound: 0,
+    treasuryMinorUnits: 0,
+    stateIncomeAccruedTodayMinorUnits: 0,
   })) {
     const trailing = element('span', { className: 'hud-metric__trailing' });
     const chip = createStatChip({

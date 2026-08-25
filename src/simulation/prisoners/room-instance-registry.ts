@@ -33,6 +33,8 @@ export class RoomInstanceRegistry {
   private readonly instancesByRoomCatalogId = new Map<string, RoomInstance[]>();
   /** Lazily rebuilt, sorted-by-instanceId cache per room-catalog id; invalidated only for the affected type on `register`, never on assign/release (those don't change which instances exist). */
   private readonly sortedCache = new Map<string, readonly RoomInstance[]>();
+  /** Backing field for `totalOccupancy`; every mutation of `occupants` maintains it. */
+  private occupiedPlaceCount = 0;
 
   public register(instance: RoomInstance): void {
     if (this.instances.has(instance.instanceId)) {
@@ -99,6 +101,28 @@ export class RoomInstanceRegistry {
     return this.occupants.get(instanceId)?.size ?? 0;
   }
 
+  /**
+   * Every occupancy slot currently held, across every registered instance.
+   *
+   * Maintained on `assign`/`release`/`loadSnapshot` rather than summed on
+   * demand, because its reader is a per-day economy system and a twice-a-second
+   * projection, and neither should walk the registry to learn one integer.
+   *
+   * **Registry-wide, which is the point.** The status strip's `roomOccupants`
+   * is built by fanning out over catalog room ids
+   * (`presentation/room-projection.ts`), so an instance registered under an id
+   * the catalog does not define is invisible to it -- `docs/HUD_PROJECTIONS.md`
+   * gap 15, stated there as a deliberate limitation of that projection. This
+   * accessor has no such blind spot, which is what makes it the right count for
+   * `StateIncomeSystem`: the state pays for a place a prisoner occupies, not
+   * for a place a projection can see. The two can only disagree for an instance
+   * no `ZoneRoom` command could have produced, since `RoomZoningService` only
+   * ever registers a catalog-defined id.
+   */
+  public get totalOccupancy(): number {
+    return this.occupiedPlaceCount;
+  }
+
   public occupantsOf(instanceId: string): readonly EntityId[] {
     return [...(this.occupants.get(instanceId) ?? [])];
   }
@@ -135,12 +159,20 @@ export class RoomInstanceRegistry {
     const occupants = this.occupants.get(instanceId);
     if (instance === undefined || occupants === undefined) throw new RangeError(`Unknown room instance id "${instanceId}".`);
     if (occupants.size >= instance.capacity) return false;
+    // `Set.add` is idempotent, so the counter follows the size change rather
+    // than the call: re-assigning an entity already in this instance must not
+    // invent a second occupied place for it.
+    const before = occupants.size;
     occupants.add(entityId);
+    this.occupiedPlaceCount += occupants.size - before;
     return true;
   }
 
   public release(instanceId: string, entityId: EntityId): void {
-    this.occupants.get(instanceId)?.delete(entityId);
+    // `Set.delete` reports whether it removed anything, so releasing an entity
+    // that was never here -- or releasing twice -- cannot drive the counter
+    // negative.
+    if (this.occupants.get(instanceId)?.delete(entityId) === true) this.occupiedPlaceCount -= 1;
   }
 
   /** Every instance currently holding this entity -- normally at most one for accommodation, but the registry does not assume that for every use. */
@@ -178,10 +210,16 @@ export class RoomInstanceRegistry {
 
   public loadSnapshot(snapshot: readonly (readonly [string, readonly EntityId[]])[]): void {
     for (const occupants of this.occupants.values()) occupants.clear();
+    this.occupiedPlaceCount = 0;
     for (const [instanceId, occupants] of snapshot) {
       const target = this.occupants.get(instanceId);
       if (target === undefined) throw new RangeError(`Snapshot references unknown room instance id "${instanceId}".`);
       for (const entityId of occupants) target.add(entityId);
+      // Recounted from the restored sets rather than trusted from the payload:
+      // a save is a file the player's browser produced, and a duplicate entity
+      // id inside one instance's list must not become an extra occupied place
+      // the state pays for.
+      this.occupiedPlaceCount += target.size;
     }
   }
 }

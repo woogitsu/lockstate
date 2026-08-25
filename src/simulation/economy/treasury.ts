@@ -8,21 +8,21 @@
  *
  * ## What this deliberately does not decide
  *
- * ADR 0017 is Accepted, and its decisions 6 and 8 answer two things this class
- * deliberately does not implement. The omissions are the point, and they are
- * now omissions against a settled answer rather than against an open question:
+ * ADR 0017 is Accepted, and its decision 8 answers something this class still
+ * deliberately does not implement. The omission is the point, and it is an
+ * omission against a settled answer rather than against an open question:
  *
- * - **No income.** Nothing here credits the treasury on a schedule. `credit`
- *   exists because a refund needs it, not because anything pays. Decision 6
- *   settles the basis an income line would use -- per prisoner-day, accrued
- *   per occupied place -- and building it is #29's, not this slice's.
  * - **No insolvency policy.** The balance cannot go negative: `spend` refuses
  *   rather than overdrawing, which is a validation answer and not a policy.
  *   Decision 8 settles that a negative balance should degrade the prison in a
  *   defined order rather than end the run, and that ladder is unbuilt — and
- *   unreachable, because with nothing paying in and `spend` refusing, no
- *   negative balance can occur for it to respond to. That is why this slice
- *   does not need it.
+ *   still unreachable, because `spend` refuses rather than overdrawing and
+ *   nothing debits the balance on a schedule, so no negative balance can occur
+ *   for it to respond to. That is why this slice does not need it. Note that
+ *   #29's income line does **not** change this: paying in cannot produce a
+ *   negative balance. What makes decision 8 reachable is a recurring *charge*
+ *   the player cannot decline — wages are the obvious one, and `wageBand`
+ *   exists in content with no payroll behind it.
  *
  * ## Integer minor units, and why that is not a formatting choice
  *
@@ -41,12 +41,23 @@
 /**
  * What a new prison starts with.
  *
- * **A placeholder, and load-bearing for nothing.** It is not an income
- * policy — a starting balance says what you begin with, never what the state
- * pays you for, which is the question ADR 0017 leaves open. It is set to buy
- * a few hundred bricks so that #89's loop can be driven end to end without
- * anyone having to top it up, and it should be replaced the moment a real
- * income line exists.
+ * **No longer a placeholder: 25,000 is the owner's decision, and the decision
+ * was to leave it where it was.** It used to say here that this figure should
+ * be replaced the moment a real income line existed. That line landed with
+ * #29, the question was put, and the answer was to keep 25,000 — so this
+ * constant is now a chosen opening balance rather than a number waiting to be
+ * chosen. It is still not an income policy; a starting balance says what you
+ * begin with, never what the state pays you for, and ADR 0017 decision 5
+ * keeps both out of the architecture record and in #29.
+ *
+ * What it buys, in the game's own units, so the figure can be argued with
+ * rather than merely trusted: at the shipped catalog prices it is a few
+ * hundred bricks, or roughly 22 standalone 2×3 cells' worth of wall and door
+ * at 1,105 each — and it is 83 prisoner-days of income at 300
+ * (`STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS`). That second reading is the
+ * one #29 added: the opening balance is now expressible as a number of days
+ * of running the place, which is what makes "keep it" a judgement rather than
+ * an omission.
  */
 export const TREASURY_STARTING_BALANCE_MINOR_UNITS = 25_000;
 
@@ -87,12 +98,22 @@ export class Treasury {
   }
 
   /**
-   * Puts money back.
+   * Puts money in.
    *
-   * Its only caller is a refund — a purchase whose delivery was cancelled.
-   * It is **not** an income line: nothing calls this on a schedule. Adding
-   * something that does means implementing ADR 0017 decision 6's accrual, and
-   * belongs with #29's ledger rather than here.
+   * Two callers, and only one of them is an income line — the distinction is
+   * worth keeping at the method, because this is where a future third caller
+   * arrives:
+   *
+   * - `ProcurementSystem.cancel`, a **refund** of a purchase whose delivery
+   *   was cancelled. Not income; it returns money that was already the
+   *   prison's.
+   * - `StateIncomeSystem.update`, which **is** the income line: ADR 0017
+   *   decision 3 on decision 6's basis, once per in-game day, per occupied
+   *   place (#29).
+   *
+   * `tests/foundation/documentation-claims-contract.test.ts` enumerates both
+   * against the source, so a third caller cannot arrive without this list and
+   * `docs/HUD_PROJECTIONS.md` gap 21 being brought with it.
    */
   public credit(amountMinorUnits: number): void {
     if (!Number.isSafeInteger(amountMinorUnits) || amountMinorUnits < 0) {

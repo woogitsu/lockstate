@@ -102,8 +102,10 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // authored when something produces the figure it names and not before.
   // `hud.status.funds` came with the strip's balance readout (#96/#250);
   // `hud.build.buy*` below came with the purchase control that spends it
-  // (#89). There is still no income, payroll or running-cost key, because
-  // nothing credits or debits the treasury on a schedule --
+  // (#89); `hud.status.earned-today` came with the state's per-prisoner-day
+  // payment that credits it (#29). There is still no payroll or running-cost
+  // key, and no rate, budget or forecast key, because nothing *debits* the
+  // treasury on a schedule and nothing projects forward --
   // `tests/unit/ui-hud-messages.test.ts` is the gate that keeps it that way.
   // ---------------------------------------------------------------
   'hud.status.title': 'Prison status',
@@ -117,6 +119,12 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // shown as a plain count of the units the simulation holds it in rather
   // than converted into a major unit nobody has chosen yet.
   'hud.status.funds': 'Funds',
+  // What this in-game day has earned so far (#29). The state pays per
+  // prisoner-day at the end of the day, so this is the day's accrual and the
+  // wording says so: "Earned today", never "Income" -- there is no rate, no
+  // budget and no forecast behind it, and the same minor units as `funds`
+  // above so the two chips can be read against each other.
+  'hud.status.earned-today': 'Earned today',
   'hud.status.occupancy': 'Cell occupancy',
   'hud.status.occupancy-value': '{value} of {capacity}',
   'hud.status.incidents-clear': 'Clear',
