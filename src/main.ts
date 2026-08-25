@@ -349,7 +349,12 @@ if (isDemoActorsRequested(window.location.search)) {
  * the honest picture of a session with nothing in it.
  */
 /**
- * Player-facing labels for the two entries in `BUILDABLE_REGISTRY`.
+ * Player-facing labels for the two `BUILDABLE_REGISTRY` entries that place no
+ * object.
+ *
+ * Two of the registry's four rows: `buildableLabelKey` below reads a placing
+ * buildable's label off the object's own content key, so only `wall-brick` and
+ * `door-wooden` are named here.
  *
  * The registry carries a hard-coded English `name` and no `nameKey`, which
  * bypasses ADR 0011 and is recorded as a content gap in issue #74 and

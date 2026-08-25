@@ -236,6 +236,15 @@ describe('every unconsumed content id is accounted for', () => {
      * this gate: "`object.bed` holds no `AWAITING_CONSUMER` entry to delete, so
      * what moves is `unconsumedBySrcOnly` as it gains its first `src/`
      * consumer."
+     *
+     * It moved 51 -> 50 again, and for the same reason one phase later: ADR
+     * 0028 phase 2's `toilet-brick` row names `object.toilet` as the object a
+     * completed order places, which is that id's first `src/` consumer. Phase 2
+     * predicted exactly this and nothing else -- "**Save:** no change.
+     * **Gates:** `unconsumed-content-contract` counts only" -- and this line is
+     * the whole of it. `unconsumedBySrcAndTests` again did not move, because
+     * three test files already named the toilet, which is why it appears in
+     * neither allowlist.
      */
     expect({
       declared: declaredIds.length,
@@ -250,7 +259,7 @@ describe('every unconsumed content id is accounted for', () => {
       // generically and names no room id, so nothing moved in `src/` -- and the
       // 53 -> 52 below is ADR 0025's alone, for the reason above. The two
       // measures moved on different changes and each is stated where it moved.
-    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 31, unconsumedBySrcOnly: 51 });
+    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 31, unconsumedBySrcOnly: 50 });
   });
 
   it('scans a non-trivial catalog and a non-trivial consumer set, so this cannot pass vacuously', () => {
