@@ -8,13 +8,21 @@ import { tileCoordinate } from '../../src/simulation/world/coordinates';
  * Projections must be a function of *state*, never of the order that state
  * happened to be registered in.
  *
- * `RoomInstanceRegistry` keeps occupants in a `Set`, so `occupantsOf` returns
- * them in insertion order — a property of this session's history, not of the
- * prison. `room-projection.ts` sorts them canonically before projecting, which
- * is correct; nothing asserted it. Removing that sort passed the entire
- * 811-test suite, because the existing round-trip scenario's rooms hold at
- * most one occupant, so their order is trivially stable and the reversal
- * assertion never reaches the field.
+ * `RoomInstanceRegistry` keeps occupants in a `Set`, and `occupantsOf` used to
+ * return them in insertion order — a property of this session's history, not
+ * of the prison. `room-projection.ts` sorts them canonically before
+ * projecting, which is correct; nothing asserted it. Removing that sort passed
+ * the entire 811-test suite, because the existing round-trip scenario's rooms
+ * hold at most one occupant, so their order is trivially stable and the
+ * reversal assertion never reaches the field.
+ *
+ * The accessor sorts now too (`room-occupant-ordering.test.ts`), which does
+ * **not** make this file redundant and is why the projection's own sort was
+ * kept. What is asserted here is that *this layer's output* is canonical
+ * whatever it is handed; what is asserted there is that the registry hands out
+ * state rather than history. Collapsing the two would make the projection's
+ * order depend on a decision taken in another module, and the next person to
+ * revisit that decision would have no test telling them the HUD cares.
  *
  * That is the shape of the four defects `docs/DETERMINISM.md` records: an
  * ordering that is right today, defended by nothing, one refactor from

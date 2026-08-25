@@ -453,12 +453,16 @@ across the live occupants -- the only one of #79's four named inputs that is
 both populated and reachable from intake today.
 
 Two properties of that are load-bearing. **Occupants are handed over sorted
-ascending by entity id**, never `occupantsOf`'s insertion order: live
-insertion order is assignment order while a restored session's is ascending
-id, so a consumer folding them unsorted diverges across a save, and
+ascending by entity id**, never a `Set`'s insertion order: live insertion
+order is assignment order while a restored session's is ascending id, so a
+consumer folding them unsorted diverges across a save, and
 `canonical-iteration-contract.test.ts` structurally cannot see that
-expression. And the rating is **advisory** -- it ranks and never refuses, so
-a full prison behaves exactly as before. Whether a rating is ever recorded
+expression. `occupantsOf` sorts too since the same argument was applied to
+the accessor itself (`tests/determinism/room-occupant-ordering.test.ts`);
+`findBestAvailable` keeps its own sort rather than calling it, so that this
+per-tick scan and a HUD projection do not share a cost centre. And the
+rating is **advisory** -- it ranks and never refuses, so a full prison
+behaves exactly as before. Whether a rating is ever recorded
 rather than recomputed, whether the player may override one, and how a
 cell-scoped risk reaches the sector-scoped trigger system are open questions
 in [ADR 0027](./adr/0027-cell-sharing-assessment.md), not settled in code.
