@@ -62,13 +62,13 @@ this index's. Nothing here changes a status; this table only reports them.
 | [0019](./0019-tile-ownership-under-overlapping-parcels.md) | What "owned" means for a tile under overlapping parcels | Accepted |
 | [0020](./0020-deterministic-kernel.md) | Deterministic Kernel and Scheduler | Accepted |
 | [0021](./0021-http-response-security-headers.md) | HTTP response security headers for the static-asset deployment | Accepted |
-| [0022](./0022-room-zoning-surface.md) | Where a player zones a room, and with what gesture | Proposed — pending human approval; amended 2026-08-25 (the owner chose the Rooms tab) |
-| [0023](./0023-room-occupancy-authority.md) | Where a room's occupancy comes from | Proposed — pending human approval |
+| [0022](./0022-room-zoning-surface.md) | Where a player zones a room, and with what gesture | Accepted, 2026-08-25 — as amended (the owner chose the Rooms tab; Decision §1 is superseded by that amendment) |
+| [0023](./0023-room-occupancy-authority.md) | Where a room's occupancy comes from | Accepted, 2026-08-25 — as amended (a capacity-only fallback is a no-op); not superseded by 0028 |
 | [0024](./0024-protocol-fault-recoverability.md) | Which protocol faults end a session, and who is told | Proposed — pending human approval |
 | [0025](./0025-guard-hiring-surface.md) | Where a player hires a guard, and what the hire costs | Proposed — pending human approval |
 | [0026](./0026-entity-id-lifetime.md) | The lifetime of `EntityId`-keyed state — generation exhaustion, release, and re-intake | Proposed — pending human approval |
 | [0027](./0027-cell-sharing-assessment.md) | Cell-sharing assessment — what is recorded, who may override, and how a cell-scoped risk reaches a sector-scoped trigger | Proposed — pending human approval |
-| [0028](./0028-object-placement-and-derived-room-capacity.md) | What a placed object is, and how a room's capacity comes from it | Proposed — pending human approval |
+| [0028](./0028-object-placement-and-derived-room-capacity.md) | What a placed object is, and how a room's capacity comes from it | Accepted, 2026-08-25 |
 
 **Next free number: 0029.**
 

@@ -2,16 +2,21 @@
 
 ## Status
 
-**Proposed — pending human approval.** Not accepted.
+**Accepted, 2026-08-25 — read the amendment of 2026-08-25 below before acting on
+§1 step 2.** Not superseded by [ADR 0028](./0028-object-placement-and-derived-room-capacity.md),
+deliberately: 0028 is the design for the object placement this ADR makes the
+authority, and the owner kept this document accepted so that its authored
+*nominal* fallback stays available if that build proves too large. The amendment
+records what the fallback would actually have to do to change anything.
 
 The owner delegated this question, and this document is the record of what was
-chosen under that delegation. It is not accepted until they say so, and nothing
-in `src/` implements it yet — no room definition carries a capacity field, and
-`RoomZoningService` still registers every instance with `capacity: 0`
-(`src/simulation/rooms/zoning.ts:252-261`).
+chosen under that delegation. Nothing in `src/` implements it: no room definition
+carries a capacity field, and `RoomZoningService` still registers every instance
+with `capacity: 0` and `objectCapabilities: []`
+(`src/simulation/rooms/zoning.ts`, `const instance: RoomInstance` in `zone`).
 
-A reviewer is being asked to sign off on one thing: **a room's occupancy is
-resolved from the objects standing in it, and a room definition may carry an
+What was signed off is one thing: **a room's occupancy is resolved from the
+objects standing in it, and a room definition may carry an
 authored *nominal* occupancy that is used only as a fallback when no object
 supplies one. The authored figure is never the authority.**
 
@@ -20,11 +25,11 @@ nominal figures are — numbers are content and a product call — and it does n
 say that a nominal figure will ever be authored for a given room type. It says
 where authority lives when both exist.
 
-If the decision goes the other way, the alternative it goes to is **alternative
-A**, an authored capacity per room type as the sole authority. That is named
-here as the reversal target rather than as a discarded idea, because it is the
-cheap answer and the honest reason to refuse it is not that it is wrong in
-isolation — it is that nothing in the comparable-game sample ships it as the
+Had the decision gone the other way, the alternative it would have gone to is
+**alternative A**, an authored capacity per room type as the sole authority. That
+is named here as the reversal target rather than as a discarded idea, because it
+is the cheap answer and the honest reason to refuse it is not that it is wrong
+in isolation — it is that nothing in the comparable-game sample ships it as the
 sole authority for an accommodation room, and this repository's own
 `src/simulation/rooms/zoning.ts` header already states the opposite model as
 fact.
@@ -714,3 +719,91 @@ would be worse than leaving it named.
    failure mode 4 explains why. What happens the day a bed is placed inside an
    already-registered room is the object-placement feature's decision, not
    this one's — but it is the decision that makes or breaks §3.
+
+---
+
+## Amendment — 2026-08-25: the fallback resolves a capability set as well as a number, or it resolves nothing
+
+**Everything above this line is unchanged and stays unchanged.** The *Decision*
+section still records what was chosen under the delegation, and §1's ordering —
+objects first, an authored nominal figure second, `0` third — is what was
+accepted. This amendment corrects one claim the document rests on and states the
+fallback's real relationship to
+[ADR 0028](./0028-object-placement-and-derived-room-capacity.md), because this
+ADR was **kept accepted rather than marked superseded** and must therefore not be
+left asserting something that is not true of `main`.
+
+### The correction: this ADR frames the question as being about `capacity`, and capacity is only half the gate
+
+§*The mechanism the decision has to fit* above states both halves of
+`findAvailable` correctly. What the rest of the document then does is treat the
+decision as being about **`capacity`** — §1 resolves "occupancy", §2 is titled
+"the authored figure and the resolved figure", and step 2 of §1 falls back to
+"the room definition's authored nominal figure" and says nothing about
+capabilities. That framing is wrong in a way that matters: **a fallback that
+resolves only a number produces no observable behaviour at all.**
+
+Verified on `main` at `d5c50f8` (v0.0.56), by reading each site and then by
+constructing the case:
+
+- `RoomInstanceRegistry.findAvailable`
+  (`src/simulation/prisoners/room-instance-registry.ts`, `public findAvailable`)
+  rejects an instance on two independent counts — `occupancyOf(instanceId) >=
+  instance.capacity`, and, when a capability is asked for,
+  `!instance.objectCapabilities.includes(requiredObjectCapability)`.
+- `findBestAvailable` (same file, `public findBestAvailable`) repeats **both**
+  checks before it rates anything, and it — not `findAvailable` — is the lookup
+  on the intake path since #79's cell-sharing rating landed
+  (`src/simulation/prisoners/intake-system.ts`, the `accommodation-assignment`
+  stage). §*The mechanism* above names only `findAvailable`; the second lookup
+  gates identically, so the correction applies to both.
+- `DEFAULT_ACCOMMODATION_POLICY` asks for `'sleep-surface'` for both of the room
+  ids it targets (`intake-system.ts`, `DEFAULT_ACCOMMODATION_POLICY`), and
+  `RoomZoningService` registers every zoned instance with `objectCapabilities:
+  []` (`src/simulation/rooms/zoning.ts`, `const instance: RoomInstance`).
+- Constructed and run: a `room.cell` instance registered with `capacity: 2` and
+  `objectCapabilities: []` is returned by neither `findAvailable` nor
+  `findBestAvailable` for that policy's target, while `findAvailable('room.cell')`
+  with no capability argument returns it and `assign` accepts an occupant into
+  it. So the capability half is what refuses, the capacity half is satisfied, and
+  a nominal figure of 2 on `room.cell` would leave every arrival accruing
+  `accommodationBacklogTicks` exactly as `capacity: 0` does today.
+
+ADR 0028 §*Context* records the same correction independently and in the same
+terms, and traces it to the room-occupancy research memo's §6
+(`docs/research/2026-08-25-room-occupancy.md`). It also records the two
+consequences that follow and are not restated here: that the zero switches off
+the five `room-catalog-id` actions through `ActionSystem` as well as intake, and
+that `own-accommodation` re-checks neither gate, so the first placed bed buys
+more than sleep.
+
+**What this changes about §1 step 2, and it is the whole of the change.** If the
+fallback is ever built, the room definition has to author a *capability set*
+beside its nominal number — or the resolver has to derive one — and §2's "two
+fields with different meanings" becomes two fields and a set. Authoring only the
+number is not a cheap partial version of this decision; it is a change with no
+effect, and it would read as one shipped and working. **Nothing in §1, §2 or
+§*Consequences* is otherwise disturbed:** the ordering, the two-field split, the
+six failure modes and §3's "assignment lives on the object" all stand.
+
+### Why this ADR is Accepted rather than Superseded
+
+0028 answers the question this ADR asks, and answers it by building the
+authority §1 names. The obvious bookkeeping would be to mark this ADR superseded
+by it. The owner deliberately did not, and the reason is the schedule rather than
+the design: **object placement is the largest item in the backlog**, 0028 carries
+a phase order that says how many phases pass before a prisoner can sleep, and if
+that build proves too large the authored nominal fallback is the thing that keeps
+a zoned cell usable in the meantime. Superseding this document would retire the
+fallback along with the question.
+
+So the two stand together, with the precedence unchanged from §1: objects decide,
+and the authored figure is consulted only where no object does. What this
+amendment adds is that "consulted" has to mean a capability as well as a count.
+
+### Status of this amendment
+
+**Accepted, 2026-08-25**, with the ADR. It corrects a claim rather than deciding
+anything: it authors no number, names no field, and does not move
+`ROOM_CATALOG_SCHEMA_VERSION`. §*What this decision does not settle* is unchanged
+and all five items stay open.
