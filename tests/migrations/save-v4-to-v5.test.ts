@@ -194,6 +194,22 @@ describe('save-schema V4 -> V5 migration', () => {
     expect(restored.placedObjects.size).toBe(0);
   });
 
+  it('decodes a real V4 save with a room in it through the whole chain', () => {
+    // The end-to-end statement the two cases above make in halves: a V4
+    // envelope that carries a room instance passes the V4 schema, walks the
+    // migration, passes the *strict* V5 schema and comes out at the current
+    // version. A migration that carried `capacity` across would fail here at
+    // the V5 schema rather than at an assertion about a field.
+    const result = decodeSaveEnvelope(throughStorage(v4EnvelopeWithARoom()));
+
+    expect(result).toMatchObject({ ok: true, migrated: true });
+    if (!result.ok) throw new Error('the V4 save must migrate for this test to be meaningful');
+    expect(result.value.saveSchemaVersion).toBe(SAVE_SCHEMA_VERSION);
+    expect(result.value.payload.simulation?.prisoners.roomInstanceDefinitions).toEqual([
+      { instanceId: CELL_INSTANCE_ID, roomCatalogId: 'room.cell', anchorTile: { x: 4, y: 6 } },
+    ]);
+  });
+
   it('carries a V4 save with no simulation section across untouched', () => {
     for (const fixture of [freshPrisonFixture, inProgressFixture]) {
       const v4 = v4EnvelopeFromV1(fixture);
