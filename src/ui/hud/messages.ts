@@ -56,6 +56,7 @@ export const HUD_MESSAGE_KEY = {
   tabBuild: 'hud.tab.build',
   tabSecurity: 'hud.tab.security',
   tabRegime: 'hud.tab.regime',
+  tabRooms: 'hud.tab.rooms',
 
   minimapTitle: 'hud.minimap.title',
   minimapPlaceholder: 'hud.minimap.placeholder',
@@ -146,11 +147,74 @@ export const HUD_MESSAGE_KEY = {
    * The diagnostic detail stays with the host through `MountHudOptions.onError`;
    * what reaches the player is a localized sentence about the outcome.
    */
+  /**
+   * The Rooms panel (ADR 0022, amended).
+   *
+   * A dedicated tab rather than a block inside Build, which is the surface the
+   * owner chose over that ADR's original decision: the Build panel's whole
+   * always-visible budget at 900x600 is 7.81px, and this panel needs a
+   * confirm step, a removal control, a minimum-size rule, an enclosure
+   * readout and a catalogue of eighteen rows. Those are the strings for all
+   * five.
+   *
+   * `roomsConfirm` and `roomsCancel` are the confirm step, and it is a step
+   * rather than a straight submit for a reason the removal control does not
+   * remove: a designation can cover 4,096 tiles, and while `UnzoneRoom` now
+   * makes that recoverable, "recoverable" is not the same as "costless" --
+   * removal grows each covered tile into its whole same-type run, so undoing
+   * an accidental overlap of two rooms takes both away. Two Point Hospital
+   * puts a confirm on the same gesture for the same reason.
+   *
+   * `roomsMinimum` states the authored floor, so the rule is readable *before*
+   * the drag rather than only in the refusal after it. `roomsEnclosureSealed`
+   * and `roomsEnclosureOpen` are the readout of what the simulation actually
+   * found, and `roomsEnclosureOpenRequired` is the one case that is worth
+   * flagging: the room asked to be enclosed and the rectangle's perimeter is
+   * not. It is a *warning*, never a refusal -- see
+   * `src/simulation/rooms/enclosure.ts` for why the simulation cannot honestly
+   * refuse on it.
+   */
+  roomsTitle: 'hud.rooms.title',
+  roomsCatalogue: 'hud.rooms.catalogue',
+  roomsCatalogueEmpty: 'hud.rooms.catalogue-empty',
+  roomsSelected: 'hud.rooms.selected',
+  roomsArm: 'hud.rooms.arm',
+  roomsDisarm: 'hud.rooms.disarm',
+  roomsArmHint: 'hud.rooms.arm-hint',
+  roomsRemove: 'hud.rooms.remove',
+  roomsRemoveActive: 'hud.rooms.remove-active',
+  roomsRemoveHint: 'hud.rooms.remove-hint',
+  roomsArea: 'hud.rooms.area',
+  roomsAreaNone: 'hud.rooms.area-none',
+  roomsAreaValue: 'hud.rooms.area-value',
+  roomsConfirm: 'hud.rooms.confirm',
+  roomsConfirmRemove: 'hud.rooms.confirm-remove',
+  roomsCancel: 'hud.rooms.cancel',
+  roomsMinimum: 'hud.rooms.minimum',
+  roomsMinimumNone: 'hud.rooms.minimum-none',
+  roomsTooSmall: 'hud.rooms.too-small',
+  roomsEnclosure: 'hud.rooms.enclosure',
+  roomsEnclosureNone: 'hud.rooms.enclosure-none',
+  roomsEnclosureSealed: 'hud.rooms.enclosure-sealed',
+  roomsEnclosureOpen: 'hud.rooms.enclosure-open',
+  roomsEnclosureOpenRequired: 'hud.rooms.enclosure-open-required',
+  roomsRequirementEnclosed: 'hud.rooms.requirement-enclosed',
+  roomsRequirementOutdoors: 'hud.rooms.requirement-outdoors',
+  roomsRequirementNone: 'hud.rooms.requirement-none',
+
   refusalSetClock: 'hud.refusal.set-clock',
   refusalPlaceBuildOrder: 'hud.refusal.place-build-order',
   refusalPurchaseMaterials: 'hud.refusal.purchase-materials',
   refusalUndo: 'hud.refusal.undo',
   refusalRedo: 'hud.refusal.redo',
+  /**
+   * The two room intents, each with its own sentence for the reason every
+   * other entry here has one: a refused designation leaves the prison with no
+   * new room, and a refused removal leaves the room exactly where it was --
+   * different states, and different things for the player to do next.
+   */
+  refusalZoneRoom: 'hud.refusal.zone-room',
+  refusalUnzoneRoom: 'hud.refusal.unzone-room',
 
   severityInfo: 'hud.severity.info',
   severityWarning: 'hud.severity.warning',

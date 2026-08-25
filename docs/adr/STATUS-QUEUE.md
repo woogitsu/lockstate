@@ -73,9 +73,10 @@ status next to a stale sentence:
   the old §3 recommended — so the ordering trap it named is **resolved rather
   than triggered**, and the status line says 0012 is Accepted.
 
-**0022 and 0023 were not touched.** They are the two ADRs in the corpus whose
-`Proposed` status is fully accurate, and they need a decision rather than a
-correction. See §2.
+**0022 and 0023 were not touched by #308.** 0023's `Proposed` status is still
+fully accurate. **0022's is not any more** — the owner has since chosen the
+alternative that ADR rejected, and the ADR carries a dated amendment saying so.
+See §2.
 
 ---
 
@@ -83,9 +84,15 @@ correction. See §2.
 
 | ADR | Subject | Implemented? |
 | --- | --- | --- |
-| [0022](./0022-room-zoning-surface.md) | Where a player zones a room, and with what gesture | **No** |
+| [0022](./0022-room-zoning-surface.md) | Where a player zones a room, and with what gesture | **Yes — but not as written.** See below |
 | [0023](./0023-room-occupancy-authority.md) | Where a room's occupancy comes from | **No** |
 | [0028](./0028-object-placement-and-derived-room-capacity.md) | What a placed object is, and how a room's capacity comes from it | **No** |
+
+0023 gates the next feature and is re-verified unimplemented at `f3ffe6d`:
+`RoomZoningService` still registers every instance with `capacity: 0`, and no
+room definition in `src/content/room-catalog.ts` carries a capacity field at all.
+The Rooms tab does not touch that: a zoned room is an empty rectangle and
+accommodates nobody, which is the state 0023 exists to decide about.
 
 **Read 0028 before 0023.** 0023 asks where a room's occupancy comes from and
 offers an authored fallback figure; the owner answered that question by choosing
@@ -100,21 +107,39 @@ observable behaviour at all.
 plus one more: no `'object.*'` id appears as a literal anywhere under `src/`
 outside `src/content/`, so nothing places, builds or reads an object.
 
-These three gate the next feature. 0022 and 0023 re-verified unimplemented at `f3ffe6d`:
+**0022 is the unusual one, and the shape of it matters more than the cell.** The
+*decision recorded in the ADR* — a room type as a row in the Build catalogue — is
+unimplemented and always will be. The owner exercised the reversal that ADR
+itself names and chose **alternative B, the Rooms tab**, which it had rejected on
+scope. The implementation follows that choice, and the ADR carries a dated
+amendment recording it with the original *Decision* text left verbatim, because
+an ADR is a historical record. So a reviewer signing 0022 is signing the
+amendment, not the Decision section.
 
-- **0022** — `ZoneRoom` is still in the `AWAITING_PRODUCER` allow-list of
-  `tests/foundation/unconsumed-command-contract.test.ts:107-108`, and that list
-  is a gate: `:213-214` fails the build if a listed command *gains* a producer.
-  No member of `HudIntent` (`src/ui/hud/hud.ts:153-211`) is about a room.
-- **0023** — `RoomZoningService` still registers every instance with
-  `capacity: 0` (`src/simulation/rooms/zoning.ts:259`), and no room definition
-  in `src/content/room-catalog.ts` carries a capacity field at all.
+The gate that measured 0022's unimplementedness has moved with it: `ZoneRoom` is
+no longer in `AWAITING_PRODUCER`
+(`tests/foundation/unconsumed-command-contract.test.ts`), `UnzoneRoom` arrived
+alongside it *with* a producer, and `HudIntent` now declares `zone-room`,
+`unzone-room` and `arm-room-tool`. That list is a gate in both directions — it
+fails the build if a listed command gains a producer — so the entry came out in
+the same change rather than being left to rot.
 
-One thing is worth knowing before signing 0022, and it is about the evidence
-rather than the status. ADR 0022 was written against v0.0.30 and says so;
-PR #282's buy surface landed after it, and **four of its structural citations
-have drifted as a result** — the ADR anticipated the dependency but not the
-drift:
+Two things are worth knowing before signing 0022, and both are about the evidence
+rather than the status.
+
+**First**, its pre-correction 900×600 budget disagrees with
+`src/ui/hud/build-panel.ts`: the ADR's own table says `12.2` and that comment
+says `11.8`. Both were measured on the same tree by different probes and neither
+was re-derived when the other was written. Nothing turns on which is right — the
+Rooms tab's advantage is ~24× either way, and the corrected figure, `7.81`, is
+the one measured to 0.05px — so the disagreement has survived unnoticed. The
+amendment records it rather than resolving it; reconciling the two is a
+docs-truth task of its own and belongs in a queue entry below rather than in a
+feature branch.
+
+**Second**, ADR 0022 was written against v0.0.30 and says so; PR #282's buy
+surface landed after it, and **four of its structural citations have drifted as a
+result** — the ADR anticipated the dependency but not the drift:
 
 | ADR 0022 says | `main` @ `f3ffe6d` |
 | --- | --- |
@@ -240,7 +265,7 @@ text correction.
   argues in still Proposed"*, now describing a case that cannot arise.
 - `README.md:59` — ADR-0014's *"`Status` is `Proposed` … the decision has not
   been approved"*. `:77` still warns a reader that several ADRs are `Proposed`,
-  which remains true of 0022 and 0023.
+  which remains true of 0023, and of 0022's *Decision* section.
 - `docs/CLOUD_SAVE.md:1184` (*"the ADR is `Proposed`, not…"*) and `:1200` (the
   4 MiB row, *"Proposed, pending approval"*), plus
   `docs/TRUSTED_SERVICES.md:577` (*"the 4 MiB per-save figure is proposed, not

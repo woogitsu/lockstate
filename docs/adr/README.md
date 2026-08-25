@@ -62,7 +62,7 @@ this index's. Nothing here changes a status; this table only reports them.
 | [0019](./0019-tile-ownership-under-overlapping-parcels.md) | What "owned" means for a tile under overlapping parcels | Accepted |
 | [0020](./0020-deterministic-kernel.md) | Deterministic Kernel and Scheduler | Accepted |
 | [0021](./0021-http-response-security-headers.md) | HTTP response security headers for the static-asset deployment | Accepted |
-| [0022](./0022-room-zoning-surface.md) | Where a player zones a room, and with what gesture | Proposed — pending human approval |
+| [0022](./0022-room-zoning-surface.md) | Where a player zones a room, and with what gesture | Proposed — pending human approval; amended 2026-08-25 (the owner chose the Rooms tab) |
 | [0023](./0023-room-occupancy-authority.md) | Where a room's occupancy comes from | Proposed — pending human approval |
 | [0028](./0028-object-placement-and-derived-room-capacity.md) | What a placed object is, and how a room's capacity comes from it | Proposed — pending human approval |
 
