@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   type ChallengeDefinition,
   type ChallengeEvidence,
+  type ChallengeReplayOutcome,
   type ChallengeReplayRunner,
   authenticateChallengeDefinition,
   canonicalChallengeDefinitionJson,
@@ -587,6 +588,124 @@ describe('challenge submission verification', () => {
     };
     const result = await verify(evidence, runner);
     expect(result).toMatchObject({ status: 'rejected', code: 'metrics-mismatch' });
+  });
+
+  /*
+   * Disagreement in *shape*, not only in value -- and the reason it needed its
+   * own group.
+   *
+   * Every replay stub above is written `replay: ({ evidence }) => ({ ... })`
+   * and fills its outcome in from the evidence it was just handed:
+   * `finalStateHash: evidence.finalStateHash`, `checkpoints:
+   * evidence.checkpoints`, `metrics: { ...evidence.claimedMetrics }`. That
+   * makes the mock a *mirror* of the untrusted input, which is the exact
+   * inversion of what ADR 0009 says the replay is for -- it is the independent
+   * authority whose output the claim is checked against, and "the claimed
+   * score is present only so it can be contradicted".
+   *
+   * A mirror can only ever be made to differ in the one field a test edits by
+   * hand, so `checkpointsAgree` and `metricsAgree` were exercised only on their
+   * per-field value comparisons. Their *set* comparisons -- "the trusted side
+   * produced a different number of checkpoints", "the trusted side produced a
+   * metric the claim does not mention" -- describe a state no stub in this file
+   * could construct, so nothing drove them. Measured (issue #264, this branch):
+   * deleting `if (claimedKeys.length !== replayedKeys.length) return false;`
+   * from `metricsAgree`, and `if (left.length !== right.length) return false;`
+   * from `checkpointsAgree`, each left 190 files / 2106 tests green with zero
+   * delta -- while turning "claimed a subset of what the replay produced" into
+   * a publicly rankable `verified` row.
+   *
+   * So these runners return a *literal* outcome rather than a function of the
+   * evidence. That is the whole difference, and it is deliberate: a stub built
+   * from the submission cannot disagree with it about anything the test did not
+   * think to name.
+   */
+  describe('the trusted replay disagrees in shape, not only in value', () => {
+    const honestCheckpoints = buildEvidence().checkpoints;
+
+    /** A trusted side that is *not* derived from the submission: the outcome is stated, not echoed. */
+    const runnerProducing = (outcome: ChallengeReplayOutcome): ChallengeReplayRunner => ({
+      replay: () => ({ ok: true, outcome }),
+    });
+
+    const honestOutcome: ChallengeReplayOutcome = {
+      finalTick: 200,
+      finalStateHash: 'cccccccccccccccc',
+      checkpoints: honestCheckpoints,
+      metrics: { 'metric.prisoners-processed': 12 },
+    };
+
+    it('accepts the honest run through a runner that states its outcome rather than echoing it', async () => {
+      // The negative control this group needs: every case below has to fail for
+      // the disagreement it names, not because a stated outcome cannot verify
+      // at all. Without this, a typo'd fixture would make all of them pass.
+      const result = await verify(buildEvidence(), runnerProducing(honestOutcome));
+      expect(result).toMatchObject({ status: 'verified', rankedScore: 12 });
+    });
+
+    /**
+     * Set-shaped disagreements, each one a state a mirror stub cannot reach.
+     *
+     * The metric ids sort *after* the objective metric on purpose. An extra key
+     * that sorted before it would be caught by the key-equality half of
+     * `metricsAgree` even with the length check gone, so the case would pass
+     * for the wrong reason and prove nothing about the bound it is here for.
+     */
+    const shapeDisagreements: readonly {
+      readonly label: string;
+      readonly outcome: ChallengeReplayOutcome;
+      readonly code: string;
+    }[] = [
+      {
+        label: 'the replay produced a checkpoint the run never claimed',
+        outcome: { ...honestOutcome, checkpoints: [...honestCheckpoints, { tick: 300, stateHash: 'dddddddddddddddd' }] },
+        code: 'checkpoint-hash-mismatch',
+      },
+      {
+        label: 'the replay produced one checkpoint fewer than the run claims',
+        outcome: { ...honestOutcome, checkpoints: honestCheckpoints.slice(0, -1) },
+        code: 'checkpoint-hash-mismatch',
+      },
+      {
+        label: 'the replay produced a metric the claim does not mention',
+        outcome: { ...honestOutcome, metrics: { ...honestOutcome.metrics, 'metric.zz-unclaimed': 3 } },
+        code: 'metrics-mismatch',
+      },
+    ];
+
+    for (const { label, outcome, code } of shapeDisagreements) {
+      it(`rejects when ${label}`, async () => {
+        const result = await verify(buildEvidence(), runnerProducing(outcome));
+        expect(result).toMatchObject({ status: 'rejected', code });
+        expect(isPubliclyRankable(result)).toBe(false);
+      });
+    }
+
+    it('rejects a claim that carries a metric the replay never produced', async () => {
+      // The other direction, and the one that is a claim about the submission
+      // rather than about the trusted side: the extra key again sorts after the
+      // objective metric, so the count is the only thing that separates this
+      // claim from an honest one.
+      const evidence = buildEvidence({
+        claimedMetrics: { 'metric.prisoners-processed': 12, 'metric.zz-invented': 5 },
+      });
+      const result = await verify(evidence, runnerProducing(honestOutcome));
+      expect(result).toMatchObject({ status: 'rejected', code: 'metrics-mismatch' });
+      expect(isPubliclyRankable(result)).toBe(false);
+    });
+
+    it('never ranks a submission whose claimed metrics are a subset of the replay', async () => {
+      // Said as the consequence rather than as the code, because the
+      // consequence is what makes the length check worth having: a submitter
+      // who reports only the objective metric, and hides everything else the
+      // run produced, is describing a different run.
+      const result = await verify(
+        buildEvidence(),
+        runnerProducing({ ...honestOutcome, metrics: { ...honestOutcome.metrics, 'metric.zz-unclaimed': 3 } }),
+      );
+      expect(result.status).not.toBe('verified');
+      expect(isPubliclyRankable(result)).toBe(false);
+    });
   });
 
   it('refuses to rank a run whose objective metric the replay never produced', async () => {
