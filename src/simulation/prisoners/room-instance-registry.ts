@@ -123,6 +123,26 @@ export class RoomInstanceRegistry {
     return this.occupiedPlaceCount;
   }
 
+  /**
+   * **Insertion order, deliberately -- every consumer must sort.**
+   *
+   * `docs/DETERMINISM.md` already claims this contract "is stated at the
+   * accessor"; until now it was stated in `docs/HUD_PROJECTIONS.md` and
+   * `tests/helpers/canonical-iteration.ts` instead, so the doc was true of
+   * the arrangement and false about where it lived. It is stated here now.
+   *
+   * The order is not stable across a save: live insertion order is
+   * *assignment* order, while `loadSnapshot` refills from `getSnapshot`,
+   * which sorts ascending entity id. A consumer that folds occupant data in
+   * this order therefore diverges between a continued session and a
+   * restored one. `tests/determinism/canonical-iteration-contract.test.ts`
+   * structurally cannot catch that -- its own header names this expression
+   * as the shape a text scan cannot see -- so the sort is the consumer's
+   * responsibility and nothing will remind it.
+   *
+   * Simulation consumers should prefer {@link findBestAvailable}, which
+   * sorts before it hands occupants to a rating function.
+   */
   public occupantsOf(instanceId: string): readonly EntityId[] {
     return [...(this.occupants.get(instanceId) ?? [])];
   }
@@ -152,6 +172,75 @@ export class RoomInstanceRegistry {
       if (requiredObjectCapability !== undefined && !instance.objectCapabilities.includes(requiredObjectCapability)) return false;
       return true;
     });
+  }
+
+  /**
+   * The free instance of `roomCatalogId` whose **current occupants** rate
+   * best for `rate`, rather than merely the first one with a free bed.
+   *
+   * `findAvailable` above asks three questions -- room type, an occupancy
+   * *count*, an object capability -- and never asks who is already in
+   * there, so a maximum-security prisoner and a minimal-risk one land in
+   * the same cell whenever that cell happens to sort first (#79). This is
+   * the same query with the occupants handed to the caller.
+   *
+   * ## Contract on `rate`
+   *
+   * - **Lower is better, and `0` is the best a rating may be.** Ties go to
+   *   the lowest instance id, because the scan runs over
+   *   `allByRoomCatalogId`'s sorted order and the comparison is a strict
+   *   `<`. With a rating that is constant -- an empty prison, or
+   *   single-occupancy cells, where every free instance holds nobody --
+   *   this therefore returns exactly what `findAvailable` returns.
+   * - **The scan stops at the first candidate rated `0`.** That is what
+   *   keeps this the same *cost* as `findAvailable` and not merely the same
+   *   answer: `docs/PRISONER_OPERATIONS.md`'s performance note records that
+   *   this is a per-tick, potentially-thousands-of-instances hot path which
+   *   has already caused a severe super-linear slowdown once, and turning
+   *   an early-exit `.find` into an unconditional full scan is exactly the
+   *   shape that did it. An empty room rates 0 under any sane policy, so in
+   *   a prison with a free empty room of the right type the scan exits at
+   *   the same candidate `.find` would have. It is the reason the floor is
+   *   part of the contract rather than a rating being any number at all.
+   * - **A non-finite rating means "not a permissible placement"** and the
+   *   instance is skipped. That is the mechanism a policy which forbids
+   *   some pairing outright would use; no policy in `src/` returns one
+   *   today, and whether any should is ADR 0027's question, not this
+   *   method's.
+   * - **It must be pure.** No RNG, no clock, no `Map`/`Set` iteration --
+   *   this runs inside a simulation tick.
+   *
+   * ## Determinism
+   *
+   * Occupants are handed over **sorted ascending by entity id**, not in
+   * `occupantsOf`'s insertion order, so a rating that is sensitive to order
+   * cannot diverge between a live session and a restored one (see
+   * `occupantsOf`). Candidates are visited in `allByRoomCatalogId`'s sorted
+   * order, and the tie-break is total.
+   */
+  public findBestAvailable(
+    roomCatalogId: string,
+    rate: (occupants: readonly EntityId[], instance: RoomInstance) => number,
+    requiredObjectCapability?: string,
+  ): RoomInstance | undefined {
+    let best: RoomInstance | undefined;
+    let bestRating = Number.POSITIVE_INFINITY;
+
+    for (const instance of this.allByRoomCatalogId(roomCatalogId)) {
+      if (this.occupancyOf(instance.instanceId) >= instance.capacity) continue;
+      if (requiredObjectCapability !== undefined && !instance.objectCapabilities.includes(requiredObjectCapability)) continue;
+
+      const occupants = [...(this.occupants.get(instance.instanceId) ?? [])].sort((a, b) => a - b);
+      const rating = rate(occupants, instance);
+      if (!Number.isFinite(rating)) continue;
+      if (rating < bestRating) {
+        bestRating = rating;
+        best = instance;
+        if (rating <= 0) break; // Nothing later can beat the floor, and a tie would lose to this one anyway.
+      }
+    }
+
+    return best;
   }
 
   public assign(instanceId: string, entityId: EntityId): boolean {

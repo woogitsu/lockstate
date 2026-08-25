@@ -66,36 +66,50 @@ this index's. Nothing here changes a status; this table only reports them.
 | [0023](./0023-room-occupancy-authority.md) | Where a room's occupancy comes from | Proposed — pending human approval |
 | [0024](./0024-protocol-fault-recoverability.md) | Which protocol faults end a session, and who is told | Proposed — pending human approval |
 | [0025](./0025-guard-hiring-surface.md) | Where a player hires a guard, and what the hire costs | Proposed — pending human approval |
+| [0026](./0026-entity-id-lifetime.md) | The lifetime of `EntityId`-keyed state — generation exhaustion, release, and re-intake | Proposed — pending human approval |
+| [0027](./0027-cell-sharing-assessment.md) | Cell-sharing assessment — what is recorded, who may override, and how a cell-scoped risk reaches a sector-scoped trigger | Proposed — pending human approval |
 | [0028](./0028-object-placement-and-derived-room-capacity.md) | What a placed object is, and how a room's capacity comes from it | Proposed — pending human approval |
 
 **Next free number: 0029.**
 
-## Why 0026 and 0027 are absent, and 0028 is not the next number after 0025
+## Why nothing between 0024 and 0028 is missing any more, and 0028 was allocated out of band
 
-Two numbers are skipped here and neither of them is free. `0026` and `0027` are
-claimed by PR #299 — open at the time of writing, and therefore invisible to
-this table, which is a statement about `main` and can never be anything else.
-`0024` and `0025` were in that list until they merged, which is what closing the
-gap from below looks like.
+**Every number from 0019 to 0028 now has a document in this directory**, which
+it did not for most of the week and which is the outcome the previous versions
+of this section were describing in advance. `0018` is the only absent number
+left, and it is absent for an unrelated reason recorded below.
 
-That invisibility is the whole reason the gap exists. This file says of itself
-that "the number is not reserved until it appears below", which is true and is
-also the trap: three agents collided over 0024 and 0025 before 0028 was taken,
-because each read the stated next-free number on `main` and each was right.
-0025's own document was written as 0024 and renumbered before review, on the
-discovery that what is now 0024 above had already claimed that number — the same
-choice, made for the same reason, as the one recorded further down for the kernel
-ADR: **take the lowest number free without coordinating with unmerged or held
-work.** 0028 was then allocated out of band — by the owner, across the open
-branches — and `0029` is stated above because
+The gap that used to be here is worth keeping the account of, because the
+mechanism that produced it has not gone anywhere. This file says of itself that
+"the number is not reserved until it appears below", which is true and is also
+the trap: three agents collided over 0024 and 0025 before 0028 was taken,
+because each read the stated next-free number on `main` and each was right. An
+open pull request's ADR is invisible to this table — which is a statement about
+`main` and can never be anything else — so the stated next free number is a
+ceiling rather than a reservation.
+
+Both halves of that collision cost a renumber, and both were resolved the same
+way. 0025's own document was written as 0024 and renumbered before review, on
+the discovery that what is now 0024 above had already claimed that number. PR
+#299 wrote what are now 0026 and 0027 as 0024 and 0025, on the same reading of
+the same stated next-free number, and renumbered once 0024 had merged and 0025
+was claimed — two files, two headings and seven citations across `docs/`, `src/`
+comments and `tests/`, none of which any assertion would have reported as
+*wrong* had they been left pointing at somebody else's ADR. Both followed the
+same rule, which is the one recorded further down for the kernel ADR: **take the
+lowest number free without coordinating with unmerged or held work.** 0028 was
+then allocated out of band — by the owner, across the open branches — and `0029`
+is stated above because
 `tests/foundation/adr-numbering-contract.test.ts` derives the next free number
 from the highest number on disk rather than from the lowest unused one.
 
-Two consequences worth stating rather than leaving to be rediscovered. **The gap
+Two consequences worth stating rather than leaving to be rediscovered. **A gap
 closes from below as those PRs merge**, and each merge is a row added here, not a
-renumbering. And **the stated next-free number is a ceiling, not a reservation**:
-whoever writes the ADR after 0028 should check the open pull requests before
-taking 0029, exactly as 0028's author had to.
+renumbering — the renumbering happens on the branch, before the merge, and it is
+the open branch's cost rather than this file's. And **the stated next-free number
+is still a ceiling**: whoever writes the ADR after 0028 should check the open
+pull requests before taking 0029, exactly as 0028's author had to, and exactly
+as the two authors who did not are the reason this section exists.
 
 ## 0018, and why it is free again
 

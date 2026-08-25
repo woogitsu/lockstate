@@ -81,6 +81,134 @@ describe('RoomInstanceRegistry', () => {
     });
   });
 
+  describe('findBestAvailable', () => {
+    /** Two shared cells of the same room type, both with the required capability. */
+    function twoSharedCells(): RoomInstanceRegistry {
+      const registry = new RoomInstanceRegistry();
+      registry.register({ instanceId: 'shared-a', roomCatalogId: 'room.cell', anchorTile: TILE, capacity: 2, objectCapabilities: ['sleep-surface'] });
+      registry.register({ instanceId: 'shared-b', roomCatalogId: 'room.cell', anchorTile: TILE, capacity: 2, objectCapabilities: ['sleep-surface'] });
+      return registry;
+    }
+
+    it('consults the occupants, so an arrival is not put in with an incompatible cellmate when another cell is free (#79)', () => {
+      // This is the whole of #79 at the decision function. `findAvailable`
+      // returns 'shared-a' here -- it sorts first and has a free bed, and a
+      // capacity count is every question it asks. Asserted alongside, so the
+      // difference is the test rather than the claim.
+      const registry = twoSharedCells();
+      registry.assign('shared-a', 7); // entity 7 is the occupant we must not pair with
+
+      expect(registry.findAvailable('room.cell', 'sleep-surface')?.instanceId).toBe('shared-a');
+
+      const chosen = registry.findBestAvailable('room.cell', (occupants) => (occupants.includes(7) ? 10 : 0), 'sleep-surface');
+      expect(chosen?.instanceId).toBe('shared-b');
+    });
+
+    it('is identical to findAvailable when every free instance rates the same', () => {
+      // The condition every scenario in this repository is in: single-
+      // occupancy cells, so every *free* instance holds nobody and every
+      // rating is 0. Ties go to the lowest instance id.
+      const registry = new RoomInstanceRegistry();
+      registry.register({ instanceId: 'cell-2', roomCatalogId: 'room.cell', anchorTile: TILE, capacity: 1, objectCapabilities: [] });
+      registry.register({ instanceId: 'cell-1', roomCatalogId: 'room.cell', anchorTile: TILE, capacity: 1, objectCapabilities: [] });
+
+      expect(registry.findBestAvailable('room.cell', () => 0)?.instanceId).toBe(registry.findAvailable('room.cell')?.instanceId);
+      expect(registry.findBestAvailable('room.cell', () => 0)?.instanceId).toBe('cell-1');
+    });
+
+    it('still respects capacity and the required object capability', () => {
+      const registry = new RoomInstanceRegistry();
+      registry.register({ instanceId: 'full', roomCatalogId: 'room.cell', anchorTile: TILE, capacity: 1, objectCapabilities: ['sleep-surface'] });
+      registry.register({ instanceId: 'no-bed', roomCatalogId: 'room.cell', anchorTile: TILE, capacity: 4, objectCapabilities: [] });
+      registry.register({ instanceId: 'usable', roomCatalogId: 'room.cell', anchorTile: TILE, capacity: 4, objectCapabilities: ['sleep-surface'] });
+      registry.assign('full', 1);
+
+      expect(registry.findBestAvailable('room.cell', () => 0, 'sleep-surface')?.instanceId).toBe('usable');
+    });
+
+    it('treats a non-finite rating as "not a permissible placement" and skips the instance', () => {
+      const registry = twoSharedCells();
+      registry.assign('shared-a', 7);
+
+      const chosen = registry.findBestAvailable(
+        'room.cell',
+        (occupants) => (occupants.includes(7) ? Number.POSITIVE_INFINITY : 0),
+        'sleep-surface',
+      );
+      expect(chosen?.instanceId).toBe('shared-b');
+
+      // Every candidate refused is the backlog condition, not a wrong answer.
+      registry.assign('shared-b', 7);
+      expect(registry.findBestAvailable('room.cell', () => Number.POSITIVE_INFINITY, 'sleep-surface')).toBeUndefined();
+    });
+
+    it('hands occupants over sorted ascending by entity id, never in assignment order', () => {
+      // `occupantsOf` returns assignment order live and ascending-id order
+      // after a snapshot round trip, so a consumer that folded them in that
+      // order would diverge across a save. This is the guard for the sort
+      // that stops it; `canonical-iteration-contract.test.ts` structurally
+      // cannot see this expression (its own header says so).
+      const registry = new RoomInstanceRegistry();
+      registry.register({ instanceId: 'dorm', roomCatalogId: 'room.cell', anchorTile: TILE, capacity: 8, objectCapabilities: [] });
+      registry.assign('dorm', 1_048_576);
+      registry.assign('dorm', 3);
+      registry.assign('dorm', 42);
+
+      expect(registry.occupantsOf('dorm')).toEqual([1_048_576, 3, 42]); // assignment order, as documented
+
+      const seen: (readonly number[])[] = [];
+      registry.findBestAvailable('room.cell', (occupants) => {
+        seen.push([...occupants]);
+        return 0;
+      });
+      expect(seen).toEqual([[3, 42, 1_048_576]]);
+    });
+
+    it('stops at the first candidate rated 0, so it costs what findAvailable costs on the common path', () => {
+      // Not a micro-optimisation: `docs/PRISONER_OPERATIONS.md` records that
+      // this is a per-tick, potentially-thousands-of-instances hot path that
+      // has already produced a severe super-linear slowdown once, and
+      // replacing an early-exit `.find` with an unconditional full scan is
+      // the shape that did it. An empty room rates 0, so in a prison with a
+      // free empty room the scan exits where `.find` would have.
+      const registry = new RoomInstanceRegistry();
+      for (let n = 0; n < 50; n += 1) {
+        registry.register({ instanceId: `cell-${String(n).padStart(2, '0')}`, roomCatalogId: 'room.cell', anchorTile: TILE, capacity: 1, objectCapabilities: [] });
+      }
+
+      let rated = 0;
+      const chosen = registry.findBestAvailable('room.cell', () => {
+        rated += 1;
+        return 0;
+      });
+
+      expect(chosen?.instanceId).toBe('cell-00');
+      expect(rated).toBe(1);
+    });
+
+    it('does not stop early while every candidate so far rates above the floor', () => {
+      const registry = new RoomInstanceRegistry();
+      registry.register({ instanceId: 'cell-1', roomCatalogId: 'room.cell', anchorTile: TILE, capacity: 2, objectCapabilities: [] });
+      registry.register({ instanceId: 'cell-2', roomCatalogId: 'room.cell', anchorTile: TILE, capacity: 2, objectCapabilities: [] });
+      registry.register({ instanceId: 'cell-3', roomCatalogId: 'room.cell', anchorTile: TILE, capacity: 2, objectCapabilities: [] });
+
+      const ratings = new Map([['cell-1', 3], ['cell-2', 2], ['cell-3', 1]]);
+      const visited: string[] = [];
+      const chosen = registry.findBestAvailable('room.cell', (_occupants, instance) => {
+        visited.push(instance.instanceId);
+        return ratings.get(instance.instanceId)!;
+      });
+
+      expect(visited).toEqual(['cell-1', 'cell-2', 'cell-3']);
+      expect(chosen?.instanceId).toBe('cell-3');
+    });
+
+    it('returns undefined when no instance of the room type exists at all', () => {
+      const registry = new RoomInstanceRegistry();
+      expect(registry.findBestAvailable('room.cell', () => 0)).toBeUndefined();
+    });
+  });
+
   it('instancesOccupiedBy lists every instance holding an entity, sorted', () => {
     const registry = new RoomInstanceRegistry();
     registry.register({ instanceId: 'a', roomCatalogId: 'room.yard', anchorTile: TILE, capacity: 5, objectCapabilities: [] });
