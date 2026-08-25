@@ -86,12 +86,26 @@ See §2.
 | --- | --- | --- |
 | [0022](./0022-room-zoning-surface.md) | Where a player zones a room, and with what gesture | **Yes — but not as written.** See below |
 | [0023](./0023-room-occupancy-authority.md) | Where a room's occupancy comes from | **No** |
+| [0028](./0028-object-placement-and-derived-room-capacity.md) | What a placed object is, and how a room's capacity comes from it | **No** |
 
 0023 gates the next feature and is re-verified unimplemented at `f3ffe6d`:
 `RoomZoningService` still registers every instance with `capacity: 0`, and no
 room definition in `src/content/room-catalog.ts` carries a capacity field at all.
 The Rooms tab does not touch that: a zoned room is an empty rectangle and
 accommodates nobody, which is the state 0023 exists to decide about.
+
+**Read 0028 before 0023.** 0023 asks where a room's occupancy comes from and
+offers an authored fallback figure; the owner answered that question by choosing
+object placement, and 0028 is the design for that answer. So signing 0028 makes
+0023's fallback field unnecessary, while signing 0023 as written does *not*
+dispose of 0028. More importantly, 0028 corrects 0023's central practical claim:
+0023 treats the decision as being about `capacity`, but `findAvailable` gates on
+capacity **and** capability, so a capacity-only change is a no-op and produces no
+observable behaviour at all.
+
+0028 is verified unimplemented by the same measurement 0023's entry rests on,
+plus one more: no `'object.*'` id appears as a literal anywhere under `src/`
+outside `src/content/`, so nothing places, builds or reads an object.
 
 **0022 is the unusual one, and the shape of it matters more than the cell.** The
 *decision recorded in the ADR* — a room type as a row in the Build catalogue — is
