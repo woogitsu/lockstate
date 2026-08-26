@@ -11,12 +11,28 @@ permissions:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  # Cancel superseded PR runs, never a run on `main`. For a push to `main` the
-  # ref is constant, so `true` meant two merges landing close together
-  # cancelled the earlier commit's CI -- while that commit was already live,
-  # since a merge deploys. It left a shipped commit with no completed gate
-  # result and nothing reporting the hole. A merge queue of one is worth the
-  # extra minutes.
+  # Cancel superseded PR runs. For a push to `main` the ref is constant, so
+  # `true` meant two merges landing close together cancelled the earlier
+  # commit's CI -- while that commit was already live, since a merge deploys.
+  # It left a shipped commit with no completed gate result and nothing
+  # reporting the hole. A merge queue of one is worth the extra minutes.
+  #
+  # THIS DOES NOT MEAN A RUN ON `main` IS NEVER CANCELLED, and the sentence
+  # above used to say that it did. `cancel-in-progress` governs the run that is
+  # ALREADY RUNNING; GitHub separately keeps at most one PENDING run per
+  # concurrency group, whatever this setting says. So a third push arriving
+  # while one run is in progress and a second waits cancels the second -- which
+  # never starts, and records no jobs at all. Runs 33004940891 and 33005035205
+  # are both that: pushes to `main` on 2026-08-26, both `cancelled`, both with
+  # zero jobs. `main` sees this often enough to matter -- eight of the sixty
+  # most recent completed CI runs started by a push to `main`, measured over
+  # 2026-08-25T18:08Z to 2026-08-26T19:45Z.
+  #
+  # The consequence is a deployment one, and it is now reported rather than
+  # inferred: deploy.yml triggers on this workflow's COMPLETION and its
+  # `staging` job requires `conclusion == 'success'`, so a commit whose CI was
+  # cancelled here is never published as itself. deploy.yml's `staging-blocked`
+  # job says so out loud (#424); before it, that was silent.
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:

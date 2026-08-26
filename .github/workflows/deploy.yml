@@ -85,9 +85,12 @@ concurrency:
   # Two properties of the group itself, because they are easy to misread:
   #
   #   * `github.event_name` is `workflow_run` for every automatic deploy, so
-  #     the group evaluates to the constant `deploy-staging` and all automatic
-  #     deploys contend with one another. A `workflow_dispatch` of
-  #     `production` gets `deploy-production` and is never cancelled by one.
+  #     the group evaluates to the constant `deploy-staging` for every automatic
+  #     deploy that will publish, and all of those contend with one another.
+  #     One that will not publish is diverted to a group of its own -- see
+  #     "WHICH RUNS JOIN THE GROUP" below, which is the newer half of this
+  #     argument. A `workflow_dispatch` of `production` gets
+  #     `deploy-production` and is never cancelled by either.
   #   * The trigger is CI completion rather than the merge (see `on:` above),
   #     so a cancelled run is one whose CI has already passed: cancellation
   #     here discards verified work. It also means "joins the group last" is
@@ -98,7 +101,52 @@ concurrency:
   #
   # If a half-finished deployment is ever actually seen, #134's answer is to
   # move to `cancel-in-progress: false` with a queue, not to patch around it.
-  group: deploy-${{ github.event_name == 'workflow_dispatch' && inputs.target || 'staging' }}
+  #
+  # WHICH RUNS JOIN THE GROUP, AND ONE KIND THAT MUST NOT (#424).
+  #
+  # A `workflow_run` run whose triggering CI did not conclude `success`
+  # publishes nothing: the `staging` guard rejects it, and `staging-blocked`
+  # below reports it. Such a run used to join `deploy-staging` all the same,
+  # so `cancel-in-progress: true` let a run that deploys nothing cancel one
+  # that was deploying. Twice on 2026-08-26, and read what actually happened
+  # rather than the conclusion:
+  #
+  #   * run 32996017285's `Deploy to Cloudflare (staging)` step concluded
+  #     `success` at 17:46:31; the job was cancelled at 17:46:35.
+  #   * run 32971477174's step concluded `cancelled`, but its log ends
+  #     `Deployed lockstate-staging triggers (2.63 sec)` at 12:58:52.659 and
+  #     `##[error]The operation was canceled.` 0.24 s later.
+  #
+  # BOTH PUBLISHED. What the cancellation destroyed is the record, not the
+  # deploy: two runs that updated the live site are filed as `cancelled`, and
+  # a reader auditing what reached the Worker has to open the log to find out.
+  # Note also what this does NOT show: neither upload was interrupted, so the
+  # "cancelled *during* `wrangler deploy`" case the bullets above call unknown
+  # rather than safe is still unobserved. Not safer -- just not seen.
+  #
+  # INFERRED, not read out of a log: that the runs which cancelled them were
+  # 32996050125 and 32971516619. Both concluded `skipped`, both published
+  # nothing, and each was created seconds before the cancellation while
+  # sharing the group; no other run joined in either window. The cancelling
+  # run is not named in the cancelled run's log, so this is timing and group
+  # membership rather than a direct observation.
+  #
+  # So the group now carries the triggering run's conclusion. A run that will
+  # not publish gets `deploy-blocked-<triggering run id>`, a group of one: it
+  # cancels no deploy, and nothing cancels it mid-announcement -- and an
+  # announcement that can be cancelled is a silent deploy again, which is the
+  # whole of #424.
+  #
+  # `conclusion` is the ONLY term of the `staging` guard repeated here, on
+  # purpose. It is the term that varies in practice, and the set it diverts is
+  # exactly the set `staging-blocked` fires on, so the two stay legible
+  # together. A run rejected for the guard's other two terms -- a CI run a
+  # pull request started, or one whose head commit came from a fork -- still
+  # joins `deploy-staging` and can still cancel a publish. That is unchanged
+  # behaviour rather than a new hole, and the alternative is copying the whole
+  # guard into a group expression where it could drift out of step with the
+  # guard itself.
+  group: deploy-${{ github.event_name == 'workflow_dispatch' && inputs.target || github.event.workflow_run.conclusion == 'success' && 'staging' || format('blocked-{0}', github.event.workflow_run.id) }}
   cancel-in-progress: true
 
 env:
@@ -285,6 +333,128 @@ jobs:
             url="https://dash.cloudflare.com/${CLOUDFLARE_ACCOUNT_ID}/workers/services/view/lockstate-staging"
           fi
           echo "url=$url" >> "$GITHUB_OUTPUT"
+
+  # A BLOCKED DEPLOY MUST NOT BE SILENT (#424).
+  #
+  # When the `staging` guard's automatic alternative rejects a run, every job
+  # in this workflow skips, and GitHub reports a run whose every job skipped as
+  # `skipped`. `skipped` is not `failure`: no red X in the Actions list, no
+  # notification, nothing that distinguishes it from a run that had nothing to
+  # do. A deploy that is genuinely blocked therefore looks exactly like one
+  # that is merely slow. Read off the runs on 2026-08-26: no Deploy run
+  # concluded `success` between 32994037499 at 17:25:21 and 33005151972 at
+  # 19:26:26, two hours and one minute apart, and seven consecutive runs in
+  # between -- 32996050125, 32996093805, 32997470428, 33004133740,
+  # 33004481382, 33005039649, 33005071431 -- all concluded `skipped`. The
+  # Actions list showed no failure at any point in it, and what ended the gap
+  # was a later merge going green on its own rather than anyone noticing.
+  #
+  # One correction to that window, because it is the kind this repository gets
+  # wrong: 32996017285 sits inside it and did publish. Its
+  # `Deploy to Cloudflare (staging)` step completed successfully at 17:46:31;
+  # the run says `cancelled` because a rejected run joined its concurrency
+  # group four seconds later. So the site was not frozen for the whole two
+  # hours -- what was continuous is the silence, not the staleness.
+  #
+  # This job is the announcement, and it is deliberately not a new mechanism.
+  # It fails, so the run concludes `failure`, so a blocked deploy is reported
+  # exactly the way every other failure in this repository is reported. No
+  # notification tier, no external service, nothing to configure, nothing that
+  # can itself go stale.
+  #
+  # ITS GUARD IS THE `staging` GUARD'S AUTOMATIC ALTERNATIVE WITH ONE TERM
+  # NEGATED, and the other terms are repeated rather than dropped:
+  #
+  #   * `event == 'push'` and `head_repository.full_name == github.repository`
+  #     are #423's terms, and this job needs them for a reason of its own. A
+  #     run rejected by either of those is the gate WORKING -- a pull request's
+  #     CI is not a merge, and a fork's commit must never reach the Worker that
+  #     serves lockstate.io -- and a working gate must not report failure.
+  #     Without them, anyone who can open a pull request from a fork could turn
+  #     this repository's Deploy workflow red at will.
+  #   * `conclusion != 'success'` is the negation. Together with the `staging`
+  #     guard it partitions the automatic path: for a completed CI run that a
+  #     push to `main` of this repository started, exactly one of the two jobs
+  #     runs. This one publishes nothing, checks out nothing and reads no
+  #     secret, so it weakens neither the gate nor the site.
+  #
+  # `cancelled` IS INCLUDED, AND THAT IS A DECISION. A CI run on `main` is
+  # cancelled more often than it fails, and not for the reason ci.yml's
+  # concurrency comment gives: GitHub keeps at most one PENDING run per
+  # concurrency group whatever `cancel-in-progress` says, so a third merge
+  # arriving while one CI run is in progress and another waits cancels the
+  # waiting one. CI runs 33004940891 and 33005035205 are both that -- pushes to
+  # `main`, both `cancelled`, both with zero jobs recorded because neither ever
+  # started. Such a commit is usually carried to the site later by a
+  # descendant's deploy, so this announcement will sometimes name a commit that
+  # arrives anyway. It stays included: the commit was still not published as
+  # itself, nothing retries it, and the alternative -- announcing only an
+  # outright CI `failure` -- leaves a cancelled run silently blocking
+  # publication, which is this defect wearing a different conclusion.
+  #
+  # NOT `ubuntu-latest`, however little this job does. It does not work in this
+  # repository: version.yml's header measures a four-second failure with no
+  # step recorded and no log, on run 32727713492.
+  staging-blocked:
+    if: >-
+      github.event_name == 'workflow_run'
+      && github.event.workflow_run.event == 'push'
+      && github.event.workflow_run.head_repository.full_name == github.repository
+      && github.event.workflow_run.conclusion != 'success'
+    runs-on: [self-hosted, Linux, X64, wsl2]
+    timeout-minutes: 10
+    steps:
+      # Every value arrives through `env:` rather than being interpolated into
+      # the script. Nothing admitted by the guard above is attacker-controlled,
+      # but a `${{ }}` expanded inside a `run:` block is textual substitution
+      # into a shell, and this file should not carry an example of it for the
+      # next job to copy.
+      - name: Report that the site was not published
+        env:
+          CI_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          CI_RUN_URL: ${{ github.event.workflow_run.html_url }}
+          BLOCKED_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+
+          case "$CI_CONCLUSION" in
+            failure | timed_out)
+              why="its CI run did not pass"
+              next="Fix main. Nothing here retries this commit."
+              ;;
+            cancelled)
+              why="its CI run was cancelled"
+              next="Usually a later merge superseded it while its CI was still queued, in which case a descendant's deploy carries this commit to the site. Confirm that a later Deploy run succeeded before reading this as harmless."
+              ;;
+            *)
+              why="its CI run concluded '$CI_CONCLUSION', which is neither a pass nor an ordinary failure"
+              next="Read the CI run before assuming which it is; a run that never started reaches here too."
+              ;;
+          esac
+
+          {
+            echo "## The staging deploy did not happen"
+            echo
+            echo "\`$BLOCKED_SHA\` was not published, because $why."
+            echo
+            echo "- Triggering CI run: $CI_RUN_URL (\`$CI_CONCLUSION\`)"
+            echo "- $next"
+            echo
+            echo "The site still serves whatever the last successful Deploy run published."
+            echo "This workflow triggers on CI *completion*, so nothing re-attempts this"
+            echo "commit on its own: the next merge whose CI passes publishes its own commit"
+            echo "and carries this one along. A \`workflow_dispatch\` of this workflow with"
+            echo "\`target=staging\` publishes the current tip of \`main\`, which is not"
+            echo "necessarily this commit and is gated by nothing -- see docs/DEPLOYMENT.md,"
+            echo "\"What can publish the staging Worker\"."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          echo "::error title=Staging deploy blocked::$BLOCKED_SHA was not published, because $why. $CI_RUN_URL"
+
+          # The whole point of this job. An `::error::` annotation on its own
+          # leaves the run green, and a green run is the silence this exists to
+          # end.
+          exit 1
 
   production:
     # Manual only. The `production` environment should carry required

@@ -140,7 +140,7 @@ Ordinary CI (`.github/workflows/ci.yml`) validates packages but does not publish
 
 | What | When | Gate |
 | --- | --- | --- |
-| Frontend → Cloudflare **staging** | automatically, on every merge to `main` | CI passed on that exact commit, and the CI run was a push from this repository — see "What can publish the staging Worker" |
+| Frontend → Cloudflare **staging** | automatically, on every merge to `main` **whose CI concludes `success`** | CI passed on that exact commit, and the CI run was a push from this repository — see "What can publish the staging Worker". A merge whose CI does not conclude `success` is **not** published, and says so — see "When the automatic path does not publish" |
 | Frontend → Cloudflare **staging** | by hand, `workflow_dispatch` of `deploy.yml` with `target=staging` | the ref must be `main`, and that is the whole gate: no CI, no approval |
 | Frontend → Cloudflare **production** | manual dispatch only | `production` environment approval |
 | Migrations → Supabase **staging** | automatically, on every merge to `main`, through Supabase's own GitHub integration | none |
@@ -172,6 +172,26 @@ Exactly the two **staging** rows above, because `deploy.yml`'s `staging` job has
 **What was not protecting it.** Every job in `ci.yml` carries `github.event.pull_request.head.repo.full_name == github.repository` — three jobs today, and `ci-configuration-contract.test.ts` now requires it of a fourth — so every job of such a run skips. Whether GitHub then reports that run's `conclusion` as `skipped` or as `success` is established by nothing in this repository, and that is the difference between the paragraph above describing something latent and something live. It is not worth settling by experiment, because the terms are right either way: the protection was a property of *another workflow*, uncommented there, that one unguarded job added to `ci.yml` would have flipped with nothing connecting the two files. Both files now state the requirement where it applies.
 
 **By hand:** a `workflow_dispatch` of `deploy.yml` with `target=staging`. It checks out `github.ref` and runs no `pnpm verify` — the `production` job's "Verify before shipping" step has no counterpart in `staging`, because the automatic path's gate is the CI run that triggers it and a dispatch has no triggering run. It is restricted to `main`, so it publishes the branch the automatic path publishes anyway; it still publishes it with no CI result and no approval. Two stronger gates are available and neither is taken here: requiring the dispatched ref's own CI to have passed, and giving the `staging` environment required reviewers the way `production` has them (see "Credentials" — that approval, not an `if:`, is what actually blocks an unattended deploy). Both are the owner's call, not this workflow's.
+
+### When the automatic path does not publish
+
+Read this row of the table as **"on every merge whose CI concludes `success`"**, because the difference is not rare. Over the sixty most recent completed CI runs started by a push to `main` — 2026-08-25T18:08Z to 2026-08-26T19:45Z — thirty-eight concluded `success`, fourteen `failure` and eight `cancelled`. Twenty-two merges in those twenty-six hours were therefore never published as themselves.
+
+**Until #424 that was invisible**, and the invisibility was the defect rather than the redness. When the `staging` guard rejects a run, every job in `deploy.yml` skips, and GitHub reports a run whose every job skipped as `skipped` — no red X, no notification, nothing that distinguishes it from a run with nothing to do. A blocked deploy looked exactly like a slow one. On 2026-08-26 no Deploy run concluded `success` between `32994037499` at 17:25:21 and `33005151972` at 19:26:26 — 2h01m — and seven consecutive runs in between (`32996050125`, `32996093805`, `32997470428`, `33004133740`, `33004481382`, `33005039649`, `33005071431`) all concluded `skipped`. What ended it was a later merge going green by itself, not anyone noticing. One run inside that window, `32996017285`, did publish: its `Deploy to Cloudflare (staging)` step concluded `success` at 17:46:31 and the job was cancelled at 17:46:35, so the run is filed as `cancelled` although the site was updated. So what was continuous across the two hours is the silence, not the staleness.
+
+`deploy.yml`'s **`staging-blocked`** job is the answer, and it is deliberately the smallest one: its guard is the `staging` guard's automatic alternative with `conclusion == 'success'` negated, and all it does is fail. So a blocked deploy concludes `failure` and is reported by the same machinery that reports every other failure — no notification tier, no external service. It fires for `cancelled` as well as `failure`; the reasoning, including why a cancelled CI run on `main` is common and what it usually means, is written above the job.
+
+**Three states, not two, and the third is the normal one.** A commit on `main` can be:
+
+1. **published** — its CI concluded `success` and the `staging` job ran;
+2. **blocked** — its CI completed without concluding `success`, so `staging-blocked` failed and said which commit and why;
+3. **never judged at all** — no CI run exists for it, so no Deploy run exists either, and nothing is wrong.
+
+State 3 is what `version.yml` produces after every merge. Its bump commit is pushed with the workflow's own `GITHUB_TOKEN`, which starts no workflow run, so `main`'s tip is normally a `chore(release)` commit with no CI run, no Deploy run and no publication of its own — by design, since it differs from the commit CI has just judged by one string. **Any check of the form "has `main`'s current head been deployed?" is therefore permanently false and permanently useless here**, and any check of the form "has the commit that failed been superseded?" has to walk back over the bump commit before it can answer. That is why the signal lives inside the deploy path, where the triggering CI run is in hand, rather than in a watchdog that polls the branch.
+
+**Nothing drains the backlog, and that is the current decision rather than an oversight.** `deploy.yml` triggers on CI *completion*, so a commit whose CI did not pass gets no second attempt: the next merge whose CI passes publishes its own commit and carries the earlier ones along. Making a successful CI run publish `main`'s head instead of its own commit would drain the backlog and would also make what gets published less predictable; #424 records that as a real trade-off wanting an ADR, and it has not been taken. Until it is, the guarantee is only that a gap is now **announced**, not that it closes itself.
+
+**To publish a blocked commit sooner**, either fix `main` and let the next merge carry it, or dispatch this workflow by hand with `target=staging` — which publishes the current tip of `main`, gated by nothing, and so is a different act from re-attempting that commit. See "What can publish the staging Worker" above.
 
 ### What currently serves lockstate.io
 
