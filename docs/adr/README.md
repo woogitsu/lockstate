@@ -36,10 +36,19 @@ normalised judgement. Two heading styles are in use — some ADRs carry a
 above except the two newest is now `Accepted` in some form, several with a
 qualifier the ADR itself carries.
 
-**Exactly two ADRs in this directory are awaiting the owner's approval: 0031 and
-0032.** An ADR in that state is not binding whether or not code already
-implements it — both of them arrived on the same branch as their implementing
-change, and that does not make either accepted.
+**Every ADR in this directory is accepted.** 0031 and 0032 were both approved on
+2026-08-26 — 0031 with a condition, not plainly: its open question 4 is promoted
+to blocking, because ADR 0028 phase 4 took `BUILDABLE_REGISTRY` from four rows to
+twenty-one and the price its decision 3 pays is now several times what the
+document argues for. Read 0031's Status before treating its catalogue trade as
+settled.
+
+One decision is still outstanding and is **not** an ADR status, which is why the
+sentence above can be true at the same time: the amendment to ADR 0007 queued in
+[`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2. An amendment inside an accepted ADR
+has no `Status` line of its own, so no row in the table below and no mechanical
+gate will ever mention it, and that queue entry is the only thing that says it is
+waiting.
 
 A note on how this paragraph is worded, because it matters to a test:
 `tests/foundation/adr-status-reference-contract.test.ts` scans for a sentence
@@ -97,8 +106,8 @@ Nothing here changes a status; this table only reports them.
 | [0027](./0027-cell-sharing-assessment.md) | Cell-sharing assessment — what is recorded, who may override, and how a cell-scoped risk reaches a sector-scoped trigger | Accepted, 2026-08-25 — as the mechanism; its three questions stay open, and its subject became reachable when 0028 shipped (measured 2026-08-26) |
 | [0028](./0028-object-placement-and-derived-room-capacity.md) | What a placed object is, and how a room's capacity comes from it | Accepted, 2026-08-25 |
 | [0029](./0029-concurrent-room-use-claims.md) | What a concurrent-use claim on a room is — when it is taken, when it ends, and who waits | Accepted, 2026-08-26 |
-| [0031](./0031-build-queue-cancellation-surface.md) | Withdrawing one queued build order — where a player aims, and what a long queue looks like | Proposed — pending human approval |
-| [0032](./0032-incident-consequences-and-classification-review.md) | What an incident costs the prisoner who was in it, and how a classification tier moves | Proposed — pending human approval |
+| [0031](./0031-build-queue-cancellation-surface.md) | Withdrawing one queued build order — where a player aims, and what a long queue looks like | Accepted, 2026-08-26 — with open question 4 promoted to blocking |
+| [0032](./0032-incident-consequences-and-classification-review.md) | What an incident costs the prisoner who was in it, and how a classification tier moves | Accepted, 2026-08-26 |
 
 **Next free number: 0033.** 0032 is this table's newest row and **0030 is still
 held by an unmerged branch** — the incident-response restore change, which

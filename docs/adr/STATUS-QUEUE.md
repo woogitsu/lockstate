@@ -251,10 +251,12 @@ cells is exercised nowhere, because no shipped session yet furnishes two.
 
 ---
 
-## 2. The queue has two entries: ADR 0031, and an amendment to ADR 0007
+## 2. The queue has one entry: an amendment to ADR 0007
 
 **This heading has now read "empty", then "exactly one entry: ADR 0029", then
-"empty again", then one entry once more, and now two.** The second is not a new
+"empty again", then one entry once more, then two, and now one again** — 0031 and
+0032 were both accepted on 2026-08-26, and 0032 never appeared here at all, which
+is the failure recorded at the foot of this section. The second is not a new
 document: it is an amendment to ADR **0007**, which is Accepted and stays
 Accepted. An amendment is queued here for the same reason a new ADR is — it
 decides something the sections above it do not, and nothing else in the corpus
@@ -284,64 +286,30 @@ landing and the status moving is the cost, and it is not zero.
 The account of why the queue was emptied the first time is kept below unchanged,
 because it is still the argument for why one row is worth reading.
 
-### ADR 0031 — withdrawing one queued build order
+### ADR 0031 — accepted 2026-08-26, and the entry is deleted
 
-- **What it is.** [ADR 0031](./0031-build-queue-cancellation-surface.md),
-  *"Withdrawing one queued build order — where a player aims, and what a long
-  queue looks like"*. It settles two things at once: that the pending build queue
-  becomes a projected read model (`hud/build-queue`) rather than a copy the main
-  thread keeps, and where a player cancels **one** order rather than a whole
-  gesture.
-- **It arrived with its implementing change**, the same fragile case 0029's entry
-  above names, and for the same reason this entry is in the same commit.
-- **The evidence is a gate that had carried the gap for its whole life.**
-  `tests/foundation/unconsumed-command-contract.test.ts` measured
-  `CancelBuildOrder` as the repository's only command with no production
-  producer, and the reason its entry gave was correct: no order *id* reached the
-  main thread, so no control could name one.
-  `src/simulation/protocol/commands.ts` said the same thing while arguing that
-  `RemoveObject` carries a tile — an order id is something *"nothing on screen
-  shows and no snapshot carries"*. What changed is #348: construction builds one
-  order at a time, so `tests/unit/construction-geometry.test.ts`'s twelve-segment
-  run finishes at tick **730** where it used to finish at **70**, and eleven of
-  those twelve segments now wait hundreds of ticks with nothing on screen saying
-  so.
-- **What approving it commits the project to.** A thirteenth `PROJECTION_ID` and
-  a read model over `ConstructionSystem`; the queue read on the counts cadence
-  only while the Build tab is showing; a per-order cancel on the Build panel that
-  is `hidden` until something is queued and collapsed when it appears; **the
-  Build panel's catalogue dropping from a two-row floor to a one-row floor while
-  a queue exists**, which is where the block's 45px comes from and is the
-  decision most worth reading twice; and **three rows with no way to page past
-  them**, on the argument that the list is the crew's schedule and `Undo` is the
-  control for a whole run. It commits to no save-format change, no new content
-  and no change to `src/simulation/construction/**`.
-- **The measurement that shaped it, because it is the one a reviewer should
-  check.** The block's cost was first measured through the UI harness, whose
-  aside slot is empty and which therefore hands the Build panel 128.7px more rail
-  than the application ever does. On the assembled page a *collapsed* queue put
-  the panel 15px over its box at 1280x720 and 37px over at 900x600, with the
-  block's own header 14px and 37px below the panel's unscrolled fold — #174 for a
-  third time. The catalogue-floor donation is what fixes it, and after it the
-  header is above the fold at all five viewports with nothing scrolled.
-- **What refusing it would cost.** Refusing the surface means deciding the other
-  way round — that arbitrary per-order cancellation is not wanted — and the honest
-  consequence is deleting `CancelBuildOrder`: its schema member, its
-  `commandJson` case and its handler branch, with
-  `ConstructionSystem.cancelOrder` staying because `undo()` delegates to it. The
-  read model would survive either way, because "twelve queued, one being built" is
-  a fact #348 created and nothing else carries.
-- **The exact line that would replace the status.** In
-  `docs/adr/0031-build-queue-cancellation-surface.md`, replace
-  `**Proposed — pending human approval.** Not accepted.` with
-  `**Accepted, YYYY-MM-DD.**`, and change that ADR's row in
-  `docs/adr/README.md` from `Proposed — pending human approval` to
-  `Accepted, YYYY-MM-DD`. Both in the same commit — the suite checks the pair.
-  The two paragraphs in `docs/adr/README.md` that count the `Proposed` rows drop
-  by one, and this entry is deleted.
+Following this section's own recipe: the decision was settled, the accepted count
+moved by one, and the entry it replaced is gone rather than annotated. What is
+kept is the one thing the entry could not have predicted, because a reader of
+0031 needs it and the deleted entry is where they would have looked for it.
 
----
+**It was accepted with a condition, not plainly.** Open question 4 of that ADR
+("is the catalogue the right donor?") is promoted to *blocking*: the catalogue
+needs a surface of its own before more rows arrive. The entry deleted here argued
+the trade on a `BUILDABLE_REGISTRY` of two rows; the amendment at the foot of the
+ADR re-argued it at four and reported three of four behind a scroll at 900x600;
+ADR 0028 phase 4 then landed **twenty-one**. At the row height and list box that
+ADR measured, that is one row of twenty-one visible — derived from its own two
+figures, not re-measured, and labelled as derived in its Status.
 
+The generalisable part, and the reason this closure is longer than "deleted": a
+queue entry states the price of a decision *at the moment it is written*, and
+nothing re-reads it when a later change multiplies that price. This one was
+multiplied twice by an unrelated ADR's phases, between being written and being
+approved. **A queue entry whose argument rests on a count should name the count
+and where it lives**, so that the next reader can check it in one command rather
+than trusting the number. This entry did not, and the acceptance had to
+reconstruct it.
 ### ADR 0007 — an amendment: the shared flow-field plan, and the two caches under it
 
 - **What it is.** A `## Amendment, 2026-08-26 (awaiting approval)` section at the
@@ -409,6 +377,39 @@ because it is still the argument for why one row is worth reading.
   delete this entry. **No `Status` line and no `docs/adr/README.md` row move**:
   0007 is Accepted and an amendment to it does not change that, which is exactly
   why this row is the only record that a decision was outstanding.
+
+### ADR 0032 was accepted without ever appearing in this queue
+
+Recorded because it is this section's own rule failing, and the rule is worth
+more than the appearance of a clean record.
+
+[ADR 0032](./0032-incident-consequences-and-classification-review.md) — what an
+incident costs the prisoner who was in it — arrived with its implementing change
+on 2026-08-26 and was accepted the same day. **It never had an entry here.** Its
+author could not add one: this file was held by concurrent work, so the
+instruction they were given put it out of scope. They did the next best thing —
+recorded the debt in the ADR's own Status, recorded it again in
+[`README.md`](./README.md), and quoted the entry they would have written in the
+pull request — and the debt was then paid by nobody, because the acceptance
+arrived before the file was free.
+
+Two things follow, and neither is "try harder".
+
+**The rule as written is unsatisfiable under concurrency.** *"Any commit that adds
+an outstanding ADR adds an entry here in the same commit"* assumes one writer.
+With two changes in flight, one of them must either edit a file another is
+rewriting or break the rule; the author chose to break it visibly, which was the
+right call and should not be held against them. If this rule is to survive, the
+queue needs to be something two commits can append to without conflicting — a
+file per entry in a directory, most likely — or the rule needs to say what to do
+when the file is held.
+
+**An ADR can be approved faster than its queue entry can be written.** This
+section is addressed to the owner and exists so a pending decision is visible;
+0032 was visible enough to be decided without it. That is not evidence the queue
+is unnecessary — 0031 sat for a day *with* an entry — but it is evidence that the
+queue is not the only path, and a rule whose violation costs nothing observable
+will be violated again.
 
 ### Why the queue was emptied, and what that bought
 
