@@ -23,10 +23,19 @@
 -- Each assertion below pins an exact privilege set rather than "at least
 -- these", so an accidental over-grant fails just as loudly as a missing one.
 -- The per-table and per-role comparisons compare only the four DML
--- privileges, because REFERENCES, TRIGGER and MAINTAIN (which exists only
--- on PostgreSQL 17+) are ambient defaults that carry no Data API meaning,
--- and folding them into those aggregates would make this suite fail on a
--- server-version difference instead of on a privilege change.
+-- privileges, because folding REFERENCES, TRIGGER and MAINTAIN (which exists
+-- only on PostgreSQL 17+) into those aggregates would make this suite fail on
+-- a server-version difference instead of on a privilege change.
+--
+-- That is a portability constraint on *how* they are asserted, and it used to
+-- be written here as a claim that they "carry no Data API meaning" -- the same
+-- dismissal that was applied to TRUNCATE before #105 finding 3 and #163 found
+-- TRUNCATE was not nothing either. #280 finding F14 re-opened it: the
+-- dismissal held only while `has_schema_privilege(role, 'public', 'CREATE')`
+-- was false for all three roles, and nothing asserted that. All three are now
+-- revoked by 20260826120000 and swept below, from the ACL *text* rather than
+-- by privilege name, which is portable across server versions and exhaustive
+-- in a way naming them could not be.
 --
 -- TRUNCATE used to be dismissed with them, and is not one of them (issue
 -- #105 finding 3, issue #163). Supabase's default privileges `grant all on
@@ -74,7 +83,7 @@
 -- the TRUNCATE sweep to `service_role`.
 
 begin;
-select plan(28);
+select plan(33);
 
 -- Alphabetical because the aggregates below order by privilege name:
 -- DELETE, INSERT, SELECT, UPDATE.
@@ -242,7 +251,7 @@ select is(
      join pg_namespace n on n.oid = c.relnamespace
      cross join unnest(array['DELETE', 'INSERT', 'SELECT', 'UPDATE']) as p
     where n.nspname = 'public'
-      and c.relkind in ('r', 'v', 'm', 'p', 'f')
+      and c.relkind in ('r', 'v', 'm', 'p', 'f', 'S')
       and has_table_privilege('anon', c.oid, p)),
   'challenge_definitions:SELECT',
   'anon reaches exactly one relation in public: the challenge definitions, and only the rows its policy publishes'
@@ -264,7 +273,7 @@ select is(
      join pg_namespace n on n.oid = c.relnamespace
      cross join unnest(array['DELETE', 'INSERT', 'SELECT', 'UPDATE']) as p
     where n.nspname = 'public'
-      and c.relkind in ('r', 'v', 'm', 'p', 'f')
+      and c.relkind in ('r', 'v', 'm', 'p', 'f', 'S')
       and has_table_privilege('authenticated', c.oid, p)),
   replace($expected$challenge_definitions:SELECT
 challenge_submissions:SELECT
@@ -293,7 +302,7 @@ select is(
      join pg_namespace n on n.oid = c.relnamespace
      cross join unnest(array['DELETE', 'INSERT', 'SELECT', 'UPDATE']) as p
     where n.nspname = 'public'
-      and c.relkind in ('r', 'v', 'm', 'p', 'f')
+      and c.relkind in ('r', 'v', 'm', 'p', 'f', 'S')
       and has_table_privilege('service_role', c.oid, p)),
   replace($expected$challenge_definitions:INSERT
 challenge_definitions:SELECT
@@ -324,7 +333,7 @@ select is(
      join pg_namespace n on n.oid = c.relnamespace
      cross join lateral aclexplode(c.relacl) as a
     where n.nspname = 'public'
-      and c.relkind in ('r', 'v', 'm', 'p', 'f')
+      and c.relkind in ('r', 'v', 'm', 'p', 'f', 'S')
       and a.grantee = 0),
   null,
   'nothing in public is granted to PUBLIC, so the per-role sweeps above are the whole story'
@@ -367,11 +376,145 @@ select is(
      join pg_namespace n on n.oid = c.relnamespace
      cross join unnest(array['anon', 'authenticated', 'service_role']) as r(role)
     where n.nspname = 'public'
-      and c.relkind in ('r', 'v', 'm', 'p', 'f')
+      and c.relkind in ('r', 'v', 'm', 'p', 'f', 'S')
       and has_table_privilege(r.role, c.oid, 'TRUNCATE')),
   null,
   'no Data API role may TRUNCATE anything in public: it would ignore RLS and fire no row trigger'
 );
+
+-- --- The rest of the ambient residue, and the default that regenerates it ---
+--
+-- (issue #280 findings F14 and F15, and the class F14 sits inside.)
+--
+-- This file's header says REFERENCES, TRIGGER and MAINTAIN are "ambient
+-- defaults that carry no Data API meaning" and folds them out of the
+-- aggregates above so a server-version difference cannot fail the suite. The
+-- first half of that was the same reasoning applied to TRUNCATE, which turned
+-- out to be #105 finding 3 and #163. #280 section 5 put the question to the
+-- owner and the answer is the one #163 gave: revoke them, symmetrically, across
+-- the whole schema. `20260826120000_revoke_ambient_table_privileges.sql` does
+-- it, and ADR 0008 section 2 records the ruling generalised so the next ambient
+-- privilege needs no third one.
+--
+-- The second half of the header's reasoning still stands, and this assertion is
+-- shaped by it. Naming MAINTAIN in SQL is a syntax error on PostgreSQL 16 and
+-- this schema runs on 16 and 18, so the sweep reads the ACL *text* instead of
+-- calling `has_table_privilege` per privilege name: an aclitem renders as
+-- `grantee=privileges/grantor`, and the privilege letters are the alphabet of
+-- whatever the running server supports. Asserting that no letter outside the
+-- four DML ones appears is therefore portable **and** exhaustive -- it covers
+-- TRUNCATE (`D`), REFERENCES (`x`), TRIGGER (`t`), MAINTAIN (`m`) and anything
+-- a future major version adds, without naming any of them.
+--
+-- Sequences are swept with a stricter rule: no letter at all. There are none
+-- today -- every key in this schema is a `uuid` -- which is exactly why F15
+-- filed the gap as latent rather than live. What makes it stop being latent is
+-- `scripts/sql/supabase-compat-harness.sql:79,83-84`, which reproduces
+-- Supabase's `alter default privileges ... grant all on sequences` and the
+-- revoke of only `usage, select`: the residue is `UPDATE`, and UPDATE on a
+-- sequence is `setval`. The first `bigserial` or identity column would arrive
+-- with all three roles able to rewind its counter, and the DML sweeps above --
+-- now widened to `relkind = 'S'` as F15 asks -- would report it as ordinary
+-- UPDATE while this one reports it as a privilege a sequence should not hold.
+select cmp_ok(
+  (select count(*)::int
+     from pg_class c
+     join pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = 'public'
+      and c.relkind in ('r', 'v', 'm', 'p', 'f', 'S')),
+  '>=',
+  9,
+  'the relation sweeps above found the relations they claim to cover; an empty scan would satisfy every null expectation'
+);
+
+select is(
+  (select string_agg(
+            c.relname || ':' || split_part(item, '=', 1) || '='
+              || split_part(split_part(item, '=', 2), '/', 1),
+            ' ' order by c.relname, item)
+     from pg_class c
+     join pg_namespace n on n.oid = c.relnamespace
+     cross join lateral unnest(c.relacl) as u(aclitem)
+     cross join lateral (select u.aclitem::text as item) as t
+    where n.nspname = 'public'
+      and c.relkind in ('r', 'v', 'm', 'p', 'f', 'S')
+      and split_part(item, '=', 1) in ('anon', 'authenticated', 'service_role')
+      and split_part(split_part(item, '=', 2), '/', 1)
+            ~ (case when c.relkind = 'S' then '.' else '[^rawd]' end)),
+  null,
+  'no Data API role holds a privilege outside the four DML ones on any relation in public, and none at all on a sequence'
+);
+
+-- The durable half, and the half #280 did not find.
+--
+-- Both TRUNCATE revokes note that `on all tables in schema public` expands at
+-- execution time, so a table added later inherits the ambient privilege again,
+-- and both point at the sweep above as what fails when it does. Executed: that
+-- is true -- a `create table public.newly_added_table (...)` appended to
+-- 20260824150000, with RLS enabled, one own-row policy and
+-- `grant select ... to authenticated`, failed the TRUNCATE sweep on the next
+-- run of `pnpm verify:sql`.
+--
+-- But it fails *after* the table exists, and the fix a reader then applies is a
+-- fourth `revoke truncate on all tables`. What regenerates the defect is the
+-- default privilege itself, which before 20260826120000 read
+--
+--   r | {anon=Dxt/root,authenticated=Dxt/root,service_role=Dxt/root}
+--   S | {anon=w/root,authenticated=w/root,service_role=w/root}
+--
+-- -- TRUNCATE, REFERENCES and TRIGGER on every table created in `public` from
+-- then on, and UPDATE on every sequence. Revoking it is one statement and it
+-- holds for tables nobody has written yet, which is the only kind this sweep
+-- cannot enumerate.
+select is(
+  (select string_agg(
+            d.defaclobjtype::text || ':' || split_part(item, '=', 1) || '='
+              || split_part(split_part(item, '=', 2), '/', 1),
+            ' ' order by d.defaclobjtype::text, item)
+     from pg_default_acl d
+     join pg_namespace n on n.oid = d.defaclnamespace
+     cross join lateral unnest(d.defaclacl) as u(aclitem)
+     cross join lateral (select u.aclitem::text as item) as t
+    where n.nspname = 'public'
+      and split_part(item, '=', 1) in ('anon', 'authenticated', 'service_role')),
+  null,
+  'no default privilege in public grants a Data API role anything, so the next table does not arrive pre-exposed'
+);
+
+-- ...and the behavioural half, because the catalog assertion above would pass
+-- against a `pg_default_acl` that is empty for the wrong reason -- a different
+-- grantor role, a renamed schema. This creates the two object kinds the default
+-- covers and reads their ACLs back, which is the property the migration
+-- actually claims. Rolled back with the rest of the suite.
+create table public.zz_future_table_probe (id uuid primary key);
+create sequence public.zz_future_sequence_probe;
+
+select cmp_ok(
+  (select count(*)::int from pg_class c
+     join pg_namespace n on n.oid = c.relnamespace and n.nspname = 'public'
+    where c.relname in ('zz_future_table_probe', 'zz_future_sequence_probe')),
+  '=',
+  2,
+  'both probe relations were created, so the assertion below is not passing on an empty scan'
+);
+
+select is(
+  (select string_agg(
+            c.relname || ':' || split_part(item, '=', 1) || '='
+              || split_part(split_part(item, '=', 2), '/', 1),
+            ' ' order by c.relname, item)
+     from pg_class c
+     join pg_namespace n on n.oid = c.relnamespace and n.nspname = 'public'
+     cross join lateral unnest(coalesce(c.relacl, '{}'::aclitem[])) as u(aclitem)
+     cross join lateral (select u.aclitem::text as item) as t
+    where c.relname in ('zz_future_table_probe', 'zz_future_sequence_probe')
+      and split_part(item, '=', 1) in ('anon', 'authenticated', 'service_role')),
+  null,
+  'a table and a sequence created now arrive with no grant for any Data API role: the next migration starts closed'
+);
+
+drop table public.zz_future_table_probe;
+drop sequence public.zz_future_sequence_probe;
 
 -- --- Callable RPCs ---
 --

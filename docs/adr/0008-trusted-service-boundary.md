@@ -82,6 +82,34 @@ trusted mutation to record actor, reason and prior value, and no audit trail
 on the trusted write path exists yet (#105 finding 8), so a truncated ledger
 would leave no record that it happened.
 
+**Generalised, 2026-08-26 (issue #280 finding F14): a Data API role holds
+exactly the DML privileges its zone needs on a table, and nothing else.**
+`TRUNCATE` was the first ambient privilege Supabase's `grant all on tables`
+left behind; `REFERENCES`, `TRIGGER` and — from PostgreSQL 17 — `MAINTAIN`
+were the rest, and they were dismissed in
+`supabase/tests/003_data_api_grants.test.sql` as carrying "no Data API
+meaning". They do carry none *today*, and that is the problem with the
+dismissal rather than a defence of it: `TRIGGER` is inert only because no
+role can `EXECUTE` a trigger function, `REFERENCES` only because no role
+holds `CREATE` on a schema, and neither condition was asserted anywhere.
+`20260826120000_revoke_ambient_table_privileges.sql` revokes all three, and
+the sweep that pins it reads privilege *letters* out of the ACL rather than
+naming privileges, so it holds on a server version this schema has not been
+run on yet.
+
+The same migration revokes the `ALTER DEFAULT PRIVILEGES` entries that hand
+those privileges back. That is the half the three preceding revokes left
+open: each expanded `on all tables in schema public` at execution time, so
+the next table created in `public` arrived TRUNCATE-able again, and the
+mitigation was a schema-wide sweep that fails *after* the table exists.
+Executed before the revoke, a freshly created table came out
+`{…,anon=Dxt/root,authenticated=Dxt/root,service_role=Dxt/root}` with
+`has_table_privilege('anon', …, 'TRUNCATE')` true; after it, with a null ACL.
+The residue on sequences was `UPDATE`, which is `setval` — latent only
+because every key in this schema is a `uuid` (#280 finding F15). **The rule
+this settles for every future table is that a new relation in `public`
+starts closed, and its migration opens exactly what it means to open.**
+
 ### 3. Mandatory shape of a Z2 entry point
 
 Every trusted mutation path, without exception, is:
