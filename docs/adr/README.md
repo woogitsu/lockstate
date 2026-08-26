@@ -299,9 +299,13 @@ comments and `tests/`, none of which any assertion would have reported as
 same rule, which is the one recorded further down for the kernel ADR: **take the
 lowest number free without coordinating with unmerged or held work.** 0028 was
 then allocated out of band — by the owner, across the open branches — and `0029`
-is stated above because
+was the number stated above **at the time**, because
 `tests/foundation/adr-numbering-contract.test.ts` derives the next free number
-from the highest number on disk rather than from the lowest unused one.
+from the highest number on disk rather than from the lowest unused one — which
+is still how it works, and is why the bolded line above has since moved well
+past 0029. **This sentence named 0029 in the present tense and went stale the
+next time that line moved**; it is the mechanism that matters here, not the
+number, so the number is no longer restated.
 
 Two consequences worth stating rather than leaving to be rediscovered. **A gap
 closes from below as those PRs merge**, and each merge is a row added here, not a
@@ -331,8 +335,10 @@ opening balance, which is ADR 0017 decision 1 — so this table releases the
 number, exactly as the previous version of this section said it should on that
 outcome.
 
-**0018 is therefore available.** It is not the next free number (0029 is), and
-it should not be reached for preferentially: a gap in the sequence is easier to
+**0018 is therefore available.** It is not the next free number — the bolded
+**Next free number** line above is the only place that says which is, and this
+parenthetical used to name one and contradict it — and 0018
+should not be reached for preferentially: a gap in the sequence is easier to
 read than a number reused years apart. Take it only if a future ADR is a direct
 successor to what #91 proposed, where sharing the number would be
 informative rather than confusing.
