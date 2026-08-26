@@ -53,14 +53,20 @@ So the standing rules for anything added here:
 | [2026-08-25 room zoning gesture](./2026-08-25-room-zoning-gesture.md) | What gesture designates a room, and where does the control live? | ADR 0022 |
 | [2026-08-25 room occupancy](./2026-08-25-room-occupancy.md) | Where does a room's occupancy capacity come from? | ADR 0023 |
 | [2026-08-25 economy rate](./2026-08-25-economy-rate.md) | What does the state pay per prisoner-day, on what cadence, from what balance? | [#29](https://github.com/matmaxalez/lockstate/issues/29), within ADR 0017 |
+| [2026-08-26 failure modes](./2026-08-26-failure-modes.md) | What should failing look like, and what is the cheapest honest route to it from what already exists? | None yet — it states two shapes and declines to pick |
 
-### Findings from these three that changed a decision
+### Findings from these four that changed a decision
 
 Recorded here because each contradicted something the project believed, and a
 reader who only sees the resulting ADR will not know the belief was ever held.
 
-**These were true on 2026-08-25 and they are written in the present tense, which
-is a trap this index laid for itself.** The rule above — *"a record here does not
+**The first seven bullets were true on 2026-08-25 and the last three on
+2026-08-26, and all of them are written in the present tense, which is a trap
+this index laid for itself.** Each bullet belongs to the record it came from and
+the table above says which; this sentence has to be re-read whenever a record is
+added, which is the habit `docs/adr/STATUS-QUEUE.md` asks of its anchor line, for
+the same reason and with the same failure available if nobody does. The rule
+above — *"a record here does not
 become wrong, it becomes older"* — protects the dated files, and it cannot
 protect a summary that says "currently" and "today" in the index. So the bullets
 keep what was found, because that is the point of the section, and each one that
@@ -102,3 +108,32 @@ it the same way.
   twelve-wall perimeter finishes at tick 730 rather than at 70. Money is
   therefore no longer the only constraint on building, which is the half of
   this finding an economy memo would have leaned on.
+
+**Added 2026-08-26**, from the failure-mode record. The first two extend the
+"pack the prison" bullet above rather than replacing it: that bullet is right,
+and it stopped one step short of its own consequence.
+
+- **"Running out of money" is not a failure mode either — it is not even
+  representable.** `Treasury.spend` refuses rather than overdrawing, the balance
+  is validated non-negative in four places, and nothing debits it on a schedule,
+  so a running prison's balance is monotonically non-decreasing. The premise that
+  money was the *one* failure mode understated the gap: there were none. Measured
+  over ten in-game days with one housed prisoner, the balance closes at 27,935
+  from an opening 25,000.
+- **No incident can fire in any session a player can start, and the missing
+  producer is not the reason.** `IncidentTriggerSystem` iterates a watched-sector
+  array that only the restore path ever writes, and none of the eleven protocol
+  commands creates a sector — but wiring one by hand does not help. Contraband
+  pressure has no producer, so the risk score cannot exceed
+  `0.5 x needsPressure + 0.3`; `needsPressure` reads the `safety` need alone; and
+  `safety` is raised twenty times faster than it decays by the sleep action,
+  which requires the very bed `AdmitPrisoner` refuses an arrival without.
+  **The hard gate on occupancy and the riot trigger are wired in mutual
+  exclusion.** Measured fully wired, with zero guards against a four-guard
+  schedule: 0.32 against a 0.6 threshold, and no incident in 25 in-game days.
+- **"Until a session/scenario registers them" defers to a caller that has never
+  been written.** There is no scenario type, class or module under `src/` at all.
+  The same deferral leaves the escape-opportunity resolver, the incident
+  summariser, the incident alert projection and the whole tunnel registry with no
+  caller in `src/` — the same class as issue #287's two uncalled capabilities,
+  three layers deeper.
