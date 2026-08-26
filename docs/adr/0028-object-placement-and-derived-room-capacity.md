@@ -763,9 +763,25 @@ rejection of the entity model.
 ### Phase 4 — the rest of the object catalogue
 
 **Ships:** buildables for the remaining object ids the room catalogue already
-requires — shower head, sink, dining table, bench, chair, desk, stove, prep
+requires — shower head, dining table, bench, chair, desk, stove, prep
 counter, fridge, bookshelf, and the rest. Content rows and locale strings, no
 new mechanism.
+
+> **Correction, 2026-08-26, made while implementing this phase.** This list
+> named **sink** among "the object ids the room catalogue already requires",
+> and the *Gates* paragraph below says in the same section that `object.sink`
+> "is the one entry a room requirement does not reach". Both cannot be true, and
+> the Gates paragraph is the one that is: no room definition in
+> `src/content/room-catalog.ts` requires a sink. The name is struck from the
+> list rather than the sentence from the Gates paragraph, because the list is
+> the mistake — this phase's scope is the ids the room catalogue requires, and a
+> sink is not one. Nineteen of the twenty declared objects are required by some
+> room; the sink is the twentieth.
+>
+> The consequence is that phase 4 shipped **seventeen** buildable rows and not
+> eighteen, and `object.sink` keeps its `AWAITING_CONSUMER` entry — which is the
+> only record that no room asks for a sink and that #141 owes the decision of
+> which room should. Placing it would have deleted that record to no end.
 
 **What it unblocks:** `action.shower` (the one need that genuinely requires a
 placed capability), `action.eat-meal` in a canteen, and the object requirements
@@ -784,6 +800,39 @@ identical, so splitting them would be ceremony.
 substantially — up to 17 `AWAITING_CONSUMER` object entries and the exact-count
 triple. `object.sink` is the one entry a room requirement does not reach, so it
 moves only if something places it.
+
+**What it actually moved, measured on the branch that shipped it.** Fourteen
+entries were deleted and the triple moved twice as far as the entry count, which
+is the distinction that file reports two measures for:
+`unconsumedBySrcAndTests` 30 → 16 and `unconsumedBySrcOnly` 49 → 32. Seventeen
+ids gained a first `src/` consumer — every row names its object through
+`placesObjectId` — but three of them (`object.bench`, `object.dining-table`,
+`object.storage-rack`) were already named by a test and so had no entry to
+delete, exactly as `object.bed` and `object.toilet` had none in phases 1 and 2.
+The fourteenth deletion is `object.loading-dock-door`, and it left
+`PROTECTED_BY_DECISION` rather than `AWAITING_CONSUMER`: the stale-entry gate
+requires it, and its protection is stronger afterwards, because
+`validateBuildableObjectReferences` throws at import if a catalogued id a
+buildable names is deleted.
+
+**Two things this phase did not need, and one it could not express.** It needed
+**no locale key at all** — `buildableLabelKey` reads an object buildable's label
+off the object's own `nameKey` and all twenty already shipped in
+`src/content/default-locale-en.ts` — so the "and locale strings" half of *Ships*
+above turned out to be already done. And gap 13 stayed *half*-answerable rather
+than becoming answered: `requirementStatus` still compares capabilities and
+never counts objects, so one chair still satisfies a classroom's requirement for
+four. Making it count is a mechanism, not a row, so it is not in a phase whose
+whole claim is that it adds no mechanism.
+
+What it could not express is **orientation**. `DEFAULT_PLACEMENT_ORIENTATION` is
+`0` for every placement and decision 5's rotate control does not exist, so a
+player cannot turn the `3x2` dining table or the `3x1` loading dock door. No room
+type is blocked by it — every required object fits its room's authored minimum
+unrotated, which
+`tests/foundation/object-buildable-cost-contract.test.ts` now checks — so this is
+a usability limit rather than a hole, and it is already owed to the phase that
+adds the control.
 
 ### Phase 5 — the Rooms tab readout
 
