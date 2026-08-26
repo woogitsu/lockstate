@@ -1845,6 +1845,166 @@ test.describe('the assembled application', () => {
   });
 
   /**
+   * The Build panel in the state a player *arrives* in, on the assembled page
+   * (#174, and ADR 0031 decision 3's first bullet).
+   *
+   * **Why this is not the sweep above.** That test measures the same panel, in
+   * the same rail, at the same five viewports -- and since #367 it measures it
+   * with **six orders queued**, always. It has to: the queue block's four
+   * controls exist in the DOM at every moment and are laid out in none of the
+   * states it would otherwise visit, so without the queue its `neverLaidOut`
+   * gate fails and names them. The consequence is that every Build-panel
+   * measurement on this page is now a measurement of the *queued* panel, and
+   * the empty queue -- which is what a player loads the game into -- stopped
+   * being measured here at all.
+   *
+   * That state is not an uninteresting one. It is the state #174 was filed
+   * about, and ADR 0031's first bullet is a claim about it in terms: "No box
+   * until something is queued. An empty queue is the arrival state, so the
+   * panel's arrival height is unchanged from what #174 left." The only place
+   * that claim is measured is `tests/browser/ui-build-queue.spec.ts`, whose
+   * harness leaves `hud.asideSlot` empty -- `.hud__aside:empty { display: none }`
+   * then hands the Build panel 128.7px more rail than the application ever
+   * gives it, which is precisely the surface #174 proved cannot reproduce this
+   * class of defect. So the claim was resting on a page with no rail contention
+   * in it.
+   *
+   * **What it measures**, all of it with nothing scrolled and nothing opened,
+   * at 900x600 -- the viewport that presses, where the rail is 482.8px and the
+   * save panel's floor takes 120.7px of it:
+   *
+   *   - the queue block has no box at all, so this really is the arrival state
+   *     and the numbers below are not about a different panel;
+   *   - the panel is 338.1px of box holding 338.1px of content, `scrollTop` 0;
+   *   - "Enter coordinates" -- the last section that *is* laid out here -- ends
+   *     at y=513.9 against a fold at y=521.7, 7.8px inside it;
+   *   - no box in the shrink chain is shorter than its own content: the body is
+   *     291.2px over 291.2px and the catalogue 136px over 136px, both exactly
+   *     on the floors `hud.css` sums for them;
+   *   - and the catalogue list, which is the one box here that is *meant* to
+   *     hold more than it shows, really is scrollable: `BUILDABLE_REGISTRY` has
+   *     four entries, so it holds 176px of rows in the 88px its floor gives it
+   *     at this viewport, and two of the four are behind that scroll.
+   *
+   * **Proven to bite, rather than assumed to.** With `hud.css`'s
+   * `max-height: 700px` block -- the short-viewport trims #174 was closed with
+   * -- deleted and nothing else changed, this goes red at 900x600 and nowhere
+   * else: the panel arrives 60px over its box, "Enter coordinates" ends 59.8px
+   * past the fold, and the body is 32px shorter than its own content. Three of
+   * the assertions below, on the same run, and the other four viewports stay
+   * green -- which is the shape the original defect had.
+   */
+  test('the Build panel arrives inside its own fold, with nothing queued (#174)', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await openApp(page);
+    // A prison in the list is the state a player reaches with the first thing
+    // they do, and it is what fills the rail's aside slot -- which is the whole
+    // reason this measurement is here rather than in a harness.
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.save-panel__item-label').first()).toContainText('New Prison');
+    await page.getByRole('button', { name: 'Build' }).click();
+    await expect(page.locator('.hud-build')).toBeVisible();
+
+    for (const [width, height] of [
+      [1280, 720],
+      [1440, 900],
+      [1024, 768],
+      [900, 600],
+      [375, 812],
+    ] as const) {
+      await page.setViewportSize({ width, height });
+      await expect
+        .poll(async () => (await canvasMetrics(page))?.cssWidth, { message: `canvas did not follow ${width}px` })
+        .toBe(width);
+
+      const arrival = await page.evaluate(() => {
+        const panel = document.querySelector('.hud-build');
+        const list = document.querySelector('.hud-build__list');
+        const queue = document.querySelector('.hud-build__queue');
+        if (panel === null || list === null || queue === null) return null;
+        const sections = [...document.querySelectorAll('.hud-build .ui-section')].filter(
+          (section) => section.getClientRects().length > 0,
+        );
+        const last = sections.at(-1)?.querySelector('.ui-section__header') ?? null;
+        if (last === null) return null;
+        const scrollTop = panel.scrollTop;
+        panel.scrollTop = 0;
+        const p = panel.getBoundingClientRect();
+        return {
+          scrollTop,
+          panelHeight: Math.round(p.height),
+          panelOverflow: panel.scrollHeight - panel.clientHeight,
+          panelTop: p.top,
+          panelBottom: p.bottom,
+          fold: p.top + panel.clientTop + panel.clientHeight,
+          queueLaidOut: queue.getClientRects().length > 0,
+          lastText: last.textContent?.trim() ?? '',
+          lastBottom: last.getBoundingClientRect().bottom,
+          listOverflow: list.scrollHeight - list.clientHeight,
+          listOverflowY: getComputedStyle(list).overflowY,
+          shortfalls: [
+            '.hud-build > .ui-panel__body',
+            '.hud-build__catalogue',
+            '.hud-build__catalogue > .ui-section__body',
+          ]
+            .map((selector) => {
+              const box = document.querySelector(selector);
+              if (box === null) return `${selector} has no box`;
+              const shortfall = box.scrollHeight - box.clientHeight;
+              return shortfall === 0 ? null : `${selector} is ${shortfall}px shorter than its own content`;
+            })
+            .filter((entry) => entry !== null),
+        };
+      });
+
+      expect(arrival, `the Build panel has no laid-out section at ${width}x${height}`).not.toBeNull();
+      if (arrival === null) continue;
+      // Vacuity guard, the one the Rooms panel's sibling assertion carries: a
+      // panel that failed to lay out reports plausible, meaningless numbers and
+      // every comparison below would hold.
+      expect(arrival.panelHeight, `the Build panel is not laid out at ${width}x${height}`).toBeGreaterThan(150);
+      // And the state is the one this test claims to be about. A queue laid out
+      // here would mean something had queued an order, the catalogue's floor had
+      // dropped to one row (`.hud-build[data-queued]`), and every figure below
+      // was about a different panel.
+      expect(arrival.queueLaidOut, `something is queued at ${width}x${height}`).toBe(false);
+      expect(arrival.scrollTop, `something had already scrolled the Build panel at ${width}x${height}`).toBe(0);
+      expect(
+        arrival.panelOverflow,
+        `the Build panel arrives with more content than box at ${width}x${height}`,
+      ).toBe(0);
+      // Read from the bundled catalog rather than typed as English: ADR 0011
+      // puts the key on one side of that boundary and the text on the other.
+      expect(arrival.lastText, `the panel's last laid-out section at ${width}x${height}`).toBe(
+        localeText('hud.build.coordinates'),
+      );
+      expect(
+        arrival.lastBottom,
+        `"${arrival.lastText}" is below the unscrolled Build panel's fold at ${width}x${height}: it ends at y=${Math.round(arrival.lastBottom)} in a panel clipped at y=${Math.round(arrival.fold)}`,
+      ).toBeLessThanOrEqual(arrival.fold);
+      expect(
+        arrival.shortfalls,
+        `boxes in the arriving Build panel shorter than their own content at ${width}x${height}`,
+      ).toEqual([]);
+      // The list is the exception, and the exception has to be reachable: it is
+      // holding rows the panel cannot show, so `overflow-y` is what makes the
+      // buildables behind the fourth row something a player can get to.
+      expect(
+        arrival.listOverflowY,
+        `the catalogue list holds ${arrival.listOverflow}px it cannot show and is not scrollable at ${width}x${height}`,
+      ).toBe('auto');
+      // The panel itself is on screen, which is the rail's claim rather than the
+      // panel's and is why it is asserted separately.
+      expect(arrival.panelTop, `the Build panel starts above the viewport at ${width}x${height}`).toBeGreaterThanOrEqual(
+        -0.5,
+      );
+      expect(arrival.panelBottom, `the Build panel runs past the viewport at ${width}x${height}`).toBeLessThanOrEqual(
+        height + 0.5,
+      );
+    }
+  });
+
+  /**
    * The Rooms panel's own geometry, on the assembled page (ADR 0022, amended).
    *
    * **This has to be here rather than in `ui-shell.spec.ts` for the reason the
