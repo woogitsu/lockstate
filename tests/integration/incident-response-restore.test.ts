@@ -87,8 +87,31 @@ const GUARDS_HIRED = 6;
 const SEVERITY = 8;
 /** #352's reproduction hires every guard on the same origin tile. */
 const GUARD_ORIGIN = { x: tileCoordinate(0), y: tileCoordinate(0) } as const;
-/** `respondersPerSeverityPoint` is 0.5, so a severity-8 riot needs four. Derived from the policy, not copied. */
-const REQUIRED_RESPONDERS = Math.max(1, Math.ceil(SEVERITY * DEFAULT_INCIDENT_RESPONSE_POLICY.respondersPerSeverityPoint));
+/**
+ * `respondersPerSeverityPoint` is 0.5 and the requirement rounds up, so a
+ * severity-8 riot needs four.
+ *
+ * **A literal, and it used to be derived** -- `Math.max(1, Math.ceil(SEVERITY *
+ * DEFAULT_INCIDENT_RESPONSE_POLICY.respondersPerSeverityPoint))`, under a
+ * comment approving of the derivation. That is `IncidentResponseSystem`'s own
+ * expression copied into the test, and what it costs is precise, so it is
+ * worth stating precisely rather than overstating (#416): most assertions
+ * using this constant compare it against *observed* runtime state -- guard
+ * phases, dispatch metrics -- so they do bite when the requirement changes
+ * (measured: halving the requirement turns ten cases in this file red, with
+ * the derivation still in place). What a self-derived constant cannot do is
+ * notice a change to the *rule that computes it*: it re-derives, follows, and
+ * the comparison holds. `Math.ceil` -> `Math.floor` was a whole-suite survivor
+ * at v0.0.121, and this file could never have been the one to catch it --
+ * `SEVERITY` is 8, and half of an even number needs no rounding at all.
+ *
+ * The rule is now pinned where it belongs, in
+ * `tests/unit/incident-response.test.ts`, at odd severities where ceiling and
+ * floor differ. Here the policy inputs this figure was read from are asserted
+ * instead, so a changed policy fails loudly rather than silently re-deriving a
+ * number that no longer describes the scenario this file sets up.
+ */
+const REQUIRED_RESPONDERS = 4;
 const POST_TILE = { x: tileCoordinate(3), y: tileCoordinate(1) } as const;
 /**
  * The whole `security.sectorControlStates` payload while `SECTOR_ID` is locked
@@ -303,6 +326,19 @@ const RESOLVE_TICKS_LATE_BY_CONTAINMENT_PROGRESS = [
 const LAPSE_TICK = 611;
 
 describe('a save taken during an incident response releases what the response claimed', () => {
+  it('is set up on the policy this file assumes, so REQUIRED_RESPONDERS stays a description of it', () => {
+    // The half a derived constant used to hide (#416). `REQUIRED_RESPONDERS` is
+    // now the literal 4, so the inputs it was read from have to be pinned
+    // somewhere or a changed policy would leave nine assertions quietly
+    // describing a scenario that no longer happens. This is that somewhere --
+    // and unlike the derivation it replaces, it fails when the policy moves
+    // instead of following it.
+    expect(SEVERITY).toBe(8);
+    expect(DEFAULT_INCIDENT_RESPONSE_POLICY.respondersPerSeverityPoint).toBe(0.5);
+    expect(REQUIRED_RESPONDERS).toBe(4);
+    expect(GUARDS_HIRED).toBeGreaterThan(REQUIRED_RESPONDERS); // the pool can fill two responses over
+  });
+
   it('reproduces the save-time state #352 measured: four responders committed and the sector locked down', () => {
     const runtime = buildRespondingPrison();
 

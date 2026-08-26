@@ -681,7 +681,15 @@ describe('incidents', () => {
     expect(riot).toMatchObject({ type: 'riot', sectorId: 'sector-a', severity: 8, participantCount: 3, terminal: false });
     expect(riot.severityBar).toEqual(toBoundedValue(8, 10));
     expect(riot.ageTicks).toBe(10);
-    expect(riot.requiredResponders).toBe(runtime.incidentResponseSystem.requiredResponderCount(8));
+    // A literal, not `runtime.incidentResponseSystem.requiredResponderCount(8)`
+    // (#416). Asking the production code what it thinks the answer is and then
+    // asserting the projection agrees holds for every implementation of the
+    // rule, including a wrong one -- the projection reads that exact method, so
+    // the two sides were one side. `respondersPerSeverityPoint` is 0.5 and the
+    // requirement rounds up, so a severity-8 riot needs four; the rule itself
+    // is pinned in `tests/unit/incident-response.test.ts`, and what belongs
+    // here is that the projection publishes it rather than something else.
+    expect(riot.requiredResponders).toBe(4);
   });
 
   it('never exposes the hidden cause factors that produced an incident', () => {

@@ -60,6 +60,75 @@ describe('IncidentResponseSystem: real guards, real routes, real lockdown', () =
     expect(guards.getDeploymentPhase(guards.allGuardIds()[0]!)).toBe('unassigned'); // never claimed
   });
 
+  /**
+   * The staffing rule, at the only inputs that can see it (#416).
+   *
+   * `requiredResponderCount` is `Math.max(1, Math.ceil(severity * 0.5))` and
+   * its policy comment says "rounded up". The suite sampled severity 2 and
+   * severity 8 -- both even, and half of an even number is an integer, so
+   * `Math.ceil` and `Math.floor` returned the same number for every input
+   * anything ever passed it. Measured at v0.0.121: `Math.ceil` -> `Math.floor`
+   * left **238 files / 2,696 tests green**. What it ships is a severity-9 riot
+   * answered by four guards instead of five, everywhere in the game, silently.
+   *
+   * The expected counts are worked out from the documented rule and written
+   * down, never computed by calling the policy through the same expression the
+   * production code uses. Two places did that and have been changed with this
+   * one: `tests/unit/hud-projections.test.ts` asserted the projected figure
+   * against `requiredResponderCount(8)` -- the very method the projection
+   * calls, so both sides were one side and it caught nothing at all
+   * (measured); and `tests/integration/incident-response-restore.test.ts`
+   * re-derived the requirement from the policy, which follows a changed rule
+   * instead of failing on it.
+   */
+  it('rounds the responder requirement up, which only an odd severity can show', () => {
+    const { response } = buildHarness();
+
+    // ceil(1.5)=2, ceil(2.5)=3, ceil(3.5)=4, ceil(4.5)=5. Rounding down would
+    // answer 1, 2, 3, 4 -- one guard short at every odd severity there is.
+    expect(response.requiredResponderCount(3)).toBe(2);
+    expect(response.requiredResponderCount(5)).toBe(3);
+    expect(response.requiredResponderCount(7)).toBe(4);
+    expect(response.requiredResponderCount(9)).toBe(5);
+
+    // The floor of the same expression, and it is deliberately a different
+    // list: a fixture that could not distinguish the two is the defect this
+    // case exists for.
+    expect([3, 5, 7, 9].map((severity) => response.requiredResponderCount(severity))).not.toEqual([1, 2, 3, 4]);
+
+    // Even severities still round to the same figures they always did, so
+    // this is a floor pinned at the ceiling and not a change of rule.
+    expect(response.requiredResponderCount(2)).toBe(1);
+    expect(response.requiredResponderCount(8)).toBe(4);
+    // And the `max(1, ...)`: severity 1 halves to 0.5, which no prison answers
+    // with nobody.
+    expect(response.requiredResponderCount(1)).toBe(1);
+  });
+
+  it('refuses to dispatch an odd-severity incident on the rounded-down number of guards', () => {
+    // The same rule where a player would meet it. Severity 3 needs two guards;
+    // one is what rounding down would call enough. Below the lockdown
+    // threshold (6), so nothing here depends on doors.
+    const { cellBlock, guards, incidents, response, kernel } = buildHarness();
+    incidents.open({ id: 'incident-odd', type: 'assault', sectorId: 'block-a', participantIds: [1], severity: 3, causeFactors: [] }, 0);
+    guards.hire('staff-role.guard', cellBlock.canteenTiles[0]!);
+
+    for (let i = 0; i < 20; i += 1) kernel.step();
+
+    expect(incidents.get('incident-odd')!.state, 'one guard is not enough for a severity-3 incident').toBe('active');
+    expect(response.getMetrics().respondersDispatched).toBe(0);
+    expect(guards.getDeploymentPhase(guards.allGuardIds()[0]!)).toBe('unassigned'); // never claimed
+
+    // And the second guard is what unblocks it, so this is a boundary rather
+    // than an incident that could never have been answered at all: the
+    // response is mounted with exactly two, and it resolves.
+    guards.hire('staff-role.guard', cellBlock.canteenTiles[0]!);
+    for (let tick = 0; tick < 2_000 && response.getMetrics().incidentsResolved < 1; tick += 1) kernel.step();
+
+    expect(incidents.get('incident-odd')!.state).toBe('resolved');
+    expect(response.getMetrics().respondersDispatched).toBe(2);
+  });
+
   it('a severe incident drives the sector into real lockdown and back to normal on resolution', () => {
     const { cellBlock, sectors, guards, incidents, response, kernel } = buildHarness();
     for (let i = 0; i < 4; i += 1) guards.hire('staff-role.guard', cellBlock.canteenTiles[0]!);
