@@ -330,13 +330,20 @@ audited in one direction.
   moved. `RoomZoningService` no longer hardcodes the zero — it resolves a
   derived figure through a collaborator (`src/simulation/rooms/zoning.ts:330`,
   called at `:444`) — and two object ids are now built by construction
-  definitions (`placesObjectId: 'object.bed'` and `'object.toilet'`,
-  `src/simulation/construction/definition.ts:87` and `:147`), so something does
-  place, build and read an object. What has **not** moved is the second ground
+  definitions (`placesObjectId: 'object.bed'` on `BUILDABLE_REGISTRY`'s
+  `bed-wooden` row and `'object.toilet'` on its `toilet-brick` row,
+  `src/simulation/construction/definition.ts`; cited by symbol rather than by
+  line, because the two line numbers this entry used to give have already
+  drifted once), so something does place, build and read an object. What has **not** moved is the second ground
   and the observable outcome: no room definition authors a capacity, and an
   empty zoned room still derives zero, which is why ADR 0027's tripwire below
   is still green rather than fired. Phases 1-2 of 0028 landed in #320, #321 and
-  #323; the remaining phases are the rest of its own *What this costs*.
+  #323; the remaining phases are the rest of its own *What this costs*. One
+  thing phase 1 promised is now true and was **not** delivered by any phase:
+  `door-wooden` builds a real door. It could not be an object placement — a door
+  is a fact about a tile edge — so it is edge geometry plus a `DoorRegistry`
+  row, it contributes nothing to either derived capacity, and 0028 carries an
+  amendment saying so. Nothing about the eight decisions moved with it.
 - **ADR 0027's subject is unreachable, so its effects are not observable.** New
   as of this commit and the reason its status line is qualified. The rating seam
   that was approved is live, and it is inert: a zoned room with nothing placed in

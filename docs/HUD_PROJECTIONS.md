@@ -579,9 +579,13 @@ decision about what to build next.
       `src/simulation/rooms/enclosure.ts` answers whether the rectangle's own
       perimeter is walled and the answer travels on
       `simulation/status-counts`'s new `zoning` field. It refuses nothing,
-      because the check is narrower than enclosure and because
-      `edgeNumericIdFor` writes `0` for `door-wooden`, so no sealed room can
-      currently have a way in. Gap 14 below is the wider question.
+      because the check is narrower than enclosure, and because it runs at
+      designation time while the walls usually go up afterwards. (It also used
+      to say that `edgeNumericIdFor` wrote `0` for `door-wooden`, so no sealed
+      room could have a way in; a completed door order now writes
+      `DOOR_EDGE_NUMERIC_ID` and registers a real door, so a sealed room with a
+      door in it is exactly what the check reports.) Gap 14 below is the wider
+      question.
 
     `object` requirements are gated on the *derived* capability list since
     ADR 0028 phase 1 rather than on a declared one, which changes where the

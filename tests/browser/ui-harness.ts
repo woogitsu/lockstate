@@ -347,10 +347,16 @@ const BUILD_MODEL: HudBuildViewModel = {
       definitionId: 'door-wooden',
       labelKey: HUD_MESSAGE_KEY.buildableDoorWooden,
       occupiesEdge: false,
-      // `false`, and the one row in the catalogue where that is worth a line:
-      // a door is `category: 'object'` and sits on no edge, and it still places
-      // no object (`edgeNumericIdFor` records why ADR 0028 phase 1 leaves it
-      // exactly as it found it). So the two flags are not opposites.
+      // Both `false`, which is what `src/main.ts` still projects for this row
+      // and is why the two flags are not opposites: a door places no *object*
+      // (it places a door, which is a fact about a tile edge), and
+      // `occupiesEdge` is derived from `category === 'wall'` there, so the panel
+      // hides its edge chooser for one. That second half is a known gap rather
+      // than a fact about doors -- a completed `door-wooden` order does occupy
+      // an edge now, and `occupiesTileEdge` in
+      // `src/simulation/construction/definition.ts` is the predicate that
+      // surface is owed. This fixture mirrors what the composition root
+      // produces today; it moves when that does.
       placesObject: false,
       material: {
         itemId: 'item.wood-plank',

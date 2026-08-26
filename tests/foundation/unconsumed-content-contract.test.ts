@@ -245,6 +245,19 @@ describe('every unconsumed content id is accounted for', () => {
      * the whole of it. `unconsumedBySrcAndTests` again did not move, because
      * three test files already named the toilet, which is why it appears in
      * neither allowlist.
+     *
+     * It moved 50 -> 49 for a fourth time, on the change that made a completed
+     * `door-wooden` order register a real door: `BUILDABLE_REGISTRY`'s
+     * `door-wooden` row now names `'grade.general'` as the security grade the
+     * door's clearance and permission come from, which is that id's first
+     * `src/` consumer. The grade is named rather than a clearance number
+     * because `createGradedDoor` requires it -- "a door gating entry into a
+     * sector should be authored through this, not with hand-picked
+     * `requiredSecurityClearance`/`requiredPermission` values that could
+     * silently drift from the sector's own stated grade" -- so a door
+     * buildable naming a grade is the shape that file asks for.
+     * `unconsumedBySrcAndTests` again did not move: four test files already
+     * name `grade.general`, which is why it appears in neither allowlist.
      */
     expect({
       declared: declaredIds.length,
@@ -259,7 +272,7 @@ describe('every unconsumed content id is accounted for', () => {
       // generically and names no room id, so nothing moved in `src/` -- and the
       // 53 -> 52 below is ADR 0025's alone, for the reason above. The two
       // measures moved on different changes and each is stated where it moved.
-    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 31, unconsumedBySrcOnly: 50 });
+    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 31, unconsumedBySrcOnly: 49 });
   });
 
   it('scans a non-trivial catalog and a non-trivial consumer set, so this cannot pass vacuously', () => {

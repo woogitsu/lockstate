@@ -464,11 +464,16 @@ export class RoomZoningService {
      *     designation. The wider question needs region-level enclosure, and
      *     `TopologyManager` does region *detection* with no enclosure query
      *     and no caller for its `update()`.
-     *   - A sealed room cannot currently have a door. `edgeNumericIdFor`
-     *     writes `0` for the `'object'`-category `door-wooden`, so a completed
-     *     door order changes nothing in the world -- and refusing every
-     *     `'enclosed'` room that is not sealed would make 17 of the 18 room
-     *     types designatable only as a box with no way in.
+     *   - Refusing every `'enclosed'` room that is not sealed would refuse
+     *     rooms a player can zone today, on a check that runs at *designation
+     *     time* while the walls are usually built afterwards. (This bullet used
+     *     to give a stronger reason -- that a sealed room could not have a door,
+     *     because `edgeNumericIdFor` wrote `0` for `door-wooden` and a completed
+     *     door order changed nothing in the world. That stopped being true when
+     *     doors became buildable: a door writes `DOOR_EDGE_NUMERIC_ID` and
+     *     registers itself, so a sealed room with a way in is now expressible.
+     *     The decision not to refuse is unchanged, and the reason above is the
+     *     one that survives.)
      *
      * So the answer is *reported* instead: it goes onto the notice below,
      * reaches the Rooms panel through `simulation/status-counts`, and the

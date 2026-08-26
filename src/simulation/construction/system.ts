@@ -130,6 +130,32 @@ export interface ObjectPlacementSink {
   onOrderReverted(objectId: string, anchor: TilePosition): boolean;
 }
 
+/**
+ * What a completed order for a **door** buildable hands off to, and what a
+ * reverted one hands back.
+ *
+ * `ObjectPlacementSink`'s sibling, declared here for the same reason and with
+ * the same properties: a structural port rather than an import of
+ * `src/simulation/navigation/`, so this module holds no `DoorRegistry`, no
+ * security grade and no opinion about what a door id looks like. It is told
+ * which buildable finished and on which edge of which tile, in this module's
+ * own vocabulary; `DoorConstructionService` turns that into a door.
+ *
+ * It carries the **buildable id** rather than a resolved door description
+ * because the description is content: the grade, the initial state and the cost
+ * multiplier live on `BuildableDefinition.placesDoor`, and passing them through
+ * here would copy content into a signature that would then have to change every
+ * time a door gained a property.
+ *
+ * Both methods answer `boolean` and neither may throw, for the reason
+ * `ObjectPlacementSink`'s two do not: they are called from inside `update`, and
+ * a throw out of a scheduled system update faults the worker.
+ */
+export interface DoorPlacementSink {
+  onDoorOrderCompleted(definitionId: string, location: TilePosition, edge: BuildEdge): boolean;
+  onDoorOrderReverted(definitionId: string, location: TilePosition, edge: BuildEdge): boolean;
+}
+
 export class ConstructionSystem implements SystemRegistration {
   public readonly id = 'construction';
   public readonly order = 100;
@@ -156,6 +182,17 @@ export class ConstructionSystem implements SystemRegistration {
      * `ObjectPlacementSink`.
      */
     private readonly objectPlacement?: ObjectPlacementSink,
+    /**
+     * Where a completed door order registers its door.
+     *
+     * Fourth and optional, so every existing caller -- `createNewSimulationRuntime`
+     * aside -- constructs the system exactly as before. Absent, a completed
+     * door order still writes its `DOOR_EDGE_NUMERIC_ID` and registers nothing,
+     * which is a barrier with no way through it: that is a bare
+     * `ConstructionSystem` rather than a session, and it is why the one
+     * production caller passes a sink. See `DoorPlacementSink`.
+     */
+    private readonly doorPlacement?: DoorPlacementSink,
   ) {}
 
   /**
@@ -393,9 +430,20 @@ export class ConstructionSystem implements SystemRegistration {
    *
    * A buildable that names a `placesObjectId` writes a row in the placed-object
    * registry instead of an edge, through the optional `ObjectPlacementSink`
-   * (ADR 0028 decision 4). One that names neither -- `door-wooden`, every
-   * `'utility'` row -- still has nothing to write and still bumps the revision,
-   * exactly as before.
+   * (ADR 0028 decision 4). One that names neither -- every `'utility'` row --
+   * still has nothing to write and still bumps the revision, exactly as before.
+   *
+   * A buildable that names a `placesDoor` does **both**, and that is the whole
+   * of what a door is: `DOOR_EDGE_NUMERIC_ID` into the edge layer, so the room
+   * behind it is enclosed and the renderer has something to draw, and a
+   * `DoorDefinition` into `DoorRegistry` through the optional
+   * `DoorPlacementSink`, so navigation crosses it. Either half without the
+   * other is wrong in a different direction -- the edge alone is a wall, and the
+   * registration alone is invisible and encloses nothing -- and
+   * `definition.ts`'s `DOOR_EDGE_NUMERIC_ID` argues both out in full. The edge
+   * is written first so that the geometry revision has already moved when the
+   * door appears, which is what stops `RouteCache` holding a route computed
+   * before it existed (`docs/NAVIGATION.md`).
    */
   private finalizeConstruction(order: BuildOrder): void {
     const definition = getBuildableDefinition(order.definitionId);
@@ -413,7 +461,11 @@ export class ConstructionSystem implements SystemRegistration {
       return;
     }
 
-    this.writeEdge(order.location, resolveBuildEdge(order), edgeValue);
+    const edge = resolveBuildEdge(order);
+    this.writeEdge(order.location, edge, edgeValue);
+    if (definition.placesDoor !== undefined) {
+      this.doorPlacement?.onDoorOrderCompleted(definition.id, order.location, edge);
+    }
   }
 
   /**
@@ -428,6 +480,19 @@ export class ConstructionSystem implements SystemRegistration {
    * The scan is over `orderedOrders()` rather than the raw map, so which of
    * two remaining claimants wins is a function of their ids and not of the
    * order the session happened to create them in.
+   *
+   * **A door reverses both halves, and the order of the two is decided rather
+   * than incidental.** The door leaves the registry *before* the edge is
+   * rewritten, so there is no moment at which the edge value has fallen to
+   * whatever a remaining wall claims while a door is still registered on it --
+   * a state in which navigation would report a crossing that the player had
+   * just paid to have removed. And the edge does not simply go to `0`: if a
+   * wall was built on the same edge as well, `remainingEdgeValue` restores the
+   * wall, so undoing a door out of a wall line leaves a wall rather than a
+   * hole. If nothing else claims the edge, undoing the door leaves a **gap** --
+   * which is the honest answer and not an oversight: what the player built was
+   * a barrier, and taking a barrier away leaves an opening, exactly as
+   * cancelling a wall does.
    */
   private revertConstruction(order: BuildOrder): void {
     const definition = getBuildableDefinition(order.definitionId);
@@ -446,16 +511,48 @@ export class ConstructionSystem implements SystemRegistration {
     }
 
     const edge = resolveBuildEdge(order);
+    // The door leaves only if no *other* completed order still puts one on this
+    // edge -- the same rule the edge value follows one line down, applied to the
+    // registry. Nothing rejects a second `door-wooden` order on an edge that
+    // already has one (nothing rejects a second wall either), the second one's
+    // registration is a no-op because the edge is taken, and without this check
+    // cancelling the *first* would delete the door the second one paid for.
+    if (definition.placesDoor !== undefined && !this.anotherCompletedDoorClaims(order, edge)) {
+      this.doorPlacement?.onDoorOrderReverted(definition.id, order.location, edge);
+    }
     this.writeEdge(order.location, edge, this.remainingEdgeValue(order, edge));
   }
 
-  private remainingEdgeValue(cancelled: BuildOrder, edge: BuildEdge): number {
-    let value = 0;
+  /**
+   * Every other completed order occupying the same tile edge as `cancelled`,
+   * in ascending id.
+   *
+   * The one walk behind both "what does the edge fall back to" and "is a door
+   * still claimed here". They were one loop and a second was nearly written;
+   * keeping two would let the two questions disagree about which orders count,
+   * and the answer has to be identical or an edge can end up saying "door" with
+   * no door registered on it.
+   */
+  private *otherCompletedClaimants(cancelled: BuildOrder, edge: BuildEdge): Generator<BuildOrder> {
     for (const other of this.orderedOrders()) {
       if (other.id === cancelled.id) continue;
       if (other.state !== 'completed') continue;
       if (other.location.x !== cancelled.location.x || other.location.y !== cancelled.location.y) continue;
       if (resolveBuildEdge(other) !== edge) continue;
+      yield other;
+    }
+  }
+
+  private anotherCompletedDoorClaims(cancelled: BuildOrder, edge: BuildEdge): boolean {
+    for (const other of this.otherCompletedClaimants(cancelled, edge)) {
+      if (getBuildableDefinition(other.definitionId).placesDoor !== undefined) return true;
+    }
+    return false;
+  }
+
+  private remainingEdgeValue(cancelled: BuildOrder, edge: BuildEdge): number {
+    let value = 0;
+    for (const other of this.otherCompletedClaimants(cancelled, edge)) {
       const otherValue = edgeNumericIdFor(getBuildableDefinition(other.definitionId));
       if (otherValue !== 0) value = otherValue;
     }

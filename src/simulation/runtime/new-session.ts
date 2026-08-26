@@ -14,6 +14,7 @@ import {
 } from '../contraband';
 import {
   ConstructionSystem,
+  DoorConstructionService,
 } from '../construction';
 import {
   GangRegistry,
@@ -291,10 +292,34 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   const containers = new ContainerRegistry();
   const constructionMaterials = new Container(CONSTRUCTION_MATERIALS_CONTAINER_ID);
   containers.register(constructionMaterials);
-  const construction = new ConstructionSystem(world, new ContainerMaterialsProvider(constructionMaterials), {
-    onOrderCompleted: (objectId, anchor) => objectPlacement?.onOrderCompleted(objectId, anchor) ?? false,
-    onOrderReverted: (objectId, anchor) => objectPlacement?.onOrderReverted(objectId, anchor) ?? false,
-  });
+  /*
+   * What makes a completed `door-wooden` order a door rather than a plank spent
+   * on nothing.
+   *
+   * `docs/NAVIGATION.md` recorded the missing wiring as two facts, not one:
+   * `edgeNumericIdFor` answered `0` for the row, *and* "`ConstructionSystem` is
+   * constructed with a `SparseWorld` and a materials provider and holds no
+   * `DoorRegistry` at all, so a completed order registers nothing whatever the
+   * category says". This line is the second fact, and it can only be stated
+   * here: `ConstructionSystem` knows a `DoorPlacementSink`, the service knows a
+   * `DoorRegistry`, and the composition root is the only thing that holds both.
+   *
+   * `navigation.doors` rather than a registry of this module's own, for the
+   * reason `securitySectors` is handed the same one below: it is the only door
+   * mutation entry point #21/#22 expose, so a door built here is a door the
+   * router, the caches and `doorsSnapshot` all see. A second registry would be
+   * a parallel door model that saves nothing and routes nobody.
+   */
+  const doorConstruction = new DoorConstructionService(navigation.doors);
+  const construction = new ConstructionSystem(
+    world,
+    new ContainerMaterialsProvider(constructionMaterials),
+    {
+      onOrderCompleted: (objectId, anchor) => objectPlacement?.onOrderCompleted(objectId, anchor) ?? false,
+      onOrderReverted: (objectId, anchor) => objectPlacement?.onOrderReverted(objectId, anchor) ?? false,
+    },
+    doorConstruction,
+  );
   objectPlacement = new ObjectPlacementService(
     world,
     prisoners.roomInstances,
