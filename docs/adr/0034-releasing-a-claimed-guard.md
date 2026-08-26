@@ -2,7 +2,24 @@
 
 ## Status
 
-**Proposed — pending human approval.** Not accepted.
+**Accepted, 2026-08-26 — by the owner's explicit delegation, and the distinction
+matters.** The owner did not read this document. Asked which of the outstanding
+decisions they wanted to take, they answered *"choose yourself"*. So this is a
+real approval — but of the *judgement delegated*, not of the text. Anyone who
+disagrees with a decision below should treat it as open rather than as settled by
+an owner who weighed it.
+
+What was weighed before the delegation: that having no way to release a claimed
+guard is what made #352's defect **terminal rather than merely slow**, and that
+the next resource-claiming system's equivalent bug would be terminal for the same
+reason. What decided it was a measurement, not an argument — the naive
+`unassign`-only version fails 7 of 18 cases, one of them a riot reaching
+`resolved` while counting a released guard toward its quorum, which is containment
+invented out of a guard already back in the pool.
+
+**Decision 9's question is answered elsewhere.** It put the security tier's
+ship-or-not judgement to the owner; that is #396, the owner chose a derived
+default sector, and a separate change implements it.
 
 This document answers [ADR 0033](./0033-releasing-an-interrupted-incident-response-at-runtime.md)'s
 **open question 3** — *"Should a dismiss/fire command exist regardless? The
