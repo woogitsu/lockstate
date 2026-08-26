@@ -102,8 +102,45 @@ dropoff leg is cancelled or fails?
 
 `this.containers.getById(job.sourceContainerId)?.deposit(job.itemId, job.quantity)`.
 
-- **Conservation:** exact and total. Stock before equals stock after, for every
-  item, on every path.
+- **Conservation:** exact and total on every path **where the source container
+  still exists**, which is every path a player can reach.
+
+  **Amended 2026-08-26. This bullet read "exact and total. Stock before equals
+  stock after, for every item, on every path", and that was false in the commit
+  that wrote it** — `64cd379` added this document and
+  `compensateHeldStock`'s `if (source === undefined) return;`
+  (`src/simulation/operations/job-system.ts:310`) together. On the **dropoff**
+  leg `withdrawReserved` has already committed, so a missing source container
+  means the carried quantity has nowhere to go and is voided silently. On the
+  pickup leg nothing is lost: what is held there is a reservation *on the
+  container that is missing*.
+
+  **The guard is right and must not be removed.** Throwing out of a scheduled
+  system update faults the worker and ends the session — that is the whole
+  lesson of #419, decided one commit later.
+
+  **What the bullet should have said, and the reachability, checked rather than
+  assumed.** `ContainerRegistry` (`src/simulation/operations/inventory.ts:96-127`)
+  exposes `register`, `getById`, `require`, `all`, `getSnapshot` and
+  `loadSnapshot` — **and no removal of any kind**, so a container cannot
+  disappear from a running session. `getSnapshot()` emits every registered
+  container, and a job's `sourceContainerId` named a registered container when
+  the job was created, so **a save this codebase produces always carries the
+  source container of every job it carries.** The early return is therefore
+  unreachable by play and is reachable only from a malformed or externally
+  edited save. That is why the recommendation below is unchanged: this is a
+  false sentence, not a live leak.
+
+  `docs/OPERATIONS.md:264-274` already describes this hole correctly, including
+  its cause and the restore route that reaches it — *"the one hole
+  `compensateHeldStock` cannot close"*. The document that was wrong is this one.
+
+  **The forward-looking risk, which is the reason to record this rather than
+  quietly fix a sentence.** [#99](https://github.com/matmaxalez/lockstate/issues/99)
+  — removing a built object dismantles it into salvage — is exactly the change
+  that would give `ContainerRegistry` a removal path and turn an unreachable
+  early return into a live way to destroy stock. **Whoever implements #99 owns
+  this bullet.**
 - **New concepts:** none. `deposit` exists, the source container exists, and
   `ContainerMaterialsProvider.release` already reverses a committed withdrawal
   this way.
