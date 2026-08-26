@@ -88,6 +88,12 @@ gameplay are sampled by default.
 
 ## Transport
 
+**Nothing in `src/` outside `src/services/telemetry/` imports this service
+today: no host calls `pump`, there is no consent control, and no event is ever
+recorded.** What follows describes the contract a host would meet, not a wiring
+that exists — `git log --all -S "recorder.pump"` is empty, so no host has ever
+existed.
+
 `BatchingTelemetrySink` is timer-free: the host calls `pump(now)` from its
 own idle/interval orchestration, so telemetry cannot install work on the
 simulation tick or render frame path, and tests are deterministic without

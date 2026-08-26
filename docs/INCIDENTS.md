@@ -173,11 +173,28 @@ collide with newly generated ones).
 `IncidentResponseSystem` restores **metrics only**. Live response
 bookkeeping references the *previous* `NavigationSystem` instance's request
 queue, exactly like #25's jobs and #26's guards. A restored open incident
-therefore has no active response and, because the lifecycle is forward-only
-and cannot return to `'active'` to be re-dispatched, it **lapses at its
-deadline** — which is precisely the consistent-failure outcome issue #28
-demands rather than a hidden success. `tests/unit/incident-response.test.ts`
-proves this directly.
+therefore has no active response **on the tick it loads**, and is then
+**re-dispatched**: `IncidentResponseSystem.update` runs a one-shot sweep on its
+first scheduled update after a load — `releaseOrphanedClaims()` followed by
+`redispatchInterruptedResponses(context.tick)`
+(`src/simulation/incidents/response-system.ts:239-242`) — and `mountResponse`
+(`:395-414`) attaches a fresh response. The forward-only lifecycle is not the
+obstacle this paragraph claimed it was, because re-dispatch mounts a new
+response rather than returning the incident to `'active'`.
+
+The outcome is the **same terminal state, later by at most one scheduling
+interval**: `tests/integration/incident-response-restore.test.ts:392-404` runs a
+restored session against a continuous one and asserts both reach `'resolved'`
+with equal outcomes, the restored one closing at tick 81 against the continuous
+run's 71. `docs/DETERMINISM.md` has carried that reading since the change.
+
+**This paragraph used to say the incident "lapses at its deadline ... which is
+precisely the consistent-failure outcome issue #28 demands", and cited
+`tests/unit/incident-response.test.ts` as proving it directly.** That became
+false at `e44bcb9` (#394, v0.0.106) and survived a later edit to this file at
+`2926c54` (v0.0.108). The cited test still passes, which is why nothing caught
+it: its `restored` harness hires no guard, so there is nobody to re-dispatch —
+a special case that was being read as the general rule.
 
 ## Wiring into `SimulationRuntime`
 

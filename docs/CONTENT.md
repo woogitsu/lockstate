@@ -108,8 +108,7 @@ real label.
 (issue #17) are unchanged in shape. `roomDefinitionFromCatalog` converts one
 validated `RoomCatalogDefinition` into that shape (resolving `nameKey` to
 `name` via a locale catalog, `en` by default);
-`buildRoomRegistryFromCatalog` does this for a whole catalog and is how
-`defaultRoomRegistry` is now built — replacing #17's two hard-coded entries
+`buildRoomRegistryFromCatalog` does this for a whole catalog — replacing #17's two hard-coded entries
 with issue #23's full, validated, representative set. What the integration
 establishes is that a catalog-driven room type resolves, including by the
 numeric zoning id a `Uint8Array` zoning plane stores
@@ -121,9 +120,13 @@ reported every `object` requirement as missing and treated `minimum-size` as
 always satisfied, in its own words as a mock, and nothing in `src/` called it.
 The single evaluator of room requirements is now `requirementStatus` in
 `src/simulation/presentation/room-projection.ts`, which reads the **content**
-catalog rather than this registry. So `defaultRoomRegistry` currently has no
-consumer in `src/` — it is the runtime-side room vocabulary that real
-object-placement work will need, not dead content, and it is kept for the same
+catalog rather than this registry. So `buildRoomRegistryFromCatalog` currently has no
+consumer in `src/`. **This passage named `defaultRoomRegistry`, an eagerly-built
+binding #181 deleted before v0.0.1** — `grep -rn defaultRoomRegistry src/`
+returns nothing, and the only mentions left are two tests describing its
+removal. **The justification has also been overtaken:** it was kept for the
+object-placement work that has since shipped without using it, so what keeps it
+is that it is the runtime-side room vocabulary, and it is kept for the same
 reason `tests/foundation/unconsumed-content-contract.test.ts` keeps declared
 ids that no code reads yet.
 

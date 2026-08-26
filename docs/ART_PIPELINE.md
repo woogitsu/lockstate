@@ -74,7 +74,9 @@ pnpm verify:assets
 
 CI runs it as a required `assets` job, the only check that reads image bytes; see
 [ADR-0014](./adr/0014-art-storage-and-runtime-asset-delivery.md). A checkout
-without LFS content leaves 130-byte pointer files in place of PNGs, so the
+without LFS content leaves pointer files of roughly 131 bytes in place of PNGs
+(measured 131 and 132; this line said 130, and all ten actor pointers were
+already 131 or 132 at the commit that wrote it), so the
 validator detects a pointer and fails naming it rather than passing vacuously,
 and the job asserts the PNG signature and a size floor on every atlas before
 validating.

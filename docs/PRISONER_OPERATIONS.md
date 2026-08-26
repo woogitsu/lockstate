@@ -241,13 +241,15 @@ that are worth stating here rather than leaving to be discovered:
   `unmetDemandCycles`, and retry on the next cycle.
 - **Nothing a player can build is affected yet, and that is the honest
   reading.** Every room type whose actions resolve by catalogue id derives its
-  ceiling from the objects in it, and the two placeable buildables supply
-  `'sleep-surface'` (`bed-wooden`) and `'sanitation'` (`toilet-brick`) -- neither
-  of which any `room-catalog-id` action asks for, since `action.sleep` and
-  `action.use-toilet` both target `own-accommodation`. So a canteen, shower room,
-  common room and classroom all derive 0 for the capability their action wants
-  and those actions are unreachable. The ceiling becomes observable in phase 4,
-  when those objects become placeable. Before the #326 amendment this was *not*
+  ceiling from the objects in it. **This paragraph used to read "the two
+  placeable buildables supply `'sleep-surface'` (`bed-wooden`) and
+  `'sanitation'` (`toilet-brick`)" and concluded that a canteen, shower room,
+  common room and classroom all derive 0, so those actions are unreachable until
+  phase 4 makes the objects placeable.** Phase 4 shipped at `b097e70` (#384,
+  v0.0.98): `src/simulation/construction/definition.ts` now declares nineteen
+  rows carrying a `placesObjectId`, dining tables, benches and shower heads among
+  them, and that same file works the canteen arithmetic this paragraph said was
+  not yet observable (`:386-397`). The ceiling is observable now. Before the #326 amendment this was *not*
   the case and the difference was an accident: a bed or a toilet standing in a
   common room gave its capability-blind ceiling a value, so
   `action.common-room-recreation` became reachable off furniture that has
@@ -794,11 +796,17 @@ re-benchmark navigation throughput at scale -- see
 Full violence/gangs/contraband/rehabilitation systems (#27/#28/#30); final
 personality/trait depth (#39); advanced crowd steering; tile-by-tile
 locomotion/rendering; the complete final need/action catalog and balance;
-real object-placement tracking (the reason `RoomInstanceRegistry` exists
-as an explicit, minimal bridge instead); UI/save-file integration (a session
-UI does now exist -- the HUD and save panel mounted by `src/main.ts` -- but
-the only prisoner state it surfaces is the status strip's population counts
-(#104) -- no roster, no needs, no actions and no cell assignment reaches a
+**"real object-placement tracking" was listed here as out of scope and is
+removed, because it shipped**: `PlacedObjectRegistry` and `RemoveObject` are
+described by this same document at `:178-180` and `:315-325`, so the exclusion
+contradicted the body above it from `6cededc` (#320, v0.0.61) onward. `RoomInstanceRegistry`
+remains the explicit, minimal bridge it was built as;
+UI/save-file integration (a session
+UI does now exist -- the HUD and save panel mounted by `src/main.ts` -- and it
+surfaces the status strip's population counts and, since `a613d04` (#383), the
+Intake panel's six stage counts and two group counts, which
+`src/ui/simulation-intake.ts:162` reads from the `hud/prisoner-population`
+projection -- no roster, no needs, no actions and no cell assignment reaches a
 panel, matching #19/#22's precedent of shipping the system before the
 surface; the save-file half was closed later,
 by #70).
