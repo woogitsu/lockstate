@@ -968,3 +968,62 @@ Left open deliberately. Inventing an answer would be worse than naming the gap.
    neither.
 7. **Where an occupant is released from a `room-catalog-id` room's occupant
    set** — phase 6's own open question, named there.
+
+---
+
+## Amendment, 2026-08-26: `door-wooden` is fixed, and not by phase 1
+
+*This changes **no decision**. The eight decisions and the phase order above are
+approved as written and are untouched; what is corrected is a **prediction**
+phase 1 made about a row it turned out not to be able to reach, and one example
+attached to an open question. An amendment is the form the ADR 0007 amendment
+established for exactly this: the record of what was decided stays as accepted,
+and what the tree does instead is recorded beside it.*
+
+### The prediction
+
+Phase 1 lists, under *Also fixes a shipped defect*: "`door-wooden` stops being a
+catalogue row that consumes a plank and does nothing." It did not, and could
+not. `src/simulation/construction/definition.ts` recorded the correction when
+phase 1 landed and left the defect open: a placed object under decision 1 is a
+row addressed by an **anchor tile** with a footprint of tiles, a door is a fact
+about a tile **edge**, and `src/content/object-catalog.ts` declares no wooden
+door at all — `object.loading-dock-door` is a three-tile delivery door with a
+`'delivery-access'` capability, which is a different thing.
+
+### What closed it instead
+
+A door is **edge geometry plus a `DoorRegistry` row**, and neither half on its
+own. `BuildableDefinition.placesDoor` names a security grade, an initial state
+and a cost multiplier; `finalizeConstruction` writes `DOOR_EDGE_NUMERIC_ID` into
+the world's edge layer *and* hands the edge to a `DoorPlacementSink`, which
+`DoorConstructionService` turns into a `DoorDefinition`. Two layers then answer
+two different questions, and both answers are right: `TopologyManager` and
+`roomPerimeterEnclosure` read the edge layer, so a cell with a door in its wall
+line stays a **distinct region** and reads `sealed` — which is what makes a cell
+a cell — while `buildNavigationGraph` reads `DoorRegistry` first, so the same
+door is a **`Portal`** and the cell is reachable. `docs/NAVIGATION.md`'s
+door-placement section is where that is decided and where its four previously
+open questions — orientation, removal, identity, access requirements — are
+answered.
+
+**Nothing in this design was used to do it**, which is the point of recording it
+here rather than quietly. No `PlacedObject` is created, no
+`placesObjectId` is added, and `PlaceObject`/`RemoveObject` never see a door. So
+a door contributes **nothing** to either derived capacity under decision 2:
+`residentCapacity` and `concurrentUseCapacity` both sum over objects standing in
+a room's rectangle, and a door is not one. That matters because
+`concurrentUseCapacity` currently sums `footprint.width` over *every* object
+regardless of capability — an open defect, tracked separately — so a door
+written as an object would have silently handed its room another unit of
+occupancy.
+
+### Open question 5's example is withdrawn; the question is not
+
+Open question 5 asks whether an object may be placed outside any room, notes
+that decision 1 permits it structurally, and cites `door-wooden` as "the case
+that argues [the gesture] should not [refuse it]". That example no longer
+applies: a door is not placed through `PlaceObject` and never was refused by it.
+The question itself is unchanged and still open —
+`ObjectPlacementService.place` refuses `outside-room`, and its own header states
+the reasoning so it can be overruled.

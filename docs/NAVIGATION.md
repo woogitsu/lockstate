@@ -35,47 +35,89 @@ segments.
 ## Doors and world geometry are independent layers
 
 `DoorRegistry` (`door.ts`) is deliberately **not** part of `SparseWorld`.
-Completing a build order does write world geometry: `finalizeConstruction`
+Completing a build order writes world geometry: `finalizeConstruction`
 sets the tile's `topEdge`/`leftEdge` value for an edge-geometry buildable and
-only bumps the geometry revision for everything else. Door placement is still
-not wired into `ConstructionSystem`, and the `category: 'object'` on
-`BUILDABLE_REGISTRY`'s only door explains just one half of that: it is why
-`edgeNumericIdFor` returns 0 and a completed door order writes no edge value.
-It does not explain the other half. `ConstructionSystem` is constructed with a
-`SparseWorld` and a materials provider and holds no `DoorRegistry` at all, so
-a completed order registers nothing whatever the category says.
-Navigation therefore still cannot assume a door corresponds to any particular
+only bumps the geometry revision for everything else. That layer says *a
+boundary exists here*, and nothing more.
+Navigation does not assume a door corresponds to any particular
 wall-edge numericId.
 Instead: a door registered at an edge is authoritative for gating that
 edge, whatever the world's own edge value is; a plain nonzero edge value
 with no registered door is an ordinary, permanently impassable wall.
+`buildNavigationGraph` and `boundedLocalSearch` both ask
+`DoorRegistry.getByEdge` *first* and fall through to the wall value only when
+there is no door, which is why the rule holds at both layers.
 
-Wiring construction to place real doors is more than calling
-`DoorRegistry.register`/`setState` from `finalizeConstruction`, and this
-section used to say otherwise. Four things are undecided (issue #261):
+### Construction places doors, and what that decided (issue #261)
 
-- **Orientation.** A `DoorDefinition` needs a `side`, and `BuildOrder`
-  already carries an `edge` that the world pointer tool fills in for any
-  buildable. The Build panel's coordinate form does not: it derives
-  `occupiesEdge` from `category === 'wall'` (`src/main.ts`) and hides the
-  edge chooser for a door, so a door submitted there silently takes
-  whichever edge was last selected. Which edge a door sits on stops being
-  cosmetic the moment it gates one.
-- **Removal.** `ConstructionSystem.cancelOrder`/`undo` reverse a completed
-  order's geometry on purpose, so a placed door has to be removable —
-  and `DoorRegistry` exposes no removal operation. Adding one contradicts
-  `structuralRevision`'s "bumped only when a door is *added*" contract
-  below, and `SecuritySectorRegistry` keeps a baseline state per governed
-  door id whose `setState` would then throw on a door that no longer exists.
-- **Identity.** Doors cross the save boundary (`doorsSnapshot` in
-  `runtime/session-systems.ts`), and `buildNavigationGraph` sorts portals by
-  door id — so the minted id decides routing tie-breaks. That is exactly the
-  choice [ADR 0012](./adr/0012-derived-identifier-reproducibility.md)
-  requires a declaring module to make explicitly.
-- **Access requirements.** `DoorDefinition` needs a state, a clearance and a
-  cost multiplier; `createGradedDoor` (`security/sector.ts`) states that a
-  door's requirements must come from a security grade rather than
-  hand-picked values, and no buildable carries one.
+`door-wooden` used to be the one buildable the registry offered that could not
+finish meaningfully: `edgeNumericIdFor` answered `0` for it, and
+`ConstructionSystem` held no `DoorRegistry`, so a completed order consumed a
+plank and changed nothing whatever. Both halves are wired now.
+`BuildableDefinition.placesDoor` names the security grade, initial state and
+cost multiplier; `finalizeConstruction` writes `DOOR_EDGE_NUMERIC_ID` into the
+edge layer *and* hands the buildable, the tile and the `BuildEdge` to a
+`DoorPlacementSink`; `DoorConstructionService`
+(`src/simulation/construction/door-construction.ts`) turns that into a
+`DoorDefinition`. This section named four things as undecided, and each is
+answered below rather than deleted, because the reasoning is what a reader
+needs.
+
+- **A door writes an edge value, and that is what stops it un-sealing the
+  room.** The objection this file and `construction/definition.ts` both used
+  to raise — an edge is opaque to `TopologyManager`, so recording a door as one
+  "would seal the room it is supposed to open" — was true of an edge value
+  written *without* a registry row beside it. With both halves, the two layers
+  answer two different questions and both answers are right: topology and
+  `roomPerimeterEnclosure` see a barrier, so a cell with a door stays a
+  distinct region and reads `sealed`; navigation sees a `Portal`, so the cell
+  is reachable. Measured in `tests/unit/construction-doors.test.ts`, including
+  the control — the identical wall line with no door is `unreachable`.
+  `DOOR_EDGE_NUMERIC_ID` is a value of its own rather than
+  `WALL_EDGE_NUMERIC_ID` because the edge planes are carried in the world
+  snapshot, so a prison records where its doors are and a renderer that draws
+  one differently becomes a change to the renderer alone.
+- **Orientation.** A `DoorDefinition` needs a `side` and `BuildOrder` already
+  carries an `edge` that the world pointer tool fills in;
+  `doorSideForBuildEdge` is the one place the two vocabularies meet
+  (`'north'`/`'west'` against `'top'`/`'left'`). **The Build panel's coordinate
+  form is still owed a fix**: it derives `occupiesEdge` from
+  `category === 'wall'` (`src/main.ts`) and hides the edge chooser for a door,
+  so a door submitted through the two number fields silently takes whichever
+  edge was last selected. `occupiesTileEdge` in
+  `construction/definition.ts` is the predicate that surface should read.
+- **Removal.** `DoorRegistry.unregister` exists, and
+  `structuralRevision`'s contract widened with it: it is bumped when a door is
+  added **or removed**, because both change the region/portal graph.
+  `revertConstruction` removes the door *before* it rewrites the edge, and only
+  when no other completed order still claims a door there — so undoing a door
+  out of a wall line leaves the wall, and undoing a lone door leaves a gap, the
+  same thing cancelling a wall leaves. `SecuritySectorRegistry`'s per-door
+  baseline is untouched by this and cannot be broken by it today: `register`
+  throws on a door id that does not already exist, so a sector can only govern
+  doors that existed when it did, and nothing in `src/` registers a sector
+  after a build order completes. A surface that let a player put a *built* door
+  into a sector would have to answer what happens when its perimeter is
+  demolished.
+- **Identity.** `constructedDoorIdFor` mints `door:<side>:<x>:<y>` — a pure
+  function of the edge, never the order id, which is the choice
+  [ADR 0012](./adr/0012-derived-identifier-reproducibility.md) requires a
+  declaring module to make explicitly. Portal ordering is by door id, so this
+  is what keeps routing tie-breaks a function of geometry rather than of build
+  history; the id is colon-separated to match `roomInstanceIdFor` and
+  `placedObjectIdFor`, both of which are persisted the same way.
+- **Access requirements.** `placesDoor` names a **security grade** and
+  `createGradedDoor` (`security/sector.ts`) reads the clearance and permission
+  off it, which is what that function's own comment demands: requirements must
+  come from a grade rather than hand-picked values that could drift from a
+  sector's stated grade. `door-wooden` names `grade.general` — clearance 0, no
+  permission — because an ordinary wooden door gates nothing. A door that gates
+  a wing is another content row naming another grade, not a code change.
+
+**Still owed, and not claimed here:** the renderer draws every non-zero edge
+with `EDGE_WALL_APPEARANCE` (`rendering/phaser/tile-layer.ts`), so a finished
+door currently *looks* like a wall. The value it needs to tell them apart is in
+the layer it already reads.
 
 A door is still a portal whatever placed it, so `findRoute`'s model is
 unaffected. Two things around it are. First, *when* the graph is rebuilt:
@@ -86,13 +128,14 @@ that is the work budget's problem —
 Second, `RouteCache`/`FlowFieldCache` do **not** invalidate on
 `structuralRevision`: they compare `NavigationGraph.geometrySignature`, which
 is built from chunk `geometryRevision`s alone, plus (for `RouteCache`) the
-access versions of the doors an entry actually used. A door that appears
-without its chunk's geometry revision moving would therefore leave routes
-cached from before it existed. Nothing does that today — the sole caller of
-`DoorRegistry.register` is `restoreSessionSystems`, which runs before any
-route is computed — and a construction-driven placement would bump the
-revision anyway (`finalizeConstruction` always does), so this is a hazard
-for whatever wires door placement, not a live defect.
+access versions of the doors an entry actually used. A door that appeared or
+vanished without its chunk's geometry revision moving would therefore leave
+routes cached from before the change. Nothing does that: the two callers of
+`DoorRegistry.register` are `restoreSessionSystems`, which runs before any
+route is computed, and `DoorConstructionService`, which is reached from
+`finalizeConstruction`/`revertConstruction` — both of which write the tile edge
+in the same call and therefore bump the revision. A future caller that mutates
+the registry *without* touching world geometry would have to close this itself.
 
 ## Permission model
 
@@ -157,13 +200,16 @@ a determinism test in `tests/unit/navigation-router.test.ts`.
 Two revision counters on `DoorRegistry`, because they invalidate different
 things:
 
-- **`structuralRevision`** — bumped only when a door is *added* (changes
-  which edges are gated, i.e. topology). `isNavigationGraphStale`
+- **`structuralRevision`** — bumped when a door is *added or removed* (both
+  change which edges are gated, i.e. topology). `isNavigationGraphStale`
   (`region-graph.ts`) checks this plus the world's own per-chunk
   `geometryRevision` (fingerprinted as `NavigationGraph.geometrySignature`)
-  to decide whether the region/portal graph itself needs rebuilding.
+  to decide whether the region/portal graph itself needs rebuilding. It read
+  "only when a door is *added*" until doors became buildable and therefore
+  removable; see the door-placement section above.
 - **`accessRevision`** (registry-wide) and a **per-door access version**
-  (`getAccessVersion(doorId)`) — bumped on every state change. `RouteCache`
+  (`getAccessVersion(doorId)`) — bumped on every state change, and on an add
+  or a remove. `RouteCache`
   (`route-cache.ts`) records, per cached route, which doors it actually
   depended on (crossed, or — for a `permission-denied` failure — was
   blocked by) and their version at compute time. A lockdown on one door

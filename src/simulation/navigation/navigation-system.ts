@@ -27,10 +27,13 @@ export interface NavigationSystemOptions {
  * entity/gameplay model -- #23/#24 own what a prisoner or staff member
  * *is*; this only owns getting a path from A to B for whatever asks.
  *
- * Door placement and chunk loading are not wired into construction/world
- * streaming yet (see `docs/NAVIGATION.md`), so both are driven externally:
- * register doors on `.doors` directly, and call `setLoadedChunks` whenever
- * the set of loaded chunk positions changes.
+ * Chunk loading is not wired into world streaming yet (see
+ * `docs/NAVIGATION.md`), so it is driven externally: call `setLoadedChunks`
+ * whenever the set of loaded chunk positions changes. **Door placement is
+ * wired**: a completed `door-wooden` order reaches `.doors` through
+ * `DoorConstructionService`, which the composition root hands this system's own
+ * registry to. Registering on `.doors` directly is still what a fixture or a
+ * restore does.
  */
 export class NavigationSystem implements SystemRegistration {
   public readonly id = 'navigation';

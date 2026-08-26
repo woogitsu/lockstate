@@ -1,5 +1,7 @@
 import { defaultItemRegistry } from '../../content/item-catalog';
 import { defaultObjectRegistry } from '../../content/object-catalog';
+import { defaultSecurityGradeRegistry } from '../../content/security-grade-catalog';
+import type { DoorState } from '../navigation/door';
 
 export type BuildableCategory = 'wall' | 'object' | 'utility';
 
@@ -21,8 +23,9 @@ export interface BuildableDefinition {
    * decision 4).
    *
    * Absent means "this buildable places no object", which is what every
-   * buildable before phase 1 meant and what `door-wooden` still means -- see
-   * `edgeNumericIdFor` below for why that one is unchanged.
+   * buildable before phase 1 meant. `door-wooden` is still absent from here and
+   * always will be: it places a **door**, which is a fact about a tile edge and
+   * not a row addressed by an anchor tile -- see `placesDoor` below.
    *
    * A **content id**, not a numeric id and not a message key: the footprint,
    * the capabilities and the label all come from the catalogue entry, so
@@ -31,6 +34,48 @@ export interface BuildableDefinition {
    * exactly as `validateBuildableItemReferences` checks the material one.
    */
   readonly placesObjectId?: string;
+  /**
+   * What a completed order for this buildable registers in `DoorRegistry`, for
+   * a buildable that puts a **door** on a tile edge.
+   *
+   * Absent means "this buildable is not a door", which is what every buildable
+   * except `door-wooden` means.
+   *
+   * **Mutually exclusive with `placesObjectId`, and that is the shape of the
+   * decision rather than a lint.** A placed object is a row addressed by an
+   * *anchor tile* with a footprint of tiles ([ADR 0028](../../../docs/adr/0028-object-placement-and-derived-room-capacity.md)
+   * decision 1); a door is a fact about a tile *edge*, which is the one thing
+   * a tile-addressed footprint cannot express -- the edge between (4,6) and
+   * (3,6) belongs to neither tile more than the other. Writing a door as an
+   * object would also make it count toward
+   * `RoomCapacityResolver`'s `concurrentUseCapacity`, which sums
+   * `footprint.width` over everything standing in the room regardless of
+   * capability (the open defect #326): a door would silently hand its room
+   * another unit of occupancy. `validateBuildableDoorReferences` refuses the
+   * combination at import time.
+   */
+  readonly placesDoor?: DoorPlacement;
+}
+
+/**
+ * What a completed door order needs to know to become a `DoorDefinition`.
+ *
+ * Deliberately **not** a `requiredSecurityClearance`/`requiredPermission`
+ * pair. `createGradedDoor` (`../security/sector.ts`) states the rule this
+ * follows: "a door gating entry into a sector should be authored through this,
+ * not with hand-picked `requiredSecurityClearance`/`requiredPermission` values
+ * that could silently drift from the sector's own stated grade." So the
+ * buildable names a **grade** and the two access fields are read off it, which
+ * is `docs/NAVIGATION.md`'s fourth undecided item answered the way that file
+ * said it had to be.
+ */
+export interface DoorPlacement {
+  /** An id from `src/content/security-grade-catalog.ts`; supplies clearance and permission. */
+  readonly securityGradeId: string;
+  /** The door's state the moment it is built. `DoorRegistry` is the only thing that changes it afterwards. */
+  readonly initialState: DoorState;
+  /** Relative traversal cost multiplier, >= 1; see `doorTraversalCost`. */
+  readonly costMultiplier: number;
 }
 
 export const BUILDABLE_REGISTRY = new Map<string, BuildableDefinition>([
@@ -41,12 +86,59 @@ export const BUILDABLE_REGISTRY = new Map<string, BuildableDefinition>([
     workRequired: 50,
     materialsRequired: [{ itemId: 'item.brick', quantity: 2 }],
   }],
+  /*
+   * The one buildable that puts a door on a tile edge, and the row that was a
+   * shipped defect until it got `placesDoor`.
+   *
+   * **What it used to be**: a Build-panel row that consumed a plank, finished,
+   * and changed nothing whatever in the simulation -- `edgeNumericIdFor`
+   * answered `0` for it, `ConstructionSystem` held no `DoorRegistry`, and a
+   * completed order wrote nothing anybody could read. The comment on
+   * `edgeNumericIdFor` below used to end by saying so and calling the defect
+   * open; it now says what closed it.
+   *
+   * **Why it is not a `placesObjectId`.** ADR 0028 phase 1 predicted that
+   * object placement would fix this row, and it could not: a placed object is
+   * addressed by an anchor *tile* and a door is a fact about a tile *edge*, and
+   * `src/content/object-catalog.ts` declares no wooden door at all
+   * (`object.loading-dock-door` is a three-tile delivery door with a
+   * `'delivery-access'` capability, which is a different thing). The prediction
+   * was right about the outcome and wrong about the route; see `placesDoor`
+   * above for the two consequences that decided it.
+   *
+   * **`category: 'object'` is unchanged**, and it is still not a mistyped
+   * `'wall'`: `'wall'` means *opaque* edge geometry, and promoting the door
+   * would build a solid wall where the player asked for a door. What changed is
+   * that `'wall'` stopped being the only thing that occupies an edge -- see
+   * `occupiesTileEdge` and `DOOR_EDGE_NUMERIC_ID` below.
+   *
+   * **`grade.general`**, whose `minSecurityClearance` is `0` and which names no
+   * permission, because an ordinary wooden door is the one that gates nothing:
+   * it is a physical barrier with a lock state, not a checkpoint. A door that
+   * gates a wing is a different buildable naming a different grade, and adding
+   * one is a content row rather than a code change -- which is the whole reason
+   * the grade is named here instead of a clearance number.
+   *
+   * **`initialState: 'closed'`** rather than `'open'`, because a door that
+   * appeared standing open would make a freshly built cell no different from a
+   * doorway. `'closed'` is passable to anyone the grade admits, at
+   * `doorTraversalCost`'s 1.5x, which is the "opening delay" that file
+   * describes. Nothing in `src/` opens or shuts it afterwards except
+   * `SecuritySectorRegistry`, and that is the state a door-operation system
+   * would take over.
+   *
+   * **The two numbers are untouched placeholders**, not choices this change
+   * made: `workRequired: 30` and one `item.wood-plank` are what the row has
+   * carried since #16, and ADR 0017 decision 5 reserves all pricing and balance
+   * to #29.
+   */
   ['door-wooden', {
     id: 'door-wooden',
     category: 'object',
     name: 'Wooden Door',
     workRequired: 30,
     materialsRequired: [{ itemId: 'item.wood-plank', quantity: 1 }],
+    placesDoor: { securityGradeId: 'grade.general', initialState: 'closed', costMultiplier: 1 },
   }],
   /*
    * The first buildable that puts a discrete object in the world (ADR 0028
@@ -238,6 +330,62 @@ if (buildableObjectReferenceErrors.length > 0) {
   throw new Error(`Buildable definitions reference unknown objects: ${JSON.stringify(buildableObjectReferenceErrors)}`);
 }
 
+export type BuildableDoorReferenceError =
+  | { readonly kind: 'missing-grade-reference'; readonly buildableId: string; readonly securityGradeId: string }
+  | { readonly kind: 'door-and-object'; readonly buildableId: string };
+
+/**
+ * Every door a buildable claims to place must name a real security grade, and
+ * no buildable may claim to place a door *and* an object.
+ *
+ * The third sibling of `validateBuildableItemReferences` and
+ * `validateBuildableObjectReferences`, added for the same reason and against
+ * the same measured shape of failure -- a reference that is wrong produces no
+ * error anywhere, only a row that misbehaves at the far end of a
+ * sixty-tick build.
+ *
+ *   - **A grade id no catalogue declares** would reach `createGradedDoor`
+ *     inside `ConstructionSystem.update`, where it throws a `RangeError` --
+ *     out of a scheduled system update, which faults the worker. Checking at
+ *     import time turns a session-killing fault into a build that will not
+ *     start.
+ *   - **A buildable naming both a door and an object** is not merely odd, it
+ *     is unimplementable: `finalizeConstruction` writes an edge value for one
+ *     and hands the anchor tile to `ObjectPlacementSink` for the other, and
+ *     the two branches are exclusive. Rather than let the order of two `if`s
+ *     silently decide which half a content author gets, the combination is
+ *     refused where it is authored.
+ *
+ * Ids are walked in sorted order so a build with two broken rows reports them
+ * in a stable order rather than in `Map` insertion order.
+ */
+export function validateBuildableDoorReferences(): readonly BuildableDoorReferenceError[] {
+  const errors: BuildableDoorReferenceError[] = [];
+
+  for (const id of [...BUILDABLE_REGISTRY.keys()].sort()) {
+    const definition = BUILDABLE_REGISTRY.get(id)!;
+    if (definition.placesDoor === undefined) continue;
+    if (definition.placesObjectId !== undefined) {
+      errors.push({ kind: 'door-and-object', buildableId: id });
+    }
+    if (!defaultSecurityGradeRegistry.has(definition.placesDoor.securityGradeId)) {
+      errors.push({
+        kind: 'missing-grade-reference',
+        buildableId: id,
+        securityGradeId: definition.placesDoor.securityGradeId,
+      });
+    }
+  }
+
+  return errors;
+}
+
+const buildableDoorReferenceErrors = validateBuildableDoorReferences();
+
+if (buildableDoorReferenceErrors.length > 0) {
+  throw new Error(`Buildable door definitions are invalid: ${JSON.stringify(buildableDoorReferenceErrors)}`);
+}
+
 /**
  * What a completed wall writes into the world's `topEdge` / `leftEdge` layer.
  *
@@ -251,37 +399,104 @@ if (buildableObjectReferenceErrors.length > 0) {
 export const WALL_EDGE_NUMERIC_ID = 1;
 
 /**
+ * What a completed **door** writes into the same layer.
+ *
+ * A second value in a layer whose only published meaning used to be "zero
+ * means nothing is here", and the constant above already anticipated it: "when
+ * different wall materials need to look different, the value becomes a
+ * per-definition id and this constant becomes its default."
+ *
+ * ## Why a door writes an edge value at all
+ *
+ * Because it is the barrier. A wall line with a door in it is a wall line: the
+ * room on the inside is *enclosed*, and a prisoner crosses at the door rather
+ * than anywhere along it. Every consumer of the edge layers reads that
+ * correctly from a non-zero value and would read it wrongly from a zero:
+ *
+ *   - `TopologyManager` flood-fills across zero edges, so a door written as
+ *     `0` would put a cell and the corridor outside it in **one region**, and
+ *     `roomPerimeterEnclosure` would report the cell `'open'`. A cell whose
+ *     door made it stop being a cell is not a door.
+ *   - The renderer draws an edge wherever the value is non-zero, so a door
+ *     written as `0` is invisible -- which is the defect this row already was,
+ *     preserved in a new place.
+ *
+ * ## Why that does not seal the room, which is the objection this file used to
+ * raise against exactly this
+ *
+ * **Because navigation reads the door before it reads the edge.**
+ * `buildNavigationGraph` and `boundedLocalSearch` both ask
+ * `DoorRegistry.getByEdge` *first* and only fall through to the wall value when
+ * there is no door (`../navigation/region-graph.ts`,
+ * `../navigation/local-search.ts`), and `docs/NAVIGATION.md` states the rule
+ * they implement: "a door registered at an edge is authoritative for gating
+ * that edge, **whatever the world's own edge value is**; a plain nonzero edge
+ * value with no registered door is an ordinary, permanently impassable wall."
+ * The navigation fixtures have been built this way since #21 --
+ * `buildTwoRoomFixture` walls a whole column and registers two doors on it.
+ *
+ * So the two answers a door produces are different answers to different
+ * questions, and both are right:
+ *
+ *   - **Topology / enclosure**: two regions. A door delimits a room; that is
+ *     what makes a cell a cell.
+ *   - **Navigation**: two regions joined by a `Portal`, permission-checked at
+ *     traversal time. That is what makes the cell reachable.
+ *
+ * The old sentence here -- "recording a door as one would seal the room it is
+ * supposed to open" -- was true of an edge value written **without** a
+ * `DoorRegistry` row, which is all this file could offer at the time. It is the
+ * missing half that sealed the room, not the edge value.
+ *
+ * ## Why not simply reuse `WALL_EDGE_NUMERIC_ID`
+ *
+ * Nothing in `src/` discriminates on the value yet -- every consumer tests
+ * `!== 0` -- so a door written as `1` would behave identically today. It is a
+ * separate value because the *save* carries it: the edge layers are RLE'd into
+ * the world snapshot, so a prison built now records where its doors are, and a
+ * renderer that draws a door differently becomes a change to the renderer alone
+ * rather than a change that cannot tell the two apart in any existing save.
+ * **The renderer does not draw it differently today**, and that is owed work
+ * rather than a claim: `tile-layer.ts` paints every non-zero edge with
+ * `EDGE_WALL_APPEARANCE`, so a finished door currently looks like a wall.
+ */
+export const DOOR_EDGE_NUMERIC_ID = 2;
+
+/**
+ * Whether a completed order for this buildable occupies a tile **edge** rather
+ * than a tile.
+ *
+ * Two members of `BuildableCategory` are edge geometry now, which is why this
+ * is a predicate and not `category === 'wall'` written out at each call site:
+ * a `'wall'`, and any buildable that names a `placesDoor`. It is exported
+ * because the composition root needs the same answer to decide whether the
+ * Build panel shows its edge chooser (`src/main.ts`), and a second copy of the
+ * rule there is how the two would come to disagree.
+ */
+export function occupiesTileEdge(definition: BuildableDefinition): boolean {
+  return definition.category === 'wall' || definition.placesDoor !== undefined;
+}
+
+/**
  * The edge-layer value a completed order for this buildable writes, or `0`
  * for a buildable that is not edge geometry at all.
  *
- * Only `'wall'` occupies a tile edge. A door is `'object'` here and is
- * deliberately *not* written as an edge: an edge is opaque to
- * `TopologyManager`, so recording a door as one would seal the room it is
- * supposed to open. Doors are modelled by `navigation/door.ts`'s
- * `DoorRegistry`, and connecting a completed door order to it is a separate
- * piece of work (see `docs/NAVIGATION.md`).
+ * Three answers, and the third is the one that closed a shipped defect.
+ * A `'wall'` writes `WALL_EDGE_NUMERIC_ID`. A buildable naming a `placesDoor`
+ * writes `DOOR_EDGE_NUMERIC_ID`, and `ConstructionSystem.finalizeConstruction`
+ * registers the matching `DoorDefinition` in the same call -- the two halves
+ * are what make it a door rather than a wall, and neither is a door on its own.
+ * Everything else writes nothing: a buildable that places an *object* is
+ * addressed by a tile, and a `'utility'` row still has nothing to write.
  *
- * `'object'` is therefore not a mistyped `'wall'`, and #261 asked directly
- * whether it was. `BuildableCategory` has three members and none of them
- * means "edge gate": `'wall'` means *opaque* edge geometry, so promoting the
- * door would build a solid wall where the player asked for a door -- worse
- * than today, not a fix. What is actually missing is a placement model for a
- * door, not a different category for one, and until that exists a completed
- * `door-wooden` order changes nothing in the simulation.
- *
- * **The placement model now exists and `door-wooden` still does nothing, which
- * is a correction to what ADR 0028 phase 1 predicted.** That phase claims it
- * "also fixes a shipped defect: `door-wooden` stops being a catalogue row that
- * consumes a plank and does nothing". It does not, and cannot: a placed object
- * is a row naming an id in `src/content/object-catalog.ts`, and that catalogue
- * declares no wooden door -- `object.loading-dock-door` is a three-tile
- * delivery door with a `'delivery-access'` capability, not this. A door's own
- * state lives in `DoorRegistry` (`src/simulation/navigation/door.ts`) and
- * connecting a completed order to it is navigation work with its own
- * consequences for `TopologyManager`. So `door-wooden` is left exactly as it
- * was found, with no `placesObjectId`, and the defect is still open.
+ * `door-wooden` used to fall in the third bucket with no `placesDoor`, so a
+ * completed order for it consumed a plank and changed nothing whatever in the
+ * simulation -- the one buildable the registry offered that could not finish
+ * meaningfully. `DOOR_EDGE_NUMERIC_ID`'s comment above is where the reasoning
+ * that kept it that way is answered, point by point.
  */
 export function edgeNumericIdFor(definition: BuildableDefinition): number {
+  if (definition.placesDoor !== undefined) return DOOR_EDGE_NUMERIC_ID;
   return definition.category === 'wall' ? WALL_EDGE_NUMERIC_ID : 0;
 }
 

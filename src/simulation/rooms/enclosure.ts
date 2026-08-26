@@ -37,16 +37,22 @@ import type { SparseWorld } from '../world/sparse-world';
  * honestly, and the narrowness is why nothing *refuses* a room on it -- see
  * `RoomZoningService.zone`.
  *
- * ## Why a sealed room cannot currently have a door
+ * ## A sealed room can have a door in it, and that is recent
  *
  * Worth knowing before reading a `sealed`/`open` answer as a verdict on the
- * player's building. Only a `'wall'` writes into the edge layers:
- * `edgeNumericIdFor` (`../construction/definition.ts`) returns `0` for the
- * `'object'`-category `door-wooden`, because an edge is opaque to
- * `TopologyManager` and recording a door as one "would seal the room it is
- * supposed to open". A completed door order therefore changes nothing in the
- * world at all, and the only enclosure the world can express today is a
- * rectangle with no way in.
+ * player's building. This paragraph used to say the opposite -- that only a
+ * `'wall'` wrote into the edge layers, that `edgeNumericIdFor` returned `0` for
+ * `door-wooden` because an edge is opaque to `TopologyManager`, and that "the
+ * only enclosure the world can express today is a rectangle with no way in".
+ *
+ * A completed door order now writes `DOOR_EDGE_NUMERIC_ID` into the same layer
+ * *and* registers a `DoorDefinition`, so this function reports a room with a
+ * door in its wall line as `'sealed'` -- correctly, because it is: the
+ * perimeter really is closed, and the way in is a gated crossing that only
+ * navigation can see (`buildNavigationGraph` reads `DoorRegistry` before it
+ * reads the edge value). So a `'sealed'` answer no longer implies "no way in",
+ * and an `'open'` one still means exactly what it says: an edge on the
+ * perimeter holds nothing at all.
  *
  * ## Determinism
  *

@@ -112,4 +112,64 @@ describe('DoorRegistry', () => {
     const doors = new DoorRegistry();
     expect(() => doors.setState('missing', 'open')).toThrow(RangeError);
   });
+
+  it('unregister takes the door off both lookup paths and out of all()', () => {
+    const doors = new DoorRegistry();
+    doors.register(makeDoor());
+    doors.register(makeDoor({ id: 'door-2', position: { x: tileCoordinate(9), y: tileCoordinate(9) } }));
+
+    expect(doors.unregister('door-1')).toBe(true);
+
+    expect(doors.getById('door-1')).toBeUndefined();
+    expect(doors.getByEdge({ x: tileCoordinate(4), y: tileCoordinate(1) }, 'left')).toBeUndefined();
+    expect(doors.all().map((door) => door.id)).toEqual(['door-2']);
+  });
+
+  it('unregister bumps both revisions, because a removal changes the region graph exactly as an addition does', () => {
+    // The contract this widened. It said "bumped only when a door is *added*"
+    // until doors became buildable, and `docs/NAVIGATION.md` named that sentence
+    // as a precondition for wiring door placement: a completed order is
+    // cancellable, so a built door has to be removable, and
+    // `isNavigationGraphStale` compares exactly this counter.
+    const doors = new DoorRegistry();
+    doors.register(makeDoor());
+    const structuralBefore = doors.structuralRevision;
+    const accessBefore = doors.accessRevision;
+
+    doors.unregister('door-1');
+
+    expect(doors.structuralRevision).toBe(structuralBefore + 1);
+    expect(doors.accessRevision).toBe(accessBefore + 1);
+  });
+
+  it('unregister answers false for an unknown id instead of throwing, unlike setState', () => {
+    // Deliberate asymmetry: `setState` on a door that is not there is a caller
+    // bug, while removing a door that is not there is the outcome the caller
+    // asked for -- and the production caller runs inside a scheduled system
+    // update, where a throw faults the worker.
+    const doors = new DoorRegistry();
+    const structuralBefore = doors.structuralRevision;
+
+    expect(doors.unregister('missing')).toBe(false);
+
+    expect(doors.structuralRevision).toBe(structuralBefore);
+    expect(doors.accessRevision).toBe(0);
+  });
+
+  it('leaves nothing behind, so an edge can hold a fresh door with the same id afterwards', () => {
+    // What makes `constructedDoorIdFor` safe to mint twice: rebuilding a door on
+    // the same edge is the same door in the same place, and it must not inherit
+    // a removed one's access version -- which is what a retained entry would
+    // give it.
+    const doors = new DoorRegistry();
+    doors.register(makeDoor({ state: 'locked' }));
+    doors.setState('door-1', 'open');
+    expect(doors.getAccessVersion('door-1')).toBe(1);
+
+    doors.unregister('door-1');
+    doors.register(makeDoor({ state: 'closed' }));
+
+    expect(doors.getById('door-1')?.state).toBe('closed');
+    expect(doors.getAccessVersion('door-1')).toBe(0);
+  });
 });

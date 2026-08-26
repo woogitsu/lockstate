@@ -229,13 +229,17 @@ it is on.
   tracks one touch pointer by default, so the second finger was previously
   never delivered at all).
 
-- **Objects have no placement model.** Issue #74 made
+- **A completed door is drawn as a wall.** Issue #74 made
   `ConstructionSystem.finalizeConstruction` write the world's `topEdge` /
-  `leftEdge` layers, so a completed **wall** order is now real geometry and the
+  `leftEdge` layers, so a completed **wall** order is real geometry and the
   renderer draws it from the world like any other edge — the order-derived
-  structure it also draws simply agrees. A completed order for anything that is
-  *not* edge geometry (the wooden door, and every future object) still only
-  bumps the chunk's geometry revision: nothing in the simulation records which
-  objects stand on which tile (`docs/HUD_PROJECTIONS.md`, gap 13), so those are
-  still drawn from the build order itself and vanish if the order is ever
-  cleaned out of the construction snapshot.
+  structure it also draws simply agrees. A completed **door** order writes the
+  same layers, with `DOOR_EDGE_NUMERIC_ID` rather than `WALL_EDGE_NUMERIC_ID`,
+  and `tile-layer.ts` paints every non-zero edge with `EDGE_WALL_APPEARANCE`
+  regardless of value — so the door the player watched being built in
+  `door-wooden`'s own colours turns into a brick wall the moment it finishes.
+  The value that tells the two apart is already in the layer the renderer
+  reads; what is missing is a per-value appearance lookup beside
+  `EDGE_WALL_APPEARANCE`. A completed order for anything that is *not* edge
+  geometry — every object — only bumps the chunk's geometry revision, and is
+  drawn from the build order itself.

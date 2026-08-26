@@ -3,6 +3,7 @@ import {
   BUILD_EDGES,
   ConstructionSystem,
   DEFAULT_BUILD_EDGE,
+  DOOR_EDGE_NUMERIC_ID,
   WALL_EDGE_NUMERIC_ID,
   createBuildOrder,
   createConstructionCommandHandler,
@@ -184,21 +185,49 @@ describe('completing an order writes world geometry', () => {
   });
 
   it('writes nothing to the edge layers for a buildable that is not edge geometry', () => {
-    // A door is an `'object'` in `BUILDABLE_REGISTRY`. Writing it as an edge
-    // would make it opaque to the flood fill -- a door that seals the room.
+    /*
+     * `bed-wooden` places an *object*: a row addressed by an anchor tile, with
+     * a footprint of tiles and no edge anywhere in it. Writing one as an edge
+     * would make it opaque to the flood fill -- furniture that seals the room.
+     *
+     * This assertion used to be aimed at `door-wooden`, on the reasoning that a
+     * door written as an edge would seal the room it is supposed to open. That
+     * reasoning was half right and is answered where it lived, on
+     * `DOOR_EDGE_NUMERIC_ID`: what sealed the room was an edge value with no
+     * `DoorRegistry` row beside it, and a door now writes both. So the claim
+     * "not edge geometry" moved to the buildable that is genuinely not edge
+     * geometry, and the door has a test of its own below.
+     */
     const world = loadedWorld();
     const construction = new ConstructionSystem(world);
     const kernel = new Kernel();
     kernel.registerSystem(construction);
-    construction.submitOrder(createBuildOrder('door-0', 'door-wooden', tile(4, 6), 'north'));
+    construction.submitOrder(createBuildOrder('object-0', 'bed-wooden', tile(4, 6), 'north'));
     const before = world.getChunk(CHUNK_0)?.geometryRevision ?? -1;
     runToCompletion(kernel);
 
-    expect(construction.getOrder('door-0')?.state).toBe('completed');
+    expect(construction.getOrder('object-0')?.state).toBe('completed');
     expect(world.getTopEdge(tile(4, 6))).toBe(0);
     expect(world.getLeftEdge(tile(4, 6))).toBe(0);
     // But the topological change is still signalled, exactly as before #74.
     expect(world.getChunk(CHUNK_0)?.geometryRevision ?? -1).toBeGreaterThan(before);
+  });
+
+  it('writes the door edge value, and only that edge, for a completed door order', () => {
+    const world = loadedWorld();
+    const construction = new ConstructionSystem(world);
+    const kernel = new Kernel();
+    kernel.registerSystem(construction);
+    construction.submitOrder(createBuildOrder('door-0', 'door-wooden', tile(4, 6), 'west'));
+    runToCompletion(kernel);
+
+    expect(construction.getOrder('door-0')?.state).toBe('completed');
+    // A value of its own, not `WALL_EDGE_NUMERIC_ID`: nothing in `src/`
+    // discriminates on it yet, but the edge layers are carried in the world
+    // snapshot, so a prison built today records where its doors are.
+    expect(world.getLeftEdge(tile(4, 6))).toBe(DOOR_EDGE_NUMERIC_ID);
+    expect(DOOR_EDGE_NUMERIC_ID).not.toBe(WALL_EDGE_NUMERIC_ID);
+    expect(world.getTopEdge(tile(4, 6))).toBe(0);
   });
 });
 
