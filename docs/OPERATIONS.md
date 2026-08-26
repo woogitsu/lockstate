@@ -104,8 +104,8 @@ which is the conservation property this substrate exists to provide, inverted.
 The asymmetry is the lesson worth keeping: the pickup case had a dedicated
 regression test and the symmetric dropoff case had none, so a green suite said
 nothing about half of a two-legged mechanism. `docs/adr/0037-goods-in-a-carriers-hands-when-a-carry-job-dies.md`
-proposes the design question the repair had to answer ahead of a decision, and
-records the two alternatives (a floor stack at the carrier's tile; an accounted
+records the design question the repair had to answer, and
+names the two alternatives (a floor stack at the carrier's tile; an accounted
 void) that were not taken.
 
 ## The no-teleport rule
@@ -152,7 +152,7 @@ There are **three** deliberate exceptions, and none is a transfer:
   smoothed over: it is the cheapest thing that conserves stock without inventing
   a representation for goods sitting on the floor, and no more than that.
   `docs/adr/0037-goods-in-a-carriers-hands-when-a-carry-job-dies.md` is where
-  that trade is put to the owner; the floor-stack alternative is the one that
+  that trade is recorded and accepted; the floor-stack alternative is the one that
   would make this rule true instead of thrice-excepted.
 
 Anything else calling `deposit` outside `operations/` is a fourth exception
