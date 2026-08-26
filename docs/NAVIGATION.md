@@ -127,8 +127,12 @@ that is the work budget's problem —
 [ADR 0007](./adr/0007-navigation-work-budgets-and-flow-fields.md) territory.
 Second, `RouteCache`/`FlowFieldCache` do **not** invalidate on
 `structuralRevision`: they compare `NavigationGraph.geometrySignature`, which
-is built from chunk `geometryRevision`s alone, plus (for `RouteCache`) the
-access versions of the doors an entry actually used. A door that appeared or
+is built from chunk `geometryRevision`s alone, plus — for both caches — the
+per-door traversal verdicts the entry was computed under (see "Invalidation and
+caching" below). This read "*(for `RouteCache`) the access versions of the doors
+an entry actually used*" until #357, which was wrong twice over: about which
+doors an answer depends on, and about `FlowFieldCache`, which has tracked doors
+of its own since #22. A door that appeared or
 vanished without its chunk's geometry revision moving would therefore leave
 routes cached from before the change. Nothing does that: the two callers of
 `DoorRegistry.register` are `restoreSessionSystems`, which runs before any
@@ -205,9 +209,31 @@ one costs the same, and none of them is the iteration/insertion order of a
    #365; the sort is the third thing a route depends on, and
    `constructedDoorIdFor`'s docstring already treated it as one.
 
+A fourth thing decides which route comes back, and it is not an ordering: the
+**end the region search is rooted at**. A tie-break among equal-cost
+predecessors is applied from the search's own source, so the same three rules
+above select different doors depending on which end they run from — origin-rooted
+picks the tied path by its last hop, destination-rooted by its first. That is why
+`dijkstraRegionPath` is rooted at the destination and walked from the origin
+(`router.ts`): a `RegionFlowField` can only be rooted at the destination, so
+rooting `findRoute` anywhere else made a shared plan a *different* plan.
+Measured on a four-room ring whose two ways round cost exactly the same, before
+that change: 64 of 256 origin/destination pairs took a different door through a
+shared field than through `findRoute`, 20 of them at strictly higher cost, and
+which of the two an actor received depended on how many others happened to share
+its destination that tick (#360). Aggregate quality is unchanged by the
+direction — against a flat full-map search the hierarchical answer's total excess
+over all 256 pairs is 48 either way, worst case 4 either way, on the same 20
+pairs — so what changed is that there is one answer per state instead of two.
+`tests/determinism/navigation-shared-plan-equivalence.test.ts` is the guard for
+that fourth thing, over every pair on the ring and all 81 combinations of its
+four doors' states; a per-portal tie-break on the door id was measured as
+insufficient before this was chosen, because the smallest first hop and the
+smallest last hop of a tied pair need not belong to the same route.
+
 `tests/determinism/navigation-search-tie-breaks.test.ts` is the guard for all
-three. It states each canonical answer as a concrete route **and** asserts
-the alternative is genuinely available at the same cost, so no case there can
+three orders above. It states each canonical answer as a concrete route **and**
+asserts the alternative is genuinely available at the same cost, so no case there can
 pass because there was only ever one route to find. Measured, reverting one
 site at a time: the A* tie-break fails one case, the Dijkstra tie-break one,
 the portal sort two.
@@ -234,18 +260,59 @@ things:
   removable; see the door-placement section above.
 - **`accessRevision`** (registry-wide) and a **per-door access version**
   (`getAccessVersion(doorId)`) — bumped on every state change, and on an add
-  or a remove. `RouteCache`
-  (`route-cache.ts`) records, per cached route, which doors it actually
-  depended on (crossed, or — for a `permission-denied` failure — was
-  blocked by) and their version at compute time. A lockdown on one door
-  therefore evicts only the cache entries that actually used that door,
+  or a remove. `RouteCache` (`route-cache.ts`) and `FlowFieldCache`
+  (`flow-field.ts`) record, per entry, every door the answer *depended on* and
+  what the search concluded about each: may this `RouteContext` cross it, and at
+  what cost (`route-dependencies.ts`). An entry is evicted when one of those
+  doors stops giving the verdict it was computed under — `accessRevision` is the
+  O(1) proof that no door anywhere has moved, and the per-door version the same
+  proof one door at a time, so the verdict is only re-evaluated for a door that
+  actually changed.
+
+  **This bullet said "which doors it actually depended on (crossed, or — for a
+  `permission-denied` failure — was blocked by)" until #357, and that
+  parenthetical was the defect rather than a gloss on it.** The doors a route
+  crossed are not the doors it depended on: an answer depends just as much on
+  every door that was *shut* when it was computed, and on every cheaper crossing
+  that was not yet open. Read as an exhaustive dependency set it let a cached
+  `permission-denied` outlive the lockdown that caused it, and a cached route
+  outlive the opening of a cheaper door — and, at the flow-field layer (#358), it
+  let one stale field route a whole sharing group through the door it had been
+  forced to use. `RouteFailure.blockedBy` is documented above as a best-effort
+  diagnostic and is no longer read as anything else.
+
+  What an answer depends on is **the doors incident to a region within reach of
+  it**, derived and stated at `runRegionDijkstra`: a door whose two endpoint
+  regions are both further from the destination than the region being asked
+  about can neither shorten that answer nor introduce an equal-cost alternative a
+  tie-break could pick instead. Minus one exclusion, also a proof rather than a
+  heuristic (`portalCannotBeCrossedBetween`): a cell is a leaf region, so any
+  route entering it must leave by the same door and pay for it twice, and dropping
+  that excursion is a strictly cheaper route between the same two tiles — so such
+  a door is on no shortest route and on no tied one, whatever its state. That
+  exclusion is what keeps the rule proportionate on the shape a prison actually
+  has, where one corridor touches every cell door: 2,670 work units against 266
+  on a ten-tick measurement with one unrelated cell door toggling every tick. A
+  *field* keeps even those doors, because it answers for every origin including
+  one behind such a door, so its dependency set is every door incident to a
+  reachable region and any door change invalidates it; the narrow per-route half
+  lives in `RouteCache`.
+
+  So a lockdown on one door still evicts only the entries that door could change,
   leaving unrelated cached routes untouched — "a closed/locked door can
-  invalidate connectivity without rebuilding unrelated world regions."
+  invalidate connectivity without rebuilding unrelated world regions" — and it no
+  longer fails to evict the entries that door shaped by being shut. The guard is
+  `tests/determinism/navigation-cache-agreement.test.ts`, which asserts a warmed
+  cache's answer against a fresh `findRoute` rather than against an eviction
+  count, over every single-door state change on a cell-block fixture; a
+  behavioural form was necessary because the old rule's own unit test passed by
+  only ever *closing* a door that had been used, never opening one that had not.
 
 Region/portal topology is **not** sensitive to lock state changes alone:
 a door always splits two regions whether it is open or locked, so toggling
 a lock never requires rebuilding the graph, only re-checking (or evicting
-from cache) the routes that cross it.
+from cache) the entries whose answer that door could change — which, per the
+bullet above, is not the same set as the routes that cross it.
 
 ## Known correctness caveat: hierarchical vs. flat-optimal cost
 
@@ -295,10 +362,32 @@ rationale lives in
   region) returns `undefined`, and the caller falls back to #21's full
   `findRoute` for an accurate diagnosis — the shared fast path never
   fabricates a `permission-denied` reason.
+
+  **The parenthetical above was false until #360 and is kept because it is true
+  now.** `findRoute`'s region search was rooted at the **origin**, so it was not
+  the same pass from the same end: cost is symmetric, so the two agreed on
+  distances, but the predecessor each recorded among equal-cost candidates was
+  chosen by distance from its own source, so they disagreed about *which door*
+  whenever two region routes tied. `dijkstraRegionPath` is rooted at the
+  destination now — the end a field can only be rooted at — which is what makes
+  one pass answer for every origin and makes the claim above hold as written. See
+  the Determinism section for what it cost while it did not.
+- **Sharing sits behind the route cache, not in front of it.** Every request
+  resolves through `findRouteCached`, and flow-field sharing decides only how a
+  *miss* is computed. Until #359 the field branch ran ahead of `RouteCache` and
+  never wrote to it, so the busiest destination in the prison — the one that
+  trips the activation threshold, i.e. the one whose legs repeat most — was the
+  only one that got no cross-tick reuse, re-paying a full per-actor local A*
+  every tick. On `buildCellBlockFixture(24)`, eight legs re-requested each tick
+  for ten ticks: 1,906 work units before, 214 after, against 268 with sharing
+  switched off. The composition only became safe once the two mechanisms
+  computed the same route, which is why #360 and #359 are one change.
 - **Cache metrics.** `RouteCache` and the new `FlowFieldCache` both expose
-  cumulative `hits`/`misses`/`evictions` (a specific door's access-version
-  change) and `geometryInvalidations` (a whole-graph rebuild) via
-  `getMetrics()`.
+  cumulative `hits`/`misses`/`evictions` (an entry dropped because a door it
+  depended on no longer gives the traversal verdict it was computed under — this
+  read "a specific door's access-version change" until #357, and a version
+  change that leaves the verdict alone is deliberately not an eviction) and
+  `geometryInvalidations` (a whole-graph rebuild) via `getMetrics()`.
 - **`NavigationSystem`** is a real `SystemRegistration` registered on
   `SimulationRuntime`'s `Kernel` (`createNewSimulationRuntime`, order 150,
   every tick) — generic over request identity (`id: string`), so it knows
@@ -351,6 +440,56 @@ destination region) while lockdown-return and mixed-destination — distinct
 destinations per actor — almost never do**, exactly the "evidence-driven,
 not used for every destination" requirement; this is the intended,
 observed crossover, not a coincidence of these particular seeds.
+
+### What the two cache columns above do and do not say (#359)
+
+**Those numbers come from the hand-rolled mirror, and its `Cache hit/miss` and
+`Flow-field activations` columns describe a composition the shipped code no
+longer has.** `benchmarks/scenarios/navigation-actor-tiers.mjs` is a separate
+implementation by deliberate choice — ADR 0007 explains why, and names drift
+from the real algorithm as the accepted cost — and it still consults its route
+cache **only for requests that are not eligible for sharing**
+(`if (!eligible && routeCache.has(...))`), which is the ordering #359 replaced.
+The mirror is unchanged by that fix, so re-running it would reproduce the same
+figures; what has to be corrected is the reading, not the number.
+
+So `0 / 60` for meal-rush at 5,000 actors is **not** "the cache never helped a
+meal rush". In the mirror an eligible request increments neither counter, so the
+column is reporting the 60 requests of 5,000 that were never eligible, all of
+which missed — the ratio of a residue, not of the scenario. It was read here as
+a property of the scenario, and it was in fact the defect: sharing and the route
+cache were mutually exclusive, so the busiest destination was the only one with
+no cross-tick reuse. The same misreading is why the activation counts are not
+comparable across the fix either: they counted one field per group per tick,
+where the shipped code computes a field only when the cache cannot already
+answer.
+
+Measured on the real modules instead — the actual `NavigationSystem` on a real
+`Kernel`, same 64-cell layout, `workBudgetPerTick=400`, `agingIntervalTicks=15`,
+`flowFieldActivationThreshold=6`, same seeds and stub-actor populations as
+`tests/unit/navigation-system.test.ts`, this development container, before and
+after #380. Directional only, on the same footing as everything else in this
+section:
+
+| Scenario | Actors | Ticks | Work units | Activations | Route cache hit/miss |
+| --- | --- | --- | --- | --- | --- |
+| meal-rush | 250 | 27 → **26** | 11,374 → **10,890** | 115 → 99 | 24 / 108 → **45 / 205** |
+| meal-rush | 5,000 | 300 → **81** | 127,245 → **34,203** | 2,278 → 476 | 1,590 / 277 → **4,261 / 739** |
+| lockdown-return | 250 | 35 → **40** | 15,018 → **17,413** | 0 → 0 | 6 / 244 → 6 / 244 |
+| lockdown-return | 5,000 | 544 → **477** | 236,270 → **208,106** | 2,096 → 1,532 | 991 / 2,758 → 1,724 / 3,276 |
+| mixed-destination | 250 | 32 → 32 | 13,740 → **13,582** | 7 → 7 | 0 / 245 → 0 / 250 |
+| mixed-destination | 5,000 | 537 → 537 | 231,466 → **231,539** | 2,132 → 2,073 | 146 / 3,750 → 237 / 4,763 |
+
+Every request now reaches the cache, so hits and misses both rise and the ratio
+becomes readable: meal-rush at 5,000 actors goes from 1,590 hits to 4,261 and
+drains in 81 ticks instead of 300, for a quarter of the work units. **One row
+moved the wrong way and is left in rather than dropped:** lockdown-return at the
+250 tier costs 17,413 work units against 15,018 and takes five ticks longer,
+because rooting the region search at the destination (Determinism, above) changes
+which end the early exit truncates, and on this layout — one canteen region
+against 64 cell regions — the ball around a cell is not the ball around the
+canteen. It is a per-shape cost of having one answer per state, it reverses at
+the 5,000 tier of the same scenario, and nothing here is a gate.
 
 ## What is out of scope here
 
