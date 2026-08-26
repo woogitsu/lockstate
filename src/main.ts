@@ -1453,16 +1453,36 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
            * holding only a zoned canteen therefore passes here and is refused
            * there -- still exactly one message, from the other side.
            *
-           * **It is zero until the player zones something**, because
-           * `RoomZoningService` is still the only thing in `src/` that
-           * registers an instance -- and since the Rooms tab (#312) that is a
-           * gesture a player has, so this is a real branch rather than a
-           * permanent one. Measured on the merged tree: a zoned `room.cell`
-           * takes `counts.rooms` to 1, the worker finds an instance of an
+           * **It is zero in a fresh session until the player zones
+           * something**, because `RoomZoningService.zone` is the only thing
+           * that mints a room instance from a gesture -- and since the Rooms
+           * tab (#312) that is a gesture a player has, so this is a real
+           * branch rather than a permanent one. Two sentences here needed
+           * narrowing, and both had been quietly false for a while:
+           *
+           *   - This said `RoomZoningService` is *"the only thing in `src/`
+           *     that registers an instance"*, which
+           *     `restoreSessionSystems` in
+           *     `src/simulation/runtime/session-systems.ts` has falsified
+           *     since #70: a restored save re-registers every instance it
+           *     carries. "Zero until the player zones something" is therefore
+           *     true of a *new* prison and not of a loaded one, which is the
+           *     narrower claim this branch actually rests on.
+           *   - It said the arrival waits at `accommodation-assignment`
+           *     *"because zoning registers `capacity: 0` (ADR 0023)"*. Zoning
+           *     writes zeroes, but as a placeholder before `updateDerived`
+           *     resolves the real figure rather than as the answer (ADR 0028
+           *     phase 1, and the field is now `residentCapacity`). An *empty*
+           *     zoned cell still derives zero, so the observed wait is
+           *     unchanged -- but it is now a fact about the cell being empty,
+           *     and putting a bed in it ends the wait.
+           *
+           * Measured on the merged tree: a zoned `room.cell` takes
+           * `counts.rooms` to 1, the worker finds an instance of an
            * accommodation target and admits, and the arrival waits at
-           * `accommodation-assignment` because zoning registers `capacity: 0`
-           * (ADR 0023). A prison with nothing zoned is still refused here, and
-           * the panel says so before the press as well
+           * `accommodation-assignment` while that cell holds no
+           * `'sleep-surface'` object. A prison with nothing zoned is still
+           * refused here, and the panel says so before the press as well
            * (`hud.intake.hint`) rather than leaving the player to discover it
            * by pressing.
            */
