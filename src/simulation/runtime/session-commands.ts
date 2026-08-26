@@ -6,6 +6,7 @@ import {
   ADMIT_REFUSAL_REASONS,
   HIRE_REFUSAL_REASONS,
   PLACE_OBJECT_REFUSAL_REASONS,
+  PURCHASE_CANCEL_REFUSAL_REASONS,
   PURCHASE_REFUSAL_REASONS,
   REMOVE_OBJECT_REFUSAL_REASONS,
   UNZONE_REFUSAL_REASONS,
@@ -54,10 +55,18 @@ import { tileCoordinate } from '../world/coordinates';
  * placement and a removal are one gesture with a mode, exactly as a designation
  * and an un-designation are, so they are routed side by side (ADR 0028 phase 3).
  *
- * `refusals` is the session's `RefusalLog`, and all eight routes write to the
+ * `CancelMaterialPurchase` is the eighth, and it is the one command here that
+ * *un-does* another one of them: it names a purchase by the id
+ * `PurchaseMaterials` minted and reaches `ProcurementSystem.cancel`, which was a
+ * complete credit path with no caller in `src/` at all (#285). It is routed
+ * beside the purchase for the reason `UnzoneRoom` is routed beside `ZoneRoom` --
+ * one service's two halves belong side by side.
+ *
+ * `refusals` is the session's `RefusalLog`, and all nine routes write to the
  * same one: a refused wall, a refused purchase, a refused zoning rectangle, a
  * refused un-zoning, a refused hire, a refused admission, a refused object
- * placement and a refused object removal are the same kind of fact about the
+ * placement, a refused object removal and a cancellation with nothing left to
+ * refund are the same kind of fact about the
  * session -- the kernel took the command and a system then declined to carry it
  * out -- and they reach the player down one channel (#261).
  */
@@ -233,6 +242,43 @@ export function createSessionCommandHandler(
       // is given a wire id and a message key.
       const outcome = procurement.purchase(simCommand.orderId, simCommand.itemId, simCommand.quantity, context.tick);
       if (!outcome.ok) refusals.record(PURCHASE_REFUSAL_REASONS[outcome.reason], context.tick);
+      return;
+    }
+
+    if (simCommand !== null && simCommand.type === 'CancelMaterialPurchase') {
+      /*
+       * The other half of a purchase, and the producer `ProcurementSystem.cancel`
+       * never had (#285).
+       *
+       * Before this branch, money spent on a delivery still in flight was
+       * unrecoverable by any means a player could reach: `cancel` refunded the
+       * recorded `paidMinorUnits` exactly, was idempotent, was snapshotted and
+       * restored -- and `grep -rn "procurement\.cancel" src/` found nothing, so
+       * the only caller in the repository was a test. Undoing the build order the
+       * materials were bought for does not help and must not be made to: the two
+       * ids are independent because the two *actions* are, and a refund wired to
+       * undo would credit the money while `cancelOrder` also released the
+       * materials, which creates value out of a keystroke (#285's mutation M2).
+       *
+       * **The refusal reaches the player, and it is the interesting half.** A
+       * cancellation is refused for exactly one reason -- the delivery is not in
+       * flight any more, because it landed or was never here -- and it is a
+       * refusal a player can provoke without doing anything wrong: the list on
+       * screen is a projection on a cadence, so a delivery can arrive between the
+       * publication and the press. `CancelBuildOrder` deliberately says nothing
+       * in the same race (`createConstructionCommandHandler` swallows an id that
+       * names nothing) and the difference is what the two controls promise. A
+       * cancelled order that had already finished leaves the world visibly
+       * changed a moment later either way; a cancellation that refunded nothing
+       * leaves a balance that did not move, and silence there is a control that
+       * appeared to give money back.
+       *
+       * **No pre-check on the main thread**, for `CancelBuildOrder`'s reason:
+       * whether a delivery is still in flight is not something this thread's
+       * stale copy may decide.
+       */
+      const outcome = procurement.cancel(simCommand.orderId);
+      if (!outcome.ok) refusals.record(PURCHASE_CANCEL_REFUSAL_REASONS[outcome.reason], context.tick);
       return;
     }
 

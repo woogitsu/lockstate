@@ -314,6 +314,7 @@ const shutdownMessageSchema = z
 export const PROJECTION_IDS = [
   'hud/status-strip',
   'hud/build-queue',
+  'hud/pending-deliveries',
   'hud/prisoner-population',
   'hud/prisoner-roster',
   'hud/prisoner-detail',
@@ -636,9 +637,10 @@ export type SimulationStatusCounts = DeepReadonly<
  * message key in `src/ui/simulation-alerts.ts`; no text crosses the boundary.
  *
  * Declared in ascending code-unit order, and namespaced by the command the
- * refusal answers, so the seven vocabularies behind it cannot collide:
+ * refusal answers, so the nine vocabularies behind it cannot collide:
  * `admit.*` mirrors `AdmitPrisonerRefusalReason`, `build.*` mirrors
- * `BuildOrder.failReason`, `hire.*` mirrors `StaffHireRefusalReason`,
+ * `BuildOrder.failReason`, `cancel-purchase.*` mirrors
+ * `PurchaseCancelRefusalReason`, `hire.*` mirrors `StaffHireRefusalReason`,
  * `place-object.*` mirrors `PlaceObjectRefusalReason`,
  * `purchase.*` mirrors `PurchaseOutcome`'s refusal reasons,
  * `remove-object.*` mirrors `RemoveObjectRefusalReason`, `unzone.*` mirrors
@@ -650,9 +652,9 @@ export type SimulationStatusCounts = DeepReadonly<
  * answers, so one flat id per spelling would put one sentence on several.
  *
  * `src/simulation/refusals/refusal-log.ts` maps each domain value onto one of
- * these through an exhaustive `Record`, so a reason added to any of the seven
+ * these through an exhaustive `Record`, so a reason added to any of the nine
  * fails to compile until it is named here -- and
- * `tests/unit/simulation-refusals.test.ts` asserts the seven tables between
+ * `tests/unit/simulation-refusals.test.ts` asserts the nine tables between
  * them cover this list exactly, so a member declared here and produced by
  * nothing is a failure too.
  *
@@ -661,6 +663,12 @@ export type SimulationStatusCounts = DeepReadonly<
  * for exactly the reason this comment gives: "the player pressed where there was
  * no room" and "the player pressed where there was no object" are two sentences,
  * and one flat id would put one of them on both.
+ *
+ * `cancel-purchase.*` is the ninth namespace and it is a namespace of its own
+ * against `purchase.*` for the same reason `unzone.*` is one against `zone.*`
+ * (#285): the treasury is involved in both and the player is doing opposite
+ * things, so somebody who pressed Cancel on a delivery must not read that the
+ * materials were not ordered.
  */
 export const REFUSAL_REASONS = [
   'admit.no-accommodation',
@@ -670,6 +678,7 @@ export const REFUSAL_REASONS = [
   'build.unbuildable-terrain',
   'build.unowned-land',
   'build.water-blocked',
+  'cancel-purchase.not-pending',
   'hire.insufficient-funds',
   'hire.roster-full',
   'hire.unknown-role',

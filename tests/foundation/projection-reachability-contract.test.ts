@@ -62,7 +62,7 @@ import { PROJECTION_CATALOG } from '../../src/simulation/worker/projection-catal
  * other way: **there must be a painter**, and deleting the last one fails here
  * rather than quietly returning the channel to a pipe with nothing on the end
  * of it. It still does not claim that every projection is painted; ten of the
- * thirteen catalogued read models have a route and no reader.
+ * fourteen catalogued read models have a route and no reader.
  *
  * The second painter is `src/ui/simulation-build-queue.ts`, and it is worth
  * naming because it closed a *different* gap from the room readout's. That one
@@ -72,6 +72,17 @@ import { PROJECTION_CATALOG } from '../../src/simulation/worker/projection-catal
  * producer, because no control could aim at an order nothing had told this
  * thread about. So this channel is now the route by which a *command* becomes
  * reachable, not only the route by which a readout does.
+ *
+ * The fourth is `src/ui/simulation-pending-deliveries.ts`, over
+ * `hud/pending-deliveries`, and it is the second time this channel is what makes
+ * a *command* reachable rather than a readout -- with the difference that what
+ * sat unreachable behind it was not a control but a **credit** (#285).
+ * `ProcurementSystem.cancel` refunds the recorded price of a delivery that has
+ * not landed, exactly, and every caller in the repository was a test -- so the
+ * one thing besides the state income line that puts money back into the treasury
+ * could not happen in any session a player could drive. A purchase id is minted
+ * on the main thread and immediately forgotten; this projection is what carries
+ * it back, so a control can name one.
  *
  * The third is `src/ui/simulation-intake.ts`, over `hud/prisoner-population`,
  * and it is the first one about *people* rather than about the building: it
@@ -133,7 +144,12 @@ const ROUTED_ELSEWHERE: Readonly<Record<string, string>> = {
  * assertion below. Named individually so that a reader which is renamed or
  * moved out of `src/ui/` fails here instead of silently leaving the surface.
  */
-const PAINTERS = ['simulation-build-queue.ts', 'simulation-intake.ts', 'simulation-room-needs.ts'] as const;
+const PAINTERS = [
+  'simulation-build-queue.ts',
+  'simulation-intake.ts',
+  'simulation-pending-deliveries.ts',
+  'simulation-room-needs.ts',
+] as const;
 
 const catalogSource = read(CATALOG_FILE);
 

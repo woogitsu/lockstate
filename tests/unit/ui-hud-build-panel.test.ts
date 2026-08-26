@@ -4,12 +4,19 @@ import { Localizer, buildMessageCatalog, defaultMessageCatalogEn } from '../../s
 import { BUILD_EDGES, DEFAULT_BUILD_EDGE } from '../../src/simulation/construction';
 import {
   BUILD_QUEUE_ROW_LIMIT,
+  PENDING_DELIVERY_ROW_LIMIT,
   buildEdgeChoiceOptions,
   formatBuildQueueOrderText,
   formatBuildTargetText,
+  formatPendingDeliveryText,
 } from '../../src/ui/hud/build-panel';
 import { HUD_MESSAGE_KEYS } from '../../src/ui/hud/messages';
-import { HUD_BUILD_EDGES, HUD_BUILD_ORDER_STATES, type HudBuildOrderViewModel } from '../../src/ui/hud/view-model';
+import {
+  HUD_BUILD_EDGES,
+  HUD_BUILD_ORDER_STATES,
+  type HudBuildOrderViewModel,
+  type HudPendingDeliveryViewModel,
+} from '../../src/ui/hud/view-model';
 import { PENDING_BUILD_ORDER_STATES } from '../../src/simulation/presentation/construction-projection';
 
 /**
@@ -336,5 +343,82 @@ describe('a queued row names its own order', () => {
     // no `remove` -- from growing over a session.
     expect(BUILD_QUEUE_ROW_LIMIT).toBeGreaterThan(1);
     expect(BUILD_QUEUE_ROW_LIMIT).toBeLessThanOrEqual(4);
+  });
+});
+
+describe('a delivery row says what it gives back', () => {
+  /**
+   * Sentinels for the same reason the queued row uses them: the expected strings
+   * can then be written out in full, and a template that dropped a field is
+   * visible rather than merely different.
+   */
+  const sentinels = buildMessageCatalog('en', {
+    'hud.build.delivery': 'delivery/{count}/{material}/{total}',
+    'hud.build.delivery-unnamed': 'UNNAMED-MATERIAL-SENTINEL',
+    'item.brick.name': 'BRICK-SENTINEL',
+  });
+  const localizer = new Localizer({ locale: 'en', catalogs: [sentinels] });
+  const t = (key: Parameters<Localizer['format']>[0], parameters?: Parameters<Localizer['format']>[1]): string =>
+    parameters === undefined ? localizer.format(key) : localizer.format(key, parameters);
+
+  const delivery = (overrides: Partial<HudPendingDeliveryViewModel> = {}): HudPendingDeliveryViewModel => ({
+    orderId: 'buy-1',
+    labelKey: 'item.brick.name',
+    quantity: 3,
+    paidMinorUnits: 120,
+    ...overrides,
+  });
+
+  it('says how much of what, and what cancelling it returns', () => {
+    expect(formatPendingDeliveryText(t, delivery(), '120')).toBe('delivery/3/BRICK-SENTINEL/120');
+  });
+
+  it('renders the figure it was handed rather than deriving one from the quantity', () => {
+    /*
+     * The load-bearing property of this sentence. `ProcurementSystem.cancel`
+     * refunds the *recorded* `paidMinorUnits`, so the row must promise that and
+     * nothing else -- a row that multiplied a quantity by today's unit price
+     * would promise the wrong amount the moment prices ever move, which is the
+     * bug the recorded refund exists to prevent.
+     *
+     * Driven with a total that is deliberately not `quantity` times anything the
+     * catalogue knows: an implementation that recomputed would print 120.
+     */
+    expect(formatPendingDeliveryText(t, delivery({ paidMinorUnits: 7 }), '7')).toBe('delivery/3/BRICK-SENTINEL/7');
+  });
+
+  it('still draws a row for a delivery the host names no item for', () => {
+    // Money nobody can label is still money: dropping the row would hide the
+    // only control that recovers the payment.
+    const { labelKey: _dropped, ...unnamed } = delivery();
+    expect(formatPendingDeliveryText(t, unnamed, '120')).toBe('delivery/3/UNNAMED-MATERIAL-SENTINEL/120');
+  });
+
+  it('produces a different row per delivery with the strings that actually ship', () => {
+    // The sentinels above are invented, so they would not notice a shipped
+    // `hud.build.delivery` that stopped interpolating a field -- every row would
+    // read the same, and the figures a player is deciding on would be missing.
+    const shipped = new Localizer({ locale: 'en', catalogs: [defaultMessageCatalogEn] });
+    const format = (key: Parameters<Localizer['format']>[0], parameters?: Parameters<Localizer['format']>[1]): string =>
+      parameters === undefined ? shipped.format(key) : shipped.format(key, parameters);
+    const three = formatPendingDeliveryText(format, delivery({ quantity: 3, paidMinorUnits: 120 }), '120');
+    const two = formatPendingDeliveryText(format, delivery({ quantity: 2, paidMinorUnits: 80 }), '80');
+    expect(three).not.toBe(two);
+    expect(three).toContain(shipped.format('item.brick.name'));
+    expect(three).toContain('120');
+    expect(two).toContain('80');
+  });
+
+  it('bounds how many rows the block ever holds, and the bound is a rectangle', () => {
+    /*
+     * Not a preference: `PENDING_DELIVERY_ROW_LIMIT` carries the measurement.
+     * At 900x600 on the assembled page the open buy disclosure with three rows
+     * and the "and N more" line is 312.9px against a 337.0px visible panel box;
+     * at four rows it is 360.9px and the fourth Cancel's box ends 7.9px below
+     * the panel's visible bottom with a full 78x44 rectangle and an
+     * `offsetParent` -- laid out, hit-testable, and off screen (#220's shape).
+     */
+    expect(PENDING_DELIVERY_ROW_LIMIT).toBeGreaterThan(1);
+    expect(PENDING_DELIVERY_ROW_LIMIT).toBeLessThanOrEqual(3);
   });
 });

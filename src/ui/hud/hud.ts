@@ -444,6 +444,32 @@ export type HudIntent =
    */
   | { readonly kind: 'cancel-build-order'; readonly orderId: string }
   /**
+   * The player asked for **one particular** purchase to be cancelled and its
+   * money returned (#285).
+   *
+   * One id and nothing else -- the host turns this into a
+   * `CancelMaterialPurchase`; the HUD does not know that such a command exists,
+   * and the id is not one it could mint. It came *in*, on the pending-deliveries
+   * view model, from the projection that names the purchases still in flight.
+   *
+   * **Why this is not `cancel-build-order`.** The two name different records and
+   * the ids are independent by construction: buying materials mints a purchase
+   * id and spends immediately, placing a build order mints an order id and
+   * spends nothing. So cancelling a build order cannot return the money -- there
+   * is no payment attached to it -- and this is the only intent in the interface
+   * whose subject is a credit to the treasury.
+   *
+   * A *command*, so it goes through the same gate as a purchase: a second tap
+   * while one is in flight must not hand a busy host two cancellations, and a
+   * refusal has to reach the player. Unlike a cancelled build order, a refused
+   * cancellation is a real state a player meets without doing anything wrong --
+   * the delivery can land between the publication and the press -- and the
+   * simulation reports it as `cancel-purchase.not-pending` on the alerts
+   * channel. What `hud.refusal.cancel-material-purchase` says is the other side
+   * of the dispatch: this thread had no session to send to.
+   */
+  | { readonly kind: 'cancel-material-purchase'; readonly orderId: string }
+  /**
    * The player asked for an area to become a room (ADR 0022, amended).
    *
    * Ids and numbers only -- the host turns this into a `ZoneRoom` command; the
@@ -1183,6 +1209,23 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     onCancelOrder: (orderId) => {
       dispatchCommand({ kind: 'cancel-build-order', orderId });
     },
+    /*
+     * Cancelling one purchase, which is the surface `ProcurementSystem.cancel`
+     * had been waiting for (#285).
+     *
+     * A *command* for the same reasons buying is: it asks the host to change the
+     * simulation, money moves, and a second tap while one is in flight must not
+     * hand a busy host two cancellations. No control is passed, deliberately, and
+     * for the reason the queue rows pass none -- `dispatchCommand`'s `control`
+     * argument marks *the* control a refusal is about, and these rows are pooled
+     * and repainted on the counts cadence, so a mark would end up on whichever
+     * delivery landed in the row next. The refusal line still says what did not
+     * happen, and it is on screen at every viewport, which the alerts list is
+     * not.
+     */
+    onCancelPurchase: (orderId) => {
+      dispatchCommand({ kind: 'cancel-material-purchase', orderId });
+    },
   });
   /*
    * The Rooms panel, and the two commands it can issue (ADR 0022, amended).
@@ -1525,6 +1568,11 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // published, absent when nothing asked, and passed straight through. The
     // panel decides what a queue looks like; this line decides nothing.
     buildPanel.setBuildQueue(next.buildQueue);
+    // And what has been bought and has not arrived, on identical terms (#285).
+    // The projection decided which purchases are still in flight and what each
+    // one would refund; the panel decides the sentences; this line decides
+    // nothing.
+    buildPanel.setPendingDeliveries(next.pendingDeliveries);
     // And where the arrivals are, on identical terms: pulled, absent when
     // nothing asked, and passed straight through. The projection decided how
     // many are at each stage and which stage is terminal; the panel decides the

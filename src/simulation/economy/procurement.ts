@@ -68,6 +68,35 @@ export type PurchaseOutcome =
   | { readonly ok: false; readonly reason: PurchaseRefusalReason };
 
 /**
+ * Why a cancellation refunded nothing.
+ *
+ * One member, and it is one for a reason rather than for now: this system
+ * cannot tell an id it has never seen from an id whose delivery has already
+ * landed, because a landed delivery leaves `pending` and takes its record with
+ * it. Both are the same fact about the treasury — there is no payment here to
+ * give back — and a second reason would be this system claiming to know which
+ * of the two happened.
+ *
+ * Named as a union rather than left as a `false`, for the reason
+ * `PurchaseRefusalReason` is named: `src/simulation/refusals/refusal-log.ts`
+ * maps it through an exhaustive `Record`, so a second reason added here fails
+ * to compile until somebody decides what the player is told (#285).
+ */
+export type PurchaseCancelRefusalReason = 'not-pending';
+
+/**
+ * What a cancellation did.
+ *
+ * `refundedMinorUnits` is the figure that was actually credited, never the
+ * figure the catalog would charge today — see `cancel`. It is on the outcome
+ * because the caller is the only thing that can report it, and because "the
+ * money came back" is the whole point of the command this answers.
+ */
+export type PurchaseCancelOutcome =
+  | { readonly ok: true; readonly refundedMinorUnits: number }
+  | { readonly ok: false; readonly reason: PurchaseCancelRefusalReason };
+
+/**
  * Quantity bound for one purchase.
  *
  * Not a balance decision: an unbounded quantity multiplied by a unit price is
@@ -148,14 +177,29 @@ export class ProcurementSystem implements SystemRegistration {
    * Refunds the recorded `paidMinorUnits` rather than recomputing from the
    * catalog: recomputing would refund today's price for a purchase made at
    * yesterday's, which is a bug the moment prices ever move — and prices not
-   * moving yet is a property of this slice, not of the design.
+   * moving yet is a property of this slice, not of the design. It is also what
+   * closes the buy-low-cancel-high trade before it exists, which is why the
+   * refund is a *record* rather than a calculation.
+   *
+   * **Idempotent, and the second call is a refusal rather than a silence**
+   * (#285). It answers a `PurchaseCancelOutcome` rather than a boolean because
+   * the caller has to report both halves: a refund is a figure the player
+   * watched leave, and a refusal is a sentence they are owed — a cancellation
+   * that quietly did nothing is a control that lied, which is the class of
+   * defect `src/simulation/refusals/refusal-log.ts` exists for.
+   *
+   * There is deliberately no way to cancel a delivery that has landed. The
+   * materials are in the container by then and the money bought stock, so
+   * taking the money back without taking the stock back would create value out
+   * of a button press — which is the mutation
+   * `tests/integration/economy-money-conservation.test.ts` records as M1.
    */
-  public cancel(orderId: string): boolean {
+  public cancel(orderId: string): PurchaseCancelOutcome {
     const index = this.pending.findIndex((delivery) => delivery.orderId === orderId);
-    if (index === -1) return false;
+    if (index === -1) return { ok: false, reason: 'not-pending' };
     const [delivery] = this.pending.splice(index, 1);
     this.treasury.credit(delivery!.paidMinorUnits);
-    return true;
+    return { ok: true, refundedMinorUnits: delivery!.paidMinorUnits };
   }
 
   /** Deliveries not yet arrived, in the order they will arrive. */

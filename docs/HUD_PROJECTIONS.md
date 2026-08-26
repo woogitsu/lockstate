@@ -366,7 +366,7 @@ the protocol growing with the read model.
 One request and one reply carry all of them:
 
 1. The main thread sends `simulation/request-projection` naming a
-   `projectionId` from a closed vocabulary (`PROJECTION_IDS`, thirteen members),
+   `projectionId` from a closed vocabulary (`PROJECTION_IDS`, fourteen members),
    optionally with `offset`/`limit` and optionally with a `target` — an entity
    id or a string id — for a detail projection.
 2. The worker looks the id up in `PROJECTION_CATALOG`
@@ -465,7 +465,34 @@ gap 12a rather than closing it: *how many* are waiting is now on screen, *how
 long* (`accommodationBacklogTicks`) and *why* a particular arrival failed are
 still read by nothing.
 
-Nine of the thirteen catalogued read models still have a route and nobody on the
+`src/ui/simulation-pending-deliveries.ts` is the fourth, on the same three terms
+as the build queue -- `hud/pending-deliveries`, while the Build tab is showing, on
+the counts cadence, asking for the panel's own three-row window rather than the
+default hundred -- and it is the second time this channel is what makes a
+*command* reachable rather than a readout. The difference from the queue's is what
+was unreachable behind it: not a control, but a **credit**.
+
+`ProcurementSystem.cancel` refunds the recorded `paidMinorUnits` of a delivery
+that has not landed, exactly, and it is one of only two things in the simulation
+that credit the treasury at all (gap 21). Every caller in the repository was a
+test -- `grep -rn "procurement\.cancel" src/` found nothing -- because no command
+named a purchase, and a command could not usefully have named one: a purchase
+`orderId` is minted on the main thread by the press that spends the money and then
+forgotten, exactly as a build order id was before `hud/build-queue`. So money
+spent on a delivery a player had changed their mind about was unrecoverable by
+any means the interface offered (#285), and nothing on screen said it was in
+transit either.
+
+What this read model carries is therefore two things a player can act on: the
+**purchase ids**, which `CancelMaterialPurchase` names, and
+`refundableMinorUnits` -- what every pending delivery together would give back.
+The status strip's Funds readout says what is *left*; this is the first figure in
+the interface that says what is *out*. It needs no new persisted state and no
+save-schema version: `pendingDeliveries` is a public accessor over the list
+`snapshot`/`restore` already carry, and `economySectionSchema` already types every
+field of it.
+
+Nine of the fourteen catalogued read models still have a route and nobody on the
 end of it. That is the honest state of this channel, and it is a different
 sentence from the one this section used to carry.
 
@@ -741,14 +768,33 @@ decision about what to build next.
     `tests/foundation/documentation-claims-contract.test.ts` pins that this
     paragraph names both.
 
-    **One of the two is now reachable from a session a player can drive, and
-    the other still is not.** This section used to say neither was, and the
-    half that changed was changed by ADR 0028 rather than by anything in the
-    money loop — which is why nothing here announced it:
+    **Both are now reachable from a session a player can drive.** This section
+    used to say neither was, then that one was: the income half was changed by
+    ADR 0028 rather than by anything in the money loop, and the refund half by
+    #285's surface. Both are recorded here because each was, at some point, a
+    credit path the documentation described and no session could produce:
 
-    - The refund has no *surface* (#285): no command in
+    - **The refund is reachable, and it has a surface.** This bullet used to read
+      "the refund has no *surface* (#285): no command in
       `simulationCommandSchema` cancels a purchase, so nothing in `src/` calls
-      `ProcurementSystem.cancel`. Which surface is #285's open decision.
+      `ProcurementSystem.cancel`", and both halves of that are now false.
+      `CancelMaterialPurchase` is that command, `createSessionCommandHandler`
+      routes it to `ProcurementSystem.cancel`, and the Build panel's buy
+      disclosure lists what is on the way with a Cancel per delivery -- read over
+      `hud/pending-deliveries` (section 9), which is what carries the purchase ids
+      back to the thread that mints them. #285's decision was resolution 2, a
+      purchase-cancel command with its own surface.
+
+      Two properties of it are worth keeping here rather than only in the code.
+      The refund is the **recorded** `paidMinorUnits` and never a recomputation,
+      so no buy-low-cancel-high trade exists even once prices move. And a
+      cancellation whose delivery has already landed is **refused rather than
+      swallowed** (`cancel-purchase.not-pending`): crediting a delivered purchase
+      would hand back the money while the materials stayed in the container, which
+      is value created out of a button press -- mutation M1 of
+      `tests/integration/economy-money-conservation.test.ts`. The balance
+      returning to exactly its prior figure is asserted in integer minor units by
+      `tests/integration/economy-purchase-cancellation.test.ts`.
     - **The income line pays.** It used to have no occupied *place*:
       `RoomZoningService` registered a zoned room with `capacity: 0`, so a
       prisoner held no unit of any declared capacity and 300 × 0 was 0 in every

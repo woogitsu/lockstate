@@ -1316,7 +1316,8 @@ test.describe('the assembled application', () => {
      * The Build panel's queue block (#348) is the second block after #89's buy
      * row whose controls exist in the DOM at every moment and are laid out at
      * none of the states this sweep would otherwise visit -- and there are four
-     * of them: the fold's own header and one Cancel per row. Without this the
+     * of them: the fold's own header and one Cancel per row. The deliveries block
+     * (#285) is the third, and the purchases below are its half of this setup. Without this the
      * `neverLaidOut` check at the foot of the loop does not merely get weaker, it
      * fails and names all four, which is the gate doing exactly its job.
      *
@@ -1342,6 +1343,42 @@ test.describe('the assembled application', () => {
     }
     if ((await queueSetupCoordinates.getAttribute('aria-expanded')) === 'true') await queueSetupCoordinates.click();
     await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
+
+    /*
+     * Three purchases, in the same one clock run, and for exactly the reason the
+     * queue above is here.
+     *
+     * The deliveries block (#285) is the **third** set of Build-panel controls
+     * that exists in the DOM at every moment and is laid out in none of the
+     * states this sweep would otherwise visit -- one Cancel per pending
+     * delivery. Without this the `neverLaidOut` check at the foot of the loop
+     * fails and names all three, which is the gate doing its job: a control the
+     * sweep can never see is a control this test cannot claim is reachable.
+     *
+     * The rows live inside the buy disclosure, which the loop below opens at
+     * every viewport, so all this has to do is make the list non-empty -- and it
+     * has to do it through the real application, so it presses the real Buy
+     * button. The disclosure is closed again afterwards, because the loop's own
+     * assertions start from the arrival state and one of them is that opening it
+     * is what reveals the row.
+     */
+    const setupBuyToggle = page.locator('.hud-build__buy-toggle');
+    await setupBuyToggle.click();
+    const setupBuy = page.locator('.hud-build__buy-submit');
+    await expect(setupBuy).toBeVisible();
+    for (let press = 0; press < 3; press += 1) await setupBuy.click();
+    // `data-pending` rather than a box: the block is inside a disclosure whose
+    // own state this setup is about to change back, and the attribute is what the
+    // panel writes when the projection answers with a non-empty list.
+    await expect
+      .poll(async () => page.locator('.hud-build__deliveries').getAttribute('data-pending'), {
+        message: 'three purchases never reached the Build panel as pending deliveries',
+        timeout: 20_000,
+      })
+      .toBe('3');
+    await setupBuyToggle.click();
+    await expect(page.locator('.hud-build__buy')).toBeHidden();
+
     // A box, not a count: the block is `hidden` until the projection reports a
     // queue, and `hidden` is what "there is nothing coming" looks like.
     await expect
@@ -1350,6 +1387,10 @@ test.describe('the assembled application', () => {
         timeout: 20_000,
       })
       .toBe(true);
+    // Paused, which freezes both: the projections answer a request whenever one
+    // arrives, tick or no tick, so the queue *and* the deliveries survive every
+    // viewport and every tab change below. The deliveries would otherwise land
+    // 100 ticks after they were bought and take their own controls with them.
     await page.locator('.hud-strip__transport [title="Pause"]').click();
 
     for (const [width, height] of [
@@ -2041,6 +2082,254 @@ test.describe('the assembled application', () => {
         height + 0.5,
       );
     }
+  });
+
+  test('a pending delivery costs the Build panel nothing, and its refund is inside the fold (#285)', async ({
+    page,
+  }) => {
+    /*
+     * The measurement that decided *where* the purchase-cancel surface goes, and
+     * the reason it has to be taken here rather than in `ui-harness.html`: that
+     * harness leaves the rail's aside slot empty, `.hud__aside:empty { display:
+     * none }` then hands this panel the whole rail, and it is 128.7px more than
+     * the application ever gives it -- the exact blindness that let a collapsed
+     * queue block sit below the panel's fold with a green suite (ADR 0031
+     * decision 3).
+     *
+     * The constraint this surface was built under: the catalogue is the only
+     * block `hud.css` lets this panel take height from, ADR 0031 decision 3
+     * already spends 45px of it on the queue, and `BUILDABLE_REGISTRY` now holds
+     * twenty-one rows -- so at 900x600 with a queue the list is a 44px box over
+     * 924px of rows, one row of twenty-one, which is what that ADR's open
+     * question 4 asks about. A third block appearing whenever a delivery was
+     * pending would have taken a second donation out of the same place.
+     *
+     * So the deliveries live inside the buy disclosure, which has no box until
+     * the player opens it, and **the claim is an identity**: the panel's arrival
+     * geometry with purchases outstanding is the same as with none. Measured at
+     * every viewport the suite visits, and the panel is the rail's flexible
+     * member, so any change to the save panel, the strip, the tab bar or either
+     * floor would show up in it.
+     */
+    await page.setViewportSize({ width: 900, height: 600 });
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+    await page.getByRole('button', { name: 'Build' }).click();
+    await expect(page.locator('.hud-build')).toBeVisible();
+
+    /** The panel's arrival geometry: what a block appearing here would change. */
+    const geometry = () =>
+      page.evaluate(() => {
+        const panel = document.querySelector('.hud-build');
+        const list = document.querySelector('.hud-build__list');
+        const body = document.querySelector('.hud-build > .ui-panel__body');
+        if (panel === null || list === null || body === null) return null;
+        const sections = [...document.querySelectorAll('.hud-build .ui-section')].filter(
+          (section) => section.getClientRects().length > 0,
+        );
+        const last = sections.at(-1)?.querySelector('.ui-section__header') ?? null;
+        const round = (value: number): number => Math.round(value * 10) / 10;
+        const panelBox = panel.getBoundingClientRect();
+        return {
+          panelHeight: round(panelBox.height),
+          panelOverflow: panel.scrollHeight - panel.clientHeight,
+          panelScrollTop: panel.scrollTop,
+          bodyHeight: round(body.getBoundingClientRect().height),
+          bodyContent: body.scrollHeight,
+          listHeight: round(list.getBoundingClientRect().height),
+          listContent: list.scrollHeight,
+          lastText: last?.textContent?.trim() ?? '',
+          // The gap between the last visible section and the fold: the panel's
+          // whole always-visible budget, which is 7.8px at 900x600.
+          foldSlack: round(
+            panelBox.top + panel.clientTop + panel.clientHeight - (last?.getBoundingClientRect().bottom ?? 0),
+          ),
+        };
+      });
+
+    const before = await geometry();
+    expect(before, 'the Build panel is not laid out').not.toBeNull();
+    // Vacuity guard: a panel that failed to lay out reports plausible,
+    // meaningless numbers and every comparison below would hold.
+    expect(before?.panelHeight ?? 0).toBeGreaterThan(150);
+    expect(before?.lastText).toBe(localeText('hud.build.coordinates'));
+    // The two figures this panel's whole design rests on, at the viewport they
+    // were measured at. Written out because they are what a reader has to be able
+    // to check the argument against: 291.2px of content in a 291.2px box, and
+    // 7.8px between the last section and the fold.
+    expect(before?.bodyHeight).toBe(291.2);
+    expect(before?.foldSlack).toBe(7.8);
+    expect(before?.panelOverflow).toBe(0);
+    // And the catalogue is on its two-row floor over twenty-one rows of content,
+    // which is the number ADR 0031's open question 4 is about.
+    expect(before?.listHeight).toBe(88);
+    expect(before?.listContent).toBe(924);
+
+    const buy = page.locator('.hud-build__buy-submit');
+    const deliveries = page.locator('.hud-build__deliveries');
+    const funds = page.locator('[data-metric="funds"] .ui-stat__value');
+    await expect(funds).toHaveText(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS));
+
+    /*
+     * **Five** purchases, each `wall-brick`'s two bricks at 40, and five rather
+     * than three on purpose: the block draws three rows, so five is the state
+     * where the "and N more" line is also laid out -- the tallest the disclosure
+     * ever gets -- and it is the only state in which raising the row limit shows
+     * up as a control outside the panel. Measured: with three bought, a limit of
+     * four leaves the fourth row hidden and every assertion below green.
+     *
+     * The clock has to run for any of them to execute -- `Kernel.step` is what
+     * dispatches a queued command -- and it is stopped again afterwards so the
+     * deliveries stay in flight for the rest of the test rather than landing
+     * mid-measurement.
+     */
+    const purchases = 5;
+    await page.locator('.hud-build__buy-toggle').click();
+    await expect(page.locator('.hud-build__buy')).toBeVisible();
+    await expect(buy).toHaveText(`Buy 2 × Brick · ${fundsText(2 * unitPriceOf('item.brick'))}`);
+    await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
+    for (let press = 0; press < purchases; press += 1) await buy.click();
+    await expect
+      .poll(async () => deliveries.getAttribute('data-pending'), {
+        message: 'the purchases never reached the Build panel as pending deliveries',
+        timeout: 20_000,
+      })
+      .toBe(String(purchases));
+    await page.locator('.hud-strip__transport [title="Pause"]').click();
+    await expect(funds).toHaveText(
+      fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS - purchases * 2 * unitPriceOf('item.brick')),
+    );
+
+    // Closed again: the arrival state, with three purchases outstanding.
+    await page.locator('.hud-build__buy-toggle').click();
+    await expect(page.locator('.hud-build__buy')).toBeHidden();
+
+    for (const [width, height] of [
+      [900, 600],
+      [1280, 720],
+      [1440, 900],
+      [1024, 768],
+      [375, 812],
+    ] as const) {
+      await page.setViewportSize({ width, height });
+      await expect
+        .poll(async () => (await canvasMetrics(page))?.cssWidth, { message: `canvas did not follow ${width}px` })
+        .toBe(width);
+      const withPending = await geometry();
+      expect(withPending, `the Build panel is not laid out at ${width}x${height}`).not.toBeNull();
+      expect(
+        (await deliveries.getAttribute('data-pending')) ?? '',
+        `the panel forgot the pending deliveries at ${width}x${height}`,
+      ).toBe(String(purchases));
+      // The block itself has no box while the disclosure is closed, which is the
+      // mechanism the identity below rests on.
+      expect(await deliveries.boundingBox(), `the deliveries block has a box while closed at ${width}x${height}`).toBeNull();
+
+      // And nothing about the panel moved. Compared against a snapshot of the
+      // same panel at the same viewport with nothing bought, so this is an
+      // identity rather than a set of remembered constants.
+      await page.setViewportSize({ width, height });
+      const baseline = width === 900 && height === 600 ? before : null;
+      if (baseline !== null) expect(withPending).toEqual(baseline);
+      expect(withPending?.panelOverflow, `the panel scrolls with a delivery pending at ${width}x${height}`).toBe(0);
+      expect(withPending?.lastText, `the panel's last visible section at ${width}x${height}`).toBe(
+        localeText('hud.build.coordinates'),
+      );
+    }
+
+    /*
+     * Opened at 900x600: every Cancel inside the panel's visible box, a real tap
+     * target, and hit-testing to itself. This is the state the row limit is a
+     * measurement of -- three rows put the open disclosure at 312.9px in a 337.0px
+     * box, and a fourth takes it to 360.9px and leaves the last control 7.9px
+     * below the fold with a full box and an `offsetParent`, which is #220's shape
+     * exactly.
+     */
+    await page.setViewportSize({ width: 900, height: 600 });
+    await page.locator('.hud-build__buy-toggle').click();
+    await expect(deliveries).toBeVisible();
+
+    const reach = await page.evaluate(() => {
+      const panel = document.querySelector('.hud-build');
+      if (panel === null) return null;
+      const panelBox = panel.getBoundingClientRect();
+      const fold = panelBox.top + panel.clientTop + panel.clientHeight;
+      const measure = (element: Element | null) => {
+        if (element === null) return null;
+        const rect = element.getBoundingClientRect();
+        const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+        return {
+          width: Math.round(rect.width * 10) / 10,
+          height: Math.round(rect.height * 10) / 10,
+          insidePanel: rect.top >= panelBox.top - 0.5 && rect.bottom <= fold + 0.5,
+          hitsItself: element.contains(hit) || element === hit,
+          hasOffsetParent: (element as HTMLElement).offsetParent !== null,
+        };
+      };
+      return {
+        rows: [...document.querySelectorAll('.hud-build__delivery-row')]
+          .filter((row) => row.getClientRects().length > 0)
+          .map((row) => ({
+            delivery: (row as HTMLElement).dataset['delivery'] ?? '',
+            cancel: measure(row.querySelector('.ui-action')),
+          })),
+        // The control the player opened the row for. Revealing the refunds must
+        // not push what buys off the screen.
+        buy: measure(document.querySelector('.hud-build__buy-submit')),
+        moreLaidOut: (document.querySelector('.hud-build__deliveries-more')?.getClientRects().length ?? 0) > 0,
+        openRowHeight: Math.round((document.querySelector('.hud-build__buy')?.getBoundingClientRect().height ?? 0) * 10) / 10,
+        panelVisibleHeight: Math.round(panel.clientHeight * 10) / 10,
+      };
+    });
+
+    expect(reach, 'nothing was laid out to measure').not.toBeNull();
+    // Three, as a literal rather than as `PENDING_DELIVERY_ROW_LIMIT`: the limit
+    // is the thing being guarded, so an expectation read out of it would move
+    // with the mutation instead of failing on it.
+    expect(reach?.rows).toHaveLength(3);
+    expect(reach?.moreLaidOut, 'the "and N more" line is not laid out, so this is not the tallest state').toBe(true);
+    // The rectangle the row limit is: the whole open row fits inside the panel's
+    // visible box, so the scroll the disclosure already performs is enough.
+    expect(reach?.openRowHeight ?? 0).toBeLessThanOrEqual(reach?.panelVisibleHeight ?? 0);
+    for (const row of reach?.rows ?? []) {
+      expect(row.cancel, `${row.delivery} has no cancel control`).not.toBeNull();
+      expect(row.cancel?.hasOffsetParent, `${row.delivery}'s cancel has no offsetParent`).toBe(true);
+      expect(row.cancel?.height ?? 0, `${row.delivery}'s cancel is shorter than a tap target`).toBeGreaterThanOrEqual(44);
+      expect(row.cancel?.width ?? 0, `${row.delivery}'s cancel is narrower than a tap target`).toBeGreaterThanOrEqual(44);
+      expect(row.cancel?.insidePanel, `${row.delivery}'s cancel is outside the panel's visible box`).toBe(true);
+      expect(row.cancel?.hitsItself, `${row.delivery}'s cancel is covered by something else`).toBe(true);
+    }
+    expect(reach?.buy?.insidePanel, 'the buy button left the panel\'s visible box').toBe(true);
+    expect(new Set((reach?.rows ?? []).map((row) => row.delivery)).size).toBe(3);
+
+    /*
+     * And the whole loop, on the page a player loads: press one Cancel and the
+     * balance goes *up* by exactly what that delivery cost.
+     *
+     * This is the assertion #285 is about. Before this change the balance could
+     * only fall in the procurement half -- `ProcurementSystem.cancel` was the one
+     * credit besides the state income line and nothing in `src/` called it, so
+     * money spent on a delivery a player had changed their mind about was
+     * unrecoverable by any means the interface offered.
+     */
+    const refundOf = 2 * unitPriceOf('item.brick');
+    await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
+    await page.locator('.hud-build__delivery-row .ui-action').first().click();
+    await expect
+      .poll(async () => funds.textContent(), {
+        message: 'pressing Cancel never credited the treasury, so the refund is still unreachable',
+        timeout: 20_000,
+      })
+      .toBe(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS - purchases * refundOf + refundOf));
+    // And one purchase left the list: the press refunded a delivery rather than
+    // the whole list or none of it.
+    await expect
+      .poll(async () => deliveries.getAttribute('data-pending'), { timeout: 20_000 })
+      .toBe(String(purchases - 1));
+    // Nothing was refused: the delivery was still in flight, so this is the
+    // credit path and not the `cancel-purchase.not-pending` branch.
+    await expect(page.locator('.hud__refusal')).toBeHidden();
   });
 
   /**

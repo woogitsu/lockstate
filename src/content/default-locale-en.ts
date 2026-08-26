@@ -185,6 +185,22 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.alert.refusal.build.unbuildable-terrain': 'The build order failed — the ground there cannot be built on.',
   'hud.alert.refusal.build.unowned-land': 'The build order failed — you do not own that land.',
   'hud.alert.refusal.build.water-blocked': 'The build order failed — there is water on that tile.',
+  /*
+   * The one `cancel-purchase.*` sentence (#285).
+   *
+   * It says the money did not come back *first*, because that is the fact the
+   * player pressed the control to change and the only one they can act on: the
+   * balance did not move, and the materials are theirs. Deliberately not "that
+   * delivery has already arrived": `ProcurementSystem.cancel` cannot tell a
+   * delivery that landed from an id it never held, so the sentence names what is
+   * true of both -- the delivery is not on its way any more.
+   *
+   * The likeliest way to meet it is not a mistake. The list of deliveries is a
+   * projection on a cadence, so one can land in the half-second between the
+   * publication and the press, and then the button the player aimed correctly
+   * refunds nothing.
+   */
+  'hud.alert.refusal.cancel-purchase.not-pending': 'Nothing was refunded — that delivery is not on its way any more.',
   // `hire.insufficient-funds` describes the same condition as
   // `purchase.insufficient-funds` below and gets its own sentence, for the
   // reason the `zone.*` pair further down does: the treasury refuses a hire
@@ -358,6 +374,33 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.build.queue-cancel': 'Cancel',
   'hud.build.queue-unnamed': 'Unnamed order',
   'hud.build.queue-more': 'and {count} more behind these — undo takes back a whole run.',
+  /*
+   * What has been bought and has not arrived (#285), inside the buy disclosure
+   * and beside the control that spent the money.
+   *
+   * `deliveries-count` carries the figure this whole surface exists for: what a
+   * cancellation would give back. The strip's Funds readout says what is left,
+   * and until this existed nothing said what was out — so money spent on a
+   * delivery a player had changed their mind about was gone with no affordance
+   * that explained it and none that recovered it.
+   *
+   * `delivery` is the row, in the order a player needs the words: how much of
+   * what, and then what cancelling it returns. "back" rather than "refund"
+   * because the row is next to a Cancel button and the sentence has to survive
+   * being read at a glance on a phone.
+   *
+   * `deliveries-more` names no other control, unlike `queue-more`: there is no
+   * Undo for a purchase. It says what really happens to the rest — the rows are
+   * the deliveries landing soonest, and the ones behind them come into view as
+   * those arrive, which is also the moment their own refunds stop being
+   * available.
+   */
+  'hud.build.deliveries': 'On the way',
+  'hud.build.deliveries-count': '{count} bought · {total} back if cancelled',
+  'hud.build.delivery': '{count} × {material} · {total} back',
+  'hud.build.delivery-cancel': 'Cancel',
+  'hud.build.delivery-unnamed': 'Unnamed material',
+  'hud.build.deliveries-more': 'and {count} more on the way — these arrive first, and the rest come into view as they land.',
   'hud.build.buildable.wall-brick': 'Brick wall',
   'hud.build.buildable.door-wooden': 'Wooden door',
 
@@ -420,6 +463,12 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.refusal.unzone-room': 'Nothing was removed — the request was refused.',
   'hud.refusal.admit-prisoner': 'Nobody was admitted — the request was refused.',
   'hud.refusal.cancel-build-order': 'The order is still queued — the request was refused.',
+  // The money is the point, so the sentence leads with it: this line is painted
+  // when the host refuses before submitting, which for a cancellation means
+  // there is no session at all. The delivery-has-landed case is the
+  // simulation's own refusal and reads differently
+  // (`hud.alert.refusal.cancel-purchase.not-pending`).
+  'hud.refusal.cancel-material-purchase': 'Nothing was refunded — the request was refused and the delivery is still on its way.',
 
   'hud.rooms.title': 'Rooms',
   'hud.rooms.catalogue': 'Room type',

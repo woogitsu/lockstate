@@ -30,6 +30,7 @@ import {
   type HudHandle,
   type HudIntakePipelineViewModel,
   type HudIntent,
+  type HudPendingDeliveriesViewModel,
   type HudRoomNeedsViewModel,
   type HudRoomViewModel,
   type HudRoomsViewModel,
@@ -45,6 +46,7 @@ import { hudCountsFromWorkerMessage } from './ui/simulation-counts';
 import { hudZoningFromWorkerMessage } from './ui/simulation-zoning';
 import { BuildQueueReader } from './ui/simulation-build-queue';
 import { IntakePipelineReader } from './ui/simulation-intake';
+import { PendingDeliveriesReader } from './ui/simulation-pending-deliveries';
 import { RoomNeedsReader } from './ui/simulation-room-needs';
 import { SimulationCommandSender } from './ui/simulation-commands';
 import { BuildTool } from './ui/build-tool';
@@ -850,6 +852,30 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
    * in it produces (ADR 0028 decision 8).
    */
   const intakePipelineReader = client === undefined ? undefined : new IntakePipelineReader(client);
+  /*
+   * What has been bought and has not arrived, on the same three terms as the
+   * three readouts above -- a pull, on the counts cadence, only while the Build
+   * tab is showing -- and closing the last unreachable credit path in the
+   * economy (#285).
+   *
+   * The difference is what it makes reachable. `ProcurementSystem.cancel`
+   * refunds the recorded price of a delivery that has not landed, exactly, and
+   * `grep -rn "procurement\.cancel" src/` found **nothing**: the only caller in
+   * the repository was a test, so money spent on a delivery a player had
+   * changed their mind about could not be recovered by any means the interface
+   * offered. A purchase id is minted here, sent, and then forgotten by this
+   * thread -- so, exactly as with a build order id, the missing piece was a read
+   * model rather than a button.
+   *
+   * The item-name lookup is handed over rather than duplicated, for the reason
+   * `buildableLabelKey` is: an item's `nameKey` is content this file already
+   * reads (`purchasableMaterialFor` above), and neither the projection nor the
+   * HUD may hold it.
+   */
+  const pendingDeliveriesReader =
+    client === undefined
+      ? undefined
+      : new PendingDeliveriesReader(client, (itemId) => defaultItemRegistry.getById(itemId)?.nameKey);
   let activeTab: HudTabId = INITIAL_HUD_SHELL_STATE.activeTab;
 
   /**
@@ -905,6 +931,40 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       // answering for is a button pointed at a prison that may not exist. The
       // failure reaches no control, because the player pressed nothing.
       .catch(() => applyBuildQueue(undefined));
+  };
+
+  /**
+   * Puts the deliveries on the view model, or takes them off. The same
+   * absent-property dance the others do, and for the same reason: "nothing has
+   * asked" and "no money is in transit" are different facts, and only the second
+   * is a statement about the prison.
+   */
+  const applyPendingDeliveries = (next: HudPendingDeliveriesViewModel | undefined): void => {
+    if (next === undefined) {
+      if (viewModel.pendingDeliveries === undefined) return;
+      const { pendingDeliveries: _cleared, ...withoutPendingDeliveries } = viewModel;
+      viewModel = withoutPendingDeliveries;
+    } else {
+      viewModel = { ...viewModel, pendingDeliveries: next };
+    }
+    hud?.update(viewModel);
+  };
+
+  const refreshPendingDeliveries = (): void => {
+    if (pendingDeliveriesReader === undefined || activeTab !== 'build') return;
+    void pendingDeliveriesReader
+      .read()
+      .then((next) => {
+        // `undefined` is "a read was already in flight", not an answer, so it
+        // must leave what is on screen alone rather than blanking it.
+        if (next !== undefined) applyPendingDeliveries(next);
+      })
+      // A refusal, a timeout, or a worker that went away. The block comes off
+      // rather than staying, for the reason the queue's does and with money at
+      // stake: every row is a control promising a refund, and a row nothing is
+      // answering for is a promise about a treasury that may not exist. The
+      // failure reaches no control, because the player pressed nothing.
+      .catch(() => applyPendingDeliveries(undefined));
   };
 
   const refreshRoomNeeds = (): void => {
@@ -1070,10 +1130,12 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       applyRoomNeeds(undefined);
       applyBuildQueue(undefined);
       applyIntakePipeline(undefined);
+      applyPendingDeliveries(undefined);
     } else {
       refreshRoomNeeds();
       refreshBuildQueue();
       refreshIntakePipeline();
+      refreshPendingDeliveries();
     }
   });
 
@@ -1165,6 +1227,10 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           // put the stale one back.
           if (activeTab === 'build') refreshBuildQueue();
           else applyBuildQueue(undefined);
+          // And what has been bought and has not arrived, which lives on the
+          // same tab and on the same terms (#285).
+          if (activeTab === 'build') refreshPendingDeliveries();
+          else applyPendingDeliveries(undefined);
           // And the intake readout on the tab the Intake panel lives on, on
           // the same terms as both: arriving asks at once rather than waiting
           // up to 500ms for the next counts publication, and leaving takes the
@@ -1321,6 +1387,37 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
          */
         case 'cancel-build-order':
           requireSimulation(commands).submit({ type: 'CancelBuildOrder', orderId: intent.orderId });
+          return;
+
+        /*
+         * The producer #285 was missing, and the one that makes an existing
+         * credit path reachable rather than adding a new one.
+         *
+         * `ProcurementSystem.cancel` refunds the *recorded* `paidMinorUnits` of a
+         * delivery that has not landed -- so the buy-low-cancel-high trade is
+         * closed before it exists -- and it had no caller in `src/` at all. It is
+         * the only thing in the economy that credits the treasury besides the
+         * state's income line, and until this line existed no session could
+         * produce that credit.
+         *
+         * **No id minted here**, which makes this the second dispatch in this
+         * file that mints nothing (`cancel-build-order` is the other). The id was
+         * minted by `purchase-materials` below, went out on the command, came
+         * back on `hud/pending-deliveries`, onto a row, and returns unchanged.
+         *
+         * **No pre-check**, unlike the purchase this reverses. Whether the money
+         * can be spent is a question about a balance the worker published and
+         * this thread can answer honestly; whether a delivery is still in flight
+         * is not -- the list on screen is a projection on a cadence, so a
+         * delivery can land in the half-second before the press. The simulation
+         * decides, and it *refuses* rather than swallowing: a cancellation that
+         * refunded nothing while the player watched the balance not move is the
+         * silent failure this repository treats as a real bug, so
+         * `session-commands.ts` records `cancel-purchase.not-pending` and the
+         * alerts list says so.
+         */
+        case 'cancel-material-purchase':
+          requireSimulation(commands).submit({ type: 'CancelMaterialPurchase', orderId: intent.orderId });
           return;
 
         case 'place-build-order': {

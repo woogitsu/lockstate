@@ -179,6 +179,40 @@ export const HUD_MESSAGE_KEY = {
   buildQueueCancel: 'hud.build.queue-cancel',
   buildQueueUnnamed: 'hud.build.queue-unnamed',
   buildQueueMore: 'hud.build.queue-more',
+  /**
+   * What has been bought and has not arrived, inside the buy disclosure (#285).
+   *
+   * These label the one surface in the interface that says money is in transit,
+   * and they sit **beside the control that spent it** rather than in a block of
+   * their own -- see `PENDING_DELIVERY_ROW_LIMIT` for the measurement that
+   * decided that, which is a fact about the panel's height rather than a
+   * preference about layout.
+   *
+   * `buildDeliveries` labels the group and `buildDeliveriesCount` is the figure
+   * beside it: how many purchases are out and what they would refund. The refund
+   * total is the number #285 is about -- the status strip says what is left, and
+   * nothing said what is out.
+   *
+   * `buildDelivery` is one row: how much of what, and what cancelling it gives
+   * back. `buildDeliveryCancel` is the control's own word, because a row that
+   * only named a delivery would leave a player guessing what pressing it does.
+   * Neither names a currency, for the reason `buildBuySubmit` does not.
+   *
+   * `buildDeliveryUnnamed` is for a delivery whose item the host names no key
+   * for. The row is still drawn: money nobody can label is still money, and
+   * dropping the row would hide the only control that recovers it.
+   *
+   * `buildDeliveriesMore` states how many purchases are behind the last row, and
+   * unlike `buildQueueMore` it names no alternative control -- there is no
+   * `Undo` for a purchase. It says what actually happens instead: the rows are
+   * the deliveries arriving soonest, and the rest come into view as those land.
+   */
+  buildDeliveries: 'hud.build.deliveries',
+  buildDeliveriesCount: 'hud.build.deliveries-count',
+  buildDelivery: 'hud.build.delivery',
+  buildDeliveryCancel: 'hud.build.delivery-cancel',
+  buildDeliveryUnnamed: 'hud.build.delivery-unnamed',
+  buildDeliveriesMore: 'hud.build.deliveries-more',
 
   /**
    * The Staff panel on the Security tab
@@ -426,6 +460,22 @@ export const HUD_MESSAGE_KEY = {
    */
   refusalAdmitPrisoner: 'hud.refusal.admit-prisoner',
   refusalCancelBuildOrder: 'hud.refusal.cancel-build-order',
+  /**
+   * A cancelled purchase the host refused before it was sent -- which here means
+   * only "there is no session", because this thread has nothing to pre-check
+   * (#285).
+   *
+   * Its own key rather than sharing `refusalCancelBuildOrder`, for the reason
+   * every entry here has one: a withdrawn build order and a cancelled delivery
+   * leave the prison in different states, and one of the two is about money.
+   *
+   * It is **not** the sentence a player sees when the delivery has already
+   * landed. That refusal is the simulation's -- `cancel-purchase.not-pending`,
+   * decided at the tick the command executes -- and it arrives in the alerts
+   * list. The two sit on opposite sides of `sender.submit`, so one press
+   * produces exactly one of them and never both.
+   */
+  refusalCancelMaterialPurchase: 'hud.refusal.cancel-material-purchase',
 
   severityInfo: 'hud.severity.info',
   severityWarning: 'hud.severity.warning',

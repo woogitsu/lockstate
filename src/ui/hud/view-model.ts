@@ -326,6 +326,59 @@ export interface HudBuildQueueViewModel {
 }
 
 /**
+ * One purchase whose delivery has not landed, and the id that can undo it
+ * (#285).
+ *
+ * **`orderId` is the whole reason this interface exists**, exactly as it is on
+ * `HudBuildOrderViewModel`. `CancelMaterialPurchase { orderId }` names one
+ * delivery, the id is minted by the press that bought it and immediately
+ * forgotten by this thread, and nothing carried one back until
+ * `hud/pending-deliveries` did — so a complete, tested refund path
+ * (`ProcurementSystem.cancel`) had no caller in the application at all.
+ *
+ * `labelKey` is **optional** for the reason the build order's is: what an item
+ * is called lives in `src/content/item-catalog.ts`, the host looks it up, and a
+ * delivery of something the catalogue cannot name is still money a player may
+ * want back — so the row is drawn and the panel says so in its own words rather
+ * than dropping the only control that reaches it.
+ *
+ * `paidMinorUnits` is what cancelling gives back, and it is the recorded price
+ * rather than a recomputation: the simulation refunds what was paid, so this is
+ * the one figure a row is allowed to promise.
+ */
+export interface HudPendingDeliveryViewModel {
+  readonly orderId: string;
+  /** A message key, never text. Absent when the host names no item for this delivery. */
+  readonly labelKey?: LocalizationKey;
+  readonly quantity: number;
+  readonly paidMinorUnits: number;
+}
+
+/**
+ * What has been paid for and has not arrived (#285).
+ *
+ * Session state on a **pull**, on the same three terms as
+ * `HudBuildQueueViewModel`: it is `O(deliveries)` to walk, nobody reads it from
+ * another tab, and absent is a real state — "nothing has asked" and "nothing is
+ * on its way" must not render the same, because only the second is a statement
+ * about the prison.
+ *
+ * `refundableMinorUnits` is the figure this whole surface exists for. The status
+ * strip's balance says what is *left*; this says what is *out* and recoverable,
+ * which is the number #285 measured as unrecoverable by any means a player had.
+ * It is summed over every pending delivery rather than over the window, so a
+ * player with more purchases than rows is still told the whole amount.
+ */
+export interface HudPendingDeliveriesViewModel {
+  /** Every pending delivery, however many rows there was room to carry. */
+  readonly total: number;
+  /** What the treasury would get back if all of them were cancelled, in minor units. */
+  readonly refundableMinorUnits: number;
+  /** The window, in the order the deliveries will land. */
+  readonly deliveries: readonly HudPendingDeliveryViewModel[];
+}
+
+/**
  * The authored floor on a room's area, as the panel reads it.
  *
  * Three numbers rather than two, because content authors three: a room asks
@@ -667,6 +720,14 @@ export interface HudViewModel {
    * with", and the two must not render the same.
    */
   readonly intakePipeline?: HudIntakePipelineViewModel;
+  /**
+   * What has been bought and has not arrived, or absent because nothing asked.
+   *
+   * The fourth pulled field, on the same terms as the three above: absent is
+   * "nobody asked" and an empty list is "no money is in transit", and the two
+   * must not render the same (#285).
+   */
+  readonly pendingDeliveries?: HudPendingDeliveriesViewModel;
 }
 
 /**
