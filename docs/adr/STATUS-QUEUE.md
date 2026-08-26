@@ -251,12 +251,14 @@ cells is exercised nowhere, because no shipped session yet furnishes two.
 
 ---
 
-## 2. The queue has one entry: an amendment to ADR 0007
+## 2. The queue is empty
 
-**This heading has now read "empty", then "exactly one entry: ADR 0029", then
-"empty again", then one entry once more, then two, and now one again** — 0031 and
-0032 were both accepted on 2026-08-26, and 0032 never appeared here at all, which
-is the failure recorded at the foot of this section. The second is not a new
+**This heading has now read "empty", "exactly one entry: ADR 0029", "empty
+again", one entry, two, one, and now empty for the third time** — 0031, 0032,
+0033 and 0007's amendment were all accepted on 2026-08-26. Two of those four
+never appeared here at all, which is the failure recorded at the foot of this
+section, and the churn in this heading is the point rather than noise: it is the
+only place a reader can see how fast this corpus moves. The second is not a new
 document: it is an amendment to ADR **0007**, which is Accepted and stays
 Accepted. An amendment is queued here for the same reason a new ADR is — it
 decides something the sections above it do not, and nothing else in the corpus
@@ -310,73 +312,29 @@ approved. **A queue entry whose argument rests on a count should name the count
 and where it lives**, so that the next reader can check it in one command rather
 than trusting the number. This entry did not, and the acceptance had to
 reconstruct it.
-### ADR 0007 — an amendment: the shared flow-field plan, and the two caches under it
+### ADR 0007's amendment — accepted 2026-08-26, and the entry is deleted
 
-- **What it is.** A `## Amendment, 2026-08-26 (awaiting approval)` section at the
-  end of [ADR 0007](./0007-navigation-work-budgets-and-flow-fields.md), arriving
-  with the change that closes issues #357, #358, #359 and #360. It records one
-  sentence of the accepted decision that was **false when it was written**, one
-  decision the accepted sections do not contain, and two consequences that pull
-  in opposite directions.
-- **It arrived with its implementing change**, the same fragile case the 0031 and
-  0029 entries above name, and for the same reason it is in the same commit.
-- **The false sentence.** The decision justifies sharing by asserting a
-  `RegionFlowField` is *"mathematically identical to running #21's
-  destination-rooted search"* and *"the same shortest-path tree every individual
-  `findRoute` call to that destination would eventually discover"*. #21's search
-  was rooted at the **origin**, not the destination, and the two ends disagree
-  wherever two region routes tie on cost: measured on a four-room ring with equal
-  cost both ways round, **64 of 256 origin/destination pairs took a different
-  door and 20 cost strictly more, up to double** — and which of the two an actor
-  got was decided by how many others happened to share its destination that tick.
-- **What approving it commits the project to.** That the region search's
-  **direction** is part of the sharing contract: `dijkstraRegionPath` is rooted at
-  the destination, because a field can only be rooted there, so `findRoute` and a
-  shared field are the same search. That flow-field sharing sits **behind** the
-  route cache rather than in front of it, and a field-resolved answer is written
-  into it. That both caches record every door an answer *depended on* — including
-  the ones they refused — and evict on a change of **traversal verdict** rather
-  than of access version. It commits to no save-format change, no new content, and
-  nothing outside `src/simulation/navigation/`.
-- **The consequence most worth reading twice.** A field answers for every
-  reachable region, so its dependency set is every door incident to one: any door
-  state change anywhere now invalidates a cached field. That is wider than the
-  accepted text's "only fields that depend on it" reads, it is unavoidable for one
-  shared object, and it costs the single Dijkstra pass sharing exists to amortise.
-  The narrow half moved to `RouteCache`, whose per-route entries are bounded by
-  their own origin's reach — and even that is wide on a real prison shape, because
-  one corridor touches every cell door. The doors a route provably cannot cross
-  are excluded on an argument stated at `portalCannotBeCrossedBetween` (entering a
-  leaf cell means paying for its door twice, so it is on no shortest route and no
-  tied one), which is worth **2,670 work units against 266** on the ten-tick
-  measurement with one unrelated cell door toggling every tick. Approving means
-  accepting that trade rather than overlooking it, and accepting that the rest
-  cannot be tightened without the origin-rooted second search sharing exists to
-  avoid.
-- **What refusing it would cost.** Refusing means deciding that a shared plan may
-  differ from the plan `findRoute` returns — and then the accepted sentence quoted
-  above still has to be rewritten, because it is false either way, and
-  `docs/NAVIGATION.md`'s "hierarchical vs. flat-optimal cost" caveat has to be
-  widened to accept two answers for one set of inputs, which it explicitly does
-  not today. The measurements say what that would cost in routing: 20 of the 64
-  divergent pairs were strictly more expensive through the field.
-- **What it does not claim.** Aggregate routing quality is unchanged by the new
-  direction rather than improved: against a flat full-map search over the same
-  ring, total excess is 48 over 256 pairs either way, worst case 4 either way, on
-  the same 20 pairs. And the benchmark mirror
-  (`benchmarks/scenarios/navigation-actor-tiers.mjs`) still mirrors the old
-  cache/sharing ordering, so the activation and cache-hit columns in
-  `docs/NAVIGATION.md`'s table — including the `0 / 60` for `meal-rush`, which was
-  this defect published as a property of the scenario — describe the previous
-  composition until someone re-runs them. Nothing in this branch touches either
-  file.
-- **The exact edit that would settle it.** In
-  `docs/adr/0007-navigation-work-budgets-and-flow-fields.md`, change the
-  amendment's heading from `(awaiting approval)` to `(accepted, YYYY-MM-DD)`,
-  delete the sentence in its opening italics saying it has not been approved, and
-  delete this entry. **No `Status` line and no `docs/adr/README.md` row move**:
-  0007 is Accepted and an amendment to it does not change that, which is exactly
-  why this row is the only record that a decision was outstanding.
+Following the exact edit this entry itself prescribed: the amendment's heading
+lost `(awaiting approval)`, the sentence saying it was unapproved is gone, and
+this entry is deleted. **No `Status` line moved and no row in
+[`README.md`](./README.md) changed**, because 0007 was Accepted throughout and an
+amendment to it does not touch that — which is precisely why this row was the
+only record that a decision was outstanding.
+
+What is kept, because deleting it would leave nothing behind: the approval is now
+recorded **only in the amendment's own opening paragraph**. Every mechanical
+check in this repository counts documents by their `Status` line, so from this
+commit onward there is no gate, no index row and no queue entry that could tell
+anyone this decision was ever pending, or that it was decided. That is the
+structural gap this entry existed to cover, and closing the entry re-opens it.
+
+The generalisable part, since this is the second time in one day the same shape
+has cost something: **a decision that changes no `Status` line has no home in
+this corpus.** 0032 and 0033 were both approved without ever getting an entry
+here because the file was held by other work; this amendment got one and it
+worked exactly as designed. The difference was not diligence, it was contention —
+so the fix is a queue two commits can append to without conflicting, not more
+care.
 
 ### ADR 0032 was accepted without ever appearing in this queue
 
