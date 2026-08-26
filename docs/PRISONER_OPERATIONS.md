@@ -395,14 +395,25 @@ therefore unrecoverable even after a room is zoned. See
 
 Which of the two a press meets is now a fact about the prison rather than
 about the application, because the Rooms tab (#312) gave `ZoneRoom` a
-producer. Measured on the merged tree, seed 11: a `room.cell` zoned at its
-authored 2x3 minimum registers an instance with `capacity: 0` and no object
-capabilities, `hasAccommodationTarget()` answers `true`, the admission is
-**accepted**, and the arrival advances `queued -> reception ->
-classification -> accommodation-assignment` and is still waiting there at
-tick 1,000 with `failedCount: 0` and `accommodationBacklogTicks` at 196. A
-prison holding nothing zoned, or holding only a 6x6 canteen, is still refused
--- visibly, as one alert row per press.
+producer. Measured on the merged tree, seed 11, with the cell **unfurnished**:
+a `room.cell` zoned at its authored 2x3 minimum registers an instance with
+`capacity: 0` and no object capabilities, `hasAccommodationTarget()` answers
+`true`, the admission is **accepted**, and the arrival advances
+`queued -> reception -> classification -> accommodation-assignment` and is
+still waiting there at tick 1,000 with `failedCount: 0` and
+`accommodationBacklogTicks` at 196. A prison holding nothing zoned, or holding
+only a 6x6 canteen, is still refused -- visibly, as one alert row per press.
+
+**With the cell furnished, the wait ends.** Capacity comes from the objects
+standing in the room since ADR 0028 phase 1
+(`src/simulation/objects/room-capacity.ts`), so this paragraph's `capacity: 0`
+is the value of an *empty* rectangle and not of every rectangle. Re-measured
+through the real commands and the real kernel: a `bed-wooden` built inside the
+zoned cell leaves the instance at `residentCapacity: 1` with
+`objectCapabilities: ['sleep-surface']`, and the arrival reaches `completed`
+and occupies it -- `tests/integration/object-placement-loop.test.ts` asserts
+that outcome in literals, along with the 300 minor units of state income the
+occupied place then earns on the day's last tick.
 
 **The hole that used to be here is closed, and it was wider than it was
 recorded as being.** ADR 0028 decision 8 named a residual gap and left it as
@@ -498,16 +509,33 @@ rather than recomputed, whether the player may override one, and how a
 cell-scoped risk reaches the sector-scoped trigger system are open questions
 in [ADR 0027](./adr/0027-cell-sharing-assessment.md), not settled in code.
 
-None of it changes an outcome today, and that is stated rather than left to be
-discovered: 36 of the cell registrations in this tree are `capacity: 1` and a
-zoned one is `capacity: 0`, so every *free* instance holds nobody, every rating
-is 0, and the tie-break returns exactly what `findAvailable` returned. The two
-determinism fixtures that do register a cell above 1 each register only one
-instance of that room type, so there is nothing for a ranking to reorder
-there either. Occupant-aware allocation becomes observable in a
-session on the day room capacity is derived from placed objects
-([ADR 0028](./adr/0028-object-placement-and-derived-room-capacity.md)), which is
-also the day the tripwire above starts failing.
+**This paragraph used to say none of it changed an outcome today. It does now.**
+What it said was accurate when written: 36 of the cell registrations in this tree
+are `capacity: 1` and a zoned one was `capacity: 0`, so every *free* instance
+held nobody, every rating was 0, and the tie-break returned exactly what
+`findAvailable` returned; and the two determinism fixtures that do register a
+cell above 1 each register only one instance of that room type, so there was
+nothing for a ranking to reorder there either. It named the condition that would
+end that -- the day room capacity is derived from placed objects
+([ADR 0028](./adr/0028-object-placement-and-derived-room-capacity.md)) -- and
+said that day was also the day a tripwire in
+`tests/unit/prisoners-intake-system.test.ts` would start failing.
+
+**ADR 0028 shipped, the tripwire did not fire, and co-occupancy is reachable.**
+The tripwire could not fire: it zones an empty rectangle, and an empty rectangle
+holds nobody both before and after ADR 0028, so the value it pinned never moved
+(the test now records that at length, as the lesson for the next one). Measured
+through the real commands and the real kernel, seed 11: two `bed-wooden` in one
+zoned 3x3 `room.cell` leave the instance at `residentCapacity: 2`, two
+`AdmitPrisoner` commands are accepted with no refusal, and
+`occupancyOf('room.cell:3:3')` is **2** with `completedCount: 2` and
+`failedCount: 0`.
+
+So `rateCellSharing` ranks real occupants in a shipped session now, and every
+test of it still registers its instances by hand. That coverage gap is a
+separate finding rather than something this document can close, and
+[ADR 0027](./adr/0027-cell-sharing-assessment.md)'s status carries the same
+correction.
 
 **Performance note:** `allByRoomCatalogId`/`findAvailable` are a per-tick,
 potentially-thousands-of-instances hot path (every pending intake and every

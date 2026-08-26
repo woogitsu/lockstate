@@ -226,7 +226,7 @@ describe('IntakeSystem: deterministic stage-by-stage pipeline', () => {
 
     const LOW_RISK = { sentenceLengthTicks: 100, priorIncidents: 0 };
 
-    it('houses nobody at all through the shipped session path, because a zoned room has no capacity', () => {
+    it('houses nobody through the shipped session path while the cell is unfurnished, because capacity comes from the objects standing in it', () => {
       /*
        * The precondition every case below is built around, end to end
        * through the real session rather than asserted in prose.
@@ -250,15 +250,44 @@ describe('IntakeSystem: deterministic stage-by-stage pipeline', () => {
        * for a structurally absent room type, and the backlog counter is the
        * one that moves.
        *
-       * Which makes this a tripwire and not a restatement of
-       * `rooms-zoning.test.ts`'s `capacity: 0` pin. That pin is about one
-       * registration; this is about the consequence three systems later --
-       * occupant-aware allocation (#79) cannot be exercised in a shipped
-       * session, so every other case in this describe registers its
-       * instances by hand. The day capacity is derived from placed objects
-       * (ADR 0028), this case fails, and the failure is the notice that
-       * ADR 0027's stated precondition has expired and #79 is now reachable
-       * for real.
+       * Which makes this a statement about the consequence three systems
+       * later, and not a restatement of `rooms-zoning.test.ts`'s `capacity: 0`
+       * pin -- that pin is about one registration.
+       *
+       * ## This case was written as a tripwire, and it could not fire
+       *
+       * The sentence that used to end here read: *"The day capacity is derived
+       * from placed objects (ADR 0028), this case fails, and the failure is the
+       * notice that ADR 0027's stated precondition has expired and #79 is now
+       * reachable for real."*
+       *
+       * **That day came, and this case did not fail.** ADR 0028 is Accepted and
+       * its phase 1 shipped; capacity is derived from placed objects today
+       * (`RoomCapacityResolver`, `src/simulation/objects/room-capacity.ts`).
+       * The notice never arrived, because the trigger was not expressible in
+       * this fixture: it zones an *empty* rectangle, and an empty rectangle
+       * holds nobody under both designs -- before ADR 0028 because no room had
+       * capacity, after it because there is nothing standing in this one. The
+       * assertions below were never the ones that would move.
+       *
+       * The lesson, for whoever writes the next tripwire: **a tripwire has to
+       * exercise the input the change is about.** A test that pins the value
+       * `0` cannot tell "0 because the mechanism is absent" from "0 because the
+       * mechanism ran and this input sums to nothing", and only the first of
+       * those was supposed to be permanent. What would have fired is a case
+       * zoning a rectangle with a bed in it -- and that case now exists, at
+       * integration level, asserting the opposite outcome in literals:
+       * `tests/integration/object-placement-loop.test.ts` pins
+       * `residentCapacity: 1` and `objectCapabilities: ['sleep-surface']` for a
+       * furnished cell, houses an admitted prisoner in it, and measures the
+       * state income the occupied place earns as `+300` over one in-game day.
+       *
+       * So what this case still guards is narrower than its old title claimed
+       * and is permanently true: an **unfurnished** zoned cell accommodates
+       * nobody, and the arrival waits rather than failing. Occupant-aware
+       * allocation (#79) *is* now reachable in a shipped session -- which is
+       * why the other cases in this describe, which register their instances
+       * by hand, are a convenience rather than the only available route.
        */
       const runtime = createNewSimulationRuntime(7);
       const cell = runtime.roomZoning.zone({ roomCatalogId: 'room.cell', x: 2, y: 2, width: 3, height: 3 }, 0);

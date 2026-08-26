@@ -712,30 +712,38 @@ decision about what to build next.
     `tests/foundation/documentation-claims-contract.test.ts` pins that this
     paragraph names both.
 
-    **Neither is reachable from a session a player can drive**, for two
-    different reasons, and this is the honest state of the money loop:
+    **One of the two is now reachable from a session a player can drive, and
+    the other still is not.** This section used to say neither was, and the
+    half that changed was changed by ADR 0028 rather than by anything in the
+    money loop — which is why nothing here announced it:
 
     - The refund has no *surface* (#285): no command in
       `simulationCommandSchema` cancels a purchase, so nothing in `src/` calls
       `ProcurementSystem.cancel`. Which surface is #285's open decision.
-    - The income line has no occupied *place*. Admission is wired (#261 step
-      4), so a population is now reachable, but `RoomZoningService` registers a
-      zoned room with `capacity: 0`, so a prisoner holds no unit of any
-      declared capacity — and 300 × 0 is 0 for as long as that holds. Measured:
-      a zoned `room.cell`, one admitted prisoner and 2,500 ticks leave the
-      balance at 25,000, `stateIncomeAccruedTodayMinorUnits` at 0 and both
-      `roomCapacity` and `roomOccupants` at 0. Capacity is ADR 0028's subject,
-      not this change's. Until it lands, both the balance and the "earned
-      today" readout beside it are flat.
+    - **The income line pays.** It used to have no occupied *place*:
+      `RoomZoningService` registered a zoned room with `capacity: 0`, so a
+      prisoner held no unit of any declared capacity and 300 × 0 was 0 in every
+      session a player could start. Capacity is now derived from the objects
+      standing in the room (ADR 0028 phase 1,
+      `src/simulation/objects/room-capacity.ts`), so a cell holds as many
+      prisoners as it has beds. Measured through the real commands and the real
+      kernel: one plank bought, a `bed-wooden` placed in a zoned `room.cell`,
+      and the instance reads `residentCapacity: 1` with
+      `objectCapabilities: ['sleep-surface']`; an admitted prisoner reaches
+      `completed` and occupies it; the balance moves *up* by 300 on the day's
+      last tick. `tests/integration/object-placement-loop.test.ts` asserts all
+      of it in literals, including the closing balance as `25_000 - 65 + 300`.
 
-    So the balance a player can observe still only ever goes down, and a hire
-    is now one of the two ways it does. That is not a loss of money in the
-    procurement half — a purchase buys stock, an undone build order returns the
-    stock it had allocated (#97), and the two together conserve value exactly,
-    which `tests/integration/economy-money-conservation.test.ts` asserts in
-    integer minor units over the sequences a player can produce. A hire is
-    deliberately outside that property rather than a hole in it: what the money
-    bought is a staff member, and no command destroys one.
+    So the balance a player can observe no longer only goes down — it rises
+    once per in-game day per occupied place, and the "earned today" readout
+    beside it is no longer flat. A hire remains one of the two ways it falls.
+    Neither direction is a loss of money in the procurement half: a purchase
+    buys stock, an undone build order returns the stock it had allocated (#97),
+    and the two together conserve value exactly, which
+    `tests/integration/economy-money-conservation.test.ts` asserts in integer
+    minor units over the sequences a player can produce. A hire is deliberately
+    outside that property rather than a hole in it: what the money bought is a
+    staff member, and no command destroys one.
 22. **`'on-search'` conflates two duties.** A guard pulled onto a
     contraband search and a guard dispatched to an incident share one
     deployment phase, and neither `SearchSystem` nor
