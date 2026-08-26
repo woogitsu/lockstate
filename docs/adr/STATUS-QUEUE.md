@@ -19,9 +19,15 @@ holds instead is the account of what moved, what may not be touched, and what
 the test cannot see. Deciding is still the owner's; this file only makes the
 next decision cheap.
 
-Re-anchored at `main` @ `83c3121` (**v0.0.88**). Every claim below was re-read
-from disk at that commit, and entries cite symbols rather than line numbers
-where a citation would otherwise drift on the next edit (the precedent is #309).
+Re-anchored at `main` @ `dbe271f` (**v0.0.98**), and **the warrant is stated
+precisely because it is not the same warrant the last two anchors carried**:
+§§3-6 were read in full at `83c3121`, and the delta `83c3121..dbe271f` was read
+against them by the method under *"How to extend this anchor cheaply"* below. So
+every claim below has been read from disk at `83c3121` or later, and every claim
+whose evidence the delta touched has been read at `dbe271f`. Entries cite symbols
+rather than line numbers where a citation would otherwise drift on the next edit
+(the precedent is #309) — and the two anchors' worth of line numbers that drifted
+anyway are the argument for doing it more.
 
 **This line said `4e3976d` (v0.0.65) for twelve releases, and the file carried a
 second, older anchor underneath it.** Two commits after that re-anchor — #331
@@ -54,6 +60,63 @@ a player can start"* — measured here, two prisoners share one cell through fou
 commands a player sends, so the entry is withdrawn and replaced by the
 measurement that refutes it. Two more sentences still turned on ADR 0029 being
 unapproved and now name ADR 0031.
+
+**And a third time, ten releases later, on the same day.** That re-read landed at
+v0.0.96 and named `83c3121` (v0.0.88) — the release commit its branch was cut
+from, which was already eight releases old when the branch merged. **An anchor
+moved to a commit that is already old spends most of its budget on arrival**, and
+this one spent eight of ten before anyone could read it: the gate stood at exactly
+10 with the next release commit — which `.github/workflows/version.yml` produces
+after every merge and which starts no CI run — guaranteed to break it. So this
+re-anchor is not a second full re-read. It is the **delta** `83c3121..dbe271f`,
+read against the dependency set below, and that is the practice this file is
+adopting rather than a shortcut taken once.
+
+### How to extend this anchor cheaply, and what it costs to be allowed to
+
+**§§3-6 do not depend on the tree at large. They depend on an enumerable set of
+files**, and every claim in them cites one. The set, in full:
+
+- `package.json` and `supabase/migrations/**` (§3);
+  `.github/workflows/migrate-database.yml`, `docs/DEPLOYMENT.md` and
+  `wrangler.jsonc` (§4).
+- `docs/CLOUD_SAVE.md`, `docs/TRUSTED_SERVICES.md`, `docs/HUD_PROJECTIONS.md`,
+  `README.md`, `docs/adr/README.md` and
+  `docs/research/2026-08-25-economy-rate.md`.
+- ADRs **0002, 0008, 0009, 0010, 0012, 0013, 0015, 0016, 0017, 0022, 0023, 0025,
+  0026, 0027, 0028, 0029, 0031**.
+- Fifteen files under `src/`: `ui/hud/messages.ts`, `ui/hud/projection.ts`,
+  `ui/hud/hud.ts`, `ui/hud/build-panel.ts`, `content/procurement-catalog.ts`,
+  `content/room-catalog.ts`, `simulation/economy/income.ts`,
+  `simulation/rooms/zoning.ts`, `simulation/rooms/topology.ts`,
+  `simulation/worker/state-machine.ts`, `simulation/protocol/commands.ts`,
+  `simulation/protocol/types.ts`, `simulation/construction/definition.ts`,
+  `simulation/prisoners/intake-system.ts`,
+  `services/challenges/verification.ts`.
+- Six under `tests/`: `foundation/adr-status-reference-contract.test.ts`,
+  `foundation/unconsumed-command-contract.test.ts`,
+  `unit/ui-hud-messages.test.ts`, `unit/objects-room-capacity.test.ts`,
+  `unit/entity-generation-wrap.test.ts`,
+  `unit/prisoners-intake-system.test.ts`.
+
+**So extending the anchor is `git diff --name-only <anchor>..HEAD` intersected
+with that set, and then reading only the intersection.** Run for
+`83c3121..dbe271f`: **53 files changed, 15 of them in the set** — three docs, six
+ADRs and `docs/adr/README.md`, `package.json`, two new migrations, and **three of
+the twenty-one files under `src/` and `tests/`**. Reading fifteen files is not
+reading eighty citations, and that difference is what makes an anchor extensible
+instead of a thing nobody has time to move.
+
+**What this is not licence to do.** A delta note is a claim and it needs an
+entry's standard: *"the delta touched nothing §§3-6 depend on"* is a sentence
+somebody has to be able to check, so it must name the diff it ran and the set it
+intersected, and it is false the moment the set is stale — an entry that starts
+citing a file not listed above has to add it here in the same commit, exactly as
+landing a change means updating its entry. **And a small intersection is not a
+small consequence.** Three files under `src/`/`tests/` moved in this delta and
+they falsified **three claims**, one of them a claim the previous re-read had
+written eight releases earlier. The cheap step is finding *what to read*. Nothing
+here licenses deciding that nothing needs reading.
 
 A note on keeping this file true, since it is the kind of document that rots
 silently: an entry's evidence is a claim about `main`, so **landing the change
@@ -410,16 +473,38 @@ Functions in that table live in
 of that table was re-read against the file at this commit: `:45` and `:91`,
 `:150` with its trigger at `:188`, the exception's `hint` at `:178`, and
 `:71-73`'s `as $$ select 4194304 $$;`. Both
-absences were re-verified at `83c3121` by grepping the whole
+absences were re-verified at `dbe271f` by grepping the whole
 `supabase/migrations/` tree for a total-bytes, retention or pruning mechanism
 (`total_bytes`, `retention`, `prune`, `268435456`, `max_revisions`); there is
-none. The directory holds the same twenty-one files it held at `4ed571f` — `git
-diff 4ed571f..main -- supabase/migrations/` is empty across all **thirty**
-releases — so nothing in this section has moved for a reason other than nobody
-having decided anything. **That count said "eighteen" for twelve releases**,
-which is the smallest possible instance of this file's recurring defect: a
-release count in prose is a claim about `main` and goes stale on every merge,
-so it is the number to check first and the reason the anchor above has a test.
+none, and the single hit for *"retention"* is a forward reference discussed below
+rather than a mechanism.
+
+**The claim underneath that one has now moved, and it is the first time this
+section has had to change for a reason other than nobody deciding anything.**
+This entry said the directory *"holds the same twenty-one files it held at
+`4ed571f`"* and that `git diff 4ed571f..main -- supabase/migrations/` *"is
+empty"*. It holds **twenty-three**, and that diff is no longer empty: **#382
+added two** — `20260826120000_revoke_ambient_table_privileges.sql` and
+`20260826130000_server_stamp_updated_at.sql`. Neither touches capacity. The
+base migration this section's whole table cites is byte-identical (`git diff
+83c3121..main` over `20260823100000_bound_free_tier_capacity.sql` is empty), so
+every row above still stands; what changed is a sentence this entry used as a
+shortcut for "nothing here has moved", which is exactly the kind of sentence that
+stops being true without anybody deciding to make it false. **And the release
+count said "eighteen" for twelve releases and now reads thirty** — a release
+count in prose is a claim about `main` that goes stale on every merge, so it is
+the number to check first and the reason the anchor above has a test.
+
+**One thing in #382 bears on §6 without deciding it, and is the reason the
+retention grep is no longer silent.** `20260826130000_server_stamp_updated_at.sql:68-76`
+argues that the exposure of a client-writable `updated_at` is *"a **future**
+reader: a retention or cleanup job keyed on `updated_at` (docs/CLOUD_SAVE.md
+names 'cleanup of abandoned anonymous accounts' as open work, ADR 0013 sections
+5-6)"*, and closes it now *"because the column becomes load-bearing in the commit
+that first reads it, not in the commit that first writes it"*. So whichever
+retention policy §6 eventually gets, **the column it would key on is now
+server-authoritative** — a constraint the decision inherits rather than an answer
+to it. §6 is still undecided and still unimplemented.
 
 **§5 — 256 MiB per account.** Undecided and unimplemented. The ADR's own §5
 records that it depends on the revision-depth decision below and on the
@@ -462,14 +547,18 @@ automated, and the trigger is the merge rather than the diff — PR #87 touched 
 file under `supabase/migrations/` and nine migrations were applied anyway
 (`docs/DEPLOYMENT.md:143-147` for the table, `:159` for the 71-second window and
 `:161` for #87 itself, all re-read here). The half of the decision that *is* in
-this repository stays verified at `83c3121`:
+this repository stays verified at `dbe271f`:
 `.github/workflows/migrate-database.yml` is `workflow_dispatch:` (`:34`) with no
 `push:`, requires a typed `confirm_project_ref` (`:41`), and its apply job is
-environment-gated (`:65`). **`git diff cddaebb..main` over that file is empty**,
-so nothing in this section moved across the eleven releases the anchor above had
-stopped counting — which is the outcome to record rather than to leave implied,
-because a watch item that nobody re-checked is indistinguishable from one that
-did not move.
+environment-gated (`:65`). **`git diff cddaebb..main` over that file is still
+empty, and so is `git diff 83c3121..main`** — neither this workflow nor
+`docs/DEPLOYMENT.md` appears in either delta, so nothing in this section has
+moved across twenty-one releases. That is the outcome to record rather than to
+leave implied, because a watch item nobody re-checked is indistinguishable from
+one that did not move. The one thing that *did* move nearby is #382's two new
+migrations, and they reach a hosted database by exactly the mechanism this
+section is about — which is the risk being live rather than the constraint being
+broken.
 
 So the constraint is approved architecture whose only defence is a sentence in a
 document. Repointing the integration is a two-click change in a dashboard; it
@@ -486,17 +575,32 @@ that disagree with each other. **None is a status defect.** This paragraph used
 to say that "with the queue empty that is the whole of what this section can be:
 either a decision is accepted and the code has not caught up, which is a code or
 wiring gap, or two documents state different numbers, which is a docs-truth job".
-**The queue is not empty** — §2 holds ADR 0031 — so that premise is withdrawn,
-and with it the claim that those two shapes are exhaustive. There is a third,
-and ADR 0031 is standing in it: **the code has run ahead of a decision nobody has
-approved yet.** #367 shipped the `hud/build-queue` read model, the per-order
-cancel control and the Build panel's one-row catalogue floor while
+**The queue is not empty** — §2 holds **two** entries — so that premise is
+withdrawn, and with it the claim that those two shapes are exhaustive. There are
+two more, one standing in each of §2's rows.
+
+**Third: the code has run ahead of a decision nobody has approved.** #367 shipped
+the `hud/build-queue` read model, the per-order cancel control and the Build
+panel's one-row catalogue floor while
 `docs/adr/0031-build-queue-cancellation-surface.md:5` still reads `**Proposed —
-pending human approval.** Not accepted.` That is not a defect either — §2 exists
-to make exactly that visible and the ADR arrived in the same commit as the code,
-which is the rule §2 states — but it is a third relationship between a decision
-and a tree, and a section written on the assumption that an unapproved decision
-cannot have an implementation would mis-file it. The entries are recorded so that
+pending human approval.** Not accepted.` That is not a defect — §2 exists to make
+exactly that visible, and the ADR arrived in the same commit as the code, which is
+the rule §2 states — but a section written on the assumption that an unapproved
+decision cannot have an implementation would mis-file it.
+
+**Fourth, and newer: a decision is waiting inside a document whose `Status` line
+will never move.** #380 queued an **amendment** to ADR 0007, which is Accepted and
+stays Accepted, on the argument §2 now states — that
+`adr-numbering-contract.test.ts` counts documents by their `Status` line, so an
+amendment inside an accepted ADR *"is invisible to every mechanical gate there
+is; this row is the only thing that says it exists"*. Its heading carries the
+approval state instead
+(`docs/adr/0007-navigation-work-budgets-and-flow-fields.md:319`, *"## Amendment,
+2026-08-26 (awaiting approval)"*). Nothing in §§3-6 could have held that: every
+entry here is keyed to an ADR's status or to code, and this is neither. It is
+also why `docs/adr/README.md:108`'s *"One row is outstanding: 0031"* is **true
+and not a contradiction** of §2's "two entries" — the README counts rows in its
+own table, and an amendment has no row. The entries below are recorded so that
 reading this file does not leave the impression that the corpus was audited in
 one direction.
 
@@ -582,7 +686,7 @@ one direction.
   Four commands, all of them ones a player sends, through the real kernel and the
   real decoder: `PurchaseMaterials` for four planks, `ZoneRoom` for the 2×3
   rectangle at (4,6) that `room.cell`'s `minimum-size` requirement accepts
-  (`src/content/room-catalog.ts:68`), and `PlaceObject` twice —
+  (`src/content/room-catalog.ts:70`), and `PlaceObject` twice —
   `definitionId: 'bed-wooden'` at (4,6) and at (5,6), the two 1×2 footprints that
   fit side by side inside it. Nothing refused (`refusals.count` 0), both orders
   completed, and the instance the registry then holds is
@@ -603,12 +707,15 @@ one direction.
   and without the `sleep-surface` filter *in a prison whose cell is empty*; a
   zoned room with nothing in it does derive zero
   (`tests/unit/objects-room-capacity.test.ts`, *"is zero for a room with nothing
-  in it"*); and `prisoners-intake-system.test.ts:229`'s *"houses nobody at all
-  through the shipped session path"* does still pass — **and must not be
-  re-baselined**, because it is a true statement about an *unfurnished* prison
-  and its own comment scopes it that way (*"it is what a zoned room **holds**
-  that is the problem"*). What the entry did was generalise from that tripwire to
-  the whole tree. It cannot carry that weight: it zones two rooms and places
+  in it"*); and the case at `prisoners-intake-system.test.ts:229` does still
+  pass. **That case was retitled by #371 and this entry's quotation of it is
+  stale**: it read *"houses nobody at all through the shipped session path"* and
+  now reads *"houses nobody through the shipped session path **while the cell is
+  unfurnished**, because capacity comes from the objects standing in it"*. The
+  narrowing is the right resolution and is better than the *"must not be
+  re-baselined"* this entry demanded — every assertion still holds, and the title
+  now says which world it is true of. What the entry did was generalise from that
+  tripwire to the whole tree. It cannot carry that weight: it zones two rooms and places
   nothing, so it says nothing whatever about a prison with a bed in it, and
   `tests/integration/object-placement-loop.test.ts` — *"a player buys a plank,
   places a bed in a cell they zoned, and a prisoner lives in it"* — had been on
@@ -621,24 +728,85 @@ one direction.
   than by any assertion, and it is why *"moving the anchor without re-reading
   anything passes it"* is written at the top of this file.
 
-  **What is left of it, restated as what is true.** The tripwire is green and
-  should stay green; ADR 0027's status qualifier is still the right shape,
-  because #79's *rating* is advisory and nothing in a shipped session yet
-  chooses **between** two eligible cells on the strength of a rating — every
-  measurement above lands in the only cell there is. That is a much narrower
-  claim than "unreachable", it is the one still worth watching, and the notice
-  for it would be a session with two furnished cells and a prisoner sent to the
-  emptier one. Nothing here is awaiting a decision, which is why it stays in §5.
+  **Somebody else found it first, one release after the anchor this entry was
+  written against, and that is the strongest argument for the delta note above.**
+  #371 — *"ADR 0028 shipped, and the tripwire written to announce it could not
+  fire"* — landed at v0.0.89 and measured the same fact independently: seed 11,
+  two `bed-wooden` in one zoned 3×3 `room.cell`, `residentCapacity: 2`, two
+  `AdmitPrisoner` accepted with no refusal, `occupancyOf('room.cell:3:3')` **2**,
+  `completedCount: 2`, `failedCount: 0`. Different seed, different rectangle,
+  different anchor tile, same conclusion — which is a stronger result than either
+  measurement alone, and is recorded here rather than replaced because two
+  independent routes to a fact are worth keeping. But the re-read that produced
+  the entry above was cut from `83c3121`, **one commit before #371 merged**, so it
+  rediscovered at length a thing already on `main` and already written into the
+  ADR. That cost is what the delta note exists to avoid.
+
+  **ADR 0027 now carries it in its own body**, which is where it belongs and where
+  a reader should go first: `docs/adr/0027-cell-sharing-assessment.md:14-32`,
+  *"Update, 2026-08-26 — the subject is now reachable, and this ADR named the
+  day"*, with the preconditions kept verbatim below it *"because every design
+  argument below them was made under them"*. The index row moved with it —
+  `docs/adr/README.md:97` now reads *"its subject became reachable when 0028
+  shipped (measured 2026-08-26)"* where it read *"unreachable until 0028 ships"*.
+
+  **And #371 adds one live gap this entry did not have.** `rateCellSharing` *"is
+  deciding real allocations in a live session for the first time, and nothing
+  exercises it through that path — every test of it still registers its instances
+  by hand"* (`docs/adr/0027-…md:27-30`). That is sharper than this entry's own
+  closing observation and it supersedes it: the point is not only that no session
+  furnishes two cells, it is that the rating function is now load-bearing in
+  production with **no** test reaching it through a command. ADR 0027 files it as
+  a coverage question rather than resolving it, and it stays here as the thing to
+  watch.
+
+  **What is left of it, restated as what is true.** The retitled case is green
+  and correct. ADR 0027's status qualifier is still the right shape — its three
+  questions stay open and are now *load-bearing rather than hypothetical*, which
+  is how the ADR's own Update puts it. What is worth watching is the coverage gap
+  #371 names above, and, narrower, that nothing in a shipped session yet chooses
+  **between** two eligible cells on the strength of a rating: every measurement
+  here and in #371 lands in the only cell there is. The notice for that would be
+  a session with two furnished cells and a prisoner sent to the emptier one.
+  Nothing here is awaiting a decision, which is why it stays in §5.
 - **ADR 0026's three questions are open under an Accepted ADR**, and the only
-  thing holding them is a pair of tests that assert the wrong answer on purpose
-  (`tests/unit/entity-generation-wrap.test.ts`, and one case in
-  `tests/unit/prisoners-intake-system.test.ts`, both labelled `DEFECT`). That is
-  what was accepted, so it is not a status defect — but it is the entry to read
-  before #31, because the release path is where all three questions become
-  load-bearing on the same day, and because nothing else in the suite observes
-  any of it: mutating the wrap period from `& 0xFFF` to `& 0xF` leaves the suite
-  green except one case in `actor-identity.test.ts`, which pins the arithmetic
-  period and not one of its consequences.
+  thing holding them is a set of tests that assert the wrong answer on purpose
+  (`tests/unit/entity-generation-wrap.test.ts`, five `DEFECT`-labelled cases at
+  `:96`, `:163`, `:178`, `:190` and `:204`, and one case in
+  `tests/unit/prisoners-intake-system.test.ts`). That is what was accepted, so it
+  is not a status defect, and it is still the entry to read before #31, because
+  the release path is where all three questions become load-bearing on the same
+  day.
+
+  **The rest of this entry is FALSIFIED, and by the best possible thing: somebody
+  measured the tripwire.** It said *"nothing else in the suite observes any of it:
+  mutating the wrap period from `& 0xFFF` to `& 0xF` leaves the suite green except
+  one case in `actor-identity.test.ts`"*. **#373 closed both halves of that**, and
+  found the gap was worse than this entry described.
+
+  - The wrap period **is now pinned in that file**, in its own case
+    (`tests/unit/entity-generation-wrap.test.ts:124`, *"rejects a stale handle for
+    every one of the 4,095 recycles before the wrap, and only wraps at 4,096"*).
+    So the `& 0xF` mutation no longer leaves this file green, and the pin no
+    longer rests on `actor-identity.test.ts` alone.
+  - **Why that mattered more than coverage**, and this is the part worth keeping:
+    `actor-identity.test.ts`'s pin *"is the one ADR 0026 names as the cost of
+    option A"*, so the sole guard on the counter **was scheduled to be
+    re-baselined by one of the options this file exists to gate** — the gate would
+    have been dismantled by the decision it was guarding.
+  - **And the generation check was not exercised at all.** Every
+    `isAlive(stale) === false` was asserted between a `destroy` and the following
+    `spawn`, with the slot on the free list, so `alive[index] !== 1` satisfied it
+    and the generation comparison was never reached. Measured: removing the
+    generation term from `isAlive` — #110's fix, the exact guard whose failure at
+    the wrap is that file's subject — **left all 190 test files and 2,229 tests
+    green**. The assertions now run with the slot occupied.
+
+  ADR 0026 carries this itself, as an addendum that changes no decision
+  (`docs/adr/0026-entity-id-lifetime.md`, *"Addendum, 2026-08-26 (#169): the
+  tripwire's own coverage, measured"*). **No `src/` change**: none of options A,
+  B or C was taken, so the three questions are exactly as open as before — what
+  moved is that the tripwire now detects what it claims to.
 - **ADR 0012 — a retained topology is now evicted; the streaming policy is what
   is left.** This entry read "`chunkTopologies` is never evicted", re-verified at
   `4ed571f` on the ground that no `delete` existed on that map. **#324 closed
@@ -669,7 +837,7 @@ one direction.
   0024's has been deleted. The fix is in the code, and the open decision is
   whether to send the handshake or delete `'ready'` (issue #274, Q4).
 - **ADR 0010 — the telemetry layer is inert.** Nothing outside
-  `src/services/telemetry/` imports it, re-verified at `83c3121` by grepping the
+  `src/services/telemetry/` imports it, re-verified at `dbe271f` by grepping the
   whole of `src/` for that path — every hit is inside the directory itself — so
   consent is never asked for and `record()` is never called. The prohibition half of the ADR
   holds; the sentence *"telemetry is fed from the main thread's orchestration
@@ -699,9 +867,13 @@ one direction.
 
   **Understated:** the third figure has no source. ADR 0025 says its inherited
   budget is *"the 3.9px at 900×600 that ADR 0022 and `hud.css` both record"*.
-  Re-verified at `83c3121` by grepping the whole tree: **`3.9` appears in no ADR
+  Re-verified at `dbe271f` by grepping the whole tree: **`3.9` appears in no ADR
   but 0025 — `docs/adr/0025-guard-hiring-surface.md:70` and `:182` — in no
-  `.css` file, and nowhere in `src/`.** Neither document it cites
+  `.css` file, and nowhere in `src/`.** Re-run after #377, which is the first
+  change to touch `src/ui/hud/hud.css` since this entry was written and so the
+  one that could have supplied the missing source; it did not, and
+  `src/ui/hud/build-panel.ts`, ADR 0022 and ADR 0025 are all untouched in that
+  delta, so the entry's three figures are exactly as they were. Neither document it cites
   records it. That is a dangling citation inside an Accepted ADR rather than a
   disagreement between measurements, and it cannot be repaired by picking a
   number — 3.9 is not 7.81 and not 11.8, so nobody knows what was measured. The
@@ -782,8 +954,11 @@ one direction.
   last places in the corpus asserting the old world, and a reader who follows
   either citation lands on a page contradicting the sentence that sent them. The
   two sentences are still there and were re-read here:
-  `docs/adr/0023-room-occupancy-authority.md:204-205` and
-  `docs/adr/0027-cell-sharing-assessment.md:55`.
+  `docs/adr/0023-room-occupancy-authority.md:204-205`, unmoved, and
+  `docs/adr/0027-cell-sharing-assessment.md:81` — **which this entry cited as
+  `:55`**, before #371 added that ADR's 2026-08-26 Update above it. The Update is
+  now the first thing a reader of 0027 meets, so the contradiction is at least
+  signposted inside the document rather than only here.
 
   **The second half of this entry is withdrawn as false.** It read: *"Neither
   conclusion moves, which is why the bodies are left verbatim: 0023's step 1 is
@@ -797,15 +972,53 @@ one direction.
   beds resolves through **branch 1** to a `residentCapacity` of 2 in a session a
   player can start. Branch 3 is what an *empty* room takes; branch 2 is
   unreachable in either world, because no room definition authors a nominal
-  figure — the eighteen definitions at `src/content/room-catalog.ts:66-164`
+  figure — the eighteen definitions at `src/content/room-catalog.ts:68-165`
   declare `requirements` and nothing else, and the string `capacity` does not
-  occur in that file at all. And 0027's co-occupancy is reachable:
+  occur in that file at all (re-counted and re-grepped after #376 added an
+  import-time cross-catalogue check to the head of that file, which moved every
+  definition down by two lines and changed nothing else this entry rests on). And 0027's co-occupancy is reachable:
   two prisoners hold `room.cell:4:6`. So what is false in those two ADRs is the
   stated **cause** — object placement does exist — and their **conclusions have
   moved too**; the bodies are still left verbatim, but on the narrower ground
   that a body is amended in its own commit and by whoever takes the decision, not
   because the sentences after the false clause survived. The same phrase in
   `docs/research/` stays untouched for the reason that directory's README gives.
+
+- **NEW — two dated rulings were written into ADR 0008's Accepted body with no
+  queue row, on the same day #380 argued that such a thing needs one.** This is
+  for the owner rather than a defect this file can settle, and it is here because
+  nothing else would surface it. #382 added both to
+  `docs/adr/0008-trusted-service-boundary.md` §2: *"**Generalised, 2026-08-26
+  (issue #280 finding F14): a Data API role holds exactly the DML privileges its
+  zone needs on a table, and nothing else**"*, which states *"the rule this
+  settles for every future table"*; and *"**Authority over a row is not authority
+  over the record of when it was written.** Decided 2026-08-26 for issue #194"*,
+  which narrows §2's *"saves, settings — Z0/Z1 (client-authoritative)"* row by
+  ruling a timestamp column out of "content". Both are written as decided. Neither
+  carries an approval caveat, and **neither has a §2 row**.
+
+  **The tension is with a rule that landed hours earlier, not with a rule this
+  file invented.** #380 queued its ADR 0007 amendment on the argument §2 now
+  states — that an amendment inside an Accepted ADR is invisible to
+  `adr-numbering-contract.test.ts`, so *"this row is the only thing that says it
+  exists"* — and it declined to self-approve, marking its heading *"(awaiting
+  approval)"*. #382 took the other view for the same shape of edit. Its stated
+  reason is that these are *applications* of ADR 0008 §2's existing zone taxonomy
+  rather than new decisions: *"Recorded as a rule in ADR 0008 section 2 rather
+  than only in a migration, because the question is asked again by every table
+  that gets a timestamp."*
+
+  **That reading may well be right**, and §2's rule triggers on an *outstanding*
+  decision, so a ruling that is not outstanding needs no row by the letter of it.
+  What is missing is the line between the two, because #380's argument does not
+  draw one: both edits add prose to an Accepted ADR that changes what the ADR
+  requires of future work. **The question for the owner is whether "applies an
+  accepted decision" and "amends an accepted decision" are distinguishable by
+  anything a reader can check**, and if not, whether the queue rule should cover
+  both. Recorded, not decided; ADR 0008's `Status` is `Accepted` and no status is
+  wrong either way. Two ADR numbers are unused — `docs/adr/README.md:102-106`
+  records **0032** as next free and 0030 as *"held by an unmerged branch"* — so
+  nothing here was blocked on a number.
 
 Also not here as a decision: **ADR 0002**, whose configuration matches the ADR
 exactly (`wrangler.jsonc:12` for `lockstate-staging`, `:20` for `lockstate`)
@@ -913,9 +1126,11 @@ never recorded before this round:
 - `tests/unit/entity-generation-wrap.test.ts` — *"ADR 0026 states all three at
   Proposed"*. 0026 is Accepted as the framing and the tripwire, and leaves all
   three open, which is what the file needed to say. The tests are untouched.
-- `tests/unit/prisoners-intake-system.test.ts` — *"it is stated at Proposed in
-  ADR 0026 rather than settled here"*, on the re-intake case. Now names it as
-  0026's question 3, left open by an Accepted ADR.
+- `tests/unit/prisoners-intake-system.test.ts:494` — *"it is stated at Proposed
+  in ADR 0026 rather than settled here"*, on the re-intake case. Now names it as
+  0026's question 3, left open by an Accepted ADR. (Cited as `:465` at the last
+  anchor; #373 added a case above it pinning the determinism half of that same
+  question, so the comment moved down 29 lines and the file now carries two.)
 - `src/simulation/economy/income.ts` — *"a ninth `Proposed` document in
   `docs/adr/`"*. **This entry then said "there is exactly one, and it is 0029",
   and that is now false: 0029 was accepted on 2026-08-26 (#356) and the one
@@ -976,17 +1191,24 @@ never recorded before this round:
 - `README.md:59` — ADR-0014's *"`Status` is `Proposed` … the decision has not
   been approved"*. Now Accepted, and the pipeline the repository implements is
   the approved one rather than a proposal it happens to match.
-- `docs/CLOUD_SAVE.md:1268-1269` (*"the ADR is `Proposed`, not…"*) and `:1285`
-  (the 4 MiB row). The prose now states the split — *"that ADR is `Accepted` for
+- `docs/CLOUD_SAVE.md:1553-1554` (*"the ADR is `Proposed`, not…"*) and `:1570`
+  (the 4 MiB row). The prose states the split — *"that ADR is `Accepted` for
   its §§1-4 and its §§5-6 remain `Proposed`"* — and the row reads *"**Accepted**
-  as ADR 0013 §4"*. **`:1286-1287` were true and stayed true**, and they gained
+  as ADR 0013 §4"*. **`:1571-1572` were true and stayed true**, and they gained
   their ADR section numbers so that a reader (and the gate) can tell a §-scoped
-  `Proposed` from a claim about the whole document. `:1324` and `:1336` were
-  already §-scoped and are untouched. **All five line numbers in this entry have
-  moved** — they read `:1184`, `:1200`, `:1201-1202`, `:1239` and `:1250`, and
-  `docs/CLOUD_SAVE.md` gained 85 lines above them across the eleven releases the
-  anchor above had stopped counting (#350 and #353). The sentences are the same
-  sentences; only the numbers were wrong.
+  `Proposed` from a claim about the whole document. `:1609` and `:1620` were
+  already §-scoped and are untouched.
+
+  **All five numbers have now drifted twice, in two consecutive anchors, and
+  nothing else in this file has done that.** They read `:1184`, `:1200`,
+  `:1201-1202`, `:1239`, `:1250` at `cddaebb`; were corrected to `:1268-1269`,
+  `:1285`, `:1286-1287`, `:1324`, `:1336` at `83c3121` after that file gained 85
+  lines (#350, #353); and are corrected again here after it gained **361 more**
+  (#368 and #382's cloud-save work). The sentences have never changed. **The
+  numbers are the wrong citation for this document** — it is the fastest-growing
+  file in the dependency set, and the next re-read should expect to correct these
+  five again unless somebody re-cites them by heading or quoted phrase, which is
+  the remedy this file keeps recommending elsewhere and has not applied here.
 - `docs/TRUSTED_SERVICES.md:592-598` — *"the 4 MiB per-save figure is proposed,
   not accepted"*, and *"ADR 0013 is in `Proposed` status"*. Both corrected —
   `:592` now reads *"**The 4 MiB per-save figure is accepted** — ADR 0013 §4"* —
@@ -1000,22 +1222,41 @@ never recorded before this round:
   enforcing it mechanically, which is the sentence that made the flip worth
   landing here at all.
 
-**Which of the citations above survived the re-read, since a list of corrections
-is only worth reading if it says which parts of itself were checked.** Every
-sentence in this subsection was re-read from disk at the anchor commit. The eight
-code and test comments hold as corrected — `messages.ts:28`, `projection.ts:211`,
-`procurement-catalog.ts:13` and `:23`, `entity-generation-wrap.test.ts:37`,
-`prisoners-intake-system.test.ts:465`, `income.ts` and `zoning.ts:106`/`:115` —
-and none of them has drifted back. Six `file:line` citations still land where
-they say: `docs/DEPLOYMENT.md:163`, `docs/adr/0016-migration-delivery-mechanism.md:173`,
+**Which of the citations above survived, since a list of corrections is only
+worth reading if it says which parts of itself were checked.** Two passes are
+recorded, because they were checked differently and a reader should know which.
+
+**At `83c3121`, a full re-read of every sentence in this subsection.** Nine
+citations had moved and were corrected then: 0013's §4 heading, 0015's discharge,
+five in `docs/CLOUD_SAVE.md`, one in `docs/TRUSTED_SERVICES.md`, and one factual
+claim — which `Proposed` ADR the `income.ts` count referred to.
+
+**At `dbe271f`, the delta only**, by the method the header describes: intersect
+`git diff --name-only 83c3121..dbe271f` with the dependency set, then read the
+intersection. Of the files this subsection cites, **three changed** —
+`docs/CLOUD_SAVE.md`, `tests/unit/prisoners-intake-system.test.ts` and
+`tests/unit/entity-generation-wrap.test.ts` — and two of them moved a citation,
+both corrected above. The other seven code and test comments are in files
+`git diff` reports as untouched, so they hold as corrected without re-reading:
+`messages.ts:28`, `projection.ts:211`, `procurement-catalog.ts:13` and `:23`,
+`entity-generation-wrap.test.ts:37` (verified anyway, since the file changed),
+`income.ts` and `zoning.ts:106`/`:115`. Six `file:line` citations are in
+untouched files and still land where they say: `docs/DEPLOYMENT.md:163`,
+`docs/adr/0016-migration-delivery-mechanism.md:173`,
 `docs/adr/0013-free-tier-cloud-save-capacity.md:15` and `:19-21`, `README.md:59`,
-and `.github/workflows/migrate-database.yml:20`. **Nine moved and are corrected
-above**: 0013's §4 heading, 0015's discharge, five in `docs/CLOUD_SAVE.md` and
-one in `docs/TRUSTED_SERVICES.md`, plus one factual claim — which `Proposed` ADR
-the `income.ts` count referred to. That ratio is the argument for the practice
-this file keeps recommending and keeps failing to follow: a `file:line` into a
-document under active edit is the least durable citation here, and a quoted
-sentence is the most.
+and `.github/workflows/migrate-database.yml:20`. **`docs/TRUSTED_SERVICES.md`
+gained six lines and its `:592-598` citation was re-read rather than assumed —
+it still lands**, which is the one case where "the file changed" and "the
+citation moved" came apart.
+
+That is the whole cost of the second pass, and the ratio across both is the
+argument for the practice this file keeps recommending and keeps failing to
+follow: **a `file:line` into a document under active edit is the least durable
+citation here, and a quoted sentence is the most.** Across both passes this
+subsection needed fifteen corrections — eight line citations at `83c3121`, six
+more at `dbe271f`, and exactly **one** correction of substance, the ADR the
+`income.ts` count referred to. **Fourteen of fifteen were numbers**, and not one
+of the sentences those numbers point at has changed.
 
 ### Cannot be edited at all
 
