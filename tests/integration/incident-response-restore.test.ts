@@ -112,6 +112,18 @@ const GUARD_ORIGIN = { x: tileCoordinate(0), y: tileCoordinate(0) } as const;
  * number that no longer describes the scenario this file sets up.
  */
 const REQUIRED_RESPONDERS = 4;
+/**
+ * The damage a *contained* severity-8 incident leaves behind.
+ *
+ * A literal for the same reason and found in the same sweep (#416): it was
+ * `Math.floor(SEVERITY / 2)`, which is `IncidentResponseSystem`'s own
+ * expression for this figure, so the assertion could not disagree with a
+ * changed rule. The production form also carries a `Math.min(10, ...)` cap
+ * that no severity in this file reaches, and that the derivation silently
+ * dropped -- a re-implementation is a second copy of a rule, and a second copy
+ * is a place for the two to differ.
+ */
+const CONTAINED_PROPERTY_DAMAGE = 4;
 const POST_TILE = { x: tileCoordinate(3), y: tileCoordinate(1) } as const;
 /**
  * The whole `security.sectorControlStates` payload while `SECTOR_ID` is locked
@@ -336,6 +348,7 @@ describe('a save taken during an incident response releases what the response cl
     expect(SEVERITY).toBe(8);
     expect(DEFAULT_INCIDENT_RESPONSE_POLICY.respondersPerSeverityPoint).toBe(0.5);
     expect(REQUIRED_RESPONDERS).toBe(4);
+    expect(CONTAINED_PROPERTY_DAMAGE).toBe(4);
     expect(GUARDS_HIRED).toBeGreaterThan(REQUIRED_RESPONDERS); // the pool can fill two responses over
   });
 
@@ -438,7 +451,7 @@ describe('a save taken during an incident response releases what the response cl
     // Non-vacuous: the shared value really is the contained one, and it really
     // is not the lapse ADR 0033 recorded.
     expect(continuousIncident.state).toBe('resolved');
-    expect(continuousIncident.outcome).toEqual({ injuredEntityIds: [], propertyDamage: Math.floor(SEVERITY / 2), escaped: false });
+    expect(continuousIncident.outcome).toEqual({ injuredEntityIds: [], propertyDamage: CONTAINED_PROPERTY_DAMAGE, escaped: false });
     expect(restoredIncident.outcome).not.toEqual({ injuredEntityIds: [1, 2, 3], propertyDamage: SEVERITY, escaped: false });
 
     // Every resource the response claimed is back where the continuous run put
@@ -590,7 +603,7 @@ describe('a save taken during an incident response releases what the response cl
     expect(restored.incidents.get('incident-a')!.state).toBe('resolved');
     expect(restored.incidents.get('incident-a')!.outcome).toEqual({
       injuredEntityIds: [],
-      propertyDamage: Math.floor(SEVERITY / 2),
+      propertyDamage: CONTAINED_PROPERTY_DAMAGE,
       escaped: false,
     });
 
