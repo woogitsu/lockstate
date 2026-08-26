@@ -11,8 +11,30 @@ ranks permissible candidates and refuses nothing. The three questions below are
 **not** answered by this status and stay open, each for the reason its own
 section gives.
 
-**The subject of this decision is unreachable in a shipped session, and
-accepting it does not change that.** `RoomZoningService` registers every room
+**Update, 2026-08-26 — the subject is now reachable, and this ADR named the
+day.** The paragraph below said the effects of this decision were not observable
+through any path a player could take, and named the condition that would change
+that: the day capacity is derived from placed objects. That day has passed. ADR
+0028 is Accepted and its phase 1 shipped, so capacity comes from the objects
+standing in a room, and **two prisoners in one cell is reachable through the
+shipped command path**. Measured through the real commands and the real kernel,
+seed 11: two `bed-wooden` placed in one zoned 3x3 `room.cell` leave the instance
+at `residentCapacity: 2` with `objectCapabilities: ['sleep-surface']`; two
+`AdmitPrisoner` commands are accepted with no refusal, and
+`occupancyOf('room.cell:3:3')` is **2** with `completedCount: 2` and
+`failedCount: 0`.
+
+So `rateCellSharing` is deciding real allocations in a live session for the
+first time, and nothing exercises it through that path — every test of it still
+registers its instances by hand. That gap is filed separately rather than
+resolved here, because it is a coverage question and not a change to this
+decision. The three open questions this status already carried stay open and are
+now *load-bearing* rather than hypothetical.
+
+The paragraph as it stood, kept because the reasoning is still the record of why
+this was accepted while unreachable:
+
+> `RoomZoningService` registers every room
 instance with `capacity: 0`, so no session this codebase can produce puts two
 prisoners in one cell: this is an approved decision whose effects are not yet
 observable through any path a player can take. They become observable on the day
@@ -48,7 +70,11 @@ the player, overridable, and feeding the existing incident trigger system.
 Three preconditions bound everything below, and all three are structural
 rather than incidental.
 
-**Co-occupancy is not reachable in a shipped session.** `RoomZoningService`
+**Co-occupancy is not reachable in a shipped session.** *No longer true — see
+the update in Status, which measures two prisoners in one cell through the
+shipped command path. The three preconditions are kept as written because every
+design argument below was made under them, and rewriting them would hide which
+arguments now need re-checking. This one does.* `RoomZoningService`
 registers every room instance with `capacity: 0`
 (`RoomZoningService.zone`, `src/simulation/rooms/zoning.ts`, pinned by
 `rooms-zoning.test.ts`'s "gives a freshly zoned room no capacity and no
@@ -65,7 +91,10 @@ directly.
 it.** The Rooms tab gave `ZoneRoom` its first producer, so a player can now
 create and destroy room instances and a live session containing real rooms
 exists for the first time — which is exactly the shape of change that turns a
-precondition into a stale sentence. It did not: zoning two cells through the
+precondition into a stale sentence. It did not — and the change that *did*, ADR
+0028's object placement, arrived later and was not re-measured against this
+document at all until 2026-08-26. Re-measuring the right change late is the
+lesson worth carrying out of this ADR. What #312 left standing: zoning two cells through the
 real service still yields `capacity: 0` and an empty capability list,
 `findAvailable` and `findBestAvailable` both return `undefined` for
 `room.cell` with and without the `sleep-surface` filter, an admitted prisoner
