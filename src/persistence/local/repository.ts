@@ -43,42 +43,55 @@ export type SaveImportResult =
  *
  * Demotion **deletes** a generation, and the only thing that justifies
  * deleting a save is that a better one remains. The caller that drives it
- * (`SessionController.loadPrison`) walks the retained window newest-first and
- * demotes every generation the host refuses, and the *usual* reason a host
- * refuses one is deterministic — a payload shape this build cannot restore, or
- * a bug in this build's own restore code, which
- * `SimulationWorkerStateMachine.handleInitialize` labels
+ * (`SessionController.loadPrison`) walks the retained window newest-first, and
+ * the *usual* reason a host refuses a generation is deterministic — a payload
+ * shape this build cannot restore, or a bug in this build's own restore code,
+ * which `SimulationWorkerStateMachine.handleInitialize` labels
  * `snapshot-incompatible` identically to a genuinely bad blob because it
  * catches every exception from `restoreSimulationRuntime`. A deterministic
- * cause fails on *every* generation, so one load walked the whole window and
- * deleted all of it: measured on v0.0.112, three good generations became zero
- * in a single load, and the prison stayed unloadable afterwards even once the
- * failure was removed, because there was nothing left to load. One generation
- * is enough for it: the same walk deleted a legitimate V1 save that had
- * migrated and checksummed cleanly on the way in.
- * `tests/integration/session-restore-failure.test.ts`'s "never the last copy"
- * pins both cases.
+ * cause fails on *every* generation, so a walk that demoted each refusal as it
+ * happened deleted the whole window: measured on v0.0.112, three good
+ * generations became zero in a single load, and the prison stayed unloadable
+ * afterwards even once the failure was removed, because there was nothing left
+ * to load. One generation is enough for it: the same walk deleted a legitimate
+ * V1 save that had migrated and checksummed cleanly on the way in.
  *
- * `'last-generation-retained'` is the floor that stops it: the last retained
- * generation is never deleted, however confidently it has been refused. It
- * costs the player nothing but a refused load -- a prison whose only
- * generation cannot be restored and a prison with an empty window both answer
- * `no-valid-generation` from `SessionController.loadPrison` (`loadCurrent`
- * still returns the retained envelope, which is the point), both keep their
- * row in the prison list, and `delete()` still clears either one -- and it is
- * the difference between a save that a fixed build can still open and a save
- * that no longer exists.
+ * **`loadPrison` now calls this only once a *different* generation has
+ * actually restored** (#403 (d)). That is what "a better one remains" means
+ * literally rather than by assumption: another generation went through the
+ * same restore code on the same build moments earlier and came back a running
+ * simulation, so what is wrong is this save. A deterministic cause reaches
+ * this method not at all, and costs nothing.
+ * `tests/integration/session-restore-failure.test.ts` pins both halves --
+ * "a deterministic refusal costs no generation at all" for the walk that
+ * retires nothing, and "demotes the unrestorable generation, restores the
+ * previous one" for the retirement a success earns.
+ *
+ * `'last-generation-retained'` is the floor underneath that, and it is now a
+ * second belt rather than the thing holding the window up: the last retained
+ * generation is never deleted, however confidently it has been refused.
+ * `loadPrison` can no longer reach it -- the generation that restored is
+ * always retained, so a demotion driven by it always leaves at least that one
+ * behind -- but the floor is what any *other* caller runs into, and what
+ * catches a future walk that forgets the rule above. It costs the player
+ * nothing but a refused load: a prison whose only generation cannot be
+ * restored and a prison with an empty window both answer `no-valid-generation`
+ * from `SessionController.loadPrison` (`loadCurrent` still returns the
+ * retained envelope, which is the point), both keep their row in the prison
+ * list, and `delete()` still clears either one -- and it is the difference
+ * between a save that a fixed build can still open and a save that no longer
+ * exists.
  *
  * `'not-retained'` is the pre-existing no-op: an unknown prison, or a
  * generation already outside the retained window. It is reported rather than
  * swallowed so a caller looping over generations cannot mistake "nothing
  * happened" for progress and spin.
  *
- * This also aligns demotion with what the *decode* path has always done.
+ * Both rules came from the *decode* path, which has always had them.
  * `loadCurrent` drops confirmed-corrupt generations through
  * `recoverToGeneration`, which runs **only after** a generation has validated
  * -- when nothing in the window validates it deletes nothing at all. Demotion
- * was the one path in this file that would empty a window.
+ * was the one path in this file that would empty a window; it no longer is.
  */
 export type DemotionResult =
   | { readonly demoted: true }
@@ -328,7 +341,8 @@ export class PrisonSaveRepository {
    * by every read path and would never be deleted by `delete()` either, so
    * un-pointing alone would leak it. The caller decides what counts as
    * confirmed-unrestorable; `SessionController.loadPrison` demotes only on a
-   * `SnapshotRestoreRejectedError`, never on a host that failed to answer.
+   * `SnapshotRestoreRejectedError`, never on a host that failed to answer, and
+   * only once a different generation has restored (#403 (d)).
    *
    * **The last retained generation is never demoted**, and that floor is the
    * reason this method reports what it did instead of returning `void`. See
