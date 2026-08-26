@@ -427,6 +427,30 @@ function buildModelWithCatalogueOf(count: number): HudBuildViewModel {
   };
 }
 
+/**
+ * One element's rectangle, rounded, or `null` when the browser gave it none.
+ *
+ * A zero-area box is not laid out at all -- the element itself, or an
+ * ancestor, is `display: none`. Reported as absent rather than as a 0x0
+ * rectangle at the origin, which would silently satisfy an overlap check.
+ *
+ * Module-level because four probes need the same answer, and a per-probe copy
+ * of this rule is a rule that can drift between them.
+ */
+function layoutBoxOf(node: Element | null): LayoutBox | null {
+  if (node === null) return null;
+  const rect = node.getBoundingClientRect();
+  if (rect.width === 0 && rect.height === 0) return null;
+  return {
+    x: Math.round(rect.x),
+    y: Math.round(rect.y),
+    width: Math.round(rect.width),
+    height: Math.round(rect.height),
+    right: Math.round(rect.right),
+    bottom: Math.round(rect.bottom),
+  };
+}
+
 const root = document.getElementById('ui-root');
 if (root === null) throw new Error('ui-harness: #ui-root is missing');
 
@@ -788,24 +812,7 @@ window.lockstateUiHarness = {
   },
 
   layoutProbe(): LayoutProbe {
-    const box = (selector: string): LayoutBox | null => {
-      const node = document.querySelector(selector);
-      if (node === null) return null;
-      const rect = node.getBoundingClientRect();
-      // A zero-area box is not laid out at all -- the element itself, or an
-      // ancestor, is `display: none`. Reported as absent rather than as a
-      // 0x0 rectangle at the origin, which would silently satisfy an
-      // overlap check.
-      if (rect.width === 0 && rect.height === 0) return null;
-      return {
-        x: Math.round(rect.x),
-        y: Math.round(rect.y),
-        width: Math.round(rect.width),
-        height: Math.round(rect.height),
-        right: Math.round(rect.right),
-        bottom: Math.round(rect.bottom),
-      };
-    };
+    const box = (selector: string): LayoutBox | null => layoutBoxOf(document.querySelector(selector));
 
     const minimap = box('.hud-minimap');
     const tabs = box('.hud-tabs__inner');
@@ -849,6 +856,7 @@ window.lockstateUiHarness = {
     const buySubmit = document.querySelector<HTMLButtonElement>('.hud-build__buy-submit');
     const buyQuantity = document.querySelector<HTMLInputElement>('.hud-build__buy .ui-number__input');
     const target = document.querySelector<HTMLElement>('.hud-build__target');
+    const targetValue = document.querySelector<HTMLElement>('.hud-build__target .hud-build__target-value');
     const coordinates = [...document.querySelectorAll<HTMLElement>('.hud-build .ui-section')].find((section) =>
       section.querySelector('.hud-build__coords'),
     );
@@ -864,6 +872,28 @@ window.lockstateUiHarness = {
       edge:
         document.querySelector<HTMLElement>('.hud-build .ui-choice__option[data-active="true"]')?.dataset['choice'] ??
         null,
+      // The id and the *text* together, per option (#341). `textContent` and
+      // not `data-choice`: the whole point is that an implementation labelling
+      // every edge "North" reports the right id here and the wrong label, and
+      // the id is what every existing assertion in this file reads.
+      //
+      // Scoped to `.hud-build` rather than to the document, for the reason
+      // `hudProbe` scopes its section read: `createChoiceGroup` is a shared
+      // primitive, and a second panel adopting it would silently fold its
+      // options into this list in document order.
+      edgeLabels: [...document.querySelectorAll<HTMLElement>('.hud-build .ui-choice__option')].map((option) => {
+        const box = option.getBoundingClientRect();
+        return {
+          id: option.dataset['choice'] ?? '',
+          label: (option.textContent ?? '').trim(),
+          // `offsetParent`, not `hidden`: the attribute is inherited through
+          // the DOM, and this control sits inside a collapsible body that
+          // carries it while folded.
+          laidOut: option.offsetParent !== null,
+          widthPx: Math.round(box.width * 10) / 10,
+          heightPx: Math.round(box.height * 10) / 10,
+        };
+      }),
       edgeChooserVisible: edgeChooser !== null && edgeChooser.offsetParent !== null,
       submitDisabled: submit?.disabled ?? true,
       armLabel: arm?.textContent?.trim() ?? '',
@@ -897,7 +927,11 @@ window.lockstateUiHarness = {
       hint: hint?.textContent?.trim() ?? '',
       coordinatesCollapsed: coordinates?.dataset['collapsed'] === 'true',
       targetReadout: target?.dataset['target'] ?? null,
-      targetText: target?.querySelector('.hud-build__target-value')?.textContent?.trim() ?? '',
+      targetText: targetValue?.textContent?.trim() ?? '',
+      // The pairing `targetText` needs to mean anything: a `textContent` read
+      // is identical on a readout that was never painted (#220).
+      targetLaidOut: targetValue !== null && targetValue.offsetParent !== null,
+      targetBox: layoutBoxOf(targetValue),
       // `offsetParent`, not the `hidden` attribute: an author `display` beats
       // the user agent's `display: none`, and this row is laid out by a rule
       // that has to opt out of that (`hud.css`). Reading the attribute would
@@ -1033,6 +1067,26 @@ window.lockstateUiHarness = {
     const button = direction === 'down' ? steps[0] : steps[1];
     if (button === undefined) return false;
     button.click();
+    return true;
+  },
+
+  aimBuildTarget(target: {
+    readonly x: number;
+    readonly y: number;
+    readonly edge: string;
+    readonly segments: number;
+  } | null): boolean {
+    if (hud === undefined) return false;
+    // `HudHandle.setBuildTarget` is exactly what `main.ts` wires
+    // `BuildTool.attachReadout` into, so this is the production path minus the
+    // Phaser pointer that produces the coordinates. `mountHud` offers no
+    // readout port for build aims the way it does for room gestures, so there
+    // is no sink to register instead.
+    hud.setBuildTarget(
+      target === null
+        ? undefined
+        : { x: target.x, y: target.y, edge: target.edge as HudBuildEdge, segments: target.segments },
+    );
     return true;
   },
 
@@ -1187,19 +1241,7 @@ window.lockstateUiHarness = {
     const status = document.querySelector<HTMLElement>('.hud-rooms__status');
     const body = document.querySelector<HTMLElement>('.hud-rooms > .ui-panel__body');
 
-    const box = (node: Element | null): LayoutBox | null => {
-      if (node === null) return null;
-      const rect = node.getBoundingClientRect();
-      if (rect.width === 0 && rect.height === 0) return null;
-      return {
-        x: Math.round(rect.x),
-        y: Math.round(rect.y),
-        width: Math.round(rect.width),
-        height: Math.round(rect.height),
-        right: Math.round(rect.right),
-        bottom: Math.round(rect.bottom),
-      };
-    };
+    const box = layoutBoxOf;
 
     const panelRect = panel?.getBoundingClientRect();
 
@@ -1245,19 +1287,7 @@ window.lockstateUiHarness = {
     const sections = [...document.querySelectorAll<HTMLElement>('.hud-build .ui-section')];
     const header = sections[sections.length - 1]?.querySelector<HTMLElement>('.ui-section__header') ?? null;
 
-    const box = (node: Element | null): LayoutBox | null => {
-      if (node === null) return null;
-      const rect = node.getBoundingClientRect();
-      if (rect.width === 0 && rect.height === 0) return null;
-      return {
-        x: Math.round(rect.x),
-        y: Math.round(rect.y),
-        width: Math.round(rect.width),
-        height: Math.round(rect.height),
-        right: Math.round(rect.right),
-        bottom: Math.round(rect.bottom),
-      };
-    };
+    const box = layoutBoxOf;
 
     const panelRect = panel?.getBoundingClientRect();
 
