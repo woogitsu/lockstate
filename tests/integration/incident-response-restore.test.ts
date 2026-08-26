@@ -102,8 +102,9 @@ const GUARD_ORIGIN = { x: tileCoordinate(0), y: tileCoordinate(0) } as const;
  * the derivation still in place). What a self-derived constant cannot do is
  * notice a change to the *rule that computes it*: it re-derives, follows, and
  * the comparison holds. `Math.ceil` -> `Math.floor` was a whole-suite survivor
- * at v0.0.121, and this file could never have been the one to catch it --
- * `SEVERITY` is 8, and half of an even number needs no rounding at all.
+ * at `54418b6` (v0.0.121), and this file could never have been the one to
+ * catch it -- `SEVERITY` is 8, and half of an even number needs no rounding
+ * at all.
  *
  * The rule is now pinned where it belongs, in
  * `tests/unit/incident-response.test.ts`, at odd severities where ceiling and

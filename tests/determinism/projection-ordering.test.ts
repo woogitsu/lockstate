@@ -56,7 +56,7 @@ function registryWithOccupants(order: readonly EntityId[]): RoomInstanceRegistry
  * sorts**, so every one of them feeds `projectRoomDetail` an ascending list
  * and asserts that an ascending list came back. Deleting
  * `.sort(compareEntityIds)` from `room-projection.ts` left 238 files / 2,696
- * tests green when measured at v0.0.121 -- the exact defect this file was
+ * tests green when measured at `54418b6` (v0.0.121) -- the exact defect this file was
  * written to prevent, surviving inside the file written to prevent it. It is
  * `docs/TESTING.md`'s first form: the fixture supplied both sides of the
  * comparison, because the "input" was produced by a sort of its own.

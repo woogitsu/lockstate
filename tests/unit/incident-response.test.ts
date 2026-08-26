@@ -67,8 +67,8 @@ describe('IncidentResponseSystem: real guards, real routes, real lockdown', () =
    * its policy comment says "rounded up". The suite sampled severity 2 and
    * severity 8 -- both even, and half of an even number is an integer, so
    * `Math.ceil` and `Math.floor` returned the same number for every input
-   * anything ever passed it. Measured at v0.0.121: `Math.ceil` -> `Math.floor`
-   * left **238 files / 2,696 tests green**. What it ships is a severity-9 riot
+   * anything ever passed it. Measured at `54418b6` (v0.0.121):
+   * `Math.ceil` -> `Math.floor` left **238 files / 2,696 tests green**. What it ships is a severity-9 riot
    * answered by four guards instead of five, everywhere in the game, silently.
    *
    * The expected counts are worked out from the documented rule and written

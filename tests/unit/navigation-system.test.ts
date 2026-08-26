@@ -112,8 +112,8 @@ describe('NavigationSystem: wired into SimulationRuntime', () => {
  * own tests pass a budget in directly, so none of them can see that line at
  * all -- replacing it with `workBudget: Number.MAX_SAFE_INTEGER`, which is
  * literally "run every pending A* this tick, however many there are", left
- * **238 files / 2,696 tests green** when measured at v0.0.121. The scenarios
- * below drive 250 actors to completion and assert what came back, never how
+ * **238 files / 2,696 tests green** when measured at `54418b6` (v0.0.121).
+ * The scenarios below drive 250 actors to completion and assert what came back, never how
  * many ticks of work it was allowed to cost, so an unbounded queue satisfies
  * them faster.
  *

@@ -133,7 +133,7 @@ describe('the wire vocabulary is exactly what the ten domains can produce', () =
      * `duplicate-instance-id` values keeps both sides identical, keeps every
      * `Record` exhaustive, keeps the namespace prefixes intact, keeps the
      * shared-spelling cases green -- and left 238 files / 2,696 tests green
-     * when measured at v0.0.121, while shipping a player who drew a room too
+     * when measured at `54418b6` (v0.0.121), while shipping a player who drew a room too
      * small being told the room already exists. Twelve of the thirty-six wire
      * ids are named by no other test in the suite at all, so for those the
      * pairing had nothing anywhere.

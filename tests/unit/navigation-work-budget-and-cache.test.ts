@@ -253,7 +253,7 @@ describe('PathRequestQueue: flow-field sharing composes with the route cache rat
  * unasserted: replacing `usedBudget += stats.expansions;` with
  * `usedBudget += 1;` -- which turns the tick budget into a request count and
  * lets one tick expand many times its budget -- left 238 files and 2,696
- * tests green when measured at v0.0.121.
+ * tests green when measured at `54418b6` (v0.0.121).
  *
  * The neighbouring cases cannot see it. "Defers requests once the tick budget
  * is spent" runs at `workBudget: 1`, where a per-request counter and a
