@@ -159,7 +159,7 @@ a fresh process per configuration:
 | `decodeWorkerToMainMessage(simulation/delta)` | **0.0049 ms** | **0.0051 ms** |
 | `WorldRenderView.fromSnapshot` | 0.58 ms | 1.35 ms |
 | `actorsFromSnapshot` | 0.22 ms | 0.19 ms |
-| `decodeRenderActorsPayload` + `actorsFromDelta` | 0.05 ms | 0.32 ms |
+| `actorsFromDelta(decodeRenderActorsPayload(...))` | 0.05 ms | 0.32 ms |
 | session bundle, as JSON | 101,856 bytes | 596,659 bytes |
 | render-actors keyframe | 8,016 bytes | **80,016 bytes** |
 | the same actors as JSON rows | 11,811 bytes | 126,823 bytes |
@@ -168,11 +168,16 @@ The delta's boundary cost is **flat in the population** -- a tenfold prison
 moves it by 0.0002 ms -- because `arrayBufferPayloadSchema` validates a schema
 id, a content type and a `byteLength` cross-check and never walks the body,
 where `jsonValueSchema` is `isJsonValue` recursing with an
-`Object.getOwnPropertyDescriptor` per array element and per object key. That
-walk is **96% of what decoding a snapshot costs** at 5,000/64, which is the
-claim #414 made and this reproduces. The worker's side of the delta is one walk
-of the position SoA: 0.11 ms at 5,000 against 3.94 ms to capture a full session
-bundle.
+`Object.getOwnPropertyDescriptor` per array element and per object key.
+
+That walk is **essentially the whole of what decoding a snapshot costs**: the
+45.39 ms row and the 44.53 ms row are the same work measured two ways, and they
+straddle each other inside the run-to-run noise. Against the renderer's own
+decode of the same bundle — 1.35 + 0.19 + 0.002 ms for the world, the actors and
+the structures — the boundary is **97%** of the main-thread poll, which is
+#414's claim and ADR 0040's figure, reproduced. The worker's side of the delta
+is one walk of the position SoA: 0.11 ms at 5,000, against 3.94 ms to capture a
+full session bundle for one poll.
 
 What it does **not** buy, stated because the payload is where a reader will look
 for it: the record list is still one record per live actor, so the *bytes* and
