@@ -65,7 +65,11 @@ scheduled every 5 ticks) drives both identically through
    job's source container can actually `reserve` the required quantity. A
    job whose source lacks stock **stays `'available'`** rather than
    failing -- issue #25's "backpressure... observable" as a state, not an
-   error.
+   error. This is also the **boundary**: both of a job's container ids are
+   looked up here, before anything is reserved, and a job naming an id the
+   `ContainerRegistry` does not hold fails immediately with
+   `'unknown-source-container'` or `'unknown-destination-container'` --
+   holding no reservation, occupying no worker and moving no stock.
 2. **Travel** (`beginLeg`/`continueTravelling`): delegates entirely to the
    real `NavigationSystem` (#21/#22) via `requestRoute`/`getResult` --
    never a shortcut or parallel routing implementation. A `permission-denied`/
@@ -74,6 +78,17 @@ scheduled every 5 ticks) drives both identically through
 3. **Performing** (`continuePerforming`): a fixed dwell (`PICKUP_DROPOFF_DURATION_TICKS`)
    at each leg's destination, then `withdrawReserved` (pickup) or `deposit`
    (dropoff) -- the only points where a job actually touches inventory.
+   Both container lookups here are **lenient**, and a missing container fails
+   the job with the same named reason the boundary would have given it. They
+   were `ContainerRegistry.require`, which throws, and this runs inside a
+   scheduled system update where a throw faults the worker rather than
+   refusing anything: on the dropoff leg it threw with the withdrawal already
+   committed, so one unregistered container id ended the session *and*
+   destroyed the stock the carrier was holding. The boundary above does not
+   make this redundant and this does not make the boundary redundant -- a job
+   restored from a save never passes through `assignAvailableJobs` at all, so
+   the boundary cannot see it, and only this recovers a save that already
+   carries such a job.
 
 **Cancellation/failure gives back whatever the job was holding, and which
 that is depends on the leg.** `JobSystem.failJob` and `JobSystem.cancel` share
@@ -245,6 +260,18 @@ intentionally *not* part of any snapshot (session-scoped, like
 `IntakeSystem`'s counters) -- a restored `'performing'` job simply restarts
 its dwell timer, extending the pickup/dropoff wait by at most
 `PICKUP_DROPOFF_DURATION_TICKS`, never losing state.
+
+A restored job may name a container the restored session does not hold:
+`restoreSessionSystems` registers a container per *container-snapshot* entry
+and never consults a job's ids, and a restored job re-enters the lifecycle at
+the state it was saved in rather than at assignment. That is the route by
+which an unknown container id reaches `continuePerforming` above now that
+`assignAvailableJobs` refuses one, and it is why both places check. Such a
+job fails cleanly on its next scheduled tick, giving back whatever it held;
+if the container that is missing is the **source** of a job already carrying
+stock, there is nowhere to give it back to and the quantity is gone -- the
+one hole `compensateHeldStock` cannot close, because the destination it would
+return goods to is the thing that does not exist.
 
 ## Wiring into `SimulationRuntime`
 
