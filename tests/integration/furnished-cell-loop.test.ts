@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createSaveEnvelope, decodeSaveEnvelope } from '../../src/persistence/save-schema';
+import { defaultRoomContentRegistry } from '../../src/content/room-catalog';
 import { DEFAULT_ACTIONS } from '../../src/simulation/prisoners/actions';
 import { NEED_IDS, NEED_SCALE } from '../../src/simulation/prisoners/needs';
 import { projectRoomDetail } from '../../src/simulation/presentation/room-projection';
@@ -202,14 +203,19 @@ describe('a toilet placed in a cell satisfies the requirement a bed alone cannot
     const runtime = prisonWithBedAndToiletOrdered();
     stepTo(runtime, 200);
 
-    // Two objects of footprint width 1 each, so concurrent use is 2. Only one
-    // of them declares `'sleep-surface'`, so residency stays 1. **Nothing
-    // authored either number**: both are read off footprints
+    // Two objects of footprint width 1 each, so the all-objects total is 2.
+    // Only one of them declares `'sleep-surface'`, so residency stays 1.
+    // **Nothing authored either number**: both are read off footprints
     // `src/content/object-catalog.ts` has shipped since it existed, and the
     // resolver was not touched by this phase.
+    //
+    // The total is not a ceiling on anything (issue #326); the per-capability
+    // breakdown is, and here it is one place each for the one thing each object
+    // is for -- which is what makes 2 the wrong number for either question.
     expect(runtime.prisoners.roomInstances.getById(cellInstanceId)).toMatchObject({
       residentCapacity: 1,
       concurrentUseCapacity: 2,
+      concurrentUseCapacityByCapability: [['sanitation', 1], ['sleep-surface', 1]],
     });
     // The bed-only prison is the control: the toilet is the entire difference
     // between 1 and 2.
@@ -308,6 +314,30 @@ describe('what the toilet does and does not change in the running prison', () =>
       'action.common-room-recreation',
       'action.classroom-education',
     ]);
+
+    /*
+     * **The invariant that keeps the yard the only unbounded room** (issue
+     * #326). An action naming no `requiredObjectCapability` gets no
+     * object-derived ceiling at all, so leaving it out is a claim that the room
+     * is bounded by nothing -- and the only room type in
+     * `src/content/room-catalog.ts` that requires no object is `room.yard`.
+     * Derived from the catalogue rather than listed here, so a room type that
+     * gains or loses an object requirement moves this on its own.
+     */
+    for (const action of roomGated) {
+      if (action.target.kind !== 'room-catalog-id') continue;
+      const definition = defaultRoomContentRegistry.getById(action.target.roomCatalogId)!;
+      const requiresObjects = definition.requirements.some((requirement) => requirement.type === 'object');
+      expect(
+        action.requiredObjectCapability !== undefined,
+        `${action.id} targets ${definition.id}, which ${requiresObjects ? 'requires objects, so the action must name the capability they supply' : 'requires no object, so the action is right to name none'}`,
+      ).toBe(requiresObjects);
+    }
+    expect(
+      roomGated.filter((action) => action.requiredObjectCapability === undefined).map((action) => action.id),
+      'the yard, and nothing else',
+    ).toEqual(['action.yard-recreation']);
+
     for (const action of roomGated) {
       if (action.target.kind !== 'room-catalog-id') continue;
       expect(
@@ -317,17 +347,24 @@ describe('what the toilet does and does not change in the running prison', () =>
     }
 
     /*
-     * And the reason is worth pinning, because "a toilet unblocks nothing" is
-     * only half true and the other half is not phase 2's.
+     * And the reason is worth pinning, because "a toilet unblocks nothing" used
+     * to be only half true, and issue #326 is what made the other half go away.
      *
-     * Three of the five -- yard, common-room and classroom recreation -- declare
-     * **no** `requiredObjectCapability`, so `findAvailableForUse` gates on
-     * `concurrentUseCapacity` alone, and that figure sums `footprint.width`
-     * over *every* object regardless of capability (ADR 0028 decision 2). So one
-     * toilet in a zoned common room makes `action.common-room-recreation`
-     * reachable -- and so does one bed, identically. The capacity route has been
-     * capability-blind since phase 1; the toilet is not what opened it, and
-     * nothing here should be read as claiming otherwise.
+     * **What this block asserted before, and why it was the defect.** Three of
+     * the five -- yard, common-room and classroom recreation -- declared **no**
+     * `requiredObjectCapability`, so `findAvailableForUse` gated on
+     * `concurrentUseCapacity` alone, and that figure summed `footprint.width`
+     * over *every* object regardless of capability. So one toilet in a zoned
+     * common room made `action.common-room-recreation` reachable -- and so did
+     * one bed, identically. This block measured exactly that and recorded it as
+     * a known capability-blindness rather than as a bug.
+     *
+     * It is a bug, and it is fixed: the ceiling is per capability, and the two
+     * actions that were not really unbounded now name the capability their
+     * rooms' required objects already carried -- `'recreation'` for the common
+     * room's benches, `'education'` for the classroom's bookshelf. So a bed or a
+     * toilet in a common room unblocks **nothing**, which is what a bed and a
+     * toilet have to do with sitting around in a common room.
      */
     for (const definitionId of ['toilet-brick', 'bed-wooden'] as const) {
       const runtime = createNewSimulationRuntime(SEED);
@@ -337,11 +374,29 @@ describe('what the toilet does and does not change in the running prison', () =>
       submit(runtime, 'place', packCommand({ type: 'PlaceObject', orderId: 'o-1', definitionId, x: 11, y: 11 }));
       stepTo(runtime, 200);
 
+      const commonRoomId = 'room.common-room:10:10';
       expect(runtime.placedObjects.size, `${definitionId} must have been built`).toBe(1);
+      // The room is real, it was zoned, and the object really is standing in it
+      // -- so the refusal below is a refusal and not an empty registry.
+      expect(runtime.prisoners.roomInstances.getById(commonRoomId)).toMatchObject({
+        concurrentUseCapacity: 1,
+        objectCapabilities: [definitionId === 'bed-wooden' ? 'sleep-surface' : 'sanitation'],
+      });
+      // Asked with **the action's own capability**, read off `DEFAULT_ACTIONS`
+      // rather than written in here. That is what makes this an assertion about
+      // the content too: an `action.common-room-recreation` that named no
+      // capability would pass `undefined`, which has no object-derived ceiling,
+      // and the room would answer available off a bed.
+      const commonRoomAction = DEFAULT_ACTIONS.find((action) => action.id === 'action.common-room-recreation')!;
+      expect(commonRoomAction.requiredObjectCapability, 'the common room is not an unbounded room -- it requires two benches').toBe('recreation');
       expect(
-        runtime.prisoners.roomInstances.findAvailableForUse('room.common-room', undefined)?.instanceId,
-        `${definitionId} gives the common room a concurrent-use capacity of 1`,
-      ).toBe('room.common-room:10:10');
+        runtime.prisoners.roomInstances.findAvailableForUse('room.common-room', commonRoomAction.requiredObjectCapability),
+        `${definitionId} supplies no 'recreation', so it buys the common room nothing`,
+      ).toBeUndefined();
+      // The all-objects total is 1 and is not what the gate reads. This is the
+      // integration-level statement of the same thing
+      // `objects-room-capacity.test.ts` pins on the derivation.
+      expect(runtime.prisoners.roomInstances.concurrentUseCapacityFor(runtime.prisoners.roomInstances.getById(commonRoomId)!, 'recreation')).toBe(0);
       // The one action of the five that names a capability a toilet could ever
       // supply is still out of reach: `action.shower` wants `'hygiene'`, which
       // is the sink's and the shower head's, and both are phase 4's.

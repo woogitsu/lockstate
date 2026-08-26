@@ -109,7 +109,13 @@ const ALLOWED: readonly CanonicalIterationExemption[] = [
     file: 'src/simulation/prisoners/room-instance-registry.ts',
     expression: 'this.useClaims.values()',
     reason:
-      "`loadSnapshot` clears every concurrent-use claim set, for the same reason and with the same argument as `this.occupants.values()` above: emptying all of them touches each set once and leaves no residue an order could depend on. It is not refilled from the payload at all -- use claims are derived rather than persisted (ADR 0029), and `ActionSystem.reinstateUseClaims` rebuilds them afterwards over `EntityQuery.execute`'s ascending index order, which is a total order derived from state.",
+      "`loadSnapshot` clears every concurrent-use claim map, for the same reason and with the same argument as `this.occupants.values()` above: emptying all of them touches each set once and leaves no residue an order could depend on. It is not refilled from the payload at all -- use claims are derived rather than persisted (ADR 0029), and `ActionSystem.reinstateUseClaims` rebuilds them afterwards over `EntityQuery.execute`'s ascending index order, which is a total order derived from state.",
+  },
+  {
+    file: 'src/simulation/prisoners/room-instance-registry.ts',
+    expression: 'claims.values()',
+    reason:
+      "`useOccupancyOf` counts how many of one instance's concurrent-use claims were taken against a given capability, and a count is commutative: every walk order returns the same integer, and the walk itself reaches no caller. The scoped count exists because issue #326 made the ceiling per capability, so the headcount had to become per capability too. Which entity holds which seat is never decided here -- `claimUse` grants in the caller's ascending entity-index order and `reinstateUseClaims` rebuilds over `EntityQuery.execute`, both total orders derived from state.",
   },
   {
     file: 'src/simulation/prisoners/room-instance-registry.ts',

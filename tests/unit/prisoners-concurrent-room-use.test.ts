@@ -457,4 +457,62 @@ describe('the same command order gives byte-identical results with the gate biti
 
     expect(fingerprintOf()).toEqual(fingerprintOf());
   });
+
+  /**
+   * ADR 0029's over-capacity answer, **relocated here by issue #326**.
+   *
+   * `tests/integration/object-removal-loop.test.ts` used to prove it end to end,
+   * by removing an object from a yard that two prisoners were standing in. It
+   * could only do that because the yard's ceiling summed every object's
+   * footprint width regardless of capability, which made a *bed* the bound on
+   * `action.yard-recreation` -- the defect #326 removed. No placeable buildable
+   * supplies a capability any `room-catalog-id` action asks for, so until ADR
+   * 0028 phase 4 makes a dining table placeable there is no bounded
+   * concurrent-use room a command can reach. This fixture can build one, over
+   * the same real `ActionSystem` and the same real registry.
+   */
+  it('lowers a ceiling under a standing claim without evicting anybody, and shuts the door behind it', () => {
+    const fixture = buildContentionFixture({ prisonerCount: 4, concurrentUseCapacity: 2 });
+    fixture.step(1);
+    expect(fixture.performingInCanteen()).toBe(2);
+    const holders = fixture.prisoners.filter((entityId) => fixture.coldState.getActionTarget(entityId) === fixture.canteenInstanceId);
+    expect(holders).toHaveLength(2);
+
+    // What a removal does to a room: `RoomCapacityResolver` recomputes and
+    // `updateDerived` writes. The dining tables are gone, so `'dining'` is gone
+    // with them, and this is the resolved shape -- a breakdown, not a total.
+    fixture.roomInstances.updateDerived(fixture.canteenInstanceId, {
+      residentCapacity: 0,
+      concurrentUseCapacity: 0,
+      concurrentUseCapacityByCapability: [],
+      objectCapabilities: [],
+    });
+
+    // **Two claims, zero capacity, and that is the decided answer.** The claims
+    // are not released: releasing them would leave prisoners performing in a
+    // room they no longer hold, which under-counts real use and lets the next
+    // prisoner in over the true ceiling -- the exact failure ADR 0029 exists to
+    // remove, reintroduced from the other end.
+    expect(fixture.roomInstances.useOccupancyOf(fixture.canteenInstanceId, 'dining')).toBe(2);
+    expect(fixture.roomInstances.totalUseClaims).toBe(2);
+    for (const entityId of holders) {
+      expect(fixture.currentAction.phase[fixture.store.getIndex(entityId)]).toBe(PERFORMING_PHASE);
+      expect(fixture.coldState.getActionTarget(entityId)).toBe(fixture.canteenInstanceId);
+    }
+
+    // Nobody new gets in while they stand: `findAvailableForUse` skips a room at
+    // or above the ceiling for the capability asked, and `claimUse` refuses at
+    // the same comparison, so the over-capacity state is a closed door rather
+    // than an open one.
+    expect(fixture.roomInstances.findAvailableForUse('room.canteen', 'dining')).toBeUndefined();
+    expect(fixture.roomInstances.claimUse(fixture.canteenInstanceId, 4_242 as never, 'dining')).toBe(false);
+
+    // And the claims drain by themselves rather than being stranded above a
+    // ceiling they can never fall back under: `action.eat-meal` is
+    // `minDurationTicks: 40` and nothing in `ActionSystem`'s release sites
+    // consults a capacity.
+    fixture.step(200);
+    expect(fixture.roomInstances.totalUseClaims).toBe(0);
+    expect(fixture.performingInCanteen()).toBe(0);
+  });
 });

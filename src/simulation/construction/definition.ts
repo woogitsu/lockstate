@@ -47,11 +47,13 @@ export interface BuildableDefinition {
    * decision 1); a door is a fact about a tile *edge*, which is the one thing
    * a tile-addressed footprint cannot express -- the edge between (4,6) and
    * (3,6) belongs to neither tile more than the other. Writing a door as an
-   * object would also make it count toward
-   * `RoomCapacityResolver`'s `concurrentUseCapacity`, which sums
-   * `footprint.width` over everything standing in the room regardless of
-   * capability (the open defect #326): a door would silently hand its room
-   * another unit of occupancy. `validateBuildableDoorReferences` refuses the
+   * object would also make it count toward `RoomCapacityResolver`'s derived
+   * capacity: `object.loading-dock-door` carries `'delivery-access'`, so a door
+   * written as an object would hand its room a three-wide ceiling for that
+   * capability. Before #326 was fixed it was worse than that -- the ceiling
+   * summed `footprint.width` over everything in the room regardless of
+   * capability, and a delivery door in a yard granted three prisoners outdoor
+   * exercise. `validateBuildableDoorReferences` refuses the
    * combination at import time.
    */
   readonly placesDoor?: DoorPlacement;

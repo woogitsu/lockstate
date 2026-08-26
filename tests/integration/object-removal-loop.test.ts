@@ -81,7 +81,19 @@ const SECOND_BED_TILE = { x: 7, y: 6 } as const;
  * the honest way to reach the concurrent-use path with real content.
  */
 const YARD_RECT = { x: 16, y: 4, width: 8, height: 8 } as const;
-/** Inside `YARD_RECT`. A bed in a yard is odd and legal: `concurrentUseCapacity` sums every object's footprint width, whatever it is for. */
+/**
+ * Inside `YARD_RECT`. A bed in a yard is odd and legal: an object belongs to
+ * whichever room's rectangle contains its anchor tile, and nothing refuses a
+ * bed outdoors.
+ *
+ * It used to be load-bearing as well as odd. Before issue #326 the yard's
+ * concurrent-use ceiling summed every object's footprint width whatever it was
+ * for, so this bed *was* the yard's ceiling and gave the block below a bounded
+ * room to measure. It is not one any more -- `action.yard-recreation` names no
+ * capability and a rule that sums object footprints has no domain for it -- so
+ * the bed now buys the yard a `'sleep-surface'` ceiling nothing asks for, and
+ * the block below measures that instead.
+ */
 const YARD_BED_TILE = { x: 16, y: 4 } as const;
 
 /** The tile `src/main.ts` admits at: the middle of the one chunk a new prison owns. */
@@ -385,16 +397,16 @@ describe('a bed removed from an occupied cell evicts nobody (ADR 0028 decision 2
 
 describe('a removal that drops capacity below the claims held on a room (ADR 0029)', () => {
   /**
-   * A prison whose yard has one object in it and one prisoner performing there,
-   * plus a second prisoner who has been refused the same yard.
+   * A prison whose yard has one object in it and **both** prisoners performing
+   * there.
    *
-   * Two prisoners because the refusal is half of what is being measured: with
-   * one, "nobody new gets in" is indistinguishable from "nobody asked".
+   * Two prisoners because "the room is not bounded by its furniture" is
+   * indistinguishable from "nobody asked" with one.
    */
   function prisonWithYardInUse(): {
     readonly runtime: SimulationRuntime;
-    readonly holder: number;
-    readonly waiter: number;
+    readonly first: number;
+    readonly second: number;
   } {
     const runtime = createNewSimulationRuntime(SEED);
     submit(runtime, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 3 }));
@@ -405,9 +417,14 @@ describe('a removal that drops capacity below the claims held on a room (ADR 002
     submit(runtime, 'bed-2', packCommand({ type: 'PlaceObject', orderId: 'bed-2', definitionId: 'bed-wooden', ...SECOND_BED_TILE }));
     submit(runtime, 'bed-yard', packCommand({ type: 'PlaceObject', orderId: 'bed-3', definitionId: 'bed-wooden', ...YARD_BED_TILE }));
     stepTo(runtime, 220);
-    // One bed of footprint width 1, so the yard seats exactly one at a time.
-    // Nothing authored that number: it is the object's own width.
-    expect(runtime.prisoners.roomInstances.getById(yardInstanceId)?.concurrentUseCapacity).toBe(1);
+    // One bed of footprint width 1, so the yard's all-objects total is 1 and its
+    // one per-capability ceiling is `'sleep-surface'` of 1. Nothing authored
+    // either: both are the object's own width. Neither bounds
+    // `action.yard-recreation`, which names no capability.
+    expect(runtime.prisoners.roomInstances.getById(yardInstanceId)).toMatchObject({
+      concurrentUseCapacity: 1,
+      concurrentUseCapacityByCapability: [['sleep-surface', 1]],
+    });
 
     submit(runtime, 'admit-1', packCommand({ type: 'AdmitPrisoner', ...ADMISSION, ...ARRIVAL }));
     submit(runtime, 'admit-2', packCommand({ type: 'AdmitPrisoner', ...ADMISSION, x: ARRIVAL.x + 1, y: ARRIVAL.y }));
@@ -418,72 +435,80 @@ describe('a removal that drops capacity below the claims held on a room (ADR 002
     // both of them go.
     stepTo(runtime, 1_040);
 
-    const holder = runtime.prisoners.entityStore.getIdByIndex(0);
-    const waiter = runtime.prisoners.entityStore.getIdByIndex(1);
-    expect(runtime.prisoners.roomInstances.useOccupancyOf(yardInstanceId)).toBe(1);
-    expect(runtime.prisoners.coldState.getActionTarget(holder)).toBe(yardInstanceId);
-    // The second was refused the claim and left with nothing: no target, no
-    // action started. That is `claimUse` answering `false` at the ceiling.
-    expect(runtime.prisoners.coldState.getActionTarget(waiter)).toBeUndefined();
-    return { runtime, holder, waiter };
+    const first = runtime.prisoners.entityStore.getIdByIndex(0);
+    const second = runtime.prisoners.entityStore.getIdByIndex(1);
+    // **Both are in the yard**, which is the #326 fix at the far end of the real
+    // command path. On the previous rule the bed's width of 1 was the ceiling
+    // and the second prisoner was refused the claim outright -- so a prison
+    // whose yard happened to contain no furniture admitted nobody to sixty-four
+    // tiles of open ground, and one with a delivery door in it admitted three.
+    expect(runtime.prisoners.roomInstances.useOccupancyOf(yardInstanceId)).toBe(2);
+    expect(runtime.prisoners.coldState.getActionTarget(first)).toBe(yardInstanceId);
+    expect(runtime.prisoners.coldState.getActionTarget(second)).toBe(yardInstanceId);
+    return { runtime, first, second };
   }
 
-  it('lets the claim stand above the new capacity instead of releasing it mid-action', () => {
-    const { runtime, holder } = prisonWithYardInUse();
-    const index = runtime.prisoners.entityStore.getIndex(holder);
+  it('takes every derived figure with it and refuses nobody, because none of them bounded the action', () => {
+    const { runtime, first, second } = prisonWithYardInUse();
+    const firstIndex = runtime.prisoners.entityStore.getIndex(first);
+    const secondIndex = runtime.prisoners.entityStore.getIndex(second);
 
     submit(runtime, 'remove-yard-bed', packCommand({ type: 'RemoveObject', ...YARD_BED_TILE }));
 
     expect(runtime.refusals.count, 'a room in use is still removable from').toBe(0);
-    expect(runtime.prisoners.roomInstances.getById(yardInstanceId)?.concurrentUseCapacity).toBe(0);
+    // Both derived figures go, and the capability with them: the removal did
+    // everything a removal does.
+    expect(runtime.prisoners.roomInstances.getById(yardInstanceId)).toMatchObject({
+      residentCapacity: 0,
+      concurrentUseCapacity: 0,
+      concurrentUseCapacityByCapability: [],
+      objectCapabilities: [],
+    });
 
-    // **One claim, zero capacity, and that is the decided answer.** The claim is
-    // not released here: releasing it would leave the prisoner performing in a
-    // room they no longer hold, which under-counts real use and lets the next
-    // prisoner in over the true ceiling -- the exact failure ADR 0029 exists to
-    // remove, reintroduced from the other end.
-    expect(runtime.prisoners.roomInstances.useOccupancyOf(yardInstanceId)).toBe(1);
-    expect(runtime.prisoners.roomInstances.totalUseClaims).toBe(1);
-    expect(ACTION_PHASES[runtime.prisoners.currentAction.phase[index]!]).toBe('performing');
-    expect(runtime.prisoners.coldState.getActionTarget(holder)).toBe(yardInstanceId);
+    // **And nothing about the yard's use changed**, because none of those
+    // numbers was ever this action's ceiling. Both claims stand, both prisoners
+    // keep performing, and the room still admits. On the pre-#326 rule this same
+    // removal shut the yard: the ceiling fell to 0, `findAvailableForUse`
+    // answered `undefined`, and an empty yard was a room nobody could stand in.
+    expect(runtime.prisoners.roomInstances.useOccupancyOf(yardInstanceId)).toBe(2);
+    expect(runtime.prisoners.roomInstances.totalUseClaims).toBe(2);
+    expect(ACTION_PHASES[runtime.prisoners.currentAction.phase[firstIndex]!]).toBe('performing');
+    expect(ACTION_PHASES[runtime.prisoners.currentAction.phase[secondIndex]!]).toBe('performing');
+    expect(runtime.prisoners.roomInstances.findAvailableForUse(YARD)?.instanceId).toBe(yardInstanceId);
+    expect(runtime.prisoners.roomInstances.claimUse(yardInstanceId, 4_242 as never)).toBe(true);
 
-    // Nobody new gets in while it stands: `findAvailableForUse` skips a room at
-    // or above its ceiling, and `claimUse` refuses at the same comparison, so
-    // the over-capacity state is a closed door rather than an open one.
-    expect(runtime.prisoners.roomInstances.findAvailableForUse(YARD)).toBeUndefined();
-    expect(runtime.prisoners.roomInstances.claimUse(yardInstanceId, 4_242 as never)).toBe(false);
+    // Unbounded is not "anything goes": the emptied yard admits nobody to
+    // anything that needs an object, so no capability-naming action falls
+    // through the same hole.
+    expect(runtime.prisoners.roomInstances.findAvailableForUse(YARD, 'sleep-surface')).toBeUndefined();
+    expect(runtime.prisoners.roomInstances.claimUse(yardInstanceId, 4_243 as never, 'sleep-surface')).toBe(false);
   });
 
-  it('drains the claim when the action ends, leaking nothing and double-releasing nothing', () => {
-    const { runtime, holder } = prisonWithYardInUse();
+  it('drains the claims when the actions end, leaking nothing and double-releasing nothing', () => {
+    const { runtime } = prisonWithYardInUse();
     submit(runtime, 'remove-yard-bed', packCommand({ type: 'RemoveObject', ...YARD_BED_TILE }));
-    expect(runtime.prisoners.roomInstances.totalUseClaims).toBe(1);
+    expect(runtime.prisoners.roomInstances.totalUseClaims).toBe(2);
 
-    // `action.yard-recreation` is `minDurationTicks: 100`, so the claim ends by
-    // itself within a few reconsideration cycles of the removal. Nothing in
-    // `ActionSystem`'s three release sites consults a capacity, which is why a
-    // dropped capacity cannot leak a claim.
-    stepTo(runtime, 1_180);
-    expect(runtime.prisoners.roomInstances.useOccupancyOf(yardInstanceId)).toBe(0);
-    expect(runtime.prisoners.roomInstances.totalUseClaims).toBe(0);
-    expect(runtime.prisoners.coldState.getActionTarget(holder)).toBeUndefined();
-
-    // A claim released twice, or released without having been taken, would drive
+    // Nothing in `ActionSystem`'s three release sites consults a capacity, which
+    // is why a dropped capacity can neither leak a claim nor strand one. A
+    // claim released twice, or released without having been taken, would drive
     // the registry-wide counter negative and silently *raise* every room's
     // effective capacity for the rest of the session. Five days of real
-    // scheduling later it is still exactly zero, and both prisoners are still
-    // housed -- so nothing was released out of the residency collection either.
+    // scheduling later -- through every recreation block in them, so the claims
+    // really were taken and released many times over -- it is exactly zero, and
+    // both prisoners are still housed, so nothing was released out of the
+    // residency collection either.
     expect(() => stepTo(runtime, 14_000)).not.toThrow();
     expect(runtime.prisoners.roomInstances.totalUseClaims).toBe(0);
     expect(runtime.prisoners.roomInstances.useOccupancyOf(yardInstanceId)).toBe(0);
     expect(runtime.prisoners.roomInstances.totalOccupancy).toBe(2);
   });
 
-  it('lets the room be used again once an object is placed back in it', () => {
+  it('brings the removed object s own ceiling back when it is placed again', () => {
     const { runtime } = prisonWithYardInUse();
     submit(runtime, 'remove-yard-bed', packCommand({ type: 'RemoveObject', ...YARD_BED_TILE }));
     stepTo(runtime, 1_180);
-    expect(runtime.prisoners.roomInstances.findAvailableForUse(YARD)).toBeUndefined();
+    expect(runtime.prisoners.roomInstances.findAvailableForUse(YARD, 'sleep-surface')).toBeUndefined();
 
     submit(runtime, 'buy-again', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-2', itemId: 'item.wood-plank', quantity: 1 }));
     submit(runtime, 'bed-yard-2', packCommand({ type: 'PlaceObject', orderId: 'bed-4', definitionId: 'bed-wooden', ...YARD_BED_TILE }));
@@ -492,9 +517,37 @@ describe('a removal that drops capacity below the claims held on a room (ADR 002
     // The capacity comes back from the object and nothing else -- there is no
     // remembered figure to restore, which is what makes the resolver's
     // idempotence the whole of the recovery.
-    expect(runtime.prisoners.roomInstances.getById(yardInstanceId)?.concurrentUseCapacity).toBe(1);
-    expect(runtime.prisoners.roomInstances.findAvailableForUse(YARD)?.instanceId).toBe(yardInstanceId);
+    expect(runtime.prisoners.roomInstances.getById(yardInstanceId)).toMatchObject({
+      concurrentUseCapacity: 1,
+      concurrentUseCapacityByCapability: [['sleep-surface', 1]],
+    });
+    expect(runtime.prisoners.roomInstances.findAvailableForUse(YARD, 'sleep-surface')?.instanceId).toBe(yardInstanceId);
   });
+
+  /*
+   * **Where ADR 0029's over-capacity property went, and why it is not here.**
+   *
+   * This block used to prove it: a claim standing above a ceiling a removal had
+   * dropped, with the door shut behind it. It could do that because the yard's
+   * ceiling summed every object's footprint width, so a *bed* in a yard bounded
+   * `action.yard-recreation` -- which is the defect issue #326 removed, and
+   * which `YARD_BED_TILE`'s comment named as odd before it was known to be
+   * wrong.
+   *
+   * The property is unchanged and still holds. What it lost is its route
+   * through a command: no placeable buildable supplies a capability any
+   * `room-catalog-id` action asks for. `bed-wooden` gives `'sleep-surface'` and
+   * `toilet-brick` gives `'sanitation'`, and `action.sleep` and
+   * `action.use-toilet` both target `own-accommodation`, which re-checks neither
+   * gate. So until ADR 0028 phase 4 makes a dining table placeable there is no
+   * bounded, command-reachable concurrent-use room to drop a ceiling under.
+   *
+   * It is proven over the real `ActionSystem` in
+   * `tests/unit/prisoners-concurrent-room-use.test.ts` -- "a ceiling lowered
+   * under a standing claim closes the door without evicting anybody" -- and this
+   * comment is here so the move is a recorded relocation rather than a deletion
+   * somebody has to find.
+   */
 });
 
 describe('a removal is deterministic and survives a save', () => {

@@ -1027,3 +1027,211 @@ applies: a door is not placed through `PlaceObject` and never was refused by it.
 The question itself is unchanged and still open —
 `ObjectPlacementService.place` refuses `outside-room`, and its own header states
 the reasoning so it can be overruled.
+
+---
+
+## Amendment, 2026-08-26: the concurrent-use ceiling is scoped to the capability being asked for
+
+*This changes **one rule decision 2 states verbatim** and nothing else. Decisions
+1 and 3 through 8 and the phase order stay approved as written; decision 2's
+`objects(R)`, `capabilities(R)` and `residentCapacity(R)` lines, its
+orientation-blindness, its event-driven resolver and its "nobody is evicted"
+answer are all untouched. What is replaced is the single line
+`concurrentUse(R) = Σ over objects(R) of catalogue(objectId).footprint.width`.
+An amendment is the form the ADR 0007 amendment and this ADR's own `door-wooden`
+amendment established: the record of what was decided stays as accepted, and
+what the tree does instead is recorded beside it.*
+
+*Issue #326. The amendment above already named this as "an open defect, tracked
+separately"; this is the entry that closes it.*
+
+### The rule, restated
+
+For a room instance `R` with catalogue definition `D`, replacing decision 2's
+`concurrentUse(R)`:
+
+```
+concurrentUse(R, c) = Σ over objects(R) whose capabilities include `c`
+                      of catalogue(objectId).footprint.width
+concurrentUse(R, -) = unbounded      -- an action that names no capability
+```
+
+`findAvailableForUse(roomCatalogId, c)` and `claimUse(instanceId, entityId, c)`
+both gate on `concurrentUse(R, c)`, and the headcount they compare against it
+counts only the claims taken against `c`.
+
+**Everything decision 2 defends is preserved.** No number is authored anywhere —
+every figure is still read off a `footprint` in `src/content/object-catalog.ts`.
+It is still orientation-blind, still event-driven through `updateDerived` at the
+same three moments, and still recomputed at restore rather than persisted. What
+changes is only *which* footprints are summed for *which* question.
+
+### What was measured
+
+The defect: `deriveRoomCapacity` summed `footprint.width` over **every**
+recognised object for the one concurrent-use number, while only
+`residentCapacity` filtered on a capability. `findAvailableForUse` then checked
+two things that did not match each other — the capability had to be present
+*somewhere* in the room, and the headcount was compared against that all-objects
+total. A capability-specific question answered against a capability-blind
+ceiling. One scalar cannot bound two actions that consume different objects.
+
+Measured on `main` at **9d0a125, v0.0.73**, driving the real
+`zone → resolveInstance → findAvailableForUse/claimUse` path — after the
+`door-wooden` amendment landed, so these are the numbers as they stand and not
+as they stood when #326 was filed:
+
+| room and contents | `concurrentUseCapacity` | admitted |
+| --- | --- | --- |
+| canteen, 2 dining tables + 4 benches, asked for `'dining'` | 14 | 14 |
+| the same canteen plus 4 toilets and a storage rack, asked for `'dining'` | 19 | **19** |
+| empty 8×8 yard, no capability asked | 0 | **0** |
+| 8×8 yard, one toilet | 1 | 1 |
+| 8×8 yard, one loading-dock door | 3 | **3** |
+| 8×8 yard, four benches | 8 | 8 |
+
+So nineteen diners sat in a canteen whose tables and benches seat fourteen, and
+a three-tile delivery door granted three prisoners outdoor exercise while
+sixty-four tiles of open ground granted none.
+
+### The floor-space counter-argument was looked for, and the repository argues the other way
+
+The strongest case for the old rule is that a capability-blind ceiling is a
+deliberate floor-space abstraction: a room holds N bodies whatever the furniture.
+An argument from the absence of that claim would be weak, so it was searched for
+across `docs/`, `src/` and `tests/`. It is not there — and two things stronger
+than an absence are:
+
+1. **The research memo this ADR rests on considered floor space and rejected
+   it.** `docs/research/2026-08-25-room-occupancy.md` §*Option 4 — Decide
+   capacity from floor space*: "it makes a bare patch of floor into
+   accommodation, which is the least believable of the four". The one place the
+   position is written down is the place it is turned down.
+2. **The memo's own reading of `NumSlots` is per-object and per-use.** It
+   describes the field as "a **usage/footprint slot count**: how many actors can
+   stand at the thing at once", and warns that "an implementation that grepped
+   for it and wired it into a capacity field would be putting a footprint number
+   in an occupancy field". Slots belong to the object and to the use, which is
+   what capability scoping restores. Summing them into one room ceiling is a
+   step the memo never took: its recommendation was *per room category* — sleep
+   surfaces for `category: 'housing'`, all required objects for every other
+   category — and that is coherent while a room has one purpose and one scalar.
+   It stopped being coherent the moment `findAvailableForUse` took a capability
+   argument, and the "every" is a vestige of the per-category rule rather than an
+   abstraction anybody argued for.
+
+Note what is *not* claimed here. #326 also reports that the memo's "`NumSlots`
+equals the object's tile length in every row" is false of the shipped
+`materials.txt` (`RiotVan` 2×5 → 6, `VisitorTable` 3×2 → 4). That file is not in
+this tree and the claim was not re-verified, so nothing above rests on it; the
+argument stands on the memo's own characterisation of the field, which is in the
+tree.
+
+### The correction to #326's arithmetic, and to this ADR's worked example
+
+**#326 says the repair leaves the canteen seating 14. It does not: it seats 6.**
+Decision 2's worked example — "a canteen with 2 dining tables and 4 benches
+seats `2×3 + 4×2 = 14`" — is arithmetic under the all-objects rule.
+`object.dining-table` declares `['dining']`; `object.bench` declares
+`['seating', 'recreation']` and **not** `'dining'`. `action.eat-meal` requires
+`'dining'`. So the capability-scoped dining ceiling of that canteen is
+`2×3 = 6`, and the change to it is 19 → 6, not 19 → 14.
+
+That is stated rather than engineered away. Adding `'dining'` to
+`object.bench`'s capabilities would reproduce 14 exactly, and `room.canteen`'s
+own requirement block — which requires *both* two dining tables and four benches
+— is a real argument that a canteen's benches are where people sit to eat.
+**This amendment does not make that change**, for two reasons: it is a content
+and balance decision rather than an architectural one, and altering a catalogue
+row so that a number comes out the way a prior document said it would is the
+inverse of deriving the number. The question is named here and left open, and one
+line in `src/content/object-catalog.ts` settles it either way whenever it is
+answered. Until then the ADR's "14" survives as what
+`RoomInstance.concurrentUseCapacity` still reports, which is a statement about
+object footprints and not about diners.
+
+### The yard stops being an exemption and becomes a derivation
+
+An action that names no capability consumes no object, so a rule that sums object
+footprints has **no domain** for it — and the honest reading of an undefined
+ceiling is "this rule does not bound it", not "it bounds it at zero". Zero is
+what the old rule said, and `room.yard` is what it said it about: the only room
+type in `src/content/room-catalog.ts` that requires no object at all, and
+therefore the only genuinely unbounded room. Nothing is authored to make that
+true; it falls out.
+
+Two other `room-catalog-id` actions named no capability and were **not**
+unbounded rooms at all, so leaving them unnamed would have handed them the
+yard's answer by accident:
+
+- `action.common-room-recreation` now requires `'recreation'`. `room.common-room`
+  requires two `object.bench`, and a bench already carries `'recreation'`.
+- `action.classroom-education` now requires `'education'`. `room.classroom`
+  requires one `object.bookshelf`, which already carries `'education'`.
+
+Both capabilities existed on the objects the rooms already require; the actions
+simply did not name them. That is content, and it is the whole of the content in
+this change.
+
+### `concurrentUseCapacity` survives as a total, and is nothing's ceiling
+
+`RoomInstance` keeps the scalar and its arithmetic is unchanged, so no figure any
+test asserts about it moves. **What changed is that no admission gate reads it.**
+It is the summed footprint width of everything standing in a room: true about
+objects, false about people — 14 for a canteen that seats 6, and 19 for that
+canteen plus four toilets.
+
+It is kept rather than deleted for one honest reason and one practical one. The
+honest one: decision 2's own §*A room whose objects are removed while occupied*
+and phase 5's owed Rooms-tab readout both want to say something about how much
+furniture stands in a room, and this is that number. The practical one: it is the
+field ~25 test files register instances with, and removing it would have churned
+all of them, including files a concurrent change owns.
+
+That leaves a real hazard, named here so it is not discovered: **projecting this
+number as "how many can use this room at once" puts #326 back on screen.** The
+declaration in `room-instance-registry.ts` says so at the field, and
+`objects-room-capacity.test.ts` pins that no gate reads it — a room whose total
+is 19 and whose dining ceiling is 6 admits 6.
+
+### What this costs
+
+- **`claimUse` and `reinstateUseClaim` take a capability, and a claim records
+  what it consumes.** Not optional: a canteen's fourteenth diner and its first
+  toilet user are different seats, and one pooled count against one pooled
+  ceiling would refuse the toilet because lunch was busy. `useOccupancyOf` gains
+  an optional capability and counts only matching claims; without one it still
+  counts every claim, which is `claimCountOf`'s question and no ceiling's.
+- **The claim collection is a `Map<EntityId, capability>` rather than a `Set`.**
+  Its scoped count is a linear walk of the actors performing in one room, which
+  that room's own ceiling bounds. `tests/determinism/canonical-iteration-contract.test.ts`
+  carries the exemption: a count is commutative, and which entity gets which
+  seat is decided by the caller's ascending entity-index scan, not by this walk.
+- **`RoomInstance.concurrentUseCapacityByCapability` is optional and
+  `RoomDerivedCapacity`'s is required.** Every production path resolves an
+  instance before any gate is asked — `zone` inside the same command dispatch,
+  a restore through `resolveAll` — so a live instance always carries the
+  breakdown. Absent means "nobody has resolved this instance's objects", which is
+  a hand-built fixture, and such an instance has only its total to offer, so the
+  pre-amendment rule applies to it. That fallback is the one place the old
+  behaviour survives, it is stated at `concurrentUseCapacityFor`, and no command
+  can reach it.
+- **ADR 0029's over-capacity property loses its integration-level route, and
+  keeps its proof.** `tests/integration/object-removal-loop.test.ts` demonstrated
+  "a claim stands above a dropped ceiling and nobody new gets in" by putting a
+  *bed* in a yard — legal only because the ceiling was capability-blind, as that
+  fixture's own comment said. No placeable buildable supplies a capability any
+  `room-catalog-id` action asks for (`bed-wooden` gives `'sleep-surface'`,
+  `toilet-brick` gives `'sanitation'`, and both of those actions target
+  `own-accommodation`), so until phase 4 makes a dining table placeable the
+  property is not reachable through a command. It is proven in
+  `tests/unit/prisoners-concurrent-room-use.test.ts` instead, over the real
+  `ActionSystem`, and the integration file records where it went.
+
+### What this does not change
+
+`residentCapacity`, `objectCapabilities`, the persistence format (no capacity has
+been persisted since decision 6), the resolver's three moments, orientation
+blindness, and "nobody is evicted; occupancy above capacity is a legal, named
+state". Open questions 1 through 7 are all still open, including 5 as the
+`door-wooden` amendment left it.

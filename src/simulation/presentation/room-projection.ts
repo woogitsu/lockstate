@@ -112,7 +112,15 @@ export interface RoomOccupancyViewModel {
    * is the one occupancy is a share of -- `current` counts the prisoners
    * `IntakeSystem` housed, and `free`/`utilization` are statements about
    * housing. Projecting `concurrentUseCapacity` here instead would make a
-   * canteen that seats fourteen read as a dormitory for fourteen.
+   * canteen read as a dormitory for its furniture.
+   *
+   * **And that field is the wrong one to project anywhere**, not merely here
+   * (issue #326). It is the summed footprint width of *every* object in the
+   * room and no gate reads it: ADR 0028's worked canteen reports 14 there and
+   * seats 6 diners, and the same canteen holding four toilets reports 19. The
+   * ceiling is per capability, in `concurrentUseCapacityByCapability`, so a
+   * concurrent-use readout is a readout of that -- one number per thing the
+   * room can be used for, not one number for the room.
    *
    * The concurrent-use figure is **not projected at all yet**, and that is a
    * gap rather than a decision: it is the Rooms tab readout ADR 0028 phase 5

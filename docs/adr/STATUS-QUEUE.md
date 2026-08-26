@@ -343,7 +343,20 @@ audited in one direction.
   `door-wooden` builds a real door. It could not be an object placement — a door
   is a fact about a tile edge — so it is edge geometry plus a `DoorRegistry`
   row, it contributes nothing to either derived capacity, and 0028 carries an
-  amendment saying so. Nothing about the eight decisions moved with it.
+  amendment saying so. Nothing about the eight decisions moved with it. A
+  **second** amendment (#326) does move one rule inside decision 2: the
+  concurrent-use ceiling is now scoped to the capability being asked for, rather
+  than summing `footprint.width` over every object in the room. Measured before
+  the change at `9d0a125`, on the real gate: a canteen holding four toilets and a
+  storage rack admitted 19 diners to tables that seat 6, and an empty 8x8 yard
+  admitted nobody while the same yard holding one loading-dock door admitted
+  three. Decision 2's other lines, the other seven decisions and the phase order
+  are untouched, and the amendment corrects that ADR's own worked example --
+  under capability scoping its canteen seats 6, because `object.bench` declares
+  `'seating'` and `'recreation'` and not `'dining'`. The empty zoned room above
+  still derives zero for every capability, so ADR 0027's tripwire below is
+  unaffected: what changed is that an action naming **no** capability now has no
+  object-derived ceiling at all, which is `room.yard` and nothing else.
 - **ADR 0027's subject is unreachable, so its effects are not observable.** New
   as of this commit and the reason its status line is qualified. The rating seam
   that was approved is live, and it is inert: a zoned room with nothing placed in

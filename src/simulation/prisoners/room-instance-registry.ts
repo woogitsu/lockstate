@@ -82,16 +82,55 @@ export interface RoomInstance {
   readonly height?: number;
   /** How many prisoners may *live* here. Derived: the summed footprint width of the sleep surfaces standing inside the rectangle. */
   readonly residentCapacity: number;
-  /** How many actors may *use* the room at once. Derived: the summed footprint width of every object standing inside the rectangle. */
+  /**
+   * The summed footprint width of **every** object standing inside the
+   * rectangle. Derived, and **not a ceiling on anything**.
+   *
+   * It was the concurrent-use gate until issue #326, and comparing a
+   * capability-specific admission against this capability-blind total is the
+   * defect that gate had: ADR 0028's worked canteen reads 14 here and seats 6
+   * diners, and the same canteen holding four toilets reads 19. The ceiling
+   * lives in `concurrentUseCapacityByCapability` below; this number survives
+   * only as a true statement about objects, and a reader that projects it as
+   * "how many can use this room at once" reintroduces #326 on screen.
+   */
   readonly concurrentUseCapacity: number;
+  /**
+   * How many actors may use the room at once **for each thing it can be used
+   * for**: capability, then the summed footprint width of the objects inside
+   * the rectangle carrying that capability. Ascending by capability, so the
+   * list has one order rather than an insertion order.
+   *
+   * The ceiling `findAvailableForUse` and `claimUse` gate against, through
+   * `concurrentUseCapacityFor`. Its keys are exactly `objectCapabilities` --
+   * both come from one walk in `deriveRoomCapacity`, so they cannot disagree.
+   *
+   * **Optional, and the fallback is stated rather than implied.** Every
+   * production path registers an instance with zeroes and then writes this
+   * through `updateDerived` (`RoomZoningService.zone` inside the same command
+   * dispatch, `restoreSimulationRuntime` via `resolveAll`), so a live instance
+   * always carries it. Absent means "nobody has resolved this instance's
+   * objects" -- a hand-built fixture -- and the only number such an instance
+   * has to offer is `concurrentUseCapacity`, so that is what bounds it, for the
+   * capabilities it claims to have. See `concurrentUseCapacityFor`.
+   */
+  readonly concurrentUseCapacityByCapability?: readonly (readonly [string, number])[];
   /** The union of the capabilities of the objects inside the rectangle, deduplicated, ascending by code unit. Derived. */
   readonly objectCapabilities: readonly string[];
 }
 
-/** The three fields `RoomCapacityResolver` computes and `updateDerived` writes. */
+/**
+ * The four fields `RoomCapacityResolver` computes and `updateDerived` writes.
+ *
+ * `concurrentUseCapacityByCapability` is **required** here and optional on
+ * `RoomInstance`, deliberately: a resolver that computed a breakdown and
+ * declined to write it would be the only way a resolved instance could end up
+ * without one, and there is no reason for it.
+ */
 export interface RoomDerivedCapacity {
   readonly residentCapacity: number;
   readonly concurrentUseCapacity: number;
+  readonly concurrentUseCapacityByCapability: readonly (readonly [string, number])[];
   readonly objectCapabilities: readonly string[];
 }
 
@@ -109,7 +148,7 @@ export class RoomInstanceRegistry {
    * rebuilt at restore rather than written down; `getSnapshot` therefore still
    * emits residency only and the save format does not move.
    */
-  private readonly useClaims = new Map<string, Set<EntityId>>();
+  private readonly useClaims = new Map<string, Map<EntityId, string | undefined>>();
   /** Grouped by room-catalog id so `allByRoomCatalogId`/`findAvailable*` never scan instances of other room types. */
   private readonly instancesByRoomCatalogId = new Map<string, RoomInstance[]>();
   /** Lazily rebuilt, sorted-by-instanceId cache per room-catalog id; invalidated only for the affected type on `register`, never on assign/release (those don't change which instances exist). */
@@ -125,7 +164,7 @@ export class RoomInstanceRegistry {
     }
     this.instances.set(instance.instanceId, instance);
     this.occupants.set(instance.instanceId, new Set());
-    this.useClaims.set(instance.instanceId, new Set());
+    this.useClaims.set(instance.instanceId, new Map());
 
     const group = this.instancesByRoomCatalogId.get(instance.roomCatalogId);
     if (group === undefined) this.instancesByRoomCatalogId.set(instance.roomCatalogId, [instance]);
@@ -134,13 +173,13 @@ export class RoomInstanceRegistry {
   }
 
   /**
-   * Writes the three derived fields for one instance, or answers `false` when
+   * Writes the four derived fields for one instance, or answers `false` when
    * there is no such instance.
    *
    * The one mutation an instance admits, and the reason `register` keeps
    * throwing on a duplicate id (ADR 0028 decision 2): re-registering to change
    * a capacity would make "registered once" false and would silently accept a
-   * second instance for the same room. This changes three fields and nothing
+   * second instance for the same room. This changes four fields and nothing
    * else -- not the id, not the catalogue id, not the anchor, not the bounds --
    * so no index that is keyed on any of those can go stale.
    *
@@ -167,6 +206,7 @@ export class RoomInstanceRegistry {
       ...instance,
       residentCapacity: derived.residentCapacity,
       concurrentUseCapacity: derived.concurrentUseCapacity,
+      concurrentUseCapacityByCapability: derived.concurrentUseCapacityByCapability,
       objectCapabilities: [...derived.objectCapabilities],
     };
     this.instances.set(instanceId, next);
@@ -247,9 +287,73 @@ export class RoomInstanceRegistry {
     return this.occupants.get(instanceId)?.size ?? 0;
   }
 
-  /** How many actors are *using* this instance for an action right now. The count `findAvailableForUse` gates against `concurrentUseCapacity`. */
-  public useOccupancyOf(instanceId: string): number {
-    return this.useClaims.get(instanceId)?.size ?? 0;
+  /**
+   * How many actors are *using* this instance for an action right now.
+   *
+   * **With `capability`, only the claims consuming that capability** -- which
+   * is the count `findAvailableForUse` and `claimUse` gate against, because
+   * since issue #326 the ceiling is per capability and so must the headcount
+   * be. Fourteen diners at fourteen dining places must not be the reason the
+   * room's one toilet reads as busy, and one scalar count against one scalar
+   * ceiling made it exactly that.
+   *
+   * **Without `capability`, every claim, whatever it consumes** -- which is
+   * `claimCountOf`'s question ("is anybody holding this instance at all") and
+   * not a question any ceiling is compared against. A claim taken for an action
+   * that names no capability is counted here and bounded by nothing; see
+   * `concurrentUseCapacityFor`.
+   *
+   * A linear walk of the claim map when scoped, rather than a second index per
+   * capability: the map holds one entry per actor *currently performing in this
+   * one room*, which the room's own ceiling bounds, and the alternative is a
+   * nested structure to keep consistent on every claim and release.
+   */
+  public useOccupancyOf(instanceId: string, capability?: string): number {
+    const claims = this.useClaims.get(instanceId);
+    if (claims === undefined) return 0;
+    if (capability === undefined) return claims.size;
+    let matching = 0;
+    for (const held of claims.values()) if (held === capability) matching += 1;
+    return matching;
+  }
+
+  /**
+   * The ceiling on how many actors may use `instance` at once **for the thing
+   * `capability` names**, which is the only form of that question this registry
+   * answers since issue #326.
+   *
+   * Three cases, and the first is the one that turned the yard from an
+   * exemption into a derivation:
+   *
+   * 1. **No capability required: no object-derived ceiling at all.** An action
+   *    that names no capability consumes no object, so a rule that sums object
+   *    footprints has no domain, and the honest reading of an undefined ceiling
+   *    is "this rule does not bound it" rather than "it bounds it at zero".
+   *    Zero is what the previous rule said, and it said it about `room.yard` --
+   *    64 tiles of open ground that admitted nobody, while the same yard
+   *    holding one three-tile delivery door admitted three prisoners for
+   *    outdoor exercise. `room.yard` requires no object in
+   *    `src/content/room-catalog.ts`; it is the only room type that does not,
+   *    and it is therefore the only genuinely unbounded one.
+   * 2. **A resolved instance: the capability's own sum**, or zero when no
+   *    object in the room carries it. Zero here subsumes the separate "is this
+   *    capability present" test `findAvailableForUse` used to make, since a
+   *    capability a room has always sums to at least 1.
+   * 3. **An instance nobody has resolved** -- no breakdown, so the only number
+   *    it has is the all-objects total, applied to the capabilities it claims.
+   *    This is the pre-#326 rule, and it survives *only* here, for fixtures
+   *    that register a capacity by hand instead of placing objects. No
+   *    production path reaches it: `zone` resolves inside the same command
+   *    dispatch and a restore resolves every instance before a tick runs.
+   */
+  public concurrentUseCapacityFor(instance: RoomInstance, capability?: string): number {
+    if (capability === undefined) return Number.POSITIVE_INFINITY;
+    const breakdown = instance.concurrentUseCapacityByCapability;
+    if (breakdown === undefined) {
+      return instance.objectCapabilities.includes(capability) ? instance.concurrentUseCapacity : 0;
+    }
+    for (const [held, capacity] of breakdown) if (held === capability) return capacity;
+    return 0;
   }
 
   /**
@@ -447,13 +551,27 @@ export class RoomInstanceRegistry {
    * **This is an answer, not a reservation.** Nothing is held by asking; the
    * claim is taken by `claimUse` when the actor actually arrives (ADR 0029), so
    * two actors selecting in the same tick can both be answered this instance
-   * and only the first `concurrentUseCapacity` of them will get in.
+   * and only the first `concurrentUseCapacityFor` of them will get in.
+   *
+   * **The ceiling and the headcount are now scoped to the same capability, and
+   * that is issue #326.** They used to be scoped to different things: the
+   * capability had to be present *somewhere* in the room, and the headcount was
+   * compared against the summed footprint width of **every** object in it. So a
+   * canteen answering "yes, there is something to dine on here" then admitted
+   * its toilets' and its storage rack's footprints as diners -- measured at
+   * v0.0.73, ADR 0028's worked canteen plus four toilets and a rack admitted 19
+   * where the tables seat 6. One scalar cannot bound two actions that consume
+   * different objects, and the separate presence test is gone because a
+   * capability no object in the room carries now has a ceiling of zero, which
+   * refuses on the line above.
    */
   public findAvailableForUse(roomCatalogId: string, requiredObjectCapability?: string): RoomInstance | undefined {
     return this.allByRoomCatalogId(roomCatalogId).find((instance) => {
-      if (this.useOccupancyOf(instance.instanceId) >= instance.concurrentUseCapacity) return false;
-      if (requiredObjectCapability !== undefined && !instance.objectCapabilities.includes(requiredObjectCapability)) return false;
-      return true;
+      const ceiling = this.concurrentUseCapacityFor(instance, requiredObjectCapability);
+      // An action naming no capability has no object-derived ceiling, so there
+      // is nothing to count and no reason to walk the claim map for it.
+      if (ceiling === Number.POSITIVE_INFINITY) return true;
+      return this.useOccupancyOf(instance.instanceId, requiredObjectCapability) < ceiling;
     });
   }
 
@@ -564,8 +682,8 @@ export class RoomInstanceRegistry {
   }
 
   /**
-   * Claims a concurrent-use place for `entityId`, or answers `false` when the
-   * instance is already at `concurrentUseCapacity`.
+   * Claims a concurrent-use place for `entityId` **against `capability`**, or
+   * answers `false` when the instance is already at that capability's ceiling.
    *
    * The mirror of `assign` for the other kind of claim (ADR 0029): same throw
    * on an unknown id, same idempotent add, same "answers `false` rather than
@@ -579,14 +697,34 @@ export class RoomInstanceRegistry {
    * `false` is not an error: it is the answer "somebody else took the last
    * seat", and the fairness rule that decides who did is the caller's ascending
    * entity-index scan.
+   *
+   * **The claim records what it consumes, and the ceiling is that thing's**
+   * (issue #326). Gating here on an all-objects total was the second half of
+   * that defect and the half that mattered, because this is the point ADR 0029
+   * calls "what makes the ceiling true rather than advisory": a canteen's
+   * fourteenth diner and its first toilet user are two different seats, and one
+   * pooled count against one pooled ceiling could neither admit the nineteenth
+   * diner honestly nor let the toilet be used while lunch was on.
+   *
+   * A claim for an action naming no capability is stored with `undefined` and
+   * bounded by nothing -- see `concurrentUseCapacityFor` case 1. It is still
+   * recorded, because `releaseUse`, `claimCountOf` and `totalUseClaims` all
+   * need to know the actor is in there.
    */
-  public claimUse(instanceId: string, entityId: EntityId): boolean {
+  public claimUse(instanceId: string, entityId: EntityId, capability?: string): boolean {
     const instance = this.instances.get(instanceId);
     const claims = this.useClaims.get(instanceId);
     if (instance === undefined || claims === undefined) throw new RangeError(`Unknown room instance id "${instanceId}".`);
-    if (claims.size >= instance.concurrentUseCapacity) return false;
+    // Idempotent for a claim this entity already holds against this same
+    // capability, which is what `Set.add` gave for free before the capability
+    // was recorded. Without it, re-claiming would compare a count that already
+    // includes this entity against the ceiling and refuse a seat its own holder
+    // is sitting in.
+    if (claims.has(entityId) && claims.get(entityId) === capability) return true;
+    const ceiling = this.concurrentUseCapacityFor(instance, capability);
+    if (this.useOccupancyOf(instanceId, capability) >= ceiling) return false;
     const before = claims.size;
-    claims.add(entityId);
+    claims.set(entityId, capability);
     this.useClaimCount += claims.size - before;
     return true;
   }
@@ -607,8 +745,9 @@ export class RoomInstanceRegistry {
   }
 
   /**
-   * Reinstates a use claim that already existed, ignoring
-   * `concurrentUseCapacity`. Answers `false` when there is no such instance.
+   * Reinstates a use claim that already existed, against the capability it was
+   * granted for and ignoring that capability's ceiling. Answers `false` when
+   * there is no such instance.
    *
    * The restore path's method, and the one place the ceiling is deliberately
    * not applied. A claim being rebuilt was granted once already, under whatever
@@ -621,11 +760,11 @@ export class RoomInstanceRegistry {
    * failure mode this whole change exists to remove, so the restore path
    * reproduces the count exactly and lets it be above the ceiling.
    */
-  public reinstateUseClaim(instanceId: string, entityId: EntityId): boolean {
+  public reinstateUseClaim(instanceId: string, entityId: EntityId, capability?: string): boolean {
     const claims = this.useClaims.get(instanceId);
     if (claims === undefined) return false;
     const before = claims.size;
-    claims.add(entityId);
+    claims.set(entityId, capability);
     this.useClaimCount += claims.size - before;
     return true;
   }

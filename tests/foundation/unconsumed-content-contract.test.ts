@@ -124,7 +124,6 @@ const AWAITING_CONSUMER: Readonly<Record<string, string>> = {
   'object.prep-counter': "Required by a room definition; no code places or reads it.",
   'object.security-console': "Required by a room definition; no code places or reads it.",
   'object.shower-head': "Required by a room definition; no code places or reads it.",
-  'object.storage-rack': "Required by a room definition; no code places or reads it.",
   'object.stove': "Required by a room definition; no code places or reads it.",
   'object.utility-panel': "Required by a room definition; no code places or reads it.",
   'object.washing-machine': "Required by a room definition; no code places or reads it.",
@@ -263,6 +262,15 @@ describe('every unconsumed content id is accounted for', () => {
       declared: declaredIds.length,
       unconsumedBySrcAndTests: unconsumedIds.length,
       unconsumedBySrcOnly: unconsumedBySrcOnly.length,
+      // 30, not 31: `object.storage-rack` gained a test consumer in
+      // `tests/unit/objects-room-capacity.test.ts` and `tests/unit/prisoners-room-instance-registry.test.ts`,
+      // which stand one in a canteen alongside four toilets -- the clutter issue
+      // #326 measured admitting diners. Its entry is removed from the list above
+      // rather than kept with a new reason, which is what this file's stale-entry
+      // gate asks for. `unconsumedBySrcOnly` did not move: no `src/` file names
+      // the rack, and a capability-scoped ceiling reads capabilities rather than
+      // object ids.
+      //
       // 31, not 33: `object.bench` and `object.dining-table` gained one in
       // `tests/helpers/determinism-scenario.ts`, which places both so a yard and
       // a canteen have a derived concurrent-use capacity (see their note in the
@@ -272,7 +280,7 @@ describe('every unconsumed content id is accounted for', () => {
       // generically and names no room id, so nothing moved in `src/` -- and the
       // 53 -> 52 below is ADR 0025's alone, for the reason above. The two
       // measures moved on different changes and each is stated where it moved.
-    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 31, unconsumedBySrcOnly: 49 });
+    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 30, unconsumedBySrcOnly: 49 });
   });
 
   it('scans a non-trivial catalog and a non-trivial consumer set, so this cannot pass vacuously', () => {
