@@ -1418,17 +1418,23 @@ load. With the floor the same load leaves the oldest generation in place, and
 a build that can restore it loads the prison again
 (`tests/integration/session-restore-failure.test.ts`, "never the last copy").
 
-It costs nothing a player can see. A prison with one unrestorable generation
-and a prison with none give the same answer — `loadCurrent` reports
-`no-valid-generation`, the row stays in the prison list, `delete()` still
-clears the slot and its generations — so the only difference is whether the
-bytes still exist. Retrying the retained generation on every load costs one
-refused restore, which is the price of not deleting a save that a fixed build,
-or `exportSave`, can still read.
+It costs the player nothing but a refused load. A prison whose only generation
+cannot be restored and a prison with an empty window both answer
+`no-valid-generation` from `SessionController.loadPrison` — `loadCurrent` still
+returns the retained envelope, which is the whole point of keeping it — the row
+stays in the prison list, and `delete()` still clears the slot and its
+generations. The row's generation count is the one visible difference, and it
+correctly says the save is still there. Retrying the retained generation on
+every load costs one refused restore, which is the price of not deleting a save
+that a fixed build can still read. The bytes are reachable through
+`exportSave`, but the panel's Export is session-scoped (`exportActive` runs
+against the active session) and a prison that will not load never becomes the
+active session — so the retained save is preserved for a later build, not for
+the player today.
 
 It also aligns demotion with the decode path, which has always had this floor
 implicitly: `recoverToGeneration` deletes confirmed-corrupt generations **only
-after** a later one has validated, and when nothing in the window validates
+after** an older one has validated, and when nothing in the window validates
 `loadCurrent` deletes nothing at all. Demotion was the one path here that
 could empty a window.
 

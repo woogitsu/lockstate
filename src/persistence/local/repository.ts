@@ -61,11 +61,13 @@ export type SaveImportResult =
  *
  * `'last-generation-retained'` is the floor that stops it: the last retained
  * generation is never deleted, however confidently it has been refused. It
- * costs nothing a player can see -- a prison with one unrestorable generation
- * and a prison with none both answer `no-valid-generation` (`loadCurrent`),
- * both keep their row in the prison list, and `delete()` still clears either
- * one -- and it is the difference between a save that a fixed build can still
- * open and a save that no longer exists.
+ * costs the player nothing but a refused load -- a prison whose only
+ * generation cannot be restored and a prison with an empty window both answer
+ * `no-valid-generation` from `SessionController.loadPrison` (`loadCurrent`
+ * still returns the retained envelope, which is the point), both keep their
+ * row in the prison list, and `delete()` still clears either one -- and it is
+ * the difference between a save that a fixed build can still open and a save
+ * that no longer exists.
  *
  * `'not-retained'` is the pre-existing no-op: an unknown prison, or a
  * generation already outside the retained window. It is reported rather than
