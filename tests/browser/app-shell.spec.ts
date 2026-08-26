@@ -3656,6 +3656,19 @@ test.describe('the assembled application', () => {
     // per-tick firehose would show up here as hundreds of messages.
     const publishedBeforePlay = (await publications()).length;
     await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
+    // The worker's answer, not the click. `aria-pressed` flips only once the
+    // `set-clock` command has come back accepted, so a command that was
+    // refused or never reached the worker fails *here*, naming the step.
+    // Without it the poll below spends its whole 15s budget and then reports
+    // "the simulation never advanced", which describes the symptom and not
+    // the cause -- exactly how #425 read on CI, where the clock was already
+    // showing a ready session at `0%` and it was the play that never took.
+    // The reliable case above (`the HUD clock ... after the simulation was
+    // started`) has always asserted this; these four did not.
+    await expect(page.locator('.hud-strip__transport [title="Play at normal speed"]')).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
     await expect
       .poll(async () => page.locator('.hud-clock__day-progress').textContent(), {
         message: 'the simulation never advanced, so the quiet counts channel proves nothing',
@@ -3881,6 +3894,19 @@ test.describe('the assembled application', () => {
     // so a paused simulation would leave it queued and refuse nothing.
     await page.getByRole('button', { name: 'New prison' }).click();
     await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
+    // The worker's answer, not the click. `aria-pressed` flips only once the
+    // `set-clock` command has come back accepted, so a command that was
+    // refused or never reached the worker fails *here*, naming the step.
+    // Without it the poll below spends its whole 15s budget and then reports
+    // "the simulation never advanced", which describes the symptom and not
+    // the cause -- exactly how #425 read on CI, where the clock was already
+    // showing a ready session at `0%` and it was the play that never took.
+    // The reliable case above (`the HUD clock ... after the simulation was
+    // started`) has always asserted this; these four did not.
+    await expect(page.locator('.hud-strip__transport [title="Play at normal speed"]')).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
     await expect
       .poll(async () => page.locator('.hud-clock__day-progress').textContent(), {
         message: 'the simulation never advanced, so no command could be dispatched',
@@ -4092,6 +4118,19 @@ test.describe('the assembled application', () => {
     // A running clock: the command is dispatched at a tick, so a paused
     // simulation would leave it queued and refuse nothing.
     await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
+    // The worker's answer, not the click. `aria-pressed` flips only once the
+    // `set-clock` command has come back accepted, so a command that was
+    // refused or never reached the worker fails *here*, naming the step.
+    // Without it the poll below spends its whole 15s budget and then reports
+    // "the simulation never advanced", which describes the symptom and not
+    // the cause -- exactly how #425 read on CI, where the clock was already
+    // showing a ready session at `0%` and it was the play that never took.
+    // The reliable case above (`the HUD clock ... after the simulation was
+    // started`) has always asserted this; these four did not.
+    await expect(page.locator('.hud-strip__transport [title="Play at normal speed"]')).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
     await expect
       .poll(async () => page.locator('.hud-clock__day-progress').textContent(), {
         message: 'the simulation never advanced, so no command could be dispatched',
@@ -4176,6 +4215,19 @@ test.describe('the assembled application', () => {
     await openApp(page);
     await page.getByRole('button', { name: 'New prison' }).click();
     await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
+    // The worker's answer, not the click. `aria-pressed` flips only once the
+    // `set-clock` command has come back accepted, so a command that was
+    // refused or never reached the worker fails *here*, naming the step.
+    // Without it the poll below spends its whole 15s budget and then reports
+    // "the simulation never advanced", which describes the symptom and not
+    // the cause -- exactly how #425 read on CI, where the clock was already
+    // showing a ready session at `0%` and it was the play that never took.
+    // The reliable case above (`the HUD clock ... after the simulation was
+    // started`) has always asserted this; these four did not.
+    await expect(page.locator('.hud-strip__transport [title="Play at normal speed"]')).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
     await expect
       .poll(async () => page.locator('.hud-clock__day-progress').textContent(), {
         message: 'the simulation never advanced, so no command could be dispatched',
