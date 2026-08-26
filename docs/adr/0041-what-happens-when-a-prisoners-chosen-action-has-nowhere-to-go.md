@@ -119,6 +119,49 @@ six still get the better meal for ever. It does nothing for `action.shower`,
 `own-accommodation` sibling in `DEFAULT_ACTIONS` at all — those still starve
 under contention, and only B helps them.
 
+> **Amended 2026-08-26, after this was built. Two sentences above are wrong, and
+> the base case is stronger than this document claimed.**
+>
+> **"It does nothing for `action.shower` …" runs two things together.** It is
+> true of the *need*: `action.shower` has no `own-accommodation` sibling and
+> hygiene is still unserved. It is false of the *prisoner*, who stops standing
+> still. Measured in `tests/integration/furnished-cell-loop.test.ts`, the regime's
+> three hygiene blocks used to be spent idle after `action.shower` failed to
+> resolve; under the fallback the prisoner takes `action.use-toilet` instead and
+> **bladder moves 212.6 → 247.8**. The same cause moved four counts in
+> `furnished-prison-loop.test.ts`. Only B fixes the hygiene *need*; the fallback
+> already fixes the wasted cycle.
+>
+> **The starvation is not a contention effect, and this document framed it partly
+> as one.** The first per-action measurement in a cell-only prison — the thing
+> the "what would change my mind" section below said nobody had run — shows a
+> prisoner **entirely alone**, with no contention of any kind and
+> `routeFailures: 0`, eating nothing across 24,000 ticks and sitting at hunger
+> 0.0 for 18,902 of them. Contention was where this was noticed, not what caused
+> it. After the fix the same prisoner performs 1,600 ticks / 40 completions of
+> `action.eat-in-cell` and never falls below hunger 179.5, while the canteen
+> control still shows `eat-in-cell` at 0/0 — a fallback, not a replacement.
+>
+> **One test had pinned the defect as a feature**, which is worth recording
+> because it is the shape this repository keeps finding.
+> `tests/integration/incident-consequence-loop.test.ts` asserted `hardSleep === 0`
+> and called it the mechanic — *"a prisoner on the restricted timetable stops
+> resting"*. It was not the timetable. The high-risk regime allows `meal` for
+> 2,200 of 2,400 ticks a day, so that prisoner selected `action.eat-meal` on
+> essentially every reconsideration, failed, and started nothing at all. Measured
+> after the fix, the direction reverses: reclassified `[973, 1000, 0, 965, 1000,
+> 0]` against clean `[867, 1000, 0, 847, 1000, 0]`.
+>
+> **One commitment is preserved and unguarded, reported rather than claimed.**
+> ADR 0029 decision 7 commitment 4 — a refused claim mutates nothing — is held in
+> the code, but a mutation that violates it deliberately left the whole suite
+> green. The branch is unreachable in the current single-threaded ascending scan:
+> `findAvailableForUse` is consulted two statements earlier and each claim is
+> visible to the next prisoner in the same walk, so a prisoner reaching
+> `claimUseIfNeeded` is never refused — the losers are refused at the *selection*
+> gate instead. It is defence in depth against a case a parallel scan would make
+> reachable, and nothing in the suite would catch its removal.
+
 Its blast radius is real and must be paid deliberately: it moves
 `tests/unit/prisoners-operations-scenario.test.ts`'s fingerprint, and
 `tests/integration/furnished-prison-loop.test.ts:410` **asserts `eat-in-cell` is
@@ -172,12 +215,15 @@ all, so this option no longer describes a defensible position.
 
 ## What would change my mind
 
-- **A measurement showing `eat-in-cell` does execute somewhere today.** My case is
-  four converging readings and one arithmetic fit; I did **not** run a cell-only
-  prison with per-action counters, because the existing probe would not build
-  without a canteen and the fix was not worth the detour. If it does execute, the
-  base-case half of this decision collapses and only the contention half remains,
-  which is B's territory rather than A's.
+- ~~**A measurement showing `eat-in-cell` does execute somewhere today.**~~
+  **Discharged.** This was the document's stated weakest claim: four converging
+  readings and one arithmetic fit, with nobody having run a cell-only prison with
+  per-action counters. It has since been run, at 1, 4 and 24 prisoners over
+  24,000 ticks with no canteen zoned: `action.eat-in-cell` is 0 ticks and 0
+  completions for every prisoner, and `actions ever performed by anybody` is
+  `["action.sleep","action.use-toilet"]`. The claim held, and the single-prisoner
+  case made the base half **stronger** than argued here rather than weaker — see
+  the amendment above.
 - **An owner ruling that a canteen is meant to be a hard requirement**, with
   starvation as a designed pressure. Then A is wrong and the honest fix is a
   readout plus a consequence for `hunger`, and `action.eat-in-cell` should be
