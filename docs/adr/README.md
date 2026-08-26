@@ -36,10 +36,17 @@ normalised judgement. Two heading styles are in use — some ADRs carry a
 above carries `Accepted` in some form, several with a qualifier the ADR itself
 carries.
 
-**Every ADR in this directory is accepted.** Eight decisions were approved on
-2026-08-26: 0031, 0032, 0033, ADR 0007's amendment, then 0034, 0035 and 0036
-within the same few hours, and 0037 the same evening — which is the rate this
-corpus actually moves at.
+**Every ADR in this directory is accepted.** The table above is the count, and
+this paragraph deliberately no longer carries one. It used to read *"Eight
+decisions were approved on 2026-08-26"* and enumerate them; three more were
+approved the same evening — 0038, 0039 and 0040, all under the same delegation —
+which made the sentence wrong again without anything touching it. **A tally in
+prose beside a table that computes the same tally is this corpus's most reliably
+rotting shape**, and it has now rotted here three ways in one day: an ADR
+arriving Proposed, that ADR being accepted, and three more arriving at all. What
+the day is evidence of is unchanged and is the part worth keeping: this corpus
+moves at several decisions an evening, so a sentence that enumerates them is
+stale before it is read.
 
 **This paragraph was corrected twice on 2026-08-26, in opposite directions, and
 both edits are marked rather than overwritten.** 0037 arrived Proposed, which
@@ -157,8 +164,11 @@ Nothing here changes a status; this table only reports them.
 | [0035](./0035-buildable-catalogue-category-filter.md) | Choosing what to build out of twenty-one rows — filtering the catalogue by the categories content already authors | Accepted, 2026-08-26 — by delegation; it narrows #390's claim rather than closing it |
 | [0036](./0036-a-derived-default-security-sector.md) | A default security sector, derived from the world rather than authored | Accepted, 2026-08-26 — by delegation; it answers ADR 0034 decision 9 |
 | [0037](./0037-goods-in-a-carriers-hands-when-a-carry-job-dies.md) | Where goods go when a carry job dies with them in a carrier's hands | Accepted, 2026-08-26 — by delegation; the owner approved *that* someone decide, not the option chosen |
+| [0038](./0038-what-makes-a-save-compatible.md) | What makes a save compatible | Accepted, 2026-08-26 — by delegation; it settles #415 and #412's sentence, and the owner did not read it |
+| [0039](./0039-a-keyboard-route-to-room-zoning.md) | A keyboard route to room zoning | Accepted, 2026-08-26 — by delegation; #411, a route the game is unfinishable without |
+| [0040](./0040-the-shape-of-the-render-delta-channel.md) | The shape of the render delta channel | Accepted, 2026-08-26 — by delegation; it decides the channel and explicitly does **not** decide simulation-side locomotion |
 
-**Next free number: 0038.** 0037 is this table's newest row and **0030 is still
+**Next free number: 0041.** 0040 is this table's newest row and **0030 is still
 held by an unmerged branch** — the incident-response restore change, which
 allocated it in the same hour it was stated free here. It is listed nowhere above
 because nothing is merged under that number yet, which is precisely the gap a
