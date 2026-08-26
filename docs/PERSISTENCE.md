@@ -167,13 +167,32 @@ work are not.**
   persisted; a restored session rebuilds them from the same inputs. The
   pending queue is not a cache but it is not *state* either — it is work in
   flight, owned by a `NavigationSystem` instance that no longer exists after a
-  restore. Every subsystem that holds a request id (`PrisonerOperationsRuntime`,
-  `GuardRoster`, `JobBoard`, `SearchSystem`, `IncidentResponseSystem`) drops it
-  on restore and re-requests on its next scheduled tick, and each of those
+  restore. Four of the five subsystems that hold a request id
+  (`PrisonerOperationsRuntime`, `GuardRoster`, `JobBoard`, `SearchSystem`) drop
+  it on restore and re-request on their next scheduled tick, and each of those
   resets is proven idempotent in `tests/determinism/snapshot-restore-fidelity.test.ts`.
-  The visible cost is a bounded delay, not lost progress; the alternative —
-  persisting request ids into a queue that never received them — leaves actors
-  stuck forever.
+  For those four the visible cost is a bounded delay, not lost progress; the
+  alternative — persisting request ids into a queue that never received them —
+  leaves actors stuck forever.
+
+  **`IncidentResponseSystem` was listed here as a fifth and does not belong,
+  which was measured rather than reasoned (#352).** It cannot re-request: the
+  incident lifecycle is forward-only, so `advanceResponse`'s no-record path can
+  never return to `tryDispatch`, and the incident lapses instead. That much its
+  own docstring states and intends. What the reset also discards is the record
+  `releaseResponse` reads to *return* what the response claimed — and both of
+  those things are persisted, so the loss is permanent rather than delayed. A
+  save taken one tick after a severity-8 dispatch comes back with its four
+  responders still `'on-search'` and its sector still `'lockdown'` (doors still
+  `'locked'`), unchanged 52,000 ticks later, while the continuous run resolves
+  the incident, lifts the lockdown and returns all six guards. `GuardRoster`'s
+  own `unassign` has no reachable caller for an `'on-search'` guard, and there
+  is no dismiss command, so the guards are unrecoverable. `SearchSystem` sets
+  the same phase and does *not* leak, because its active jobs are in the
+  payload and a restored job releases its guards — the difference is only
+  whether the record that owns the release survives the save. Fixing it is
+  either a V6 field or a restore-semantics decision, which is why #352 records
+  it instead of this document asserting the bounded-delay property for it.
 - **Per-system `requestSequence` counters** (`SearchSystem`,
   `DeploymentSystem`, `PatrolSystem`, `ActionSystem`). These only mint names
   for path requests against the queue above. Since no restored state can
@@ -478,16 +497,34 @@ trade-off to be recorded rather than decided in implementation code.
   A step never receives or returns the caller's original object reference in
   a way that lets it mutate the source fixture.
 
-`saveMigrationChain` registers the V1, V2, V3 and V4 schemas and the `1 -> 2`,
-`2 -> 3` and `3 -> 4` steps. The chain-walking, per-step validation and
-immutability guarantees are also exercised against a synthetic multi-version
-fixture in `tests/unit/persistence-migration.test.ts`, independent of the real
-save versions; the real upgrades are covered in
+`saveMigrationChain` registers the V1, V2, V3, V4 and V5 schemas and the
+`1 -> 2`, `2 -> 3`, `3 -> 4` and `4 -> 5` steps. The chain-walking, per-step
+validation and immutability guarantees are also exercised against a synthetic
+multi-version fixture in `tests/unit/persistence-migration.test.ts`,
+independent of the real save versions; the real upgrades are covered in
 `tests/migrations/save-v1-to-v2.test.ts`,
-`tests/migrations/save-v2-to-v3.test.ts` and
-`tests/migrations/save-v3-to-v4.test.ts`, the last two each walking a frozen
+`tests/migrations/save-v2-to-v3.test.ts`,
+`tests/migrations/save-v3-to-v4.test.ts` and
+`tests/migrations/save-v4-to-v5.test.ts`, the last three each walking a frozen
 V1 fixture the whole way in one decode, which is what a save from the first
 release actually gets.
+
+`tests/migrations/save-v1-to-v5-chain.test.ts` covers the one property those
+per-step files structurally cannot, and it is a lesson about how a migration
+test is written rather than about any one step. Each of them builds its input
+by calling the earlier steps on a fixture, so an assertion like
+`expect(result.value.payload.world).toEqual(v2.payload.world)` has the step
+under suspicion on **both** sides: it proves the later links carry `world` and
+is blind to whatever the first one did to it. Measured, not argued — rewriting
+`migrateSaveEnvelopeV1ToV2`'s `world` line to
+`{ ...payload.world, ownedChunks: [], parcels: [] }`, a schema-valid V2 payload
+in which the prison has lost every owned chunk and every parcel it was ever
+sold, left the whole suite passing; the same edit in `migrateSaveEnvelopeV4ToV5`
+failed three tests. The new file asserts `kernel`, `world`, `construction`, the
+payload key set and the checksum after **every** link, always against the
+checked-in V1 fixture, so a loss is both caught and attributed to a link. The
+rule it stands for: a migration assertion must name a value the migration did
+not produce.
 
 ### Adding a V6 later
 
