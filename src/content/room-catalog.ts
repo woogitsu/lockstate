@@ -213,12 +213,13 @@ export const defaultRoomContentRegistry = defaultRoomCatalog.registry;
  * `defaultRoomContentRegistry` imports this module -- the same arrangement
  * `src/simulation/construction/definition.ts` uses for its
  * buildable-to-object and buildable-to-item checks, which are in the bundle
- * for that reason. Measured cost of running it in production: 26 object
- * requirements across 18 rooms against 20 objects, 0.12-0.18 ms for the
- * first, cold, un-warmed call in each of five fresh processes, and +327 bytes
- * minified / +109 gzipped on `assets/index-*.js` (1,671,678 -> 1,672,005),
- * plus the same again on the simulation worker chunk, which imports this
- * module too (+326 / +95). Free, on any reading of free.
+ * for that reason. Measured cost of running it in production, rather than
+ * assumed: 26 object requirements across 18 rooms against 20 objects,
+ * 0.12-0.18 ms for the first, cold, un-warmed call in each of five fresh
+ * processes, and +327 bytes minified / +108 gzipped on the client chunk, plus
+ * the same again on the simulation worker chunk, which imports this module too
+ * (+326 / +93). Deltas rather than absolute chunk sizes, because those go
+ * stale within a release; the PR for #315 records both against its merge base.
  */
 const defaultCrossReferenceErrors = validateRoomObjectReferences(defaultRoomContentRegistry, defaultObjectRegistry);
 

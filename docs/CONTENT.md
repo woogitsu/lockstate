@@ -74,8 +74,8 @@ the sentence promised it could not.
 Running it in production was measured rather than assumed before it was
 chosen: 26 object requirements across 18 rooms against 20 objects,
 0.12–0.18 ms for the first cold call in each of five fresh processes, and
-+327 bytes minified (+109 gzipped) on the client chunk, with the same again
-on the simulation worker chunk. Two things keep it there:
++327 bytes minified (+108 gzipped) on the client chunk, with the same again
+on the simulation worker chunk (+326 / +93). Two things keep it there:
 `tests/foundation/content-validation-reachability-contract.test.ts` fails if
 the module holding the check stops being reachable from `src/main.ts` or the
 simulation worker entry, and a `vite.config.ts` plugin fails the build if the
