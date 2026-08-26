@@ -5,11 +5,27 @@ import type { RoomCatalogDefinition } from '../../content/room-catalog';
  * than its contents.
  *
  * `RoomRequirementDefinition` is a discriminated union with four members and
- * a room carries a list of them (`src/content/room-catalog.ts`). Two of the
+ * a room carries a list of them (`src/content/room-catalog.ts`). Three of the
  * four are about the rectangle a player drags -- `minimum-size` and the
- * `enclosed`/`outdoors` pair -- and the other two (`object`) are about what
- * stands inside it, which nothing places yet (`docs/HUD_PROJECTIONS.md` gap
- * 13).
+ * `enclosed`/`outdoors` pair -- and the fourth, `object`, is about what stands
+ * inside it.
+ *
+ * **That last clause used to read "which nothing places yet
+ * (`docs/HUD_PROJECTIONS.md` gap 13)", and both halves of it have since
+ * expired.** ADR 0028 phase 1 shipped placement: `ObjectPlacementService`
+ * mints an order, `PlacedObjectRegistry` holds a row per standing object, and
+ * `bed-wooden` and `toilet-brick` are buildables a player can order. The
+ * citation went stale in the same movement -- gap 13's heading now reads
+ * *"Object placement exists, and `minQuantity` is still unchecked"*, so a
+ * reader who followed it landed on a document saying the opposite of the
+ * sentence that sent them there. (The count was wrong too: the union's
+ * `object` arm is one member, not two.)
+ *
+ * What survives, and is the only part this module ever depended on, is that
+ * **`object` requirements are none of its business.** It reads the two
+ * area-shaped kinds and nothing else; who checks the contents, and whether
+ * `minQuantity` is checkable yet, are questions for
+ * `RoomCapacityResolver` and `room-projection.ts`.
  *
  * These live in their own module, and outside `RoomZoningService`, because
  * three layers ask the same question and none of them may re-derive the
