@@ -371,6 +371,18 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.intake.title': 'Intake',
   'hud.intake.admit': 'Admit a prisoner',
   'hud.intake.hint': 'A prisoner can only be admitted into a prison that has a room to hold them.',
+  // Where the arrivals already admitted are. "In intake" rather than "Queue":
+  // the pipeline is what the simulation calls this and the stage named
+  // `queued` is only its first step, so a header saying "queue" would name one
+  // stage while counting four.
+  'hud.intake.pipeline': 'In intake',
+  'hud.intake.pipeline-count': '{waiting} of {total}',
+  'hud.intake.pipeline-stage': '{count} at {stage}',
+  // The terminal stage, in the words that say what a player can do about it:
+  // nothing. `IntakeSystem` reaches it only when the prison holds no room of
+  // any type the arrival's classification may be housed in, and no branch of
+  // the stage machine leaves it again -- so this must not read like a wait.
+  'hud.intake.pipeline-failed': '{count} cannot be housed at all',
 
   // The Staff panel on the Security tab (ADR 0025). `hud.security.hire` names
   // the role and states what the press will spend in one sentence, so the
