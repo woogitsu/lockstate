@@ -131,12 +131,7 @@ const AWAITING_CONSUMER: Readonly<Record<string, string>> = {
   // `object.bed` did not move either list -- three test files already named it,
   // and its new `src/` consumer moves `unconsumedBySrcOnly` instead.
 
-  'object.bookshelf': "Required by a room definition; no code places or reads it.",
-  'object.chair': "Required by a room definition; no code places or reads it.",
-  'object.desk': "Required by a room definition; no code places or reads it.",
 
-  'object.medical-bed': "Required by a room definition; no code places or reads it.",
-  'object.medicine-cabinet': "Required by a room definition; no code places or reads it.",
   'object.security-console': "Required by a room definition; no code places or reads it.",
   'object.utility-panel': "Required by a room definition; no code places or reads it.",
   'object.waste-bin': "Required by a room definition; no code places or reads it.",
@@ -329,7 +324,7 @@ describe('every unconsumed content id is accounted for', () => {
       // generically and names no room id, so nothing moved in `src/` -- and the
       // 53 -> 52 below is ADR 0025's alone, for the reason above. The two
       // measures moved on different changes and each is stated where it moved.
-    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 25, unconsumedBySrcOnly: 42 });
+    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 20, unconsumedBySrcOnly: 37 });
   });
 
   it('scans a non-trivial catalog and a non-trivial consumer set, so this cannot pass vacuously', () => {

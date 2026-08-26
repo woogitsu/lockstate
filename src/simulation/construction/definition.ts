@@ -460,6 +460,84 @@ export const BUILDABLE_REGISTRY = new Map<string, BuildableDefinition>([
     materialsRequired: [{ itemId: 'item.wood-plank', quantity: 2 }],
     placesObjectId: 'object.bench',
   }],
+  /*
+   * Offices, education and medical. Five rows that finish `room.reception`,
+   * `room.staff-room`, `room.classroom` and `room.infirmary`.
+   *
+   * All five are timber, so all five take the plank. Widths 2, 1, 2, 1 and 1.
+   *
+   * **Two capability facts worth having written down**, because both look like
+   * bugs from a distance and neither is one:
+   *
+   *   - `object.desk` carries `'workstation'` and so does
+   *     `object.security-console`. `requirementStatus` asks whether *every*
+   *     capability of the required object is present in the room, so a security
+   *     console standing in a reception satisfies its **desk** requirement
+   *     (`'workstation'` is there) while a desk standing in a security office
+   *     does **not** satisfy its console requirement (`'surveillance'` is not).
+   *     The asymmetry is the containment rule doing its job, not an accident of
+   *     these rows.
+   *   - `object.medical-bed` carries `'sleep-surface'` *and*
+   *     `'medical-treatment'`, so a plain `object.bed` cannot satisfy an
+   *     infirmary's requirement, while a medical bed can satisfy a cell's. That
+   *     also means a medical bed adds to `residentCapacity` wherever it stands,
+   *     which is correct -- it is a bed -- and is why an infirmary derives a
+   *     residency it has no intake route to use.
+   *
+   * `object.medical-bed` is `1x2` like `object.bed`, so the rule gives it the
+   * same one plank and 30 work. A medical bed costing exactly what an ordinary
+   * bed costs is a balance statement and #29's to make; the rule reads size and
+   * a medical bed is the same size.
+   */
+  ['desk-wooden', {
+    id: 'desk-wooden',
+    category: 'object',
+    name: 'Desk',
+    workRequired: 60,
+    materialsRequired: [{ itemId: 'item.wood-plank', quantity: 2 }],
+    placesObjectId: 'object.desk',
+  }],
+  /*
+   * The cheapest and quickest row in the registry, and the one required in the
+   * largest quantity: `room.classroom` wants four and `room.reception` and
+   * `room.staff-room` two each. `minQuantity` is still not checked anywhere
+   * (`docs/HUD_PROJECTIONS.md` gap 13), so one chair satisfies all three
+   * requirements today -- ADR 0028 phase 4 notes that decision 1 makes the
+   * check *possible* for the first time, and building it is a mechanism rather
+   * than a row, so it is not in this phase.
+   */
+  ['chair-wooden', {
+    id: 'chair-wooden',
+    category: 'object',
+    name: 'Chair',
+    workRequired: 30,
+    materialsRequired: [{ itemId: 'item.wood-plank', quantity: 1 }],
+    placesObjectId: 'object.chair',
+  }],
+  ['bookshelf-wooden', {
+    id: 'bookshelf-wooden',
+    category: 'object',
+    name: 'Bookshelf',
+    workRequired: 60,
+    materialsRequired: [{ itemId: 'item.wood-plank', quantity: 2 }],
+    placesObjectId: 'object.bookshelf',
+  }],
+  ['medical-bed-wooden', {
+    id: 'medical-bed-wooden',
+    category: 'object',
+    name: 'Medical Bed',
+    workRequired: 30,
+    materialsRequired: [{ itemId: 'item.wood-plank', quantity: 1 }],
+    placesObjectId: 'object.medical-bed',
+  }],
+  ['medicine-cabinet-wooden', {
+    id: 'medicine-cabinet-wooden',
+    category: 'object',
+    name: 'Medicine Cabinet',
+    workRequired: 30,
+    materialsRequired: [{ itemId: 'item.wood-plank', quantity: 1 }],
+    placesObjectId: 'object.medicine-cabinet',
+  }],
 ]);
 
 export type BuildableItemReferenceError = {
