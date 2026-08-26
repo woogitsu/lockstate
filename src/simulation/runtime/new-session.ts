@@ -17,6 +17,7 @@ import {
   DoorConstructionService,
 } from '../construction';
 import {
+  DEFAULT_INCIDENT_RESPONSE_POLICY,
   GangRegistry,
   IncidentLog,
   IncidentResponseSystem,
@@ -501,7 +502,23 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   };
 
   const incidentTriggerSystem = new IncidentTriggerSystem(incidents, sectorRisk, gangs, incidentSectorIds, sampleSectorRisk, resolveSectorOccupants);
-  const incidentResponseSystem = new IncidentResponseSystem(incidents, securitySectors, securityGuards, navigation);
+  // The policy and the route-context resolver are the constructor's own
+  // defaults, restated (and skipped) only so the seventh argument can be
+  // supplied: the live view of which guards `SearchSystem` is holding on the
+  // shared `'on-search'` phase, which is what lets a restored session hand
+  // back the responders a save interrupted without disturbing a search job
+  // (issue #352). `undefined` takes the emergency-override resolver the
+  // constructor documents at length; naming it here would copy that default
+  // into a second place.
+  const incidentResponseSystem = new IncidentResponseSystem(
+    incidents,
+    securitySectors,
+    securityGuards,
+    navigation,
+    DEFAULT_INCIDENT_RESPONSE_POLICY,
+    undefined,
+    () => searchSystem.claimedGuardIds(),
+  );
 
   kernel.registerSystem(construction);
   kernel.registerSystem(procurement);

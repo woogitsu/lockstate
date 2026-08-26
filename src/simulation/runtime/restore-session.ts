@@ -119,8 +119,16 @@ export interface RestoredScopeEntry {
  * - Navigation's route/flow-field caches and its pending path-request queue
  *   belong to a `NavigationSystem` instance a restored session rebuilds; the
  *   subsystems that referenced one (prisoners mid-travel, guards mid-leg,
- *   carry jobs, search legs, incident responses) each reset that reference on
- *   restore, idempotently, and re-request on their next scheduled tick.
+ *   carry jobs, search legs) each reset that reference on restore,
+ *   idempotently, and re-request on their next scheduled tick.
+ *
+ *   **`IncidentResponseSystem` used to be named in that list and does not
+ *   belong** (#352, ADR 0033): it cannot re-request, because the incident
+ *   lifecycle is forward-only and it holds no record to re-request against.
+ *   What a restored session does instead is *release* the claim the interrupted
+ *   response was holding -- the responders and the sector lockdown, both of
+ *   which the payload carries -- on its first scheduled update. See
+ *   `IncidentResponseSystem.releaseOrphanedClaims`.
  *
  * `docs/PERSISTENCE.md` records the reason for every exclusion.
  * `restoreSimulationRuntime` returns this summary so a caller -- and the

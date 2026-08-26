@@ -33,20 +33,20 @@ change to settle it. It changes no status either.
 The `Status` column reproduces what each ADR's own document says, not a
 normalised judgement. Two heading styles are in use — some ADRs carry a
 `- Status:` bullet and others a `## Status` section — and every ADR in the table
-above except the two newest is now `Accepted` in some form, several with a
+above except the newest is now `Accepted` in some form, several with a
 qualifier the ADR itself carries.
 
-**Every ADR in this directory is accepted.** 0031 and 0032 were both approved on
-2026-08-26 — 0031 with a condition, not plainly: its open question 4 is promoted
-to blocking, because ADR 0028 phase 4 took `BUILDABLE_REGISTRY` from four rows to
-twenty-one and the price its decision 3 pays is now several times what the
-document argues for. Read 0031's Status before treating its catalogue trade as
-settled.
+**Exactly one ADR in this directory is awaiting the owner's approval: 0033.**
+0031 and 0032 were both approved on 2026-08-26 — 0031 with a condition, not
+plainly: its open question 4 is promoted to blocking, because ADR 0028 phase 4
+took `BUILDABLE_REGISTRY` from four rows to twenty-one and the price its decision
+3 pays is now several times what the document argues for. Read 0031's Status
+before treating its catalogue trade as settled.
 
-One decision is still outstanding and is **not** an ADR status, which is why the
-sentence above can be true at the same time: the amendment to ADR 0007 queued in
-[`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2. An amendment inside an accepted ADR
-has no `Status` line of its own, so no row in the table below and no mechanical
+**A second decision is outstanding and is not an ADR status at all**, which is
+why counting rows in the table below undercounts by one: the amendment to ADR
+0007 queued in [`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2. An amendment inside an
+accepted ADR has no `Status` line of its own, so no row here and no mechanical
 gate will ever mention it, and that queue entry is the only thing that says it is
 waiting.
 
@@ -108,12 +108,21 @@ Nothing here changes a status; this table only reports them.
 | [0029](./0029-concurrent-room-use-claims.md) | What a concurrent-use claim on a room is — when it is taken, when it ends, and who waits | Accepted, 2026-08-26 |
 | [0031](./0031-build-queue-cancellation-surface.md) | Withdrawing one queued build order — where a player aims, and what a long queue looks like | Accepted, 2026-08-26 — with open question 4 promoted to blocking |
 | [0032](./0032-incident-consequences-and-classification-review.md) | What an incident costs the prisoner who was in it, and how a classification tier moves | Accepted, 2026-08-26 |
+| [0033](./0033-releasing-an-interrupted-incident-response-at-runtime.md) | A restored session abandons an incident response and returns what it claimed | Proposed — pending human approval |
 
-**Next free number: 0033.** 0032 is this table's newest row and **0030 is still
+**Next free number: 0034.** 0033 is this table's newest row and **0030 is still
 held by an unmerged branch** — the incident-response restore change, which
 allocated it in the same hour it was stated free here. It is listed nowhere above
 because nothing is merged under that number yet, which is precisely the gap a
-stated next-free cannot see: enumerate the open pull requests before taking 0033.
+stated next-free cannot see: enumerate the open pull requests before taking 0034.
+
+**0033's author ran that enumeration and it came back with two open pull
+requests**, #355 (no ADR) and #361 (holding 0030), so 0033 was free. 0033 is the
+counter-proposal to the document on #361's branch: it decides the same question
+— what a restored session owes an incident response a save interrupted — by
+releasing the claim at runtime rather than by bumping the save schema, so the two
+are alternatives and not a sequence. If both were somehow accepted, the runtime
+release becomes redundant and should be removed rather than layered.
 
 **0032's author ran that enumeration and it came back with three open pull
 requests, one of them holding 0030 and neither of the other two carrying an ADR
@@ -122,13 +131,21 @@ thing again. That is a fact about one hour, not a reason to stop checking. 0032
 pre-commits in its own Status to renumbering if a branch turns up holding it,
 which is the habit the two previous collisions taught.
 
-**Two rows are outstanding: 0031 and 0032.** Both arrived with the change that
-implements them — the shape [`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2 names as
-fragile. 0031's queue entry is in the same commit, per that file's rule.
-**0032's is not, and that is a gap rather than an exemption:** `STATUS-QUEUE.md`
-was out of that change's scope, held by other work in the same hour, so the entry
-is owed and 0032's own pull request quotes the text it would have added. 0029 was
-the previous outstanding row and was accepted on 2026-08-26; it *did* sit
+**One row is outstanding: 0033.** It arrived with the change that implements it
+— the shape [`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2 names as fragile — and
+**its queue entry is owed rather than written**, for a stated reason rather than
+a collision: the brief that change was done under names `STATUS-QUEUE.md` as a
+file it may not touch, so the entry is quoted in its pull request instead. That
+is the precedent 0032 set an hour earlier, and 0032's own debt was paid in the
+commit that accepted it. This one is the next edit to that file to clear.
+
+0031 and 0032 arrived the same way and are now Accepted. 0031's entry was in the
+same commit, per §2's rule, and was deleted on acceptance; 0032's was never
+written at all, and §2 records that as its own rule failing rather than tidying
+it away — the rule assumes one writer and is unsatisfiable when two changes are
+in flight.
+
+0029 was the previous outstanding row and was accepted on 2026-08-26; it *did* sit
 outstanding on `main` for a day while its code shipped, which is exactly the cost
 §2 predicted, and its queue entry was removed in the same commit as its
 acceptance.

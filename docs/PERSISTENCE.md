@@ -187,12 +187,36 @@ work are not.**
   `'locked'`), unchanged 52,000 ticks later, while the continuous run resolves
   the incident, lifts the lockdown and returns all six guards. `GuardRoster`'s
   own `unassign` has no reachable caller for an `'on-search'` guard, and there
-  is no dismiss command, so the guards are unrecoverable. `SearchSystem` sets
+  is no dismiss command, so the guards were unrecoverable. `SearchSystem` sets
   the same phase and does *not* leak, because its active jobs are in the
   payload and a restored job releases its guards — the difference is only
-  whether the record that owns the release survives the save. Fixing it is
-  either a V6 field or a restore-semantics decision, which is why #352 records
-  it instead of this document asserting the bounded-delay property for it.
+  whether the record that owns the release survives the save.
+
+  **The restore-semantics half of #352's choice is now taken (ADR 0033), and
+  this entry stays corrected rather than reverted.** A restored session releases
+  the claim instead of inheriting it: `IncidentResponseSystem.loadSnapshot`
+  marks a reconciliation as owed, and the system's first scheduled `update`
+  after the load hands back every `'on-search'` guard that no active search job
+  names and no live response record claims, and returns to `'normal'` every
+  `'lockdown'` sector no open incident justifies. Nothing is written to the save
+  and no version is bumped — the repair is recomputed from the payload on every
+  load, so a player who dislikes the outcome still has the file they had.
+
+  So `IncidentResponseSystem` still does **not** belong in the group above, and
+  the reason is worth stating precisely rather than filed as fixed. The other
+  four pay *"a bounded delay, not lost progress"*. This one loses progress on
+  purpose: the response is abandoned, the incident lapses at its deadline
+  instead of being contained, and every participant is injured where a
+  continuous run would have had none. What is bounded is only the *release*, and
+  its bound is the distance from the save to this system's next scheduled
+  update — at most one interval, **10 ticks**, and zero when the save lands on
+  one. `tests/integration/incident-response-restore.test.ts` measures both
+  halves: exact agreement with a continuous run on every resource the response
+  claimed (the unassigned pool, the sector's control state, the governed door),
+  and the incident outcome they disagree on, written out rather than omitted.
+  Carrying the record in the payload instead would recover the outcome too, and
+  is a save-schema version and a migration over stored saves — the trade ADR
+  0033 records and PR #361 takes the other side of.
 - **Per-system `requestSequence` counters** (`SearchSystem`,
   `DeploymentSystem`, `PatrolSystem`, `ActionSystem`). These only mint names
   for path requests against the queue above. Since no restored state can
