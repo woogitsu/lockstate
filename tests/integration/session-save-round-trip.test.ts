@@ -10,6 +10,7 @@ import {
 import { NEED_IDS, NEED_MAX, type NeedId } from '../../src/simulation/prisoners/needs';
 import { ACTOR_IDENTITY_RNG_STREAM } from '../../src/simulation/identity';
 import { projectPrisonerRoster } from '../../src/simulation/presentation/prisoner-projection';
+import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from '../helpers/determinism-scenario';
 
 /**
@@ -101,6 +102,21 @@ function buildPopulatedPrison(): SimulationRuntime {
     tick: runtime.kernel.tick,
   });
 
+  /*
+   * A sixth guard, because the scenario's five no longer leave a quorum.
+   *
+   * Since [ADR 0036](../../docs/adr/0036-a-derived-default-security-sector.md)
+   * every session carries a derived default sector asking for one guard all
+   * day, so the scenario's five guards cover three sectors (`sector-a`,
+   * `sector-b`, `security-sector.prison`) and leave two unassigned. A
+   * severity-6 riot needs three responders (`respondersPerSeverityPoint` is
+   * 0.5), so with five the incident below could not be staffed at all and would
+   * simply run to its 600-tick deadline and lapse -- which the assertion allows
+   * and would therefore have hidden. Six guards keep this case measuring what it
+   * says it measures: a restored session *containing* a live incident.
+   */
+  runtime.securityGuards.hire('staff-role.guard', { x: tileCoordinate(0), y: tileCoordinate(0) });
+
   // An incident that is genuinely still open at save time.
   runtime.incidents.open(
     {
@@ -175,7 +191,10 @@ describe('a populated prison survives save -> load', () => {
     const runtime = buildPopulatedPrison();
 
     const guardIds = runtime.securityGuards.allGuardIds();
-    expect(guardIds.length).toBe(5);
+    // The scenario's five, plus the sixth `buildPopulatedPrison` hires so a
+    // severity-6 riot still has a quorum once the derived default sector has
+    // taken one (ADR 0036).
+    expect(guardIds.length).toBe(6);
     const deployed = guardIds.filter((id) => runtime.securityGuards.getSectorId(id) !== undefined);
     expect(deployed.length).toBeGreaterThan(0);
 

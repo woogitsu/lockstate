@@ -844,44 +844,65 @@ const INTERACTIVE_SELECTOR =
  * Build panel toggle vanished would have gone through as a pass.
  */
 /**
- * The controls this sweep cannot reach **at any viewport**, because the state
- * that reveals them is a state no session a player can start can be in.
+ * The controls this sweep cannot reach **at any viewport**, because nothing this
+ * sweep does puts the simulation into the state that reveals them.
  *
- * One entry, and it is a finding rather than a formality (ADR 0034). The Staff
- * panel's held-guards block draws a row per guard something is holding, and it
- * has no box until the simulation reports one. **Nothing in `src/` can hold a
- * guard in a new session**, and this was measured rather than assumed:
+ * ## The reason changed, and the old one is quoted rather than deleted
  *
- * - `DeploymentSystem.assignUnassignedGuards` iterates `sectors.all()`, and
- *   **nothing in `src/` registers a `SecuritySectorDefinition`** for a new
- *   session -- `restoreSecuritySystems` in `session-systems.ts` is the only
- *   caller of `securitySectors.register`, and it reads a save payload. So no
- *   guard ever reaches `'travelling'` or `'on-post'`, and there is no
- *   `'deployment'` claim.
- * - `IncidentTriggerSystem` iterates `incidentSectorIds`, which the same
- *   function is the only populator of, so no incident is ever opened and there
- *   is no `'incident-response'` claim.
- * - `SearchSystem.submitOrder` has no caller in `src/` at all and
- *   `runtime.searchPolicies` is likewise only populated from a save, so there is
- *   no `'search'` claim.
- * - `'unattributed'` is the residue of a save taken during a response, so it
- *   cannot exist without one of the above having happened first.
+ * This constant was `NEVER_LAID_OUT_WITHOUT_A_SECURITY_SECTOR`, and it said:
  *
- * That is a **pre-existing gap in the security tier and not a property of this
- * surface**: the same four facts already make `DeploymentSystem`, `PatrolSystem`,
- * `IncidentResponseSystem` and `SearchSystem` no-ops in every session a player
- * can start, which is the state one layer down from the one ADR 0025 closed when
- * `HireStaff` gave the roster its first real entries. A guard can be hired; there
- * is nothing for it to be assigned to.
+ * > **Nothing in `src/` can hold a guard in a new session.**
+ * > `DeploymentSystem.assignUnassignedGuards` iterates `sectors.all()`, and
+ * > **nothing in `src/` registers a `SecuritySectorDefinition`** for a new
+ * > session -- `restoreSecuritySystems` in `session-systems.ts` is the only
+ * > caller of `securitySectors.register`, and it reads a save payload. [...]
+ * > **This entry is a tripwire, not an excuse.** The moment anything registers a
+ * > security sector for a new session, these three controls become reachable,
+ * > this list goes stale, and the assertion below fails until it is deleted.
  *
- * **This entry is a tripwire, not an excuse.** The moment anything registers a
- * security sector for a new session, these three controls become reachable, this
- * list goes stale, and the assertion below fails until it is deleted -- which is
- * exactly the direction `AWAITING_PRODUCER` in
- * `tests/foundation/unconsumed-command-contract.test.ts` fails in, and for the
- * same reason: a record of unreachability must not outlive the fact.
+ * ADR 0034 decision 9 put that finding to the owner and it became issue #396.
+ * [ADR 0036](../../docs/adr/0036-a-derived-default-security-sector.md) answers
+ * it: every session now derives one sector, one deployment requirement and one
+ * watched sector id from the world, so a hired guard **is** held --
+ * `tests/integration/security-default-sector.test.ts` posts one through the real
+ * `HireStaff` command on the tick it lands, and drives a riot in that sector to
+ * a contained resolution with three more.
+ *
+ * So the sentence above is false now, and the tripwire fired in the sense that
+ * matters: the reason had to be rewritten. What it did **not** do is fail the
+ * assertion below, and that is worth being exact about rather than glossing:
+ * these three rows are still never laid out, for a *weaker* reason than before.
+ *
+ * ## The reason now
+ *
+ * **This sweep never hires anybody.** It presses no `.hud-staff__hire`, and the
+ * held-guards block has no box until `hud/held-guards` reports a held guard, so
+ * the three `Release` rows keep their place in the inventory and never get a
+ * rectangle. The claim this exemption makes has therefore shrunk from "the game
+ * cannot reach this state" to "this test does not drive it", which is a weaker
+ * claim and a worse one.
+ *
+ * ## What would remove it, and how much
+ *
+ * One press of `.hud-staff__hire` on the security tab, before the loop. It would
+ * make **one** of these three rows reachable and no more: the derived sector's
+ * requirement is one guard (ADR 0036), so a second and third hire stay
+ * `'unassigned'` and nothing holds them -- `HELD_GUARD_ROW_LIMIT` is 3 and only
+ * a riot or a contraband search claims more than one guard, and neither has a
+ * player gesture. It is not done here because a held-guards block changes the
+ * Staff panel's height, and the box-chain assertions above and the rail
+ * invariants below are measured to the pixel in the arrival state at five
+ * viewports; re-measuring all of them is its own change with its own numbers,
+ * not a line added to this one.
+ *
+ * The two rows that would remain are the honest residue of what is still inert:
+ * ADR 0036's own "what a sector does not bring back" measurements.
+ * `SearchSystem.submitOrder` still has no caller in `src/` at all and
+ * `runtime.searchPolicies` is still only populated from a save, so there is no
+ * `'search'` claim; and an `'incident-response'` claim needs a riot, which needs
+ * fifteen thousand ticks of a deliberately overcrowded prison.
  */
-const NEVER_LAID_OUT_WITHOUT_A_SECURITY_SECTOR = [
+const NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD = [
   'hud > hud__rail > hud__side > ui-panel hud-staff > ui-panel__body > hud-staff__held > ' +
     'hud-staff__held-list > hud-staff__held-row > button.ui-action "Release" #1',
   'hud > hud__rail > hud__side > ui-panel hud-staff > ui-panel__body > hud-staff__held > ' +
@@ -1961,13 +1982,15 @@ test.describe('the assembled application', () => {
       // deliberate responsive decision (see `hud.css`), named here so it stays
       // one: it is the honest limit of what this test can claim about a phone.
       //
-      // `NEVER_LAID_OUT_WITHOUT_A_SECURITY_SECTOR` is added at *every* viewport,
-      // and for a different kind of reason: not a responsive decision but a gap
-      // in the simulation, measured and recorded on that constant. Sorted
-      // together because the assertion compares the sweep's document order.
+      // `NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD` is added at *every* viewport, and
+      // for a different kind of reason: not a responsive decision but a gesture
+      // this sweep does not make, measured and recorded on that constant --
+      // which since ADR 0036 is a weaker claim than the simulation gap it used
+      // to record. Sorted together because the assertion compares the sweep's
+      // document order.
       const exempt = [
         ...(width <= 720 ? NEVER_LAID_OUT_BELOW_720 : []),
-        ...NEVER_LAID_OUT_WITHOUT_A_SECURITY_SECTOR,
+        ...NEVER_LAID_OUT_WITHOUT_A_HELD_GUARD,
       ];
       const neverLaidOut = inventory.filter((_, index) => !everMeasured.has(index));
       expect([...neverLaidOut].sort(), `controls never laid out in any state at ${width}x${height}`).toEqual(

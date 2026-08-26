@@ -182,12 +182,21 @@ proves this directly.
 ## Wiring into `SimulationRuntime`
 
 `createNewSimulationRuntime` constructs an empty `IncidentLog`,
-`SectorRiskTracker`, `GangRegistry`, `TunnelRegistry` and a mutable empty
+`SectorRiskTracker`, `GangRegistry`, `TunnelRegistry` and a mutable
 `incidentSectorIds` array, and registers `IncidentTriggerSystem` and
-`IncidentResponseSystem` on the kernel. No incidents, gangs, tunnels or
-watched sectors exist until a session/scenario registers them — the same
-"no fabricated default content" convention every prior issue's wiring
-follows, asserted directly in `tests/unit/new-session-runtime.test.ts`.
+`IncidentResponseSystem` on the kernel. No incidents, gangs or tunnels exist
+until a session/scenario registers them — the same "no fabricated default
+content" convention every prior issue's wiring follows, asserted directly in
+`tests/unit/new-session-runtime.test.ts`.
+
+**`incidentSectorIds` is the exception, and it is not a small one.** It used to
+start empty too, and because it did, `IncidentTriggerSystem` sampled nothing and
+**no incident was ever opened in any session a player could start** — the whole
+of this document was measured in scenarios and restored saves. Issue #396
+measured that and [ADR 0036](./adr/0036-a-derived-default-security-sector.md)
+closes it: every session derives one sector and watches it. See
+`docs/SECURITY.md`'s "One derived sector" for what is derived and why it is
+re-derived on load rather than persisted.
 
 The default risk sampler derives its inputs from the systems already
 constructed for that session: staffing shortfall from
@@ -199,6 +208,27 @@ knowledge, and a scenario wanting one constructs its own
 `IncidentTriggerSystem` with a custom `SectorRiskSampler`/
 `SectorOccupantResolver` — the same injection seam #25's `JobWorkerAdapter`
 and #27's `TargetLocationResolver` use.
+
+### What that makes reachable, and the bound on it
+
+`tests/integration/security-default-sector.test.ts` drives the whole chain
+through real commands only: a cell zoned and furnished, three prisoners admitted
+for its one bed, and the two it cannot house left standing on the arrival tile —
+which is also the derived sector's post tile, so they *are* its occupants. Their
+`safety` need decays untended, `needsPressure` crosses 0.6 against a
+`staffingShortfall` of 1, and `DEFAULT_SECTOR_RISK_POLICY`'s three-sample window
+opens a **severity-6 riot at tick 15,600**. Five `HireStaff` commands later three
+responders walk from (0, 0) to the post tile, the sector locks down, and the riot
+is `resolved` with `propertyDamage: 3` and nobody injured.
+
+**The bound is worth naming, because it decides the shape of the play.**
+`DeploymentSystem` and `IncidentResponseSystem` draw from the same
+`unassignedGuardIds()` pool, so a staffing shortfall — the term that makes a riot
+possible at all — exists exactly when the responder pool is empty. A riot in a
+one-sector prison therefore cannot be answered by the guards whose absence
+caused it; it is answered by guards hired *after* it starts, inside the
+600-tick `responseDeadlineTicks`. That is coherent play rather than a defect, but
+it is a consequence of a single sector and it changes when a second one exists.
 
 ## Scale
 

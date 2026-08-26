@@ -292,6 +292,31 @@ export class SparseWorld {
     return this.owned.has(chunkKey(position));
   }
 
+  /**
+   * Every chunk this world owns, in canonical `(y, x)` order.
+   *
+   * `snapshot()` has always emitted exactly this list under `ownedChunks` and
+   * now reads it from here, so there is one definition of "the owned chunks, in
+   * order" rather than two. It is public because it is the *only* cheap way to
+   * read ownership as a list: `isOwned` answers one position at a time, and the
+   * alternative -- `snapshot().ownedChunks` -- encodes every loaded chunk's four
+   * byte planes to RLE first, which is a lot of work to learn which chunk comes
+   * first.
+   *
+   * Canonical order is load-bearing rather than tidy. A caller that derives
+   * world state from "the first owned chunk" must get the same chunk on every
+   * run of a seed and again after a save round trip, and a `Set`'s insertion
+   * order gives neither -- `setOwned` is called in whatever order a session,
+   * a scenario or `fromSnapshot` happens to use. `compareChunkPositions` is
+   * `(y, x)`, the same order every other sorted enumeration in this file uses.
+   */
+  public ownedChunkPositions(): readonly ChunkPosition[] {
+    return [...this.owned]
+      .map((key) => this.requireStateByKey(key).position)
+      .sort(compareChunkPositions)
+      .map((position) => ({ ...position }));
+  }
+
   public setOwned(position: ChunkPosition, owned: boolean): void {
     const key = chunkKey(position);
     if (owned) {
@@ -598,12 +623,6 @@ export class SparseWorld {
   // --- Snapshot & Serialization ---
 
   public snapshot(): WorldSnapshotV1 {
-    const positions = (keys: Iterable<string>): ChunkPosition[] =>
-      [...keys]
-        .map((key) => this.requireStateByKey(key).position)
-        .sort(compareChunkPositions)
-        .map((position) => ({ ...position }));
-
     const chunks: SerializedChunkState[] = [...this.chunks.values()]
       .sort((left, right) => compareChunkPositions(left.position, right.position))
       .map((state) => {
@@ -645,7 +664,7 @@ export class SparseWorld {
     return {
       version: WORLD_SNAPSHOT_VERSION,
       chunkSize: this.tileChunkSize,
-      ownedChunks: positions(this.owned),
+      ownedChunks: this.ownedChunkPositions(),
       chunks,
       ...(sortedParcels.length > 0 ? { parcels: sortedParcels } : {}),
       ...(sortedOwnedParcels.length > 0 ? { ownedParcels: sortedOwnedParcels } : {}),

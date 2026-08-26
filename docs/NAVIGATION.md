@@ -96,9 +96,12 @@ needs.
   baseline is untouched by this and cannot be broken by it today: `register`
   throws on a door id that does not already exist, so a sector can only govern
   doors that existed when it did, and nothing in `src/` registers a sector
-  after a build order completes. A surface that let a player put a *built* door
-  into a sector would have to answer what happens when its perimeter is
-  demolished.
+  after a build order completes. The one sector a session now registers
+  ([ADR 0036](./adr/0036-a-derived-default-security-sector.md)) is registered at
+  composition time and **governs no doors at all**, for exactly this reason among
+  others — so a built door is in nobody's perimeter and demolishing it cannot
+  break a baseline. A surface that let a player put a *built* door into a sector
+  would have to answer what happens when its perimeter is demolished.
 - **Identity.** `constructedDoorIdFor` mints `door:<side>:<x>:<y>` — a pure
   function of the edge, never the order id, which is the choice
   [ADR 0012](./adr/0012-derived-identifier-reproducibility.md) requires a
