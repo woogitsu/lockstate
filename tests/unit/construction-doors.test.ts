@@ -53,6 +53,17 @@ import { SparseWorld } from '../../src/simulation/world/sparse-world';
  * Both are measured below on the same built geometry, and each has a control
  * that goes red without the other half.
  *
+ * ## Which navigation site each half actually pins
+ *
+ * Deleting the `DoorRegistry` lookup in `boundedLocalSearch` turns every built
+ * door into a wall, and this file is where that goes red: the walker below is
+ * refused at the crossing. Deleting the one in `buildNavigationGraph`'s region
+ * walk does *not* go red here, and cannot -- a built door writes
+ * `DOOR_EDGE_NUMERIC_ID`, so the wall check on the next line separates the two
+ * sides just the same. That rule is pinned where its only observable case
+ * lives: `navigation-region-graph.test.ts`, "treats a door as a region boundary
+ * even where the world edge value is 0".
+ *
  * ## Nothing here writes the world
  *
  * Every wall and every door arrives as a `PlaceBuildOrder` through the real
@@ -368,6 +379,19 @@ describe('a wall line with a door in it', () => {
 
     const topology = topologyOf(runtime);
     expect(topology.getTopologyId(INSIDE)).not.toBe(topology.getTopologyId(OUTSIDE));
+
+    // The same pair the door case asserts, on the identical geometry minus one
+    // order: `buildNavigationGraph` separates the two sides here too, and with
+    // no door there is nothing spanning them. Stated at the graph level and not
+    // only as a failed route, so a merged graph and a blocked crossing cannot
+    // both be reported by the same red line.
+    const graph = runtime.navigation.getGraph();
+    const insideRegion = graph.tileToRegion.get(`${INSIDE.x},${INSIDE.y}`);
+    const outsideRegion = graph.tileToRegion.get(`${OUTSIDE.x},${OUTSIDE.y}`);
+    expect(insideRegion).toBeDefined();
+    expect(outsideRegion).toBeDefined();
+    expect(insideRegion).not.toBe(outsideRegion);
+    expect(graph.portals).toEqual([]);
 
     const result = routeFrom(runtime, OUTSIDE, INSIDE, 'walk-in-sealed');
     expect(result.ok).toBe(false);

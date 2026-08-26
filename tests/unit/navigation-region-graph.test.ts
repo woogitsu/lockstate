@@ -78,8 +78,21 @@ describe('buildNavigationGraph', () => {
 
   it('treats a door as a region boundary even where the world edge value is 0 (no wall painted)', () => {
     // The door registry is authoritative for gating even if the world's own
-    // edge value happens to be 0 -- door placement is not yet wired into
-    // ConstructionSystem, so navigation must not assume a nonzero wall value.
+    // edge value happens to be 0, so navigation must not assume a nonzero wall
+    // value.
+    //
+    // Since #331 a completed `door-wooden` order writes `DOOR_EDGE_NUMERIC_ID`
+    // beside its registry row, and `remainingEdgeValue` keeps that value while
+    // any completed door order still claims the edge -- so the build path never
+    // produces this shape. That is exactly why it needs a case of its own:
+    // with a nonzero edge value the wall check *below* the door check in
+    // `buildNavigationGraph` separates the two sides anyway, so deleting the
+    // door check leaves every built-door test green. This case is the one that
+    // goes red for it. The other half of the same rule -- that the crossing is
+    // then passable -- is pinned through the real construction path by
+    // `construction-doors.test.ts`, which goes red when `boundedLocalSearch`
+    // stops consulting the registry.
+    //
     // The rest of the column is walled off so the only route between the
     // two sides is through the door's own (unwalled) gap.
     const world = new SparseWorld(CHUNK_SIZE);
