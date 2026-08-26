@@ -703,6 +703,22 @@ Three changes, and only one of them would have needed a bump on its own:
   asserts one that overlaps its neighbours. An instance with no rectangle is
   attributed no objects, so its capacity stays `0` — its
   pre-object-placement behaviour, and therefore not a regression.
+
+  **Issue #337 gave this field a second consumer, and no new field.**
+  `RoomZoningService.unzone` used to grow each covered tile into the connected
+  run of tiles holding the same room *type*, so two cells zoned as two separate
+  drags were one region and removing one removed both. It now resolves each
+  covered tile through `roomInstanceContaining` — the plane narrows the tile to
+  a room type, the rectangle names the instance — and clears that instance's
+  rectangle. The issue proposed storing an instance id per tile in the zoning
+  plane and correctly called that a save-schema question; it is not needed, and
+  adding it would have re-created exactly the shape the third bullet below
+  removes, a persisted value derivable from state it could disagree with. So
+  **#337 changed nothing in this format: no field, no section, no version
+  bump.** `SAVE_SCHEMA_VERSION` stays at 5. A V4 row's absent rectangle keeps
+  its own meaning here too: nothing resolves to such an instance, so its tiles
+  fall to the same-type fill they always used, which is what keeps a restored
+  V4 room removable rather than permanent.
 - **A room instance loses `capacity` and `objectCapabilities`.** This is what
   forces the bump: `capacity` was a *required* field, so removing it changes
   the shape. Both are now pure functions of (placed objects, room bounds, the

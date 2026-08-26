@@ -719,14 +719,41 @@ Left open deliberately, and none of them decided in code.
    costs no always-visible height, and finding one is a design decision that is
    still not made here.
 
-2. **Two adjacent same-type rectangles are still two `RoomInstance`s, and
-   removal treats them as one region.** Unchanged in the first direction and
-   newly visible in the second: `unzone` grows each covered tile into its
-   connected same-type run, so clipping one corner of one of two touching cells
-   removes both. Both ends need the zoning plane to carry an *instance id* per
-   tile rather than a room type, which is a persistence-format decision
-   (`docs/HUD_PROJECTIONS.md` gap 11). `tests/unit/rooms-zoning.test.ts` pins
-   both directions so that changing either is a visible decision.
+2. **Two adjacent same-type rectangles are two `RoomInstance`s at both ends.**
+   *Amended 2026-08-26 by issue #337; this consequence used to end the other
+   way.* It said removal treated them as one region — `unzone` grew each
+   covered tile into its connected same-type run, so clipping one corner of one
+   of two touching cells removed both — and that both ends needed the zoning
+   plane to carry an *instance id* per tile, a persistence-format decision.
+
+   **The persistence-format decision turned out not to be needed, and the
+   sentence naming it was already stale when it was written.** It cited
+   `docs/HUD_PROJECTIONS.md` gap 11, which ADR 0028 phase 1 had by then
+   narrowed: a `RoomInstance` carries `width` and `height`, and
+   `roomInstanceContaining` (`src/simulation/objects/room-capacity.ts`) already
+   answered "which instance is this tile in" for object placement — the plane
+   narrows the tile to a room type, the rectangle names the instance. `unzone`
+   now asks that same function and clears the resolved instance's rectangle.
+   Nothing was added to the zoning plane and nothing to the save format;
+   `SAVE_SCHEMA_VERSION` is unchanged at 5. A second, per-tile copy of an
+   instance id would have been a persisted value derivable from the rectangle
+   it was minted from, which is the shape ADR 0028 decision 6 *removed* from
+   this record rather than one to add back.
+
+   The player-visible rule is the one #337 asked for and is unchanged by the
+   cheaper mechanism: **un-zoning removes the rooms the rectangle covers, and
+   only those.** A partial drag still removes the whole room it clipped, and a
+   drag that genuinely covers several rooms still removes all of them, which is
+   why `removedInstanceIds` stays plural. The refusal in the other direction
+   went with it: an empty room beside an occupied one used to be unremovable,
+   because the occupancy check ran over the whole reached region.
+
+   What is *not* changed: `zone` still refuses `overlaps-existing-room`, so two
+   touching same-type rectangles are still two rooms rather than one L-shaped
+   one, and nothing merges them. `tests/unit/rooms-zoning.test.ts` and
+   `tests/integration/room-zoning-loop.test.ts` pin both directions, including
+   the save round trip that makes the rectangle load-bearing for removal, so
+   changing either is a visible decision.
 
 3. **Whether a zone gesture should carry a `transactionId`** — still open, and
    the implementation sends none. The reasoning in §3 is unchanged: zoning

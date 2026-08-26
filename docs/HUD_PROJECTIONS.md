@@ -600,7 +600,12 @@ decision about what to build next.
     `roomInstanceContaining` (`src/simulation/objects/room-capacity.ts`)
     answers it by narrowing the tile to a room type through the zoning plane
     and then testing the rectangle. That is what gives object placement a
-    containment rule.
+    containment rule — and, since issue #337, what bounds `unzone` to one
+    room instead of to a connected run of one room *type*. That second
+    consumer is worth naming here, because this gap was cited three times as
+    the reason the zoning plane would have to carry an instance id per tile
+    (ADR 0022's consequence 2 and open question 3, and #337 itself) after it
+    had already been narrowed enough to make that unnecessary.
 
     What is still unanswered is the *projection* question: nothing projects
     the room a prisoner is standing in. The detail projection still reports
