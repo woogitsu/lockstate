@@ -2,7 +2,24 @@
 
 ## Status
 
-**Proposed — pending human approval.** Nothing in this document is settled, and
+**Accepted, 2026-08-26 — by the owner's explicit delegation, and the distinction
+matters.** The owner did not read this document. Asked which of the outstanding
+decisions they wanted to take, they answered *"choose yourself"*. So this is a
+real approval — but of the *judgement delegated*, not of the text. Anyone who
+disagrees with a decision below should treat it as open rather than as settled by
+an owner who weighed it.
+
+The delegation here was narrower than it looks. Asked which resolution to take
+for #390 the owner answered *"I don't know"*; the approach below was chosen on the
+research, and *"choose yourself"* covered it. **What they were told was the
+headline figure — one visible row of twenty-one — and that figure is not what this
+change fixes.** It fixes the 880px of undifferentiated scroll behind it, cutting
+it to 264px, and leaves the visible row count identical to the pixel. §1 is that
+correction and it is the claim to read: approving this approves that trade, **not**
+a claim that the one-row figure moved.
+
+The sentence this replaced is still true and still the best thing about the
+change: nothing here is settled, and
 the change that carries it can be reverted by deleting one control: the panel's
 arrival state is byte-identical with the filter set to "Everything", which is
 where it starts.

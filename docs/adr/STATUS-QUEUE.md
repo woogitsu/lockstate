@@ -336,6 +336,30 @@ worked exactly as designed. The difference was not diligence, it was contention 
 so the fix is a queue two commits can append to without conflicting, not more
 care.
 
+### Four ADRs have now been accepted without ever appearing in this queue
+
+0032, 0033, **0034 and 0035**. All four the same way, and the rule has now failed
+more often than it has worked, so the count is the finding rather than any one
+instance.
+
+0034 and 0035 were written in the same hour by two agents, each told this file was
+out of scope because a third was rewriting it. Both did exactly what 0032's
+precedent prescribes — debt recorded in the ADR's own Status, entry quoted
+verbatim in the pull request — and both were then accepted before anyone was free
+to write the entry. **The entries were never wrong, never disputed and never
+written.**
+
+What the four cases together show, which no single one did: the rule's cost is
+paid by whoever holds the file, and its benefit accrues to a reader who may never
+arrive. A rule with that shape is not obeyed less carefully over time — it is
+obeyed until the first collision and then routed around, correctly, by people
+doing the right thing. **The fix is structural and it is now overdue**: one file
+per entry in a directory, so two commits can add two entries without touching each
+other, and so "the file is held" stops being a reason.
+
+The section that follows records 0032's case in the detail it was written with,
+and is kept as the first instance rather than folded into this count.
+
 ### ADR 0032 was accepted without ever appearing in this queue
 
 Recorded because it is this section's own rule failing, and the rule is worth
