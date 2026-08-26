@@ -107,12 +107,63 @@ env:
 
 jobs:
   staging:
+    # Two `||` alternatives, and every term in each one is load-bearing. As a
+    # sentence: publish a CI run that PASSED, that a PUSH started, on a branch
+    # of THIS repository -- or a manual dispatch of `staging` from `main`.
+    #
     # `conclusion` must be tested explicitly. `types: [completed]` fires for a
     # failed, cancelled and timed-out run too -- "completed" is not "passed",
     # and without this a red CI would still deploy.
+    #
+    # `head_repository.full_name` is about a FORK, and `branches: [main]` above
+    # does not imply it: that filter matches the *triggering run's head
+    # branch*, and a fork's branch can be named `main`. ci.yml triggers on a
+    # bare `pull_request`, so a pull request opened from a fork starts a CI run
+    # that belongs to THIS repository and carries the fork's head branch and
+    # the fork's commit -- which the `Checkout` step below then builds, because
+    # it deliberately takes `workflow_run.head_sha`. lockstate.io is a Custom
+    # Domain on the Worker this job deploys, so that commit is the public site
+    # (docs/DEPLOYMENT.md, "What currently serves lockstate.io").
+    #
+    # What is NOT the mitigation, and that is the point. Every job in ci.yml
+    # carries the same test against
+    # `github.event.pull_request.head.repo.full_name` -- three jobs today, and
+    # tests/foundation/ci-configuration-contract.test.ts now requires it of a
+    # fourth -- so every job of such a run is skipped as things stand. Whether
+    # GitHub then reports that run's `conclusion` as `skipped` or as `success`
+    # is not established by anything in this repository, and it is the whole
+    # difference between latent and live: which is exactly why it must not be
+    # the thing protecting the site. It was a property of another file,
+    # uncommented there, that ONE unguarded job added to ci.yml would have
+    # flipped, with nothing in either file connecting the two. These terms put
+    # the requirement where the deploy is, so it holds whatever ci.yml grows
+    # next.
+    #
+    # `workflow_run.event == 'push'` is a second door rather than a restatement
+    # of the first: a `workflow_dispatch` of CI on `main` also completes on
+    # `main`, from this repository, and CI passing is not a merge. Publishing
+    # on demand is what this workflow's own `workflow_dispatch` is for.
+    #
+    # `github.ref == 'refs/heads/main'` on the dispatch alternative. A dispatch
+    # checks out `github.ref` (see `Checkout` below), and this job runs no
+    # `pnpm verify`: the `production` job's "Verify before shipping" step has
+    # no counterpart here, because the automatic path's gate is the CI run that
+    # triggered it and a dispatch has no triggering run at all. So without this
+    # term, dispatching `staging` at any ref published that ref to the live
+    # site with no gate of any kind -- no CI, no environment approval. It is
+    # now the branch the automatic path publishes anyway. Two stronger answers
+    # exist and neither is this file's to choose: requiring the dispatched
+    # ref's own CI to have passed, and required reviewers on the `staging`
+    # GitHub Environment (a repository setting, invisible from here -- the same
+    # shape as the `production` environment's reviewers, which
+    # docs/DEPLOYMENT.md, "Credentials" says is what actually blocks an
+    # unattended production deploy). Both are the owner's decision.
     if: >-
-      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
-      || (github.event_name == 'workflow_dispatch' && inputs.target == 'staging')
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
+      && github.event.workflow_run.event == 'push'
+      && github.event.workflow_run.head_repository.full_name == github.repository)
+      || (github.event_name == 'workflow_dispatch' && inputs.target == 'staging'
+      && github.ref == 'refs/heads/main')
     runs-on: [self-hosted, Linux, X64, wsl2]
     timeout-minutes: 30
     environment:
