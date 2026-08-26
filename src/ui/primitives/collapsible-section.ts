@@ -22,6 +22,31 @@ export interface CollapsibleSectionOptions {
   readonly collapsed?: boolean;
   /** Optional trailing element in the header -- typically a count badge. */
   readonly trailing?: HTMLElement;
+  /**
+   * A control that sits **beside** the header button rather than inside it
+   * ([ADR 0035](../../../docs/adr/0035-buildable-catalogue-category-filter.md)).
+   *
+   * `trailing` above puts a node *inside* the header, which is a `<button>`,
+   * so it can only ever carry something inert -- a count badge, a status dot.
+   * An interactive control nested in a button is not reachable as itself: the
+   * outer button swallows the press, and nesting interactive content is
+   * invalid HTML besides. So a control gets a slot of its own, as a sibling,
+   * and the two share one 44px row.
+   *
+   * **Sharing the row is the whole point of the slot.** A control placed above
+   * or below a section costs the layout its own tap target; a control on the
+   * header row costs nothing at all, because the header's 44px is already in
+   * every height budget that sums this section. That is what made a filter
+   * affordable in the Build panel, whose catalogue had 7.8px of slack at
+   * 900x600 and none at all with a queue (ADR 0031 decision 3).
+   *
+   * Present or absent changes the section's DOM shape: with an action the
+   * header button is wrapped in `.ui-section__header-row`, so a selector
+   * written as `.ui-section > .ui-section__header` stops matching. Only the
+   * sections that pass one are affected, which is why this is opt-in rather
+   * than the shape every section has.
+   */
+  readonly headerAction?: HTMLElement;
 }
 
 export interface CollapsibleSection {
@@ -48,7 +73,11 @@ export function createCollapsibleSection(options: CollapsibleSectionOptions): Co
   });
 
   const body = element('div', { className: 'ui-section__body', attributes: { id: bodyId } });
-  const root = element('div', { className: 'ui-section', children: [header, body] });
+  const headerSlot =
+    options.headerAction === undefined
+      ? header
+      : element('div', { className: 'ui-section__header-row', children: [header, options.headerAction] });
+  const root = element('div', { className: 'ui-section', children: [headerSlot, body] });
 
   let collapsed = options.collapsed ?? false;
 

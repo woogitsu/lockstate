@@ -3,17 +3,21 @@ import { SIMULATION_ENUM_GROUPS, deriveSimulationMessageKey, type SimulationEnum
 import { Localizer, buildMessageCatalog, defaultMessageCatalogEn } from '../../src/services/localization';
 import { BUILD_EDGES, DEFAULT_BUILD_EDGE } from '../../src/simulation/construction';
 import {
+  BUILD_CATEGORY_ALL,
   BUILD_QUEUE_ROW_LIMIT,
   PENDING_DELIVERY_ROW_LIMIT,
+  buildCategoryOptions,
   buildEdgeChoiceOptions,
   formatBuildQueueOrderText,
   formatBuildTargetText,
   formatPendingDeliveryText,
+  visibleBuildableIds,
 } from '../../src/ui/hud/build-panel';
 import { HUD_MESSAGE_KEYS } from '../../src/ui/hud/messages';
 import {
   HUD_BUILD_EDGES,
   HUD_BUILD_ORDER_STATES,
+  type HudBuildableViewModel,
   type HudBuildOrderViewModel,
   type HudPendingDeliveryViewModel,
 } from '../../src/ui/hud/view-model';
@@ -420,5 +424,102 @@ describe('a delivery row says what it gives back', () => {
      */
     expect(PENDING_DELIVERY_ROW_LIMIT).toBeGreaterThan(1);
     expect(PENDING_DELIVERY_ROW_LIMIT).toBeLessThanOrEqual(3);
+  });
+});
+
+/**
+ * The catalogue's category filter (#390, ADR 0035).
+ *
+ * Both functions are exported and pure for the reason `buildEdgeChoiceOptions`
+ * is: the default Vitest environment is `node` (`docs/TESTING.md`), so nothing
+ * headless can call `createBuildPanel`, and "which rows the filter leaves on
+ * screen" is exactly the claim that must be assertable without a DOM. The
+ * *heights* the filter buys are a browser question and are measured in
+ * `tests/browser/app-shell.spec.ts`; this is the vocabulary half.
+ *
+ * The fixtures are written out rather than derived from `BUILDABLE_REGISTRY`.
+ * A fixture that read the real registry would compute its expected value from
+ * the code under test (#375), and would also change every time a content row
+ * lands -- which is the event this filter exists to survive.
+ */
+describe('the buildable catalogue groups by category', () => {
+  const buildable = (
+    definitionId: string,
+    categoryId: string,
+    categoryLabelKey: string,
+  ): HudBuildableViewModel => ({
+    definitionId,
+    labelKey: `content.${definitionId}`,
+    occupiesEdge: false,
+    placesObject: true,
+    categoryId,
+    categoryLabelKey,
+  });
+
+  /**
+   * Deliberately in an order where the categories interleave, so an
+   * implementation that assumed the rows arrive grouped fails here.
+   */
+  const rows: readonly HudBuildableViewModel[] = [
+    buildable('wall-brick', 'structure', 'category.structure'),
+    buildable('bed-wooden', 'furniture', 'category.furniture'),
+    buildable('door-wooden', 'structure', 'category.structure'),
+    buildable('toilet-brick', 'sanitation', 'category.sanitation'),
+    buildable('chair-wooden', 'furniture', 'category.furniture'),
+  ];
+
+  const t = (key: string): string => `[${key}]`;
+
+  it('offers All first, then each category once, in the order the rows arrive', () => {
+    expect(buildCategoryOptions(rows, t)).toEqual([
+      { id: BUILD_CATEGORY_ALL, label: '[hud.build.category-all]' },
+      { id: 'structure', label: '[category.structure]' },
+      { id: 'furniture', label: '[category.furniture]' },
+      { id: 'sanitation', label: '[category.sanitation]' },
+    ]);
+  });
+
+  it('offers no filter at all for an empty catalogue', () => {
+    expect(buildCategoryOptions([], t)).toEqual([]);
+  });
+
+  it('offers no filter when every row is in one group', () => {
+    // A control every option of which shows the same list. The real catalogue
+    // has eight groups, so this is `tests/browser/ui-harness.ts`'s state rather
+    // than the application's.
+    expect(buildCategoryOptions(rows.filter((row) => row.categoryId === 'structure'), t)).toEqual([]);
+  });
+
+  it('shows every row under All', () => {
+    expect(visibleBuildableIds(rows, BUILD_CATEGORY_ALL, 'wall-brick')).toEqual([
+      'wall-brick',
+      'bed-wooden',
+      'door-wooden',
+      'toilet-brick',
+      'chair-wooden',
+    ]);
+  });
+
+  it('shows one category, and keeps the selected row whatever category it is in', () => {
+    // `wall-brick` is selected and is structural, so filtering to furniture
+    // leaves it on screen: the filter is a view operation and must not hide
+    // the row whose badge says what the next press will place.
+    expect(visibleBuildableIds(rows, 'furniture', 'wall-brick')).toEqual([
+      'wall-brick',
+      'bed-wooden',
+      'chair-wooden',
+    ]);
+  });
+
+  it('adds no row twice when the selection is already in the active category', () => {
+    expect(visibleBuildableIds(rows, 'furniture', 'chair-wooden')).toEqual(['bed-wooden', 'chair-wooden']);
+  });
+
+  it('shows the active category alone when nothing is selected', () => {
+    expect(visibleBuildableIds(rows, 'structure', undefined)).toEqual(['wall-brick', 'door-wooden']);
+  });
+
+  it('shows nothing for a category no row carries', () => {
+    expect(visibleBuildableIds(rows, 'medical', undefined)).toEqual([]);
   });
 });

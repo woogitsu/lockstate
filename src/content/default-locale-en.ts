@@ -63,6 +63,28 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'object.waste-bin.name': 'Waste Bin',
   'object.utility-panel.name': 'Utility Panel',
 
+  // The seven authored object categories, named for the first time so the
+  // Build panel's catalogue can be filtered by one (#390, ADR 0035).
+  //
+  // Five are the schema id title-cased, because for those the id already is the
+  // word a player would scan an option list for. Two are not, and both times
+  // the id names the *domain* while the option has to name the things in it:
+  // `sanitation` reads "Plumbing", because a player hunting a shower head or a
+  // sink is looking for plumbing rather than for sanitation; `food-service`
+  // reads "Catering", because a stove and a fridge are what a kitchen is
+  // catered with. Neither id moves -- an id is not a label (ADR 0011).
+  //
+  // `OBJECT_CATEGORY_NAME_KEYS` in `src/content/object-catalog.ts` holds the
+  // keys, and its type is what fails the build if an eighth category arrives
+  // without one.
+  'object.category.furniture.name': 'Furniture',
+  'object.category.sanitation.name': 'Plumbing',
+  'object.category.food-service.name': 'Catering',
+  'object.category.security.name': 'Security',
+  'object.category.storage.name': 'Storage',
+  'object.category.utility.name': 'Utility',
+  'object.category.medical.name': 'Medical',
+
   'staff-role.warden.name': 'Warden',
   'staff-role.administrator.name': 'Administrator',
   'staff-role.guard.name': 'Guard',
@@ -413,6 +435,21 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.build.deliveries-more': 'and {count} more on the way — these arrive first, and the rest come into view as they land.',
   'hud.build.buildable.wall-brick': 'Brick wall',
   'hud.build.buildable.door-wooden': 'Wooden door',
+
+  // The catalogue's category filter (#390, ADR 0035). Three keys and not
+  // eight: the seven object categories are named in the content namespace
+  // above, because they are content. These three are the panel's own
+  // vocabulary -- the control's accessible name, the option that filters
+  // nothing, and the group for the two buildables that place no object and
+  // therefore belong to no object category.
+  //
+  // "Walls and doors" names its two members rather than abstracting over them
+  // ("Structure", "Building"): the group exists because those two rows have no
+  // authored category, so a name that describes the rows is honest where a
+  // name that implies a taxonomy is not.
+  'hud.build.category': 'Category',
+  'hud.build.category-all': 'Everything',
+  'hud.build.category.structure': 'Walls and doors',
 
   // The intake surface (#261 step 4). The hint states the prison's actual
   // situation rather than a feature disclaimer, because it *is* the prison's

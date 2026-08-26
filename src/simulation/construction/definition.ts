@@ -1,5 +1,5 @@
 import { defaultItemRegistry } from '../../content/item-catalog';
-import { defaultObjectRegistry } from '../../content/object-catalog';
+import { defaultObjectRegistry, type ObjectCategory } from '../../content/object-catalog';
 import { defaultSecurityGradeRegistry } from '../../content/security-grade-catalog';
 import type { DoorState } from '../navigation/door';
 
@@ -642,6 +642,42 @@ export const BUILDABLE_REGISTRY = new Map<string, BuildableDefinition>([
     placesObjectId: 'object.utility-panel',
   }],
 ]);
+
+/**
+ * Which authored object category a buildable's row belongs to, or `undefined`
+ * for a buildable that places no object at all
+ * ([ADR 0035](../../../docs/adr/0035-buildable-catalogue-category-filter.md)).
+ *
+ * A **category id**, never a label: this is `src/simulation/`, so it may not
+ * answer with text (ADR 0011). The composition root turns the id into a
+ * message key, exactly as it already turns `placesObjectId` into one through
+ * the object's own `nameKey`.
+ *
+ * The join lives here rather than at the composition root because it is the
+ * same join `validateBuildableObjectReferences` below already performs -- a
+ * `placesObjectId` looked up in `defaultObjectRegistry` -- and a second copy of
+ * it in `src/main.ts` would be a second place for the two vocabularies to
+ * drift.
+ *
+ * **`undefined` is a real answer for two of the twenty-one rows, and it is not
+ * a gap to close.** `wall-brick` places opaque edge geometry and
+ * `door-wooden` places a door, which is a fact about a tile *edge* registered
+ * in `DoorRegistry`; neither is a row addressed by an anchor tile, so neither
+ * has an object and neither can borrow an object's category. Giving them one
+ * would mean authoring an object nothing places (see `door-wooden`'s own
+ * comment above on why `object.loading-dock-door` is a different thing).
+ * `tests/foundation/buildable-category-contract.test.ts` holds the whole
+ * partition, `undefined` group included, as a written-out table.
+ *
+ * A `placesObjectId` naming an object the registry does not hold also answers
+ * `undefined`, and that state cannot reach a running session:
+ * `validateBuildableObjectReferences` throws at import time on exactly it.
+ */
+export function buildableObjectCategory(definition: BuildableDefinition): ObjectCategory | undefined {
+  const objectId = definition.placesObjectId;
+  if (objectId === undefined) return undefined;
+  return defaultObjectRegistry.getById(objectId)?.category;
+}
 
 export type BuildableItemReferenceError = {
   readonly kind: 'missing-item-reference';

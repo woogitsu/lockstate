@@ -340,6 +340,19 @@ const BUILD_MODEL: HudBuildViewModel = {
       labelKey: HUD_MESSAGE_KEY.buildableWallBrick,
       occupiesEdge: true,
       placesObject: false,
+      // The group `src/main.ts` mints for the two buildables that place no
+      // object, and the one both of this fixture's rows fall into -- which is
+      // what the real projection says of exactly these two ids (ADR 0035).
+      //
+      // So this harness has **one** group, `buildCategoryOptions` answers with
+      // no options at all, and the panel measured here draws no category filter.
+      // That is the useful half rather than a gap: every height this harness
+      // pins is measured on a panel without the control, and every one of them
+      // is unchanged, which is the other half of the evidence that the control
+      // costs nothing. The filtered panel is measured on the assembled page,
+      // against the real eight-group projection.
+      categoryId: 'structure',
+      categoryLabelKey: HUD_MESSAGE_KEY.buildCategoryStructure,
       // The same figures `src/main.ts` projects for this buildable: two
       // bricks per wall at 40 minor units each, bounded by the simulation's
       // own `MAX_PURCHASE_QUANTITY`. Written out rather than imported for the
@@ -358,6 +371,8 @@ const BUILD_MODEL: HudBuildViewModel = {
       definitionId: 'door-wooden',
       labelKey: HUD_MESSAGE_KEY.buildableDoorWooden,
       occupiesEdge: false,
+      categoryId: 'structure',
+      categoryLabelKey: HUD_MESSAGE_KEY.buildCategoryStructure,
       // Both `false`, which is what `src/main.ts` still projects for this row
       // and is why the two flags are not opposites: a door places no *object*
       // (it places a door, which is a fact about a tile edge), and
@@ -426,6 +441,14 @@ function buildModelWithCatalogueOf(count: number): HudBuildViewModel {
       // *count*, and a mixture of gestures would make the measurement about
       // something else.
       placesObject: false,
+      // One group for the whole synthetic list, for the same reason every row
+      // is a wall route: this varies the row *count*, and a list divided into
+      // groups would make "the panel at twelve rows" a measurement of the
+      // filter's division rather than of twelve rows (ADR 0035). One group
+      // means no filter is drawn, so these measurements are of the panel
+      // without it -- see `BUILD_MODEL` above.
+      categoryId: 'structure',
+      categoryLabelKey: HUD_MESSAGE_KEY.buildCategoryStructure,
       // The first two entries are the real ones and carry the real priced
       // material, so the panel this measures has the controls the
       // application's does -- the buy disclosure costs no height either way,

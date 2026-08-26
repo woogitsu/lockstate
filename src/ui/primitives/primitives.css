@@ -376,6 +376,46 @@
 }
 
 .ui-section__header:hover { color: var(--text-subtle); }
+
+/*
+ * A header that shares its row with a control (`headerAction`).
+ *
+ * The row is the same 44px the header alone is, and that is the reason the
+ * slot exists rather than a side effect of it: a control here is free, where a
+ * control above or below the section costs a whole tap target of panel height.
+ * `min-height` is stated on the row as well as on the button because the
+ * button is now `flex: 1 1 auto` inside it and an action shorter than 44px
+ * must not be allowed to set the row's height.
+ *
+ * The button keeps its own `padding: 0 var(--space-2)`, which is what
+ * separates the eyebrow from the action; the row carries the padding on the
+ * outer edge the button no longer reaches.
+ */
+.ui-section__header-row {
+  display: flex;
+  align-items: center;
+  min-height: var(--tap-target);
+  padding-right: var(--space-2);
+}
+
+.ui-section__header-row > .ui-section__header {
+  flex: 1 1 auto;
+  width: auto;
+  /* Or the eyebrow's own content width becomes the button's floor and the
+     action is pushed out of the row at the narrow rail. */
+  min-width: 0;
+}
+
+/* Scoped to this variant rather than put on `.ui-section__eyebrow`: every
+   other section gives its eyebrow the whole row, where clipping would be a
+   defect rather than a fit. */
+.ui-section__header-row > .ui-section__header > .ui-section__eyebrow {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-section__header-row > :not(.ui-section__header) { flex: 0 0 auto; }
 .ui-section__eyebrow { flex: 1; color: inherit; }
 .ui-section__chevron { transition: transform 120ms linear; }
 .ui-section[data-collapsed='true'] .ui-section__chevron { transform: rotate(-90deg); }

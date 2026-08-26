@@ -286,6 +286,38 @@ export const HUD_MESSAGE_KEY = {
   buildableDoorWooden: 'hud.build.buildable.door-wooden',
 
   /**
+   * The catalogue's category filter (#390,
+   * [ADR 0035](../../../docs/adr/0035-buildable-catalogue-category-filter.md)).
+   *
+   * **Three keys, not eight.** The seven groups a player can choose between
+   * are the seven categories `src/content/object-catalog.ts` authors, and each
+   * is named in the *content* namespace by `OBJECT_CATEGORY_NAME_KEYS` -- the
+   * same split `buildableWallBrick` above already lives on the other side of.
+   * A `hud.build.category.furniture` key here would author a second English
+   * word for a content fact and let the two drift, which is the mistake
+   * `buildableLabelKey`'s comment in `src/main.ts` refuses for row labels.
+   *
+   * These three are the panel's own, because none of them names content:
+   *
+   *   - `buildCategory` is the control's accessible name. The filter sits in
+   *     the catalogue's header row beside a 44px eyebrow, with no room for a
+   *     visible label of its own, so this is an `aria-label` -- which is
+   *     allowed here and not a tooltip-only label, because the control shows
+   *     its own current value as its visible text.
+   *   - `buildCategoryAll` is the option that filters nothing, and it is the
+   *     arrival state: the panel arrives showing every row, exactly as it did
+   *     before this filter existed, so nothing a player already knew moved.
+   *   - `buildCategoryStructure` is the group for the two buildables that
+   *     place no object -- `wall-brick` and `door-wooden` -- and so belong to
+   *     no `ObjectCategory`. It is a HUD key rather than a content one for the
+   *     same reason the two labels above it are: there is no content entry to
+   *     read it off.
+   */
+  buildCategory: 'hud.build.category',
+  buildCategoryAll: 'hud.build.category-all',
+  buildCategoryStructure: 'hud.build.category.structure',
+
+  /**
    * The intake surface (#261 step 4).
    *
    * `intakeHint` is not decoration and is not a disclaimer. Until something
