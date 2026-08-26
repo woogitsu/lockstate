@@ -2,7 +2,26 @@
 
 ## Status
 
-**Proposed — pending human approval.** Not accepted.
+**Accepted, 2026-08-26 — by the owner's explicit delegation.** The owner did not
+read this document. Shown #396's three options they chose the first, a *derived*
+default sector, and when the design questions underneath it were put to them they
+answered *"choose yourself"*. So this is a real approval of the judgement
+delegated, and not of the text. A reader who disagrees with a decision below
+should treat it as open rather than as settled by someone who weighed it.
+
+What the owner did weigh, because it is the reason this exists: **nothing in
+`src/` registered a security sector in a new session.** `securitySectors.register`
+had one call site, inside the restore path, reading a save payload — so
+deployment, patrol, incident response and contraband search were all inert in
+every session a player could start, and ADR 0032's incident consequences with
+them. The alternatives were a player-facing sector-drawing gesture (a large
+feature that first needs a decision about what a sector *means* to a player) or
+declaring the tier unshipped and saying so in the five documents that describe it
+as working. The first option was chosen because it makes an entire tier reachable
+without inventing a gesture nobody asked for.
+
+**This is the answer to ADR 0034 decision 9**, which put that ship-or-not
+judgement to the owner rather than deciding it.
 
 This document answers [ADR 0034](./0034-releasing-a-claimed-guard.md)'s
 **decision 9** — the ship/don't-ship judgement it put to the owner explicitly —
