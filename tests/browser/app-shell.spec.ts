@@ -1429,12 +1429,26 @@ test.describe('the assembled application', () => {
       // 52px. `hud.css`'s `max-height: 700px` block trims the panel's fixed
       // blocks and its gutters until it fits, and measured there today the
       // panel is 338.1px of content in a 338.1px slot with nothing scrolled
-      // (issue #174). The catalogue itself donates nothing any more: the 8px
+      // (issue #174). The catalogue *section* donates nothing any more: the 8px
       // it used to "donate" was the gutter under its own list, and donating it
       // meant laying that gutter over the map block's hairline, which is what
-      // the next assertion but one is about. The first #88 fix clipped the panel
-      // at 1280x720 too, on arrival, and nothing said so -- which is what this
-      // line is for.
+      // the next assertion but one is about.
+      //
+      // The catalogue *list* inside it donates a great deal, and the sentence
+      // above used to say otherwise ("the catalogue itself donates nothing any
+      // more"). That was true of a two-entry `BUILDABLE_REGISTRY` and stopped
+      // being true when ADR 0028 phase 2 made it four: the list holds 176px of
+      // rows, and in the state this test is in -- six orders queued, so
+      // `.hud-build[data-queued]` has dropped the floor under it to one row
+      // (ADR 0031 decision 3) -- it hands back 111px at 1280x720, 0 at
+      // 1440x900, 75px at 1024x768, 132px at 900x600 and 66px at 375x812. The
+      // panel fits at 900x600 because three of the four buildables are behind
+      // that scroll, which is a price the ADR argues for and this line does not
+      // measure; the arrival-state test below is where the list's own
+      // scrollability is asserted.
+      //
+      // The first #88 fix clipped the panel at 1280x720 too, on arrival, and
+      // nothing said so -- which is what this line is for.
       expect(
         foldedRail.buildPanelScrolls,
         `the Build panel scrolls on arrival at ${width}x${height}`,
@@ -1514,9 +1528,27 @@ test.describe('the assembled application', () => {
         `the Build panel's last visible section ("${lastSection?.lastText ?? ''}") is below its unscrolled fold at ${width}x${height}: it ends at y=${Math.round(lastSection?.lastBottom ?? 0)} in a panel clipped at y=${Math.round(lastSection?.fold ?? 0)}`,
       ).toBeLessThanOrEqual(lastSection?.fold ?? 0);
 
-      // And no box that carries the Build panel's height is ever shorter than
-      // its own content -- every box in the shrink chain, not only the one
-      // that was measured first.
+      // And no box that carries the Build panel's height is shorter than its
+      // own content *in the state the panel arrives in* -- every box in the
+      // shrink chain, not only the one that was measured first.
+      //
+      // "In this state", and that scope is the honest half of the claim rather
+      // than a hedge. This line used to say "ever", and measurement says
+      // otherwise: open one of the panel's three folds and the body is shorter
+      // than its content again, because its floor is a sum of the blocks in
+      // the *arrival* state and an opened fold is taller than the block the sum
+      // counted. Measured on the assembled page with nothing queued, body box
+      // against body content: the numeric fallback expanded costs 195px at
+      // 1280x720, 60px at 1440x900, 159px at 1024x768, 200px at 900x600 and
+      // 135px at 375x812; the buy row open costs 127px, 0, 91px, 125px and
+      // 83px. The queue fold is the third and needs a queue to open, so it is
+      // measured in this test's own state instead: 157px, 22px, 121px, 154px
+      // and 98px. Nothing clips and every control opened is measured inside the
+      // panel's visible box further down, so this is #174 item 2's "harmless by
+      // coincidence" exactly as that issue frames it -- still open, and closing
+      // it is the layout decision the issue names (which box yields, and what
+      // happens when the sum exceeds the rail), not a number this file can
+      // pick.
       //
       // The body was 283px of box over 335px of content at 900x600 (#174) and
       // got a summed floor for it. The catalogue section then turned out to
@@ -1535,12 +1567,18 @@ test.describe('the assembled application', () => {
       // box chain rather than a guarantee.
       //
       // Be exact about what makes this green. Today it is the layout in
-      // `hud.css`: the floors resolve to exactly the content at 900x600 -- the
-      // catalogue 136px on a 136px floor, the body 275.2px on a 275.2px floor
-      // -- so this viewport rests on them squarely and any term dropped from
-      // either sum shows up here as a number rather than as a panel quietly
-      // clipping again. That is why this assertion matters more than the sums
-      // it is guarding: the sums cannot be derived (see `hud.css` for the
+      // `hud.css`, and at 900x600 the boxes sit on the floors it sums. In the
+      // arrival state they sit on them exactly -- the catalogue 136px on a
+      // 136px floor, the body's 275.2px content box on a 275.2px floor -- which
+      // is the pair of numbers the arrival-state test below records. In *this*
+      // test's state, six orders queued, `.hud-build[data-queued]` has taken a
+      // row off the catalogue's floor to pay for the queue block: the catalogue
+      // is 92px on a 92px floor and the body's 275.2px content box now has 44px
+      // of slack over a 231.2px floor, because the floor lost 44px and the
+      // content gained a 45px collapsed section. Either way any term dropped
+      // from either sum shows up here as a number rather than as a panel
+      // quietly clipping again. That is why this assertion matters more than
+      // the sums it is guarding: the sums cannot be derived (see `hud.css` for the
       // `min-content` and grid-track attempts, both measured failing), so
       // something has to check them.
       //
@@ -1995,9 +2033,10 @@ test.describe('the assembled application', () => {
       ).toBe('auto');
       // The panel itself is on screen, which is the rail's claim rather than the
       // panel's and is why it is asserted separately.
-      expect(arrival.panelTop, `the Build panel starts above the viewport at ${width}x${height}`).toBeGreaterThanOrEqual(
-        -0.5,
-      );
+      expect(
+        arrival.panelTop,
+        `the Build panel starts above the viewport at ${width}x${height}`,
+      ).toBeGreaterThanOrEqual(-0.5);
       expect(arrival.panelBottom, `the Build panel runs past the viewport at ${width}x${height}`).toBeLessThanOrEqual(
         height + 0.5,
       );
