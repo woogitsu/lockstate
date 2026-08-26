@@ -554,6 +554,24 @@ export class SimulationWorkerStateMachine {
         return this.fault('snapshot-incompatible', `Session snapshots must use the structured-clone transport, got "${snapshot.transport}".`, rejectedSnapshotFault(msg.messageId));
       }
 
+      // **A catch-all, and what hangs off it.** Every exception out of
+      // `restoreSimulationRuntime` is reported under one code, so a payload
+      // this build genuinely cannot restore and a *bug in this build's own
+      // restore code* are indistinguishable from here. That code is not
+      // inert on the other side: `WorkerSessionHost` turns
+      // `snapshot-incompatible` into `SnapshotRestoreRejectedError`, which is
+      // the one error `SessionController.loadPrison` demotes a save
+      // generation for -- and demotion deletes.
+      //
+      // Bounded rather than solved. `PrisonSaveRepository.demoteGeneration`
+      // refuses to delete the last retained generation (docs/PERSISTENCE.md,
+      // "Never the last copy"), which is what stops a deterministic failure
+      // here from walking a player's whole retained window; before that floor
+      // it did, measured at three generations to zero in one load. Telling
+      // the two causes apart is the fix this comment is not: it needs every
+      // deliberate rejection on the restore path to be a declared verdict
+      // rather than whichever error class was nearest, which is a decision
+      // about the restore modules and not about this call site.
       try {
         this._runtime = restoreSimulationRuntime(snapshot.data as unknown as SessionSnapshotBundle).runtime;
       } catch (error) {

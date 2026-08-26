@@ -169,7 +169,22 @@ export class SessionController {
    * `current` and stay current for ever, leaving the prison permanently
    * unloadable by the very mechanism the repository's rollback exists to
    * provide. So a snapshot the host *rejects* demotes that generation and
-   * the next-newest one is tried, until one restores or none is left.
+   * the next-newest one is tried, until one restores or the repository
+   * refuses to give up the last copy.
+   *
+   * **The walk stops rather than emptying the window.** A rejected snapshot
+   * is not proof that the save is bad: the worker labels a bug in this
+   * build's own restore code `snapshot-incompatible` exactly as it labels a
+   * genuinely bad payload (`SimulationWorkerStateMachine.handleInitialize`
+   * catches every exception out of `restoreSimulationRuntime`), and such a
+   * cause is deterministic, so it rejects every generation this loop offers
+   * it. Demoting each one in turn deleted every save the player had --
+   * three generations to zero in one load, measured on v0.0.112. So
+   * `demoteGeneration` refuses to delete the last retained generation and
+   * reports that refusal, and this walk treats the refusal as its end: the
+   * prison is unloadable *by this build*, which is what
+   * `no-valid-generation` already says, and the save is still there for a
+   * fixed one. See `DemotionResult`.
    *
    * Only `SnapshotRestoreRejectedError` demotes anything. A host that timed
    * out, was never started or has gone away propagates unchanged and costs
@@ -203,7 +218,15 @@ export class SessionController {
         await this.host.startFromSnapshot(bundle);
       } catch (error) {
         if (!(error instanceof SnapshotRestoreRejectedError)) throw error;
-        await this.repository.demoteGeneration(prisonId, result.generationId);
+        const demotion = await this.repository.demoteGeneration(prisonId, result.generationId);
+        if (!demotion.demoted) {
+          // Nothing was retired, so there is no next candidate: either this
+          // was the player's last copy and the repository kept it (the
+          // floor), or the generation was already outside the retained
+          // window. Report the outcome a prison with nothing loadable in it
+          // already reports -- and leave what is on disk alone.
+          return { ok: false, reason: 'no-valid-generation' };
+        }
         demoted.add(result.generationId);
         continue;
       }

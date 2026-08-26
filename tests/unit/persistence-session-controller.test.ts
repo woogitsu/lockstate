@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryLocalSaveStore } from '../../src/persistence/local/memory-store';
-import { PrisonSaveRepository } from '../../src/persistence/local/repository';
+import { PrisonSaveRepository, type SaveResult } from '../../src/persistence/local/repository';
 import { decodePrisonSlotMetadata } from '../../src/persistence/local/slot-metadata-schema';
 import { InProcessSessionHost, type SessionRuntimeHost } from '../../src/persistence/session/runtime-host';
 import { computeSaveChecksum } from '../../src/persistence/checksum';
@@ -253,6 +253,67 @@ describe('SessionController: autosave coalescing and non-overlap', () => {
     const { controller } = buildController({ autosaveIntervalMs: 1_000 });
     expect(() => controller.markDirty()).not.toThrow();
     expect(controller.hasPendingAutosave()).toBe(false);
+  });
+
+  /**
+   * The scheduler's own guard proved against the wiring that actually
+   * produces the failure.
+   *
+   * `buildEnvelope` here is the controller's real one, so the rejection comes
+   * from `host.capture()` -- a worker that faulted, hung or went away, which
+   * is the *ordinary* mid-session failure rather than an exotic one. Before
+   * `performSave` had a `try/finally`, that single rejection left the prison
+   * parked in `'saving'`: no follow-up was ever scheduled, every later
+   * `markDirty` was silently dropped, and autosave was over for the session
+   * with an unhandled rejection as the only evidence.
+   */
+  it('reports a capture failure and keeps autosaving afterwards', async () => {
+    const repository = new PrisonSaveRepository(new MemoryLocalSaveStore());
+    const inner = new InProcessSessionHost();
+    let failNextCapture = false;
+    const host: SessionRuntimeHost = {
+      startNew: (seed) => inner.startNew(seed),
+      startFromSnapshot: (bundle) => inner.startFromSnapshot(bundle),
+      capture: async () => {
+        if (failNextCapture) {
+          failNextCapture = false;
+          throw new Error('The simulation worker did not reply within 15000ms.');
+        }
+        return inner.capture();
+      },
+      stop: () => inner.stop(),
+    };
+    const results: SaveResult[] = [];
+    const controller = new SessionController(repository, host, {
+      gameVersion: 'test-version',
+      autosaveIntervalMs: 1_000,
+      onSaveResult: (_prisonId, result) => results.push(result),
+    });
+
+    await controller.createPrison('prison-1');
+    results.length = 0; // ignore the create-time save
+
+    failNextCapture = true;
+    controller.markDirty();
+    await vi.advanceTimersByTimeAsync(1_000);
+
+    // Reported, with the cause, to the surface the save panel reads.
+    expect(results).toHaveLength(1);
+    const failure = results[0]!;
+    expect(failure.ok).toBe(false);
+    expect(!failure.ok && failure.error.message).toContain('The simulation worker did not reply');
+    expect(controller.getLastSaveResult()).toBe(failure);
+    expect(controller.hasPendingAutosave()).toBe(false);
+
+    controller.markDirty();
+    await vi.advanceTimersByTimeAsync(1_000);
+
+    // A real write, identified by the revision it carries: the create-time
+    // save was revision 1, the failed autosave advanced nothing, so this is
+    // revision 2.
+    expect(results.at(-1)).toMatchObject({ ok: true });
+    const loaded = await repository.loadCurrent('prison-1');
+    expect(loaded.ok && loaded.envelope.revision).toBe(2);
   });
 });
 

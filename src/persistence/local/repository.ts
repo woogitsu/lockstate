@@ -35,6 +35,53 @@ export type SaveImportResult =
   | { readonly ok: true; readonly generationId: string; readonly migrated: boolean }
   | { readonly ok: false; readonly error: SaveWriteError; readonly rejected?: SaveDecodeError };
 
+/**
+ * What `demoteGeneration` did, and when it did nothing, why.
+ *
+ * It used to return `void`, and the reason it no longer can is a data-loss
+ * defect this repository could not report its way out of.
+ *
+ * Demotion **deletes** a generation, and the only thing that justifies
+ * deleting a save is that a better one remains. The caller that drives it
+ * (`SessionController.loadPrison`) walks the retained window newest-first and
+ * demotes every generation the host refuses, and the *usual* reason a host
+ * refuses one is deterministic — a payload shape this build cannot restore, or
+ * a bug in this build's own restore code, which
+ * `SimulationWorkerStateMachine.handleInitialize` labels
+ * `snapshot-incompatible` identically to a genuinely bad blob because it
+ * catches every exception from `restoreSimulationRuntime`. A deterministic
+ * cause fails on *every* generation, so one load walked the whole window and
+ * deleted all of it: measured on v0.0.112, three good generations became zero
+ * in a single load, and the prison stayed unloadable afterwards even once the
+ * failure was removed, because there was nothing left to load. One generation
+ * is enough for it: the same walk deleted a legitimate V1 save that had
+ * migrated and checksummed cleanly on the way in.
+ * `tests/integration/session-restore-failure.test.ts`'s "never the last copy"
+ * pins both cases.
+ *
+ * `'last-generation-retained'` is the floor that stops it: the last retained
+ * generation is never deleted, however confidently it has been refused. It
+ * costs nothing a player can see -- a prison with one unrestorable generation
+ * and a prison with none both answer `no-valid-generation` (`loadCurrent`),
+ * both keep their row in the prison list, and `delete()` still clears either
+ * one -- and it is the difference between a save that a fixed build can still
+ * open and a save that no longer exists.
+ *
+ * `'not-retained'` is the pre-existing no-op: an unknown prison, or a
+ * generation already outside the retained window. It is reported rather than
+ * swallowed so a caller looping over generations cannot mistake "nothing
+ * happened" for progress and spin.
+ *
+ * This also aligns demotion with what the *decode* path has always done.
+ * `loadCurrent` drops confirmed-corrupt generations through
+ * `recoverToGeneration`, which runs **only after** a generation has validated
+ * -- when nothing in the window validates it deletes nothing at all. Demotion
+ * was the one path in this file that would empty a window.
+ */
+export type DemotionResult =
+  | { readonly demoted: true }
+  | { readonly demoted: false; readonly reason: 'last-generation-retained' | 'not-retained' };
+
 export type LoadRecoveryOutcome = 'current' | 'recovered-previous';
 
 export type LoadResult =
@@ -244,14 +291,22 @@ export class PrisonSaveRepository {
    * confirmed-unrestorable; `SessionController.loadPrison` demotes only on a
    * `SnapshotRestoreRejectedError`, never on a host that failed to answer.
    *
-   * A prison whose every generation is demoted keeps its metadata row with
-   * an empty window, which `loadCurrent` reports as `no-valid-generation` —
-   * the same outcome it already returns when nothing in the window validates.
+   * **The last retained generation is never demoted**, and that floor is the
+   * reason this method reports what it did instead of returning `void`. See
+   * `DemotionResult` and "Never the last copy" in docs/PERSISTENCE.md for the
+   * measurement behind it.
    */
-  public async demoteGeneration(prisonId: string, generationId: string): Promise<void> {
-    await this.store.runTransaction('readwrite', async (tx) => {
+  public async demoteGeneration(prisonId: string, generationId: string): Promise<DemotionResult> {
+    return this.store.runTransaction('readwrite', async (tx) => {
       const metadata = readSlot(await tx.getMetadata(prisonId), prisonId);
-      if (metadata === undefined) return;
+      if (metadata === undefined) return { demoted: false, reason: 'not-retained' };
+      if (!metadata.generationIds.includes(generationId)) return { demoted: false, reason: 'not-retained' };
+      // The floor. One generation left means this is the player's only
+      // remaining copy of this prison, and there is nothing to fall back to
+      // once it is gone, so demoting it can only turn a prison this build
+      // cannot load into a prison no build can ever load.
+      if (metadata.generationIds.length <= 1) return { demoted: false, reason: 'last-generation-retained' };
+
       const generationIds = metadata.generationIds.filter((id) => id !== generationId);
       // `generationIds` is ordered oldest-first, so the newest survivor is last.
       const nextCurrent = metadata.currentGenerationId === generationId
@@ -264,6 +319,7 @@ export class PrisonSaveRepository {
         updatedAt: this.now(),
       });
       await tx.deleteGeneration(prisonId, generationId);
+      return { demoted: true };
     });
   }
 

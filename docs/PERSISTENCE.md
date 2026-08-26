@@ -7,11 +7,11 @@ Supabase sync (#20) is a separate issue with its own document: its schema, RPC
 and client-side sync/conflict policy (`src/persistence/cloud/`) are covered in
 [CLOUD_SAVE.md](./CLOUD_SAVE.md), not here.
 
-## Envelope shape (`SaveEnvelope`, currently V4)
+## Envelope shape (`SaveEnvelope`, currently V5)
 
 ```
 {
-  saveSchemaVersion: 4,
+  saveSchemaVersion: 5,
   gameVersion: string,     // build/version identifier, e.g. "lockstate-0.0.0"
   prisonId: string,
   revision: number,        // caller-managed monotonic counter; optimistic-concurrency
@@ -40,6 +40,7 @@ and client-side sync/conflict policy (`src/persistence/cloud/`) are covered in
       incidents:  { log, sectorRisk, gangs, tunnels,
                     watchedSectorIds, trigger, response },
       economy?:   { treasury, procurement },                  // #96 / #249
+      objects?:   { placedObjects },                          // V5, ADR 0028
     },
     identity?: {                                              // V3, issue #75 / ADR 0015
       version: 1, poolId,
@@ -1396,10 +1397,67 @@ that generation was the current one — repoints `currentGenerationId` at the
 newest survivor. Deleting rather than merely un-pointing, for the same reason
 the decode path already deletes: a generation outside `generationIds` is
 unreachable by every read path and would not be cleaned up by `delete()`
-either. A prison whose every generation is demoted keeps its metadata row with
-an empty window, which `loadCurrent` reports as `no-valid-generation` — the
-player still sees the prison and is told its saves are unreadable rather than
-finding it silently gone.
+either.
+
+#### Never the last copy
+
+`demoteGeneration` **refuses to demote the last retained generation** and
+reports the refusal (`DemotionResult`), and that floor is what stops one
+restore-time throw from costing a player every save they have.
+
+The chain it breaks: `handleInitialize` wraps `restoreSimulationRuntime` in a
+catch-all and reports *every* exception out of it as `snapshot-incompatible`,
+so a bug in this build's own restore code is indistinguishable from a bad
+blob; `WorkerSessionHost` turns that code into a
+`SnapshotRestoreRejectedError`; `loadPrison` demotes the generation and tries
+the next-newest. A cause of that shape is deterministic, so it rejects every
+generation in the window. Measured on `main` at v0.0.112: **three good
+generations became zero in one load**, and the prison stayed unloadable
+afterwards even once the failure was removed, because nothing was left to
+load. With the floor the same load leaves the oldest generation in place, and
+a build that can restore it loads the prison again
+(`tests/integration/session-restore-failure.test.ts`, "never the last copy").
+
+It costs nothing a player can see. A prison with one unrestorable generation
+and a prison with none give the same answer — `loadCurrent` reports
+`no-valid-generation`, the row stays in the prison list, `delete()` still
+clears the slot and its generations — so the only difference is whether the
+bytes still exist. Retrying the retained generation on every load costs one
+refused restore, which is the price of not deleting a save that a fixed build,
+or `exportSave`, can still read.
+
+It also aligns demotion with the decode path, which has always had this floor
+implicitly: `recoverToGeneration` deletes confirmed-corrupt generations **only
+after** a later one has validated, and when nothing in the window validates
+`loadCurrent` deletes nothing at all. Demotion was the one path here that
+could empty a window.
+
+**Three things this does not settle, none of them decidable inside
+implementation code:**
+
+1. **Classifying the failure.** A schema/checksum failure is a fact about the
+   blob; an unexpected exception is a fact about our code, and only the first
+   justifies deleting anything. Today they are one `catch`. Splitting them
+   needs every deliberate rejection on the restore path to be a *declared*
+   verdict rather than whatever error was nearest — today they are
+   `WorldSnapshotError` (`sparse-world.ts`), bare `RangeError`s
+   (`restore-session.ts`, `session-systems.ts`, `entity-codec.ts`) and bare
+   `Error`s (`entity-store.ts`, `component.ts`) — because the fallback
+   direction matters both ways: treat an unclassified error as a code fault
+   and #103's rollback silently stops covering the module that threw it.
+2. **Quarantine instead of delete**, so a demoted generation stays recoverable
+   by a fixed build rather than only the last one. The obvious form —
+   a `quarantinedGenerationIds` field on the slot record — is a persistence
+   format change with a *downgrade* hazard: `prisonSlotMetadataSchema` is
+   `.strict()`, so a record written by a newer build makes `list()` refuse the
+   whole prison list on an older one (see `CorruptSlotMetadataError` above).
+   Un-pointing without deleting is not an option for the reason stated above.
+3. **Demoting only once a fallback has actually restored** — the decode path's
+   own rule, applied to restore failures. It would cost *no* generations
+   instead of all-but-one, and needs the walk to advance by skipping tried
+   generations rather than by deleting them (`loadCurrent` currently returns
+   the same generation until one is retired), which retires
+   `demoteGeneration`'s only production caller.
 
 Who calls it is deliberately narrow: `SessionController.loadPrison` demotes
 **only** on a `SnapshotRestoreRejectedError`, the error a host raises when the
@@ -1417,6 +1475,27 @@ write settles — never a second concurrent write for the same prison. Tests
 use Vitest's fake timers (`vi.useFakeTimers()`/`advanceTimersByTimeAsync`),
 per `docs/TESTING.md`'s "own the complete timer lifecycle" rule, rather than
 real elapsed time.
+
+**A failed save is reported and survived, never swallowed.** A save that
+*rejects* — rather than returning a failed `SaveResult` — reaches `onResult`
+as one, classified by `classifyStoreError` so a thrown `QuotaExceededError`
+says `quota-exceeded` here too, and the prison settles exactly as a
+successful save settles: the follow-up a mid-save dirty marker asked for
+still runs, and a later `markDirty` still schedules a save.
+
+That is worth stating because it was false until it was fixed, and the
+failure mode was silent. `runSave` claims the slot (`state = 'saving'`) and
+calls `performSave` through `void`; `performSave` had no `try`, so one
+rejection left the entry parked in `'saving'` for ever. `settle` never ran, so
+no follow-up timer was ever scheduled and `markDirty` could only set
+`'saving-with-pending-dirty'` on a save that had already finished — **autosave
+stopped for the rest of the session after a single failure**, with an
+unhandled rejection as the only evidence anywhere. The most likely trigger is
+the least exotic one: `buildEnvelope` captures authoritative state across the
+worker boundary, so it rejects whenever the worker has faulted, hung or gone
+away. Reporting it is half the fix rather than a nicety — the same argument
+ADR 0024 decision 2 makes for a recoverable worker fault, that continuing
+after a failure is defensible only while the failure is visible.
 
 **What marks a session dirty: every command the simulation accepts.** The main
 thread observes acceptance as a `simulation/command-result` with
@@ -1457,8 +1536,8 @@ best-effort lifecycle save this section describes.
 `importSave` runs an arbitrary value through `decodeSaveEnvelope` (schema +
 migration + checksum) before it can reach `save()` — an invalid import never
 touches storage. Migration is not a separate step a caller has to remember:
-`decodeSaveEnvelope` walks the chain, so a V1/V2/V3 file becomes a V4 envelope
-on the way in and `save()` only ever sees the current version.
+`decodeSaveEnvelope` walks the chain, so a V1/V2/V3/V4 file becomes a V5
+envelope on the way in and `save()` only ever sees the current version.
 
 **A refused import says which of four things went wrong (#287).** It returns
 `SaveImportResult`, not `SaveResult`, for two reasons the save path does not
@@ -1664,6 +1743,13 @@ pending command queue intact, seed determinism, and both fault paths.
   (#103, and "Demotion also covers saves that decode and cannot be restored"
   above). A generation offered again after being demoted throws rather than
   looping: demotion is what makes the walk terminate.
+
+  **The walk ends where demotion does.** A `DemotionResult` reporting that
+  nothing was retired — the last-copy floor, or a generation already outside
+  the window — ends it with `no-valid-generation`, the same answer a prison
+  with nothing loadable in it already gives, and leaves what is on disk
+  alone. See "Never the last copy" above for what that is worth and what it
+  costs.
 
 Default autosave cadence is `DEFAULT_AUTOSAVE_INTERVAL_MS` (30s),
 justified by the measurements below rather than picked by feel — issue

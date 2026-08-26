@@ -209,6 +209,11 @@ describe('PrisonSaveRepository: loadCurrent recovery', () => {
  * stayed current for ever. `demoteGeneration` is the primitive that lets the
  * session layer retire such a generation, matching what the decode path
  * already does for one it proves corrupt.
+ *
+ * It matches the decode path in the other direction too: `recoverToGeneration`
+ * only ever deletes generations once a *later* one has validated, so nothing
+ * on the decode side can empty a retained window. Demotion now has the same
+ * floor -- see the last-generation case below.
  */
 describe('PrisonSaveRepository: demoteGeneration', () => {
   it('drops the demoted generation, deletes it and repoints the current pointer at the newest survivor', async () => {
@@ -218,7 +223,7 @@ describe('PrisonSaveRepository: demoteGeneration', () => {
     await repo.save('prison-1', buildEnvelope(1));
     await repo.save('prison-1', buildEnvelope(2));
 
-    await repo.demoteGeneration('prison-1', 'gen-2');
+    expect(await repo.demoteGeneration('prison-1', 'gen-2')).toEqual({ demoted: true });
 
     const [metadata] = await repo.list();
     expect(metadata).toMatchObject({ currentGenerationId: 'gen-1', generationIds: ['gen-1'] });
@@ -243,27 +248,56 @@ describe('PrisonSaveRepository: demoteGeneration', () => {
     expect(metadata).toMatchObject({ currentGenerationId: 'gen-2', generationIds: ['gen-2'] });
   });
 
-  it('reports no-valid-generation once every generation has been demoted, rather than losing the slot', async () => {
-    const repo = new PrisonSaveRepository(new MemoryLocalSaveStore(), { generateGenerationId: idSequence('gen') });
+  /**
+   * The floor. This case used to assert the opposite -- that demoting the
+   * only generation left the slot with an empty window -- and that behaviour
+   * is what made one restore-time throw cost a player every save they had:
+   * `SessionController.loadPrison` walks the window demoting whatever the
+   * host refuses, and a refusal is usually deterministic, so it refuses all
+   * of them. Measured on v0.0.112: three generations to zero in one load.
+   *
+   * Asserted on the surviving save's own contents rather than on a length,
+   * because "nothing was lost" is exactly the claim a count cannot make: an
+   * empty window and a window holding the wrong bytes both have a length.
+   */
+  it('refuses to demote the last retained generation, and the save it keeps is unchanged', async () => {
+    const store = new MemoryLocalSaveStore();
+    const repo = new PrisonSaveRepository(store, { generateGenerationId: idSequence('gen') });
     await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0' });
-    await repo.save('prison-1', buildEnvelope(1));
+    await repo.save('prison-1', buildEnvelope(4, 19));
 
-    await repo.demoteGeneration('prison-1', 'gen-1');
+    const demotion = await repo.demoteGeneration('prison-1', 'gen-1');
 
-    expect(await repo.loadCurrent('prison-1')).toEqual({ ok: false, reason: 'no-valid-generation' });
-    expect(await repo.list()).toHaveLength(1);
+    // The save first and the return value second, deliberately: this case has
+    // to fail because the player's only save was deleted, not merely because
+    // a method that used to return `void` now reports what it did.
+    //
+    // Still in the store, still pointed at, and still saying what it said
+    // when it was written -- so a build that can restore it still can.
+    const survivor = await repo.loadCurrent('prison-1');
+    expect(survivor.ok && survivor.generationId).toBe('gen-1');
+    expect(survivor.ok && survivor.outcome).toBe('current');
+    expect(survivor.ok && survivor.envelope.revision).toBe(4);
+    expect(survivor.ok && survivor.envelope.payload.kernel.tick).toBe(19);
+
+    const [metadata] = await repo.list();
+    expect(metadata).toMatchObject({ currentGenerationId: 'gen-1', generationIds: ['gen-1'] });
+    expect(demotion).toEqual({ demoted: false, reason: 'last-generation-retained' });
   });
 
   it('is a no-op for an unknown prison or an unknown generation', async () => {
     const repo = new PrisonSaveRepository(new MemoryLocalSaveStore(), { generateGenerationId: idSequence('gen') });
     await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0' });
     await repo.save('prison-1', buildEnvelope(1));
+    await repo.save('prison-1', buildEnvelope(2));
 
-    await repo.demoteGeneration('prison-2', 'gen-1');
-    await repo.demoteGeneration('prison-1', 'gen-nonexistent');
+    // Reported rather than silent: a caller walking generations has to be
+    // able to tell "nothing happened" from progress, or it loops for ever.
+    expect(await repo.demoteGeneration('prison-2', 'gen-1')).toEqual({ demoted: false, reason: 'not-retained' });
+    expect(await repo.demoteGeneration('prison-1', 'gen-nonexistent')).toEqual({ demoted: false, reason: 'not-retained' });
 
     const [metadata] = await repo.list();
-    expect(metadata).toMatchObject({ currentGenerationId: 'gen-1', generationIds: ['gen-1'] });
+    expect(metadata).toMatchObject({ currentGenerationId: 'gen-2', generationIds: ['gen-1', 'gen-2'] });
   });
 });
 
