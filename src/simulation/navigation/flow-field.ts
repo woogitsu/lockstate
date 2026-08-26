@@ -5,6 +5,7 @@ import type { DoorRegistry } from './door';
 import type { NavigationGraph, Portal, RegionId } from './region-graph';
 import { runRegionDijkstra } from './region-dijkstra';
 import { checkDoorAccess, routeContextFingerprint, type RouteContext } from './route-context';
+import { captureDoorDependencies, doorDependenciesStillHold, type DoorDependencies } from './route-dependencies';
 import { sliceIntoSegments } from './router';
 import type { Route, RouteResult } from './route';
 
@@ -36,8 +37,22 @@ export interface RegionFlowField {
   readonly contextFingerprint: string;
   readonly geometrySignature: string;
   readonly steps: ReadonlyMap<RegionId, RegionFlowFieldStep>;
-  /** Access version of every door any step depends on, captured at compute time -- mirrors `RouteCache`'s targeted invalidation. */
-  readonly doorVersions: ReadonlyMap<string, number>;
+  /**
+   * Every door any step depends on and what the pass concluded about each,
+   * captured at compute time -- mirrors `RouteCache`'s targeted invalidation.
+   *
+   * "Every door any step depends on" was the stated intent from the start and
+   * the recorded set was the portals that ended up *in* the tree, which is not
+   * the same thing: a door whose being locked is the reason a step points the
+   * long way round is a door that step depends on, and opening it evicted
+   * nothing (#358). A field covers every reachable region, so its dependency
+   * set is the doors incident to any of them -- correspondingly wide, and
+   * unavoidably so for one shared object that answers for every origin. The
+   * per-route entries `RouteCache` now keeps for field-resolved requests (#359)
+   * are the narrow half: each depends only on the doors within reach of its own
+   * origin.
+   */
+  readonly doorDependencies: DoorDependencies;
 }
 
 export function computeRegionFlowField(
@@ -52,14 +67,13 @@ export function computeRegionFlowField(
     return door !== undefined && checkDoorAccess(door, context).allowed;
   };
 
-  const { dist, prevPortal } = runRegionDijkstra(graph, doors, destinationRegion, isPortalAllowed, stats);
+  const dependencyDoorIds = new Set<string>();
+  const { dist, prevPortal } = runRegionDijkstra(graph, doors, destinationRegion, isPortalAllowed, stats, undefined, dependencyDoorIds);
 
   const steps = new Map<RegionId, RegionFlowFieldStep>();
-  const doorVersions = new Map<string, number>();
   for (const [regionId, portal] of prevPortal) {
     if (regionId === destinationRegion) continue;
     steps.set(regionId, { nextPortal: portal, costToDestination: dist.get(regionId) ?? Number.POSITIVE_INFINITY });
-    doorVersions.set(portal.doorId, doors.getAccessVersion(portal.doorId));
   }
 
   return {
@@ -67,8 +81,13 @@ export function computeRegionFlowField(
     contextFingerprint: routeContextFingerprint(context),
     geometrySignature: graph.geometrySignature,
     steps,
-    doorVersions,
+    doorDependencies: captureDoorDependencies(dependencyDoorIds, doors, context),
   };
+}
+
+/** Doors incident to `regionId`, added to `doorDependencies`; see `runRegionDijkstra` for why incidence is the right rule. */
+function addIncidentDoors(graph: NavigationGraph, regionId: RegionId, doorDependencies: Set<string>): void {
+  for (const portal of graph.regionPortals.get(regionId) ?? []) doorDependencies.add(portal.doorId);
 }
 
 /**
@@ -82,6 +101,15 @@ export function computeRegionFlowField(
  * region isn't in `steps`): the caller should fall back to `findRoute` for
  * either a correct answer or an accurate `permission-denied` diagnosis,
  * exactly like a `RouteCache` miss.
+ *
+ * `doorDependencies`, when supplied, is filled with the doors *this* answer
+ * depends on so the result can be cached (#359) without inheriting the whole
+ * field's much wider set. It is the same rule `runRegionDijkstra` applies for
+ * `findRoute` -- the doors incident to a region within the origin's
+ * distance-to-destination -- read off the field's own recorded costs, which are
+ * that same `dist` map. The two paths therefore record identical dependency
+ * sets for identical requests, so a cached entry means the same thing whichever
+ * of them produced it.
  */
 export function findRouteUsingFlowField(
   field: RegionFlowField,
@@ -91,6 +119,7 @@ export function findRouteUsingFlowField(
   origin: TilePosition,
   destination: TilePosition,
   stats?: SearchStats,
+  doorDependencies?: Set<string>,
 ): RouteResult | undefined {
   if (field.geometrySignature !== graph.geometrySignature) return undefined;
 
@@ -116,6 +145,15 @@ export function findRouteUsingFlowField(
       if (hop === maxSteps - 1 && cursor !== destinationRegion) {
         throw new Error('Invariant violated: RegionFlowField step chain did not reach its destination region.');
       }
+    }
+  }
+
+  if (doorDependencies !== undefined && originRegion !== destinationRegion) {
+    const reach = field.steps.get(originRegion)?.costToDestination ?? Number.POSITIVE_INFINITY;
+    addIncidentDoors(graph, destinationRegion, doorDependencies);
+    for (const [regionId, step] of field.steps) {
+      if (step.costToDestination > reach) continue;
+      addIncidentDoors(graph, regionId, doorDependencies);
     }
   }
 
@@ -162,13 +200,11 @@ export class FlowFieldCache {
       this.misses += 1;
       return undefined;
     }
-    for (const [doorId, version] of entry.doorVersions) {
-      if (doors.getAccessVersion(doorId) !== version) {
-        this.entries.delete(key);
-        this.evictions += 1;
-        this.misses += 1;
-        return undefined;
-      }
+    if (!doorDependenciesStillHold(entry.doorDependencies, doors, context)) {
+      this.entries.delete(key);
+      this.evictions += 1;
+      this.misses += 1;
+      return undefined;
     }
     this.hits += 1;
     return entry;
