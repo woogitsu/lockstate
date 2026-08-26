@@ -27,6 +27,25 @@ Lockstate.io is a long-lived browser simulation project. Optimize for architectu
 9. Pathfinding must be budgeted and hierarchical. Never run unrestricted full-map A* per agent per frame.
 10. Input must support remapping, QWERTY/AZERTY and touch/pointer interaction.
 
+## How this work is carried out
+`docs/AGENT_WORKFLOW.md` is the operating *method* that accompanies this
+contract: how work is picked up between sessions, how it is split across several
+agents at once, and what evidence a finding needs before it is reported. This
+file governs what an agent may do; that one governs how. Where they disagree,
+this file wins.
+
+The parts of it that are rules rather than advice:
+- An implementing agent takes its own git worktree before it touches anything.
+- Parallelise across unrelated surfaces, serialise within one. Name each agent's
+  surface, and the others', in its brief.
+- ADR numbers are assigned centrally, after drafts return. A number is not
+  reserved until it appears in `docs/adr/README.md`.
+- A test proves nothing until the production code has been mutated and that test
+  watched going red. Report both outputs.
+- Never report a result you did not obtain, and open every `file:line` you cite.
+- Correcting the brief you were given is expected. "Already fixed, here are the
+  numbers" is doing the job.
+
 ## Required workflow for every issue
 Before coding:
 - Read the issue, linked ADRs and relevant docs.

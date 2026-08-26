@@ -1,6 +1,7 @@
 # Claude Code instructions for Lockstate
 
 `AGENTS.md` is the canonical agent contract for this repository and MUST be read before implementation work.
+`docs/AGENT_WORKFLOW.md` is the operating method that accompanies it — how work continues across sessions, how it is split across several agents, and what evidence a finding needs. Read it before dispatching agents.
 
 Additional Claude-specific rules:
 - Use repository docs and ADRs as the source of truth.
