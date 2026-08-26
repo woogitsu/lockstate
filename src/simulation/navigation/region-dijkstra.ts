@@ -16,6 +16,31 @@ export interface RegionDijkstraResult {
  * every recorded predecessor). Ties break on the region id, matching every
  * other deterministic tie-break in this module -- never iteration/insertion
  * order.
+ *
+ * `doorDependencies`, when supplied, is filled with **every door this search's
+ * answer depends on** -- not only the doors it crossed. That is the set a
+ * cache has to watch to be sure it never serves an answer a fresh search would
+ * not give (#357/#358), and it is exactly the doors incident to a region
+ * within reach of the answer.
+ *
+ * Let `d` be a door with endpoint regions `u`/`v`, and let `reach` be the
+ * distance from `source` to the region the answer was asked about (`stopAt`,
+ * or every reachable region when there is no early exit). If
+ * `min(dist(u), dist(v)) > reach`, every path through `d` costs at least
+ * `cost(d) + dist(y) > reach` for the endpoint `y` it leaves by -- so
+ * unlocking `d` or making it cheaper can neither shorten the answer nor
+ * introduce a new *equal-cost* route a tie-break could pick instead. A door
+ * that was refused, or that was open but not worth crossing, and that touches
+ * a region at or inside `reach` **can** change the answer, which is why "the
+ * doors it crossed" was never the right set. The bound is `<=` and not `<`
+ * precisely so that ties are covered.
+ *
+ * Collected from `dist` after the search rather than during expansion, because
+ * a region relaxed to exactly `reach` may never be dequeued -- the early exit
+ * fires first -- and still names a door that could produce a tied alternative.
+ *
+ * One class of door inside `reach` is excluded, and only when `stopAt` names the
+ * other end of a single journey: see `portalIsUncrossable`.
  */
 export function runRegionDijkstra(
   graph: NavigationGraph,
@@ -24,6 +49,7 @@ export function runRegionDijkstra(
   isPortalAllowed: (portal: Portal) => boolean,
   stats?: SearchStats,
   stopAt?: RegionId,
+  doorDependencies?: Set<string>,
 ): RegionDijkstraResult {
   const dist = new Map<RegionId, number>([[source, 0]]);
   const prevPortal = new Map<RegionId, Portal>();
@@ -62,5 +88,62 @@ export function runRegionDijkstra(
     }
   }
 
+  if (doorDependencies !== undefined) {
+    const reach = stopAt === undefined ? Number.POSITIVE_INFINITY : (dist.get(stopAt) ?? Number.POSITIVE_INFINITY);
+    for (const [region, distance] of dist) {
+      if (distance > reach) continue;
+      for (const portal of graph.regionPortals.get(region) ?? []) {
+        if (stopAt !== undefined && portalIsUncrossable(graph, portal, source, stopAt)) continue;
+        doorDependencies.add(portal.doorId);
+      }
+    }
+  }
+
   return { dist, prevPortal };
+}
+
+/**
+ * True when no route between `from` and `to` can cross `portal` at all,
+ * whatever state its door is in -- so its state cannot change the answer and it
+ * does not belong in a dependency set.
+ *
+ * One of the portal's endpoint regions has this portal as its **only** portal
+ * and is neither end of the journey. Any route entering that region must leave
+ * it by the same door, paying for it twice; dropping that excursion is a route
+ * between the same two tiles that is strictly cheaper, since a door costs more
+ * than nothing. Such a door is therefore on no shortest route and on no tied one
+ * either.
+ *
+ * This is what keeps invalidation proportionate on the shape a prison actually
+ * has: a corridor touches every cell door, so every route along it has every
+ * cell door inside its reach, and without this rule one cell door opening would
+ * evict every cached route in the block. Measured on
+ * `buildCellBlockFixture(24)` with one cell door toggling every tick over ten
+ * ticks: 2,670 work units without this rule against 266 with it, for identical
+ * routes.
+ *
+ * Deliberately **not** applied when there is no `stopAt` -- that is a flow
+ * field, which answers for every origin including one *inside* such a region,
+ * whose step chain is that very door. A field's dependency set has to keep it.
+ */
+function portalIsUncrossable(graph: NavigationGraph, portal: Portal, from: RegionId, to: RegionId): boolean {
+  for (const region of [portal.regionA, portal.regionB]) {
+    if (region === from || region === to) continue;
+    if ((graph.regionPortals.get(region) ?? []).length === 1) return true;
+  }
+  return false;
+}
+
+/**
+ * The same exclusion, for a caller that resolved one origin through a shared
+ * field rather than by running its own search (`flow-field.ts`), so both record
+ * the same dependency set for the same request.
+ */
+export function portalCannotBeCrossedBetween(
+  graph: NavigationGraph,
+  portal: Portal,
+  originRegion: RegionId,
+  destinationRegion: RegionId,
+): boolean {
+  return portalIsUncrossable(graph, portal, destinationRegion, originRegion);
 }

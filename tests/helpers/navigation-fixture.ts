@@ -227,3 +227,57 @@ export function buildFixtureGraph(world: SparseWorld, doors: DoorRegistry, chunk
   });
   return buildNavigationGraph(world, doors, chunkStates);
 }
+
+export interface RingFixture {
+  readonly world: SparseWorld;
+  readonly doors: DoorRegistry;
+  readonly chunkPositions: readonly ChunkPosition[];
+  /** Every tile of the ring, row-major -- the full origin/destination sweep set. */
+  readonly tiles: readonly TilePosition[];
+}
+
+/**
+ * Four 2x2 rooms in a ring, in one 4x4 chunk: A top-left, B top-right,
+ * C bottom-left, D bottom-right, joined by one door per side of the ring.
+ * Region ids follow the row-major tile scan, so A=1, B=2, C=3, D=4.
+ *
+ * ```
+ *   A=(0..1,0..1) --d1-a-b-- B=(2..3,0..1)
+ *        |                        |
+ *     d3-a-c                   d2-b-d
+ *        |                        |
+ *   C=(0..1,2..3) --d4-c-d-- D=(2..3,2..3)
+ * ```
+ *
+ * The cost multipliers are 1/2/2/1 clockwise, so **both** ways round the ring
+ * from any room to its diagonal opposite cost exactly the same: A->B->D costs
+ * 1+2 and A->C->D costs 2+1. Every existing navigation fixture is a tree
+ * (`buildCellBlockFixture`) or a single pair of regions
+ * (`buildTwoRoomFixture`), so none of them can hold two distinct region routes
+ * of equal cost -- and a tie is precisely where two searches that agree on
+ * *cost* can still disagree on *which doors* they cross. Issue #360's
+ * measurement was made on this shape.
+ */
+export function buildRingFixture(): RingFixture {
+  const world = new SparseWorld(FIXTURE_CHUNK_SIZE);
+  const chunk = { x: chunkCoordinate(0), y: chunkCoordinate(0) };
+  world.load(chunk);
+  world.setOwned(chunk, true);
+
+  const t = (x: number, y: number): TilePosition => ({ x: tileCoordinate(x), y: tileCoordinate(y) });
+  for (let y = 0; y < FIXTURE_CHUNK_SIZE; y += 1) world.setLeftEdge(t(2, y), 1);
+  for (let x = 0; x < FIXTURE_CHUNK_SIZE; x += 1) world.setTopEdge(t(x, 2), 1);
+
+  const doors = new DoorRegistry();
+  doors.register({ id: 'd1-a-b', position: t(2, 1), side: 'left', state: 'open', requiredSecurityClearance: 0, costMultiplier: 1 });
+  doors.register({ id: 'd2-b-d', position: t(3, 2), side: 'top', state: 'open', requiredSecurityClearance: 0, costMultiplier: 2 });
+  doors.register({ id: 'd3-a-c', position: t(0, 2), side: 'top', state: 'open', requiredSecurityClearance: 0, costMultiplier: 2 });
+  doors.register({ id: 'd4-c-d', position: t(2, 3), side: 'left', state: 'open', requiredSecurityClearance: 0, costMultiplier: 1 });
+
+  const tiles: TilePosition[] = [];
+  for (let y = 0; y < FIXTURE_CHUNK_SIZE; y += 1) {
+    for (let x = 0; x < FIXTURE_CHUNK_SIZE; x += 1) tiles.push(t(x, y));
+  }
+
+  return { world, doors, chunkPositions: [chunk], tiles };
+}
