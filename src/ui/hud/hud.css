@@ -941,6 +941,57 @@
    `min-width: 0` above buys. */
 .hud-build__queue-row > .ui-action { flex: 0 0 auto; }
 
+/*
+ * What the queue block costs, and the block it takes it from.
+ *
+ * **The measurement first, because it is the whole reason this rule exists.**
+ * On the assembled page -- where `.hud__rail` also holds the save panel, which
+ * `ui-shell.spec.ts`'s harness does not, so that harness hands this panel
+ * 128.7px more rail than the application ever gives it -- a queue with this
+ * block *collapsed* put the panel 15px over its box at 1280x720 and 37px over at
+ * 900x600, and the block's own 45px header ended **14px and 37px below the
+ * panel's unscrolled fold**. Nothing had scrolled. That is issue #174 re-opened
+ * for a third time, and this time on a control rather than on a readout: a
+ * player who queues six walls would have been told so by a header they could not
+ * see, and the only way to reach the cancel controls behind it would have been to
+ * guess that the panel scrolls.
+ *
+ * So the 45px is paid for, and it is paid for out of the one block this panel is
+ * allowed to take height from: `--hud-build-catalogue-floor` drops from two rows
+ * to one while a queue exists. Three rules spend that token -- the catalogue
+ * section, its body and the list -- and the panel body's floor sums it, so
+ * overriding it here moves all four at once, which is exactly why it is a token
+ * (see `src/ui/tokens.css`).
+ *
+ * **It is a floor, so this donates nothing where nothing is needed.** A flex item
+ * shrinks only under pressure: at 1440x900, 1024x768 and 375x812 the panel has
+ * room for the block and the catalogue keeps both rows. The donation happens at
+ * the two short viewports that were over their box, and it comes back the moment
+ * the queue drains.
+ *
+ * **Against the token's own argument**, which says two rows because "one row plus
+ * a scrollbar is not a list you can choose from". That is right about the state
+ * it was written for -- the panel's default, where choosing what to build is its
+ * whole job. A panel with a queue has a second job: saying what is coming and
+ * letting one order be taken back. Between a two-row catalogue and a reachable
+ * queue, at the two viewports where they do not both fit, the queue wins -- and a
+ * player who wants the list back finishes or cancels the queue. The Rooms panel
+ * already runs on a one-row floor (`--hud-rooms-catalogue-floor`), so a
+ * scrolling one-row catalogue is a state this interface ships rather than a new
+ * one invented here.
+ */
+.hud-build[data-queued] { --hud-build-catalogue-floor: var(--tap-target); }
+
+/* `[hidden]` on the "and N more" line has to win, and it does not win on its
+   own: that line also carries `.hud-build__note`, which the `max-height: 700px`
+   block at the foot of this file gives `display: -webkit-box` in order to clamp
+   the arm hint to one line -- an author declaration that beats the user agent's
+   `display: none`. Without this rule a queue with nothing behind it would lay
+   out an empty line at every short viewport. Same trap as
+   `.hud-build__buy:not([hidden])`, closed from the other side because the class
+   being beaten is shared. */
+.hud-build__queue-more[hidden] { display: none; }
+
 /* A readout of where the wall will land -- never an input. */
 .hud-build__target {
   display: flex;

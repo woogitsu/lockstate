@@ -701,7 +701,19 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
 
   const queueCount = valueText('', 'hud-build__queue-count');
   const queueList = element('div', { className: 'hud-build__queue-list' });
-  const queueMore = eyebrowText('', 'hud-build__note');
+  /*
+   * `hud-build__queue-more` as well as `hud-build__note`, and the extra class is
+   * load-bearing rather than descriptive.
+   *
+   * `.hud-build__note` is given `display: -webkit-box` under
+   * `max-height: 700px` in `hud.css`, to clamp the arm hint to one line -- and an
+   * author `display` beats the user agent's `[hidden] { display: none }`. So
+   * without a class to hang a rule on, `queueMore.hidden = true` would still lay
+   * this line out at every short viewport. It is the same trap
+   * `.hud-build__buy:not([hidden])` closes, and it is closed here in the other
+   * direction because the class it has to beat is shared.
+   */
+  const queueMore = eyebrowText('', 'hud-build__note hud-build__queue-more');
 
   /**
    * One pooled row: what the order is, what it is waiting for, and the one
@@ -799,7 +811,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       }
       queueCount.textContent = '';
       queueMore.textContent = '';
-      delete queueSection.element.dataset['queued'];
+      delete panel.element.dataset['queued'];
       return;
     }
 
@@ -810,7 +822,22 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       count: shown.total,
       started: shown.started,
     });
-    queueSection.element.dataset['queued'] = String(shown.total);
+    /*
+     * On the *panel*, not on the block, because it is what `hud.css` keys the
+     * catalogue's floor on -- and that floor is where the 45px this block costs
+     * actually comes from.
+     *
+     * Measured on the assembled page, where the rail also holds the save panel:
+     * with a queue and this block collapsed, the panel was 15px over its box at
+     * 1280x720 and 37px over at 900x600, and the block's own header ended 14px
+     * and 37px **below the panel's unscrolled fold**. That is #174 re-opened --
+     * a control laid out where the player cannot see it, with nothing having
+     * scrolled -- and it is invisible in `ui-shell.spec.ts`'s harness, whose
+     * aside slot is empty and which therefore hands this panel 128.7px more rail
+     * than the application ever does. See `.hud-build[data-queued]` in
+     * `hud.css` for what pays for it.
+     */
+    panel.element.dataset['queued'] = String(shown.total);
 
     for (const [index, row] of queueRows.entries()) {
       const order = shown.orders[index];
@@ -895,6 +922,14 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     collapsed: true,
     onToggle: (collapsed) => coordinates.setCollapsed(collapsed),
   });
+  // Named, for the reason `.hud-build__arm` and `.hud-build__catalogue` are:
+  // a selector has to be able to say *which* section it means. It used to be
+  // findable as "the panel's last `.ui-section`", and the queue block (#348) is
+  // appended after it -- so `.last()` now resolves to a section that is `hidden`
+  // whenever nothing is queued. Three assertions in
+  // `tests/browser/app-shell.spec.ts` were reaching this header that way and
+  // timed out clicking an invisible one; they name the class now.
+  coordinates.element.classList.add('hud-build__coordinates');
   coordinates.body.append(
     eyebrowText(t(HUD_MESSAGE_KEY.buildCoordinatesHint), 'hud-build__note'),
     element('div', { className: 'hud-build__coords', children: [xField.element, yField.element] }),

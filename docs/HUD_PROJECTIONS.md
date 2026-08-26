@@ -366,7 +366,7 @@ the protocol growing with the read model.
 One request and one reply carry all of them:
 
 1. The main thread sends `simulation/request-projection` naming a
-   `projectionId` from a closed vocabulary (`PROJECTION_IDS`, twelve members),
+   `projectionId` from a closed vocabulary (`PROJECTION_IDS`, thirteen members),
    optionally with `offset`/`limit` and optionally with a `target` — an entity
    id or a string id — for a detail projection.
 2. The worker looks the id up in `PROJECTION_CATALOG`
@@ -418,7 +418,7 @@ neither a catalog entry nor a recorded route of its own. `projectClockPosition`
 is the one recorded exception — it is a pure function of a tick and the main
 thread already has the tick, so it is computed there rather than requested.
 
-**The first consumer, and what is still unpainted.** The route had no reader
+**The first consumers, and what is still unpainted.** The route had no reader
 for as long as #104 had shipped it — the gate above recorded that state as
 `UNPAINTED_ROUTE` and was written to fail the day a module under `src/ui/`
 started using it, which is what happened. `src/ui/simulation-room-needs.ts`
@@ -430,7 +430,19 @@ stack so a slow answer cannot queue a second question. The gate's entry is gone
 and its assertion now runs the other way: there must be a reader, and deleting
 the last one fails.
 
-Ten of the twelve catalogued read models still have a route and nobody on the
+`src/ui/simulation-build-queue.ts` is the second, on identical terms —
+`hud/build-queue`, while the Build tab is showing, on the counts cadence,
+refusing to stack — and it is the one worth naming separately, because it is the
+first time this channel made a **command** reachable rather than a readout.
+`CancelBuildOrder` names an `orderId`; no order id reached the main thread at
+all, so nothing could aim it, and
+`tests/foundation/unconsumed-command-contract.test.ts` carried it as the
+repository's last command with no production producer for as long as that gate
+had existed. It asks for the panel's own row budget rather than the default
+window, because the block draws three rows and a hundred would be ninety-odd
+built for nothing twice a second.
+
+Ten of the thirteen catalogued read models still have a route and nobody on the
 end of it. That is the honest state of this channel, and it is a different
 sentence from the one this section used to carry.
 
