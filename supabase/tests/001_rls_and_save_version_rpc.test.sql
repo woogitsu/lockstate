@@ -5,11 +5,11 @@
 -- 19/19 each. Everything added since has been run only the second way,
 -- because the stack run needs container images that were not reachable when
 -- they were written: the thirteen for issue #105 finding 11 (the
--- "storage_path" section), and the five for issue #194 (the
--- server-timestamp section at the end). `pnpm verify:sql` reports 37/37 for
--- this suite. That figure is what drifted before -- it read 32/32 for as
--- long as nobody re-ran it after #194 -- so treat it as a claim to check
--- rather than as a fact to trust.
+-- "storage_path" section), the five for issue #194's `created_at` half, and
+-- the six for its `updated_at` half (the two server-timestamp sections at
+-- the end). `pnpm verify:sql` reports 43/43 for this suite. That figure is
+-- what drifted before -- it read 32/32 for as long as nobody re-ran it after
+-- #194 -- so treat it as a claim to check rather than as a fact to trust.
 --
 --   * `supabase test db` against the REAL Supabase local stack (CLI 2.115.0,
 --     PostgreSQL 17 + pgTAP, with GoTrue, PostgREST, Storage and Realtime
@@ -29,7 +29,7 @@
 -- which drives the same contract through /auth/v1 and /rest/v1.
 
 begin;
-select plan(37);
+select plan(43);
 
 -- Two auth.users rows to test cross-owner isolation. Inserting directly
 -- into auth.users is the standard way to seed fixtures for RLS pgTAP tests.
@@ -424,6 +424,97 @@ select lives_ok(
   $$ insert into public.prisons (owner_id, game_version, slot_index)
      values ('11111111-1111-1111-1111-111111111111', 'lockstate-0.0.0', 8) $$,
   'the same insert without created_at succeeds, so suite 004 still drives the slot cap through this grant'
+);
+
+-- --- ...nor its update timestamps, and the server keeps them current (#194) ---
+--
+-- #194's open half, decided in 20260826130000 and recorded as a rule in ADR
+-- 0008 section 2. Two properties, and the second is the one the decision turned
+-- on rather than the first.
+--
+-- The refusal is the same privilege boundary as `created_at` above: `42501`,
+-- because the column is out of every client grant. This schema refuses rather
+-- than silently corrects for the same reason it refuses `current_revision` at
+-- the top of this file -- a silently corrected value is one the client believes
+-- it set and the server did not.
+--
+-- The stamping is the half that makes the column mean anything. `default now()`
+-- fires on INSERT and never again, so before the trigger an UPDATE that did not
+-- name `updated_at` left it at the insert value: reproduced as `authenticated`,
+-- `payload` moved to `{"a": 2}` while `updated_at` stayed at 2020-01-01. The
+-- column was not merely untrustworthy, it was stale. The last two assertions
+-- below are what would fail if the trigger were dropped and the grants left as
+-- they are -- which would read as a tightening and would leave the column
+-- frozen at its insert value forever.
+select throws_ok(
+  $$ insert into public.user_settings (user_id, settings_schema_version, payload, updated_at)
+     values ('11111111-1111-1111-1111-111111111111', 1, '{}'::jsonb,
+             '4000-01-01T00:00:00Z') $$,
+  '42501',
+  null,
+  'a client naming user_settings.updated_at is refused on the privilege'
+);
+
+select lives_ok(
+  $$ insert into public.user_settings (user_id, settings_schema_version, payload)
+     values ('11111111-1111-1111-1111-111111111111', 1, '{"a": 1}'::jsonb) $$,
+  'the same insert without updated_at succeeds, so the revoke did not take the write path with it'
+);
+
+select throws_ok(
+  $$ update public.user_settings set updated_at = '1900-01-01T00:00:00Z'
+      where user_id = '11111111-1111-1111-1111-111111111111' $$,
+  '42501',
+  null,
+  'and a client cannot walk it backwards afterwards -- the reproduction in #194, now refused'
+);
+
+-- The stamp itself. `now()` is the transaction timestamp and this suite is one
+-- transaction, so no wall-clock comparison can say anything here; what is
+-- asserted is the property the trigger exists for -- an UPDATE that never
+-- mentions `updated_at` moves it off a value the row already held.
+--
+-- Getting a row into that state is itself the first assertion. The obvious way
+-- to plant a stale value is a privileged UPDATE, and it does not work: the
+-- trigger has no exempt path, so the table owner's write is stamped too. That
+-- is worth asserting rather than working around silently -- `entitlement_events`
+-- is append-only *including for the table owner* by the same mechanism, and a
+-- trigger that a privileged connection could route around would be a weaker
+-- control than the grants it sits beside.
+reset role;
+update public.user_settings set updated_at = '2020-01-01T00:00:00Z'
+  where user_id = '11111111-1111-1111-1111-111111111111';
+
+select is(
+  (select updated_at = now() from public.user_settings
+    where user_id = '11111111-1111-1111-1111-111111111111'),
+  true,
+  'even the table owner cannot plant a stale updated_at: the trigger has no exempt write path'
+);
+
+-- So the trigger is disabled to plant it, which needs the table owner and is
+-- therefore unreachable from either client role.
+alter table public.user_settings disable trigger user_settings_stamp_updated_at;
+update public.user_settings set updated_at = '2020-01-01T00:00:00Z'
+  where user_id = '11111111-1111-1111-1111-111111111111';
+alter table public.user_settings enable trigger user_settings_stamp_updated_at;
+
+select is(
+  (select updated_at from public.user_settings
+    where user_id = '11111111-1111-1111-1111-111111111111'),
+  '2020-01-01T00:00:00Z'::timestamptz,
+  'the stale value is planted, so the assertion below is not passing on a row that was already current'
+);
+
+set local role authenticated;
+update public.user_settings set payload = '{"a": 2}'::jsonb
+  where user_id = '11111111-1111-1111-1111-111111111111';
+
+select is(
+  (select updated_at = now() from public.user_settings
+    where user_id = '11111111-1111-1111-1111-111111111111'),
+  true,
+  'an UPDATE that never names updated_at still moves it to now(): the column is the server''s, and current'
 );
 
 reset role;

@@ -87,6 +87,7 @@ max_save_slot_capacity:invoker:<unpinned>
 recompute_entitlement_projection:definer:public, pg_temp
 record_entitlement_event:definer:public, pg_temp
 reject_entitlement_event_update:invoker:public, pg_temp
+stamp_updated_at:invoker:public, pg_temp
 submit_challenge_evidence:definer:public, pg_temp$expected$, e'\r', ''),
   'every function in public declares exactly the definer rights and pinned search_path its migration states'
 );

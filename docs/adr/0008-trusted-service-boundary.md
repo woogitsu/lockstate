@@ -82,6 +82,63 @@ trusted mutation to record actor, reason and prior value, and no audit trail
 on the trusted write path exists yet (#105 finding 8), so a truncated ledger
 would leave no record that it happened.
 
+**Generalised, 2026-08-26 (issue #280 finding F14): a Data API role holds
+exactly the DML privileges its zone needs on a table, and nothing else.**
+`TRUNCATE` was the first ambient privilege Supabase's `grant all on tables`
+left behind; `REFERENCES`, `TRIGGER` and — from PostgreSQL 17 — `MAINTAIN`
+were the rest, and they were dismissed in
+`supabase/tests/003_data_api_grants.test.sql` as carrying "no Data API
+meaning". They do carry none *today*, and that is the problem with the
+dismissal rather than a defence of it: `TRIGGER` is inert only because no
+role can `EXECUTE` a trigger function, `REFERENCES` only because no role
+holds `CREATE` on a schema, and neither condition was asserted anywhere.
+`20260826120000_revoke_ambient_table_privileges.sql` revokes all three, and
+the sweep that pins it reads privilege *letters* out of the ACL rather than
+naming privileges, so it holds on a server version this schema has not been
+run on yet.
+
+The same migration revokes the `ALTER DEFAULT PRIVILEGES` entries that hand
+those privileges back. That is the half the three preceding revokes left
+open: each expanded `on all tables in schema public` at execution time, so
+the next table created in `public` arrived TRUNCATE-able again, and the
+mitigation was a schema-wide sweep that fails *after* the table exists.
+Executed before the revoke, a freshly created table came out
+`{…,anon=Dxt/root,authenticated=Dxt/root,service_role=Dxt/root}` with
+`has_table_privilege('anon', …, 'TRUNCATE')` true; after it, with a null ACL.
+The residue on sequences was `UPDATE`, which is `setval` — latent only
+because every key in this schema is a `uuid` (#280 finding F15). **The rule
+this settles for every future table is that a new relation in `public`
+starts closed, and its migration opens exactly what it means to open.**
+
+**Authority over a row is not authority over the record of when it was
+written.** Decided 2026-08-26 for issue #194, and it is the one ruling in
+this section that narrows the row above rather than the one below it: "Prison
+simulation state, saves, settings — Z0/Z1 (client-authoritative)" is about a
+row's *content*, and a `created_at`/`updated_at` column is not content. It is
+the server's statement about when the write happened, so its authority is Z2
+even on a table whose payload is Z0's. `20260824140000` established this for
+`created_at` without naming it as a rule;
+`20260826130000_server_stamp_updated_at.sql` completes it for `updated_at` on
+`prisons`, `profiles` and `user_settings` — the server stamps them from a
+`BEFORE INSERT OR UPDATE` trigger, and the columns are out of every client
+grant, so a client that sends one is refused rather than silently corrected.
+
+The rejected alternative was to keep the columns client-writable on the
+argument that an offline-first client legitimately knows when the user
+changed a setting. It was declined on two grounds, both executed. First,
+`src/persistence/cloud/sync-engine.ts` states the reconciliation contract as
+"silent last-write-wins is prohibited": ordering is decided by
+`prisons.current_revision`, which a client cannot write (`42501`, reproduced),
+and conflicts by an explicit user choice — so a client edit time has no
+consumer in the design and one prohibited use. Second, without a trigger the
+column was not merely untrustworthy but *wrong*: `default now()` fires only on
+`INSERT`, so an `UPDATE` that did not name `updated_at` left it at the insert
+value. Reproduced as `authenticated`: `payload` changed while `updated_at`
+stayed at `2020-01-01`. Nothing in `src/` names it, so nothing was keeping it
+current. **If a client-side edit time is ever needed for reconciliation it
+gets its own column, named for what it is** (`client_edited_at`), so the trust
+boundary is visible where the value is read rather than inferred from a grant.
+
 ### 3. Mandatory shape of a Z2 entry point
 
 Every trusted mutation path, without exception, is:
