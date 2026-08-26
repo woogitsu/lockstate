@@ -1580,6 +1580,144 @@ test.describe('HUD shell', () => {
     });
 
     /**
+     * Issue #341: **the label a player reads, not the id underneath it.**
+     *
+     * #339 closed the mapping layer -- `buildEdgeChoiceOptions` and
+     * `formatBuildTargetText` are now asserted headlessly against literal
+     * text. What it could not reach from its two-file surface is the step
+     * after: whether the panel puts the mapped label on screen next to the
+     * right control.
+     *
+     * That step was completely unasserted, and measurably so. #339 applied
+     *
+     * ```ts
+     * function edgeLabelKey(edge: HudBuildEdge): LocalizationKey {
+     *   void deriveSimulationMessageKey('build-edge', edge);
+     *   return 'build-edge.north.name';
+     * }
+     * ```
+     *
+     * to unmodified `main` and ran the whole repository suite: 204 files,
+     * 2,321 tests, all green, with every edge on screen reading "North".
+     * `buildProbe().edge` cannot see it -- it reads `data-choice`, and a
+     * label defect leaves the id correct -- and `targetText` was asserted
+     * only for the empty state, where no edge has been named yet.
+     *
+     * Vitest cannot close it either: `vitest.config.ts` runs `environment:
+     * 'node'` with no DOM library anywhere in the dependency tree, so
+     * `createBuildPanel` throws outside a browser. `docs/TESTING.md` puts
+     * rendered-output claims about `src/ui/hud/**` here, and this is one.
+     *
+     * Two claims, and #220's lesson applies to both: `toContainText` does not
+     * imply visibility, so every label read here is paired with the box the
+     * browser gave it and with `offsetParent`. Geometry is only worth reading
+     * once the page is known to have rendered -- a page that failed to load
+     * reports plausible numbers that mean nothing -- so the viewport, the
+     * active tab and the panel's own rectangle are checked first.
+     */
+    test('draws a distinct visible label per edge, and names the aimed edge in the readout', async ({ page }) => {
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate(() => window.lockstateUiHarness.clickTab('build'));
+      // The chooser lives in the folded fallback section, whose body carries
+      // `hidden`. Opening it is what makes a visibility claim about the
+      // options meaningful rather than vacuously false.
+      await page.evaluate(() => window.lockstateUiHarness.expandBuildCoordinates());
+
+      /*
+       * **The page rendered.** Three independent facts, none of them the thing
+       * under test: the harness answered at all (a failed load leaves
+       * `window.lockstateUiHarness` undefined and `page.evaluate` throws), the
+       * HUD is painting the tab that was clicked, and the browser gave the
+       * Build panel a non-degenerate rectangle. Only after that is any box
+       * below worth believing.
+       */
+      const layout = await page.evaluate(() => window.lockstateUiHarness.buildLayoutProbe());
+      expect((await page.evaluate(() => window.lockstateUiHarness.hudProbe())).activeTab).toBe('build');
+      expect(layout.viewport[0]).toBeGreaterThan(0);
+      expect(layout.viewport[1]).toBeGreaterThan(0);
+      expect(layout.panel).not.toBeNull();
+      expect(layout.panel?.width ?? 0).toBeGreaterThan(0);
+      expect(layout.panel?.height ?? 0).toBeGreaterThan(0);
+
+      const probe = await page.evaluate(() => window.lockstateUiHarness.buildProbe());
+      expect(probe.visible).toBe(true);
+      expect(probe.edgeChooserVisible).toBe(true);
+
+      // The ids, which is all the panel's `data-` attributes can say, and all
+      // any existing assertion in this file reads.
+      expect(probe.edgeLabels.map((option) => option.id)).toEqual(['north', 'west']);
+      // The text, which is what a player receives. Literal, against
+      // `src/content/simulation-message-keys.ts`' `build-edge` labels: a
+      // spec that recomputed the expectation from the same helper the panel
+      // calls would agree with any mapping, right or wrong.
+      expect(probe.edgeLabels.map((option) => option.label)).toEqual(['North', 'West']);
+      // The property the mutation violates, stated on its own so a third edge
+      // added later is covered without being enumerated: two ids never share
+      // one label.
+      expect(new Set(probe.edgeLabels.map((option) => option.label)).size).toBe(probe.edgeLabels.length);
+      // ADR 0011: an unresolved key renders as itself, so a raw namespace
+      // prefix here is a missing catalog entry rather than a label.
+      expect(probe.edgeLabels.filter((option) => option.label.startsWith('build-edge.'))).toEqual([]);
+      expect(probe.edgeLabels.filter((option) => option.label.length === 0)).toEqual([]);
+
+      // Visible, not merely present (#220). `offsetParent` is the browser's
+      // own answer, and the box says the text was given room to be read.
+      for (const option of probe.edgeLabels) {
+        expect(option.laidOut).toBe(true);
+        expect(option.widthPx).toBeGreaterThan(0);
+        expect(option.heightPx).toBeGreaterThan(0);
+      }
+
+      /*
+       * **The readout**, which is the second place an edge becomes a label and
+       * the one where the wrong edge is invisible: the option row shows both
+       * labels side by side, while the readout shows one string that looks
+       * plausible whatever edge produced it.
+       *
+       * Aimed rather than merely chosen, because the two are separate routes.
+       * Choosing west in the chooser decides what `clickPlaceOrder` will send
+       * -- which the numeric fallback test above asserts -- while the readout
+       * reports what the *world* is aimed at, which `main.ts` drives through
+       * `HudHandle.setBuildTarget`. Both are driven here: `edge` below is what
+       * the chooser did, `targetText` what the aim did.
+       */
+      await page.evaluate(() => window.lockstateUiHarness.clickBuildEdge('west'));
+      const aim = await page.evaluate(() =>
+        window.lockstateUiHarness.aimBuildTarget({ x: 18, y: 15, edge: 'west', segments: 1 }),
+      );
+      // `false` means no HUD was mounted, so an assertion below could only be
+      // reading the panel's opening state.
+      expect(aim).toBe(true);
+
+      const aimed = await page.evaluate(() => window.lockstateUiHarness.buildProbe());
+      expect(aimed.edge).toBe('west');
+      // The id side, so a readout that is right by accident while the aim was
+      // wrong cannot pass: `hud.build.target-value` is `{x}, {y} · {edge}`.
+      expect(aimed.targetReadout).toBe('18,15,west,1');
+      expect(aimed.targetText).toBe('18, 15 · West');
+      // And the west label specifically, sourced from the row rather than
+      // written twice -- with the north label excluded, which is the exact
+      // string the mutation substitutes.
+      const label = (id: string): string => probe.edgeLabels.find((option) => option.id === id)?.label ?? '';
+      expect(aimed.targetText).toContain(label('west'));
+      expect(aimed.targetText).not.toContain(label('north'));
+      // On screen, for the same reason the options are measured: `targetText`
+      // is a `textContent` read and answers identically on a readout the
+      // browser never painted.
+      expect(aimed.targetLaidOut).toBe(true);
+      expect(aimed.targetBox).not.toBeNull();
+      expect(aimed.targetBox?.width ?? 0).toBeGreaterThan(0);
+      expect(aimed.targetBox?.height ?? 0).toBeGreaterThan(0);
+
+      // Clearing the aim is the state the panel opens in, and it names no edge
+      // at all -- so the readout above was the aim's doing.
+      expect(await page.evaluate(() => window.lockstateUiHarness.aimBuildTarget(null))).toBe(true);
+      const cleared = await page.evaluate(() => window.lockstateUiHarness.buildProbe());
+      expect(cleared.targetReadout).toBeNull();
+      expect(cleared.targetText).toBe('Point at the world');
+    });
+
+    /**
      * Issue #89: the panel is where the treasury is spent, and the control
      * that spends it costs the panel no height until it is opened.
      *

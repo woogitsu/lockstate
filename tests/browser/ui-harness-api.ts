@@ -85,6 +85,35 @@ export interface IntakeProbe {
   readonly hint: string;
 }
 
+/**
+ * One option of the Build panel's edge chooser, as a player actually receives
+ * it (issue #341).
+ *
+ * `BuildProbe.edge` reports `data-choice`, which is an **id**: an
+ * implementation that labels every edge "North" still reports `west` there, so
+ * no assertion over it can see a label defect. #339 measured that exact
+ * mutation passing all 2,321 tests in the repository. This carries the id and
+ * the *drawn text* side by side so a spec can require them to disagree in the
+ * way two distinct edges must.
+ *
+ * The geometry is here for #220's reason: `toContainText` does not imply
+ * visibility, and the edge chooser lives inside a collapsible section whose
+ * body is `hidden` until the player opens it, so a label can be in the DOM
+ * with nothing on screen. `laidOut` is the browser's own answer via
+ * `offsetParent`; the box says the text was given room to be read.
+ */
+export interface BuildEdgeLabelProbe {
+  /** `data-choice` -- the id, which a label defect leaves correct. */
+  readonly id: string;
+  /** The option button's rendered text: the label, and the thing under test. */
+  readonly label: string;
+  /** `offsetParent`, not the `hidden` attribute, which is inherited. */
+  readonly laidOut: boolean;
+  /** The option's border box in CSS pixels. Both must exceed 0 to be readable. */
+  readonly widthPx: number;
+  readonly heightPx: number;
+}
+
 export interface BuildProbe {
   /** False while the Build tab is not the active one. */
   readonly visible: boolean;
@@ -94,6 +123,16 @@ export interface BuildProbe {
   readonly tileX: string;
   readonly tileY: string;
   readonly edge: string | null;
+  /**
+   * Every edge option, in the order they are drawn: id, rendered label, and
+   * the box the browser gave that label (issue #341).
+   *
+   * The field `edge` above cannot answer this. It reads `data-choice`, so the
+   * mutation that returns `'build-edge.north.name'` for every edge -- which
+   * paints the West option "North" -- leaves it reporting `west` and every
+   * assertion over it green.
+   */
+  readonly edgeLabels: readonly BuildEdgeLabelProbe[];
   /** True when the edge chooser is showing at all -- it is hidden for a non-edge buildable. */
   readonly edgeChooserVisible: boolean;
   readonly submitDisabled: boolean;
@@ -128,6 +167,17 @@ export interface BuildProbe {
   /** The `data-target` readout, or null when nothing is aimed at. */
   readonly targetReadout: string | null;
   readonly targetText: string;
+  /**
+   * Whether the readout `targetText` was read from is laid out, and its box
+   * (issue #341, on #220's lesson).
+   *
+   * `targetText` is a `textContent` read and answers the same on a readout the
+   * browser never painted. The readout is the *second* place an edge becomes a
+   * label and the one where a wrong edge is invisible, so the string being
+   * right is only half the claim -- a player has to be able to read it.
+   */
+  readonly targetLaidOut: boolean;
+  readonly targetBox: LayoutBox | null;
   /** The buy disclosure (#89): whether it is offered at all, and whether it is open. */
   readonly buyToggleVisible: boolean;
   readonly buyOpen: boolean;
@@ -468,6 +518,22 @@ export interface LockstateUiHarness {
   clickBuildable(definitionId: string): boolean;
   stepBuildCoordinate(axis: 'x' | 'y', direction: 'up' | 'down'): boolean;
   clickBuildEdge(edge: string): boolean;
+  /**
+   * Aims the panel's target readout at one tile edge, the way the world does.
+   *
+   * `main.ts` wires `BuildTool.attachReadout` straight into
+   * `HudHandle.setBuildTarget`, and this calls that same method on the mounted
+   * HUD -- driving a real Phaser pointer belongs to `app-shell.spec.ts`. The
+   * numeric edge chooser deliberately does *not* feed this readout: choosing
+   * an edge there changes what `clickPlaceOrder` will send, not what the
+   * player is currently aimed at. So the readout has to be aimed to be read.
+   *
+   * `null` clears it. Returns `false` when no HUD is mounted, so a spec cannot
+   * pass by asserting about an aim that never happened.
+   */
+  aimBuildTarget(
+    target: { readonly x: number; readonly y: number; readonly edge: string; readonly segments: number } | null,
+  ): boolean;
   clickPlaceOrder(): boolean;
   /** Opens or closes the buy disclosure (#89). */
   clickBuyToggle(): boolean;
