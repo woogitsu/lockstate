@@ -465,7 +465,9 @@ describe('staff', () => {
     ]);
     expect(staff.countsByDeploymentPhase.reduce((sum, entry) => sum + entry.count, 0)).toBe(5);
 
-    expect(staff.coverage.map((entry) => entry.sectorId)).toEqual(['sector-a', 'sector-b']);
+    // Three sectors: the scenario's two, plus the derived default every session
+    // carries (ADR 0036), which asks for one guard exactly as those two do.
+    expect(staff.coverage.map((entry) => entry.sectorId)).toEqual(['sector-a', 'sector-b', 'security-sector.prison']);
     for (const entry of staff.coverage) {
       expect(entry.required).toBe(1);
       expect(entry.shortage).toBe(Math.max(0, entry.required - entry.assigned));
@@ -498,13 +500,19 @@ describe('security', () => {
       runtime.kernel.tick,
     );
 
-    expect(security.sectors.map((sector) => sector.sectorId)).toEqual(['sector-a', 'sector-b']);
+    // The scenario's two, plus the derived default every session carries
+    // (ADR 0036). It has no doors and no patrol route, which is what the
+    // assertions on `security.sectors[2]` below say.
+    expect(security.sectors.map((sector) => sector.sectorId)).toEqual(['sector-a', 'sector-b', 'security-sector.prison']);
     const sectorA = security.sectors[0]!;
     expect(sectorA.controlState).toBe(runtime.securitySectors.getControlState('sector-a'));
     expect(sectorA.doors.map((door) => door.doorId)).toEqual(['door-1']);
     expect(sectorA.doors[0]).toMatchObject({ state: 'open', requiredSecurityClearance: 0 });
     expect(sectorA.patrol).toMatchObject({ hasRoute: true, waypointCount: 2, expectedLoopTicks: 40 });
     expect(security.sectors[1]?.patrol.hasRoute).toBe(false);
+    expect(security.sectors[2]).toMatchObject({ sectorId: 'security-sector.prison', gradeId: 'grade.general', controlState: 'normal' });
+    expect(security.sectors[2]?.doors).toEqual([]);
+    expect(security.sectors[2]?.patrol.hasRoute).toBe(false);
 
     expect(sectorA.staffing.assigned).toBe(
       staffAssignedTo(runtime, 'sector-a'),

@@ -4,6 +4,7 @@ import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/si
 import { DAY_LENGTH_TICKS } from '../../src/simulation/prisoners/regime';
 import { createGradedDoor } from '../../src/simulation/security/sector';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
+import { withoutDefaultSectorDeploymentDemand } from '../helpers/default-security-sector';
 import { hashFullRuntime } from '../helpers/determinism-state';
 
 /**
@@ -87,6 +88,17 @@ function phases(runtime: SimulationRuntime): readonly string[] {
 /** A prison with one sector, one graded door, and `guards` guards hired at the origin. */
 function buildPrison(guards: number): SimulationRuntime {
   const runtime = createNewSimulationRuntime(SEED);
+  /*
+   * Every session now carries a derived default sector that asks for one guard
+   * all day ([ADR 0036](../../docs/adr/0036-a-derived-default-security-sector.md),
+   * closing #396). `DeploymentSystem` fills it from the same unassigned pool
+   * every claimant here draws from, so without this the first guard hired below
+   * would be posted rather than claimable and every guard id in this file's
+   * eighteen assertions would shift by one -- which would say nothing about
+   * `ReleaseGuardAssignment`, this file's subject. The sector stays registered;
+   * only its demand is zeroed. See the helper for why zero rather than deleted.
+   */
+  withoutDefaultSectorDeploymentDemand(runtime);
   runtime.navigation.doors.register(
     createGradedDoor(DOOR_ID, { x: tileCoordinate(2), y: tileCoordinate(1) }, 'left', 'open', 'grade.general'),
   );

@@ -52,8 +52,14 @@ test('new-session runtime wires security sectors, guard deployment and patrol', 
   }
 
   expect(runtime.securityGuards.getDeploymentPhase(guardId)).toBe('on-post');
+  // Two sectors: this test's own, and the derived default every session now
+  // carries (ADR 0036). Sorted by id, `'sector-1'` before
+  // `'security-sector.prison'`, which is also the order `assignUnassignedGuards`
+  // fills them in -- so the single guard hired here goes to this test's sector
+  // and the default one reports the shortage it honestly has.
   expect(runtime.deploymentSystem.getCoverageReport(0)).toEqual([
     { sectorId: 'sector-1', required: 1, assigned: 1, shortage: 0 },
+    { sectorId: 'security-sector.prison', required: 1, assigned: 0, shortage: 1 },
   ]);
 });
 
@@ -63,6 +69,11 @@ test('new-session runtime wires contraband, intelligence and search through the 
   runtime.prisoners.roomInstances.register({ instanceId: 'cell-1', roomCatalogId: 'room.cell', anchorTile: { x: tileCoordinate(5), y: tileCoordinate(5) }, residentCapacity: 1, concurrentUseCapacity: 1, objectCapabilities: [] });
   runtime.contraband.introduce('item-1', 'contraband.phone', { kind: 'cell', id: 'cell-1' }, { sourceType: 'room-object', sourceId: 'workshop', introducedAtTick: 0 });
   runtime.searchPolicies.push({ scope: 'cell', requiredGuardCount: 1, dwellTicksPerTarget: 5, baseDetectionProbability: 1, concealmentPenaltyPerPoint: 0, intelligenceConfidenceBonus: 0 });
+  // Two guards for a one-guard search, because the derived default sector takes
+  // the first (ADR 0036): `DeploymentSystem` runs at order 270 and
+  // `SearchSystem` at 295, both drawing from `unassignedGuardIds()`, so a single
+  // hire would be standing on a post rather than available to search.
+  runtime.securityGuards.hire('staff-role.guard', { x: tileCoordinate(0), y: tileCoordinate(0) });
   runtime.securityGuards.hire('staff-role.guard', { x: tileCoordinate(0), y: tileCoordinate(0) });
   runtime.searchSystem.submitOrder({ id: 'search-1', scope: 'cell', targets: [{ holderKind: 'cell', holderId: 'cell-1' }] });
 
@@ -82,6 +93,10 @@ test('new-session runtime wires the incident pipeline through real sectors, guar
   runtime.securitySectors.register({ id: 'sector-1', gradeId: 'grade.general', doorIds: ['door-1'], postTile });
   runtime.incidentSectorIds.push('sector-1');
 
+  // Two guards for a one-responder incident, for the reason the search case
+  // above hires two: the derived default sector's requirement claims the first
+  // (ADR 0036), and `claimableResponders` draws from the unassigned pool.
+  runtime.securityGuards.hire('staff-role.guard', { x: tileCoordinate(0), y: tileCoordinate(0) });
   runtime.securityGuards.hire('staff-role.guard', { x: tileCoordinate(0), y: tileCoordinate(0) });
 
   // An incident opened directly on the runtime's own log is driven to resolution by the wired response system.
@@ -100,9 +115,37 @@ test('new-session runtime starts with no fabricated incident, gang or contraband
   expect(runtime.incidents.all()).toEqual([]);
   expect(runtime.gangs.all()).toEqual([]);
   expect(runtime.tunnels.all()).toEqual([]);
-  expect(runtime.incidentSectorIds).toEqual([]);
   expect(runtime.contraband.all()).toEqual([]);
   expect(runtime.intelligence.all()).toEqual([]);
   expect(runtime.searchPolicies).toEqual([]);
-  expect(runtime.securitySchedules).toEqual([]);
+});
+
+/**
+ * The exception to the rule above, and it is the one issue #396 is about
+ * ([ADR 0036](../../docs/adr/0036-a-derived-default-security-sector.md)).
+ *
+ * `incidentSectorIds` and `securitySchedules` were both asserted empty by the
+ * test above, alongside the registries that genuinely hold authored content.
+ * That was the bug rather than the invariant: with all three of them empty,
+ * `DeploymentSystem`, `PatrolSystem`, `IncidentTriggerSystem` and
+ * `IncidentResponseSystem` were no-ops in every session a player could start.
+ *
+ * A derived sector is not fabricated content: it carries no authored geometry,
+ * no name, no grade nobody chose, and it is a pure function of the world -- so
+ * it is re-derived on load rather than persisted, and `SAVE_SCHEMA_VERSION`
+ * stays 5. The three values below are written out rather than imported from the
+ * module that produces them, so a change to the derivation has to change this
+ * test too.
+ */
+test('new-session runtime derives exactly one security sector, its staffing requirement and its watch entry', () => {
+  const runtime = createNewSimulationRuntime();
+
+  expect(runtime.securitySectors.all()).toEqual([
+    { id: 'security-sector.prison', gradeId: 'grade.general', doorIds: [], postTile: { x: 16, y: 16 } },
+  ]);
+  expect(runtime.securitySectors.getControlState('security-sector.prison')).toBe('normal');
+  expect(runtime.securitySchedules).toEqual([
+    { sectorId: 'security-sector.prison', blocks: [{ startTickOfDay: 0, endTickOfDay: 2_400, requiredGuardCount: 1 }] },
+  ]);
+  expect(runtime.incidentSectorIds).toEqual(['security-sector.prison']);
 });

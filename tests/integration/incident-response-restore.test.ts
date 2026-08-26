@@ -9,6 +9,8 @@ import {
 } from '../../src/simulation/runtime/restore-session';
 import { createGradedDoor } from '../../src/simulation/security/sector';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
+import { DEFAULT_SECURITY_SECTOR_ID } from '../../src/simulation/security/default-sector';
+import { withoutDefaultSectorDeploymentDemand } from '../helpers/default-security-sector';
 import { hashFullRuntime, toJsonValue } from '../helpers/determinism-state';
 
 /**
@@ -88,6 +90,21 @@ const GUARD_ORIGIN = { x: tileCoordinate(0), y: tileCoordinate(0) } as const;
 /** `respondersPerSeverityPoint` is 0.5, so a severity-8 riot needs four. Derived from the policy, not copied. */
 const REQUIRED_RESPONDERS = Math.max(1, Math.ceil(SEVERITY * DEFAULT_INCIDENT_RESPONSE_POLICY.respondersPerSeverityPoint));
 const POST_TILE = { x: tileCoordinate(3), y: tileCoordinate(1) } as const;
+/**
+ * The whole `security.sectorControlStates` payload while `SECTOR_ID` is locked
+ * down, and it has **two** rows since [ADR 0036](../../docs/adr/0036-a-derived-default-security-sector.md).
+ *
+ * The second is the derived default sector every session carries, sitting at its
+ * baseline. It is written out rather than filtered away because this file's
+ * subject is what a payload says about a lockdown, and a payload that quietly
+ * dropped a sector's control state would be the #352 defect's own shape. Sorted
+ * by sector id, which is the order `SecuritySectorRegistry.getSnapshot` emits:
+ * `'sector-1'` before `'security-sector.prison'`.
+ */
+const SECTOR_CONTROL_STATES_IN_LOCKDOWN = [
+  [SECTOR_ID, 'lockdown'],
+  [DEFAULT_SECURITY_SECTOR_ID, 'normal'],
+] as const;
 
 /**
  * The reproduction from #352: six guards, one sector with one graded door, and
@@ -96,6 +113,16 @@ const POST_TILE = { x: tileCoordinate(3), y: tileCoordinate(1) } as const;
  */
 function buildRespondingPrison(): SimulationRuntime {
   const runtime = createNewSimulationRuntime(SEED);
+  /*
+   * #352's reproduction counts guards exactly -- four responders committed and
+   * two left in the pool -- and every session now carries a derived default
+   * sector asking for one guard all day
+   * ([ADR 0036](../../docs/adr/0036-a-derived-default-security-sector.md)). That
+   * would post one of these six before the riot could claim it, changing the
+   * reproduction rather than the defect. Zeroed rather than deleted so it says
+   * the same thing on both sides of this file's save round trips.
+   */
+  withoutDefaultSectorDeploymentDemand(runtime);
   runtime.navigation.doors.register(
     createGradedDoor(DOOR_ID, { x: tileCoordinate(2), y: tileCoordinate(1) }, 'left', 'open', 'grade.general'),
   );
@@ -495,6 +522,10 @@ describe('a save taken during an incident response releases what the response cl
      * here and it is not guessed at either.
      */
     const runtime = createNewSimulationRuntime(SEED);
+    // Two sectors, and only the two: the derived default's one-guard demand
+    // would post guard 0 to its own post tile and break the id arithmetic the
+    // rest of this case rests on (ADR 0036).
+    withoutDefaultSectorDeploymentDemand(runtime);
     runtime.securitySectors.register({ id: 'sector-a', gradeId: 'grade.general', doorIds: [], postTile: POST_TILE });
     runtime.securitySectors.register({ id: 'sector-z', gradeId: 'grade.general', doorIds: [], postTile: { x: tileCoordinate(9), y: tileCoordinate(9) } });
     runtime.incidentSectorIds.push('sector-a', 'sector-z');
@@ -538,7 +569,10 @@ describe('a save taken during an incident response releases what the response cl
 
     // #352 is still fixed for it either way: nothing is held.
     expect(restored.securityGuards.unassignedGuardIds().length).toBe(10);
+    // Three sectors, not two: `'sector-a'`, `'sector-z'` and the derived default
+    // every session carries (ADR 0036). All three back at their baseline.
     expect(restored.securitySectors.all().map((sector) => restored.securitySectors.getControlState(sector.id))).toEqual([
+      'normal',
       'normal',
       'normal',
     ]);
@@ -574,7 +608,7 @@ describe('a save taken during an incident response releases what the response cl
     expect(toJsonValue(captureSessionSnapshot(restored).simulation?.security.guards)).toEqual(
       toJsonValue(bundle.simulation?.security.guards),
     );
-    expect(captureSessionSnapshot(restored).simulation?.security.sectorControlStates).toEqual([[SECTOR_ID, 'lockdown']]);
+    expect(captureSessionSnapshot(restored).simulation?.security.sectorControlStates).toEqual(SECTOR_CONTROL_STATES_IN_LOCKDOWN);
   });
 
   it('is deterministic: two sessions restored from one payload agree tick for tick', () => {
@@ -747,7 +781,7 @@ describe('a save the unfixed build already stranded', () => {
     // Guards the two tests below: an input that did not actually hold the claim
     // would make them pass on nothing.
     const bundle = strandedBundle();
-    expect(bundle.simulation?.security.sectorControlStates).toEqual([[SECTOR_ID, 'lockdown']]);
+    expect(bundle.simulation?.security.sectorControlStates).toEqual(SECTOR_CONTROL_STATES_IN_LOCKDOWN);
     expect(bundle.simulation?.security.guards.records.map(([, record]) => record.deploymentPhase)).toEqual([
       'on-search',
       'on-search',
@@ -805,6 +839,6 @@ describe('a save the unfixed build already stranded', () => {
       'unassigned',
       'unassigned',
     ]);
-    expect(bundle.simulation?.security.sectorControlStates).toEqual([[SECTOR_ID, 'lockdown']]);
+    expect(bundle.simulation?.security.sectorControlStates).toEqual(SECTOR_CONTROL_STATES_IN_LOCKDOWN);
   });
 });
