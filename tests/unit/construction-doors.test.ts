@@ -168,6 +168,19 @@ function step(runtime: SimulationRuntime, ticks: number): void {
   for (let index = 0; index < ticks; index += 1) runtime.kernel.step();
 }
 
+/**
+ * Long enough for the whole perimeter to be standing.
+ *
+ * The crew builds one order at a time, so the perimeter's cost is the sum of
+ * its segments rather than the cost of the slowest one: eleven `wall-brick`
+ * at 60 ticks each once the queue is moving, one `door-wooden` at 40, plus the
+ * ~10 the first order spends being approved and drawing materials -- 710.
+ * 900 leaves headroom without depending on the exact number; the exact
+ * numbers are pinned in `construction-crew-capacity.test.ts`, where the
+ * schedule is the subject rather than the setup.
+ */
+const PERIMETER_BUILD_TICKS = 900;
+
 /** Recomputes topology the way a host would: from the world's own chunk states. `TopologyManager.update` has no caller in `src/`, so this is what a caller would do. */
 function topologyOf(runtime: SimulationRuntime): TopologyManager {
   const chunk = runtime.world.getChunk(CHUNK_0);
@@ -247,7 +260,7 @@ describe('a wall line with a door in it', () => {
   function builtWithDoor(): SimulationRuntime {
     const runtime = session();
     submitPerimeter(runtime, [DOORWAY_INDEX]);
-    step(runtime, 200);
+    step(runtime, PERIMETER_BUILD_TICKS);
     for (let index = 0; index < PERIMETER.length; index += 1) {
       expect(runtime.construction.getOrder(`seg-${String(index).padStart(2, '0')}`)?.state, `order ${index}`).toBe(
         'completed',
@@ -372,7 +385,7 @@ describe('a wall line with a door in it', () => {
      */
     const runtime = session();
     submitPerimeter(runtime);
-    step(runtime, 200);
+    step(runtime, PERIMETER_BUILD_TICKS);
 
     expect(runtime.navigation.doors.all()).toEqual([]);
     expect(roomPerimeterEnclosure(runtime.world, ROOM_RECT)).toEqual({ enclosure: 'sealed' });
@@ -404,7 +417,7 @@ describe('taking a built door back', () => {
   function builtWithDoor(): SimulationRuntime {
     const runtime = session();
     submitPerimeter(runtime, [DOORWAY_INDEX]);
-    step(runtime, 200);
+    step(runtime, PERIMETER_BUILD_TICKS);
     return runtime;
   }
 
@@ -483,7 +496,7 @@ describe('taking a built door back', () => {
         transactionId: 'wall-under-door',
       }),
     );
-    step(runtime, 200);
+    step(runtime, PERIMETER_BUILD_TICKS);
     expect(runtime.construction.getOrder('seg-99-wall-under-door')?.state).toBe('completed');
     // The door still crosses it: `DoorRegistry` is authoritative for the edge
     // whatever the world's own value there is.
@@ -510,7 +523,7 @@ describe('taking a built door back', () => {
      */
     const runtime = builtWithDoor();
     runtime.construction.submitOrder(createBuildOrder('seg-98-second-door', 'door-wooden', tile(DOORWAY.x, DOORWAY.y), DOORWAY.edge));
-    step(runtime, 200);
+    step(runtime, PERIMETER_BUILD_TICKS);
     expect(runtime.construction.getOrder('seg-98-second-door')?.state).toBe('completed');
     expect(runtime.navigation.doors.all().map((door) => door.id)).toEqual([DOOR_ID]);
 

@@ -416,7 +416,11 @@ describe('a removal that drops capacity below the claims held on a room (ADR 002
     submit(runtime, 'bed-1', packCommand({ type: 'PlaceObject', orderId: 'bed-1', definitionId: 'bed-wooden', ...BED_TILE }));
     submit(runtime, 'bed-2', packCommand({ type: 'PlaceObject', orderId: 'bed-2', definitionId: 'bed-wooden', ...SECOND_BED_TILE }));
     submit(runtime, 'bed-yard', packCommand({ type: 'PlaceObject', orderId: 'bed-3', definitionId: 'bed-wooden', ...YARD_BED_TILE }));
-    stepTo(runtime, 220);
+    // Three beds, and the crew builds one at a time: 100 ticks for the plank
+    // delivery, then 40 ticks per bed once the queue is moving. 400 clears all
+    // three with headroom, where 220 cleared them only because they used to be
+    // built simultaneously.
+    stepTo(runtime, 400);
     // One bed of footprint width 1, so the yard's all-objects total is 1 and its
     // one per-capability ceiling is `'sleep-surface'` of 1. Nothing authored
     // either: both are the object's own width. Neither bounds
