@@ -72,6 +72,13 @@ import { PROJECTION_CATALOG } from '../../src/simulation/worker/projection-catal
  * producer, because no control could aim at an order nothing had told this
  * thread about. So this channel is now the route by which a *command* becomes
  * reachable, not only the route by which a readout does.
+ *
+ * The third is `src/ui/simulation-intake.ts`, over `hud/prisoner-population`,
+ * and it is the first one about *people* rather than about the building: it
+ * says where the arrivals the player has already admitted are, which is the
+ * difference between an admission that is waiting for a cell and one that can
+ * never be housed at all. Neither state had a surface, although the strip
+ * counted both among the population.
  */
 
 const ROOT = join(__dirname, '../..');
@@ -126,7 +133,7 @@ const ROUTED_ELSEWHERE: Readonly<Record<string, string>> = {
  * assertion below. Named individually so that a reader which is renamed or
  * moved out of `src/ui/` fails here instead of silently leaving the surface.
  */
-const PAINTERS = ['simulation-build-queue.ts', 'simulation-room-needs.ts'] as const;
+const PAINTERS = ['simulation-build-queue.ts', 'simulation-intake.ts', 'simulation-room-needs.ts'] as const;
 
 const catalogSource = read(CATALOG_FILE);
 

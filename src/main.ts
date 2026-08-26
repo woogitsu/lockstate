@@ -28,6 +28,7 @@ import {
   type HudBuildViewModel,
   type HudBuildableViewModel,
   type HudHandle,
+  type HudIntakePipelineViewModel,
   type HudIntent,
   type HudRoomNeedsViewModel,
   type HudRoomViewModel,
@@ -43,6 +44,7 @@ import { hudAlertsFromWorkerMessage, hudRefusalFromWorkerMessage } from './ui/si
 import { hudCountsFromWorkerMessage } from './ui/simulation-counts';
 import { hudZoningFromWorkerMessage } from './ui/simulation-zoning';
 import { BuildQueueReader } from './ui/simulation-build-queue';
+import { IntakePipelineReader } from './ui/simulation-intake';
 import { RoomNeedsReader } from './ui/simulation-room-needs';
 import { SimulationCommandSender } from './ui/simulation-commands';
 import { BuildTool } from './ui/build-tool';
@@ -821,6 +823,27 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           const definition = BUILDABLE_REGISTRY.get(definitionId);
           return definition === undefined ? undefined : buildableLabelKey(definition);
         });
+  /*
+   * Where the arrivals are, on the same three terms as the two readouts above
+   * and closing the same shape of gap one panel over (#104's channel, third
+   * consumer).
+   *
+   * The terms it shares: it is a **pull**, because nobody reads the intake
+   * pipeline from the Build tab; it rides the **counts cadence**, because a
+   * stage advances on an intake tick without moving a single figure on the
+   * strip -- the population count is identical before and after an arrival
+   * finally gets a cell -- so a readout refreshed only when somebody was
+   * admitted would go stale in exactly the case the player is waiting on; and
+   * it is asked for **only while the Overview tab is showing**, which is the tab
+   * the Intake panel lives on.
+   *
+   * The difference: this one is about people the player has *already* admitted.
+   * `AdmitPrisoner` is refused when no room could ever house the arrival, and
+   * that refusal already reaches the band -- what had no surface at all was the
+   * accepted admission that then waits, which is what a zoned cell with no bed
+   * in it produces (ADR 0028 decision 8).
+   */
+  const intakePipelineReader = client === undefined ? undefined : new IntakePipelineReader(client);
   let activeTab: HudTabId = INITIAL_HUD_SHELL_STATE.activeTab;
 
   /**
@@ -894,6 +917,40 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       // player pressed nothing, so there is nothing to mark and no refusal to
       // report, which is the line `refusalMessageKey` already draws for chrome.
       .catch(() => applyRoomNeeds(undefined));
+  };
+
+  /**
+   * Puts the pipeline on the view model, or takes it off. The same
+   * absent-property dance the two above do, and for the same reason: "nothing
+   * has asked" and "every arrival has been dealt with" are different facts, and
+   * only the second is a statement about the prison.
+   */
+  const applyIntakePipeline = (next: HudIntakePipelineViewModel | undefined): void => {
+    if (next === undefined) {
+      if (viewModel.intakePipeline === undefined) return;
+      const { intakePipeline: _cleared, ...withoutPipeline } = viewModel;
+      viewModel = withoutPipeline;
+    } else {
+      viewModel = { ...viewModel, intakePipeline: next };
+    }
+    hud?.update(viewModel);
+  };
+
+  const refreshIntakePipeline = (): void => {
+    if (intakePipelineReader === undefined || activeTab !== 'overview') return;
+    void intakePipelineReader
+      .read()
+      .then((next) => {
+        // `undefined` is "a read was already in flight", not an answer, so it
+        // must leave what is on screen alone rather than blanking it.
+        if (next !== undefined) applyIntakePipeline(next);
+      })
+      // A refusal, a timeout, or a worker that went away. The readout comes off
+      // rather than staying: a line saying somebody is waiting for a cell, with
+      // nothing still answering for them, is the class of lie this layer exists
+      // to avoid. The failure reaches no control, because the player pressed
+      // nothing.
+      .catch(() => applyIntakePipeline(undefined));
   };
 
   /**
@@ -1006,9 +1063,11 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     if (message.kind === 'simulation/stopped') {
       applyRoomNeeds(undefined);
       applyBuildQueue(undefined);
+      applyIntakePipeline(undefined);
     } else {
       refreshRoomNeeds();
       refreshBuildQueue();
+      refreshIntakePipeline();
     }
   });
 
@@ -1100,6 +1159,12 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           // put the stale one back.
           if (activeTab === 'build') refreshBuildQueue();
           else applyBuildQueue(undefined);
+          // And the intake readout on the tab the Intake panel lives on, on
+          // the same terms as both: arriving asks at once rather than waiting
+          // up to 500ms for the next counts publication, and leaving takes the
+          // block off, because from here on nothing is refreshing it.
+          if (activeTab === 'overview') refreshIntakePipeline();
+          else applyIntakePipeline(undefined);
           return;
         }
 

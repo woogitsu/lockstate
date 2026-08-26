@@ -442,7 +442,30 @@ had existed. It asks for the panel's own row budget rather than the default
 window, because the block draws three rows and a hundred would be ninety-odd
 built for nothing twice a second.
 
-Ten of the thirteen catalogued read models still have a route and nobody on the
+`src/ui/simulation-intake.ts` is the third, on the same three terms —
+`hud/prisoner-population`, while the Overview tab is showing, on the counts
+cadence, refusing to stack — and it is the first that is about *people* rather
+than about the building. It asks for no window at all, because that projection
+is declared `paged: false` and the worker refuses `offset`/`limit` on a
+projection with no list rather than ignoring them; the reply is six stage counts
+whatever the population, which is the same shape that makes the status counts
+publishable (contract 5).
+
+What it carries is a fact the prison already knew and no surface had: an arrival
+that has been classified and is waiting for somewhere to sleep is **not**
+refused. `IntakeSystem` keeps the stage and retries it, and it is the state a
+zoned cell with no bed in it produces, because a room with no bed derives
+`residentCapacity: 0` (ADR 0028 decision 8). The status strip counts that
+prisoner among the population all the while, so a press of Admit moved a number
+and explained nothing. The readout names the stage the arrivals are at and, in a
+separate sentence, the terminal `failed` stage — which is terminal in the
+stronger sense that nothing the player builds afterwards releases those
+arrivals, so summing the two would promise a fix that does not exist. It narrows
+gap 12a rather than closing it: *how many* are waiting is now on screen, *how
+long* (`accommodationBacklogTicks`) and *why* a particular arrival failed are
+still read by nothing.
+
+Nine of the thirteen catalogued read models still have a route and nobody on the
 end of it. That is the honest state of this channel, and it is a different
 sentence from the one this section used to carry.
 
@@ -531,11 +554,17 @@ decision about what to build next.
 12. **No release date in player units.** `sentenceEndTick` exists but only
     after classification, and there is no served/remaining breakdown.
 12a. **Nothing projects why an admission failed, or how long one has been
-    waiting.** `IntakeMetrics` (`completedCount`, `failedCount`,
+    waiting** *— narrowed by the Intake panel's readout (section 9), not
+    closed.* `hud/prisoner-population` now reaches a surface, so **how many**
+    arrivals are at each stage is on screen: a prison holding one zoned cell
+    and three arrivals says two are at cell assignment, and a terminal
+    failure gets a sentence of its own. What is still unread is the rest of
+    this gap. `IntakeMetrics` (`completedCount`, `failedCount`,
     `accommodationBacklogTicks`) has no reader anywhere in `src/` outside
     `IntakeSystem` itself, so a prisoner stuck at
-    `accommodation-assignment` for an in-game week is indistinguishable on
-    screen from one who arrived a tick ago. This is why #261 step 4 puts the
+    `accommodation-assignment` for an in-game week is still
+    indistinguishable on screen from one who arrived a tick ago, and nothing
+    projects *why* a particular arrival failed — only that one did. This is why #261 step 4 puts the
     admission *refusal* on the `RefusalLog` route instead: a refusal is a
     fact about a press and reaches the player, while the backlog is a
     condition of the prison and reaches nothing. Prison Architect's answer

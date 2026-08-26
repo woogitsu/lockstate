@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import type { PrisonerPopulationCountsViewModel } from '../../src/simulation/presentation/prisoner-projection';
+import { Kernel } from '../../src/simulation/kernel/kernel';
+import {
+  projectPrisonerPopulationCounts,
+  type PrisonerPopulationCountsViewModel,
+} from '../../src/simulation/presentation/prisoner-projection';
+import { deriveXoshiroState } from '../../src/simulation/rng/seed';
+import { NamedRngStreams } from '../../src/simulation/rng/streams';
 import {
   SIMULATION_PROTOCOL_VERSION,
   type MainToWorkerMessage,
@@ -7,6 +13,10 @@ import {
 } from '../../src/simulation/protocol/types';
 import { IntakePipelineReader, intakePipelineFromProjection } from '../../src/ui/simulation-intake';
 import type { ProjectionMessageChannel } from '../../src/ui/simulation-projections';
+import { buildPrisonerScenarioFixture } from '../helpers/prisoner-fixture';
+
+/** The one stream `classifyPrisoner` draws from, seeded exactly as the intake-system tests seed it. */
+const RNG_STREAM = 'prisoners.classification';
 
 /**
  * The main thread's translator for the intake pipeline, proven with no worker
@@ -243,5 +253,75 @@ describe('the reader that asks for the pipeline', () => {
     const pending = reader.read();
     reader.dispose();
     await expect(pending).rejects.toThrow();
+  });
+});
+
+/**
+ * The same translator against a real prison, so the fixtures above are not
+ * fiction.
+ *
+ * Everything up to here is a hand-written view model, which proves the mapping
+ * and proves nothing about whether a prison ever produces one. This drives
+ * `IntakeSystem` over a prison with exactly one general-population cell,
+ * admits three arrivals, and asks what the panel would say. The expected
+ * figures come from the scenario -- three admitted, one cell, capacity one --
+ * and are cross-checked against the raw `records.intakeStage` array, which is
+ * the state the projection reads rather than anything the projection or the
+ * translator computed.
+ *
+ * It is the case the readout exists for: `IntakeSystem` keeps a stage it cannot
+ * satisfy and retries it, so two of these three are waiting rather than
+ * refused, and before this readout nothing on screen said so.
+ */
+describe('what the readout says about a prison with one cell and three arrivals', () => {
+  const admitThreeIntoOneCell = () => {
+    // `cellCount: 2` leaves exactly one `room.cell` instance: the fixture
+    // reserves `max(1, floor(40%))` of the cell tiles as `room.solitary-cell`.
+    const fixture = buildPrisonerScenarioFixture({ cellCount: 2, capacity: 10 });
+    expect(fixture.generalCellTiles).toHaveLength(1);
+    const kernel = new Kernel(0, 0, new NamedRngStreams([{ name: RNG_STREAM, state: deriveXoshiroState(1, RNG_STREAM) }]));
+    fixture.registerOn(kernel);
+
+    // A short sentence and no prior incidents: `classifyPrisoner` scores that
+    // at 0 and its one screening draw clamps to tier 0 or 1, so all three are
+    // classified `general-population` and all three resolve `room.cell`. That
+    // is the certainty `intake-system.ts` records, not a probability this test
+    // is relying on.
+    const ids = [0, 1, 2].map(() => fixture.prisoners.admitPrisoner({ sentenceLengthTicks: 1_000, priorIncidents: 0 }, fixture.originTile));
+    // Four intake firings (ticks 0, 5, 10, 15) walk an arrival from `queued` to
+    // `accommodation-assignment`; the fifth is where the one cell decides which
+    // of the three completes.
+    for (let tick = 0; tick < 25; tick += 1) kernel.step();
+    return { fixture, ids };
+  };
+
+  it('says two of the three are waiting at cell assignment, and none has failed', () => {
+    const { fixture, ids } = admitThreeIntoOneCell();
+
+    // The independent reading: the raw stage index per entity, straight off the
+    // component array the projection walks. `4` is `'completed'` and `3` is
+    // `'accommodation-assignment'` in `INTAKE_STAGES`.
+    const stageIndices = ids.map((id) => fixture.prisoners.records.intakeStage[fixture.prisoners.entityStore.getIndex(id)]);
+    expect(stageIndices.filter((stage) => stage === 4)).toHaveLength(1);
+    expect(stageIndices.filter((stage) => stage === 3)).toHaveLength(2);
+
+    const pipeline = intakePipelineFromProjection(projectPrisonerPopulationCounts(fixture.prisoners));
+    expect(pipeline).toEqual({
+      waiting: 2,
+      failed: 0,
+      total: 3,
+      stages: [
+        { stageId: 'accommodation-assignment', labelKey: 'intake-stage.accommodation-assignment.name', count: 2 },
+      ],
+    });
+  });
+
+  it('counts the admitted arrival in the population and not in the queue', () => {
+    // The distinction the whole readout turns on. One of the three is housed,
+    // and a readout that reported `waiting: 3` would be describing the status
+    // strip's population figure under a different name.
+    const { fixture } = admitThreeIntoOneCell();
+    const pipeline = intakePipelineFromProjection(projectPrisonerPopulationCounts(fixture.prisoners));
+    expect(pipeline.total - pipeline.waiting - pipeline.failed).toBe(1);
   });
 });

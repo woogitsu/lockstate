@@ -274,6 +274,15 @@ export function createIntakePanel(options: IntakePanelOptions): IntakePanel {
     },
     setVisible(visible: boolean): void {
       panel.element.hidden = !visible;
+      // The readout is *pulled* while this tab is the one showing, so leaving
+      // it stops the refresh -- and a readout nothing is refreshing goes stale
+      // in silence. Cleared rather than frozen, exactly as the Rooms panel
+      // clears its own, for the reason the counts empty when a session ends:
+      // what is on screen must be something a system is still answering for.
+      if (!visible) {
+        pipeline = undefined;
+        paintPipeline();
+      }
     },
   };
 }
