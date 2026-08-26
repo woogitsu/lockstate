@@ -111,6 +111,54 @@ function buildDiamond(): { readonly world: SparseWorld; readonly doors: DoorRegi
   return { world, doors, graph: buildNavigationGraph(world, doors, [chunkState]) };
 }
 
+/**
+ * The same diamond with the four doors renamed, so that the order regions
+ * reach the *frontier* points at the higher-numbered region.
+ *
+ * `buildDiamond`'s comment says its door ids make the portal order point the
+ * opposite way to the region-id order, and that is true of `S`'s portals --
+ * but the region search is rooted at the **destination** (#360), so the order
+ * that decides the tie is `T`'s portal list, and there `c-x-t` (to X=2) comes
+ * before `d-y-t` (to Y=5), pointing the same way as the region ids. Measured
+ * on this tree: with `region-dijkstra.ts`'s tie-break deleted outright, so
+ * that ties fall to frontier order, `buildDiamond`'s case stays green.
+ *
+ * Here the T-side doors are named the other way round -- `c-y-t` before
+ * `d-x-t` -- so Y=5 is relaxed onto the frontier first and the region-id
+ * tie-break is the only thing that can still send the route through X=2. That
+ * is exactly the property a heap frontier can lose without a total comparator
+ * (#413), and losing it fails this case.
+ *
+ * ```
+ *   S=(0,0) --a-s-x-- X=(1,0)
+ *      |                 |
+ *    b-s-y             d-x-t
+ *      |                 |
+ *   Y=(0,1) --e-y-t-- T=(1,1)     (the T-side doors sort c-y-t < d-x-t)
+ * ```
+ */
+function buildMirroredDiamond(): { readonly world: SparseWorld; readonly doors: DoorRegistry; readonly graph: ReturnType<typeof buildNavigationGraph> } {
+  const world = new SparseWorld(4);
+  const chunk = { x: chunkCoordinate(0), y: chunkCoordinate(0) };
+  world.load(chunk);
+  for (let x = 1; x < 4; x += 1) {
+    for (let y = 0; y < 4; y += 1) world.setLeftEdge(t(x, y), 1);
+  }
+  for (let x = 0; x < 4; x += 1) {
+    for (let y = 1; y < 4; y += 1) world.setTopEdge(t(x, y), 1);
+  }
+
+  const doors = new DoorRegistry();
+  doors.register({ id: 'b-s-y', position: t(0, 1), side: 'top', state: 'open', requiredSecurityClearance: 0, costMultiplier: 1 });
+  doors.register({ id: 'a-s-x', position: t(1, 0), side: 'left', state: 'open', requiredSecurityClearance: 0, costMultiplier: 1 });
+  doors.register({ id: 'd-x-t', position: t(1, 1), side: 'top', state: 'open', requiredSecurityClearance: 0, costMultiplier: 1 });
+  doors.register({ id: 'c-y-t', position: t(1, 1), side: 'left', state: 'open', requiredSecurityClearance: 0, costMultiplier: 1 });
+
+  const chunkState = world.getChunk(chunk);
+  if (chunkState === undefined) throw new Error('Fixture chunk must be loaded.');
+  return { world, doors, graph: buildNavigationGraph(world, doors, [chunkState]) };
+}
+
 describe('boundedLocalSearch: equal f-scores break on the tile key, not on frontier insertion order', () => {
   it('hugs the canonically-least tiles across an open room', () => {
     const { world, doors, graph } = buildOpenRoom();
@@ -167,6 +215,34 @@ describe('runRegionDijkstra: equal distances break on the region id, not on fron
 
     const alternative = requireRoute(findRoute(world, doors, graph, t(0, 0), t(1, 1), PLAIN));
     expect(doorTrail(alternative.segments)).toBe('1>5(a-s-y)>6(d-y-t)');
+    expect(alternative.totalCost).toBe(2);
+  });
+
+  it('routes through the lower-numbered region even when the frontier reached the higher one first', () => {
+    const { world, doors, graph } = buildMirroredDiamond();
+
+    expect(graph.tileToRegion.get(tileKey(t(1, 0)))).toBe(2);
+    expect(graph.tileToRegion.get(tileKey(t(0, 1)))).toBe(5);
+
+    // The order the destination region's portals are relaxed in -- which is
+    // the order the two tied regions enter the frontier -- now points at Y=5,
+    // so nothing but the region-id tie-break can produce the answer below.
+    const destinationPortals = graph.regionPortals.get(6) ?? [];
+    expect(destinationPortals.map((portal) => portal.doorId)).toEqual(['c-y-t', 'd-x-t']);
+    expect(destinationPortals[0]?.regionA === 5 || destinationPortals[0]?.regionB === 5).toBe(true);
+
+    const route = requireRoute(findRoute(world, doors, graph, t(0, 0), t(1, 1), PLAIN));
+    expect(doorTrail(route.segments)).toBe('1>2(a-s-x)>6(d-x-t)');
+    expect(route.totalCost).toBe(2);
+  });
+
+  it('had the route through the higher-numbered region available at the identical cost there too', () => {
+    const { world, doors, graph } = buildMirroredDiamond();
+
+    doors.setState('a-s-x', 'locked');
+
+    const alternative = requireRoute(findRoute(world, doors, graph, t(0, 0), t(1, 1), PLAIN));
+    expect(doorTrail(alternative.segments)).toBe('1>5(b-s-y)>6(c-y-t)');
     expect(alternative.totalCost).toBe(2);
   });
 
