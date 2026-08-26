@@ -19,7 +19,7 @@ import { tileCoordinate } from '../../src/simulation/world/coordinates';
  * what the response claimed, and both claims are themselves in the payload
  * (`deploymentPhase: 'on-search'`, `sectorControlStates`) -- so a restore did
  * not undo the claim, it made it permanent. Measured on `origin/main` at
- * v0.0.82, four guards and one sector were still held 53,000 ticks after the
+ * v0.0.84, four guards and one sector were still held 53,000 ticks after the
  * restore, with no code path in `src/` able to release either.
  *
  * ## Why these assertions and not "they agree eventually"

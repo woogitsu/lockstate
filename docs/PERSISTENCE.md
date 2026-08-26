@@ -633,9 +633,9 @@ there is no record — so the guess did not undo the claims, it made them
 permanent. Nothing else in `src/` can move a guard out of `'on-search'`
 (`GuardRoster.unassign`'s other callers are all unreachable for that phase, and
 there is no dismiss command) and nothing else writes or clears `'lockdown'`.
-Measured at v0.0.82 through the real save path: a severity-8 riot saved one
-tick after dispatch left four of six guards and one sector held, and 53,000
-further ticks moved nothing. An optional field would have preserved exactly
+Measured at v0.0.84, and unchanged since v0.0.82, through the real save path: a
+severity-8 riot saved one tick after dispatch left four of six guards and one
+sector held, and 53,000 further ticks moved nothing. An optional field would have preserved exactly
 that guess for every save written from V6 on.
 
 **`SearchSystem` is the shape this copies, and the control that proved it.**
