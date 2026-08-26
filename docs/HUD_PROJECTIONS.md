@@ -802,13 +802,33 @@ decision about what to build next.
 32. **Build costs are material quantities, and that part is real**:
     `BuildableDefinition.materialsRequired` is `{itemId, quantity}` and
     `ContainerMaterialsProvider` genuinely consumes them from a
-    `Container`. But `BUILDABLE_REGISTRY` holds exactly two entries, is a
-    plain `Map` rather than a validated content catalog, and its
-    definitions carry a hard-coded English `name` string instead of a
-    `nameKey` — a localization-boundary violation waiting to be rendered.
+    `Container`. But `BUILDABLE_REGISTRY`'s definitions carry a hard-coded
+    English `name` string instead of a `nameKey` — a localization-boundary
+    violation waiting to be rendered.
+
+    **Two clauses of this gap have expired and are removed rather than left
+    to mislead.** It said the registry *"holds exactly two entries"*: it holds
+    four — `wall-brick`, `door-wooden`, `bed-wooden` and `toilet-brick` — and
+    nothing recounted when ADR 0028's phases added the last two. It also said
+    the registry is *"a plain `Map` rather than a validated content catalog"*.
+    It is still a `Map`, and it is no longer unvalidated: three checks run at
+    import and throw — `validateBuildableItemReferences`,
+    `validateBuildableObjectReferences` and `validateBuildableDoorReferences`
+    — so a row naming an unknown item, object or security grade fails the
+    module load rather than waiting in `materials-pending` for ever. The
+    `name`/`nameKey` clause is untouched and is still true.
     `assignedWorkerId` is `'mock-worker-1'` and progress advances a fixed
     `+10` per scheduled tick regardless of workers. No construction
     projection was written for this reason.
+
+    **That sentence is now half true (#348), and the false half is the half a
+    projection would have to show.** Still one mock worker id, still `+10` per
+    scheduled tick, still nothing that models a worker. What changed is that
+    only **one order at a time** advances: the crew is busy or it is not, and a
+    waiting order takes it in the canonical ascending-id sequence. So a queue
+    is no longer free — a twelve-wall perimeter finishes at tick 730 rather
+    than 70 — and "how far along is this, and what is it waiting behind" became
+    a question a player can now ask and the interface still cannot answer.
 
     Issue #74 added a Build **panel** without closing this. The panel is
     handed its option list as view-model data — `{definitionId, labelKey,

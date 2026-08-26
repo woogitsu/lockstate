@@ -1235,3 +1235,59 @@ been persisted since decision 6), the resolver's three moments, orientation
 blindness, and "nobody is evicted; occupancy above capacity is a legal, named
 state". Open questions 1 through 7 are all still open, including 5 as the
 `door-wooden` amendment left it.
+
+---
+
+## Amendment, 2026-08-26: the measurement in §4 assumed parallel orders, and no longer holds
+
+*This amends **one measured paragraph in decision 4** and no decision. Decision
+4's own ruling is untouched and is not the thing that expired: it says "Adding a
+cap is a jobs-system decision (#26) that affects walls too, and making furniture
+the one buildable that waits for a worker while walls do not would be a rule a
+player cannot learn." That assignment stands, that objection stands, and #26
+still owns a labour model. What has expired is the **measurement underneath it**
+— a statement about what the tree did on the day this was written, which #348
+falsified. An amendment is the form this ADR's own `door-wooden` and
+capability-scoping amendments established: the record of what was decided stays
+as accepted, and what the tree does instead is recorded beside it.*
+
+*Issue #348. Status is untouched: this ADR remains Accepted, 2026-08-25.*
+
+### What the paragraph said, and which clause moved
+
+Decision 4 measures:
+
+> There is **no labour cap and no worker**: `order.assignedWorkerId =
+> 'mock-worker-1'` for every order and every order advances every scheduled
+> tick, so a hundred objects take the same wall-clock time as one.
+
+Three clauses, and only the last two moved:
+
+- **"No worker" is unchanged.** `assignedWorkerId` is still `'mock-worker-1'`
+  for every order. Nothing models a builder, nothing pathfinds, nothing is
+  wired to `staff-role.maintenance-worker`.
+- **"Every order advances every scheduled tick" is false.** One order holds the
+  crew; a waiting order takes it only when the crew is free, chosen in the
+  canonical ascending-id sequence `orderedOrders()` already walks.
+- **"A hundred objects take the same wall-clock time as one" is false**, and it
+  was the sentence the rest of §4's time-cost reasoning rested on. A single
+  order is unaffected — `wall-brick` still finishes on tick 70 — and each
+  further one costs +60. A twelve-wall perimeter finishes at 730.
+
+### Why this did not need a new decision, and where the argument is
+
+#348 argues that its rule applies **identically to every buildable**, so it
+satisfies decision 4's stated objection — furniture waiting while walls do not
+— rather than walking into it, and that what it adds is a queue rather than a
+labour model: no crew size, no configurable cap, no role. That is the reasoning
+this amendment records rather than ratifies. **The moment crew capacity becomes
+a tunable number, or staff roles or builder movement become real, it is
+ADR-worthy**, and #26 will have to reconcile with the queue when it lands.
+
+### What this does not touch
+
+Decision 4's material-cost half, its placeholder-quantity rule and its
+`purchasableMaterialFor` limit are unchanged. Every other decision, the phase
+order and all seven open questions are as the previous two amendments left them.
+No save format moves: the rule is derived entirely from `state`, `progress` and
+`assignedWorkerId`, which a v0.0.76 save already carries.

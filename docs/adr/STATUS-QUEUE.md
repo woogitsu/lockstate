@@ -18,10 +18,23 @@ holds instead is the account of what moved, what may not be touched, and what
 the test cannot see. Deciding is still the owner's; this file only makes the
 next decision cheap.
 
-Re-anchored at `main` @ `4e3976d` (v0.0.65), plus the text corrections in the
-commit that carries this revision. Every claim below was re-read from disk at
-that commit, and entries cite symbols rather than line numbers where a citation
-would otherwise drift on the next edit (the precedent is #309).
+Re-anchored at `main` @ `cddaebb` (**v0.0.77**). Every claim below was re-read
+from disk at that commit, and entries cite symbols rather than line numbers
+where a citation would otherwise drift on the next edit (the precedent is #309).
+
+**This line said `4e3976d` (v0.0.65) for twelve releases, and the file carried a
+second, older anchor underneath it.** Two commits after that re-anchor — #331
+and #335 — edited §5 without moving this line, so the file's declared anchor was
+older than parts of the file itself. Meanwhile §§3-5 said "re-verified at
+`4ed571f`" in five places, and `4ed571f` is **v0.0.58**, seven releases older
+again. A reader had two dates to reconcile and no way to tell which entry had
+been checked when, which is the failure mode this whole file exists to prevent.
+Both anchors are now the same commit, every "re-verified at" below names it, and
+`tests/foundation/adr-status-queue-anchor-contract.test.ts` asserts that they
+stay one commit and that the version this line names does not fall far behind
+`package.json`. That test cannot tell whether a sentence here is true — nothing
+mechanical can — but it can tell that the file has stopped being re-read, which
+is what actually went wrong.
 
 A note on keeping this file true, since it is the kind of document that rots
 silently: an entry's evidence is a claim about `main`, so **landing the change
@@ -29,10 +42,19 @@ an entry describes means updating that entry in the same commit**, exactly as
 moving a status means moving its index row. #295 changed the code and ADR 0012
 and left this file behind, which is how the old entry 7 came to be false for two
 releases — a correction that itself had to be landed separately, at `b653b93`,
-before the entry could be acted on. Nothing mechanical can catch that: both
-gates over `docs/adr/` check statuses against documents — the index against the
-ADR, and now every sentence in the corpus against the ADR — and neither checks a
+before the entry could be acted on. Nothing mechanical can catch that: the gates
+over `docs/adr/` check statuses against documents — the index against the ADR,
+and every sentence in the corpus against the ADR — and none of them checks a
 status against code. It is a habit, not an assertion.
+
+The one thing that *is* now asserted is narrower and is the failure that
+actually happened: the anchor line above stopped moving.
+`tests/foundation/adr-status-queue-anchor-contract.test.ts` requires this file
+to declare exactly one anchor commit, requires every live "verified at" below to
+name that same commit, and fails when the version the anchor names falls more
+than ten releases behind `package.json`. It proves nothing about whether a
+sentence here is true — moving the anchor without re-reading anything passes it
+— so it is a bound on unreviewed history and not a substitute for the habit.
 
 ---
 
@@ -256,9 +278,11 @@ database and two are explicitly absent.
 
 Functions in that table live in
 `supabase/migrations/20260823100000_bound_free_tier_capacity.sql`. Both absences
-were re-verified at `4ed571f` by grepping the whole `supabase/migrations/` tree
-for a total-bytes, retention or pruning mechanism; there is none, and no
-migration has been added to that directory since the previous re-anchor.
+were re-verified at `cddaebb` by grepping the whole `supabase/migrations/` tree
+for a total-bytes, retention or pruning mechanism; there is none. The directory
+holds the same twenty-one files it held at `4ed571f` — `git diff 4ed571f..main
+-- supabase/migrations/` is empty across all eighteen releases — so nothing in
+this section has moved for a reason other than nobody having decided anything.
 
 **§5 — 256 MiB per account.** Undecided and unimplemented. The ADR's own §5
 records that it depends on the revision-depth decision below and on the
@@ -299,7 +323,7 @@ Supabase staging project *"automatically, on every merge to `main`"* with gating
 *"none"* (`docs/DEPLOYMENT.md`, "Automated deployment"), rollback is not
 automated, and the trigger is the merge rather than the diff — PR #87 touched no
 file under `supabase/migrations/` and nine migrations were applied anyway. The
-half of the decision that *is* in this repository stays verified at `4ed571f`:
+half of the decision that *is* in this repository stays verified at `cddaebb`:
 `.github/workflows/migrate-database.yml` is `workflow_dispatch:` with no `push:`,
 requires a typed `confirm_project_ref`, and its apply job is environment-gated.
 
@@ -337,10 +361,22 @@ audited in one direction.
   drifted once), so something does place, build and read an object. What has **not** moved is the second ground
   and the observable outcome: no room definition authors a capacity, and an
   empty zoned room still derives zero, which is why ADR 0027's tripwire below
-  is still green rather than fired. Phases 1-2 of 0028 landed in #320, #321 and
-  #323; the remaining phases are the rest of its own *What this costs*. One
+  is still green rather than fired. **Four of 0028's six phases have now landed
+  in whole or in part, and this sentence used to stop at two.** Phases 1-2
+  landed in #320, #321 and #323; **phase 3** (removal, and the
+  objects-removed-while-occupied path) landed in **#328**, so a standing object
+  can be deleted and an order that has not been built can be cancelled and
+  refunded; **phase 5**'s Rooms-tab readout landed *in half* in **#336**, which
+  ships the per-room "what is this room missing" verdict but not the
+  "over capacity" state the projection still cannot say
+  (`room-projection.ts` reads an over-capacity room as full at 100%); and
+  **phase 6**'s counting landed in #323 under the decision ADR 0029 is still
+  awaiting approval for (§2). Phase 4 — the rest of the object catalogue — is
+  untouched: exactly two `'object.*'` ids appear as literals under `src/`
+  outside `src/content/`, both on `BUILDABLE_REGISTRY` rows. One
   thing phase 1 promised is now true and was **not** delivered by any phase:
-  `door-wooden` builds a real door. It could not be an object placement — a door
+  `door-wooden` builds a real door, and since **#334** the crossing is pinned at
+  the two sites that decide it rather than only at the one the issue named. It could not be an object placement — a door
   is a fact about a tile edge — so it is edge geometry plus a `DoorRegistry`
   row, it contributes nothing to either derived capacity, and 0028 carries an
   amendment saying so. Nothing about the eight decisions moved with it. A
@@ -356,7 +392,15 @@ audited in one direction.
   `'seating'` and `'recreation'` and not `'dining'`. The empty zoned room above
   still derives zero for every capability, so ADR 0027's tripwire below is
   unaffected: what changed is that an action naming **no** capability now has no
-  object-derived ceiling at all, which is `room.yard` and nothing else.
+  object-derived ceiling at all, which is `room.yard` and nothing else. A
+  **third** amendment (#348) touches no decision at all: it corrects the
+  *measurement* under decision 4, which said "every order advances every
+  scheduled tick, so a hundred objects take the same wall-clock time as one".
+  Construction now runs one order at a time, so a twelve-wall perimeter finishes
+  at tick 730 rather than 70 while a single wall still finishes at 70. Decision
+  4's own ruling — that a labour cap is #26's to make, and that furniture must
+  not be the one buildable that waits — is untouched and is satisfied rather
+  than contradicted, because the queue applies to every buildable alike.
 - **ADR 0027's subject is unreachable, so its effects are not observable.** New
   as of this commit and the reason its status line is qualified. The rating seam
   that was approved is live, and it is inert: a zoned room with nothing placed in
@@ -409,7 +453,7 @@ audited in one direction.
   0024's has been deleted. The fix is in the code, and the open decision is
   whether to send the handshake or delete `'ready'` (issue #274, Q4).
 - **ADR 0010 — the telemetry layer is inert.** Nothing outside
-  `src/services/telemetry/` imports it, re-verified at `4ed571f`, so consent is
+  `src/services/telemetry/` imports it, re-verified at `cddaebb`, so consent is
   never asked for and `record()` is never called. The prohibition half of the ADR
   holds; the sentence *"telemetry is fed from the main thread's orchestration
   layer"* does not.
@@ -419,35 +463,99 @@ audited in one direction.
   the port, no endpoint exists, and nothing outside `src/services/` imports the
   layer. **This status is the most accurate in the corpus** — it says "gated", and
   the gates are genuinely shut. Listed as a model, not a defect.
-- **ADR 0022's pre-correction 900×600 budget disagrees with
-  `src/ui/hud/build-panel.ts`.** The ADR's table says `12.2` and that file's
-  comment on `buyToggle` says `11.8`; both were measured on the same tree by
-  different probes and neither was re-derived when the other was written. Nothing
-  turns on which is right — the Rooms tab's advantage is ~24× either way, and the
-  corrected figure, `7.81`, is the one measured to 0.05px, which is exactly why
-  the disagreement has survived unnoticed. `docs/adr/0025-guard-hiring-surface.md`
-  quotes a third figure from the same family (3.9px at 900×600, inherited rather
-  than re-measured, and its Status says so), which is worth knowing before anyone
-  tries to reconcile two numbers and finds three. It is a docs-truth task inside
-  two accepted ADRs, and it belongs in a change of its own.
+- **The 900×600 budget has three figures in the corpus, and only one of them is
+  live.** This entry used to be headed *"ADR 0022's pre-correction 900×600 budget
+  disagrees with `src/ui/hud/build-panel.ts`"*, which overstated it in one
+  direction and understated it in another, so it is rewritten rather than
+  re-verified.
+
+  **Overstated:** there is no live disagreement between the ADR and the file.
+  `src/ui/hud/build-panel.ts` has said *"7.8px is the entire budget"* since
+  before `4ed571f`, and ADR 0022's table reads `| 900×600 | 12.2 | 7.8 |` with a
+  `Now` column measured to 0.05px (7.81). Both name the same corrected figure.
+  `11.8` survives in that file only as the reading it explicitly records as
+  superseded, and ADR 0022 already devotes a bolded paragraph to the `11.8`/`12.2`
+  split and to why it declines to resolve it — so the entry's closing claim that
+  the disagreement *"has survived unnoticed"* was the one sentence here that was
+  plainly false. It was noticed, in writing, in the document itself.
+
+  **Understated:** the third figure has no source. ADR 0025 says its inherited
+  budget is *"the 3.9px at 900×600 that ADR 0022 and `hud.css` both record"*.
+  Re-verified at `cddaebb` by grepping the whole tree: **`3.9` appears in no ADR
+  but 0025, in no `.css` file, and nowhere in `src/`.** Neither document it cites
+  records it. That is a dangling citation inside an Accepted ADR rather than a
+  disagreement between measurements, and it cannot be repaired by picking a
+  number — 3.9 is not 7.81 and not 11.8, so nobody knows what was measured. The
+  ADR's own Status already flags the layout claims as inherited and not
+  re-measured, and its argument does not turn on the figure (its point is that the
+  Staff panel and the Build panel are never laid out together, so the budget is
+  not a constraint on it at all). Left verbatim, as 0022's and 0027's drift is,
+  and recorded here: it is a docs-truth task inside an accepted ADR and it belongs
+  in a change of its own.
 - **ADR 0022 was written against v0.0.30 and its structural citations have
-  drifted.** `HudIntent` declares thirteen members rather than the seven the ADR
-  counts, three of them room-related; `ZoneRoom` is no longer in
-  `AWAITING_PRODUCER` at all (#312 gave it a producer, and
+  drifted.** `HudIntent` declares **fifteen** members rather than the seven the
+  ADR counts — it cites `src/ui/hud/hud.ts:153-195` for the seven — three of
+  them room-related; `ZoneRoom` is no longer in `AWAITING_PRODUCER` at all
+  (#312 gave it a producer, and
   `tests/foundation/unconsumed-command-contract.test.ts` fails in both
-  directions); the `onIntent` switch in `src/main.ts` has moved. None of it
+  directions); the `onIntent` switch in `src/main.ts` has moved; and its
+  citation of *"`tests/unit/ui-hud-messages.test.ts:196-200` asserts it by
+  scanning for the import"* now lands eight lines short — #339 removed the
+  single-file, comment-blind copy of that check from
+  `tests/unit/ui-hud-build-panel.test.ts`, and the surviving assertion, which
+  covers every file under `src/ui/hud/**` and `src/ui/primitives/**` over
+  comment-stripped source, sits at `:204-210`. The ADR names the right test and
+  the property it names is strictly stronger than it was; only the line range
+  drifted.
+
+  **This entry said "thirteen", and thirteen was never right.** It was fourteen
+  at `ac03d8f`, the commit that wrote the number, and `remove-object` (#328) has
+  since made it fifteen — so a sentence written to record somebody else's
+  drifted count was itself off by one on the day it landed, and off by two
+  within four releases. The two arms it missed are `arm-build-tool` and
+  `arm-room-tool`, which are the only members declared across several lines
+  rather than on one, which is exactly the shape a hand count skips. Nothing in
+  the ADR turns on the figure; what it demonstrates is that a count in prose is
+  the least durable citation this corpus has, and it is the reason the entries
+  around it cite symbols instead. None of it
   touches the decision, but a reader following a `file:line` out of that ADR
   should expect to land near rather than on.
 - **ADR 0027's command-surface count has drifted the same way**, new as of this
   commit and worth recording because it is one clause inside a question that
   stays open. Its question 2 says the entire command surface is seven members and
-  *"not one of them concerns a prisoner"*. Re-verified at `4ed571f`:
-  `src/simulation/protocol/commands.ts` declares **nine**, and `AdmitPrisoner`
-  (#306) concerns a prisoner. The load-bearing half of the argument is
+  *"not one of them concerns a prisoner"*. **This entry answered "nine", and the
+  correction has itself drifted twice** — which is the entry's own point turned
+  back on it, and the reason the anchor above now has a test. Nine was right at
+  `4ed571f`; `PlaceObject` (#320) made it ten before the v0.0.65 re-anchor, which
+  did not re-count; `RemoveObject` (#328) has since made it eleven. Re-verified at
+  `cddaebb`: `simulationCommandSchema` in
+  `src/simulation/protocol/commands.ts` discriminates **eleven**, and
+  `AdmitPrisoner` (#306) concerns a prisoner. The
+  load-bearing half of the argument is
   unaffected — there is still no player input to *placement*, and an override
   still needs a new command type, its codec case, a handler branch and a decision
   about whether intake blocks — so the body was left verbatim rather than
   rewritten by the commit that accepted it, exactly as 0022's drift was.
+
+- **Two Accepted ADRs still say object placement does not exist**, which is the
+  same drift as 0022's and 0027's structural citations and is recorded the same
+  way. `docs/adr/0023-room-occupancy-authority.md` says step 1 of its resolver is
+  *"unimplementable today … object placement does not exist
+  (`docs/HUD_PROJECTIONS.md` gap 13), so until it does, the resolver's only
+  reachable branches are 2 and 3"*, and
+  `docs/adr/0027-cell-sharing-assessment.md` says a freshly zoned room is
+  registered with `capacity: 0` *"because object placement does not exist"*. ADR
+  0028 phase 1 falsified the premise in both. The document they both cite has
+  already moved — gap 13 now opens *"Object placement exists, and `minQuantity`
+  is still unchecked"* — so the two ADRs are the last places in the corpus
+  asserting the old world, and a reader who follows either citation lands on a
+  page contradicting the sentence that sent them. **Neither conclusion moves**,
+  which is why the bodies are left verbatim: 0023's step 1 is now reachable but
+  still resolves to zero for an empty room, so branches 2 and 3 remain the ones
+  a shipped session takes, and 0027's co-occupancy is still unreachable for the
+  reason its own tripwire (above) is still green. What is false is the stated
+  cause, not the state. The same phrase in `docs/research/` stays untouched for
+  the reason that directory's README gives.
 
 Also not here as a decision: **ADR 0002**, whose configuration matches the ADR
 exactly (`wrangler.jsonc`) while `docs/DEPLOYMENT.md` records that

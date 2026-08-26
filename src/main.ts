@@ -432,13 +432,28 @@ const NEW_PRISON_ORIGIN_TILE = { x: 16, y: 16 } as const;
  * plain numbers and one message key on `HudBuildMaterialViewModel`.
  *
  * **The first requirement that can actually be bought**, and nothing more.
- * Both shipped buildables require exactly one material, so "first" and "only"
- * agree today; a buildable requiring two would get a control for one of them
- * and no way to buy the other, which is a real limit and is stated rather than
- * hidden -- the panel offers one stepper, and a multi-material buy surface is
- * a design question nobody has answered. A requirement no one sells yields
- * `undefined` and the panel offers no purchase at all, which is the honest
- * rendering of a material the economy has no price for.
+ * All four shipped buildables list exactly one `materialsRequired` entry, so
+ * "first" and "only" agree today; a buildable naming two *item ids* would get
+ * a control for one of them and no way to buy the other, which is a real
+ * limit and is stated rather than hidden -- the panel offers one stepper, and
+ * a multi-material buy surface is a design question nobody has answered. A
+ * requirement no one sells yields `undefined` and the panel offers no purchase
+ * at all, which is the honest rendering of a material the economy has no price
+ * for.
+ *
+ * **This paragraph used to say "both shipped buildables", and it was wrong
+ * twice over.** It was wrong about the count: `BUILDABLE_REGISTRY`
+ * (`src/simulation/construction/definition.ts`) has held four rows since
+ * ADR 0028 phase 2 -- `wall-brick`, `door-wooden`, `bed-wooden` and
+ * `toilet-brick` -- and each row was added without anyone touching this
+ * sentence, which is exactly how a count in a comment rots. It was also wrong
+ * about what "one material" bounds: it reads as one *unit*, and `wall-brick`
+ * requires `quantity: 2`. The limit this function actually imposes is one
+ * priced **item id** per buildable, never one unit per placement --
+ * `quantityPerPlacement` below carries the requirement's quantity through to
+ * the panel, which opens the stepper on it (`setQuantity` in
+ * `src/ui/hud/build-panel.ts`), so the two-brick wall's buy control starts at
+ * two and needs no second control to be correct.
  *
  * `maxQuantity` comes from `MAX_PURCHASE_QUANTITY` rather than from a number
  * chosen here: the simulation's own bound on one purchase, so the stepper
@@ -1438,16 +1453,36 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
            * holding only a zoned canteen therefore passes here and is refused
            * there -- still exactly one message, from the other side.
            *
-           * **It is zero until the player zones something**, because
-           * `RoomZoningService` is still the only thing in `src/` that
-           * registers an instance -- and since the Rooms tab (#312) that is a
-           * gesture a player has, so this is a real branch rather than a
-           * permanent one. Measured on the merged tree: a zoned `room.cell`
-           * takes `counts.rooms` to 1, the worker finds an instance of an
+           * **It is zero in a fresh session until the player zones
+           * something**, because `RoomZoningService.zone` is the only thing
+           * that mints a room instance from a gesture -- and since the Rooms
+           * tab (#312) that is a gesture a player has, so this is a real
+           * branch rather than a permanent one. Two sentences here needed
+           * narrowing, and both had been quietly false for a while:
+           *
+           *   - This said `RoomZoningService` is *"the only thing in `src/`
+           *     that registers an instance"*, which
+           *     `restoreSessionSystems` in
+           *     `src/simulation/runtime/session-systems.ts` has falsified
+           *     since #70: a restored save re-registers every instance it
+           *     carries. "Zero until the player zones something" is therefore
+           *     true of a *new* prison and not of a loaded one, which is the
+           *     narrower claim this branch actually rests on.
+           *   - It said the arrival waits at `accommodation-assignment`
+           *     *"because zoning registers `capacity: 0` (ADR 0023)"*. Zoning
+           *     writes zeroes, but as a placeholder before `updateDerived`
+           *     resolves the real figure rather than as the answer (ADR 0028
+           *     phase 1, and the field is now `residentCapacity`). An *empty*
+           *     zoned cell still derives zero, so the observed wait is
+           *     unchanged -- but it is now a fact about the cell being empty,
+           *     and putting a bed in it ends the wait.
+           *
+           * Measured on the merged tree: a zoned `room.cell` takes
+           * `counts.rooms` to 1, the worker finds an instance of an
            * accommodation target and admits, and the arrival waits at
-           * `accommodation-assignment` because zoning registers `capacity: 0`
-           * (ADR 0023). A prison with nothing zoned is still refused here, and
-           * the panel says so before the press as well
+           * `accommodation-assignment` while that cell holds no
+           * `'sleep-surface'` object. A prison with nothing zoned is still
+           * refused here, and the panel says so before the press as well
            * (`hud.intake.hint`) rather than leaving the player to discover it
            * by pressing.
            */

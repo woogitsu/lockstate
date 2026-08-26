@@ -59,6 +59,14 @@ So the standing rules for anything added here:
 Recorded here because each contradicted something the project believed, and a
 reader who only sees the resulting ADR will not know the belief was ever held.
 
+**These were true on 2026-08-25 and they are written in the present tense, which
+is a trap this index laid for itself.** The rule above — *"a record here does not
+become wrong, it becomes older"* — protects the dated files, and it cannot
+protect a summary that says "currently" and "today" in the index. So the bullets
+keep what was found, because that is the point of the section, and each one that
+the code has since overtaken says so inline. Adding a finding here means writing
+it the same way.
+
 - **Authoring one occupancy number per room type is a no-op.** `findAvailable`
   gates on capacity *and* on a `'sleep-surface'` capability, so a capacity
   number alone unblocks nothing. The minimum content change is two fields, not
@@ -76,9 +84,21 @@ reader who only sees the resulting ADR will not know the belief was ever held.
   reaches only the construction system, and re-zoning is blocked by
   `overlaps-existing-room` — so one stray drag creates unremovable room for the
   session, with no recovery at all on touch, where there is no undo key.
+  **Overtaken:** this is the finding the Rooms tab was built to answer.
+  `UnzoneRoom` is a command with a producer (#312, and #317 for the touch half),
+  so a stray drag is recoverable with the same gesture that made it. The
+  `overlaps-existing-room` refusal and the reach of `Undo` are both unchanged;
+  what changed is that removal no longer has to go through either.
 - **"Pack the prison" is not the reachable failure mode.** Occupancy is
   hard-gated, so overcrowding is unrepresentable; the strategy the economy has
   to price against is sprawl.
 - **Construction is effectively instantaneous** — a wall completes in about
   2.5 seconds, with no labour cap and every order in parallel. Money, not
   time, is the only constraint on building today.
+  **Overtaken in its second half (#348).** A single wall still finishes on the
+  same tick it always did, so "a wall completes in about 2.5 seconds" survives
+  unchanged. Orders are no longer parallel: one order holds the crew at a time
+  and a waiting order takes it in the canonical ascending-id sequence, so a
+  twelve-wall perimeter finishes at tick 730 rather than at 70. Money is
+  therefore no longer the only constraint on building, which is the half of
+  this finding an economy memo would have leaned on.

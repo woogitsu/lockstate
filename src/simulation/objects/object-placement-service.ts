@@ -28,9 +28,23 @@ import { roomInstanceContaining, type RoomCapacityResolver } from './room-capaci
  * the container.
  *
  * This service is therefore not a placement *system*: it has no `update`, it
- * holds no state, and it runs only inside a command dispatch. What it does is
- * decide whether the placement is legal and mint the order; the object appears
- * when the order finishes, through `onOrderCompleted` below.
+ * holds no state a snapshot has to carry, and it runs only inside a command
+ * dispatch. What it does is decide whether the placement is legal and mint the
+ * order; the object appears when the order finishes, through
+ * `onOrderCompleted` below.
+ *
+ * **That sentence used to say "it holds no state" flatly, and that is not what
+ * it is allowed to mean.** The class owns two fields -- `refusals` and
+ * `removalRefusals`, both bounded at `MAX_RECORDED_PLACEMENT_REFUSALS` --
+ * added by ADR 0028 phases 1 and 3 for `recentRefusals` and
+ * `recentRemovalRefusals`. They are deliberately ephemeral diagnostic: a
+ * record of things that did **not** happen, capped rather than logged,
+ * absent from every snapshot, and read by nobody who decides anything. So the
+ * narrow claim holds and is the one worth making -- no gameplay fact lives
+ * here, restoring a save reconstructs this service with both windows empty,
+ * and the reconstructed prison is identical -- while the flat claim was
+ * simply false and would have licensed the next reader to give the class a
+ * field that *does* matter.
  *
  * ## Why it is a separate command from `PlaceBuildOrder`
  *

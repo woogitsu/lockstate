@@ -49,8 +49,10 @@ export const MAX_RUN_SEGMENTS = 64;
  * An edge's identity as a string, for a `Set` or a `Map` key.
  *
  * **It has no caller in `src/`, and the module that wants it cannot have it.**
- * `src/ui/build-tool.ts:138` de-duplicates a run by exactly this format,
- * written out inline, and calling this instead would be a **value** import
+ * `BuildTool.deduplicate` (`src/ui/build-tool.ts`) de-duplicates a run by
+ * exactly this format, written out inline -- cited by symbol because the line
+ * number this used to give, `:138`, had drifted onto an unrelated method.
+ * Calling this instead would be a **value** import
  * from `src/rendering/` into `src/ui/` -- which
  * `tests/unit/ui-orchestration-boundaries.test.ts` records as forbidden for
  * that file, in terms that are about intent rather than mechanics: *"a value

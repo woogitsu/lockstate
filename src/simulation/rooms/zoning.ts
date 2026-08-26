@@ -132,11 +132,22 @@ import {
 export const MAX_ZONE_DIMENSION_TILES = 64;
 
 /**
- * How many refusals are kept for a reporting route that does not exist yet.
+ * How many refusals are kept for diagnosis, behind the route that reports them.
  *
  * A player who drags a zone over unowned land repeatedly must not grow a
  * list without limit, and nothing reads more than the last few, so the
  * record is a bounded window rather than a log.
+ *
+ * **This used to say "for a reporting route that does not exist yet".** The
+ * route was built in #261 step 2 and the sentence was not moved: every refusal
+ * from `zone` and `unzone` is recorded to the session's `RefusalLog` by
+ * `src/simulation/runtime/session-commands.ts`, which quotes this very comment
+ * where it does so. The two are not the same record and the distinction is
+ * worth keeping -- what crosses the worker boundary is the most recent
+ * refusal's *reason* and nothing else, while this window holds the last
+ * thirty-two with their requests and tiles, which is diagnosis. So the window
+ * still exists for the reason it always did; it simply no longer waits on
+ * anything.
  */
 export const MAX_RECORDED_ZONING_REFUSALS = 32;
 

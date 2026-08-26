@@ -149,8 +149,17 @@ const ROOT = resolve(__dirname, '../..');
  * today, and it fails as stale the moment the command gains a producer.
  */
 const AWAITING_PRODUCER: Readonly<Record<string, string>> = {
+  // This reason used to end at "the Build panel places an order and offers no
+  // way to withdraw a *particular* one", and #328 made that half false without
+  // producing this command. Object placement phase 3 added a Remove toggle that
+  // does withdraw a particular order -- but it sends `RemoveObject`, whose
+  // handler calls `ConstructionSystem.cancelOrder` directly, and it reaches
+  // object orders only (`orderBuildingObjectAt` walks the orders whose
+  // buildable declares a `placesObjectId`). So `CancelBuildOrder` is still
+  // constructed by nothing, and the gap it names is now the narrower and more
+  // precise one below: a *wall* run.
   CancelBuildOrder:
-    'Handled at `construction/handler.ts` and reachable from `ConstructionSystem.cancelOrder`, but nothing in the application constructs the command. The Build panel places an order and offers no way to withdraw a *particular* one: since #261 a misplaced run can be taken back whole, by `KeyZ`, because undo pops the last transaction -- which is not the same control. Cancelling the third order of a twelve-segment run still needs a per-order control on the panel, which is #174 territory since that panel is already over its height budget.',
+    'Handled at `construction/handler.ts` and reachable from `ConstructionSystem.cancelOrder`, but nothing in the application constructs the command. A pending *object* order can be withdrawn individually since #328, by pressing its tile with the Build panel armed to Remove -- that route sends `RemoveObject` and cancels the order inside its handler, so it produces this command not at all. Nothing reaches a *wall* order the same way: since #261 a misplaced run can be taken back whole, by `KeyZ`, because undo pops the last transaction -- which is not the same control. Cancelling the third order of a twelve-segment run still needs a per-order control on the panel, which is #174 territory since that panel is already over its height budget.',
 };
 
 function collectTypeScriptFiles(directory: string): readonly string[] {
