@@ -418,6 +418,61 @@ describe('money is conserved across build orders and undo (#285)', () => {
     expect(session.creditSpy).not.toHaveBeenCalled();
   });
 
+  it('holds when the purchase costs exactly the balance, which must be bought rather than refused', () => {
+    /*
+     * The affordability boundary, driven the way a player reaches it (#416).
+     *
+     * `Treasury.canAfford` ends in `amountMinorUnits <= this.balance`, and
+     * nothing in the suite had ever spent the exact balance: changing that
+     * `<=` to `<` left 238 files / 2,696 tests green. What it ships is a
+     * prison that cannot spend its last coin -- the player is told
+     * `purchase.insufficient-funds` for a purchase they can exactly afford.
+     *
+     * The quantity is computed from the catalogue price and the opening
+     * balance rather than written down, so it stays *exact* if either moves;
+     * and because "exact" is the whole point, the divisibility that makes it
+     * exact is asserted first. Without that line a price of 30 would make this
+     * case buy 833 bricks of the 833.33 it can afford and quietly stop testing
+     * the boundary -- the fixture-cannot-reach-the-mechanism shape #375 is
+     * about.
+     */
+    const price = UNIT_PRICE.get(WALL_REQUIREMENT.itemId)!;
+    expect(
+      TREASURY_STARTING_BALANCE_MINOR_UNITS % price,
+      'the opening balance no longer divides by the unit price, so this case can no longer spend it exactly',
+    ).toBe(0);
+    const wholeBalance = TREASURY_STARTING_BALANCE_MINOR_UNITS / price;
+
+    const session = createSession();
+    session.buy('order-buy-everything', WALL_REQUIREMENT.itemId, wholeBalance, 'a purchase for the exact balance');
+
+    expect(
+      session.runtime.refusals.count,
+      'a purchase the prison can exactly afford must not be refused',
+    ).toBe(0);
+    expect(session.runtime.treasury.balanceMinorUnits, 'the last coin was spent').toBe(0);
+    expect(session.runtime.procurement.pendingDeliveries, 'the goods were ordered').toHaveLength(1);
+    expect(session.runtime.procurement.pendingDeliveries[0]?.paidMinorUnits).toBe(
+      TREASURY_STARTING_BALANCE_MINOR_UNITS,
+    );
+
+    // The other side of the same boundary, one minor unit past it, on a
+    // treasury that is now empty: still a refusal, and still no partial debit.
+    session.buy('order-buy-one-more', WALL_REQUIREMENT.itemId, 1, 'one brick too many');
+    expect(session.runtime.refusals.last?.reason).toBe('purchase.insufficient-funds');
+    expect(session.runtime.treasury.balanceMinorUnits).toBe(0);
+    expect(session.runtime.procurement.pendingDeliveries).toHaveLength(1);
+
+    // And the conservation equation is unmoved by all of it: `session.buy`
+    // checks it after every command, so the balance reaching zero is a
+    // *transfer* into goods in flight rather than a loss.
+    session.runUntil(
+      () => session.stock(WALL_REQUIREMENT.itemId) === wholeBalance,
+      'the whole balance arrives as bricks',
+    );
+    expect(session.creditSpy).not.toHaveBeenCalled();
+  });
+
   it('holds when a purchase is refused, and when undo is pressed with nothing to undo', () => {
     /*
      * The two no-op edges. A refused purchase must leave the equation exactly
