@@ -136,6 +136,102 @@ describe('kernel system ordering', () => {
     expect(() => kernel.submitCommand('past', 1, 0, packCommand({ type: 'Undo' }))).toThrow(/past/i);
   });
 
+  /*
+   * The three cases below are one defect and its premise (DET-05).
+   *
+   * `step()` tested the head of the sorted queue with a strict `!==`, so a
+   * command whose `executeAtTick` had already passed was not skipped -- it
+   * *stayed* at the head, and the `break` fired on it on every subsequent
+   * tick. Every command behind it, for the rest of the session, was
+   * therefore never dispatched, with no throw, no refusal and no log: the
+   * player's input silently stopped having any effect.
+   *
+   * ADR 0020 is what settles which way to fix it, and it says both halves.
+   * "At the start of a tick, **all due commands** are dispatched in strict
+   * sequence order before any systems run" -- a command whose tick has
+   * passed is due, so `!==` never implemented that sentence. And ADR 0009
+   * makes the command stream replay evidence, so *dropping* the overdue
+   * command instead would put a hole in the log a replay reproduces from --
+   * actively corrupting rather than merely lossy, because `Undo`/`Redo`
+   * travel in the same stream and count positions in it.
+   */
+
+  it('a live kernel never holds a command whose tick has passed, which is the premise the next two cases rest on', () => {
+    const kernel = new Kernel();
+    kernel.setCommandHandler(() => {});
+
+    // `executeAtTick === tick` is accepted -- it is `<` that is refused --
+    // so this is the tightest a live queue ever gets.
+    kernel.submitCommand('at-current-tick', 0, 0, null);
+    kernel.submitCommand('ahead', 1, 3, null);
+
+    for (let tick = 0; tick < 5; tick += 1) {
+      kernel.step();
+      for (const command of kernel.snapshot().commands) {
+        expect(command.executeAtTick, `pending ${command.id} once the kernel reached tick ${kernel.tick}`).toBeGreaterThanOrEqual(kernel.tick);
+      }
+    }
+
+    // Non-vacuous: the loop above really did have commands to check, and
+    // both of them really were dispatched rather than sitting unexamined.
+    expect(kernel.snapshot().commands).toEqual([]);
+    // And the front door is what keeps the invariant, so the overdue queue
+    // the next two cases build can only arrive from a snapshot -- a save
+    // file, whose schema validates `executeAtTick` and `tick` as
+    // independent fields and never their relation.
+    expect(() => kernel.submitCommand('behind', 2, 0, null)).toThrow(/past/i);
+  });
+
+  it('dispatches a command whose tick has already passed, ahead of the commands queued behind it', () => {
+    const log: string[] = [];
+    const kernel = new Kernel();
+    kernel.setCommandHandler((command) => log.push(`cmd:${command.id}`));
+    kernel.registerSystem(probe('system', 10, log));
+
+    kernel.restoreState({
+      tick: 10,
+      expectedSequence: 3,
+      rngStates: [],
+      commands: [
+        { id: 'overdue', sequence: 0, executeAtTick: 5, payload: null },
+        { id: 'due-now', sequence: 1, executeAtTick: 10, payload: null },
+        { id: 'later', sequence: 2, executeAtTick: 11, payload: null },
+      ],
+    });
+
+    kernel.step();
+    // Sequence order, and still before any system runs that tick.
+    expect(log).toEqual(['cmd:overdue', 'cmd:due-now', 'system@10']);
+
+    kernel.step();
+    expect(log).toEqual(['cmd:overdue', 'cmd:due-now', 'system@10', 'cmd:later', 'system@11']);
+    expect(kernel.snapshot().commands).toEqual([]);
+  });
+
+  it('does not let one overdue command silently stop every later command, including input submitted after the load', () => {
+    const log: string[] = [];
+    const kernel = new Kernel();
+    kernel.setCommandHandler((command) => log.push(command.id));
+
+    kernel.restoreState({
+      tick: 100,
+      expectedSequence: 1,
+      rngStates: [],
+      commands: [{ id: 'overdue', sequence: 0, executeAtTick: 99, payload: null }],
+    });
+
+    // The player's next order. `submitCommand` accepts it and the worker
+    // acknowledges it as `queued`, which is the whole severity of the
+    // defect: the acknowledgement was truthful and the command still never
+    // ran, because it sat behind an overdue head for ever.
+    kernel.submitCommand('player-input', 1, 120, null);
+
+    for (let step = 0; step < 1_000; step += 1) kernel.step();
+
+    expect(log).toEqual(['overdue', 'player-input']);
+    expect(kernel.snapshot().commands).toEqual([]);
+  });
+
   /**
    * The pin that matters for stored replay evidence: adding, removing or
    * renumbering a simulation system changes what a recorded command stream

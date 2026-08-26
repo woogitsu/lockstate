@@ -449,7 +449,33 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    * control-state changes are never a parallel/bypassing door model.
    */
   const securitySectors = new SecuritySectorRegistry(navigation.doors);
-  const securityGuards = new GuardRoster(DEFAULT_GUARD_CAPACITY, actorIdentity, () => rng.get(ACTOR_IDENTITY_RNG_STREAM));
+  /*
+   * `kernel.rng`, never the local `rng` binding above.
+   *
+   * The two are the same object for a new session -- `rng` is what the kernel
+   * was constructed with -- and they stop being the same object the moment a
+   * session is restored. `Kernel.restoreState` **replaces** the instance
+   * (`this._rng = new NamedRngStreams(snapshot.rngStates)`), so a closure that
+   * captured `rng` here kept drawing from a `NamedRngStreams` that no snapshot
+   * observes and no restore rebuilds, while every registered system drew from
+   * the new one through `SimulationContext.rng`.
+   *
+   * That was a real divergence in *persisted* state and not a cosmetic one.
+   * `hire` mints a name, and prisoner and guard names share the
+   * `identity.actor-name` stream: a guard hired after a load took a name from
+   * a stream still at its seeded start position, left the kernel's stream
+   * un-advanced, and so also changed the name the *next prisoner* was given.
+   * Both land in `SessionSnapshotBundle.identity`, which is a replay break
+   * under [ADR 0009](../../../docs/adr/0009-challenge-verification-strategy.md).
+   *
+   * `Kernel.rng` is a getter and this resolver runs per `hire`, so reading
+   * through it is not a workaround -- it is the accessor that exists for
+   * exactly this, and it follows a replaced instance where a captured
+   * reference cannot. Anything else this function hands the session RNG to
+   * must be written the same way, and `tests/determinism/session-restore-rng-ownership.test.ts`
+   * is the guard.
+   */
+  const securityGuards = new GuardRoster(DEFAULT_GUARD_CAPACITY, actorIdentity, () => kernel.rng.get(ACTOR_IDENTITY_RNG_STREAM));
   // ADR 0025's `HireStaff` consumer. It fabricates nobody -- the roster is
   // still empty until a command arrives, the same convention as every registry
   // above -- and it holds no state, so nothing here joins the save.
