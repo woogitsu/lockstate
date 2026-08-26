@@ -208,6 +208,12 @@ const UNLABELLED: readonly { readonly sourceFile: string; readonly declaration: 
       'Why `PrisonerOperationsRuntime.requestAdmission` refused an `AdmitPrisoner` -- no room instance any accommodation target names, or an exhausted entity store. It is the admission counterpart of `ZoneRoomRefusalReason` and `UnzoneRoomRefusalReason` above and carries no key for the identical reason: it never leaves the simulation under this spelling, because `createSessionCommandHandler` maps both members onto a `RefusalReason` through an exhaustive `Record` before anything is published, and what the player reads is one authored `hud.alert.refusal.admit.*` sentence per reason rather than a two-word label. See the `REFUSAL_REASONS` entry above for that argument in full.',
   },
   {
+    sourceFile: 'src/simulation/security/guard-release.ts',
+    declaration: 'GuardReleaseRefusalReason',
+    reason:
+      'Why `GuardReleaseService.release` refused a `ReleaseGuardAssignment` -- the guard is already unassigned, or the roster holds no such entity (ADR 0034). Exempt for the identical reason as `ZoneRoomRefusalReason`, `UnzoneRoomRefusalReason`, `PurchaseCancelRefusalReason` and `ADMIT_PRISONER_REFUSAL_REASONS` above: it never leaves the simulation under this spelling, because `createSessionCommandHandler` maps both members onto a `RefusalReason` through an exhaustive `Record` before anything is published, and what the player reads is one authored `hud.alert.refusal.release-guard.*` sentence per reason rather than a two-word label this table could hold. Note that the *other* union the same file declares, `GUARD_CLAIM_KINDS`, is labelled rather than exempt, and the contrast is the whole rule: a claim kind is a dense label on a roster row and a refusal reason is a sentence about something that did not happen.',
+  },
+  {
     sourceFile: 'src/content/simulation-message-keys.ts',
     declaration: 'SimulationEnumForm',
     reason:

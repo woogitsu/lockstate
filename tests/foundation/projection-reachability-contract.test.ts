@@ -62,7 +62,7 @@ import { PROJECTION_CATALOG } from '../../src/simulation/worker/projection-catal
  * other way: **there must be a painter**, and deleting the last one fails here
  * rather than quietly returning the channel to a pipe with nothing on the end
  * of it. It still does not claim that every projection is painted; ten of the
- * fourteen catalogued read models have a route and no reader.
+ * fifteen catalogued read models have a route and no reader.
  *
  * The second painter is `src/ui/simulation-build-queue.ts`, and it is worth
  * naming because it closed a *different* gap from the room readout's. That one
@@ -83,6 +83,19 @@ import { PROJECTION_CATALOG } from '../../src/simulation/worker/projection-catal
  * could not happen in any session a player could drive. A purchase id is minted
  * on the main thread and immediately forgotten; this projection is what carries
  * it back, so a control can name one.
+ *
+ * The fifth is `src/ui/simulation-held-guards.ts`, over `hud/held-guards`, and it
+ * is the **third** time this channel is what makes a *command* reachable rather
+ * than a readout -- with the difference that what sat unreachable behind it was
+ * neither a control nor a credit but a **release** (ADR 0034, answering ADR 0033's
+ * open question 3). `GuardRoster.unassign` has been complete since #26 and every
+ * caller of it in `src/` sits inside the system that made the claim being
+ * released, each firing only when that system decides the claim is over -- so a
+ * claim whose owner had lost track of it was permanent, which is what issue #352
+ * measured as four guards held for ever. A guard id is minted inside the
+ * simulation and never reached this thread at all; this projection is what
+ * carries it out, together with the one fact the roster cannot answer on its own
+ * -- which of the two `'on-search'` claimants holds the guard.
  *
  * The third is `src/ui/simulation-intake.ts`, over `hud/prisoner-population`,
  * and it is the first one about *people* rather than about the building: it
@@ -146,6 +159,7 @@ const ROUTED_ELSEWHERE: Readonly<Record<string, string>> = {
  */
 const PAINTERS = [
   'simulation-build-queue.ts',
+  'simulation-held-guards.ts',
   'simulation-intake.ts',
   'simulation-pending-deliveries.ts',
   'simulation-room-needs.ts',
@@ -162,7 +176,7 @@ describe('every projection the worker can produce has a route out of it', () => 
     // stopped matching would make every assertion below true of an empty set,
     // which reads exactly like compliance -- the failure this whole family of
     // gates exists to prevent.
-    expect(PROJECTIONS.length).toBeGreaterThanOrEqual(13);
+    expect(PROJECTIONS.length).toBeGreaterThanOrEqual(14);
     expect(new Set(PROJECTIONS.map(({ name }) => name)).size).toBe(PROJECTIONS.length);
     // Named files, so a projection module that is renamed or moved out of the
     // scanned directory fails here rather than silently leaving the surface.
@@ -170,6 +184,7 @@ describe('every projection the worker can produce has a route out of it', () => 
     for (const expected of [
       'clock-projection.ts',
       'contraband-projection.ts',
+      'guard-release-projection.ts',
       'incident-projection.ts',
       'prisoner-projection.ts',
       'room-projection.ts',

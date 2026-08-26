@@ -36,7 +36,12 @@ export interface IncidentResponseMetrics {
 
 interface ResponseRecord {
   readonly incidentId: string;
-  readonly guardIds: readonly EntityId[];
+  /**
+   * Mutable since ADR 0034: `GuardReleaseService` can take one responder off a
+   * response without abandoning it, so the list a record names is no longer
+   * fixed for the response's life.
+   */
+  guardIds: EntityId[];
   pathRequestIdsByGuard: Map<EntityId, string>;
   arrivedGuardIds: Set<EntityId>;
   containmentStartedAtTick: number | undefined;
@@ -146,6 +151,79 @@ export class IncidentResponseSystem implements SystemRegistration {
     return Math.max(1, Math.ceil(severity * this.policy.respondersPerSeverityPoint));
   }
 
+  /**
+   * The guards this system is currently holding on the `'on-search'` deployment
+   * phase ([ADR 0034](../../../docs/adr/0034-releasing-a-claimed-guard.md)).
+   *
+   * The counterpart of `SearchSystem.claimedGuardIds`, and it exists for the
+   * same reason: `'on-search'` is a shared phase with exactly two producers, so
+   * neither the release surface nor the read model behind it can tell a
+   * responder from a searcher without asking each claimant which guards are its
+   * own. Before this method the *other* claimant could be asked and this one
+   * could not, which is why `releaseOrphanedClaims` had to define a responder
+   * negatively -- "an `'on-search'` guard no search job names" -- rather than
+   * positively. That definition stays exactly as it is: it is what makes the
+   * sweep able to release a claim whose record the save destroyed, which is
+   * precisely the case this method cannot see.
+   *
+   * So the two are not redundant and the difference is worth stating: this
+   * answers *"which guards does a live response record name"*, and
+   * `releaseOrphanedClaims` answers *"which `'on-search'` guards does nothing
+   * live name at all"*.
+   *
+   * Deterministic: ascending entity id, over response records enumerated in
+   * sorted incident-id order.
+   */
+  public claimedGuardIds(): readonly EntityId[] {
+    const claimed = new Set<EntityId>();
+    for (const incidentId of [...this.responses.keys()].sort()) {
+      for (const guardId of this.responses.get(incidentId)!.guardIds) claimed.add(guardId);
+    }
+    return [...claimed].sort((a, b) => a - b);
+  }
+
+  /**
+   * Takes `guardId` off whatever response holds it, and answers whether one did
+   * ([ADR 0034](../../../docs/adr/0034-releasing-a-claimed-guard.md)).
+   *
+   * **The roster is not touched here** -- `GuardReleaseService` owns that call,
+   * for the reason `SearchSystem.releaseGuard` states: unassigning a responder
+   * without telling this system would leave the record naming a guard back in
+   * the unassigned pool, so `releaseResponse` would later `unassign` a guard
+   * some other system had since claimed, and `advanceResponse` would keep
+   * counting it toward `arrivedGuardIds`.
+   *
+   * **A response left with no responders is abandoned, and the incident is
+   * left open.** The record is deleted and nothing is transitioned: the incident
+   * keeps running and lapses at its own deadline, which is issue #28's
+   * consistent-failure outcome and exactly what `advanceResponse`'s no-record
+   * path already does for an interrupted response. `lapse` then lifts the
+   * lockdown through `liftLockdownNoOpenIncidentJustifies`, the branch ADR 0033
+   * added for a record-less incident -- so a player who releases the last
+   * responder from a severity-8 riot does not leave the sector dark for ever.
+   * That branch is reused rather than duplicated, which is what makes this safe
+   * to add.
+   *
+   * **What it does not do is resolve or lapse the incident early.** A release is
+   * a staffing decision, not a verdict on the riot, and a command that closed an
+   * incident would be writing an outcome the simulation had not reached.
+   *
+   * Deterministic: sorted incident ids, no RNG draw.
+   */
+  public releaseResponder(guardId: EntityId): boolean {
+    for (const incidentId of [...this.responses.keys()].sort()) {
+      const record = this.responses.get(incidentId)!;
+      const index = record.guardIds.indexOf(guardId);
+      if (index === -1) continue;
+      record.guardIds.splice(index, 1);
+      record.arrivedGuardIds.delete(guardId);
+      record.pathRequestIdsByGuard.delete(guardId);
+      if (record.guardIds.length === 0) this.responses.delete(incidentId);
+      return true;
+    }
+    return false;
+  }
+
   public update(context: SimulationContext): void {
     // Before the incident pass, so responders this sweep hands back are in the
     // unassigned pool in time for `tryDispatch` to send them to an incident
@@ -232,7 +310,7 @@ export class IncidentResponseSystem implements SystemRegistration {
     for (const guardId of guardIds) this.guards.setDeploymentPhase(guardId, 'on-search');
     this.respondersDispatched += guardIds.length;
 
-    const record: ResponseRecord = { incidentId: incident.id, guardIds, pathRequestIdsByGuard: new Map(), arrivedGuardIds: new Set(), containmentStartedAtTick: undefined, lockdownApplied: false };
+    const record: ResponseRecord = { incidentId: incident.id, guardIds: [...guardIds], pathRequestIdsByGuard: new Map(), arrivedGuardIds: new Set(), containmentStartedAtTick: undefined, lockdownApplied: false };
 
     if (incident.severity >= this.policy.lockdownSeverityThreshold) {
       this.sectors.setControlState(incident.sectorId, 'lockdown');

@@ -108,13 +108,24 @@ Nothing here changes a status; this table only reports them.
 | [0029](./0029-concurrent-room-use-claims.md) | What a concurrent-use claim on a room is — when it is taken, when it ends, and who waits | Accepted, 2026-08-26 |
 | [0031](./0031-build-queue-cancellation-surface.md) | Withdrawing one queued build order — where a player aims, and what a long queue looks like | Accepted, 2026-08-26 — with open question 4 promoted to blocking |
 | [0032](./0032-incident-consequences-and-classification-review.md) | What an incident costs the prisoner who was in it, and how a classification tier moves | Accepted, 2026-08-26 |
-| [0033](./0033-releasing-an-interrupted-incident-response-at-runtime.md) | A restored session abandons an incident response and returns what it claimed | Proposed — pending human approval |
+| [0033](./0033-releasing-an-interrupted-incident-response-at-runtime.md) | A restored session abandons an incident response and returns what it claimed | Proposed — pending human approval; **amended** in place, with open question 1 answered (a restored session re-dispatches) |
+| [0034](./0034-releasing-a-claimed-guard.md) | Releasing a claimed guard — one command, every claimant | Proposed — pending human approval; **owes a `STATUS-QUEUE.md` §2 entry**, quoted in its pull request |
 
-**Next free number: 0034.** 0033 is this table's newest row and **0030 is still
+**Next free number: 0035.** 0034 is this table's newest row and **0030 is still
 held by an unmerged branch** — the incident-response restore change, which
 allocated it in the same hour it was stated free here. It is listed nowhere above
 because nothing is merged under that number yet, which is precisely the gap a
-stated next-free cannot see: enumerate the open pull requests before taking 0034.
+stated next-free cannot see: enumerate the open pull requests before taking 0035.
+
+**0034's author ran that enumeration and it came back with two open pull
+requests**, **#393** (documentation only: it accepts 0033 and amends 0007, and its
+`docs/adr/` listing adds no new number) and **#355** (no ADR), so 0034 was free.
+0034 answers 0033's own **open question 3** — that the absence of a release
+command *"is what made this defect terminal rather than merely slow"* — and it is
+a separate document rather than a second amendment because that question names
+itself a gameplay-surface decision. 0033's **open question 1** was answered in
+0033 itself, as an amendment section, for the mirror-image reason: it is that
+document's own restore semantics.
 
 **0033's author ran that enumeration and it came back with two open pull
 requests**, #355 (no ADR) and #361 (holding 0030), so 0033 was free. 0033 is the

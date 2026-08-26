@@ -366,7 +366,7 @@ the protocol growing with the read model.
 One request and one reply carry all of them:
 
 1. The main thread sends `simulation/request-projection` naming a
-   `projectionId` from a closed vocabulary (`PROJECTION_IDS`, fourteen members),
+   `projectionId` from a closed vocabulary (`PROJECTION_IDS`, fifteen members),
    optionally with `offset`/`limit` and optionally with a `target` — an entity
    id or a string id — for a detail projection.
 2. The worker looks the id up in `PROJECTION_CATALOG`
@@ -492,7 +492,37 @@ save-schema version: `pendingDeliveries` is a public accessor over the list
 `snapshot`/`restore` already carry, and `economySectionSchema` already types every
 field of it.
 
-Nine of the fourteen catalogued read models still have a route and nobody on the
+`src/ui/simulation-held-guards.ts` is the fifth, on the same three terms --
+`hud/held-guards`, while the Security tab is showing, on the counts cadence,
+asking for the panel's own three-row window rather than the default hundred -- and
+it is the **third** time this channel is what makes a *command* reachable rather
+than a readout. What was unreachable behind it was neither a control nor a credit
+but a **release** ([ADR 0034](./adr/0034-releasing-a-claimed-guard.md), answering
+[ADR 0033](./adr/0033-releasing-an-interrupted-incident-response-at-runtime.md)'s
+open question 3).
+
+`GuardRoster.unassign` has been complete since #26, and every caller of it in
+`src/` sits *inside the system that made the claim being released*, each firing
+only when that system decides the claim is over. So a claim whose owner had lost
+track of it was permanent -- which is exactly what #352 was, measured at four
+guards and one sector still held 53,000 ticks after a restore. A guard id is a
+staff `EntityId` minted inside the simulation and it never reached the main thread
+at all: `hud/staff` was catalogued and read by nobody.
+
+**And `hud/staff` would not have been enough even if it had been read**, which is
+where this differs from the queue's case and the deliveries'. It carries
+`assignment.deploymentPhase`, and `'on-search'` is a *shared* phase with exactly
+two producers -- so a row saying "On Search" cannot say whether the guard is on a
+contraband search or in a riot, and those are different decisions. This read model
+resolves the claim through `GuardReleaseService.claimOf`, **the same function the
+release itself uses**, so a row and the press on it cannot disagree about what is
+being released.
+
+It needs no new persisted state and no save-schema version: everything it reads is
+`security.guards.records` and the live claim views of the two `'on-search'`
+claimants, all of which a V5 save has held all along.
+
+Ten of the fifteen catalogued read models still have a route and nobody on the
 end of it. That is the honest state of this channel, and it is a different
 sentence from the one this section used to carry.
 

@@ -41,7 +41,7 @@ import { TopologyManager } from '../rooms/topology';
 import { RoomZoningService } from '../rooms/zoning';
 import { deriveXoshiroState } from '../rng/seed';
 import { NamedRngStreams } from '../rng/streams';
-import { DeploymentSystem, GuardRoster, PatrolSystem, SecuritySectorRegistry, type DeploymentSchedule } from '../security';
+import { DeploymentSystem, GuardReleaseService, GuardRoster, PatrolSystem, SecuritySectorRegistry, type DeploymentSchedule } from '../security';
 import { chunkCoordinate, tileCoordinate, type ChunkPosition, type TilePosition } from '../world/coordinates';
 import { SparseWorld } from '../world/sparse-world';
 
@@ -160,6 +160,18 @@ export interface SimulationRuntime {
    * could start.
    */
   readonly staffHiring: StaffHiringService;
+  /**
+   * Releases a guard from whatever is holding it -- a search job, an incident
+   * response, or a deployment (ADR 0034, answering ADR 0033's open question 3).
+   *
+   * The consumer of `ReleaseGuardAssignment`, and it is a session-level service
+   * rather than a system for `RoomZoningService`'s and `StaffHiringService`'s
+   * reason: it performs no per-tick work, so it has nothing for `update` to do.
+   * It is constructed after both `'on-search'` claimants because it reads both of
+   * them live -- the claim view cannot be captured, for the reason ADR 0033
+   * decision 4 gives.
+   */
+  readonly guardRelease: GuardReleaseService;
   /** Mutable and empty until session/scenario setup pushes entries -- the same "no fabricated content" convention `containers`/`jobs`/`electricity`/`water` follow. `DeploymentSystem` reads this array live, so pushing into it after construction is how a scenario adds staffing requirements. */
   readonly securitySchedules: DeploymentSchedule[];
   readonly deploymentSystem: DeploymentSystem;
@@ -520,6 +532,11 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     () => searchSystem.claimedGuardIds(),
   );
 
+  // After both `'on-search'` claimants, because it reads each of them live: a
+  // captured claim view would be exactly the mistake ADR 0033 decision 4
+  // measured, one command later.
+  const guardRelease = new GuardReleaseService(securityGuards, searchSystem, incidentResponseSystem);
+
   kernel.registerSystem(construction);
   kernel.registerSystem(procurement);
   kernel.registerSystem(stateIncome);
@@ -533,7 +550,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   kernel.registerSystem(searchSystem);
   kernel.registerSystem(incidentResponseSystem);
   kernel.setCommandHandler(
-    createSessionCommandHandler(construction, procurement, roomZoning, staffHiring, prisoners, objectPlacement, refusals),
+    createSessionCommandHandler(construction, procurement, roomZoning, staffHiring, prisoners, objectPlacement, guardRelease, refusals),
   );
 
   return {
@@ -569,6 +586,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     informants,
     confiscations,
     searchPolicies,
+    guardRelease,
     searchSystem,
     searchContainerLocations,
     incidents,

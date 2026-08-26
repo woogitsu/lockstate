@@ -4,6 +4,7 @@ import type { PlaceObjectRefusalReason, RemoveObjectRefusalReason } from '../obj
 import type { AdmitPrisonerRefusalReason } from '../prisoners/prisoner-operations-runtime';
 import type { RefusalReason, SimulationRefusal } from '../protocol/types';
 import type { UnzoneRoomRefusalReason, ZoneRoomRefusalReason } from '../rooms/zoning';
+import type { GuardReleaseRefusalReason } from '../security/guard-release';
 import type { StaffHireRefusalReason } from '../staff/hiring';
 
 /**
@@ -230,6 +231,35 @@ export const PURCHASE_REFUSAL_REASONS: Readonly<Record<PurchaseRefusalReason, Re
  */
 export const PURCHASE_CANCEL_REFUSAL_REASONS: Readonly<Record<PurchaseCancelRefusalReason, RefusalReason>> = {
   'not-pending': 'cancel-purchase.not-pending',
+};
+
+/**
+ * `GuardReleaseRefusalReason`, mapped onto the wire's. Exhaustive for the same
+ * reason as above (ADR 0034).
+ *
+ * `GuardReleaseService.release` answers a `GuardReleaseOutcome` rather than a
+ * boolean **so that this table has something to be exhaustive over**, and that
+ * is not a stylistic preference: `tests/unit/simulation-refusals.test.ts`
+ * requires each wire reason to come from a `Record` over a named union, so a
+ * boolean return could not have reached a player-visible surface at all. This is
+ * the second time that has decided an API -- `ProcurementSystem.cancel` gained
+ * `PurchaseCancelRefusalReason` for the same reason in #285 -- and it is worth
+ * naming as a pattern rather than as a coincidence, because "a release either
+ * worked or it did not" is exactly the shape a boolean looks adequate for.
+ *
+ * `not-held` is the reachable one and the one a player can provoke without doing
+ * anything wrong: `hud/held-guards` is published on a cadence, so a response can
+ * close or a search can finish between the publication and the press.
+ * `unknown-guard` is reachable only from a command composed elsewhere, and is
+ * mapped for the reason every other table maps its whole union.
+ *
+ * Namespaced `release-guard.*` rather than folded into `hire.*`: hiring and
+ * releasing are opposite gestures on the same roster, and somebody who pressed
+ * Release must not read that a wage could not be paid.
+ */
+export const RELEASE_GUARD_REFUSAL_REASONS: Readonly<Record<GuardReleaseRefusalReason, RefusalReason>> = {
+  'not-held': 'release-guard.not-held',
+  'unknown-guard': 'release-guard.unknown-guard',
 };
 
 /**

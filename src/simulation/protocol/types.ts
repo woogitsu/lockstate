@@ -315,6 +315,7 @@ export const PROJECTION_IDS = [
   'hud/status-strip',
   'hud/build-queue',
   'hud/pending-deliveries',
+  'hud/held-guards',
   'hud/prisoner-population',
   'hud/prisoner-roster',
   'hud/prisoner-detail',
@@ -637,12 +638,13 @@ export type SimulationStatusCounts = DeepReadonly<
  * message key in `src/ui/simulation-alerts.ts`; no text crosses the boundary.
  *
  * Declared in ascending code-unit order, and namespaced by the command the
- * refusal answers, so the nine vocabularies behind it cannot collide:
+ * refusal answers, so the ten vocabularies behind it cannot collide:
  * `admit.*` mirrors `AdmitPrisonerRefusalReason`, `build.*` mirrors
  * `BuildOrder.failReason`, `cancel-purchase.*` mirrors
  * `PurchaseCancelRefusalReason`, `hire.*` mirrors `StaffHireRefusalReason`,
  * `place-object.*` mirrors `PlaceObjectRefusalReason`,
  * `purchase.*` mirrors `PurchaseOutcome`'s refusal reasons,
+ * `release-guard.*` mirrors `GuardReleaseRefusalReason`,
  * `remove-object.*` mirrors `RemoveObjectRefusalReason`, `unzone.*` mirrors
  * `UnzoneRoomRefusalReason` and `zone.*` mirrors `ZoneRoomRefusalReason`. The
  * namespace is doing real work rather than being tidy -- `out-of-bounds` and
@@ -652,9 +654,9 @@ export type SimulationStatusCounts = DeepReadonly<
  * answers, so one flat id per spelling would put one sentence on several.
  *
  * `src/simulation/refusals/refusal-log.ts` maps each domain value onto one of
- * these through an exhaustive `Record`, so a reason added to any of the nine
+ * these through an exhaustive `Record`, so a reason added to any of the ten
  * fails to compile until it is named here -- and
- * `tests/unit/simulation-refusals.test.ts` asserts the nine tables between
+ * `tests/unit/simulation-refusals.test.ts` asserts the ten tables between
  * them cover this list exactly, so a member declared here and produced by
  * nothing is a failure too.
  *
@@ -669,6 +671,16 @@ export type SimulationStatusCounts = DeepReadonly<
  * (#285): the treasury is involved in both and the player is doing opposite
  * things, so somebody who pressed Cancel on a delivery must not read that the
  * materials were not ordered.
+ *
+ * `release-guard.*` is the tenth (ADR 0034), and its `unknown-guard` is the
+ * fifth demonstration of the namespace doing real work: `hire.unknown-role`,
+ * `purchase.unknown-material` and `place-object.unknown-buildable` are all "the
+ * simulation has no such thing", and this one is about a *person* rather than a
+ * catalogue entry, which is a different sentence to read. Both of its members are
+ * mapped even though only `not-held` is reachable from the panel, for the reason
+ * every other table maps its whole union: a command composed anywhere else -- a
+ * queued command in a restored save, a future producer -- can still provoke the
+ * other.
  */
 export const REFUSAL_REASONS = [
   'admit.no-accommodation',
@@ -693,6 +705,8 @@ export const REFUSAL_REASONS = [
   'purchase.insufficient-funds',
   'purchase.invalid-quantity',
   'purchase.unknown-material',
+  'release-guard.not-held',
+  'release-guard.unknown-guard',
   'remove-object.nothing-to-remove',
   'unzone.invalid-area',
   'unzone.nothing-to-remove',

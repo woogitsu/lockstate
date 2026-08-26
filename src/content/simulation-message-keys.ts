@@ -250,6 +250,32 @@ export const SIMULATION_ENUM_GROUPS = [
     },
   },
   {
+    // Labelled rather than exempted, unlike every refusal vocabulary beside it,
+    // and the difference is what the words are *for*. A refusal is a sentence
+    // about something that did not happen; this is a **label on a row** -- the
+    // Staff panel's held-guards list says what is holding each guard, one dense
+    // phrase per row, exactly as `deployment-phase` above labels the phase. ADR
+    // 0034 is the decision it arrived with.
+    //
+    // `'unattributed'` is the one member worth naming here: it is an
+    // `'on-search'` guard that neither `'on-search'` claimant names, which is
+    // the residue ADR 0033 is about. It is a real state a player can see -- in
+    // the window between loading a save taken during a response and that
+    // system's next scheduled update -- so it needs a word rather than an
+    // exemption, and the word says "nothing is holding this" rather than naming
+    // a claimant that does not exist.
+    namespace: 'guard-claim',
+    sourceFile: 'src/simulation/security/guard-release.ts',
+    declaration: 'GUARD_CLAIM_KINDS',
+    form: 'const-array',
+    labels: {
+      deployment: 'Sector Post',
+      'incident-response': 'Incident Response',
+      search: 'Contraband Search',
+      unattributed: 'Unclaimed',
+    },
+  },
+  {
     namespace: 'sector-control-state',
     sourceFile: 'src/simulation/security/sector.ts',
     declaration: 'SectorControlState',

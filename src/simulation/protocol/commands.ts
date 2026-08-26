@@ -377,6 +377,55 @@ export const removeObjectSchema = z.object({
   y: z.number().int(),
 }).strict();
 
+/**
+ * Release one guard from whatever is holding it
+ * ([ADR 0034](../../../docs/adr/0034-releasing-a-claimed-guard.md), answering
+ * [ADR 0033](../../../docs/adr/0033-releasing-an-interrupted-incident-response-at-runtime.md)
+ * open question 3).
+ *
+ * ## Why one command and not one per claimant
+ *
+ * Because a guard is one thing and a player is looking at one guard. Three
+ * commands -- release-from-search, release-from-response, release-from-post --
+ * would put the resolution of "what is holding this?" on the *main thread*,
+ * which cannot answer it: `'on-search'` is a shared phase and telling a
+ * responder from a searcher needs both claimants asked live, inside the
+ * simulation, at the tick the release happens (ADR 0033 decision 4 is the whole
+ * argument). A command that named the claimant would be the main thread guessing
+ * with a stale projection, and it would be wrong exactly in the race this
+ * command's `not-held` refusal exists for.
+ *
+ * So the command names the *guard* and the simulation resolves the claim.
+ * `GuardReleaseService.claimOf` is that resolution and the accepted outcome
+ * reports which kind it found.
+ *
+ * ## What it carries
+ *
+ * `guardId`, and nothing else. A staff `EntityId`, so `z.number().int()` rather
+ * than `identifierSchema` -- the id space is `EntityStore`'s, not a content
+ * catalogue's, and it is the same shape `ProjectionTarget`'s `'entity'` kind
+ * carries. Non-negative because `EntityStore` mints from zero upward.
+ *
+ * **No claimant, no sector, no incident id and no search order id.** Every one
+ * of those is a property of the record this guard id already reaches, and every
+ * one of them would be a second thing the wire could get wrong. **No "and
+ * re-deploy to" either**: releasing is one act and assigning is another, and
+ * `DeploymentSystem` already fills a shortage from the pool on its next cycle.
+ *
+ * ## Not a dismissal
+ *
+ * The guard stays hired. What is released is the claim, not the employment --
+ * firing destroys an entity, which is ADR 0026's subject and needs its own
+ * decision about id reuse. `ReleaseGuardAssignment` rather than `DismissGuard`
+ * for exactly that reason: ADR 0033's open question 3 asks for a
+ * *"dismiss/fire command"* and the narrower half of it is the half that closes
+ * the defect.
+ */
+export const releaseGuardAssignmentSchema = z.object({
+  type: z.literal('ReleaseGuardAssignment'),
+  guardId: z.number().int().min(0).max(Number.MAX_SAFE_INTEGER),
+}).strict();
+
 export const undoCommandSchema = z.object({
   type: z.literal('Undo'),
 }).strict();
@@ -396,6 +445,7 @@ export const simulationCommandSchema = z.discriminatedUnion('type', [
   hireStaffSchema,
   placeObjectSchema,
   removeObjectSchema,
+  releaseGuardAssignmentSchema,
   undoCommandSchema,
   redoCommandSchema,
 ]);
@@ -475,6 +525,9 @@ function commandJson(command: SimulationCommand): JsonValue {
 
     case 'RemoveObject':
       return { type: command.type, x: command.x, y: command.y };
+
+    case 'ReleaseGuardAssignment':
+      return { type: command.type, guardId: command.guardId };
 
     case 'Undo':
     case 'Redo':

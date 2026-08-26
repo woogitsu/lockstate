@@ -1,5 +1,6 @@
 import type {
   HudBuildQueueViewModel,
+  HudHeldGuardsViewModel,
   HudPendingDeliveriesViewModel,
   HudRoomNeedsViewModel,
   HudViewModel,
@@ -287,6 +288,43 @@ export interface PendingDeliveryRowProbe {
   readonly cancelDisabled: boolean;
 }
 
+/**
+ * The Staff panel's held-guards section (ADR 0034), and every field here is a
+ * `getClientRects()` or `offsetParent` answer rather than an attribute read.
+ *
+ * #220's lesson applied to the newest control in the interface: a Release button
+ * that is laid out, hit-tests to itself and is not on screen is a feature that
+ * does not exist. Unlike the delivery rows one panel over these are not inside a
+ * disclosure, so the arrival state has a box the moment the simulation reports a
+ * held guard -- which is what makes `heldPanelBox` and `panelVisibleBottom` the
+ * pair the reachability assertions turn on.
+ */
+export interface HeldGuardsProbe {
+  /** Whether the browser gave the block a box at all. `false` until the first reply, by design. */
+  readonly blockLaidOut: boolean;
+  /** `data-held` on the block: how many guards the panel was told are held, as a string. */
+  readonly held: string | null;
+  /** The header's figure -- the whole roster's held/free pair, never the row count. */
+  readonly summaryText: string;
+  readonly blockBox: LayoutBox | null;
+  /** One entry per row the browser actually laid out, in draw order. */
+  readonly rows: readonly HeldGuardRowProbe[];
+  /** The "and N more" line, empty when every held guard has a row. */
+  readonly moreText: string;
+  /** The "nobody is assigned" line, empty while any guard is held. */
+  readonly emptyText: string;
+}
+
+export interface HeldGuardRowProbe {
+  /** `data-guard`: *which* guard this row's control releases. */
+  readonly guardId: string;
+  /** The rendered sentence: who, and what is holding them. */
+  readonly labelText: string;
+  readonly releaseBox: LayoutBox | null;
+  readonly releaseHasOffsetParent: boolean;
+  readonly releaseDisabled: boolean;
+}
+
 /** The Staff panel on the Security tab (ADR 0025). */
 export interface StaffProbe {
   /** False while the Security tab is not the active one. */
@@ -299,6 +337,17 @@ export interface StaffProbe {
   readonly hireDisabled: boolean;
   /** Every visible label in the panel, so an unresolved `hud.*` key is caught. */
   readonly texts: readonly string[];
+  /** Which guards are held, and by what (ADR 0034) -- see `HeldGuardsProbe`. */
+  readonly held: HeldGuardsProbe;
+  /**
+   * The bottom of the panel's *client* box -- where its content starts being
+   * clipped. The fold the reachability assertions compare a Release button's own
+   * bottom edge against, in the shape `BuildLayoutProbe.panelVisibleBottom` set.
+   */
+  readonly panelVisibleBottom: number;
+  /** `scrollHeight - clientHeight` on the panel: 0 when the panel itself does not scroll. */
+  readonly panelOverflow: number;
+  readonly panelBox: LayoutBox | null;
 }
 
 export interface LayoutProbe {
@@ -733,6 +782,18 @@ export interface LockstateUiHarness {
   ): void;
   /** Presses the cancel control on the delivery row aimed at `orderId`. Returns false when no such row is laid out. */
   pressPendingDeliveryCancel(orderId: string): boolean;
+  /**
+   * Publishes which guards are held and by what, which in the real app is read
+   * over `simulation/request-projection` by `src/ui/simulation-held-guards.ts`
+   * (ADR 0034).
+   *
+   * `undefined` is "nothing has been asked", which is a different fact from a
+   * model reporting no held guards -- the first draws no block at all and the
+   * second draws a sentence, and the panel has to be handed each to prove it.
+   */
+  reportHeldGuards(held: HudHeldGuardsViewModel | undefined): void;
+  /** Presses the release control on the row aimed at `guardId`. Returns false when no such row is laid out. */
+  pressGuardRelease(guardId: number): boolean;
   roomsProbe(): RoomsProbe;
   roomsLayoutProbe(): RoomsLayoutProbe;
   buildLayoutProbe(): BuildLayoutProbe;

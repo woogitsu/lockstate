@@ -23,7 +23,14 @@ interface SearchJobRecord {
   readonly id: string;
   readonly scope: SearchScope;
   readonly targets: readonly SearchTarget[];
-  readonly guardIds: readonly EntityId[];
+  /**
+   * Mutable since ADR 0034: `GuardReleaseService` can take one guard off a job
+   * without cancelling it, so the list a job names is no longer fixed for the
+   * job's life. Everything that reads it -- `getSnapshot`, `claimedGuardIds`,
+   * `beginTravelToCurrentTarget`, `releaseGuards` -- reads it live, so there is
+   * no second copy to keep in step.
+   */
+  guardIds: EntityId[];
   currentTargetIndex: number;
   state: SearchJobState;
   /** `false` right after (re)entering `'travelling'` (fresh assignment, next target, or post-restore) -- `update` issues route requests exactly once per such transition. */
@@ -120,6 +127,61 @@ export class SearchSystem implements SystemRegistration {
     return [...claimed].sort((a, b) => a - b);
   }
 
+  /**
+   * Takes `guardId` off whatever search job holds it, and answers whether one
+   * did ([ADR 0034](../../../docs/adr/0034-releasing-a-claimed-guard.md)).
+   *
+   * **Its own bookkeeping first, the roster second.** The roster is *not*
+   * touched here -- `GuardReleaseService` owns that call -- because the whole
+   * point of routing a release through the claimant is that
+   * `GuardRoster.unassign` on a job's guard, on its own, is precisely the bug
+   * this method exists to make impossible: the job would keep naming a guard
+   * that is back in the unassigned pool, `DeploymentSystem` would send it to a
+   * post, `beginTravelToCurrentTarget` would keep routing it to a search target,
+   * and `runDetectionForCurrentTarget` would record a confiscation as found by
+   * somebody standing somewhere else. So this method removes the guard from the
+   * job, and the service unassigns it exactly once, from one place.
+   *
+   * **A job left with no guards is cancelled**, counted on
+   * `searchesCancelled` -- the same counter a route failure increments, because
+   * it is the same fact about the order (it did not complete). Leaving a
+   * guardless job active would be worse than cancelling it in two ways that are
+   * facts about this file rather than judgements: `beginTravelToCurrentTarget`
+   * would iterate nothing, so `allArrived` would stay `true` and the job would
+   * march through every target dwelling on each one with nobody present, and
+   * `runDetectionForCurrentTarget` reads `job.guardIds[0]!` for the
+   * `foundByGuardId` on every confiscation it records.
+   *
+   * The path request the released guard had in flight is dropped rather than
+   * cleared on the navigation system, which is what every other abandoned
+   * request in this system does (`loadSnapshot` drops all of them) -- a result
+   * nothing collects is garbage the queue ages out, and `clearResult` on a
+   * request that may not have resolved yet is not a thing this system does
+   * anywhere.
+   *
+   * Deterministic: ascending order id, so which job is inspected first is a
+   * function of state rather than of insertion history, exactly as
+   * `activeJobsInCanonicalOrder` requires of every other iteration here. A
+   * guard can only be on one job anyway -- `assignQueuedOrders` claims from
+   * `unassignedGuardIds()` -- so the order cannot change the outcome; it is
+   * canonical because `tests/determinism/canonical-iteration-contract.test.ts`
+   * gates the enumeration and not its effect.
+   */
+  public releaseGuard(guardId: EntityId): boolean {
+    for (const job of this.activeJobsInCanonicalOrder()) {
+      const index = job.guardIds.indexOf(guardId);
+      if (index === -1) continue;
+      job.guardIds.splice(index, 1);
+      job.pathRequestIdsByGuard.delete(guardId);
+      if (job.guardIds.length === 0) {
+        this.active.delete(job.id);
+        this.searchesCancelled += 1;
+      }
+      return true;
+    }
+    return false;
+  }
+
   public isQueued(orderId: string): boolean {
     return this.queue.some((order) => order.id === orderId);
   }
@@ -179,7 +241,7 @@ export class SearchSystem implements SystemRegistration {
         id: next.id,
         scope: next.scope,
         targets: next.targets,
-        guardIds,
+        guardIds: [...guardIds],
         currentTargetIndex: 0,
         state: 'travelling',
         travelInFlight: false,
@@ -328,7 +390,7 @@ export class SearchSystem implements SystemRegistration {
         id,
         scope: job.scope,
         targets: job.targets,
-        guardIds: job.guardIds,
+        guardIds: [...job.guardIds],
         currentTargetIndex: job.currentTargetIndex,
         state: 'travelling',
         travelInFlight: false,

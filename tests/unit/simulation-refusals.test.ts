@@ -9,6 +9,7 @@ import {
   PLACE_OBJECT_REFUSAL_REASONS,
   PURCHASE_CANCEL_REFUSAL_REASONS,
   PURCHASE_REFUSAL_REASONS,
+  RELEASE_GUARD_REFUSAL_REASONS,
   REMOVE_OBJECT_REFUSAL_REASONS,
   RefusalLog,
   UNZONE_REFUSAL_REASONS,
@@ -100,8 +101,8 @@ describe('RefusalLog: the snapshot shape a cadence channel can carry', () => {
   });
 });
 
-describe('the wire vocabulary is exactly what the nine domains can produce', () => {
-  it('maps every admission, build, hiring, placement, object removal, purchase, cancellation and zoning refusal onto a declared reason', () => {
+describe('the wire vocabulary is exactly what the ten domains can produce', () => {
+  it('maps every admission, build, hiring, placement, object removal, purchase, cancellation, guard release and zoning refusal onto a declared reason', () => {
     const produced = [
       ...Object.values(ADMIT_REFUSAL_REASONS),
       ...Object.values(BUILD_REFUSAL_REASONS),
@@ -109,6 +110,7 @@ describe('the wire vocabulary is exactly what the nine domains can produce', () 
       ...Object.values(PLACE_OBJECT_REFUSAL_REASONS),
       ...Object.values(PURCHASE_CANCEL_REFUSAL_REASONS),
       ...Object.values(PURCHASE_REFUSAL_REASONS),
+      ...Object.values(RELEASE_GUARD_REFUSAL_REASONS),
       ...Object.values(REMOVE_OBJECT_REFUSAL_REASONS),
       ...Object.values(ZONE_REFUSAL_REASONS),
       ...Object.values(UNZONE_REFUSAL_REASONS),
@@ -139,7 +141,7 @@ describe('the wire vocabulary is exactly what the nine domains can produce', () 
     expect([...REFUSAL_REASONS]).toEqual([...REFUSAL_REASONS].sort());
   });
 
-  it('names the nine commands it can answer, so the vocabularies cannot collide', () => {
+  it('names the ten commands it can answer, so the vocabularies cannot collide', () => {
     // `unzone` is its own namespace and not more members of `zone`'s, because
     // `invalid-area` is the same *condition* for both and a different
     // *sentence*: a player told "the room was not zoned" after asking to remove
@@ -162,6 +164,12 @@ describe('the wire vocabulary is exactly what the nine domains can produce', () 
     // same treasury, so a flat vocabulary would tell somebody who pressed Cancel
     // that the materials were not ordered -- which would send them to buy the
     // bricks they are trying to get their money back for.
+    // `release-guard` is the tenth (ADR 0034) and it is the sixth demonstration:
+    // its `unknown-guard` is spelled like `hire.unknown-role`,
+    // `purchase.unknown-material` and `place-object.unknown-buildable` in
+    // meaning -- "the simulation has no such thing" -- and it is about a person
+    // rather than a catalogue entry, and it answers the opposite gesture on the
+    // same roster hiring writes to.
     const prefixes = new Set(REFUSAL_REASONS.map((reason) => reason.split('.')[0]));
     expect([...prefixes].sort()).toEqual([
       'admit',
@@ -170,6 +178,7 @@ describe('the wire vocabulary is exactly what the nine domains can produce', () 
       'hire',
       'place-object',
       'purchase',
+      'release-guard',
       'remove-object',
       'unzone',
       'zone',
