@@ -77,8 +77,12 @@ import type {
  *
  * **The confirm gates removals too**, and that is deliberate rather than
  * uniformity for its own sake. A removal drag grows every tile it covers into
- * that tile's whole connected same-type run, so clipping the corner of a 6x6
- * canteen removes all 36 tiles. That is the right behaviour -- the alternative
+ * the whole room instance that claims it, so clipping the corner of a 6x6
+ * canteen removes all 36 tiles. (This read "that tile's whole connected
+ * same-type run" until #337, which is a different rule with the same
+ * consequence here and a worse one next door: it took the neighbouring room
+ * too. The tile now resolves through the instance's rectangle.) That is the
+ * right behaviour -- the alternative
  * leaves the zoning plane painted where the registry has no instance -- and it
  * is exactly the behaviour a confirm step should be shown for. It is also what
  * makes removal usable on touch: drag, read the area, tap once more.

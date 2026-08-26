@@ -698,11 +698,17 @@ export class SimulationWorkerStateMachine {
       // the one error `SessionController.loadPrison` demotes a save
       // generation for -- and demotion deletes.
       //
-      // Bounded rather than solved. `PrisonSaveRepository.demoteGeneration`
-      // refuses to delete the last retained generation (docs/PERSISTENCE.md,
-      // "Never the last copy"), which is what stops a deterministic failure
-      // here from walking a player's whole retained window; before that floor
-      // it did, measured at three generations to zero in one load. Telling
+      // Bounded rather than solved, and the bound has moved since this comment
+      // was written. It used to say the floor in
+      // `PrisonSaveRepository.demoteGeneration` -- which refuses to delete the
+      // last retained generation (docs/PERSISTENCE.md, "Never the last copy")
+      // -- is what stops a deterministic failure here from walking a player's
+      // whole retained window. That was true, and it cost all but one
+      // generation: measured at three to one in a single load, and at three to
+      // zero before the floor existed. It is now #403 mitigation (d) that does
+      // the stopping -- a refused generation is retired only once a *different*
+      // one has restored -- so a deterministic failure costs **nothing**, and
+      // the floor is the second belt rather than the first. Telling
       // the two causes apart is the fix this comment is not: it needs every
       // deliberate rejection on the restore path to be a declared verdict
       // rather than whichever error class was nearest, which is a decision

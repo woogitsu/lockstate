@@ -400,9 +400,15 @@ export const HUD_MESSAGE_KEY = {
    * rather than a straight submit for a reason the removal control does not
    * remove: a designation can cover 4,096 tiles, and while `UnzoneRoom` now
    * makes that recoverable, "recoverable" is not the same as "costless" --
-   * removal grows each covered tile into its whole same-type run, so undoing
-   * an accidental overlap of two rooms takes both away. Two Point Hospital
-   * puts a confirm on the same gesture for the same reason.
+   * removal grows each covered tile into the whole room instance that claims
+   * it, so clipping one corner of a 6x6 canteen still takes all 36 tiles. Two
+   * Point Hospital puts a confirm on the same gesture for the same reason.
+   *
+   * This used to add "so undoing an accidental overlap of two rooms takes both
+   * away", and #337 made that false: removal is bounded to the instance the
+   * tile belongs to, resolved through the rectangle rather than by flooding the
+   * same-type region, so a neighbour of the same type survives. The confirm
+   * still earns its place on the clause above it.
    *
    * `roomsMinimum` states the authored floor, so the rule is readable *before*
    * the drag rather than only in the refusal after it. `roomsEnclosureSealed`

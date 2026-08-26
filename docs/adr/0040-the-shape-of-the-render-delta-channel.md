@@ -18,16 +18,20 @@ rather than as settled by someone who weighed it — the same standing ADRs 0034
 `AGENTS.md`. The draft pre-committed to renumbering and that commitment stands:
 if another branch holds this number, this document moves without argument.
 
-**The number is a placeholder and is not defended.** `0040` is deliberate:
-`AGENTS.md` — *"ADR numbers are assigned centrally, after drafts return. A number
-is not reserved until it appears in `docs/adr/README.md`"* — and
-`docs/AGENT_WORKFLOW.md:64-68`, which asks in as many words that a draft *"carry a
-placeholder and pre-commit, in the ADR text, to being renumbered"*. Two agents
-took 0034 within an hour last session; `docs/adr/README.md:161` currently declares
-0038 free. **This document pre-commits to renumbering without argument** to
-whatever the owner assigns; no citation of it is load-bearing until it has a
-number, and its filename must be renamed to match in the same commit that gives it
-one.
+**On the numbering, since this document was drafted without one.** `AGENTS.md`
+assigns ADR numbers centrally after drafts return, and `docs/AGENT_WORKFLOW.md`
+asks a draft to carry a placeholder and pre-commit to renumbering. This one did,
+and the commitment stands. **It was not a theoretical precaution**: two agents
+took 0034 within an hour in an earlier session, and 0038 was taken twice in this
+one — the keyboard-route document drafted itself as 0038 on a correct enumeration
+of open pull requests while 0038 had already gone to *"What makes a save
+compatible"* from another unpushed worktree, and renumbered to 0039. A number is
+not held until something is pushed.
+
+> *This paragraph replaced one that still called `0040` "a placeholder … not
+> defended" after the number had been assigned, and cited two line numbers that
+> had since moved. It was left behind by the mechanical `NNNN` → `0040` pass that
+> landed this document, and contradicted the paragraph directly above it.*
 
 **Where the approval must be visible.** This decision does **not** go in as an
 amendment to [ADR 0003](./0003-simulation-worker-protocol.md), even though 0003
@@ -154,7 +158,7 @@ One fixed-width record per live actor, every message, no diff state anywhere.
 - **Cost, measured:** boundary decode **0.008–0.013 ms and flat in n** (0.0132 ms
   at 500, 0.0082 ms at 5,000 — noise), because `arrayBufferPayloadSchema`
   validates `z.instanceof(ArrayBuffer)` and a `byteLength` cross-check and never
-  looks inside. Payload 60,000 bytes at 5,000 actors against 118,891 as JSON rows
+  looks inside. Payload 80,016 bytes at 5,000 actors against 126,823 as JSON rows (both re-measured against the built encoder; this line said 60,000 and 118,891)
   and 544,869 for today's bundle. Worker-side build is one walk of the SoA prefix
   (`actorsFromSnapshot` measures that walk at 0.196 ms for 5,000).
 - **New concepts:** none. Message kind, envelope, schema, transfer-list case and
@@ -254,8 +258,61 @@ records then removals:
 | then `recordCount` × 4 words | `u32` entity id, `u32` packed fields (population kind, reserved), `i32` tileX, `i32` tileY |
 | then `removedCount` × 1 word | `u32` entity id no longer live |
 
-Sixteen bytes per actor; 60,004 bytes for a 5,000-actor keyframe (measured 60,000
-for the record body). `packEntityId` returns `>>> 0`
+Sixteen bytes per actor; **80,016 bytes** for a 5,000-actor keyframe, and 8,016
+at 500 — the sixteen-byte header plus sixteen bytes a record, both from the table
+above, measured against the built encoder.
+
+> **Amended 2026-08-26, after slice 1 was built. This paragraph contradicted its
+> own table.** It read *"Sixteen bytes per actor; 60,004 bytes for a 5,000-actor
+> keyframe (measured 60,000 for the record body)"*, and §"Options" carried the
+> same 60,000. Neither number can be produced by the table beside them: 60,000 ÷
+> 5,000 is **twelve** bytes a record — three words, not four — and the extra
+> **4** implies a **one**-word header where the table specifies four. The prose
+> was computed against a layout the table does not describe. Built to the table,
+> which is what shipped because dropping a word means dropping the packed-fields
+> word the guards slice needs, a 5,000-actor keyframe is 80,016 bytes.
+>
+> **The argument is unaffected and that is worth stating plainly**: 80,016 against
+> the 596,659-byte session bundle it replaces on the render path is still the
+> order-of-magnitude claim this decision rests on, and still smaller than the
+> 126,823 bytes the same actors cost as JSON rows.
+>
+> Two further corrections from the same build, both in the decision's favour:
+> the `array-buffer` boundary decode measures **0.0049 ms at 500 actors and
+> 0.0051 ms at 5,000** — flat, as claimed, but roughly twice as cheap as the
+> 0.008–0.013 ms band stated above; and the *"skipped entirely when nothing
+> changed"* rule is best defined as **a tick comparison**, not the value
+> comparison `STATUS_COUNTS_PUBLISH_INTERVAL_MS` uses. No actor position can
+> change without a kernel step, so an unmoved tick *is* nothing changed — and it
+> is a correctness requirement rather than an optimisation, because
+> `deltaMessageSchema` refuses `tick <= baseTick` and `baseTick` is the previous
+> publication's tick, so publishing twice at one tick posts a message the main
+> thread's own decoder throws away. Note where that skip actually fires: on the
+> **first wakes after play**, because the tick loop wakes every 15 ms while the
+> clock steps every 50 ms. It does *not* fire on a paused prison, because pausing
+> stops the tick loop and the publication is never reached. A test written on the
+> paused assumption guards nothing, and one was.
+>
+> **One statement in the migration path is wrong in a way that matters to slice
+> 3.** It says the receiver written in slice 1 "keeps working" when the diff
+> lands. It must not: a slice-1 receiver applying a changed-only record list as
+> the complete live set would delete every actor that merely did not move. The
+> shipped receiver refuses a non-keyframe and says so. Slice 3 **extends** the
+> receiver — the base-tick rule and the keyframe/diff branch — rather than
+> leaving it untouched.
+>
+> **Open question 3 is answered by construction**: with keyframe-only messages,
+> removals are strictly redundant, because the keyframe *is* the live set and an
+> id absent from it is dropped. The four words stay reserved; the question
+> reopens at slice 3.
+>
+> Nothing in the **decision** changed under construction — options, cadence,
+> transport, envelope, seam, and the refusal to invent motion all held. **This
+> amendment moves no `Status` line, so no mechanical gate in this repository can
+> see it**; that is the trap `docs/adr/STATUS-QUEUE.md` names, and this note is
+> the only thing that records it.
+
+`packEntityId` returns `>>> 0`
 (`src/simulation/entity/entity-store.ts:66-67`), so an id is exactly one `u32`.
 Tile coordinates are plain `i32` because that is exactly what the simulation holds
 (`components.ts:160-161`); nothing is invented, which is the rule
