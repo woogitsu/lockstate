@@ -167,8 +167,9 @@ Nothing here changes a status; this table only reports them.
 | [0038](./0038-what-makes-a-save-compatible.md) | What makes a save compatible | Accepted, 2026-08-26 — by delegation; it settles #415 and #412's sentence, and the owner did not read it |
 | [0039](./0039-a-keyboard-route-to-room-zoning.md) | A keyboard route to room zoning | Accepted, 2026-08-26 — by delegation; #411, a route the game is unfinishable without |
 | [0040](./0040-the-shape-of-the-render-delta-channel.md) | The shape of the render delta channel | Accepted, 2026-08-26 — by delegation; it decides the channel and explicitly does **not** decide simulation-side locomotion |
+| [0041](./0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md) | What happens when a prisoner's chosen action has nowhere to go | Accepted, 2026-08-26 — by delegation; it takes the fallback and leaves ADR 0029 decision 5's fairness half open as its tracked successor |
 
-**Next free number: 0041.** 0040 is this table's newest row and **0030 is still
+**Next free number: 0042.** 0041 is this table's newest row and **0030 is still
 held by an unmerged branch** — the incident-response restore change, which
 allocated it in the same hour it was stated free here. It is listed nowhere above
 because nothing is merged under that number yet, which is precisely the gap a
