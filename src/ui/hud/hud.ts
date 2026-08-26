@@ -1525,6 +1525,11 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // published, absent when nothing asked, and passed straight through. The
     // panel decides what a queue looks like; this line decides nothing.
     buildPanel.setBuildQueue(next.buildQueue);
+    // And where the arrivals are, on identical terms: pulled, absent when
+    // nothing asked, and passed straight through. The projection decided how
+    // many are at each stage and which stage is terminal; the panel decides the
+    // sentences; this line decides nothing.
+    intakePanel.setPipeline(next.intakePipeline);
     // Last, so that a snapshot which both empties the alerts list and carries
     // a refusal leaves the band and the log agreeing about the same record.
     applySimulationRefusal(next.refusal);

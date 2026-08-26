@@ -240,6 +240,29 @@ export const HUD_MESSAGE_KEY = {
   intakeHint: 'hud.intake.hint',
 
   /**
+   * Where the arrivals the player has already admitted are (#104's channel,
+   * third consumer).
+   *
+   * Four keys for one readout, and the split is the readout's whole point.
+   * `intakePipeline` and `intakePipelineCount` are the block's header -- the
+   * eyebrow, and how many of the prison's people are still in intake.
+   * `intakePipelineStage` is one line per stage that holds somebody, and the
+   * stage's *own* name is interpolated into it from the key the simulation's
+   * enum catalog derives (`intake-stage.*.name`), never authored here.
+   *
+   * `intakePipelineFailed` is a separate sentence rather than a fifth stage
+   * line, because the fact is a different kind: an arrival waiting for a cell
+   * is released the moment a place exists, and one in the terminal `failed`
+   * stage is released by nothing at all (ADR 0028 decision 8). One sentence
+   * covering both would tell a player that building something will help when
+   * it will not.
+   */
+  intakePipeline: 'hud.intake.pipeline',
+  intakePipelineCount: 'hud.intake.pipeline-count',
+  intakePipelineStage: 'hud.intake.pipeline-stage',
+  intakePipelineFailed: 'hud.intake.pipeline-failed',
+
+  /**
    * What the player is told when a control's action was refused (issue #207).
    *
    * One key per *command* intent rather than one generic sentence, because

@@ -468,6 +468,65 @@ export interface HudRoomNeedsViewModel {
 }
 
 /**
+ * One stage of the intake pipeline, and how many arrivals are in it.
+ *
+ * `stageId` is the simulation's own stable id (`queued`,
+ * `accommodation-assignment`) and `labelKey` is the message key for it. Both,
+ * rather than either alone: the id is what a test and a `data-` attribute read
+ * without parsing a localized sentence, and the key is the only thing this
+ * layer may render (ADR 0011). Deriving the key here would need the HUD to hold
+ * the stage vocabulary, which is `src/simulation/prisoners/components.ts`'s --
+ * so `src/ui/simulation-intake.ts` derives it on the other side of the boundary,
+ * the way `src/ui/simulation-alerts.ts` does for a refusal.
+ */
+export interface HudIntakeStageViewModel {
+  /** Stable simulation id, for a row identity and a `data-` attribute. Never rendered. */
+  readonly stageId: string;
+  /** The stage's message key. A key, never text. */
+  readonly labelKey: LocalizationKey;
+  /** How many arrivals are at this stage. Always greater than zero -- see `stages`. */
+  readonly count: number;
+}
+
+/**
+ * Where the prison's arrivals are in intake (#104's channel, third consumer).
+ *
+ * Session state that arrives on a **pull**, exactly like `HudRoomNeedsViewModel`
+ * and `HudBuildQueueViewModel`: it is read through
+ * `simulation/request-projection` (`hud/prisoner-population`) by
+ * `src/ui/simulation-intake.ts` while the Overview tab is the one showing, and
+ * it is absent at every other moment. Absent is a real state and not a zeroed
+ * one -- "nothing has asked" and "nobody is in intake" must not render the
+ * same, because the second is a statement about the prison and the first is a
+ * statement about this thread.
+ *
+ * ### The fact it exists to carry
+ *
+ * An arrival that has been classified and is waiting for somewhere to sleep is
+ * **not** a refusal: `IntakeSystem` keeps the stage and retries, and the
+ * arrival completes the moment a place frees up -- which is also the state a
+ * zoned cell with no bed in it produces, because a room with no bed derives
+ * `residentCapacity: 0` (ADR 0028 decision 8). The status strip counts that
+ * prisoner among the population, so before this readout existed the player saw
+ * a number go up, nothing else happen, and had nothing on screen saying why.
+ *
+ * `failed` is the opposite case and is kept apart from `waiting` for that
+ * reason: it is **terminal**, so building something will not release those
+ * arrivals, and a readout that summed the two would promise a player that it
+ * would.
+ */
+export interface HudIntakePipelineViewModel {
+  /** Arrivals in a stage intake is still working through. Building or freeing a place moves these. */
+  readonly waiting: number;
+  /** Arrivals in the terminal `failed` stage, which nothing releases. */
+  readonly failed: number;
+  /** Every prisoner the prison holds, admitted or not, so the panel can say "3 of 8". */
+  readonly total: number;
+  /** The stages that hold somebody, in the pipeline's own order. A stage holding nobody is absent, not zero. */
+  readonly stages: readonly HudIntakeStageViewModel[];
+}
+
+/**
  * What the simulation said about the last room the player designated.
  *
  * Session state, unlike `HudRoomsViewModel`: it arrives on
@@ -600,6 +659,14 @@ export interface HudViewModel {
    * and the two must not render the same.
    */
   readonly buildQueue?: HudBuildQueueViewModel;
+  /**
+   * Where the prison's arrivals are in intake, or absent because nothing asked.
+   *
+   * The third pulled field, on the same terms as the two above: absent is
+   * "nobody asked" and an empty pipeline is "every arrival has been dealt
+   * with", and the two must not render the same.
+   */
+  readonly intakePipeline?: HudIntakePipelineViewModel;
 }
 
 /**

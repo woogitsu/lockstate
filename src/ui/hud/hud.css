@@ -1062,6 +1062,59 @@
 
 .hud-intake__note { white-space: normal; text-transform: none; letter-spacing: 0; }
 
+/*
+ * Where the arrivals are (#104's channel, third consumer).
+ *
+ * The shape `.hud-rooms__needs` uses, deliberately: it is the same kind of
+ * thing -- a readout of what the simulation found, folded away when there is
+ * nothing to report -- and two readouts that say the same kind of thing should
+ * not look like two different mechanisms. What it does not borrow is the
+ * warning tone: an arrival waiting for a cell is the prison working, not a
+ * fault, so only the terminal line below is toned.
+ *
+ * `:not([hidden])` because the block folds, and an author `display: flex` beats
+ * the `display: none` a user agent gives `[hidden]`.
+ */
+.hud-intake__pipeline:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-top: var(--space-2);
+  border-top: var(--hairline) solid var(--border-hairline);
+}
+
+/* Label left, figure right: the shape every readout line in this HUD uses. */
+.hud-intake__pipeline-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.hud-intake__pipeline-count { font-variant-numeric: tabular-nums; }
+
+.hud-intake__pipeline-stages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+/* Sentences, not labels, so an eyebrow's uppercase single-line treatment is
+   undone here exactly as `.hud-intake__note` above undoes it. */
+.hud-intake__pipeline-stage,
+.hud-intake__pipeline-failed {
+  display: block;
+  white-space: normal;
+  text-transform: none;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The one state in this block a player cannot act on, and the only one toned.
+   It is not a refusal -- the refusal band says what did not happen -- it is a
+   standing fact about somebody already inside the prison. */
+.hud-intake__pipeline-failed:not([hidden]) { color: var(--status-warning); }
+
 /* ------------------------------------------------------------------ */
 /* Bottom-centre tab bar                                               */
 /* ------------------------------------------------------------------ */

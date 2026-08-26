@@ -1,9 +1,10 @@
 import type { LocalizationKey } from '../../content/localization';
+import type { MessageParameters } from '../../services/localization/format';
 import { createActionButton, type ActionButton } from '../primitives/action-button';
-import { element, eyebrowText } from '../primitives/dom';
+import { element, eyebrowText, valueText } from '../primitives/dom';
 import { createPanel } from '../primitives/panel';
 import { HUD_MESSAGE_KEY } from './messages';
-import type { HudLocalizer } from './view-model';
+import type { HudIntakePipelineViewModel, HudIntakeStageViewModel, HudLocalizer } from './view-model';
 
 /**
  * The Intake panel: one control, which admits one prisoner (#261 step 4).
@@ -50,6 +51,27 @@ import type { HudLocalizer } from './view-model';
  * message key like every other (ADR 0011); the panel renders no text of its
  * own.
  *
+ * ### What it now says back (#104's channel, third consumer)
+ *
+ * One press used to be the end of the conversation. The panel asked for an
+ * admission, the status strip's population went up by one, and nothing on
+ * screen said what became of the person -- although the simulation knew
+ * exactly: every prisoner record carries an `intakeStage`, and an arrival that
+ * has been classified and is waiting for somewhere to sleep is **not** refused.
+ * `IntakeSystem` keeps that stage and retries, and it is the state a zoned cell
+ * with no bed in it produces, because a room with no bed derives
+ * `residentCapacity: 0` (ADR 0028 decision 8). So the honest readout names the
+ * wait and what ends it, and the block that does is fed from
+ * `hud/prisoner-population` by `src/ui/simulation-intake.ts` -- a pull, asked
+ * for only while this tab is the one showing.
+ *
+ * It costs the panel height only when it has something to say: the block is
+ * `hidden` unless somebody is in intake or somebody is stuck in the terminal
+ * stage, which is the rule `.hud-rooms__needs` follows for the same reason.
+ * Nothing about it is a refusal, and it must not read as one -- that is the
+ * refusal line's job, and `hud.intake.pipeline-failed` is the one sentence here
+ * that is about a state a player cannot act on.
+ *
  * ### What it does not offer, and why
  *
  * No sentence-length field, no prior-incidents field and no arrival tile. The
@@ -69,8 +91,62 @@ export interface IntakePanelOptions {
   readonly onAdmit: () => void;
 }
 
+/** The localizer call this panel makes, narrowed so the pure helpers below need no `HudLocalizer`. */
+type Translate = (key: LocalizationKey, parameters?: MessageParameters) => string;
+
+/**
+ * Whether the readout has anything to say.
+ *
+ * `undefined` and an empty pipeline both draw nothing and stay two different
+ * facts -- "nothing has asked this thread's question" and "the simulation says
+ * every arrival has been dealt with" -- which is why
+ * `HudIntakePipelineViewModel` keeps them apart and only this predicate
+ * collapses them.
+ *
+ * `failed` on its own is enough. It is the case a `waiting > 0` test would drop
+ * and the one that matters most: an arrival in the terminal stage is the only
+ * thing here that nothing the player does will move, so falling silent about it
+ * would leave the population count as the sole evidence that anybody arrived.
+ */
+export function isIntakePipelineWorthShowing(pipeline: HudIntakePipelineViewModel | undefined): boolean {
+  return pipeline !== undefined && (pipeline.waiting > 0 || pipeline.failed > 0);
+}
+
+/** How much of the prison is still in intake, against how many people it holds. */
+export function formatIntakePipelineCountText(t: Translate, pipeline: HudIntakePipelineViewModel): string {
+  return t(HUD_MESSAGE_KEY.intakePipelineCount, { waiting: pipeline.waiting, total: pipeline.total });
+}
+
+/**
+ * One stage's line, naming that stage.
+ *
+ * The stage's own `labelKey` is resolved here and nowhere else: it is the key
+ * `src/ui/simulation-intake.ts` derived from the simulation's stage id, so the
+ * panel interpolates a translation it was handed rather than a word it chose
+ * (ADR 0011).
+ */
+export function formatIntakeStageText(t: Translate, stage: HudIntakeStageViewModel): string {
+  return t(HUD_MESSAGE_KEY.intakePipelineStage, { count: stage.count, stage: t(stage.labelKey) });
+}
+
+/** The arrivals in the terminal stage, which is a different sentence from a wait. */
+export function formatIntakeFailedText(t: Translate, pipeline: HudIntakePipelineViewModel): string {
+  return t(HUD_MESSAGE_KEY.intakePipelineFailed, { count: pipeline.failed });
+}
+
 export interface IntakePanel {
   readonly element: HTMLElement;
+  /**
+   * Where the arrivals are now, or `undefined` to take the block off.
+   *
+   * `undefined` is what the host passes when nothing is answering for the
+   * prison any more -- a stopped session, a refused read -- and it must take
+   * the block away rather than leave the last answer standing, for the reason
+   * the Rooms panel's readout comes off: a sentence about people waiting, with
+   * nothing still answering for them, is the class of lie this layer exists to
+   * avoid.
+   */
+  setPipeline(pipeline: HudIntakePipelineViewModel | undefined): void;
   /** The controls to disable while a command is in flight -- the one button that issues one. */
   readonly controls: readonly HTMLButtonElement[];
   /** The admit button, so a refused admission is reported *on the control that was pressed* (issue #207). */
@@ -80,7 +156,7 @@ export interface IntakePanel {
 
 export function createIntakePanel(options: IntakePanelOptions): IntakePanel {
   const { localizer } = options;
-  const t = (key: LocalizationKey): string => localizer.format(key);
+  const t: Translate = (key, parameters) => (parameters === undefined ? localizer.format(key) : localizer.format(key, parameters));
 
   const admit: ActionButton = createActionButton({
     label: t(HUD_MESSAGE_KEY.intakeAdmit),
@@ -89,6 +165,73 @@ export function createIntakePanel(options: IntakePanelOptions): IntakePanel {
     onActivate: () => options.onAdmit(),
   });
   admit.element.classList.add('hud-intake__admit');
+
+  /*
+   * Nothing at construction, exactly as the Rooms panel holds no needs at
+   * construction: `mountHud` calls `update` with its view model as its last
+   * act, so a session that already has an answer paints on the first frame
+   * through `setPipeline` and there is no second route for that value to
+   * arrive by.
+   */
+  let pipeline: HudIntakePipelineViewModel | undefined;
+
+  const pipelineCount = valueText('', 'hud-intake__pipeline-count');
+  const pipelineStages = element('div', { className: 'hud-intake__pipeline-stages' });
+  const pipelineFailed = eyebrowText('', 'hud-intake__pipeline-failed');
+  const pipelineBlock = element('div', {
+    className: 'hud-intake__pipeline',
+    children: [
+      element('div', {
+        className: 'hud-intake__pipeline-header',
+        children: [eyebrowText(t(HUD_MESSAGE_KEY.intakePipeline)), pipelineCount],
+      }),
+      pipelineStages,
+      pipelineFailed,
+    ],
+  });
+
+  /**
+   * Rebuilds the readout from what the host last said.
+   *
+   * The rows are rebuilt rather than reconciled, and that is affordable here in
+   * a way it is not for the alerts list: there are at most four of them, bounded
+   * by the pipeline's own non-terminal stages rather than by the population, and
+   * none of them carries a control. Nothing in this block is focusable, so
+   * replacing it cannot take focus away from a player mid-press.
+   */
+  function paintPipeline(): void {
+    const shown = isIntakePipelineWorthShowing(pipeline) ? pipeline : undefined;
+    pipelineBlock.hidden = shown === undefined;
+    if (shown === undefined) {
+      pipelineCount.textContent = '';
+      pipelineStages.replaceChildren();
+      pipelineFailed.textContent = '';
+      pipelineFailed.hidden = true;
+      delete pipelineBlock.dataset['waiting'];
+      delete pipelineBlock.dataset['failed'];
+      return;
+    }
+
+    pipelineCount.textContent = formatIntakePipelineCountText(t, shown);
+    // The figures as data as well as as text, so a test reads them without
+    // parsing a localized sentence -- the job `data-unfinished` does on the
+    // Rooms panel's readout.
+    pipelineBlock.dataset['waiting'] = String(shown.waiting);
+    pipelineBlock.dataset['failed'] = String(shown.failed);
+
+    pipelineStages.replaceChildren(
+      ...shown.stages.map((stage) => {
+        const line = eyebrowText(formatIntakeStageText(t, stage), 'hud-intake__pipeline-stage');
+        // The stage's own id, so a browser assertion can find the line about
+        // one stage rather than counting rows.
+        line.dataset['stage'] = stage.stageId;
+        return line;
+      }),
+    );
+
+    pipelineFailed.hidden = shown.failed <= 0;
+    pipelineFailed.textContent = shown.failed <= 0 ? '' : formatIntakeFailedText(t, shown);
+  }
 
   let collapsed = false;
   const panel = createPanel({
@@ -111,14 +254,35 @@ export function createIntakePanel(options: IntakePanelOptions): IntakePanel {
       children: [admit.element],
     }),
     eyebrowText(t(HUD_MESSAGE_KEY.intakeHint), 'hud-intake__note'),
+    pipelineBlock,
   );
+  /*
+   * The single authority on whether the block has a box, run once here rather
+   * than by an initial `hidden` on the element: a second assignment would be a
+   * line no test could fail on, which is the rule `paintNeeds` states one panel
+   * over.
+   */
+  paintPipeline();
 
   return {
     element: panel.element,
     controls: [admit.element],
     submitControl: admit.element,
+    setPipeline(next: HudIntakePipelineViewModel | undefined): void {
+      pipeline = next;
+      paintPipeline();
+    },
     setVisible(visible: boolean): void {
       panel.element.hidden = !visible;
+      // The readout is *pulled* while this tab is the one showing, so leaving
+      // it stops the refresh -- and a readout nothing is refreshing goes stale
+      // in silence. Cleared rather than frozen, exactly as the Rooms panel
+      // clears its own, for the reason the counts empty when a session ends:
+      // what is on screen must be something a system is still answering for.
+      if (!visible) {
+        pipeline = undefined;
+        paintPipeline();
+      }
     },
   };
 }
