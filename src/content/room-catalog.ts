@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { identifierSchema } from '../simulation/protocol/types';
+import { defaultObjectRegistry } from './object-catalog';
 import { buildContentRegistry, type ContentRegistry, type ContentRegistryError } from './registry';
+import { validateRoomObjectReferences } from './validate-catalog';
 
 export const ROOM_CATALOG_SCHEMA_VERSION = 1 as const;
 
@@ -189,3 +191,37 @@ if (defaultRoomCatalog.errors.length > 0) {
 }
 
 export const defaultRoomContentRegistry = defaultRoomCatalog.registry;
+
+/**
+ * The cross-catalog half of the same import-time check, next to the registry
+ * it validates rather than in the barrel `src/content/index.ts`, which is
+ * where it lived until #315.
+ *
+ * `validate-catalog.ts` says what the check is and what a dangling
+ * room-to-object reference costs. What #315 established is *where it has to
+ * run*. In the barrel it did not run in the shipped build at all: the barrel
+ * has one importer under `src/` (`src/simulation/rooms/definition.ts`), whose
+ * own only importer is a test, so the module never entered the production
+ * graph and the bundler dropped it. Measured in the artefact before this
+ * moved -- `dist/assets/index-*.js` carried each catalog's own
+ * "Default room catalog failed validation" / "Default object catalog failed
+ * validation" throw and not one occurrence of "cross-reference validation".
+ * The guarantee two sentences claimed was absent exactly where it mattered:
+ * a build with a dangling reference booted and broke later.
+ *
+ * Here it cannot be dropped or bypassed, because every reader of
+ * `defaultRoomContentRegistry` imports this module -- the same arrangement
+ * `src/simulation/construction/definition.ts` uses for its
+ * buildable-to-object and buildable-to-item checks, which are in the bundle
+ * for that reason. Measured cost of running it in production: 26 object
+ * requirements across 18 rooms against 20 objects, 0.12-0.18 ms for the
+ * first, cold, un-warmed call in each of five fresh processes, and +327 bytes
+ * minified / +109 gzipped on `assets/index-*.js` (1,671,678 -> 1,672,005),
+ * plus the same again on the simulation worker chunk, which imports this
+ * module too (+326 / +95). Free, on any reading of free.
+ */
+const defaultCrossReferenceErrors = validateRoomObjectReferences(defaultRoomContentRegistry, defaultObjectRegistry);
+
+if (defaultCrossReferenceErrors.length > 0) {
+  throw new Error(`Default content catalogs failed cross-reference validation: ${JSON.stringify(defaultCrossReferenceErrors)}`);
+}
