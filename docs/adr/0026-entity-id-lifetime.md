@@ -117,6 +117,49 @@ explicitly rather than by omission: these cases say "this is what happens
 today and it is wrong", not "this is acceptable". Every option below changes
 at least one of them, which is the point — none can be implemented silently.
 
+### Addendum, 2026-08-26 (#169): the tripwire's own coverage, measured
+
+*No decision changes here. Two claims this section makes about the gate were
+checked by mutating what the gate guards, and both needed sharpening — a
+tripwire is worth only what it detects, and this one detected less than
+stated.*
+
+**The generation check was not exercised at all.** Every
+`isAlive(staleId) === false` in `entity-generation-wrap.test.ts` was asserted
+between a `destroy` and the following `spawn` — with the slot on the free
+list, so the expectation was satisfied by `alive[index] !== 1` and never
+reached the generation comparison. Removing the generation term from
+`isAlive` entirely — #110's fix, and the exact guard whose failure at the wrap
+is this document's subject — left **all 190 test files and 2,229 tests green**.
+Those assertions now run with the slot occupied, where only the generation can
+reject the id.
+
+**The wrap period was not pinned in that file.** Every loop there runs exactly
+4,096 cycles, so any period dividing 4,096 lands on the same starting
+generation and satisfies every assertion: the `& 0xFFF` → `& 0xF` mutation
+cited above passed all six of its original cases, and only
+`actor-identity.test.ts` failed. That matters more than a plain coverage gap,
+because `actor-identity.test.ts` is the pin option A is named below as
+re-baselining — so the only guard on this counter was scheduled to be removed
+by one of the options this file exists to gate. The period is now pinned in
+`entity-generation-wrap.test.ts` as well, in a case that survives option A on
+its own terms.
+
+**Question 3's RNG consequence is now measured rather than argued.** The claim
+below that a re-intake "shifts the stream every later arrival's classification
+is read from" is pinned in `prisoners-intake-system.test.ts`: three later
+arrivals with identical inputs, admitted in the same order, take risk tiers
+`[2, 2, 0]` without the re-intake and `[2, 0, 2]` with it. The baseline is a
+second identical session rather than a literal copied from a previous run, so
+neither side of the comparison is supplied by the behaviour under test.
+
+**Still latent, re-verified at v0.0.88.** `EntityStore.destroy` has no call
+site anywhere in `src/` — all twelve `.destroy(` hits are Phaser teardown in
+`src/rendering/`. No index is recycled even once in a session a player can
+drive, so neither the wrap nor the re-intake is reachable through any shipped
+path; `submitIntake`'s only caller remains `admitPrisoner`, which spawns a
+fresh entity every time. The decisions below stay with #31.
+
 ## Question 1 — what happens when a generation is exhausted?
 
 ### A. Refuse to recycle an index past its last generation
