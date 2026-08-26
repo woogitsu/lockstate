@@ -809,6 +809,38 @@ container ids and doors — and `restoreSessionSystems` registers them before
 calling the subsystem `loadSnapshot` that references them by id. Without this,
 the first prison with an occupied cell fails its restore outright.
 
+**One sector is the exception, and it is derived rather than authored**
+([ADR 0036](./adr/0036-a-derived-default-security-sector.md), issue #396).
+`security-sector.prison` is a pure function of the world's chunk size and its
+owned chunks, so `createNewSimulationRuntime` derives it — which means a
+restored session derives it too, before the payload is applied, because
+`restoreSimulationRuntime` builds its session through that same function. The
+restore loop therefore **skips a sector id already registered**: `register`
+throws on a duplicate, and the payload's row for this one is the same definition
+the derivation just produced.
+
+Three consequences worth stating plainly, none of which moves a version:
+
+- **`SAVE_SCHEMA_VERSION` stays 5 and no migration exists.** No persisted field
+  is added and no persisted shape changes. V6 stays free.
+- **A save written before ADR 0036 gains the sector on load.** Its
+  `sectorDefinitions`, `schedules` and `watchedSectorIds` are all empty, and
+  `applyDefaultSecuritySector` runs again at the *end* of
+  `restoreSessionSystems` — after the two arrays are cleared and refilled from
+  the payload — so an existing file gets a working security tier with no
+  migration. Re-saving that file adds the three entries to it.
+- **The payload's copy is redundant, not authoritative, and a test says so.**
+  `tests/integration/security-default-sector.test.ts` asserts that what a
+  capture writes for this sector equals what a restore derives. If the
+  derivation rule ever changes, that assertion fails and whoever changed it has
+  to decide what an existing prison's post tile should be.
+
+Where the payload *does* carry an entry for this sector, it wins:
+`applyDefaultSecuritySector` leaves an existing sector, schedule or watch entry
+alone. That is what lets a session hold a requirement for it other than the
+derived one and keep it across a save. What cannot be expressed is
+"deliberately no schedule at all" — silence is read as "derive it".
+
 ### A lockdown must stay liftable
 
 `SecuritySectorRegistry` records each governed door's state at `register` time

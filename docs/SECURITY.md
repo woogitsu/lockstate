@@ -157,18 +157,60 @@ matching #25's combined-not-per-class restore-test convention.
 ## Wiring into `SimulationRuntime`
 
 `createNewSimulationRuntime` (`src/simulation/runtime/new-session.ts`)
-constructs an empty `SecuritySectorRegistry` (bound to the session's own
-`NavigationSystem.doors`), an empty `GuardRoster`, an empty mutable
+constructs a `SecuritySectorRegistry` (bound to the session's own
+`NavigationSystem.doors`), an empty `GuardRoster`, a mutable
 `securitySchedules` array, and registers `DeploymentSystem`/`PatrolSystem`
-on the kernel -- all exposed on `SimulationRuntime`. Exactly like
-#19/#22/#24/#25 before it: this wires real infrastructure with no
-fabricated default content. No sectors, no hired guards and no deployment
-requirements exist until an actual session/scenario registers them -- or,
-for a guard, until a `HireStaff` command arrives
-([ADR 0025](./adr/0025-guard-hiring-surface.md));
-`securitySchedules` stays a plain mutable array specifically so scenario
-setup can `push` staffing requirements into it after construction --
-`DeploymentSystem` reads the array live on every scheduled tick.
+on the kernel -- all exposed on `SimulationRuntime`. `securitySchedules`
+stays a plain mutable array specifically so scenario setup can `push`
+staffing requirements into it after construction -- `DeploymentSystem` reads
+the array live on every scheduled tick.
+
+### One derived sector, and why this is the exception to "no fabricated default content"
+
+Every other registry here starts empty, and the sector registry used to as
+well. **That was the defect issue #396 measured**, not the invariant:
+`securitySectors.register` had exactly one caller in all of `src/` --
+`restoreSessionSystems`, reading a save payload -- so a session a player could
+start held zero sectors, and `DeploymentSystem`, `PatrolSystem`,
+`IncidentTriggerSystem` and `IncidentResponseSystem` all iterated empty
+collections for the whole life of that session. The tier was measured only in
+scenarios and in restored saves.
+
+[ADR 0036](./adr/0036-a-derived-default-security-sector.md) closes it with a
+**derived** default rather than an authored one. `applyDefaultSecuritySector`
+(`src/simulation/security/default-sector.ts`) is called from the composition
+root and fills three collections, because filling one of them changes nothing:
+
+| collection | value | why the other two are needed |
+| --- | --- | --- |
+| `securitySectors` | `security-sector.prison`, `grade.general`, **no doors**, post tile at the middle of the first owned chunk in canonical `(y, x)` order | -- |
+| `securitySchedules` | one guard, all day | `DeploymentSystem.requiredGuardCountFor` answers `0` for a sector with no schedule, so a sector alone posts nobody |
+| `incidentSectorIds` | that one id | `IncidentTriggerSystem` samples only the ids it is handed, so a staffed sector nothing watches opens no incident |
+
+A derived sector is not fabricated *content*: it carries no authored geometry,
+no name, no grade nobody chose, and it is a pure function of the world's chunk
+size and its owned chunks. Because it is pure it is **re-derived on load rather
+than persisted** -- `applyDefaultSecuritySector` runs again at the end of
+`restoreSessionSystems`, is idempotent, and leaves anything the payload already
+carried alone. `SAVE_SCHEMA_VERSION` stays 5 and no migration exists; a save
+written before ADR 0036 gains the sector on load.
+
+**Its post tile is the tile `NEW_PRISON_ORIGIN_TILE` holds** (16, 16 for a new
+session's 32-tile chunk), and that is load-bearing three times over: a hire is
+posted without a route request, an unhoused arrival standing there is a sector
+occupant for `resolveSectorOccupants`, and the tile is on owned walkable ground.
+
+**What it does not bring back**, measured in
+`tests/integration/security-default-sector.test.ts`:
+
+- **Patrol.** The derived sector has no `patrolRoute`, so `PatrolSystem` is
+  still a no-op. A route is an authored loop of waypoints and a derived one
+  would be a made-up path across whatever the player built.
+- **Lockdown's physical effect.** `doorIds` is empty, so `setControlState`
+  moves a control state that cascades onto nothing. A perimeter is the one
+  thing the derivation cannot know.
+- **Contraband search**, for a reason that was never a sector:
+  `SearchSystem.submitOrder` has no caller in `src/` at all.
 
 ## Readonly projections for UI
 
@@ -204,6 +246,9 @@ effects (a session UI exists -- the HUD and save panel -- but the only thing
 it surfaces is a headcount of hired guards and how many are unassigned
 (#104), beside the Staff panel that hires one
 ([ADR 0025](./adr/0025-guard-hiring-surface.md)) and lists hireable roles
-rather than hired people; no sector, no patrol and no deployment state
-reaches a panel); alarms, cameras or any detection
+rather than hired people, plus the held-guards block a release aims at
+([ADR 0034](./adr/0034-releasing-a-claimed-guard.md)); `projectSecurity`
+exists and `hud/security` is published, but no panel reads it, so sector
+control state, patrol metrics and coverage still reach no surface); alarms,
+cameras or any detection
 mechanic beyond the access-control/patrol substrate itself.

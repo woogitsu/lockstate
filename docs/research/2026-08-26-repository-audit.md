@@ -39,6 +39,44 @@ the browser image-decode test fail in this container by design), and no coverage
 provider (so coverage claims below come from mutation testing and static
 reachability, never from a line-coverage number).
 
+## 0. Overtaken between the audit and this merge
+
+The audit ran against `fcecad2` (v0.0.108). Before it merged, `main` advanced four
+releases to **v0.0.112**, and two of those commits land directly on findings below.
+Recorded here rather than edited into the findings, because the rule this directory
+runs on is that *a record does not become wrong, it becomes older* — the findings
+say what was true at `fcecad2`, and this section says what has moved since.
+
+- **§2 action 1 (the anchor time-bomb) is resolved.** #401 re-anchored
+  `STATUS-QUEUE.md` at v0.0.111 and corrected three claims the delta falsified. At
+  v0.0.112 the gate now sits 1 release behind a budget of 10 instead of 10. The
+  prediction held — the re-anchor was the work the audit said was owed — and the
+  urgency is spent. **Everything in §9 about the process itself still stands**,
+  including that the re-anchoring cost another commit of release budget.
+- **PRD-01 / Theme B is half resolved, and the better half.** #398 and
+  [ADR 0036](../adr/0036-a-derived-default-security-sector.md) added
+  `applyDefaultSecuritySector`, called at `new-session.ts:545` and idempotent, which
+  seeds **three** of the empty collections — `securitySectors`, `securitySchedules`
+  and `incidentSectorIds`. ADR 0036 names the same closed loop this audit found, in
+  the same terms, and fixes the exact half that mattered most: deployment, patrol,
+  incident triggering and response are now reachable in a session a player can
+  start, and the failure-modes record measures a riot firing at tick 15,600. **"No
+  incident can ever fire" is overtaken and should not be quoted from this record.**
+  ADR 0036 is also explicit that it was accepted by delegation without the owner
+  reading it, which is itself §9's subject.
+- **What PRD-01 still describes accurately.** Seven `until a session/scenario`
+  deferrals remain at v0.0.112, and these stay empty in a new session:
+  `searchPolicies` (`:473`), `gangs` (`:515`), `tunnels` (`:516`), `jobs` (`:418`),
+  `electricity` and `water` (`:425-426`), and `containers`. So contraband search,
+  gangs, tunnels, the job board and both utility networks are still unreachable by
+  construction, and Theme B's *pattern* — a tier built ahead of the caller that
+  would use it — is unchanged for them.
+- **Not re-audited against v0.0.112.** Every other finding was verified at
+  `fcecad2` and has not been re-checked against the four new releases. #398 touched
+  `new-session.ts`, `session-systems.ts`, `sparse-world.ts` and
+  `snapshot-restore-fidelity.test.ts`, so the determinism and persistence findings
+  that live in those files are the ones most worth re-confirming before acting.
+
 ## 1. Headline verdict
 
 **The engineering tier is unusually strong and the delivery tier is where the
@@ -70,7 +108,7 @@ Ordered by (player harm or imminence) ÷ effort. Each is small.
 
 | # | Action | Why now | Effort |
 | --- | --- | --- | --- |
-| 1 | **Move the `STATUS-QUEUE.md` anchor.** | The **next merge to `main` turns `pnpm test` red with zero code change.** Anchor v0.0.98, ships v0.0.108, budget 10, assertion `<= 10` — passing at exactly the limit while `version.yml` bumps the patch on every merge. Found independently by two agents; arithmetic re-verified by the lead. | Hours (the test forbids raising the budget, so §§3-6 must be re-read) |
+| 1 | **Move the `STATUS-QUEUE.md` anchor.** *(Done since — see [§0](#0-overtaken-between-the-audit-and-this-merge).)* | The **next merge to `main` turns `pnpm test` red with zero code change.** Anchor v0.0.98, ships v0.0.108, budget 10, assertion `<= 10` — passing at exactly the limit while `version.yml` bumps the patch on every merge. Found independently by two agents; arithmetic re-verified by the lead. | Hours (the test forbids raising the budget, so §§3-6 must be re-read) |
 | 2 | **Stop restore failures from deleting saves** (PER-01). | A deterministic code bug currently destroys *all* retained generations, irreversibly. Reproduced 3 → 0 in one load. | Small — classify data-fault vs code-fault; never delete the last generation; quarantine instead of delete |
 | 3 | **Fix the command-queue head test** (DET-05). | `kernel.ts:161` uses `!==` on a sorted head, so one past-tick command blocks *every* later command forever, silently. Player input just stops working. | One line, plus a decision on past-tick semantics |
 | 4 | **Close the deploy gate** (SEC-01/OPS-02). | Two independent routes publish unreviewed code to the Worker serving public lockstate.io. Fix is two `if` clauses and one dispatch guard. | Small |

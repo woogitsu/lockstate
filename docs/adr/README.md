@@ -36,15 +36,17 @@ normalised judgement. Two heading styles are in use — some ADRs carry a
 above is now `Accepted` in some form, several with a qualifier the ADR itself
 carries.
 
-**Every ADR in this directory is accepted.** Six decisions were approved on
-2026-08-26: 0031, 0032, 0033, ADR 0007's amendment, then 0034 and 0035 within the
-same few hours, which is the rate this corpus actually moves at.
+**Every ADR in this directory is accepted.** Seven decisions were approved on
+2026-08-26: 0031, 0032, 0033, ADR 0007's amendment, then 0034, 0035 and 0036
+within the same few hours, which is the rate this corpus actually moves at.
 
-**0034 and 0035 were accepted by the owner's delegation rather than by the owner
-reading them.** Each Status says so, and says what the owner was and was not told.
-That is a weaker warrant than the other four carry and it is recorded as weaker on
-purpose — a reader who disagrees with either should treat it as open, not as
-settled by someone who weighed the text.
+**0034, 0035 and 0036 were accepted by the owner's delegation rather than by the
+owner reading them.** Each Status says so, and says what the owner was and was not
+told. That is a weaker warrant than the other four carry and it is recorded as
+weaker on purpose — a reader who disagrees with any of the three should treat it
+as open, not as settled by someone who weighed the text. Three of seven decisions
+in one day resting on delegation is itself worth noticing by whoever reads this
+next: it is what a day of this pace costs in review depth.
 
 Two of those carry a qualifier the row alone will not tell you, and both are worth
 reading before treating the decision as settled:
@@ -128,12 +130,24 @@ Nothing here changes a status; this table only reports them.
 | [0033](./0033-releasing-an-interrupted-incident-response-at-runtime.md) | A restored session abandons an incident response and returns what it claimed | Accepted, 2026-08-26 — **amended in place**: its open question 1 was commissioned and is now answered (a restored session re-dispatches) |
 | [0034](./0034-releasing-a-claimed-guard.md) | Releasing a claimed guard — one command, every claimant | Accepted, 2026-08-26 — by delegation |
 | [0035](./0035-buildable-catalogue-category-filter.md) | Choosing what to build out of twenty-one rows — filtering the catalogue by the categories content already authors | Accepted, 2026-08-26 — by delegation; it narrows #390's claim rather than closing it |
+| [0036](./0036-a-derived-default-security-sector.md) | A default security sector, derived from the world rather than authored | Accepted, 2026-08-26 — by delegation; it answers ADR 0034 decision 9 |
 
-**Next free number: 0036.** 0035 is this table's newest row and **0030 is still
+**Next free number: 0037.** 0036 is this table's newest row and **0030 is still
 held by an unmerged branch** — the incident-response restore change, which
 allocated it in the same hour it was stated free here. It is listed nowhere above
 because nothing is merged under that number yet, which is precisely the gap a
-stated next-free cannot see: enumerate the open pull requests before taking 0036.
+stated next-free cannot see: enumerate the open pull requests before taking 0037.
+
+**0036's author ran that enumeration and it came back with exactly one open pull
+request**, **#355** (no ADR), so 0036 was free — and unlike the three collisions
+below, the stated next-free and the enumeration agreed *and* the number that was
+free was the one the table stated, because 0035 had merged by then. 0036 answers
+0034's **decision 9** — the ship/don't-ship judgement 0034 put to the owner
+explicitly — and its **open question 5**, *"What registers a security sector in a
+new session?"*. It is a separate document rather than an amendment to 0034 because
+0034's own decision 9 point 3 asked for it as its own issue: *"the real blocker is
+one registration, and it is not this document's."* That issue is #396. 0036
+pre-commits in its own Status to renumbering if a branch turns up holding it.
 
 **0034's author ran that enumeration and it came back with two open pull
 requests**, **#393** (documentation only: it accepts 0033 and amends 0007, and its

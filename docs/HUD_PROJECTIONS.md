@@ -859,7 +859,14 @@ decision about what to build next.
 
 23. **No sector membership model.** Which prisoners, rooms or tiles are in
     a sector is session/scenario knowledge supplied through
-    `SectorOccupantResolver`; the simulation does not own it.
+    `SectorOccupantResolver`; the simulation does not own it. Since
+    [ADR 0036](./adr/0036-a-derived-default-security-sector.md) a session
+    derives **one** sector for the whole prison, and the resolver
+    `new-session.ts` supplies for it counts prisoners standing exactly on its
+    post tile — which happens to be the arrival tile, so it finds the arrivals
+    a full prison cannot house. That works because there is one sector; a
+    second one needs a real tile-to-sector map first, and this gap is where it
+    would go.
 24. **Sector risk is withheld by design.** If a "tension" gauge is wanted,
     revealing `SectorRiskTracker`'s score is a product decision about
     exposing a hidden calculation, not a projection gap.

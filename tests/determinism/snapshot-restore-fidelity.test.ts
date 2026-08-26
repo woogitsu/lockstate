@@ -319,6 +319,26 @@ describe('subsystem snapshot / restore fidelity', () => {
     runtime.contraband.introduce('item-a', 'contraband.phone', { kind: 'cell', id: 'cell-a' }, { sourceType: 'room-object', sourceId: 'workshop', introducedAtTick: 0 });
     runtime.contraband.introduce('item-b', 'contraband.phone', { kind: 'cell', id: 'cell-b' }, { sourceType: 'room-object', sourceId: 'workshop', introducedAtTick: 0 });
     runtime.searchPolicies.push({ scope: 'cell', requiredGuardCount: 1, dwellTicksPerTarget: 5, baseDetectionProbability: 0.5, concealmentPenaltyPerPoint: 0, intelligenceConfidenceBonus: 0 });
+    /*
+     * **Three guards for two one-guard jobs, and the third one is the point.**
+     *
+     * Since [ADR 0036](../../docs/adr/0036-a-derived-default-security-sector.md)
+     * every session carries a derived sector asking for one guard all day, and
+     * `DeploymentSystem` (order 270) runs before `SearchSystem` (order 295) and
+     * claims the lowest-id unassigned guard. With two hires only one is left for
+     * the search queue, so the two jobs run *sequentially* -- and then the FIFO
+     * queue's order decides which of them draws from `contraband.detection`
+     * first, which is exactly the submission-order dependence the second test
+     * below asserts is absent. Measured with two: `['search-a','search-b']`
+     * confiscated `item-a` and `['search-b','search-a']` confiscated `item-b`.
+     *
+     * That is not a determinism defect -- submission order is recorded input
+     * (`determinism-scenario.ts` says so of its own queue) -- but it is a
+     * different fixture from the one these tests are about, which needs both
+     * jobs staffed on the same tick so that job *id* order decides the draws.
+     * The third hire restores that condition rather than papering over it.
+     */
+    runtime.securityGuards.hire('staff-role.guard', tile);
     runtime.securityGuards.hire('staff-role.guard', tile);
     runtime.securityGuards.hire('staff-role.guard', tile);
 

@@ -332,6 +332,52 @@ the risk sampler reads. The hard gate on occupancy and the riot trigger are
 wired in mutual exclusion.** VERIFIED, and it is the reason "just join the four
 pieces" is not the cheap fix it looks like.
 
+> ### CORRECTION, 2026-08-26 (#396, [ADR 0036](../adr/0036-a-derived-default-security-sector.md)): the mutual-exclusion finding is false, and §7 named it as this record's strongest claim
+>
+> §7 says of the paragraph above: *"The arithmetic in §3 is solid — I would
+> defend the mutual-exclusion finding against anything."* The arithmetic is
+> solid. **Step 5's premise is not**, and it fails at the first clause: *"a
+> prisoner can only exist in this prison if they have a bed"*.
+>
+> `PrisonerOperationsRuntime.requestAdmission` refuses when **no room instance
+> of any accommodation target exists**. It does not refuse when one exists and
+> is full. So a prison with one zoned cell and one bed admits a second and a
+> third arrival; `IntakeSystem` leaves them at the `accommodation-assignment`
+> stage, they never reach `action.sleep`, and nothing raises their `safety`.
+>
+> MEASURED on this tree, one furnished cell and three `AdmitPrisoner` commands
+> (`tests/integration/security-default-sector.test.ts`):
+>
+> | tick | housed prisoner `safety` | the two unhoused | their tile |
+> | --- | --- | --- | --- |
+> | 500 | 255 | 252 | (16, 16) |
+> | 5,000 | 255 | 207 | (16, 16) |
+> | 30,000 | 249 | **0** | (16, 16) |
+>
+> Their tile is the arrival tile, which is also the derived sector's post tile,
+> so `resolveSectorOccupants` counts them and `needsPressure` is theirs alone.
+`IncidentTriggerSystem` samples every 50 ticks, and MEASURED: the score is
+> 0.598 at tick 15,450, reaches the `hotThreshold` of 0.6 exactly at **15,500**
+> (the first hot sample), 0.6 again at 15,550, and 0.602 at **15,600**, where the
+> three-sample window opens a **severity-6 riot** — with a sector registered by
+> ADR 0036 rather than by a probe, and every other input exactly as this record
+> describes it.
+>
+> **So the reachable pressure was overcrowding after all**, which is the reading
+> `docs/research/README.md` records this record as having closed off. The probe
+> in §3 could not have found it: it *"admitted one prisoner into the furnished
+> cell"*, so there was nobody unhoused to be the pressure. That is issue #375's
+> shape — a fixture arranged so the thing under test cannot happen — met in a
+> research probe rather than in a test.
+>
+> What survives unchanged: `contrabandPressure` is still structurally 0,
+> `needsPressure` is still `safety` alone, and §7's actual weakest claim — that
+> widening the sampler is small — is still unmeasured. What is withdrawn is the
+> mutual exclusion and the sentence that a *"starving, filthy, unguarded,
+> entirely unstaffed prison scores 0.32 and is assessed as calm"*: an
+> **overcrowded** one crosses the threshold at 0.602 and rises toward 0.8 as the
+> unhoused arrivals' `safety` reaches zero, and it riots.
+
 The corollary is the sharper form of the room-occupancy record's finding.
 `docs/research/README.md` records that *"'pack the prison' is not the reachable
 failure mode"* because occupancy is hard-gated. That is true, and this is the

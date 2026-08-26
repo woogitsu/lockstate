@@ -41,7 +41,7 @@ import { TopologyManager } from '../rooms/topology';
 import { RoomZoningService } from '../rooms/zoning';
 import { deriveXoshiroState } from '../rng/seed';
 import { NamedRngStreams } from '../rng/streams';
-import { DeploymentSystem, GuardReleaseService, GuardRoster, PatrolSystem, SecuritySectorRegistry, type DeploymentSchedule } from '../security';
+import { applyDefaultSecuritySector, DeploymentSystem, GuardReleaseService, GuardRoster, PatrolSystem, SecuritySectorRegistry, type DeploymentSchedule } from '../security';
 import { chunkCoordinate, tileCoordinate, type ChunkPosition, type TilePosition } from '../world/coordinates';
 import { SparseWorld } from '../world/sparse-world';
 
@@ -172,7 +172,18 @@ export interface SimulationRuntime {
    * decision 4 gives.
    */
   readonly guardRelease: GuardReleaseService;
-  /** Mutable and empty until session/scenario setup pushes entries -- the same "no fabricated content" convention `containers`/`jobs`/`electricity`/`water` follow. `DeploymentSystem` reads this array live, so pushing into it after construction is how a scenario adds staffing requirements. */
+  /**
+   * `DeploymentSystem` reads this array live, so pushing into it after
+   * construction is how a scenario -- or `applyDefaultSecuritySector` -- adds a
+   * staffing requirement.
+   *
+   * **Not empty for a new session since ADR 0036**: it carries the default
+   * sector's one-guard-all-day requirement. It has to, and that is the half of
+   * issue #396 the issue itself does not name:
+   * `DeploymentSystem.requiredGuardCountFor` answers `0` for a sector with no
+   * schedule, so a sector registered into an empty schedule list leaves
+   * deployment exactly as inert as no sector at all.
+   */
   readonly securitySchedules: DeploymentSchedule[];
   readonly deploymentSystem: DeploymentSystem;
   readonly patrolSystem: PatrolSystem;
@@ -189,7 +200,16 @@ export interface SimulationRuntime {
   readonly sectorRisk: SectorRiskTracker;
   readonly gangs: GangRegistry;
   readonly tunnels: TunnelRegistry;
-  /** Mutable and empty until session/scenario setup pushes sector ids -- `IncidentTriggerSystem` reads this array live, same convention as `securitySchedules`/`searchPolicies`. */
+  /**
+   * `IncidentTriggerSystem` reads this array live, same convention as
+   * `securitySchedules`/`searchPolicies`.
+   *
+   * **Not empty for a new session since ADR 0036**: it carries the default
+   * sector's id, for `securitySchedules`' reason. A watched sector is the third
+   * of the three empty collections issue #396's one-line `grep` stands for --
+   * the trigger system samples only the ids it is handed, so a registered,
+   * staffed sector that nothing watches still opens no incident.
+   */
   readonly incidentSectorIds: string[];
   readonly incidentTriggerSystem: IncidentTriggerSystem;
   readonly incidentResponseSystem: IncidentResponseSystem;
@@ -405,13 +425,29 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   const electricity = new UtilityNetwork('electricity');
   const water = new UtilityNetwork('water');
 
-  // Issue #26's security substrate: no sectors, no hired guards and no
-  // deployment schedules until a session/scenario registers them (the same
-  // "no fabricated default content" convention as `containers`/`jobs`/
-  // `electricity`/`water` above). `securitySectors` cascades onto the
-  // navigation system's own `DoorRegistry` -- the only door mutation entry
-  // point #21/#22 expose -- so sector control-state changes are never a
-  // parallel/bypassing door model.
+  /*
+   * Issue #26's security substrate. No hired guards until a `HireStaff` command
+   * arrives -- the same "no fabricated default content" convention as
+   * `containers`/`jobs`/`electricity`/`water` above -- but, since
+   * [ADR 0036](../../../docs/adr/0036-a-derived-default-security-sector.md),
+   * **one sector and one deployment requirement**, derived from the world by
+   * `applyDefaultSecuritySector` further down this function.
+   *
+   * That is a deliberate exception to the convention above and it is worth
+   * being explicit about, because the convention is what caused issue #396:
+   * "no fabricated default content" is right about *content* and was silently
+   * also deciding *reachability*. `securitySectors.register` had one caller in
+   * all of `src/` -- the restore path -- so the four systems that read this
+   * registry were no-ops in every session a player could start, and the whole
+   * security and incident tier was measured only in scenarios and restored
+   * saves. A derived sector is not authored content: it is a function of the
+   * world, carries no authored geometry, and is re-derived rather than
+   * persisted.
+   *
+   * `securitySectors` cascades onto the navigation system's own `DoorRegistry`
+   * -- the only door mutation entry point #21/#22 expose -- so sector
+   * control-state changes are never a parallel/bypassing door model.
+   */
   const securitySectors = new SecuritySectorRegistry(navigation.doors);
   const securityGuards = new GuardRoster(DEFAULT_GUARD_CAPACITY, actorIdentity, () => rng.get(ACTOR_IDENTITY_RNG_STREAM));
   // ADR 0025's `HireStaff` consumer. It fabricates nobody -- the roster is
@@ -464,9 +500,12 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
 
   const searchSystem = new SearchSystem(securityGuards, navigation, contraband, intelligence, confiscations, searchPolicies, categoryConcealment, locateSearchTarget);
 
-  // Issue #28's incident pipeline: no sectors watched, no gangs, no
-  // tunnels and no incidents until a session/scenario registers them --
-  // same "no fabricated default content" convention as everything above.
+  // Issue #28's incident pipeline: no gangs, no tunnels and no incidents until
+  // a session/scenario registers them -- same "no fabricated default content"
+  // convention as everything above. **One sector is watched**, and it is the
+  // exception `applyDefaultSecuritySector` below is entirely about (ADR 0036):
+  // an empty `incidentSectorIds` is what made `IncidentTriggerSystem` sample
+  // nothing in every session a player could start.
   // The default risk sampler derives real inputs from the systems already
   // constructed (deployment coverage shortfall, prisoner needs deficits,
   // contraband intelligence pressure) rather than a parallel state model;
@@ -476,6 +515,34 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   const gangs = new GangRegistry();
   const tunnels = new TunnelRegistry();
   const incidentSectorIds: string[] = [];
+
+  /*
+   * The registration issue #396 found missing, and the two beside it that the
+   * issue's own `grep` does not reach
+   * ([ADR 0036](../../../docs/adr/0036-a-derived-default-security-sector.md),
+   * answering [ADR 0034](../../../docs/adr/0034-releasing-a-claimed-guard.md)
+   * decision 9).
+   *
+   * Here rather than beside `securitySectors` above because it needs all three
+   * of the collections it fills, and `incidentSectorIds` is the last of them to
+   * exist. Nothing between the two points reads any of them: the systems that
+   * do are constructed below and hold references, and the kernel has not been
+   * stepped.
+   *
+   * **Here, in the one function that says how a session is assembled**, and that
+   * is the point rather than a convenience. `restoreSimulationRuntime` builds
+   * its session through this function, so a restored session derives the same
+   * sector a live one does without having to know that it did -- and a future
+   * entry point cannot forget to call it, which is exactly how the tier went
+   * dark in the first place.
+   *
+   * There is exactly one other call site, at the end of
+   * `restoreSessionSystems`: the payload clears and refills two of the three
+   * collections filled here, so the derivation is re-applied afterwards.
+   * `applyDefaultSecuritySector` is idempotent and leaves anything already
+   * present alone, for that reason.
+   */
+  applyDefaultSecuritySector({ world, sectors: securitySectors, schedules: securitySchedules, watchedSectorIds: incidentSectorIds });
 
   const resolveSectorOccupants: SectorOccupantResolver = (sectorId) => {
     const sector = securitySectors.getDefinition(sectorId);

@@ -53,7 +53,7 @@ So the standing rules for anything added here:
 | [2026-08-25 room zoning gesture](./2026-08-25-room-zoning-gesture.md) | What gesture designates a room, and where does the control live? | ADR 0022 |
 | [2026-08-25 room occupancy](./2026-08-25-room-occupancy.md) | Where does a room's occupancy capacity come from? | ADR 0023 |
 | [2026-08-25 economy rate](./2026-08-25-economy-rate.md) | What does the state pay per prisoner-day, on what cadence, from what balance? | [#29](https://github.com/matmaxalez/lockstate/issues/29), within ADR 0017 |
-| [2026-08-26 failure modes](./2026-08-26-failure-modes.md) | What should failing look like, and what is the cheapest honest route to it from what already exists? | None yet — it states two shapes and declines to pick |
+| [2026-08-26 failure modes](./2026-08-26-failure-modes.md) | What should failing look like, and what is the cheapest honest route to it from what already exists? | None yet — it states two shapes and declines to pick. **§3's mutual-exclusion finding is corrected in place** (#396): an *unhoused* arrival's `safety` does decay to zero, so overcrowding is the reachable pressure and a riot fires at tick 15,600 |
 | [2026-08-26 repository audit](./2026-08-26-repository-audit.md) | Across every discipline at once, what is wrong with this repository at v0.0.108, and what should be done first? | None yet — it ranks work and names the decisions that need an ADR |
 
 ### Findings from the first four records that changed a decision

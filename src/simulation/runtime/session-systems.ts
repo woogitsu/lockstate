@@ -24,6 +24,7 @@ import {
 } from '../prisoners/components';
 import { NEED_IDS, NeedsComponent, type NeedId } from '../prisoners/needs';
 import type { PlacedObject } from '../objects';
+import { applyDefaultSecuritySector } from '../security/default-sector';
 import type { DeploymentSchedule } from '../security/deployment-schedule';
 import type { GuardRecord, GuardRoster } from '../security/guard-roster';
 import type { SecuritySectorDefinition } from '../security/sector';
@@ -584,7 +585,37 @@ export function restoreSessionSystems(
   // 1. Navigation doors at baseline, then sectors (which snapshot that
   //    baseline), then the control states that cascade onto the doors.
   for (const door of systems.navigation.doors) runtime.navigation.doors.register({ ...door });
-  for (const sector of systems.security.sectorDefinitions) runtime.securitySectors.register({ ...sector });
+  /*
+   *    **A sector the runtime already holds is skipped, not re-registered.**
+   *
+   *    `SecuritySectorRegistry.register` throws on a duplicate id, and since
+   *    [ADR 0036](../../../docs/adr/0036-a-derived-default-security-sector.md)
+   *    the runtime this function is handed already holds one sector: the derived
+   *    default, registered by `createNewSimulationRuntime`, which
+   *    `restoreSimulationRuntime` builds the session with. Without this guard a
+   *    save written by any session at all would fail to load.
+   *
+   *    Skipping is the right resolution rather than the convenient one.
+   *    `SecuritySectorRegistry`'s own contract is that a sector's static
+   *    definition is *"assumed re-registered identically by session/scenario
+   *    setup before `loadSnapshot` runs"* -- only the mutable control state is
+   *    part of the snapshot. The default sector is a pure function of the
+   *    world, the world is restored before this runs and handed into the same
+   *    wiring a live session uses, so what the payload carries for it and what
+   *    the runtime derived are the same definition; the payload's copy is
+   *    redundant rather than authoritative, exactly as room geometry and
+   *    navigation caches are (`restore-session.ts`'s `RestoredScope`).
+   *    `tests/integration/security-default-sector.test.ts` pins that they are
+   *    identical across a real round trip rather than trusting it.
+   *
+   *    Nothing is lost for a *scenario* sector: the guard only fires for an id
+   *    already present, and nothing but the default is registered before this
+   *    point.
+   */
+  for (const sector of systems.security.sectorDefinitions) {
+    if (runtime.securitySectors.getDefinition(sector.id) !== undefined) continue;
+    runtime.securitySectors.register({ ...sector });
+  }
   runtime.securitySectors.loadSnapshot(systems.security.sectorControlStates);
 
   // 2. Definitions that other snapshots reference by id.
@@ -694,4 +725,32 @@ export function restoreSessionSystems(
   runtime.incidentSectorIds.push(...systems.incidents.watchedSectorIds);
   runtime.incidentTriggerSystem.loadSnapshot(systems.incidents.trigger);
   runtime.incidentResponseSystem.loadSnapshot(systems.incidents.response);
+
+  /*
+   * 8. The derived default sector, re-applied after the payload
+   *    ([ADR 0036](../../../docs/adr/0036-a-derived-default-security-sector.md)).
+   *
+   *    `createNewSimulationRuntime` already derived it, and steps 1, 5 and 7
+   *    above have just overwritten two of the three collections it filled:
+   *    `securitySchedules` and `incidentSectorIds` are both cleared and refilled
+   *    from the payload, because `DeploymentSystem` and `IncidentTriggerSystem`
+   *    read those arrays live and restoring means refilling the array rather
+   *    than replacing it. A save written *before* this ADR carries both of them
+   *    empty, so without this line loading such a save would strip the sector's
+   *    staffing requirement and its place on the incident watch list, and the
+   *    tier would go dark again on exactly the saves players already have.
+   *
+   *    So it runs last, and `applyDefaultSecuritySector` is idempotent and
+   *    payload-wins: a save that carries a schedule or a watch entry for this
+   *    sector keeps its own, and one that carries neither gets the derived pair.
+   *    This is the whole of what makes ADR 0036 need **no save-schema bump and
+   *    no migration** -- `SAVE_SCHEMA_VERSION` stays 5 and no persisted field is
+   *    added, because derived state is recomputed rather than carried.
+   */
+  applyDefaultSecuritySector({
+    world: runtime.world,
+    sectors: runtime.securitySectors,
+    schedules: runtime.securitySchedules,
+    watchedSectorIds: runtime.incidentSectorIds,
+  });
 }
