@@ -1,4 +1,4 @@
-# ADR 0030: Withdrawing one queued build order — where a player aims, and what a long queue looks like
+# ADR 0031: Withdrawing one queued build order — where a player aims, and what a long queue looks like
 
 ## Status
 
@@ -12,13 +12,28 @@ unnoticed. Its rule is followed here — the queue entry is in the same commit.
 
 ### The number
 
-**0030**, which `docs/adr/README.md` stated as next-free. The check that
-statement cannot make could not be made from inside this session: `gh` is not
-installed on this machine, so the open pull requests were not enumerated the way
-[ADR 0029](./0029-concurrent-room-use-claims.md)'s author enumerated them. That
-is stated rather than glossed, because it is exactly the condition under which
-0024 through 0027 collided. If an unmerged branch is holding 0030, this document
-is the one that renumbers.
+**0031, and it started as 0030.** This document took 0030 on the strength of
+`docs/adr/README.md`'s stated next-free, and said so plainly: the check that
+statement cannot make was not available from inside the session that wrote it —
+`gh` is not installed on that machine, so the open pull requests were not
+enumerated the way [ADR 0029](./0029-concurrent-room-use-claims.md)'s author
+enumerated them. It recorded the exposure rather than glossing it, because it is
+exactly the condition under which 0024 through 0027 collided, and it committed in
+advance: *if an unmerged branch is holding 0030, this document is the one that
+renumbers.*
+
+**An unmerged branch was holding 0030** — the incident-response restore change,
+which allocated the same number in the same hour for
+`0030-restoring-an-interrupted-incident-response.md`. So this document renumbered,
+exactly as it said it would, and the pre-commitment is why the collision cost a
+`git mv` rather than an argument about who was first.
+
+Worth keeping for whoever allocates the next number: the stated next-free in a
+file is a claim about merged history, and two branches reading it in the same hour
+both read it correctly and still collide. The enumeration ADR 0029's author ran is
+the only thing that catches that, and it has to be run *by whoever can see the
+open pull requests* — which, when the author cannot, means the number is
+provisional until someone checks.
 
 ### What the evidence rests on
 
