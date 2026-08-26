@@ -2,7 +2,37 @@
 
 ## Status
 
-**Proposed — pending human approval.** Not accepted.
+**Accepted, 2026-08-26 — and open question 1 is commissioned rather than left
+open.** The four decisions are approved as written: a restored session does not
+inherit an emergency response, the guards go back immediately while the lockdown
+waits for the incident, the sweep happens on a tick and is owed by a flag rather
+than by a tick comparison, and the premises are tested rather than cited.
+
+**What the owner weighed, stated so the approval is not mistaken for indifference
+to the cost.** This decision gives up the incident's *outcome*: measured, a
+restored incident lapses with `injuredEntityIds: [1,2,3]` and `propertyDamage: 8`
+where a continuous run resolves it with `[]` and `4`. That was accepted because
+the alternative on `main` today is not "the incident is resolved" — it is
+"the responders are gone for ever and the lockdown never lifts", so a lapse is a
+strict improvement rather than a regression. The reversibility mattered too: the
+file on disk is never written and the repair recomputes on every load, so a
+mistake here is undoable in a way ADR 0030's migration-time write would not have
+been.
+
+**Open question 1 is now work rather than a question.** The owner asked for the
+outcome recovered as well as the resources — a restored session should mount a
+*fresh* response to the still-open incident, accepting the restarted containment
+timer named in that question as its price. That is being built against this
+document and will arrive as an amendment here rather than as a new ADR, because it
+is this decision's own open question and not a different one.
+
+**One debt, recorded rather than tidied.** This document owed a
+`docs/adr/STATUS-QUEUE.md` §2 entry and never got one — the brief its author
+worked under named that file as off-limits, so they quoted the entry in the pull
+request instead, which is the precedent ADR 0032 set hours earlier. The approval
+then arrived before the entry was written, exactly as it did for 0032. §2 records
+that pattern as its own rule failing under concurrency rather than as two
+authors' oversight.
 
 The implementing change is on the same branch as this document, which is the
 shape [`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2 warns about: an ADR that lands

@@ -316,13 +316,21 @@ name reappears anywhere in `src/`, and fails if this amendment or the original
 sentence it amends is removed from this file. Bringing either accessor back is
 therefore a change to this ADR, which is what it was in the first place.
 
-## Amendment, 2026-08-26 (awaiting approval): the shared plan is the plan `findRoute` computes, because the router's search direction moved to meet it
+## Amendment, accepted 2026-08-26: the shared plan is the plan `findRoute` computes, because the router's search direction moved to meet it
 
 *Issues #357, #358, #359 and #360. The sections above are left exactly as
 accepted — an ADR is the record of what was decided — and this amendment records
 what changed underneath them, which of their sentences was false when it was
-written, and the one decision the sections above do not contain. It has not been
-approved: `docs/adr/STATUS-QUEUE.md` §2 carries its entry.*
+written, and the one decision the sections above do not contain.*
+
+*Approved by the owner on 2026-08-26, and the approval is worth one sentence of
+its own because nothing mechanical can show it: 0007's `Status` line does not
+move, no row in `docs/adr/README.md` changes, and
+`adr-numbering-contract.test.ts` counts documents by their `Status` line, so an
+amendment inside an accepted ADR is invisible to every gate in this repository.
+The queue entry in `docs/adr/STATUS-QUEUE.md` §2 was the only record that this
+decision was outstanding, and it is deleted in the same commit as this heading —
+which means this paragraph is now the only record that it was ever pending.*
 
 ### The sentence that was false, and what it cost
 
