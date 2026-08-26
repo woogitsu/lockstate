@@ -494,6 +494,82 @@ describe('IntakeSystem: deterministic stage-by-stage pipeline', () => {
     // DEFECT: and the metric counts one prisoner as two completed intakes.
     expect(fixture.prisoners.intakeSystem.getMetrics().completedCount).toBe(2);
   });
+
+  it('DEFECT (#169 item 3): a re-intake shifts the classification stream, so later arrivals are classified differently', () => {
+    // **The determinism half of the case above, and the reason this question
+    // is not merely bookkeeping.** ADR 0026 states it in prose -- the second
+    // run reaches the `classification` stage and draws from
+    // `prisoners.classification`, "so a re-intake shifts the stream every
+    // later arrival's classification is read from", and "a re-intake path
+    // that could be replayed a different number of times would therefore be
+    // a determinism defect, not merely a bookkeeping one". Nothing measured
+    // it. This does.
+    //
+    // Determinism is the property most of this suite exists to protect: the
+    // same seed and the same command sequence must produce the same state.
+    // A re-intake is an extra draw on a shared named stream, so it moves
+    // every subsequent consumer of that stream -- which means the defect is
+    // not confined to the prisoner who was re-submitted.
+    //
+    // ## Why this is asserted as a difference rather than against literals
+    //
+    // The expected value of a classification draw cannot be written down
+    // without re-implementing `classifyPrisoner` and the RNG, and a literal
+    // copied out of a previous run of the code under test would be this
+    // repository's dominant test defect -- a fixture supplying both sides of
+    // its own comparison. So the baseline comes from a source independent of
+    // the behaviour being tested: **a second identical session**. Two runs
+    // that differ in nothing must agree, and two runs that differ only by one
+    // extra `submitIntake` call must -- today -- disagree.
+    //
+    // That pair is what makes each half non-vacuous. The equality would fail
+    // if the draw were nondeterministic for any other reason; the inequality
+    // would fail if classification collapsed to a constant, which is the way
+    // a broken draw would otherwise look like a fix.
+    //
+    // Measured when this was written, for the record rather than as an
+    // assertion: the three later arrivals' risk tiers are `[2, 2, 0]` without
+    // the re-intake and `[2, 0, 2]` with it -- the same three prisoners,
+    // admitted in the same order with identical inputs, classified
+    // differently because an unrelated entity went through intake twice.
+    //
+    // Whichever of ADR 0026 question 3's three shapes is taken changes this
+    // case: refusing the re-intake removes the second draw, cleaning up
+    // first has to answer for the stream explicitly, and moving re-intake to
+    // its own entry point makes this call unreachable. None is taken here.
+    function runSession(reIntake: boolean): readonly number[] {
+      const fixture = buildPrisonerScenarioFixture({ cellCount: 8, capacity: 20 });
+      const kernel = makeKernel();
+      fixture.prisoners.registerOn(kernel);
+
+      const first = fixture.prisoners.admitPrisoner({ sentenceLengthTicks: 1_000, priorIncidents: 0 }, fixture.originTile);
+      for (let i = 0; i < 25; i += 1) kernel.step();
+
+      if (reIntake) {
+        fixture.prisoners.intakeSystem.submitIntake(first, { sentenceLengthTicks: 1_000, priorIncidents: 0 });
+        for (let i = 0; i < 25; i += 1) kernel.step();
+      }
+
+      // Three later arrivals, identical inputs, admitted in a fixed order.
+      const later = [0, 1, 2].map(() =>
+        fixture.prisoners.admitPrisoner({ sentenceLengthTicks: 500, priorIncidents: 1 }, fixture.originTile));
+      for (let i = 0; i < 30; i += 1) kernel.step();
+
+      return later.map((entityId) => fixture.prisoners.records.riskTier[fixture.prisoners.entityStore.getIndex(entityId)]!);
+    }
+
+    const control = runSession(false);
+    const controlRepeated = runSession(false);
+    const withReIntake = runSession(true);
+
+    // The independent baseline: same seed, same commands, same state.
+    expect(controlRepeated).toEqual(control);
+    expect(control).toHaveLength(3);
+
+    // DEFECT: one extra `submitIntake` for an unrelated, already-housed
+    // prisoner, and these three are classified differently.
+    expect(withReIntake).not.toEqual(control);
+  });
   /**
    * The property the whole admission guard exists to provide, asserted over
    * every prison shape rather than over the one a panel happens to produce.
