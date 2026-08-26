@@ -1,8 +1,53 @@
 import type { EntityId } from '../entity/entity-store';
+import type { RouteFailureReason } from '../navigation/route';
 import type { TilePosition } from '../world/coordinates';
 
 export type JobLifecycleState = 'available' | 'reserved' | 'assigned' | 'travelling' | 'performing' | 'completed' | 'failed' | 'cancelled';
 export type CarryLeg = 'pickup' | 'dropoff';
+
+/**
+ * Why `JobSystem` itself ended a carry job, as a closed union rather than the
+ * free `string` this used to be.
+ *
+ * Closed for the reason `BUILD_ORDER_FAIL_REASONS` is closed: a fail reason is
+ * a vocabulary, and a free `string` lets the next one be minted at a call site
+ * where nobody has to decide whether it is the same fact as an existing member
+ * or a new one. Both members that existed before #419 were written as bare
+ * literals in `job-system.ts`, and the third -- `unknown-destination-container`
+ * -- is the one whose absence #419 is about: the source leg refused an unknown
+ * container id and the destination leg did not, so `ContainerRegistry.require`
+ * threw `RangeError` out of a scheduled system update *after*
+ * `withdrawReserved` had committed, which faults the worker and takes the
+ * stock with it.
+ *
+ * The two `unknown-*-container` members are separate rather than one
+ * `unknown-container`, because they are not the same fact: an unknown source is
+ * decided before any stock moves and an unknown destination is decided with the
+ * goods already in the carrier's hands, and only the second one has anything to
+ * give back.
+ *
+ * **It does not reach the player, and it is not on the refusal wire.**
+ * `RefusalReason` (`protocol/types.ts`) is the vocabulary of *command*
+ * refusals, written from the kernel's command handler at the tick a command
+ * executes -- and no command creates a carry job. There is deliberately no
+ * `Record` mapping these onto it and no `hud.alert.refusal.carry.*` sentence;
+ * see the note on `JobSystem.continuePerforming` for why giving job failures a
+ * player-facing surface is a decision this change is not entitled to make.
+ *
+ * Persisted: `save-schema.ts`'s `carryItemJobSchema` validates `failReason` as
+ * an optional `z.string()` and stays that way deliberately, for the reason
+ * `build-order.ts` records for the identical pair -- narrowing the *reader*
+ * would turn an unrecognised historical value into an unloadable prison rather
+ * than a job that reads as failed. That is also what lets a member be added
+ * here without a save bump.
+ */
+export const CARRY_JOB_FAIL_REASONS = [
+  'reservation-invariant-violated',
+  'unknown-destination-container',
+  'unknown-source-container',
+] as const;
+
+export type CarryJobFailReason = (typeof CARRY_JOB_FAIL_REASONS)[number];
 
 /**
  * The one concrete job kind this representative slice implements end to
@@ -26,7 +71,14 @@ export interface CarryItemJob {
   leg: CarryLeg;
   assignedWorkerId?: EntityId | undefined;
   pathRequestId?: string | undefined;
-  failReason?: string | undefined;
+  /**
+   * Either one of `JobSystem`'s own reasons or the navigation vocabulary a
+   * failed leg records verbatim (`continueTravelling` passes
+   * `RouteFailure.reason` straight through). Two vocabularies rather than one
+   * because they are decided by two systems, and neither is rewritten into the
+   * other's spelling on the way here.
+   */
+  failReason?: CarryJobFailReason | RouteFailureReason | undefined;
 }
 
 export interface SubmitCarryItemJobInput {
