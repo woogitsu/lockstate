@@ -33,22 +33,35 @@ change to settle it. It changes no status either.
 The `Status` column reproduces what each ADR's own document says, not a
 normalised judgement. Two heading styles are in use — some ADRs carry a
 `- Status:` bullet and others a `## Status` section — and every ADR in the table
-above except the newest is now `Accepted` in some form, several with a
-qualifier the ADR itself carries.
+above is now `Accepted` in some form, several with a qualifier the ADR itself
+carries.
 
-**Exactly one ADR in this directory is awaiting the owner's approval: 0033.**
-0031 and 0032 were both approved on 2026-08-26 — 0031 with a condition, not
-plainly: its open question 4 is promoted to blocking, because ADR 0028 phase 4
-took `BUILDABLE_REGISTRY` from four rows to twenty-one and the price its decision
-3 pays is now several times what the document argues for. Read 0031's Status
-before treating its catalogue trade as settled.
+**Exactly one ADR in this directory is awaiting the owner's approval: 0034.**
+0031, 0032, 0033 and ADR 0007's amendment were all approved on 2026-08-26, which
+emptied [`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2 for the third time in its
+history — and 0034 arrived within the hour, which is the rate this corpus
+actually moves at.
 
-**A second decision is outstanding and is not an ADR status at all**, which is
-why counting rows in the table below undercounts by one: the amendment to ADR
-0007 queued in [`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2. An amendment inside an
-accepted ADR has no `Status` line of its own, so no row here and no mechanical
-gate will ever mention it, and that queue entry is the only thing that says it is
-waiting.
+Two of those carry a qualifier the row alone will not tell you, and both are worth
+reading before treating the decision as settled:
+
+- **0031** was approved with its open question 4 promoted to *blocking*. ADR 0028
+  phase 4 took `BUILDABLE_REGISTRY` from four rows to twenty-one, so the price its
+  decision 3 pays is several times what the document argues for; the catalogue
+  needs a surface of its own before more rows arrive (#390).
+- **0033** was approved with its open question 1 *commissioned* rather than left
+  open: the owner asked for the incident's outcome recovered as well as its
+  resources, so a restored session mounting a fresh response is being built
+  against that document.
+
+One structural note that outlives all four. An **amendment** to an accepted ADR
+has no `Status` line of its own, so it gets no row in the table below and no
+mechanical gate in this repository can see it — `adr-numbering-contract.test.ts`
+counts documents by their `Status` line. While 0007's amendment was pending, the
+§2 queue entry was the only record that a decision was outstanding; now that it is
+accepted and the entry is deleted, the amendment's own opening paragraph is the
+only record it ever was. If a future amendment needs to be visible, §2 is the only
+place that can do it.
 
 A note on how this paragraph is worded, because it matters to a test:
 `tests/foundation/adr-status-reference-contract.test.ts` scans for a sentence
@@ -108,8 +121,8 @@ Nothing here changes a status; this table only reports them.
 | [0029](./0029-concurrent-room-use-claims.md) | What a concurrent-use claim on a room is — when it is taken, when it ends, and who waits | Accepted, 2026-08-26 |
 | [0031](./0031-build-queue-cancellation-surface.md) | Withdrawing one queued build order — where a player aims, and what a long queue looks like | Accepted, 2026-08-26 — with open question 4 promoted to blocking |
 | [0032](./0032-incident-consequences-and-classification-review.md) | What an incident costs the prisoner who was in it, and how a classification tier moves | Accepted, 2026-08-26 |
-| [0033](./0033-releasing-an-interrupted-incident-response-at-runtime.md) | A restored session abandons an incident response and returns what it claimed | Proposed — pending human approval; **amended** in place, with open question 1 answered (a restored session re-dispatches) |
-| [0034](./0034-releasing-a-claimed-guard.md) | Releasing a claimed guard — one command, every claimant | Proposed — pending human approval; **owes a `STATUS-QUEUE.md` §2 entry**, quoted in its pull request |
+| [0033](./0033-releasing-an-interrupted-incident-response-at-runtime.md) | A restored session abandons an incident response and returns what it claimed | Accepted, 2026-08-26 — **amended in place**: its open question 1 was commissioned and is now answered (a restored session re-dispatches) |
+| [0034](./0034-releasing-a-claimed-guard.md) | Releasing a claimed guard — one command, every claimant | Proposed — pending human approval; owes a `STATUS-QUEUE.md` §2 entry, quoted in its pull request |
 
 **Next free number: 0035.** 0034 is this table's newest row and **0030 is still
 held by an unmerged branch** — the incident-response restore change, which
