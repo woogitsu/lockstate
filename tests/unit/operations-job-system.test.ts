@@ -32,7 +32,14 @@ class MapWorkerAdapter implements JobWorkerAdapter {
   }
 }
 
-function buildFixture(cellCount = 12) {
+/**
+ * `registered` leaves a container out of the `ContainerRegistry` while the job
+ * still names its id -- the state a save reaches when its container snapshot
+ * does not carry every container its jobs reference, and the one #419 measured
+ * the `RangeError` from. Both default to registered, so every fixture built
+ * before this parameter existed is unchanged.
+ */
+function buildFixture(cellCount = 12, registered: { readonly source?: boolean; readonly destination?: boolean } = {}) {
   const cellBlock = buildCellBlockFixture(cellCount);
   const navigation = new NavigationSystem(cellBlock.world, { workBudgetPerTick: 2_000, agingIntervalTicks: 10, flowFieldActivationThreshold: 100 }, cellBlock.doors);
   navigation.setLoadedChunks(cellBlock.chunkPositions);
@@ -40,8 +47,8 @@ function buildFixture(cellCount = 12) {
   const containers = new ContainerRegistry();
   const source = new Container('delivery-bay-0');
   const destination = new Container('storage-0');
-  containers.register(source);
-  containers.register(destination);
+  if (registered.source !== false) containers.register(source);
+  if (registered.destination !== false) containers.register(destination);
 
   const board = new JobBoard();
   const workers = new JobWorkerPool();
@@ -293,5 +300,232 @@ describe('JobSystem: a job ended on the dropoff leg conserves the stock it is ca
     expect(destination.quantityOf('item.brick')).toBe(0);
     expect(source.reservedOf('item.brick')).toBe(FOREIGN_RESERVATION); // untouched
     expect(source.availableOf('item.brick')).toBe(7); // INITIAL_STOCK - FOREIGN_RESERVATION, stated not computed
+  });
+});
+
+/**
+ * A container id the registry does not hold, on either leg and by either
+ * route (#419).
+ *
+ * `ContainerRegistry.require` throws `RangeError`, and `continuePerforming`
+ * called it on both legs. The dropoff call is the one that matters most,
+ * because it runs *after* `withdrawReserved` has committed: the throw escaped
+ * `Kernel.step()` with the source container already debited, the goods in the
+ * carrier's hands and the worker still marked busy, so one unregistered id
+ * ended the session and took the stock with it. The source leg had a graceful
+ * check in `assignAvailableJobs` and the destination leg had none.
+ *
+ * Two routes reach it and each is covered on its own, because one test cannot
+ * stand for both: a **live** job is refused at the assignment boundary before
+ * it reserves anything, and a **restored** job never passes through
+ * `assignAvailableJobs` at all -- `JobBoard.loadSnapshot` puts it back at the
+ * state it was saved in -- so the boundary check cannot see it and the tick has
+ * to resolve leniently.
+ *
+ * Every quantity compared against below is a literal written here, never a
+ * value read back out of a container the production code just wrote.
+ */
+describe('JobSystem: a container id the registry does not hold fails the job instead of throwing out of the tick', () => {
+  const INITIAL_STOCK = 10;
+  const CARRIED = 4;
+  const STOCK_WHILE_CARRIED = 6; // INITIAL_STOCK - CARRIED, stated rather than computed by the system
+
+  /** Steps until the job satisfies `reached`, and asserts that it did. */
+  function stepUntil(
+    fixture: ReturnType<typeof buildFixture>,
+    jobId: string,
+    reached: (job: NonNullable<ReturnType<JobBoard['getById']>>) => boolean,
+  ): void {
+    const { board, kernel } = fixture;
+    let arrived = false;
+    for (let i = 0; i < 400 && !arrived; i += 1) {
+      kernel.step();
+      arrived = reached(board.getById(jobId)!);
+    }
+    expect(arrived).toBe(true);
+  }
+
+  /**
+   * Moves a live session's board, workers and containers onto a freshly wired
+   * one, minus the container `dropContainerId` names -- which is exactly the
+   * save `restoreSessionSystems` produces when its container snapshot does not
+   * carry a container its jobs reference: that function registers a container
+   * per *container-snapshot* entry, and a job's ids are never consulted.
+   */
+  function restoreOnto(
+    target: ReturnType<typeof buildFixture>,
+    saved: ReturnType<typeof buildFixture>,
+    dropContainerId: string,
+  ): void {
+    target.containers.loadSnapshot(saved.containers.getSnapshot().filter(([id]) => id !== dropContainerId));
+    target.board.loadSnapshot(saved.board.getSnapshot());
+    target.workers.loadSnapshot(saved.workers.getSnapshot());
+  }
+
+  it('refuses a live job for an unknown destination at the assignment boundary, before it reserves stock or claims a worker', () => {
+    const fixture = buildFixture(12, { destination: false });
+    const { cellBlock, source, containers, board, workers, adapter, kernel } = fixture;
+    source.deposit('item.brick', INITIAL_STOCK);
+
+    // The source is registered and holds enough stock, so the refusal below is
+    // about the destination and nothing else. Without this the test would pass
+    // just as well against a job that could never have been assigned anyway.
+    expect(containers.getById('delivery-bay-0')).toBeDefined();
+    expect(source.availableOf('item.brick')).toBe(INITIAL_STOCK);
+    expect(containers.getById('storage-0')).toBeUndefined();
+
+    const workerId = 1;
+    workers.register(workerId);
+    adapter.set(workerId, cellBlock.canteenTiles[0]!);
+
+    board.submitCarryItem(
+      { id: 'carry-8', priority: 1, itemId: 'item.brick', quantity: CARRIED, sourceContainerId: 'delivery-bay-0', sourceTile: cellBlock.cellTiles[0]!, destinationContainerId: 'storage-0', destinationTile: cellBlock.canteenTiles[1]! },
+      0,
+    );
+
+    // One scheduled tick, which is the point: the refusal happens on the pass
+    // that would otherwise have assigned the job, not eventually.
+    kernel.step();
+
+    const job = board.getById('carry-8');
+    expect(job?.state).toBe('failed');
+    expect(job?.failReason).toBe('unknown-destination-container');
+    // Refused at the boundary and not at the dropoff: the job never left the
+    // pickup leg and never had a worker, which is what separates this from the
+    // same reason recorded four legs later.
+    expect(job?.leg).toBe('pickup');
+    expect(job?.assignedWorkerId).toBeUndefined();
+    expect(source.quantityOf('item.brick')).toBe(INITIAL_STOCK); // nothing withdrawn
+    expect(source.reservedOf('item.brick')).toBe(0); // nothing claimed
+    expect(workers.isBusy(workerId)).toBe(false);
+  });
+
+  it('refuses a live job for an unknown source at the same boundary, so neither half of the pair can be removed unnoticed', () => {
+    const fixture = buildFixture(12, { source: false });
+    const { cellBlock, containers, destination, board, workers, adapter, kernel } = fixture;
+
+    expect(containers.getById('delivery-bay-0')).toBeUndefined();
+    expect(containers.getById('storage-0')).toBeDefined();
+
+    const workerId = 1;
+    workers.register(workerId);
+    adapter.set(workerId, cellBlock.canteenTiles[0]!);
+
+    board.submitCarryItem(
+      { id: 'carry-9', priority: 1, itemId: 'item.brick', quantity: CARRIED, sourceContainerId: 'delivery-bay-0', sourceTile: cellBlock.cellTiles[0]!, destinationContainerId: 'storage-0', destinationTile: cellBlock.canteenTiles[1]! },
+      0,
+    );
+
+    kernel.step();
+
+    const job = board.getById('carry-9');
+    expect(job?.state).toBe('failed');
+    expect(job?.failReason).toBe('unknown-source-container');
+    expect(job?.assignedWorkerId).toBeUndefined();
+    expect(destination.quantityOf('item.brick')).toBe(0); // nothing was created at the far end
+    expect(workers.isBusy(workerId)).toBe(false);
+  });
+
+  it('fails a restored job whose destination container is gone, returning the stock it had already withdrawn', () => {
+    const saved = buildFixture(6);
+    saved.source.deposit('item.brick', INITIAL_STOCK);
+
+    const workerId = 1;
+    saved.workers.register(workerId);
+    saved.adapter.set(workerId, saved.cellBlock.canteenTiles[2]!);
+
+    saved.board.submitCarryItem(
+      { id: 'carry-10', priority: 1, itemId: 'item.brick', quantity: CARRIED, sourceContainerId: 'delivery-bay-0', sourceTile: saved.cellBlock.canteenTiles[0]!, destinationContainerId: 'storage-0', destinationTile: saved.cellBlock.cellTiles[0]! },
+      0,
+    );
+
+    stepUntil(saved, 'carry-10', (job) => job.leg === 'dropoff' && job.state === 'performing');
+
+    // The withdrawal has genuinely committed: the stock has left the source and
+    // has arrived nowhere, and the reservation that paid for it is gone. A
+    // dropoff-leg test whose job never acquired stock proves nothing.
+    expect(saved.source.quantityOf('item.brick')).toBe(STOCK_WHILE_CARRIED);
+    expect(saved.source.reservedOf('item.brick')).toBe(0);
+    expect(saved.destination.quantityOf('item.brick')).toBe(0);
+    expect(saved.workers.isBusy(workerId)).toBe(true);
+
+    const restored = buildFixture(6, { destination: false });
+    restoreOnto(restored, saved, 'storage-0');
+    restored.adapter.set(workerId, restored.cellBlock.cellTiles[0]!);
+
+    // The restored session is in the state the throw was measured from: a job
+    // mid-dropoff, holding stock, naming a container this registry does not
+    // hold.
+    const beforeStep = restored.board.getById('carry-10');
+    expect(beforeStep?.state).toBe('performing');
+    expect(beforeStep?.leg).toBe('dropoff');
+    expect(restored.containers.getById('storage-0')).toBeUndefined();
+    expect(restored.containers.require('delivery-bay-0').quantityOf('item.brick')).toBe(STOCK_WHILE_CARRIED);
+    expect(restored.workers.isBusy(workerId)).toBe(true);
+
+    // No `RangeError` escapes `Kernel.step()`; before #419 this line threw.
+    for (let i = 0; i < 50; i += 1) restored.kernel.step();
+
+    const job = restored.board.getById('carry-10');
+    expect(job?.state).toBe('failed');
+    expect(job?.failReason).toBe('unknown-destination-container');
+    expect(job?.leg).toBe('dropoff');
+
+    // Conservation, against literals: the 4 in the carrier's hands went back to
+    // the container they were withdrawn from, so the restored prison holds the
+    // 10 it started with and no phantom reservation.
+    const restoredSource = restored.containers.require('delivery-bay-0');
+    expect(restoredSource.quantityOf('item.brick')).toBe(INITIAL_STOCK);
+    expect(restoredSource.reservedOf('item.brick')).toBe(0);
+    expect(restoredSource.availableOf('item.brick')).toBe(INITIAL_STOCK);
+    // The worker is free again rather than busy forever on a job that ended.
+    expect(restored.workers.isBusy(workerId)).toBe(false);
+  });
+
+  it('fails a restored job whose source container is gone, on the leg that has not withdrawn anything yet', () => {
+    const saved = buildFixture(6);
+    saved.source.deposit('item.brick', INITIAL_STOCK);
+
+    const workerId = 1;
+    saved.workers.register(workerId);
+    saved.adapter.set(workerId, saved.cellBlock.canteenTiles[2]!);
+
+    saved.board.submitCarryItem(
+      { id: 'carry-11', priority: 1, itemId: 'item.brick', quantity: CARRIED, sourceContainerId: 'delivery-bay-0', sourceTile: saved.cellBlock.cellTiles[0]!, destinationContainerId: 'storage-0', destinationTile: saved.cellBlock.canteenTiles[0]! },
+      0,
+    );
+
+    stepUntil(saved, 'carry-11', (job) => job.leg === 'pickup' && job.state === 'performing');
+
+    // Mid-pickup: the reservation is held and the stock has not moved. This is
+    // the other side of the dropoff case above, and it has nothing to give back
+    // but the claim.
+    expect(saved.source.quantityOf('item.brick')).toBe(INITIAL_STOCK);
+    expect(saved.source.reservedOf('item.brick')).toBe(CARRIED);
+    expect(saved.workers.isBusy(workerId)).toBe(true);
+
+    const restored = buildFixture(6, { source: false });
+    restoreOnto(restored, saved, 'delivery-bay-0');
+    restored.adapter.set(workerId, restored.cellBlock.cellTiles[0]!);
+
+    const beforeStep = restored.board.getById('carry-11');
+    expect(beforeStep?.state).toBe('performing');
+    expect(beforeStep?.leg).toBe('pickup');
+    expect(restored.containers.getById('delivery-bay-0')).toBeUndefined();
+    expect(restored.workers.isBusy(workerId)).toBe(true);
+
+    // No `RangeError` escapes `Kernel.step()`; before #419 this threw too, and
+    // a restored job is the only way to reach it now that the boundary refuses
+    // a live one.
+    for (let i = 0; i < 50; i += 1) restored.kernel.step();
+
+    const job = restored.board.getById('carry-11');
+    expect(job?.state).toBe('failed');
+    expect(job?.failReason).toBe('unknown-source-container');
+    expect(job?.leg).toBe('pickup');
+    // Nothing was invented at the far end to stand in for the stock that never
+    // left a container this session does not have.
+    expect(restored.containers.require('storage-0').quantityOf('item.brick')).toBe(0);
+    expect(restored.workers.isBusy(workerId)).toBe(false);
   });
 });

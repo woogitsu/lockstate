@@ -148,6 +148,12 @@ const UNLABELLED: readonly { readonly sourceFile: string; readonly declaration: 
       'The construction system\'s own spelling of why it failed an order, and it never leaves the simulation under this name: `createConstructionCommandHandler` maps every member onto a `RefusalReason` through an exhaustive `Record` before anything is published, and no projection in `src/simulation/presentation/` emits `BuildOrder.failReason` at all. It is persisted (`save-schema.ts`) and read back as save data, which is storage rather than display. Labelling it would author a second set of words for the same nine facts `REFUSAL_REASONS` already carries, and the two would drift.',
   },
   {
+    sourceFile: 'src/simulation/operations/job.ts',
+    declaration: 'CARRY_JOB_FAIL_REASONS',
+    reason:
+      'Why `JobSystem` ended a carry job -- a container id the registry does not hold, or a reservation that could not be honoured at pickup. Exempt for a *stronger* version of the reason `BUILD_ORDER_FAIL_REASONS` above is: that one at least reaches the player under a different spelling, mapped onto a `RefusalReason` by a command handler, and this one reaches no surface at all. Nothing in `src/simulation/presentation/` projects `CarryItemJob.failReason`, no command creates a carry job (so there is no handler to map it and no `carry.*` namespace on the wire -- `simulation-refusals.test.ts` asserts the wire vocabulary is exactly the ten *command* namespaces), and `docs/OPERATIONS.md` records that nothing in the HUD surfaces the operations substrate yet. It is persisted by `save-schema.ts` and read back as save data, which is storage rather than display. Labelling it would author words for a fact no panel can render; giving job failures a player-facing channel is an ADR rather than a row in this table.',
+  },
+  {
     sourceFile: 'src/simulation/economy/procurement.ts',
     declaration: 'PurchaseRefusalReason',
     reason:

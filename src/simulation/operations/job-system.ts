@@ -1,10 +1,11 @@
 import type { SimulationContext, SystemRegistration } from '../kernel/system';
 import type { EntityId } from '../entity/entity-store';
 import type { NavigationSystem } from '../navigation/navigation-system';
+import type { RouteFailureReason } from '../navigation/route';
 import type { RouteContext } from '../navigation/route-context';
 import type { TilePosition } from '../world/coordinates';
 import type { ContainerRegistry } from './inventory';
-import type { CarryItemJob, CarryLeg, JobLifecycleState } from './job';
+import type { CarryItemJob, CarryJobFailReason, CarryLeg, JobLifecycleState } from './job';
 import { JobBoard } from './job';
 
 /**
@@ -105,10 +106,33 @@ export class JobSystem implements SystemRegistration {
     for (const job of this.board.availableJobsSorted()) {
       if (nextWorkerIndex >= idleWorkers.length) break;
 
+      // **Both container ids, before anything is reserved.** This is the
+      // boundary: a job admitted here goes on to claim stock, occupy a worker
+      // and travel, so a container id that names nothing has to be refused
+      // while a refusal still costs nothing but the job. The source half has
+      // always been checked; the destination half was not, and the leg it
+      // belongs to is the one that runs *after* `withdrawReserved` has
+      // committed -- so the unchecked id threw `RangeError` out of a scheduled
+      // system update with the goods already out of the container and the
+      // worker already assigned (#419).
+      //
+      // Checking the destination here does not make the dropoff-leg check in
+      // `continuePerforming` redundant, and vice versa: a job restored from a
+      // save never passes through this method at all (`JobBoard.loadSnapshot`
+      // puts it back at the state it was saved in), so this alone leaves the
+      // save path broken -- the same pair of paths #409 measured for an
+      // unknown buildable, refused at the boundary *and* resolved leniently in
+      // the tick.
       const sourceContainer = this.containers.getById(job.sourceContainerId);
       if (sourceContainer === undefined) {
         job.state = 'failed';
         job.failReason = 'unknown-source-container';
+        continue;
+      }
+
+      if (this.containers.getById(job.destinationContainerId) === undefined) {
+        job.state = 'failed';
+        job.failReason = 'unknown-destination-container';
         continue;
       }
 
@@ -165,6 +189,46 @@ export class JobSystem implements SystemRegistration {
     this.performingSince.set(job.id, tick);
   }
 
+  /**
+   * The dwell at a leg's destination, and then the one point on that leg where
+   * the job actually touches inventory: `withdrawReserved` on pickup,
+   * `deposit` on dropoff.
+   *
+   * **Both container lookups are lenient, because this runs inside a scheduled
+   * system update and a throw here faults the worker.** They were
+   * `ContainerRegistry.require`, which throws `RangeError` for an id it does
+   * not hold, and that is the whole of #419. Two paths reached it and each
+   * needs its own answer:
+   *
+   * - **Dropoff.** `withdrawReserved` has already committed on the pickup leg,
+   *   so the throw landed with the source container already debited, the goods
+   *   in the carrier's hands and the worker marked busy -- one unregistered
+   *   container id ended the session and destroyed the stock with it. Failing
+   *   the job instead routes it through `failJob`, so `compensateHeldStock`
+   *   returns the carried quantity to the container it came from (ADR 0037)
+   *   and the worker is freed.
+   * - **Pickup.** Reached only by a job that never passed
+   *   `assignAvailableJobs` -- which is to say a *restored* one, since
+   *   `JobBoard.loadSnapshot` puts a job back at the state it was saved in and
+   *   nothing re-runs the assignment checks over it. Nothing has been withdrawn
+   *   yet, so what `compensateHeldStock` has to give back is the reservation,
+   *   and if the source container is the one that is missing there is nothing
+   *   to give it back to.
+   *
+   * A job failed either way is terminal, so `activeJobs()` stops returning it
+   * and the board behind it drains normally rather than re-throwing every
+   * scheduled tick.
+   *
+   * **No refusal is recorded, and that is a known gap rather than a decision
+   * this code is entitled to make** -- the same gap `ConstructionSystem.update`
+   * records for the same class of recovery in #409, and for a stronger reason
+   * here. `RefusalLog` is the log of *command* refusals, written from the
+   * kernel's command handler at the tick a command executes, and no command
+   * creates a carry job: `simulation-refusals.test.ts` asserts the wire
+   * vocabulary is exactly ten command namespaces. Giving a job failure a
+   * player-facing surface means deciding what channel a *system* speaks on,
+   * which is an ADR rather than a line in a system update.
+   */
   private continuePerforming(job: CarryItemJob, tick: number): void {
     const startedAt = this.performingSince.get(job.id);
     if (startedAt === undefined) {
@@ -174,7 +238,11 @@ export class JobSystem implements SystemRegistration {
     if (tick - startedAt < PICKUP_DROPOFF_DURATION_TICKS) return;
 
     if (job.leg === 'pickup') {
-      const sourceContainer = this.containers.require(job.sourceContainerId);
+      const sourceContainer = this.containers.getById(job.sourceContainerId);
+      if (sourceContainer === undefined) {
+        this.failJob(job, 'unknown-source-container');
+        return;
+      }
       const withdrawal = sourceContainer.withdrawReserved(job.itemId, job.quantity);
       if (!withdrawal.ok) {
         // The reservation made at assignment time should always be honorable here; fail loudly rather than silently drop the job if that invariant is ever violated.
@@ -187,7 +255,12 @@ export class JobSystem implements SystemRegistration {
       return;
     }
 
-    this.containers.require(job.destinationContainerId).deposit(job.itemId, job.quantity);
+    const destinationContainer = this.containers.getById(job.destinationContainerId);
+    if (destinationContainer === undefined) {
+      this.failJob(job, 'unknown-destination-container');
+      return;
+    }
+    destinationContainer.deposit(job.itemId, job.quantity);
     this.performingSince.delete(job.id);
     this.workers.setBusy(job.assignedWorkerId!, false);
     job.state = 'completed';
@@ -239,7 +312,7 @@ export class JobSystem implements SystemRegistration {
     else source.deposit(job.itemId, job.quantity);
   }
 
-  private failJob(job: CarryItemJob, reason: string): void {
+  private failJob(job: CarryItemJob, reason: CarryJobFailReason | RouteFailureReason): void {
     this.compensateHeldStock(job, job.leg, job.state);
     this.performingSince.delete(job.id);
     if (job.assignedWorkerId !== undefined) this.workers.setBusy(job.assignedWorkerId, false);
