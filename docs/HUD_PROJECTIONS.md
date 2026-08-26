@@ -802,10 +802,21 @@ decision about what to build next.
 32. **Build costs are material quantities, and that part is real**:
     `BuildableDefinition.materialsRequired` is `{itemId, quantity}` and
     `ContainerMaterialsProvider` genuinely consumes them from a
-    `Container`. But `BUILDABLE_REGISTRY` holds exactly two entries, is a
-    plain `Map` rather than a validated content catalog, and its
-    definitions carry a hard-coded English `name` string instead of a
-    `nameKey` — a localization-boundary violation waiting to be rendered.
+    `Container`. But `BUILDABLE_REGISTRY`'s definitions carry a hard-coded
+    English `name` string instead of a `nameKey` — a localization-boundary
+    violation waiting to be rendered.
+
+    **Two clauses of this gap have expired and are removed rather than left
+    to mislead.** It said the registry *"holds exactly two entries"*: it holds
+    four — `wall-brick`, `door-wooden`, `bed-wooden` and `toilet-brick` — and
+    nothing recounted when ADR 0028's phases added the last two. It also said
+    the registry is *"a plain `Map` rather than a validated content catalog"*.
+    It is still a `Map`, and it is no longer unvalidated: three checks run at
+    import and throw — `validateBuildableItemReferences`,
+    `validateBuildableObjectReferences` and `validateBuildableDoorReferences`
+    — so a row naming an unknown item, object or security grade fails the
+    module load rather than waiting in `materials-pending` for ever. The
+    `name`/`nameKey` clause is untouched and is still true.
     `assignedWorkerId` is `'mock-worker-1'` and progress advances a fixed
     `+10` per scheduled tick regardless of workers. No construction
     projection was written for this reason.

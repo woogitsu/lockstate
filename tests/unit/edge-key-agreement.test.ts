@@ -6,11 +6,13 @@ import type { HudBuildOrder } from '../../src/ui/hud';
 /**
  * One string format, two spellings, and the pin that keeps them the same.
  *
- * `edgeTargetKey` (`src/rendering/build/edge-picking.ts:48`) produces
+ * `edgeTargetKey` (`src/rendering/build/edge-picking.ts`) produces
  * `` `${tileX},${tileY},${edge}` ``. `BuildTool.deduplicate`
- * (`src/ui/build-tool.ts:138`) produces the identical string, written out
+ * (`src/ui/build-tool.ts`) produces the identical string, written out
  * inline, to key the `Set` that stops a run submitting two orders for one
- * edge. #141 found the pair while inventorying exports with no reference
+ * edge. Both were cited by line here and both lines had moved -- `:48`
+ * landed on a docblock opener and `:138` on an unrelated method -- so they
+ * are cited by symbol now, which is the precedent #309 set for exactly this. #141 found the pair while inventorying exports with no reference
  * anywhere, and put it in the #123/#182 family: one rule, two
  * implementations, nothing comparing them.
  *

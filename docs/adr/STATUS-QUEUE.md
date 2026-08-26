@@ -18,11 +18,11 @@ holds instead is the account of what moved, what may not be touched, and what
 the test cannot see. Deciding is still the owner's; this file only makes the
 next decision cheap.
 
-Re-anchored at `main` @ `5044f59` (**v0.0.76**). Every claim below was re-read
+Re-anchored at `main` @ `cddaebb` (**v0.0.77**). Every claim below was re-read
 from disk at that commit, and entries cite symbols rather than line numbers
 where a citation would otherwise drift on the next edit (the precedent is #309).
 
-**This line said `4e3976d` (v0.0.65) for eleven releases, and the file carried a
+**This line said `4e3976d` (v0.0.65) for twelve releases, and the file carried a
 second, older anchor underneath it.** Two commits after that re-anchor — #331
 and #335 — edited §5 without moving this line, so the file's declared anchor was
 older than parts of the file itself. Meanwhile §§3-5 said "re-verified at
@@ -278,7 +278,7 @@ database and two are explicitly absent.
 
 Functions in that table live in
 `supabase/migrations/20260823100000_bound_free_tier_capacity.sql`. Both absences
-were re-verified at `5044f59` by grepping the whole `supabase/migrations/` tree
+were re-verified at `cddaebb` by grepping the whole `supabase/migrations/` tree
 for a total-bytes, retention or pruning mechanism; there is none. The directory
 holds the same twenty-one files it held at `4ed571f` — `git diff 4ed571f..main
 -- supabase/migrations/` is empty across all eighteen releases — so nothing in
@@ -323,7 +323,7 @@ Supabase staging project *"automatically, on every merge to `main`"* with gating
 *"none"* (`docs/DEPLOYMENT.md`, "Automated deployment"), rollback is not
 automated, and the trigger is the merge rather than the diff — PR #87 touched no
 file under `supabase/migrations/` and nine migrations were applied anyway. The
-half of the decision that *is* in this repository stays verified at `5044f59`:
+half of the decision that *is* in this repository stays verified at `cddaebb`:
 `.github/workflows/migrate-database.yml` is `workflow_dispatch:` with no `push:`,
 requires a typed `confirm_project_ref`, and its apply job is environment-gated.
 
@@ -445,7 +445,7 @@ audited in one direction.
   0024's has been deleted. The fix is in the code, and the open decision is
   whether to send the handshake or delete `'ready'` (issue #274, Q4).
 - **ADR 0010 — the telemetry layer is inert.** Nothing outside
-  `src/services/telemetry/` imports it, re-verified at `5044f59`, so consent is
+  `src/services/telemetry/` imports it, re-verified at `cddaebb`, so consent is
   never asked for and `record()` is never called. The prohibition half of the ADR
   holds; the sentence *"telemetry is fed from the main thread's orchestration
   layer"* does not.
@@ -473,7 +473,7 @@ audited in one direction.
 
   **Understated:** the third figure has no source. ADR 0025 says its inherited
   budget is *"the 3.9px at 900×600 that ADR 0022 and `hud.css` both record"*.
-  Re-verified at `5044f59` by grepping the whole tree: **`3.9` appears in no ADR
+  Re-verified at `cddaebb` by grepping the whole tree: **`3.9` appears in no ADR
   but 0025, in no `.css` file, and nowhere in `src/`.** Neither document it cites
   records it. That is a dangling citation inside an Accepted ADR rather than a
   disagreement between measurements, and it cannot be repaired by picking a
@@ -490,7 +490,15 @@ audited in one direction.
   them room-related; `ZoneRoom` is no longer in `AWAITING_PRODUCER` at all
   (#312 gave it a producer, and
   `tests/foundation/unconsumed-command-contract.test.ts` fails in both
-  directions); the `onIntent` switch in `src/main.ts` has moved.
+  directions); the `onIntent` switch in `src/main.ts` has moved; and its
+  citation of *"`tests/unit/ui-hud-messages.test.ts:196-200` asserts it by
+  scanning for the import"* now lands eight lines short — #339 removed the
+  single-file, comment-blind copy of that check from
+  `tests/unit/ui-hud-build-panel.test.ts`, and the surviving assertion, which
+  covers every file under `src/ui/hud/**` and `src/ui/primitives/**` over
+  comment-stripped source, sits at `:204-210`. The ADR names the right test and
+  the property it names is strictly stronger than it was; only the line range
+  drifted.
 
   **This entry said "thirteen", and thirteen was never right.** It was fourteen
   at `ac03d8f`, the commit that wrote the number, and `remove-object` (#328) has
@@ -512,7 +520,7 @@ audited in one direction.
   back on it, and the reason the anchor above now has a test. Nine was right at
   `4ed571f`; `PlaceObject` (#320) made it ten before the v0.0.65 re-anchor, which
   did not re-count; `RemoveObject` (#328) has since made it eleven. Re-verified at
-  `5044f59`: `simulationCommandSchema` in
+  `cddaebb`: `simulationCommandSchema` in
   `src/simulation/protocol/commands.ts` discriminates **eleven**, and
   `AdmitPrisoner` (#306) concerns a prisoner. The
   load-bearing half of the argument is
