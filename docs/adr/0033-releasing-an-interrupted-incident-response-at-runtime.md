@@ -295,3 +295,204 @@ and a fact nothing asserts is a fact that will change quietly.
 4. **Should the player be told the response was interrupted?** The incident log
    records the lapse and its outcome; nothing surfaces "this response was
    abandoned by a save/load". A projection question.
+
+---
+
+## Amendment: a restored session re-dispatches (open question 1, answered)
+
+**Status of this section: `Proposed`, with the rest of this document.** It is an
+amendment rather than a new ADR because open question 1 is this decision's own
+question — *"a restored session mounts a new response"* is the second half of
+"what does a restored session owe an interrupted response", not a different
+subject. **Nothing above is edited**, including the Status: the four decisions
+stand exactly as written and this section is additive. Where a sentence above is
+now narrower than it was, this section says so and does not go back and reword
+it, because the document's value is partly the record of what was decided when.
+
+### What the owner asked for
+
+The outcome recovered as well as the resources, accepting the containment timer
+that restarts as the price. Open question 1 named that price and named the
+obstacle; both are addressed below.
+
+### The obstacle, verified rather than trusted
+
+Open question 1 states it as: *"the incident lifecycle is forward-only and the
+incident is already `'notified'`, so re-dispatching means creating a record for
+an incident in a state `tryDispatch` never sees."*
+
+**Both halves are true and the conclusion drawn from them was too strong.** The
+lifecycle really is forward-only (`LEGAL_TRANSITIONS` in
+`src/simulation/incidents/incident.ts`: `notified: ['responding', 'lapsed']`,
+with no edge back to `'active'`), `tryDispatch` really does run only from
+`'active'` (`update`'s `if (incident.state === 'active')`), and a re-dispatch
+really does mean creating a record for an incident in a state `tryDispatch`
+never sees. What none of that establishes is that the record cannot be created.
+`tryDispatch` was doing **two** things in one method — claiming responders and
+*notifying* — and only the second is unavailable past `'active'`. Separating them
+is the whole of what this needed:
+
+- `mountResponse` claims the responders, applies the lockdown the severity calls
+  for, routes whoever is not already there and records the response. It performs
+  **no lifecycle transition** and is legal from any open state.
+- `tryDispatch` is `mountResponse` followed by `transition(..., 'notified')`,
+  and is still reached only from `'active'`.
+
+**`LEGAL_TRANSITIONS` is not widened by a single edge, no state is written
+backwards, and `IncidentLog.transition` still rejects an illegal transition
+rather than being asked to permit one.** The obstacle was a fact about a method
+boundary, not about the lifecycle. `advanceResponse`'s own comment claimed
+*"re-dispatch is impossible from here"*; it was wrong in one word — impossible
+*from `tryDispatch`* — and that comment is corrected in the same change.
+
+### Decision 5. A restored session releases, and then mounts a fresh response
+
+Immediately after `releaseOrphanedClaims`, on the same scheduled update and owed
+by the same flag, `redispatchInterruptedResponses` mounts a **new** response to
+every still-open incident that no live record claims.
+
+**Decision 1 stands unchanged.** The interrupted response is still abandoned and
+everything it held is still handed back; the release is what refills the pool the
+re-dispatch draws from. There is no resumption anywhere in this: no responder is
+attributed to the incident it used to serve, no containment progress is
+inherited, and no `arrivedGuardIds` is reconstructed. So **open question 2's
+guess is still never made** — the fact it names as unrecoverable is not needed by
+a fresh dispatch, exactly as it was not needed by a release.
+
+Decision 3's shape is kept exactly: one flag, set by `loadSnapshot`, consumed on
+the first `update`, never a comparison against the tick the save was taken at.
+Both steps happen once per restore, in one statement, on a tick the kernel drove.
+A save taken *on* a scheduled tick is re-dispatched on that tick — the case the
+`ProcurementSystem.update` `<=` trap would have stepped over.
+
+Determinism is unaffected for decision 3's reasons plus one: `openIncidents()` is
+sorted by id, `claimableResponders` draws the lowest unassigned entity ids
+(`unassignedGuardIds()` is ascending), and nothing in the pass touches an RNG
+stream. Two sessions restored from one payload are hash-identical at every
+checkpoint through the release, the re-dispatch, the fresh containment window and
+the resolution.
+
+### 6. The outcome is fully recovered. Here is what it costs
+
+**Tier R, measured on #352's own reproduction** — a severity-8 riot, six guards,
+four required responders — through the same real save path as the figures above,
+at this branch's head. Every restored figure is compared against a **continuous
+run executed live on the same seed**, never against a literal from a prior run
+(#375).
+
+| | incident | outcome | closes on | `respondersDispatched` |
+|---|---|---|---|---|
+| continuous | `resolved` | `injuredEntityIds: []`, `propertyDamage: 4` | 71 | 4 |
+| restored, save at tick 1 | `resolved` | **`[]`, `4`** | **81** | **8** |
+| restored, save at tick 10 (on cadence) | `resolved` | `[]`, `4` | 81 | 8 |
+| restored, save at tick 11 (`'responding'`) | `resolved` | `[]`, `4` | 81 | 8 |
+
+Against decision 1's own measurement — `injuredEntityIds: [1,2,3]` and
+`propertyDamage: 8` — **the outcome is recovered exactly, not approximately.**
+Three costs, each priced rather than described:
+
+1. **The incident closes later, by the progress the save discarded.** The fresh
+   response's clocks start at the re-dispatch tick: a `'notified'` save redoes
+   the travel, a `'responding'` save restarts the containment timer. So the
+   lateness is that discarded progress, rounded up to this system's cadence and
+   **capped at `containmentTicks`** — a save one tick before containment
+   completes throws away sixty ticks and no more, because there were never more
+   than sixty to throw away. Measured, for a save taken mid-containment:
+
+   | save taken at | restored closes on | later by |
+   |---|---|---|
+   | 11 | 81 | 10 |
+   | 21 | 91 | 20 |
+   | 31 | 101 | 30 |
+   | 51 | 121 | 50 |
+   | 61 | 131 | **60** |
+   | 69 | 131 | **60** |
+
+2. **The responders come back when the *new* response closes, not one interval
+   after the load.** This narrows decision 1's table row *"Responders: Back on
+   duty, one system interval after the load at the latest"* — measured, all six
+   guards are in the pool on tick 81 rather than tick 11. It is stated as a
+   narrowing rather than a correction: that row was true of decision 1 and is
+   true of this document's first four decisions. What matters is that the wait is
+   still **bounded**, where #352's was permanent, and it ends with the incident
+   contained rather than with a riot that ran its course.
+
+3. **`respondersDispatched` counts the second dispatch**, so a restored
+   session's counter is twice a continuous one's for the same incident. Counted
+   rather than suppressed, because a second dispatch is what happened, and it is
+   the observable that proves both halves ran: four guards were handed back and
+   four were claimed again from a pool they were only in because the release put
+   them there.
+
+### 7. Re-dispatch is refused rather than guessed at, in four cases
+
+Each one is a refusal to invent something, and the fourth is a real bound on
+what this amendment can recover.
+
+1. **An `'active'` incident is skipped** — `tryDispatch` owns it and runs on the
+   same update, a few lines below. Dispatching here as well would double-claim.
+2. **An incident past `responseDeadlineTicks` is skipped**, so the deadline still
+   decides. `startedAtTick` is in the payload, so a save loaded long after the
+   incident began finds it already too late and lapses on the incident pass
+   exactly as decision 1 says.
+3. **An incident whose sector the registry does not hold is skipped.** A
+   restore-path hazard rather than a hypothetical:
+   `SecuritySectorRegistry.loadSnapshot` skips a sector session setup did not
+   re-register, and `mountResponse` reaches `requireDefinition` through both
+   `setControlState` and `incidentTile`, which throws — out of `Kernel.step()`,
+   which nothing on a tick may do. `lapse` already tolerates exactly this case
+   for exactly this reason, and this pass tolerates it the same way rather than
+   turning a tolerated restore into a crash.
+4. **An incident already `'responding'` is re-dispatched only if every responder
+   the pool offers is already standing on its post tile.** That state asserts
+   that responders arrived, and `advanceResponse`'s `'responding'` branch reads
+   no route results at all — so a response re-mounted from guards who are
+   somewhere else would contain the incident with a responder still in transit
+   and leave a navigation request nothing ever collects.
+
+   **Case 4 is reachable, and this is the honest cost of the whole amendment.**
+   With two incidents open, `openIncidents()` is sorted by id and
+   `unassignedGuardIds()` is ascending, so the incident whose id sorts first
+   claims the lowest guard ids. When the incident that sorts *last* is the one
+   already `'responding'`, what is left for it is the other incident's
+   ex-responders, standing at the other incident's post tile. Measured — two
+   severity-8 riots in two sectors, ten guards, `'incident-z'` mid-containment
+   and `'incident-a'` mid-travel at the save: `'incident-a'` resolves with `[]`
+   and `4`, and **`'incident-z'` lapses with `[1,2]` and `8`**, which is decision
+   1's outcome verbatim. Nothing is stranded either way — all ten guards return
+   and both sectors return to `'normal'`, so #352 is fixed for both.
+
+   This is **open question 2's un-recoverable fact re-appearing as a bound**:
+   *"which incident each responder served when two are open with responders
+   committed"* is exactly what would have to be known to give a `'responding'`
+   incident its own responders back, and it is still not in the payload. This
+   amendment does not guess it. So the honest summary is: **a restored session
+   recovers the outcome of every interrupted incident except a `'responding'` one
+   that loses the id race to another open incident, and that one gets decision
+   1's outcome unchanged.**
+
+### 8. What this changes about the Consequences above
+
+- **`SAVE_SCHEMA_VERSION` is still 5.** `src/persistence/save-schema.ts` is
+  untouched, `incidents.response` stays `.strict()` with metrics only,
+  `tests/fixtures/persistence/` is unchanged, no migration is added, and **V6
+  stays free** for #337.
+- **Nothing is written to a stored save, ever**, and the round-trip assertion
+  that proves it is unchanged and still passes: the payload a restored session
+  re-captures is the payload it was given.
+- **The "different incident outcomes" consequence is narrowed, not withdrawn.**
+  It said a restored session and a continuous one *"agree exactly on every
+  resource the response claimed and disagree on the incident: `resolved` against
+  `lapsed`."* They now agree on the incident too, and disagree on **when** it
+  closed and on `respondersDispatched`. A replay verifier (ADR 0009) may compare
+  the resource state and the eventual outcome across a restore boundary, and may
+  not compare the closing tick or a dispatch counter — a narrower prohibition
+  than the one recorded above. `docs/DETERMINISM.md` is corrected accordingly.
+- **The `docs/PERSISTENCE.md` bullet stays out of the "bounded delay, not lost
+  progress" group**, and the reason changes rather than disappearing: progress
+  *is* still lost — the interrupted response is abandoned — and it is then
+  redone, so what the player pays is time rather than the outcome. The bound is
+  no longer "one interval to the release" but "the discarded progress, capped at
+  `containmentTicks`".
+- Open question 3 is answered separately and is a gameplay surface, as this
+  document said it was.
