@@ -1,6 +1,6 @@
 import { type SystemRegistration, type SimulationContext } from '../kernel/system';
 import { type BuildEdge, type BuildOrder, type BuildOrderFailReason, resolveBuildEdge } from './build-order';
-import { edgeNumericIdFor, getBuildableDefinition } from './definition';
+import { BUILDABLE_REGISTRY, edgeNumericIdFor, getBuildableDefinition } from './definition';
 import { type ConstructionMaterialsProvider, UNLIMITED_MATERIALS_PROVIDER } from './materials-provider';
 import { SparseWorld } from '../world/sparse-world';
 import { type BuildabilityRequirement, canBuildAt } from '../world/buildability';
@@ -217,14 +217,41 @@ export class ConstructionSystem implements SystemRegistration {
   /**
    * Accepts an order, or fails it with a reason.
    *
-   * Two checks, in this order, and the order matters: a tile outside the
-   * materialised world has no ownership to ask about, so `out-of-bounds` is
-   * decided first and `canBuildAt` is never handed a chunk that does not
-   * exist.
+   * Three checks, in this order, and the order matters.
+   *
+   * **The buildable is asked about first**, because it is the only one of the
+   * three that is a property of the *request* rather than of a tile: an order
+   * naming a row nobody declared is refused whatever is under it, so asking
+   * about the world at all would be answering a narrower question first. It
+   * also touches nothing -- no chunk lookup, no `canBuildAt` -- which matters
+   * because `SparseWorld` materialises a chunk on write and a refusal must
+   * grow no world (`ObjectPlacementService.place` orders its own checks for the
+   * same reason).
+   *
+   * `getBuildableDefinition` is deliberately **not** used here: it throws, and
+   * this is reached from inside a kernel command dispatch, where a throw faults
+   * the worker instead of refusing anything. The registry is read directly and
+   * the answer becomes a `failReason` the player is told about, which is the
+   * treatment `ObjectPlacementService` already gives the identical id for
+   * `PlaceObject`. Until this check existed an unknown id was **approved**, and
+   * `update`'s own lookup then threw on every scheduled tick for the rest of the
+   * session -- and, because `snapshot()` carries the order, for the rest of the
+   * save's life as well.
+   *
+   * Then the two tile checks, in the order they were already in: a tile outside
+   * the materialised world has no ownership to ask about, so `out-of-bounds` is
+   * decided before `canBuildAt` is ever handed a chunk that does not exist.
    */
   public submitOrder(order: BuildOrder): void {
     if (this.orders.has(order.id)) {
       throw new Error(`BuildOrder ${order.id} already exists`);
+    }
+
+    if (!BUILDABLE_REGISTRY.has(order.definitionId)) {
+      order.state = 'failed';
+      order.failReason = 'unknown-buildable';
+      this.orders.set(order.id, order);
+      return;
     }
 
     const { chunk } = tileToChunk(order.location, this.world.tileChunkSize);
@@ -448,8 +475,50 @@ export class ConstructionSystem implements SystemRegistration {
     let crewBusy = orders.some((candidate) => candidate.state === 'in-progress');
 
     for (const order of orders) {
-      const def = getBuildableDefinition(order.definitionId);
-      
+      // A terminal order needs no definition, so it is not asked for one. This
+      // used to be a `case` at the bottom of the switch, below an
+      // unconditional lookup -- which meant a *completed* order was still
+      // being resolved every scheduled tick to decide to do nothing, and a
+      // save carrying a finished order for a row a later catalogue no longer
+      // ships would have faulted the worker on the same line. Skipping first
+      // also keeps a completed order out of the refusal branch below: what it
+      // built is in the world, and re-failing it would be a state regression
+      // rather than a recovery.
+      if (order.state === 'completed' || order.state === 'cancelled' || order.state === 'failed') {
+        continue;
+      }
+
+      // Read leniently, because **this is inside a scheduled system update and
+      // a throw here faults the worker.** `getBuildableDefinition` throws, and
+      // that is the whole of BUG-01: an order naming an unknown row was
+      // approved by `submitOrder`, stored, carried into the save by
+      // `snapshot()` -- and then this line threw on every subsequent tick, for
+      // every order in the prison, forever. `submitOrder` now refuses such an
+      // order at the boundary and tells the player why, so nothing *new* can
+      // reach here; this is what recovers a save that already holds one. The
+      // order is failed with the same reason `submitOrder` would have given it,
+      // which is terminal, so it is skipped from the next tick on and the queue
+      // behind it drains normally.
+      //
+      // No refusal is recorded here, and that is a **known gap rather than a
+      // decision this code is entitled to make**. `ConstructionSystem` holds no
+      // `RefusalLog` -- the command handler does -- and `RefusalLog`'s own class
+      // comment argues at length that it must not carry a notice about
+      // something a *previous* session did, which is why it is not snapshotted.
+      // Nor does the order become visible by being failed: `hud/build-queue`
+      // publishes only `PENDING_BUILD_ORDER_STATES`, and `failed` is one of the
+      // three that projection deliberately excludes. So what a player observes
+      // here is a stuck row disappearing and the prison building again, with no
+      // sentence explaining it. Giving that a surface means either wiring a
+      // refusal sink into this system or giving the build queue a failed
+      // section, and both are decisions for whoever owns the HUD contract.
+      const def = BUILDABLE_REGISTRY.get(order.definitionId);
+      if (def === undefined) {
+        order.state = 'failed';
+        order.failReason = 'unknown-buildable';
+        continue;
+      }
+
       switch (order.state) {
         case 'approved':
           // Auto-transition to materials pending
@@ -490,12 +559,6 @@ export class ConstructionSystem implements SystemRegistration {
             order.state = 'completed';
             this.finalizeConstruction(order);
           }
-          break;
-
-        case 'completed':
-        case 'cancelled':
-        case 'failed':
-          // Final states, cleanup can happen later or be kept for history
           break;
       }
     }

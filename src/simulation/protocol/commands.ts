@@ -20,11 +20,39 @@ import { identifierSchema, type VersionedPayload } from './types';
  * canonical edges, so a malformed orientation fails
  * `simulationCommandSchema` and `unpackCommand` returns `null` rather than
  * letting a nonsense string reach the construction system.
+ *
+ * ## Why `definitionId` is `.min(1)` and still not `identifierSchema`
+ *
+ * `.min(1)` because the *save* boundary already requires exactly that of the
+ * same value, and a disagreement between the two boundaries is not a stricter
+ * check -- it is a window, which is the argument `PurchaseMaterials` records
+ * below. `save-schema.ts`'s `buildOrderSchema` types an order's `definitionId`
+ * as `z.string().min(1)` and `createSaveEnvelope` parses and throws, so while
+ * this was a bare `z.string()` the following was reachable and measured: a
+ * command carrying `definitionId: ''` decoded cleanly, the kernel dispatched
+ * it, `ConstructionSystem.submitOrder` refused it (an empty id names no
+ * buildable) and **stored the refused order anyway** -- `submitOrder` keeps a
+ * failed order so it can be read back -- and the next save attempt then threw
+ * at `construction.orders.0.definitionId` on a path the player cannot connect
+ * to anything. The two boundaries now say the same thing, so a value one
+ * accepts the other can always write.
+ *
+ * **Not** `identifierSchema`, for the reason `PlaceObject.definitionId` gives:
+ * a buildable id is not a content id, and `wall-brick` would fail a
+ * dotted-identifier rule. And deliberately no *existence* check here either --
+ * an id no catalogue declares is refused by `ConstructionSystem.submitOrder`
+ * with `unknown-buildable`, which is a **refusal the player is told about**,
+ * where a schema rejection makes `unpackCommand` answer `null` and the command
+ * vanish silently. Shape belongs to the schema; existence belongs to the system
+ * that owns the catalogue. That division is what every other command here
+ * already follows -- `HireStaff.staffRoleId` is `identifierSchema` and its
+ * catalogue miss is `hire.unknown-role`, `PurchaseMaterials.itemId` likewise
+ * against `purchase.unknown-material`.
  */
 export const placeBuildOrderSchema = z.object({
   type: z.literal('PlaceBuildOrder'),
   orderId: z.string(),
-  definitionId: z.string(),
+  definitionId: z.string().min(1),
   x: z.number().int(),
   y: z.number().int(),
   edge: z.enum(BUILD_EDGES).optional(),

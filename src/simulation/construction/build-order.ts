@@ -63,24 +63,40 @@ export function resolveBuildEdge(order: { readonly edge?: BuildEdge }): BuildEdg
  * player-facing vocabulary without a fallback, and a fallback is how a new
  * refusal reaches the screen as the wrong sentence. Declared as a closed
  * union, `src/simulation/refusals/refusal-log.ts` maps it through an
- * exhaustive `Record` and a sixth member added here fails to compile until
+ * exhaustive `Record` and a seventh member added here fails to compile until
  * somebody decides what the player is told.
  *
  * `'unbuildable'` is the value `submitOrder` writes when `canBuildAt` refuses
- * for a reason `SUBMISSION_FAIL_REASONS` does not name; the other four are
- * that table's entries plus the out-of-bounds check that runs before it.
+ * for a reason `SUBMISSION_FAIL_REASONS` does not name; three more are that
+ * table's entries and one is the out-of-bounds check that runs before it.
+ *
+ * `'unknown-buildable'` is the odd one out and the only member that is not
+ * about a *tile*: it is what `submitOrder` writes when `definitionId` names no
+ * row in `BUILDABLE_REGISTRY`. It is spelled exactly like
+ * `PlaceObjectRefusalReason`'s member of the same name because it is the same
+ * fact about the same registry reached by a different command, and it is
+ * namespaced apart from it on the wire for the reason every other collision in
+ * `REFUSAL_REASONS` is. Before it existed the id was never checked: the order
+ * was approved, stored, and `ConstructionSystem.update`'s unconditional
+ * `getBuildableDefinition` then threw out of a scheduled system update on every
+ * subsequent tick, for every order, and `snapshot()` carried the offending
+ * order into the save -- so the prison could never build anything again and
+ * reloading reproduced it.
  *
  * Persisted: `save-schema.ts` validates `failReason` as an optional string, so
  * a save written by an older build can carry any of these and no migration is
  * needed. It stays a `z.string()` there deliberately -- a save is data that
  * already exists, and narrowing the *reader* would turn an unrecognised
  * historical value into an unloadable prison rather than an order that reads
- * as failed.
+ * as failed. The same property is what lets this member be *added* without a
+ * save bump: an order failed for it is written by a build that has the value,
+ * and read back by any build at all.
  */
 export const BUILD_ORDER_FAIL_REASONS = [
   'out-of-bounds',
   'unbuildable',
   'unbuildable-terrain',
+  'unknown-buildable',
   'unowned-land',
   'water-blocked',
 ] as const;

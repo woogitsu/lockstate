@@ -674,13 +674,25 @@ export type SimulationStatusCounts = DeepReadonly<
  *
  * `release-guard.*` is the tenth (ADR 0034), and its `unknown-guard` is the
  * fifth demonstration of the namespace doing real work: `hire.unknown-role`,
- * `purchase.unknown-material` and `place-object.unknown-buildable` are all "the
- * simulation has no such thing", and this one is about a *person* rather than a
+ * `purchase.unknown-material` and `place-object.unknown-buildable` are all
+ * "the simulation has no such thing",
+ * and this one is about a *person* rather than a
  * catalogue entry, which is a different sentence to read. Both of its members are
  * mapped even though only `not-held` is reachable from the panel, for the reason
  * every other table maps its whole union: a command composed anywhere else -- a
  * queued command in a restored save, a future producer -- can still provoke the
  * other.
+ *
+ * `build.unknown-buildable` is the sharpest instance of that last point and the
+ * newest member here. `place-object.unknown-buildable` is the same condition on
+ * the same registry, reached by `PlaceObject` instead: two commands carry a
+ * `BUILDABLE_REGISTRY` id, `ObjectPlacementService` checked its one and
+ * `ConstructionSystem.submitOrder` checked nothing, so an unknown id on a
+ * `PlaceBuildOrder` was approved and `ConstructionSystem.update` then threw out
+ * of a scheduled system update for the rest of the session -- and, since the
+ * order is snapshotted, for the rest of the save's life. Two spellings of one
+ * fact, each answering a different command, is exactly what the namespace is
+ * for; that only one of them existed is what the defect was.
  */
 export const REFUSAL_REASONS = [
   'admit.no-accommodation',
@@ -688,6 +700,7 @@ export const REFUSAL_REASONS = [
   'build.out-of-bounds',
   'build.unbuildable',
   'build.unbuildable-terrain',
+  'build.unknown-buildable',
   'build.unowned-land',
   'build.water-blocked',
   'cancel-purchase.not-pending',
