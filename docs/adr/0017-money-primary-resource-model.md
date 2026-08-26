@@ -160,18 +160,39 @@ writing the hierarchy down.
   unchanged. The rate is #29's and not this ADR's, per decision 5, and it is
   recorded on that issue rather than here.
 
-  **It pays nothing in a session today, and the reason is room capacity rather
-  than economy.** Admission is wired (#261 step 4), so a prison can hold a
-  population, but `RoomZoningService` registers a zoned room with `capacity: 0`,
-  so no prisoner holds a unit of any declared capacity: there is no occupied
-  place and 300 × 0 is 0 for as long as that holds. Measured on the tree that
-  wired admission — a zoned `room.cell`, one admitted prisoner, 2,500 ticks —
-  the balance is still 25,000 and the accrual still 0. The mechanism is real and
-  tested against prisoners injected at the simulation level; giving a room a
-  capacity is ADR 0028's subject. So decision 3's *first* half is built and its
-  consequence — "income scales with population, and so does trouble" — is not
-  yet observable, which is a better position than the reverse and is not a
-  licence to skip #79/#80/#81.
+  **It paid nothing in a session for as long as rooms had no capacity, and it
+  pays now.** The paragraph here used to end with the first half of that
+  sentence, and the reason it is worth keeping both halves is that nothing in
+  this ADR's subject changed: the block that follows was true when written and
+  was falsified by a change in a different document's subject entirely.
+
+  What it said: admission was wired (#261 step 4), so a prison could hold a
+  population, but `RoomZoningService` registered a zoned room with
+  `capacity: 0`, so no prisoner held a unit of any declared capacity — there was
+  no occupied place and 300 × 0 was 0 for as long as that held. Measured on the
+  tree that wired admission (a zoned `room.cell`, one admitted prisoner, 2,500
+  ticks) the balance was still 25,000 and the accrual still 0. Giving a room a
+  capacity was named as ADR 0028's subject rather than this one's.
+
+  **ADR 0028 is Accepted and its phase 1 shipped**, so capacity is derived from
+  the objects standing in a room (`src/simulation/objects/room-capacity.ts`) and
+  a cell holds as many prisoners as it has beds. Re-measured through the real
+  commands and the real kernel: one plank bought, a `bed-wooden` placed in a
+  zoned `room.cell`, one prisoner admitted — the instance reads
+  `residentCapacity: 1`, the arrival reaches `completed` and occupies it, and the
+  balance rises by exactly 300 on the day's last tick, closing at
+  `25_000 - 65 + 300`. `tests/integration/object-placement-loop.test.ts` asserts
+  every one of those figures as a literal.
+
+  So decision 3 is built and its consequence — "income scales with population,
+  and so does trouble" — is observable for the first time. The *population* half
+  of that scaling is real; the *trouble* half still is not, and #79/#80/#81 stay
+  owed. What this correction cost is worth recording: the change that made the
+  line pay was measured and asserted in the test suite the same day it landed,
+  and this paragraph, `docs/HUD_PROJECTIONS.md`, `docs/PRISONER_OPERATIONS.md`
+  and [ADR 0027](./0027-cell-sharing-assessment.md) all went on saying the
+  opposite, because no test reads English and the tripwire written to announce
+  it could not fire (`tests/unit/prisoners-intake-system.test.ts` records why).
 
   One consequence of the daily cadence, stated here because it is a design
   property rather than an implementation detail: occupancy is read at the day

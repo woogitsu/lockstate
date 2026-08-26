@@ -31,6 +31,14 @@ interface StepResult {
   readonly cost: number;
 }
 
+/**
+ * What it costs to cross a plain open boundary between two adjacent tiles,
+ * and -- by necessity rather than coincidence -- what `heuristic` charges for
+ * every tile still to be travelled. The two uses below are the same number,
+ * and the comment on `heuristic` is why they have to be.
+ */
+export const PLAIN_STEP_COST = 1;
+
 function canStep(
   world: SparseWorld,
   doors: DoorRegistry,
@@ -55,11 +63,40 @@ function canStep(
     return { allowed: true, cost: doorTraversalCost(door) };
   }
   if (edge.wallValue !== 0) return { allowed: false, cost: 0 };
-  return { allowed: true, cost: 1 };
+  return { allowed: true, cost: PLAIN_STEP_COST };
 }
 
+/**
+ * Manhattan distance: exactly `PLAIN_STEP_COST` per tile still to travel.
+ *
+ * **Admissible only while no traversable edge costs less than
+ * `PLAIN_STEP_COST`**, and this A* leans on that in its strongest form:
+ * `closed` is never reopened, so a tile first reached by a non-optimal route
+ * keeps that route's `g` for the rest of the search. Give one edge a cost
+ * below a step and the heuristic starts *over*estimating -- a run of `n`
+ * cheap doors genuinely costs less than `n` -- and `boundedLocalSearch` then
+ * returns a route that is not the cheapest one inside its own bound. It does
+ * so silently: there is no failure to observe, only a longer path.
+ *
+ * A door's crossing is the one edge cost that is authored rather than fixed
+ * (`doorTraversalCost`: `costMultiplier` for an open door, `1.5x` closed,
+ * `2x` locked), so the precondition reduces to `costMultiplier >=
+ * MINIMUM_DOOR_COST_MULTIPLIER`. That is enforced in
+ * `DoorRegistry.register`, which is why this heuristic can stay Manhattan;
+ * it is a precondition of this function, held elsewhere, not a property of
+ * the arithmetic here. `MINIMUM_DOOR_COST_MULTIPLIER` and `PLAIN_STEP_COST`
+ * must stay equal, and
+ * `tests/unit/navigation-local-search-admissibility.test.ts` pins that,
+ * measures the exactness it buys against an independent Dijkstra over the
+ * identical allowed set, and measures what a sub-unit door costs instead.
+ *
+ * The alternative -- tolerating a cheaper-than-a-step edge by reopening
+ * closed nodes, or by scaling the heuristic to the cheapest edge in the
+ * bound -- is a real algorithm change with a real cost, and nothing in the
+ * game wants a door cheaper than walking.
+ */
 function heuristic(tile: TilePosition, destination: TilePosition): number {
-  return Math.abs(tile.x - destination.x) + Math.abs(tile.y - destination.y);
+  return PLAIN_STEP_COST * (Math.abs(tile.x - destination.x) + Math.abs(tile.y - destination.y));
 }
 
 /**
@@ -67,6 +104,13 @@ function heuristic(tile: TilePosition, destination: TilePosition): number {
  * an unbounded full-map search. Ties (equal f-score) break on the tile's
  * canonical string key so identical inputs always produce the identical
  * route, required for deterministic replay.
+ *
+ * Optimal within its own bound only while every traversable edge costs at
+ * least `PLAIN_STEP_COST`; see `heuristic`, and
+ * `MINIMUM_DOOR_COST_MULTIPLIER` for where that is kept true. This is a
+ * separate, stronger claim than `docs/NAVIGATION.md`'s "hierarchical vs.
+ * flat-optimal cost" caveat, which is about the regions the *portal* search
+ * chose and says nothing about optimality inside them.
  */
 export function boundedLocalSearch(
   world: SparseWorld,

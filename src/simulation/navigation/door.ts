@@ -23,9 +23,39 @@ export interface DoorDefinition {
   /** 0 = no clearance required. */
   readonly requiredSecurityClearance: number;
   readonly requiredPermission?: string;
-  /** Relative traversal cost multiplier, >= 1. Closed doors cost more than open ones to cross (see `doorTraversalCost`). */
+  /**
+   * Relative traversal cost multiplier, `>= MINIMUM_DOOR_COST_MULTIPLIER`
+   * and enforced there rather than only stated here. Closed doors cost more
+   * than open ones to cross (see `doorTraversalCost`).
+   */
   readonly costMultiplier: number;
 }
+
+/**
+ * The least a door may cost to cross, as a multiple of a plain step between
+ * two adjacent tiles.
+ *
+ * **Not a balance number, and not independently choosable**: it is equal to
+ * `local-search.ts`'s `PLAIN_STEP_COST` because `boundedLocalSearch`'s
+ * Manhattan heuristic charges exactly one step per remaining tile and never
+ * reopens a closed tile. A door cheaper than a step makes that heuristic
+ * overestimate the remaining cost, and the A* then returns a route that is
+ * not the cheapest one inside its own bound -- silently, since a longer
+ * route is still a route. `heuristic`'s own comment carries the full
+ * argument; this constant is the half that is enforced.
+ *
+ * The docstring on `costMultiplier` above said `>= 1` and nothing checked
+ * it, while `save-schema.ts` accepted any finite number from a save on the
+ * field beside a bounded neighbour. Both halves are closed now: the schema
+ * bounds the value where an authored one can enter, and `register` below
+ * covers every other producer -- present and future -- so the precondition
+ * is enforced rather than documented.
+ *
+ * A deliberate cheap-door *feature* would not raise this bound; it would
+ * have to change the search (reopening closed nodes, or a heuristic scaled
+ * to the cheapest edge in the bound) and say so here.
+ */
+export const MINIMUM_DOOR_COST_MULTIPLIER = 1;
 
 export function doorEdgeKey(position: TilePosition, side: DoorSide): string {
   return `${side}:${tileKey(position)}`;
@@ -117,7 +147,25 @@ export class DoorRegistry {
     return this._accessRevision;
   }
 
+  /**
+   * Adds a door, refusing a `costMultiplier` the searches cannot route
+   * correctly over.
+   *
+   * The multiplier check throws like the duplicate-edge and duplicate-id
+   * checks below, and for the same reason: all three are conditions no
+   * caller can recover from at this point, and a registry that quietly
+   * accepted one would push the consequence into a search that reports no
+   * failure. See `MINIMUM_DOOR_COST_MULTIPLIER`. `NaN`/`Infinity` are
+   * refused by the same comparison being written as a finiteness test
+   * first -- `NaN < 1` is `false`, so a bare comparison would let `NaN`
+   * through and turn every route across the door into `NaN` cost.
+   */
   public register(door: DoorDefinition): void {
+    if (!Number.isFinite(door.costMultiplier) || door.costMultiplier < MINIMUM_DOOR_COST_MULTIPLIER) {
+      throw new RangeError(
+        `Door "${door.id}" has costMultiplier ${door.costMultiplier}; a door may not cost less than a plain step (>= ${MINIMUM_DOOR_COST_MULTIPLIER}).`,
+      );
+    }
     const edgeKey = doorEdgeKey(door.position, door.side);
     if (this.doorsByEdge.has(edgeKey)) {
       throw new RangeError(`A door is already registered at edge "${edgeKey}".`);

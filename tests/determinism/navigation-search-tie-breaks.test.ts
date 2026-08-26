@@ -29,12 +29,13 @@ import { buildFixtureGraph, buildTwoRoomFixture } from '../helpers/navigation-fi
  * scan cannot cover them -- `tests/helpers/canonical-iteration.ts` restricts
  * its `for ... of` rule to fields on purpose, and says of these two searches
  * that they "pick their next node by an explicit total tie-break rather than
- * by iteration order, which no textual rule can see and which their own
- * behavioural tests already pin". The second half of that sentence is what
- * this file makes true. `tests/unit/navigation-router.test.ts`'s
- * "is deterministic: identical requests return identical routes" calls
- * `findRoute` twice on one graph, which is identical under either rule, and
- * `docs/NAVIGATION.md` cites it for the stronger claim.
+ * by iteration order, which no textual rule can see" and defer to a
+ * behavioural guard instead. This file is that guard, and both it and
+ * `docs/NAVIGATION.md`'s "Determinism" section name it now (#365) rather
+ * than pointing at `tests/unit/navigation-router.test.ts`'s "is
+ * deterministic: identical requests return identical routes", which calls
+ * `findRoute` twice on one graph -- identical under either rule, and green
+ * under all three of the reverts below.
  *
  * Each case below pins the canonical answer *and* asserts the alternative is
  * genuinely available at the same cost, so none of them can pass because

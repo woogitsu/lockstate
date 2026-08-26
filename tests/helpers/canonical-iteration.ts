@@ -43,7 +43,12 @@
  * algorithm whose determinism is a property of that algorithm -- both
  * pathfinding searches here pick their next node by an explicit total
  * tie-break rather than by iteration order, which no textual rule can see and
- * which their own behavioural tests already pin. Flagging every local would
+ * which `tests/determinism/navigation-search-tie-breaks.test.ts` pins
+ * behaviourally instead, naming the route each rule produces and the equally
+ * cheap alternative it declines. That sentence used to defer to "their own
+ * behavioural tests", plural and unnamed, and the file it turned out to mean
+ * (`tests/unit/navigation-router.test.ts`) called `findRoute` twice on one
+ * graph and could not see either tie-break (#365). Flagging every local would
  * add entries whose reason is "this is not what the rule is about", and an
  * allow-list padded with those is the list nobody reads.
  *
