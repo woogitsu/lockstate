@@ -135,10 +135,39 @@ new action is one more entry here -- never a new branch in
 
 `utility-ai.ts`'s `scoreAction` is `sum(need deficit x action's per-tick
 effect on that need)` -- an action addressing a more depleted need, or
-addressing a need more strongly, scores higher. `selectBestAction` picks
-the highest score among *already-filtered-legal* candidates, breaking an
-exact tie deterministically by ascending action id -- never by RNG or
-iteration order. The one intentional RNG use in this whole slice is
+addressing a need more strongly, scores higher. `rankActions` orders the
+*already-filtered-legal* candidates by descending score, breaking an exact
+tie deterministically by ascending action id -- never by RNG or iteration
+order. Action ids are unique, so that comparator never answers `0` and the
+ranking is a **total order derived from state**, which is what
+[ADR 0029](./adr/0029-concurrent-room-use-claims.md) decision 7 commitment 3
+requires. `selectBestAction` is its head, derived rather than restated.
+
+**Scoring has no availability term, and cannot have one -- it is a pure
+function of needs.** So the ranking says what a prisoner *wants* and
+`ActionSystem.beginNextAction` says what they can *have*: it walks the ranked
+candidates and starts the first one whose target resolves, **in the same
+reconsideration cycle** (ADR 0041 decision 1). Before that walk it took one
+answer and gave up, which made every
+lower-ranked candidate unreachable in that cycle -- and in the next, since
+nothing about the prisoner's state had changed in between. `action.eat-meal`
+scores strictly above `action.eat-in-cell` on the same need in the same `meal`
+category, so a prison with no canteen chose the canteen for ever and fed
+nobody: measured at 0 performing ticks of `action.eat-in-cell` and hunger
+pinned at the floor, at 1, 4 and 24 prisoners alike, so it was never a
+contention effect. `tests/integration/cell-only-meal-fallback.test.ts` is the
+run. Ordering the *contended* scan by need urgency is ADR 0041 decision 2 and
+is deliberately not done -- ADR 0029 decision 5's unfairness is unchanged, and
+under contention a loser now eats a worse meal rather than nothing.
+
+*ADR 0041 is referenced here by number and not by link, deliberately: the
+decision was accepted and the code implementing it is on this branch, but the
+document itself is on a separate branch and is not yet a file under
+`docs/adr/`. `tests/foundation/documentation-links-contract.test.ts` would go
+red on a link to it, which is the gate working. The link is owed the moment the
+ADR lands, and this paragraph is what a reader is owed until then.*
+
+The one intentional RNG use in this whole slice is
 `classification.ts`'s screening-variance draw (issue #24: "deterministic
 tie-breaking and named RNG only where explicitly intended"); everything
 else here is a pure function of state.
