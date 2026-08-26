@@ -94,10 +94,13 @@
  * spread of a collection reached through a lookup, as in
  * `RoomInstanceRegistry.occupantsOf`'s `[...(this.occupants.get(id) ?? [])]`.
  * Whether that expression is a `Set` or an array is known to `tsc` and not to
- * a text scan. That particular accessor is a documented insertion-order
- * accessor whose consumer sorts, guarded by
- * `tests/determinism/projection-ordering.test.ts`; the general case is a
- * genuine limit of a textual rule.
+ * a text scan. That particular accessor used to rely on the invisibility --
+ * it returned insertion order and asked its consumers to sort -- and no
+ * longer does; it sorts, guarded behaviourally by
+ * `tests/determinism/room-occupant-ordering.test.ts` because this scanner
+ * cannot see the sort either. The general case is a genuine limit of a
+ * textual rule, and the honest reading of it is that a lookup-then-spread
+ * accessor is unguarded by this file in both directions.
  */
 
 /**

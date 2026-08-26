@@ -157,7 +157,7 @@ export interface RoomListRowViewModel {
 
 export interface RoomDetailViewModel extends RoomListRowViewModel {
   readonly schemaVersion: HudViewModelSchemaVersion;
-  /** Ascending entity id. `RoomInstanceRegistry.occupantsOf` returns `Set` order; this projection sorts it. */
+  /** Ascending entity id. `RoomInstanceRegistry.occupantsOf` is canonical too since it stopped handing out `Set` order, but this projection sorts what it gets regardless: the order of this field is this layer's contract, pinned by `tests/determinism/projection-ordering.test.ts`, and it should not become a consequence of a decision taken in the registry. */
   readonly occupantEntityIds: readonly EntityId[];
   readonly requirements: readonly RoomRequirementViewModel[];
 }

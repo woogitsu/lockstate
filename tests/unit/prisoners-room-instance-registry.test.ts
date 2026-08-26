@@ -254,18 +254,25 @@ describe('RoomInstanceRegistry', () => {
     });
 
     it('hands occupants over sorted ascending by entity id, never in assignment order', () => {
-      // `occupantsOf` returns assignment order live and ascending-id order
-      // after a snapshot round trip, so a consumer that folded them in that
-      // order would diverge across a save. This is the guard for the sort
-      // that stops it; `canonical-iteration-contract.test.ts` structurally
-      // cannot see this expression (its own header says so).
+      // Assignment order here is deliberately not ascending, so a rating
+      // function that received the `Set` untouched would see a list this
+      // assertion does not accept. `canonical-iteration-contract.test.ts`
+      // structurally cannot see the expression that sorts (its own header
+      // says so), which is why the guard is behavioural.
       const registry = new RoomInstanceRegistry();
       registry.register({ instanceId: 'dorm', roomCatalogId: 'room.cell', anchorTile: TILE, residentCapacity: 8, concurrentUseCapacity: 8, objectCapabilities: [] });
       registry.assign('dorm', 1_048_576);
       registry.assign('dorm', 3);
       registry.assign('dorm', 42);
 
-      expect(registry.occupantsOf('dorm')).toEqual([1_048_576, 3, 42]); // assignment order, as documented
+      // This asserted `[1_048_576, 3, 42]` -- assignment order -- for as long
+      // as `occupantsOf` returned its backing `Set` untouched, with the
+      // comment "as documented". It was a true description of a hazard: the
+      // same prison answered ascending id after a save/load, so the accessor
+      // was not a function of state. The accessor sorts now, and
+      // `tests/determinism/room-occupant-ordering.test.ts` is where that is
+      // proved across histories rather than merely stated here.
+      expect(registry.occupantsOf('dorm')).toEqual([3, 42, 1_048_576]);
 
       const seen: (readonly number[])[] = [];
       registry.findBestAvailable('room.cell', (occupants) => {

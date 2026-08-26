@@ -315,27 +315,74 @@ export class RoomInstanceRegistry {
   }
 
   /**
-   * **Insertion order, deliberately -- every consumer must sort.**
+   * Every entity that **lives** in this instance, **ascending by entity id**.
    *
-   * `docs/DETERMINISM.md` already claims this contract "is stated at the
-   * accessor"; until now it was stated in `docs/HUD_PROJECTIONS.md` and
-   * `tests/helpers/canonical-iteration.ts` instead, so the doc was true of
-   * the arrangement and false about where it lived. It is stated here now.
+   * ## What this used to be, and what deleting the sort would cost
    *
-   * The order is not stable across a save: live insertion order is
-   * *assignment* order, while `loadSnapshot` refills from `getSnapshot`,
-   * which sorts ascending entity id. A consumer that folds occupant data in
-   * this order therefore diverges between a continued session and a
-   * restored one. `tests/determinism/canonical-iteration-contract.test.ts`
-   * structurally cannot catch that -- its own header names this expression
-   * as the shape a text scan cannot see -- so the sort is the consumer's
-   * responsibility and nothing will remind it.
+   * Until now this returned the `Set` in insertion order, and said so: the
+   * previous version of this comment declared "insertion order, deliberately
+   * -- every consumer must sort", and closed by admitting that the sort "is
+   * the consumer's responsibility and **nothing will remind it**". That was an
+   * accurate description of a hazard, not a design. The order it handed out is
+   * not a property of the prison at all -- it is a property of *this session's
+   * history*, and specifically one that changes across a save: live insertion
+   * order is `assign` order, while `loadSnapshot` refills from `getSnapshot`,
+   * which sorts ascending entity id. So a consumer that folds occupant data in
+   * the order it is given produces one answer in a continued session and
+   * another in a restored one, from identical state. Under ADR 0009 that is
+   * not cosmetic: replay verification compares state hashes, so the two
+   * sessions disagree and the replay is refused.
    *
-   * Simulation consumers should prefer {@link findBestAvailable}, which
-   * sorts before it hands occupants to a rating function.
+   * Deleting the sort below therefore costs the guarantee that this accessor
+   * is a function of state. It does not cost anything measurable in time: the
+   * collection is bounded by `residentCapacity`, which ADR 0028 derives from
+   * the summed footprint width of the sleep surfaces standing in one room's
+   * rectangle -- single digits for a cell, tens for the largest dormitory this
+   * content tree can express -- and the sole caller in `src/` is
+   * `projectRoomDetail`, which runs on a HUD projection request and not in a
+   * tick. `findBestAvailable`, which *is* on the per-tick intake path, does not
+   * route through here at all; it reads `this.occupants` directly and applies
+   * the same sort, and that duplication is deliberate (see its comment) so this
+   * accessor's cost can never be argued onto the hot path.
+   *
+   * ## Why the sort is here and not a second, plainly-unsafe accessor
+   *
+   * The alternative considered was splitting this in two -- an internal
+   * insertion-order accessor plus a sorted public one -- so that a new caller
+   * had to opt into the hazard. It was rejected because **no caller wanted the
+   * hazard**: `projectRoomDetail` sorted what it got, `findBestAvailable`
+   * never asked, and the one test that pinned the unsorted shape pinned it as
+   * this accessor's stated behaviour rather than because anything needed it. A
+   * split would have added an accessor with zero callers whose only purpose
+   * was to be dangerous, and left the sorted name free for a future caller to
+   * reach for the other one by mistake.
+   *
+   * It also puts this registry back in line with every structurally identical
+   * accessor in the tree, which is the argument that decided it.
+   * `GangRegistry.membersOf` -- the same "members of one keyed collection"
+   * lookup over a `Map<string, Set<EntityId>>` -- already sorts ascending
+   * entity id inside the accessor. `DoorRegistry.all` was changed to sort in
+   * #132 *even though its only caller already sorted*, and its comment states
+   * the general rule this one was the last exception to: "an accessor that
+   * hands out registration history is a trap for the next caller rather than a
+   * safe default."
+   *
+   * ## Why the type scan cannot replace this
+   *
+   * `tests/determinism/canonical-iteration-contract.test.ts` does not see this
+   * line and never will. Its scanner is textual, and
+   * `tests/helpers/canonical-iteration.ts` names this exact expression as the
+   * one shape it cannot judge: whether `this.occupants.get(id)` yields a `Set`
+   * or an array is known to `tsc` and not to a regex. So there is no static
+   * gate here, and the behavioural guard is
+   * `tests/determinism/room-occupant-ordering.test.ts`, which builds the same
+   * occupant set through four different histories -- two assignment orders, a
+   * snapshot round trip, and a release-then-reassign that leaves the backing
+   * `Set` in an order no single assignment sequence could produce -- and
+   * requires one identical answer from all four.
    */
   public occupantsOf(instanceId: string): readonly EntityId[] {
-    return [...(this.occupants.get(instanceId) ?? [])];
+    return [...(this.occupants.get(instanceId) ?? [])].sort((a, b) => a - b);
   }
 
   /**
@@ -448,11 +495,23 @@ export class RoomInstanceRegistry {
    *
    * ## Determinism
    *
-   * Occupants are handed over **sorted ascending by entity id**, not in
-   * `occupantsOf`'s insertion order, so a rating that is sensitive to order
-   * cannot diverge between a live session and a restored one (see
+   * Occupants are handed over **sorted ascending by entity id**, so a rating
+   * that is sensitive to order cannot diverge between a live session and a
+   * restored one -- live `assign` order and a restored session's
+   * ascending-id refill are the same list only after the sort (see
    * `occupantsOf`). Candidates are visited in `allByRoomCatalogId`'s sorted
    * order, and the tie-break is total.
+   *
+   * **The sort is repeated here rather than delegated to `occupantsOf`, and
+   * that is on purpose.** `occupantsOf` now sorts too, so the call would be
+   * correct; what it would also do is put this per-tick,
+   * potentially-thousands-of-instances scan
+   * (`docs/PRISONER_OPERATIONS.md`'s performance note) downstream of an
+   * accessor whose only other caller is a HUD projection. The next person
+   * asked to make that accessor cheaper would then be trading against a hot
+   * path they cannot see from its call site. Reading `this.occupants`
+   * directly keeps the two costs independent, and the duplicated comparator
+   * is four tokens.
    */
   public findBestAvailable(
     roomCatalogId: string,
