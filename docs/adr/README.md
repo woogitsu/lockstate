@@ -99,12 +99,21 @@ Nothing here changes a status; this table only reports them.
 | [0029](./0029-concurrent-room-use-claims.md) | What a concurrent-use claim on a room is — when it is taken, when it ends, and who waits | Accepted, 2026-08-26 |
 | [0031](./0031-build-queue-cancellation-surface.md) | Withdrawing one queued build order — where a player aims, and what a long queue looks like | Proposed — pending human approval |
 | [0032](./0032-incident-consequences-and-classification-review.md) | What an incident costs the prisoner who was in it, and how a classification tier moves | Proposed — pending human approval |
+| [0033](./0033-releasing-an-interrupted-incident-response-at-runtime.md) | A restored session abandons an incident response and returns what it claimed | Proposed — pending human approval |
 
-**Next free number: 0033.** 0032 is this table's newest row and **0030 is still
+**Next free number: 0034.** 0033 is this table's newest row and **0030 is still
 held by an unmerged branch** — the incident-response restore change, which
 allocated it in the same hour it was stated free here. It is listed nowhere above
 because nothing is merged under that number yet, which is precisely the gap a
-stated next-free cannot see: enumerate the open pull requests before taking 0033.
+stated next-free cannot see: enumerate the open pull requests before taking 0034.
+
+**0033's author ran that enumeration and it came back with two open pull
+requests**, #355 (no ADR) and #361 (holding 0030), so 0033 was free. 0033 is the
+counter-proposal to the document on #361's branch: it decides the same question
+— what a restored session owes an incident response a save interrupted — by
+releasing the claim at runtime rather than by bumping the save schema, so the two
+are alternatives and not a sequence. If both were somehow accepted, the runtime
+release becomes redundant and should be removed rather than layered.
 
 **0032's author ran that enumeration and it came back with three open pull
 requests, one of them holding 0030 and neither of the other two carrying an ADR
@@ -113,13 +122,19 @@ thing again. That is a fact about one hour, not a reason to stop checking. 0032
 pre-commits in its own Status to renumbering if a branch turns up holding it,
 which is the habit the two previous collisions taught.
 
-**Two rows are outstanding: 0031 and 0032.** Both arrived with the change that
-implements them — the shape [`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2 names as
+**Three rows are outstanding: 0031, 0032 and 0033.** All three arrived with the
+change that implements them — the shape [`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2 names as
 fragile. 0031's queue entry is in the same commit, per that file's rule.
 **0032's is not, and that is a gap rather than an exemption:** `STATUS-QUEUE.md`
 was out of that change's scope, held by other work in the same hour, so the entry
-is owed and 0032's own pull request quotes the text it would have added. 0029 was
-the previous outstanding row and was accepted on 2026-08-26; it *did* sit
+is owed and 0032's own pull request quotes the text it would have added. **0033's
+is not either, and for a stated reason rather than a collision:** the brief that
+change was done under names `STATUS-QUEUE.md` as a file it may not touch, so its
+entry is owed on the same terms and its pull request quotes it too. Two owed
+entries is one more than the precedent, and the next edit to that file should
+clear both.
+
+0029 was the previous outstanding row and was accepted on 2026-08-26; it *did* sit
 outstanding on `main` for a day while its code shipped, which is exactly the cost
 §2 predicted, and its queue entry was removed in the same commit as its
 acceptance.

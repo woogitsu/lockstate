@@ -335,8 +335,14 @@ export class IncidentResponseSystem implements SystemRegistration {
   private advanceResponse(incident: IncidentRecord, tick: number): void {
     const record = this.responses.get(incident.id);
     if (record === undefined) {
-      // Restored without live response bookkeeping -- re-dispatch from 'active' is impossible
-      // (the lifecycle is forward-only), so treat the response as lost and let the deadline decide.
+      // No live record for an open incident, which since #352 is the ordinary
+      // restore path rather than an edge: `loadSnapshot` restores no records,
+      // `releaseOrphanedClaims` has already handed back what the interrupted
+      // response was holding, and there is nothing to resume. Re-dispatch is
+      // impossible from here -- `tryDispatch` runs only from `'active'` and the
+      // lifecycle is forward-only -- so the deadline decides, and the incident
+      // lapses rather than silently resolving (issue #28's consistent-failure
+      // outcome). `lapse` lifts the sector's lockdown on the way out.
       if (this.isPastDeadline(incident, tick)) this.lapse(incident, tick);
       return;
     }
