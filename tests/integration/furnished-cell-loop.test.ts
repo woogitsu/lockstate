@@ -292,13 +292,41 @@ describe('what the toilet does and does not change in the running prison', () =>
     // the same curve in both prisons. Phase 2 changes what the cell *reports*,
     // not what the prisoner *does*.
     expect(needsOf(furnished)).toEqual(needsOf(bedOnly));
-    // Not a vacuous comparison: the loop really ran and the needs moved a long
-    // way. Measured at tick 4,800 in both prisons: hunger 25.0 of 255, sleep
-    // 254.7, hygiene 163.0, bladder 212.6 -- so the two needs the cell can
-    // serve are high, hunger is nearly exhausted because `action.eat-in-cell`
-    // gains 3 a tick against a canteen's 4, and hygiene has no route at all
-    // until phase 4 places a shower head.
-    expect(needLevel(furnished, 'hunger')).toBeLessThan(100);
+    /*
+     * Not a vacuous comparison: the loop really ran and the needs moved a long
+     * way. Measured at tick 4,800 in both prisons: hunger **240.5** of 255,
+     * sleep 254.7, hygiene 163.0, bladder **247.8** -- the three needs the cell
+     * can serve are high, and hygiene has no route at all until phase 4 places
+     * a shower head.
+     *
+     * **This paragraph used to read hunger 25.0 and bladder 212.6, and it
+     * explained the 25.0 by saying "hunger is nearly exhausted because
+     * `action.eat-in-cell` gains 3 a tick against a canteen's 4". That
+     * explanation was wrong, and it was wrong about a mechanism that had never
+     * run once.** 255 - 25.0 = 230 levels, and hunger decays at 0.05 a tick
+     * (`NEED_DECAY_PER_TICK`), so 230 levels is exactly 4,600 ticks of pure
+     * decay -- admission at tick 200 to the measurement at 4,800, with **not
+     * one tick of eating** in between. `action.eat-in-cell` had not gained 3 a
+     * tick against anything; it had never been performed, in this prison or in
+     * any other, because `action.eat-meal` outscored it at every hunger level
+     * and then failed to resolve a canteen that does not exist. This file
+     * records no per-action counters, so nothing in it could have caught the
+     * difference between a weak meal and no meal at all.
+     *
+     * [ADR 0041](../../docs/adr/0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md)
+     * decision 1 made the prisoner fall back to the next-best legal candidate
+     * in the same cycle, so the cell meal now runs and the number moved from
+     * 25.0 to 240.5. `tests/integration/cell-only-meal-fallback.test.ts` is
+     * where that is measured with the per-action counters this file lacks;
+     * what is asserted here is only that the correction reached this prison.
+     *
+     * Bladder moved for the same reason and it is worth naming, because it is
+     * not about meals: in the regime's three `hygiene` blocks the prisoner used
+     * to select `action.shower`, find no shower room and stand idle: now they
+     * fall back to `action.use-toilet`.
+     */
+    expect(needLevel(furnished, 'hunger')).toBe(240.5);
+    expect(needLevel(furnished, 'bladder')).toBe(247.8);
     expect(needLevel(furnished, 'sleep')).toBeGreaterThan(250);
   });
 

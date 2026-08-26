@@ -144,6 +144,23 @@ function prisonWithoutShowerHeads(): SimulationRuntime {
   return prisonFurnishedWith(FURNISHING.filter((placement) => !placement.orderId.startsWith('o-sh')));
 }
 
+/**
+ * The control for the meal measurement, on exactly the shape above: the same
+ * prison with the **two dining tables** left unordered and everything else
+ * identical -- the same three zoned rooms, the same eight other placements, the
+ * same 15 planks and 3 bricks bought and paid for.
+ *
+ * `object.dining-table` is the only object in the catalogue carrying
+ * `'dining'`, so a canteen without one derives a `'dining'` ceiling of zero and
+ * `action.eat-meal` has nowhere to resolve -- while the benches still stand, so
+ * the room is not simply empty. That is what turns `action.eat-in-cell`'s
+ * absence below from a fact about the catalogue into a fact about *this*
+ * prison: see [ADR 0041](../../docs/adr/0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md).
+ */
+function prisonWithoutDiningTables(): SimulationRuntime {
+  return prisonFurnishedWith(FURNISHING.filter((placement) => !placement.orderId.startsWith('o-dt')));
+}
+
 function prisonFurnishedWith(placements: readonly (typeof FURNISHING)[number][]): SimulationRuntime {
   const runtime = zonedPrison();
   for (const placement of placements) {
@@ -326,6 +343,8 @@ describe('the prisoner uses the rooms, which is what the phase is for', () => {
     readonly maxUseClaims: number;
     readonly finalHygiene: number;
     readonly hygieneEverRose: boolean;
+    readonly finalHunger: number;
+    readonly hungerEverRose: boolean;
   } {
     const runtime = build();
     stepTo(runtime, BUILT_BY);
@@ -336,6 +355,11 @@ describe('the prisoner uses the rooms, which is what the phase is for', () => {
     let maxUseClaims = 0;
     let previousHygiene = Number.POSITIVE_INFINITY;
     let hygieneEverRose = false;
+    // Hunger is read on the same terms as hygiene and for the same reason: a
+    // need is a reservoir, so a level that goes *up* is a performed meal and a
+    // decay curve can never produce one (ADR 0041).
+    let previousHunger = Number.POSITIVE_INFINITY;
+    let hungerEverRose = false;
 
     for (let tick = runtime.kernel.tick + 1; tick <= 9_000; tick += 1) {
       stepTo(runtime, tick);
@@ -351,14 +375,16 @@ describe('the prisoner uses the rooms, which is what the phase is for', () => {
       maxUseClaims = Math.max(maxUseClaims, runtime.prisoners.roomInstances.totalUseClaims);
       const hygiene = runtime.prisoners.needs.levels.hygiene[index]! / NEED_SCALE;
       // A **rise**, sampled every tick, and that is the whole measurement. A
-      // need is a reservoir here rather than a pressure -- phase 2's comment
-      // calls hunger at 25.0 of 255 "nearly exhausted" -- so it drains on its
-      // own and only a performed action refills it. `action.shower` is the only
-      // entry in `DEFAULT_ACTIONS` whose `needEffectsPerTick` touches hygiene,
-      // so a hygiene level that goes *up* is proof a shower happened, and a
-      // decay curve can never produce one.
+      // need is a reservoir here rather than a pressure: it drains on its own
+      // (`NEED_DECAY_PER_TICK`) and only a performed action refills it.
+      // `action.shower` is the only entry in `DEFAULT_ACTIONS` whose
+      // `needEffectsPerTick` touches hygiene, so a hygiene level that goes *up*
+      // is proof a shower happened, and a decay curve can never produce one.
       if (hygiene > previousHygiene) hygieneEverRose = true;
       previousHygiene = hygiene;
+      const hunger = runtime.prisoners.needs.levels.hunger[index]! / NEED_SCALE;
+      if (hunger > previousHunger) hungerEverRose = true;
+      previousHunger = hunger;
     }
 
     const index = store.getIndex(store.getIdByIndex(0));
@@ -368,6 +394,8 @@ describe('the prisoner uses the rooms, which is what the phase is for', () => {
       maxUseClaims,
       finalHygiene: runtime.prisoners.needs.levels.hygiene[index]! / NEED_SCALE,
       hygieneEverRose,
+      finalHunger: runtime.prisoners.needs.levels.hunger[index]! / NEED_SCALE,
+      hungerEverRose,
     };
   }
 
@@ -389,12 +417,28 @@ describe('the prisoner uses the rooms, which is what the phase is for', () => {
      * The counts are exact because they are deterministic: one seed, one
      * command order, no RNG in placement. They are a measurement of the loop
      * and they are supposed to move if the loop changes.
+     *
+     * **They moved once, and this is that entry.** This block read
+     * `{sleep 1800, eat-meal 560, use-toilet 120, shower 80}` until
+     * [ADR 0041](../../docs/adr/0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md)
+     * decision 1 let a prisoner fall back to the next-best legal candidate when
+     * the best one cannot resolve a target. Three of the eight actions in
+     * `DEFAULT_ACTIONS` target rooms this prison has not zoned -- the yard, the
+     * common room and the classroom -- and the two recreation blocks of the
+     * general-population day allow nothing else. Before the fallback the
+     * prisoner selected one of those, failed to resolve it and stood idle for
+     * the whole block; now they shower or use the toilet instead, which is
+     * where `shower` 80 -> 240 and `use-toilet` 120 -> 280 come from. The
+     * showers run past the boundary into the meal block that follows, which
+     * costs two meal blocks out of fourteen: `eat-meal` 560 -> 480. Sleep is
+     * untouched, because the two sleep blocks allow nothing but `action.sleep`
+     * and it always resolved.
      */
     expect(performingTicks).toEqual({
       'action.sleep': 1_800,
-      'action.eat-meal': 560,
-      'action.use-toilet': 120,
-      'action.shower': 80,
+      'action.eat-meal': 480,
+      'action.use-toilet': 280,
+      'action.shower': 240,
     });
     // Stated as a property as well as a count, so the intent survives a
     // re-baseline: the two room-gated actions really were reached.
@@ -403,11 +447,72 @@ describe('the prisoner uses the rooms, which is what the phase is for', () => {
       expect(action.target.kind, `${id} must be the room-gated kind for this to mean anything`).toBe('room-catalog-id');
       expect(performingTicks[id] ?? 0, `${id} was never performed`).toBeGreaterThan(0);
     }
-    // `action.eat-in-cell` is not in the list, and that is the interesting
-    // absence: with a canteen standing, the prisoner walks to it. Phase 2
-    // measured hunger at 25.0 of 255 on `action.eat-in-cell`'s 3 a tick;
-    // `action.eat-meal` gains 4.
+    /*
+     * **`action.eat-in-cell` is still not in the list, and the sentence that
+     * used to stand here was wrong about why.**
+     *
+     * It read: *"that is the interesting absence: with a canteen standing, the
+     * prisoner walks to it. Phase 2 measured hunger at 25.0 of 255 on
+     * `action.eat-in-cell`'s 3 a tick; `action.eat-meal` gains 4."* The second
+     * half attributed a measurement to a mechanism that had **never executed**,
+     * here or anywhere: `furnished-cell-loop.test.ts`'s 25.0 was 4,600 ticks of
+     * pure decay from admission, and `action.eat-in-cell` had no performing
+     * ticks in any configuration this repository had ever run. What this line
+     * pinned was a defect observed and mistaken for behaviour --
+     * [ADR 0041](../../docs/adr/0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md)
+     * records the four converging readings, and
+     * `tests/integration/cell-only-meal-fallback.test.ts` records the run that
+     * settled it.
+     *
+     * So the absence is inverted rather than deleted: it stays, but it is no
+     * longer allowed to stand on its own. The claim it makes now is a
+     * **preference** -- the canteen wins whenever it resolves -- and a
+     * preference is only meaningful against a prison where the preference has
+     * nowhere to go, which is the control asserted in the test below. Before
+     * ADR 0041 this same `toBeUndefined()` was true in *every* prison ever
+     * built, including one with no canteen at all, and no assertion in this
+     * repository could tell the two cases apart.
+     */
     expect(performingTicks['action.eat-in-cell']).toBeUndefined();
+    expect(performingTicks['action.eat-meal'] ?? 0, 'the canteen meal is what it ate instead').toBeGreaterThan(0);
+  });
+
+  it('eats in its cell when the canteen has no table, which is what makes the absence above a preference', () => {
+    /*
+     * The same prison, two dining tables lighter, and **everything else
+     * identical** -- the same three zoned rooms, the same eight other
+     * placements, the same bill. `object.dining-table` is the only object
+     * carrying `'dining'`, so the canteen still stands, still holds its four
+     * benches and still answers `'recreation'` -- but `action.eat-meal` has no
+     * seat to resolve and the prisoner falls back to `action.eat-in-cell`
+     * inside the same reconsideration cycle (ADR 0041 decision 1).
+     *
+     * This is `action.eat-in-cell`'s first appearance in this file, and the
+     * first in any prison this repository runs.
+     */
+    const control = watchedPrison(prisonWithoutDiningTables);
+
+    expect(control.runtime.prisoners.roomInstances.findAvailableForUse('room.canteen', 'dining')).toBeUndefined();
+    expect(control.performingTicks).toEqual({
+      'action.sleep': 1_800,
+      'action.eat-in-cell': 560,
+      'action.use-toilet': 300,
+      'action.shower': 240,
+    });
+
+    // Stated as the player-visible consequence as well as a count: a hunger
+    // level that rises is a meal that happened, and no decay curve can produce
+    // one. Before ADR 0041 this prison's prisoner ate nothing at all.
+    expect(control.hungerEverRose, 'a hunger level that rises is a meal that happened').toBe(true);
+    expect(control.finalHunger).toBe(230.5);
+
+    // And the cost of losing the canteen is now a **worse meal**, not
+    // starvation: 3 hunger a tick instead of 4, over the same number of
+    // sittings, ends one level below the furnished prison rather than at the
+    // floor.
+    const withTables = watchedPrison();
+    expect(withTables.finalHunger).toBe(231.5);
+    expect(control.finalHunger).toBeGreaterThan(withTables.finalHunger - 10);
   });
 
   it('takes a real concurrent-use claim, which no shipped session could either', () => {
@@ -435,20 +540,27 @@ describe('the prisoner uses the rooms, which is what the phase is for', () => {
      * This is that sentence falsified, against a control that differs by two
      * placements and nothing else.
      *
-     * A need is a **reservoir** rather than a pressure -- phase 2's comment
-     * calls hunger at 25.0 of 255 "nearly exhausted" -- so hygiene drains on
+     * A need is a **reservoir** rather than a pressure, so hygiene drains on
      * its own and only a performed action refills it. So the measurement is a
      * hygiene level that goes **up**, which no decay curve can produce, and the
      * two prisons separate cleanly:
      *
      *   - no shower head: hygiene falls monotonically to **91.0** of 255 and
      *     never once rises across 8,200 sampled ticks;
-     *   - two shower heads: it rises, and ends at **162.4**.
+     *   - two shower heads: it rises, and ends at **216.0**.
      *
-     * What is deliberately *not* claimed is a clean prisoner. 162.4 of 255 is a
+     * What is deliberately *not* claimed is a clean prisoner. 216.0 of 255 is a
      * prisoner who showers sometimes, because one shower room on a regime is
      * what was built; asserting more would be the invented consequence this
      * repository spends the most effort on.
+     *
+     * **This figure was 162.4 until ADR 0041.** The shower did not get better;
+     * the prisoner stopped standing idle through the two recreation blocks
+     * whose actions this prison cannot resolve, and both of those blocks also
+     * allow `hygiene`. Shower time went from 80 ticks to 240 over the same
+     * 8,200. The control is untouched at 91.0, which is the right direction for
+     * it to be untouched in: a prison with no shower head has no hygiene action
+     * to fall back *to*, so ADR 0041 cannot move it and does not.
      */
     const withShower = watchedPrison();
     const control = watchedPrison(prisonWithoutShowerHeads);
@@ -464,9 +576,9 @@ describe('the prisoner uses the rooms, which is what the phase is for', () => {
     expect(control.hygieneEverRose, 'with no shower head, hygiene can only drain').toBe(false);
     expect(control.finalHygiene).toBe(91);
 
-    // With two shower heads it is refilled, and ends 71.4 higher.
+    // With two shower heads it is refilled, and ends 125.0 higher.
     expect(withShower.hygieneEverRose, 'a hygiene level that rises is a shower that happened').toBe(true);
-    expect(withShower.finalHygiene).toBe(162.4);
+    expect(withShower.finalHygiene).toBe(216);
     expect(withShower.finalHygiene).toBeGreaterThan(control.finalHygiene);
 
     // Both prisons bought and paid for the same 15 planks and 3 bricks -- the
