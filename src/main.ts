@@ -35,7 +35,7 @@ import {
   type HudViewModel,
 } from './ui/hud';
 import { hudClockFromWorkerMessage } from './ui/simulation-clock';
-import { hudAlertsFromWorkerMessage } from './ui/simulation-alerts';
+import { hudAlertsFromWorkerMessage, hudRefusalFromWorkerMessage } from './ui/simulation-alerts';
 import { hudCountsFromWorkerMessage } from './ui/simulation-counts';
 import { hudZoningFromWorkerMessage } from './ui/simulation-zoning';
 import { SimulationCommandSender } from './ui/simulation-commands';
@@ -778,7 +778,18 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
    * that did not survive one would be painted over within 500 ms, which the
    * player cannot tell apart from the swallowing #187 finding 3 reported.
    *
-   * One listener for all three, because they land on one view model: a
+   * **And the list is where the player was not looking.** #261 joined the
+   * seam; it did not make the sentence visible. `hud.css` drops `.hud__corner`
+   * at 720px and below and the alerts section starts folded at every size, so
+   * the row it paints is `offsetParent === null` with a 0x0 box unless the
+   * player is on a wide viewport *and* has opened the fold -- the same
+   * measurement #220 made before moving "simulation unavailable" to
+   * `.hud__unavailable`, and it was never made per message. So the refusal is
+   * read a second time, for `HudViewModel.refusal` and the band that carries
+   * it. The list stays: it is the log, and it holds the refusal beside
+   * standing protocol faults, which one line cannot.
+   *
+   * One listener for all four, because they land on one view model: a
    * message that says nothing about any of them leaves the HUD alone rather
    * than triggering a repaint.
    */
@@ -787,7 +798,20 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     const counts = hudCountsFromWorkerMessage(message);
     const alerts = hudAlertsFromWorkerMessage(message, viewModel.alerts);
     const zoning = hudZoningFromWorkerMessage(message);
-    if (clock === undefined && counts === undefined && alerts === undefined && zoning === undefined) return;
+    // The same refusal, read a second time for the surface that is actually
+    // on screen. The list above is the log; this is the notice, and it goes
+    // to a band `hud.css` lays out at every viewport with no section to
+    // open -- which the list is not, at any viewport (#220, and see
+    // `hudRefusalFromWorkerMessage` for the split).
+    const refusal = hudRefusalFromWorkerMessage(message);
+    if (
+      clock === undefined &&
+      counts === undefined &&
+      alerts === undefined &&
+      zoning === undefined &&
+      refusal === undefined
+    )
+      return;
     viewModel = {
       ...viewModel,
       ...(clock === undefined ? {} : { clock }),
@@ -802,10 +826,20 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       // `zoning` is an *optional* field, so clearing it has to delete the key
       // rather than set it to `undefined` -- `exactOptionalPropertyTypes` is on.
       ...(zoning === undefined ? {} : zoning === 'none' ? {} : { zoning }),
+      // Three states as well, for the reason `zoning` has three: `undefined`
+      // is a message that said nothing about a refusal, `'none'` is a session
+      // that has refused nothing or has ended, and a notice is the refusal
+      // itself. Optional, so clearing it deletes the key below rather than
+      // writing `undefined` -- `exactOptionalPropertyTypes` is on.
+      ...(refusal === undefined ? {} : refusal === 'none' ? {} : { refusal }),
     };
     if (zoning === 'none' && viewModel.zoning !== undefined) {
       const { zoning: _cleared, ...withoutZoning } = viewModel;
       viewModel = withoutZoning;
+    }
+    if (refusal === 'none' && viewModel.refusal !== undefined) {
+      const { refusal: _withdrawn, ...withoutRefusal } = viewModel;
+      viewModel = withoutRefusal;
     }
     hud?.update(viewModel);
   });
@@ -1057,9 +1091,10 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
          * the control they pressed. There is no such figure here: every one of
          * the seven refusal reasons is about the zoning plane, the objects
          * already standing or the orders in flight, and this thread holds none
-         * of them. So the refusal arrives on the alerts line from the worker,
-         * once, and a pre-flight check that guessed would be a second answer
-         * that could disagree with it.
+         * of them. So the refusal comes back from the worker, once -- on the
+         * refusal band, and in the alerts log beside it -- and a pre-flight
+         * check that guessed would be a second answer that could disagree
+         * with it.
          */
         case 'place-object':
           requireSimulation(commands).submit({
@@ -1091,8 +1126,10 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
          *
          * **Nothing is checked before submitting**, for the reason a placement
          * is not: the one refusal reason is about the placed objects and the
-         * order list, and this thread holds neither. So the refusal arrives on
-         * the alerts line from the worker, once.
+         * order list, and this thread holds neither. So the refusal comes back
+         * from the worker, once, and reaches the band `hud.css` lays out at
+         * every viewport -- which is what makes removal answerable on a phone
+         * at all (#220, made structural).
          */
         case 'remove-object':
           requireSimulation(commands).submit({ type: 'RemoveObject', x: intent.x, y: intent.y });
@@ -1351,14 +1388,15 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
            * above and is there for the same reason: it is a *report*, not a
            * second treasury. `Treasury.spend` refuses rather than overdrawing
            * either way; throwing here rejects the HUD's gated action, which
-           * paints the refusal line and marks the button the player pressed
-           * instead of answering some ticks later on the alerts list. It is an
+           * paints the refusal band and marks the button the player pressed
+           * instead of answering some ticks later from the worker. It is an
            * echo of the balance the worker last published, so the same two
            * cases get past it -- several hires inside one tick, and a balance
            * that moved in the last 500ms -- and both are answered by the
            * worker-side route in `session-commands.ts`. The `throw` and that
-           * alert row sit on opposite sides of `sender.submit`, so one press
-           * produces exactly one of them and never both.
+           * worker refusal sit on opposite sides of `sender.submit`, so one
+           * press produces exactly one of them and never both -- and they
+           * share the band, told apart by its `data-source`.
            *
            * The wage is read through `staffHireCostMinorUnits` rather than off
            * the view model's rendered figure, so the number checked here and

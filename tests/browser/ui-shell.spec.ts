@@ -781,6 +781,199 @@ test.describe('HUD shell', () => {
     });
   });
 
+  /**
+   * Issue #220, made structural: **a refusal the worker decided reaches a
+   * surface that is on screen.**
+   *
+   * #220 measured the alerts list and found it invisible in two independent
+   * ways -- `hud.css` drops `.hud__corner` at 720px and below, and the alerts
+   * section starts folded (`INITIAL_HUD_SHELL_STATE`) so the row is
+   * `offsetParent === null` with a 0x0 box even at 1280x800 -- and moved
+   * exactly one sentence out of it. Every refusal the simulation decided after
+   * accepting a command went on arriving there: a wall on unowned land, a
+   * purchase the treasury cannot cover, a room over one already there, and
+   * ADR 0028 phase 3's object removal, added after #220 and silent on a phone
+   * from the day it shipped.
+   *
+   * These drive the real `mountHud` and read the production DOM, and they
+   * assert the **geometry** rather than the text. That distinction is the
+   * whole of #220's lesson: `toContainText` passes against a row inside a
+   * folded section, which is how a green suite coexisted with an invisible
+   * message. Both boxes are measured in every case -- the band's and the
+   * list row's -- so "the band is laid out" and "the row it replaced is not"
+   * are two readings rather than one inferred from the other.
+   *
+   * The fold is left exactly as it starts. Opening it would measure a state
+   * the player never asked for.
+   */
+  test.describe('a refusal the simulation decided reaches a visible band (issue #220)', () => {
+    const REFUSAL_TEXT = 'The build order failed';
+    const REFUSAL_KEY = 'hud.alert.refusal.build.unowned-land';
+
+    /** What `src/main.ts` publishes when the worker has refused something. */
+    const withSimulationRefusal = (sequence: number): HudViewModel => ({
+      counts: {
+        prisoners: 0,
+        prisonerCapacity: 0,
+        staff: 0,
+        rooms: 0,
+        activeIncidents: 0,
+        contrabandFound: 0,
+        treasuryMinorUnits: 0,
+        stateIncomeAccruedTodayMinorUnits: 0,
+      },
+      clock: { day: 1, tickOfDay: 0, dayLengthTicks: 2_400, mode: 'paused', speed: 1 },
+      // Both surfaces, exactly as the composition root fills them: the list
+      // keeps the log row and the band carries the notice.
+      alerts: [{ id: `refusal-${sequence}`, labelKey: REFUSAL_KEY, severity: 'warning' }],
+      refusal: { sequence, labelKey: REFUSAL_KEY },
+    });
+
+    for (const [width, height] of [
+      [1280, 800],
+      [375, 812],
+    ] as const) {
+      test(`is laid out with a real box at ${width}x${height}, with the alerts fold left shut`, async ({ page }) => {
+        await page.setViewportSize({ width, height });
+        await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+
+        // The page actually rendered before any geometry is trusted: a HUD
+        // that failed to mount reports plausible zeros, and `mountHudShell`
+        // resolving is not the same as the browser having laid anything out.
+        // The status strip is production DOM that is present at every
+        // viewport and in every state, so a real box on it is the proof.
+        const strip = (await page.evaluate(() => window.lockstateUiHarness.layoutProbe())).strip;
+        expect(strip, 'the HUD never rendered, so nothing measured below means anything').not.toBeNull();
+        expect(strip?.height).toBeGreaterThan(0);
+
+        // The default state, asserted rather than assumed -- the whole
+        // measurement is about what a player who has touched nothing sees.
+        expect((await page.evaluate(() => window.lockstateUiHarness.hudProbe())).alertsCollapsed).toBe('true');
+        expect(await page.evaluate(() => window.lockstateUiHarness.refusalProbe())).toMatchObject({
+          visible: false,
+          source: null,
+        });
+
+        await page.evaluate(
+          (model) => window.lockstateUiHarness.setHudViewModel(model),
+          withSimulationRefusal(1),
+        );
+
+        const probe = await page.evaluate(() => window.lockstateUiHarness.refusalProbe());
+        expect(probe.visible).toBe(true);
+        expect(probe.width).toBeGreaterThan(0);
+        expect(probe.height).toBeGreaterThan(0);
+        expect(probe.text).toContain(REFUSAL_TEXT);
+        // The simulation's sentence, and named as such: a band that could not
+        // say which producer it is carrying could not be asserted about.
+        expect(probe.source).toBe('simulation');
+        // No `data-action` and no marked control. The command was accepted --
+        // it was refused ticks later, possibly for a drag with no button
+        // behind it at all -- so there is nothing on screen it is about, and
+        // `aria-describedby` must not point at a control that had no part in
+        // it.
+        expect(probe.action).toBeNull();
+        expect(probe.failedControls).toEqual([]);
+        // A live region, or a screen reader never hears it.
+        expect(probe.role).toBe('status');
+        expect(probe.ariaLive).toBe('polite');
+        // The HUD's own rendered text, which is the measurement #220
+        // established as honest: `innerText` excludes a subtree the layout
+        // dropped, so this cannot pass from inside the folded section.
+        expect(await page.evaluate(() => window.lockstateUiHarness.hudText())).toContain(REFUSAL_TEXT);
+
+        // And the surface it replaced, at the same instant: the row is in the
+        // DOM and occupies nothing. This is the defect, measured -- not
+        // reasoned about from the CSS.
+        const row = await page.evaluate(() => window.lockstateUiHarness.alertRowProbe());
+        expect(row.present).toBe(true);
+        expect(row.visible).toBe(false);
+        expect(row.width).toBe(0);
+        expect(row.height).toBe(0);
+      });
+    }
+
+    test('a republished refusal does not steal the line from a command this thread refused since', async ({
+      page,
+    }) => {
+      // The counts channel is a snapshot on a cadence: it republishes an
+      // unchanged refusal beside every changed count, up to twice a second.
+      // Without the ordinal the band would take the line back from the
+      // host's own refusal within 500 ms, and the player would be told about
+      // the wrong press.
+      await page.setViewportSize({ width: 1280, height: 800 });
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withSimulationRefusal(1));
+      expect((await page.evaluate(() => window.lockstateUiHarness.refusalProbe())).source).toBe('simulation');
+
+      await page.evaluate(() => window.lockstateUiHarness.failIntents(true));
+      await page.evaluate(() => window.lockstateUiHarness.clickTransport('Pause'));
+      await expect
+        .poll(() => page.evaluate(() => window.lockstateUiHarness.refusalProbe().source))
+        .toBe('host');
+      expect((await page.evaluate(() => window.lockstateUiHarness.refusalProbe())).action).toBe('set-clock');
+      // Taking the line unmarks nothing here -- there was no control behind
+      // the simulation's refusal -- but the host's own control is marked now.
+      expect((await page.evaluate(() => window.lockstateUiHarness.refusalProbe())).failedControls).toEqual(['Pause']);
+
+      // The same refusal, republished. Same ordinal, so nothing happened.
+      await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withSimulationRefusal(1));
+      const after = await page.evaluate(() => window.lockstateUiHarness.refusalProbe());
+      expect(after.source).toBe('host');
+      expect(after.action).toBe('set-clock');
+      expect(after.failedControls).toEqual(['Pause']);
+
+      // A *new* refusal is a new decision and does take the line -- and takes
+      // the mark off the control with it, because `aria-describedby` may not
+      // point at a sentence about something else.
+      await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withSimulationRefusal(2));
+      const replaced = await page.evaluate(() => window.lockstateUiHarness.refusalProbe());
+      expect(replaced.source).toBe('simulation');
+      expect(replaced.action).toBeNull();
+      expect(replaced.failedControls).toEqual([]);
+      expect(replaced.text).toContain(REFUSAL_TEXT);
+    });
+
+    test('a session that has refused nothing withdraws the sentence, and a host refusal survives it', async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 375, height: 812 });
+      await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+      await page.evaluate((model) => window.lockstateUiHarness.setHudViewModel(model), withSimulationRefusal(3));
+      expect((await page.evaluate(() => window.lockstateUiHarness.refusalProbe())).visible).toBe(true);
+
+      // What `src/main.ts` publishes for a stopped session, or one that has
+      // refused nothing: the field is gone. A refusal by a simulation that no
+      // longer exists is not something the player can act on.
+      const { refusal: _withdrawn, ...withoutRefusal } = withSimulationRefusal(3);
+      await page.evaluate(
+        (model) => window.lockstateUiHarness.setHudViewModel(model as HudViewModel),
+        withoutRefusal,
+      );
+      const cleared = await page.evaluate(() => window.lockstateUiHarness.refusalProbe());
+      expect(cleared.visible).toBe(false);
+      expect(cleared.source).toBeNull();
+      expect(cleared.text).toBe('');
+
+      // The other direction: a snapshot that says the session has refused
+      // nothing must not withdraw a refusal *this thread* decided a moment
+      // ago. They are different facts with different owners.
+      await page.evaluate(() => window.lockstateUiHarness.failIntents(true));
+      await page.evaluate(() => window.lockstateUiHarness.clickTransport('Pause'));
+      await expect
+        .poll(() => page.evaluate(() => window.lockstateUiHarness.refusalProbe().source))
+        .toBe('host');
+      await page.evaluate(
+        (model) => window.lockstateUiHarness.setHudViewModel(model as HudViewModel),
+        withoutRefusal,
+      );
+      const survived = await page.evaluate(() => window.lockstateUiHarness.refusalProbe());
+      expect(survived.visible).toBe(true);
+      expect(survived.source).toBe('host');
+      expect(survived.action).toBe('set-clock');
+    });
+  });
+
   test('the alerts section folds and unfolds from a single tap on its header', async ({ page }) => {
     await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
     expect((await page.evaluate(() => window.lockstateUiHarness.hudProbe())).alertsCollapsed).toBe('true');

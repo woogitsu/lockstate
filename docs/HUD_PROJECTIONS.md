@@ -233,7 +233,10 @@ There is now, and it is the same shape as the clock's:
 #### The refusal it also carries (#261)
 
 The same payload has an optional `refusal` beside `counts`, and it is what
-finally gives `HudViewModel.alerts` a producer. The list, the severity
+finally gives `HudViewModel.alerts` a producer — and, since the structural
+half of #220, `HudViewModel.refusal` as well: the same record is read twice,
+once for the log row and once for the always-laid-out band that is the surface
+the player actually sees. Gap 34 records why, and what each surface is for. The list, the severity
 badges, the folding section, the empty-state row and the insertion ordering
 #209 measured in a real browser were all implemented; between #220 — which
 moved the one message ever routed there, "simulation unavailable", to
@@ -264,7 +267,8 @@ that reached a bounded in-worker window and stopped there.
   `hudAlertsFromWorkerMessage` (`src/ui/simulation-alerts.ts`) maps each
   reason onto a `hud.alert.refusal.*` message key through a `Record` over the
   closed union, so a reason added to the protocol fails to compile until it
-  has something to say.
+  has something to say. `hudRefusalFromWorkerMessage` reads the same table for
+  the band, so the two surfaces cannot drift apart about what a reason says.
 - **It stays up until another refusal replaces it, or the session ends.**
   Nothing on this channel can say "dismissed"; that needs a main-to-worker
   message and simulation state to hold it. Recorded as gap 34 below rather
@@ -805,16 +809,17 @@ decision about what to build next.
     states still needs the projection this gap describes, and it carries rows,
     so it needs the paging contract too.
 
-    The buy control's own refusals reach the player on **two** surfaces, and
-    exactly one of them speaks per press. `src/main.ts` refuses an unpriced
-    item, or a total the last published balance cannot cover, *before* the
-    command is sent — that rejects the HUD's gated action and paints the
-    refusal line on the pressed control. `ProcurementSystem` refuses whatever
-    got past that, and it arrives as an alert row once the queued command
-    reaches its tick — never while the clock is paused, because a paused clock
-    dispatches nothing. The dispatch sits between the two, so a press produces
-    one message or the other, never both and never neither. Gap 34 records why
-    the difference matters at 720px and below.
+    The buy control's own refusals are decided in **two** places, and exactly
+    one of them speaks per press. `src/main.ts` refuses an unpriced item, or a
+    total the last published balance cannot cover, *before* the command is
+    sent — that rejects the HUD's gated action and marks the pressed control.
+    `ProcurementSystem` refuses whatever got past that, once the queued
+    command reaches its tick — never while the clock is paused, because a
+    paused clock dispatches nothing. The dispatch sits between the two, so a
+    press produces one message or the other, never both and never neither.
+    Both now land on the same band, told apart by `data-source`; only the
+    pre-flight's marks a control, because only it can name one. Gap 34 records
+    why the simulation's half needed that band at all.
 
 ### Cross-cutting
 
@@ -831,41 +836,64 @@ decision about what to build next.
     buy, and it is written down as such under "What is deliberately excluded
     from the payload" in `docs/PERSISTENCE.md`.
 
-34. **A refusal cannot be dismissed, and carries no location.** The alerts
-    row raised by `simulation/status-counts` stands until another refusal
-    replaces it or the session ends: the channel is a snapshot, so "the last
-    refusal was X" stays true, and there is no way for the HUD to say
-    "dismissed" — that needs a main-to-worker message and a piece of
-    simulation state to hold the acknowledgement. The refusal also carries no
-    tile, order id or item id, so the sentence can say *what* was refused and
-    *why* but not *where*; carrying a position would put a second copy of the
-    order's location on the boundary and needs a decision about how the HUD
-    renders it (highlight the tile? move the camera?).
+34. **A refusal cannot be dismissed, and carries no location.** The refusal
+    raised by `simulation/status-counts` stands until another refusal replaces
+    it or the session ends: the channel is a snapshot, so "the last refusal
+    was X" stays true, and there is no way for the HUD to say "dismissed" —
+    that needs a main-to-worker message and a piece of simulation state to
+    hold the acknowledgement. The refusal also carries no tile, order id or
+    item id, so the sentence can say *what* was refused and *why* but not
+    *where*; carrying a position would put a second copy of the order's
+    location on the boundary and needs a decision about how the HUD renders it
+    (highlight the tile? move the camera?).
 
-    Two placement facts belong with this and are measured, not assumed: the
-    alerts section starts **folded** (`INITIAL_HUD_SHELL_STATE`), and
-    `hud.css` drops `.hud__corner` — which contains the whole alerts region —
-    at 720px and below. So a refusal is *reported* rather than *unmissable*,
-    and on a phone it is not reported at all. That is the same measurement
-    #220 made when it moved the "simulation unavailable" notice out of this
-    list and into `.hud__unavailable`. Whether a simulation refusal deserves
-    that always-laid-out band as well is a product decision: the band is
-    currently bound to a control that was pressed (`data-action`,
-    `aria-describedby`), and a refusal decided several ticks later has no
-    control to attach to.
+    **The placement half of this gap is closed, and this is the answer it
+    named.** It used to record that the alerts section starts *folded*
+    (`INITIAL_HUD_SHELL_STATE`) and that `hud.css` drops `.hud__corner` — the
+    whole alerts region — at 720px and below, so a refusal routed there was
+    *reported* rather than unmissable and on a phone was not reported at all;
+    and it left open whether a simulation refusal deserved the always-laid-out
+    band, on the argument that the band was bound to a control that was
+    pressed (`data-action`, `aria-describedby`) while a refusal decided
+    several ticks later has none.
 
-    **Since #187 this gap has two producers, and the second raises the stakes
-    on the placement half.** An uncorrelated `protocol/error` now paints a row
-    here too — the worker rejecting a message it could not decode, the worker's
-    own `internal-error` from inside the tick loop, and the main thread's
+    It does deserve it, and the binding was the answer rather than the
+    obstacle: a simulation refusal simply arrives with no `data-action` and
+    marks no control, which is honest — there may have been no control, only a
+    drag on the world. `HudViewModel.refusal` carries the last refusal's
+    ordinal and message key, `.hud__refusal` renders it, and the fix is made
+    for the **class** rather than per message, which is the property #220's
+    own fix lacked: it moved one sentence and every later refusal route
+    re-opened the hole, most recently ADR 0028 phase 3's object removal.
+    Measured on the shipped page with a real worker, with the fold left shut:
+    the band is 1280×32 at 1280×800 and 375×47 at 375×812, `offsetParent`
+    non-null at both, while the alerts row is present with a 0×0 box and
+    `offsetParent === null` at both.
+
+    One line means one sentence, so the rule is the one the band already had:
+    **the most recently decided refusal is the one on the line**, whichever
+    side decided it, and taking the line unmarks the previous occupant's
+    control. Nothing is stacked and nothing is restored — when a host refusal
+    clears because that action later succeeded, an older simulation refusal
+    does not come back. It is still in the log.
+
+    **The alerts list keeps a role, and it is the log.** It holds the refusal
+    row under its ordinal *beside* the rows the band deliberately does not
+    take: since #187 an uncorrelated `protocol/error` paints one here too —
+    the worker rejecting a message it could not decode, its own
+    `internal-error` from inside the tick loop, and the main thread's
     inability to read a worker reply (`src/ui/simulation-alerts.ts`,
-    [ADR 0024](./adr/0024-protocol-fault-recoverability.md)). Both halves of
-    this gap apply to it unchanged: a fault row cannot be dismissed either, and
-    it carries no location because a protocol fault has none. What is different
-    is what a missed row costs. A missed refusal means the player does not learn
-    why one wall was not built; a missed `danger` fault means they do not learn
-    that the interface can no longer say what the simulation is doing. ADR 0024
-    deliberately does not decide that placement question here — deciding a HUD
-    question on the back of a worker one is how the folded row got its second
-    producer without anyone re-asking whether folding is right — but it names
-    this gap as where the answer belongs.
+    [ADR 0024](./adr/0024-protocol-fault-recoverability.md)). A fault is not a
+    refusal of a player's command, it stands per code, and several can stand
+    at once, so one line cannot hold them and the list can. Both halves of the
+    *dismissal* half of this gap still apply to a fault unchanged: it cannot
+    be dismissed either, and it carries no location because a protocol fault
+    has none.
+
+    What stays open is the fault's own placement, and the stakes are the ones
+    #187 named: a missed refusal means the player does not learn why one wall
+    was not built; a missed `danger` fault means they do not learn that the
+    interface can no longer say what the simulation is doing. That is a
+    different question from the one answered above — a fault is not a refusal
+    and does not belong on a band that says a command was declined — and it is
+    deliberately still open here rather than settled as a side effect.

@@ -2591,9 +2591,9 @@ test.describe('the assembled application', () => {
     await expect(submit).toBeVisible();
     await submit.click();
 
-    // The command itself was accepted, so the thread-local refusal line stays
-    // hidden. If this ever lit up, the test would be measuring the wrong
-    // refusal entirely.
+    // The command itself was accepted, so nothing has been refused yet. If the
+    // band lit up *here* the test would be measuring the wrong refusal
+    // entirely -- a pre-flight throw rather than the simulation's decision.
     await expect(page.locator('.hud__refusal')).toBeHidden();
 
     // The row arrives on the worker's own schedule: the command is scheduled
@@ -2654,6 +2654,18 @@ test.describe('the assembled application', () => {
     expect(measured.width).toBeGreaterThan(0);
     expect(measured.height).toBeGreaterThan(0);
     expect(measured.hudMentionsIt).toBe(true);
+
+    // And the band, which is where the player was told *without* opening
+    // anything: the fold above had to be opened for the row, and the band was
+    // already carrying the same sentence before that click (#220, made
+    // structural). `data-source` says the simulation decided it, and no
+    // control is marked, because the command was accepted and refused later.
+    const band = page.locator('.hud__refusal');
+    await expect(band).toBeVisible();
+    await expect(band).toHaveAttribute('data-source', 'simulation');
+    await expect(band).toContainText('that tile is outside the map');
+    await expect(band).not.toContainText('build.');
+    await expect(page.locator('[data-action-failed="true"]')).toHaveCount(0);
   });
 
   /**
@@ -2746,11 +2758,15 @@ test.describe('the assembled application', () => {
   /**
    * The other half: what the player is *told* when the press removed nothing.
    *
-   * At 1280x800, because that is where the alerts region exists -- see the test
-   * above for why 375x812 cannot carry this half. The refusal is the simulation's
-   * own, decided at the command's tick and carried back on
-   * `simulation/status-counts`, so this needs a real worker, a running clock and
-   * `src/main.ts`'s own listener, exactly as #261's build-refusal test does.
+   * At 1280x800, where the alerts region exists, so both surfaces can be read
+   * at once: the band that carries the notice and the list that keeps the log.
+   * The phone -- where the list does not exist at all, and where this half was
+   * unreachable until #220's fix was made structural -- is the test below.
+   *
+   * The refusal is the simulation's own, decided at the command's tick and
+   * carried back on `simulation/status-counts`, so this needs a real worker, a
+   * running clock and `src/main.ts`'s own listener, exactly as #261's
+   * build-refusal test does.
    */
   test('tells the player when a world press had no object to remove (ADR 0028 phase 3)', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
@@ -2773,11 +2789,27 @@ test.describe('the assembled application', () => {
     await page.locator('.hud-build__remove').click();
     expect(await pressOnWorld(page), 'the HUD left no bare world to press at 1280x800').toBe(true);
 
-    // The command was accepted, so the thread-local refusal line stays hidden:
-    // this is a refusal *on content*, decided by the simulation, and it travels
-    // the alerts route. If this ever lit up the test would be measuring the
-    // wrong refusal entirely.
+    // The command was accepted, so nothing has been refused *yet* -- the
+    // simulation decides at the command's tick. A band lit up here would mean
+    // the pre-flight had spoken and the test was measuring the wrong refusal.
     await expect(page.locator('.hud__refusal')).toBeHidden();
+
+    // The band the sentence now reaches, and it says which producer it came
+    // from: `simulation`, not `host`. Before #220 was made structural this
+    // stayed hidden and the only report was the folded row below.
+    const band = page.locator('.hud__refusal');
+    await expect
+      .poll(async () => band.getAttribute('data-source'), {
+        message: 'the simulation refused the removal and the refusal band never said so',
+        timeout: 20_000,
+      })
+      .toBe('simulation');
+    await expect(band).toBeVisible();
+    await expect(band).toContainText(localeText('hud.alert.refusal.remove-object.nothing-to-remove'));
+    // No control is marked: the press was on the world, and the command was
+    // accepted before the simulation refused it several ticks later.
+    await expect(page.locator('[data-action-failed="true"]')).toHaveCount(0);
+    await expect(band).not.toHaveAttribute('data-action', /.*/u);
 
     const alertRow = page.locator('.hud-alerts__list [data-alert]:not([data-alert="empty"])');
     await expect
@@ -2799,6 +2831,96 @@ test.describe('the assembled application', () => {
     // A localized sentence, not the wire vocabulary (ADR 0011).
     await expect(alertRow).not.toContainText('remove-object.');
     await expect(alertRow).not.toContainText('nothing-to-remove');
+    // The log keeps its job. The band holds one sentence; the list holds this
+    // row beside any standing `protocol/error` row, which is why it is not
+    // redundant and was not emptied.
+    await expect(alertRow).toHaveCount(1);
+  });
+
+  /**
+   * The same refusal, on a phone -- **the measurement this whole change
+   * exists for.**
+   *
+   * `hud.css` drops `.hud__corner` at 720px and below, so at 375x812 the
+   * alerts list the worker's refusals arrived in does not exist. ADR 0028
+   * phase 3 said so in its own comments and left it: "a pre-existing gap this
+   * phase neither widens nor closes". It is closed here, structurally -- the
+   * band takes the whole class of simulation refusals, not one more sentence
+   * at a time -- and this is the proof, on the shipped page, with a real
+   * worker, at the viewport where nothing else could carry it.
+   *
+   * The geometry is measured rather than the text asserted, because #220's
+   * finding is precisely that `toContainText` passes against a 0x0 box.
+   */
+  test('a world press with nothing to remove says so at 375x812, where the alerts list does not exist', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
+    await expect
+      .poll(async () => page.locator('.hud-clock__day-progress').textContent(), {
+        message: 'the simulation never advanced, so no command could be dispatched',
+        timeout: 15_000,
+      })
+      .not.toBe('0%');
+
+    // The region really is gone at this viewport, asserted rather than taken
+    // from the stylesheet -- it is the premise of the whole test.
+    await expect(page.locator('.hud__corner')).toBeHidden();
+    await expect(page.locator('.hud__refusal')).toBeHidden();
+
+    await page.locator('.ui-tab[data-tab="build"]').click();
+    await page.locator('.hud-build__remove').click();
+    expect(await pressOnWorld(page), 'the HUD left no bare world to press at 375x812').toBe(true);
+
+    const band = page.locator('.hud__refusal');
+    await expect
+      .poll(async () => band.getAttribute('data-source'), {
+        message: 'the simulation refused the removal and the phone was told nothing',
+        timeout: 20_000,
+      })
+      .toBe('simulation');
+
+    // **Visible, with a box, on a page that actually rendered.** The canvas
+    // having real area is the proof of the last part: a page that failed to
+    // load reports plausible zeros for everything else.
+    const measured = await page.evaluate(() => {
+      const line = document.querySelector<HTMLElement>('.hud__refusal');
+      const rect = line?.getBoundingClientRect();
+      const canvas = document.querySelector<HTMLCanvasElement>('canvas')?.getBoundingClientRect();
+      const row = document.querySelector<HTMLElement>('.hud-alerts__list [data-alert]:not([data-alert="empty"])');
+      return {
+        laidOut: line !== null && line.offsetParent !== null,
+        width: rect?.width ?? 0,
+        height: rect?.height ?? 0,
+        canvasWidth: canvas?.width ?? 0,
+        canvasHeight: canvas?.height ?? 0,
+        // The row exists in the DOM and is inside a region the layout dropped.
+        alertRowPresent: row !== null,
+        alertRowLaidOut: row !== null && row.offsetParent !== null,
+        hudMentionsIt: (document.querySelector<HTMLElement>('.hud')?.innerText ?? '').includes(
+          'Nothing was removed',
+        ),
+      };
+    });
+    expect(measured.canvasWidth, 'the page never rendered, so nothing below means anything').toBeGreaterThan(0);
+    expect(measured.canvasHeight).toBeGreaterThan(0);
+    expect(measured.laidOut).toBe(true);
+    expect(measured.width).toBeGreaterThan(0);
+    expect(measured.height).toBeGreaterThan(0);
+    // `innerText` excludes a subtree the layout dropped, which is the
+    // measurement #220 established as the honest one.
+    expect(measured.hudMentionsIt).toBe(true);
+    // And the surface it replaced, at the same instant and at this viewport:
+    // the row is built and is on screen nowhere.
+    expect(measured.alertRowPresent).toBe(true);
+    expect(measured.alertRowLaidOut).toBe(false);
+
+    await expect(band).toContainText(localeText('hud.alert.refusal.remove-object.nothing-to-remove'));
+    await expect(band).not.toContainText('remove-object.');
+    await expect(band).not.toContainText('nothing-to-remove');
   });
 
   /**
@@ -3083,7 +3205,7 @@ test.describe('the assembled application', () => {
    * `invalid-quantity`, and the pre-flight answers `unknown-material` before
    * the worker ever sees it).
    */
-  test('a purchase the simulation refuses reaches the alerts list, and nowhere else (#89, #261)', async ({
+  test('a purchase the simulation refuses reaches the band and the log, and no control (#89, #261, #220)', async ({
     page,
   }) => {
     await installCommandTee(page);
@@ -3135,8 +3257,9 @@ test.describe('the assembled application', () => {
       .toBe(2);
 
     // Both got past the main thread, which is what makes this a test of the
-    // worker's refusal: a refusal line here would mean the pre-flight had
-    // spoken and there was nothing left for the simulation to refuse.
+    // worker's refusal: a lit band here -- with the clock still paused, so no
+    // command has been dispatched -- would mean the pre-flight had spoken and
+    // there was nothing left for the simulation to refuse.
     await expect(refusal).toBeHidden();
     await expect(page.locator('[data-action-failed="true"]')).toHaveCount(0);
     expect(await purchasesSent(page)).toEqual([
@@ -3202,11 +3325,18 @@ test.describe('the assembled application', () => {
       true,
     );
 
-    // **Exactly one message, which is the assertion this seam had none of.**
-    // The refusal line is still hidden and no control is marked: the worker's
-    // row is the only thing the player was told, and the pre-flight in
-    // `src/main.ts` did not also speak about the same gesture.
-    await expect(refusal).toBeHidden();
+    // **Exactly one refusal, from exactly one producer**, which is the
+    // assertion this seam had none of. The band carries the simulation's
+    // sentence -- and carried it before the fold above was opened, which is
+    // the half #220 left unfixed for every refusal but one -- while no
+    // control is marked and no `data-action` names one, because the pre-flight
+    // in `src/main.ts` said nothing about this gesture and the command it sent
+    // was accepted.
+    await expect(refusal).toBeVisible();
+    await expect(refusal).toHaveAttribute('data-source', 'simulation');
+    await expect(refusal).toContainText(localeText('hud.alert.refusal.purchase.insufficient-funds'));
+    await expect(refusal).not.toContainText('purchase.');
+    await expect(refusal).not.toHaveAttribute('data-action', /.*/u);
     await expect(page.locator('[data-action-failed="true"]')).toHaveCount(0);
     await expect(alertRow).toHaveCount(1);
   });

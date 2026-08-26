@@ -1,6 +1,6 @@
 import type { LocalizationKey } from '../content/localization';
 import type { ProtocolFaultCode, RefusalReason, WorkerToMainMessage } from '../simulation/protocol/types';
-import type { HudAlertViewModel } from './hud/view-model';
+import type { HudAlertViewModel, HudRefusalNoticeViewModel } from './hud/view-model';
 
 /**
  * What the player is told about each refusal the simulation can report.
@@ -252,6 +252,72 @@ export function hudAlertsFromWorkerMessage(
     // `UNKNOWN_HUD_CLOCK`.
     case 'simulation/stopped':
       return [];
+
+    default:
+      return undefined;
+  }
+}
+
+/**
+ * Turns the same refusal into the notice the HUD's always-laid-out band
+ * paints.
+ *
+ * The fifth translator outside `src/ui/hud/`, and the structural half of
+ * issue #220's fix -- see `HudRefusalNoticeViewModel` for the measurement it
+ * rests on and `mountHud`'s refusal element for the band's own rules.
+ *
+ * ## Why this is a second reading of one message rather than a second message
+ *
+ * There is exactly one refusal on the wire: `RefusalLog`'s last record, on
+ * `simulation/status-counts`. This function and `hudAlertsFromWorkerMessage`
+ * read that one record for two different surfaces, and they are separate
+ * functions rather than one returning a pair because the two surfaces have
+ * different lifetimes and different neighbours. The list merges the refusal
+ * with standing `protocol/error` rows and therefore needs the list it is
+ * updating; the band holds one sentence and needs nothing but the message.
+ * Folding them together would hand the band the alerts list's `previous`
+ * parameter for no reason, and `src/main.ts` would still have to pick the two
+ * results apart.
+ *
+ * ## What each surface is for, now that there are two
+ *
+ * - **The band is the notice.** It is laid out at every viewport and needs no
+ *   section opened, so it is where the player is *told*. It carries the most
+ *   recent refusal and nothing else.
+ * - **The list is the log.** It keeps the refusal row -- keyed by the same
+ *   ordinal, so it is still the row `HudAlertViewModel.id` was designed for --
+ *   *beside* the `protocol/error` rows nothing else on this thread reads.
+ *   Those two families cannot share one line: a fault is not a refusal of a
+ *   player command, it stands per code, and several can stand at once
+ *   (`replaceOrAppend`). The band cannot hold them and the list can, so the
+ *   list is not redundant and is not being emptied.
+ *
+ * The sentence therefore appears twice on a wide viewport with the section
+ * opened, and that is the intended reading rather than a duplication to be
+ * removed: one is what is happening now, the other is the entry it left.
+ *
+ * Tri-state for the reason `hudZoningFromWorkerMessage` is: `undefined` means
+ * this message says nothing about a refusal and the view model must be left
+ * alone, while `'none'` is a message that does say, and says there is none.
+ * Collapsing them would make a session that has refused nothing
+ * indistinguishable from a `simulation/delta`, and the band would go on
+ * showing a refusal from a session that had ended.
+ */
+export function hudRefusalFromWorkerMessage(
+  message: WorkerToMainMessage,
+): HudRefusalNoticeViewModel | 'none' | undefined {
+  switch (message.kind) {
+    case 'simulation/status-counts': {
+      const { refusal } = message.payload;
+      if (refusal === undefined) return 'none';
+      return { sequence: refusal.sequence, labelKey: REFUSAL_LABEL_KEYS[refusal.reason] };
+    }
+
+    // The session is over, so the band empties -- the same thing the list
+    // does, and for the same reason: a refusal by a simulation that no longer
+    // exists is not something the player can act on.
+    case 'simulation/stopped':
+      return 'none';
 
     default:
       return undefined;
