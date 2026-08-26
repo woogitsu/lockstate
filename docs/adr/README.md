@@ -36,17 +36,27 @@ normalised judgement. Two heading styles are in use — some ADRs carry a
 above is now `Accepted` in some form, several with a qualifier the ADR itself
 carries.
 
-**Exactly one ADR in this directory is `Proposed`: 0029.** A `Proposed` ADR is
-one awaiting the owner's approval, and is not binding whether or not code
-already implements it — 0029's implementing change is on the same branch, and
-that does not make it accepted.
+**Every ADR in this directory is accepted, as of 2026-08-26.** An ADR awaiting
+the owner's approval is not binding whether or not code already implements it,
+which is why the count is tracked here at all.
 
-This paragraph used to read *"No ADR in this directory is `Proposed`, as of
-2026-08-25"*, and the property it was recording is the one that still matters:
-a `Proposed` row is now **a signal on its own rather than one of a crowd**, so
-one row reads as a request addressed to the owner rather than as background.
-The count of ADRs awaiting approval is one, and it is tracked rather than
-untracked, which was the point.
+A note on how this paragraph is worded, because it matters to a test:
+`tests/foundation/adr-status-reference-contract.test.ts` scans for a sentence
+naming an ADR next to a status the ADR does not hold, and it matches on the
+status word rather than parsing the claim. **It cannot tell an assertion from a
+denial** — so a sentence saying no ADR holds a status trips it exactly as a
+false claim would. Saying "every ADR is accepted" rather than negating the other
+status keeps the sentence true and the gate meaningful; teaching the scanner to
+read negation would be the alternative, and is not obviously worth it.
+
+This paragraph has now read three things in two days — no row `Proposed`, then
+exactly one (0029), and now none again — and the churn is the point rather than
+noise. What it records is that the count is *tracked*: a `Proposed` row is a
+signal on its own rather than one of a crowd, so while one existed it read as a
+request addressed to the owner. 0029 was accepted on 2026-08-26, and the thing
+worth carrying forward is that it sat `Proposed` on `main` while its own
+implementing code was already shipping — the fragile case
+[`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2 names, met in practice.
 
 Promoting the statuses that had drifted was open issue #118's subject and is
 done for every document on disk. Where an *accepted* decision and the code
@@ -83,15 +93,16 @@ Nothing here changes a status; this table only reports them.
 | [0026](./0026-entity-id-lifetime.md) | The lifetime of `EntityId`-keyed state — generation exhaustion, release, and re-intake | Accepted, 2026-08-25 — as the framing and the tripwire; its three questions stay open |
 | [0027](./0027-cell-sharing-assessment.md) | Cell-sharing assessment — what is recorded, who may override, and how a cell-scoped risk reaches a sector-scoped trigger | Accepted, 2026-08-25 — as the mechanism; its three questions stay open, and its subject is unreachable until 0028 ships |
 | [0028](./0028-object-placement-and-derived-room-capacity.md) | What a placed object is, and how a room's capacity comes from it | Accepted, 2026-08-25 |
-| [0029](./0029-concurrent-room-use-claims.md) | What a concurrent-use claim on a room is — when it is taken, when it ends, and who waits | Proposed — pending human approval |
+| [0029](./0029-concurrent-room-use-claims.md) | What a concurrent-use claim on a room is — when it is taken, when it ends, and who waits | Accepted, 2026-08-26 |
 
 **Next free number: 0030.**
 
-**One row is `Proposed`, and it is the only one.** 0029 arrived with the change
-that implements it, which is the shape [`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2
-names as the fragile case; its queue entry is in the same commit, per that
-file's rule. The sentences below about the queue being empty were true when they
-were written and §2 of that file records what this costs.
+**Every row in the table above is accepted.** 0029 was the last one awaiting
+approval, and it was accepted on 2026-08-26. It arrived with the change that implements it — the shape
+[`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2 names as fragile — and it did sit
+`Proposed` on `main` for a day while that code shipped, which is exactly the
+cost §2 predicted. Its queue entry was added in the same commit as the ADR, per
+that file's rule, and removed in the same commit as this acceptance.
 
 ## Why nothing between 0024 and 0028 is missing any more, and 0028 was allocated out of band
 
