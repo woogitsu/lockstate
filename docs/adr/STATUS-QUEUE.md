@@ -8,10 +8,10 @@ implementation.
 
 **Nothing here changes a status.** A status moves in the ADR and in the index,
 never in this file. What changed with this revision is what the file is *for*:
-§1 records **all thirteen** flips, §2 records that **the queue is empty again —
-ADR 0029 was accepted on 2026-08-26** — above the account of why the queue had
-been emptied the first time and what that bought, and everything after it is the
-residue — one genuinely open
+§1 records **all thirteen** flips, §2 holds **the one decision awaiting approval —
+ADR 0031** — above the account of why the queue had been emptied the first time
+and what that bought (ADR 0029 was accepted on 2026-08-26 and its entry deleted;
+0031 arrived immediately after), and everything after it is the residue — one genuinely open
 decision, one watch item, and the gaps between an accepted decision and the
 code. §6 used to be the inventory of stale sentences the flips left behind;
 **they are corrected, and that class is now asserted by a test**, so what it
@@ -166,13 +166,21 @@ gap, not a wrong status; §5 carries it, with what has and has not moved since
 
 ---
 
-## 2. The queue is empty again: ADR 0029 was accepted
+## 2. The queue has one entry: ADR 0031
 
-**This heading has now read "empty", then "exactly one entry: ADR 0029", and
-"empty" again.** 0029 was accepted on 2026-08-26 and its entry is deleted, which
-is what this section's own rule prescribed: the entry said *"this entry is
-deleted"* as part of the exact recipe for accepting it, and following that
-recipe is the whole point of writing one.
+**This heading has now read "empty", then "exactly one entry: ADR 0029", then
+"empty again", and now one entry once more.** 0029 was accepted on 2026-08-26 and
+its entry was deleted, which is what this section's own rule prescribed — the
+entry said *"this entry is deleted"* as part of the exact recipe for accepting
+it, and following that recipe is the whole point of writing one. 0031 arrived
+immediately after, so the row below is a different decision rather than the same
+one returning.
+
+The rule this section states — *"any commit that adds an outstanding ADR adds an
+entry here in the same commit, giving the evidence, what settling it commits the
+project to, and the exact line that would replace the status"* — is followed by
+0031, and the account of why the queue was emptied is kept below unchanged,
+because it is the argument for why one row is worth reading.
 
 What the round trip is worth recording for: 0029 arrived on the same branch as
 its implementing code, and **it sat `Proposed` on `main` for a day while that
@@ -183,6 +191,62 @@ landing and the status moving is the cost, and it is not zero.
 
 The account of why the queue was emptied the first time is kept below unchanged,
 because it is still the argument for why one row is worth reading.
+
+### ADR 0031 — withdrawing one queued build order
+
+- **What it is.** [ADR 0031](./0031-build-queue-cancellation-surface.md),
+  *"Withdrawing one queued build order — where a player aims, and what a long
+  queue looks like"*. It settles two things at once: that the pending build queue
+  becomes a projected read model (`hud/build-queue`) rather than a copy the main
+  thread keeps, and where a player cancels **one** order rather than a whole
+  gesture.
+- **It arrived with its implementing change**, the same fragile case 0029's entry
+  above names, and for the same reason this entry is in the same commit.
+- **The evidence is a gate that had carried the gap for its whole life.**
+  `tests/foundation/unconsumed-command-contract.test.ts` measured
+  `CancelBuildOrder` as the repository's only command with no production
+  producer, and the reason its entry gave was correct: no order *id* reached the
+  main thread, so no control could name one.
+  `src/simulation/protocol/commands.ts` said the same thing while arguing that
+  `RemoveObject` carries a tile — an order id is something *"nothing on screen
+  shows and no snapshot carries"*. What changed is #348: construction builds one
+  order at a time, so `tests/unit/construction-geometry.test.ts`'s twelve-segment
+  run finishes at tick **730** where it used to finish at **70**, and eleven of
+  those twelve segments now wait hundreds of ticks with nothing on screen saying
+  so.
+- **What approving it commits the project to.** A thirteenth `PROJECTION_ID` and
+  a read model over `ConstructionSystem`; the queue read on the counts cadence
+  only while the Build tab is showing; a per-order cancel on the Build panel that
+  is `hidden` until something is queued and collapsed when it appears; **the
+  Build panel's catalogue dropping from a two-row floor to a one-row floor while
+  a queue exists**, which is where the block's 45px comes from and is the
+  decision most worth reading twice; and **three rows with no way to page past
+  them**, on the argument that the list is the crew's schedule and `Undo` is the
+  control for a whole run. It commits to no save-format change, no new content
+  and no change to `src/simulation/construction/**`.
+- **The measurement that shaped it, because it is the one a reviewer should
+  check.** The block's cost was first measured through the UI harness, whose
+  aside slot is empty and which therefore hands the Build panel 128.7px more rail
+  than the application ever does. On the assembled page a *collapsed* queue put
+  the panel 15px over its box at 1280x720 and 37px over at 900x600, with the
+  block's own header 14px and 37px below the panel's unscrolled fold — #174 for a
+  third time. The catalogue-floor donation is what fixes it, and after it the
+  header is above the fold at all five viewports with nothing scrolled.
+- **What refusing it would cost.** Refusing the surface means deciding the other
+  way round — that arbitrary per-order cancellation is not wanted — and the honest
+  consequence is deleting `CancelBuildOrder`: its schema member, its
+  `commandJson` case and its handler branch, with
+  `ConstructionSystem.cancelOrder` staying because `undo()` delegates to it. The
+  read model would survive either way, because "twelve queued, one being built" is
+  a fact #348 created and nothing else carries.
+- **The exact line that would replace the status.** In
+  `docs/adr/0031-build-queue-cancellation-surface.md`, replace
+  `**Proposed — pending human approval.** Not accepted.` with
+  `**Accepted, YYYY-MM-DD.**`, and change that ADR's row in
+  `docs/adr/README.md` from `Proposed — pending human approval` to
+  `Accepted, YYYY-MM-DD`. Both in the same commit — the suite checks the pair.
+  The two paragraphs in `docs/adr/README.md` that count the `Proposed` rows drop
+  by one, and this entry is deleted.
 
 ---
 

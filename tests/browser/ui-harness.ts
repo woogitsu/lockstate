@@ -16,6 +16,7 @@ import {
   type HudLocalizer,
   type HudRoomArea,
   type HudRoomGesture,
+  type HudBuildQueueViewModel,
   type HudRoomNeedsViewModel,
   type HudRoomsViewModel,
   type HudViewModel,
@@ -34,6 +35,8 @@ import type {
   ImportOutcomeName,
   HudProbe,
   IntakeProbe,
+  BuildQueueProbe,
+  BuildQueueRowProbe,
   LayoutBox,
   LayoutProbe,
   LockstateUiHarness,
@@ -451,6 +454,53 @@ function layoutBoxOf(node: Element | null): LayoutBox | null {
   };
 }
 
+/**
+ * What the Build panel's queue block is actually showing, measured rather than
+ * read off attributes.
+ *
+ * Module-level beside `layoutBoxOf`, because the row walk and the "is this
+ * reachable" rule are two things a per-probe copy would let drift -- and the
+ * rule is the whole point of the probe. #220's finding was that a row in a
+ * folded section inside a container `hud.css` drops at 720px is
+ * `offsetParent === null` with a 0x0 box at *every* viewport while
+ * `toContainText` passes. Every field below is one of the two answers that
+ * would have caught it.
+ */
+function buildQueueProbe(): BuildQueueProbe {
+  const section = document.querySelector<HTMLElement>('.hud-build__queue');
+  const header = section?.querySelector<HTMLButtonElement>('.ui-section__header') ?? null;
+  const rows = [...document.querySelectorAll<HTMLElement>('.hud-build__queue-row')].filter(
+    // Laid out, not merely present: the rows are pooled, so the ones with no
+    // order in them are `hidden` and still in the DOM. A probe that reported
+    // them would count three rows for a queue of one.
+    (row) => row.getClientRects().length > 0,
+  );
+  return {
+    sectionLaidOut: section !== null && section.getClientRects().length > 0,
+    open: header?.getAttribute('aria-expanded') === 'true',
+    countText: section?.querySelector<HTMLElement>('.hud-build__queue-count')?.textContent?.trim() ?? '',
+    sectionBox: layoutBoxOf(section),
+    rows: rows.map((row): BuildQueueRowProbe => {
+      const cancel = row.querySelector<HTMLButtonElement>('.ui-action');
+      return {
+        orderId: row.dataset['order'] ?? '',
+        state: row.dataset['state'] ?? '',
+        labelText: row.querySelector<HTMLElement>('.hud-build__queue-label')?.textContent?.trim() ?? '',
+        stateText: row.querySelector<HTMLElement>('.hud-build__queue-state')?.textContent?.trim() ?? '',
+        cancelAccessibleName: cancel?.getAttribute('aria-label') ?? '',
+        cancelBox: layoutBoxOf(cancel),
+        cancelHasOffsetParent: cancel !== null && cancel.offsetParent !== null,
+        cancelDisabled: cancel?.disabled ?? true,
+      };
+    }),
+    moreText:
+      [...(section?.querySelectorAll<HTMLElement>('.hud-build__note') ?? [])]
+        .filter((line) => line.getClientRects().length > 0)
+        .map((line) => (line.textContent ?? '').trim())
+        .find((text) => text.length > 0) ?? '',
+  };
+}
+
 const root = document.getElementById('ui-root');
 if (root === null) throw new Error('ui-harness: #ui-root is missing');
 
@@ -850,7 +900,7 @@ window.lockstateUiHarness = {
     const actions = document.querySelector<HTMLElement>('.hud-build__actions');
     const body = document.querySelector<HTMLElement>('.hud-build > .ui-panel__body');
     const hint = document.querySelector<HTMLElement>('.hud-build__map > .hud-build__note');
-    const submit = document.querySelector<HTMLButtonElement>('.hud-build .ui-section__body .ui-action');
+    const submit = document.querySelector<HTMLButtonElement>('.hud-build__coordinates .ui-action');
     const buyToggle = document.querySelector<HTMLButtonElement>('.hud-build__buy-toggle');
     const buyRow = document.querySelector<HTMLElement>('.hud-build__buy');
     const buySubmit = document.querySelector<HTMLButtonElement>('.hud-build__buy-submit');
@@ -944,6 +994,7 @@ window.lockstateUiHarness = {
       texts: [...(panel?.querySelectorAll<HTMLElement>('button, label, span, h2') ?? [])]
         .map((node) => (node.textContent ?? '').trim())
         .filter((text) => text.length > 0),
+      queue: buildQueueProbe(),
     };
   },
 
@@ -1175,6 +1226,41 @@ window.lockstateUiHarness = {
     });
   },
 
+  /**
+   * Publishes the build queue, which in the real app arrives over
+   * `simulation/request-projection` on the counts cadence.
+   *
+   * Spread rather than passed as `undefined`, so "nothing has been asked" is an
+   * absent property: `exactOptionalPropertyTypes` is on, and the panel branches
+   * on the field being there at all.
+   */
+  reportBuildQueue(queue: HudBuildQueueViewModel | undefined): void {
+    hud?.update({
+      ...BASE_VIEW_MODEL,
+      ...(queue === undefined ? {} : { buildQueue: queue }),
+    });
+  },
+
+  toggleBuildQueue(): boolean {
+    const header = document.querySelector<HTMLButtonElement>('.hud-build__queue .ui-section__header');
+    if (header === null || header.getClientRects().length === 0) return false;
+    // A real click, so a control inside a `hidden` section genuinely does not fire.
+    header.click();
+    return true;
+  },
+
+  pressBuildQueueCancel(orderId: string): boolean {
+    const row = document.querySelector<HTMLElement>(`.hud-build__queue-row[data-order="${orderId}"]`);
+    const cancel = row?.querySelector<HTMLButtonElement>('.ui-action');
+    if (cancel === undefined || cancel === null) return false;
+    // `offsetParent`, not the attribute: the row sits inside a collapsible body
+    // that carries `hidden` while folded, and a press on a control the player
+    // cannot see must not count as reaching it.
+    if (cancel.offsetParent === null) return false;
+    cancel.click();
+    return true;
+  },
+
   roomsProbe(): RoomsProbe {
     const panel = document.querySelector<HTMLElement>('.hud-rooms');
     const note = document.querySelector<HTMLElement>('.hud-rooms__note');
@@ -1270,8 +1356,10 @@ window.lockstateUiHarness = {
 
   clickPlaceOrder(): boolean {
     // The numeric route's button, inside the folded section -- not the arm
-    // toggle, which is now the panel's first `.ui-action`.
-    const submit = document.querySelector<HTMLButtonElement>('.hud-build .ui-section__body .ui-action');
+    // toggle, which is the panel's first `.ui-action`, and not a queue row's
+    // cancel, which is the panel's last (#348). Scoped to
+    // `.hud-build__coordinates` so it names the section rather than a position.
+    const submit = document.querySelector<HTMLButtonElement>('.hud-build__coordinates .ui-action');
     if (submit === null) return false;
     // A real click, so a disabled button genuinely does not fire.
     submit.click();
@@ -1281,10 +1369,22 @@ window.lockstateUiHarness = {
   buildLayoutProbe(): BuildLayoutProbe {
     const panel = document.querySelector<HTMLElement>('.hud-build');
     const list = document.querySelector<HTMLElement>('.hud-build__list');
-    // The panel's last section is the numeric fallback -- "Enter coordinates".
-    // Found as the last `.ui-section` inside the panel rather than by a
-    // hard-coded index, so it stays the *last* one if another is ever added.
-    const sections = [...document.querySelectorAll<HTMLElement>('.hud-build .ui-section')];
+    // The panel's last *laid-out* section, which in the arrival state is the
+    // numeric fallback -- "Enter coordinates". Found by walking rather than by a
+    // hard-coded index, so it stays the last one if another is ever added.
+    //
+    // **`getClientRects()`, and that filter is load-bearing.** The queue block
+    // (#348) is a `.ui-section` appended *after* the numeric fallback and
+    // `hidden` whenever nothing is queued -- which is every state the reachability
+    // assertions in `ui-shell.spec.ts` measure. Taking the last node in document
+    // order would report a section with no box as "the panel's last section", so
+    // `lastSectionHeader` would be `null` and `lastSectionHeaderText` would read
+    // "Queued": the fold assertion would go vacuous and the text assertion would
+    // fail, both for a block that is not on screen. What those assertions are
+    // about is the last thing the player can actually see.
+    const sections = [...document.querySelectorAll<HTMLElement>('.hud-build .ui-section')].filter(
+      (section) => section.getClientRects().length > 0,
+    );
     const header = sections[sections.length - 1]?.querySelector<HTMLElement>('.ui-section__header') ?? null;
 
     const box = layoutBoxOf;

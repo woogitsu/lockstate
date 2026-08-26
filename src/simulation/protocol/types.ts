@@ -313,6 +313,7 @@ const shutdownMessageSchema = z
  */
 export const PROJECTION_IDS = [
   'hud/status-strip',
+  'hud/build-queue',
   'hud/prisoner-population',
   'hud/prisoner-roster',
   'hud/prisoner-detail',

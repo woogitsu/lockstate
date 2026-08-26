@@ -1309,6 +1309,49 @@ test.describe('the assembled application', () => {
     await page.getByRole('button', { name: 'New prison' }).click();
     await expect(page.locator('.save-panel__item-label').first()).toContainText('New Prison');
 
+    /*
+     * A queue, once, and then the clock is stopped so it stays one for the rest
+     * of the test.
+     *
+     * The Build panel's queue block (#348) is the second block after #89's buy
+     * row whose controls exist in the DOM at every moment and are laid out at
+     * none of the states this sweep would otherwise visit -- and there are four
+     * of them: the fold's own header and one Cancel per row. Without this the
+     * `neverLaidOut` check at the foot of the loop does not merely get weaker, it
+     * fails and names all four, which is the gate doing exactly its job.
+     *
+     * It has to be built through the real application, so it is: six orders
+     * placed through the panel's own numeric route, then the clock started
+     * because a command is dispatched at a tick and a paused simulation would
+     * leave all six in the kernel's queue with no order to show. Six rather than
+     * one because construction builds **one order at a time** since #348 -- a
+     * lone wall finishes at tick 70, where six take 370 -- so this gives the poll
+     * below room to see the block before the crew empties it. The clock is then
+     * paused, which freezes the queue: the projection answers a request whenever
+     * one arrives, tick or no tick, so the block survives every viewport and
+     * every tab change below.
+     */
+    await page.getByRole('button', { name: 'Build' }).click();
+    const queueSetupCoordinates = page.locator('.hud-build__coordinates > .ui-section__header');
+    if ((await queueSetupCoordinates.getAttribute('aria-expanded')) === 'false') await queueSetupCoordinates.click();
+    const queueSetupSubmit = page.locator('.hud-build__coordinates .ui-action');
+    for (const tileY of [5, 6, 7, 8, 9, 10]) {
+      await page.getByRole('spinbutton', { name: 'Tile X' }).fill('5');
+      await page.getByRole('spinbutton', { name: 'Tile Y' }).fill(String(tileY));
+      await queueSetupSubmit.click();
+    }
+    if ((await queueSetupCoordinates.getAttribute('aria-expanded')) === 'true') await queueSetupCoordinates.click();
+    await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
+    // A box, not a count: the block is `hidden` until the projection reports a
+    // queue, and `hidden` is what "there is nothing coming" looks like.
+    await expect
+      .poll(async () => (await page.locator('.hud-build__queue').boundingBox()) !== null, {
+        message: 'six placed orders never reached the Build panel as a queue',
+        timeout: 20_000,
+      })
+      .toBe(true);
+    await page.locator('.hud-strip__transport [title="Pause"]').click();
+
     for (const [width, height] of [
       // The viewport the issue was measured at, a wide desktop, a small
       // laptop, a short window and a phone. The collision is a layout
@@ -1414,24 +1457,40 @@ test.describe('the assembled application', () => {
       // the reason the defect is a defect. So the first assertion is that
       // nothing had to scroll the panel to reach a control, and the second is
       // where the header sits once it is unscrolled -- each red on its own.
+      // Two headers, not one, and the second is the addition rather than a
+      // replacement. This used to reach "the panel's last `.ui-section`" by
+      // position and check that it read "Enter coordinates". The queue block
+      // (#348) is a `.ui-section` appended after the numeric fallback and laid
+      // out whenever something is queued -- which is now this test's state -- so
+      // position no longer identifies the numeric fallback. It is named instead
+      // (`.hud-build__coordinates`), and the *last visible* section is measured
+      // as well, because "the panel's last section is above its fold" is the
+      // property #174 is about and it has to hold for whichever section that is.
       const lastSection = await page.evaluate(() => {
         const panel = document.querySelector('.hud-build');
-        const sections = [...document.querySelectorAll('.hud-build .ui-section')];
-        const header = sections.at(-1)?.querySelector('.ui-section__header') ?? null;
-        if (panel === null || header === null) return null;
+        const named = document.querySelector('.hud-build__coordinates > .ui-section__header');
+        const sections = [...document.querySelectorAll('.hud-build .ui-section')].filter(
+          (section) => section.getClientRects().length > 0,
+        );
+        const last = sections.at(-1)?.querySelector('.ui-section__header') ?? null;
+        if (panel === null || named === null || last === null) return null;
         const scrollTop = panel.scrollTop;
         panel.scrollTop = 0;
         const p = panel.getBoundingClientRect();
-        const h = header.getBoundingClientRect();
+        const fold = p.top + panel.clientTop + panel.clientHeight;
         return {
-          text: header.textContent?.trim() ?? '',
-          bottom: h.bottom,
-          fold: p.top + panel.clientTop + panel.clientHeight,
+          text: named.textContent?.trim() ?? '',
+          bottom: named.getBoundingClientRect().bottom,
+          lastText: last.textContent?.trim() ?? '',
+          lastBottom: last.getBoundingClientRect().bottom,
+          fold,
           scrollTop,
         };
       });
       expect(lastSection, `the Build panel's last section has no box at ${width}x${height}`).not.toBeNull();
-      expect(lastSection?.text, `the panel's last section at ${width}x${height}`).toBe('Enter coordinates');
+      expect(lastSection?.text, `the panel's numeric fallback section at ${width}x${height}`).toBe(
+        'Enter coordinates',
+      );
       expect(
         lastSection?.scrollTop,
         `reaching a control scrolled the Build panel at ${width}x${height}`,
@@ -1439,6 +1498,20 @@ test.describe('the assembled application', () => {
       expect(
         lastSection?.bottom ?? Number.POSITIVE_INFINITY,
         `"Enter coordinates" is below the unscrolled Build panel's fold at ${width}x${height}: it ends at y=${Math.round(lastSection?.bottom ?? 0)} in a panel clipped at y=${Math.round(lastSection?.fold ?? 0)}`,
+      ).toBeLessThanOrEqual(lastSection?.fold ?? 0);
+      /*
+       * And whatever *is* last. With a queue that is the queue block's own
+       * header, and it is the header that says a queue exists at all -- so a
+       * player who cannot see it has not been told. Measured before this
+       * assertion existed: the collapsed block is 45px and the rail had 8px to
+       * spare at 1280x720 and none at 900x600, so the header ended **14px and
+       * 37px below this fold** with nothing scrolled. `hud.css`'s
+       * `.hud-build[data-queued]` is what pays for it, out of the catalogue's
+       * floor.
+       */
+      expect(
+        lastSection?.lastBottom ?? Number.POSITIVE_INFINITY,
+        `the Build panel's last visible section ("${lastSection?.lastText ?? ''}") is below its unscrolled fold at ${width}x${height}: it ends at y=${Math.round(lastSection?.lastBottom ?? 0)} in a panel clipped at y=${Math.round(lastSection?.fold ?? 0)}`,
       ).toBeLessThanOrEqual(lastSection?.fold ?? 0);
 
       // And no box that carries the Build panel's height is ever shorter than
@@ -1491,7 +1564,14 @@ test.describe('the assembled application', () => {
 
       // The numeric fallback expanded: the tallest the Build panel gets, and
       // the state issue #88 was measured in.
-      const coordinates = page.locator('.hud-build .ui-section__header').last();
+      //
+      // Named, not positional. All three of this file's reaches for this header
+      // used to be `.hud-build .ui-section__header').last()`, and the queue
+      // block (#348) is a `.ui-section` appended after the numeric fallback --
+      // `hidden` while nothing is queued, so `.last()` resolved to an invisible
+      // button and the click waited out the whole 60s timeout. `.hud-build__coordinates`
+      // exists so a selector can say which section it means.
+      const coordinates = page.locator('.hud-build__coordinates > .ui-section__header');
       if ((await coordinates.getAttribute('aria-expanded')) === 'false') await coordinates.click();
       const expanded = await controlReachability(page);
       for (const index of expanded.measured) everMeasured.add(index);
@@ -1605,6 +1685,84 @@ test.describe('the assembled application', () => {
       // Closed again, the panel fits, so a scroll left over from reaching a
       // control in that state cannot survive into the next viewport's
       // measurement of where the last section is.
+      await page.evaluate(() => {
+        const panel = document.querySelector('.hud-build');
+        if (panel !== null) panel.scrollTop = 0;
+      });
+
+      /*
+       * The queue block open (#348), which is this panel's third player-opened
+       * state and the buy row's argument one block down.
+       *
+       * Its three Cancel controls exist in the DOM at every moment -- the rows
+       * are pooled, so the HUD's busy group, which has `add` and no `remove`,
+       * cannot grow over a session -- and are laid out in none of the states
+       * above. Without this the `neverLaidOut` check below fails and names them,
+       * which is the gate working: a control the sweep can never see is a control
+       * this test cannot claim is reachable. Six orders are queued and the clock
+       * is stopped, from before the loop.
+       */
+      const queueFold = page.locator('.hud-build__queue > .ui-section__header');
+      await expect(queueFold, `the queue fold is missing at ${width}x${height}`).toBeVisible();
+      await queueFold.click();
+      await expect(page.locator('.hud-build__queue-list')).toBeVisible();
+
+      // Every revealed control is inside the panel's *visible* box, measured
+      // the way #174 measures it and for the reason the buy row's own check
+      // above gives: opening a fold that reveals controls below the panel's own
+      // fold has not revealed them. `controlReachability` below cannot make this
+      // claim, because it calls `scrollIntoView` first. Measured over all three
+      // rows rather than one, because they are stacked and only the last is at
+      // risk -- 38px, 90px and 142px of clearance at 1280x720 today.
+      const queueBoxes = await page.evaluate(() => {
+        const panel = document.querySelector('.hud-build');
+        if (panel === null) return null;
+        const p = panel.getBoundingClientRect();
+        const top = p.top + panel.clientTop;
+        return [...document.querySelectorAll('.hud-build__queue-row')]
+          .filter((row) => row.getClientRects().length > 0)
+          .map((row) => {
+            const control = row.querySelector('.ui-action');
+            if (control === null) return { order: row.getAttribute('data-order') ?? '', above: -1, below: -1 };
+            const c = control.getBoundingClientRect();
+            return {
+              order: row.getAttribute('data-order') ?? '',
+              above: Math.round(c.top - top),
+              below: Math.round(top + panel.clientHeight - c.bottom),
+            };
+          });
+      });
+      expect(queueBoxes, `the queue rows have no boxes once the fold is open at ${width}x${height}`).not.toBeNull();
+      expect(queueBoxes?.length ?? 0, `the open queue drew no rows at ${width}x${height}`).toBeGreaterThan(0);
+      for (const row of queueBoxes ?? []) {
+        expect(
+          row.above,
+          `the cancel for ${row.order} is above the Build panel's visible box at ${width}x${height}`,
+        ).toBeGreaterThanOrEqual(0);
+        expect(
+          row.below,
+          `the cancel for ${row.order} is below the Build panel's visible box at ${width}x${height}: opening the fold revealed a control the player cannot see`,
+        ).toBeGreaterThanOrEqual(0);
+      }
+
+      const queued = await controlReachability(page);
+      inventory = queued.controls;
+      for (const index of queued.measured) everMeasured.add(index);
+      expect(
+        queued.unreachable,
+        `controls covered by something else with the build queue open at ${width}x${height}`,
+      ).toEqual([]);
+      // The rail still holds in a state that overflows the panel at every
+      // viewport here: the panel absorbs its own excess and the player scrolls
+      // it, which is what separates this from #174's defect -- there the panel
+      // arrived clipped, here the player opened a fold.
+      expect(
+        railInvariants(await railIntegrity(page)),
+        `the rail with the build queue open at ${width}x${height}`,
+      ).toEqual({ railOverflow: 0, offScreen: [], stuck: [] });
+
+      await queueFold.click();
+      await expect(page.locator('.hud-build__queue-list')).toBeHidden();
       await page.evaluate(() => {
         const panel = document.querySelector('.hud-build');
         if (panel !== null) panel.scrollTop = 0;
@@ -2697,10 +2855,14 @@ test.describe('the assembled application', () => {
     // is the state a first-time player is in for as long as they leave the
     // save panel alone.
     await page.getByRole('button', { name: 'Build' }).click();
-    const coordinates = page.locator('.hud-build .ui-section__header').last();
+    const coordinates = page.locator('.hud-build__coordinates > .ui-section__header');
     if ((await coordinates.getAttribute('aria-expanded')) === 'false') await coordinates.click();
 
-    const submit = page.locator('.hud-build .ui-section__body .ui-action');
+    // Scoped to the numeric fallback's own section. A bare
+    // `.hud-build .ui-section__body .ui-action` matches every cancel in the
+    // queue block too, and Playwright's strict mode rejects a multi-match
+    // locator before it ever asks about visibility.
+    const submit = page.locator('.hud-build__coordinates .ui-action');
     await expect(submit).toBeVisible();
 
     const before = await page.locator('.hud').innerText();
@@ -2865,7 +3027,7 @@ test.describe('the assembled application', () => {
     await expect(emptyRow).toHaveCount(1);
 
     await page.getByRole('button', { name: 'Build' }).click();
-    const coordinates = page.locator('.hud-build .ui-section__header').last();
+    const coordinates = page.locator('.hud-build__coordinates > .ui-section__header');
     if ((await coordinates.getAttribute('aria-expanded')) === 'false') await coordinates.click();
 
     // Outside the single 32x32 chunk a new prison owns. The fields accept it
@@ -2875,7 +3037,7 @@ test.describe('the assembled application', () => {
     // buttons, which carry `aria-label="Decrease Tile X"`/"Increase Tile X".
     await page.getByRole('spinbutton', { name: 'Tile X' }).fill('100');
     await page.getByRole('spinbutton', { name: 'Tile Y' }).fill('100');
-    const submit = page.locator('.hud-build .ui-section__body .ui-action');
+    const submit = page.locator('.hud-build__coordinates .ui-action');
     await expect(submit).toBeVisible();
     await submit.click();
 

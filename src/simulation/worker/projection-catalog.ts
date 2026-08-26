@@ -3,6 +3,7 @@ import {
   HUD_VIEW_MODEL_SCHEMA_VERSION,
   WORLD_RENDER_SNAPSHOT_SCHEMA_ID,
   WORLD_RENDER_SNAPSHOT_SCHEMA_VERSION,
+  projectBuildQueue,
   projectContraband,
   projectIncidentDetail,
   projectIncidents,
@@ -201,6 +202,25 @@ export const PROJECTION_CATALOG: Readonly<Record<ProjectionId, ProjectionCatalog
     paged: false,
     target: 'none',
     project: (runtime, tick) => ({ view: projectStatusStrip(statusStripSource(runtime, tick)) as unknown as JsonValue }),
+  },
+
+  /**
+   * What is still waiting to be built.
+   *
+   * `runtime.construction` is the one `ConstructionSystem` a session has, so
+   * this is the queue the crew is actually working through rather than a second
+   * view of it. Paged, because a queue has no ceiling: a drag along thirty tiles
+   * is thirty orders, and `docs/HUD_PROJECTIONS.md` contract 5 puts the window
+   * in the caller's hands with `MAX_PROJECTION_PAGE_LIMIT` as the ceiling.
+   */
+  'hud/build-queue': {
+    ...hud(`${HUD_VIEW_MODEL_SCHEMA_ID}.build-queue`),
+    paged: true,
+    target: 'none',
+    project: (runtime, _tick, request) => {
+      const view = projectBuildQueue(runtime.construction, pageRequest(request));
+      return { view: view as unknown as JsonValue, page: pageOfView(view.orders) };
+    },
   },
 
   'hud/prisoner-population': {

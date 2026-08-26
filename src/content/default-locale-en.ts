@@ -333,6 +333,31 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.build.buy-quantity': 'Quantity',
   'hud.build.buy-submit': 'Buy {count} × {material} · {total}',
   'hud.build.buy-hint': 'Arrives while the clock runs, into the stock a build draws from.',
+  /*
+   * The queue (#348, and the surface that finally gives `CancelBuildOrder` a
+   * producer).
+   *
+   * `queue-count` counts the whole queue and says how much of it is moving,
+   * because "one of twelve" is the fact #348 created and nothing on screen
+   * carried: the crew builds one order at a time, so eleven of a twelve-segment
+   * run are waiting.
+   *
+   * `queue-order` is the row, and the order of the words is the order a player
+   * needs them in: *what* it is, *where* it is, and *what it is waiting for*.
+   * The edge and the state both arrive already translated, from
+   * `build-edge` and `build-order-state` in the simulation enum table -- there is
+   * no second spelling of either here.
+   *
+   * `queue-more` says what is behind the last row and deliberately offers no way
+   * to reach it: those orders are not the ones about to happen, and taking a
+   * whole run back is Undo's job.
+   */
+  'hud.build.queue': 'Queued',
+  'hud.build.queue-count': '{count} waiting · {started} being built',
+  'hud.build.queue-order': '{buildable} · {x}, {y} · {edge}',
+  'hud.build.queue-cancel': 'Cancel',
+  'hud.build.queue-unnamed': 'Unnamed order',
+  'hud.build.queue-more': 'and {count} more behind these — undo takes back a whole run.',
   'hud.build.buildable.wall-brick': 'Brick wall',
   'hud.build.buildable.door-wooden': 'Wooden door',
 
@@ -382,6 +407,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.refusal.zone-room': 'The room was not designated — the request was refused.',
   'hud.refusal.unzone-room': 'Nothing was removed — the request was refused.',
   'hud.refusal.admit-prisoner': 'Nobody was admitted — the request was refused.',
+  'hud.refusal.cancel-build-order': 'The order is still queued — the request was refused.',
 
   'hud.rooms.title': 'Rooms',
   'hud.rooms.catalogue': 'Room type',

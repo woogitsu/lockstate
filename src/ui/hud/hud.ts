@@ -419,6 +419,31 @@ export type HudIntent =
   | { readonly kind: 'undo' }
   | { readonly kind: 'redo' }
   /**
+   * The player asked for **one particular** queued order to be withdrawn.
+   *
+   * One id and nothing else -- the host turns this into a `CancelBuildOrder`
+   * command; the HUD does not know that such a command exists, and the id is not
+   * one it could mint. It came *in*, on the build-queue view model, from the
+   * projection that names the pending orders.
+   *
+   * **Why this is not `undo`.** Both take a wall back, and that is where the
+   * resemblance stops. `Undo` is payload-free by protocol and reverses the last
+   * *transaction* -- a twelve-segment drag is one gesture and undoes as one wall
+   * -- so it can take back everything after the order the player is looking at
+   * but not that order alone. This names the order. Since #348 the difference is
+   * something a player actually meets: construction builds one order at a time,
+   * so eleven of those twelve segments sit queued for hundreds of ticks and
+   * "cancel the third one, keep the rest" is the obvious thing to want.
+   *
+   * A *command*, so it goes through the same gate as a build order: a second tap
+   * while one is in flight must not hand a busy host two cancellations, and a
+   * refusal has to reach the player rather than being discarded. Cancellation is
+   * idempotent at the simulation's command boundary -- an id naming nothing is
+   * swallowed -- so the refusal this can paint is about *this thread* (no worker,
+   * no session), which is what `hud.refusal.cancel-build-order` says.
+   */
+  | { readonly kind: 'cancel-build-order'; readonly orderId: string }
+  /**
    * The player asked for an area to become a room (ADR 0022, amended).
    *
    * Ids and numbers only -- the host turns this into a `ZoneRoom` command; the
@@ -1140,6 +1165,24 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
         buildPanel.purchaseControl,
       );
     },
+    /*
+     * Withdrawing one queued order, which is the surface `CancelBuildOrder` had
+     * been waiting for.
+     *
+     * A *command* for the same reasons placing one is: it asks the host to
+     * change the simulation, and a second tap while one is in flight must not
+     * hand a busy host two cancellations. No control is passed, deliberately --
+     * `dispatchCommand`'s `control` argument marks *the* control a refusal is
+     * about, and there are `BUILD_QUEUE_ROW_LIMIT` of these, each naming a
+     * different order and each repainted on the counts cadence. Marking a pooled
+     * row would leave the mark on whichever order landed in it next, which is a
+     * worse lie than no mark; the refusal line still says what did not happen,
+     * which is the surface #220 established as the one that is on screen at
+     * every viewport.
+     */
+    onCancelOrder: (orderId) => {
+      dispatchCommand({ kind: 'cancel-build-order', orderId });
+    },
   });
   /*
    * The Rooms panel, and the two commands it can issue (ADR 0022, amended).
@@ -1478,6 +1521,10 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // reaches the panel as `undefined` rather than as an empty model, because
     // "nobody asked" and "every room is finished" must not draw the same.
     roomsPanel.setRoomNeeds(next.roomNeeds);
+    // And what is still being built, on the same terms: pulled rather than
+    // published, absent when nothing asked, and passed straight through. The
+    // panel decides what a queue looks like; this line decides nothing.
+    buildPanel.setBuildQueue(next.buildQueue);
     // Last, so that a snapshot which both empties the alerts list and carries
     // a refusal leaves the band and the log agreeing about the same record.
     applySimulationRefusal(next.refusal);

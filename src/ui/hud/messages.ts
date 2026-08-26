@@ -145,6 +145,40 @@ export const HUD_MESSAGE_KEY = {
   buildBuyQuantity: 'hud.build.buy-quantity',
   buildBuySubmit: 'hud.build.buy-submit',
   buildBuyHint: 'hud.build.buy-hint',
+  /**
+   * The queue block, which is what #348 made worth building.
+   *
+   * Construction now builds one order at a time, so a twelve-segment run
+   * finishes at tick 730 rather than 70 -- and nothing on screen said a queue
+   * existed. `buildQueue` labels the fold, `buildQueueCount` is the figure in its
+   * header (the whole queue, not the rows that fit), and `buildQueueOrder` is one
+   * row: what it is, where it is, which edge, and what it is waiting for. The
+   * state's own word comes from `build-order-state` in
+   * `src/content/simulation-message-keys.ts` rather than from a key here, for the
+   * reason the edge labels do -- it is a projected simulation enum, and a second
+   * set of words for it here would drift.
+   *
+   * `buildQueueCancel` is the badge on every row saying what pressing it does.
+   * A row that only named an order would be a control whose action a player has
+   * to guess, and this one is destructive.
+   *
+   * `buildQueueUnnamed` is for an order whose buildable the host names no key
+   * for -- possible by construction (`docs/HUD_PROJECTIONS.md` gap 32) and not
+   * reachable with the shipped catalogue. The row is still drawn, because an
+   * order nobody can name is still an order a player may want to withdraw.
+   *
+   * `buildQueueMore` states how many orders are queued behind the last row
+   * shown, and the reason there is no control to reach them is in
+   * `BUILD_QUEUE_ROW_LIMIT`: the list is the crew's schedule, so the rows are
+   * the orders that are about to happen, and taking a whole run back is what
+   * `Undo` is for.
+   */
+  buildQueue: 'hud.build.queue',
+  buildQueueCount: 'hud.build.queue-count',
+  buildQueueOrder: 'hud.build.queue-order',
+  buildQueueCancel: 'hud.build.queue-cancel',
+  buildQueueUnnamed: 'hud.build.queue-unnamed',
+  buildQueueMore: 'hud.build.queue-more',
 
   /**
    * The Staff panel on the Security tab
@@ -368,6 +402,7 @@ export const HUD_MESSAGE_KEY = {
    * prison in the same state and there is nothing different to do about them.
    */
   refusalAdmitPrisoner: 'hud.refusal.admit-prisoner',
+  refusalCancelBuildOrder: 'hud.refusal.cancel-build-order',
 
   severityInfo: 'hud.severity.info',
   severityWarning: 'hud.severity.warning',

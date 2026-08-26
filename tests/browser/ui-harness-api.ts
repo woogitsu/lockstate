@@ -1,4 +1,4 @@
-import type { HudRoomNeedsViewModel, HudViewModel } from '../../src/ui/hud';
+import type { HudBuildQueueViewModel, HudRoomNeedsViewModel, HudViewModel } from '../../src/ui/hud';
 
 /**
  * The contract between the in-page UI harness (`ui-harness.ts`) and
@@ -189,6 +189,58 @@ export interface BuildProbe {
   readonly buyQuantity: string;
   /** Every visible label in the panel, so an unresolved `hud.*` key is caught. */
   readonly texts: readonly string[];
+  /** The queue fold (#348) -- see `BuildQueueProbe`. */
+  readonly queue: BuildQueueProbe;
+}
+
+/**
+ * The Build panel's queue block, and every field here is a `getClientRects()` or
+ * `offsetParent` answer rather than an attribute read.
+ *
+ * That is issue #220's lesson applied to a control that did not exist when it
+ * was learned. #220 measured that a message routed to the alerts list is on
+ * screen at **no** viewport -- `hud.css` drops `.hud__corner` at 720px and below,
+ * and the section starts folded -- so the row was `offsetParent === null` with a
+ * 0x0 box everywhere while `toContainText` passed. A cancel button is a worse
+ * case than a message: a control the player cannot reach is a feature that does
+ * not exist, and the whole point of this block is that it is *pressable* on a
+ * phone.
+ */
+export interface BuildQueueProbe {
+  /** Whether the browser gave the section a box at all. `false` in the arrival state, by design. */
+  readonly sectionLaidOut: boolean;
+  /** `aria-expanded` on the fold's header: `false` when it appears, which is the design. */
+  readonly open: boolean;
+  /** The header's figure -- the whole queue's length, never the row count. */
+  readonly countText: string;
+  /** The section's box, so a spec can say where in the panel it sits. */
+  readonly sectionBox: LayoutBox | null;
+  /** One entry per row the browser actually laid out, in draw order. */
+  readonly rows: readonly BuildQueueRowProbe[];
+  /** The "and N more" line, empty when every queued order has a row. */
+  readonly moreText: string;
+}
+
+export interface BuildQueueRowProbe {
+  /** `data-order`: *which* order this row is aimed at. The whole feature is that this is answerable. */
+  readonly orderId: string;
+  /** `data-state`: what the row says it is waiting for, as an id rather than as translated text. */
+  readonly state: string;
+  /** The rendered sentence: what it is, where it is, which edge. */
+  readonly labelText: string;
+  /** The rendered state word, so an unresolved `build-order-state.*` key is caught. */
+  readonly stateText: string;
+  /** The cancel button's accessible name, which must name *this* order. */
+  readonly cancelAccessibleName: string;
+  /**
+   * The cancel button's own box and whether it has an `offsetParent`.
+   *
+   * Both, and neither alone is enough: `offsetParent` is `null` for a node inside
+   * a `display: none` ancestor, and a node can have one and still be 0x0.
+   */
+  readonly cancelBox: LayoutBox | null;
+  readonly cancelHasOffsetParent: boolean;
+  readonly cancelDisabled: boolean;
 }
 
 /** The Staff panel on the Security tab (ADR 0025). */
@@ -616,6 +668,12 @@ export interface LockstateUiHarness {
    * to be handed each of them to prove it.
    */
   reportRoomNeeds(needs: HudRoomNeedsViewModel | undefined): void;
+  /** Publishes the build queue, which in the real app arrives over `simulation/request-projection`. */
+  reportBuildQueue(queue: HudBuildQueueViewModel | undefined): void;
+  /** Presses the queue fold's header. Returns false when the section is not laid out. */
+  toggleBuildQueue(): boolean;
+  /** Presses the cancel control on the row aimed at `orderId`. Returns false when no such row is laid out. */
+  pressBuildQueueCancel(orderId: string): boolean;
   roomsProbe(): RoomsProbe;
   roomsLayoutProbe(): RoomsLayoutProbe;
   buildLayoutProbe(): BuildLayoutProbe;

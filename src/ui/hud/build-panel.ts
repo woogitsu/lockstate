@@ -9,7 +9,14 @@ import { createListRow, type ListRow } from '../primitives/list-row';
 import { createNumberField, type NumberField } from '../primitives/number-field';
 import { createPanel } from '../primitives/panel';
 import { HUD_MESSAGE_KEY } from './messages';
-import { HUD_BUILD_EDGES, type HudBuildEdge, type HudBuildViewModel, type HudLocalizer } from './view-model';
+import {
+  HUD_BUILD_EDGES,
+  type HudBuildEdge,
+  type HudBuildOrderViewModel,
+  type HudBuildQueueViewModel,
+  type HudBuildViewModel,
+  type HudLocalizer,
+} from './view-model';
 
 /**
  * The Build panel.
@@ -114,6 +121,14 @@ export interface BuildPanelOptions {
   readonly onArm: (armed: boolean, definitionId: string | undefined, removing: boolean) => void;
   /** Buy the selected buildable's material, in the quantity the stepper shows (#89). */
   readonly onPurchase: (intent: BuildPanelPurchaseIntent) => void;
+  /**
+   * Withdraw **one** pending order, named by its own id.
+   *
+   * The id and nothing else. The panel does not know that a `CancelBuildOrder`
+   * command exists, any more than it knows `PurchaseMaterials` does -- it knows
+   * that a row it drew named an order and that the player pressed that row.
+   */
+  readonly onCancelOrder: (orderId: string) => void;
 }
 
 export interface BuildPanel {
@@ -150,6 +165,16 @@ export interface BuildPanel {
   isRemoving(): boolean;
   /** Live feedback from the world. `undefined` clears the readout. */
   setTarget(target: BuildPanelTarget | undefined): void;
+  /**
+   * What is still waiting to be built, or `undefined` because nothing asked.
+   *
+   * Two different silences, and the panel draws them the same way for one
+   * reason and not the other: it draws no block when nothing asked *and* when
+   * the queue is empty, because in both cases there is nothing about the queue
+   * to say. It never draws a block that says the queue is empty -- see
+   * `paintQueue`.
+   */
+  setBuildQueue(queue: HudBuildQueueViewModel | undefined): void;
   setVisible(visible: boolean): void;
 }
 
@@ -215,6 +240,80 @@ export function formatBuildTargetText(t: Translate, target: BuildPanelTarget | u
         count: target.segments,
       })
     : t(HUD_MESSAGE_KEY.buildTargetValue, { x: target.x, y: target.y, edge: t(edgeLabelKey(target.edge)) });
+}
+
+/**
+ * How many queued orders the block lists at once.
+ *
+ * **Three, and it is a measurement plus an argument. Both halves matter.**
+ *
+ * The measurement is the panel's, and it is the tightest in the interface.
+ * `buyToggle`'s comment records it: at 900x600, Build tab, coordinates folded --
+ * the state a player arrives in -- the panel's body holds 291.2px of content in
+ * a 291.2px box and there is **7.8px** between the last section's bottom edge
+ * and the fold. So an always-visible list of rows was never on the table; a
+ * collapsed section of its own is 45px, which is already six times the whole
+ * budget. That is why this block is `hidden` while nothing is queued -- an empty
+ * queue is the state a player arrives in, and the arrival height is therefore
+ * byte-identical to what #174 left -- and why it is *collapsed* when it appears,
+ * so a queue costs a header and not a list until the player asks for one.
+ *
+ * The argument is what decides the number rather than making it as large as
+ * fits. Since #348 the crew builds **one order at a time**, so the queue is a
+ * schedule and this list is its head: row one is being built, row two is next,
+ * row three is after that. An order thirteenth in line is not one a player needs
+ * to reach, because nothing is going to happen to it for another six hundred
+ * ticks -- and the control for "I have changed my mind about that whole run" is
+ * `Undo`, which pops the transaction the run was drawn in. So the two controls
+ * divide the work: `Undo` takes back a gesture, and a row takes back one order.
+ * `hud.build.queue-more` says exactly that to a player with more queued than
+ * these, and `hud.build.queue-count` always states the whole length, so the
+ * panel never implies the queue is shorter than it is.
+ *
+ * The rows are also **pooled** -- created once here, repainted per publication --
+ * and that is not only an allocation choice. Each row's cancel button joins the
+ * HUD's busy group, and `createBusyGroup` has `add` and no `remove`: a block
+ * that built a row per order would grow that group without bound over a session
+ * and keep every dead button in it.
+ */
+export const BUILD_QUEUE_ROW_LIMIT = 3;
+
+/**
+ * What one queued row says it is, and where.
+ *
+ * Pure and exported for the reason `buildEdgeChoiceOptions` and
+ * `formatBuildTargetText` are: the default Vitest environment is `node`
+ * (`docs/TESTING.md`), so nothing headless can call `createBuildPanel` at all,
+ * and "what the panel says about an order" is exactly the claim that has to be
+ * assertable over real text from a real catalog.
+ *
+ * An order the host names no buildable for still gets a row -- see
+ * `HudBuildOrderViewModel.labelKey` -- and this is where it gets its word.
+ * Dropping such a row would hide the only control that reaches the order.
+ */
+export function formatBuildQueueOrderText(t: Translate, order: HudBuildOrderViewModel): string {
+  return t(HUD_MESSAGE_KEY.buildQueueOrder, {
+    buildable: t(order.labelKey ?? HUD_MESSAGE_KEY.buildQueueUnnamed),
+    x: order.tile.x,
+    y: order.tile.y,
+    edge: t(edgeLabelKey(order.edge)),
+  });
+}
+
+/**
+ * What a queued order is waiting for, in the simulation's own vocabulary.
+ *
+ * Derived, never hand-authored, exactly as `edgeLabelKey` is and under the same
+ * rule (ADR 0011): `build-order-state` in
+ * `src/content/simulation-message-keys.ts` labels every member of
+ * `BuildOrderLifecycleState`, and a second pair of words for the five a queue
+ * can hold would be two spellings of the same five facts.
+ *
+ * This imports from `src/content/`, never from `src/simulation/**` -- the HUD
+ * boundary is intact.
+ */
+function buildOrderStateLabelKey(state: HudBuildOrderViewModel['state']): LocalizationKey {
+  return deriveSimulationMessageKey('build-order-state', state);
 }
 
 export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
@@ -326,9 +425,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
    *
    * Because until it existed a placed object could be taken back only by `Undo`,
    * and `Undo` is `KeyZ`. So on a touch device a misplaced bed was **permanent
-   * for the session**: the Build panel offers no per-order control (the
-   * `CancelBuildOrder` entry in
-   * `tests/foundation/unconsumed-command-contract.test.ts` records why), and a
+   * for the session**: the Build panel offered no per-order control at all, and a
    * tile under a standing object refuses every further placement. That is
    * precisely the state the Rooms tab shipped in and had to fix in a follow-up,
    * and `AGENTS.md` boundary 10 is not satisfied by "it works with a keyboard"
@@ -345,6 +442,18 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
    * `.hud-rooms__arm` already is) and this one is labelled with one word.
    * Measured on the assembled page at all five viewports the browser suite
    * visits -- see `tests/browser/app-shell.spec.ts`.
+   *
+   * ### It is not the queue block, and the two do different work
+   *
+   * The panel has a per-order control now -- one per row of `.hud-build__queue`,
+   * which is where `CancelBuildOrder` finally got its producer -- and this button
+   * is still the right one for an object. Three differences, and each is a reason
+   * this control stays: the queue names *pending* orders, so it cannot touch a
+   * bed that has already been built; it names orders by id rather than by tile,
+   * so aiming at a thing you are looking at is a press on the panel rather than
+   * on the object; and `RemoveObject` reverses a *standing* object's geometry,
+   * which no cancellation of a finished order does through this route. A player
+   * removing a bed presses the bed; a player thinning out a queue presses a row.
    *
    * ### Why arming to remove needs no selection
    *
@@ -563,6 +672,206 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     setQuantity(quantity);
   }
 
+  // ---- what is still coming (#348) ----------------------------------
+  /*
+   * The queue block, and why it exists at all.
+   *
+   * Before #348 there was nothing here to show. Every `assigned` order started
+   * on the tick it was assigned and every `in-progress` order advanced on every
+   * scheduled tick, so a twelve-segment run finished in the time one wall takes
+   * -- there was no queue to look at, only a brief flicker. #348 made the crew
+   * the constraint, and `tests/unit/construction-crew-capacity.test.ts` measures
+   * what that costs: the same run finishes at tick 730 rather than 70. A queue
+   * became a real thing a player waits on, and **nothing on screen said one
+   * existed**.
+   *
+   * So this block does two things that used to be impossible, and the second is
+   * the one the repository has been carrying as a gap. It says what is coming --
+   * how many, and which one the crew is on. And it names each order, which is
+   * what lets a player *aim*: `CancelBuildOrder` takes an `orderId`, ids reach
+   * this thread only through the build-queue projection, and until they did the
+   * only control that could take a wall back was `Undo` -- one transaction, last
+   * in first out. Cancelling the third order of a twelve-segment run is a
+   * different request, and this is where it is made.
+   *
+   * `BUILD_QUEUE_ROW_LIMIT` carries the height measurement and the argument for
+   * showing the head of the queue rather than all of it.
+   */
+  let queue: HudBuildQueueViewModel | undefined;
+
+  const queueCount = valueText('', 'hud-build__queue-count');
+  const queueList = element('div', { className: 'hud-build__queue-list' });
+  /*
+   * `hud-build__queue-more` as well as `hud-build__note`, and the extra class is
+   * load-bearing rather than descriptive.
+   *
+   * `.hud-build__note` is given `display: -webkit-box` under
+   * `max-height: 700px` in `hud.css`, to clamp the arm hint to one line -- and an
+   * author `display` beats the user agent's `[hidden] { display: none }`. So
+   * without a class to hang a rule on, `queueMore.hidden = true` would still lay
+   * this line out at every short viewport. It is the same trap
+   * `.hud-build__buy:not([hidden])` closes, and it is closed here in the other
+   * direction because the class it has to beat is shared.
+   */
+  const queueMore = eyebrowText('', 'hud-build__note hud-build__queue-more');
+
+  /**
+   * One pooled row: what the order is, what it is waiting for, and the one
+   * control that withdraws it.
+   *
+   * The label is a *readout* and the button is the control, rather than the whole
+   * row being one button. A row that was itself a button would be a full-width
+   * destructive control whose action a player has to infer from the fact that
+   * pressing things usually selects them -- and this one does not select. The
+   * button says "Cancel", and its accessible name says which order, because
+   * three buttons all reading "Cancel" are three identical controls to a screen
+   * reader.
+   */
+  interface QueueRow {
+    readonly element: HTMLElement;
+    readonly label: HTMLSpanElement;
+    readonly state: HTMLSpanElement;
+    readonly cancel: ActionButton;
+    /** The order this row currently names, or `undefined` while it is hidden. */
+    orderId: string | undefined;
+  }
+
+  const queueRows: readonly QueueRow[] = Array.from({ length: BUILD_QUEUE_ROW_LIMIT }, (): QueueRow => {
+    const label = valueText('', 'hud-build__queue-label');
+    const state = eyebrowText('', 'hud-build__queue-state');
+    const row: QueueRow = {
+      element: element('div', { className: 'hud-build__queue-row' }),
+      label,
+      state,
+      cancel: createActionButton({
+        label: t(HUD_MESSAGE_KEY.buildQueueCancel),
+        onActivate: () => {
+          // Read at press time, not captured at construction: the row is pooled
+          // and names whichever order the last publication put in it. A captured
+          // id would cancel whatever was here two seconds ago, which is the
+          // exact defect a pooled row exists to avoid paying for with
+          // allocations.
+          const { orderId } = row;
+          if (orderId === undefined) return;
+          options.onCancelOrder(orderId);
+        },
+      }),
+      orderId: undefined,
+    };
+    row.element.append(
+      element('div', { className: 'hud-build__queue-text', children: [label, state] }),
+      row.cancel.element,
+    );
+    row.element.hidden = true;
+    queueList.append(row.element);
+    return row;
+  });
+
+  const queueSection: CollapsibleSection = createCollapsibleSection({
+    eyebrow: t(HUD_MESSAGE_KEY.buildQueue),
+    // Collapsed when it appears, for the reason `BUILD_QUEUE_ROW_LIMIT` gives:
+    // a queue then costs this panel a header and a count, and costs it a list
+    // only when the player asks for one.
+    collapsed: true,
+    trailing: queueCount,
+    onToggle: (collapsed) => {
+      queueSection.setCollapsed(collapsed);
+      // Opened, the rows are below the panel's fold at the narrow viewports --
+      // the panel is sized to its arrival content and this list is not part of
+      // it -- so opening scrolls them into view. Exactly what `paintBuy` does
+      // for the buy row, and for the same reason: a disclosure that reveals a
+      // control the player cannot see has not revealed it.
+      if (!collapsed) queueSection.element.scrollIntoView({ block: 'nearest' });
+    },
+  });
+  queueSection.element.classList.add('hud-build__queue');
+  queueSection.body.append(queueList, queueMore);
+
+  /**
+   * Draws the queue, or draws nothing.
+   *
+   * **Nothing is the arrival state and it must cost nothing.** The panel's
+   * always-visible budget at 900x600 is 7.8px (`buyToggle`), so a block that
+   * said "nothing is queued" would be permanent furniture bought with height
+   * this panel does not have -- and it would be furniture saying the least
+   * interesting thing it could say. The Rooms panel's needs readout draws no
+   * block for a prison whose rooms are all finished, for the same reason and
+   * with the same measurement behind it.
+   *
+   * `hidden`, not an empty box: a laid-out empty block still takes its gap and
+   * its border.
+   */
+  function paintQueue(): void {
+    const shown = queue !== undefined && queue.total > 0 ? queue : undefined;
+    queueSection.element.hidden = shown === undefined;
+    if (shown === undefined) {
+      for (const row of queueRows) {
+        row.element.hidden = true;
+        row.orderId = undefined;
+      }
+      queueCount.textContent = '';
+      queueMore.textContent = '';
+      delete panel.element.dataset['queued'];
+      return;
+    }
+
+    // The whole queue and how much of it is moving, never the row count: a
+    // header that counted the rows it drew would tell a player with thirty
+    // queued walls that they have three.
+    queueCount.textContent = t(HUD_MESSAGE_KEY.buildQueueCount, {
+      count: shown.total,
+      started: shown.started,
+    });
+    /*
+     * On the *panel*, not on the block, because it is what `hud.css` keys the
+     * catalogue's floor on -- and that floor is where the 45px this block costs
+     * actually comes from.
+     *
+     * Measured on the assembled page, where the rail also holds the save panel:
+     * with a queue and this block collapsed, the panel was 15px over its box at
+     * 1280x720 and 37px over at 900x600, and the block's own header ended 14px
+     * and 37px **below the panel's unscrolled fold**. That is #174 re-opened --
+     * a control laid out where the player cannot see it, with nothing having
+     * scrolled -- and it is invisible in `ui-shell.spec.ts`'s harness, whose
+     * aside slot is empty and which therefore hands this panel 128.7px more rail
+     * than the application ever does. See `.hud-build[data-queued]` in
+     * `hud.css` for what pays for it.
+     */
+    panel.element.dataset['queued'] = String(shown.total);
+
+    for (const [index, row] of queueRows.entries()) {
+      const order = shown.orders[index];
+      if (order === undefined) {
+        row.element.hidden = true;
+        row.orderId = undefined;
+        continue;
+      }
+      row.orderId = order.orderId;
+      row.element.hidden = false;
+      row.label.textContent = formatBuildQueueOrderText(t, order);
+      row.state.textContent = t(buildOrderStateLabelKey(order.state));
+      // The order id on the row, so a test can assert *which* order a control
+      // is aimed at rather than only that a control exists. The same job
+      // `.hud-rooms__needs`'s data attributes do.
+      row.element.dataset['order'] = order.orderId;
+      // The state as a data attribute as well as a word, so `hud.css` can accent
+      // the row the crew is actually on -- and so a test can ask which row that
+      // is without reading translated text.
+      row.element.dataset['state'] = order.state;
+      // Three buttons reading "Cancel" are one control repeated, to a screen
+      // reader and to anything that queries by accessible name. The visible
+      // word stays short because the row is narrow at 375px.
+      row.cancel.element.setAttribute('aria-label', `${t(HUD_MESSAGE_KEY.buildQueueCancel)}: ${row.label.textContent}`);
+    }
+
+    // How many are behind the last row, and no control to reach them --
+    // `BUILD_QUEUE_ROW_LIMIT` argues that out, and the sentence itself points at
+    // the control that does take a whole run back.
+    const unlisted = Math.max(0, shown.total - shown.orders.length);
+    queueMore.textContent = unlisted === 0 ? '' : t(HUD_MESSAGE_KEY.buildQueueMore, { count: unlisted });
+    queueMore.hidden = unlisted === 0;
+  }
+
   // ---- the numeric route (secondary) --------------------------------
   const xField: NumberField = createNumberField({
     label: t(HUD_MESSAGE_KEY.buildTileX),
@@ -613,6 +922,14 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     collapsed: true,
     onToggle: (collapsed) => coordinates.setCollapsed(collapsed),
   });
+  // Named, for the reason `.hud-build__arm` and `.hud-build__catalogue` are:
+  // a selector has to be able to say *which* section it means. It used to be
+  // findable as "the panel's last `.ui-section`", and the queue block (#348) is
+  // appended after it -- so `.last()` now resolves to a section that is `hidden`
+  // whenever nothing is queued. Three assertions in
+  // `tests/browser/app-shell.spec.ts` were reaching this header that way and
+  // timed out clicking an invisible one; they name the class now.
+  coordinates.element.classList.add('hud-build__coordinates');
   coordinates.body.append(
     eyebrowText(t(HUD_MESSAGE_KEY.buildCoordinatesHint), 'hud-build__note'),
     element('div', { className: 'hud-build__coords', children: [xField.element, yField.element] }),
@@ -677,10 +994,15 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       ],
     }),
     coordinates.element,
+    // Last in the body, so a queue that appears moves nothing above it: the arm
+    // button, the target readout and the hint stay exactly where the player's
+    // finger left them, and the panel grows downward into its own scroll.
+    queueSection.element,
   );
   paintCatalogue();
   paintArmed();
   paintBuy();
+  paintQueue();
 
   function readSelection(): BuildPanelIntent | undefined {
     const buildable = selectedBuildable();
@@ -720,15 +1042,31 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
 
   return {
     element: panel.element,
-    controls: [submit.element, buySubmit.element],
+    // Every control that issues a command, which is now three kinds of them:
+    // the numeric route's submit, the buy button, and one cancel per pooled
+    // queue row. The rows are pooled precisely so that this list is fixed at
+    // mount -- the HUD's busy group has `add` and no `remove`.
+    controls: [submit.element, buySubmit.element, ...queueRows.map((row) => row.cancel.element)],
     submitControl: submit.element,
     purchaseControl: buySubmit.element,
     getSelection: readSelection,
     isArmed: () => armed,
     isRemoving: () => removing,
     setTarget,
+    setBuildQueue(next: HudBuildQueueViewModel | undefined): void {
+      queue = next;
+      paintQueue();
+    },
     setVisible(visible: boolean): void {
       panel.element.hidden = !visible;
+      // The queue goes with the tab. Nothing refreshes it from another tab --
+      // the host only asks while this one is showing -- so a block left behind
+      // would be a list of ids that were true when the player walked away, and
+      // every row in it a control aimed at an order that may already be a wall.
+      if (!visible && queue !== undefined) {
+        queue = undefined;
+        paintQueue();
+      }
       // Leaving the tab must hand the pointer back to the camera. A tool that
       // stayed armed behind a hidden panel would swallow every click on a
       // world the player thought they were only looking at.

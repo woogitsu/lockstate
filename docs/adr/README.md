@@ -36,27 +36,30 @@ normalised judgement. Two heading styles are in use — some ADRs carry a
 above is now `Accepted` in some form, several with a qualifier the ADR itself
 carries.
 
-**Every ADR in this directory is accepted, as of 2026-08-26.** An ADR awaiting
-the owner's approval is not binding whether or not code already implements it,
-which is why the count is tracked here at all.
+**Exactly one ADR in this directory is awaiting the owner's approval: 0031.** An
+ADR in that state is not binding whether or not code already implements it —
+0031 arrived on the same branch as its implementing change, and that does not
+make it accepted.
 
 A note on how this paragraph is worded, because it matters to a test:
 `tests/foundation/adr-status-reference-contract.test.ts` scans for a sentence
 naming an ADR next to a status the ADR does not hold, and it matches on the
 status word rather than parsing the claim. **It cannot tell an assertion from a
 denial** — so a sentence saying no ADR holds a status trips it exactly as a
-false claim would. Saying "every ADR is accepted" rather than negating the other
-status keeps the sentence true and the gate meaningful; teaching the scanner to
-read negation would be the alternative, and is not obviously worth it.
+false claim would. Where this paragraph needs to say that nothing is
+outstanding, it says "every ADR is accepted" rather than negating the other
+status; teaching the scanner to read negation would be the alternative, and is
+not obviously worth it.
 
-This paragraph has now read three things in two days — no row `Proposed`, then
-exactly one (0029), and now none again — and the churn is the point rather than
-noise. What it records is that the count is *tracked*: a `Proposed` row is a
-signal on its own rather than one of a crowd, so while one existed it read as a
-request addressed to the owner. 0029 was accepted on 2026-08-26, and the thing
-worth carrying forward is that it sat `Proposed` on `main` while its own
+This paragraph has now read four things in two days — none outstanding, then
+0029, then none again, now 0031 — and the churn is the point rather than noise.
+What it records is that the count is *tracked*: a row awaiting approval is a
+signal on its own rather than one of a crowd, so one row reads as a request
+addressed to the owner. 0029 was accepted on 2026-08-26, and the thing worth
+carrying forward from it is that it sat outstanding on `main` while its own
 implementing code was already shipping — the fragile case
-[`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2 names, met in practice.
+[`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2 names, met in practice, and now met a
+second time by 0031.
 
 Promoting the statuses that had drifted was open issue #118's subject and is
 done for every document on disk. Where an *accepted* decision and the code
@@ -94,15 +97,36 @@ Nothing here changes a status; this table only reports them.
 | [0027](./0027-cell-sharing-assessment.md) | Cell-sharing assessment — what is recorded, who may override, and how a cell-scoped risk reaches a sector-scoped trigger | Accepted, 2026-08-25 — as the mechanism; its three questions stay open, and its subject is unreachable until 0028 ships |
 | [0028](./0028-object-placement-and-derived-room-capacity.md) | What a placed object is, and how a room's capacity comes from it | Accepted, 2026-08-25 |
 | [0029](./0029-concurrent-room-use-claims.md) | What a concurrent-use claim on a room is — when it is taken, when it ends, and who waits | Accepted, 2026-08-26 |
+| [0031](./0031-build-queue-cancellation-surface.md) | Withdrawing one queued build order — where a player aims, and what a long queue looks like | Proposed — pending human approval |
 
-**Next free number: 0030.**
+**Next free number: 0032.** 0031 is this table's newest row and **0030 is held by
+an unmerged branch** — the incident-response restore change, which allocated it in
+the same hour. It is listed nowhere above because nothing is merged under that
+number yet, which is precisely the gap a stated next-free cannot see: enumerate
+the open pull requests before taking 0032.
 
-**Every row in the table above is accepted.** 0029 was the last one awaiting
-approval, and it was accepted on 2026-08-26. It arrived with the change that implements it — the shape
-[`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2 names as fragile — and it did sit
-`Proposed` on `main` for a day while that code shipped, which is exactly the
-cost §2 predicted. Its queue entry was added in the same commit as the ADR, per
-that file's rule, and removed in the same commit as this acceptance.
+**One row is outstanding: 0031.** It arrived with the change that implements it —
+the shape [`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2 names as fragile — and its
+queue entry is in the same commit, per that file's rule. 0029 was the previous
+one and was accepted on 2026-08-26; it *did* sit outstanding on `main` for a day
+while its code shipped, which is exactly the cost §2 predicted, and its queue
+entry was removed in the same commit as its acceptance.
+
+**0031 was allocated as 0030, and renumbered because the collision it warned
+about actually happened.** The number was taken on this table's stated next-free
+without the open-pull-request enumeration 0029's author ran — `gh` is not
+installed on the machine that wrote it — and the document said so, and
+pre-committed to renumbering if an unmerged branch held 0030. One did: the
+incident-response restore change allocated `0030` for
+`0030-restoring-an-interrupted-incident-response.md` in the same hour. The
+pre-commitment is why that cost a rename rather than an argument.
+
+**The lesson for the next allocation**, since this is the second time these
+numbers have collided: a stated next-free is a claim about *merged* history, so
+two branches can both read it correctly in the same hour and still collide. Only
+the enumeration catches it, and it has to be run by whoever can actually see the
+open pull requests — when the author cannot, the number is provisional until
+someone else checks.
 
 ## Why nothing between 0024 and 0028 is missing any more, and 0028 was allocated out of band
 

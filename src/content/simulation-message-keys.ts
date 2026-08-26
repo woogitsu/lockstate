@@ -404,6 +404,22 @@ export const SIMULATION_ENUM_GROUPS = [
     labels: { pickup: 'Pickup', dropoff: 'Drop-off' },
   },
   {
+    // Where a build order has got to, and since the Build panel's queue block
+    // these words are **on screen** rather than merely authored: five of the
+    // eight are what a queued order's row says it is waiting for, resolved
+    // through `deriveSimulationMessageKey('build-order-state', state)` from the
+    // `state` on `BuildQueueOrderViewModel`.
+    //
+    // `assigned` was `'Assigned'` while nothing rendered any of these, and that
+    // word does not survive being read by a player: an `assigned` order has its
+    // materials and is waiting for the crew, and since #348 the crew is the
+    // constraint -- one order in progress at a time -- so this is the state a
+    // queue of eleven walls spends its whole wait in. "Assigned" names what the
+    // simulation did to it; "Awaiting the crew" names what the player is waiting
+    // for, which is the same distinction `'materials-pending'` already resolved
+    // in favour of the player with "Awaiting Materials". The stable id is
+    // untouched: it is persisted in `save-schema.ts` and a label is not an id
+    // (ADR 0011).
     namespace: 'build-order-state',
     sourceFile: 'src/simulation/construction/build-order.ts',
     declaration: 'BuildOrderLifecycleState',
@@ -412,7 +428,7 @@ export const SIMULATION_ENUM_GROUPS = [
       planned: 'Planned',
       approved: 'Approved',
       'materials-pending': 'Awaiting Materials',
-      assigned: 'Assigned',
+      assigned: 'Awaiting the Crew',
       'in-progress': 'In Progress',
       completed: 'Completed',
       cancelled: 'Cancelled',
