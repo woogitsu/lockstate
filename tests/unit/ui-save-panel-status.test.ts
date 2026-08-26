@@ -182,6 +182,7 @@ describe('no module in src/ui/ renders a hard-coded sentence (issue #208)', () =
     'simulation-commands.ts',
     'simulation-counts.ts',
     'simulation-projections.ts',
+    'simulation-room-needs.ts',
     'simulation-zoning.ts',
   ] as const;
 

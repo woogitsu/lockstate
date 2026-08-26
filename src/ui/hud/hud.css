@@ -1042,6 +1042,22 @@
     -webkit-line-clamp: 1;
     overflow: hidden;
   }
+
+  /* And the room readout's detail line, for the same four-declaration reason
+     and a sharper version of the same argument. At 900x600 this panel's
+     catalogue list is already on its one-row floor, so the readout's whole
+     budget is about 43px -- a header line and one more -- and a sentence that
+     wrapped to two would spend the margin that keeps the rule readout below it
+     inside the panel's fold. `ROOM_NEEDS_NAMED_LIMIT` in `rooms-panel.ts`
+     carries the measurement. The text node stays in the DOM in full, clipped by
+     the box rather than replaced, so the sentence is still one localized
+     string. */
+  .hud-rooms__needs-line {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    overflow: hidden;
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -1240,6 +1256,71 @@
 .hud-rooms__note { display: block; }
 
 .hud-rooms__note[data-tone='warning'] { color: var(--status-warning); }
+
+/*
+ * What the designated rooms are still missing.
+ *
+ * **Absent from the body's floor above, deliberately.** The block is `hidden`
+ * whenever the simulation reports nothing missing, which is the state the panel
+ * arrives in and the state `ARRIVAL_PANEL_HEIGHT_PX` in
+ * `tests/browser/app-shell.spec.ts` pins to 0.1px -- so a term for it in that
+ * sum would charge every player for a readout most of them are not seeing.
+ * What pays for it when it *is* showing is `.hud-rooms__list`'s slack: the
+ * panel's own height is fixed by the rail, and measured on the assembled page a
+ * block here shrinks the catalogue rather than growing the panel (see
+ * `ROOM_NEEDS_NAMED_LIMIT` for the figures either side of the change).
+ *
+ * `:not([hidden])` because the block folds, and an author `display: flex` beats
+ * the `display: none` a user agent gives `[hidden]` -- the same trap
+ * `.hud-rooms__catalogue`'s body rule and `.ui-panel[hidden]` exist to close,
+ * and the one `.hud-rooms > .ui-panel__body > *` would have walked straight
+ * into.
+ */
+.hud-rooms__needs:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hud-rooms-gutter);
+  padding: var(--hud-rooms-gutter) var(--space-1);
+  border-top: var(--hairline) solid var(--border-hairline);
+}
+
+/* Label left, figure right: the shape `.hud-rooms__enclosure` uses, because it
+   is the same kind of line -- a readout of what the simulation found. */
+.hud-rooms__needs-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.hud-rooms__needs-count {
+  font-variant-numeric: tabular-nums;
+  color: var(--status-warning);
+}
+
+/*
+ * The one detail line.
+ *
+ * `display: block`, so it is a line's worth of space whatever it is saying --
+ * the rule `.hud-rooms__note` above follows, and for the same reason: a panel
+ * whose blocks moved as the sentence changed would move them while the player
+ * was reading it. Toned unconditionally, unlike the enclosure value below,
+ * because this block exists only when something is actually missing: there is
+ * no state of it that is neutral news.
+ */
+.hud-rooms__needs-line {
+  display: block;
+  color: var(--status-warning);
+  /* An eyebrow's own treatment is a *label*'s: uppercase, tracked out and
+     `nowrap`. This is a sentence, so all three are undone -- exactly what
+     `.hud-build__note` does one panel over, and for the reason `.hud-intake`'s
+     header gives: "an eyebrow's default single-line uppercase treatment would
+     clip a sentence". It is the eyebrow's 11px size and muted weight that are
+     wanted here, and nothing else. */
+  white-space: normal;
+  text-transform: none;
+  letter-spacing: 0;
+}
 
 /* The authored rule and what the simulation found: three label lines and no
    controls. Last in the panel, because it is the block a player reads rather

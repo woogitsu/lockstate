@@ -755,7 +755,16 @@ async function roomWorldGeometry(page: Page): Promise<RoomWorldGeometry> {
   }, BARE_WORLD_SCAN_MAX_PX);
 }
 
-async function dragRectangleOnWorld(page: Page): Promise<boolean> {
+/**
+ * `minY` starts the scan lower down the page, which is how a *second*
+ * rectangle is drawn without overlapping the first.
+ *
+ * The scan aims at bare world -- "is this point the canvas" -- and a tile that
+ * is already zoned is still the canvas, so a second call with no offset finds
+ * the same point and the designation is refused as `overlaps-existing-room`.
+ * Optional, so every existing caller is unchanged.
+ */
+async function dragRectangleOnWorld(page: Page, options: { readonly minY?: number } = {}): Promise<boolean> {
   const viewport = page.viewportSize();
   if (viewport === null) throw new Error('the viewport size is needed to aim the drag');
 
@@ -764,11 +773,11 @@ async function dragRectangleOnWorld(page: Page): Promise<boolean> {
   // aiming at open ground, not measuring a boundary, and a fine grid would spend
   // hundreds of round trips to find the same point.
   const aim = await page.evaluate(
-    ({ width, height, deltas }) => {
+    ({ width, height, deltas, minY }) => {
       const free = (x: number, y: number): boolean =>
         document.elementFromPoint(x, y)?.tagName.toLowerCase() === 'canvas';
       for (const delta of deltas) {
-        for (let y = 8; y + delta < height - 8; y += 16) {
+        for (let y = Math.max(8, minY); y + delta < height - 8; y += 16) {
           for (let x = 8; x + delta < width - 8; x += 16) {
             if (free(x, y) && free(x + delta / 2, y + delta / 2) && free(x + delta, y + delta)) {
               return { x, y, delta };
@@ -778,7 +787,7 @@ async function dragRectangleOnWorld(page: Page): Promise<boolean> {
       }
       return null;
     },
-    { width: viewport.width, height: viewport.height, deltas: [...ROOM_DRAG_DELTAS_PX] },
+    { width: viewport.width, height: viewport.height, deltas: [...ROOM_DRAG_DELTAS_PX], minY: options.minY ?? 8 },
   );
 
   if (aim === null) return false;
@@ -1951,6 +1960,285 @@ test.describe('the assembled application', () => {
       ).toEqual({ railOverflow: 0, offScreen: [], stuck: [] });
 
       await page.locator('.ui-tab[data-tab="build"]').click();
+    }
+  });
+
+  /**
+   * What a zoned room is missing, on the assembled page (#331 milestone).
+   *
+   * ### The gap
+   *
+   * The simulation could answer this and the interface never asked. A zoned
+   * `room.cell` with nothing standing in it reports
+   * `requirementSummary.missingCapability: 2` from `projectRoomList`, and
+   * `projectRoomDetail` names the two objects -- the same signal `IntakeSystem`
+   * gates an admission on, so the room genuinely does nothing until they are
+   * there. Nothing under `src/ui/` constructed a `SimulationProjectionRequester`,
+   * so the panel that made the room could not say why.
+   *
+   * ### Why this is measured here and not in the harness
+   *
+   * Three of the things being asserted only exist on this page. The eighteen-row
+   * catalogue is the shipped one (a harness page has three); the verdict comes
+   * out of a **real simulation worker** over a real
+   * `simulation/request-projection` round trip rather than a view model a test
+   * pushed in; and the rail this panel sits in holds the save panel above it,
+   * which is half of what consumes the height at 375x812.
+   *
+   * ### Why the geometry is measured and not asserted with `toContainText`
+   *
+   * `toContainText` passes inside a `display: none` subtree and on a zero-size
+   * box, which is exactly how #220's "simulation unavailable" row stayed green
+   * while no player could see it. So the readout's own border box and its
+   * `offsetParent` are read at both viewports, against the panel's unscrolled
+   * fold -- and the vacuity guards come first, because a page that failed to
+   * load reports plausible, meaningless numbers.
+   *
+   * ### The half that stops it becoming furniture
+   *
+   * The first thing asserted is that a prison with no rooms shows **no readout
+   * at all** -- no box, no `offsetParent`, and nothing in `.hud`'s rendered
+   * text. A panel whose height budget ADR 0022 measured at 7.9px cannot afford a
+   * block that is always there to say everything is fine.
+   */
+  test('the Rooms panel says what a zoned room is missing, and says nothing when nothing is (#331)', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.save-panel__item-label').first()).toContainText('New Prison');
+    await page.locator('.ui-tab[data-tab="rooms"]').click();
+    await expect(page.locator('.hud-rooms')).toBeVisible();
+
+    // Vacuity guard, before a single pixel is trusted: this is the shipped
+    // application with the shipped catalogue behind it, not a harness.
+    // Eighteen is `ROOM_CATALOG`'s own length.
+    expect(
+      await page.locator('.hud-rooms__list [data-room]').count(),
+      'the Rooms catalogue is not the shipped one',
+    ).toBe(18);
+
+    /** The readout's box, its `offsetParent`, and what it says. */
+    const needsProbe = async (): Promise<{
+      readonly present: boolean;
+      readonly hidden: boolean;
+      readonly laidOut: boolean;
+      readonly offsetParent: boolean;
+      readonly width: number;
+      readonly height: number;
+      readonly bottom: number;
+      readonly unfinished: string;
+      readonly needs: string;
+      readonly line: string;
+      readonly text: string;
+      readonly panelFold: number;
+      readonly panelHeight: number;
+      readonly panelScrollTop: number;
+      readonly hudText: string;
+    }> =>
+      page.evaluate(() => {
+        const node = document.querySelector<HTMLElement>('.hud-rooms__needs');
+        const panel = document.querySelector<HTMLElement>('.hud-rooms');
+        const panelRect = panel?.getBoundingClientRect();
+        const rect = node?.getBoundingClientRect();
+        return {
+          present: node !== null,
+          // `=== true`, because the DOM's `hidden` is `boolean | 'until-found'`
+          // and this only ever asks whether the attribute is the plain form the
+          // panel sets.
+          hidden: node?.hidden === true,
+          // A box the browser actually laid out, not the attribute's opinion of
+          // one: `hidden` on a block whose class carries its own `display` is
+          // not hidden, which is the trap `.ui-panel__body[hidden]` exists for.
+          laidOut: (node?.getClientRects().length ?? 0) > 0,
+          offsetParent: node !== null && node.offsetParent !== null,
+          width: Math.round((rect?.width ?? 0) * 10) / 10,
+          height: Math.round((rect?.height ?? 0) * 10) / 10,
+          bottom: Math.round((rect?.bottom ?? 0) * 10) / 10,
+          unfinished: node?.dataset['unfinished'] ?? '',
+          needs: node?.dataset['needs'] ?? '',
+          line: document.querySelector<HTMLElement>('.hud-rooms__needs-line')?.innerText.trim() ?? '',
+          text: node?.innerText.trim() ?? '',
+          panelFold:
+            panel === null || panelRect === undefined
+              ? 0
+              : Math.round((panelRect.top + panel.clientTop + panel.clientHeight) * 10) / 10,
+          panelHeight: Math.round((panelRect?.height ?? 0) * 10) / 10,
+          panelScrollTop: panel?.scrollTop ?? 0,
+          hudText: document.querySelector<HTMLElement>('.hud')?.innerText ?? '',
+        };
+      });
+
+    // ---- nothing zoned: no readout, at either viewport ----------------
+    //
+    // The case that keeps this out of the way. It is checked at both viewports
+    // and not only at the desktop one, because the ≤720px media query drops
+    // `.hud__corner` and folds the rail into one column, and "invisible at
+    // 1280x800" has been true of something visible at 375px before.
+    for (const [width, height] of [
+      [1280, 800],
+      [375, 812],
+    ] as const) {
+      await page.setViewportSize({ width, height });
+      await page.locator('.ui-tab[data-tab="build"]').click();
+      await page.locator('.ui-tab[data-tab="rooms"]').click();
+      await expect(page.locator('.hud-rooms')).toBeVisible();
+      const empty = await needsProbe();
+      expect(empty.present, `the readout block is not in the DOM at all at ${width}x${height}`).toBe(true);
+      expect(empty.panelHeight, `the Rooms panel is not laid out at ${width}x${height}`).toBeGreaterThan(150);
+      expect(empty.hidden, `a prison with no rooms shows a readout at ${width}x${height}`).toBe(true);
+      expect(empty.laidOut, `the readout has a box with no rooms zoned at ${width}x${height}`).toBe(false);
+      expect(empty.offsetParent, `the readout is painted with no rooms zoned at ${width}x${height}`).toBe(false);
+      expect(empty.height, `the readout takes height with no rooms zoned at ${width}x${height}`).toBe(0);
+      expect(empty.line, `the readout has a detail line with no rooms zoned at ${width}x${height}`).toBe('');
+      // And the HUD's rendered text does not mention it, which is the
+      // assertion #220 found `toContainText` unable to make.
+      expect(
+        empty.hudText.includes(localeText('hud.rooms.needs')),
+        `the HUD says "${localeText('hud.rooms.needs')}" with no rooms zoned at ${width}x${height}`,
+      ).toBe(false);
+    }
+
+    // ---- two cells zoned, and nothing standing in either -------------
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.locator('.ui-tab[data-tab="rooms"]').click();
+    await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
+    await page.locator('.hud-rooms__arm').click();
+    expect(await dragRectangleOnWorld(page), 'a room drag found no bare world').toBe(true);
+    await page.locator('.hud-rooms__confirm').click();
+    // A new session starts paused and a command queued against a paused clock
+    // is not dispatched, so the room does not register until the clock runs.
+    // The count moving from 0 is the proof that a real worker took it.
+    await page.getByRole('button', { name: localeText('hud.transport.play') }).click();
+    await expect(page.locator('[data-metric="rooms"]')).toContainText('1');
+
+    /*
+     * The readout arrives **without the player leaving the tab**, which is the
+     * half of the wiring a tab switch would hide.
+     *
+     * Nothing has been clicked but the world and the confirm since the Rooms tab
+     * was selected, so the only thing that can have asked is the
+     * `simulation/status-counts` cadence. It matters because placing an object
+     * changes what a room has and moves no count at all: a readout refreshed
+     * only when a tab is selected would sit there saying "needs a bed" after the
+     * bed was built.
+     *
+     * The panel is folded here -- confirming leaves the tool armed, so the
+     * drawing pass resumes -- so the header control is what brings the body
+     * back, exactly as a player reaching for it would.
+     */
+    await expect(page.locator('.hud-rooms')).toHaveAttribute('data-collapsed', 'true');
+    await page.locator('.hud-rooms > .ui-panel__header > .ui-panel__toggle').click();
+    await expect(
+      page.locator('.hud-rooms__needs'),
+      'the readout never arrived on the counts cadence, only on a tab change',
+    ).toBeVisible();
+    expect((await needsProbe()).unfinished).toBe('1');
+
+    // A second cell, lower down so it cannot overlap the first. The tool stays
+    // armed through a confirm, so this is another drag and nothing else -- and
+    // two rooms are what make the readout have more needs than rows.
+    expect(await dragRectangleOnWorld(page, { minY: 320 }), 'a second room drag found no bare world').toBe(
+      true,
+    );
+    await page.locator('.hud-rooms__confirm').click();
+    await expect(page.locator('[data-metric="rooms"]')).toContainText('2');
+
+    for (const [width, height] of [
+      [1280, 800],
+      [375, 812],
+      [900, 600],
+    ] as const) {
+      await page.setViewportSize({ width, height });
+      // Away and back: leaving the tab disarms the tool and takes the readout
+      // off, so what is measured is a fresh pull into an unfolded panel --
+      // which is also the state a player is in when they come back to look.
+      await page.locator('.ui-tab[data-tab="build"]').click();
+      await page.locator('.ui-tab[data-tab="rooms"]').click();
+      await expect(page.locator('.hud-rooms')).toBeVisible();
+      await expect(page.locator('.hud-rooms__needs')).toBeVisible();
+
+      const shown = await needsProbe();
+      // Vacuity again, and it is not the same guard as above: a panel that
+      // failed to lay out reports a plausible zero for every box below.
+      expect(shown.panelHeight, `the Rooms panel is not laid out at ${width}x${height}`).toBeGreaterThan(150);
+      expect(
+        shown.panelScrollTop,
+        `something had already scrolled the Rooms panel at ${width}x${height}`,
+      ).toBe(0);
+
+      // 1. The verdict is the simulation's, and it counted both rooms.
+      expect(shown.unfinished, `the readout does not report both rooms at ${width}x${height}`).toBe('2');
+
+      // 2. It is painted: a real box, with a real `offsetParent`, wide enough
+      // and tall enough to be read.
+      expect(shown.hidden, `the readout is hidden at ${width}x${height}`).toBe(false);
+      expect(shown.laidOut, `the readout has no box at ${width}x${height}`).toBe(true);
+      expect(shown.offsetParent, `the readout has no offsetParent at ${width}x${height}`).toBe(true);
+      expect(shown.width, `the readout is too narrow to read at ${width}x${height}`).toBeGreaterThan(200);
+      // Two lines and its own gutters: 30px is well under the 43px the tightest
+      // viewport can afford and well over a single collapsed line.
+      expect(shown.height, `the readout is too short to hold its two lines at ${width}x${height}`).toBeGreaterThan(
+        30,
+      );
+
+      // 3. And inside the panel's own unscrolled fold, which is the assertion
+      // #174 and ADR 0022 both turn on: a block below the fold is present,
+      // laid out and unreachable.
+      expect(
+        shown.bottom,
+        `the readout is below the unscrolled Rooms panel's fold at ${width}x${height}: it ends at y=${shown.bottom} in a panel clipped at y=${shown.panelFold}`,
+      ).toBeLessThanOrEqual(shown.panelFold);
+
+      // 4. It says the whole sentence, and the sentence is the catalogue's.
+      //
+      // Built from the bundled default locale rather than typed here: ADR 0011
+      // puts the key on one side of that boundary and the text on the other, so
+      // a test that hard-coded "Cell at 6, 10 needs Bed, and 3 more" would be
+      // asserting against a copy and would stay green while the player read
+      // something else. The tile is the one part left as a pattern, because
+      // where the drag landed is not this test's claim.
+      //
+      // `needs-more` and not `needs-one`: two cells with nothing in them is four
+      // unmet requirements and the line names one, so it has to say how many it
+      // did not rather than dropping three of them in silence.
+      const expected = localeText('hud.rooms.needs-more')
+        .replace('{room}', localeText('room.cell.name'))
+        .replace('{object}', localeText('object.bed.name'))
+        .replace('{count}', '3');
+      expect(
+        shown.line,
+        `the readout does not say what the room needs at ${width}x${height}`,
+      ).toMatch(
+        new RegExp(
+          `^${expected.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace('\\{x\\}', '-?\\d+').replace('\\{y\\}', '-?\\d+')}$`,
+        ),
+      );
+      // The same figure as a number rather than as prose, so the count above is
+      // not being read off the sentence it is meant to be checking.
+      expect(shown.needs, `the readout does not report every unmet requirement at ${width}x${height}`).toBe('4');
+
+      // 5. Nothing else in the panel was pushed out to make room. The
+      // catalogue list is deliberately absent: it is the one box here that is
+      // meant to hold more than it shows, and it is what pays for this block.
+      expect(
+        await page.evaluate(() =>
+          ['.hud-rooms > .ui-panel__body', '.hud-rooms__catalogue', '.hud-rooms__catalogue > .ui-section__body']
+            .map((selector) => {
+              const box = document.querySelector(selector);
+              if (box === null) return `${selector} has no box`;
+              const shortfall = box.scrollHeight - box.clientHeight;
+              return shortfall === 0 ? null : `${selector} is ${shortfall}px shorter than its own content`;
+            })
+            .filter((entry) => entry !== null),
+        ),
+        `boxes in the Rooms panel shorter than their own content at ${width}x${height}`,
+      ).toEqual([]);
+      expect(
+        railInvariants(await railIntegrity(page)),
+        `the rail with the room readout showing at ${width}x${height}`,
+      ).toEqual({ railOverflow: 0, offScreen: [], stuck: [] });
     }
   });
 

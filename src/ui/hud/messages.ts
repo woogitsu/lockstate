@@ -290,6 +290,54 @@ export const HUD_MESSAGE_KEY = {
   roomsRequirementEnclosed: 'hud.rooms.requirement-enclosed',
   roomsRequirementOutdoors: 'hud.rooms.requirement-outdoors',
   roomsRequirementNone: 'hud.rooms.requirement-none',
+  /*
+   * What a designated room is still missing (#331 milestone).
+   *
+   * The five keys of the readout that answers "I zoned a cell and nothing
+   * happened". The simulation has been able to answer that since #123 --
+   * `projectRoomList` reports `missingCapability` per room and
+   * `projectRoomDetail` names the object each unmet requirement wants -- and
+   * until now nothing under `src/ui/` asked it, so the panel that made the room
+   * could not say why the room does nothing.
+   *
+   * `roomsNeeds` and `roomsNeedsCount` are the block's header: the eyebrow and,
+   * beside it, how many of the prison's rooms are unfinished. The pair is
+   * shaped like `roomsEnclosure` and its value deliberately -- label left,
+   * figure right -- because it is the same kind of line: a readout of what the
+   * simulation found, not a control.
+   *
+   * `roomsNeedsOne` and `roomsNeedsMore` are the *one* detail line, in its two
+   * forms: what one unfinished room needs, and the same with a count of
+   * everything else that went unnamed. Two keys chosen in code rather than one
+   * with a nested plural, which is the split ADR 0011 names outright ("where a
+   * message genuinely needs nested selection, it is split into separate keys
+   * chosen in code").
+   *
+   * **One line and not a list**, and that is a measurement rather than a
+   * preference -- see `ROOM_NEEDS_NAMED_LIMIT` in `rooms-panel.ts` for the
+   * numbers. The panel's height at 900x600 is fixed by the rail and its
+   * catalogue list is already on its one-row floor there, so the whole readout
+   * has about 43px to live in. A three-row list measured 101.3px and pushed the
+   * rule readout 58px below the panel's fold, which is the #174 defect with a
+   * new cause.
+   *
+   * `roomsNeedsObjectUnknown` stands in for the object's name when the object
+   * catalogue defines nothing under the id the requirement names -- which is
+   * the *reason* the projection calls that requirement unmet. Substituted as
+   * `{object}` rather than given the sentence a fourth variant, and it is a key
+   * rather than a blank because a sentence that trailed off would read as a
+   * rendering bug rather than as the content error it is.
+   *
+   * There is deliberately **no** "every room is ready" key. A room that is fine
+   * earns no line at all -- the block is not drawn -- which is what keeps this
+   * out of the way of a panel whose always-visible budget ADR 0022 measured at
+   * 7.9px.
+   */
+  roomsNeeds: 'hud.rooms.needs',
+  roomsNeedsCount: 'hud.rooms.needs-count',
+  roomsNeedsOne: 'hud.rooms.needs-one',
+  roomsNeedsMore: 'hud.rooms.needs-more',
+  roomsNeedsObjectUnknown: 'hud.rooms.needs-object-unknown',
 
   refusalSetClock: 'hud.refusal.set-clock',
   refusalPlaceBuildOrder: 'hud.refusal.place-build-order',

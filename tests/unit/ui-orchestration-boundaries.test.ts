@@ -256,6 +256,13 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
       'Type-only: `RoomToolPort` and `TileRect` from `src/rendering/build/area-picking`. The exact shape of `build-tool.ts`\'s entry above and the same argument one gesture over: `RoomToolPort` is a port the renderer *offers* -- the scene reports the rectangle of tiles a drag covered and this module turns it into something the HUD can dispatch -- so the direction is UI-onto-a-renderer-contract rather than UI-into-renderer-internals, and it is erased. It is a second module rather than more methods on `BuildTool` because the two ports carry different shapes and the room tool carries a removal mode; `src/ui/room-tool.ts`\'s header states that rule against `BuildTool`\'s own. A value import here would mean the orchestrator had started calling into the renderer, which is what that entry says too.',
   },
   {
+    file: 'src/ui/simulation-room-needs.ts',
+    tree: 'simulation',
+    kind: 'type-only',
+    reason:
+      'Type-only: `RoomListViewModel` and `RoomDetailViewModel` from `src/simulation/presentation/room-projection`. The fifth of the translators outside `src/ui/hud/`, and the first that reads a *pulled* read model rather than a publication: it names the two view-model shapes `hud/room-list` and `hud/room-detail` answer with, and turns the `missing-capability` verdict inside them into `HudRoomNeedsViewModel`. Erased, so no simulation code runs on its account -- the projections themselves execute in the worker, and everything this module knows about the channel it gets from `src/ui/simulation-projections.ts` beside it, which is an intra-tree import. A `value` import appearing here would mean the readout had started projecting rooms on the main thread from state it does not own, which is the second source of truth `AGENTS.md` boundary 1 forbids and the reason the verdict is asked for rather than computed.',
+  },
+  {
     file: 'src/ui/simulation-zoning.ts',
     tree: 'simulation',
     kind: 'type-only',
@@ -287,6 +294,7 @@ describe('UI orchestration boundaries', () => {
       'src/ui/simulation-commands.ts',
       'src/ui/simulation-counts.ts',
       'src/ui/simulation-projections.ts',
+      'src/ui/simulation-room-needs.ts',
       'src/ui/simulation-zoning.ts',
     ]);
     // And the import scanner really is reading them.

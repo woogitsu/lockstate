@@ -422,6 +422,18 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.rooms.requirement-enclosed': 'Must be enclosed',
   'hud.rooms.requirement-outdoors': 'Must be outdoors',
   'hud.rooms.requirement-none': 'No enclosure rule',
+  // What a room the player already designated is still missing. "Not ready"
+  // rather than "Incomplete" or "Invalid": the room exists, it is painted on
+  // the map and it counts in the status strip -- what it cannot yet do is the
+  // job it was designated for.
+  'hud.rooms.needs': 'Not ready',
+  'hud.rooms.needs-count': '{unfinished} of {total}',
+  'hud.rooms.needs-one': '{room} at {x}, {y} needs {object}',
+  'hud.rooms.needs-more': '{room} at {x}, {y} needs {object}, and {count} more',
+  // The object catalogue defines nothing under the id this requirement names,
+  // which is why the requirement counts as unmet. Substituted where the
+  // object's own name would go, so the sentence still ends somewhere.
+  'hud.rooms.needs-object-unknown': 'something this build cannot name',
 
   'hud.severity.info': 'Info',
   'hud.severity.warning': 'Warning',
