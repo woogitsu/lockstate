@@ -110,6 +110,35 @@ because every key in this schema is a `uuid` (#280 finding F15). **The rule
 this settles for every future table is that a new relation in `public`
 starts closed, and its migration opens exactly what it means to open.**
 
+**Authority over a row is not authority over the record of when it was
+written.** Decided 2026-08-26 for issue #194, and it is the one ruling in
+this section that narrows the row above rather than the one below it: "Prison
+simulation state, saves, settings — Z0/Z1 (client-authoritative)" is about a
+row's *content*, and a `created_at`/`updated_at` column is not content. It is
+the server's statement about when the write happened, so its authority is Z2
+even on a table whose payload is Z0's. `20260824140000` established this for
+`created_at` without naming it as a rule;
+`20260826130000_server_stamp_updated_at.sql` completes it for `updated_at` on
+`prisons`, `profiles` and `user_settings` — the server stamps them from a
+`BEFORE INSERT OR UPDATE` trigger, and the columns are out of every client
+grant, so a client that sends one is refused rather than silently corrected.
+
+The rejected alternative was to keep the columns client-writable on the
+argument that an offline-first client legitimately knows when the user
+changed a setting. It was declined on two grounds, both executed. First,
+`src/persistence/cloud/sync-engine.ts` states the reconciliation contract as
+"silent last-write-wins is prohibited": ordering is decided by
+`prisons.current_revision`, which a client cannot write (`42501`, reproduced),
+and conflicts by an explicit user choice — so a client edit time has no
+consumer in the design and one prohibited use. Second, without a trigger the
+column was not merely untrustworthy but *wrong*: `default now()` fires only on
+`INSERT`, so an `UPDATE` that did not name `updated_at` left it at the insert
+value. Reproduced as `authenticated`: `payload` changed while `updated_at`
+stayed at `2020-01-01`. Nothing in `src/` names it, so nothing was keeping it
+current. **If a client-side edit time is ever needed for reconciliation it
+gets its own column, named for what it is** (`client_edited_at`), so the trust
+boundary is visible where the value is read rather than inferred from a grant.
+
 ### 3. Mandatory shape of a Z2 entry point
 
 Every trusted mutation path, without exception, is:

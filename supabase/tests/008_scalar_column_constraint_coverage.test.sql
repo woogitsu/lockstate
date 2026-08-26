@@ -127,18 +127,27 @@ insert into constrained_columns (tbl, col, mechanism, object_name, reason, clien
   ('profiles',              'created_at',    'unconstrained-by-decision', null,
    'Server-defaulted; not client-writable since 20260824140000, which replaced this table''s table-level INSERT and UPDATE grants with per-column lists that omit created_at.', false),
 
-  -- (b) Client-writable, and that is a finding rather than a decision. A
-  --     client can set these at insert time and walk `updated_at` backwards --
-  --     reproduced in #194, whose `updated_at` half is still open. They are
-  --     listed here so this suite records the open finding instead of reading
-  --     as though the state were intended; the entries move to a real mechanism
-  --     when that half is acted on.
+  -- (b) These three were group (b) -- "client-writable, and that is a finding
+  --     rather than a decision" -- for as long as #194's `updated_at` half was
+  --     open, and the note here said the entries "move to a real mechanism when
+  --     that half is acted on". 20260826130000 acted on it, and this is what
+  --     moving looks like: the server stamps all three from a
+  --     `BEFORE INSERT OR UPDATE` trigger and none of them is in a client
+  --     grant, so `client_writable` is now false and the last assertion in this
+  --     suite is what forced the flip. Group (b) is empty; nothing in this
+  --     schema is now recorded as unconstrained *and* client-writable.
+  --
+  --     Still `unconstrained-by-decision` rather than a mechanism, and the
+  --     distinction is the point: a trigger decides *who writes* the column,
+  --     not what range it may hold. An absolute calendar bound on a timestamp
+  --     is the same product question group (a) declines to answer, and it is
+  --     now declined for the same reason -- no client can reach the column.
   ('prisons',               'updated_at',    'unconstrained-by-decision', null,
-   'CLIENT-WRITABLE by explicit grant. Whether a client may set its own updated_at is the decision in #194; a client-supplied value cannot be trusted for ordering.', true),
+   'Server-stamped by prisons_stamp_updated_at since 20260826130000 (#194), which also revoked the grants that reached it. An absolute calendar bound would be a product decision.', false),
   ('profiles',              'updated_at',    'unconstrained-by-decision', null,
-   'CLIENT-WRITABLE via the per-column INSERT and UPDATE grants 20260824140000 left in place. Open finding #194.', true),
+   'Server-stamped by profiles_stamp_updated_at since 20260826130000 (#194); the per-column INSERT and UPDATE grants no longer name it.', false),
   ('user_settings',         'updated_at',    'unconstrained-by-decision', null,
-   'CLIENT-WRITABLE via table-level INSERT and UPDATE; 20260824140000 deliberately changed nothing here. Open finding #194.', true);
+   'Server-stamped by user_settings_stamp_updated_at since 20260826130000 (#194), which replaced this table''s table-level INSERT and UPDATE with per-column lists that omit it.', false);
 
 -- --- The enumeration, from the catalog --------------------------------
 

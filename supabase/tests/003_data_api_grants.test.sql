@@ -83,7 +83,7 @@
 -- the TRUNCATE sweep to `service_role`.
 
 begin;
-select plan(33);
+select plan(35);
 
 -- Alphabetical because the aggregates below order by privilege name:
 -- DELETE, INSERT, SELECT, UPDATE.
@@ -97,9 +97,13 @@ $$;
 -- --- Cloud save (issue #20) ---
 
 -- No table-level INSERT or UPDATE: both are granted per column below, so a
--- client cannot write `created_at`. 20260824140000 (#194) revoked them after
--- finding that a client could set a profile's creation timestamp to 1970 and
--- its `updated_at` to the year 4000, and walk `updated_at` backwards.
+-- client cannot write either timestamp. 20260824140000 (#194) revoked them
+-- after finding that a client could set a profile's creation timestamp to 1970
+-- and its `updated_at` to the year 4000, and walk `updated_at` backwards; it
+-- closed `created_at` and left `updated_at` as #194's open half.
+-- 20260826130000 closes that half -- the server stamps `updated_at` from a
+-- `BEFORE INSERT OR UPDATE` trigger and the column is out of both lists, so a
+-- client naming it is refused with `42501` rather than silently corrected.
 select is(
   pg_temp.dml_privs('authenticated', 'public.profiles'),
   'SELECT',
@@ -112,8 +116,8 @@ select is(
     where a.attrelid = 'public.profiles'::regclass
       and a.attnum > 0 and not a.attisdropped
       and has_column_privilege('authenticated', a.attrelid, a.attnum, 'INSERT')),
-  'display_name,id,updated_at',
-  'profiles: the granted-back INSERT columns are exactly what a client supplies -- created_at absent'
+  'display_name,id',
+  'profiles: the granted-back INSERT columns are exactly what a client supplies -- neither timestamp present'
 );
 
 select is(
@@ -122,8 +126,8 @@ select is(
     where a.attrelid = 'public.profiles'::regclass
       and a.attnum > 0 and not a.attisdropped
       and has_column_privilege('authenticated', a.attrelid, a.attnum, 'UPDATE')),
-  'display_name,updated_at',
-  'profiles: the granted-back UPDATE columns are the editable metadata -- id and created_at absent'
+  'display_name',
+  'profiles: the granted-back UPDATE column is the editable metadata -- id and both timestamps absent'
 );
 
 select is(
@@ -150,8 +154,8 @@ select is(
     where a.attrelid = 'public.prisons'::regclass
       and a.attnum > 0 and not a.attisdropped
       and has_column_privilege('authenticated', a.attrelid, a.attnum, 'INSERT')),
-  'display_name,game_version,id,owner_id,slot_index,updated_at',
-  'prisons: the granted-back INSERT columns match the UPDATE list plus identity -- created_at and both pointer columns absent'
+  'display_name,game_version,id,owner_id,slot_index',
+  'prisons: the granted-back INSERT columns match the UPDATE list plus identity -- both timestamps and both pointer columns absent'
 );
 
 select is(
@@ -161,8 +165,8 @@ select is(
       and a.attnum > 0
       and not a.attisdropped
       and has_column_privilege('authenticated', a.attrelid, a.attnum, 'UPDATE')),
-  'display_name,game_version,slot_index,updated_at',
-  'prisons: the granted-back UPDATE columns are exactly the editable metadata'
+  'display_name,game_version,slot_index',
+  'prisons: the granted-back UPDATE columns are exactly the editable metadata, and updated_at is not metadata'
 );
 
 select is(
@@ -171,10 +175,34 @@ select is(
   'save_versions: readable, never writable -- immutability is the absence of a write grant'
 );
 
+-- `user_settings` was the one table here with table-level INSERT and UPDATE:
+-- 20260824140000 left it alone because it has no `created_at`, and `updated_at`
+-- was #194's open half. 20260826130000 makes both per column, so the table-level
+-- pair is gone and DELETE is the only whole-row write a client holds.
 select is(
   pg_temp.dml_privs('authenticated', 'public.user_settings'),
-  'DELETE,INSERT,SELECT,UPDATE',
-  'user_settings: fully client-owned, unlike everything else here'
+  'DELETE,SELECT',
+  'user_settings: no table-level INSERT or UPDATE -- both are per column, as on the other two client tables'
+);
+
+select is(
+  (select string_agg(a.attname, ',' order by a.attname)
+     from pg_attribute a
+    where a.attrelid = 'public.user_settings'::regclass
+      and a.attnum > 0 and not a.attisdropped
+      and has_column_privilege('authenticated', a.attrelid, a.attnum, 'INSERT')),
+  'payload,settings_schema_version,user_id',
+  'user_settings: the granted-back INSERT columns are the settings and their key -- updated_at absent'
+);
+
+select is(
+  (select string_agg(a.attname, ',' order by a.attname)
+     from pg_attribute a
+    where a.attrelid = 'public.user_settings'::regclass
+      and a.attnum > 0 and not a.attisdropped
+      and has_column_privilege('authenticated', a.attrelid, a.attnum, 'UPDATE')),
+  'payload,settings_schema_version,user_id',
+  'user_settings: the granted-back UPDATE columns are the same three -- user_id is a no-op the policy already pins, not a capability'
 );
 
 -- --- Trusted services (issue #36) ---
@@ -284,9 +312,7 @@ prisons:SELECT
 profiles:SELECT
 save_versions:SELECT
 user_settings:DELETE
-user_settings:INSERT
-user_settings:SELECT
-user_settings:UPDATE$expected$, e'\r', ''),
+user_settings:SELECT$expected$, e'\r', ''),
   'authenticated reaches exactly the relations the client half of this schema needs'
 );
 
@@ -626,16 +652,22 @@ select is(
 -- is caught unless it is listed, and a listed column that stops being
 -- client-writable is caught too, so acting on #194's open half forces the entry
 -- out rather than leaving it asserting something untrue.
+--
+-- **THE ALLOW-LIST IS EMPTY, AND #194 IS WHY.** It held exactly three entries --
+-- `prisons.updated_at`, `profiles.updated_at`, `user_settings.updated_at` --
+-- each pointing at #194's open half. 20260826130000 decided it: the server
+-- stamps all three from a `BEFORE INSERT OR UPDATE` trigger and none is in a
+-- client grant, so the second assertion below forced the three entries out
+-- exactly as this comment said it would. That is the property worth keeping the
+-- empty table for. The rule is unchanged and still live for the next
+-- `default now()` column somebody adds: it fails unless an entry here gives a
+-- reason of at least 60 characters, and the reason has to survive being read.
+--
+-- Two of the three assertions below are vacuous over an empty list, and that is
+-- the correct state rather than a gap -- the one that is not vacuous is the one
+-- that matters, because it sweeps the catalog rather than the list.
 
 create temporary table client_writable_timestamps (tbl text, col text, reason text);
-
-insert into client_writable_timestamps (tbl, col, reason) values
-  ('prisons', 'updated_at',
-   'Granted on purpose by 20260822190100. Whether a client may stamp its own updated_at is #194''s open half; the alternative is a before-update trigger, and that choice decides whether anything may trust this column for ordering.'),
-  ('profiles', 'updated_at',
-   'Retained by 20260824140000, which scoped itself to created_at. Same open decision as prisons.updated_at, in #194.'),
-  ('user_settings', 'updated_at',
-   'Retained by 20260824140000. This table has no created_at, so updated_at was its only affected column and the migration deliberately changed nothing here. #194.');
 
 -- Vacuity guard: the sweep below is satisfied by an empty scan, so a query
 -- that stopped finding `default now()` columns would read as compliance.
