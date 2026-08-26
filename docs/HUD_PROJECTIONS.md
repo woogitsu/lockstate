@@ -418,11 +418,21 @@ neither a catalog entry nor a recorded route of its own. `projectClockPosition`
 is the one recorded exception — it is a pure function of a tick and the main
 thread already has the tick, so it is computed there rather than requested.
 
-What this does **not** close: **no panel calls the requester yet.** The route
-is reachable, every projection answers over it, and the first consumer is a
-separate issue — #104 scopes it out in those words ("Not in scope: what to
-*do* with the data"). The gate above records that state and fails the day a
-module under `src/ui/` starts using it, so the entry cannot go quietly stale.
+**The first consumer, and what is still unpainted.** The route had no reader
+for as long as #104 had shipped it — the gate above recorded that state as
+`UNPAINTED_ROUTE` and was written to fail the day a module under `src/ui/`
+started using it, which is what happened. `src/ui/simulation-room-needs.ts`
+reads `hud/room-list` and, for the rooms it says are unfinished,
+`hud/room-detail`, so the Rooms panel can tell the player what a zoned room is
+missing; the composition root asks while the Rooms tab is the one showing, on
+the `simulation/status-counts` cadence, and `RoomNeedsReader.read` refuses to
+stack so a slow answer cannot queue a second question. The gate's entry is gone
+and its assertion now runs the other way: there must be a reader, and deleting
+the last one fails.
+
+Ten of the twelve catalogued read models still have a route and nobody on the
+end of it. That is the honest state of this channel, and it is a different
+sentence from the one this section used to carry.
 
 ## Gaps: fields a panel plausibly wants that the simulation does not have
 
@@ -558,17 +568,33 @@ decision about what to build next.
     **Phase 2 has landed and both of `room.cell`'s `object` requirements can
     now read `'satisfied-by-capability'`** — measured in
     `tests/integration/furnished-cell-loop.test.ts`, off two real construction
-    orders rather than a hand-registered instance. What is worth recording
-    here, because it is a projection fact rather than a simulation one: **no
-    HUD surface consumes either verdict.** `projectRoomList` and
-    `projectRoomDetail` answer `requirementStatus` over the worker's projection
-    catalogue, and nothing in `src/ui/` requests either — the Rooms tab is the
-    zoning gesture (ADR 0022), not the readout. So the difference between a
-    finished cell and an unfinished one is computable and off screen until ADR
-    0028 phase 5, and the phase order's argument that shipping "a room that is
-    visibly incomplete" was worse rests on a readout that does not exist yet.
-    What a player *does* see from phase 2 is a second object row in the Build
-    panel and a toilet drawn on the tile they pressed.
+    orders rather than a hand-registered instance. **The verdict is now on
+    screen**, and this paragraph used to say the opposite: it read "no HUD
+    surface consumes either verdict … the difference between a finished cell
+    and an unfinished one is computable and off screen". It was true for as
+    long as nothing under `src/ui/` requested a projection.
+    `src/ui/simulation-room-needs.ts` requests `hud/room-list` and, for the
+    rooms whose `requirementSummary.missingCapability` is above zero,
+    `hud/room-detail` — so the Rooms panel reads out which rooms are unfinished
+    and names one thing one of them wants, from the object's own `nameKey`. The
+    panel re-derives nothing: `'missing-capability'` is asked for and rendered,
+    which is what keeps the rule that gates an admission from acquiring a second
+    definition on the main thread.
+
+    **This is part of ADR 0028 phase 5 and not the whole of it**, which is worth
+    saying plainly rather than letting the phase read as closed. Phase 5 owes
+    three things: a surface for the verdict, the *room-level* verdict ADR 0023
+    §4 argues for — one answer per room rather than counts — and "over
+    capacity", which `RoomOccupancyViewModel` still cannot express because
+    `free` clamps at zero and `utilization` clamps at 1. Only the first has
+    landed. The other two are changes to what the projection publishes, not to
+    what the panel asks for. The per-requirement quantity above is unchanged
+    too: the readout says a cell needs a toilet, never how many.
+
+    The readout counts unfinished rooms and names one unmet requirement, because
+    a single line is what the panel's height budget affords at 900×600 —
+    `ROOM_NEEDS_NAMED_LIMIT` in `src/ui/hud/rooms-panel.ts` carries the
+    measurement, including what a three-row version did to the panel's fold.
 
     **Two of the three area requirements this gap listed as
     `'not-evaluated'` are now evaluated**, and by the zoning service rather

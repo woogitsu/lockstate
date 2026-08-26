@@ -21,16 +21,19 @@ import { SavePanel } from './ui/save-panel';
 import {
   EMPTY_HUD_VIEW_MODEL,
   HUD_MESSAGE_KEY,
+  INITIAL_HUD_SHELL_STATE,
   mountHud,
   type HudBuildMaterialViewModel,
   type HudBuildViewModel,
   type HudBuildableViewModel,
   type HudHandle,
   type HudIntent,
+  type HudRoomNeedsViewModel,
   type HudRoomViewModel,
   type HudRoomsViewModel,
   type HudStaffRoleViewModel,
   type HudStaffViewModel,
+  type HudTabId,
   type HudUnavailableNotice,
   type HudViewModel,
 } from './ui/hud';
@@ -38,6 +41,7 @@ import { hudClockFromWorkerMessage } from './ui/simulation-clock';
 import { hudAlertsFromWorkerMessage, hudRefusalFromWorkerMessage } from './ui/simulation-alerts';
 import { hudCountsFromWorkerMessage } from './ui/simulation-counts';
 import { hudZoningFromWorkerMessage } from './ui/simulation-zoning';
+import { RoomNeedsReader } from './ui/simulation-room-needs';
 import { SimulationCommandSender } from './ui/simulation-commands';
 import { BuildTool } from './ui/build-tool';
 import { ObjectTool } from './ui/object-tool';
@@ -740,6 +744,75 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
 
   let viewModel: HudViewModel = EMPTY_HUD_VIEW_MODEL;
 
+  /*
+   * What the designated rooms are still missing, and the two things that make
+   * it a *pull* rather than a publication (#331 milestone).
+   *
+   * The simulation has been able to answer this since #123 -- a zoned cell with
+   * no bed reports `missingCapability: 2`, and it is the same signal
+   * `IntakeSystem` gates on -- and nothing under `src/ui/` asked, so the panel
+   * that made the room could not say why the room does nothing. The reader is
+   * `src/ui/simulation-room-needs.ts`; this is the composition root deciding
+   * *when* to ask, which is the half a translator cannot own.
+   *
+   * **Only while the Rooms tab is the one showing.** A room list is
+   * `O(instances)` to build and nobody is reading it from the Build tab, which
+   * is the whole argument for the channel being a pull
+   * (`src/ui/simulation-projections.ts`: "a panel that is closed asks for
+   * nothing"). `activeTab` is tracked from the `select-tab` intent rather than
+   * read back off the HUD, because the HUD's shell state is chrome the HUD owns.
+   *
+   * **On the counts cadence, not on a timer of its own.** Placed objects change
+   * what a room has without changing any count -- a completed bed order takes a
+   * cell from "needs a bed" to "needs a toilet" and moves nothing on the strip
+   * -- so a readout refreshed only when a room was zoned would go stale in
+   * exactly the case the player is working through. `simulation/status-counts`
+   * arrives up to twice a second while a session exists, which is a cadence
+   * that already exists and costs nothing to join; `RoomNeedsReader.read`
+   * refuses to stack, so a slow answer cannot queue a second question.
+   */
+  const roomNeedsReader = client === undefined ? undefined : new RoomNeedsReader(client);
+  let activeTab: HudTabId = INITIAL_HUD_SHELL_STATE.activeTab;
+
+  /**
+   * Puts a readout on the view model, or takes it off.
+   *
+   * Absent has to be an absent *property* and not a present one holding
+   * `undefined` (`exactOptionalPropertyTypes` is on), which is the same dance
+   * the zoning notice does in the listener below -- and it matters for the same
+   * reason: "nothing has asked" and "the simulation says every room is
+   * finished" are different facts, and only the second is a statement about the
+   * prison.
+   */
+  const applyRoomNeeds = (next: HudRoomNeedsViewModel | undefined): void => {
+    if (next === undefined) {
+      if (viewModel.roomNeeds === undefined) return;
+      const { roomNeeds: _cleared, ...withoutRoomNeeds } = viewModel;
+      viewModel = withoutRoomNeeds;
+    } else {
+      viewModel = { ...viewModel, roomNeeds: next };
+    }
+    hud?.update(viewModel);
+  };
+
+  const refreshRoomNeeds = (): void => {
+    if (roomNeedsReader === undefined || activeTab !== 'rooms') return;
+    void roomNeedsReader
+      .read()
+      .then((next) => {
+        // `undefined` here is "a read was already in flight", not an answer, so
+        // it must leave what is on screen alone rather than blanking it.
+        if (next !== undefined) applyRoomNeeds(next);
+      })
+      // A refusal, a timeout, or a worker that went away. The readout comes off
+      // rather than staying: a sentence about what a room needs, with nothing
+      // still answering for it, is the class of lie this layer exists to avoid.
+      // The failure itself reaches no control, and that is deliberate -- the
+      // player pressed nothing, so there is nothing to mark and no refusal to
+      // report, which is the line `refusalMessageKey` already draws for chrome.
+      .catch(() => applyRoomNeeds(undefined));
+  };
+
   /**
    * Repaints the HUD from what the worker last said, and from nothing else.
    *
@@ -842,6 +915,13 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       viewModel = withoutRefusal;
     }
     hud?.update(viewModel);
+
+    // The room readout rides this cadence -- see `roomNeedsReader` above. A
+    // stopped session takes it off instead of asking again, for the reason the
+    // clock reads unknown and the counts read empty: a statement about a prison
+    // that no longer exists is not something the player can act on.
+    if (message.kind === 'simulation/stopped') applyRoomNeeds(undefined);
+    else refreshRoomNeeds();
   });
 
   hud = mountHud(app, {
@@ -908,9 +988,27 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     ...(objects === undefined ? {} : { worldObjects: objects }),
     onIntent: (intent: HudIntent) => {
       switch (intent.kind) {
+        /*
+         * Chrome -- the HUD has already applied it locally -- with one half
+         * outside the HUD: which tab is showing decides whether the room
+         * readout is being refreshed at all.
+         *
+         * Both directions are needed. Arriving on the Rooms tab asks
+         * immediately rather than waiting up to 500ms for the next counts
+         * publication, and leaving it takes the readout off, because from here
+         * on nothing is refreshing it. The panel clears its own copy when it is
+         * hidden; this clears the view model, or the next publication would put
+         * the stale one back.
+         */
+        case 'select-tab': {
+          activeTab = intent.tab;
+          if (activeTab === 'rooms') refreshRoomNeeds();
+          else applyRoomNeeds(undefined);
+          return;
+        }
+
         // Chrome: the HUD has already applied it locally and there is nothing
         // for a host to do.
-        case 'select-tab':
         case 'toggle-panel':
           return;
 

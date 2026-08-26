@@ -51,12 +51,18 @@ import { PROJECTION_CATALOG } from '../../src/simulation/worker/projection-catal
  * ## What it does not claim
  *
  * It is a text scan over two directories, and the floor it asserts is "this
- * projection has a route", not "a panel paints it". A route with nothing on
- * the end of it is a real and separate state, and it is the state this
- * repository is in today -- recorded below as `UNPAINTED_ROUTE` rather than
- * left for the next reader to rediscover, and written so that the day a panel
- * calls the requester the entry goes stale and this file fails until it is
- * deleted.
+ * projection has a route", not "a panel paints it". A route with nothing on the
+ * end of it is a real and separate state, and it was this repository's state
+ * until #331's milestone: this file used to carry a `UNPAINTED_ROUTE` entry
+ * recording it, written so that the day a module under `src/ui/` called the
+ * requester the entry went stale and this file failed until it was deleted.
+ * That is what happened -- `src/ui/simulation-room-needs.ts` reads
+ * `hud/room-list` and `hud/room-detail` to tell the player what a zoned room is
+ * missing -- so the entry is gone and the assertion that replaced it runs the
+ * other way: **there must be a painter**, and deleting the last one fails here
+ * rather than quietly returning the channel to a pipe with nothing on the end
+ * of it. It still does not claim that every projection is painted; ten of the
+ * twelve catalogued read models have a route and no reader.
  */
 
 const ROOT = join(__dirname, '../..');
@@ -102,17 +108,16 @@ const ROUTED_ELSEWHERE: Readonly<Record<string, string>> = {
 };
 
 /**
- * The state of the route the catalog provides, this side of a panel.
+ * The modules that actually drink from the channel.
  *
- * Recorded rather than left implicit, because "there is a pipe" and "something
- * drinks from it" are different facts and the gap between them is exactly what
- * #104 was filed about. The entry is written so it **goes stale on success**:
- * the assertion below fails the moment a module under `src/ui/` other than the
- * requester itself mentions `SimulationProjectionRequester`, and the fix is to
- * delete this entry in the same change.
+ * The other half of #104's question, and the one no other gate asks: "there is
+ * a pipe" and "something drinks from it" are different facts. This list is the
+ * second, and it is a *floor* rather than a manifest -- a new reader may be
+ * added without touching it, and the last one being deleted fails the
+ * assertion below. Named individually so that a reader which is renamed or
+ * moved out of `src/ui/` fails here instead of silently leaving the surface.
  */
-const UNPAINTED_ROUTE =
-  'The channel exists and no panel calls it yet. `src/ui/simulation-projections.ts` is the main thread\'s requester and the only module under `src/` that constructs a `simulation/request-projection`; nothing constructs a `SimulationProjectionRequester`. That is the scope #104 itself draws -- "Not in scope: what to *do* with the data. The explanation panel, blocked-intent reporting and onboarding predicates are separate issues that consume this channel" -- and building a roster panel, its localization keys and its layout inside the change that laid the pipe would have been the scope broadening `AGENTS.md` forbids. What is *not* deferred is the pipe being reachable: the requester is a main-thread module a panel constructs with the channel it already holds, and every projection answers over it (`tests/contract/worker-projection-channel.test.ts`).';
+const PAINTERS = ['simulation-room-needs.ts'] as const;
 
 const catalogSource = read(CATALOG_FILE);
 
@@ -202,24 +207,33 @@ describe('every projection the worker can produce has a route out of it', () => 
     }
   });
 
-  it('records that the route has no painter yet, and fails when it gains one', () => {
-    // This is the entry that goes stale on success. It is not a licence for
-    // the channel to stay unused: it is the thing that makes "unused" visible
-    // in CI instead of in the next audit.
-    expect(UNPAINTED_ROUTE.trim().length).toBeGreaterThan(200);
-
+  it('has a module that actually reads the channel, and says which', () => {
     const painters = readdirSync(join(ROOT, UI_DIR))
       .filter((entry) => entry.endsWith('.ts') && entry !== 'simulation-projections.ts')
       .filter((entry) => read(`${UI_DIR}/${entry}`).includes('SimulationProjectionRequester'));
 
+    // The assertion this file used to make in reverse. Until #331's milestone
+    // the channel had a route and no reader, which was recorded here as a
+    // standing entry rather than left for the next audit; the entry has been
+    // deleted and this is what took its place. An empty list is a channel that
+    // has gone back to being a pipe with nothing on the end of it.
     expect(
-      painters,
-      'a module now uses the projection requester, so `UNPAINTED_ROUTE` above is out of date -- delete it in the same change that made it false',
+      painters.length,
+      'no module under src/ui/ reads a projection any more. The channel is a pull with nothing pulling: give a panel back its reader, or this whole layer is eleven read models nobody can see (#104)',
+    ).toBeGreaterThan(0);
+
+    // And the named ones are still there, so a reader that is renamed or moved
+    // out of the tree fails here rather than being replaced in silence by
+    // whichever other module happens to satisfy the count above.
+    expect(
+      [...PAINTERS].filter((entry) => !painters.includes(entry)),
+      'this reader no longer uses the projection requester: update PAINTERS in the same change, or the list becomes fiction',
     ).toEqual([]);
 
     // The other half of the same fact: the requester exists and is the sender.
-    // Without this the assertion above would be equally green if the requester
-    // had been deleted.
+    // Without this the assertions above would be equally green if the requester
+    // had been deleted and the readers were mentioning a name that no longer
+    // sends anything.
     expect(read(`${UI_DIR}/simulation-projections.ts`)).toContain("kind: 'simulation/request-projection',");
   });
 });

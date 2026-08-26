@@ -9,6 +9,7 @@ import { HUD_MESSAGE_KEY } from './messages';
 import type {
   HudLocalizer,
   HudRoomEnclosureRequirement,
+  HudRoomNeedsViewModel,
   HudRoomViewModel,
   HudRoomsViewModel,
   HudZoningNoticeViewModel,
@@ -148,8 +149,48 @@ export interface RoomsPanel {
   setPendingArea(area: RoomsPanelArea | undefined): void;
   /** What the simulation said about the last room designated. */
   setZoningNotice(notice: HudZoningNoticeViewModel | undefined): void;
+  /**
+   * What the simulation says the designated rooms are still missing.
+   *
+   * `undefined` clears the readout, and it is not the same statement as a
+   * model with no unfinished rooms: nothing has been asked, so the panel knows
+   * nothing rather than knowing everything is fine. Both draw no block, and
+   * they draw no block for different reasons -- see `HudRoomNeedsViewModel`.
+   */
+  setRoomNeeds(needs: HudRoomNeedsViewModel | undefined): void;
   setVisible(visible: boolean): void;
 }
+
+/**
+ * How many unmet requirements the readout names by name.
+ *
+ * **One, and it is a measurement rather than an opinion.** The panel's own
+ * height is fixed by the rail and not by its content -- measured on the
+ * assembled page, a block added to `.ui-panel__body` shrinks
+ * `.hud-rooms__list` and leaves `.hud-rooms` at 480.1px at 1280x800, 451.1px at
+ * 375x812 and 338.1px at 900x600 -- so what this readout actually spends is the
+ * catalogue list's slack, and that list stops shrinking at its one-row floor of
+ * 44px.
+ *
+ * At 900x600 the list is **already on that floor** with the readout hidden. The
+ * measurement: a header line and three rows came to 101.3px there and put the
+ * panel 58px into overflow, ending the readout itself 4.5px below the panel's
+ * unscrolled fold and the rule readout 58px below it -- #174's defect with a
+ * new cause, and the exact thing ADR 0022 and
+ * `tests/browser/app-shell.spec.ts`'s fold assertion exist to catch. The slack
+ * there is about 43px, which buys a header line and one more.
+ *
+ * So the readout names one thing and counts the rest: `roomsNeedsMore` carries
+ * "and {count} more", and the header's figure is over every room in the
+ * requested page. The player fixing that one thing sees the line move to the
+ * next -- which is the order they would work in anyway.
+ *
+ * `HudRoomNeedsViewModel.needs` stays a *list* despite this being one, and that
+ * is the point of the number living here rather than there: it is a fact about
+ * how much of the rail this panel can spend, not about what the simulation
+ * found. The boundary carries the answer; the panel decides how much of it fits.
+ */
+export const ROOM_NEEDS_NAMED_LIMIT = 1;
 
 function requirementLabelKey(requirement: HudRoomEnclosureRequirement): LocalizationKey {
   switch (requirement) {
@@ -207,6 +248,8 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
   /** The finished rectangle awaiting a confirm. */
   let pending: RoomsPanelArea | undefined;
   let notice: HudZoningNoticeViewModel | undefined;
+  /** What the simulation last said the designated rooms are missing, or nothing asked yet. */
+  let needs: HudRoomNeedsViewModel | undefined;
 
   const selectedRoom = (): HudRoomViewModel | undefined =>
     model.rooms.find((entry) => entry.roomId === selectedId);
@@ -502,6 +545,124 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
     enclosureBlock.dataset['enclosure'] = notice.enclosure;
   }
 
+  // ---- what the rooms are still missing ----------------------------
+  /*
+   * The readout that answers "I zoned a cell and nothing happened".
+   *
+   * ### Why it is here and not in the alerts list
+   *
+   * For the reason the enclosure readout is here: this is not a refusal. The
+   * room was accepted, it is painted on the map and the status strip counts it
+   * -- what it cannot do is house anybody, because a cell with no bed satisfies
+   * no `sleep-surface` requirement and `IntakeSystem` will not put a prisoner in
+   * it. That is a *fact about the room the player made*, and it belongs beside
+   * the control that made it. The alerts section also starts folded
+   * (`INITIAL_HUD_SHELL_STATE`), so a sentence routed there would be in the DOM
+   * and painted at no viewport, which is exactly the defect #220 moved
+   * "simulation unavailable" out of that list to fix.
+   *
+   * ### Why the panel decides nothing about it
+   *
+   * Every word comes from somewhere else. Which rooms are unfinished and what
+   * each one lacks is `projectRoomList` / `projectRoomDetail`'s answer, pulled
+   * over `simulation/request-projection`; the room's name and the object's name
+   * are the two catalogues' own `nameKey`s. This code chooses the sentence and
+   * the order of the words in it and nothing else -- so the rule that a cell
+   * without a bed is unfinished has exactly one definition, the one
+   * `ActionSystem` and `IntakeSystem` already gate on.
+   *
+   * ### Two lines, and why not more
+   *
+   * A header line and one detail line, which is the panel's own economy: the
+   * rule block above states two rules in two eyebrow lines rather than two rows
+   * for the same reason. `ROOM_NEEDS_NAMED_LIMIT` carries the measurement that
+   * decided it.
+   *
+   * ### Why it disappears entirely
+   *
+   * `hidden`, not an empty block and not a "nothing missing" line. A room that
+   * is fine must cost this panel no height at all: its always-visible budget at
+   * 900x600 is 7.9px (ADR 0022), and a permanent block saying everything is well
+   * is how a readout becomes furniture a player stops reading. `hidden` rather
+   * than a class, for the reason every other fold here uses it -- a box that is
+   * laid out and empty still takes its gap and its border.
+   */
+  const needsCount = valueText('', 'hud-rooms__needs-count');
+  const needsLine = eyebrowText('', 'hud-rooms__needs-line');
+  const needsBlock = element('div', {
+    className: 'hud-rooms__needs',
+    children: [
+      element('div', {
+        className: 'hud-rooms__needs-header',
+        children: [eyebrowText(t(HUD_MESSAGE_KEY.roomsNeeds)), needsCount],
+      }),
+      needsLine,
+    ],
+  });
+  /*
+   * No initial `hidden` here: `paintNeeds` runs once at construction, below the
+   * `panel.body.append`, and it is the single authority on whether this block
+   * has a box. A second assignment would be a line no test could fail on --
+   * measured, by deleting it and watching every assertion stay green.
+   */
+
+  function paintNeeds(): void {
+    /*
+     * Two states draw nothing and stay two facts: `undefined` is "nothing has
+     * been asked" and zero unfinished rooms is "the simulation says every room
+     * is finished". Collapsing them here is correct -- neither earns a line --
+     * and collapsing them *upstream* would not be, which is why the view model
+     * keeps them apart.
+     */
+    const shown = needs !== undefined && needs.unfinishedRooms > 0 ? needs : undefined;
+    needsBlock.hidden = shown === undefined;
+    if (shown === undefined) {
+      needsCount.textContent = '';
+      needsLine.textContent = '';
+      delete needsBlock.dataset['unfinished'];
+      delete needsBlock.dataset['needs'];
+      return;
+    }
+
+    needsCount.textContent = t(HUD_MESSAGE_KEY.roomsNeedsCount, {
+      unfinished: shown.unfinishedRooms,
+      total: shown.totalRooms,
+    });
+    // The verdict as data as well as as text, so a test can read it without
+    // parsing a localized sentence -- the job `data-enclosure` does on the
+    // block below, and `data-area` on the block above.
+    needsBlock.dataset['unfinished'] = String(shown.unfinishedRooms);
+    needsBlock.dataset['needs'] = String(shown.totalNeeds);
+
+    const named = shown.needs.slice(0, ROOM_NEEDS_NAMED_LIMIT);
+    const first = named[0];
+    if (first === undefined) {
+      // The simulation says rooms are unfinished and named nothing this layer
+      // can render -- reachable only through a room whose catalogue id the
+      // catalogue does not define, which `collectRoomInstances` cannot even
+      // enumerate. The count above is still true, so the header stands and the
+      // line says nothing rather than inventing a room.
+      needsLine.textContent = '';
+      return;
+    }
+
+    // The object's own name, or the stand-in for one the catalogue does not
+    // define. A key either way: nothing here interpolates text this layer
+    // authored (ADR 0011).
+    const object = t(first.objectLabelKey ?? HUD_MESSAGE_KEY.roomsNeedsObjectUnknown);
+    const unlisted = Math.max(0, shown.totalNeeds - named.length);
+    needsLine.textContent =
+      unlisted === 0
+        ? t(HUD_MESSAGE_KEY.roomsNeedsOne, { room: t(first.roomLabelKey), x: first.tile.x, y: first.tile.y, object })
+        : t(HUD_MESSAGE_KEY.roomsNeedsMore, {
+            room: t(first.roomLabelKey),
+            x: first.tile.x,
+            y: first.tile.y,
+            object,
+            count: unlisted,
+          });
+  }
+
   /**
    * Which pair of controls the one 44px row holds, and everything that follows
    * from the pending rectangle.
@@ -620,14 +781,29 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
   function paintFold(): void {
     panel.setCollapsed(folded());
   }
+  /*
+   * Before `.hud-rooms__status` and not after it, which is a decision about a
+   * measurement rather than about reading order.
+   *
+   * `.hud-rooms__status` is the panel's last block, and `app-shell.spec.ts`
+   * checks the last block against the panel's fold precisely because the last
+   * block is the one a floor that is too small pushes out. Putting this block
+   * after it would silently retarget that assertion at a box that is `hidden`
+   * in the state the assertion runs in -- a green test measuring nothing. So
+   * the rule readout keeps its place at the foot of the panel and this sits
+   * above it, between the note line the player reads while drawing and the
+   * rule they read before it.
+   */
   panel.body.append(
     catalogue.element,
     element('div', { className: 'hud-rooms__map', children: [actionsRow, areaBlock, note] }),
+    needsBlock,
     element('div', { className: 'hud-rooms__status', children: [ruleBlock, enclosureBlock] }),
   );
   paintCatalogue();
   paintActions();
   paintEnclosure();
+  paintNeeds();
 
   return {
     element: panel.element,
@@ -661,6 +837,10 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
       paintEnclosure();
       paintNote();
     },
+    setRoomNeeds(next: HudRoomNeedsViewModel | undefined): void {
+      needs = next;
+      paintNeeds();
+    },
     setVisible(visible: boolean): void {
       panel.element.hidden = !visible;
       // Leaving the tab must hand the pointer back to the camera, exactly as
@@ -672,6 +852,13 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
       if (!visible) {
         pending = undefined;
         area = undefined;
+        // The readout is *pulled* while this tab is the one showing, so leaving
+        // it stops the refresh -- and a readout nothing is refreshing goes
+        // stale in silence. Cleared rather than frozen, for the reason the
+        // counts empty when a session ends: what is on screen must be
+        // something a system is still answering for.
+        needs = undefined;
+        paintNeeds();
         if (armed) {
           armed = false;
           removing = false;

@@ -16,6 +16,7 @@ import {
   type HudLocalizer,
   type HudRoomArea,
   type HudRoomGesture,
+  type HudRoomNeedsViewModel,
   type HudRoomsViewModel,
   type HudViewModel,
   type HudZoningNoticeViewModel,
@@ -1105,6 +1106,21 @@ window.lockstateUiHarness = {
     });
   },
 
+  /**
+   * Publishes what the designated rooms are still missing, which in the real
+   * app arrives over `simulation/request-projection`.
+   *
+   * Spread rather than passed as `undefined`, so "nothing has been asked" is an
+   * absent property: `exactOptionalPropertyTypes` is on, and the panel branches
+   * on the field being there at all.
+   */
+  reportRoomNeeds(needs: HudRoomNeedsViewModel | undefined): void {
+    hud?.update({
+      ...BASE_VIEW_MODEL,
+      ...(needs === undefined ? {} : { roomNeeds: needs }),
+    });
+  },
+
   roomsProbe(): RoomsProbe {
     const panel = document.querySelector<HTMLElement>('.hud-rooms');
     const note = document.querySelector<HTMLElement>('.hud-rooms__note');
@@ -1143,6 +1159,15 @@ window.lockstateUiHarness = {
         const body = document.querySelector<HTMLElement>('.hud-rooms > .ui-panel__body');
         return body !== null && body.getClientRects().length > 0;
       })(),
+      needsLaidOut: laidOut('.hud-rooms__needs'),
+      needsUnfinished: document.querySelector<HTMLElement>('.hud-rooms__needs')?.dataset['unfinished'] ?? '',
+      needsTotal: document.querySelector<HTMLElement>('.hud-rooms__needs')?.dataset['needs'] ?? '',
+      needsCountText:
+        document.querySelector<HTMLElement>('.hud-rooms__needs-count')?.textContent?.trim() ?? '',
+      // `textContent` and not `innerText`: the line is styled from `.ui-eyebrow`
+      // and the panel undoes that class's uppercasing, so reading the rendered
+      // text would make this assertion depend on a CSS rule it is not about.
+      needsLineText: document.querySelector<HTMLElement>('.hud-rooms__needs-line')?.textContent?.trim() ?? '',
     };
   },
 

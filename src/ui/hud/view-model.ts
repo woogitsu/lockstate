@@ -302,6 +302,83 @@ export interface HudRoomsViewModel {
 }
 
 /**
+ * One thing a room the player has already designated does not have.
+ *
+ * **The verdict is the simulation's, whole.** `projectRoomList` /
+ * `projectRoomDetail` answer "does this room satisfy its catalog
+ * requirements" in three words -- `'satisfied-by-capability'`,
+ * `'missing-capability'`, `'not-evaluated'` -- and this carries the second
+ * one out, one unmet requirement per entry. Nothing on this side of the
+ * boundary decides what "missing" means, and nothing may: the rule that a
+ * cell without a bed is unfinished is the same rule `IntakeSystem` and
+ * `ActionSystem` gate on (`requiredObjectCapability`), and a second copy of
+ * it in a panel would be a second copy to drift. That is the same reason
+ * `HudCountsViewModel` carries the treasury balance rather than a currency
+ * and `HudRoomViewModel` carries a tint rather than a colour table.
+ *
+ * `objectLabelKey` is the missing object's own `nameKey` from
+ * `src/content/object-catalog.ts` -- a key, never text (ADR 0011) -- and it is
+ * **optional** because the projection can report a requirement as unmet
+ * precisely *because* the object catalogue does not define the id it names.
+ * There is then no name to render, and the panel says so in its own words
+ * rather than being handed an invented key; the same division
+ * `src/ui/simulation-zoning.ts` records, where the enum pair crosses the
+ * boundary and "which sentence that pair deserves" stays in the panel.
+ * Unreachable with the shipped catalogues -- all 18 room definitions name
+ * catalogued objects -- and reachable the moment one does not.
+ */
+export interface HudRoomNeedViewModel {
+  /**
+   * The room instance this is about (`room.cell:12:4`).
+   *
+   * A stable identity for the row, the job `HudAlertViewModel.id` does: a
+   * readout that is republished twice a second must update the row the player
+   * is reading rather than rebuild it.
+   */
+  readonly instanceId: string;
+  /** The room type's `nameKey`. A key, never text. */
+  readonly roomLabelKey: LocalizationKey;
+  /** Where the room is, so a player with four cells knows which one this is. */
+  readonly tile: { readonly x: number; readonly y: number };
+  /** The missing object's `nameKey`, absent when the object catalogue names none. */
+  readonly objectLabelKey?: LocalizationKey;
+}
+
+/**
+ * What the rooms the player has designated are still missing (#331 milestone).
+ *
+ * Session state that arrives on a **pull**, unlike everything else on
+ * `HudViewModel`: it is read through `simulation/request-projection` by
+ * `src/ui/simulation-room-needs.ts` while the Rooms tab is the one showing,
+ * and it is absent at every other moment. Absent is a real state and not a
+ * zeroed one -- "nothing has been asked" and "every room is finished" must not
+ * render the same, because the second is a statement about the prison and the
+ * first is a statement about this thread.
+ *
+ * `unfinishedRooms === 0` is the case the readout must stay silent for. A room
+ * that is fine earns no line: the block is not drawn at all, which is what
+ * keeps this from becoming permanent furniture in a panel whose height budget
+ * ADR 0022 measured to 0.05px.
+ *
+ * The three counts are the simulation's own. `unfinishedRooms` and
+ * `totalNeeds` are counted over the page of rooms that was actually requested
+ * (`MAX_PROJECTION_PAGE_LIMIT` of them), so in a prison with more rooms than
+ * one page they describe that page rather than the whole prison;
+ * `totalRooms` is `RoomListViewModel.totals.instances`, which is every
+ * instance whatever window was asked for.
+ */
+export interface HudRoomNeedsViewModel {
+  /** How many designated rooms are missing at least one thing. */
+  readonly unfinishedRooms: number;
+  /** How many designated rooms there are, missing something or not. */
+  readonly totalRooms: number;
+  /** How many unmet requirements those rooms have between them. */
+  readonly totalNeeds: number;
+  /** The ones there is room to name, in the projection's canonical order. */
+  readonly needs: readonly HudRoomNeedViewModel[];
+}
+
+/**
  * What the simulation said about the last room the player designated.
  *
  * Session state, unlike `HudRoomsViewModel`: it arrives on
@@ -419,6 +496,13 @@ export interface HudViewModel {
   readonly zoning?: HudZoningNoticeViewModel;
   /** Absent until this session has refused something. See the interface. */
   readonly refusal?: HudRefusalNoticeViewModel;
+  /**
+   * What the designated rooms are missing, or absent because nothing asked.
+   *
+   * The one field here that is *pulled* rather than published -- see the
+   * interface for why absent and "nothing is missing" are different states.
+   */
+  readonly roomNeeds?: HudRoomNeedsViewModel;
 }
 
 /**

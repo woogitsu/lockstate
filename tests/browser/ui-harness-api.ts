@@ -1,4 +1,4 @@
-import type { HudViewModel } from '../../src/ui/hud';
+import type { HudRoomNeedsViewModel, HudViewModel } from '../../src/ui/hud';
 
 /**
  * The contract between the in-page UI harness (`ui-harness.ts`) and
@@ -245,6 +245,24 @@ export interface RoomsProbe {
    */
   readonly folded: string;
   readonly bodyLaidOut: boolean;
+  /**
+   * The "not ready" readout (#331 milestone), and whether the browser gave it a
+   * box at all.
+   *
+   * `needsLaidOut` is a `getClientRects()` answer and not the `hidden`
+   * attribute, for the reason `bodyLaidOut` above is: this block earns its space
+   * only when something is actually missing, so "the browser laid it out" is the
+   * only assertion worth making about a state that is supposed to have no box.
+   */
+  readonly needsLaidOut: boolean;
+  /** `data-unfinished`: how many rooms the simulation called unfinished, as a number rather than as prose. */
+  readonly needsUnfinished: string;
+  /** `data-needs`: how many unmet requirements those rooms have between them. */
+  readonly needsTotal: string;
+  /** The figure beside the header eyebrow. */
+  readonly needsCountText: string;
+  /** The one detail line: which room, where, and what it wants. */
+  readonly needsLineText: string;
 }
 
 /**
@@ -523,6 +541,15 @@ export interface LockstateUiHarness {
   reportZoning(
     notice: { readonly sequence: number; readonly enclosure: 'sealed' | 'open'; readonly requirement: 'enclosed' | 'outdoors' | 'none' } | undefined,
   ): void;
+  /**
+   * Publishes what the rooms are still missing, which in the real app is read
+   * over `simulation/request-projection` by `src/ui/simulation-room-needs.ts`.
+   *
+   * `undefined` is "nothing has been asked", which is a different fact from a
+   * model reporting no unfinished rooms -- both draw nothing, and the panel has
+   * to be handed each of them to prove it.
+   */
+  reportRoomNeeds(needs: HudRoomNeedsViewModel | undefined): void;
   roomsProbe(): RoomsProbe;
   roomsLayoutProbe(): RoomsLayoutProbe;
   buildLayoutProbe(): BuildLayoutProbe;

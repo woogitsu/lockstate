@@ -1471,6 +1471,13 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // line decides nothing, which is what keeps "what the simulation found"
     // and "what the player is told about it" in one place each.
     roomsPanel.setZoningNotice(next.zoning);
+    // And what those rooms are still missing, passed through exactly as the
+    // enclosure readout is: the projection decided which rooms are unfinished
+    // and what each one lacks, the panel decides the sentence, and this line
+    // decides nothing. Absent is a real state -- nothing has asked -- and it
+    // reaches the panel as `undefined` rather than as an empty model, because
+    // "nobody asked" and "every room is finished" must not draw the same.
+    roomsPanel.setRoomNeeds(next.roomNeeds);
     // Last, so that a snapshot which both empties the alerts list and carries
     // a refusal leaves the band and the log agreeing about the same record.
     applySimulationRefusal(next.refusal);

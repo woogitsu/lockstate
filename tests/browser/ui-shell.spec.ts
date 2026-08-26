@@ -2352,6 +2352,107 @@ test.describe('the Rooms panel', () => {
     expect(sealed.noteTone).toBe('');
   });
 
+  test('says what a designated room is missing, and says nothing when nothing is (#331)', async ({ page }) => {
+    // The verdict is `projectRoomList`/`projectRoomDetail`'s, pulled over the
+    // projection channel; what is proven here is the panel's half -- which
+    // sentence a given verdict deserves, and that a clean prison earns no block
+    // at all. The real round trip runs in `tests/browser/app-shell.spec.ts`.
+    const probe = async () => page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+
+    // 1. Nothing asked. The panel has been handed no readout at all, which is
+    // the state it mounts in.
+    const unasked = await probe();
+    expect(unasked.needsLaidOut, 'a panel that has been told nothing draws a readout').toBe(false);
+    expect(unasked.needsLineText).toBe('');
+    expect(unasked.needsUnfinished).toBe('');
+
+    // 2. Asked, and the answer is that every room is finished. A different fact
+    // from the one above and the same drawing, which is the whole point of the
+    // block being absent rather than saying so.
+    await page.evaluate(() =>
+      window.lockstateUiHarness.reportRoomNeeds({
+        unfinishedRooms: 0,
+        totalRooms: 4,
+        totalNeeds: 0,
+        needs: [],
+      }),
+    );
+    const clean = await probe();
+    expect(clean.needsLaidOut, 'a prison with nothing missing draws a readout').toBe(false);
+    expect(clean.needsLineText).toBe('');
+    // And nothing of it is on screen, which is the assertion `toContainText`
+    // cannot make (#220): the panel's rendered text must not mention it.
+    expect(await page.locator('.hud-rooms').innerText()).not.toContain('Not ready');
+
+    // 3. One room, one thing missing: the sentence with no tail.
+    await page.evaluate(() =>
+      window.lockstateUiHarness.reportRoomNeeds({
+        unfinishedRooms: 1,
+        totalRooms: 4,
+        totalNeeds: 1,
+        needs: [
+          {
+            instanceId: 'room.cell:12:4',
+            roomLabelKey: 'room.cell.name',
+            tile: { x: 12, y: 4 },
+            objectLabelKey: 'object.bed.name',
+          },
+        ],
+      }),
+    );
+    const one = await probe();
+    expect(one.needsLaidOut).toBe(true);
+    expect(one.needsUnfinished).toBe('1');
+    expect(one.needsTotal).toBe('1');
+    expect(one.needsCountText).toBe('1 of 4');
+    expect(one.needsLineText).toBe('Cell at 12, 4 needs Bed');
+    await expectLaidOut(page, '.hud-rooms__needs', 'the room readout');
+
+    // 4. More than the one line can name: the tail counts what it did not say
+    // rather than dropping it. Three unmet requirements, one named, two counted.
+    await page.evaluate(() =>
+      window.lockstateUiHarness.reportRoomNeeds({
+        unfinishedRooms: 2,
+        totalRooms: 4,
+        totalNeeds: 3,
+        needs: [
+          {
+            instanceId: 'room.cell:12:4',
+            roomLabelKey: 'room.cell.name',
+            tile: { x: 12, y: 4 },
+            objectLabelKey: 'object.toilet.name',
+          },
+        ],
+      }),
+    );
+    const many = await probe();
+    expect(many.needsCountText).toBe('2 of 4');
+    expect(many.needsLineText).toBe('Cell at 12, 4 needs Toilet, and 2 more');
+
+    // 5. A requirement whose object the catalogue does not define -- which is
+    // *why* the projection can never call it satisfied. The sentence still ends
+    // somewhere rather than trailing off into a blank.
+    await page.evaluate(() =>
+      window.lockstateUiHarness.reportRoomNeeds({
+        unfinishedRooms: 1,
+        totalRooms: 1,
+        totalNeeds: 1,
+        needs: [{ instanceId: 'room.cell:0:0', roomLabelKey: 'room.cell.name', tile: { x: 0, y: 0 } }],
+      }),
+    );
+    expect((await probe()).needsLineText).toBe('Cell at 0, 0 needs something this build cannot name');
+
+    // 6. And it goes away again when the answer changes back, rather than
+    // leaving the last sentence standing over a prison it no longer describes.
+    await page.evaluate(() =>
+      window.lockstateUiHarness.reportRoomNeeds({ unfinishedRooms: 0, totalRooms: 1, totalNeeds: 0, needs: [] }),
+    );
+    const cleared = await probe();
+    expect(cleared.needsLaidOut).toBe(false);
+    expect(cleared.needsLineText).toBe('');
+    expect(cleared.needsUnfinished).toBe('');
+  });
+
   test('hands the pointer back when the player leaves the tab', async ({ page }) => {
     // A tool that stayed armed behind a hidden panel would swallow every click
     // on a world the player thought they were only looking at.
