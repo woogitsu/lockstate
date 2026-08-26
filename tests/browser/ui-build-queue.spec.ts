@@ -361,21 +361,33 @@ test.describe('the Build panel queue', () => {
     expect(returned.rows).toEqual([]);
   });
 
-  test('brings its rows into view when it is opened, at the viewports where they are below the fold', async ({
-    page,
-  }) => {
+  test('leaves every revealed cancel inside the panel, scrolling to them where it has to', async ({ page }) => {
     /*
-     * Measured, not assumed: at 1280x720 the opened block puts the panel 42px
-     * into overflow and at 900x600 69px, because the panel is sized to its
-     * arrival content and this list is not part of it. A disclosure that reveals
-     * a control the player cannot see has not revealed it, so opening scrolls --
-     * the same thing the buy row does, and legitimate for the same reason: the
-     * player opened it.
+     * The property, and it is deliberately stated as one rather than as a
+     * per-viewport number, because **this test's first version asserted a
+     * number and the fix for a real defect falsified it.** It required the
+     * opened block to push the panel into overflow at 1280x720, which it did --
+     * by 42px -- until `.hud-build[data-queued]` made the catalogue donate 44px
+     * to keep the collapsed header above the fold on the assembled page. The
+     * donation is a floor, so the harness's taller panel then had room for the
+     * whole open block and the overflow went to 0. A green suite would have said
+     * nothing about that; this one went red, which is the assertion working
+     * against its own author.
+     *
+     * So what is asserted is what a player needs: every cancel is inside the
+     * panel's visible box after the fold is opened, and *where* the panel has
+     * more content than box, opening scrolled it all the way -- which is the buy
+     * row's own behaviour (`paintBuy`) and legitimate for the same reason, that
+     * the player opened it.
+     *
+     * The vacuity guard is the second half. If no viewport in the sweep overflows
+     * at all, the scroll branch never runs and this test would pass without
+     * exercising the thing it is named for, so the viewports that did overflow
+     * are collected and required to be non-empty.
      */
-    for (const [width, height] of [
-      [1280, 720],
-      [900, 600],
-    ] as const) {
+    const overflowed: string[] = [];
+
+    for (const [width, height] of VIEWPORTS) {
       await page.setViewportSize({ width, height });
       await openBuildTab(page);
       await page.evaluate((model) => window.lockstateUiHarness.reportBuildQueue(model), queueOf(12));
@@ -383,23 +395,38 @@ test.describe('the Build panel queue', () => {
 
       const layout = await page.evaluate(() => window.lockstateUiHarness.buildLayoutProbe());
       const queue = await probeQueue(page);
-      expect(layout.panelOverflow, `the opened block did not push the panel into overflow at ${width}x${height}`)
-        .toBeGreaterThan(0);
-      expect(layout.panelScrollTop, `opening did not scroll the panel at ${width}x${height}`).toBe(
-        layout.panelOverflow,
-      );
+      expect(queue.open, `the fold did not open at ${width}x${height}`).toBe(true);
+      expect(queue.rows, `the open fold drew no rows at ${width}x${height}`).toHaveLength(3);
 
-      // And every cancel is on screen once it has scrolled, which is the whole
-      // point of the scroll.
+      if (layout.panelOverflow > 0) {
+        overflowed.push(`${width}x${height}:${layout.panelOverflow}`);
+        // All the way, not merely somewhere: `scrollIntoView({ block: 'nearest' })`
+        // on the section brings its *bottom* edge in, and the last row's cancel is
+        // the thing at that edge.
+        expect(
+          layout.panelScrollTop,
+          `opening the fold did not scroll the panel to its rows at ${width}x${height}`,
+        ).toBe(layout.panelOverflow);
+      }
+
       for (const row of queue.rows) {
         expect(row.cancelHasOffsetParent, `${row.orderId}'s cancel has no offsetParent at ${width}x${height}`).toBe(
           true,
         );
         expect(
           row.cancelBox?.bottom ?? Number.POSITIVE_INFINITY,
-          `${row.orderId}'s cancel is below the fold at ${width}x${height}`,
+          `${row.orderId}'s cancel is below the panel's fold at ${width}x${height}`,
         ).toBeLessThanOrEqual(layout.panelVisibleBottom);
+        expect(
+          row.cancelBox?.y ?? -1,
+          `${row.orderId}'s cancel is above the panel's visible box at ${width}x${height}`,
+        ).toBeGreaterThanOrEqual(layout.panel?.y ?? 0);
       }
     }
+
+    expect(
+      overflowed,
+      'the open fold fits the panel at every viewport this sweep visits, so the scroll it is named for was never exercised. Add a shorter viewport, or this test is about nothing',
+    ).not.toEqual([]);
   });
 });
