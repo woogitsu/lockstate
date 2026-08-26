@@ -358,9 +358,12 @@ if (isDemoActorsRequested(window.location.search)) {
  * Player-facing labels for the two `BUILDABLE_REGISTRY` entries that place no
  * object.
  *
- * Two of the registry's four rows: `buildableLabelKey` below reads a placing
- * buildable's label off the object's own content key, so only `wall-brick` and
- * `door-wooden` are named here.
+ * Two of the registry's twenty-one rows: `buildableLabelKey` below reads a
+ * placing buildable's label off the object's own content key, so only
+ * `wall-brick` and `door-wooden` are named here. The ratio is the point rather
+ * than either number -- ADR 0028 phase 4 added seventeen object rows and this
+ * table did not grow by one, because an object buildable is labelled by its
+ * object.
  *
  * The registry carries a hard-coded English `name` and no `nameKey`, which
  * bypasses ADR 0011 and is recorded as a content gap in issue #74 and
@@ -434,8 +437,11 @@ const NEW_PRISON_ORIGIN_TILE = { x: 16, y: 16 } as const;
  * plain numbers and one message key on `HudBuildMaterialViewModel`.
  *
  * **The first requirement that can actually be bought**, and nothing more.
- * All four shipped buildables list exactly one `materialsRequired` entry, so
- * "first" and "only" agree today; a buildable naming two *item ids* would get
+ * All twenty-one shipped buildables list exactly one `materialsRequired`
+ * entry, so "first" and "only" agree today -- and it is no longer only an
+ * observation: `tests/foundation/object-buildable-cost-contract.test.ts` asserts
+ * it of every object row, precisely so that this sentence cannot rot again the
+ * way the paragraph below records it rotting. A buildable naming two *item ids* would get
  * a control for one of them and no way to buy the other, which is a real
  * limit and is stated rather than hidden -- the panel offers one stepper, and
  * a multi-material buy surface is a design question nobody has answered. A

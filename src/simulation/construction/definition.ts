@@ -240,6 +240,407 @@ export const BUILDABLE_REGISTRY = new Map<string, BuildableDefinition>([
     materialsRequired: [{ itemId: 'item.brick', quantity: 1 }],
     placesObjectId: 'object.toilet',
   }],
+  /*
+   * ==========================================================================
+   * ADR 0028 phase 4 -- the rest of the object catalogue.
+   * ==========================================================================
+   *
+   * Everything from here down is a **content row and nothing else**, which is
+   * what that phase promised: "content rows and locale strings, no new
+   * mechanism. Not one phase per object: they are rows in a data module and the
+   * mechanism is identical, so splitting them would be ceremony." The claim was
+   * checked rather than taken -- see the pull request for what was looked for --
+   * and it holds: `PlaceObject` validates a footprint without naming an object
+   * id, `RoomCapacityResolver` sums and unions over whatever stands in the
+   * rectangle, `structureAppearance` reads the footprint through
+   * `placesObjectId` so a new object renders at the right size without a
+   * renderer change, and `buildableLabelKey` reads the label off the object's
+   * own `nameKey`, all twenty of which already ship in
+   * `src/content/default-locale-en.ts`. **No locale key was added by this
+   * phase**, and that is not an omission: an object buildable is labelled by
+   * its object, so there was nothing to author.
+   *
+   * ## The two numbers, derived rather than chosen
+   *
+   * ADR 0017 decision 5 reserves all pricing and balance to #29, so no figure
+   * below is a balance decision -- but seventeen rows cannot each take
+   * `door-wooden`'s 30 the way `bed-wooden` and `toilet-brick` each could, or a
+   * three-tile dining table would cost exactly what a chair costs. So both
+   * numbers are read off **`footprint.width`**, and that field is not an
+   * arbitrary pick: it is the one ADR 0028 decision 2 already derives capacity
+   * from, the number of places the object provides.
+   *
+   *     materialsRequired[0].quantity = footprint.width
+   *     workRequired                  = 30 * footprint.width
+   *
+   * So an object costs one unit of material and 30 work **per place it
+   * provides**. A 3-wide dining table seats three, costs three planks and takes
+   * three times a chair's work; a 1-wide chair seats one and costs one. Nothing
+   * per-row is authored, the ordering is monotone in the one authored quantity,
+   * and `tests/foundation/object-buildable-cost-contract.test.ts` pins the rule
+   * so a future row cannot drift off it.
+   *
+   * **The two shipped rows satisfy it exactly** -- `bed-wooden` is `1x2`, width
+   * 1, one plank, 30 work; `toilet-brick` is `1x1`, width 1, one brick, 30 work
+   * -- so neither is touched by this phase and no test that measures them moves.
+   * Stated honestly: both are width 1, so they pin the rule's *constant* and say
+   * nothing about its *slope*. The slope is chosen from decision 2's use of the
+   * same field, and it is the weaker half of the derivation.
+   *
+   * ## Which material, and the price inversion that comes with it
+   *
+   * One material per row, and that is a constraint rather than a taste:
+   * `purchasableMaterialFor` in `src/main.ts` offers a stepper for the *first*
+   * priced requirement only, so a two-material buildable would get a control
+   * for one of them and no way to buy the other. Only two materials are priced
+   * at all (`src/content/procurement-catalog.ts`), so the choice is binary, and
+   * the rule is the one the four shipped rows already follow: **`item.brick`
+   * for a plumbed, fired, masonry or machine body; `item.wood-plank` for a
+   * timber one.** A bed is timber and takes the plank; a toilet is a sanitary
+   * fixture and takes the brick. The id's second token names the material, as
+   * all four shipped ids do.
+   *
+   * **The inversion this inherits, named rather than engineered away.** Brick
+   * is priced at 40 and plank at 65, so *any* width-1 brick object is cheaper
+   * than *any* width-1 plank object: a fridge costs 40 and a chair costs 65.
+   * That is a statement about two placeholder material prices and not about
+   * furniture, it is inherited rather than introduced -- the shipped
+   * `toilet-brick` is already cheaper than the shipped `bed-wooden` for exactly
+   * this reason -- and #29 owns it. Compensating with a hand-picked quantity
+   * would put a balance decision in a row that is meant to carry none, and
+   * would break the one rule above. Within a material the ordering is monotone
+   * and correct: a 2-wide brick stove (80) costs more than a 1-wide brick
+   * fridge (40), and more than a chair (65).
+   *
+   * ## Footprints are not touched, and orientation is still 0
+   *
+   * No `footprint` in `src/content/object-catalog.ts` is changed by this phase.
+   * They are the source every derived capacity is read from, so editing one to
+   * make a price come out would be the inverse of deriving the number -- the
+   * error the #326 amendment refused for `object.bench`'s capabilities. Every
+   * one of the seventeen objects below fits its room's authored minimum
+   * rectangle at orientation 0, which is checked in
+   * `tests/foundation/object-buildable-cost-contract.test.ts`; that matters
+   * because `DEFAULT_PLACEMENT_ORIENTATION` in
+   * `src/simulation/objects/object-placement-service.ts` is 0 for every
+   * placement and the rotate control ADR 0028 decision 5 describes does not
+   * exist yet. So a player cannot turn a 3x2 dining table, and no room below
+   * needs them to.
+   *
+   * ## `object.sink` is deliberately not here
+   *
+   * It is the twentieth object and the only one **no room definition
+   * requires**, so it is outside this phase's own scope: "buildables for the
+   * remaining object ids the room catalogue already requires". Its
+   * `AWAITING_CONSUMER` entry in
+   * `tests/foundation/unconsumed-content-contract.test.ts` is the only record
+   * that no room asks for a sink and that #141 owes the decision of which one
+   * should, and giving it a row here would delete that record to no end.
+   */
+
+  /*
+   * Hygiene. `object.shower-head` is the row ADR 0028 phase 4 names first --
+   * "`action.shower` (the one need that genuinely requires a placed
+   * capability)" -- because `room.shower-room` is the only room a shower
+   * resolves in and nothing could place a shower head until now. Two of these
+   * in a zoned shower room make `findAvailableForUse('room.shower-room',
+   * 'hygiene')` answer for the first time in the project's history, which
+   * `tests/integration/furnished-prison-loop.test.ts` measures end to end.
+   *
+   * Brick for a plumbed fixture, by `toilet-brick`'s reasoning. Width 1, so one
+   * brick and 30 work -- the same figures the toilet carries, because it is the
+   * same size and the rule reads only the size.
+   */
+  ['shower-head-brick', {
+    id: 'shower-head-brick',
+    category: 'object',
+    name: 'Shower Head',
+    workRequired: 30,
+    materialsRequired: [{ itemId: 'item.brick', quantity: 1 }],
+    placesObjectId: 'object.shower-head',
+  }],
+  /*
+   * A machine body, so brick, and 2 wide -- two bricks and 60 work.
+   *
+   * `object.washing-machine`'s `'laundry'` capability is gated by **nothing**:
+   * no entry in `DEFAULT_ACTIONS` names it and no other room requires it, so a
+   * furnished `room.laundry` reads both its requirements satisfied and changes
+   * no prisoner's behaviour. That is a true statement about this row rather
+   * than a defect in it -- a laundry job system is what would consume it -- and
+   * it is recorded here because the next reader will otherwise look for the
+   * consumer.
+   */
+  ['washing-machine-brick', {
+    id: 'washing-machine-brick',
+    category: 'object',
+    name: 'Washing Machine',
+    workRequired: 60,
+    materialsRequired: [{ itemId: 'item.brick', quantity: 2 }],
+    placesObjectId: 'object.washing-machine',
+  }],
+  /*
+   * Catering. Five rows that finish `room.kitchen`, `room.canteen`,
+   * `room.holding-cell` and `room.common-room`, and the group ADR 0028 phase 4
+   * names second: "`action.eat-meal` in a canteen".
+   *
+   * **The canteen is the room where #326's arithmetic becomes observable**, and
+   * these rows are what make it so -- ADR 0029 said as much ("it becomes
+   * observable in phase 4, when those objects become placeable"). A canteen
+   * furnished to its catalogue minimum -- two dining tables and four benches --
+   * derives:
+   *
+   *     concurrentUseCapacity            = 2*3 + 4*2 = 14   (nothing's ceiling)
+   *     concurrentUse(canteen, 'dining') = 2*3       =  6   (the ceiling)
+   *
+   * because `object.dining-table` declares `'dining'` and `object.bench`
+   * declares `'seating'` and `'recreation'` and **not** `'dining'`. So the room
+   * seats six diners while fourteen tiles of furniture stand in it, and the
+   * fourteen bounds nothing. That is the #326 amendment working as written, and
+   * these rows do not touch it: the amendment explicitly left open whether a
+   * bench should carry `'dining'` and refused to change the row "so that a
+   * number comes out the way a prior document said it would". **No capability
+   * in `src/content/object-catalog.ts` is edited by this phase**, for that
+   * reason. `tests/integration/furnished-prison-loop.test.ts` measures both
+   * numbers off the real command path.
+   *
+   * Materials by the block's rule. Brick for the three kitchen appliances --
+   * a fired stove body, a masonry prep counter, a machine fridge -- and plank
+   * for the two pieces of timber furniture. Widths 2, 2, 1, 3 and 2, so
+   * quantities and work follow with nothing chosen per row.
+   */
+  ['stove-brick', {
+    id: 'stove-brick',
+    category: 'object',
+    name: 'Stove',
+    workRequired: 60,
+    materialsRequired: [{ itemId: 'item.brick', quantity: 2 }],
+    placesObjectId: 'object.stove',
+  }],
+  ['prep-counter-brick', {
+    id: 'prep-counter-brick',
+    category: 'object',
+    name: 'Prep Counter',
+    workRequired: 60,
+    materialsRequired: [{ itemId: 'item.brick', quantity: 2 }],
+    placesObjectId: 'object.prep-counter',
+  }],
+  ['fridge-brick', {
+    id: 'fridge-brick',
+    category: 'object',
+    name: 'Fridge',
+    workRequired: 30,
+    materialsRequired: [{ itemId: 'item.brick', quantity: 1 }],
+    placesObjectId: 'object.fridge',
+  }],
+  /*
+   * The widest object in the catalogue at `3x2`, so the most expensive row
+   * here: three planks and 90 work. It is also the only one whose capability
+   * is the ceiling on a need -- `action.eat-meal` asks for `'dining'` and this
+   * is the only object that declares it.
+   */
+  ['dining-table-wooden', {
+    id: 'dining-table-wooden',
+    category: 'object',
+    name: 'Dining Table',
+    workRequired: 90,
+    materialsRequired: [{ itemId: 'item.wood-plank', quantity: 3 }],
+    placesObjectId: 'object.dining-table',
+  }],
+  /*
+   * Required by three room types -- `room.holding-cell`, `room.canteen` and
+   * `room.common-room` -- which makes it the most reused row in the catalogue,
+   * and the one that finishes `action.common-room-recreation` by supplying the
+   * `'recreation'` the #326 amendment gave that action to ask for.
+   */
+  ['bench-wooden', {
+    id: 'bench-wooden',
+    category: 'object',
+    name: 'Bench',
+    workRequired: 60,
+    materialsRequired: [{ itemId: 'item.wood-plank', quantity: 2 }],
+    placesObjectId: 'object.bench',
+  }],
+  /*
+   * Offices, education and medical. Five rows that finish `room.reception`,
+   * `room.staff-room`, `room.classroom` and `room.infirmary`.
+   *
+   * All five are timber, so all five take the plank. Widths 2, 1, 2, 1 and 1.
+   *
+   * **Two capability facts worth having written down**, because both look like
+   * bugs from a distance and neither is one:
+   *
+   *   - `object.desk` carries `'workstation'` and so does
+   *     `object.security-console`. `requirementStatus` asks whether *every*
+   *     capability of the required object is present in the room, so a security
+   *     console standing in a reception satisfies its **desk** requirement
+   *     (`'workstation'` is there) while a desk standing in a security office
+   *     does **not** satisfy its console requirement (`'surveillance'` is not).
+   *     The asymmetry is the containment rule doing its job, not an accident of
+   *     these rows.
+   *   - `object.medical-bed` carries `'sleep-surface'` *and*
+   *     `'medical-treatment'`, so a plain `object.bed` cannot satisfy an
+   *     infirmary's requirement, while a medical bed can satisfy a cell's. That
+   *     also means a medical bed adds to `residentCapacity` wherever it stands,
+   *     which is correct -- it is a bed -- and is why an infirmary derives a
+   *     residency it has no intake route to use.
+   *
+   * `object.medical-bed` is `1x2` like `object.bed`, so the rule gives it the
+   * same one plank and 30 work. A medical bed costing exactly what an ordinary
+   * bed costs is a balance statement and #29's to make; the rule reads size and
+   * a medical bed is the same size.
+   */
+  ['desk-wooden', {
+    id: 'desk-wooden',
+    category: 'object',
+    name: 'Desk',
+    workRequired: 60,
+    materialsRequired: [{ itemId: 'item.wood-plank', quantity: 2 }],
+    placesObjectId: 'object.desk',
+  }],
+  /*
+   * The cheapest and quickest row in the registry, and the one required in the
+   * largest quantity: `room.classroom` wants four and `room.reception` and
+   * `room.staff-room` two each. `minQuantity` is still not checked anywhere
+   * (`docs/HUD_PROJECTIONS.md` gap 13), so one chair satisfies all three
+   * requirements today -- ADR 0028 phase 4 notes that decision 1 makes the
+   * check *possible* for the first time, and building it is a mechanism rather
+   * than a row, so it is not in this phase.
+   */
+  ['chair-wooden', {
+    id: 'chair-wooden',
+    category: 'object',
+    name: 'Chair',
+    workRequired: 30,
+    materialsRequired: [{ itemId: 'item.wood-plank', quantity: 1 }],
+    placesObjectId: 'object.chair',
+  }],
+  ['bookshelf-wooden', {
+    id: 'bookshelf-wooden',
+    category: 'object',
+    name: 'Bookshelf',
+    workRequired: 60,
+    materialsRequired: [{ itemId: 'item.wood-plank', quantity: 2 }],
+    placesObjectId: 'object.bookshelf',
+  }],
+  ['medical-bed-wooden', {
+    id: 'medical-bed-wooden',
+    category: 'object',
+    name: 'Medical Bed',
+    workRequired: 30,
+    materialsRequired: [{ itemId: 'item.wood-plank', quantity: 1 }],
+    placesObjectId: 'object.medical-bed',
+  }],
+  ['medicine-cabinet-wooden', {
+    id: 'medicine-cabinet-wooden',
+    category: 'object',
+    name: 'Medicine Cabinet',
+    workRequired: 30,
+    materialsRequired: [{ itemId: 'item.wood-plank', quantity: 1 }],
+    placesObjectId: 'object.medicine-cabinet',
+  }],
+  /*
+   * Security, logistics and utility. The last five rows, finishing
+   * `room.security-office`, `room.storage-room`, `room.delivery-bay`,
+   * `room.garbage-room` and `room.utility-room` -- after which every `object`
+   * requirement in `src/content/room-catalog.ts` is satisfiable through
+   * `PlaceObject`, which is the whole of ADR 0028 phase 4.
+   *
+   * **Four of the five capabilities here are gated by nothing**, and that is
+   * this group's honest summary rather than a defect in it. `'surveillance'`,
+   * `'item-storage'`, `'delivery-access'`, `'waste-disposal'` and
+   * `'utility-control'` appear in no `DEFAULT_ACTIONS` entry and in no other
+   * room's requirements, so furnishing these five rooms makes their
+   * requirements read `'satisfied-by-capability'` and changes no prisoner's
+   * behaviour. The systems that would consume them are a security-deployment
+   * system, #99's salvage destination, ADR 0017's procurement route, and a
+   * maintenance job system -- none of which exists. A room a player can finish
+   * and see reported as complete is what this phase owes them; the behaviour is
+   * owed by those systems.
+   */
+  ['security-console-brick', {
+    id: 'security-console-brick',
+    category: 'object',
+    name: 'Security Console',
+    workRequired: 60,
+    materialsRequired: [{ itemId: 'item.brick', quantity: 2 }],
+    placesObjectId: 'object.security-console',
+  }],
+  ['storage-rack-wooden', {
+    id: 'storage-rack-wooden',
+    category: 'object',
+    name: 'Storage Rack',
+    workRequired: 30,
+    materialsRequired: [{ itemId: 'item.wood-plank', quantity: 1 }],
+    placesObjectId: 'object.storage-rack',
+  }],
+  /*
+   * The row that needed the most care, because it is a **door that is not a
+   * door**, and `placesDoor` exists three fields up.
+   *
+   * It is `placesObjectId` and not `placesDoor`, and the choice is forced
+   * rather than preferred:
+   *
+   *   - `room.delivery-bay` requires `object.loading-dock-door` by **object
+   *     id** with a `minQuantity`, and `RoomCapacityResolver` counts placed
+   *     objects. A `placesDoor` row writes a tile *edge* and registers a
+   *     `DoorDefinition`; it places no object at all, so it could never satisfy
+   *     that requirement. The delivery bay would stay unfinishable for ever.
+   *   - `validateBuildableDoorReferences` refuses a row naming both, so there
+   *     is no combination to reach for.
+   *   - The object catalogue already settled it: `object.loading-dock-door` is
+   *     authored with a `3x1` tile footprint and a `'delivery-access'`
+   *     capability, which is a tile-addressed thing. `door-wooden`'s own
+   *     comment above already draws this distinction and calls the dock door
+   *     "a different thing".
+   *
+   * **So what a player places here is a capability marker on three tiles, not
+   * a passage.** It gates nothing, opens nothing and is not read by
+   * `DoorRegistry`; navigation cannot cross it and does not need to, because it
+   * stands on floor rather than on a wall line. That is a real limitation of
+   * this row and it is stated here rather than left to be discovered from an
+   * empty `DoorRegistry`.
+   *
+   * ADR 0017 decision 4's "on a bay's boundary" **is** expressible, and by an
+   * accident of the placement rule worth recording: `ObjectPlacementService`
+   * asks `outside-room` of the **anchor tile only**, deliberately, so a
+   * three-wide door anchored on the bay's edge tile may have its other two
+   * tiles outside the rectangle and still belong to the bay. A boundary
+   * placement is therefore legal today; nothing yet reads it as a route.
+   *
+   * Plank, like `door-wooden`, for a timber leaf. Width 3, so three planks and
+   * 90 work -- tied with the dining table as the most expensive row here, and
+   * for the same reason: it is three tiles wide.
+   */
+  ['loading-dock-door-wooden', {
+    id: 'loading-dock-door-wooden',
+    category: 'object',
+    name: 'Loading Dock Door',
+    workRequired: 90,
+    materialsRequired: [{ itemId: 'item.wood-plank', quantity: 3 }],
+    placesObjectId: 'object.loading-dock-door',
+  }],
+  /*
+   * Brick for a masonry refuse bunker rather than plank for a crate, which is
+   * a judgement and is the kind the block's rule was written to make
+   * mechanical: neither of the two priced materials is metal, and authoring a
+   * third with a price is #29's.
+   */
+  ['waste-bin-brick', {
+    id: 'waste-bin-brick',
+    category: 'object',
+    name: 'Waste Bin',
+    workRequired: 30,
+    materialsRequired: [{ itemId: 'item.brick', quantity: 1 }],
+    placesObjectId: 'object.waste-bin',
+  }],
+  ['utility-panel-brick', {
+    id: 'utility-panel-brick',
+    category: 'object',
+    name: 'Utility Panel',
+    workRequired: 30,
+    materialsRequired: [{ itemId: 'item.brick', quantity: 1 }],
+    placesObjectId: 'object.utility-panel',
+  }],
 ]);
 
 export type BuildableItemReferenceError = {

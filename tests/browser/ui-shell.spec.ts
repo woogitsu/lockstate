@@ -1895,12 +1895,15 @@ test.describe('HUD shell', () => {
      * the header *was*, so that is what is measured: its rectangle against the
      * panel's client box, with the panel unscrolled.
      *
-     * Twelve entries because `BUILDABLE_REGISTRY` has four -- a wall, a door and
-     * the two object rows ADR 0028 added -- and four cannot overflow the panel
-     * here; the panel takes its catalogue as view-model data, so the harness
-     * hands the real panel a longer list. Twelve is well past the seven that
-     * first overflow the panel here, so the test states a property rather than
-     * sitting on a boundary.
+     * Twelve entries, and the reason has changed since this was written.
+     * `BUILDABLE_REGISTRY` used to hold four rows -- a wall, a door and ADR 0028
+     * phases 1 and 2's two object rows -- and four cannot overflow the panel
+     * here, so a synthetic list was the only way to reach the condition. Phase
+     * 4's seventeen more rows take the real catalogue to twenty-one, which
+     * overflows it comfortably. Twelve is kept because it is the *varied* row
+     * count: the panel takes its catalogue as view-model data, so handing it a
+     * chosen length measures the property at a length nobody has to keep true,
+     * and twelve is well past the seven that first overflow the panel here.
      */
     const CATALOGUE_VIEWPORTS = [
       [1280, 720],

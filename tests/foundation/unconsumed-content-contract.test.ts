@@ -23,6 +23,16 @@ import { defaultStaffRoleRegistry } from '../../src/content/staff-role-catalog';
  * Until now that warning lived only in an issue body. This makes it fail a
  * gate.
  *
+ * **Two of those three are still here; the dock door graduated.** ADR 0028
+ * phase 4 gave `object.loading-dock-door` a buildable, so it has a consumer and
+ * the stale-entry gate below required its entry to go. Its protection is
+ * *stronger* without the entry, not weaker: `validateBuildableObjectReferences`
+ * throws at import if the id leaves the catalogue while a buildable names it,
+ * which is a louder failure than a list with a reason on it. That is the
+ * intended exit from this file -- an id leaves because something started using
+ * it -- and it is worth recording that the first id to take it was one of the
+ * three #141 was worried about.
+ *
  * The measurement it also delivers is #141's own recommendation 1: turn
  * "declared but unconsumed" from something four agents rediscover into a
  * line of output. `#97`'s `'brick'`/`'item.brick'` split went unnoticed for
@@ -58,11 +68,17 @@ const ROOT = join(__dirname, '../..');
  * Ids an accepted or merged decision depends on. **Deleting one of these is
  * a defect**, not a cleanup -- which is what separates this list from the
  * one below it.
+ *
+ * Two entries, not three: `object.loading-dock-door` left with ADR 0028 phase
+ * 4, which made it placeable. See the file docblock for why that strengthens
+ * rather than weakens what #141 asked for. Both survivors are **rooms**, and
+ * that is not a coincidence -- a room id has no import-time validator behind
+ * it the way an object id named by a buildable now does, so this list is the
+ * only thing standing between them and a sweep.
  */
 const PROTECTED_BY_DECISION: Readonly<Record<string, string>> = {
   'room.delivery-bay': 'ADR 0017 names it the intended physical route for material procurement; #141 flags it explicitly as not to be removed as dead content.',
   'room.storage-room': 'ADR 0017 (destination for procured materials) and #99 (destination for dismantle salvage) both depend on it; #141 flags it explicitly.',
-  'object.loading-dock-door': 'ADR 0017 names it as part of the procurement route; #141 flags it explicitly.',
 };
 
 /**
@@ -131,20 +147,7 @@ const AWAITING_CONSUMER: Readonly<Record<string, string>> = {
   // `object.bed` did not move either list -- three test files already named it,
   // and its new `src/` consumer moves `unconsumedBySrcOnly` instead.
 
-  'object.bookshelf': "Required by a room definition; no code places or reads it.",
-  'object.chair': "Required by a room definition; no code places or reads it.",
-  'object.desk': "Required by a room definition; no code places or reads it.",
 
-  'object.fridge': "Required by a room definition; no code places or reads it.",
-  'object.medical-bed': "Required by a room definition; no code places or reads it.",
-  'object.medicine-cabinet': "Required by a room definition; no code places or reads it.",
-  'object.prep-counter': "Required by a room definition; no code places or reads it.",
-  'object.security-console': "Required by a room definition; no code places or reads it.",
-  'object.shower-head': "Required by a room definition; no code places or reads it.",
-  'object.stove': "Required by a room definition; no code places or reads it.",
-  'object.utility-panel': "Required by a room definition; no code places or reads it.",
-  'object.washing-machine': "Required by a room definition; no code places or reads it.",
-  'object.waste-bin': "Required by a room definition; no code places or reads it.",
   // The exception, and the more interesting entry: no room requires a sink.
   // `validateRoomObjectReferences` checks room -> object and not the reverse,
   // so an object no room asks for is unchecked by design. Which room should
@@ -274,6 +277,43 @@ describe('every unconsumed content id is accounted for', () => {
      * buildable naming a grade is the shape that file asks for.
      * `unconsumedBySrcAndTests` again did not move: four test files already
      * name `grade.general`, which is why it appears in neither allowlist.
+         *
+     * **And then it moved a long way, on ADR 0028 phase 4.** That phase gives
+     * every object id the room catalogue requires a `BUILDABLE_REGISTRY` row
+     * that names it through `placesObjectId`, so seventeen `object.*` ids gain
+     * their first `src/` consumer in one change -- which is why this triple
+     * moves further here than on any change before it, and why the ADR
+     * predicted the counts would "move substantially".
+     *
+     * The two measures move by **different amounts**, and the difference is the
+     * whole reason this file reports both:
+     *
+     *   - `unconsumedBySrcOnly` falls by all seventeen, because every one of
+     *     them is named in `src/simulation/construction/definition.ts` for the
+     *     first time.
+     *   - `unconsumedBySrcAndTests` falls by only fourteen. `object.bench`,
+     *     `object.dining-table` and `object.storage-rack` were already named by
+     *     a test -- `tests/helpers/determinism-scenario.ts` places the first two
+     *     and `tests/unit/objects-room-capacity.test.ts` stands the third in a
+     *     canteen -- so they were in neither allowlist and there is no entry to
+     *     delete for them, exactly as `object.bed` and `object.toilet` had none
+     *     in phases 1 and 2.
+     *
+     * `object.loading-dock-door` is the one id that leaves
+     * `PROTECTED_BY_DECISION` rather than `AWAITING_CONSUMER`, and the stale
+     * gate below is what requires that: it is now placeable, so it has a
+     * consumer, so its entry is stale whatever the entry said. Nothing about
+     * #141's warning is lost by the deletion -- the protection is *stronger*
+     * afterwards, because `validateBuildableObjectReferences` throws at import
+     * if the id is deleted from the catalogue, which is a louder failure than a
+     * test listing a reason.
+     *
+     * `object.sink` is the one object id that stays, and its entry is unchanged.
+     * No room requires a sink, so it is outside phase 4's stated scope
+     * ("buildables for the remaining object ids the room catalogue already
+     * requires") and the ADR says so directly: "`object.sink` is the one entry a
+     * room requirement does not reach, so it moves only if something places
+     * it." Nothing places it.
      */
     expect({
       declared: declaredIds.length,
@@ -297,7 +337,7 @@ describe('every unconsumed content id is accounted for', () => {
       // generically and names no room id, so nothing moved in `src/` -- and the
       // 53 -> 52 below is ADR 0025's alone, for the reason above. The two
       // measures moved on different changes and each is stated where it moved.
-    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 30, unconsumedBySrcOnly: 49 });
+    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 16, unconsumedBySrcOnly: 32 });
   });
 
   it('scans a non-trivial catalog and a non-trivial consumer set, so this cannot pass vacuously', () => {

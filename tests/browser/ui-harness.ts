@@ -316,14 +316,15 @@ const ROOMS_MODEL: HudRoomsViewModel = {
 };
 
 /**
- * Two of the four entries `src/main.ts` projects out of `BUILDABLE_REGISTRY`,
- * as plain view-model data. Kept here rather than imported from the registry
- * so the spec exercises the *panel*, not the catalog.
+ * Two of the twenty-one entries `src/main.ts` projects out of
+ * `BUILDABLE_REGISTRY`, as plain view-model data. Kept here rather than
+ * imported from the registry so the spec exercises the *panel*, not the catalog.
  *
- * Two rather than four, and unchanged as the registry grew: the other two are
- * the object rows ADR 0028 phases 1 and 2 added, and every measurement in this
+ * Two rather than twenty-one, and unchanged as the registry grew from two rows
+ * to twenty-one across ADR 0028 phases 1, 2 and 4: every measurement in this
  * harness is about the panel's controls and its height budget rather than about
- * how many things a prison can build. `tests/browser/app-shell.spec.ts` drives
+ * how many things a prison can build. That the fixture never needed touching as
+ * seventeen rows landed is the evidence that it is measuring the panel. `tests/browser/app-shell.spec.ts` drives
  * the real projection, and `buildModelWithCatalogueOf` below is how a longer
  * list is measured.
  */
@@ -391,12 +392,19 @@ const STAFF_MODEL: HudStaffViewModel = {
 /**
  * A catalogue of `count` entries, for issue #143.
  *
- * `BUILDABLE_REGISTRY` holds four buildables, and four is still three fewer
- * than it takes to push the panel's last section below the fold at 1280x720, so
- * the condition cannot be reached through the real app at all today. The panel
- * takes its option list as view-model data, so the honest way to reach it is
- * to hand the real panel a longer list -- which is what the economy work
- * (#29) will do to it for real.
+ * `BUILDABLE_REGISTRY` holds twenty-one buildables, and **the condition is now
+ * reachable through the real app**, which it was not when this was written.
+ * This docblock used to say "four is still three fewer than it takes to push
+ * the panel's last section below the fold at 1280x720, so the condition cannot
+ * be reached through the real app at all today", and ADR 0028 phase 4's
+ * seventeen object rows falsified it: seven is the number that first overflows
+ * the panel here, and the real catalogue is three times that. #143's fix is
+ * what keeps that from being a defect a player meets.
+ *
+ * The synthetic list stays, and is now the *smaller* of the two routes: it
+ * varies the row count on demand, which the real registry cannot, so a
+ * regression is measured at several lengths rather than at whatever length the
+ * catalogue happens to be.
  *
  * The two label keys repeat down the list because the content catalogue
  * defines exactly two, and inventing a third key here would put a key with no
