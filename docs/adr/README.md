@@ -33,13 +33,13 @@ change to settle it. It changes no status either.
 The `Status` column reproduces what each ADR's own document says, not a
 normalised judgement. Two heading styles are in use — some ADRs carry a
 `- Status:` bullet and others a `## Status` section — and every ADR in the table
-above is now `Accepted` in some form, several with a qualifier the ADR itself
-carries.
+above except the two newest is now `Accepted` in some form, several with a
+qualifier the ADR itself carries.
 
-**Exactly one ADR in this directory is awaiting the owner's approval: 0031.** An
-ADR in that state is not binding whether or not code already implements it —
-0031 arrived on the same branch as its implementing change, and that does not
-make it accepted.
+**Exactly two ADRs in this directory are awaiting the owner's approval: 0031 and
+0032.** An ADR in that state is not binding whether or not code already
+implements it — both of them arrived on the same branch as their implementing
+change, and that does not make either accepted.
 
 A note on how this paragraph is worded, because it matters to a test:
 `tests/foundation/adr-status-reference-contract.test.ts` scans for a sentence
@@ -98,19 +98,31 @@ Nothing here changes a status; this table only reports them.
 | [0028](./0028-object-placement-and-derived-room-capacity.md) | What a placed object is, and how a room's capacity comes from it | Accepted, 2026-08-25 |
 | [0029](./0029-concurrent-room-use-claims.md) | What a concurrent-use claim on a room is — when it is taken, when it ends, and who waits | Accepted, 2026-08-26 |
 | [0031](./0031-build-queue-cancellation-surface.md) | Withdrawing one queued build order — where a player aims, and what a long queue looks like | Proposed — pending human approval |
+| [0032](./0032-incident-consequences-and-classification-review.md) | What an incident costs the prisoner who was in it, and how a classification tier moves | Proposed — pending human approval |
 
-**Next free number: 0032.** 0031 is this table's newest row and **0030 is held by
-an unmerged branch** — the incident-response restore change, which allocated it in
-the same hour. It is listed nowhere above because nothing is merged under that
-number yet, which is precisely the gap a stated next-free cannot see: enumerate
-the open pull requests before taking 0032.
+**Next free number: 0033.** 0032 is this table's newest row and **0030 is still
+held by an unmerged branch** — the incident-response restore change, which
+allocated it in the same hour it was stated free here. It is listed nowhere above
+because nothing is merged under that number yet, which is precisely the gap a
+stated next-free cannot see: enumerate the open pull requests before taking 0033.
 
-**One row is outstanding: 0031.** It arrived with the change that implements it —
-the shape [`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2 names as fragile — and its
-queue entry is in the same commit, per that file's rule. 0029 was the previous
-one and was accepted on 2026-08-26; it *did* sit outstanding on `main` for a day
-while its code shipped, which is exactly the cost §2 predicted, and its queue
-entry was removed in the same commit as its acceptance.
+**0032's author ran that enumeration and it came back with three open pull
+requests, one of them holding 0030 and neither of the other two carrying an ADR
+at all** — so 0032 was free and the ceiling and the free number were the same
+thing again. That is a fact about one hour, not a reason to stop checking. 0032
+pre-commits in its own Status to renumbering if a branch turns up holding it,
+which is the habit the two previous collisions taught.
+
+**Two rows are outstanding: 0031 and 0032.** Both arrived with the change that
+implements them — the shape [`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2 names as
+fragile. 0031's queue entry is in the same commit, per that file's rule.
+**0032's is not, and that is a gap rather than an exemption:** `STATUS-QUEUE.md`
+was out of that change's scope, held by other work in the same hour, so the entry
+is owed and 0032's own pull request quotes the text it would have added. 0029 was
+the previous outstanding row and was accepted on 2026-08-26; it *did* sit
+outstanding on `main` for a day while its code shipped, which is exactly the cost
+§2 predicted, and its queue entry was removed in the same commit as its
+acceptance.
 
 **0031 was allocated as 0030, and renumbered because the collision it warned
 about actually happened.** The number was taken on this table's stated next-free
