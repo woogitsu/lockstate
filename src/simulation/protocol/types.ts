@@ -673,9 +673,9 @@ export type SimulationStatusCounts = DeepReadonly<
  * materials were not ordered.
  *
  * `release-guard.*` is the tenth (ADR 0034), and its `unknown-guard` is the
- * fifth demonstration of the namespace doing real work: `build.unknown-buildable`,
- * `hire.unknown-role`, `purchase.unknown-material` and
- * `place-object.unknown-buildable` are all "the simulation has no such thing",
+ * fifth demonstration of the namespace doing real work: `hire.unknown-role`,
+ * `purchase.unknown-material` and `place-object.unknown-buildable` are all
+ * "the simulation has no such thing",
  * and this one is about a *person* rather than a
  * catalogue entry, which is a different sentence to read. Both of its members are
  * mapped even though only `not-held` is reachable from the panel, for the reason

@@ -13,8 +13,8 @@ import { SparseWorld } from '../../src/simulation/world/sparse-world';
  * BUG-01: a `PlaceBuildOrder` naming a buildable nothing declares used to
  * brick the session, permanently, and the save with it.
  *
- * `placeBuildOrderSchema.definitionId` is a plain `z.string()`, so any string
- * decodes. `submitOrder` asked only about the *tile* -- bounds, then ownership
+ * `placeBuildOrderSchema.definitionId` was a plain `z.string()`, so any string
+ * decoded -- it is `z.string().min(1)` as of this file's second block. `submitOrder` asked only about the *tile* -- bounds, then ownership
  * -- so an unknown id on an owned in-bounds tile was **approved**, stored in
  * `ConstructionSystem.orders`, and emitted by `snapshot()` into the save. The
  * damage was one line into `update`: `getBuildableDefinition(order.definitionId)`
