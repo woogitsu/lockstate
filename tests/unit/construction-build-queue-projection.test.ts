@@ -4,13 +4,17 @@ import {
   projectBuildQueue,
   type BuildQueueViewModel,
 } from '../../src/simulation/presentation';
-import { BUILD_ORDER_FAIL_REASONS } from '../../src/simulation/construction/build-order';
+import { BUILD_ORDER_FAIL_REASONS, type BuildOrder } from '../../src/simulation/construction/build-order';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import {
   CONSTRUCTION_MATERIALS_CONTAINER_ID,
   createNewSimulationRuntime,
   type SimulationRuntime,
 } from '../../src/simulation/runtime/new-session';
+import { tileCoordinate } from '../../src/simulation/world/coordinates';
+
+/** A `TilePosition` for the stub source below, which builds `BuildOrder`s by hand. */
+const tile = (x: number, y: number) => ({ x: tileCoordinate(x), y: tileCoordinate(y) });
 
 /**
  * The read model behind the Build panel's queue, and the command it makes
@@ -137,11 +141,18 @@ describe('the pending build queue, as a read model', () => {
 
   it('lists the queue in the order the crew will reach it, which is ascending id and not submission order', () => {
     /*
-     * Not cosmetic, and the reason this assertion is worth its own test:
-     * `ConstructionSystem.update` walks `orderedOrders()` -- ascending id -- and
-     * the first *eligible* id takes the crew. So ascending id is the build
-     * schedule. Submitted here deliberately backwards, so an implementation that
-     * passed the source's order straight through would fail.
+     * Not cosmetic: `ConstructionSystem.update` walks `orderedOrders()` --
+     * ascending id -- and the first *eligible* id takes the crew. So ascending
+     * id is the build schedule, and the list is the schedule rather than an
+     * enumeration.
+     *
+     * Submitted backwards, and **this on its own does not prove the projection
+     * sorts**: `allOrders()` already hands out ascending id, so a projection that
+     * passed the source's order straight through would pass this. Red-proofed
+     * exactly that way -- deleting the sort left this green -- which is what the
+     * stub-source test below exists for. This one is still worth keeping,
+     * because it is the half that ties the *order of the rows* to the *order the
+     * crew works in*, over a real system, which no stub can show.
      */
     const runtime = session();
     orderWall(runtime, 'order-c', 3, 5);
@@ -156,6 +167,38 @@ describe('the pending build queue, as a read model', () => {
     runTo(runtime, 30);
     expect(runtime.construction.getOrder('order-a')?.state).toBe('in-progress');
     expect(runtime.construction.getOrder('order-c')?.state).toBe('assigned');
+  });
+
+  it('sorts what it is handed, so a source that stopped ordering cannot silently reorder the panel', () => {
+    /*
+     * The half the test above cannot make, and the reason `projectBuildQueue`
+     * takes a narrow source shape at all rather than a `ConstructionSystem`:
+     * handed orders out of order, it must still answer in ascending id.
+     *
+     * `docs/DETERMINISM.md`'s canonical-iteration rule is the argument. The
+     * source *does* sort today -- `orderedOrders()` -- so this sort is
+     * belt-and-braces against that changing, and the cost of it changing is not
+     * abstract: these rows are controls, and a player about to press the row for
+     * the wall at (3,4) would press whatever the source's iteration order put
+     * there instead.
+     */
+    const scrambled: readonly BuildOrder[] = [
+      { id: 'order-c', definitionId: 'wall-brick', location: tile(3, 5), state: 'assigned', progress: 0, materialsAllocated: [] },
+      { id: 'order-a', definitionId: 'wall-brick', location: tile(3, 3), state: 'in-progress', progress: 10, materialsAllocated: [] },
+      { id: 'order-b', definitionId: 'wall-brick', location: tile(3, 4), state: 'assigned', progress: 0, materialsAllocated: [] },
+    ];
+
+    const view = projectBuildQueue({ allOrders: () => scrambled });
+    expect(view.orders.rows.map((row) => row.orderId)).toEqual(['order-a', 'order-b', 'order-c']);
+    // The rows travelled with their own tiles rather than only being reordered:
+    // a sort that shuffled the ids and left the tiles behind would pass the line
+    // above and aim every control at the wrong wall.
+    expect(view.orders.rows.map((row) => `${row.orderId}@${row.tile.x},${row.tile.y}`)).toEqual([
+      'order-a@3,3',
+      'order-b@3,4',
+      'order-c@3,5',
+    ]);
+    expect(view.started).toBe(1);
   });
 
   it('counts exactly one order as started, which is the whole of what #348 made visible', () => {
