@@ -4,7 +4,7 @@ import type { NavigationSystem } from '../navigation/navigation-system';
 import type { RouteContext } from '../navigation/route-context';
 import type { TilePosition } from '../world/coordinates';
 import type { ContainerRegistry } from './inventory';
-import type { CarryItemJob } from './job';
+import type { CarryItemJob, CarryLeg, JobLifecycleState } from './job';
 import { JobBoard } from './job';
 
 /**
@@ -193,8 +193,54 @@ export class JobSystem implements SystemRegistration {
     job.state = 'completed';
   }
 
+  /**
+   * Undoes whatever an ended job was still holding, so neither failure nor
+   * cancellation can strand a claim *or* destroy goods. **Which of the two
+   * applies is decided entirely by the leg, and the two cases are
+   * exhaustive** -- an active carry job is always holding exactly one of them:
+   *
+   * - **pickup**: the job holds the `reserve` made at assignment time and the
+   *   stock is still physically in the source container. Release the claim.
+   *   `Container` tracks reservations per *item*, not per job, so releasing one
+   *   that was never made would wrongly free another job's real reservation for
+   *   the same item -- hence the `'available'` exclusion below (a job ended
+   *   while still `'available'` never reached `assignAvailableJobs`, which is
+   *   the only place `Container.reserve` happens).
+   * - **dropoff**: `continuePerforming` already committed `withdrawReserved`,
+   *   so there is no reservation left to release and the quantity is in the
+   *   carrier's hands, held by nothing but the job. Doing nothing here destroys
+   *   it outright, which is the same defect `docs/OPERATIONS.md` requires the
+   *   construction seam's `release` to prevent: "against a finite stock a
+   *   cancelled order that had already allocated would destroy its materials
+   *   permanently". Put the quantity back as stock in the container it came
+   *   from.
+   *
+   * The dropoff case uses `deposit` rather than a reservation reversal for
+   * exactly the reason `ContainerMaterialsProvider.release` does: the
+   * withdrawal was committed and the reservation it consumed no longer exists.
+   * Returning a quantity to the container it was withdrawn from moves nothing
+   * *between* containers, so the no-teleport rule is untouched -- this is the
+   * reversal of one leg, not a transfer.
+   *
+   * `leg`/`stateBeforeEnding` are passed in rather than read off `job` because
+   * `cancel` must decide from the state as it was *before* `JobBoard.cancel`
+   * overwrote it with `'cancelled'`.
+   */
+  private compensateHeldStock(job: CarryItemJob, leg: CarryLeg, stateBeforeEnding: JobLifecycleState): void {
+    if (stateBeforeEnding === 'available') return; // holds neither a reservation nor stock
+    // `deposit` rejects a non-positive quantity (`releaseReservation` tolerates
+    // one), and `carryItemJobSchema` bounds a restored job's quantity to an
+    // integer without requiring it to be positive -- so a corrupt save must not
+    // be able to throw out of a system update here.
+    if (!Number.isInteger(job.quantity) || job.quantity <= 0) return;
+    const source = this.containers.getById(job.sourceContainerId);
+    if (source === undefined) return;
+    if (leg === 'pickup') source.releaseReservation(job.itemId, job.quantity);
+    else source.deposit(job.itemId, job.quantity);
+  }
+
   private failJob(job: CarryItemJob, reason: string): void {
-    if (job.leg === 'pickup') this.containers.getById(job.sourceContainerId)?.releaseReservation(job.itemId, job.quantity);
+    this.compensateHeldStock(job, job.leg, job.state);
     this.performingSince.delete(job.id);
     if (job.assignedWorkerId !== undefined) this.workers.setBusy(job.assignedWorkerId, false);
     job.state = 'failed';
@@ -202,23 +248,21 @@ export class JobSystem implements SystemRegistration {
   }
 
   /**
-   * Cancels an active job, releasing its reservation and worker exactly
-   * like a failure would -- issue #25's "cancellation/failure releases
-   * reservations consistently." A reservation only exists once the job
-   * has actually reached `'assigned'` or later on the pickup leg
-   * (`assignAvailableJobs` is where `Container.reserve` happens); a job
-   * cancelled while still `'available'` never held one, and
-   * `Container.releaseReservation` tracks reservations per item, not per
-   * job -- releasing one that was never made would wrongly free up
-   * another job's real reservation for the same item.
+   * Cancels an active job, giving back whatever it held and freeing its worker
+   * exactly like a failure would -- issue #25's "cancellation/failure releases
+   * reservations consistently", which `compensateHeldStock` is the single
+   * implementation of for both paths, so the two cannot drift apart per leg
+   * again.
    */
   public cancel(jobId: string): boolean {
     const job = this.board.getById(jobId);
     if (job === undefined) return false;
-    const hadReservation = job.leg === 'pickup' && job.state !== 'available';
+    // Captured before `JobBoard.cancel` mutates `state` to `'cancelled'`.
+    const legBeforeCancel = job.leg;
+    const stateBeforeCancel = job.state;
     const wasCancellable = this.board.cancel(jobId);
     if (!wasCancellable) return false;
-    if (hadReservation) this.containers.getById(job.sourceContainerId)?.releaseReservation(job.itemId, job.quantity);
+    this.compensateHeldStock(job, legBeforeCancel, stateBeforeCancel);
     this.performingSince.delete(job.id);
     if (job.assignedWorkerId !== undefined) this.workers.setBusy(job.assignedWorkerId, false);
     return true;

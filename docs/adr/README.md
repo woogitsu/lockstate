@@ -32,21 +32,44 @@ change to settle it. It changes no status either.
 
 The `Status` column reproduces what each ADR's own document says, not a
 normalised judgement. Two heading styles are in use — some ADRs carry a
-`- Status:` bullet and others a `## Status` section — and every ADR in the table
-above is now `Accepted` in some form, several with a qualifier the ADR itself
+`- Status:` bullet and others a `## Status` section, and every ADR in the table
+above carries `Accepted` in some form, several with a qualifier the ADR itself
 carries.
 
-**Every ADR in this directory is accepted.** Seven decisions were approved on
+**Every ADR in this directory is accepted.** Eight decisions were approved on
 2026-08-26: 0031, 0032, 0033, ADR 0007's amendment, then 0034, 0035 and 0036
-within the same few hours, which is the rate this corpus actually moves at.
+within the same few hours, and 0037 the same evening — which is the rate this
+corpus actually moves at.
 
-**0034, 0035 and 0036 were accepted by the owner's delegation rather than by the
-owner reading them.** Each Status says so, and says what the owner was and was not
-told. That is a weaker warrant than the other four carry and it is recorded as
-weaker on purpose — a reader who disagrees with any of the three should treat it
-as open, not as settled by someone who weighed the text. Three of seven decisions
-in one day resting on delegation is itself worth noticing by whoever reads this
-next: it is what a day of this pace costs in review depth.
+**This paragraph was corrected twice on 2026-08-26, in opposite directions, and
+both edits are marked rather than overwritten.** 0037 arrived Proposed, which
+falsified "every ADR is accepted"; it was approved by delegation one commit
+later, which falsified the "all but one row" wording written to replace it. A
+sentence asserting an absence — "every", "none outstanding", "the only" — is the
+shape `docs/HANDOVER-2026-08-26.md` names as rotting most reliably, because
+adding the thing it denies never touches the sentence. What this instance adds is
+that **the same sentence can rot back**: a correction is not more durable than
+the claim it corrected, and nothing mechanical caught either direction.
+`adr-numbering-contract.test.ts` compares each row's status keyword to its own
+ADR's, so it passes a table whose surrounding prose flatly contradicts one of
+its rows — in either direction.
+
+While 0037 stood Proposed, the two paragraphs that then stood above were
+deliberately worded so that **its number never appeared in the same sentence as
+the word `Accepted`**, because `adr-status-reference-contract.test.ts` matches
+on the status word and cannot tell "every row *except* this one is accepted"
+from "this one is accepted". That constraint is recorded here rather than
+deleted, because the next Proposed row will need it again, and the paragraph
+further down carries an awkward phrasing for exactly the same reason. Do not
+"fix" that one.
+
+**0034, 0035, 0036 and 0037 were accepted by the owner's delegation rather than
+by the owner reading them.** Each Status says so, and says what the owner was
+and was not told. That is a weaker warrant than the other four carry and it is
+recorded as weaker on purpose — a reader who disagrees with any of the four
+should treat it as open, not as settled by someone who weighed the text. Four of
+eight decisions in one day resting on delegation is itself worth noticing by
+whoever reads this next: it is what a day of this pace costs in review depth.
 
 Two of those carry a qualifier the row alone will not tell you, and both are worth
 reading before treating the decision as settled:
@@ -79,8 +102,10 @@ outstanding, it says "every ADR is accepted" rather than negating the other
 status; teaching the scanner to read negation would be the alternative, and is
 not obviously worth it.
 
-This paragraph has now read four things in two days — none outstanding, then
-0029, then none again, now 0031 — and the churn is the point rather than noise.
+This paragraph has now read six things in two days — none outstanding, then
+0029, then none again, then 0031, then 0037 outstanding, and now none again — and
+the churn is the point rather than noise. The last two arrived within one commit
+of each other.
 What it records is that the count is *tracked*: a row awaiting approval is a
 signal on its own rather than one of a crowd, so one row reads as a request
 addressed to the owner. 0029 was accepted on 2026-08-26, and the thing worth
@@ -131,12 +156,21 @@ Nothing here changes a status; this table only reports them.
 | [0034](./0034-releasing-a-claimed-guard.md) | Releasing a claimed guard — one command, every claimant | Accepted, 2026-08-26 — by delegation |
 | [0035](./0035-buildable-catalogue-category-filter.md) | Choosing what to build out of twenty-one rows — filtering the catalogue by the categories content already authors | Accepted, 2026-08-26 — by delegation; it narrows #390's claim rather than closing it |
 | [0036](./0036-a-derived-default-security-sector.md) | A default security sector, derived from the world rather than authored | Accepted, 2026-08-26 — by delegation; it answers ADR 0034 decision 9 |
+| [0037](./0037-goods-in-a-carriers-hands-when-a-carry-job-dies.md) | Where goods go when a carry job dies with them in a carrier's hands | Accepted, 2026-08-26 — by delegation; the owner approved *that* someone decide, not the option chosen |
 
-**Next free number: 0037.** 0036 is this table's newest row and **0030 is still
+**Next free number: 0038.** 0037 is this table's newest row and **0030 is still
 held by an unmerged branch** — the incident-response restore change, which
 allocated it in the same hour it was stated free here. It is listed nowhere above
 because nothing is merged under that number yet, which is precisely the gap a
-stated next-free cannot see: enumerate the open pull requests before taking 0037.
+stated next-free cannot see: enumerate the open pull requests before taking 0038.
+
+**0037 was taken from an unpushed worktree and its author could not run that
+enumeration at all**, which is the window this paragraph describes rather than an
+exception to it — four agents were working in parallel and a number is not held
+until something is pushed. ADR 0037 therefore pre-commits in its own Status to
+renumbering without argument if another branch has taken it, which
+`docs/HANDOVER-2026-08-26.md` records as the only thing that has kept three such
+collisions from becoming arguments.
 
 **0036's author ran that enumeration and it came back with exactly one open pull
 request**, **#355** (no ADR), so 0036 was free — and unlike the three collisions
