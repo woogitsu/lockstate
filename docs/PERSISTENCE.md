@@ -182,10 +182,50 @@ work are not.**
   *is* persisted, because it names incident records that outlive the tick.
 - **`JobSystem.performingSince`.** A restored `'performing'` carry job
   restarts its pickup/drop-off timer. This is the same "restart rather than
-  assume arrival" convention as travel, and is a real (small) loss rather than
-  a derivation — it is listed here rather than fixed because the field is
+  assume arrival" convention as travel, and is a real loss rather than a
+  derivation — it is listed here rather than fixed because the field is
   private to `JobSystem` and exposing it is a job-system change, not a
-  persistence one. Also recorded in `docs/DETERMINISM.md`.
+  persistence one.
+
+  It used to say "a real (small) loss", which was an estimate.
+  `tests/determinism/job-performing-restart-bound.test.ts` measures it, so
+  the bound is now a number and the number is a guard:
+
+  - **One `JobSystem` interval — 5 ticks — on the leg that was in flight**,
+    and that is the whole cost of the field. It does not depend on where
+    inside the 5-tick window the save was taken: the re-seed happens on the
+    first scheduled update after the restore, which is the very tick the
+    continuous run would have finished on, so a save at +1 and a save at +4
+    both cost exactly 5.
+  - **The same 5 ticks, once, on every job queued behind the delayed one.**
+    Measured on a single worker with three jobs waiting on it, which is the
+    shape that would compound if anything did. It does not compound and it
+    does not reorder: the completion order is unchanged and each job moves by
+    one interval, not by one interval each.
+  - **One full `ConstructionSystem` interval — 10 ticks — on a build order
+    waiting for the delivery.** This is the one place the cost is not the five
+    ticks it starts as: the deposit slips across a boundary of a system with a
+    10-tick cadence of its own, and that system re-quantises the delay. The
+    amplification is one downstream interval, not a compounding one.
+  - **Nothing else.** Every state surface a save carries — jobs, workers,
+    containers, construction, world, prisoners — is identical again from the
+    delayed build completion onwards and stays identical for the rest of the
+    run. The only residue found anywhere was
+    `PathRequestQueueMetrics.totalExpansions` settling two node-expansions
+    apart in the richer `tests/helpers/determinism-scenario.ts`: a cumulative
+    diagnostic counter with no reader in `src/`, absent from this payload, and
+    reset to zero by a restore in any case.
+
+  The reason this stays an exclusion rather than becoming a V6 field is also
+  measured. Saving five ticks *earlier*, while the same job is `'travelling'`
+  rather than `'performing'`, produces the identical profile — every job one
+  `JobSystem` interval late, the wall one `ConstructionSystem` interval late —
+  through the travel restart `JobBoard.loadSnapshot` documents and the
+  "Navigation caches and the pending path-request queue" entry above already
+  accepts. Carrying `performingSince` would narrow the window in which a save
+  costs anything; it would not remove the cost, because the window either side
+  of it already does. A schema version is the wrong instrument for that, and
+  the test is the right one. Also recorded in `docs/DETERMINISM.md`.
 - **`EntityQuery`'s `ComponentBitset`.** A pure function of "is this index
   alive", which the entity ledger already carries;
   `PrisonerOperationsRuntime.loadSnapshot` re-derives it. Persisting it would
