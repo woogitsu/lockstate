@@ -365,7 +365,8 @@ waiting.
   1280x720 and 900x600 **while a queue exists**. `BUILDABLE_REGISTRY` has two
   entries today, so that is one of two hidden behind a scroll; a third buildable
   makes it two of three, which does not change the trade but does make it more
-  visible.
+  visible. — *Both counts in this bullet are wrong; see the amendment at the foot
+  of this document.*
 - Three assertions in `tests/browser/app-shell.spec.ts` reached the numeric
   fallback's header as "the panel's last `.ui-section`" and now name it
   (`.hud-build__coordinates`), because the queue block is appended after it. The
@@ -396,3 +397,60 @@ waiting.
    catalogue may not shrink, then the honest consequence is that this surface does
    not fit the right rail at 900x600 and belongs somewhere else, which is a larger
    question than this ADR.
+
+---
+
+## Amendment — 2026-08-26: the catalogue's donation is three rows of four, not one of two
+
+**Everything above this line is unchanged**, and every measurement in it
+reproduces on `main` at v0.0.88 — including the table in decision 3, which was
+re-run for this amendment and matched to the pixel (111px, 0px, 75px, 132px and
+66px absorbed by the list, at the five viewports in that order). One sentence in
+*Consequences* does not: the two entries it attributes to `BUILDABLE_REGISTRY`.
+
+### What was wrong
+
+`BUILDABLE_REGISTRY` has held **four** entries since ADR 0028 phase 2 — a wall,
+a door, a bed and a toilet. A catalogue row is 44px, so the list holds **176px**
+of rows rather than 88px. Decision 3's own table already implied it and was read
+past: a list that donates 132px cannot be two 44px rows.
+
+Measured on the assembled page with six queued, list box against list content:
+
+| viewport | list box / content | rows a player can see |
+| --- | --- | --- |
+| 1280x720 | 65 / 176 | 1 and part of a second |
+| 1440x900 | 176 / 176 | all four |
+| 1024x768 | 101 / 176 | 2 and part of a third |
+| 900x600 | 44 / 176 | **1 of 4** |
+| 375x812 | 110 / 176 | 2 and part of a third |
+
+So while a queue exists the catalogue scrolls at **four** of the five viewports
+rather than at the two the bullet named, and at 900x600 three of the four
+buildables are behind that scroll rather than one of two.
+
+### What this does and does not change
+
+**The trade decision 3 makes is unchanged.** It weighed a reachable queue
+against a scrolling catalogue and chose the queue; that argument does not turn
+on whether one row or three is hidden, and the alternatives it measured — the
+placement readout at 20px, the arm hint already clamped, the map block's gutters
+already at `--space-1` — are all still too small to pay instead.
+
+**The price is larger than the ADR stated**, which is exactly what open question
+4 ("is the catalogue the right donor?") is for. It is now a question with a
+number: at 900x600, with a queue, choosing what to build means scrolling a list
+that shows one of four options.
+
+**Decision 3's first bullet is unaffected, and is now measured where it can be
+seen.** With nothing queued the list never drops below its two-row floor (two of
+four visible at 900x600, all four at 1440x900), the block is not laid out, and
+the panel arrives with "Enter coordinates" 7.8px inside its own fold. That claim
+was measured only through `tests/browser/ui-harness.html`, whose aside slot is
+empty — the surface #174 proved cannot see rail contention at all. It is now
+asserted on the assembled page as well, at all five viewports, by "the Build
+panel arrives inside its own fold, with nothing queued" in
+`tests/browser/app-shell.spec.ts`. That test exists because the #88 sweep, which
+was the only assembled-page measurement of this panel, now queues six orders
+before its viewport loop and therefore no longer measures the arrival state at
+all.

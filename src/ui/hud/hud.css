@@ -654,14 +654,31 @@
  * out of existence and the catalogue becomes a scrollbar with no rows.
  *
  * Below the floor the panel itself scrolls again -- so `.hud-build`'s own
- * `overflow-y: auto` above stays load-bearing rather than vestigial. With the
- * two buildables `BUILDABLE_REGISTRY` defines the floor *is* the list's own
- * height, 88px of content in an 88px box at every viewport the browser suite
- * visits, so the list donates nothing and everything the panel cannot fit is
- * still the panel's to scroll. Measured on the assembled page with the
- * coordinates expanded, which is the state that overruns every viewport:
- * 605px of content in a 418px box at 1280x720 and 532px in a 336px box at
- * 900x600. Folded, nothing scrolls anywhere any more (#174).
+ * `overflow-y: auto` above stays load-bearing rather than vestigial.
+ *
+ * **The floor is not the list's own height, and this comment said it was.**
+ * The sentence that stood here read: "with the two buildables
+ * `BUILDABLE_REGISTRY` defines the floor *is* the list's own height, 88px of
+ * content in an 88px box at every viewport the browser suite visits, so the
+ * list donates nothing". That registry has held **four** entries since
+ * ADR 0028 phase 2 -- a wall, a door, a bed and a toilet -- so the list holds
+ * 176px of rows and this floor shows two of them. Measured on the assembled
+ * page in the arrival state, list box against list content: 110/176 at
+ * 1280x720, 176/176 at 1440x900, 146/176 at 1024x768, 88/176 at 900x600 and
+ * 155/176 at 375x812. The list is the panel's donor at four of the five
+ * viewports the browser suite visits, and at 900x600 it is squeezed flat onto
+ * this floor with two buildables behind a scroll.
+ *
+ * That is why `tests/browser/app-shell.spec.ts` asserts this list is
+ * *scrollable* in the arrival state rather than only that the panel fits: rows
+ * a player cannot reach are what the donation costs, and `overflow-y` below is
+ * the whole of what makes them reachable (#174).
+ *
+ * What the panel scrolls is whatever is left after that donation. Measured on
+ * the assembled page with the coordinates expanded, which is the state that
+ * overruns every viewport: 613px of content in a 418px box at 1280x720 and
+ * 536px in a 336px box at 900x600. Folded, the panel scrolls nowhere -- the
+ * list does (#174).
  */
 .hud-build__list {
   display: flex;
