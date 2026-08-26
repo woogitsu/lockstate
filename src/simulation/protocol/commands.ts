@@ -78,9 +78,11 @@ export const zoneRoomSchema = z.object({
  * Clear the room designations a rectangle touches (#261's removal half).
  *
  * A rectangle and no room id, because removal names no room type: what comes
- * out is whatever is there. `RoomZoningService.unzone` grows each covered
- * zoned tile into its connected same-type run before clearing, and its own
- * comment states both consequences of that.
+ * out is whatever is there. `RoomZoningService.unzone` resolves each covered
+ * zoned tile to the room *instance* containing it and clears that instance's
+ * whole rectangle, and its own comment states both consequences of that. It
+ * used to grow the tile into its connected same-type *run* instead, which is
+ * why removing one of two touching cells removed both (issue #337).
  *
  * It carries no `transactionId`, where `ZoneRoom` has an optional one. Neither
  * command produces a construction order, so `ConstructionSystem` has nothing

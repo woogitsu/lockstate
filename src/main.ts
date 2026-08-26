@@ -1776,10 +1776,11 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
          *
          * No room id, because a removal names no room type: what comes out is
          * whatever the rectangle covers. `RoomZoningService.unzone` states what
-         * "covers" means -- every covered zoned tile is grown into its
-         * connected same-type run before anything is cleared -- and both
-         * consequences of that, one of which the player is told up front by the
-         * panel's removal hint.
+         * "covers" means -- every covered zoned tile is resolved to the room
+         * *instance* containing it and that instance's whole rectangle is
+         * cleared (issue #337; it used to be the connected same-type run, which
+         * took the room next door with it) -- and both consequences of that,
+         * one of which the player is told up front by the panel's removal hint.
          */
         case 'unzone-room':
           requireSimulation(commands).submit({

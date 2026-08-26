@@ -559,10 +559,13 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.rooms.remove': 'Remove rooms',
   'hud.rooms.remove-active': 'Stop removing',
   // Says what a removal drag actually does, because it is not "clear the tiles
-  // you dragged over": each covered tile is grown into its whole connected
-  // same-type run before anything is cleared, so clipping a corner off a
-  // canteen takes the whole canteen. Telling the player that up front is the
-  // difference between a rule and a surprise.
+  // you dragged over": each covered tile is resolved to the room containing it
+  // and that whole room is cleared, so clipping a corner off a canteen takes
+  // the whole canteen. Telling the player that up front is the difference
+  // between a rule and a surprise. The sentence is unchanged by issue #337 and
+  // the mechanism above is not: removal used to take the connected same-type
+  // *run*, which meant "all of it" could reach a second room the player never
+  // dragged over -- the one case where this string was a lie.
   'hud.rooms.remove-hint': 'Drag across any part of a room to remove all of it.',
   'hud.rooms.area': 'Area',
   'hud.rooms.area-none': 'Nothing selected',
