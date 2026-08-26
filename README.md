@@ -74,7 +74,7 @@ Before making changes, read:
 1. [`AGENTS.md`](./AGENTS.md) — canonical rules for all coding agents
 2. [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) — runtime architecture
 3. [`docs/ROADMAP.md`](./docs/ROADMAP.md) — development order
-4. [`docs/adr/`](./docs/adr/) — architectural decision records. Read the `Status` line of any ADR before treating it as settled. **Exactly one is `Proposed` — [0029](./docs/adr/0029-concurrent-room-use-claims.md), concurrent-use claims on a room** — and it is awaiting the owner's approval and is not binding, even though the change implementing it is in the tree. Every other ADR on disk is `Accepted`, several with a qualifier the document itself carries. [`docs/adr/STATUS-QUEUE.md`](./docs/adr/STATUS-QUEUE.md) §2 is the entry to read for 0029, and the sections after it record where an accepted decision and the code still disagree.
+4. [`docs/adr/`](./docs/adr/) — architectural decision records. Read the `Status` line of any ADR before treating it as settled. **Every ADR on disk is `Accepted`**, several with a qualifier the document itself carries. [0029](./docs/adr/0029-concurrent-room-use-claims.md), concurrent-use claims on a room, was the last one `Proposed` and was accepted on 2026-08-26. [`docs/adr/STATUS-QUEUE.md`](./docs/adr/STATUS-QUEUE.md) §2 records that the queue is empty and why the round trip was worth noting; the sections after it record where an accepted decision and the code still disagree.
 
 Claude Code uses `CLAUDE.md`. Google Antigravity uses `.agents/rules/`. Both defer to `AGENTS.md` so agent-specific instructions cannot drift apart.
 

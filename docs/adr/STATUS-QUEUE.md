@@ -8,9 +8,10 @@ implementation.
 
 **Nothing here changes a status.** A status moves in the ADR and in the index,
 never in this file. What changed with this revision is what the file is *for*:
-§1 records **all thirteen** flips, §2 holds **the one decision awaiting
-approval — ADR 0029** — above the account of why the queue had been emptied and
-what that bought, and everything after it is the residue — one genuinely open
+§1 records **all thirteen** flips, §2 records that **the queue is empty again —
+ADR 0029 was accepted on 2026-08-26** — above the account of why the queue had
+been emptied the first time and what that bought, and everything after it is the
+residue — one genuinely open
 decision, one watch item, and the gaps between an accepted decision and the
 code. §6 used to be the inventory of stale sentences the flips left behind;
 **they are corrected, and that class is now asserted by a test**, so what it
@@ -165,56 +166,23 @@ gap, not a wrong status; §5 carries it, with what has and has not moved since
 
 ---
 
-## 2. The queue has exactly one entry: ADR 0029
+## 2. The queue is empty again: ADR 0029 was accepted
 
-**This section's heading used to be "The queue is empty", and the entry below is
-the first thing to arrive since.** The rule that section states — *"any commit
-that adds a `Proposed` ADR adds an entry here in the same commit, giving the
-evidence, what settling it commits the project to, and the exact line that would
-replace the status"* — is followed, and the account of why the queue was emptied
-is kept below it unchanged, because it is the argument for why one row is worth
-reading.
+**This heading has now read "empty", then "exactly one entry: ADR 0029", and
+"empty" again.** 0029 was accepted on 2026-08-26 and its entry is deleted, which
+is what this section's own rule prescribed: the entry said *"this entry is
+deleted"* as part of the exact recipe for accepting it, and following that
+recipe is the whole point of writing one.
 
-### ADR 0029 — concurrent-use claims on a room
+What the round trip is worth recording for: 0029 arrived on the same branch as
+its implementing code, and **it sat `Proposed` on `main` for a day while that
+code was already shipping.** That is precisely the fragile case this section
+names, met in practice rather than in theory. The queue did its job — the row was
+the reason anyone knew a decision was outstanding — but the gap between the code
+landing and the status moving is the cost, and it is not zero.
 
-- **What it is.** [ADR 0029](./0029-concurrent-room-use-claims.md), *"What a
-  concurrent-use claim on a room is — when it is taken, when it ends, and who
-  waits"*. It answers three questions ADR 0028 left open and named as owed (its
-  open question 7, phase 6's queueing rule, and what a claim means once both
-  kinds exist) and **corrects one thing ADR 0028 decided**: decision 3's
-  *"The occupant set is **not** split"*.
-- **It arrived with its implementing change**, which is exactly the fragile case
-  the paragraphs below warn about, and is why this entry exists rather than the
-  ADR sitting on `main` unnoticed.
-- **The evidence for the correction is a sentence that was already in the
-  tree.** `src/simulation/economy/income.ts` stated that if occupancy were ever
-  registered somewhere a prisoner is not housed — *"a canteen tracking
-  diners"* — the income definition *"would pay twice for one prisoner-day and
-  has to be narrowed to accommodation before that lands"*. ADR 0028 phase 6 is
-  that canteen. Under one undifferentiated occupant set a prisoner eating lunch
-  would earn 600 minor units a day instead of 300. Verified after the change:
-  the 250-actor scenario's `totalOccupancy` is 250 both before and after, so the
-  economy does not move.
-- **What approving it commits the project to.** Two claim collections in
-  `RoomInstanceRegistry` rather than one, with `occupancyOf`/`totalOccupancy`
-  keeping their residency meaning; a claim taken on arrival and released when the
-  action ends; `unzone` refusing while anybody is *using* a room; contention
-  decided by ascending entity index with **no queue**, and the starvation that
-  permits accepted as a named consequence with a revisit condition. It commits to
-  no save-format change and no new content.
-- **What refusing it would cost.** The defect it fixes is measured: 40 prisoners
-  entered a canteen whose `concurrentUseCapacity` was 1, in one reconsideration
-  tick. Refusing decision 1 specifically — insisting on one occupant set — means
-  either the double-payment above or an economy rule that has to learn what a
-  diner is.
-- **The exact line that would replace the status.** In
-  `docs/adr/0029-concurrent-room-use-claims.md`, replace
-  `**Proposed — pending human approval.** Not accepted.` with
-  `**Accepted, YYYY-MM-DD.**`, and change that ADR's row in
-  `docs/adr/README.md` from `Proposed — pending human approval` to
-  `Accepted, YYYY-MM-DD`. Both in the same commit — the suite checks the pair.
-  The two paragraphs in `docs/adr/README.md` that now say one row is `Proposed`
-  go back to saying none is, and this entry is deleted.
+The account of why the queue was emptied the first time is kept below unchanged,
+because it is still the argument for why one row is worth reading.
 
 ---
 

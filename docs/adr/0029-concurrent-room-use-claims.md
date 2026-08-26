@@ -2,7 +2,18 @@
 
 ## Status
 
-**Proposed — pending human approval.** Not accepted.
+**Accepted, 2026-08-26.** The owner approved the substance of this ADR — the
+fairer queue — before the status line moved, and the implementing change has
+been on `main` since it merged. So the status was the last thing here that was
+still false, which is the defect §2 of [`STATUS-QUEUE.md`](./STATUS-QUEUE.md)
+predicted for an ADR that lands alongside its own code: it sat `Proposed` on
+`main` while the code it describes was already shipping.
+
+What is accepted is the mechanism and the five decisions below, on the same
+terms as the code that implements them. The approval does **not** reach the
+starvation revisit condition recorded under the queueing rule — that stays a
+condition to watch rather than a settled answer, and it is named here so a
+reader does not mistake an accepted ADR for a closed question.
 
 Three of the five decisions below are answers to questions
 [ADR 0028](./0028-object-placement-and-derived-room-capacity.md) left open and
