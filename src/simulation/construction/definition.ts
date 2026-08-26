@@ -538,6 +538,109 @@ export const BUILDABLE_REGISTRY = new Map<string, BuildableDefinition>([
     materialsRequired: [{ itemId: 'item.wood-plank', quantity: 1 }],
     placesObjectId: 'object.medicine-cabinet',
   }],
+  /*
+   * Security, logistics and utility. The last five rows, finishing
+   * `room.security-office`, `room.storage-room`, `room.delivery-bay`,
+   * `room.garbage-room` and `room.utility-room` -- after which every `object`
+   * requirement in `src/content/room-catalog.ts` is satisfiable through
+   * `PlaceObject`, which is the whole of ADR 0028 phase 4.
+   *
+   * **Four of the five capabilities here are gated by nothing**, and that is
+   * this group's honest summary rather than a defect in it. `'surveillance'`,
+   * `'item-storage'`, `'delivery-access'`, `'waste-disposal'` and
+   * `'utility-control'` appear in no `DEFAULT_ACTIONS` entry and in no other
+   * room's requirements, so furnishing these five rooms makes their
+   * requirements read `'satisfied-by-capability'` and changes no prisoner's
+   * behaviour. The systems that would consume them are a security-deployment
+   * system, #99's salvage destination, ADR 0017's procurement route, and a
+   * maintenance job system -- none of which exists. A room a player can finish
+   * and see reported as complete is what this phase owes them; the behaviour is
+   * owed by those systems.
+   */
+  ['security-console-brick', {
+    id: 'security-console-brick',
+    category: 'object',
+    name: 'Security Console',
+    workRequired: 60,
+    materialsRequired: [{ itemId: 'item.brick', quantity: 2 }],
+    placesObjectId: 'object.security-console',
+  }],
+  ['storage-rack-wooden', {
+    id: 'storage-rack-wooden',
+    category: 'object',
+    name: 'Storage Rack',
+    workRequired: 30,
+    materialsRequired: [{ itemId: 'item.wood-plank', quantity: 1 }],
+    placesObjectId: 'object.storage-rack',
+  }],
+  /*
+   * The row that needed the most care, because it is a **door that is not a
+   * door**, and `placesDoor` exists three fields up.
+   *
+   * It is `placesObjectId` and not `placesDoor`, and the choice is forced
+   * rather than preferred:
+   *
+   *   - `room.delivery-bay` requires `object.loading-dock-door` by **object
+   *     id** with a `minQuantity`, and `RoomCapacityResolver` counts placed
+   *     objects. A `placesDoor` row writes a tile *edge* and registers a
+   *     `DoorDefinition`; it places no object at all, so it could never satisfy
+   *     that requirement. The delivery bay would stay unfinishable for ever.
+   *   - `validateBuildableDoorReferences` refuses a row naming both, so there
+   *     is no combination to reach for.
+   *   - The object catalogue already settled it: `object.loading-dock-door` is
+   *     authored with a `3x1` tile footprint and a `'delivery-access'`
+   *     capability, which is a tile-addressed thing. `door-wooden`'s own
+   *     comment above already draws this distinction and calls the dock door
+   *     "a different thing".
+   *
+   * **So what a player places here is a capability marker on three tiles, not
+   * a passage.** It gates nothing, opens nothing and is not read by
+   * `DoorRegistry`; navigation cannot cross it and does not need to, because it
+   * stands on floor rather than on a wall line. That is a real limitation of
+   * this row and it is stated here rather than left to be discovered from an
+   * empty `DoorRegistry`.
+   *
+   * ADR 0017 decision 4's "on a bay's boundary" **is** expressible, and by an
+   * accident of the placement rule worth recording: `ObjectPlacementService`
+   * asks `outside-room` of the **anchor tile only**, deliberately, so a
+   * three-wide door anchored on the bay's edge tile may have its other two
+   * tiles outside the rectangle and still belong to the bay. A boundary
+   * placement is therefore legal today; nothing yet reads it as a route.
+   *
+   * Plank, like `door-wooden`, for a timber leaf. Width 3, so three planks and
+   * 90 work -- tied with the dining table as the most expensive row here, and
+   * for the same reason: it is three tiles wide.
+   */
+  ['loading-dock-door-wooden', {
+    id: 'loading-dock-door-wooden',
+    category: 'object',
+    name: 'Loading Dock Door',
+    workRequired: 90,
+    materialsRequired: [{ itemId: 'item.wood-plank', quantity: 3 }],
+    placesObjectId: 'object.loading-dock-door',
+  }],
+  /*
+   * Brick for a masonry refuse bunker rather than plank for a crate, which is
+   * a judgement and is the kind the block's rule was written to make
+   * mechanical: neither of the two priced materials is metal, and authoring a
+   * third with a price is #29's.
+   */
+  ['waste-bin-brick', {
+    id: 'waste-bin-brick',
+    category: 'object',
+    name: 'Waste Bin',
+    workRequired: 30,
+    materialsRequired: [{ itemId: 'item.brick', quantity: 1 }],
+    placesObjectId: 'object.waste-bin',
+  }],
+  ['utility-panel-brick', {
+    id: 'utility-panel-brick',
+    category: 'object',
+    name: 'Utility Panel',
+    workRequired: 30,
+    materialsRequired: [{ itemId: 'item.brick', quantity: 1 }],
+    placesObjectId: 'object.utility-panel',
+  }],
 ]);
 
 export type BuildableItemReferenceError = {

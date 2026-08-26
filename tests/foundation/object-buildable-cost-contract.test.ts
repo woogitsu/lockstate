@@ -63,8 +63,8 @@ describe('an object buildable costs what its footprint says it costs', () => {
     // moving would mean the rows are not in the registry. Phase 4 adds
     // seventeen rows in four groups, so this ends at 19 object buildables of
     // 21 rows; `door-wooden` and `wall-brick` are the two that place no object.
-    expect(objectBuildables.length).toBe(14);
-    expect(BUILDABLE_REGISTRY.size).toBe(16);
+    expect(objectBuildables.length).toBe(19);
+    expect(BUILDABLE_REGISTRY.size).toBe(21);
     // Every id the filter kept really does name a declared object.
     // `validateBuildableObjectReferences` throws at import for a broken
     // reference, so this is the assertion that the throw is doing its job
@@ -113,6 +113,61 @@ describe('an object buildable costs what its footprint says it costs', () => {
       expect(definition.materialsRequired.length, `${definition.id} must name exactly one material`).toBe(1);
       const requirement = definition.materialsRequired[0]!;
       expect(procurableMaterial(requirement.itemId), `${definition.id} requires ${requirement.itemId}, which nothing sells`).toBeDefined();
+    }
+  });
+
+  it('leaves every object requirement in the room catalogue satisfiable', () => {
+    /*
+     * **This is ADR 0028 phase 4's acceptance criterion, computed.**
+     *
+     * That phase ships "buildables for the remaining object ids the room
+     * catalogue already requires", and its whole value is that a player can
+     * finish a room. So the assertion is stated as the property and not as a
+     * count: for every `object` requirement of every room definition, some
+     * buildable names that object id through `placesObjectId`. Derived from the
+     * two catalogues, so a room type that gains an object requirement fails
+     * here until something can place it -- which is the gate a nineteenth
+     * object would want.
+     *
+     * `object.sink` is deliberately not covered, and cannot be: no room
+     * requires it, so it is not in the set this iterates. That is the ADR's own
+     * scoping ("the remaining object ids the room catalogue already requires")
+     * and the reason its `AWAITING_CONSUMER` entry survives phase 4.
+     */
+    const placeable = new Set(objectBuildables.map((definition) => definition.placesObjectId!));
+    const required = new Set(
+      defaultRoomContentRegistry
+        .all()
+        .flatMap((room) => room.requirements)
+        .flatMap((requirement) => (requirement.type === 'object' ? [requirement.objectId] : [])),
+    );
+
+    // Sorted so a failure lists the gaps in a stable order rather than in
+    // catalogue-walk order.
+    expect(
+      [...required].filter((objectId) => !placeable.has(objectId)).sort(),
+      'a room requires an object no buildable places, so that room type cannot be finished',
+    ).toEqual([]);
+
+    // Not vacuous: nineteen distinct object ids are required across the
+    // catalogue, and `object.sink` is the twentieth and only one that is not.
+    expect(required.size).toBe(19);
+    expect([...placeable].filter((objectId) => !required.has(objectId))).toEqual([]);
+
+    // And the room-level statement the pull request reports: 17 of the 18 room
+    // definitions carry `object` requirements, and all 17 are now satisfiable.
+    // `room.yard` is the one that carries none, which is what makes it the only
+    // genuinely unbounded room (#326).
+    const withObjects = defaultRoomContentRegistry
+      .all()
+      .filter((room) => room.requirements.some((requirement) => requirement.type === 'object'));
+    expect(withObjects.length).toBe(17);
+    expect(defaultRoomContentRegistry.all().length).toBe(18);
+    for (const room of withObjects) {
+      for (const requirement of room.requirements) {
+        if (requirement.type !== 'object') continue;
+        expect(placeable.has(requirement.objectId), `${room.id} requires ${requirement.objectId}`).toBe(true);
+      }
     }
   });
 
