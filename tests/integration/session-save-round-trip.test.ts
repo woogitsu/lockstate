@@ -44,6 +44,9 @@ function saveAndLoad(runtime: SimulationRuntime): SimulationRuntime {
   const bundle = captureSessionSnapshot(runtime);
 
   const envelope = createSaveEnvelope({
+    // What `SessionController.buildEnvelope` now writes: the captured bundle's
+    // own seed (#412), so this helper stays the full save path it claims to be.
+    ...(bundle.masterSeed === undefined ? {} : { masterSeed: bundle.masterSeed }),
     gameVersion: 'lockstate-0.0.0',
     prisonId: PRISON_ID,
     revision: 1,

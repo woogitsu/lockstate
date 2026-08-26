@@ -65,8 +65,10 @@ describe('worker snapshot protocol: the only way persisted state leaves the simu
 
     // The kernel alone is not a save -- world and construction are what make
     // a restored prison an actual prison, and since #70 `simulation` is what
-    // makes it a *populated* one.
-    expect(Object.keys(data).sort()).toEqual(['construction', 'entities', 'identity', 'kernel', 'simulation', 'world']);
+    // makes it a *populated* one. `masterSeed` joined them in #412: it is what
+    // says *which run* this is, and since #415 it is also what a stream the
+    // bundle does not carry is re-seeded from.
+    expect(Object.keys(data).sort()).toEqual(['construction', 'entities', 'identity', 'kernel', 'masterSeed', 'simulation', 'world']);
     expect(data.kernel.rngStates.length).toBeGreaterThan(0);
     expect(data.world.chunks.length).toBeGreaterThan(0);
     expect(data.construction).toHaveProperty('orders');

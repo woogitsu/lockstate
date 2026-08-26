@@ -271,6 +271,12 @@ export class SessionController {
     const bundle = await this.host.capture();
     const timestamp = this.now();
     return createSaveEnvelope({
+      // The captured bundle's seed, never `this.masterSeed` (#412): that option
+      // is what a *new* prison is created with, and a session loaded from a
+      // save was seeded by whoever created it. Spread rather than passed
+      // straight through, so a host that reports no seed writes the same
+      // payload it wrote before the field existed.
+      ...(bundle.masterSeed === undefined ? {} : { masterSeed: bundle.masterSeed }),
       gameVersion: this.gameVersion,
       prisonId: session.prisonId,
       revision: session.revision + 1,

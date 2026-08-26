@@ -1038,9 +1038,37 @@ const savePayloadV4Schema = z
  * equal the dropped ones.
  *
  * Everything outside `simulation` is byte-identical to V4.
+ *
+ * **V5 gained one more optional field after it shipped**: `masterSeed` (#412),
+ * under the same "adding an optional field without a version bump" rule the
+ * objects section is an instance of. A V5 save written before it exists is
+ * still a valid V5 save and still loads; see the field's own comment for the
+ * fact that makes its absence unambiguous.
  */
 const savePayloadV5Schema = z
   .object({
+    /**
+     * The u32 the session's named RNG streams were derived from (#412,
+     * ADR 0038 §4). Added to V5 rather than bumping to V6, because it is the
+     * optional-field pattern this file already documents at `:69-92` of
+     * `docs/PERSISTENCE.md` and applies to `objects` immediately above:
+     * optional, and absence means 0 unambiguously -- production has never
+     * supplied another value, so every save written before this field existed
+     * was written at seed 0. There is nothing for a migration step to do, so
+     * none is added rather than one fabricating a value the save does not
+     * record.
+     *
+     * `uint32Schema` and not `masterSeedSchema` from `services/challenges`:
+     * they are the same range, and `src/persistence` does not depend on
+     * `src/services`. `deriveXoshiroState` refuses anything outside it.
+     *
+     * The cost, recorded because "no bump is needed" is true and "no bump
+     * costs nothing" is not: `.strict()` means an **older** build reading a
+     * save that carries this key refuses it as `invalid-shape` where a V6 bump
+     * would have said `unsupported-version`. Both builds refuse it; only the
+     * label differs.
+     */
+    masterSeed: uint32Schema.optional(),
     kernel: kernelSnapshotSchema,
     world: worldSnapshotSchema,
     construction: constructionSnapshotSchema,
@@ -1346,6 +1374,18 @@ export function decodeSaveEnvelope(input: unknown): SaveDecodeResult {
 }
 
 export interface CreateSaveEnvelopeInput {
+  /**
+   * The seed the captured session's RNG streams were derived from (#412),
+   * taken from the bundle the authoritative simulation handed back rather than
+   * from whatever seed the composing host was configured with -- those differ
+   * the moment a session is loaded rather than created.
+   *
+   * Optional so a caller that genuinely has no seed to report (a payload
+   * composed by hand in a test, the migration path) writes a save shaped
+   * exactly like every save written before the field existed, instead of
+   * asserting a 0 it does not know.
+   */
+  readonly masterSeed?: number;
   readonly gameVersion: string;
   readonly prisonId: string;
   readonly revision: number;
@@ -1387,6 +1427,7 @@ export interface CreateSaveEnvelopeInput {
  */
 export function createSaveEnvelope(input: CreateSaveEnvelopeInput): TrustedSaveEnvelope {
   const payload = savePayloadV5Schema.parse({
+    ...(input.masterSeed === undefined ? {} : { masterSeed: input.masterSeed }),
     kernel: input.kernel,
     world: input.world,
     construction: input.construction,

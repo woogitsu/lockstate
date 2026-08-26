@@ -19,6 +19,25 @@ import { captureSessionSystems, restoreSessionSystems, type EncodedSessionSystem
  * evolves under its own version/migration contract.
  */
 export interface SessionSnapshotBundle {
+  /**
+   * The u32 the writing session's named RNG streams were derived from
+   * (issue #412, ADR 0038 §4).
+   *
+   * Optional, and **absence means 0** -- not "unknown". That is a statement of
+   * fact about the corpus rather than a convention: production has never
+   * supplied another value (`src/main.ts` constructs `SessionController` with
+   * no `masterSeed`, and `session-controller.ts` takes `?? 0`), so every save
+   * written before this field existed was written by a session seeded at 0.
+   * It is therefore the optional-field pattern `entities` / `simulation` /
+   * `identity` already use, `SAVE_SCHEMA_VERSION` stays 5, and no migration
+   * step fabricates it.
+   *
+   * It was inert until #415: the seed's only job was deriving the four initial
+   * stream states, and `Kernel.restoreState` overwrote all four. Now that a
+   * stream the bundle omits is re-seeded rather than discarded, the seed is the
+   * only input that stream has, so a restore has to know it.
+   */
+  readonly masterSeed?: number;
   readonly kernel: KernelSnapshot;
   readonly world: WorldSnapshotV1;
   readonly construction: ConstructionSnapshot;
@@ -70,6 +89,13 @@ export const SESSION_SNAPSHOT_SCHEMA_ID = 'simulation-save-payload';
  * without dragging the protocol version with it -- and declaring it matters,
  * because a build that received the other shape silently would restore a
  * corrupt liveness ledger instead of faulting `snapshot-incompatible`.
+ *
+ * **Not bumped by `masterSeed` (#412).** The rule is the same one
+ * `docs/PERSISTENCE.md` states for an optional save field and ADR 0038 §4
+ * applies to this one: the field is optional, its absence has exactly one
+ * meaning (0), and no existing field changed meaning -- so a build that
+ * receives a bundle without it restores exactly as it did before rather than
+ * mis-reading anything. A bump would only relabel a refusal nobody is making.
  */
 export const SESSION_SNAPSHOT_SCHEMA_VERSION = 3;
 
@@ -301,6 +327,11 @@ function toKernelSnapshot(kernel: SessionSnapshotBundle['kernel']): KernelSnapsh
  */
 export function captureSessionSnapshot(runtime: SimulationRuntime): SessionSnapshotBundle {
   return {
+    // Read off the runtime, which either was created at this seed or was
+    // restored from a bundle that recorded it -- so a save taken after a load
+    // reports the seed the session was originally played at, and the value
+    // survives any number of round trips.
+    masterSeed: runtime.masterSeed,
     kernel: runtime.kernel.snapshot(),
     world: runtime.world.snapshot(),
     construction: runtime.construction.snapshot(),
@@ -317,10 +348,25 @@ export function captureSessionSnapshot(runtime: SimulationRuntime): SessionSnaps
  * session gets (via `createNewSimulationRuntime`'s `world` option, so there
  * is exactly one definition of how a session is assembled), then applies
  * the kernel and construction snapshots onto it.
+ *
+ * ### Which seed the rebuilt runtime is given
+ *
+ * The bundle's own `masterSeed` where it records one, and the `masterSeed`
+ * argument only where it does not. That ordering is the point of #412: the
+ * save is the authority on what run it is, and the argument is the default for
+ * a save written before the field existed -- which, by the corpus fact
+ * recorded on `SessionSnapshotBundle.masterSeed`, is 0 for every such save.
+ * Production restores therefore stop taking the `= 0` default by accident and
+ * start taking a recorded value, without a caller having to know the seed to
+ * pass it in.
+ *
+ * The seed is load-bearing here rather than cosmetic: `Kernel.restoreState`
+ * merges the bundle's streams **over** the four this call has just derived
+ * from it (#415), so it is what any stream the bundle omits is seeded from.
  */
 export function restoreSimulationRuntime(bundle: SessionSnapshotBundle, masterSeed = 0): RestoreResult {
   const world = SparseWorld.fromSnapshot(bundle.world);
-  const runtime = createNewSimulationRuntime(masterSeed, { world });
+  const runtime = createNewSimulationRuntime(bundle.masterSeed ?? masterSeed, { world });
 
   runtime.construction.restore(bundle.construction);
   runtime.kernel.restoreState(toKernelSnapshot(bundle.kernel));
