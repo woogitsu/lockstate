@@ -136,6 +136,12 @@ const UNLABELLED: readonly { readonly sourceFile: string; readonly declaration: 
       'The only exemption here for a vocabulary that genuinely does reach the player, and the distinction is *how*. This table labels an id a panel renders as a **label** -- a cell reading "Awaiting Materials", a badge reading "High Risk" -- and a refusal is not a label: it is a whole sentence saying what did not happen and why ("The build order failed -- you do not own that land."), which a derived `refusal-reason.build.unowned-land.name` reading "Unowned Land" cannot be and would have nowhere to be rendered. So the id maps 1:1 onto an authored HUD sentence key in `src/ui/simulation-alerts.ts` (#261). The completeness this table would give is given there instead, and in two directions: the mapping is a `Record` over the closed union, so a reason added to the protocol fails to compile until it has a key, and `tests/unit/ui-simulation-alerts.test.ts` resolves every one of those keys against the bundled default catalog so none can ship as its own raw dotted text.',
   },
   {
+    sourceFile: 'src/simulation/presentation/construction-projection.ts',
+    declaration: 'PENDING_BUILD_ORDER_STATES',
+    reason:
+      'A *subset* of an enum this table already labels, and the only reason it is a declaration of its own is that the subset is a judgement worth reading: it is the five members of `BuildOrderLifecycleState` that are still coming, and `construction-projection.ts` argues out why `completed`, `cancelled` and `failed` are excluded. Every one of its five members already resolves through the `build-order-state` group above -- `projectBuildQueue` emits `state` and the Build panel renders it as `deriveSimulationMessageKey(\'build-order-state\', state)` -- so it is labelled, in the only place a label for these ids may live. A group of its own would author a second English word for the same five facts under a second namespace, and the two would drift; that is the same argument `build-edge` makes for not re-labelling `door-side`, run the other way.',
+  },
+  {
     sourceFile: 'src/simulation/construction/build-order.ts',
     declaration: 'BUILD_ORDER_FAIL_REASONS',
     reason:

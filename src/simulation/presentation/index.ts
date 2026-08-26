@@ -13,6 +13,7 @@
  */
 
 export * from './clock-projection';
+export * from './construction-projection';
 export * from './contraband-projection';
 export * from './incident-projection';
 export * from './prisoner-projection';
