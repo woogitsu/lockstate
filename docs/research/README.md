@@ -54,8 +54,9 @@ So the standing rules for anything added here:
 | [2026-08-25 room occupancy](./2026-08-25-room-occupancy.md) | Where does a room's occupancy capacity come from? | ADR 0023 |
 | [2026-08-25 economy rate](./2026-08-25-economy-rate.md) | What does the state pay per prisoner-day, on what cadence, from what balance? | [#29](https://github.com/matmaxalez/lockstate/issues/29), within ADR 0017 |
 | [2026-08-26 failure modes](./2026-08-26-failure-modes.md) | What should failing look like, and what is the cheapest honest route to it from what already exists? | None yet — it states two shapes and declines to pick |
+| [2026-08-26 repository audit](./2026-08-26-repository-audit.md) | Across every discipline at once, what is wrong with this repository at v0.0.108, and what should be done first? | None yet — it ranks work and names the decisions that need an ADR |
 
-### Findings from these four that changed a decision
+### Findings from the first four records that changed a decision
 
 Recorded here because each contradicted something the project believed, and a
 reader who only sees the resulting ADR will not know the belief was ever held.
@@ -72,6 +73,11 @@ protect a summary that says "currently" and "today" in the index. So the bullets
 keep what was found, because that is the point of the section, and each one that
 the code has since overtaken says so inline. Adding a finding here means writing
 it the same way.
+
+Re-read on **2026-08-26** when the repository-audit record was added. That record fed no
+decision and contributed no bullet, so the ten below still belong to the four records this
+heading now names explicitly — the count moved out of the heading rather than being left to
+drift, which is the failure the paragraph above describes.
 
 - **Authoring one occupancy number per room type is a no-op.** `findAvailable`
   gates on capacity *and* on a `'sleep-surface'` capability, so a capacity
