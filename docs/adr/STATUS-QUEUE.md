@@ -643,18 +643,28 @@ that disagree with each other. **None is a status defect.** This paragraph used
 to say that "with the queue empty that is the whole of what this section can be:
 either a decision is accepted and the code has not caught up, which is a code or
 wiring gap, or two documents state different numbers, which is a docs-truth job".
-**The queue is not empty** — §2 holds **two** entries — so that premise is
-withdrawn, and with it the claim that those two shapes are exhaustive. There are
-two more, one standing in each of §2's rows.
+That premise is withdrawn all the same, and with it the claim that those two
+shapes are exhaustive: there are two more, described below.
+
+**Corrected at this anchor, and it is the sharper defect of the two.** The
+paragraph above then read *"**The queue is not empty** — §2 holds **two**
+entries"*, while §2's own heading three hundred lines above says **"The queue is
+empty"** and its subsections record both entries as deleted on acceptance. **One
+file, two sections, flatly opposite.** The two entries were ADR 0031 and ADR
+0007's amendment, both accepted on 2026-08-26; §2 was updated and this paragraph
+was not. Nothing mechanical could catch it — the gates over `docs/adr/` compare a
+status word to a document, never a document to itself.
 
 **Third: the code has run ahead of a decision nobody has approved.** #367 shipped
 the `hud/build-queue` read model, the per-order cancel control and the Build
-panel's one-row catalogue floor while
-`docs/adr/0031-build-queue-cancellation-surface.md:5` still reads `**Proposed —
-pending human approval.** Not accepted.` That is not a defect — §2 exists to make
-exactly that visible, and the ADR arrived in the same commit as the code, which is
-the rule §2 states — but a section written on the assumption that an unapproved
-decision cannot have an implementation would mis-file it.
+panel's one-row catalogue floor **before** ADR 0031 was approved. **This entry
+said `docs/adr/0031-build-queue-cancellation-surface.md:5` "still reads
+`**Proposed — pending human approval.** Not accepted.`" — it reads "Accepted,
+2026-08-26 — with open question 4 promoted to blocking", and has since `e560656`
+(#389).** That is not a defect — §2 exists to make exactly that visible, and the
+ADR arrived in the same commit as the code, which is the rule §2 states — but a
+section written on the assumption that an unapproved decision cannot have an
+implementation would mis-file it.
 
 **Fourth, and newer: a decision is waiting inside a document whose `Status` line
 will never move.** #380 queued an **amendment** to ADR 0007, which is Accepted and
@@ -666,9 +676,15 @@ approval state instead
 (`docs/adr/0007-navigation-work-budgets-and-flow-fields.md:319`, *"## Amendment,
 2026-08-26 (awaiting approval)"*). Nothing in §§3-6 could have held that: every
 entry here is keyed to an ADR's status or to code, and this is neither. It is
-also why `docs/adr/README.md:108`'s *"One row is outstanding: 0031"* is **true
-and not a contradiction** of §2's "two entries" — the README counts rows in its
-own table, and an amendment has no row. The entries below are recorded so that
+also why the README's *"One row is outstanding"* line was **not a contradiction**
+of §2's entry count — the README counts rows in its own table, and an amendment
+has no row. **That citation is corrected here twice over: this entry read
+`docs/adr/README.md:108`'s "One row is outstanding: 0031", and the sentence is
+neither at that line nor about that ADR** — it now reads *"One row is
+outstanding: 0033"* and sits far below `:108`, which is prose about how the
+surrounding paragraph is worded for a test. Cited by quotation rather than by
+line from here on, which is what this file's own §6 concluded and kept not
+doing. The entries below are recorded so that
 reading this file does not leave the impression that the corpus was audited in
 one direction.
 
@@ -1105,9 +1121,15 @@ one direction.
   accepted decision" and "amends an accepted decision" are distinguishable by
   anything a reader can check**, and if not, whether the queue rule should cover
   both. Recorded, not decided; ADR 0008's `Status` is `Accepted` and no status is
-  wrong either way. Two ADR numbers are unused — `docs/adr/README.md:102-106`
-  records **0032** as next free and 0030 as *"held by an unmerged branch"* — so
-  nothing here was blocked on a number.
+  wrong either way. Numbers were free at the time — the index's **Next free
+  number** line said so, and still records 0030 as *"held by an unmerged
+  branch"* — so nothing here was blocked on a number. **This entry cited
+  `docs/adr/README.md:102-106` and said that range "records **0032** as next
+  free". Both halves are stale:** the index has since passed 0038, 0039 and 0040
+  and now states 0041, and `:102-106` is prose about how a neighbouring
+  paragraph is worded for a test, not the next-free line at all. Cited by name
+  rather than by line and number, because this is the third correction of the
+  same shape in this file.
 
 Also not here as a decision: **ADR 0002**, whose configuration matches the ADR
 exactly (`wrangler.jsonc:12` for `lockstate-staging`, `:20` for `lockstate`)
@@ -1222,10 +1244,16 @@ never recorded before this round:
   question, so the comment moved down 29 lines and the file now carries two.)
 - `src/simulation/economy/income.ts` — *"a ninth `Proposed` document in
   `docs/adr/`"*. **This entry then said "there is exactly one, and it is 0029",
-  and that is now false: 0029 was accepted on 2026-08-26 (#356) and the one
-  `Proposed` document is ADR 0031** (`docs/adr/README.md:100` is the single
-  `Proposed` row in the index, and `docs/adr/0031-build-queue-cancellation-surface.md:5`
-  is its status line). Re-read at this commit: `income.ts` carries no count at
+  which was falsified when 0029 was accepted on 2026-08-26 (#356); the
+  replacement said the one `Proposed` document was ADR 0031, and that was
+  falsified the same day at `e560656` (#389) when 0031 was accepted too. At this
+  anchor no ADR in the directory is `Proposed`.** The two line citations that
+  came with it — `docs/adr/README.md:100` as "the single `Proposed` row" and
+  `0031-build-queue-cancellation-surface.md:5` as its status line — are stale for
+  the same reason and are dropped rather than re-pointed. **That is the same
+  sentence rotting three times inside one file**, which is the argument for the
+  rule §6 closes with: a count of documents in a status is something the index
+  already computes, so prose should not restate it. Re-read at this commit: `income.ts` carries no count at
   all, which is why the correction itself did not go stale with the number — the
   argument for keeping the rate on issue #29 never depended on the count, so the
   count is gone from it, and that is the durable half. The stale sentence was
