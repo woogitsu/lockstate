@@ -62,7 +62,16 @@ import { PROJECTION_CATALOG } from '../../src/simulation/worker/projection-catal
  * other way: **there must be a painter**, and deleting the last one fails here
  * rather than quietly returning the channel to a pipe with nothing on the end
  * of it. It still does not claim that every projection is painted; ten of the
- * twelve catalogued read models have a route and no reader.
+ * thirteen catalogued read models have a route and no reader.
+ *
+ * The second painter is `src/ui/simulation-build-queue.ts`, and it is worth
+ * naming because it closed a *different* gap from the room readout's. That one
+ * made a verdict visible. This one carries the **order ids** of the orders that
+ * are still pending, which is what `CancelBuildOrder` names -- and until it
+ * existed that command was the repository's only one with no production
+ * producer, because no control could aim at an order nothing had told this
+ * thread about. So this channel is now the route by which a *command* becomes
+ * reachable, not only the route by which a readout does.
  */
 
 const ROOT = join(__dirname, '../..');
@@ -117,7 +126,7 @@ const ROUTED_ELSEWHERE: Readonly<Record<string, string>> = {
  * assertion below. Named individually so that a reader which is renamed or
  * moved out of `src/ui/` fails here instead of silently leaving the surface.
  */
-const PAINTERS = ['simulation-room-needs.ts'] as const;
+const PAINTERS = ['simulation-build-queue.ts', 'simulation-room-needs.ts'] as const;
 
 const catalogSource = read(CATALOG_FILE);
 

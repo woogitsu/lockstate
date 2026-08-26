@@ -537,7 +537,15 @@
    *          no gap -- which is why this sum is unchanged by it, and why the
    *          arm row is 44px whether the buy disclosure sits beside the arm
    *          button or not.
-   *      45  the collapsed last section: 1px border-top plus its 44px header.
+   *      45  the collapsed "Enter coordinates" section: 1px border-top plus its
+   *          44px header. It stopped being the *last* child when the queue block
+   *          (#348) was appended after it, and the sum is unchanged for the
+   *          reason the buy row leaves it unchanged: that block is `hidden`
+   *          whenever nothing is queued, which is the arrival state this floor
+   *          describes, so it lays out no box and creates no gap. A queue makes
+   *          the panel taller than this sum by a 45px collapsed section of its
+   *          own -- see `.hud-build__queue-list` below -- and the panel scrolls,
+   *          exactly as it does with the buy row open.
    *
    * `.ui-panel__body` is `content-box` (nothing in this UI resets
    * `box-sizing` globally), so this sizes the content box and its own 8px
@@ -836,6 +844,102 @@
   background: var(--surface-active);
   color: var(--text-heading);
 }
+
+/*
+ * The queue block (#348), and the two rules that let it exist in this panel at
+ * all.
+ *
+ * **One: it has no box until something is queued.** `paintQueue` sets `hidden`
+ * on the section whenever the queue is empty or nothing has asked, which is the
+ * arrival state -- so the body's `min-height` sum above is unchanged by this
+ * block and the panel arrives at exactly the height #174 left it at. There is no
+ * rule here that lays it out, only rules that shape it once it is not `hidden`,
+ * which is the same guard `.hud-build__buy:not([hidden])` above exists for: an
+ * author `display: flex` beats the user agent's `[hidden] { display: none }`, and
+ * an unguarded rule would re-open #174 by declaration order.
+ *
+ * **Two: when it appears it is collapsed**, so a queue costs a 1px border and a
+ * 44px header and nothing more until the player opens it. `primitives.css` hides
+ * a collapsed section's body, so the rows below cost nothing either.
+ *
+ * Opened, the rows are below the fold at the narrow viewports and the section
+ * scrolls itself into view -- see the `onToggle` in `build-panel.ts`. The panel
+ * is a scroll container (`.ui-panel.hud-build`), so this is the same legitimate
+ * scroll the buy row and the expanded numeric fallback already produce, and for
+ * the same reason: the player opened it.
+ */
+.hud-build__queue-list:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hud-build-map-gutter);
+}
+
+/*
+ * One row: what the order is over the state it is in, and the control that
+ * withdraws it.
+ *
+ * `align-items: center` and not `baseline`, because the right-hand child is a
+ * `--tap-target` button and the left is two stacked lines of text: aligning
+ * their baselines would hang the button off the first line.
+ */
+.hud-build__queue-row:not([hidden]) {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/*
+ * The text side takes the row and the button takes what it needs.
+ *
+ * `min-width: 0` is load-bearing, not defensive: a flex item's automatic
+ * minimum size is its content, so without this the row's minimum width is the
+ * full unwrapped label -- "Brick wall · 12, 30 · North" beside a button -- and
+ * at 375px the row overflows the panel horizontally instead of wrapping. It is
+ * the same declaration `.hud-build__actions > .hud-build__arm` already carries,
+ * for the same reason ADR 0022 measured on that row.
+ */
+.hud-build__queue-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+/* Wraps rather than truncates: the tile coordinates are at the end of the
+   sentence, and they are the half a player recognises the wall by. */
+.hud-build__queue-label {
+  color: var(--text-heading);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* What it is waiting for, in the eyebrow's size and weight but not its
+   uppercase single-line treatment -- the same three undos `.hud-build__note`
+   makes, and for the reason it gives. */
+.hud-build__queue-state {
+  white-space: normal;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Waiting is the muted default; being built is the one row a player is looking
+   for, so `data-state` is on the row and that one is accented. Keyed on the
+   simulation's own state id, which is the same id the row's own words are
+   derived from -- there is no second rule here deciding what "started" means. */
+.hud-build__queue-state { color: var(--text-subtle); }
+.hud-build__queue-row[data-state='in-progress'] .hud-build__queue-state { color: var(--accent); }
+
+/* The figure in the section header: the whole queue's length, never the row
+   count. `tabular-nums` so it does not jitter as orders finish -- the same
+   treatment `.hud-rooms__needs-count` gives its own figure. */
+.hud-build__queue-count {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-subtle);
+}
+
+/* Never shrinks. The label beside it wraps instead, which is what the
+   `min-width: 0` above buys. */
+.hud-build__queue-row > .ui-action { flex: 0 0 auto; }
 
 /* A readout of where the wall will land -- never an input. */
 .hud-build__target {

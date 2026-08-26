@@ -237,6 +237,95 @@ export interface HudBuildViewModel {
 }
 
 /**
+ * Where one queued build order has got to.
+ *
+ * Deliberately re-declared here rather than imported, exactly as
+ * `HUD_BUILD_EDGES` is and for the same reason: the HUD may not import
+ * `src/simulation/**` (`AGENTS.md` boundary 1, checked by
+ * `tests/unit/ui-hud-messages.test.ts`). `PENDING_BUILD_ORDER_STATES` in
+ * `src/simulation/presentation/construction-projection.ts` is the authority;
+ * this is the wire shape the host translates to, and
+ * `tests/unit/ui-hud-build-panel.test.ts` pins the two to the same members so
+ * they cannot drift silently.
+ *
+ * Five members and not eight. A queue holds what is still coming, so
+ * `completed`, `cancelled` and `failed` are not states a row can be in -- see
+ * the projection for why a *completed* order is cancellable and still not
+ * queued.
+ */
+export const HUD_BUILD_ORDER_STATES = [
+  'planned',
+  'approved',
+  'materials-pending',
+  'assigned',
+  'in-progress',
+] as const;
+export type HudBuildOrderState = (typeof HUD_BUILD_ORDER_STATES)[number];
+
+/**
+ * One order the crew has not finished, and the id that can withdraw it.
+ *
+ * **`orderId` is the whole reason this interface exists.**
+ * `CancelBuildOrder { orderId }` names an arbitrary order, so a control that
+ * can aim it needs the id -- and until the build-queue projection existed
+ * nothing carried one to this thread, which is why that command was the
+ * repository's only one with no production producer. It is a stable simulation
+ * id and travels back out unchanged in the intent.
+ *
+ * `labelKey` is **optional**, and absent is a real state rather than a
+ * defensive one: the buildable registry carries a hard-coded English `name` and
+ * no key (`docs/HUD_PROJECTIONS.md` gap 32), so the host maps `definitionId` to
+ * a key through `buildableLabelKey` and a buildable that names neither a
+ * `content.*` entry nor a row in that table has no name to render. The row is
+ * still drawn -- an order nobody can name is still an order that can be
+ * cancelled, and dropping it would hide the cancellable thing -- and the panel
+ * says so in its own words, exactly as `HudRoomNeedViewModel.objectLabelKey`'s
+ * absence is handled.
+ */
+export interface HudBuildOrderViewModel {
+  readonly orderId: string;
+  /** A message key, never text. Absent when the host names no buildable for this order. */
+  readonly labelKey?: LocalizationKey;
+  /** Where the order sits, which is how a player recognises *which* wall this is. */
+  readonly tile: { readonly x: number; readonly y: number };
+  readonly edge: HudBuildEdge;
+  readonly state: HudBuildOrderState;
+}
+
+/**
+ * What is still waiting to be built (#348's consequence, made visible).
+ *
+ * Session state that arrives on a **pull**, exactly like
+ * `HudRoomNeedsViewModel` and for the same two reasons: a queue is
+ * `O(orders)` to walk and nobody reads it from the Rooms tab, and absent is a
+ * real state -- "nothing has asked" and "the queue is empty" must not render
+ * the same, because the second is a statement about the prison and the first is
+ * a statement about this thread.
+ *
+ * `total` is the whole queue and `orders` is the window that fits. The two are
+ * separate numbers on purpose: the panel's height is a fact about the rail and
+ * the queue's length is a fact about the prison, and a header that counted only
+ * the rows it drew would tell a player with thirty queued walls that they have
+ * twelve.
+ */
+export interface HudBuildQueueViewModel {
+  /** Every pending order, however many rows there was room to carry. */
+  readonly total: number;
+  /**
+   * How many of them the crew has actually started -- `0` or `1` in every
+   * session the simulation can produce, because construction builds one order
+   * at a time (#348).
+   *
+   * Counted over the whole queue rather than over the window, so a player whose
+   * in-progress order is past the end of the window is still told that something
+   * is happening.
+   */
+  readonly started: number;
+  /** The window, in the order the crew will reach them. */
+  readonly orders: readonly HudBuildOrderViewModel[];
+}
+
+/**
  * The authored floor on a room's area, as the panel reads it.
  *
  * Three numbers rather than two, because content authors three: a room asks
@@ -503,6 +592,14 @@ export interface HudViewModel {
    * interface for why absent and "nothing is missing" are different states.
    */
   readonly roomNeeds?: HudRoomNeedsViewModel;
+  /**
+   * What is still waiting to be built, or absent because nothing asked.
+   *
+   * The second pulled field, and it shares every property of the first: absent
+   * is "nobody asked" and an empty queue is "the prison has nothing coming",
+   * and the two must not render the same.
+   */
+  readonly buildQueue?: HudBuildQueueViewModel;
 }
 
 /**

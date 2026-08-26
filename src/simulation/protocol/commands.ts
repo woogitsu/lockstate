@@ -289,11 +289,20 @@ export const placeObjectSchema = z.object({
  *
  * Because the player is aiming at a *thing in the world*, not at a record in an
  * order list. `CancelBuildOrder` needs the id of the order that built the
- * object, which nothing on screen shows and no snapshot carries: the main thread
- * would have to keep a tile-to-order map for the life of the session, and it
- * would still be wrong for an object restored from a save, whose order is not in
- * the session at all. A tile is what the player pressed and a tile is what the
- * tile index can answer, so a tile is what this carries.
+ * object, and it would still be wrong for an object restored from a save, whose
+ * order is not in the session at all. A tile is what the player pressed and a
+ * tile is what the tile index can answer, so a tile is what this carries.
+ *
+ * This paragraph used to open with a stronger claim -- that an order id is
+ * something "nothing on screen shows and no snapshot carries", so the main thread
+ * would have had to keep a tile-to-order map for the life of the session. **The
+ * first half of that is no longer true and the conclusion is unchanged.**
+ * `hud/build-queue` shows the ids of the orders that are still *pending*, which
+ * is what gave this command's sibling `CancelBuildOrder` a producer at last. It
+ * shows nothing about an object that is already standing, because such an order
+ * has left the queue -- and a standing object is exactly what this command is
+ * aimed at. So the reason is now the second one alone: a finished object's order
+ * is not something the interface can name, and after a restore it does not exist.
  *
  * ## What it carries: one tile, and deliberately nothing else
  *

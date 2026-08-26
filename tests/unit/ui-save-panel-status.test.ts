@@ -178,6 +178,7 @@ describe('no module in src/ui/ renders a hard-coded sentence (issue #208)', () =
     'save-panel.ts',
     'save-panel-messages.ts',
     'simulation-alerts.ts',
+  'simulation-build-queue.ts',
     'simulation-clock.ts',
     'simulation-commands.ts',
     'simulation-counts.ts',

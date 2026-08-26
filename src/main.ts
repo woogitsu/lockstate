@@ -24,6 +24,7 @@ import {
   INITIAL_HUD_SHELL_STATE,
   mountHud,
   type HudBuildMaterialViewModel,
+  type HudBuildQueueViewModel,
   type HudBuildViewModel,
   type HudBuildableViewModel,
   type HudHandle,
@@ -41,6 +42,7 @@ import { hudClockFromWorkerMessage } from './ui/simulation-clock';
 import { hudAlertsFromWorkerMessage, hudRefusalFromWorkerMessage } from './ui/simulation-alerts';
 import { hudCountsFromWorkerMessage } from './ui/simulation-counts';
 import { hudZoningFromWorkerMessage } from './ui/simulation-zoning';
+import { BuildQueueReader } from './ui/simulation-build-queue';
 import { RoomNeedsReader } from './ui/simulation-room-needs';
 import { SimulationCommandSender } from './ui/simulation-commands';
 import { BuildTool } from './ui/build-tool';
@@ -787,6 +789,38 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
    * refuses to stack, so a slow answer cannot queue a second question.
    */
   const roomNeedsReader = client === undefined ? undefined : new RoomNeedsReader(client);
+  /*
+   * What is still waiting to be built, on the same terms as the room readout
+   * above and for the same three reasons -- with one difference that is the
+   * whole point of it.
+   *
+   * The reasons it shares: it is a **pull**, because a queue is `O(orders)` to
+   * walk and nobody reads it from the Rooms tab; it rides the **counts
+   * cadence**, because an order finishing changes the queue without moving a
+   * single figure on the status strip, so a readout refreshed only when
+   * something was ordered would go stale in exactly the case the player is
+   * watching; and it is asked for **only while the Build tab is showing**.
+   *
+   * The difference: this readout carries **order ids**, and a control on the
+   * panel turns one of them into a `CancelBuildOrder`. That command has had a
+   * handler and a complete implementation behind it since #16 and no producer at
+   * all, and the reason was this reader's absence rather than the control's --
+   * `src/simulation/protocol/commands.ts` says so in terms while arguing that
+   * `RemoveObject` names a tile: an order id is something "nothing on screen
+   * shows and no snapshot carries". It does now.
+   *
+   * `buildableLabelKey` is handed over rather than duplicated: what a buildable
+   * is *called* is this file's answer already (the registry carries an English
+   * `name` and no key -- `docs/HUD_PROJECTIONS.md` gap 32), and neither the
+   * projection nor the HUD may hold it.
+   */
+  const buildQueueReader =
+    client === undefined
+      ? undefined
+      : new BuildQueueReader(client, (definitionId) => {
+          const definition = BUILDABLE_REGISTRY.get(definitionId);
+          return definition === undefined ? undefined : buildableLabelKey(definition);
+        });
   let activeTab: HudTabId = INITIAL_HUD_SHELL_STATE.activeTab;
 
   /**
@@ -808,6 +842,40 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       viewModel = { ...viewModel, roomNeeds: next };
     }
     hud?.update(viewModel);
+  };
+
+  /**
+   * Puts the queue on the view model, or takes it off. The same absent-property
+   * dance `applyRoomNeeds` does, and for the same reason: "nothing has asked"
+   * and "nothing is queued" are different facts, and only the second is a
+   * statement about the prison.
+   */
+  const applyBuildQueue = (next: HudBuildQueueViewModel | undefined): void => {
+    if (next === undefined) {
+      if (viewModel.buildQueue === undefined) return;
+      const { buildQueue: _cleared, ...withoutBuildQueue } = viewModel;
+      viewModel = withoutBuildQueue;
+    } else {
+      viewModel = { ...viewModel, buildQueue: next };
+    }
+    hud?.update(viewModel);
+  };
+
+  const refreshBuildQueue = (): void => {
+    if (buildQueueReader === undefined || activeTab !== 'build') return;
+    void buildQueueReader
+      .read()
+      .then((next) => {
+        // `undefined` is "a read was already in flight", not an answer, so it
+        // must leave what is on screen alone rather than blanking it.
+        if (next !== undefined) applyBuildQueue(next);
+      })
+      // A refusal, a timeout, or a worker that went away. The block comes off
+      // rather than staying, and it matters more here than for the room readout:
+      // every row is a control aimed at an order id, and a row nothing is
+      // answering for is a button pointed at a prison that may not exist. The
+      // failure reaches no control, because the player pressed nothing.
+      .catch(() => applyBuildQueue(undefined));
   };
 
   const refreshRoomNeeds = (): void => {
@@ -935,8 +1003,13 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     // stopped session takes it off instead of asking again, for the reason the
     // clock reads unknown and the counts read empty: a statement about a prison
     // that no longer exists is not something the player can act on.
-    if (message.kind === 'simulation/stopped') applyRoomNeeds(undefined);
-    else refreshRoomNeeds();
+    if (message.kind === 'simulation/stopped') {
+      applyRoomNeeds(undefined);
+      applyBuildQueue(undefined);
+    } else {
+      refreshRoomNeeds();
+      refreshBuildQueue();
+    }
   });
 
   hud = mountHud(app, {
@@ -1019,6 +1092,14 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           activeTab = intent.tab;
           if (activeTab === 'rooms') refreshRoomNeeds();
           else applyRoomNeeds(undefined);
+          // The build queue is the same arrangement one tab over: arriving asks
+          // at once rather than waiting up to 500ms for the next counts
+          // publication, and leaving takes the block off, because from here on
+          // nothing is refreshing it. The panel clears its own copy when it is
+          // hidden; this clears the view model, or the next publication would
+          // put the stale one back.
+          if (activeTab === 'build') refreshBuildQueue();
+          else applyBuildQueue(undefined);
           return;
         }
 
@@ -1056,11 +1137,10 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
             // pressed Remove gets one gesture rather than two layered ones.
             //
             // There is no wall removal behind this and the control does not
-            // claim one: `hud.build.remove-hint` says "any tile of an object",
-            // and taking a *wall* down is still `Undo` or a per-order control
-            // the Build panel does not have
-            // (`tests/foundation/unconsumed-command-contract.test.ts` records
-            // why `CancelBuildOrder` has no producer).
+            // claim one: `hud.build.remove-hint` says "any tile of an object".
+            // Taking a *wall* down is `Undo` for a finished one, and -- since the
+            // Build panel's queue block -- a press on its row for one that is
+            // still queued, which is a per-order control the panel now has.
             tool?.setArmed(false);
             objects?.setArmed(intent.armed, { removing: true });
             return;
@@ -1132,6 +1212,44 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
 
         case 'redo':
           requireSimulation(commands).submit({ type: 'Redo' });
+          return;
+
+        /*
+         * The `CancelBuildOrder` producer, and the last one this repository was
+         * missing.
+         *
+         * `tests/foundation/unconsumed-command-contract.test.ts` had held this
+         * command's entry since it was written: handled at
+         * `construction/handler.ts`, reachable from
+         * `ConstructionSystem.cancelOrder`, constructed by nothing in `src/`. The
+         * reason was never the handler and never the control -- it was that no
+         * order *id* reached this thread, so no control could name one, and a
+         * "cancel" that named nothing would have been a worse `Undo`. The
+         * build-queue projection carries the ids; the Build panel's queue block
+         * draws one row per id; and this line is what turns a press on a row into
+         * the command.
+         *
+         * **No id minted here**, which makes this the only construction dispatch
+         * in this file that mints nothing: `place-build-order`, `place-object`
+         * and `purchase-materials` all invent an identifier because they are
+         * creating a record, and this one names a record that already exists.
+         * The id came out of the simulation, through the projection, onto the
+         * view model, onto the row, and back -- unchanged, which is the whole
+         * contract of a stable id (ADR 0011).
+         *
+         * **No pre-check.** `purchase-materials` refuses a total the last
+         * reported balance cannot cover, because spending money the player does
+         * not have is a refusal this thread can decide honestly. Whether an order
+         * still exists is not: the queue on screen is a snapshot on a cadence, so
+         * an order can finish between the publication and the press, and this
+         * thread's copy is exactly the stale authority that must not be allowed
+         * to decide. The simulation decides, and it is idempotent about it --
+         * `createConstructionCommandHandler` swallows the throw from an id that
+         * names nothing, deliberately and with a comment saying so. The next
+         * publication then shows the queue as it really is.
+         */
+        case 'cancel-build-order':
+          requireSimulation(commands).submit({ type: 'CancelBuildOrder', orderId: intent.orderId });
           return;
 
         case 'place-build-order': {

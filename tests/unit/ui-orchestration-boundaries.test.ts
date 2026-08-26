@@ -256,6 +256,20 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
       'Type-only: `RoomToolPort` and `TileRect` from `src/rendering/build/area-picking`. The exact shape of `build-tool.ts`\'s entry above and the same argument one gesture over: `RoomToolPort` is a port the renderer *offers* -- the scene reports the rectangle of tiles a drag covered and this module turns it into something the HUD can dispatch -- so the direction is UI-onto-a-renderer-contract rather than UI-into-renderer-internals, and it is erased. It is a second module rather than more methods on `BuildTool` because the two ports carry different shapes and the room tool carries a removal mode; `src/ui/room-tool.ts`\'s header states that rule against `BuildTool`\'s own. A value import here would mean the orchestrator had started calling into the renderer, which is what that entry says too.',
   },
   {
+    file: 'src/ui/simulation-build-queue.ts',
+    tree: 'content',
+    kind: 'type-only',
+    reason:
+      "Type-only: `LocalizationKey` from `src/content/localization`, to type the `BuildableLabelLookup` the composition root hands it. The same erased naming-of-a-key-type `simulation-alerts.ts` and `brand-badge.ts` make; no content code runs because of it. It names the type rather than reading a catalogue *because* of the boundary this manifest is about: what a buildable is called is `buildableLabelKey`'s answer in `src/main.ts`, and this module is handed the function rather than the table.",
+  },
+  {
+    file: 'src/ui/simulation-build-queue.ts',
+    tree: 'simulation',
+    kind: 'type-only',
+    reason:
+      "Type-only: `BuildQueueViewModel` from `src/simulation/presentation/construction-projection`. The sixth of the translators outside `src/ui/hud/` and the second that reads a *pulled* read model, so it is `simulation-room-needs.ts`'s entry above one projection over: it names the view-model shape `hud/build-queue` answers with and turns it into `HudBuildQueueViewModel`. Erased, so no simulation code runs on its account -- the projection executes in the worker, and everything this module knows about the channel it gets from `src/ui/simulation-projections.ts` beside it, which is an intra-tree import. A `value` import appearing here would mean the queue had started being derived on the main thread from orders it does not own, which is the second source of truth `AGENTS.md` boundary 1 forbids -- and it would be worse here than for the room readout, because every row this produces carries an order id that a press *cancels*.",
+  },
+  {
     file: 'src/ui/simulation-room-needs.ts',
     tree: 'simulation',
     kind: 'type-only',
@@ -290,6 +304,7 @@ describe('UI orchestration boundaries', () => {
       'src/ui/save-panel-messages.ts',
       'src/ui/save-panel.ts',
       'src/ui/simulation-alerts.ts',
+      'src/ui/simulation-build-queue.ts',
       'src/ui/simulation-clock.ts',
       'src/ui/simulation-commands.ts',
       'src/ui/simulation-counts.ts',
