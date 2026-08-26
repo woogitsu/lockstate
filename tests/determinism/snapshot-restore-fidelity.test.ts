@@ -362,29 +362,106 @@ describe('subsystem snapshot / restore fidelity', () => {
     expect(confiscated(backwards)).toEqual(confiscated(forwards));
   });
 
+  /**
+   * What `write(read())` alone does *not* prove, and why every case below
+   * carries a donor state (issue #264 S11).
+   *
+   * This test used to read `const before = toJsonValue(read()); write(read());
+   * expect(toJsonValue(read())).toEqual(before)` for all twelve subsystems --
+   * a round trip against its own inverse, which **`write` being a no-op
+   * satisfies**, for every one of them. Measured on this file alone: gutting
+   * `ConfiscationLog.loadSnapshot` to `return;` left it 11/11 green, and so did
+   * gutting `TunnelRegistry.loadSnapshot`. Both are killed elsewhere in the
+   * suite, so the mutation is not a survivor -- but this test, the one that
+   * names those subsystems, contributed nothing to the kill. That is the shape
+   * `camera-coordinates.test.ts` records as having let #115 ship.
+   *
+   * So each case now supplies a state the subsystem can hold that this run does
+   * *not* hold, from a source the subsystem under test did not produce, and the
+   * assertions are ordered: the donor really differs, loading it is observed in
+   * full, and only then is the run's own snapshot restored and required to come
+   * back exactly. A `loadSnapshot` that ignores its argument fails the second
+   * assertion; one that drops a field fails it too, because the whole donor
+   * document has to reappear.
+   *
+   * Nine donors are the snapshot of an *independent* session -- the same
+   * scenario, never stepped -- which is a valid state of the same subsystem
+   * that nothing in the run under test computed. Three are literals, because
+   * this scenario leaves `tunnels`, `jobWorkers` and `incidentResponse` in
+   * exactly the state a fresh session has: an empty tunnel registry, the same
+   * four idle workers, four zero counters. Those three were the most vacuous
+   * cases of all -- `tunnels` was `[] -> [] -> []` -- and a literal is the
+   * strongest available fix, since the expected document is then written out
+   * rather than read back from anything.
+   */
   it('subsystems with no in-flight travel state round-trip their snapshot unchanged', () => {
     const runtime = buildDeterminismScenario(SCENARIO_SEED);
     submitScenarioCommands(runtime);
     step(runtime, 200);
 
-    const roundTripIsExact = <T>(label: string, read: () => T, write: (value: T) => void): void => {
-      const before = toJsonValue(read());
-      write(read());
+    /** An independent session, never stepped: a donor of states this run does not hold. */
+    const donorSession = buildDeterminismScenario(SCENARIO_SEED);
+
+    const roundTripIsExact = <T>(label: string, read: () => T, write: (value: T) => void, donor: T): void => {
+      const original = read();
+      const before = toJsonValue(original);
+      const foreign = toJsonValue(donor);
+
+      // Non-vacuity first: a donor equal to the run's own state would make the
+      // adoption assertion below true for a `loadSnapshot` that does nothing.
+      expect(foreign, `${label}: the donor state does not differ from this run's own`).not.toEqual(before);
+
+      // The write is real, and complete: the whole donor document has to be
+      // readable back, so ignoring the argument or dropping a field fails here.
+      write(donor);
+      expect(toJsonValue(read()), `${label}: loadSnapshot did not adopt the snapshot it was given`).toEqual(foreign);
+
+      // And only now the property this test is named for, on a subsystem that
+      // has demonstrably been overwritten in between.
+      write(original);
       expect(toJsonValue(read()), label).toEqual(before);
     };
 
-    roundTripIsExact('contraband', () => runtime.contraband.getSnapshot(), (value) => runtime.contraband.loadSnapshot(value));
-    roundTripIsExact('intelligence', () => runtime.intelligence.getSnapshot(), (value) => runtime.intelligence.loadSnapshot(value));
-    roundTripIsExact('confiscations', () => runtime.confiscations.getSnapshot(), (value) => runtime.confiscations.loadSnapshot(value));
-    roundTripIsExact('incidents', () => runtime.incidents.getSnapshot(), (value) => runtime.incidents.loadSnapshot(value));
-    roundTripIsExact('gangs', () => runtime.gangs.getSnapshot(), (value) => runtime.gangs.loadSnapshot(value));
-    roundTripIsExact('sectorRisk', () => runtime.sectorRisk.getSnapshot(), (value) => runtime.sectorRisk.loadSnapshot(value));
-    roundTripIsExact('tunnels', () => runtime.tunnels.getSnapshot(), (value) => runtime.tunnels.loadSnapshot(value));
-    roundTripIsExact('containers', () => runtime.containers.getSnapshot(), (value) => runtime.containers.loadSnapshot(value));
-    roundTripIsExact('jobWorkers', () => runtime.jobWorkers.getSnapshot(), (value) => runtime.jobWorkers.loadSnapshot(value));
-    roundTripIsExact('roomInstances', () => runtime.prisoners.roomInstances.getSnapshot(), (value) => runtime.prisoners.roomInstances.loadSnapshot(value));
-    roundTripIsExact('incidentTrigger', () => runtime.incidentTriggerSystem.getSnapshot(), (value) => runtime.incidentTriggerSystem.loadSnapshot(value));
-    roundTripIsExact('incidentResponse', () => runtime.incidentResponseSystem.getSnapshot(), (value) => runtime.incidentResponseSystem.loadSnapshot(value));
+    roundTripIsExact('contraband', () => runtime.contraband.getSnapshot(), (value) => runtime.contraband.loadSnapshot(value), donorSession.contraband.getSnapshot());
+    roundTripIsExact('intelligence', () => runtime.intelligence.getSnapshot(), (value) => runtime.intelligence.loadSnapshot(value), donorSession.intelligence.getSnapshot());
+    roundTripIsExact('confiscations', () => runtime.confiscations.getSnapshot(), (value) => runtime.confiscations.loadSnapshot(value), donorSession.confiscations.getSnapshot());
+    roundTripIsExact('incidents', () => runtime.incidents.getSnapshot(), (value) => runtime.incidents.loadSnapshot(value), donorSession.incidents.getSnapshot());
+    roundTripIsExact('gangs', () => runtime.gangs.getSnapshot(), (value) => runtime.gangs.loadSnapshot(value), donorSession.gangs.getSnapshot());
+    roundTripIsExact('sectorRisk', () => runtime.sectorRisk.getSnapshot(), (value) => runtime.sectorRisk.loadSnapshot(value), donorSession.sectorRisk.getSnapshot());
+    roundTripIsExact('containers', () => runtime.containers.getSnapshot(), (value) => runtime.containers.loadSnapshot(value), donorSession.containers.getSnapshot());
+    roundTripIsExact('roomInstances', () => runtime.prisoners.roomInstances.getSnapshot(), (value) => runtime.prisoners.roomInstances.loadSnapshot(value), donorSession.prisoners.roomInstances.getSnapshot());
+    roundTripIsExact('incidentTrigger', () => runtime.incidentTriggerSystem.getSnapshot(), (value) => runtime.incidentTriggerSystem.loadSnapshot(value), donorSession.incidentTriggerSystem.getSnapshot());
+
+    // The three the scenario itself cannot distinguish, with the donor written
+    // out instead. Each is a state its subsystem's own API can reach --
+    // `TunnelRegistry.start`/`advance`, `JobWorkerPool.setBusy`, four resolved
+    // and lapsed incidents -- so it is a document a real save can carry, not a
+    // shape invented to make an assertion fire.
+    roundTripIsExact('tunnels', () => runtime.tunnels.getSnapshot(), (value) => runtime.tunnels.loadSnapshot(value), [
+      { id: 'tunnel-donor', startTile: { x: tileCoordinate(2), y: tileCoordinate(2) }, targetTile: { x: tileCoordinate(9), y: tileCoordinate(3) }, progress: 0.25 },
+    ]);
+    roundTripIsExact('jobWorkers', () => runtime.jobWorkers.getSnapshot(), (value) => runtime.jobWorkers.loadSnapshot(value), {
+      workers: [0, 2, 5],
+      busy: [2],
+    });
+    roundTripIsExact('incidentResponse', () => runtime.incidentResponseSystem.getSnapshot(), (value) => runtime.incidentResponseSystem.loadSnapshot(value), {
+      metrics: { incidentsResolved: 3, incidentsLapsed: 2, respondersDispatched: 7, routeFailures: 1 },
+    });
+
+    // The scenario is what makes the nine donors above differ at all, so the
+    // three literals are here because it produces *nothing* for those
+    // subsystems -- not because their donors were awkward to obtain. Pinned, so
+    // a scenario that later digs a tunnel or busies a worker is a failure that
+    // asks for the literal to be dropped rather than a case that silently goes
+    // back to comparing a fresh session against itself.
+    expect(donorSession.tunnels.getSnapshot(), 'the scenario now populates tunnels; use its snapshot as the donor').toEqual([]);
+    expect(toJsonValue(donorSession.jobWorkers.getSnapshot()), 'the scenario now changes the worker pool; use its snapshot as the donor').toEqual(
+      toJsonValue(runtime.jobWorkers.getSnapshot()),
+    );
+    expect(
+      toJsonValue(donorSession.incidentResponseSystem.getSnapshot()),
+      'the scenario now moves the response metrics; use its snapshot as the donor',
+    ).toEqual(toJsonValue(runtime.incidentResponseSystem.getSnapshot()));
   });
 
   /**
@@ -404,8 +481,32 @@ describe('subsystem snapshot / restore fidelity', () => {
     submitScenarioCommands(runtime);
     step(runtime, 200);
 
-    const resetIsIdempotent = <T>(label: string, read: () => T, write: (value: T) => void): void => {
-      write(read());
+    /**
+     * The same donor session the exactness test above uses, and for the same
+     * reason (#264 S11): `write(read())` then "the second write changes
+     * nothing" is satisfied by `write` doing nothing at all, so idempotence on
+     * its own is not evidence that anything was loaded. Measured: gutting
+     * `JobBoard.loadSnapshot` to a no-op left this file green even with the
+     * exactness test above already strengthened.
+     *
+     * Never stepped, which is what makes the strong form of the adoption
+     * assertion available here despite the reset: a session with no in-flight
+     * travel has nothing for `loadSnapshot` to reset, so its snapshot must come
+     * back *exactly*. `hasNoInFlightTravel` asserts that premise rather than
+     * assuming it.
+     */
+    const donorSession = buildDeterminismScenario(SCENARIO_SEED);
+
+    const resetIsIdempotent = <T>(label: string, read: () => T, write: (value: T) => void, donor: T): void => {
+      const original = read();
+      const before = toJsonValue(original);
+      const foreign = toJsonValue(donor);
+      expect(foreign, `${label}: the donor state does not differ from this run's own`).not.toEqual(before);
+
+      write(donor);
+      expect(toJsonValue(read()), `${label}: loadSnapshot did not adopt the snapshot it was given`).toEqual(foreign);
+
+      write(original);
       const afterFirst = toJsonValue(read());
       write(read());
       expect(toJsonValue(read()), label).toEqual(afterFirst);
@@ -414,10 +515,13 @@ describe('subsystem snapshot / restore fidelity', () => {
     // Guard travel really is in flight here, so the reset path is exercised
     // rather than trivially satisfied by an idle roster.
     expect(runtime.securityGuards.allGuardIds().some((id) => runtime.securityGuards.getPathRequestId(id) !== undefined)).toBe(true);
+    // And the premise the donor rests on: nothing in the donor session is
+    // travelling, so its snapshot is a fixed point of the reset.
+    expect(donorSession.securityGuards.allGuardIds().every((id) => donorSession.securityGuards.getPathRequestId(id) === undefined)).toBe(true);
 
-    resetIsIdempotent('securityGuards', () => runtime.securityGuards.getSnapshot(), (value) => runtime.securityGuards.loadSnapshot(value));
-    resetIsIdempotent('jobs', () => runtime.jobs.getSnapshot(), (value) => runtime.jobs.loadSnapshot(value));
-    resetIsIdempotent('prisoners', () => runtime.prisoners.getSnapshot(), (value) => runtime.prisoners.loadSnapshot(value));
-    resetIsIdempotent('search', () => runtime.searchSystem.getSnapshot(), (value) => runtime.searchSystem.loadSnapshot(value));
+    resetIsIdempotent('securityGuards', () => runtime.securityGuards.getSnapshot(), (value) => runtime.securityGuards.loadSnapshot(value), donorSession.securityGuards.getSnapshot());
+    resetIsIdempotent('jobs', () => runtime.jobs.getSnapshot(), (value) => runtime.jobs.loadSnapshot(value), donorSession.jobs.getSnapshot());
+    resetIsIdempotent('prisoners', () => runtime.prisoners.getSnapshot(), (value) => runtime.prisoners.loadSnapshot(value), donorSession.prisoners.getSnapshot());
+    resetIsIdempotent('search', () => runtime.searchSystem.getSnapshot(), (value) => runtime.searchSystem.loadSnapshot(value), donorSession.searchSystem.getSnapshot());
   });
 });
