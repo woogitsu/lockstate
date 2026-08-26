@@ -240,6 +240,144 @@ export const BUILDABLE_REGISTRY = new Map<string, BuildableDefinition>([
     materialsRequired: [{ itemId: 'item.brick', quantity: 1 }],
     placesObjectId: 'object.toilet',
   }],
+  /*
+   * ==========================================================================
+   * ADR 0028 phase 4 -- the rest of the object catalogue.
+   * ==========================================================================
+   *
+   * Everything from here down is a **content row and nothing else**, which is
+   * what that phase promised: "content rows and locale strings, no new
+   * mechanism. Not one phase per object: they are rows in a data module and the
+   * mechanism is identical, so splitting them would be ceremony." The claim was
+   * checked rather than taken -- see the pull request for what was looked for --
+   * and it holds: `PlaceObject` validates a footprint without naming an object
+   * id, `RoomCapacityResolver` sums and unions over whatever stands in the
+   * rectangle, `structureAppearance` reads the footprint through
+   * `placesObjectId` so a new object renders at the right size without a
+   * renderer change, and `buildableLabelKey` reads the label off the object's
+   * own `nameKey`, all twenty of which already ship in
+   * `src/content/default-locale-en.ts`. **No locale key was added by this
+   * phase**, and that is not an omission: an object buildable is labelled by
+   * its object, so there was nothing to author.
+   *
+   * ## The two numbers, derived rather than chosen
+   *
+   * ADR 0017 decision 5 reserves all pricing and balance to #29, so no figure
+   * below is a balance decision -- but seventeen rows cannot each take
+   * `door-wooden`'s 30 the way `bed-wooden` and `toilet-brick` each could, or a
+   * three-tile dining table would cost exactly what a chair costs. So both
+   * numbers are read off **`footprint.width`**, and that field is not an
+   * arbitrary pick: it is the one ADR 0028 decision 2 already derives capacity
+   * from, the number of places the object provides.
+   *
+   *     materialsRequired[0].quantity = footprint.width
+   *     workRequired                  = 30 * footprint.width
+   *
+   * So an object costs one unit of material and 30 work **per place it
+   * provides**. A 3-wide dining table seats three, costs three planks and takes
+   * three times a chair's work; a 1-wide chair seats one and costs one. Nothing
+   * per-row is authored, the ordering is monotone in the one authored quantity,
+   * and `tests/foundation/object-buildable-cost-contract.test.ts` pins the rule
+   * so a future row cannot drift off it.
+   *
+   * **The two shipped rows satisfy it exactly** -- `bed-wooden` is `1x2`, width
+   * 1, one plank, 30 work; `toilet-brick` is `1x1`, width 1, one brick, 30 work
+   * -- so neither is touched by this phase and no test that measures them moves.
+   * Stated honestly: both are width 1, so they pin the rule's *constant* and say
+   * nothing about its *slope*. The slope is chosen from decision 2's use of the
+   * same field, and it is the weaker half of the derivation.
+   *
+   * ## Which material, and the price inversion that comes with it
+   *
+   * One material per row, and that is a constraint rather than a taste:
+   * `purchasableMaterialFor` in `src/main.ts` offers a stepper for the *first*
+   * priced requirement only, so a two-material buildable would get a control
+   * for one of them and no way to buy the other. Only two materials are priced
+   * at all (`src/content/procurement-catalog.ts`), so the choice is binary, and
+   * the rule is the one the four shipped rows already follow: **`item.brick`
+   * for a plumbed, fired, masonry or machine body; `item.wood-plank` for a
+   * timber one.** A bed is timber and takes the plank; a toilet is a sanitary
+   * fixture and takes the brick. The id's second token names the material, as
+   * all four shipped ids do.
+   *
+   * **The inversion this inherits, named rather than engineered away.** Brick
+   * is priced at 40 and plank at 65, so *any* width-1 brick object is cheaper
+   * than *any* width-1 plank object: a fridge costs 40 and a chair costs 65.
+   * That is a statement about two placeholder material prices and not about
+   * furniture, it is inherited rather than introduced -- the shipped
+   * `toilet-brick` is already cheaper than the shipped `bed-wooden` for exactly
+   * this reason -- and #29 owns it. Compensating with a hand-picked quantity
+   * would put a balance decision in a row that is meant to carry none, and
+   * would break the one rule above. Within a material the ordering is monotone
+   * and correct: a 2-wide brick stove (80) costs more than a 1-wide brick
+   * fridge (40), and more than a chair (65).
+   *
+   * ## Footprints are not touched, and orientation is still 0
+   *
+   * No `footprint` in `src/content/object-catalog.ts` is changed by this phase.
+   * They are the source every derived capacity is read from, so editing one to
+   * make a price come out would be the inverse of deriving the number -- the
+   * error the #326 amendment refused for `object.bench`'s capabilities. Every
+   * one of the seventeen objects below fits its room's authored minimum
+   * rectangle at orientation 0, which is checked in
+   * `tests/foundation/object-buildable-cost-contract.test.ts`; that matters
+   * because `DEFAULT_PLACEMENT_ORIENTATION` in
+   * `src/simulation/objects/object-placement-service.ts` is 0 for every
+   * placement and the rotate control ADR 0028 decision 5 describes does not
+   * exist yet. So a player cannot turn a 3x2 dining table, and no room below
+   * needs them to.
+   *
+   * ## `object.sink` is deliberately not here
+   *
+   * It is the twentieth object and the only one **no room definition
+   * requires**, so it is outside this phase's own scope: "buildables for the
+   * remaining object ids the room catalogue already requires". Its
+   * `AWAITING_CONSUMER` entry in
+   * `tests/foundation/unconsumed-content-contract.test.ts` is the only record
+   * that no room asks for a sink and that #141 owes the decision of which one
+   * should, and giving it a row here would delete that record to no end.
+   */
+
+  /*
+   * Hygiene. `object.shower-head` is the row ADR 0028 phase 4 names first --
+   * "`action.shower` (the one need that genuinely requires a placed
+   * capability)" -- because `room.shower-room` is the only room a shower
+   * resolves in and nothing could place a shower head until now. Two of these
+   * in a zoned shower room make `findAvailableForUse('room.shower-room',
+   * 'hygiene')` answer for the first time in the project's history, which
+   * `tests/integration/furnished-prison-loop.test.ts` measures end to end.
+   *
+   * Brick for a plumbed fixture, by `toilet-brick`'s reasoning. Width 1, so one
+   * brick and 30 work -- the same figures the toilet carries, because it is the
+   * same size and the rule reads only the size.
+   */
+  ['shower-head-brick', {
+    id: 'shower-head-brick',
+    category: 'object',
+    name: 'Shower Head',
+    workRequired: 30,
+    materialsRequired: [{ itemId: 'item.brick', quantity: 1 }],
+    placesObjectId: 'object.shower-head',
+  }],
+  /*
+   * A machine body, so brick, and 2 wide -- two bricks and 60 work.
+   *
+   * `object.washing-machine`'s `'laundry'` capability is gated by **nothing**:
+   * no entry in `DEFAULT_ACTIONS` names it and no other room requires it, so a
+   * furnished `room.laundry` reads both its requirements satisfied and changes
+   * no prisoner's behaviour. That is a true statement about this row rather
+   * than a defect in it -- a laundry job system is what would consume it -- and
+   * it is recorded here because the next reader will otherwise look for the
+   * consumer.
+   */
+  ['washing-machine-brick', {
+    id: 'washing-machine-brick',
+    category: 'object',
+    name: 'Washing Machine',
+    workRequired: 60,
+    materialsRequired: [{ itemId: 'item.brick', quantity: 2 }],
+    placesObjectId: 'object.washing-machine',
+  }],
 ]);
 
 export type BuildableItemReferenceError = {

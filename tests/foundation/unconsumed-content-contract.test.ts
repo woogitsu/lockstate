@@ -140,10 +140,8 @@ const AWAITING_CONSUMER: Readonly<Record<string, string>> = {
   'object.medicine-cabinet': "Required by a room definition; no code places or reads it.",
   'object.prep-counter': "Required by a room definition; no code places or reads it.",
   'object.security-console': "Required by a room definition; no code places or reads it.",
-  'object.shower-head': "Required by a room definition; no code places or reads it.",
   'object.stove': "Required by a room definition; no code places or reads it.",
   'object.utility-panel': "Required by a room definition; no code places or reads it.",
-  'object.washing-machine': "Required by a room definition; no code places or reads it.",
   'object.waste-bin': "Required by a room definition; no code places or reads it.",
   // The exception, and the more interesting entry: no room requires a sink.
   // `validateRoomObjectReferences` checks room -> object and not the reverse,
@@ -274,6 +272,43 @@ describe('every unconsumed content id is accounted for', () => {
      * buildable naming a grade is the shape that file asks for.
      * `unconsumedBySrcAndTests` again did not move: four test files already
      * name `grade.general`, which is why it appears in neither allowlist.
+         *
+     * **And then it moved a long way, on ADR 0028 phase 4.** That phase gives
+     * every object id the room catalogue requires a `BUILDABLE_REGISTRY` row
+     * that names it through `placesObjectId`, so seventeen `object.*` ids gain
+     * their first `src/` consumer in one change -- which is why this triple
+     * moves further here than on any change before it, and why the ADR
+     * predicted the counts would "move substantially".
+     *
+     * The two measures move by **different amounts**, and the difference is the
+     * whole reason this file reports both:
+     *
+     *   - `unconsumedBySrcOnly` falls by all seventeen, because every one of
+     *     them is named in `src/simulation/construction/definition.ts` for the
+     *     first time.
+     *   - `unconsumedBySrcAndTests` falls by only fourteen. `object.bench`,
+     *     `object.dining-table` and `object.storage-rack` were already named by
+     *     a test -- `tests/helpers/determinism-scenario.ts` places the first two
+     *     and `tests/unit/objects-room-capacity.test.ts` stands the third in a
+     *     canteen -- so they were in neither allowlist and there is no entry to
+     *     delete for them, exactly as `object.bed` and `object.toilet` had none
+     *     in phases 1 and 2.
+     *
+     * `object.loading-dock-door` is the one id that leaves
+     * `PROTECTED_BY_DECISION` rather than `AWAITING_CONSUMER`, and the stale
+     * gate below is what requires that: it is now placeable, so it has a
+     * consumer, so its entry is stale whatever the entry said. Nothing about
+     * #141's warning is lost by the deletion -- the protection is *stronger*
+     * afterwards, because `validateBuildableObjectReferences` throws at import
+     * if the id is deleted from the catalogue, which is a louder failure than a
+     * test listing a reason.
+     *
+     * `object.sink` is the one object id that stays, and its entry is unchanged.
+     * No room requires a sink, so it is outside phase 4's stated scope
+     * ("buildables for the remaining object ids the room catalogue already
+     * requires") and the ADR says so directly: "`object.sink` is the one entry a
+     * room requirement does not reach, so it moves only if something places
+     * it." Nothing places it.
      */
     expect({
       declared: declaredIds.length,
@@ -297,7 +332,7 @@ describe('every unconsumed content id is accounted for', () => {
       // generically and names no room id, so nothing moved in `src/` -- and the
       // 53 -> 52 below is ADR 0025's alone, for the reason above. The two
       // measures moved on different changes and each is stated where it moved.
-    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 30, unconsumedBySrcOnly: 49 });
+    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 28, unconsumedBySrcOnly: 47 });
   });
 
   it('scans a non-trivial catalog and a non-trivial consumer set, so this cannot pass vacuously', () => {
