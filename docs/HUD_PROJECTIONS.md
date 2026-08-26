@@ -600,12 +600,7 @@ decision about what to build next.
     `roomInstanceContaining` (`src/simulation/objects/room-capacity.ts`)
     answers it by narrowing the tile to a room type through the zoning plane
     and then testing the rectangle. That is what gives object placement a
-    containment rule — and, since issue #337, what bounds `unzone` to one
-    room instead of to a connected run of one room *type*. That second
-    consumer is worth naming here, because this gap was cited three times as
-    the reason the zoning plane would have to carry an instance id per tile
-    (ADR 0022's consequence 2 and open question 3, and #337 itself) after it
-    had already been narrowed enough to make that unnecessary.
+    containment rule.
 
     What is still unanswered is the *projection* question: nothing projects
     the room a prisoner is standing in. The detail projection still reports
@@ -698,6 +693,21 @@ decision about what to build next.
     a single line is what the panel's height budget affords at 900×600 —
     `ROOM_NEEDS_NAMED_LIMIT` in `src/ui/hud/rooms-panel.ts` carries the
     measurement, including what a three-row version did to the panel's fold.
+
+    **That budget is now measured per host rather than as one number, because
+    the panel has more than one place to put something** (ADR 0038, #411).
+    Growing a fixed-height block in each candidate until the panel's height, its
+    fold gap or any of `.hud-rooms > .ui-panel__body`, `.hud-rooms__catalogue`
+    and the catalogue's `.ui-section__body` moves, in the state this readout is
+    showing: the panel body affords **32px at 1280×720 and 0px at 900×600**, the
+    catalogue section's body **41px and 4px**, and `.hud-rooms__list` at least
+    400px at both — the list being the one box here that is meant to hold more
+    than it shows. A collapsed section header is 44px, so anything that must be
+    *always* visible is refused at both viewports and the scroller is the only
+    answer. The typed route to a rectangle is inside it for exactly that reason,
+    and costs this readout nothing: with the form folded and with it open, the
+    panel's height, fold gap and last block's bottom edge are identical to their
+    figures before it existed, at all six viewports.
 
     **Two of the three area requirements this gap listed as
     `'not-evaluated'` are now evaluated**, and by the zoning service rather
