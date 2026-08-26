@@ -198,8 +198,9 @@ describe('IncidentResponseSystem: real guards, real routes, real lockdown', () =
    * only thing that survives a restore -- "Only metrics survive a restore" --
    * driven so that dropping them fails here (#375).
    *
-   * Measured at v0.0.93: replacing the four assignments in that method with
-   * `return;` left this file 10/10 green. The mutation was killed, but only by
+   * Measured at v0.0.98: replacing the four assignments in that method with
+   * `return;` left this file 10/10 green, and the whole suite at 216/217 files
+   * -- one failure, and not here. The mutation was killed, but only by
    * `tests/determinism/snapshot-restore-fidelity.test.ts`, which is not the file
    * that names the mechanism -- the shape `tests/unit/camera-coordinates.test.ts`
    * records as having let #115 ship.

@@ -337,11 +337,10 @@ describe('a populated prison survives save -> load', () => {
      * `runtime.electricity`/`runtime.water` are captured into every save and
      * restored on every load, and **nothing anywhere populated them** -- no
      * production path and no fixture -- so both were always empty on both
-     * sides of the boundary. Measured at v0.0.93: deleting the two
-     * `loadSnapshot` calls from `restoreSimulationRuntime` left 214 files /
-     * 2,429 tests green, the pre-existing `adr-status-queue-anchor-contract`
-     * failure aside, because an empty network restored onto an empty network is
-     * the same answer either way. That is issue #375's fourth candidate shape:
+     * sides of the boundary. Measured at v0.0.98: deleting the two
+     * `loadSnapshot` calls from `restoreSimulationRuntime` left **217 files /
+     * 2,463 tests green**, because an empty network restored onto an empty
+     * network is the same answer either way. That is #375's fourth shape:
      * a fixture that builds an empty instance of the thing whose non-empty
      * behaviour is the subject.
      *

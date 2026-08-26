@@ -27,11 +27,11 @@ import { constantDeploymentSchedule, type DeploymentSchedule } from '../../src/s
  * then reads start at zero because they were never loaded, not because a
  * restore preserved a zero.
  *
- * Measured at v0.0.93, on the mutation each method's own body names as its
+ * Measured at v0.0.98, on the mutation each method's own body names as its
  * subject: replacing `PatrolSystem.loadSnapshot`'s three assignments with
- * `return;` left **214 files / 2,429 tests green** (`pnpm vitest run`, the one
- * pre-existing `adr-status-queue-anchor-contract` failure aside), and so did
- * replacing `DeploymentSystem.loadSnapshot`'s single assignment. Both are
+ * `return;` left the whole suite green -- **217 files / 2,463 tests**,
+ * `pnpm vitest run` -- and so did replacing `DeploymentSystem.loadSnapshot`'s
+ * single assignment, each measured alone and both measured together. Both are
  * player-visible: `patrolMetrics` and `deploymentMetrics` reach the Staff and
  * Security panels through `src/simulation/presentation/staff-projection.ts`,
  * and `src/persistence/save-schema.ts` validates both sections of every save,
