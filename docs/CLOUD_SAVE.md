@@ -72,13 +72,34 @@ design. That gap is now closed except where noted:
   database (`src/persistence/cloud/supabase-client.ts`); a pure-JS fake
   asserting RLS, grants or RPC semantics would test the fake, not the
   contract. `verify:stack` at least exercises the same HTTP contract that
-  client speaks. One narrower claim *is* now unit-tested, because it is a
-  property of the query this repository builds rather than of the database:
-  `tests/unit/persistence-cloud-supabase-client.test.ts` drives the client
-  through a PostgREST stand-in that applies the `.eq()` filters it is given,
-  and pins that both save-version reads are scoped to their prison (see
-  "Every save-version read is scoped to its prison" below). It asserts
-  nothing about ownership, roles or policies.
+  client speaks. **Two** narrower claims *are* now unit-tested, because both
+  are properties of the code in that file rather than of the database, and
+  `tests/unit/persistence-cloud-supabase-client.test.ts` pins both, in three
+  suites. *Which rows the client asks for:* it drives the class through a
+  PostgREST stand-in that applies the `.eq()` filters it is given, and pins
+  that both save-version reads are scoped to their prison (see "Every
+  save-version read is scoped to its prison" below). *Which outcome each RPC
+  status maps to:* for `create_prison` and `create_save_version` alike --
+  that no two statuses collapse onto the same outcome, that the call sends the
+  parameter names the migration declares, that a single-element array is
+  unwrapped the way PostgREST returns a set-returning function, and that the
+  byte size sent is measured in UTF-8 bytes, which is the figure
+  `save_versions_enforce_size` bounds against.
+  `tests/foundation/rpc-status-vocabulary-contract.test.ts` is the gate beside
+  it, pinning that the client's row types name exactly the statuses the
+  migrations can return -- so a *missing* case is a type error where a *wrong*
+  case was caught by nothing (#264 S7). Neither test asserts anything about
+  ownership, roles or policies.
+
+  Two limits of that stand-in, because they are what a reader of this bullet
+  needs next. **It does not cast.** It accepts `'prison-1'` as a prison id
+  (`tests/unit/persistence-cloud-supabase-client.test.ts:430`) where the real
+  `prisons.id` is `uuid` and the database refuses it -- #338. That is one
+  concrete instance of this bullet's own warning that a fake tests the fake,
+  and it is named here so the caution reads as a live risk rather than a
+  general one. And the headline is not softened by any of the above: nothing
+  under `tests/` opens a database connection, `pnpm verify:sql` exercises the
+  SQL rather than this class, and `pnpm verify:stack` is in no CI gate.
 - **Not attempted:** the JSONB-vs-Storage payload benchmark and any real
   upload/download/restore timing. The local stack makes this newly
   possible, but it is a benchmark of its own rather than a by-product of
