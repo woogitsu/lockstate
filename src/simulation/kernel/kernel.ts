@@ -241,13 +241,58 @@ export class Kernel {
    * it. Doing that through this method keeps exactly one definition of how
    * a session's systems are wired, instead of a second list that could
    * drift from the factory's.
+   *
+   * ### RNG streams **merge** onto the kernel's own, they do not replace them
+   *
+   * This line used to be `this._rng = new NamedRngStreams(snapshot.rngStates)`
+   * -- replace, not merge -- and it was issue #415: the four streams the
+   * runtime factory had derived from `masterSeed` a moment earlier
+   * (`runtime/new-session.ts`) were discarded wholesale, so a bundle that
+   * omitted one restored **silently** and then threw
+   * `RangeError: Unknown RNG stream` out of `step()` at the first draw,
+   * between 5 and 600 ticks later depending on what the player did. The
+   * worker's tick-loop catch turns that into a non-recoverable
+   * `internal-error` fault, which is terminal
+   * (`simulation/worker/state-machine.ts`). The repository's own
+   * `tests/fixtures/persistence/save-v1-fresh-prison.json` carries
+   * `"rngStates": []` and detonated on the player's first Admit.
+   *
+   * The expected set needs no declaration here and none is added: the kernel
+   * this method is called on **already holds** exactly the streams this build
+   * registers, correctly derived. Merging over them rather than replacing them
+   * is what stops the discard, and it means:
+   *
+   * - a stream the bundle carries **wins**, so a restore is still exact for
+   *   every stream the save actually recorded;
+   * - a stream this build registers and the bundle omits keeps the state
+   *   `deriveXoshiroState(masterSeed, name)` already gave it, which is
+   *   identical on every client loading that bundle (ADR 0038 §2);
+   * - a stream the bundle carries and this build does not register is **kept**,
+   *   never dropped, so loading a save is not lossy (ADR 0038 §3).
+   *
+   * The incoming states are still constructed through `NamedRngStreams` first,
+   * so its name-shape and uniqueness rejections (`rng/streams.ts`) fire exactly
+   * as before -- merging through a `Map` alone would have swallowed a duplicate
+   * name that the save boundary is supposed to refuse. Order is canonical
+   * either way: `snapshot()` sorts by name.
    */
   public restoreState(snapshot: KernelSnapshot): void {
     if (!Number.isInteger(snapshot.tick) || snapshot.tick < 0) throw new RangeError('Tick must be a non-negative integer.');
     if (!Number.isInteger(snapshot.expectedSequence) || snapshot.expectedSequence < 0) throw new RangeError('Sequence must be a non-negative integer.');
     this._tick = snapshot.tick;
     this._expectedSequence = snapshot.expectedSequence;
-    this._rng = new NamedRngStreams(snapshot.rngStates);
+    const merged = new Map<string, NamedRngStreamState>();
+    for (const entry of this._rng.snapshot()) merged.set(entry.name, entry);
+    for (const entry of new NamedRngStreams(snapshot.rngStates).snapshot()) merged.set(entry.name, entry);
+    // Sorted by name rather than handed over in `Map` insertion order. Both
+    // inputs are already canonical -- `snapshot()` sorts -- so this walk is
+    // deterministic either way and the resulting instance's own `snapshot()`
+    // would re-sort regardless. It sorts anyway because
+    // `docs/DETERMINISM.md`'s canonical-iteration rule is about the order an
+    // enumeration *reaches*, not about whether reverting it would change an
+    // answer today, and this array is what the next kernel's stream map is
+    // built from.
+    this._rng = new NamedRngStreams([...merged.values()].sort((left, right) => (left.name < right.name ? -1 : left.name > right.name ? 1 : 0)));
     this._commands = snapshot.commands.map((command) => ({ ...command }));
     this._commands.sort((a, b) => {
       if (a.executeAtTick !== b.executeAtTick) return a.executeAtTick - b.executeAtTick;
