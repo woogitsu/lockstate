@@ -123,12 +123,13 @@ Nothing here changes a status; this table only reports them.
 | [0032](./0032-incident-consequences-and-classification-review.md) | What an incident costs the prisoner who was in it, and how a classification tier moves | Accepted, 2026-08-26 |
 | [0033](./0033-releasing-an-interrupted-incident-response-at-runtime.md) | A restored session abandons an incident response and returns what it claimed | Accepted, 2026-08-26 — **amended in place**: its open question 1 was commissioned and is now answered (a restored session re-dispatches) |
 | [0034](./0034-releasing-a-claimed-guard.md) | Releasing a claimed guard — one command, every claimant | Proposed — pending human approval; owes a `STATUS-QUEUE.md` §2 entry, quoted in its pull request |
+| [0035](./0035-buildable-catalogue-category-filter.md) | Choosing what to build out of twenty-one rows — filtering the catalogue by the categories content already authors | Proposed — pending human approval; owes a `STATUS-QUEUE.md` §2 entry, quoted in its pull request |
 
-**Next free number: 0035.** 0034 is this table's newest row and **0030 is still
+**Next free number: 0036.** 0035 is this table's newest row and **0030 is still
 held by an unmerged branch** — the incident-response restore change, which
 allocated it in the same hour it was stated free here. It is listed nowhere above
 because nothing is merged under that number yet, which is precisely the gap a
-stated next-free cannot see: enumerate the open pull requests before taking 0035.
+stated next-free cannot see: enumerate the open pull requests before taking 0036.
 
 **0034's author ran that enumeration and it came back with two open pull
 requests**, **#393** (documentation only: it accepts 0033 and amends 0007, and its
@@ -139,6 +140,25 @@ a separate document rather than a second amendment because that question names
 itself a gameplay-surface decision. 0033's **open question 1** was answered in
 0033 itself, as an amendment section, for the mirror-image reason: it is that
 document's own restore semantics.
+
+**0035's author ran the same enumeration in the same hour and got the same
+answer, and 0034 was taken anyway — the third collision this week.** Both authors
+read the stated next-free correctly, both enumerated the open pull requests
+correctly, and neither could see the other: the branch holding 0034 had not opened
+its pull request when 0035's author enumerated, and opened it minutes later. So
+this is not a case of the enumeration being skipped, which is what 0024 through
+0027 were; it is the enumeration running and being **correct and insufficient**,
+which is what 0031 met and what 0030 is still an instance of.
+
+The generalisable part, since three collisions in a week is a pattern rather than
+bad luck: **an enumeration of open pull requests is a claim about one instant,
+and a number is not held until something is pushed.** The only thing that has
+actually prevented an argument in any of the three is the pre-commitment — each
+of 0031, 0034 and 0035 states in its own Status that it is the document which
+renumbers if a branch turns up holding its number, so a collision costs a
+`git mv` rather than a negotiation. 0035 renumbered from 0034 on exactly that
+pre-commitment, and its `### The number` section records the collision it
+predicted.
 
 **0033's author ran that enumeration and it came back with two open pull
 requests**, #355 (no ADR) and #361 (holding 0030), so 0033 was free. 0033 is the

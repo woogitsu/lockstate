@@ -2141,6 +2141,305 @@ test.describe('the assembled application', () => {
     }
   });
 
+  /**
+   * The catalogue's category filter, and what it costs (#390,
+   * [ADR 0035](../../docs/adr/0035-buildable-catalogue-category-filter.md)).
+   *
+   * **The measurement this test exists for, and the correction it carries.**
+   * ADR 0031's Status derived a figure -- "one row of twenty-one visible" at
+   * 900x600 with a queue -- from two numbers it had measured, and flagged it as
+   * derived. Re-measured here on the assembled page, it is exactly right: the
+   * catalogue list is a 44px box over 924px of 44px rows, and one row of
+   * twenty-one is on screen. Nothing about it was optimistic.
+   *
+   * What the filter does and does not fix follows from that, and both halves
+   * are asserted below because getting the claim wrong is the way this work
+   * gets undone:
+   *
+   *   - It does **not** change how many rows are on screen. The list's box is
+   *     set by the rail, the save panel and ADR 0031 decision 3's donation, and
+   *     a filter changes none of them: at 900x600 with a queue it is a 44px box
+   *     before and a 44px box after. Anything that claims otherwise is claiming
+   *     the panel got taller, and it did not.
+   *   - It **does** change how far a player scrolls to reach a row they cannot
+   *     see, which is the thing choosing what to build actually costs. At the
+   *     same viewport the list goes from 880px of scroll to 264px, and the
+   *     largest group is six rows against the registry's twenty-one.
+   *
+   * **And it costs the panel nothing at all**, which is the claim that made it
+   * buildable rather than merely desirable. The control shares the catalogue
+   * header's 44px tap target (`headerAction` on `createCollapsibleSection`), so
+   * every floor `hud.css` sums for this panel is unchanged: the assertions below
+   * re-check the panel's overflow, the shrink chain's shortfalls and the header
+   * row's height at all five viewports, in both the arrival state and the
+   * queued one. A control anywhere else in the body would have cost a tap
+   * target, and ADR 0031 measured 7.8px between the last section and the fold at
+   * 900x600 on arrival and a single 44px row of catalogue with a queue.
+   *
+   * **Not merged into the #88 sweep, and the reason is that sweep's own gate.**
+   * The filter is laid out in every state the sweep visits, so it needs no new
+   * setup there -- unlike #392's control, which the sweep could not reach until
+   * its setup was extended. What the sweep must *not* do is choose a category:
+   * `visibleBuildableIds` hides the rows of every other group, and a hidden row
+   * is a row `neverLaidOut` would name. So the filter stays on "Everything"
+   * there -- which is also the arrival state -- and the filtered state is
+   * measured here, where hiding rows is the subject rather than a side effect.
+   */
+  test('the catalogue can be filtered to one category, and the filter costs the panel nothing (#390)', async ({
+    page,
+  }) => {
+    test.slow();
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.save-panel__item-label').first()).toContainText('New Prison');
+    await page.getByRole('button', { name: 'Build' }).click();
+    await expect(page.locator('.hud-build')).toBeVisible();
+
+    const filter = page.locator('.hud-build__category');
+    await expect(filter).toBeVisible();
+    // The option a player reads, not the id behind it: ADR 0011 puts the key on
+    // one side of that boundary and the text on the other, and driving the
+    // control by its label is what proves the content entry is wired at all.
+    const largestGroup = localeText('object.category.furniture.name');
+
+    /*
+     * The catalogue, as boxes. Never `toContainText`: #220 found a row with a
+     * real 78x44 rectangle and `offsetParent` set that was not on screen at any
+     * viewport while a rendered-text assertion passed, and every figure here is
+     * about whether rows can be reached rather than about what they say.
+     */
+    const catalogue = async (): Promise<{
+      readonly laidOutRows: number;
+      readonly listBox: number;
+      readonly listContent: number;
+      readonly scrollToLast: number;
+      readonly headerRowHeight: number;
+      readonly filterBox: { readonly width: number; readonly height: number };
+      readonly filterHitsItself: boolean;
+      readonly selectedInsideList: boolean;
+      readonly panelOverflow: number;
+      readonly shortfalls: readonly string[];
+      readonly lastSectionText: string;
+      readonly lastSectionBottom: number;
+      readonly fold: number;
+    } | null> =>
+      page.evaluate(() => {
+        const panel = document.querySelector('.hud-build');
+        const list = document.querySelector('.hud-build__list');
+        const headerRow = document.querySelector('.hud-build__catalogue > .ui-section__header-row');
+        const control = document.querySelector<HTMLSelectElement>('.hud-build__category');
+        if (panel === null || list === null || headerRow === null || control === null) return null;
+
+        const rows = [...list.querySelectorAll<HTMLElement>('.ui-row')].filter(
+          (row) => row.getClientRects().length > 0,
+        );
+        const listTop = list.getBoundingClientRect().top + list.clientTop;
+        const selected = rows.find((row) => row.dataset['selected'] === 'true') ?? null;
+        const filterRect = control.getBoundingClientRect();
+        const hit = document.elementFromPoint(
+          filterRect.x + filterRect.width / 2,
+          filterRect.y + filterRect.height / 2,
+        );
+        const sections = [...document.querySelectorAll('.hud-build .ui-section')].filter(
+          (section) => section.getClientRects().length > 0,
+        );
+        const last = sections.at(-1)?.querySelector('.ui-section__header') ?? null;
+        const panelBox = panel.getBoundingClientRect();
+
+        return {
+          laidOutRows: rows.length,
+          listBox: Math.round(list.clientHeight * 10) / 10,
+          listContent: Math.round(list.scrollHeight * 10) / 10,
+          scrollToLast: Math.round((list.scrollHeight - list.clientHeight) * 10) / 10,
+          headerRowHeight: Math.round(headerRow.getBoundingClientRect().height * 10) / 10,
+          filterBox: { width: Math.round(filterRect.width), height: Math.round(filterRect.height) },
+          filterHitsItself: hit !== null && (control === hit || control.contains(hit)),
+          selectedInsideList:
+            selected !== null &&
+            selected.getBoundingClientRect().top >= listTop - 0.5 &&
+            selected.getBoundingClientRect().bottom <= listTop + list.clientHeight + 0.5,
+          panelOverflow: panel.scrollHeight - panel.clientHeight,
+          shortfalls: [
+            '.hud-build > .ui-panel__body',
+            '.hud-build__catalogue',
+            '.hud-build__catalogue > .ui-section__body',
+          ]
+            .map((selector) => {
+              const box = document.querySelector(selector);
+              if (box === null) return `${selector} has no box`;
+              const shortfall = box.scrollHeight - box.clientHeight;
+              return shortfall === 0 ? null : `${selector} is ${shortfall}px shorter than its own content`;
+            })
+            .filter((entry) => entry !== null),
+          lastSectionText: last?.textContent?.trim() ?? '',
+          lastSectionBottom: last?.getBoundingClientRect().bottom ?? Number.NaN,
+          fold: panelBox.top + panel.clientTop + panel.clientHeight,
+        };
+      });
+
+    /*
+     * Both states, because they are two different panels: with nothing queued
+     * the catalogue's floor is two rows, and with a queue ADR 0031 decision 3
+     * drops it to one. The queued half is the one #390 is about, and it is the
+     * one the #88 sweep already measures -- so this test builds the queue the
+     * same way that sweep does, through the panel's own numeric route, and
+     * pauses the clock to freeze it.
+     */
+    for (const queued of [false, true] as const) {
+      if (queued) {
+        const coordinates = page.locator('.hud-build__coordinates > .ui-section__header');
+        if ((await coordinates.getAttribute('aria-expanded')) === 'false') await coordinates.click();
+        const submit = page.locator('.hud-build__coordinates .ui-action');
+        for (const tileY of [5, 6, 7, 8, 9, 10]) {
+          await page.getByRole('spinbutton', { name: 'Tile X' }).fill('5');
+          await page.getByRole('spinbutton', { name: 'Tile Y' }).fill(String(tileY));
+          await submit.click();
+        }
+        if ((await coordinates.getAttribute('aria-expanded')) === 'true') await coordinates.click();
+        await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
+        await expect
+          .poll(async () => (await page.locator('.hud-build__queue').boundingBox()) !== null, {
+            message: 'six placed orders never reached the Build panel as a queue',
+            timeout: 20_000,
+          })
+          .toBe(true);
+        await page.locator('.hud-strip__transport [title="Pause"]').click();
+      }
+      const state = queued ? 'with a queue' : 'with nothing queued';
+
+      for (const [width, height] of [
+        [1280, 720],
+        [1440, 900],
+        [1024, 768],
+        [900, 600],
+        [375, 812],
+      ] as const) {
+        await page.setViewportSize({ width, height });
+        await expect
+          .poll(async () => (await canvasMetrics(page))?.cssWidth, { message: `canvas did not follow ${width}px` })
+          .toBe(width);
+
+        // The arrival state of the filter is "Everything", so this is also the
+        // panel as it was before the filter existed.
+        const everything = await catalogue();
+        expect(everything, `the Build panel has no catalogue at ${width}x${height}`).not.toBeNull();
+        if (everything === null) continue;
+
+        // Vacuity guard: a panel that failed to lay out reports plausible,
+        // meaningless numbers and every comparison below would hold.
+        expect(everything.laidOutRows, `the catalogue laid out no rows at ${width}x${height}`).toBeGreaterThan(10);
+        // Every row is one tap target tall and the list holds nothing else, so
+        // this is what says the filter control did not leak into the list --
+        // where it would have cost a row rather than nothing.
+        expect(
+          everything.listContent,
+          `the unfiltered catalogue list is not ${everything.laidOutRows} rows of 44px at ${width}x${height}`,
+        ).toBe(everything.laidOutRows * 44);
+
+        await filter.selectOption({ label: largestGroup });
+        const filtered = await catalogue();
+        expect(filtered, `the Build panel has no catalogue once filtered at ${width}x${height}`).not.toBeNull();
+        if (filtered === null) continue;
+
+        /*
+         * The largest group is six rows, and the selected row is kept on screen
+         * whatever group it is in, so a filtered list is seven rows at worst.
+         * Six is written out in
+         * `tests/foundation/buildable-category-contract.test.ts` as a table of
+         * every buildable and its group, so a content row that made a group
+         * larger than this fails there, naming the row, rather than here.
+         */
+        expect(
+          filtered.laidOutRows,
+          `the largest filtered group is more than six rows plus the selection at ${width}x${height}, ${state}`,
+        ).toBeLessThanOrEqual(7);
+        expect(
+          filtered.laidOutRows,
+          `filtering to "${largestGroup}" left the whole catalogue on screen at ${width}x${height}, ${state}`,
+        ).toBeLessThan(everything.laidOutRows);
+
+        // The box is unchanged and the content is not: the filter buys reach,
+        // not height, and claiming otherwise is claiming the panel grew.
+        expect(
+          filtered.listBox,
+          `the catalogue list changed size when it was filtered at ${width}x${height}, ${state}`,
+        ).toBe(everything.listBox);
+        expect(
+          filtered.scrollToLast,
+          `filtering did not shorten the scroll to the last row at ${width}x${height}, ${state}: ` +
+            `${everything.scrollToLast}px before, ${filtered.scrollToLast}px after`,
+        ).toBeLessThan(everything.scrollToLast);
+
+        // The row whose badge says what the next press will place is on screen
+        // after the filter moved, which is the whole of why the selected row is
+        // exempt from being hidden: at 900x600 with a queue the list shows one
+        // row, so "laid out" and "reachable" are different claims (#220).
+        expect(
+          filtered.selectedInsideList,
+          `the selected row is not inside the catalogue list after filtering at ${width}x${height}, ${state}`,
+        ).toBe(true);
+
+        // What the filter costs, in both states, at every viewport: nothing.
+        for (const [label, measured] of [
+          ['unfiltered', everything],
+          ['filtered', filtered],
+        ] as const) {
+          expect(
+            measured.headerRowHeight,
+            `the catalogue header row is not one tap target while ${label} at ${width}x${height}, ${state}`,
+          ).toBe(44);
+          expect(
+            measured.filterBox.height,
+            `the category filter is not one tap target tall while ${label} at ${width}x${height}, ${state}`,
+          ).toBe(44);
+          expect(
+            measured.filterBox.width,
+            `the category filter is narrower than a tap target while ${label} at ${width}x${height}, ${state}`,
+          ).toBeGreaterThanOrEqual(44);
+          expect(
+            measured.filterHitsItself,
+            `something covers the category filter while ${label} at ${width}x${height}, ${state}`,
+          ).toBe(true);
+          expect(
+            measured.panelOverflow,
+            `the Build panel holds more than its box while ${label} at ${width}x${height}, ${state}`,
+          ).toBe(0);
+          expect(
+            measured.shortfalls,
+            `boxes in the Build panel shorter than their own content while ${label} at ${width}x${height}, ${state}`,
+          ).toEqual([]);
+          /*
+           * Named only in the arrival state. With a queue the last section is
+           * the queue block, whose header states the queue's length and how
+           * much of it is moving (ADR 0031 decision 4) rather than a fixed
+           * sentence -- so what is asserted there is where it *is*, which is
+           * the claim that matters either way.
+           */
+          if (!queued) {
+            expect(
+              measured.lastSectionText,
+              `the panel's last laid-out section while ${label} at ${width}x${height}, ${state}`,
+            ).toBe(localeText('hud.build.coordinates'));
+          }
+          expect(
+            measured.lastSectionBottom,
+            `"${measured.lastSectionText}" is below the Build panel's fold while ${label} at ${width}x${height}, ` +
+              `${state}: it ends at y=${Math.round(measured.lastSectionBottom)} in a panel clipped at ` +
+              `y=${Math.round(measured.fold)}`,
+          ).toBeLessThanOrEqual(measured.fold);
+        }
+
+        await filter.selectOption({ label: localeText('hud.build.category-all') });
+        const restored = await catalogue();
+        expect(
+          restored?.laidOutRows,
+          `"Everything" did not bring the whole catalogue back at ${width}x${height}, ${state}`,
+        ).toBe(everything.laidOutRows);
+      }
+    }
+  });
+
   test('a pending delivery costs the Build panel nothing, and its refund is inside the fold (#285)', async ({
     page,
   }) => {

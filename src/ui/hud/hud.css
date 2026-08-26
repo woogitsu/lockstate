@@ -623,7 +623,63 @@
   );
 }
 
-.hud-build__catalogue > .ui-section__header { flex: 0 0 auto; }
+/*
+ * Two selectors for one rule, because this section has two DOM shapes. It is
+ * the one section in the panel that passes `headerAction` (ADR 0035), so when
+ * the filter is drawn its header button is wrapped in a row it shares with the
+ * control; when the catalogue has fewer than two groups to divide,
+ * `buildCategoryOptions` answers with no options and the section keeps its bare
+ * header. Both must refuse to shrink for the same reason every box in this
+ * chain does -- a header that shrank would let the rows paint behind the map
+ * block instead of scrolling -- and writing only the wrapped one would have left
+ * `tests/browser/ui-harness.ts`'s two-row catalogue silently on `flex: 0 1 auto`.
+ *
+ * The row is still 44px either way: the filter shares the header's tap target
+ * rather than adding one, so every floor summed above is unchanged by the
+ * filter's arrival, which is what made it affordable in a panel with 7.8px of
+ * slack.
+ */
+.hud-build__catalogue > .ui-section__header,
+.hud-build__catalogue > .ui-section__header-row {
+  flex: 0 0 auto;
+}
+
+/*
+ * The category filter, in the catalogue's header row (#390, ADR 0035).
+ *
+ * `max-width: 50%` and `min-width: 0`, so the eyebrow and the control divide a
+ * 264px rail rather than one pushing the other out of it: the widest option is
+ * "Walls and doors" and the eyebrow is "What to build", and at the phone width
+ * the rail is narrower still. The eyebrow ellipsizes first (see
+ * `.ui-section__header-row` in `primitives.css`), because the filter's own text
+ * *is* its value -- a clipped option name would be a control that misreports
+ * its state, where a clipped eyebrow is a label a player has already read.
+ *
+ * `height: var(--tap-target)` rather than a padding that happens to reach 44px:
+ * a native control's intrinsic height comes from the platform, and the one
+ * thing this must not do is make the header row taller than the 44px every
+ * floor above counts for it.
+ */
+.hud-build__category {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 50%;
+  height: var(--tap-target);
+  box-sizing: border-box;
+  padding: 0 var(--space-1);
+  background: var(--surface-sunken);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-body);
+  font: inherit;
+  font-size: var(--text-size-label);
+  cursor: pointer;
+}
+
+.hud-build__category:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 
 /*
  * `:not([hidden])` because this section folds. An author `display: flex` beats
@@ -656,18 +712,33 @@
  * Below the floor the panel itself scrolls again -- so `.hud-build`'s own
  * `overflow-y: auto` above stays load-bearing rather than vestigial.
  *
- * **The floor is not the list's own height, and this comment said it was.**
- * The sentence that stood here read: "with the two buildables
+ * **The floor is not the list's own height, and this comment has now been
+ * wrong about the content twice.** It first read: "with the two buildables
  * `BUILDABLE_REGISTRY` defines the floor *is* the list's own height, 88px of
  * content in an 88px box at every viewport the browser suite visits, so the
- * list donates nothing". That registry has held **four** entries since
- * ADR 0028 phase 2 -- a wall, a door, a bed and a toilet -- so the list holds
- * 176px of rows and this floor shows two of them. Measured on the assembled
- * page in the arrival state, list box against list content: 110/176 at
- * 1280x720, 176/176 at 1440x900, 146/176 at 1024x768, 88/176 at 900x600 and
- * 155/176 at 375x812. The list is the panel's donor at four of the five
- * viewports the browser suite visits, and at 900x600 it is squeezed flat onto
- * this floor with two buildables behind a scroll.
+ * list donates nothing". It was then corrected to **four** entries and 176px of
+ * rows, which was true of ADR 0028 phase 2 and was already false when it was
+ * written: phase 4 landed the remaining seventeen object rows, so the registry
+ * holds **twenty-one** and the list holds **924px**.
+ *
+ * Re-measured on the assembled page in the arrival state at v0.0.105, list box
+ * against list content -- the boxes are exactly what the previous correction
+ * said and only the content moved, which is why the error survived a
+ * correction:
+ *
+ *   110/924 at 1280x720, 245/924 at 1440x900, 146/924 at 1024x768,
+ *    88/924 at 900x600, 155/924 at 375x812.
+ *
+ * So the list is the panel's donor at **all five** viewports rather than four,
+ * and at 900x600 it is squeezed flat onto this floor with nineteen of the
+ * twenty-one buildables behind a scroll -- 836px of it. With a queue that
+ * becomes one row of twenty-one and 880px (see `.hud-build[data-queued]`
+ * below), which is the number issue #390 was filed on and
+ * [ADR 0035](../../../docs/adr/0035-buildable-catalogue-category-filter.md)
+ * answers: the catalogue keeps this floor and gains a category filter in its
+ * header row, so the scroll a player faces is one group's rows rather than the
+ * whole registry's. The filter costs this box nothing -- it shares the section
+ * header's 44px -- so every figure above is unchanged by it.
  *
  * That is why `tests/browser/app-shell.spec.ts` asserts this list is
  * *scrollable* in the arrival state rather than only that the panel fits: rows
@@ -1079,7 +1150,10 @@
  * block above had to buy its 45px out of `--hud-build-catalogue-floor`, and
  * ADR 0031's own open question 4 asks whether the catalogue should go on being
  * the donor -- at 900x600 with a queue that list is a 44px box over 924px of
- * rows, which is one row of twenty-one. This block lives inside `.hud-build__buy`, which has no box at all
+ * rows, which is one row of twenty-one. ADR 0035 answers that question with
+ * "yes, and the reach is fixed elsewhere": the donation stands and the
+ * catalogue gains a filter that costs this panel nothing. This block lives
+ * inside `.hud-build__buy`, which has no box at all
  * until the player opens the disclosure, so the panel's arrival height is
  * untouched and nothing is donated: measured on the assembled page at 900x600
  * with three deliveries pending and the disclosure closed, the panel is 338.1px

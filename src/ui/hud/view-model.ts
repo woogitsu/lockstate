@@ -219,6 +219,26 @@ export interface HudBuildableViewModel {
    * `false` to both and the panel offers it the wall route, unchanged.
    */
   readonly placesObject: boolean;
+  /**
+   * Which group of the catalogue this row belongs to
+   * ([ADR 0035](../../../docs/adr/0035-buildable-catalogue-category-filter.md)).
+   *
+   * An **opaque id** the panel compares and never renders. It is not an
+   * `ObjectCategory`, and the panel is deliberately not told that such a type
+   * exists: two of the twenty-one buildables place no object and therefore
+   * have no object category at all, so the composition root mints a group for
+   * them and the panel's only requirement is that equal ids mean one group.
+   * That is the same treatment `definitionId` gets and for the same reason
+   * (`AGENTS.md` boundary 1).
+   *
+   * Required rather than optional, because a row with no group would be a row
+   * the filter could only ever hide or only ever show, and neither is a state
+   * the panel should have to have an opinion about. The host answers for every
+   * row -- see `buildableCategory` in `src/main.ts`.
+   */
+  readonly categoryId: string;
+  /** What that group is called. A message key, never text. */
+  readonly categoryLabelKey: LocalizationKey;
   /** Absent when nothing this buildable is made of can be bought. */
   readonly material?: HudBuildMaterialViewModel;
 }

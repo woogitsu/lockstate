@@ -12,6 +12,7 @@ import { HUD_MESSAGE_KEY } from './messages';
 import {
   HUD_BUILD_EDGES,
   type HudBuildEdge,
+  type HudBuildableViewModel,
   type HudBuildOrderViewModel,
   type HudBuildQueueViewModel,
   type HudBuildViewModel,
@@ -244,6 +245,107 @@ export function buildEdgeChoiceOptions(t: Translate): readonly ChoiceOption[] {
 }
 
 /**
+ * The option id that filters nothing.
+ *
+ * A single `*`, which no category id can be: every group id the host mints is
+ * either an authored `ObjectCategory` (kebab-case, `identifierSchema`) or the
+ * one word it invents for the buildables that have none, so a sentinel that is
+ * not a valid identifier cannot collide with a real group. A `''` would have
+ * collided with "the host answered nothing" and an `'all'` with a future
+ * category actually called that.
+ *
+ * Exported because the arrival state *is* this option -- the panel shows every
+ * row on arrival, exactly as it did before the filter existed -- and a test
+ * that asserted the arrival state needs to be able to name it.
+ */
+export const BUILD_CATEGORY_ALL = '*';
+
+/**
+ * The catalogue's filter options: every group the rows actually carry, in the
+ * order the rows carry them, behind an option that filters nothing
+ * ([ADR 0035](../../../docs/adr/0035-buildable-catalogue-category-filter.md)).
+ *
+ * **Derived from the rows, never from a list of categories.** A group with no
+ * buildable in it produces no option, so the filter can never offer a choice
+ * that yields an empty list; and a group that arrives with a future content row
+ * produces one with nothing edited here. That is the whole seam #390 is about:
+ * the taxonomy already exists and the layout is the thing that had never read
+ * it.
+ *
+ * **Order is the rows' own order**, first appearance wins, which makes the
+ * options read in the same sequence as the list they filter -- one order in the
+ * panel rather than two. It is deterministic for the reason `buildCatalogue`'s
+ * sort in `src/main.ts` is: the rows arrive sorted by content, so the options
+ * are a function of content and not of iteration history
+ * (`docs/DETERMINISM.md`).
+ *
+ * **Empty unless there is something to divide**, which means an empty
+ * catalogue *and* a catalogue whose rows are all in one group. Both would
+ * produce a control every option of which shows the same list, and the panel
+ * draws no filter at all rather than one that can only be pressed to no
+ * effect -- the same reading `buildEdgeChoiceOptions` does not need because an
+ * edge always has four.
+ *
+ * The real catalogue has eight groups and only ever gains them, so the
+ * one-group case is not a state the application reaches;
+ * `tests/browser/ui-harness.ts`'s two-row fixture is, and every height that
+ * harness pins is therefore measured on a panel with no filter in it -- which
+ * is the other half of the evidence that this control costs nothing.
+ *
+ * Exported and pure for the reason `buildEdgeChoiceOptions` above is: the
+ * default Vitest environment is `node` (`docs/TESTING.md`), so nothing headless
+ * can call `createBuildPanel`, and which options the filter offers has to be
+ * assertable over real keys.
+ */
+export function buildCategoryOptions(
+  buildables: readonly HudBuildableViewModel[],
+  t: Translate,
+): readonly ChoiceOption[] {
+  const groups = new Map<string, LocalizationKey>();
+  for (const buildable of buildables) {
+    if (!groups.has(buildable.categoryId)) groups.set(buildable.categoryId, buildable.categoryLabelKey);
+  }
+  if (groups.size < 2) return [];
+  return [
+    { id: BUILD_CATEGORY_ALL, label: t(HUD_MESSAGE_KEY.buildCategoryAll) },
+    ...[...groups].map(([id, labelKey]) => ({ id, label: t(labelKey) })),
+  ];
+}
+
+/**
+ * Which rows the catalogue leaves on screen, in list order.
+ *
+ * **The selected row is always among them, whatever the filter says**, and
+ * that is the decision in this function rather than an edge case it handles.
+ * Filtering is a view operation: it must not change what the next press
+ * places. The alternatives were both worse -- moving the selection to the
+ * active group changes the armed tool as a side effect of looking around, and
+ * hiding the selected row leaves the panel's arm button pointed at a buildable
+ * whose "Selected" badge is nowhere on screen, which is a control that lies
+ * about what it will do.
+ *
+ * The cost is one row from another group appearing inside the active one, and
+ * it is self-explaining: it is the only row wearing the badge. The worst case
+ * is therefore the largest group plus one.
+ *
+ * Pure, and exported, for `buildCategoryOptions`'s reason.
+ */
+export function visibleBuildableIds(
+  buildables: readonly HudBuildableViewModel[],
+  activeCategoryId: string,
+  selectedId: string | undefined,
+): readonly string[] {
+  return buildables
+    .filter(
+      (buildable) =>
+        activeCategoryId === BUILD_CATEGORY_ALL ||
+        buildable.categoryId === activeCategoryId ||
+        buildable.definitionId === selectedId,
+    )
+    .map((buildable) => buildable.definitionId);
+}
+
+/**
  * What the target readout says for a given aim, including the case where the
  * pointer is aimed at nothing.
  *
@@ -386,6 +488,13 @@ function buildOrderStateLabelKey(state: HudBuildOrderViewModel['state']): Locali
  * pending would have had to take a second donation out of that same block. This
  * one has nothing to pay for.
  *
+ * That open question is answered by
+ * [ADR 0035](../../../docs/adr/0035-buildable-catalogue-category-filter.md), and
+ * answered in this block's favour rather than against it: the catalogue stays the
+ * donor and gains a category filter that shares the section header's own 44px, so
+ * the figures above are unchanged and "costs the panel nothing" remains the only
+ * way a block gets into this panel.
+ *
  * The rows are **pooled** for both of `BUILD_QUEUE_ROW_LIMIT`'s reasons, and the
  * second is not about allocation: each row's cancel button joins the HUD's busy
  * group, `createBusyGroup` has `add` and no `remove`, and a block that built a
@@ -444,10 +553,100 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   const catalogueList = element('div', { className: 'hud-build__list' });
   const rows = new Map<string, ListRow>();
 
+  /**
+   * Which group of the catalogue is on screen (ADR 0035). View state, and
+   * deliberately nothing more: it is not on the intent, not in a snapshot and
+   * not in a save. What a player is looking at is not what their prison is,
+   * and `src/persistence/save-schema.ts` is untouched by this filter.
+   *
+   * Starts at `BUILD_CATEGORY_ALL`, so the panel arrives showing exactly the
+   * rows it showed before this control existed -- which is what keeps
+   * ADR 0031 decision 3's first bullet ("the panel's arrival height is
+   * unchanged") a statement about this panel too, and what keeps the most-used
+   * buildable in the game from starting out behind a filter.
+   */
+  let activeCategoryId: string = BUILD_CATEGORY_ALL;
+
+  const categoryOptions = buildCategoryOptions(model.buildables, t);
+
+  /**
+   * The filter, as a `<select>` -- the one place in this interface that is not
+   * a `createChoiceGroup`, and the reason is arithmetic rather than taste.
+   *
+   * A choice group shows every option at once, which is right for the edge
+   * chooser's four one-word options. This control has as many options as the
+   * content has groups -- nine today, one per authored category plus the
+   * structural pair plus "Everything" -- and it has to fit **inside a 44px
+   * header row** beside an eyebrow, in a 264px rail. A row of nine chips wraps
+   * to three lines there, which is exactly the height this filter exists to
+   * avoid spending.
+   *
+   * So: one native control, one tap target, reachable by keyboard and by touch
+   * alike, showing its own current value as its visible text -- which is why an
+   * `aria-label` is legitimate here rather than a tooltip-only label. It is not
+   * promoted to a primitive: `src/ui/primitives/choice-group.ts` states the
+   * case against a `<select>` for the case it was written for, and one control
+   * that needs the other trade is not yet a pattern.
+   */
+  const categoryFilter = element('select', {
+    className: 'hud-build__category',
+    attributes: { 'aria-label': t(HUD_MESSAGE_KEY.buildCategory) },
+    children: categoryOptions.map((option) =>
+      element('option', { text: option.label, attributes: { value: option.id } }),
+    ),
+  });
+  categoryFilter.value = activeCategoryId;
+  categoryFilter.addEventListener('change', () => {
+    activeCategoryId = categoryFilter.value;
+    paintCatalogue();
+    revealSelectedRow();
+  });
+
+  /**
+   * Scrolls the list, and only the list, until the selected row is inside it.
+   *
+   * `visibleBuildableIds` guarantees the selected row is *laid out* whatever
+   * the filter says, and at the viewport this whole change is about that buys
+   * nothing on its own: with a queue at 900x600 the list is a 44px box, so
+   * exactly one row is on screen and a selected row anywhere below the first
+   * is laid out and invisible. That is #220's shape -- a control with a real
+   * box that a player cannot see -- so the rule and this are one decision.
+   *
+   * Written as arithmetic on `catalogueList.scrollTop` rather than as
+   * `scrollIntoView({ block: 'nearest' })`, which walks *every* scroll
+   * ancestor: the panel is itself a scroll container
+   * (`.ui-panel.hud-build`), so the browser helper would also scroll the panel
+   * and move "Enter coordinates" out from under its own fold -- the exact
+   * measurement `tests/browser/app-shell.spec.ts` asserts is 7.8px inside it.
+   *
+   * Called on a filter change and nowhere else. Not at mount, because the
+   * arrival state is measured with nothing scrolled; and not on selection,
+   * because a player who taps a row is looking at the row they tapped.
+   */
+  function revealSelectedRow(): void {
+    const row = selectedId === undefined ? undefined : rows.get(selectedId);
+    if (row === undefined || row.element.hidden) return;
+    const listTop = catalogueList.getBoundingClientRect().top + catalogueList.clientTop;
+    const rowBox = row.element.getBoundingClientRect();
+    const above = rowBox.top - listTop;
+    const below = rowBox.bottom - (listTop + catalogueList.clientHeight);
+    if (above < 0) catalogueList.scrollTop += above;
+    else if (below > 0) catalogueList.scrollTop += below;
+  }
+
   const paintCatalogue = (): void => {
+    const visible = new Set(visibleBuildableIds(model.buildables, activeCategoryId, selectedId));
     for (const [id, row] of rows) {
       row.setBadge(id === selectedId ? { tone: 'info', text: t(HUD_MESSAGE_KEY.buildSelected) } : undefined);
       row.element.dataset['selected'] = id === selectedId ? 'true' : 'false';
+      /*
+       * `hidden` rather than a class, so a filtered row lays out no box at all
+       * and the list's `scrollHeight` really is the filtered list's height --
+       * which is the whole measurable effect of this control. A row hidden by
+       * opacity or by `visibility` would keep its 44px and the filter would
+       * shorten nothing.
+       */
+      row.element.hidden = !visible.has(id);
     }
   };
 
@@ -489,6 +688,23 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   const catalogue: CollapsibleSection = createCollapsibleSection({
     eyebrow: t(HUD_MESSAGE_KEY.buildCatalogue),
     onToggle: (collapsed) => catalogue.setCollapsed(collapsed),
+    /*
+     * In the header row, beside the eyebrow, because that row is already 44px
+     * and already counted in every floor `hud.css` sums for this section --
+     * so the filter costs the panel nothing. Nothing else in this panel could
+     * afford it: measured on the assembled page there are 7.8px between the
+     * last section and the fold at 900x600 on arrival, and with a queue the
+     * catalogue list is down to a single 44px row (ADR 0031 decision 3), so a
+     * control with a tap target of its own anywhere else in the body would put
+     * "Enter coordinates" below the fold -- issue #174 for a fourth time.
+     *
+     * Omitted entirely when there is nothing to divide -- an empty catalogue, or
+     * one whose rows are all in one group. `buildCategoryOptions` answers `[]`
+     * for both, and a filter every option of which shows the same list is a
+     * control that can only be pressed to no effect. `hud.css` styles both
+     * shapes of this header for that reason.
+     */
+    ...(categoryOptions.length === 0 ? {} : { headerAction: categoryFilter }),
   });
   // The one section the panel's height budget is allowed to take space from,
   // named so `hud.css` can say which one it is (issue #143). Every other block
@@ -712,7 +928,9 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
    * one `BUILDABLE_REGISTRY` row of twenty-one on screen. A third section drawn
    * whenever something is pending would have been a second donation out of the
    * same donor, which is precisely what that ADR's open question 4 ("is the
-   * catalogue the right donor?") is about.
+   * catalogue the right donor?") is about -- and what ADR 0035 answers by
+   * keeping the donation and shortening what the list has to hold, rather than
+   * by finding a second donor that does not exist.
    *
    * So this costs the panel **nothing at all** until the player opens the
    * disclosure, which is the same trade `buyToggle` records and the reason that

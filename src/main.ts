@@ -54,10 +54,10 @@ import { SimulationCommandSender } from './ui/simulation-commands';
 import { BuildTool } from './ui/build-tool';
 import { ObjectTool } from './ui/object-tool';
 import { RoomTool } from './ui/room-tool';
-import { defaultObjectRegistry } from './content/object-catalog';
+import { OBJECT_CATEGORY_NAME_KEYS, defaultObjectRegistry } from './content/object-catalog';
 import { defaultRoomContentRegistry } from './content/room-catalog';
 import { PLANNED_OBJECT_TINT, zoningTint } from './rendering/world/appearance';
-import { BUILDABLE_REGISTRY, type BuildableDefinition } from './simulation/construction';
+import { BUILDABLE_REGISTRY, buildableObjectCategory, type BuildableDefinition } from './simulation/construction';
 // The one reader of the room catalogue's *area* requirements outside the
 // simulation, and it is the composition root by design: three layers ask this
 // question and none may re-derive the answer. See `roomCatalogue()` below.
@@ -410,6 +410,58 @@ function buildableLabelKey(definition: BuildableDefinition): LocalizationKey | u
 const CATEGORY_RANK: Readonly<Record<string, number>> = { wall: 0, object: 1, utility: 2 };
 
 /**
+ * The catalogue group for a buildable that places no object
+ * ([ADR 0035](../docs/adr/0035-buildable-catalogue-category-filter.md)).
+ *
+ * `src/content/object-catalog.ts` authors seven categories and the Build
+ * panel's filter divides the catalogue by them -- but two of the twenty-one
+ * rows place no object at all, so two rows have no category to be divided by.
+ * They are `wall-brick`, which is opaque edge geometry, and `door-wooden`,
+ * which registers a door on a tile edge; `buildableObjectCategory` answers
+ * `undefined` for both and its comment records why neither can be given an
+ * object.
+ *
+ * **A group and not an omission.** Leaving them out of the filter would put
+ * the wall -- the most-used buildable in the game -- reachable only from the
+ * unfiltered list, which is the state this whole change exists to make
+ * navigable. So the composition root mints one group for the pair, in the same
+ * place and for the same reason `BUILDABLE_LABEL_KEY` above mints their labels:
+ * their ids name no content entry, and this is the layer that knows both
+ * vocabularies.
+ *
+ * The id is an opaque string to the HUD (`HudBuildableViewModel.categoryId`)
+ * and can never collide with an authored category: `objectCategorySchema`'s
+ * seven members are a closed set and none of them is this word.
+ */
+const STRUCTURAL_CATEGORY_ID = 'structure';
+
+/**
+ * Which group of the Build panel's catalogue a buildable's row belongs to, and
+ * what that group is called.
+ *
+ * The **only** place the two vocabularies meet. A category id is simulation
+ * content (`buildableObjectCategory`), a name is a localization key
+ * (`OBJECT_CATEGORY_NAME_KEYS`), and ADR 0011 puts them on opposite sides of a
+ * boundary the HUD may not cross -- so the join is here, exactly as
+ * `buildableLabelKey` above joins a `placesObjectId` to an object's `nameKey`.
+ *
+ * Both halves are total, which is why this returns no `undefined`: every
+ * buildable has a group, because a buildable with no object gets the
+ * structural one. `tests/foundation/buildable-category-contract.test.ts` holds
+ * the whole partition as a written-out table, so a content row that landed in
+ * the wrong group is a failing test rather than a mis-sorted list.
+ */
+function buildableCategory(definition: BuildableDefinition): {
+  readonly categoryId: string;
+  readonly categoryLabelKey: LocalizationKey;
+} {
+  const category = buildableObjectCategory(definition);
+  return category === undefined
+    ? { categoryId: STRUCTURAL_CATEGORY_ID, categoryLabelKey: HUD_MESSAGE_KEY.buildCategoryStructure }
+    : { categoryId: category, categoryLabelKey: OBJECT_CATEGORY_NAME_KEYS[category] };
+}
+
+/**
  * The tile a new prison's interface starts from.
  *
  * A new session owns exactly chunk (0,0) of a 32-tile world, so the middle of
@@ -508,9 +560,37 @@ function purchasableMaterialFor(
 function buildCatalogue(): HudBuildViewModel {
   const buildables: HudBuildableViewModel[] = [];
   const rank = (category: string): number => CATEGORY_RANK[category] ?? Number.MAX_SAFE_INTEGER;
-  const ordered = [...BUILDABLE_REGISTRY.values()].sort(
+  const sorted = [...BUILDABLE_REGISTRY.values()].sort(
     (a, b) => rank(a.category) - rank(b.category) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
   );
+  /*
+   * Then regrouped so one catalogue group's rows are contiguous
+   * ([ADR 0035](../docs/adr/0035-buildable-catalogue-category-filter.md)).
+   *
+   * **A stable regroup of the sort above, not a second sort key**, and the
+   * difference is what keeps the first row the first row. Groups are visited in
+   * the order their first member already had, and members keep their order
+   * inside a group -- so `wall-brick` is still `buildables[0]` and still the
+   * default selection, which several browser assertions press by position.
+   * A `(group, rank, id)` comparator would have put `door-wooden` first, on
+   * `door` < `wall`, and quietly changed what the panel arrives armed to place.
+   *
+   * Why regroup at all, when the filter hides rows rather than reordering
+   * them: the unfiltered list is the arrival state and stays 21 rows long, so
+   * this is what makes those 21 rows read in the same sequence as the filter's
+   * own options -- one order in the panel instead of two. It also means a
+   * player scrolling the unfiltered list meets like with like, which is the
+   * only improvement available to a list that has to stay complete.
+   */
+  const groups = new Map<string, BuildableDefinition[]>();
+  for (const definition of sorted) {
+    const { categoryId } = buildableCategory(definition);
+    const group = groups.get(categoryId);
+    if (group === undefined) groups.set(categoryId, [definition]);
+    else group.push(definition);
+  }
+  const ordered = [...groups.values()].flat();
+
   for (const definition of ordered) {
     const labelKey = buildableLabelKey(definition);
     if (labelKey === undefined) continue;
@@ -519,6 +599,11 @@ function buildCatalogue(): HudBuildViewModel {
       definitionId: definition.id,
       labelKey,
       occupiesEdge: definition.category === 'wall',
+      // Which group the catalogue's filter puts this row in, and what that
+      // group is called (ADR 0035). Both are answers only this layer can give:
+      // the id is simulation content and the key is a localization key, and the
+      // HUD may hold neither (`AGENTS.md` boundary 1, ADR 0011).
+      ...buildableCategory(definition),
       // Whether the row arms the object tool and produces a `PlaceObject`
       // rather than a `PlaceBuildOrder`. A shape fact the HUD is handed, like
       // `occupiesEdge` above it, because what a buildable places is simulation
