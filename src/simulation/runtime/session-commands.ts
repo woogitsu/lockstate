@@ -8,6 +8,7 @@ import {
   PLACE_OBJECT_REFUSAL_REASONS,
   PURCHASE_CANCEL_REFUSAL_REASONS,
   PURCHASE_REFUSAL_REASONS,
+  RELEASE_GUARD_REFUSAL_REASONS,
   REMOVE_OBJECT_REFUSAL_REASONS,
   UNZONE_REFUSAL_REASONS,
   ZONE_REFUSAL_REASONS,
@@ -17,6 +18,7 @@ import type { ConstructionSystem } from '../construction/system';
 import type { ObjectPlacementService } from '../objects';
 import type { PrisonerOperationsRuntime } from '../prisoners/prisoner-operations-runtime';
 import type { RoomZoningService } from '../rooms/zoning';
+import type { GuardReleaseService } from '../security/guard-release';
 import type { StaffHiringService } from '../staff/hiring';
 import { tileCoordinate } from '../world/coordinates';
 
@@ -62,13 +64,21 @@ import { tileCoordinate } from '../world/coordinates';
  * beside the purchase for the reason `UnzoneRoom` is routed beside `ZoneRoom` --
  * one service's two halves belong side by side.
  *
- * `refusals` is the session's `RefusalLog`, and all nine routes write to the
+ * `ReleaseGuardAssignment` is the ninth, and it is the one command here that
+ * *un-does a claim rather than a purchase* (ADR 0034, answering ADR 0033's open
+ * question 3). It is routed here rather than beside `HireStaff` -- the other
+ * roster command -- because it is not the roster's other half: hiring adds a
+ * guard and releasing frees one that is already hired, and the service it
+ * reaches knows about search jobs and incident responses as well as about
+ * deployment. Beside the hire would have implied it was the opposite of one.
+ *
+ * `refusals` is the session's `RefusalLog`, and all ten routes write to the
  * same one: a refused wall, a refused purchase, a refused zoning rectangle, a
  * refused un-zoning, a refused hire, a refused admission, a refused object
- * placement, a refused object removal and a cancellation with nothing left to
- * refund are the same kind of fact about the
- * session -- the kernel took the command and a system then declined to carry it
- * out -- and they reach the player down one channel (#261).
+ * placement, a refused object removal, a cancellation with nothing left to
+ * refund and a release of a guard nothing was holding are the same kind of fact
+ * about the session -- the kernel took the command and a system then declined to
+ * carry it out -- and they reach the player down one channel (#261).
  */
 export function createSessionCommandHandler(
   construction: ConstructionSystem,
@@ -77,6 +87,7 @@ export function createSessionCommandHandler(
   staffHiring: StaffHiringService,
   runtimePrisoners: PrisonerOperationsRuntime,
   objectPlacement: ObjectPlacementService,
+  guardRelease: GuardReleaseService,
   refusals: RefusalLog,
 ): CommandHandler {
   const constructionCommands = createConstructionCommandHandler(construction, refusals);
@@ -388,6 +399,43 @@ export function createSessionCommandHandler(
        */
       const outcome = objectPlacement.remove({ x: simCommand.x, y: simCommand.y }, context.tick);
       if (outcome.kind === 'refused') refusals.record(REMOVE_OBJECT_REFUSAL_REASONS[outcome.reason], context.tick);
+      return;
+    }
+
+    if (simCommand !== null && simCommand.type === 'ReleaseGuardAssignment') {
+      /*
+       * The producer `GuardRoster.unassign` never had for a claimed guard (ADR
+       * 0034, answering ADR 0033 open question 3).
+       *
+       * ADR 0033 measured why this matters and put it in one sentence: *"the
+       * absence of one is what made this defect terminal rather than merely
+       * slow, and it will make the next resource-claiming system's equivalent
+       * bug terminal too."* Before this branch, every caller of
+       * `GuardRoster.unassign` in `src/` was inside the system that had made the
+       * claim, and each of those callers only ever fires when that system
+       * decides the claim is over -- so a claim whose owner had lost track of it
+       * was permanent, and #352 is the shape of that happening.
+       *
+       * **`GuardReleaseService.release`, not `GuardRoster.unassign`.** The
+       * difference is the whole of ADR 0034: the claim lives in the claimant's
+       * bookkeeping, not on the roster, so unassigning without telling the
+       * claimant swaps a stuck guard for a corrupt one -- a search job still
+       * routing somebody `DeploymentSystem` has since sent to a post, a response
+       * still counting somebody toward `arrivedGuardIds`. The service asks the
+       * claimant to drop the guard and then performs the one roster write.
+       *
+       * **No pre-check on the main thread**, for `CancelBuildOrder`'s and
+       * `CancelMaterialPurchase`'s reason: whether a guard is still held, and by
+       * what, is not something this thread's cadence-stale copy of the roster may
+       * decide. So this line is the only route a refused release reaches the
+       * player by, and the whole union is mapped rather than the one reason the
+       * panel can provoke.
+       *
+       * The lookup is exhaustive over `GuardReleaseRefusalReason`, so a third
+       * reason fails to compile until it has a wire id and a message key.
+       */
+      const outcome = guardRelease.release(simCommand.guardId);
+      if (outcome.kind === 'refused') refusals.record(RELEASE_GUARD_REFUSAL_REASONS[outcome.reason], context.tick);
       return;
     }
 

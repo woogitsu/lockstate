@@ -202,21 +202,52 @@ work are not.**
   and no version is bumped — the repair is recomputed from the payload on every
   load, so a player who dislikes the outcome still has the file they had.
 
+  **And the outcome is recovered too, which is ADR 0033's amendment (its open
+  question 1, built).** On the same update, immediately after the release, the
+  system mounts a **fresh** response to every still-open incident that no record
+  claims. Nothing is resumed and nothing is guessed: no responder is attributed
+  to the incident it used to serve, and no containment progress is inherited.
+  What that buys is exact agreement with a continuous run on the incident's own
+  outcome as well as on every resource the response claimed — measured on #352's
+  reproduction, the restored run now *resolves* the riot with
+  `injuredEntityIds: []` and `propertyDamage: 4`, where before the amendment it
+  lapsed with `[1,2,3]` and `8`.
+
   So `IncidentResponseSystem` still does **not** belong in the group above, and
   the reason is worth stating precisely rather than filed as fixed. The other
   four pay *"a bounded delay, not lost progress"*. This one loses progress on
-  purpose: the response is abandoned, the incident lapses at its deadline
-  instead of being contained, and every participant is injured where a
-  continuous run would have had none. What is bounded is only the *release*, and
-  its bound is the distance from the save to this system's next scheduled
-  update — at most one interval, **10 ticks**, and zero when the save lands on
-  one. `tests/integration/incident-response-restore.test.ts` measures both
-  halves: exact agreement with a continuous run on every resource the response
-  claimed (the unassigned pool, the sector's control state, the governed door),
-  and the incident outcome they disagree on, written out rather than omitted.
-  Carrying the record in the payload instead would recover the outcome too, and
-  is a save-schema version and a migration over stored saves — the trade ADR
-  0033 records and PR #361 takes the other side of.
+  purpose — the interrupted response really is abandoned, not resumed — and then
+  redoes it, so what a player pays is **time, not the outcome**:
+
+  - **The fresh response's clocks start at the re-dispatch tick.** For a save
+    taken while the incident is `'notified'` the travel is redone; for a save
+    taken while it is `'responding'` the containment timer restarts. So the
+    incident closes later by *the progress the save discarded*, rounded up to
+    this system's cadence and capped at `containmentTicks` (**60 ticks**,
+    because there was never more than sixty of it to discard). Measured:
+    a save at tick 1, 10 or 11 closes on 81 against the continuous run's 71; a
+    save at 69 closes on 131.
+  - **The responders come back when the new response closes**, not one interval
+    after the load. That is the one promise the amendment weakens, and it is
+    still bounded where #352's was permanent.
+  - **`respondersDispatched` counts the second dispatch**, because a second
+    dispatch is what happened. A restored session's counter is twice a
+    continuous one's for the same incident.
+  - **Re-dispatch is refused rather than guessed at** when the pool cannot offer
+    an incident already `'responding'` a set of responders who are *already at
+    its post tile* — which is reachable with two incidents open, because the
+    incident whose id sorts first takes the lowest guard ids. Such an incident
+    falls back to the paragraph above exactly: abandoned, resources returned,
+    lapsed at its deadline. It is ADR 0033 open question 2's un-recoverable fact
+    ("which incident each responder served") re-appearing as a bound on what a
+    re-dispatch can recover.
+
+  `tests/integration/incident-response-restore.test.ts` measures all of it, and
+  compares the restored outcome against a **continuous run executed on the same
+  seed** rather than against a copied literal. Carrying the record in the payload
+  instead would recover the containment *progress* as well, and is a save-schema
+  version and a migration over stored saves — the trade ADR 0033 records and PR
+  #361 takes the other side of.
 - **Per-system `requestSequence` counters** (`SearchSystem`,
   `DeploymentSystem`, `PatrolSystem`, `ActionSystem`). These only mint names
   for path requests against the queue above. Since no restored state can

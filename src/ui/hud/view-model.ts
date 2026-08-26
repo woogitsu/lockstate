@@ -379,6 +379,60 @@ export interface HudPendingDeliveriesViewModel {
 }
 
 /**
+ * One held guard, as the Staff panel's release list reads it
+ * ([ADR 0034](../../../docs/adr/0034-releasing-a-claimed-guard.md)).
+ *
+ * `entityId` is the whole point of the row: `ReleaseGuardAssignment { guardId }`
+ * names one guard, and until this view model existed nothing on this thread
+ * carried a guard id that a control could aim at. The same shape
+ * `HudBuildOrderViewModel` and `HudPendingDeliveryViewModel` are in, one
+ * resource over.
+ *
+ * `claimLabelKey` and `roleLabelKey` are message keys, never text (ADR 0011).
+ * The claim's key is derived by the host from the simulation's stable id
+ * through `deriveSimulationMessageKey('guard-claim', claim)`, exactly as every
+ * other projected simulation enum's label is, so the HUD resolves a key it was
+ * handed rather than knowing what a claim kind is.
+ *
+ * The role's key is optional and the claim's is not, and the asymmetry is real:
+ * a guard hired with a role id the catalogue does not define has no name for its
+ * role, and it is still a held guard whose claim a player may want to release --
+ * so the row is drawn without the role rather than dropped, for the reason a
+ * nameless delivery keeps its row.
+ */
+export interface HudHeldGuardViewModel {
+  readonly entityId: number;
+  /** What is holding this guard. Always present -- a row exists because something is. */
+  readonly claimLabelKey: LocalizationKey;
+  /** Absent when the host names no role for this guard. */
+  readonly roleLabelKey?: LocalizationKey;
+}
+
+/**
+ * Which guards are held, and by what (ADR 0034).
+ *
+ * Session state on a **pull**, on `HudPendingDeliveriesViewModel`'s three terms:
+ * `O(guards)` to walk, nobody reads it from another tab, and absent is a real
+ * state -- "nothing has asked" and "no guard is held" must not render the same,
+ * because only the second is a statement about the prison.
+ *
+ * `held` is summed over the whole roster rather than over the window, so a
+ * prison with more held guards than rows is still told how many there are --
+ * `HudPendingDeliveriesViewModel.total` carries the same fact for the same
+ * reason. `unassigned` is beside it because the pair is the sentence the header
+ * needs: "four of six on duty" is what makes a release a decision rather than a
+ * button.
+ */
+export interface HudHeldGuardsViewModel {
+  /** Every held guard, however many rows there was room to carry. */
+  readonly held: number;
+  /** Guards free right now. */
+  readonly unassigned: number;
+  /** The window, in ascending entity id. */
+  readonly guards: readonly HudHeldGuardViewModel[];
+}
+
+/**
  * The authored floor on a room's area, as the panel reads it.
  *
  * Three numbers rather than two, because content authors three: a room asks
@@ -728,6 +782,11 @@ export interface HudViewModel {
    * must not render the same (#285).
    */
   readonly pendingDeliveries?: HudPendingDeliveriesViewModel;
+  /**
+   * Which guards are held, and by what (ADR 0034). Absent until the first
+   * `hud/held-guards` reply, which is a different fact from "no guard is held".
+   */
+  readonly heldGuards?: HudHeldGuardsViewModel;
 }
 
 /**

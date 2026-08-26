@@ -5,6 +5,7 @@ import {
   WORLD_RENDER_SNAPSHOT_SCHEMA_VERSION,
   projectBuildQueue,
   projectContraband,
+  projectHeldGuards,
   projectIncidentDetail,
   projectIncidents,
   projectPrisonerDetail,
@@ -244,6 +245,33 @@ export const PROJECTION_CATALOG: Readonly<Record<ProjectionId, ProjectionCatalog
     project: (runtime, _tick, request) => {
       const view = projectPendingDeliveries(runtime.procurement, pageRequest(request));
       return { view: view as unknown as JsonValue, page: pageOfView(view.deliveries) };
+    },
+  },
+
+  /**
+   * ADR 0034's read model: which guards are held, and by what.
+   *
+   * `runtime.guardRelease` is handed in as the claim resolver rather than the
+   * projection re-deriving the claim, and that is the point of the entry rather
+   * than a convenience -- the row and the `ReleaseGuardAssignment` that aims at
+   * it must resolve "what is holding this guard" by one rule, and
+   * `GuardReleaseService.claimOf` is that rule.
+   *
+   * `paged: true` for `hud/pending-deliveries`' reason: the roster has no
+   * ceiling short of `GuardRoster`'s capacity, so the window is the caller's,
+   * bounded by `MAX_PROJECTION_PAGE_LIMIT` at the protocol edge.
+   */
+  'hud/held-guards': {
+    ...hud(`${HUD_VIEW_MODEL_SCHEMA_ID}.held-guards`),
+    paged: true,
+    target: 'none',
+    project: (runtime, _tick, request) => {
+      const view = projectHeldGuards(
+        { staff: runtime.securityGuards, claims: runtime.guardRelease },
+        pageRequest(request),
+        { identity: runtime.actorIdentity },
+      );
+      return { view: view as unknown as JsonValue, page: pageOfView(view.held) };
     },
   },
 

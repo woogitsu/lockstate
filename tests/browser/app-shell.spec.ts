@@ -843,6 +843,53 @@ const INTERACTIVE_SELECTOR =
  * match either of them, so a minimap toggle that came back at 375px while a
  * Build panel toggle vanished would have gone through as a pass.
  */
+/**
+ * The controls this sweep cannot reach **at any viewport**, because the state
+ * that reveals them is a state no session a player can start can be in.
+ *
+ * One entry, and it is a finding rather than a formality (ADR 0034). The Staff
+ * panel's held-guards block draws a row per guard something is holding, and it
+ * has no box until the simulation reports one. **Nothing in `src/` can hold a
+ * guard in a new session**, and this was measured rather than assumed:
+ *
+ * - `DeploymentSystem.assignUnassignedGuards` iterates `sectors.all()`, and
+ *   **nothing in `src/` registers a `SecuritySectorDefinition`** for a new
+ *   session -- `restoreSecuritySystems` in `session-systems.ts` is the only
+ *   caller of `securitySectors.register`, and it reads a save payload. So no
+ *   guard ever reaches `'travelling'` or `'on-post'`, and there is no
+ *   `'deployment'` claim.
+ * - `IncidentTriggerSystem` iterates `incidentSectorIds`, which the same
+ *   function is the only populator of, so no incident is ever opened and there
+ *   is no `'incident-response'` claim.
+ * - `SearchSystem.submitOrder` has no caller in `src/` at all and
+ *   `runtime.searchPolicies` is likewise only populated from a save, so there is
+ *   no `'search'` claim.
+ * - `'unattributed'` is the residue of a save taken during a response, so it
+ *   cannot exist without one of the above having happened first.
+ *
+ * That is a **pre-existing gap in the security tier and not a property of this
+ * surface**: the same four facts already make `DeploymentSystem`, `PatrolSystem`,
+ * `IncidentResponseSystem` and `SearchSystem` no-ops in every session a player
+ * can start, which is the state one layer down from the one ADR 0025 closed when
+ * `HireStaff` gave the roster its first real entries. A guard can be hired; there
+ * is nothing for it to be assigned to.
+ *
+ * **This entry is a tripwire, not an excuse.** The moment anything registers a
+ * security sector for a new session, these three controls become reachable, this
+ * list goes stale, and the assertion below fails until it is deleted -- which is
+ * exactly the direction `AWAITING_PRODUCER` in
+ * `tests/foundation/unconsumed-command-contract.test.ts` fails in, and for the
+ * same reason: a record of unreachability must not outlive the fact.
+ */
+const NEVER_LAID_OUT_WITHOUT_A_SECURITY_SECTOR = [
+  'hud > hud__rail > hud__side > ui-panel hud-staff > ui-panel__body > hud-staff__held > ' +
+    'hud-staff__held-list > hud-staff__held-row > button.ui-action "Release" #1',
+  'hud > hud__rail > hud__side > ui-panel hud-staff > ui-panel__body > hud-staff__held > ' +
+    'hud-staff__held-list > hud-staff__held-row > button.ui-action "Release" #2',
+  'hud > hud__rail > hud__side > ui-panel hud-staff > ui-panel__body > hud-staff__held > ' +
+    'hud-staff__held-list > hud-staff__held-row > button.ui-action "Release" #3',
+] as const;
+
 const NEVER_LAID_OUT_BELOW_720 = [
   'hud > hud__corner > ui-panel hud-minimap > ui-panel__header > ' +
     'button.ui-icon-button ui-icon-button--quiet ui-panel__toggle "Collapse"',
@@ -1913,9 +1960,19 @@ test.describe('the assembled application', () => {
       // those two controls genuinely cannot be reached at any tab. That is a
       // deliberate responsive decision (see `hud.css`), named here so it stays
       // one: it is the honest limit of what this test can claim about a phone.
-      const exempt = width <= 720 ? [...NEVER_LAID_OUT_BELOW_720] : [];
+      //
+      // `NEVER_LAID_OUT_WITHOUT_A_SECURITY_SECTOR` is added at *every* viewport,
+      // and for a different kind of reason: not a responsive decision but a gap
+      // in the simulation, measured and recorded on that constant. Sorted
+      // together because the assertion compares the sweep's document order.
+      const exempt = [
+        ...(width <= 720 ? NEVER_LAID_OUT_BELOW_720 : []),
+        ...NEVER_LAID_OUT_WITHOUT_A_SECURITY_SECTOR,
+      ];
       const neverLaidOut = inventory.filter((_, index) => !everMeasured.has(index));
-      expect(neverLaidOut, `controls never laid out in any state at ${width}x${height}`).toEqual(exempt);
+      expect([...neverLaidOut].sort(), `controls never laid out in any state at ${width}x${height}`).toEqual(
+        [...exempt].sort(),
+      );
       expect(
         everMeasured.size,
         `hit-tested only ${everMeasured.size} of ${inventory.length} controls at ${width}x${height}`,

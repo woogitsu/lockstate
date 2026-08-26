@@ -36,7 +36,12 @@ export interface IncidentResponseMetrics {
 
 interface ResponseRecord {
   readonly incidentId: string;
-  readonly guardIds: readonly EntityId[];
+  /**
+   * Mutable since ADR 0034: `GuardReleaseService` can take one responder off a
+   * response without abandoning it, so the list a record names is no longer
+   * fixed for the response's life.
+   */
+  guardIds: EntityId[];
   pathRequestIdsByGuard: Map<EntityId, string>;
   arrivedGuardIds: Set<EntityId>;
   containmentStartedAtTick: number | undefined;
@@ -146,13 +151,95 @@ export class IncidentResponseSystem implements SystemRegistration {
     return Math.max(1, Math.ceil(severity * this.policy.respondersPerSeverityPoint));
   }
 
+  /**
+   * The guards this system is currently holding on the `'on-search'` deployment
+   * phase ([ADR 0034](../../../docs/adr/0034-releasing-a-claimed-guard.md)).
+   *
+   * The counterpart of `SearchSystem.claimedGuardIds`, and it exists for the
+   * same reason: `'on-search'` is a shared phase with exactly two producers, so
+   * neither the release surface nor the read model behind it can tell a
+   * responder from a searcher without asking each claimant which guards are its
+   * own. Before this method the *other* claimant could be asked and this one
+   * could not, which is why `releaseOrphanedClaims` had to define a responder
+   * negatively -- "an `'on-search'` guard no search job names" -- rather than
+   * positively. That definition stays exactly as it is: it is what makes the
+   * sweep able to release a claim whose record the save destroyed, which is
+   * precisely the case this method cannot see.
+   *
+   * So the two are not redundant and the difference is worth stating: this
+   * answers *"which guards does a live response record name"*, and
+   * `releaseOrphanedClaims` answers *"which `'on-search'` guards does nothing
+   * live name at all"*.
+   *
+   * Deterministic: ascending entity id, over response records enumerated in
+   * sorted incident-id order.
+   */
+  public claimedGuardIds(): readonly EntityId[] {
+    const claimed = new Set<EntityId>();
+    for (const incidentId of [...this.responses.keys()].sort()) {
+      for (const guardId of this.responses.get(incidentId)!.guardIds) claimed.add(guardId);
+    }
+    return [...claimed].sort((a, b) => a - b);
+  }
+
+  /**
+   * Takes `guardId` off whatever response holds it, and answers whether one did
+   * ([ADR 0034](../../../docs/adr/0034-releasing-a-claimed-guard.md)).
+   *
+   * **The roster is not touched here** -- `GuardReleaseService` owns that call,
+   * for the reason `SearchSystem.releaseGuard` states: unassigning a responder
+   * without telling this system would leave the record naming a guard back in
+   * the unassigned pool, so `releaseResponse` would later `unassign` a guard
+   * some other system had since claimed, and `advanceResponse` would keep
+   * counting it toward `arrivedGuardIds`.
+   *
+   * **A response left with no responders is abandoned, and the incident is
+   * left open.** The record is deleted and nothing is transitioned: the incident
+   * keeps running and lapses at its own deadline, which is issue #28's
+   * consistent-failure outcome and exactly what `advanceResponse`'s no-record
+   * path already does for an interrupted response. `lapse` then lifts the
+   * lockdown through `liftLockdownNoOpenIncidentJustifies`, the branch ADR 0033
+   * added for a record-less incident -- so a player who releases the last
+   * responder from a severity-8 riot does not leave the sector dark for ever.
+   * That branch is reused rather than duplicated, which is what makes this safe
+   * to add.
+   *
+   * **What it does not do is resolve or lapse the incident early.** A release is
+   * a staffing decision, not a verdict on the riot, and a command that closed an
+   * incident would be writing an outcome the simulation had not reached.
+   *
+   * Deterministic: sorted incident ids, no RNG draw.
+   */
+  public releaseResponder(guardId: EntityId): boolean {
+    for (const incidentId of [...this.responses.keys()].sort()) {
+      const record = this.responses.get(incidentId)!;
+      const index = record.guardIds.indexOf(guardId);
+      if (index === -1) continue;
+      record.guardIds.splice(index, 1);
+      record.arrivedGuardIds.delete(guardId);
+      record.pathRequestIdsByGuard.delete(guardId);
+      if (record.guardIds.length === 0) this.responses.delete(incidentId);
+      return true;
+    }
+    return false;
+  }
+
   public update(context: SimulationContext): void {
     // Before the incident pass, so responders this sweep hands back are in the
     // unassigned pool in time for `tryDispatch` to send them to an incident
     // that is still `'active'` on this same tick.
+    //
+    // Release first, then dispatch anew, and the order is load-bearing twice
+    // over: ADR 0033 decision 1's release is what refills the pool the
+    // re-dispatch draws from, and it is also the decision that stays -- the
+    // interrupted response is abandoned, and what follows is a *new* response
+    // rather than a resumption of it. Both steps are owed by the one flag
+    // `loadSnapshot` sets, so both happen exactly once per restore, on the same
+    // scheduled update, at a tick the kernel drove.
     if (this.orphanedClaimSweepPending) {
       this.orphanedClaimSweepPending = false;
       this.releaseOrphanedClaims();
+      this.redispatchInterruptedResponses(context.tick);
     }
 
     for (const incident of this.incidents.openIncidents()) {
@@ -171,15 +258,59 @@ export class IncidentResponseSystem implements SystemRegistration {
       return;
     }
 
+    const guardIds = this.claimableResponders(incident);
+    if (guardIds === undefined) return; // observable understaffing -- incident keeps running until its deadline
+
+    this.mountResponse(incident, guardIds, tick);
+    this.incidents.transition(incident.id, 'notified', tick);
+  }
+
+  /**
+   * The `required` lowest-id unassigned guards, or `undefined` when the pool
+   * cannot fill the response.
+   *
+   * Split out of `tryDispatch` so that `redispatchInterruptedResponses` claims
+   * responders by exactly the same rule -- ascending entity id, from the same
+   * finite shared pool `DeploymentSystem` and `SearchSystem` draw from. A second
+   * selection rule for the re-dispatch path would be a second thing to keep
+   * deterministic.
+   */
+  private claimableResponders(incident: IncidentRecord): readonly EntityId[] | undefined {
     const required = this.requiredResponderCount(incident.severity);
     const available = this.guards.unassignedGuardIds();
-    if (available.length < required) return; // observable understaffing -- incident keeps running until its deadline
+    if (available.length < required) return undefined;
+    return available.slice(0, required);
+  }
 
-    const guardIds = available.slice(0, required);
+  /**
+   * Claims `guardIds`, applies the lockdown the severity calls for, routes
+   * whoever is not already there, and records the response.
+   *
+   * **It performs no lifecycle transition**, and that is the whole reason it is
+   * a method rather than the body of `tryDispatch`. Dispatching and *notifying*
+   * are two things, and only the first of them is available for an incident
+   * that is already past `'active'` -- which is the obstacle ADR 0033's open
+   * question 1 names ("re-dispatching means creating a record for an incident in
+   * a state `tryDispatch` never sees"). Separating the claim from the transition
+   * is the whole of what that question needed: the claim is legal from any open
+   * state, the transition is not, and `IncidentLog.transition` rejects an
+   * illegal one rather than being asked to allow it. The forward-only lifecycle
+   * is untouched and `LEGAL_TRANSITIONS` is not widened by a single edge.
+   *
+   * `containmentStartedAtTick` is set here for an incident already
+   * `'responding'`, and that is the restarted containment timer ADR 0033's open
+   * question 1 prices. It is set rather than left `undefined` because
+   * `advanceResponse`'s `'responding'` branch reads
+   * `record.containmentStartedAtTick ?? tick` into a *local* -- an undefined
+   * field is re-defaulted to the current tick on every update and the elapsed
+   * check can therefore never pass, so a record without it would hold the
+   * incident open for ever instead of restarting its clock.
+   */
+  private mountResponse(incident: IncidentRecord, guardIds: readonly EntityId[], tick: number): void {
     for (const guardId of guardIds) this.guards.setDeploymentPhase(guardId, 'on-search');
     this.respondersDispatched += guardIds.length;
 
-    const record: ResponseRecord = { incidentId: incident.id, guardIds, pathRequestIdsByGuard: new Map(), arrivedGuardIds: new Set(), containmentStartedAtTick: undefined, lockdownApplied: false };
+    const record: ResponseRecord = { incidentId: incident.id, guardIds: [...guardIds], pathRequestIdsByGuard: new Map(), arrivedGuardIds: new Set(), containmentStartedAtTick: undefined, lockdownApplied: false };
 
     if (incident.severity >= this.policy.lockdownSeverityThreshold) {
       this.sectors.setControlState(incident.sectorId, 'lockdown');
@@ -199,8 +330,88 @@ export class IncidentResponseSystem implements SystemRegistration {
       record.pathRequestIdsByGuard.set(guardId, requestId);
     }
 
+    if (incident.state === 'responding') record.containmentStartedAtTick = tick;
+
     this.responses.set(incident.id, record);
-    this.incidents.transition(incident.id, 'notified', tick);
+  }
+
+  /**
+   * Mounts a **fresh** response to every still-open incident whose response a
+   * save interrupted -- ADR 0033 open question 1, built.
+   *
+   * Runs immediately after `releaseOrphanedClaims`, on the same update, and the
+   * order is the semantics: 0033 decision 1 stands, the interrupted response
+   * really is abandoned and everything it held really is handed back, and only
+   * then is a new response mounted out of the pool the release refilled. There
+   * is no resumption anywhere in here and nothing guesses which incident a
+   * restored responder served -- which is the guess 0033 open question 2
+   * declines to make and this path still does not have to make.
+   *
+   * What it recovers is the *outcome*. 0033 measured the cost of abandoning one
+   * on #352's own reproduction: the riot lapsed with `injuredEntityIds: [1,2,3]`
+   * and `propertyDamage: 8` where a continuous run resolved it with `[]` and
+   * `4`. A fresh response reaches the continuous run's outcome instead, and the
+   * price is the one that question named -- a containment timer that restarts --
+   * plus two costs it did not, both measured in
+   * `tests/integration/incident-response-restore.test.ts`: the responders are
+   * committed again rather than idle from the sweep onward, so they come back
+   * when the *new* response closes rather than one interval after the load; and
+   * `respondersDispatched` counts the second dispatch, because a second dispatch
+   * is what happened.
+   *
+   * Three conditions, each of them a refusal to invent something:
+   *
+   * - **An `'active'` incident is skipped**, because `tryDispatch` owns it and
+   *   runs on this very update, a few lines below. Dispatching here as well
+   *   would double-claim.
+   * - **An incident past its deadline is skipped**, so the deadline still
+   *   decides. `responseDeadlineTicks` is measured from `startedAtTick`, which
+   *   is in the payload, so a save loaded long after the incident began finds it
+   *   already too late and lapses on the incident pass exactly as 0033 says.
+   * - **An incident whose sector this registry does not hold is skipped.** This
+   *   is a restore-path hazard rather than a hypothetical:
+   *   `SecuritySectorRegistry.loadSnapshot` skips a sector session setup did not
+   *   re-register, and `mountResponse` reaches `requireDefinition` through both
+   *   `setControlState` and `incidentTile`, which throws -- out of
+   *   `Kernel.step()`. `lapse` already tolerates exactly this case for exactly
+   *   this reason (`liftLockdownNoOpenIncidentJustifies` returns silently), and
+   *   this path tolerates it the same way instead of turning a tolerated
+   *   restore into a crash.
+   *
+   * And one more for an incident already `'responding'`: every claimed responder
+   * must **already be standing on the incident's post tile**. That state asserts
+   * that responders arrived, and `advanceResponse`'s `'responding'` branch reads
+   * no route results at all -- so a re-mounted response that had to walk
+   * somebody in would leave a navigation request nothing ever collects and
+   * contain the incident with a responder still in transit. When the pool cannot
+   * offer a set that is already there, the incident falls back to 0033's
+   * behaviour and lapses. Measured on #352's reproduction: the four guards the
+   * sweep just released are the four lowest ids in the pool and are standing on
+   * the post tile, so the condition is met rather than merely tested for.
+   *
+   * Deterministic: `openIncidents()` is sorted by id, `claimableResponders`
+   * draws ascending entity id, and nothing here touches an RNG stream.
+   */
+  private redispatchInterruptedResponses(tick: number): void {
+    for (const incident of this.incidents.openIncidents()) {
+      if (incident.state === 'active') continue;
+      // Empty immediately after `loadSnapshot`, and checked rather than assumed
+      // for the reason `releaseOrphanedClaims` checks the same thing: a payload
+      // that one day carries response records must narrow this pass instead of
+      // being fought by it.
+      if (this.responses.has(incident.id)) continue;
+      if (this.isPastDeadline(incident, tick)) continue;
+      if (this.sectors.getDefinition(incident.sectorId) === undefined) continue;
+
+      const guardIds = this.claimableResponders(incident);
+      if (guardIds === undefined) continue;
+      if (incident.state === 'responding') {
+        const destination = this.incidentTile(incident);
+        if (!guardIds.every((guardId) => sameTile(this.guards.getTile(guardId), destination))) continue;
+      }
+
+      this.mountResponse(incident, guardIds, tick);
+    }
   }
 
   private isPastDeadline(incident: IncidentRecord, tick: number): boolean {
@@ -335,14 +546,26 @@ export class IncidentResponseSystem implements SystemRegistration {
   private advanceResponse(incident: IncidentRecord, tick: number): void {
     const record = this.responses.get(incident.id);
     if (record === undefined) {
-      // No live record for an open incident, which since #352 is the ordinary
-      // restore path rather than an edge: `loadSnapshot` restores no records,
-      // `releaseOrphanedClaims` has already handed back what the interrupted
-      // response was holding, and there is nothing to resume. Re-dispatch is
-      // impossible from here -- `tryDispatch` runs only from `'active'` and the
-      // lifecycle is forward-only -- so the deadline decides, and the incident
-      // lapses rather than silently resolving (issue #28's consistent-failure
-      // outcome). `lapse` lifts the sector's lockdown on the way out.
+      // No live record for an open incident. Since #352 that was the ordinary
+      // restore path; since ADR 0033's amendment it is the *residue* of it --
+      // `redispatchInterruptedResponses` has already run on this system's first
+      // update after the load and mounted a fresh response to every interrupted
+      // incident it could, so what reaches this branch is one it could not: the
+      // deadline had already passed, the pool could not fill the response, the
+      // sector is not registered, or (for an incident already `'responding'`)
+      // the responders it could claim were not at the scene.
+      //
+      // The sentence this comment used to carry -- *"re-dispatch is impossible
+      // from here"* -- was the obstacle ADR 0033 open question 1 stated, and it
+      // was wrong in one word: re-dispatch is impossible *from `tryDispatch`*,
+      // which runs only from `'active'`, and the thing that made it look
+      // impossible altogether was that dispatching and notifying were one
+      // method. They are two now. The lifecycle is still forward-only and
+      // `LEGAL_TRANSITIONS` is unchanged.
+      //
+      // So the deadline still decides here, and the incident lapses rather than
+      // silently resolving (issue #28's consistent-failure outcome). `lapse`
+      // lifts the sector's lockdown on the way out.
       if (this.isPastDeadline(incident, tick)) this.lapse(incident, tick);
       return;
     }

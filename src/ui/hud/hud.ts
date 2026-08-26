@@ -470,6 +470,29 @@ export type HudIntent =
    */
   | { readonly kind: 'cancel-material-purchase'; readonly orderId: string }
   /**
+   * The player asked for a guard to be released from whatever is holding it
+   * ([ADR 0034](../../../docs/adr/0034-releasing-a-claimed-guard.md)).
+   *
+   * An id and nothing else, and deliberately **no claim**. The HUD is told what
+   * is holding each guard so it can say so on the row, and it does not send that
+   * back: which claimant to ask is resolved inside the simulation at the tick
+   * the command executes, because `'on-search'` is a shared deployment phase and
+   * the only way to tell a responder from a searcher is to ask both claimants
+   * live. A claim travelling out on this intent would be this thread guessing
+   * from a projection that is a cadence old, and it would be wrong in exactly
+   * the race the release's own `release-guard.not-held` refusal exists for.
+   *
+   * A *command*, so it goes through the same gate as a purchase: a second tap
+   * while one is in flight must not hand a busy host two releases. Like a
+   * refused cancellation, a refused release is a real state a player meets
+   * without doing anything wrong -- the response can close between the
+   * publication and the press -- and the simulation reports that as
+   * `release-guard.not-held` on the alerts channel. What
+   * `hud.refusal.release-guard` says is the other side of the dispatch: this
+   * thread had no session to send to.
+   */
+  | { readonly kind: 'release-guard'; readonly guardId: number }
+  /**
    * The player asked for an area to become a room (ADR 0022, amended).
    *
    * Ids and numbers only -- the host turns this into a `ZoneRoom` command; the
@@ -1309,6 +1332,18 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     onHire: (intent) => {
       dispatchCommand({ kind: 'hire-staff', staffRoleId: intent.staffRoleId }, staffPanel.hireControl);
     },
+    /*
+     * Releasing is a command on the same terms as hiring, and the button that
+     * was pressed is deliberately *not* passed as the refusal's control (ADR
+     * 0034). The rows are pooled and repainted on the counts cadence, so a mark
+     * left on row two would end up on whichever guard the next publication put
+     * there -- the same trap `onCancelPurchase` names one panel over. The
+     * refusal line still says what did not happen, and it is on screen at every
+     * viewport, which the alerts list is not.
+     */
+    onRelease: (intent) => {
+      dispatchCommand({ kind: 'release-guard', guardId: intent.guardId });
+    },
   });
 
   // ---- bottom-right intake panel (Overview tab) ---------------------
@@ -1573,6 +1608,11 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // one would refund; the panel decides the sentences; this line decides
     // nothing.
     buildPanel.setPendingDeliveries(next.pendingDeliveries);
+    // And which guards are held and by what, on identical terms (ADR 0034). The
+    // projection resolved every claim -- through the same rule the release
+    // itself uses -- the panel decides the sentences, and this line decides
+    // nothing.
+    staffPanel.setHeldGuards(next.heldGuards);
     // And where the arrivals are, on identical terms: pulled, absent when
     // nothing asked, and passed straight through. The projection decided how
     // many are at each stage and which stage is terminal; the panel decides the

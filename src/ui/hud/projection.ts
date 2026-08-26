@@ -330,6 +330,8 @@ export function refusalMessageKey(actionId: string): LocalizationKey | undefined
       return HUD_MESSAGE_KEY.refusalCancelBuildOrder;
     case 'cancel-material-purchase':
       return HUD_MESSAGE_KEY.refusalCancelMaterialPurchase;
+    case 'release-guard':
+      return HUD_MESSAGE_KEY.refusalReleaseGuard;
     default:
       return undefined;
   }

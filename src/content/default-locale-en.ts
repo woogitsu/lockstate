@@ -236,6 +236,16 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.alert.refusal.purchase.insufficient-funds': 'The materials were not ordered — there are not enough funds.',
   'hud.alert.refusal.purchase.invalid-quantity': 'The materials were not ordered — that quantity cannot be bought.',
   'hud.alert.refusal.purchase.unknown-material': 'The materials were not ordered — that material is not for sale.',
+  /*
+   * ADR 0034's two. `not-held` is the one a player provokes by pressing a row
+   * the list had already stopped being true about -- a response that closed or a
+   * search that finished between the publication and the press -- so it says the
+   * guard is free rather than implying a mistake. `unknown-guard` is not
+   * reachable from the panel and is worded for the case that does reach it: a
+   * command naming somebody who is not on the roster.
+   */
+  'hud.alert.refusal.release-guard.not-held': 'Nothing was released — that guard is already off duty.',
+  'hud.alert.refusal.release-guard.unknown-guard': 'Nothing was released — that guard is not on the roster.',
   // `zone.out-of-bounds` and `zone.unowned-land` describe the same condition
   // as their `build.*` neighbours and get their own sentence, because the
   // player asked for a room rather than for a wall and a message that named
@@ -440,6 +450,21 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.security.hire': 'Hire {role} · {total}',
   'hud.security.hire-hint': 'Taken from the treasury on hire. A new guard starts unassigned.',
 
+  // The Staff panel's held-guards list (ADR 0034). `hud.security.held-row` says
+  // who and what is holding them in one line, so the claim is a statement about
+  // the guard rather than a badge the reader has to pair up with a name.
+  // `hud.security.held-release` names no claim: releasing a searcher, a
+  // responder and a posted guard is one gesture, which is the decision ADR 0034
+  // records, and three verbs would contradict it on screen.
+  'hud.security.held': 'On duty',
+  'hud.security.held-summary': '{held} held · {unassigned} free',
+  'hud.security.held-empty': 'Nobody is assigned right now.',
+  'hud.security.held-row': '{name} · {claim}',
+  'hud.security.held-row-unnamed': 'Guard {id} · {claim}',
+  'hud.security.held-release': 'Release',
+  'hud.security.held-more': 'and {count} more',
+  'hud.security.held-hint': 'A released guard stays hired and goes back to the pool.',
+
   // What a refused control says (issue #207). Four comments in `src/` claimed
   // the HUD reported a refusal "on the control that was pressed" while the
   // only consumer of the failure was a `console.warn`, so a "Place order" with
@@ -469,6 +494,7 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // simulation's own refusal and reads differently
   // (`hud.alert.refusal.cancel-purchase.not-pending`).
   'hud.refusal.cancel-material-purchase': 'Nothing was refunded — the request was refused and the delivery is still on its way.',
+  'hud.refusal.release-guard': 'Nobody was released — the request was refused and the guard is still assigned.',
 
   'hud.rooms.title': 'Rooms',
   'hud.rooms.catalogue': 'Room type',

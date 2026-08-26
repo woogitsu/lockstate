@@ -34,16 +34,37 @@ import { hashFullRuntime, toJsonValue } from '../helpers/determinism-state';
  *
  * The semantics that buys, stated so the tests can be read against it: **a
  * restored session does not inherit an emergency response. The response is
- * abandoned and its resources are returned.** The incident is not resumed --
- * it lapses at its own deadline, which is issue #28's consistent-failure
- * outcome. So the assertions below split into two groups on purpose:
+ * abandoned and its resources are returned** -- and then, since ADR 0033's
+ * amendment (open question 1, built), **a fresh response is mounted to the
+ * still-open incident out of the pool the release just refilled.** Release
+ * first, dispatch anew second, both owed by the one flag `loadSnapshot` sets,
+ * both on the same scheduled update.
+ *
+ * The incident is *not resumed*: no responder is attributed to the incident it
+ * used to serve, no containment progress is inherited, and nothing guesses
+ * anything (which is what ADR 0033 open question 2 declines to do and this path
+ * still never has to). What is recovered is the **outcome**.
+ *
+ * ## What each group of assertions below is for
  *
  * - **The resource observables** -- the unassigned guard pool, the sector's
  *   control state and the state of the door that sector governs -- reach
- *   exactly what the continuous run reaches. This is the whole of #352.
- * - **The incident's own outcome** does *not*. The continuous run resolves it;
- *   a restored run lapses it. That difference is asserted, with both values
- *   written out, rather than left to be discovered.
+ *   exactly what the continuous run reaches. This is the whole of #352, and it
+ *   is unchanged by the amendment. What *did* change is when: the responders are
+ *   handed back and immediately committed again, so they return to the pool when
+ *   the **new** response closes rather than one interval after the load.
+ * - **The incident's own outcome** now reaches the continuous run's too, and it
+ *   is asserted **against a continuous run executed live on the same seed**,
+ *   never against a literal copied out of a previous run.
+ * - **The price** is asserted as a number rather than described: the fresh
+ *   response's clocks start at the re-dispatch tick, so the incident closes
+ *   later, and `respondersDispatched` counts the second dispatch because a
+ *   second dispatch is what happened.
+ * - **The boundary** is asserted too. Re-dispatch is not always possible, and
+ *   the one case a session can reach without being forced into it -- two open
+ *   incidents, where the responders the pool offers are standing at the *other*
+ *   incident's post tile -- falls back to ADR 0033 decision 1 exactly, with the
+ *   lapse and its outcome written out.
  *
  * ## Why these tick pins and not "they agree eventually"
  *
@@ -64,6 +85,8 @@ const GUARDS_HIRED = 6;
 const SEVERITY = 8;
 /** #352's reproduction hires every guard on the same origin tile. */
 const GUARD_ORIGIN = { x: tileCoordinate(0), y: tileCoordinate(0) } as const;
+/** `respondersPerSeverityPoint` is 0.5, so a severity-8 riot needs four. Derived from the policy, not copied. */
+const REQUIRED_RESPONDERS = Math.max(1, Math.ceil(SEVERITY * DEFAULT_INCIDENT_RESPONSE_POLICY.respondersPerSeverityPoint));
 const POST_TILE = { x: tileCoordinate(3), y: tileCoordinate(1) } as const;
 
 /**
@@ -172,6 +195,24 @@ function tickOfLockdownLift(runtime: SimulationRuntime, budget: number): number 
 }
 
 /**
+ * The tick a run reaches a terminal incident state on, either one, or
+ * `undefined` if it never does.
+ *
+ * Deliberately blind to *which* terminal state: the whole point of the
+ * comparisons below is that a restored run and a continuous one now agree on
+ * that, so a helper that only recognised one of them would be asserting the
+ * answer in the question.
+ */
+function tickOfIncidentClose(runtime: SimulationRuntime, budget: number): number | undefined {
+  for (let index = 0; index < budget; index += 1) {
+    runtime.kernel.step();
+    const state = runtime.incidents.get(INCIDENT_ID)!.state;
+    if (state === 'resolved' || state === 'lapsed') return runtime.kernel.tick;
+  }
+  return undefined;
+}
+
+/**
  * Generous enough that a run which is merely slow is distinguished from one
  * that is stuck: `responseDeadlineTicks` is 600, so a response that lapses
  * instead of resolving still releases inside this budget. On `origin/main` the
@@ -186,20 +227,53 @@ const RELEASE_BUDGET_TICKS = 2_000;
  *
  * - The continuous run releases everything on **71** (dispatch at tick 0,
  *   `'responding'` at 10, sixty containment ticks, resolved on 70).
- * - A save taken at `kernel.tick` **1** is reconciled by the first scheduled
- *   `IncidentResponseSystem` update, which is tick 10, observed at **11**.
- * - A save taken at `kernel.tick` **11** is reconciled on tick 20, at **21**.
- * - A save taken at `kernel.tick` **10** is reconciled on tick 10 itself, with
- *   no delay at all -- the case a tick comparison rather than a pending flag
- *   would have stepped straight over.
- * - The interrupted incident lapses on tick 610 (`responseDeadlineTicks` is
- *   600 and the check runs on this system's cadence), and the lockdown lifts
- *   with it, at **611**.
+ * - A save taken at `kernel.tick` **1**, **10** or **11** is reconciled by the
+ *   first scheduled `IncidentResponseSystem` update it gets -- tick 10, tick 10
+ *   again (the case a tick comparison rather than a pending flag would have
+ *   stepped straight over) and tick 20 -- and the fresh response mounted there
+ *   closes the incident on **81** in all three, which is the continuous run's
+ *   71 plus one system interval.
+ * - **The interrupted incident no longer lapses.** ADR 0033 measured the lapse
+ *   at 610 with the lockdown lifting at **611**; the amendment recovers the
+ *   outcome instead, so the lockdown lifts when the *new* response resolves the
+ *   incident. 611 survives below only as the tick the one reachable fall-back
+ *   case still lapses on.
  */
 const CONTINUOUS_RELEASE_TICK = 71;
-const RELEASE_TICK_SAVED_AT_1 = 11;
-const RELEASE_TICK_SAVED_AT_11 = 21;
-const LOCKDOWN_LIFT_TICK = 611;
+/**
+ * Where a re-dispatched response puts every guard back, for a save taken
+ * anywhere inside the first interval: the fresh response's clocks start at the
+ * re-dispatch tick, so the whole response runs one interval late.
+ *
+ * The same number for a save at 1, at 10 and at 11 -- and not by coincidence.
+ * For a `'notified'` save the fresh response redoes the travel from the
+ * re-dispatch tick; for a `'responding'` save it restarts the containment timer
+ * from it. Both stages take the same ten ticks to reach in this reproduction, so
+ * both cost the same ten here. `RESOLVE_TICKS_LATE_BY_CONTAINMENT_PROGRESS`
+ * below is the general statement.
+ */
+const REDISPATCHED_RESOLVE_TICK = 81;
+/**
+ * What a restarted containment timer costs, as a table rather than a sentence:
+ * `[tick the save was taken at, tick the restored run resolves on]` for a save
+ * taken while the incident is `'responding'`.
+ *
+ * The cost is **the containment progress the save discards**, rounded up to this
+ * system's cadence and capped at `containmentTicks` -- a save one tick before
+ * containment completes throws away the whole sixty and no more, because there
+ * was never more than sixty to throw away. Each pair is measured; the shape is
+ * asserted against `DEFAULT_INCIDENT_RESPONSE_POLICY` in the test that reads it.
+ */
+const RESOLVE_TICKS_LATE_BY_CONTAINMENT_PROGRESS = [
+  [11, 81],
+  [21, 91],
+  [31, 101],
+  [51, 121],
+  [61, 131],
+  [69, 131],
+] as const;
+/** The tick ADR 0033's abandoned incident lapsed on, kept because one fall-back case still reaches it. */
+const LAPSE_TICK = 611;
 
 describe('a save taken during an incident response releases what the response claimed', () => {
   it('reproduces the save-time state #352 measured: four responders committed and the sector locked down', () => {
@@ -220,56 +294,93 @@ describe('a save taken during an incident response releases what the response cl
     );
   });
 
-  it('hands every responder back on the first scheduled update after the load, and the continuous run needed 71 ticks to do the same', () => {
+  it('releases the claim it inherited and mounts a fresh response out of the pool that refilled, on one update', () => {
     const continuous = buildRespondingPrison();
     const restored = saveAndLoad(continuous);
 
-    // The restore itself changes nothing: the claim is intact, and the release
-    // is a thing that happens in play rather than during re-hydration.
+    // The restore itself changes nothing: the claim is intact, and both the
+    // release and the re-dispatch are things that happen in play rather than
+    // during re-hydration. This is the assertion that keeps the file on disk
+    // unchanged, and the round-trip test below is its other half.
     expect(observe(restored)).toEqual(observe(continuous));
+    expect(restored.incidentResponseSystem.getMetrics().respondersDispatched).toBe(REQUIRED_RESPONDERS);
 
+    // The pin below is a distance from the save, not a magic number: the save
+    // was taken at tick 1 and this system runs every 10 ticks from phase 0, so
+    // the first update it gets is tick 10. Read off the system so a cadence
+    // change fails here, with the reason, rather than further down.
+    expect(restored.incidentResponseSystem.schedule).toEqual({ intervalTicks: 10, phaseTicks: 0 });
+    step(restored, restored.incidentResponseSystem.schedule.intervalTicks);
+    expect(restored.kernel.tick).toBe(11);
+
+    // **Both halves happened, on that one update, and this is what proves it.**
+    // Four responders were handed back and four were claimed again, so the
+    // dispatch counter has moved by exactly the required count a second time --
+    // which is only reachable through `unassignedGuardIds()`, and the four
+    // inherited responders were not in it until the release put them there.
+    expect(restored.incidentResponseSystem.getMetrics().respondersDispatched).toBe(REQUIRED_RESPONDERS * 2);
+    expect(observe(restored)).toEqual({
+      incident: 'notified',
+      // Still locked down, deliberately -- and now for two reasons rather than
+      // one: the riot is still running and its severity is what justifies a
+      // lockdown, and the fresh response has applied one of its own.
+      sectorControlState: 'lockdown',
+      doorState: 'locked',
+      guardPhases: ['on-search', 'on-search', 'on-search', 'on-search', 'unassigned', 'unassigned'],
+      unassignedGuardCount: GUARDS_HIRED - REQUIRED_RESPONDERS,
+    });
+
+    // And the guards do come back -- which is the whole of #352 -- when the new
+    // response closes rather than one interval after the load. That is the cost
+    // the amendment accepts in exchange for the outcome, and it is a *bounded*
+    // wait rather than #352's permanent one.
     const continuousRelease = tickOfRelease(continuous, RELEASE_BUDGET_TICKS);
     expect(continuousRelease, 'the continuous run must release, or there is nothing to compare against').toBe(
       CONTINUOUS_RELEASE_TICK,
     );
-
     const restoredRelease = tickOfRelease(restored, RELEASE_BUDGET_TICKS);
     expect(
       restoredRelease,
       'the restored run must release the guards it inherited -- issue #352 is that it never did',
     ).toBeDefined();
-    expect(restoredRelease).toBe(RELEASE_TICK_SAVED_AT_1);
-
-    // The pin above is a distance from the save, not a magic number: the save
-    // was taken at tick 1 and this system runs every 10 ticks from phase 0, so
-    // the first update it gets is tick 10. Read off the system so a cadence
-    // change fails here, with the reason, rather than further down.
-    expect(restored.incidentResponseSystem.schedule).toEqual({ intervalTicks: 10, phaseTicks: 0 });
-    expect(RELEASE_TICK_SAVED_AT_1 - 1).toBe(restored.incidentResponseSystem.schedule.intervalTicks);
-
-    expect(observe(restored)).toEqual({
-      incident: 'notified',
-      // Still locked down, deliberately: the riot is still running and its
-      // severity is what justifies the lockdown, not the responders.
-      sectorControlState: 'lockdown',
-      doorState: 'locked',
-      guardPhases: ['unassigned', 'unassigned', 'unassigned', 'unassigned', 'unassigned', 'unassigned'],
-      unassignedGuardCount: GUARDS_HIRED,
-    });
+    expect(restoredRelease).toBe(REDISPATCHED_RESOLVE_TICK);
   });
 
-  it('lifts the lockdown when the interrupted incident closes, and reaches the continuous run’s resource state exactly', () => {
+  it('reaches the continuous run’s outcome as well as its resource state, compared against that run rather than a literal', () => {
+    // **The assertion ADR 0033's open question 1 is about.** Both runs are
+    // executed here, from the same seed, and the restored run's outcome is
+    // compared against whatever the continuous run actually produced -- not
+    // against a value copied out of an earlier run of this suite, which is the
+    // fixture class #375 documents six instances of. If the continuous run's
+    // outcome changes for any reason, this test follows it instead of pinning a
+    // stale copy of it.
     const continuous = buildRespondingPrison();
     const restored = saveAndLoad(continuous);
 
-    expect(tickOfLockdownLift(restored, RELEASE_BUDGET_TICKS)).toBe(LOCKDOWN_LIFT_TICK);
-    expect(restored.incidents.get(INCIDENT_ID)!.timeline.at(-1)).toEqual({ state: 'lapsed', atTick: LOCKDOWN_LIFT_TICK - 1 });
+    const continuousClose = tickOfIncidentClose(continuous, RELEASE_BUDGET_TICKS);
+    const restoredClose = tickOfIncidentClose(restored, RELEASE_BUDGET_TICKS);
+    expect(continuousClose, 'the continuous run must close the incident, or there is nothing to compare against').toBe(
+      CONTINUOUS_RELEASE_TICK,
+    );
+    expect(restoredClose, 'the restored run must close the incident it re-dispatched to').toBe(REDISPATCHED_RESOLVE_TICK);
 
-    step(continuous, CONTINUOUS_RELEASE_TICK - continuous.kernel.tick);
-    expect(continuous.kernel.tick).toBe(CONTINUOUS_RELEASE_TICK);
+    const continuousIncident = continuous.incidents.get(INCIDENT_ID)!;
+    const restoredIncident = restored.incidents.get(INCIDENT_ID)!;
+
+    // The outcome, recovered. ADR 0033 measured the cost of abandoning it as
+    // `injuredEntityIds: [1,2,3]` and `propertyDamage: 8` against the continuous
+    // run's `[]` and `4`; there is no such difference left to measure.
+    expect(restoredIncident.state).toBe(continuousIncident.state);
+    expect(restoredIncident.outcome).toEqual(continuousIncident.outcome);
+    // Non-vacuous: the shared value really is the contained one, and it really
+    // is not the lapse ADR 0033 recorded.
+    expect(continuousIncident.state).toBe('resolved');
+    expect(continuousIncident.outcome).toEqual({ injuredEntityIds: [], propertyDamage: Math.floor(SEVERITY / 2), escaped: false });
+    expect(restoredIncident.outcome).not.toEqual({ injuredEntityIds: [1, 2, 3], propertyDamage: SEVERITY, escaped: false });
 
     // Every resource the response claimed is back where the continuous run put
-    // it: the door open, the sector normal, all six guards in the pool.
+    // it: the door open, the sector normal, all six guards in the pool. This is
+    // ADR 0033 decision 1's own guarantee, unchanged.
     expect(observeClaim(restored)).toEqual(observeClaim(continuous));
     expect(observeClaim(restored)).toEqual({
       sectorControlState: 'normal',
@@ -278,60 +389,173 @@ describe('a save taken during an incident response releases what the response cl
       unassignedGuardCount: GUARDS_HIRED,
     });
 
-    // And the one thing that is *not* the same, written out rather than
-    // omitted: the response was abandoned, so the incident ran its course.
-    expect(continuous.incidents.get(INCIDENT_ID)!.state).toBe('resolved');
-    expect(restored.incidents.get(INCIDENT_ID)!.state).toBe('lapsed');
-    expect(restored.incidents.get(INCIDENT_ID)!.outcome).toEqual({
-      injuredEntityIds: [1, 2, 3],
-      propertyDamage: SEVERITY,
-      escaped: false,
-    });
-    expect(continuous.incidents.get(INCIDENT_ID)!.outcome).toEqual({
-      injuredEntityIds: [],
-      propertyDamage: Math.floor(SEVERITY / 2),
-      escaped: false,
-    });
+    // And the two things that are *not* the same, written out rather than
+    // omitted, because they are the price.
+    expect(restoredClose! - continuousClose!).toBe(restored.incidentResponseSystem.schedule.intervalTicks);
+    expect(restored.incidentResponseSystem.getMetrics().respondersDispatched).toBe(
+      continuous.incidentResponseSystem.getMetrics().respondersDispatched * 2,
+    );
+  });
+
+  it('prices the restarted containment timer: the cost is the progress the save discarded, capped at the containment window', () => {
+    // ADR 0033 open question 1 named this cost and did not measure it. The table
+    // is what it costs, and the arithmetic below is what the table *means*, so a
+    // policy change moves the assertion rather than leaving six stale pairs.
+    const continuous = buildRespondingPrison();
+    expect(tickOfIncidentClose(continuous, RELEASE_BUDGET_TICKS)).toBe(CONTINUOUS_RELEASE_TICK);
+
+    for (const [saveTick, expectedClose] of RESOLVE_TICKS_LATE_BY_CONTAINMENT_PROGRESS) {
+      const run = buildRespondingPrison();
+      step(run, saveTick - run.kernel.tick);
+      expect(run.kernel.tick).toBe(saveTick);
+      expect(run.incidents.get(INCIDENT_ID)!.state, `the save at ${saveTick} must be taken mid-containment`).toBe('responding');
+
+      const restored = saveAndLoad(run);
+      expect(tickOfIncidentClose(restored, RELEASE_BUDGET_TICKS), `save at ${saveTick}`).toBe(expectedClose);
+      // The outcome is recovered at every one of these, which is the point of
+      // the table: the price is paid in *ticks* and never in the outcome.
+      expect(restored.incidents.get(INCIDENT_ID)!.outcome).toEqual(continuous.incidents.get(INCIDENT_ID)!.outcome);
+    }
+
+    // The cap, asserted rather than described: the last two rows are the same
+    // close tick because a save one tick before containment completes discards
+    // sixty ticks of progress and a save nine ticks before it discards sixty
+    // too. Sixty is `containmentTicks`, read off the policy.
+    const worst = RESOLVE_TICKS_LATE_BY_CONTAINMENT_PROGRESS.at(-1)!;
+    expect(worst[1] - CONTINUOUS_RELEASE_TICK).toBe(DEFAULT_INCIDENT_RESPONSE_POLICY.containmentTicks);
+    expect(RESOLVE_TICKS_LATE_BY_CONTAINMENT_PROGRESS.at(-2)![1]).toBe(worst[1]);
   });
 
   it('leaves nothing behind after 53,000 further ticks, which is where #352 measured the loss as terminal', () => {
     // The figure from the issue, kept as the statement it was: 52,000 ticks
     // past the +3,000 sample moved nothing on `origin/main`. Here the run is
     // settled long before, so what this asserts is that it *stays* settled --
-    // no guard re-claimed, no lockdown returning.
+    // no guard re-claimed, no lockdown returning, and **no second re-dispatch**:
+    // the pass is owed by a flag consumed once per restore, so a settled session
+    // cannot start mounting responses to incidents that are already closed.
     const restored = saveAndLoad(buildRespondingPrison());
     step(restored, 53_000);
 
     expect(observe(restored)).toEqual({
-      incident: 'lapsed',
+      incident: 'resolved',
       sectorControlState: 'normal',
       doorState: 'open',
       guardPhases: ['unassigned', 'unassigned', 'unassigned', 'unassigned', 'unassigned', 'unassigned'],
       unassignedGuardCount: GUARDS_HIRED,
     });
+    expect(restored.incidentResponseSystem.getMetrics()).toEqual({
+      incidentsResolved: 1,
+      incidentsLapsed: 0,
+      respondersDispatched: REQUIRED_RESPONDERS * 2,
+      routeFailures: 0,
+    });
   });
 
-  it('costs nothing extra when the responders had already arrived, and nothing at all when the save lands on a scheduled tick', () => {
-    // The `'responding'` half of #352's table. There is no travel to restart
-    // and no arrival to wait for, so the release is the same first-update
-    // release -- the delay is the distance from the save to the next update
-    // and nothing else.
-    const responding = buildRespondingPrison();
-    while (responding.incidents.get(INCIDENT_ID)!.state === 'notified') responding.kernel.step();
-    expect(responding.incidents.get(INCIDENT_ID)!.state).toBe('responding');
-    expect(responding.kernel.tick).toBe(11);
-
-    expect(tickOfRelease(saveAndLoad(responding), RELEASE_BUDGET_TICKS)).toBe(RELEASE_TICK_SAVED_AT_11);
-
+  it('costs one interval when the save lands on a scheduled tick, which is the trap a tick comparison would have fallen into', () => {
     // The trap `ProcurementSystem.update`'s `<=` comment names, from the other
     // side: a save taken *on* a scheduled tick must be reconciled on that tick
-    // rather than skipped, which is why the sweep is owed by a pending flag and
-    // not by a comparison against the tick the save was taken at.
+    // rather than skipped, which is why both the sweep and the re-dispatch are
+    // owed by a pending flag and not by a comparison against the tick the save
+    // was taken at. A comparison would step straight over tick 10 here and this
+    // run would never re-dispatch at all.
     const onCadence = buildRespondingPrison();
     step(onCadence, 9);
     expect(onCadence.kernel.tick).toBe(10);
     expect(onCadence.kernel.tick % onCadence.incidentResponseSystem.schedule.intervalTicks).toBe(0);
-    expect(tickOfRelease(saveAndLoad(onCadence), RELEASE_BUDGET_TICKS)).toBe(11);
+
+    const restored = saveAndLoad(onCadence);
+    expect(tickOfIncidentClose(restored, RELEASE_BUDGET_TICKS)).toBe(REDISPATCHED_RESOLVE_TICK);
+    expect(restored.incidents.get(INCIDENT_ID)!.state).toBe('resolved');
+    // Re-dispatched on tick 10 itself, with nothing lost to the cadence: the
+    // second dispatch is already counted by the time the tick is observed.
+    expect(restored.incidentResponseSystem.getMetrics().respondersDispatched).toBe(REQUIRED_RESPONDERS * 2);
+  });
+
+  it('falls back to ADR 0033 decision 1 exactly when the pool cannot offer responders who are already at the scene', () => {
+    /*
+     * **The boundary, and it is reachable rather than forced.** With two
+     * incidents open, `openIncidents()` is sorted by id and
+     * `unassignedGuardIds()` is ascending, so the incident whose id sorts first
+     * claims the lowest-id guards in the pool. When the incident that sorts
+     * *last* is the one already `'responding'`, the guards left for it are the
+     * other incident's ex-responders -- standing at the other incident's post
+     * tile, not at its own.
+     *
+     * A `'responding'` incident's own state asserts that responders arrived, and
+     * `advanceResponse`'s `'responding'` branch reads no route results at all,
+     * so a response re-mounted from guards who are somewhere else would contain
+     * the incident with a responder still in transit and leave a navigation
+     * request nothing ever collects. It is refused instead, and the incident
+     * gets ADR 0033 decision 1's outcome: abandoned, resources returned, lapsed
+     * at its own deadline.
+     *
+     * This is ADR 0033 open question 2's un-recoverable fact -- *"which incident
+     * each responder served when two are open with responders committed"* --
+     * reappearing as a bound on what a re-dispatch can recover. It is not solved
+     * here and it is not guessed at either.
+     */
+    const runtime = createNewSimulationRuntime(SEED);
+    runtime.securitySectors.register({ id: 'sector-a', gradeId: 'grade.general', doorIds: [], postTile: POST_TILE });
+    runtime.securitySectors.register({ id: 'sector-z', gradeId: 'grade.general', doorIds: [], postTile: { x: tileCoordinate(9), y: tileCoordinate(9) } });
+    runtime.incidentSectorIds.push('sector-a', 'sector-z');
+    for (let index = 0; index < 10; index += 1) runtime.securityGuards.hire('staff-role.guard', GUARD_ORIGIN);
+
+    // `'incident-z'` sorts last and is the one that reaches `'responding'`
+    // first, so it is the one whose ex-responders are at the far post tile.
+    runtime.incidents.open({ id: 'incident-z', type: 'riot', sectorId: 'sector-z', participantIds: [1, 2], severity: SEVERITY, causeFactors: [] }, 0);
+    while (runtime.incidents.get('incident-z')!.state !== 'responding') runtime.kernel.step();
+    runtime.incidents.open({ id: 'incident-a', type: 'riot', sectorId: 'sector-a', participantIds: [3, 4], severity: SEVERITY, causeFactors: [] }, runtime.kernel.tick);
+    while (runtime.incidents.get('incident-a')!.state === 'active') runtime.kernel.step();
+
+    // The setup really is the one this test is about, checked rather than
+    // assumed: one incident mid-containment with its responders at its post
+    // tile, one mid-travel with its responders still at the origin.
+    expect(runtime.incidents.get('incident-z')!.state).toBe('responding');
+    expect(runtime.incidents.get('incident-a')!.state).toBe('notified');
+    expect(runtime.securityGuards.getTile(0)).toEqual({ x: 9, y: 9 });
+    expect(runtime.securityGuards.getTile(REQUIRED_RESPONDERS)).toEqual(GUARD_ORIGIN);
+
+    const restored = loadBundle(captureSessionSnapshot(runtime));
+    step(restored, RELEASE_BUDGET_TICKS);
+
+    // The `'notified'` incident is recovered -- it has no arrival to honour, so
+    // any four guards will do and the travel is simply redone.
+    expect(restored.incidents.get('incident-a')!.state).toBe('resolved');
+    expect(restored.incidents.get('incident-a')!.outcome).toEqual({
+      injuredEntityIds: [],
+      propertyDamage: Math.floor(SEVERITY / 2),
+      escaped: false,
+    });
+
+    // The `'responding'` one is not, and this is ADR 0033's outcome verbatim.
+    expect(restored.incidents.get('incident-z')!.state).toBe('lapsed');
+    expect(restored.incidents.get('incident-z')!.outcome).toEqual({
+      injuredEntityIds: [1, 2],
+      propertyDamage: SEVERITY,
+      escaped: false,
+    });
+    expect(restored.incidents.get('incident-z')!.timeline.at(-1)).toEqual({ state: 'lapsed', atTick: LAPSE_TICK - 1 });
+
+    // #352 is still fixed for it either way: nothing is held.
+    expect(restored.securityGuards.unassignedGuardIds().length).toBe(10);
+    expect(restored.securitySectors.all().map((sector) => restored.securitySectors.getControlState(sector.id))).toEqual([
+      'normal',
+      'normal',
+    ]);
+  });
+
+  it('re-dispatches nothing for a closed incident, and nothing at all on a second update', () => {
+    // The lifecycle is forward-only and this change does not widen it. A
+    // terminal incident is not in `openIncidents()`, so it can never be
+    // re-dispatched to -- and the flag is consumed on the first update, so even
+    // a still-open incident gets exactly one attempt.
+    const restored = saveAndLoad(buildRespondingPrison());
+    expect(tickOfIncidentClose(restored, RELEASE_BUDGET_TICKS)).toBe(REDISPATCHED_RESOLVE_TICK);
+    const settled = restored.incidentResponseSystem.getMetrics();
+
+    step(restored, 1_000);
+    expect(restored.incidentResponseSystem.getMetrics()).toEqual(settled);
+    expect(restored.incidents.get(INCIDENT_ID)!.timeline.filter((entry) => entry.state === 'notified')).toHaveLength(1);
   });
 
   it('rewrites nothing: the payload a restored session re-captures is the payload it was given', () => {
@@ -358,16 +582,21 @@ describe('a save taken during an incident response releases what the response cl
     const first = loadBundle(bundle);
     const second = loadBundle(bundle);
 
-    for (const checkpoint of [1, 10, 11, 200, 611, 700]) {
+    // The checkpoints straddle every state change the amendment introduced: the
+    // release-and-re-dispatch update (10), the arrival and second `'responding'`
+    // transition (20), the fresh containment window (21-80) and the resolution
+    // (81).
+    for (const checkpoint of [1, 10, 11, 20, 21, 80, 81, 200, 700]) {
       step(first, checkpoint - first.kernel.tick);
       step(second, checkpoint - second.kernel.tick);
       expect(first.kernel.tick).toBe(checkpoint);
       expect(hashFullRuntime(first), `divergence at tick ${checkpoint}`).toBe(hashFullRuntime(second));
     }
-    // Non-vacuous: the two runs really did move through the release and the
-    // lapse rather than sitting still.
+    // Non-vacuous: the two runs really did move through the release, the
+    // re-dispatch and the resolution rather than sitting still.
     expect(observe(first).unassignedGuardCount).toBe(GUARDS_HIRED);
-    expect(observe(first).incident).toBe('lapsed');
+    expect(observe(first).incident).toBe('resolved');
+    expect(first.incidentResponseSystem.getMetrics().respondersDispatched).toBe(REQUIRED_RESPONDERS * 2);
   });
 });
 
@@ -418,13 +647,24 @@ describe('a search job’s guards are not a response’s to release', () => {
     const restored = saveAndLoad(runtime);
     step(restored, 10);
 
-    // The four responders are back; the searcher is still searching.
+    // The searcher is still searching -- the premise this whole describe block
+    // exists to pin, and the amendment does not touch it. The four responders
+    // were handed back and then claimed by the fresh response, so they are
+    // `'on-search'` again for a *different* reason, which the dispatch counter
+    // is what distinguishes.
     expect(restored.securityGuards.getDeploymentPhase(4)).toBe('on-search');
     expect(restored.searchSystem.claimedGuardIds()).toEqual([4]);
-    expect(restored.securityGuards.unassignedGuardIds()).toEqual([0, 1, 2, 3, 5]);
-    // And it finishes: a released searcher would have stranded the job.
+    expect(restored.incidentResponseSystem.getMetrics().respondersDispatched).toBe(REQUIRED_RESPONDERS * 2);
+    // **Guard 4 was never available to the re-dispatch and guard 5 was not
+    // needed**, which is the load-bearing half: the fresh response claimed the
+    // four ex-responders and nothing else, so the search job kept its guard.
+    expect(restored.securityGuards.unassignedGuardIds()).toEqual([5]);
+    // And the job finishes: a released *or re-claimed* searcher would have
+    // stranded it.
     step(restored, 60);
     expect(restored.searchSystem.getMetrics().searchesCompleted).toBe(1);
+    // Everything back, from both claimants.
+    step(restored, 60);
     expect(restored.securityGuards.unassignedGuardIds()).toEqual([0, 1, 2, 3, 4, 5]);
   });
 
@@ -449,7 +689,9 @@ describe('a search job’s guards are not a response’s to release', () => {
 
     expect(restored.searchSystem.claimedGuardIds()).toEqual([4]);
     expect(restored.securityGuards.getDeploymentPhase(4)).toBe('on-search');
-    expect(restored.securityGuards.unassignedGuardIds()).toEqual([0, 1, 2, 3, 5]);
+    // The pool the re-dispatch drew from is what the sweep left after honouring
+    // the search claim, so guard 4 is not in it and guard 5 was not needed.
+    expect(restored.securityGuards.unassignedGuardIds()).toEqual([5]);
     step(restored, 60);
     expect(restored.searchSystem.getMetrics().searchesCompleted).toBe(1);
   });

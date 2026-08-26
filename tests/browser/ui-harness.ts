@@ -38,6 +38,8 @@ import type {
   IntakeProbe,
   BuildQueueProbe,
   BuildQueueRowProbe,
+  HeldGuardRowProbe,
+  HeldGuardsProbe,
   PendingDeliveriesProbe,
   PendingDeliveryRowProbe,
   LayoutBox,
@@ -48,7 +50,7 @@ import type {
   RoomsLayoutProbe,
   RoomsProbe,
 } from './ui-harness-api';
-import { HUD_MESSAGE_KEY, type HudBuildViewModel, type HudStaffViewModel } from '../../src/ui/hud';
+import { HUD_MESSAGE_KEY, type HudBuildViewModel, type HudHeldGuardsViewModel, type HudStaffViewModel } from '../../src/ui/hud';
 import '../../src/styles.css';
 
 /**
@@ -520,6 +522,48 @@ function buildQueueProbe(): BuildQueueProbe {
  * delivery in them are `hidden` and still in the DOM, and a probe that reported
  * them would count three rows for a list of one.
  */
+/**
+ * The held-guards section, measured rather than read off attributes (ADR 0034).
+ *
+ * Rows are filtered by `getClientRects().length > 0` for `pendingDeliveriesProbe`'s
+ * reason: the rows are pooled, so a row with no guard in it is present in the DOM
+ * and must not be reported as one the player can see.
+ */
+function heldGuardsProbe(): HeldGuardsProbe {
+  const block = document.querySelector<HTMLElement>('.hud-staff__held');
+  const rows = [...document.querySelectorAll<HTMLElement>('.hud-staff__held-row')].filter(
+    (row) => row.getClientRects().length > 0,
+  );
+  const visibleText = (selector: string): string =>
+    [...(block?.querySelectorAll<HTMLElement>(selector) ?? [])]
+      .filter((line) => line.getClientRects().length > 0)
+      .map((line) => (line.textContent ?? '').trim())
+      .find((text) => text.length > 0) ?? '';
+
+  return {
+    blockLaidOut: block !== null && block.getClientRects().length > 0,
+    held: block?.dataset['held'] ?? null,
+    summaryText: block?.querySelector<HTMLElement>('.hud-staff__held-summary')?.textContent?.trim() ?? '',
+    blockBox: layoutBoxOf(block),
+    rows: rows.map((row): HeldGuardRowProbe => {
+      const release = row.querySelector<HTMLButtonElement>('.ui-action');
+      return {
+        guardId: row.dataset['guard'] ?? '',
+        labelText: row.querySelector<HTMLElement>('.hud-staff__held-label')?.textContent?.trim() ?? '',
+        releaseBox: layoutBoxOf(release),
+        releaseHasOffsetParent: release !== null && release.offsetParent !== null,
+        releaseDisabled: release?.disabled ?? true,
+      };
+    }),
+    moreText: visibleText('.hud-staff__held-more'),
+    emptyText:
+      [...(block?.querySelectorAll<HTMLElement>('.hud-staff__note') ?? [])]
+        .filter((line) => line.getClientRects().length > 0 && !line.classList.contains('hud-staff__held-more'))
+        .map((line) => (line.textContent ?? '').trim())
+        .find((text) => text.length > 0) ?? '',
+  };
+}
+
 function pendingDeliveriesProbe(): PendingDeliveriesProbe {
   const block = document.querySelector<HTMLElement>('.hud-build__deliveries');
   const rows = [...document.querySelectorAll<HTMLElement>('.hud-build__delivery-row')].filter(
@@ -1063,7 +1107,33 @@ window.lockstateUiHarness = {
       texts: [...(panel?.querySelectorAll<HTMLElement>('button, label, span, h2') ?? [])]
         .map((node) => (node.textContent ?? '').trim())
         .filter((text) => text.length > 0),
+      held: heldGuardsProbe(),
+      // The fold, in the shape `buildLayoutProbe` reports the Build panel's: the
+      // bottom of the *client* box, which is where content starts being clipped
+      // and is unaffected by scrolling.
+      panelVisibleBottom:
+        panel === null ? 0 : panel.getBoundingClientRect().top + panel.clientTop + panel.clientHeight,
+      panelOverflow: panel === null ? 0 : panel.scrollHeight - panel.clientHeight,
+      panelBox: layoutBoxOf(panel),
     };
+  },
+
+  reportHeldGuards(held: HudHeldGuardsViewModel | undefined): void {
+    hud?.update({
+      ...BASE_VIEW_MODEL,
+      ...(held === undefined ? {} : { heldGuards: held }),
+    });
+  },
+
+  pressGuardRelease(guardId: number): boolean {
+    const row = document.querySelector<HTMLElement>(`.hud-staff__held-row[data-guard="${String(guardId)}"]`);
+    const release = row?.querySelector<HTMLButtonElement>('.ui-action');
+    if (release === undefined || release === null) return false;
+    // `offsetParent`, not the attribute: a press on a control the player cannot
+    // see must not count as reaching it.
+    if (release.offsetParent === null) return false;
+    release.click();
+    return true;
   },
 
   clickHireStaff(): boolean {

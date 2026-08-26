@@ -2,11 +2,11 @@ import type { LocalizationKey } from '../../content/localization';
 import type { MessageParameters } from '../../services/localization/format';
 import { createActionButton, type ActionButton } from '../primitives/action-button';
 import { createCollapsibleSection, type CollapsibleSection } from '../primitives/collapsible-section';
-import { element, eyebrowText } from '../primitives/dom';
+import { element, eyebrowText, valueText } from '../primitives/dom';
 import { createListRow, type ListRow } from '../primitives/list-row';
 import { createPanel } from '../primitives/panel';
 import { HUD_MESSAGE_KEY } from './messages';
-import type { HudLocalizer, HudStaffViewModel } from './view-model';
+import type { HudHeldGuardViewModel, HudHeldGuardsViewModel, HudLocalizer, HudStaffViewModel } from './view-model';
 
 /**
  * The Staff panel, on the Security tab
@@ -29,12 +29,27 @@ import type { HudLocalizer, HudStaffViewModel } from './view-model';
  *
  * ### What it holds
  *
- * A list of the roles that can be hired and one action. It is **not a roster**:
- * it says what may be hired, never who has been. Listing the people is a
- * projection this tree already has (`projectStaff`) and a surface ADR 0025
- * deliberately does not design -- `simulation/status-counts` carries two staff
- * integers and no rows, and putting a paged projection on a channel published
- * on a cadence is `docs/HUD_PROJECTIONS.md` contract 5's subject.
+ * A list of the roles that can be hired and one action -- and, since
+ * [ADR 0034](../../../docs/adr/0034-releasing-a-claimed-guard.md), a second
+ * section listing the guards that are **held**, with what is holding each and a
+ * control that releases it.
+ *
+ * That second section narrows this panel's own "**it is not a roster**" claim
+ * and the narrowing is deliberate rather than accidental, so it is stated: the
+ * held list is still not the roster. It is the *held subset*, it is windowed to
+ * `HELD_GUARD_ROW_LIMIT` rows, and it exists because a release command needs
+ * something to aim at -- the same reason the Build panel grew a queue block for
+ * `CancelBuildOrder` and a delivery list for `CancelMaterialPurchase`. Listing
+ * every guard hired, with names, roles, clearances and coverage, is still
+ * `projectStaff`'s job and still has no surface here.
+ *
+ * **Why this panel and not the Build panel.** Because guards are here. The Build
+ * panel's catalogue is the only block `hud.css` lets that panel take height from
+ * and ADR 0031 spends part of it already (#390); more to the point, a guard is
+ * not a building, and hanging a staffing control off the selected buildable
+ * would make that panel's organising idea false -- the same argument ADR 0025
+ * made when it put hiring here. Releasing and hiring are the two things a player
+ * does to the roster, and they belong on one panel.
  *
  * ### Boundaries
  *
@@ -52,11 +67,83 @@ export interface StaffPanelHireIntent {
   readonly staffRoleId: string;
 }
 
+/**
+ * How many held guards the list shows at once.
+ *
+ * Three, matching `PENDING_DELIVERY_ROW_LIMIT`, and the rows are **pooled** for
+ * both of that constant's reasons -- the second of which is not about
+ * allocation: each row's Release button joins the HUD's busy group,
+ * `createBusyGroup` has `add` and no `remove`, so a section that built a row per
+ * guard would grow that group without bound over a session and keep every dead
+ * button in it.
+ *
+ * Three, and it is measured rather than borrowed. On the assembled page, Security
+ * tab, three rows plus the "and N more" line, every Release is **85.0x44.0 with an
+ * `offsetParent`, inside the panel, above the fold** at 1440x900, 1280x720,
+ * 1024x768, 900x600 and 375x812 -- the tightest being 900x600, where the last
+ * Release's bottom edge is 483.0px against a 522.0px fold, with the block costing
+ * 219.0px of a 467.0px panel and 25.0px of scroll going to the roles list above
+ * it. **A fourth row puts its Release 9.0px below that fold** (531.0 against
+ * 522.0) with a full box and an `offsetParent`, which is #220's shape and #285's
+ * fourth delivery row to within a pixel -- reachable only by scrolling a panel a
+ * player has no reason to think has more in it. That is why the limit is three.
+ *
+ * The panel can afford the height at all for a reason that is ADR 0025's and is
+ * inherited rather than re-derived: `mountHud` builds one panel for the rail's
+ * `.hud__side` slot and shows exactly one of Build, Rooms, Staff and Intake, so
+ * the Staff panel is never laid out beside the Build panel and the height budget
+ * that panel has been fixed for twice (#143, #174) is not a constraint on it.
+ * `.ui-panel.hud-staff` already carries `overflow-y: auto`, so what the rail
+ * cannot give it is its own to scroll. Measured arrival cost with nothing held:
+ * **nothing at all** -- the block has no box until the first `hud/held-guards`
+ * reply, so the panel is 298.0px (273.0px at 900x600) either way.
+ */
+export const HELD_GUARD_ROW_LIMIT = 3;
+
+/**
+ * What one press of a release control asks for: a guard id and nothing else.
+ *
+ * **No claim.** The row knows what is holding the guard, because it says so, and
+ * it does not send that back: which claimant to ask is resolved inside the
+ * simulation at the tick the command executes, for the reason ADR 0034 gives at
+ * length -- `'on-search'` is a shared phase and this thread's copy of the roster
+ * is a cadence old.
+ */
+export interface StaffPanelReleaseIntent {
+  readonly guardId: number;
+}
+
 export interface StaffPanelOptions {
   readonly localizer: HudLocalizer;
   readonly model: HudStaffViewModel;
   /** Hire the selected role, at the charge the button states. */
   readonly onHire: (intent: StaffPanelHireIntent) => void;
+  /** Release one held guard from whatever is holding it (ADR 0034). */
+  readonly onRelease: (intent: StaffPanelReleaseIntent) => void;
+}
+
+/**
+ * What one row says: who, and what is holding them.
+ *
+ * Pure and exported for the reason `formatPendingDeliveryText` is: the default
+ * Vitest environment is `node` (`docs/TESTING.md`), so nothing headless can call
+ * `createStaffPanel`, and "what the panel says is holding this guard" is exactly
+ * the claim that has to be assertable over real text from a real catalog.
+ *
+ * A guard the host names no role for still gets a row and still says what holds
+ * it, because it is still a guard a player may want back -- the rule
+ * `HudPendingDeliveryViewModel.labelKey` sets one panel over. What changes is the
+ * sentence: `hud.security.held-row-unnamed` names the entity id instead, so the
+ * row is still aimable rather than anonymous.
+ */
+export function formatHeldGuardText(
+  t: (key: LocalizationKey, parameters?: MessageParameters) => string,
+  guard: HudHeldGuardViewModel,
+): string {
+  const claim = t(guard.claimLabelKey);
+  return guard.roleLabelKey === undefined
+    ? t(HUD_MESSAGE_KEY.securityHeldRowUnnamed, { id: guard.entityId, claim })
+    : t(HUD_MESSAGE_KEY.securityHeldRow, { name: t(guard.roleLabelKey), claim });
 }
 
 export interface StaffPanel {
@@ -76,8 +163,24 @@ export interface StaffPanel {
    * pressed* (issue #207) as well as in the refusal line.
    */
   readonly hireControl: HTMLButtonElement;
+  /**
+   * The release buttons, in row order, so a test can press one without reading
+   * the DOM and the host can gate them with the hire control.
+   *
+   * Fixed length (`HELD_GUARD_ROW_LIMIT`) because the rows are pooled: a button
+   * whose row is hidden is present and disabled rather than absent.
+   */
+  readonly releaseControls: readonly HTMLButtonElement[];
   /** Current selection, exposed so a test can assert it without reading the DOM. */
   getSelection(): string | undefined;
+  /**
+   * Repaint the held list from a fresh `hud/held-guards` reply.
+   *
+   * `undefined` hides the section, and it is a different state from an empty
+   * list: "nothing has asked yet" must not render as "nobody is assigned", which
+   * is the same distinction `BuildPanel.setPendingDeliveries` draws.
+   */
+  setHeldGuards(held: HudHeldGuardsViewModel | undefined): void;
   setVisible(visible: boolean): void;
 }
 
@@ -165,6 +268,127 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
     );
   }
 
+  // ---- who is held, and the control that frees them (ADR 0034) ---------
+  /**
+   * One pooled row: what is holding a guard, and the control that releases it.
+   *
+   * `guardId` is read at *press* time rather than captured when the row is
+   * built, for the reason the Build panel's queue and delivery rows do it: the
+   * row is pooled and names whichever guard the last publication put in it, so a
+   * captured id would release whoever was in this row two seconds ago.
+   */
+  interface HeldRow {
+    readonly element: HTMLElement;
+    readonly label: HTMLSpanElement;
+    readonly release: ActionButton;
+    /** The guard this row currently names, or `undefined` while it is hidden. */
+    guardId: number | undefined;
+  }
+
+  const heldList = element('div', { className: 'hud-staff__held-list' });
+
+  const heldRows: readonly HeldRow[] = Array.from({ length: HELD_GUARD_ROW_LIMIT }, (): HeldRow => {
+    const label = valueText('', 'hud-staff__held-label');
+    const row: HeldRow = {
+      element: element('div', { className: 'hud-staff__held-row' }),
+      label,
+      release: createActionButton({
+        label: t(HUD_MESSAGE_KEY.securityHeldRelease),
+        onActivate: () => {
+          const { guardId } = row;
+          if (guardId === undefined) return;
+          options.onRelease({ guardId });
+        },
+      }),
+      guardId: undefined,
+    };
+    row.element.append(element('div', { className: 'hud-staff__held-text', children: [label] }), row.release.element);
+    row.element.hidden = true;
+    heldList.append(row.element);
+    return row;
+  });
+
+  const heldSummary = valueText('', 'hud-staff__held-summary');
+  const heldEmpty = eyebrowText(t(HUD_MESSAGE_KEY.securityHeldEmpty), 'hud-staff__note');
+  const heldMore = eyebrowText('', 'hud-staff__note hud-staff__held-more');
+
+  const heldBlock = element('div', {
+    className: 'hud-staff__held',
+    children: [
+      element('div', {
+        className: 'hud-staff__held-header',
+        children: [eyebrowText(t(HUD_MESSAGE_KEY.securityHeldTitle)), heldSummary],
+      }),
+      heldList,
+      heldEmpty,
+      heldMore,
+      eyebrowText(t(HUD_MESSAGE_KEY.securityHeldHint), 'hud-staff__note'),
+    ],
+  });
+  /*
+   * No initial `hidden` here: `paintHeld` runs once below the `panel.body.append`
+   * and is the single authority on whether this block has a box. A second
+   * assignment would be a line no test could fail on -- the rule
+   * `.hud-build__deliveries` records for the same shape of block.
+   */
+
+  let held: HudHeldGuardsViewModel | undefined;
+
+  function paintHeld(): void {
+    heldBlock.hidden = held === undefined;
+    if (held === undefined) {
+      delete heldBlock.dataset['held'];
+      // Every pooled row emptied as well as hidden, so a press that somehow
+      // reached a hidden button cannot name a guard from the last publication.
+      for (const row of heldRows) {
+        row.guardId = undefined;
+        row.element.hidden = true;
+        row.release.setDisabled(true);
+        delete row.element.dataset['guard'];
+      }
+      return;
+    }
+
+    heldBlock.dataset['held'] = String(held.held);
+
+    heldSummary.textContent = t(HUD_MESSAGE_KEY.securityHeldSummary, {
+      held: localizer.formatNumber(held.held),
+      unassigned: localizer.formatNumber(held.unassigned),
+    });
+
+    const guards = held.guards.slice(0, HELD_GUARD_ROW_LIMIT);
+    heldRows.forEach((row, index) => {
+      const guard = guards[index];
+      if (guard === undefined) {
+        row.guardId = undefined;
+        row.element.hidden = true;
+        row.release.setDisabled(true);
+        delete row.element.dataset['guard'];
+        return;
+      }
+      row.guardId = guard.entityId;
+      row.label.textContent = formatHeldGuardText(t, guard);
+      row.element.hidden = false;
+      row.release.setDisabled(false);
+      // The row's identity for a browser probe, so a spec can press the control
+      // aimed at one guard and assert about the others -- the same handle
+      // `data-delivery` gives the delivery rows, and needed for the same reason:
+      // the rows are pooled, so "the second row" is not a stable name for a guard.
+      row.element.dataset['guard'] = String(guard.entityId);
+    });
+
+    heldList.hidden = guards.length === 0;
+    heldEmpty.hidden = guards.length > 0;
+    // Counted against `held.held` and not against `held.guards.length`: the
+    // reader asks for one row budget's worth of rows, so the window is what
+    // arrived and the total is what the prison holds.
+    const remaining = held.held - guards.length;
+    heldMore.hidden = remaining <= 0;
+    if (remaining > 0) {
+      heldMore.textContent = t(HUD_MESSAGE_KEY.securityHeldMore, { count: localizer.formatNumber(remaining) });
+    }
+  }
+
   const panel = createPanel({
     title: t(HUD_MESSAGE_KEY.securityStaffTitle),
     icon: 'security',
@@ -176,16 +400,23 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
       className: 'hud-staff__actions',
       children: [hire.element, eyebrowText(t(HUD_MESSAGE_KEY.securityStaffHint), 'hud-staff__note')],
     }),
+    heldBlock,
   );
 
   paintRoles();
   paintHire();
+  paintHeld();
 
   return {
     element: panel.element,
-    controls: [hire.element],
+    controls: [hire.element, ...heldRows.map((row) => row.release.element)],
     hireControl: hire.element,
+    releaseControls: heldRows.map((row) => row.release.element),
     getSelection: () => selectedId,
+    setHeldGuards(next: HudHeldGuardsViewModel | undefined): void {
+      held = next;
+      paintHeld();
+    },
     setVisible(visible: boolean): void {
       panel.element.hidden = !visible;
     },

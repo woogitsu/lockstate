@@ -749,6 +749,69 @@
 
 .hud-staff__note { white-space: normal; text-transform: none; letter-spacing: 0; }
 
+/* The held-guards section (ADR 0034). Same gutter and hairline as
+   `.hud-staff__actions` above it, so the two regions of one panel do not read as
+   two designs -- and `display: none` on `[hidden]` for the trap
+   `.hud-build__deliveries-more[hidden]` records: a block whose children carry
+   `.hud-staff__note` inherits a `display` from the `max-height: 700px` block at
+   the foot of this file, which would otherwise override the attribute. */
+.hud-staff__held {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hud-build-map-gutter);
+  padding: var(--hud-build-map-gutter) var(--space-1);
+  border-top: var(--hairline) solid var(--border-hairline);
+}
+
+.hud-staff__held[hidden] { display: none; }
+
+/* The header pairs the section's name with the held/free count, so the pair a
+   player decides against is one line rather than two readouts. */
+.hud-staff__held-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.hud-staff__held-summary { color: var(--text-heading); }
+
+.hud-staff__held-list:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hud-build-map-gutter);
+}
+
+/* One row: who is held, and the control that frees them. `align-items: center`
+   so a wrapped sentence keeps the button beside its middle rather than pushing
+   it to the top -- the same choice `.hud-build__delivery-row` makes. */
+.hud-staff__held-row:not([hidden]) {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* `min-width: 0` is load-bearing rather than defensive, exactly as on the
+   delivery rows: without it a long role-plus-claim sentence refuses to shrink
+   below its content width and pushes the Release button out of the panel. */
+.hud-staff__held-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.hud-staff__held-label {
+  color: var(--text-heading);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* Never shrinks. The sentence beside it wraps instead. */
+.hud-staff__held-row > .ui-action { flex: 0 0 auto; }
+
+.hud-staff__held-more[hidden] { display: none; }
+
 .hud-build__coords {
   display: grid;
   grid-template-columns: 1fr 1fr;

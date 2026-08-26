@@ -30,7 +30,7 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  * cancel, a zone, a purchase or an undo, and no other module built a
  * command object at all.
  *
- * ## What it reads today: twelve of twelve
+ * ## What it reads today: thirteen of thirteen
  *
  * `Undo` and `Redo` gained producers with #261's step 6, and their entries came
  * out of the list below in the same change -- which is the direction this file
@@ -134,7 +134,25 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  * no command named a purchase, and no read model carried a purchase id to the
  * thread that would have had to name one.
  *
- * The count is measured, not carried: **twelve producers, all in `src/main.ts`,
+ * `ReleaseGuardAssignment` is the thirteenth and it landed the same way the last
+ * six did -- with its producer, in one change (ADR 0034) -- and it is worth
+ * naming separately for what it makes reachable, which is the same shape as
+ * `CancelMaterialPurchase`'s and one resource over. `GuardRoster.unassign` is
+ * complete and has been since #26, and **every caller of it in `src/` sits inside
+ * the system that made the claim being released**, each firing only when that
+ * system decides the claim is over. So a claim whose owner had lost track of it
+ * was permanent, which is precisely what issue #352 was: ADR 0033 measured four
+ * guards and one sector still held 53,000 ticks after a restore and recorded that
+ * *"`GuardRoster.unassign`'s callers in `src/` are all unreachable for an
+ * `'on-search'` guard, and no dismiss command exists"*, then said in its open
+ * question 3 that the absence *"will make the next resource-claiming system's
+ * equivalent bug terminal too"*. The blocker was this file's own subject twice
+ * over again: no command named a guard, and no read model carried a guard id --
+ * `hud/staff` was catalogued and unread, and would not have been enough anyway,
+ * because `'on-search'` is a shared phase and a row saying so cannot say which
+ * claimant holds the guard.
+ *
+ * The count is measured, not carried: **thirteen producers, all in `src/main.ts`,
  * and no command with none.**
  *
  * ## What counts as a producer
@@ -210,11 +228,13 @@ const AWAITING_PRODUCER: Readonly<Record<string, string>> = {
   // a button that could not name an order would have been a second, worse undo.
   //
   // An empty list here is not a state to defend -- it is the state this gate
-  // exists to bring about. The twelfth command arrived and never touched this
-  // list, which is the only way a new one should land: `CancelMaterialPurchase`
-  // came with its producer, its consumer and its read model in one change (#285).
-  // A thirteenth added with no producer belongs here with a reason, and fails the
-  // count below until it is either wired or written down.
+  // exists to bring about. The twelfth and thirteenth commands arrived and
+  // neither touched this list, which is the only way a new one should land:
+  // `CancelMaterialPurchase` came with its producer, its consumer and its read
+  // model in one change (#285), and `ReleaseGuardAssignment` came with the same
+  // three in one change (ADR 0034). A fourteenth added with no producer belongs
+  // here with a reason, and fails the count below until it is either wired or
+  // written down.
 };
 
 function collectTypeScriptFiles(directory: string): readonly string[] {
@@ -259,7 +279,7 @@ describe('every declared simulation command either has a producer or is accounte
     // where it is -- all eleven in `src/main.ts`, which is the composition root
     // and the only place in `src/` that builds a command object.
     expect(producerSources.length).toBeGreaterThan(50);
-    expect(COMMAND_TYPES.length).toBe(12);
+    expect(COMMAND_TYPES.length).toBe(13);
 
     expect(producersOf('PlaceBuildOrder')).toEqual(['src/main.ts']);
     expect(producersOf('PurchaseMaterials')).toEqual(['src/main.ts']);
@@ -288,6 +308,11 @@ describe('every declared simulation command either has a producer or is accounte
     // reachable rather than an unreachable control (#285): the only caller of
     // `ProcurementSystem.cancel` in the repository was a test.
     expect(producersOf('CancelMaterialPurchase')).toEqual(['src/main.ts']);
+    // And the thirteenth, which made an unreachable *release* reachable rather
+    // than an unreachable control or credit (ADR 0034): every caller of
+    // `GuardRoster.unassign` in `src/` was inside the system that had made the
+    // claim, so a claim whose owner had lost track of it was permanent.
+    expect(producersOf('ReleaseGuardAssignment')).toEqual(['src/main.ts']);
     const main = producerSources.find((source) => source.where === 'src/main.ts');
     expect(main, 'the production producers of a simulation command are no longer where this gate looks for them').toBeDefined();
     expect(main!.text).toContain(`type: 'PlaceBuildOrder'`);
@@ -302,6 +327,7 @@ describe('every declared simulation command either has a producer or is accounte
     expect(main!.text).toContain(`type: 'RemoveObject'`);
     expect(main!.text).toContain(`type: 'CancelBuildOrder'`);
     expect(main!.text).toContain(`type: 'CancelMaterialPurchase'`);
+    expect(main!.text).toContain(`type: 'ReleaseGuardAssignment'`);
   });
 
   it('separates producing from consuming, so a handler branch is not mistaken for a dispatch', () => {
@@ -370,7 +396,7 @@ describe('every declared simulation command either has a producer or is accounte
     ).toEqual([]);
   });
 
-  it('measures twelve produced and none unproduced, which this file has now been able to say twice', () => {
+  it('measures thirteen produced and none unproduced, which this file has now been able to say three times', () => {
     // The denominator, stated so the gate reports a fact rather than only
     // guarding one, and exact in both directions. A command that quietly
     // stopped being reachable would otherwise only have to be added to the
@@ -392,12 +418,15 @@ describe('every declared simulation command either has a producer or is accounte
     // read model that names the pending orders, so a control can aim at one --
     // and **zero and twelve** once `CancelMaterialPurchase` arrived with its
     // producer and gave the same treatment to a purchase (#285), which is what
-    // finally put a caller in `src/` in front of `ProcurementSystem.cancel`.
+    // finally put a caller in `src/` in front of `ProcurementSystem.cancel`, and
+    // **zero and thirteen** once `ReleaseGuardAssignment` arrived the same way
+    // and put the first caller in `src/` in front of `GuardRoster.unassign` for a
+    // guard something is *holding* (ADR 0034).
     // Both numbers move in the same change as a producer, which is the point of
     // asserting the count as well as the list: neither can be edited alone and
-    // stay green. Note the denominator moves too, so a thirteenth command added
+    // stay green. Note the denominator moves too, so a fourteenth command added
     // with no producer fails here as well as failing the accounting above.
     expect(unproducedTypes.length).toBe(0);
-    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(12);
+    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(13);
   });
 });

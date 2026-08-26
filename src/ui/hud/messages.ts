@@ -238,6 +238,33 @@ export const HUD_MESSAGE_KEY = {
   securityStaffHint: 'hud.security.hire-hint',
 
   /**
+   * The Staff panel's held-guards list
+   * ([ADR 0034](../../../docs/adr/0034-releasing-a-claimed-guard.md)).
+   *
+   * `securityHeldTitle` names the section and `securityHeldSummary` states the
+   * pair that makes a release a decision rather than a button -- how many guards
+   * are held against how many are free. `securityHeldRow` is one row: who, and
+   * what is holding them. `securityHeldRelease` is the action, and it names no
+   * claim, because a release does the same thing whatever held the guard --
+   * which is ADR 0034's whole shape and would be undone by three verbs.
+   *
+   * `securityHeldEmpty` exists because a blank rectangle is indistinguishable
+   * from a broken one, the rule `hud.security.roles-empty` follows one section up.
+   * `securityHeldMore` is the overflow line, in the shape
+   * `hud.build.deliveries-more` set: the list is windowed to the panel's row
+   * budget and the header counts the whole roster, so the difference has to be
+   * said rather than implied by a list that stops.
+   */
+  securityHeldTitle: 'hud.security.held',
+  securityHeldSummary: 'hud.security.held-summary',
+  securityHeldEmpty: 'hud.security.held-empty',
+  securityHeldRow: 'hud.security.held-row',
+  securityHeldRowUnnamed: 'hud.security.held-row-unnamed',
+  securityHeldRelease: 'hud.security.held-release',
+  securityHeldMore: 'hud.security.held-more',
+  securityHeldHint: 'hud.security.held-hint',
+
+  /**
    * Labels for the two `BUILDABLE_REGISTRY` entries whose ids name no content
    * entry.
    *
@@ -476,6 +503,23 @@ export const HUD_MESSAGE_KEY = {
    * produces exactly one of them and never both.
    */
   refusalCancelMaterialPurchase: 'hud.refusal.cancel-material-purchase',
+
+  /**
+   * What a refused *dispatch* of a release says, on the control that was pressed
+   * (ADR 0034).
+   *
+   * Its own sentence rather than a shared one, for the reason every other member
+   * of this family has one: this press leaves the prison with the guard still
+   * held, and a player told only "that was refused" would not know whether to
+   * press again or go and look elsewhere.
+   *
+   * It is **not** the sentence a player sees when the guard was already free.
+   * That refusal is the simulation's -- `release-guard.not-held`, decided at the
+   * tick the command executes -- and it arrives in the alerts list. The two sit
+   * on opposite sides of `sender.submit`, so one press produces exactly one of
+   * them and never both.
+   */
+  refusalReleaseGuard: 'hud.refusal.release-guard',
 
   severityInfo: 'hud.severity.info',
   severityWarning: 'hud.severity.warning',

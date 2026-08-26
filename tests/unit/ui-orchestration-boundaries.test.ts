@@ -222,6 +222,20 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
       "Type-only: `PrisonerPopulationCountsViewModel` from `src/simulation/presentation/prisoner-projection`. The seventh of the translators outside `src/ui/hud/` and the third that reads a *pulled* read model, so it is `simulation-build-queue.ts`'s entry above one projection over: it names the view-model shape `hud/prisoner-population` answers with and turns it into `HudIntakePipelineViewModel`. The stage union it classifies is read off that same view-model type rather than from `src/simulation/prisoners/components.ts`, deliberately, so this module's one simulation dependency stays on the presentation layer instead of reaching into the prisoner runtime. Erased, so no simulation code runs on its account -- the projection executes in the worker. A `value` import appearing here would mean the pipeline had started being counted on the main thread from records it does not own, which is the second source of truth `AGENTS.md` boundary 1 forbids.",
   },
   {
+    file: 'src/ui/simulation-held-guards.ts',
+    tree: 'content',
+    kind: 'value',
+    reason:
+      "Value: `deriveSimulationMessageKey` from `src/content/simulation-message-keys`, to label a guard's claim -- plus the erased `LocalizationKey`, which types the `StaffRoleLabelLookup` the composition root hands it. The **second** `value` content dependency in this manifest, beside `simulation-intake.ts`'s, and it is one for the identical reason that entry gives: the alternative is a hand-written table of four `guard-claim.*.name` strings, which is exactly the drift that module's derivation rule exists to prevent. The function composes a string from a namespace and an id; it reads no catalogue, resolves no text and holds no state, so calling it runs no content logic in the sense this manifest measures. The role's key is *not* derived here and is injected instead, because a staff role's `nameKey` is authored in `src/content/staff-role-catalog.ts` rather than derived -- so the two names on one row come from the two different mechanisms that legitimately own them (ADR 0034).",
+  },
+  {
+    file: 'src/ui/simulation-held-guards.ts',
+    tree: 'simulation',
+    kind: 'type-only',
+    reason:
+      "Type-only: `HeldGuardsViewModel` from `src/simulation/presentation/guard-release-projection`. The ninth of the translators outside `src/ui/hud/` and the fifth that reads a *pulled* read model, so it is `simulation-pending-deliveries.ts`'s entry below one projection over: it names the view-model shape `hud/held-guards` answers with and turns it into `HudHeldGuardsViewModel`. Erased, so no simulation code runs on its account -- the projection executes in the worker, and it has to, because resolving what is holding a guard means asking both `'on-search'` claimants live (ADR 0033 decision 4, ADR 0034). A `value` import here would be the sharpest violation in this manifest: it would mean the main thread had started deciding *which system holds a guard* from a roster it does not own, and every row it produced carries a guard id that a press releases.",
+  },
+  {
     file: 'src/ui/simulation-pending-deliveries.ts',
     tree: 'content',
     kind: 'type-only',
@@ -337,6 +351,7 @@ describe('UI orchestration boundaries', () => {
       'src/ui/simulation-clock.ts',
       'src/ui/simulation-commands.ts',
       'src/ui/simulation-counts.ts',
+      'src/ui/simulation-held-guards.ts',
       'src/ui/simulation-intake.ts',
       'src/ui/simulation-pending-deliveries.ts',
       'src/ui/simulation-projections.ts',

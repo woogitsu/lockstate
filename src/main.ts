@@ -28,6 +28,7 @@ import {
   type HudBuildViewModel,
   type HudBuildableViewModel,
   type HudHandle,
+  type HudHeldGuardsViewModel,
   type HudIntakePipelineViewModel,
   type HudIntent,
   type HudPendingDeliveriesViewModel,
@@ -46,6 +47,7 @@ import { hudCountsFromWorkerMessage } from './ui/simulation-counts';
 import { hudZoningFromWorkerMessage } from './ui/simulation-zoning';
 import { BuildQueueReader } from './ui/simulation-build-queue';
 import { IntakePipelineReader } from './ui/simulation-intake';
+import { HeldGuardsReader } from './ui/simulation-held-guards';
 import { PendingDeliveriesReader } from './ui/simulation-pending-deliveries';
 import { RoomNeedsReader } from './ui/simulation-room-needs';
 import { SimulationCommandSender } from './ui/simulation-commands';
@@ -876,6 +878,29 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     client === undefined
       ? undefined
       : new PendingDeliveriesReader(client, (itemId) => defaultItemRegistry.getById(itemId)?.nameKey);
+  /**
+   * The fifth reader on #104's channel, and the third whose subject is a
+   * *command* rather than a readout (ADR 0034).
+   *
+   * What it makes reachable is `GuardRoster.unassign` for a guard something is
+   * holding. Every caller of it in `src/` sits inside the system that made the
+   * claim, and each of those only ever fires when that system decides the claim
+   * is over -- so a claim whose owner had lost track of it was permanent, which
+   * is what ADR 0033 measured as terminal and what its open question 3 says will
+   * recur. A guard id is not minted on this thread at all, and it never reached
+   * it: `hud/staff` was catalogued and unread, and would not have been enough
+   * anyway, because a row saying "On Search" cannot say *which* of the two
+   * claimants holds the guard.
+   *
+   * The staff-role lookup is handed over rather than duplicated, for the reason
+   * the item lookup above is: a role's `nameKey` is content this file already
+   * reads (`defaultStaffRoleRegistry`, at the hire pre-flight), and neither the
+   * projection nor the HUD may hold it.
+   */
+  const heldGuardsReader =
+    client === undefined
+      ? undefined
+      : new HeldGuardsReader(client, (staffRoleId) => defaultStaffRoleRegistry.getById(staffRoleId)?.nameKey);
   let activeTab: HudTabId = INITIAL_HUD_SHELL_STATE.activeTab;
 
   /**
@@ -965,6 +990,40 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       // answering for is a promise about a treasury that may not exist. The
       // failure reaches no control, because the player pressed nothing.
       .catch(() => applyPendingDeliveries(undefined));
+  };
+
+  /**
+   * Puts the held guards on the view model, or takes them off. The same
+   * absent-property dance the others do, and for the same reason: "nothing has
+   * asked" and "nobody is assigned" are different facts, and only the second is
+   * a statement about the prison.
+   */
+  const applyHeldGuards = (next: HudHeldGuardsViewModel | undefined): void => {
+    if (next === undefined) {
+      if (viewModel.heldGuards === undefined) return;
+      const { heldGuards: _cleared, ...withoutHeldGuards } = viewModel;
+      viewModel = withoutHeldGuards;
+    } else {
+      viewModel = { ...viewModel, heldGuards: next };
+    }
+    hud?.update(viewModel);
+  };
+
+  const refreshHeldGuards = (): void => {
+    if (heldGuardsReader === undefined || activeTab !== 'security') return;
+    void heldGuardsReader
+      .read()
+      .then((next) => {
+        // `undefined` is "a read was already in flight", not an answer, so it
+        // must leave what is on screen alone rather than blanking it.
+        if (next !== undefined) applyHeldGuards(next);
+      })
+      // A refusal, a timeout, or a worker that went away. The section comes off
+      // rather than staying, for the reason the deliveries do: every row is a
+      // control aimed at a guard id, and a row nothing is answering for is a
+      // button pointed at a roster that may not exist. The failure reaches no
+      // control, because the player pressed nothing.
+      .catch(() => applyHeldGuards(undefined));
   };
 
   const refreshRoomNeeds = (): void => {
@@ -1131,11 +1190,13 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       applyBuildQueue(undefined);
       applyIntakePipeline(undefined);
       applyPendingDeliveries(undefined);
+      applyHeldGuards(undefined);
     } else {
       refreshRoomNeeds();
       refreshBuildQueue();
       refreshIntakePipeline();
       refreshPendingDeliveries();
+      refreshHeldGuards();
     }
   });
 
@@ -1231,6 +1292,10 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           // same tab and on the same terms (#285).
           if (activeTab === 'build') refreshPendingDeliveries();
           else applyPendingDeliveries(undefined);
+          // And which guards are held, on the tab the Staff panel lives on, on
+          // exactly the same terms (ADR 0034).
+          if (activeTab === 'security') refreshHeldGuards();
+          else applyHeldGuards(undefined);
           // And the intake readout on the tab the Intake panel lives on, on
           // the same terms as both: arriving asks at once rather than waiting
           // up to 500ms for the next counts publication, and leaving takes the
@@ -1418,6 +1483,40 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
          */
         case 'cancel-material-purchase':
           requireSimulation(commands).submit({ type: 'CancelMaterialPurchase', orderId: intent.orderId });
+          return;
+
+        /*
+         * The producer ADR 0033's open question 3 asks for (ADR 0034), and the
+         * third dispatch in this file that mints nothing.
+         *
+         * What it makes reachable is `GuardRoster.unassign` for a guard
+         * something is holding. Every caller of it in `src/` sits inside the
+         * system that made the claim, and each of those only fires when that
+         * system decides the claim is over -- so a claim whose owner had lost
+         * track of it was permanent, which is exactly what issue #352 was, and
+         * ADR 0033 says the next resource-claiming system will have the same bug
+         * for the same reason. The id was never minted on this thread at all: it
+         * is a staff `EntityId`, allocated by `EntityStore.spawn` inside the
+         * simulation, and it reaches here on `hud/held-guards`.
+         *
+         * **No claim on the wire**, and that is the shape rather than an
+         * omission. The row says what is holding the guard so a player can
+         * decide; the command does not send it back, because `'on-search'` is a
+         * *shared* deployment phase and telling a responder from a searcher
+         * needs both claimants asked live inside the simulation at the tick the
+         * release runs (ADR 0033 decision 4). A claim chosen here would be this
+         * thread guessing from a cadence-old projection.
+         *
+         * **No pre-check**, for `cancel-material-purchase`'s reason with a
+         * person instead of money: whether a guard is still held, and by what, is
+         * not something this thread's stale copy of the roster may decide. And
+         * the simulation *refuses* rather than swallowing -- a Release that
+         * silently did nothing is the failure #82 and #207 are about -- so
+         * `session-commands.ts` records `release-guard.not-held` and the alerts
+         * list says so.
+         */
+        case 'release-guard':
+          requireSimulation(commands).submit({ type: 'ReleaseGuardAssignment', guardId: intent.guardId });
           return;
 
         case 'place-build-order': {
