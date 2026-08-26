@@ -20,7 +20,14 @@ import {
   SIMULATION_PROTOCOL_VERSION 
 } from '../protocol/types';
 import type { JsonValue } from '../../shared/json';
+import { collectProtocolTransferables } from '../protocol/transferables';
+import {
+  RENDER_ACTORS_CONTENT_TYPE,
+  RENDER_ACTORS_SCHEMA_ID,
+  RENDER_ACTORS_SCHEMA_VERSION,
+} from '../protocol/render-actors-payload';
 import { PROJECTION_CATALOG, type ProjectionRequest } from './projection-catalog';
+import { encodeRenderActorsKeyframe } from './render-actors-keyframe';
 import { projectStatusCounts, statusCountsEqual } from './status-counts';
 
 export type WorkerState = 
@@ -88,6 +95,37 @@ export const CLOCK_STATE_PUBLISH_INTERVAL_MS = 250;
  * boundary at most two messages a second.
  */
 export const STATUS_COUNTS_PUBLISH_INTERVAL_MS = 500;
+
+/**
+ * How often, at most, the worker publishes `simulation/delta` -- the render
+ * delta channel of ADR 0040, slice 1.
+ *
+ * **A ceiling, not a rate**, in the same sense
+ * `STATUS_COUNTS_PUBLISH_INTERVAL_MS` is one and enforced by the cheaper of the
+ * two tests available: `publishRenderDelta` returns without encoding anything
+ * when the tick has not moved since the last publication. Nothing in this
+ * payload can change without the kernel stepping -- an actor's position is
+ * written by a system inside a tick and by nothing else -- so an unmoved tick
+ * is exactly "nothing changed", and a paused prison posts nothing at all. That
+ * is the same rule `publishClockState` uses and it is strictly stronger here,
+ * because it is also what keeps `deltaMessageSchema`'s `tick > baseTick`
+ * satisfiable: `baseTick` is the previous publication's tick, so publishing
+ * twice at one tick would be a message the main thread's decoder refuses.
+ *
+ * A fifth of the counts' interval and two and a half times the clock's,
+ * because the three readouts have different jobs. The counts are levels a
+ * player reads; the clock is a progress bar; this one is where the actors
+ * *are*, which is the thing the player is looking straight at. ADR 0040 puts
+ * it at 100 ms and gives the reason it is not per-tick: at x4 the tick loop
+ * runs up to 5 ticks per 15 ms wake, so a per-tick channel would put a
+ * population-sized buffer on the boundary ~66 times a second to move a handful
+ * of arrivals.
+ *
+ * Wall-clock milliseconds rather than a count of ticks, for the reason the
+ * other two intervals are: it governs how often the *main thread* is told, so
+ * it must be bounded in the units the main thread's frame budget is in.
+ */
+export const RENDER_DELTA_PUBLISH_INTERVAL_MS = 100;
 
 /**
  * How `handleInitialize` reports a snapshot it refuses to restore: correlated
@@ -201,6 +239,20 @@ export class SimulationWorkerStateMachine {
   private _publishedZoningSequence = 0;
   /** When the counts were last *projected*, which bounds the projection's cost as well as the message rate. */
   private _countsProjectedAtMs = Number.NEGATIVE_INFINITY;
+  /**
+   * The tick of the last `simulation/delta`, `0` for none, which is the
+   * `baseTick` the next one declares.
+   *
+   * `0` rather than `null` because tick 0 is genuinely the base a session's
+   * first publication is measured against, and because `deltaMessageSchema`
+   * refuses `tick <= baseTick` -- so a session that has published nothing and a
+   * session whose last publication was at tick 0 want the same behaviour, and
+   * tick 0 cannot be published at all. That is not a gap: a tick-0 session is
+   * exactly the case `simulation/ready` and the feed's first snapshot already
+   * cover.
+   */
+  private _publishedDeltaTick = 0;
+  private _deltaPublishedAtMs = Number.NEGATIVE_INFINITY;
 
   public constructor(
     private readonly port: MessagePortLike,
@@ -251,6 +303,7 @@ export class SimulationWorkerStateMachine {
 
       this.publishClockState(now);
       this.publishStatusCounts(now);
+      this.publishRenderDelta(now);
     } catch (e) {
       this.fault('internal-error', e instanceof Error ? e.message : String(e));
     }
@@ -417,6 +470,88 @@ export class SimulationWorkerStateMachine {
         ...(zoning === undefined ? {} : { zoning }),
       },
     });
+  }
+
+  /**
+   * Tells the main thread where the actors are, unprompted.
+   *
+   * ADR 0040 slice 1, and the first production user the `array-buffer`
+   * transport has had since the protocol's first commit. Before this the
+   * renderer read actor positions out of a *session bundle* it obtained by
+   * sending the persistence path's own `simulation/request-snapshot` every two
+   * seconds; the whole bundle then went through `jsonValueSchema`, which is
+   * `isJsonValue` recursing with an `Object.getOwnPropertyDescriptor` per array
+   * element and per object key. That is a main-thread cost proportional to the
+   * population and the loaded chunk count, paid to move two integers per
+   * prisoner. `arrayBufferPayloadSchema` validates a schema id, a content type
+   * and a `byteLength` cross-check and never looks inside the body, so this
+   * message's boundary cost is flat in the population -- which is what issue
+   * #414 asked for and what the size of the buffer, alone, does not give.
+   *
+   * **Keyframe only, and that is the slice.** Every message carries the
+   * complete live set. ADR 0040's changed-only messages need a worker-side
+   * mirror of what was last published and a base-tick rule on the receiver;
+   * both are its slice 3, and the `flags` word and the removal list are already
+   * in the layout so that landing them changes no version.
+   *
+   * **Strictly a report**, exactly like `publishClockState` and
+   * `publishStatusCounts`. It reads `Kernel.tick` and the prisoner position SoA
+   * after the tick loop has finished stepping, calls nothing on the kernel,
+   * steps nothing and writes nothing but the buffer it posts
+   * (`tests/determinism/render-delta-publication.test.ts`). There is no request
+   * that provokes it and no main-thread module that can ask for one, so there
+   * is no feedback path from the renderer into the simulation to close --
+   * `AGENTS.md` boundary 1, in the only form a publication can take it.
+   *
+   * **Two gates, and their order is the point**, as it is one method up. The
+   * tick test comes first because it is both the cheaper check and the
+   * correctness one: `deltaMessageSchema` refuses `tick <= baseTick`, so a
+   * second publication at an unmoved tick would be a message the main thread's
+   * decoder rejects. The interval is checked next, and both are field reads, so
+   * a wake that publishes nothing costs two comparisons. Only then does the
+   * encoder walk the store.
+   */
+  private publishRenderDelta(nowMilliseconds: number): void {
+    if (this._kernel === null || this._runtime === null) return;
+
+    const tick = this._kernel.tick;
+    // Nothing in this payload can move without a tick, so an unmoved tick is
+    // "nothing changed" -- the skip `STATUS_COUNTS_PUBLISH_INTERVAL_MS`
+    // describes, reached without a mirror of the last published positions.
+    if (tick <= this._publishedDeltaTick) return;
+    if (nowMilliseconds - this._deltaPublishedAtMs < RENDER_DELTA_PUBLISH_INTERVAL_MS) return;
+
+    const data = encodeRenderActorsKeyframe(this._runtime.prisoners);
+    const message: WorkerToMainMessage = {
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: crypto.randomUUID(),
+      // No `replyTo`, and `deltaMessageSchema` is built from
+      // `requestEnvelopeFields` so it has no slot for one: nobody asked for
+      // this. ADR 0003's 2026-08-24 amendment forbids an unsolicited message
+      // from presenting itself as a request response.
+      kind: 'simulation/delta',
+      payload: {
+        baseTick: this._publishedDeltaTick,
+        tick,
+        delta: {
+          schemaId: RENDER_ACTORS_SCHEMA_ID,
+          schemaVersion: RENDER_ACTORS_SCHEMA_VERSION,
+          transport: 'array-buffer',
+          contentType: RENDER_ACTORS_CONTENT_TYPE,
+          byteLength: data.byteLength,
+          data,
+        },
+      },
+    };
+
+    this._publishedDeltaTick = tick;
+    this._deltaPublishedAtMs = nowMilliseconds;
+    // Transferred rather than copied, which is what the transport is for and
+    // what `collectProtocolTransferables` has been able to say since the
+    // protocol's first commit without anything ever asking it. The buffer is
+    // freshly built here and read by nothing else, so detaching it costs this
+    // side nothing.
+    this.post(message, collectProtocolTransferables(message));
   }
 
   /**

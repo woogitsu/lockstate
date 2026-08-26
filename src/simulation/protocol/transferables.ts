@@ -29,9 +29,13 @@ export function collectProtocolTransferables(
       return collectPayloadBuffer(message.payload.event);
     // A projection reply carries an optional `versionedPayload`, so it may in
     // principle be an `ArrayBuffer` -- the same treatment `simulation/delta`
-    // and `simulation/snapshot` get. Nothing builds one today: every catalog
-    // entry posts `transport: 'structured-clone'`, which
-    // `collectPayloadBuffer` correctly reports as nothing to transfer.
+    // and `simulation/snapshot` get. Nothing in the *projection catalogue*
+    // builds one: every entry there posts `transport: 'structured-clone'`,
+    // which `collectPayloadBuffer` correctly reports as nothing to transfer.
+    // That is no longer true of the protocol as a whole --
+    // `state-machine.ts#publishRenderDelta` posts an `array-buffer` body on
+    // `simulation/delta` (ADR 0040 slice 1, #414), which is this function's
+    // first production caller.
     case 'simulation/projection':
       return message.payload.view === undefined ? [] : collectPayloadBuffer(message.payload.view);
     case 'protocol/handshake':
