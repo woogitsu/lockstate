@@ -2,7 +2,23 @@
 
 ## Status
 
-**Proposed — pending human approval.** Not accepted.
+**Accepted, 2026-08-26.** The five decisions are approved as written, unchanged
+by the approval, and the five things this document says it does not settle stay
+unsettled rather than being approved by implication.
+
+What the approval turns on, so it is not mistaken for a rubber stamp: the
+disciplinary record is *derived* from state the V5 payload already carries, so
+this decision costs no save version and leaves V6 free for the incident-response
+restore; review is an **absolute recomputation** rather than a one-tier step, so
+a tier does not depend on how many times the system happened to run; there is no
+RNG anywhere in it; and the tier scale and the housing group are two axes with
+the group derived, which is the shape #78 asked for. Those four together are why
+this is approvable without seeing it played — none of them can drift with a
+schedule change.
+
+Not approved, and named here because the ADR names them: the four tiers still
+have no vocabulary, so a player sees a number. That is content rather than
+mechanism and it does not gate the decision.
 
 This ADR arrives **with the change that implements it**, which is the shape
 [`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2 names as fragile and the same shape
