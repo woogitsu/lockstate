@@ -94,7 +94,24 @@ const AWAITING_CONSUMER: Readonly<Record<string, string>> = {
   'room.infirmary': 'Declared with no reader anywhere.',
   'room.kitchen': 'Declared with no reader anywhere.',
   'room.laundry': 'Declared with no reader anywhere.',
-  'room.reception': 'Declared with no reader anywhere; intake has no admission path yet (#89).',
+  // Still unconsumed, but no longer for the reason this entry gave. It read
+  // "intake has no admission path yet (#89)" until an admission path arrived:
+  // `src/main.ts` handles an `admit-prisoner` command (#261 step 4) and the
+  // HUD has a control that produces it. That closed the stated reason without
+  // touching the id, which is why a wrong reason is as much a defect here as a
+  // missing entry -- the next reader would have deleted this line on the
+  // strength of the admission path alone.
+  //
+  // What is true instead: the intake pipeline names no room this one could be.
+  // `IntakeSystem` has a `'reception'` *stage*, but it is a stage of the
+  // arrival record, not a place -- the branch for it assigns an identity and
+  // advances to `'classification'`, and it reads no room instance and no tile.
+  // The only room ids the pipeline names at all are the accommodation targets
+  // `room.cell` and `room.solitary-cell`
+  // (`DEFAULT_ACCOMMODATION_POLICY`), and a prisoner is admitted straight into
+  // one of those. Nothing between the command and the cell asks where the
+  // prisoner was processed, so a zoned reception would change nothing today.
+  'room.reception': "Declared with no reader anywhere. Intake has an admission path now (#261), but it names no reception room: `IntakeSystem`'s `'reception'` stage is a stage of the arrival record rather than a place, and the only room ids the pipeline names are the accommodation targets `room.cell` and `room.solitary-cell`.",
   'room.security-office': 'Declared with no reader anywhere.',
   'room.staff-room': 'Declared with no reader anywhere.',
   'room.utility-room': 'Declared with no reader anywhere.',

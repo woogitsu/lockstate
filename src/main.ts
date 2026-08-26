@@ -432,13 +432,28 @@ const NEW_PRISON_ORIGIN_TILE = { x: 16, y: 16 } as const;
  * plain numbers and one message key on `HudBuildMaterialViewModel`.
  *
  * **The first requirement that can actually be bought**, and nothing more.
- * Both shipped buildables require exactly one material, so "first" and "only"
- * agree today; a buildable requiring two would get a control for one of them
- * and no way to buy the other, which is a real limit and is stated rather than
- * hidden -- the panel offers one stepper, and a multi-material buy surface is
- * a design question nobody has answered. A requirement no one sells yields
- * `undefined` and the panel offers no purchase at all, which is the honest
- * rendering of a material the economy has no price for.
+ * All four shipped buildables list exactly one `materialsRequired` entry, so
+ * "first" and "only" agree today; a buildable naming two *item ids* would get
+ * a control for one of them and no way to buy the other, which is a real
+ * limit and is stated rather than hidden -- the panel offers one stepper, and
+ * a multi-material buy surface is a design question nobody has answered. A
+ * requirement no one sells yields `undefined` and the panel offers no purchase
+ * at all, which is the honest rendering of a material the economy has no price
+ * for.
+ *
+ * **This paragraph used to say "both shipped buildables", and it was wrong
+ * twice over.** It was wrong about the count: `BUILDABLE_REGISTRY`
+ * (`src/simulation/construction/definition.ts`) has held four rows since
+ * ADR 0028 phase 2 -- `wall-brick`, `door-wooden`, `bed-wooden` and
+ * `toilet-brick` -- and each row was added without anyone touching this
+ * sentence, which is exactly how a count in a comment rots. It was also wrong
+ * about what "one material" bounds: it reads as one *unit*, and `wall-brick`
+ * requires `quantity: 2`. The limit this function actually imposes is one
+ * priced **item id** per buildable, never one unit per placement --
+ * `quantityPerPlacement` below carries the requirement's quantity through to
+ * the panel, which opens the stepper on it (`setQuantity` in
+ * `src/ui/hud/build-panel.ts`), so the two-brick wall's buy control starts at
+ * two and needs no second control to be correct.
  *
  * `maxQuantity` comes from `MAX_PURCHASE_QUANTITY` rather than from a number
  * chosen here: the simulation's own bound on one purchase, so the stepper
