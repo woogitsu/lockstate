@@ -1720,7 +1720,14 @@ describe('fork pull request execution contract', () => {
     let current: string[] | undefined;
 
     for (const line of lines.slice(start + 1)) {
-      const header = /^ {2}([A-Za-z][\w-]*):\s*$/u.exec(line);
+      // The `(?:#.*)?` is load-bearing and must not be "simplified" away. Without
+      // it a job header carrying a trailing comment -- `  lint-docs: # remove
+      // after #999` -- matches nothing, so the job is never added to `blocks`,
+      // never appears in `names`, and is never checked for the fork guard. That
+      // was measured, not imagined: the byte-identical job without the comment
+      // fails this test, and with it the whole file stayed green. This parser
+      // must fail closed, the way the deploy-side one at `guardOf` does.
+      const header = /^ {2}([A-Za-z][\w-]*):\s*(?:#.*)?$/u.exec(line);
       if (header) {
         current = [];
         blocks.set(header[1] ?? '', current);

@@ -165,7 +165,7 @@ The reasoning that put migrations in their own workflow has not changed, and is 
 
 ### What can publish the staging Worker
 
-Exactly the two **staging** rows above, because `deploy.yml`'s `staging` job has one `if:` with two `||` alternatives and nothing else reaches that Worker. This section is a restatement of it; the comment above it carries the full argument, and `tests/foundation/ci-configuration-contract.test.ts` pins every term.
+Exactly the two **staging** rows above, because `deploy.yml`'s `staging` job has one `if:` with two `||` alternatives and nothing else in `.github/workflows/` reaches that Worker. A local `pnpm deploy:staging` does, with operator wrangler credentials — see "Deployment" above; this section is about what the repository's own automation can publish. This section is a restatement of it; the comment above it carries the full argument, and `tests/foundation/ci-configuration-contract.test.ts` pins every term.
 
 **Automatically:** a completed `CI` run whose `conclusion` is `success`, whose `event` is `push`, and whose `head_repository` is this repository, on `main`. The last two terms are about a fork, and neither is implied by the trigger's `branches: [main]`. `ci.yml` triggers on a bare `pull_request`, so a pull request opened from a fork starts a CI run that *belongs to this repository*; `branches:` matches the triggering run's head branch, and a fork names its own branches. The `Checkout` step deliberately takes `workflow_run.head_sha`, so what gets built is the triggering run's commit — the fork's. Before those two terms, the only thing between an unreviewed commit and this Worker was that run's `conclusion`.
 
@@ -255,7 +255,7 @@ The SQL under `supabase/migrations/` has been executed against a local PostgreSQ
 
 Run `migrate-database.yml` with **dry run left checked**: it links the project and prints `supabase migration list` without applying anything. Read that list, then re-run with dry run unchecked.
 
-Before it provisions the Supabase CLI or links anything, the workflow runs `pnpm verify:sql` against a PostgreSQL it provisions locally — applying every migration in order and running the whole pgTAP suite. A migration set that does not apply locally fails the run before it can reach a hosted project. This gate runs for a dry run too: a dry run whose SQL does not apply locally is worth failing. It closes an asymmetry that stood until then, where `deploy.yml` re-ran the whole gate before a *reversible* Worker deploy while this workflow ran no verification at all before an *irreversible* `supabase db push`.
+Before it provisions the Supabase CLI or links anything, the workflow runs `pnpm verify:sql` against a PostgreSQL it provisions locally — applying every migration in order and running the whole pgTAP suite. A migration set that does not apply locally fails the run before it can reach a hosted project. This gate runs for a dry run too: a dry run whose SQL does not apply locally is worth failing. It closes an asymmetry that stood until then, where `deploy.yml`'s `production` job re-ran the whole gate before a *reversible* Worker deploy while this workflow ran no verification at all before an *irreversible* `supabase db push`.
 
 A fresh Supabase project is not empty — its own bootstrap runs before these migrations. That is precisely how issue #20's real-stack verification discovered the platform no longer grants the Data API roles table privileges by default, which had left every RLS policy in this schema unreachable.
 
