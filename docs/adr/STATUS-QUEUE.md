@@ -19,7 +19,27 @@ holds instead is the account of what moved, what may not be touched, and what
 the test cannot see. Deciding is still the owner's; this file only makes the
 next decision cheap.
 
-Re-anchored at `main` @ `dbe271f` (**v0.0.98**), and **the warrant is stated
+Re-anchored at `main` @ `8d29aa6` (**v0.0.111**) by the delta method this header
+describes, from `dbe271f` (v0.0.98). 109 files changed; **thirteen** intersect the
+declared set, and reading only those thirteen falsified **three** claims — the
+command-union count, the `'object.*'` literal count, and one drifted
+`docs/HUD_PROJECTIONS.md` line — each corrected in place with what it used to say.
+Two claims the delta *could* have falsified and did not: `AWAITING_PRODUCER` is
+still empty (both new commands shipped with producers), and `minQuantity` is still
+unchecked (`src/simulation/rooms/requirements.ts:19` and
+`src/simulation/presentation/room-projection.ts:74` both still say so).
+
+**Why this anchor moved twice in one day, and it is not carelessness.** Every
+merge triggers a `Version` bump in a commit of its own that starts no CI run, so
+nine merges spent nine releases of budget without any of them running this gate.
+The budget was crossed by release bumps, not by unread history — but the fix is
+the same either way, because the releases are real and the entries had genuinely
+not been read against them. What the previous anchor got right is the reason this
+one cost twenty minutes instead of a day: **the enumerated file set below is what
+makes a delta pass possible at all.**
+
+The older warrant, kept because it is still the correct description of the
+method: **the warrant is stated
 precisely because it is not the same warrant the last two anchors carried**:
 §§3-6 were read in full at `83c3121`, and the delta `83c3121..dbe271f` was read
 against them by the method under *"How to extend this anchor cheaply"* below. So
@@ -456,9 +476,14 @@ Functions in that table live in
 of that table was re-read against the file at this commit: `:45` and `:91`,
 `:150` with its trigger at `:188`, the exception's `hint` at `:178`, and
 `:71-73`'s `as $$ select 4194304 $$;`. Both
-absences were re-verified at `dbe271f` by grepping the whole
+absences were re-verified at `8d29aa6` by grepping the whole
 `supabase/migrations/` tree for a total-bytes, retention or pruning mechanism
-(`total_bytes`, `retention`, `prune`, `268435456`, `max_revisions`); there is
+(`total_bytes`, `retention`, `prune`, `268435456`, `max_revisions`). **That grep
+is no longer clean and the finding is unchanged**: it now returns exactly one
+hit, `20260826130000_server_stamp_updated_at.sql:68`, which is *prose* — a
+comment naming a future retention job as the reason that migration bounds what it
+bounds. A reader re-running the grep should expect it and not mistake a sentence
+about a mechanism for the mechanism. There is
 none, and the single hit for *"retention"* is a forward reference discussed below
 rather than a mechanism.
 
@@ -530,7 +555,7 @@ automated, and the trigger is the merge rather than the diff — PR #87 touched 
 file under `supabase/migrations/` and nine migrations were applied anyway
 (`docs/DEPLOYMENT.md:143-147` for the table, `:159` for the 71-second window and
 `:161` for #87 itself, all re-read here). The half of the decision that *is* in
-this repository stays verified at `dbe271f`:
+this repository stays verified at `8d29aa6`:
 `.github/workflows/migrate-database.yml` is `workflow_dispatch:` (`:34`) with no
 `push:`, requires a typed `confirm_project_ref` (`:41`), and its apply job is
 environment-gated (`:65`). **`git diff cddaebb..main` over that file is still
@@ -633,8 +658,16 @@ one direction.
   2026-08-26.**"*, plus its index row), so phase 6 now rests on an Accepted
   decision and the queue's one pending entry is ADR 0031 instead. Phase 4 — the
   rest of the object catalogue — is
-  untouched: exactly two `'object.*'` ids appear as literals under `src/`
-  outside `src/content/`, both on `BUILDABLE_REGISTRY` rows. One
+  untouched at `dbe271f`: exactly two `'object.*'` ids appeared as literals
+  under `src/` outside `src/content/`, both on `BUILDABLE_REGISTRY` rows.
+  **ADR 0028 phase 4 (#384) took that to nineteen**, still all on
+  `BUILDABLE_REGISTRY` rows and still all in
+  `src/simulation/construction/definition.ts` — measured by
+  `grep -rno "'object\.[a-z-]*'" src/ --include=*.ts | grep -v '^src/content/'`.
+  The claim's *shape* survives, which is why it is corrected rather than struck:
+  object ids still appear outside `src/content/` in exactly one file and for
+  exactly one reason. Its number did not, and a count is what the sentence was
+  for. One
   thing phase 1 promised is now true and was **not** delivered by any phase:
   `door-wooden` builds a real door, and since **#334** the crossing is pinned at
   the two sites that decide it rather than only at the one the issue named. It could not be an object placement — a door
@@ -820,7 +853,7 @@ one direction.
   0024's has been deleted. The fix is in the code, and the open decision is
   whether to send the handshake or delete `'ready'` (issue #274, Q4).
 - **ADR 0010 — the telemetry layer is inert.** Nothing outside
-  `src/services/telemetry/` imports it, re-verified at `dbe271f` by grepping the
+  `src/services/telemetry/` imports it, re-verified at `8d29aa6` by grepping the
   whole of `src/` for that path — every hit is inside the directory itself — so
   consent is never asked for and `record()` is never called. The prohibition half of the ADR
   holds; the sentence *"telemetry is fed from the main thread's orchestration
@@ -850,7 +883,7 @@ one direction.
 
   **Understated:** the third figure has no source. ADR 0025 says its inherited
   budget is *"the 3.9px at 900×600 that ADR 0022 and `hud.css` both record"*.
-  Re-verified at `dbe271f` by grepping the whole tree: **`3.9` appears in no ADR
+  Re-verified at `8d29aa6` by grepping the whole tree: **`3.9` appears in no ADR
   but 0025 — `docs/adr/0025-guard-hiring-surface.md:70` and `:182` — in no
   `.css` file, and nowhere in `src/`.** Re-run after #377, which is the first
   change to touch `src/ui/hud/hud.css` since this entry was written and so the
@@ -912,11 +945,13 @@ one direction.
   `4ed571f`; `PlaceObject` (#320) made it ten before the v0.0.65 re-anchor, which
   did not re-count; `RemoveObject` (#328) has since made it eleven. Re-verified at
   `83c3121` and it is **still eleven** — the one count in this section that has
-  held across the eleven releases, because #367 wired an existing member rather
-  than adding one: `simulationCommandSchema`
-  (`src/simulation/protocol/commands.ts:348-360`) discriminates eleven, matching
-  the eleven `type: z.literal` members declared above it, and `AdmitPrisoner`
-  (#306) concerns a prisoner. The
+  held across the eleven releases to `dbe271f`, because #367 wired an existing
+  member rather than adding one. **It no longer holds at that count.**
+  `simulationCommandSchema` (`src/simulation/protocol/commands.ts:437`) now
+  discriminates **thirteen**, matching thirteen `type: z.literal` members: #392
+  added `CancelMaterialPurchase` and #394 added `ReleaseGuardAssignment`, both
+  with producers in the same change, so `AWAITING_PRODUCER` stayed empty while
+  the count moved. `AdmitPrisoner` (#306) still concerns a prisoner. The
   load-bearing half of the argument is
   unaffected — there is still no player input to *placement*, and an override
   still needs a new command type, its codec case, a handler branch and a decision
@@ -933,7 +968,8 @@ one direction.
   registered with `capacity: 0` *"because object placement does not exist"*. ADR
   0028 phase 1 falsified the premise in both. The document they both cite has
   already moved — gap 13 now opens *"Object placement exists, and `minQuantity`
-  is still unchecked"* (`docs/HUD_PROJECTIONS.md:553`) — so the two ADRs are the
+  is still unchecked"* (`docs/HUD_PROJECTIONS.md:639`; it was `:553` at the
+  previous anchor, and the sentence is unchanged — only the line moved) — so the two ADRs are the
   last places in the corpus asserting the old world, and a reader who follows
   either citation lands on a page contradicting the sentence that sent them. The
   two sentences are still there and were re-read here:
