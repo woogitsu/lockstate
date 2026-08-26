@@ -1455,7 +1455,14 @@ missing or fails validation, it walks the remaining generations newest-first
 and adopts the first one that validates — healing `currentGenerationId` and
 dropping the confirmed-corrupt generation(s) so the pointer does not force
 the same recovery scan on every subsequent load. `no-valid-generation` is
-returned only when nothing in the retained window validates.
+returned only when nothing in the retained window validates, and in that case
+nothing has been deleted: the deletion runs through `recoverToGeneration`,
+which is reached only after a generation has decoded.
+
+Its optional `skip` set (`LoadCurrentOptions`) is how a caller that judges a
+generation by something this method cannot see — a restore that threw — asks
+for the next candidate without one being deleted to get there. See "Retired on
+success, not on refusal" below.
 
 #### Demotion also covers saves that decode and cannot be restored (#103)
 
@@ -1486,14 +1493,23 @@ The chain it breaks: `handleInitialize` wraps `restoreSimulationRuntime` in a
 catch-all and reports *every* exception out of it as `snapshot-incompatible`,
 so a bug in this build's own restore code is indistinguishable from a bad
 blob; `WorkerSessionHost` turns that code into a
-`SnapshotRestoreRejectedError`; `loadPrison` demotes the generation and tries
-the next-newest. A cause of that shape is deterministic, so it rejects every
-generation in the window. Measured on `main` at v0.0.112: **three good
-generations became zero in one load**, and the prison stayed unloadable
-afterwards even once the failure was removed, because nothing was left to
-load. With the floor the same load leaves the oldest generation in place, and
-a build that can restore it loads the prison again
-(`tests/integration/session-restore-failure.test.ts`, "never the last copy").
+`SnapshotRestoreRejectedError`; `loadPrison` acts on it. A cause of that shape
+is deterministic, so it rejects every generation in the window. Measured on
+`main` at v0.0.112, when the walk demoted each generation as it was refused:
+**three good generations became zero in one load**, and the prison stayed
+unloadable afterwards even once the failure was removed, because nothing was
+left to load. With the floor the same load left the oldest generation in
+place, and a build that could restore it loaded the prison again.
+
+The floor is now the second belt rather than the first. What the same load
+costs today is nothing at all — see "Retired on success, not on refusal"
+below, which is the rule that stops it, and
+`tests/integration/session-restore-failure.test.ts`, "a deterministic refusal
+costs no generation at all", which measures it. The floor still stands
+underneath: `loadPrison` can no longer reach it, because the generation that
+restored is always retained, but it is what any other caller of
+`demoteGeneration` runs into and what catches a future walk that forgets the
+rule.
 
 It costs the player nothing but a refused load. A prison whose only generation
 cannot be restored and a prison with an empty window both answer
@@ -1515,8 +1531,50 @@ after** an older one has validated, and when nothing in the window validates
 `loadCurrent` deletes nothing at all. Demotion was the one path here that
 could empty a window.
 
-**Three things this does not settle, none of them decidable inside
-implementation code:**
+#### Retired on success, not on refusal (#403 (d))
+
+**A generation refused by the host is retired only once a *different*
+generation has actually restored.** That is the decode path's rule, stated
+above, applied to the one path in this file that did not follow it — and it is
+the whole of the difference between all-but-one and none.
+
+The walk used to advance *by deleting*: `loadCurrent` re-derives its candidate
+list from metadata on every call, so it kept returning the same generation
+until one was retired, and retiring one deletes it. `loadCurrent` now takes a
+`skip` set (`LoadCurrentOptions`) — generations the caller has tried and cannot
+use, for a reason schema, migration and checksum cannot see. They are passed
+over as if they were not retained: not returned, and not retired to get past
+them. `SessionController.loadPrison` accumulates its refusals into that set,
+and calls `demoteGeneration` for each of them **after** a generation has
+restored, newest-first, so the pointer `demoteGeneration` heals lands on the
+generation that just restored.
+
+Why a success is what earns the deletion: another generation went through the
+same restore code, on the same build, moments later, and came back a running
+simulation. That is the strongest available evidence that what is wrong is the
+*save* and not the build — the distinction the worker's catch-all cannot draw,
+and the one the whole of #403 turns on. Absent that evidence, nothing is
+deleted:
+
+| Cause of the refusal | Before | Now |
+| --- | --- | --- |
+| Deterministic (a code fault, or a shape no generation carries correctly) | every generation but one deleted | **none deleted**; `no-valid-generation`, window intact |
+| This save only (a genuinely bad newest generation) | that generation deleted, older one loaded | unchanged: that generation deleted, older one loaded |
+
+The second row is why this is not simply "delete less": #103's requirement that
+an unrestorable generation must not stay current for ever is unchanged, and
+`tests/integration/session-restore-failure.test.ts`'s "demotes the unrestorable
+generation, restores the previous one on the same worker" still pins it.
+
+Two consequences worth stating. A failed load now writes **nothing** — no
+deletion and no pointer move — so a prison that cannot be loaded is exactly as
+it was before the attempt. And the deterministic case retries every generation
+on every load rather than one, which costs a handful of refused restores on a
+recovery path that runs once per load; that is the price of not deleting saves
+a fixed build can still read.
+
+**Two things this does not settle, neither decidable inside implementation
+code:**
 
 1. **Classifying the failure.** A schema/checksum failure is a fact about the
    blob; an unexpected exception is a fact about our code, and only the first
@@ -1535,18 +1593,17 @@ implementation code:**
    `.strict()`, so a record written by a newer build makes `list()` refuse the
    whole prison list on an older one (see `CorruptSlotMetadataError` above).
    Un-pointing without deleting is not an option for the reason stated above.
-3. **Demoting only once a fallback has actually restored** — the decode path's
-   own rule, applied to restore failures. It would cost *no* generations
-   instead of all-but-one, and needs the walk to advance by skipping tried
-   generations rather than by deleting them (`loadCurrent` currently returns
-   the same generation until one is retired), which retires
-   `demoteGeneration`'s only production caller.
+The third — demoting only once a fallback has actually restored — is settled,
+and is the section above. It also removes most of what (2) was for: after it, a
+deterministic failure deletes nothing, so there is nothing left to quarantine
+in the case quarantine was designed for.
 
 Who calls it is deliberately narrow: `SessionController.loadPrison` demotes
 **only** on a `SnapshotRestoreRejectedError`, the error a host raises when the
-*snapshot* was refused. A host that timed out, was never started or has gone
-away propagates unchanged and costs no generation — demoting a good save
-because the worker was busy would be the more expensive mistake.
+*snapshot* was refused, and only once another generation has restored. A host
+that timed out, was never started or has gone away propagates unchanged and
+costs no generation — demoting a good save because the worker was busy would be
+the more expensive mistake.
 
 ### Autosave
 
@@ -1821,18 +1878,27 @@ pending command queue intact, seed determinism, and both fault paths.
   rather than starting an overlapping save.
 - `loadPrison` sends the validated envelope payload to the host and reports
   whether recovery fell back to an earlier generation. When the host *rejects*
-  the snapshot it demotes that generation and tries the next-newest one, so
-  the newest-first walk covers restore failures and not only decode failures
+  the snapshot it sets that generation aside and asks for the next-newest one,
+  passing what it has already refused as `loadCurrent`'s `skip` set, so the
+  newest-first walk covers restore failures and not only decode failures
   (#103, and "Demotion also covers saves that decode and cannot be restored"
-  above). A generation offered again after being demoted throws rather than
-  looping: demotion is what makes the walk terminate.
+  above). A generation offered again after being skipped throws rather than
+  looping: the skip set only grows, so it is what makes the walk terminate,
+  and a repository that ignored it would spin.
 
-  **The walk ends where demotion does.** A `DemotionResult` reporting that
-  nothing was retired — the last-copy floor, or a generation already outside
-  the window — ends it with `no-valid-generation`, the same answer a prison
-  with nothing loadable in it already gives, and leaves what is on disk
-  alone. See "Never the last copy" above for what that is worth and what it
-  costs.
+  **Nothing is retired until something has restored** ("Retired on success,
+  not on refusal" above). When a generation restores, every generation the
+  walk refused on the way to it is demoted, newest-first. When none does, the
+  walk ends with `no-valid-generation` — the same answer a prison with nothing
+  loadable in it already gives — having written nothing and deleted nothing.
+
+  That retirement runs *after* the session is adopted and does not fail the
+  load: the prison is restored and running, and a storage error while deleting
+  a save already known to be unrestorable costs one more refused restore on
+  the next load rather than the load the player just made. It is reported
+  through `getLastRetirementFailure()` rather than swallowed, because an error
+  nothing can observe is indistinguishable from a retirement that silently
+  stopped happening.
 
 Default autosave cadence is `DEFAULT_AUTOSAVE_INTERVAL_MS` (30s),
 justified by the measurements below rather than picked by feel — issue

@@ -6,13 +6,24 @@ import { createNewSimulationRuntime, type SimulationRuntime } from '../../simula
  * *snapshot* rather than to the host: the payload decoded as a save envelope
  * and then could not be restored.
  *
- * The distinction is load-bearing, not decoration. `SessionController` demotes
- * the generation it just tried to load when it sees this error, and demoting
- * drops that generation from the retained window — so a hung, dead or
- * mid-shutdown host must *not* raise it, or one broken worker would delete a
- * player's newest good saves one load at a time. Everything else
- * (`WorkerSessionHost`'s reply timeout, a `send` that throws, a stopped
- * session) keeps propagating as an ordinary `Error` and demotes nothing.
+ * The distinction is load-bearing, not decoration. `SessionController` sets
+ * the generation it just tried to load aside when it sees this error, tries
+ * the next-oldest, and — **once one of them has actually restored** — demotes
+ * the ones it set aside, which drops them from the retained window and deletes
+ * them. So a hung, dead or mid-shutdown host must *not* raise it: everything
+ * else (`WorkerSessionHost`'s reply timeout, a `send` that throws, a stopped
+ * session) keeps propagating as an ordinary `Error`, costs no generation, and
+ * ends the load rather than the window.
+ *
+ * What this error can no longer do, and #403 is the reason to say so here:
+ * raising it for a cause that is really *this build's* — a bug in restore
+ * code, which the worker's catch-all cannot tell from a bad blob — used to
+ * delete a save on every generation it refused, and a cause of that shape
+ * refuses all of them. It now deletes nothing at all, because nothing is
+ * retired until a different generation has restored through the same code.
+ * The distinction above still matters for the same reason it always did; what
+ * changed is the price of getting it wrong in the one direction the worker
+ * cannot see.
  */
 export class SnapshotRestoreRejectedError extends Error {
   public constructor(message: string, options?: { readonly cause?: unknown }) {
@@ -47,8 +58,9 @@ export interface SessionRuntimeHost {
    *
    * Rejects with `SnapshotRestoreRejectedError` when the *bundle* was refused,
    * and with an ordinary `Error` for anything about the host itself (no reply,
-   * gone away). `SessionController` demotes a save generation on the first and
-   * never on the second, so an implementation must not blur the two.
+   * gone away). `SessionController` moves on to the next generation on the
+   * first and abandons the load on the second, so an implementation must not
+   * blur the two.
    */
   startFromSnapshot(bundle: SessionSnapshotBundle): Promise<void>;
   /** Captures current authoritative state. Rejects if no session is running. */
