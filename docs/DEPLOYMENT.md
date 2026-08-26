@@ -217,7 +217,26 @@ Everything named `VITE_*` is **inlined into the browser bundle** by Vite and pub
 
 It is catastrophic for a secret / service-role key. `AGENTS.md` forbids service-role keys in client code, ADR 0008 classifies the browser as an untrusted zone, and issue #20's real-stack verification established that `service_role` bypasses RLS entirely — a published one hands every visitor every row.
 
-`scripts/check-deploy-secrets.sh` runs before each deploy and refuses one whose `VITE_SUPABASE_PUBLISHABLE_KEY` looks like a secret key, including a `service_role` JWT, which it detects by decoding only the role claim. It prints no part of any value. A failure there has caught a real mistake.
+`scripts/check-deploy-secrets.sh` enforces that, and issue #344 corrected the shape of the enforcement: it used to state a rule about *everything* prefixed `VITE_` while checking one hard-coded variable name, and to inspect only the environment — never the artefact the rule is about. It now runs in two modes, and `deploy.yml` calls both in both jobs before anything is published.
+
+| Mode | When | What it establishes |
+| --- | --- | --- |
+| `env` | before the build | Every required name is set; `VITE_SUPABASE_URL` is `https://`; and **every** `VITE_`-prefixed variable that is set — enumerated with `compgen -v`, not listed in the script — carries neither a secret-shaped value nor a name that declares a secret. |
+| `bundle` | after the build, before the upload | Nothing secret-shaped appears anywhere under `dist/`, and no value of a non-public credential this pipeline holds appears there either. |
+
+Neither mode subsumes the other, which is why both run. `env` catches a secret that is configured but not yet *read* by any module — Vite only inlines a `VITE_` variable something references, so the bundle cannot show that one. `bundle` catches everything that never goes through a `VITE_` name at all: a credential committed into a source file, a value spliced in through Vite's `define`, a file dropped into `public/`. The shapes both modes recognise are the `sb_secret_` and `sbp_` prefixes, the literal `service_role`, a JWT whose payload claims `service_role` (decoded far enough to read the role claim and no further), and a PEM private key block. A name containing `SECRET`, `SERVICE_ROLE`, `PRIVATE_KEY`, `PASSWORD` or `CREDENTIAL` is refused on the name alone, whatever its value. `TOKEN` and `KEY` are deliberately *not* in that list: both have legitimate public forms — `VITE_SUPABASE_PUBLISHABLE_KEY` is the required one — and a gate that refused them would be deleted rather than fixed.
+
+Neither mode prints any part of any value; a refusal names the variable or the file and describes the shape. A failure there has caught a real mistake.
+
+`bundle` refuses, rather than passes, when there is no build output to look at. A bundle check that goes green with nothing in front of it is the defect it exists to close.
+
+#### The two Supabase names are required ahead of the client that will read them
+
+**Nothing in the shipped artefact reads either of them today, and that is deliberate rather than an oversight.** No module outside `src/persistence/cloud/` reads `import.meta.env` or `VITE_SUPABASE_*`; `src/persistence/cloud/supabase-client.ts` imports `@supabase/supabase-js` as a **type** only, so the dependency is erased at compile time and the string `supabase` does not appear in `dist/` at all. `docs/ARCHITECTURE.md` states this as "contract and SQL only — not reachable from the app", and `tests/foundation/documentation-claims-contract.test.ts` fails if a module outside `src/persistence/cloud/` starts reading that configuration without the documentation changing with it.
+
+So a deploy is refused for the absence of two values the build then discards. That is recorded here rather than relaxed, and the requirement stays **strict**, for one reason: the alternative failure is worse and silent. Vite inlines an empty string for an unset `VITE_` variable without complaint, so the first deploy after cloud save is wired would ship a bundle that cannot reach the backend, and the failure would surface as a runtime error in a visitor's browser. A secret that is set and unread costs nothing; a secret that is unset on the day something starts reading it costs a bad deploy nobody notices.
+
+What would make it right to drop either name from the required list: a decision that cloud save is not going to be wired, or a Supabase client that reads its configuration from somewhere other than `import.meta.env`. Neither has been decided. Until one is, read `env` mode's green line as what it says — that the *configuration* is present and correctly shaped — and `bundle` mode's as the one that says something about what was shipped.
 
 ## Database migrations
 
