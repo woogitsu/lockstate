@@ -97,22 +97,56 @@ export function roomInstanceContaining(
 }
 
 /**
- * The two capacities and the capability list a set of objects produces.
+ * The capacities and the capability list a set of objects produces.
  *
- * ADR 0028 decision 2, verbatim and with nothing authored anywhere:
+ * ADR 0028 decision 2, **as amended 2026-08-26 by the capability-scoped
+ * concurrent-use ceiling** (issue #326):
  *
  * ```
  * capabilities     = union over the objects of catalogue(objectId).capabilities,
  *                    deduplicated, ascending by code unit
  * residentCapacity = sum of footprint.width over the objects whose capabilities
  *                    include 'sleep-surface'
- * concurrentUse    = sum of footprint.width over every object
+ * concurrentUse(c) = sum of footprint.width over the objects whose capabilities
+ *                    include `c`, for each capability `c` in the union
+ * concurrentUse    = sum of footprint.width over every object -- a total that
+ *                    **no admission gate reads**; see below
  * ```
  *
- * So `object.bed` is `{ width: 1, height: 2 }` and a cell with one bed holds 1;
- * a canteen with 2 dining tables and 4 benches seats `2*3 + 4*2 = 14`. Neither
- * figure was invented and neither is in a content file -- both are read off
- * footprints this tree already ships.
+ * Still nothing authored anywhere: `object.bed` is `{ width: 1, height: 2 }`
+ * and its capabilities include `'sleep-surface'`, so a cell with one bed houses
+ * 1; `object.dining-table` is `{ width: 3, height: 2 }` with `['dining']`, so a
+ * canteen with two of them seats `2*3 = 6` diners. Every figure is read off a
+ * footprint this tree already ships.
+ *
+ * ## Why the per-capability breakdown exists, and what it replaced
+ *
+ * The rule this amends summed `footprint.width` over **every** object for the
+ * one concurrent-use number, while `findAvailableForUse(roomCatalogId,
+ * capability)` asked a capability-*specific* question and compared its
+ * headcount against that capability-*blind* total. Measured on the real
+ * `zone -> resolveInstance -> findAvailableForUse/claimUse` path at v0.0.73:
+ * ADR 0028's own worked canteen with four toilets and a storage rack added
+ * admitted **19 diners**, and an empty 8x8 yard -- the smallest the zoning gate
+ * permits -- admitted **nobody**, while the same yard holding one
+ * `object.loading-dock-door` admitted three. One scalar cannot bound two
+ * actions that consume different objects.
+ *
+ * So each capability carries its own sum, and an object contributes to exactly
+ * the capabilities it declares. A toilet is `['sanitation']`, so it adds
+ * nothing to `'dining'` and a canteen full of toilets still seats only its
+ * tables.
+ *
+ * ## `concurrentUseCapacity` survives as a total, and is not a ceiling
+ *
+ * The arithmetic of the scalar is unchanged, and so is every number any test
+ * asserts about it -- what changed is that **nothing gates on it any more**.
+ * It is the summed footprint width of everything standing in the room, which
+ * is a true statement about objects and a false statement about people: for
+ * ADR 0028's worked canteen it reads 14 while the room seats 6 diners, and for
+ * that canteen plus four toilets it reads 19. Projecting it as "how many can
+ * use this room at once" would put the defect this amendment removes back on
+ * screen. `objects-room-capacity.test.ts` pins that no gate reads it.
  *
  * **Orientation is ignored.** This reads the definition's `footprint.width`,
  * not the rotated extent, because capacity is a property of the object type
@@ -134,7 +168,7 @@ export function deriveRoomCapacity(
 ): RoomDerivedCapacity {
   let residentCapacity = 0;
   let concurrentUseCapacity = 0;
-  const capabilities = new Set<string>();
+  const byCapability = new Map<string, number>();
 
   for (const object of objects) {
     const definition = catalogue.getById(object.objectId);
@@ -143,13 +177,24 @@ export function deriveRoomCapacity(
     if (definition.capabilities.includes(SLEEP_SURFACE_CAPABILITY)) {
       residentCapacity += definition.footprint.width;
     }
-    for (const capability of definition.capabilities) capabilities.add(capability);
+    for (const capability of definition.capabilities) {
+      byCapability.set(capability, (byCapability.get(capability) ?? 0) + definition.footprint.width);
+    }
   }
+
+  // One sorted walk produces both, so the capability list and the breakdown
+  // cannot disagree about which capabilities a room has: `objectCapabilities`
+  // *is* the breakdown's key list. A capability present in a room always has a
+  // capacity of at least 1, because `objectFootprintSchema` bounds `width`
+  // below at 1 -- which is why `findAvailableForUse` no longer needs a separate
+  // "is this capability present" test.
+  const sorted = [...byCapability.keys()].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
 
   return {
     residentCapacity,
     concurrentUseCapacity,
-    objectCapabilities: [...capabilities].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)),
+    concurrentUseCapacityByCapability: sorted.map((capability) => [capability, byCapability.get(capability)!] as const),
+    objectCapabilities: sorted,
   };
 }
 
@@ -238,7 +283,9 @@ export class RoomCapacityResolver {
   /** What `resolveInstance` would write, without writing it. The half a projection or a test wants. */
   public deriveFor(instance: RoomInstance): RoomDerivedCapacity {
     const bounds = roomBoundsOf(instance);
-    if (bounds === undefined) return { residentCapacity: 0, concurrentUseCapacity: 0, objectCapabilities: [] };
+    if (bounds === undefined) {
+      return { residentCapacity: 0, concurrentUseCapacity: 0, concurrentUseCapacityByCapability: [], objectCapabilities: [] };
+    }
     return deriveRoomCapacity(this.placedObjects.inRect(bounds), this.objects);
   }
 }

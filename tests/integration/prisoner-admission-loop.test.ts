@@ -338,6 +338,7 @@ describe('admitting a prisoner through the real command path (#261 step 4)', () 
     runtime.prisoners.roomInstances.updateDerived(instance.instanceId, {
       residentCapacity: 1,
       concurrentUseCapacity: 1,
+      concurrentUseCapacityByCapability: [['sleep-surface', 1]],
       objectCapabilities: ['sleep-surface'],
     });
     stepTo(runtime, 410);

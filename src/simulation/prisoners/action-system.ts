@@ -133,9 +133,10 @@ export class ActionSystem implements SystemRegistration {
    *   a claim held by the registry before the restore cannot survive it. Any
    *   claim standing afterwards was rebuilt from a prisoner who is genuinely
    *   still performing.
-   * - **Duplicate.** The rebuild is idempotent -- claims are a `Set` and the
-   *   scan visits each live index once -- so restoring the same snapshot twice
-   *   into the same registry produces the same count, not double.
+   * - **Duplicate.** The rebuild is idempotent -- claims are keyed by entity id
+   *   and the scan visits each live index once -- so restoring the same
+   *   snapshot twice into the same registry produces the same count, not
+   *   double.
    *
    * Deterministic: `EntityQuery.execute` is ascending index order, so the
    * rebuild is a total order derived from state. It uses `reinstateUseClaim`
@@ -159,7 +160,11 @@ export class ActionSystem implements SystemRegistration {
 
       const targetInstanceId = this.coldState.getActionTarget(entityId);
       if (targetInstanceId === undefined) continue;
-      this.roomInstances.reinstateUseClaim(targetInstanceId, entityId);
+      // The capability comes from the action the prisoner is still performing,
+      // so a rebuilt claim consumes the same seat the live one did (issue
+      // #326). Reading it from the action rather than persisting it is what
+      // keeps use claims out of the save format.
+      this.roomInstances.reinstateUseClaim(targetInstanceId, entityId, action.requiredObjectCapability);
     }
   }
 
@@ -283,7 +288,8 @@ export class ActionSystem implements SystemRegistration {
 
   /**
    * Takes the concurrent-use claim for an action about to start in `instanceId`,
-   * or answers `false` when the room is already at `concurrentUseCapacity`.
+   * or answers `false` when the room is already at the ceiling for the
+   * capability this action consumes.
    *
    * `true` for an `own-accommodation` action without claiming anything, which
    * is the asymmetry ADR 0028's §*Context* measured and this method preserves
@@ -300,7 +306,11 @@ export class ActionSystem implements SystemRegistration {
    */
   private claimUseIfNeeded(entityId: number, action: ActionDefinition, instanceId: string): boolean {
     if (action.target.kind !== 'room-catalog-id') return true;
-    return this.roomInstances.claimUse(instanceId, entityId);
+    // The same capability `resolveTargetInstance` selected against, handed over
+    // rather than re-derived, so the seat claimed here is the seat the room was
+    // asked for (issue #326). An action naming none claims an unbounded place:
+    // `room.yard` requires no object and so has nothing to run out of.
+    return this.roomInstances.claimUse(instanceId, entityId, action.requiredObjectCapability);
   }
 
   private beginNextAction(entityId: number, index: number, tick: number): void {

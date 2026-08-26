@@ -172,10 +172,34 @@ from the ones inside its rectangle, and nothing authors any of the three.
 `findAvailableResidence(roomCatalogId, capability?)` gates on
 `residentCapacity` -- the summed footprint width of the sleep surfaces in the
 room -- and is what `IntakeSystem` asks before a prisoner *lives* somewhere.
-`findAvailableForUse` gates on `concurrentUseCapacity` -- the summed footprint
-width of every object -- and is what `ActionSystem` asks before a prisoner
-*uses* a room now. A canteen that seats fourteen houses nobody, and the single
-field could not say both.
+`findAvailableForUse(roomCatalogId, capability?)` gates on that capability's own
+ceiling -- the summed footprint width of the objects in the room that carry it --
+and is what `ActionSystem` asks before a prisoner *uses* a room now. A canteen
+seats diners and houses nobody, and the single field could not say both.
+
+**The use ceiling is scoped to the capability being asked for**, which is ADR
+0028's #326 amendment and not its decision 2 as originally written. That rule
+summed `footprint.width` over *every* object for one scalar, while
+`findAvailableForUse` asked a capability-specific question against it. Measured
+at `9d0a125` on the real gate: ADR 0028's worked canteen plus four toilets and a
+storage rack admitted **19** diners to tables that seat 6, and an empty 8x8 yard
+-- the smallest the zoning gate permits -- admitted **nobody**, while the same
+yard holding one three-tile loading-dock door admitted three. Two consequences
+worth stating here:
+
+- **An action naming no capability has no object-derived ceiling.** A rule that
+  sums object footprints has no domain for a use that consumes no object, and
+  `room.yard` is the one room type in `src/content/room-catalog.ts` that requires
+  no object -- so it is the one unbounded room, by derivation rather than by
+  exemption. `action.common-room-recreation` and `action.classroom-education`
+  named no capability and were *not* unbounded rooms, so they now name the
+  `'recreation'` and `'education'` their required benches and bookshelf already
+  carried.
+- **`RoomInstance.concurrentUseCapacity` is still the all-objects total and is
+  nothing's ceiling.** True about objects, false about people: 14 for a canteen
+  that seats 6. A readout of concurrent use reads
+  `concurrentUseCapacityByCapability`, one number per thing the room can be used
+  for.
 
 **And the concurrent-use ceiling now binds** (ADR 0028 phase 6,
 [ADR 0029](adr/0029-concurrent-room-use-claims.md)). This paragraph used to end
@@ -205,11 +229,18 @@ that are worth stating here rather than leaving to be discovered:
   room than it seats, the ones later in the scan are refused, counted in
   `unmetDemandCycles`, and retry on the next cycle.
 - **Nothing a player can build is affected yet, and that is the honest
-  reading.** Every room type whose actions resolve by catalogue id derives
-  `concurrentUseCapacity` from the objects in it, and phase 1 ships one object
-  (`object.bed`), so a canteen, shower room, common room and classroom all
-  derive 0 and their actions were already unreachable. The ceiling becomes
-  observable in phase 4, when those objects become placeable.
+  reading.** Every room type whose actions resolve by catalogue id derives its
+  ceiling from the objects in it, and the two placeable buildables supply
+  `'sleep-surface'` (`bed-wooden`) and `'sanitation'` (`toilet-brick`) -- neither
+  of which any `room-catalog-id` action asks for, since `action.sleep` and
+  `action.use-toilet` both target `own-accommodation`. So a canteen, shower room,
+  common room and classroom all derive 0 for the capability their action wants
+  and those actions are unreachable. The ceiling becomes observable in phase 4,
+  when those objects become placeable. Before the #326 amendment this was *not*
+  the case and the difference was an accident: a bed or a toilet standing in a
+  common room gave its capability-blind ceiling a value, so
+  `action.common-room-recreation` became reachable off furniture that has
+  nothing to do with recreation.
 
 **Who registers an instance (#261).** For as long as `ZoneRoom` had a no-op
 consumer, nothing in `src/` registered one except the *restore* path -- so

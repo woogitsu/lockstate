@@ -66,31 +66,77 @@ function ownedWorld(): SparseWorld {
   return world;
 }
 
-describe('the two capacities a set of objects produces', () => {
-  it('sums footprint width, and counts only sleep surfaces toward residency', () => {
-    // A cell with one bed holds 1. Nothing said so -- `object.bed` is
-    // `{ width: 1, height: 2 }` and its capabilities include `'sleep-surface'`.
+const CANTEEN_OBJECTS = [
+  placedObjectAt('object.dining-table', TILE(0, 0), 0),
+  placedObjectAt('object.dining-table', TILE(4, 0), 0),
+  placedObjectAt('object.bench', TILE(0, 4), 0),
+  placedObjectAt('object.bench', TILE(3, 4), 0),
+  placedObjectAt('object.bench', TILE(6, 4), 0),
+  placedObjectAt('object.bench', TILE(9, 4), 0),
+];
+
+describe('the capacities a set of objects produces', () => {
+  it('sums footprint width per capability, and counts only sleep surfaces toward residency', () => {
+    // A cell with one bed holds 1, and one actor can use it for the one thing a
+    // bed is for. Nothing said so -- `object.bed` is `{ width: 1, height: 2 }`
+    // and its capabilities are `['sleep-surface']`.
     expect(deriveRoomCapacity([placedObjectAt('object.bed', TILE(0, 0), 0)])).toEqual({
       residentCapacity: 1,
       concurrentUseCapacity: 1,
+      concurrentUseCapacityByCapability: [['sleep-surface', 1]],
       objectCapabilities: ['sleep-surface'],
     });
 
-    // A canteen with two dining tables and four benches seats 2*3 + 4*2 = 14,
-    // and houses nobody: neither a table nor a bench is a sleep surface.
-    const canteen = [
-      placedObjectAt('object.dining-table', TILE(0, 0), 0),
-      placedObjectAt('object.dining-table', TILE(4, 0), 0),
-      placedObjectAt('object.bench', TILE(0, 4), 0),
-      placedObjectAt('object.bench', TILE(3, 4), 0),
-      placedObjectAt('object.bench', TILE(6, 4), 0),
-      placedObjectAt('object.bench', TILE(9, 4), 0),
-    ];
-    expect(deriveRoomCapacity(canteen)).toEqual({
+    // ADR 0028's worked canteen: two dining tables and four benches. It houses
+    // nobody -- neither a table nor a bench is a sleep surface -- and it seats
+    // **six** diners, not fourteen.
+    //
+    // Fourteen is `2*3 + 4*2`, the all-objects total, and it is what that ADR's
+    // decision 2 said before its #326 amendment. `object.dining-table` declares
+    // `['dining']`; `object.bench` declares `['seating', 'recreation']` and
+    // **not** `'dining'`. `action.eat-meal` requires `'dining'`. So the ceiling
+    // that gate applies is the tables' `2*3 = 6`, and the benches bound
+    // `'seating'` and `'recreation'` at 8 apiece instead. Whether a bench ought
+    // to declare `'dining'` -- `room.canteen` requires four of them -- is the
+    // content question that amendment names and leaves open; this test pins what
+    // the catalogue actually says today.
+    expect(deriveRoomCapacity(CANTEEN_OBJECTS)).toEqual({
       residentCapacity: 0,
       concurrentUseCapacity: 14,
+      concurrentUseCapacityByCapability: [['dining', 6], ['recreation', 8], ['seating', 8]],
       objectCapabilities: ['dining', 'recreation', 'seating'],
     });
+  });
+
+  it('leaves a capability\'s ceiling untouched by objects that do not carry it', () => {
+    // **The defect issue #326 measured, as an assertion.** Four toilets and a
+    // storage rack in the canteen: five more objects, six more tiles of
+    // footprint, and not one more diner. Before the amendment the same room
+    // admitted 19 to tables that seat 6, because the ceiling summed every
+    // object's width and the gate compared a `'dining'` headcount against it.
+    const withClutter = deriveRoomCapacity([
+      ...CANTEEN_OBJECTS,
+      placedObjectAt('object.toilet', TILE(0, 8), 0),
+      placedObjectAt('object.toilet', TILE(1, 8), 0),
+      placedObjectAt('object.toilet', TILE(2, 8), 0),
+      placedObjectAt('object.toilet', TILE(3, 8), 0),
+      placedObjectAt('object.storage-rack', TILE(5, 8), 0),
+    ]);
+
+    expect(withClutter.concurrentUseCapacityByCapability).toEqual([
+      ['dining', 6],
+      ['item-storage', 1],
+      ['recreation', 8],
+      ['sanitation', 4],
+      ['seating', 8],
+    ]);
+    // And the total moved by exactly the clutter's footprint, 14 -> 19, which is
+    // the number that used to be the ceiling. It is still computed and it is
+    // still true about objects; nothing gates on it.
+    expect(withClutter.concurrentUseCapacity).toBe(19);
+    // The toilets did not become beds either: residency still filters on
+    // `'sleep-surface'` and this room has none.
+    expect(withClutter.residentCapacity).toBe(0);
   });
 
   it('emits capabilities ascending by code unit, deduplicated', () => {
@@ -105,10 +151,25 @@ describe('the two capacities a set of objects produces', () => {
       placedObjectAt('object.bed', TILE(4, 0), 0),
     ]);
     expect(derived.objectCapabilities).toEqual(['sanitation', 'sleep-surface']);
-    // Two sleep surfaces of width 1 each, and the toilet counts toward neither
-    // -- so residency and concurrent use come apart on the same set of objects.
+
+    /*
+     * **The comment that used to stand here asserted what its own numbers
+     * falsified.** It read "Two sleep surfaces of width 1 each, and the toilet
+     * counts toward neither" above these two assertions -- and the toilet is
+     * precisely the difference between 2 and 3. It counted toward
+     * `concurrentUseCapacity`, which is what made that figure the wrong ceiling
+     * for a `'sleep-surface'` question and is the whole of issue #326.
+     *
+     * Both numbers below are unchanged, because the total's arithmetic did not
+     * change. What the toilet counts toward is now sayable in one line: it has
+     * its own ceiling, `'sanitation'` of 1, and it adds nothing to the
+     * `'sleep-surface'` ceiling of 2 that the two beds give. Residency and
+     * concurrent use come apart on the same set of objects, and so do two
+     * concurrent uses of it.
+     */
     expect(derived.residentCapacity).toBe(2);
     expect(derived.concurrentUseCapacity).toBe(3);
+    expect(derived.concurrentUseCapacityByCapability).toEqual([['sanitation', 1], ['sleep-surface', 2]]);
   });
 
   it('ignores orientation, because capacity is a property of the object type', () => {
@@ -126,11 +187,20 @@ describe('the two capacities a set of objects produces', () => {
         { placedObjectId: 'object:0:0', objectId: 'object.deleted', anchorTile: TILE(0, 0), orientation: 0 },
         placedObjectAt('object.bed', TILE(2, 0), 0),
       ]),
-    ).toMatchObject({ residentCapacity: 1, concurrentUseCapacity: 1 });
+    ).toMatchObject({
+      residentCapacity: 1,
+      concurrentUseCapacity: 1,
+      concurrentUseCapacityByCapability: [['sleep-surface', 1]],
+    });
   });
 
   it('is zero for a room with nothing in it, which is what an empty rectangle accommodates', () => {
-    expect(deriveRoomCapacity([])).toEqual({ residentCapacity: 0, concurrentUseCapacity: 0, objectCapabilities: [] });
+    expect(deriveRoomCapacity([])).toEqual({
+      residentCapacity: 0,
+      concurrentUseCapacity: 0,
+      concurrentUseCapacityByCapability: [],
+      objectCapabilities: [],
+    });
   });
 });
 
@@ -232,6 +302,7 @@ describe('the resolver writes what the objects imply, and only when something ch
     expect(new RoomCapacityResolver(world, rooms, objects).resolveInstance('cell-1')).toEqual({
       residentCapacity: 0,
       concurrentUseCapacity: 0,
+      concurrentUseCapacityByCapability: [],
       objectCapabilities: [],
     });
   });
@@ -249,8 +320,46 @@ describe('the resolver writes what the objects imply, and only when something ch
     expect(rooms.getById('cell-2')).toMatchObject({
       residentCapacity: 1,
       concurrentUseCapacity: 2,
+      concurrentUseCapacityByCapability: [['sanitation', 1], ['sleep-surface', 1]],
       objectCapabilities: ['sanitation', 'sleep-surface'],
     });
+  });
+
+  it('writes the breakdown onto the instance, and no gate reads the total', () => {
+    /*
+     * **The hazard the all-objects total leaves behind, as an assertion.**
+     * `concurrentUseCapacity` is kept because it is true about objects and
+     * because a Rooms-tab readout is owed one (ADR 0028 phase 5) -- but it is
+     * nothing's ceiling, and a reader that gated on it would put issue #326
+     * straight back. So: a canteen whose total is 14 admits six diners, and its
+     * fifteenth object cannot become its fifteenth diner.
+     */
+    const world = ownedWorld();
+    const rooms = new RoomInstanceRegistry();
+    const objects = new PlacedObjectRegistry();
+    const canteenNumericId = defaultRoomContentRegistry.getById('room.canteen')!.numericId;
+    for (let y = 0; y < 16; y += 1) {
+      for (let x = 0; x < 16; x += 1) world.setZoning(TILE(x, y), canteenNumericId);
+    }
+    rooms.register(instance({ instanceId: 'canteen-1', roomCatalogId: 'room.canteen', anchorTile: TILE(0, 0), width: 16, height: 16 }));
+    for (const object of CANTEEN_OBJECTS) objects.place(object);
+
+    expect(new RoomCapacityResolver(world, rooms, objects).resolveInstance('canteen-1')).toMatchObject({
+      concurrentUseCapacity: 14,
+      concurrentUseCapacityByCapability: [['dining', 6], ['recreation', 8], ['seating', 8]],
+    });
+
+    const canteen = rooms.getById('canteen-1')!;
+    expect(rooms.concurrentUseCapacityFor(canteen, 'dining')).toBe(6);
+    let admitted = 0;
+    for (let entity = 1; entity <= 14; entity += 1) {
+      if (rooms.claimUse('canteen-1', entity as never, 'dining')) admitted += 1;
+    }
+    expect(admitted, 'six seats, however many objects stand in the room').toBe(6);
+    // Not a vacuous refusal: the room is not full of *everything*, only of
+    // dining. Its benches still have eight places to sit.
+    expect(rooms.findAvailableForUse('room.canteen', 'dining')).toBeUndefined();
+    expect(rooms.findAvailableForUse('room.canteen', 'seating')?.instanceId).toBe('canteen-1');
   });
 
   it('answers nothing for an instance that does not exist', () => {

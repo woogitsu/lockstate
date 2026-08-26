@@ -404,9 +404,12 @@ export class ObjectPlacementService {
    *    `findAvailableResidence` skips a full instance, so the room stops taking
    *    new residents while the prisoner already living there keeps their
    *    `accommodationInstanceId` and keeps sleeping.
-   *  - `claimUse` refuses at `claims.size >= concurrentUseCapacity` and
-   *    `findAvailableForUse` skips likewise, so the room stops taking new users
-   *    while the prisoners already performing there finish. Their claims drain
+   *  - `claimUse` refuses at `claims for this capability >= that capability's
+   *    ceiling` and `findAvailableForUse` skips at the same comparison, so the
+   *    room stops taking new users of the thing that was removed -- and only of
+   *    that thing, since issue #326 scoped both the ceiling and the headcount to
+   *    one capability. Taking a room's last toilet does not close its dining
+   *    tables. The prisoners already performing there finish. Their claims drain
    *    through `ActionSystem`'s three release sites, none of which consults a
    *    capacity -- so a dropped capacity cannot leak a claim, and `releaseUse`
    *    is total, so it cannot double-release one either.

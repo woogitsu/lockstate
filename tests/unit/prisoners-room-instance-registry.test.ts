@@ -90,10 +90,17 @@ describe('RoomInstanceRegistry', () => {
   describe('findAvailableForUse', () => {
     it('gates on concurrent-use capacity, not on resident capacity', () => {
       const registry = new RoomInstanceRegistry();
-      // A canteen: nobody lives here, fourteen can eat here at once. Neither
-      // number is authored -- both are what `deriveRoomCapacity` produces for
-      // two dining tables and four benches -- and this asserts that the two
-      // gates read the two fields.
+      // A canteen: nobody lives here, and fourteen can dine here at once.
+      //
+      // Registered by hand with a total and no per-capability breakdown, which
+      // is `concurrentUseCapacityFor`'s stated fallback: an instance nobody has
+      // resolved has only its total to offer, so the total bounds the
+      // capabilities it claims. That is the pre-#326 rule, and this is the shape
+      // of fixture it survives for. It is deliberately **not** what
+      // `deriveRoomCapacity` produces for two dining tables and four benches --
+      // that gives `[['dining', 6], ['recreation', 8], ['seating', 8]]`, since
+      // a bench is not dining furniture -- and the block below drives the
+      // resolved shape.
       registry.register({
         instanceId: 'canteen-1',
         roomCatalogId: 'room.canteen',
@@ -130,8 +137,190 @@ describe('RoomInstanceRegistry', () => {
     });
   });
 
+  /**
+   * Issue #326: the ceiling and the headcount are scoped to the same capability.
+   *
+   * Before this, `findAvailableForUse` asked two questions of two different
+   * things -- the capability had to be present *somewhere* in the room, and the
+   * headcount was compared against the summed footprint width of **every**
+   * object in it. Measured on the real gate at `9d0a125`: ADR 0028's worked
+   * canteen plus four toilets and a storage rack admitted 19 diners to tables
+   * that seat 6, and an empty 8x8 yard admitted nobody while the same yard
+   * holding one loading-dock door admitted three.
+   *
+   * Every instance in this block carries a resolved breakdown, which is what
+   * every instance in a running session carries.
+   */
+  describe('a capability-scoped concurrent-use ceiling', () => {
+    /** The canteen `deriveRoomCapacity` really produces for two dining tables, four benches, four toilets and a storage rack. */
+    function clutteredCanteen(): RoomInstanceRegistry {
+      const registry = new RoomInstanceRegistry();
+      registry.register({
+        instanceId: 'canteen-1',
+        roomCatalogId: 'room.canteen',
+        anchorTile: TILE,
+        residentCapacity: 0,
+        concurrentUseCapacity: 19,
+        concurrentUseCapacityByCapability: [['dining', 6], ['item-storage', 1], ['recreation', 8], ['sanitation', 4], ['seating', 8]],
+        objectCapabilities: ['dining', 'item-storage', 'recreation', 'sanitation', 'seating'],
+      });
+      return registry;
+    }
+
+    it('admits a capability up to its own sum and not to the all-objects total', () => {
+      const registry = clutteredCanteen();
+      const canteen = registry.getById('canteen-1')!;
+
+      expect(registry.concurrentUseCapacityFor(canteen, 'dining')).toBe(6);
+      expect(registry.concurrentUseCapacityFor(canteen, 'sanitation')).toBe(4);
+      // A capability no object in the room carries. Zero rather than the total,
+      // which is what makes the separate "is this capability present" test
+      // `findAvailableForUse` used to make redundant.
+      expect(registry.concurrentUseCapacityFor(canteen, 'hygiene')).toBe(0);
+      expect(registry.findAvailableForUse('room.canteen', 'hygiene')).toBeUndefined();
+
+      let seated = 0;
+      for (let entity = 1; entity <= 19; entity += 1) {
+        if (registry.claimUse('canteen-1', entity as never, 'dining')) seated += 1;
+      }
+      expect(seated, 'the toilets and the rack are not seats').toBe(6);
+      expect(registry.findAvailableForUse('room.canteen', 'dining')).toBeUndefined();
+    });
+
+    it('does not let one capability filling up close another', () => {
+      // The reason the headcount had to be scoped as well as the ceiling. With
+      // one pooled count against one pooled ceiling, six diners already exceed
+      // `'sanitation'`'s 4 and the room's toilets would read as busy because
+      // lunch was on.
+      const registry = clutteredCanteen();
+      for (let entity = 1; entity <= 6; entity += 1) expect(registry.claimUse('canteen-1', entity as never, 'dining')).toBe(true);
+
+      expect(registry.useOccupancyOf('canteen-1', 'dining')).toBe(6);
+      expect(registry.useOccupancyOf('canteen-1', 'sanitation')).toBe(0);
+      // Without a capability: every claim, whatever it consumes. That is
+      // `claimCountOf`'s question and no ceiling's.
+      expect(registry.useOccupancyOf('canteen-1')).toBe(6);
+
+      expect(registry.findAvailableForUse('room.canteen', 'sanitation')?.instanceId).toBe('canteen-1');
+      for (let entity = 100; entity < 104; entity += 1) expect(registry.claimUse('canteen-1', entity as never, 'sanitation')).toBe(true);
+      expect(registry.claimUse('canteen-1', 104 as never, 'sanitation')).toBe(false);
+      // Ten claims on a room whose largest single ceiling is 8, and every one
+      // of them legal.
+      expect(registry.totalUseClaims).toBe(10);
+    });
+
+    it('admits nobody to a capability the room has at a ceiling of zero', () => {
+      // A state the derivation cannot produce -- `objectFootprintSchema` bounds
+      // `width` below at 1, so a capability a room has always sums to at least
+      // one -- and a state a restored or hand-built instance can. Asserted so
+      // the gate is known to refuse on the number rather than on the presence
+      // of the key.
+      const registry = new RoomInstanceRegistry();
+      registry.register({
+        instanceId: 'canteen-1',
+        roomCatalogId: 'room.canteen',
+        anchorTile: TILE,
+        residentCapacity: 0,
+        concurrentUseCapacity: 40,
+        concurrentUseCapacityByCapability: [['dining', 0]],
+        objectCapabilities: ['dining'],
+      });
+
+      expect(registry.findAvailableForUse('room.canteen', 'dining')).toBeUndefined();
+      expect(registry.claimUse('canteen-1', 1 as never, 'dining')).toBe(false);
+      expect(registry.totalUseClaims).toBe(0);
+    });
+
+    it('gives an action that names no capability no object-derived ceiling, rather than a ceiling of zero', () => {
+      /*
+       * The yard, and the reason it is a derivation rather than an exemption.
+       * An action that names no capability consumes no object, so a rule that
+       * sums object footprints has no domain for it -- and an undefined ceiling
+       * means "this rule does not bound it", not "it bounds it at zero". Zero is
+       * what the old rule said about 64 tiles of empty ground.
+       */
+      const registry = new RoomInstanceRegistry();
+      registry.register({
+        instanceId: 'yard-1',
+        roomCatalogId: 'room.yard',
+        anchorTile: TILE,
+        width: 8,
+        height: 8,
+        residentCapacity: 0,
+        concurrentUseCapacity: 0,
+        concurrentUseCapacityByCapability: [],
+        objectCapabilities: [],
+      });
+      const yard = registry.getById('yard-1')!;
+
+      expect(registry.concurrentUseCapacityFor(yard, undefined)).toBe(Number.POSITIVE_INFINITY);
+      expect(registry.findAvailableForUse('room.yard')?.instanceId).toBe('yard-1');
+      for (let entity = 1; entity <= 64; entity += 1) expect(registry.claimUse('yard-1', entity as never)).toBe(true);
+      expect(registry.totalUseClaims).toBe(64);
+      expect(registry.findAvailableForUse('room.yard')?.instanceId).toBe('yard-1');
+
+      // **Unbounded is not the same as "anything goes".** The empty yard still
+      // admits nobody to anything a room needs an object for, so this is not a
+      // hole that a capability-naming action could fall through.
+      expect(registry.findAvailableForUse('room.yard', 'recreation')).toBeUndefined();
+      expect(registry.claimUse('yard-1', 500 as never, 'recreation')).toBe(false);
+    });
+
+    it('is idempotent for a claim already held against the same capability', () => {
+      // `Set.add` gave this for free before a claim carried a capability.
+      // Without it, re-claiming would compare a count that already includes
+      // this entity against the ceiling and refuse the seat its own holder is
+      // sitting in.
+      const registry = clutteredCanteen();
+      expect(registry.claimUse('canteen-1', 7 as never, 'item-storage')).toBe(true);
+      expect(registry.claimUse('canteen-1', 7 as never, 'item-storage')).toBe(true);
+      expect(registry.totalUseClaims).toBe(1);
+      expect(registry.useOccupancyOf('canteen-1', 'item-storage')).toBe(1);
+      // And a different entity is still refused, so the idempotence is not a
+      // hole in the ceiling.
+      expect(registry.claimUse('canteen-1', 8 as never, 'item-storage')).toBe(false);
+    });
+
+    it('rebuilds a claim against its capability, above the ceiling, for a restore', () => {
+      const registry = clutteredCanteen();
+      // Eight diners in a room that seats six -- the legal over-capacity state
+      // ADR 0028 decision 2 names, which a restore must reproduce exactly
+      // rather than silently trim.
+      for (let entity = 1; entity <= 8; entity += 1) {
+        expect(registry.reinstateUseClaim('canteen-1', entity as never, 'dining')).toBe(true);
+      }
+      expect(registry.useOccupancyOf('canteen-1', 'dining')).toBe(8);
+      // And the door is shut behind them: nobody new dines, while the toilets
+      // are untouched by the overflow.
+      expect(registry.findAvailableForUse('room.canteen', 'dining')).toBeUndefined();
+      expect(registry.findAvailableForUse('room.canteen', 'sanitation')?.instanceId).toBe('canteen-1');
+    });
+
+    it('falls back to the all-objects total only for an instance nobody has resolved', () => {
+      // The one place the pre-#326 rule survives, stated at
+      // `concurrentUseCapacityFor` and pinned here so it cannot spread. No
+      // command reaches it: `zone` resolves inside the same dispatch and a
+      // restore resolves every instance before a tick runs.
+      const registry = new RoomInstanceRegistry();
+      registry.register({
+        instanceId: 'canteen-1',
+        roomCatalogId: 'room.canteen',
+        anchorTile: TILE,
+        residentCapacity: 0,
+        concurrentUseCapacity: 3,
+        objectCapabilities: ['dining'],
+      });
+      const canteen = registry.getById('canteen-1')!;
+
+      expect(registry.concurrentUseCapacityFor(canteen, 'dining')).toBe(3);
+      // Still nothing for a capability the instance does not claim, so the
+      // fallback is bounded by `objectCapabilities` rather than open.
+      expect(registry.concurrentUseCapacityFor(canteen, 'sanitation')).toBe(0);
+    });
+  });
+
   describe('updateDerived', () => {
-    it('rewrites the three derived fields and nothing else, and is visible to the sorted lookup', () => {
+    it('rewrites the four derived fields and nothing else, and is visible to the sorted lookup', () => {
       const registry = new RoomInstanceRegistry();
       registry.register({
         instanceId: 'cell-1',
@@ -151,6 +340,7 @@ describe('RoomInstanceRegistry', () => {
         registry.updateDerived('cell-1', {
           residentCapacity: 1,
           concurrentUseCapacity: 1,
+          concurrentUseCapacityByCapability: [['sleep-surface', 1]],
           objectCapabilities: ['sleep-surface'],
         }),
       ).toBe(true);
@@ -163,6 +353,7 @@ describe('RoomInstanceRegistry', () => {
         height: 3,
         residentCapacity: 1,
         concurrentUseCapacity: 1,
+        concurrentUseCapacityByCapability: [['sleep-surface', 1]],
         objectCapabilities: ['sleep-surface'],
       });
       expect(updated?.anchorTile).toEqual(TILE);
@@ -182,13 +373,13 @@ describe('RoomInstanceRegistry', () => {
       // after, because a cache that is only ever filled after a write cannot
       // demonstrate invalidation.
       expect(registry.allByRoomCatalogId('room.cell')).toHaveLength(1);
-      registry.updateDerived('cell-1', { residentCapacity: 3, concurrentUseCapacity: 3, objectCapabilities: [] });
+      registry.updateDerived('cell-1', { residentCapacity: 3, concurrentUseCapacity: 3, concurrentUseCapacityByCapability: [], objectCapabilities: [] });
       expect(registry.allByRoomCatalogId('room.cell')[0]?.residentCapacity).toBe(3);
     });
 
     it('answers false for an instance that does not exist, rather than throwing', () => {
       const registry = new RoomInstanceRegistry();
-      expect(registry.updateDerived('nobody', { residentCapacity: 1, concurrentUseCapacity: 1, objectCapabilities: [] })).toBe(false);
+      expect(registry.updateDerived('nobody', { residentCapacity: 1, concurrentUseCapacity: 1, concurrentUseCapacityByCapability: [], objectCapabilities: [] })).toBe(false);
     });
   });
 

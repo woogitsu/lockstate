@@ -63,11 +63,15 @@ import {
  *
  * ## Capacity and object capabilities: derived, and no longer aspirational
  *
- * `RoomInstance` carries a `residentCapacity`, a `concurrentUseCapacity` and an
- * `objectCapabilities` list, and in this codebase all three come from the
- * objects standing in the room: a cell holds as many prisoners as it has beds,
- * and `IntakeSystem`/`ActionSystem` gate on capability tags that
- * `src/content/object-catalog.ts` puts on objects.
+ * `RoomInstance` carries a `residentCapacity`, a per-capability
+ * `concurrentUseCapacityByCapability` breakdown, an all-objects
+ * `concurrentUseCapacity` total and an `objectCapabilities` list, and in this
+ * codebase every one of them comes from the objects standing in the room: a cell
+ * holds as many prisoners as it has beds, a canteen seats as many diners as it
+ * has dining furniture, and `IntakeSystem`/`ActionSystem` gate on capability
+ * tags that `src/content/object-catalog.ts` puts on objects. The total is the
+ * one figure nothing gates on -- see its declaration, and ADR 0028's #326
+ * amendment for why it stopped being a ceiling.
  *
  * This paragraph used to end differently. It said that object placement **does
  * not exist**, that the honest reading of an empty rectangle is therefore `0`

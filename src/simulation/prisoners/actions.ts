@@ -11,7 +11,24 @@ export interface ActionDefinition {
   /** Level gained per tick while performing (see action-system.ts) -- data, not a per-action if-chain. */
   readonly needEffectsPerTick: Partial<Record<NeedId, number>>;
   readonly target: ActionTarget;
-  /** Room instance must have an object with this capability tag (src/content/object-catalog.ts) -- absent means any instance of the target room type qualifies. */
+  /**
+   * Room instance must have an object with this capability tag
+   * (src/content/object-catalog.ts), and since issue #326 it is also **the
+   * ceiling the room admits this action against**: the summed footprint width
+   * of the objects in the room carrying this capability, and nothing else's.
+   *
+   * **Absent means any instance of the target room type qualifies, and no
+   * object-derived ceiling applies** -- a stronger statement than it used to
+   * be, so a `room-catalog-id` action leaves this out only when the room really
+   * is unbounded by furniture. `room.yard` is the one such room in
+   * `src/content/room-catalog.ts`: it requires no object at all, and the
+   * previous rule read that as a ceiling of zero and admitted nobody to 64
+   * tiles of open ground. `action.common-room-recreation` and
+   * `action.classroom-education` had this absent for the same reason and were
+   * not unbounded at all -- `room.common-room` requires two benches and
+   * `room.classroom` a bookshelf and four chairs -- so they now name the
+   * capability those objects already carried.
+   */
   readonly requiredObjectCapability?: string;
   readonly minDurationTicks: number;
 }
@@ -49,10 +66,10 @@ export const DEFAULT_ACTIONS: readonly ActionDefinition[] = [
   },
   {
     id: 'action.common-room-recreation', category: 'recreation', target: { kind: 'room-catalog-id', roomCatalogId: 'room.common-room' },
-    needEffectsPerTick: { recreation: 2 }, minDurationTicks: 80,
+    requiredObjectCapability: 'recreation', needEffectsPerTick: { recreation: 2 }, minDurationTicks: 80,
   },
   {
     id: 'action.classroom-education', category: 'education', target: { kind: 'room-catalog-id', roomCatalogId: 'room.classroom' },
-    needEffectsPerTick: { recreation: 1 }, minDurationTicks: 120,
+    requiredObjectCapability: 'education', needEffectsPerTick: { recreation: 1 }, minDurationTicks: 120,
   },
 ];
