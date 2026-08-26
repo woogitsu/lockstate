@@ -2,12 +2,21 @@
 
 ## Status
 
-**Proposed — pending human approval.** Not accepted. Nothing in this document
-has been approved, and its author did not approve it.
+**Accepted, 2026-08-26 — by the owner's explicit delegation.** The owner did not
+read this document. Put the choice of how to handle audit findings whose smallest
+sensible fix needs an architectural decision, they answered *"choose yourself and
+justify it in an ADR"*. So this is a real approval of the judgement delegated,
+and not of the text. **A reader who disagrees with the decision below should
+treat it as open** rather than as settled by someone who weighed it — the same
+standing ADRs 0034, 0035 and 0036 carry, for the same reason.
+
+What was delegated is narrow and worth stating: the owner approved *that someone
+decide*, not option A over B and C. The argument for A is below and it is the
+whole of the warrant.
 
 **A conservation-preserving stopgap is already on `main` ahead of this
-decision, deliberately, and this document exists to be the place that choice is
-either ratified or replaced.** BUG-02 destroyed stock outright: a carry job
+decision, deliberately, and this document is where that choice is now
+ratified.** BUG-02 destroyed stock outright: a carry job
 cancelled or route-failed on its **dropoff** leg compensated nothing, so the
 quantity `withdrawReserved` had already taken out of the source container
 ceased to exist. Measured on v0.0.112 before the fix: 10 bricks in, 6 after, 4
@@ -15,9 +24,10 @@ gone, nothing returned anywhere. Leaving that in place while a decision was
 taken was not an option, so the fix implements **option A below** — return the
 quantity to the source container — on the ground that it is the only option
 that restores conservation *without introducing a concept the simulation does
-not already have*. That is a repair, not a ratification. If the owner prefers B
-or C, the seam is one private method (`JobSystem.compensateHeldStock`) and the
-change is local.
+not already have*. That reasoning is what this document ratifies. If a later
+reader prefers B or C, the seam is one private method
+(`JobSystem.compensateHeldStock`) and the change is local — which is the reason
+accepting A now costs little.
 
 **One debt, recorded rather than tidied.** This document owes a
 `docs/adr/STATUS-QUEUE.md` §2 entry and does not have one. Its author's brief
