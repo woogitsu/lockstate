@@ -75,16 +75,38 @@ scheduled every 5 ticks) drives both identically through
    at each leg's destination, then `withdrawReserved` (pickup) or `deposit`
    (dropoff) -- the only points where a job actually touches inventory.
 
-**Cancellation/failure releases reservations consistently.** Both
-`JobSystem.failJob` and `JobSystem.cancel` release the source reservation
-and free the worker. `cancel` specifically guards against releasing a
-reservation a job never made: a job cancelled while still `'available'`
-never reserved anything, and because `Container` tracks reservations per
-*item* (not per job), releasing one anyway would silently steal a different
-job's real reservation for the same item id. `hadReservation = job.leg ===
-'pickup' && job.state !== 'available'` is captured *before* the state
-mutates to `'cancelled'`, specifically to avoid that bug (found via
-`tests/unit/operations-job-system.test.ts`'s dedicated regression test).
+**Cancellation/failure gives back whatever the job was holding, and which
+that is depends on the leg.** `JobSystem.failJob` and `JobSystem.cancel` share
+one implementation of it, `compensateHeldStock`, so the two paths cannot drift
+apart. An active carry job holds exactly one of two things and the leg decides
+which:
+
+- On the **pickup** leg it holds the `reserve` made at assignment time, and the
+  stock is still physically in the source container. Release the claim.
+  `cancel` guards against releasing a reservation a job never made: a job
+  cancelled while still `'available'` never reserved anything, and because
+  `Container` tracks reservations per *item* (not per job), releasing one anyway
+  would silently steal a different job's real reservation for the same item id.
+  The leg and state are read *before* `JobBoard.cancel` mutates the state to
+  `'cancelled'`, specifically to avoid that bug (found via
+  `tests/unit/operations-job-system.test.ts`'s dedicated regression test).
+- On the **dropoff** leg `continuePerforming` has already committed
+  `withdrawReserved`. There is no reservation left to release and the quantity
+  is in the carrier's hands, in no container at all. It is **deposited back into
+  the source container** — see the no-teleport rule's third exception below.
+
+**This paragraph used to describe only the pickup half, and the code matched
+it.** `hadReservation = job.leg === 'pickup' && job.state !== 'available'` was
+correct about reservations and silent about stock, so a job cancelled or
+route-failed past its pickup compensated nothing and the goods it was carrying
+ceased to exist — measured on v0.0.112 at 10 bricks in, 6 after, 4 destroyed,
+which is the conservation property this substrate exists to provide, inverted.
+The asymmetry is the lesson worth keeping: the pickup case had a dedicated
+regression test and the symmetric dropoff case had none, so a green suite said
+nothing about half of a two-legged mechanism. `docs/adr/0037-goods-in-a-carriers-hands-when-a-carry-job-dies.md`
+proposes the design question the repair had to answer ahead of a decision, and
+records the two alternatives (a floor stack at the carrier's tile; an accounted
+void) that were not taken.
 
 ## The no-teleport rule
 
@@ -94,7 +116,7 @@ a job's actual dropoff tile, after `withdrawReserved` actually happened at
 its actual pickup tile. There is no direct container-to-container transfer
 method anywhere in `inventory.ts`.
 
-There are **two** deliberate exceptions, and neither is a transfer:
+There are **three** deliberate exceptions, and none is a transfer:
 
 - `ContainerMaterialsProvider` (below) does not move anything between
   containers -- it only *consumes* stock already sitting in the one container
@@ -114,7 +136,26 @@ There are **two** deliberate exceptions, and neither is a transfer:
   today at the cost of being location-blind: a wall 400 tiles away spends the
   same global stock as one next door.
 
-Anything else calling `deposit` outside `operations/` is a third exception
+- **`JobSystem.compensateHeldStock` returns a dying job's carried quantity to
+  the container it came from**, when a job on the **dropoff** leg is cancelled or
+  fails. It is not a transfer either: the goods go back to the one container they
+  were withdrawn from, so no quantity moves *between* containers — the same
+  ground `ContainerMaterialsProvider` stands on, and the same `deposit`-rather-
+  than-reservation-reversal reasoning, because `withdrawReserved` already
+  committed and the reservation it consumed no longer exists.
+
+  What it *is* missing is the same thing `ProcurementSystem` is missing, and
+  more sharply: the return has **no route and no tile**. A carrier that fails two
+  tiles short of its destination puts the goods back wherever the source
+  container is, which may be the far side of the prison. That is a real erosion
+  of this rule rather than a footnote to it, and it is stated here rather than
+  smoothed over: it is the cheapest thing that conserves stock without inventing
+  a representation for goods sitting on the floor, and no more than that.
+  `docs/adr/0037-goods-in-a-carriers-hands-when-a-carry-job-dies.md` is where
+  that trade is put to the owner; the floor-stack alternative is the one that
+  would make this rule true instead of thrice-excepted.
+
+Anything else calling `deposit` outside `operations/` is a fourth exception
 and belongs in this list before it is written.
 
 ## Construction-material integration (#16)
