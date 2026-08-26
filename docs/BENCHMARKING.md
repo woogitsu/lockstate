@@ -169,7 +169,7 @@ Correctness and deterministic checksum failures are hard gates immediately.
 
 ## Delivered: navigation work-budget/queue/flow-field scenarios (issue #22)
 
-`navigation.meal-rush`, `navigation.lockdown-return` and `navigation.mixed-destination` (`benchmarks/scenarios/navigation-actor-tiers.mjs`) measure `src/simulation/navigation/`'s path-request queue, work budget and flow-field sharing at the 250 (smoke) and 5,000 (full) actor tiers, each returning `{ checksum, metrics }` — `metrics` carries work units (expanded search nodes), cache hit/miss, flow-field activation counts and per-tick latency distribution, deterministically re-verified by `scripts/verify-benchmark-result.mjs` exactly like the checksum. The remaining two tiers (1,000/2,500) and a memory reading are covered by the separate, non-CI-gating `scripts/run-navigation-actor-tier-report.mjs` — see `docs/NAVIGATION.md`'s Performance section and `docs/adr/0007-navigation-work-budgets-and-flow-fields.md` for evidence, rationale and why these are a hand-rolled mirror rather than an import of the production modules.
+`navigation.meal-rush`, `navigation.lockdown-return` and `navigation.mixed-destination` (`benchmarks/scenarios/navigation-actor-tiers.mjs`) **model** a path-request queue, work budget and flow-field sharing at the 250 (smoke) and 5,000 (full) actor tiers — they import nothing from `src/` and gate nothing about it; the file's own header now says so, and the scenarios that do drive the production modules are `navigation.production.*` (#410). **This sentence said they "measure `src/simulation/navigation/`"** and admitted the mirror only in a trailing clause deferring to two other documents. Each returns `{ checksum, metrics }`, where `metrics` carries work units (expanded search nodes), cache hit/miss, flow-field activation counts and per-tick latency distribution, deterministically re-verified by `scripts/verify-benchmark-result.mjs` exactly like the checksum. The remaining two tiers (1,000/2,500) and a memory reading are covered by the separate, non-CI-gating `scripts/run-navigation-actor-tier-report.mjs` — see `docs/NAVIGATION.md`'s Performance section and `docs/adr/0007-navigation-work-budgets-and-flow-fields.md` for evidence, rationale and why these are a hand-rolled mirror rather than an import of the production modules.
 
 **These three are modelled** (see the table above), and #410 replaced them as
 the gate rather than deleting them: `navigation.production.meal-rush` and
@@ -187,7 +187,12 @@ an input to future work any more. Chunk storage/culling candidates (16×16,
 `world.chunk-size-dense-prison`, and their measurements are what
 [ADR-0004](./adr/0004-chunk-size-selection.md) decided the production chunk
 size on — the one case so far where a family on this list did go on to gate a
-decision. Fixed-step simulation throughput shipped as
+decision. **That is worth stating plainly rather than as a credit: those two
+scenarios hand-roll chunk storage and import no `SparseWorld`, so an accepted
+architectural decision rests on a model of the production module rather than on
+the module.** #410 converted the navigation family and deliberately left this
+one; re-deciding the chunk size against the real `SparseWorld` is its own piece
+of work and is not claimed here. Fixed-step simulation throughput shipped as
 `kernel.throughput.benchmark` (tick loop, command queue and multi-rate system
 scheduling; backlog behaviour under a starved tick is still unmeasured). Both
 are registered in `benchmarks/registry.mjs` and run under `pnpm benchmark`.
