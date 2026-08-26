@@ -17,10 +17,11 @@ cannot be unmade for a save they have already rewritten.
 **0030**, which `docs/adr/README.md` stated as next free, and the check that
 statement cannot make was made: the open pull requests on this repository at the
 time of writing are **#355** (`fix/340-343-close-prison-id-oracles`) and **#356**
-(`claude/accept-adr-0029`, which changes 0029's status and adds no document), so
-no unmerged branch is holding 0030. The index's next-free is moved to **0031** in
-this commit, because `tests/foundation/adr-numbering-contract.test.ts` derives it
-from the highest number on disk.
+(the ADR-0029 acceptance branch, which changes that ADR's status and adds no
+document), so no unmerged branch is holding 0030. The index's next-free is moved
+to **0031** in this commit, because
+`tests/foundation/adr-numbering-contract.test.ts` derives it from the highest
+number on disk.
 
 ### What the evidence rests on
 
