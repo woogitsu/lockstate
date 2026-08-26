@@ -441,6 +441,36 @@ export const HUD_MESSAGE_KEY = {
   roomsRequirementOutdoors: 'hud.rooms.requirement-outdoors',
   roomsRequirementNone: 'hud.rooms.requirement-none',
   /*
+   * The typed route to a rectangle (#411).
+   *
+   * Four numbers and the disclosure that holds them, so a rectangle can be
+   * *said* as well as dragged. `AGENTS.md` boundary 10 is not satisfied by "it
+   * works with a mouse", and until this existed the Rooms panel was the one
+   * surface in the HUD with no keyboard producer at all -- which made the game
+   * unfinishable without a pointer, because zoning gates accommodation and
+   * accommodation gates every admission.
+   *
+   * `roomsCatalogue` is reworded rather than left alone, and that is what these
+   * keys cost the panel besides themselves: the section that holds the room
+   * list now holds this form at its foot, so a header reading "Room type" would
+   * name half of its own contents -- the ADR 0011 objection ADR 0022 used
+   * against putting the Rooms panel behind an existing tab.
+   *
+   * `roomsStepDown` and `roomsStepUp` are the step buttons' full sentences,
+   * parameterized by the field's own label, exactly as `buildStepDown` and
+   * `buildStepUp` are for the Build panel: the visible content of those buttons
+   * is a symbol, so the sentence is all a screen reader has.
+   */
+  roomsCoordinates: 'hud.rooms.coordinates',
+  roomsCoordinatesHint: 'hud.rooms.coordinates-hint',
+  roomsCoordinatesSubmit: 'hud.rooms.coordinates-submit',
+  roomsTileX: 'hud.rooms.tile-x',
+  roomsTileY: 'hud.rooms.tile-y',
+  roomsWidth: 'hud.rooms.width',
+  roomsHeight: 'hud.rooms.height',
+  roomsStepDown: 'hud.rooms.step-down',
+  roomsStepUp: 'hud.rooms.step-up',
+  /*
    * What a designated room is still missing (#331 milestone).
    *
    * The five keys of the readout that answers "I zoned a cell and nothing

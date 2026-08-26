@@ -427,6 +427,18 @@ export interface RoomsProbe {
   readonly cancelLaidOut: boolean;
   readonly confirmText: string;
   readonly confirmDisabled: boolean;
+  /**
+   * What the four coordinate fields hold, as the strings the inputs carry:
+   * tile X, tile Y, width, height.
+   *
+   * Read off the DOM rather than from the panel, because the clamp being
+   * checked is the field's: `NumberField` is controlled, so what an input shows
+   * after a `change` is what its owner accepted, and an owner that accepted an
+   * out-of-range number would show it here.
+   */
+  readonly coordinates: readonly string[];
+  /** `data-collapsed` on the typed route's disclosure. */
+  readonly coordinatesFolded: string;
   readonly armPressed: string;
   readonly removePressed: string;
   /**
@@ -739,9 +751,30 @@ export interface LockstateUiHarness {
   /**
    * A real click on one of the panel's controls, so a disabled or hidden one
    * does not fire. Four of them are the actions row; `fold` is the panel's own
-   * header control.
+   * header control; `coordinates` is the typed route's disclosure header and
+   * `coordinates-submit` the control inside it that produces the rectangle.
    */
-  clickRoomsControl(control: 'arm' | 'remove' | 'confirm' | 'cancel' | 'fold'): boolean;
+  clickRoomsControl(
+    control: 'arm' | 'remove' | 'confirm' | 'cancel' | 'fold' | 'coordinates' | 'coordinates-submit',
+  ): boolean;
+  /**
+   * Types into the panel's coordinate fields, the way a player's keyboard does:
+   * the value lands in the input and the input reports `change`.
+   *
+   * Nothing becomes pending here. The fields are the typed route's *aim*, and
+   * `clickRoomsControl('coordinates-submit')` is its release -- the same
+   * separation a drag has between moving and letting go.
+   *
+   * Fields left out of the object are left alone, so a spec can move one number
+   * of four and say so. Returns `false` when a named field is not in the DOM,
+   * so a spec cannot pass by typing into nothing.
+   */
+  typeRoomCoordinates(values: {
+    x?: number;
+    y?: number;
+    width?: number;
+    height?: number;
+  }): boolean;
   /**
    * Publishes what the simulation said about the last room designated.
    *

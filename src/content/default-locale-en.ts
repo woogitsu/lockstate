@@ -550,7 +550,10 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.refusal.release-guard': 'Nobody was released — the request was refused and the guard is still assigned.',
 
   'hud.rooms.title': 'Rooms',
-  'hud.rooms.catalogue': 'Room type',
+  // Names both halves of the section it heads: the room-type list, and the
+  // coordinate form folded away at its foot (#411). It read "Room type" while
+  // the list was all there was.
+  'hud.rooms.catalogue': 'Room type and area',
   'hud.rooms.catalogue-empty': 'No room types are available',
   'hud.rooms.selected': 'Selected',
   'hud.rooms.arm': 'Draw on map',
@@ -591,6 +594,22 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.rooms.requirement-enclosed': 'Must be enclosed',
   'hud.rooms.requirement-outdoors': 'Must be outdoors',
   'hud.rooms.requirement-none': 'No enclosure rule',
+  // The typed route to a rectangle (#411). The wording mirrors the Build
+  // panel's own fallback deliberately: the same two sentences answer the same
+  // two questions, and a player who has met one has met the other.
+  'hud.rooms.coordinates': 'Enter coordinates',
+  'hud.rooms.coordinates-hint': 'The keyboard route. Dragging on the map is quicker.',
+  // What pressing it does, and it is not "designate": it produces the same
+  // rectangle a released drag produces, and the confirm control below still
+  // has to be pressed. Naming it "Designate" would promise a designation that
+  // the too-small rule may refuse to let happen.
+  'hud.rooms.coordinates-submit': 'Use these tiles',
+  'hud.rooms.tile-x': 'Tile X',
+  'hud.rooms.tile-y': 'Tile Y',
+  'hud.rooms.width': 'Width',
+  'hud.rooms.height': 'Height',
+  'hud.rooms.step-down': 'Decrease {field}',
+  'hud.rooms.step-up': 'Increase {field}',
   // What a room the player already designated is still missing. "Not ready"
   // rather than "Incomplete" or "Invalid": the room exists, it is painted on
   // the map and it counts in the status strip -- what it cannot yet do is the
