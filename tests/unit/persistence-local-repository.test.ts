@@ -189,6 +189,54 @@ describe('PrisonSaveRepository: loadCurrent recovery', () => {
     expect(metadata).toMatchObject({ currentGenerationId: 'gen-1', generationIds: ['gen-1'] });
   });
 
+  /**
+   * The seam #403 (d) needs, and the property that makes it a seam rather
+   * than a second copy of the walk: a caller that has refused a generation
+   * for a reason `loadCurrent` structurally cannot see -- a restore that
+   * threw, which schema, migration and checksum all passed -- can ask for the
+   * next candidate *without* the refused one being retired to get there.
+   *
+   * Before this, the walk advanced by deleting: `loadCurrent` re-derives its
+   * candidate list from metadata on every call, so it kept returning the same
+   * generation until one was removed, and removal is a delete.
+   */
+  it('passes over the generations a caller asks it to skip, and retires none of them', async () => {
+    const store = new MemoryLocalSaveStore();
+    const repo = new PrisonSaveRepository(store, { generateGenerationId: idSequence('gen') });
+    await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0' });
+    await repo.save('prison-1', buildEnvelope(1, 11));
+    await repo.save('prison-1', buildEnvelope(2, 22));
+    await repo.save('prison-1', buildEnvelope(3, 33));
+
+    const second = await repo.loadCurrent('prison-1', { skip: new Set(['gen-3']) });
+    expect(second).toMatchObject({ ok: true, generationId: 'gen-2', outcome: 'recovered-previous' });
+    expect(second.ok && second.envelope.revision).toBe(2);
+    expect(second.ok && second.envelope.payload.kernel.tick).toBe(22);
+
+    const third = await repo.loadCurrent('prison-1', { skip: new Set(['gen-3', 'gen-2']) });
+    expect(third.ok && third.envelope.revision).toBe(1);
+    expect(third.ok && third.envelope.payload.kernel.tick).toBe(11);
+
+    // Nothing was retired to get there: the skipped generation is still in the
+    // window, still pointed at, and still holds the tick it was written with.
+    const [metadata] = await repo.list();
+    expect(metadata).toMatchObject({ currentGenerationId: 'gen-3', generationIds: ['gen-1', 'gen-2', 'gen-3'] });
+    const skipped = await store.runTransaction('readonly', (tx) => tx.getGeneration('prison-1', 'gen-3'));
+    expect(skipped).toMatchObject({ revision: 3, payload: { kernel: { tick: 33 } } });
+  });
+
+  it('reports no-valid-generation when every retained generation is skipped or corrupt', async () => {
+    const repo = new PrisonSaveRepository(new MemoryLocalSaveStore(), { generateGenerationId: idSequence('gen') });
+    await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0' });
+    await repo.save('prison-1', buildEnvelope(1, 11));
+
+    expect(await repo.loadCurrent('prison-1', { skip: new Set(['gen-1']) })).toEqual({ ok: false, reason: 'no-valid-generation' });
+    // Reported, not deleted -- which is the whole of (d): the caller learns
+    // there is nothing left to try and the save is still there.
+    const survivor = await repo.loadCurrent('prison-1');
+    expect(survivor.ok && survivor.envelope.payload.kernel.tick).toBe(11);
+  });
+
   it('reports no-valid-generation when every retained generation is corrupt', async () => {
     const store = new MemoryLocalSaveStore();
     const repo = new PrisonSaveRepository(store, { generateGenerationId: idSequence('gen') });

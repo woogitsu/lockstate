@@ -86,6 +86,26 @@ export type DemotionResult =
 
 export type LoadRecoveryOutcome = 'current' | 'recovered-previous';
 
+export interface LoadCurrentOptions {
+  /**
+   * Generations the caller has already tried and cannot use, for a reason
+   * this method structurally cannot see: a save that passed schema, migration
+   * and checksum and then failed to *restore*. They are passed over as if they
+   * were not retained -- neither returned, nor retired to get past them.
+   *
+   * That second half is the point (#403 (d)). The walk used to advance by
+   * *deleting*: `loadCurrent` re-derives its candidate list from metadata on
+   * every call, so it kept handing back the same generation until the caller
+   * retired one, and retiring one deletes it. A restore failure whose cause is
+   * this build's own code is deterministic, so it refuses every generation in
+   * turn -- and each refusal cost a generation. Skipping costs none, and the
+   * caller retires what it refused only once a *different* generation has
+   * actually restored, which is the rule the decode path below has always
+   * followed.
+   */
+  readonly skip?: ReadonlySet<string>;
+}
+
 export type LoadResult =
   | { readonly ok: true; readonly envelope: SaveEnvelope; readonly generationId: string; readonly outcome: LoadRecoveryOutcome }
   | { readonly ok: false; readonly reason: 'not-found' | 'no-valid-generation' };
@@ -246,20 +266,37 @@ export class PrisonSaveRepository {
    * generations newest-first and adopt the first one that validates,
    * updating the pointer so the corrupt generation is not retried on every
    * boot. Returns `no-valid-generation` only when nothing in the retained
-   * window validates.
+   * window validates -- and, exactly as before, having deleted nothing in
+   * that case.
+   *
+   * **Nothing is deleted here except generations this call proved
+   * undecodable, and only once a *later* one has decoded.** A generation the
+   * caller asked to `skip` is not judged by this method at all, so it is
+   * neither returned nor retired; see `LoadCurrentOptions.skip`.
    */
-  public async loadCurrent(prisonId: string): Promise<LoadResult> {
+  public async loadCurrent(prisonId: string, options: LoadCurrentOptions = {}): Promise<LoadResult> {
     const metadata = readSlot(await this.store.runTransaction('readonly', (tx) => tx.getMetadata(prisonId)), prisonId);
     if (metadata === undefined) return { ok: false, reason: 'not-found' };
 
-    const candidates = [...metadata.generationIds].reverse(); // newest first
-    for (const generationId of candidates) {
+    const candidates = [...metadata.generationIds].reverse().filter((id) => options.skip?.has(id) !== true); // newest first
+    for (const [index, generationId] of candidates.entries()) {
       const raw = await this.store.runTransaction('readonly', (tx) => tx.getGeneration(prisonId, generationId));
       const decoded = raw === undefined ? undefined : decodeSaveEnvelope(raw);
       if (decoded?.ok !== true) continue;
 
-      if (generationId !== metadata.currentGenerationId) {
-        await this.recoverToGeneration(prisonId, generationId, candidates);
+      // Everything this walk passed over is confirmed-invalid: it was read
+      // and it did not decode. Skipped generations are not in `candidates`,
+      // so they can never end up here.
+      const confirmedInvalid = candidates.slice(0, index);
+      // The other reason the generation that decoded is not the current one
+      // is a pointer that has fallen outside the retained window, which this
+      // read heals. A pointer that is retained and simply older than the
+      // generation returned is left alone -- moving it would be a write on a
+      // read that retired nothing.
+      const pointerIsRetained =
+        metadata.currentGenerationId !== undefined && metadata.generationIds.includes(metadata.currentGenerationId);
+      if (confirmedInvalid.length > 0 || !pointerIsRetained) {
+        await this.recoverToGeneration(prisonId, generationId, confirmedInvalid);
       }
 
       return {
@@ -325,15 +362,17 @@ export class PrisonSaveRepository {
     });
   }
 
+  /**
+   * Points the slot at `recoveredGenerationId` and deletes the generations
+   * the caller proved invalid on the way to it. It runs **only after** a
+   * generation has decoded, which is why the decode path has never been able
+   * to empty a window: when nothing decodes, this is never called.
+   */
   private async recoverToGeneration(
     prisonId: string,
     recoveredGenerationId: string,
-    triedNewestFirst: readonly string[],
+    confirmedInvalid: readonly string[],
   ): Promise<void> {
-    // Everything newer than the recovered generation was confirmed invalid above; drop it.
-    const recoveredIndex = triedNewestFirst.indexOf(recoveredGenerationId);
-    const confirmedInvalid = triedNewestFirst.slice(0, recoveredIndex);
-
     await this.store.runTransaction('readwrite', async (tx) => {
       const metadata = readSlot(await tx.getMetadata(prisonId), prisonId);
       if (metadata === undefined) return;
