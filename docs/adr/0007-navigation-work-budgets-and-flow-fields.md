@@ -315,3 +315,168 @@ decision record drifts away from the code it records.
 name reappears anywhere in `src/`, and fails if this amendment or the original
 sentence it amends is removed from this file. Bringing either accessor back is
 therefore a change to this ADR, which is what it was in the first place.
+
+## Amendment, 2026-08-26 (awaiting approval): the shared plan is the plan `findRoute` computes, because the router's search direction moved to meet it
+
+*Issues #357, #358, #359 and #360. The sections above are left exactly as
+accepted — an ADR is the record of what was decided — and this amendment records
+what changed underneath them, which of their sentences was false when it was
+written, and the one decision the sections above do not contain. It has not been
+approved: `docs/adr/STATUS-QUEUE.md` §2 carries its entry.*
+
+### The sentence that was false, and what it cost
+
+> For an undirected graph with symmetric edge costs this is **mathematically
+> identical** to running #21's destination-rooted search once instead of once
+> per actor: it is **the same shortest-path tree every individual `findRoute`
+> call to that destination would eventually discover**, computed once and
+> reused.
+
+#21's search was not destination-rooted. `router.ts`'s `dijkstraRegionPath`
+passed `origin` as the source and `destination` as the early exit, so the
+parenthetical described a search that did not exist, and the two ends do not
+agree. Total path cost is symmetric, so `dist` agreed; `prevPortal` did not. A
+relaxation in `runRegionDijkstra` is a strict improvement, so among equal-cost
+predecessors the recorded one is whichever was relaxed first — and "first" is
+frontier order *measured from the search's own source*. Rooted at the origin,
+the destination's predecessor is chosen by distance-from-origin; rooted at the
+destination, the origin's successor is chosen by distance-from-destination.
+Those are different quantities, so the two searches selected different portals
+whenever two region routes tied, and the chosen portal sequence is what bounds
+the tile search — so a region-level tie became a tile-level difference.
+
+Measured on a four-room ring with both ways round costing the same (three doors
+of multiplier 1/2/2/1, `tests/helpers/navigation-fixture.ts`'s
+`buildRingFixture`): **64 of 256 origin/destination pairs took a different door
+and 20 cost strictly more, up to double.** Which of the two an actor received
+was decided by `flowFieldActivationThreshold` against the number of *other*
+pending requests sharing its destination that tick — so by the company it kept
+rather than by the state of the prison. That is the line `docs/DETERMINISM.md`
+draws for the transport controls ("they change when ticks happen and never what
+a tick computes") and generalises for multi-rate schedules, and it is a stronger
+claim than the hierarchical-versus-flat-optimal caveat in `docs/NAVIGATION.md`,
+which accepts inexactness for a *fixed* set of inputs and not two answers for
+one set.
+
+### The decision this amendment adds: the region search's direction is part of the sharing contract
+
+`dijkstraRegionPath` is rooted at the **destination** and walked from the
+origin. A `RegionFlowField` can only be rooted at the destination — that is what
+makes one pass answer for every origin — so that is the end that had to move,
+and the two are now literally the same search with and without an early exit.
+The `origin`/`destination` parameters keep their caller-facing meaning and the
+returned portals are still ordered origin to destination.
+
+Two alternatives were rejected on measurement rather than taste:
+
+- **Break ties on the portal's door id**, the cheaper fix #360 proposes. It is
+  not sufficient. Rooted at the origin that rule picks the canonically smallest
+  *last* hop of a tied path; rooted at the destination it picks the smallest
+  *first* hop; and the path with the smaller first hop need not be the path with
+  the smaller last hop. On a ring whose door ids are named so that those two
+  disagree, adding the tie-break to the origin-rooted search leaves **64 of 256
+  pairs diverging** — the same count it appears to fix on a ring whose ids
+  happen to agree.
+- **Leaving the divergence and amending the claim** to say the shared plan is
+  merely an equal-cost alternative. It is not always equal-cost: 20 of those 64
+  were strictly more expensive through the field.
+
+Aggregate routing quality is unchanged by the new direction, which is the
+question a reader should ask of it: against a flat full-map Dijkstra over the
+same ring, the hierarchical answer's **total excess is 48 over all 256 pairs
+either way, worst case 4 either way, on the same 20 pairs**. Neither direction
+was optimal and neither is now; what changed is that there is one answer per
+state instead of two.
+
+### Targeted invalidation, restated over traversal verdicts rather than access versions
+
+> a group at or above `flowFieldActivationThreshold` uses
+> `getOrComputeRegionFlowField` (backed by `FlowFieldCache`, **invalidated
+> exactly like `RouteCache` -- geometry change invalidates everything, a
+> specific door's access-version change invalidates only fields that depend on
+> it**)
+
+The intent was right and the recorded set was wrong, in both caches. Each
+recorded the doors a decision *used* — the doors a route crossed, the portals
+that ended up in a field's tree, and for a failure the `blockedBy` door that
+`route.ts` documents as a best-effort diagnostic. A door whose being shut is the
+reason the answer looks the way it does was recorded nowhere, so opening it
+evicted nothing: a `permission-denied` outlived the lockdown that caused it
+(#357) and a field kept routing a whole group through the door it was forced to
+use (#358).
+
+`runRegionDijkstra` now reports the doors an answer depends on, and the rule is
+derived at that function rather than guessed: the doors incident to a region
+within reach of the answer, where "reach" is the distance to the region the
+answer was asked about. A door whose two endpoint regions are both further away
+than that cannot shorten the answer nor introduce a new equal-cost route a
+tie-break could pick, and a door touching a region at or inside it can, whether
+the search crossed it, refused it or passed it over.
+
+Two consequences worth stating, because they pull in opposite directions:
+
+- **Invalidation is now finer than the accepted text describes, not coarser.**
+  An entry goes when a door it depended on stops giving the *traversal verdict*
+  it was computed under — may this context cross it, and at what cost — rather
+  than whenever that door's access version moves. A door that was refused and is
+  still refused evicts nothing, so a lockdown deepening on a wing a prisoner
+  could never use leaves their cached routes alone.
+- **A field's dependency set is prison-wide, and that is accepted.** A field
+  answers for every reachable region, so its answer genuinely depends on every
+  door incident to one; any door state change therefore invalidates a field.
+  This is the honest price of one shared object rather than a defect, and it
+  costs one Dijkstra pass — the pass sharing exists to amortise. The narrow half
+  lives in `RouteCache`, which since #359 holds a per-route entry for
+  field-resolved requests whose dependency set is bounded by that request's own
+  origin.
+
+### Sharing sits behind the route cache, not in front of it
+
+The accepted text decides that the portal pass is paid "once per (destination
+region, `RouteContext` fingerprint) group per cache generation, not once per
+actor". It says nothing about the order the two mechanisms are consulted in, and
+the implementation checked the field first and never wrote a field-resolved
+answer into `RouteCache` — so turning sharing on turned the route cache off for
+that group, and the busiest destination in the prison was the only one that got
+no cross-tick reuse (#359).
+
+`PathRequestQueue.processTick` now resolves every request through
+`findRouteCached`, with flow-field sharing inside the compute callback: the cache
+decides whether anything is computed, and sharing decides only *how a miss is
+computed*. On `buildCellBlockFixture(24)`, eight legs re-requested each tick for
+ten ticks, sharing on: **1,906 work units before, 214 after**, against 268 with
+sharing off — and the per-tick cost decays to nothing instead of staying flat at
+188. The case sharing exists for is untouched: 24 distinct origins onto one
+destination still costs 398 against 720 and still drains in one tick against
+two. This ordering is only safe because of the equivalence above; while the two
+mechanisms disagreed, which of them warmed an entry would have decided what
+every later caller read.
+
+One metric moves as a result: `flowFieldActivations` now counts fields that were
+actually needed, so a repeated leg no longer activates one per tick.
+`benchmarks/scenarios/navigation-actor-tiers.mjs` is the hand-rolled mirror this
+ADR's benchmark section describes, and it still mirrors the old ordering, so its
+activation and cache numbers — and the table in `docs/NAVIGATION.md` that quotes
+them, including the `0 / 60` cache hit/miss for `meal-rush` that was this defect
+published as a property of the scenario — describe the previous composition until
+someone re-runs them. That is the accepted drift this ADR's benchmark section
+already names, now with a known instance.
+
+### The gate
+
+- `tests/determinism/navigation-shared-plan-equivalence.test.ts` — a
+  field-resolved route and `findRoute` agree on the door sequence, the cost and
+  the waypoints for every origin/destination pair on the ring, across all 81
+  combinations of its four doors' states; one actor gets the same route alone and
+  in a crowd; and a run with both caches discarded every tick resolves every
+  request identically to a run with them warm across a lockdown.
+- `tests/determinism/navigation-cache-agreement.test.ts` — the #357 and #358
+  cases, through the real `NavigationSystem` on a real `Kernel`, asserted against
+  a fresh `findRoute` rather than against an eviction count.
+- `tests/unit/navigation-work-budget-and-cache.test.ts` — the cross-tick
+  accounting for #359, which is the shape a single-tick assertion cannot see.
+
+What this amendment does **not** touch: the work-unit budget, the fairness rule,
+the "always at least one request per tick" rule, the deferred-status decision
+amended on 2026-08-25, and `docs/NAVIGATION.md`'s hierarchical-versus-flat-optimal
+caveat, which is a different claim and still stands.
