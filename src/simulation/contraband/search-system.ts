@@ -97,6 +97,29 @@ export class SearchSystem implements SystemRegistration {
     return this.active.get(orderId)?.state;
   }
 
+  /**
+   * The guards this system is currently holding on the `'on-search'`
+   * deployment phase.
+   *
+   * Exposed because `'on-search'` is a *shared* phase with exactly one other
+   * producer, `IncidentResponseSystem`, and that system needs to tell the two
+   * apart in order to hand back the responders a save interrupted without
+   * touching a search job's guards (issue #352). This is the read that makes
+   * the distinction, rather than each system stamping an owner onto the guard
+   * record -- a search job already names its guards and that naming is in the
+   * payload, so there is no second source of truth to keep in step.
+   *
+   * Queued orders name no guards: `assignQueuedOrders` claims them at the
+   * moment it activates an order, so an order still in `queue` holds nothing.
+   *
+   * Deterministic: ascending entity id.
+   */
+  public claimedGuardIds(): readonly EntityId[] {
+    const claimed = new Set<EntityId>();
+    for (const job of this.activeJobsInCanonicalOrder()) for (const guardId of job.guardIds) claimed.add(guardId);
+    return [...claimed].sort((a, b) => a - b);
+  }
+
   public isQueued(orderId: string): boolean {
     return this.queue.some((order) => order.id === orderId);
   }
