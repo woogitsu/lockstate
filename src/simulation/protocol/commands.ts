@@ -126,6 +126,46 @@ export const purchaseMaterialsSchema = z.object({
 }).strict();
 
 /**
+ * Cancel a purchase whose delivery has not landed, refunding what was paid
+ * (#285).
+ *
+ * ## Why this is a command of its own and not a `CancelBuildOrder`
+ *
+ * Because the two name different records, and the ids are independent by
+ * construction. `PurchaseMaterials` mints a *purchase* id per press and buys
+ * stock; `PlaceBuildOrder` mints an *order* id and touches no treasury on any
+ * path. So a build order is never paid for, there is nothing for
+ * `ConstructionSystem.cancelOrder` to refund even in principle, and a refund
+ * wired to undo would credit the money while `cancelOrder` also released the
+ * materials -- value created out of a keystroke, measured on #285 as mutation
+ * M2 of `tests/integration/economy-money-conservation.test.ts`.
+ *
+ * What this reaches instead is `ProcurementSystem.cancel`, which was a
+ * complete, tested, idempotent credit path that **nothing in the application
+ * could call**: `grep -rn "procurement\.cancel" src/` found nothing at all, and
+ * the only caller in the repository was a test. That is the same shape
+ * `CancelBuildOrder` was in before #367, one system over.
+ *
+ * ## What it carries
+ *
+ * `orderId`, and nothing else. It is `identifierSchema` for the reason
+ * `PurchaseMaterials.orderId` is: the save boundary types a pending delivery's
+ * id that way (`economySectionSchema`), and the two boundaries disagreeing is a
+ * window rather than a stricter check. The id is minted by
+ * `PurchaseMaterials`'s producer, travels out on `hud/pending-deliveries` and
+ * comes back unchanged -- nothing on this side of the wire invents one.
+ *
+ * **No quantity and no item id.** A cancellation names a delivery, not an
+ * amount of a material: partial cancellation would be a second purchase at a
+ * price nobody agreed, and which material it was is a property of the record
+ * this id already names.
+ */
+export const cancelMaterialPurchaseSchema = z.object({
+  type: z.literal('CancelMaterialPurchase'),
+  orderId: identifierSchema,
+}).strict();
+
+/**
  * Admit one prisoner (#261 step 4).
  *
  * ## What it carries, and what it deliberately does not
@@ -351,6 +391,7 @@ export const simulationCommandSchema = z.discriminatedUnion('type', [
   zoneRoomSchema,
   unzoneRoomSchema,
   purchaseMaterialsSchema,
+  cancelMaterialPurchaseSchema,
   admitPrisonerSchema,
   hireStaffSchema,
   placeObjectSchema,
@@ -408,6 +449,9 @@ function commandJson(command: SimulationCommand): JsonValue {
         itemId: command.itemId,
         quantity: command.quantity,
       };
+
+    case 'CancelMaterialPurchase':
+      return { type: command.type, orderId: command.orderId };
 
     case 'AdmitPrisoner':
       return {

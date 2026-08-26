@@ -9,6 +9,7 @@ import {
   projectIncidents,
   projectPrisonerDetail,
   projectPrisonerPopulationCounts,
+  projectPendingDeliveries,
   projectPrisonerRoster,
   projectRoomDetail,
   projectRoomList,
@@ -220,6 +221,29 @@ export const PROJECTION_CATALOG: Readonly<Record<ProjectionId, ProjectionCatalog
     project: (runtime, _tick, request) => {
       const view = projectBuildQueue(runtime.construction, pageRequest(request));
       return { view: view as unknown as JsonValue, page: pageOfView(view.orders) };
+    },
+  },
+
+  /*
+   * What has been bought and has not arrived (#285).
+   *
+   * `runtime.procurement` is the source and it needs no adapter: the projection
+   * takes `{ pendingDeliveries }` and `ProcurementSystem` already exposes exactly
+   * that as a public accessor over the list `snapshot`/`restore` carry. So this
+   * entry reads state a V5 save has always held, which is why the surface behind
+   * it moves no persisted shape and bumps no save version.
+   *
+   * `paged: true` for the reason the build queue is: a player can press Buy as
+   * often as the treasury allows, so the list has no ceiling and the window is
+   * the caller's, bounded by `MAX_PROJECTION_PAGE_LIMIT` at the protocol edge.
+   */
+  'hud/pending-deliveries': {
+    ...hud(`${HUD_VIEW_MODEL_SCHEMA_ID}.pending-deliveries`),
+    paged: true,
+    target: 'none',
+    project: (runtime, _tick, request) => {
+      const view = projectPendingDeliveries(runtime.procurement, pageRequest(request));
+      return { view: view as unknown as JsonValue, page: pageOfView(view.deliveries) };
     },
   },
 

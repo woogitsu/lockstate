@@ -16,6 +16,8 @@ import {
   type HudBuildQueueViewModel,
   type HudBuildViewModel,
   type HudLocalizer,
+  type HudPendingDeliveriesViewModel,
+  type HudPendingDeliveryViewModel,
 } from './view-model';
 
 /**
@@ -129,6 +131,17 @@ export interface BuildPanelOptions {
    * that a row it drew named an order and that the player pressed that row.
    */
   readonly onCancelOrder: (orderId: string) => void;
+  /**
+   * Cancel **one** purchase whose delivery has not landed, named by its own id
+   * (#285).
+   *
+   * The id and nothing else, exactly as `onCancelOrder` takes one. The panel does
+   * not know that a `CancelMaterialPurchase` command exists any more than it
+   * knows `PurchaseMaterials` does -- it knows that a row it drew named a
+   * delivery, that the row said what cancelling it gives back, and that the
+   * player pressed it.
+   */
+  readonly onCancelPurchase: (orderId: string) => void;
 }
 
 export interface BuildPanel {
@@ -175,6 +188,16 @@ export interface BuildPanel {
    * `paintQueue`.
    */
   setBuildQueue(queue: HudBuildQueueViewModel | undefined): void;
+  /**
+   * What has been bought and has not arrived, or `undefined` because nothing
+   * asked (#285).
+   *
+   * The same two silences `setBuildQueue` draws the same way, for the same
+   * reason: nothing asked and nothing in transit both have nothing to say about
+   * money on its way, and neither earns a line inside a disclosure the player
+   * opened to buy something.
+   */
+  setPendingDeliveries(deliveries: HudPendingDeliveriesViewModel | undefined): void;
   setVisible(visible: boolean): void;
 }
 
@@ -314,6 +337,86 @@ export function formatBuildQueueOrderText(t: Translate, order: HudBuildOrderView
  */
 function buildOrderStateLabelKey(state: HudBuildOrderViewModel['state']): LocalizationKey {
   return deriveSimulationMessageKey('build-order-state', state);
+}
+
+/**
+ * How many pending deliveries the buy disclosure lists at once.
+ *
+ * **Three, and unlike `BUILD_QUEUE_ROW_LIMIT` this one is a measurement with no
+ * argument beside it: three is what fits, and four does not.**
+ *
+ * Measured on the assembled page at 900x600 -- where `.hud__rail` also holds the
+ * save panel, which the UI harness does not, so that harness hands this panel
+ * 128.7px more rail than the application ever gives it -- Build tab, one prison,
+ * coordinates folded, with the disclosure open:
+ *
+ * | pending | buy row | panel overflow |
+ * | --- | --- | --- |
+ * | none | 128.4px | 125px |
+ * | one | 199.7px | 196px |
+ * | three, with the "and N more" line | 312.9px | 309px |
+ *
+ * The panel's visible box at that viewport is **337.0px** (184.7 to 521.7), so
+ * the whole open row still fits inside it: after the scroll `paintBuy` already
+ * performs on opening, the panel sits at `scrollTop` 260 with the row occupying
+ * 208.9 to 521.8, every Cancel 78x44, inside the box, and hit-testing to itself.
+ *
+ * **A fourth row does not fit, and the failure is the one this repository has
+ * shipped before.** At four the row is 360.9px against the same 337.0px box, and
+ * the fourth Cancel's box ends at 529.6 -- **7.9px below the panel's visible
+ * bottom**, with `offsetParent` set and a 78x44 rectangle, which is #220's exact
+ * shape: a control that is laid out, hit-tests to itself, and is not on screen.
+ * So the ceiling is a rectangle rather than a preference, and the rows are the
+ * deliveries arriving soonest, which is also the order in which their refunds
+ * stop being available.
+ *
+ * **What this block costs the panel when it is not open: nothing at all.**
+ * Measured in the arrival state at the same viewport, with five purchases out and
+ * the disclosure closed, against the same page with nothing bought -- identical
+ * to the tenth of a pixel: the panel is 338.1px, its body holds 291.2px in a
+ * 291.2px box, the panel's own overflow is 0, the catalogue list is 88px of 924px
+ * of rows, and "Enter coordinates" ends 7.8px inside the fold. That is what
+ * decided the *placement*, and it is not a preference either. The catalogue is
+ * the one block `hud.css` lets this panel take height from; ADR 0031 decision 3
+ * already spends 45px of it on the queue block, and its open question 4 asks
+ * whether the catalogue is the right donor at all -- a question with a number
+ * behind it now that `BUILDABLE_REGISTRY` holds twenty-one rows, because at this
+ * viewport with a queue the list is a 44px box over 924px of rows, which is one
+ * row of twenty-one on screen. A block that appeared whenever a delivery was
+ * pending would have had to take a second donation out of that same block. This
+ * one has nothing to pay for.
+ *
+ * The rows are **pooled** for both of `BUILD_QUEUE_ROW_LIMIT`'s reasons, and the
+ * second is not about allocation: each row's cancel button joins the HUD's busy
+ * group, `createBusyGroup` has `add` and no `remove`, and a block that built a
+ * row per delivery would grow that group without bound over a session.
+ */
+export const PENDING_DELIVERY_ROW_LIMIT = 3;
+
+/**
+ * What one pending delivery says it is, and what cancelling it gives back.
+ *
+ * Pure and exported for the reason `formatBuildQueueOrderText` is: the default
+ * Vitest environment is `node` (`docs/TESTING.md`), so nothing headless can call
+ * `createBuildPanel`, and "what the panel promises a cancellation refunds" is
+ * exactly the claim that has to be assertable over real text from a real
+ * catalog. It is also the one sentence in this panel that states a figure the
+ * simulation will move: a row that named the wrong amount would be a lie about
+ * money.
+ *
+ * The total is the *recorded* price the projection carried, never a
+ * recomputation from a quantity and a unit price -- `ProcurementSystem.cancel`
+ * refunds what was paid, so this renders what was paid.
+ *
+ * A delivery the host names no item for still gets a row -- see
+ * `HudPendingDeliveryViewModel.labelKey` -- and this is where it gets its word.
+ */
+export function formatPendingDeliveryText(t: Translate, delivery: HudPendingDeliveryViewModel, total: string): string {
+  return t(HUD_MESSAGE_KEY.buildDelivery, {
+    count: delivery.quantity,
+    material: t(delivery.labelKey ?? HUD_MESSAGE_KEY.buildDeliveryUnnamed),
+    total,
+  });
 }
 
 export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
@@ -599,12 +702,131 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   });
   buySubmit.element.classList.add('hud-build__buy-submit');
 
+  /*
+   * ---- what has been bought and has not arrived (#285) ----------------
+   *
+   * **Why it is here, inside the buy disclosure, and not in a block of its
+   * own.** The catalogue is the only block `hud.css` lets this panel take height
+   * from, ADR 0031 decision 3 already spends 45px of it on the queue block, and
+   * at 900x600 with a queue that leaves the list a 44px box over 924px of rows --
+   * one `BUILDABLE_REGISTRY` row of twenty-one on screen. A third section drawn
+   * whenever something is pending would have been a second donation out of the
+   * same donor, which is precisely what that ADR's open question 4 ("is the
+   * catalogue the right donor?") is about.
+   *
+   * So this costs the panel **nothing at all** until the player opens the
+   * disclosure, which is the same trade `buyToggle` records and the reason that
+   * row is allowed to exist. Measured on the assembled page at 900x600, Build
+   * tab, one prison, coordinates folded -- the arrival state -- with three
+   * deliveries pending and the disclosure closed: the panel is 338.1px, its body
+   * holds 291.2px in a 291.2px box, the catalogue list is 88px of a 924px list
+   * (two rows of twenty-one), and "Enter coordinates" ends 7.8px inside the fold.
+   * Every one of those figures is byte-identical to the same page with nothing
+   * bought, because this block has no box in either state.
+   *
+   * It is also where the player is looking. A pending delivery is a *purchase*,
+   * not a build order: the id it carries was minted by the press two controls
+   * above it, the money it refunds is the money that press spent, and somebody
+   * who has just bought three bricks and changed their mind is already here.
+   *
+   * **What it costs, stated rather than left to be found.** While the buy toggle
+   * is hidden the disclosure cannot be opened, so these rows are unreachable --
+   * `paintBuy` hides the toggle for a buildable nothing sells and for the removal
+   * mode, and hiding it in that mode is load-bearing (it is what gives the third
+   * button in `.hud-build__actions` its room back, on a row ADR 0022 measured a
+   * third control overflowing). A player in the removal mode leaves it to reach
+   * their money, which is one tap, and the alternative was re-opening a measured
+   * overflow.
+   */
+  const deliveriesCount = valueText('', 'hud-build__deliveries-count');
+  const deliveryList = element('div', { className: 'hud-build__delivery-list' });
+  /*
+   * `hud-build__deliveries-more` as well as `hud-build__note`, and the extra
+   * class is load-bearing for the reason `hud-build__queue-more`'s is:
+   * `.hud-build__note` is given `display: -webkit-box` under `max-height: 700px`
+   * in `hud.css` to clamp the arm hint to one line, and an author `display`
+   * beats the user agent's `[hidden] { display: none }`. Without a class to hang
+   * a rule on, `hidden` would still lay this line out at every short viewport.
+   */
+  const deliveriesMore = eyebrowText('', 'hud-build__note hud-build__deliveries-more');
+
+  /**
+   * One pooled row: what is coming, and the one control that cancels it.
+   *
+   * Pooled for both of `BUILD_QUEUE_ROW_LIMIT`'s reasons, and the second is the
+   * one that is not about allocation: each row's cancel button joins the HUD's
+   * busy group, and `createBusyGroup` has `add` and no `remove`, so a block that
+   * built a row per delivery would grow that group without bound over a session
+   * and keep every dead button in it.
+   */
+  interface DeliveryRow {
+    readonly element: HTMLElement;
+    readonly label: HTMLSpanElement;
+    readonly cancel: ActionButton;
+    /** The delivery this row currently names, or `undefined` while it is hidden. */
+    orderId: string | undefined;
+  }
+
+  const deliveryRows: readonly DeliveryRow[] = Array.from({ length: PENDING_DELIVERY_ROW_LIMIT }, (): DeliveryRow => {
+    const label = valueText('', 'hud-build__delivery-label');
+    const row: DeliveryRow = {
+      element: element('div', { className: 'hud-build__delivery-row' }),
+      label,
+      cancel: createActionButton({
+        label: t(HUD_MESSAGE_KEY.buildDeliveryCancel),
+        onActivate: () => {
+          // Read at press time and not captured at construction, for the reason
+          // the queue rows do it: the row is pooled and names whichever delivery
+          // the last publication put in it, so a captured id would cancel
+          // whatever was here two seconds ago -- and here that is a refund of
+          // the wrong amount rather than the wrong wall.
+          const { orderId } = row;
+          if (orderId === undefined) return;
+          options.onCancelPurchase(orderId);
+        },
+      }),
+      orderId: undefined,
+    };
+    row.element.append(element('div', { className: 'hud-build__delivery-text', children: [label] }), row.cancel.element);
+    row.element.hidden = true;
+    deliveryList.append(row.element);
+    return row;
+  });
+
+  const deliveriesBlock = element('div', {
+    className: 'hud-build__deliveries',
+    children: [
+      element('div', {
+        className: 'hud-build__deliveries-header',
+        children: [eyebrowText(t(HUD_MESSAGE_KEY.buildDeliveries)), deliveriesCount],
+      }),
+      deliveryList,
+      deliveriesMore,
+    ],
+  });
+  /*
+   * No initial `hidden` here: `paintDeliveries` runs once at construction, below
+   * the `panel.body.append`, and it is the single authority on whether this block
+   * has a box. A second assignment would be a line no test could fail on -- the
+   * rule `.hud-rooms__needs` records for the same shape of block.
+   */
+
   const buyRow = element('div', {
     className: 'hud-build__buy',
     children: [
       quantityField.element,
       buySubmit.element,
       eyebrowText(t(HUD_MESSAGE_KEY.buildBuyHint), 'hud-build__note'),
+      /*
+       * Last in the row, and the order is the argument. The stepper and the
+       * button are what the player opened this for; the deliveries are what they
+       * come back for. `paintBuy` scrolls the row into view when it opens, and
+       * `block: 'nearest'` aligns the row's own leading edge when the row is
+       * taller than the panel's visible box -- so the controls that buy stay
+       * where the player expects them and the rows below them are reached by the
+       * scroll the panel already performs.
+       */
+      deliveriesBlock,
     ],
   });
   buyRow.hidden = true;
@@ -670,6 +892,90 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       return;
     }
     setQuantity(quantity);
+  }
+
+  /** What has been bought and has not arrived, or `undefined` because nothing asked. */
+  let deliveries: HudPendingDeliveriesViewModel | undefined;
+
+  /**
+   * Draws what is on its way, or draws nothing.
+   *
+   * **Nothing is the common state and it must cost nothing**, exactly as for the
+   * queue block: a line saying no money is in transit would be furniture inside a
+   * disclosure the player opened in order to spend some. `hidden` rather than an
+   * empty box, because a laid-out empty block still takes its gap.
+   *
+   * Repainted on the counts cadence whether the disclosure is open or shut, and
+   * that is deliberate: the rows are what a press cancels, so they must be the
+   * last thing the simulation said and not the state of the panel when it was
+   * last opened.
+   */
+  function paintDeliveries(): void {
+    const shown = deliveries !== undefined && deliveries.total > 0 ? deliveries : undefined;
+    deliveriesBlock.hidden = shown === undefined;
+    if (shown === undefined) {
+      for (const row of deliveryRows) {
+        row.element.hidden = true;
+        row.orderId = undefined;
+      }
+      deliveriesCount.textContent = '';
+      deliveriesMore.textContent = '';
+      deliveriesMore.hidden = true;
+      delete deliveriesBlock.dataset['pending'];
+      return;
+    }
+
+    // The whole list and what all of it would refund, never the rows drawn: a
+    // header that counted its own rows would tell a player with nine purchases
+    // out that they have three, and understate the money by the same margin.
+    deliveriesCount.textContent = t(HUD_MESSAGE_KEY.buildDeliveriesCount, {
+      count: shown.total,
+      total: localizer.formatNumber(shown.refundableMinorUnits),
+    });
+    // On the block rather than on the panel, which is the whole difference
+    // between this surface and the queue's: `.hud-build[data-queued]` exists
+    // because the queue block has to be paid for out of the catalogue's floor,
+    // and nothing here has to be paid for at all. Kept as a data attribute so a
+    // test can ask how many deliveries the panel was told about without reading
+    // translated text.
+    deliveriesBlock.dataset['pending'] = String(shown.total);
+
+    for (const [index, row] of deliveryRows.entries()) {
+      const delivery = shown.deliveries[index];
+      if (delivery === undefined) {
+        row.element.hidden = true;
+        row.orderId = undefined;
+        continue;
+      }
+      row.orderId = delivery.orderId;
+      row.element.hidden = false;
+      row.label.textContent = formatPendingDeliveryText(
+        t,
+        delivery,
+        localizer.formatNumber(delivery.paidMinorUnits),
+      );
+      // Which delivery this row is aimed at, so a test can assert *which* one a
+      // control cancels rather than only that a control exists. The same job
+      // `.hud-build__queue-row`'s `data-order` does.
+      row.element.dataset['delivery'] = delivery.orderId;
+      // Three buttons reading "Cancel" are one control repeated, to a screen
+      // reader and to anything that queries by accessible name. Two deliveries
+      // of the same material and quantity do produce the same name, and that is
+      // honest rather than a defect: unlike two build orders, which sit on
+      // different tiles, two such purchases are interchangeable -- cancelling
+      // either refunds the same figure and leaves the same list.
+      row.cancel.element.setAttribute(
+        'aria-label',
+        `${t(HUD_MESSAGE_KEY.buildDeliveryCancel)}: ${row.label.textContent}`,
+      );
+    }
+
+    // How many are behind the last row, and no control to reach them: the rows
+    // are the deliveries landing soonest, so they are the ones whose refunds are
+    // about to stop being available, and the rest come into view as those land.
+    const unlisted = Math.max(0, shown.total - shown.deliveries.length);
+    deliveriesMore.textContent = unlisted === 0 ? '' : t(HUD_MESSAGE_KEY.buildDeliveriesMore, { count: unlisted });
+    deliveriesMore.hidden = unlisted === 0;
   }
 
   // ---- what is still coming (#348) ----------------------------------
@@ -1003,6 +1309,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   paintArmed();
   paintBuy();
   paintQueue();
+  paintDeliveries();
 
   function readSelection(): BuildPanelIntent | undefined {
     const buildable = selectedBuildable();
@@ -1046,7 +1353,12 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     // the numeric route's submit, the buy button, and one cancel per pooled
     // queue row. The rows are pooled precisely so that this list is fixed at
     // mount -- the HUD's busy group has `add` and no `remove`.
-    controls: [submit.element, buySubmit.element, ...queueRows.map((row) => row.cancel.element)],
+    controls: [
+      submit.element,
+      buySubmit.element,
+      ...queueRows.map((row) => row.cancel.element),
+      ...deliveryRows.map((row) => row.cancel.element),
+    ],
     submitControl: submit.element,
     purchaseControl: buySubmit.element,
     getSelection: readSelection,
@@ -1057,6 +1369,10 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       queue = next;
       paintQueue();
     },
+    setPendingDeliveries(next: HudPendingDeliveriesViewModel | undefined): void {
+      deliveries = next;
+      paintDeliveries();
+    },
     setVisible(visible: boolean): void {
       panel.element.hidden = !visible;
       // The queue goes with the tab. Nothing refreshes it from another tab --
@@ -1066,6 +1382,13 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       if (!visible && queue !== undefined) {
         queue = undefined;
         paintQueue();
+      }
+      // And the deliveries, for the same reason and with money at stake: nothing
+      // refreshes them from another tab, so a list left behind would be rows
+      // promising refunds that may already have been delivered.
+      if (!visible && deliveries !== undefined) {
+        deliveries = undefined;
+        paintDeliveries();
       }
       // Leaving the tab must hand the pointer back to the camera. A tool that
       // stayed armed behind a hidden panel would swallow every click on a

@@ -1009,6 +1009,98 @@
    being beaten is shared. */
 .hud-build__queue-more[hidden] { display: none; }
 
+/*
+ * What has been bought and has not arrived (#285), inside the buy disclosure.
+ *
+ * **There is no rule here that pays for it, and that is the point.** The queue
+ * block above had to buy its 45px out of `--hud-build-catalogue-floor`, and
+ * ADR 0031's own open question 4 asks whether the catalogue should go on being
+ * the donor -- at 900x600 with a queue that list is a 44px box over 924px of
+ * rows, which is one row of twenty-one. This block lives inside `.hud-build__buy`, which has no box at all
+ * until the player opens the disclosure, so the panel's arrival height is
+ * untouched and nothing is donated: measured on the assembled page at 900x600
+ * with three deliveries pending and the disclosure closed, the panel is 338.1px
+ * with 291.2px of content in a 291.2px box and the catalogue list is the same
+ * 88px it is with nothing bought.
+ *
+ * `:not([hidden])` for the reason `.hud-build__buy` carries it: an author
+ * `display: flex` beats the `display: none` a user agent gives `[hidden]`, so an
+ * unguarded rule here would lay the block out in every state and put the
+ * disclosure permanently over its box.
+ *
+ * A hairline above it, which `.hud-rooms__needs` also has: it is the same kind
+ * of thing -- a readout of what the simulation found, folded away when there is
+ * nothing to report -- and the line is what separates "what you are buying" from
+ * "what you already bought" inside one open row.
+ */
+.hud-build__deliveries:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hud-build-map-gutter);
+  padding-top: var(--hud-build-map-gutter);
+  border-top: var(--hairline) solid var(--border-hairline);
+}
+
+/* Label left, figure right: the shape `.hud-rooms__needs-header` uses, because
+   it is the same kind of line. */
+.hud-build__deliveries-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+/* The figure is money in transit, not a fault, so it takes the muted treatment
+   `.hud-build__queue-count` has rather than the warning tone the room needs
+   readout uses. `tabular-nums` so it does not jitter as deliveries land. */
+.hud-build__deliveries-count {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-subtle);
+}
+
+.hud-build__delivery-list:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hud-build-map-gutter);
+}
+
+/* One row: what is coming, and the control that cancels it. `align-items:
+   center` and not `baseline`, for `.hud-build__queue-row`'s reason -- the
+   right-hand child is a `--tap-target` button and the left is text. */
+.hud-build__delivery-row:not([hidden]) {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* `min-width: 0` is load-bearing rather than defensive, exactly as on the queue
+   row: a flex item's automatic minimum size is its content, so without it the
+   row's minimum width is the full unwrapped sentence beside a button, and at
+   375px the row overflows the panel horizontally instead of wrapping. */
+.hud-build__delivery-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+/* Wraps rather than truncates: the refund figure is at the end of the sentence,
+   and it is the half the player is deciding on. */
+.hud-build__delivery-label {
+  color: var(--text-heading);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* Never shrinks. The sentence beside it wraps instead, which is what the
+   `min-width: 0` above buys. */
+.hud-build__delivery-row > .ui-action { flex: 0 0 auto; }
+
+/* Same trap as `.hud-build__queue-more[hidden]`, closed the same way: the line
+   also carries `.hud-build__note`, which the `max-height: 700px` block at the
+   foot of this file gives `display: -webkit-box`. */
+.hud-build__deliveries-more[hidden] { display: none; }
+
 /* A readout of where the wall will land -- never an input. */
 .hud-build__target {
   display: flex;

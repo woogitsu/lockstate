@@ -222,6 +222,20 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
       "Type-only: `PrisonerPopulationCountsViewModel` from `src/simulation/presentation/prisoner-projection`. The seventh of the translators outside `src/ui/hud/` and the third that reads a *pulled* read model, so it is `simulation-build-queue.ts`'s entry above one projection over: it names the view-model shape `hud/prisoner-population` answers with and turns it into `HudIntakePipelineViewModel`. The stage union it classifies is read off that same view-model type rather than from `src/simulation/prisoners/components.ts`, deliberately, so this module's one simulation dependency stays on the presentation layer instead of reaching into the prisoner runtime. Erased, so no simulation code runs on its account -- the projection executes in the worker. A `value` import appearing here would mean the pipeline had started being counted on the main thread from records it does not own, which is the second source of truth `AGENTS.md` boundary 1 forbids.",
   },
   {
+    file: 'src/ui/simulation-pending-deliveries.ts',
+    tree: 'content',
+    kind: 'type-only',
+    reason:
+      "Type-only: `LocalizationKey` from `src/content/localization`, to type the `ItemLabelLookup` the composition root hands it. The same erased naming-of-a-key-type `simulation-build-queue.ts`'s entry above makes, and for the same reason: what an item is *called* lives in `src/content/item-catalog.ts`, and this module is handed the lookup rather than the catalogue -- so a delivery of something unnamed reaches the panel as a row with no `labelKey` instead of this module resolving one.",
+  },
+  {
+    file: 'src/ui/simulation-pending-deliveries.ts',
+    tree: 'simulation',
+    kind: 'type-only',
+    reason:
+      "Type-only: `PendingDeliveriesViewModel` from `src/simulation/presentation/procurement-projection`. The eighth of the translators outside `src/ui/hud/` and the fourth that reads a *pulled* read model, so it is `simulation-build-queue.ts`'s entry above one projection over: it names the view-model shape `hud/pending-deliveries` answers with and turns it into `HudPendingDeliveriesViewModel`. Erased, so no simulation code runs on its account -- the projection executes in the worker. A `value` import here would be worse than anywhere else in this manifest: it would mean money in transit had started being totalled on the main thread from deliveries it does not own, and every row it produced carries a purchase id that a press *refunds* (#285).",
+  },
+  {
     file: 'src/ui/simulation-projections.ts',
     tree: 'simulation',
     kind: 'value',
@@ -324,6 +338,7 @@ describe('UI orchestration boundaries', () => {
       'src/ui/simulation-commands.ts',
       'src/ui/simulation-counts.ts',
       'src/ui/simulation-intake.ts',
+      'src/ui/simulation-pending-deliveries.ts',
       'src/ui/simulation-projections.ts',
       'src/ui/simulation-room-needs.ts',
       'src/ui/simulation-zoning.ts',

@@ -1,5 +1,5 @@
 import type { BuildOrderFailReason } from '../construction/build-order';
-import type { PurchaseRefusalReason } from '../economy/procurement';
+import type { PurchaseCancelRefusalReason, PurchaseRefusalReason } from '../economy/procurement';
 import type { PlaceObjectRefusalReason, RemoveObjectRefusalReason } from '../objects/object-placement-service';
 import type { AdmitPrisonerRefusalReason } from '../prisoners/prisoner-operations-runtime';
 import type { RefusalReason, SimulationRefusal } from '../protocol/types';
@@ -203,6 +203,33 @@ export const PURCHASE_REFUSAL_REASONS: Readonly<Record<PurchaseRefusalReason, Re
   'insufficient-funds': 'purchase.insufficient-funds',
   'invalid-quantity': 'purchase.invalid-quantity',
   'unknown-material': 'purchase.unknown-material',
+};
+
+/**
+ * `PurchaseCancelRefusalReason`, mapped onto the wire's. Exhaustive for the same
+ * reason as above (#285).
+ *
+ * **One entry, and the table exists anyway**, for exactly the argument
+ * `REMOVE_OBJECT_REFUSAL_REASONS` records: the table is what makes a second
+ * reason a compile error instead of a silent `undefined` on the wire, and
+ * `ProcurementSystem.cancel` gained its named union rather than keeping a
+ * boolean so that this mapping has something to be exhaustive over.
+ *
+ * `not-pending` is the one thing a cancellation can be refused for and it is a
+ * refusal the player must be told about, which is why the credit path stopped
+ * answering `false`. The delivery has landed (or was never here), so the
+ * treasury did not move -- and a control that reported nothing would be a Cancel
+ * that appeared to refund money and did not. That is the same failure #82 and
+ * #207 are about, on the one control in the interface whose whole subject is
+ * money coming back.
+ *
+ * Namespaced `cancel-purchase.*` rather than as a fifth member of `purchase.*`,
+ * which is the fifth demonstration of why these ids are namespaced: buying and
+ * un-buying are opposite gestures on the same treasury, and somebody who
+ * pressed Cancel must not read that the materials were not ordered.
+ */
+export const PURCHASE_CANCEL_REFUSAL_REASONS: Readonly<Record<PurchaseCancelRefusalReason, RefusalReason>> = {
+  'not-pending': 'cancel-purchase.not-pending',
 };
 
 /**

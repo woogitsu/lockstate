@@ -216,11 +216,13 @@ describe('money buys materials and a wall gets built (#89, #96)', () => {
 
   it('refunds exactly what a cancelled delivery cost, and stops it arriving', () => {
     /*
-     * `cancel` has no caller in `src/` yet -- there is no cancel-purchase
-     * command -- and it is tested rather than left bare because the mutation
-     * pass found it completely unguarded: replacing the refund with
-     * `credit(0)` passed everything. An untested public method on a system
-     * that spends money is worse than one that does not exist.
+     * `cancel` **now has a caller in `src/`** -- `CancelMaterialPurchase`
+     * reaches it through `createSessionCommandHandler`, and the Build panel's
+     * buy disclosure is what aims it (#285). This case predates that and stays
+     * as the unit-level guard on the arithmetic: the mutation pass found the
+     * refund completely unguarded, and replacing it with `credit(0)` passed
+     * everything. `tests/integration/economy-purchase-cancellation.test.ts`
+     * drives the same refund through the real command pipeline instead.
      *
      * The refund is the *recorded* `paidMinorUnits`, never a recomputation
      * from the catalog. Recomputing would refund today's price for a purchase
@@ -235,7 +237,12 @@ describe('money buys materials and a wall gets built (#89, #96)', () => {
     const spent = before - runtime.treasury.balanceMinorUnits;
     expect(spent, 'the fixture must actually have spent something').toBeGreaterThan(0);
 
-    expect(runtime.procurement.cancel('buy-1')).toBe(true);
+    // 5 bricks at 40 is 200, and the outcome states what came back rather than
+    // leaving the caller to infer it from a balance -- which is what
+    // `session-commands.ts` needs in order to tell a refused cancellation from a
+    // silent one.
+    expect(runtime.procurement.cancel('buy-1')).toEqual({ ok: true, refundedMinorUnits: 200 });
+    expect(spent, 'the fixture must have spent exactly the catalog price of five bricks').toBe(200);
     expect(runtime.treasury.balanceMinorUnits, 'a cancellation must refund exactly what was paid').toBe(before);
     expect(runtime.procurement.pendingDeliveries).toHaveLength(0);
 
@@ -245,7 +252,10 @@ describe('money buys materials and a wall gets built (#89, #96)', () => {
     for (let step = 0; step < PROCUREMENT_DELIVERY_DELAY_TICKS * 2; step += 1) runtime.kernel.step();
     expect(materials.quantityOf('item.brick')).toBe(0);
 
-    expect(runtime.procurement.cancel('buy-1'), 'cancelling twice must not refund twice').toBe(false);
+    expect(runtime.procurement.cancel('buy-1'), 'cancelling twice must not refund twice').toEqual({
+      ok: false,
+      reason: 'not-pending',
+    });
     expect(runtime.treasury.balanceMinorUnits).toBe(before);
   });
 

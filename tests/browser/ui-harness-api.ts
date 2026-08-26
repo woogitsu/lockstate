@@ -1,4 +1,9 @@
-import type { HudBuildQueueViewModel, HudRoomNeedsViewModel, HudViewModel } from '../../src/ui/hud';
+import type {
+  HudBuildQueueViewModel,
+  HudPendingDeliveriesViewModel,
+  HudRoomNeedsViewModel,
+  HudViewModel,
+} from '../../src/ui/hud';
 
 /**
  * The contract between the in-page UI harness (`ui-harness.ts`) and
@@ -191,6 +196,8 @@ export interface BuildProbe {
   readonly texts: readonly string[];
   /** The queue fold (#348) -- see `BuildQueueProbe`. */
   readonly queue: BuildQueueProbe;
+  /** What has been bought and has not arrived (#285) -- see `PendingDeliveriesProbe`. */
+  readonly deliveries: PendingDeliveriesProbe;
 }
 
 /**
@@ -238,6 +245,43 @@ export interface BuildQueueRowProbe {
    * Both, and neither alone is enough: `offsetParent` is `null` for a node inside
    * a `display: none` ancestor, and a node can have one and still be 0x0.
    */
+  readonly cancelBox: LayoutBox | null;
+  readonly cancelHasOffsetParent: boolean;
+  readonly cancelDisabled: boolean;
+}
+
+/**
+ * The pending-delivery rows inside the Build panel's buy disclosure (#285), and
+ * every field here is a `getClientRects()` or `offsetParent` answer rather than
+ * an attribute read.
+ *
+ * The same discipline `BuildQueueProbe` carries, for a sharper case: these
+ * controls promise *money back*, and the four-row layout this surface was
+ * measured against put the fourth Cancel 7.9px below the panel's visible bottom
+ * with a full 78x44 box and an `offsetParent` -- laid out, hit-testable, and off
+ * screen. Only rectangles can tell that apart from a working control.
+ */
+export interface PendingDeliveriesProbe {
+  /** Whether the browser gave the block a box at all. `false` while nothing is pending, by design. */
+  readonly blockLaidOut: boolean;
+  /** `data-pending` on the block: how many deliveries the panel was told about, as a string. */
+  readonly pending: string | null;
+  /** The header's figure -- the whole list and what it would refund, never the row count. */
+  readonly countText: string;
+  readonly blockBox: LayoutBox | null;
+  /** One entry per row the browser actually laid out, in draw order. */
+  readonly rows: readonly PendingDeliveryRowProbe[];
+  /** The "and N more" line, empty when every pending delivery has a row. */
+  readonly moreText: string;
+}
+
+export interface PendingDeliveryRowProbe {
+  /** `data-delivery`: *which* purchase this row's control refunds. */
+  readonly orderId: string;
+  /** The rendered sentence: how much of what, and what cancelling it gives back. */
+  readonly labelText: string;
+  /** The cancel button's accessible name, which must name what the row says. */
+  readonly cancelAccessibleName: string;
   readonly cancelBox: LayoutBox | null;
   readonly cancelHasOffsetParent: boolean;
   readonly cancelDisabled: boolean;
@@ -674,6 +718,21 @@ export interface LockstateUiHarness {
   toggleBuildQueue(): boolean;
   /** Presses the cancel control on the row aimed at `orderId`. Returns false when no such row is laid out. */
   pressBuildQueueCancel(orderId: string): boolean;
+  /**
+   * Publishes what has been bought and has not arrived, which in the real app is
+   * read over `simulation/request-projection` by
+   * `src/ui/simulation-pending-deliveries.ts` (#285).
+   *
+   * `queue` is optional and reported alongside, because the two surfaces share a
+   * panel and their heights interact: a queue takes 45px out of the catalogue's
+   * floor, and the disclosure below it has to still fit.
+   */
+  reportPendingDeliveries(
+    deliveries: HudPendingDeliveriesViewModel | undefined,
+    queue?: HudBuildQueueViewModel,
+  ): void;
+  /** Presses the cancel control on the delivery row aimed at `orderId`. Returns false when no such row is laid out. */
+  pressPendingDeliveryCancel(orderId: string): boolean;
   roomsProbe(): RoomsProbe;
   roomsLayoutProbe(): RoomsLayoutProbe;
   buildLayoutProbe(): BuildLayoutProbe;

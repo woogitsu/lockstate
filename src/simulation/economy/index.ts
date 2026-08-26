@@ -11,6 +11,8 @@ export {
   ProcurementSystem,
   type PendingDelivery,
   type ProcurementSnapshot,
+  type PurchaseCancelOutcome,
+  type PurchaseCancelRefusalReason,
   type PurchaseOutcome,
   type PurchaseRefusalReason,
 } from './procurement';

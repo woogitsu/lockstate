@@ -18,7 +18,7 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  *
  * ## What it found on the first run, and what it has moved since
  *
- * Six commands were declared. **One had a producer.** (There are eleven now:
+ * Six commands were declared. **One had a producer.** (There are twelve now:
  * `UnzoneRoom` arrived with the Rooms tab, `HireStaff` with the Staff panel,
  * `AdmitPrisoner` with the Intake panel, and `PlaceObject` and `RemoveObject`
  * with the object tool's two modes, and each arrived with a producer.)
@@ -30,7 +30,7 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  * cancel, a zone, a purchase or an undo, and no other module built a
  * command object at all.
  *
- * ## What it reads today: eleven of eleven
+ * ## What it reads today: twelve of twelve
  *
  * `Undo` and `Redo` gained producers with #261's step 6, and their entries came
  * out of the list below in the same change -- which is the direction this file
@@ -121,7 +121,20 @@ import { simulationCommandSchema } from '../../src/simulation/protocol/commands'
  * press on a row into the command. The entry is deleted and the count below moved
  * with it, in the same change, which is what this file exists to force.
  *
- * The count is measured, not carried: **eleven producers, all in `src/main.ts`,
+ * `CancelMaterialPurchase` is the twelfth and it landed the way the last five
+ * did -- with its producer, in one change (#285) -- but it is worth naming
+ * separately because of what it made reachable one layer down. Its consumer,
+ * `ProcurementSystem.cancel`, was in exactly the position `GuardRoster.hire` had
+ * been in: complete, idempotent, snapshotted, restored, tested, and with **every
+ * caller in the repository in a test**. `grep -rn "procurement\.cancel" src/`
+ * found nothing at all. So the one thing in the economy that credits the
+ * treasury besides the state's income line could not be produced by any session
+ * a player could drive, and money spent on a delivery they had changed their mind
+ * about was unrecoverable. The blocker was this file's own subject twice over:
+ * no command named a purchase, and no read model carried a purchase id to the
+ * thread that would have had to name one.
+ *
+ * The count is measured, not carried: **twelve producers, all in `src/main.ts`,
  * and no command with none.**
  *
  * ## What counts as a producer
@@ -197,9 +210,11 @@ const AWAITING_PRODUCER: Readonly<Record<string, string>> = {
   // a button that could not name an order would have been a second, worse undo.
   //
   // An empty list here is not a state to defend -- it is the state this gate
-  // exists to bring about. A twelfth command added with no producer belongs here
-  // with a reason, and fails the count below until it is either wired or written
-  // down.
+  // exists to bring about. The twelfth command arrived and never touched this
+  // list, which is the only way a new one should land: `CancelMaterialPurchase`
+  // came with its producer, its consumer and its read model in one change (#285).
+  // A thirteenth added with no producer belongs here with a reason, and fails the
+  // count below until it is either wired or written down.
 };
 
 function collectTypeScriptFiles(directory: string): readonly string[] {
@@ -244,7 +259,7 @@ describe('every declared simulation command either has a producer or is accounte
     // where it is -- all eleven in `src/main.ts`, which is the composition root
     // and the only place in `src/` that builds a command object.
     expect(producerSources.length).toBeGreaterThan(50);
-    expect(COMMAND_TYPES.length).toBe(11);
+    expect(COMMAND_TYPES.length).toBe(12);
 
     expect(producersOf('PlaceBuildOrder')).toEqual(['src/main.ts']);
     expect(producersOf('PurchaseMaterials')).toEqual(['src/main.ts']);
@@ -269,6 +284,10 @@ describe('every declared simulation command either has a producer or is accounte
     // *read model* rather than a control before it could exist, and the last to
     // get a producer -- see this file's header.
     expect(producersOf('CancelBuildOrder')).toEqual(['src/main.ts']);
+    // And the twelfth, which is the one that made an unreachable *credit path*
+    // reachable rather than an unreachable control (#285): the only caller of
+    // `ProcurementSystem.cancel` in the repository was a test.
+    expect(producersOf('CancelMaterialPurchase')).toEqual(['src/main.ts']);
     const main = producerSources.find((source) => source.where === 'src/main.ts');
     expect(main, 'the production producers of a simulation command are no longer where this gate looks for them').toBeDefined();
     expect(main!.text).toContain(`type: 'PlaceBuildOrder'`);
@@ -282,6 +301,7 @@ describe('every declared simulation command either has a producer or is accounte
     expect(main!.text).toContain(`type: 'PlaceObject'`);
     expect(main!.text).toContain(`type: 'RemoveObject'`);
     expect(main!.text).toContain(`type: 'CancelBuildOrder'`);
+    expect(main!.text).toContain(`type: 'CancelMaterialPurchase'`);
   });
 
   it('separates producing from consuming, so a handler branch is not mistaken for a dispatch', () => {
@@ -350,7 +370,7 @@ describe('every declared simulation command either has a producer or is accounte
     ).toEqual([]);
   });
 
-  it('measures eleven produced and none unproduced, which is the first time this file has been able to say so', () => {
+  it('measures twelve produced and none unproduced, which this file has now been able to say twice', () => {
     // The denominator, stated so the gate reports a fact rather than only
     // guarding one, and exact in both directions. A command that quietly
     // stopped being reachable would otherwise only have to be added to the
@@ -367,14 +387,17 @@ describe('every declared simulation command either has a producer or is accounte
     // added `PlaceObject` -- also with its producer, from two routes: the
     // object tool's world gesture and the Build panel's numeric fields -- one
     // and ten once phase 3 added `RemoveObject` with the same two routes in
-    // their removing mode, and **zero and eleven** once the Build panel's queue
-    // block gave `CancelBuildOrder` the only thing it had ever been short of: a
-    // read model that names the pending orders, so a control can aim at one.
+    // their removing mode, **zero and eleven** once the Build panel's queue
+    // block gave `CancelBuildOrder` the only thing it had ever been short of -- a
+    // read model that names the pending orders, so a control can aim at one --
+    // and **zero and twelve** once `CancelMaterialPurchase` arrived with its
+    // producer and gave the same treatment to a purchase (#285), which is what
+    // finally put a caller in `src/` in front of `ProcurementSystem.cancel`.
     // Both numbers move in the same change as a producer, which is the point of
     // asserting the count as well as the list: neither can be edited alone and
-    // stay green. Note the denominator moves too, so a twelfth command added
+    // stay green. Note the denominator moves too, so a thirteenth command added
     // with no producer fails here as well as failing the accounting above.
     expect(unproducedTypes.length).toBe(0);
-    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(11);
+    expect(COMMAND_TYPES.length - unproducedTypes.length).toBe(12);
   });
 });

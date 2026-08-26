@@ -17,6 +17,7 @@ import {
   type HudRoomArea,
   type HudRoomGesture,
   type HudBuildQueueViewModel,
+  type HudPendingDeliveriesViewModel,
   type HudRoomNeedsViewModel,
   type HudRoomsViewModel,
   type HudViewModel,
@@ -37,6 +38,8 @@ import type {
   IntakeProbe,
   BuildQueueProbe,
   BuildQueueRowProbe,
+  PendingDeliveriesProbe,
+  PendingDeliveryRowProbe,
   LayoutBox,
   LayoutProbe,
   LockstateUiHarness,
@@ -503,6 +506,43 @@ function buildQueueProbe(): BuildQueueProbe {
     }),
     moreText:
       [...(section?.querySelectorAll<HTMLElement>('.hud-build__note') ?? [])]
+        .filter((line) => line.getClientRects().length > 0)
+        .map((line) => (line.textContent ?? '').trim())
+        .find((text) => text.length > 0) ?? '',
+  };
+}
+
+/**
+ * What the buy disclosure says is on its way (#285).
+ *
+ * Rows are filtered by `getClientRects()` and not by presence, for the reason
+ * `buildQueueProbe` filters its own: the rows are pooled, so the ones with no
+ * delivery in them are `hidden` and still in the DOM, and a probe that reported
+ * them would count three rows for a list of one.
+ */
+function pendingDeliveriesProbe(): PendingDeliveriesProbe {
+  const block = document.querySelector<HTMLElement>('.hud-build__deliveries');
+  const rows = [...document.querySelectorAll<HTMLElement>('.hud-build__delivery-row')].filter(
+    (row) => row.getClientRects().length > 0,
+  );
+  return {
+    blockLaidOut: block !== null && block.getClientRects().length > 0,
+    pending: block?.dataset['pending'] ?? null,
+    countText: block?.querySelector<HTMLElement>('.hud-build__deliveries-count')?.textContent?.trim() ?? '',
+    blockBox: layoutBoxOf(block),
+    rows: rows.map((row): PendingDeliveryRowProbe => {
+      const cancel = row.querySelector<HTMLButtonElement>('.ui-action');
+      return {
+        orderId: row.dataset['delivery'] ?? '',
+        labelText: row.querySelector<HTMLElement>('.hud-build__delivery-label')?.textContent?.trim() ?? '',
+        cancelAccessibleName: cancel?.getAttribute('aria-label') ?? '',
+        cancelBox: layoutBoxOf(cancel),
+        cancelHasOffsetParent: cancel !== null && cancel.offsetParent !== null,
+        cancelDisabled: cancel?.disabled ?? true,
+      };
+    }),
+    moreText:
+      [...(block?.querySelectorAll<HTMLElement>('.hud-build__deliveries-more') ?? [])]
         .filter((line) => line.getClientRects().length > 0)
         .map((line) => (line.textContent ?? '').trim())
         .find((text) => text.length > 0) ?? '',
@@ -1003,6 +1043,7 @@ window.lockstateUiHarness = {
         .map((node) => (node.textContent ?? '').trim())
         .filter((text) => text.length > 0),
       queue: buildQueueProbe(),
+      deliveries: pendingDeliveriesProbe(),
     };
   },
 
@@ -1247,6 +1288,37 @@ window.lockstateUiHarness = {
       ...BASE_VIEW_MODEL,
       ...(queue === undefined ? {} : { buildQueue: queue }),
     });
+  },
+
+  /**
+   * Publishes what has been bought and has not arrived (#285), optionally beside
+   * a queue, because the two surfaces share a panel and their heights interact.
+   *
+   * Spread rather than passed as `undefined`, so "nothing has been asked" is an
+   * absent property: `exactOptionalPropertyTypes` is on, and the panel branches
+   * on the field being there at all.
+   */
+  reportPendingDeliveries(
+    deliveries: HudPendingDeliveriesViewModel | undefined,
+    queue?: HudBuildQueueViewModel,
+  ): void {
+    hud?.update({
+      ...BASE_VIEW_MODEL,
+      ...(deliveries === undefined ? {} : { pendingDeliveries: deliveries }),
+      ...(queue === undefined ? {} : { buildQueue: queue }),
+    });
+  },
+
+  pressPendingDeliveryCancel(orderId: string): boolean {
+    const row = document.querySelector<HTMLElement>(`.hud-build__delivery-row[data-delivery="${orderId}"]`);
+    const cancel = row?.querySelector<HTMLButtonElement>('.ui-action');
+    if (cancel === undefined || cancel === null) return false;
+    // `offsetParent`, not the attribute: the row sits inside the buy disclosure,
+    // which carries `hidden` while closed, and a press on a control the player
+    // cannot see must not count as reaching it.
+    if (cancel.offsetParent === null) return false;
+    cancel.click();
+    return true;
   },
 
   toggleBuildQueue(): boolean {

@@ -38,6 +38,7 @@ const REFUSAL_LABEL_KEYS: Readonly<Record<RefusalReason, LocalizationKey>> = {
   'build.unbuildable-terrain': 'hud.alert.refusal.build.unbuildable-terrain',
   'build.unowned-land': 'hud.alert.refusal.build.unowned-land',
   'build.water-blocked': 'hud.alert.refusal.build.water-blocked',
+  'cancel-purchase.not-pending': 'hud.alert.refusal.cancel-purchase.not-pending',
   'hire.insufficient-funds': 'hud.alert.refusal.hire.insufficient-funds',
   'hire.roster-full': 'hud.alert.refusal.hire.roster-full',
   'hire.unknown-role': 'hud.alert.refusal.hire.unknown-role',
