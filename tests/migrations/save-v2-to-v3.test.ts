@@ -243,7 +243,9 @@ describe('the V3 simulation section is validated, not trusted', () => {
         tunnels: [],
         watchedSectorIds: [],
         trigger: { metrics: { incidentsTriggered: 0, riotsTriggered: 0, retaliationsTriggered: 0 }, sequence: 0 },
-        response: { metrics: { incidentsResolved: 0, incidentsLapsed: 0, respondersDispatched: 0, routeFailures: 0 } },
+        // `responses` is required from V6 on (#352): at V6 an empty array means
+        // "no response is in flight", which is what this minimal section describes.
+        response: { metrics: { incidentsResolved: 0, incidentsLapsed: 0, respondersDispatched: 0, routeFailures: 0 }, responses: [] },
       },
     };
     mutate(simulation);

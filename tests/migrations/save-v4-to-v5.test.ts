@@ -5,6 +5,7 @@ import {
   migrateSaveEnvelopeV2ToV3,
   migrateSaveEnvelopeV3ToV4,
   migrateSaveEnvelopeV4ToV5,
+  migrateSaveEnvelopeV5ToV6,
 } from '../../src/persistence/save-migrations';
 import {
   SAVE_SCHEMA_VERSION,
@@ -95,10 +96,12 @@ function v4EnvelopeWithARoom(): SaveEnvelopeV4 {
   const bundle = captureSessionSnapshot(runtime);
   if (bundle.simulation === undefined) throw new Error('a captured session must carry a simulation section');
 
-  // The two things about a current capture that are newer than V4: the objects
-  // section did not exist, and a room instance carried a capacity and a
-  // capability list instead of a rectangle.
+  // The three things about a current capture that are newer than V4: the
+  // objects section did not exist, a room instance carried a capacity and a
+  // capability list instead of a rectangle, and `incidents.response` carried
+  // metrics only (`responses` arrived with V6, #352).
   const { objects: _objects, ...simulation } = bundle.simulation;
+  const { responses: _responses, ...responseWithoutRecords } = bundle.simulation.incidents.response;
   const payload = {
     kernel: bundle.kernel,
     world: bundle.world,
@@ -106,6 +109,7 @@ function v4EnvelopeWithARoom(): SaveEnvelopeV4 {
     ...(bundle.entities === undefined ? {} : { entities: bundle.entities }),
     simulation: {
       ...simulation,
+      incidents: { ...bundle.simulation.incidents, response: responseWithoutRecords },
       prisoners: {
         ...bundle.simulation.prisoners,
         roomInstanceDefinitions: bundle.simulation.prisoners.roomInstanceDefinitions.map((instance) => ({
@@ -180,7 +184,10 @@ describe('save-schema V4 -> V5 migration', () => {
   it('recomputes the values it dropped, and lands on the same ones', () => {
     // The other half of "lossless": what the restore *writes* for a migrated row
     // equals what V4 carried. Zero and empty in, zero and empty out.
-    const migrated = migrateSaveEnvelopeV4ToV5(v4EnvelopeWithARoom());
+    // Walked to the *current* version before restoring, not just to V5: the
+    // restore path only ever receives a current-version payload, and since V6
+    // (#352) a V5 one is missing a field it requires.
+    const migrated = migrateSaveEnvelopeV5ToV6(migrateSaveEnvelopeV4ToV5(v4EnvelopeWithARoom()));
     const restored = restoreSimulationRuntime(migrated.payload as unknown as SessionSnapshotBundle, 0).runtime;
 
     expect(restored.prisoners.roomInstances.getById(CELL_INSTANCE_ID)).toMatchObject({
@@ -238,7 +245,12 @@ describe('save-schema V4 -> V5 migration', () => {
       expect(result).toMatchObject({ ok: true, migrated: true });
       if (!result.ok) return;
       expect(result.value.saveSchemaVersion).toBe(SAVE_SCHEMA_VERSION);
-      expect(SAVE_SCHEMA_VERSION).toBe(5);
+      // V6 since #352, and pinned rather than deleted for the reason the same
+      // assertion is pinned in `economy-state-income-persistence.test.ts`: what
+      // it guards is that a bump has a *reason*. This one's is that an in-flight
+      // incident response is now carried, so a restore can release the guards
+      // and the lockdown it claimed.
+      expect(SAVE_SCHEMA_VERSION).toBe(6);
     }
   });
 

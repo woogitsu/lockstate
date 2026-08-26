@@ -41,6 +41,29 @@ interface ResponseRecord {
   arrivedGuardIds: Set<EntityId>;
   containmentStartedAtTick: number | undefined;
   lockdownApplied: boolean;
+  /**
+   * Whether this record has issued its travel requests against the *current*
+   * `NavigationSystem` instance. Not persisted, and deliberately so: a request
+   * id names a slot in a queue that a restored session never received, so a
+   * restored record starts `false` and re-issues on its first scheduled
+   * update. `SearchSystem`'s `travelInFlight` is the same field for the same
+   * reason.
+   */
+  travelIssued: boolean;
+}
+
+/**
+ * One in-flight response, as a save carries it. The live record's
+ * `pathRequestIdsByGuard` is absent (see `travelIssued`) and `travelIssued`
+ * itself is absent (it is a statement about the live navigation instance, not
+ * about the response), so what remains is exactly what `releaseResponse`
+ * needs in order to return what the response claimed.
+ */
+export interface EncodedIncidentResponse {
+  readonly guardIds: readonly EntityId[];
+  readonly arrivedGuardIds: readonly EntityId[];
+  readonly containmentStartedAtTick?: number;
+  readonly lockdownApplied: boolean;
 }
 
 function sameTile(a: TilePosition, b: TilePosition): boolean {
@@ -128,15 +151,35 @@ export class IncidentResponseSystem implements SystemRegistration {
     for (const guardId of guardIds) this.guards.setDeploymentPhase(guardId, 'on-search');
     this.respondersDispatched += guardIds.length;
 
-    const record: ResponseRecord = { incidentId: incident.id, guardIds, pathRequestIdsByGuard: new Map(), arrivedGuardIds: new Set(), containmentStartedAtTick: undefined, lockdownApplied: false };
+    const record: ResponseRecord = { incidentId: incident.id, guardIds, pathRequestIdsByGuard: new Map(), arrivedGuardIds: new Set(), containmentStartedAtTick: undefined, lockdownApplied: false, travelIssued: false };
 
     if (incident.severity >= this.policy.lockdownSeverityThreshold) {
       this.sectors.setControlState(incident.sectorId, 'lockdown');
       record.lockdownApplied = true;
     }
 
+    this.beginTravelToIncident(record, incident, tick);
+
+    this.responses.set(incident.id, record);
+    this.incidents.transition(incident.id, 'notified', tick);
+  }
+
+  /**
+   * Routes every responder that has not already arrived to the incident's
+   * post tile, and marks the record as having live requests.
+   *
+   * Called at dispatch and again on the first scheduled update after a
+   * restore, which is what makes the second call the whole cost of a restore
+   * for a response that was mid-travel: the requests a save cannot carry are
+   * re-issued rather than reconstructed. A responder already standing on the
+   * destination needs no request and is counted as arrived immediately -- the
+   * same `sameTile` short-circuit `SearchSystem.beginTravelToCurrentTarget`
+   * makes, which is why a restored `'responding'` response re-issues nothing.
+   */
+  private beginTravelToIncident(record: ResponseRecord, incident: IncidentRecord, tick: number): void {
     const destination = this.incidentTile(incident);
-    for (const guardId of guardIds) {
+    for (const guardId of record.guardIds) {
+      if (record.arrivedGuardIds.has(guardId)) continue;
       const currentTile = this.guards.getTile(guardId);
       if (sameTile(currentTile, destination)) {
         record.arrivedGuardIds.add(guardId);
@@ -147,9 +190,7 @@ export class IncidentResponseSystem implements SystemRegistration {
       this.navigation.requestRoute(requestId, currentTile, destination, this.routeContextResolver(this.guards.getStaffRoleId(guardId)), 2, tick);
       record.pathRequestIdsByGuard.set(guardId, requestId);
     }
-
-    this.responses.set(incident.id, record);
-    this.incidents.transition(incident.id, 'notified', tick);
+    record.travelIssued = true;
   }
 
   private isPastDeadline(incident: IncidentRecord, tick: number): boolean {
@@ -181,13 +222,23 @@ export class IncidentResponseSystem implements SystemRegistration {
   private advanceResponse(incident: IncidentRecord, tick: number): void {
     const record = this.responses.get(incident.id);
     if (record === undefined) {
-      // Restored without live response bookkeeping -- re-dispatch from 'active' is impossible
-      // (the lifecycle is forward-only), so treat the response as lost and let the deadline decide.
+      // An open incident with no response record at all. Since V6 a save carries
+      // the record (see `getSnapshot`), so this is no longer the restore path it
+      // used to be -- it is the residual case of a payload that names a notified
+      // incident and no response for it, which the V5 -> V6 migration produces
+      // only when it cannot attribute responders (see `save-migrations.ts`).
+      // Re-dispatch from 'notified' is impossible because the lifecycle is
+      // forward-only, so the deadline decides: the incident lapses rather than
+      // silently resolving, which is issue #28's consistent-failure outcome.
+      // Nothing is stranded by this path -- with no record there is nothing the
+      // response ever claimed.
       if (this.isPastDeadline(incident, tick)) this.lapse(incident, tick);
       return;
     }
 
     if (incident.state === 'notified') {
+      if (!record.travelIssued) this.beginTravelToIncident(record, incident, tick);
+
       const destination = this.incidentTile(incident);
       for (const guardId of record.guardIds) {
         const requestId = record.pathRequestIdsByGuard.get(guardId);
@@ -227,21 +278,75 @@ export class IncidentResponseSystem implements SystemRegistration {
     this.incidentsResolved += 1;
   }
 
-  public getSnapshot(): { readonly metrics: IncidentResponseMetrics } {
-    return { metrics: this.getMetrics() };
+  /**
+   * Metrics **and every in-flight response** (save schema V6, issue #352).
+   *
+   * Emitting metrics alone was a silent resource leak rather than the bounded
+   * loss its predecessor's docstring described. The record this map holds is
+   * what `releaseResponse` reads in order to *return* what the response
+   * claimed -- the responders and the sector lockdown -- and both of those are
+   * themselves persisted (`deploymentPhase: 'on-search'` in the guard roster,
+   * `sectorControlStates` in the security section). Dropping only the
+   * attribution therefore did not undo the claim; it made it permanent, with
+   * no code path left in `src/` able to reverse it.
+   *
+   * Responses are emitted sorted by incident id, never `Map` insertion order,
+   * for the reason `SearchSystem.activeJobsInCanonicalOrder` states: insertion
+   * order is a property of this instance's history, and a payload that carries
+   * history rather than state does not round-trip. `arrivedGuardIds` is sorted
+   * for the same reason -- a `Set` iterates in insertion order, which here is
+   * the order routes happened to resolve in.
+   */
+  public getSnapshot(): {
+    readonly metrics: IncidentResponseMetrics;
+    readonly responses: readonly (readonly [string, EncodedIncidentResponse])[];
+  } {
+    return {
+      metrics: this.getMetrics(),
+      responses: [...this.responses.keys()].sort().map((incidentId) => {
+        const record = this.responses.get(incidentId)!;
+        return [
+          incidentId,
+          {
+            guardIds: [...record.guardIds],
+            arrivedGuardIds: [...record.arrivedGuardIds].sort((a, b) => a - b),
+            ...(record.containmentStartedAtTick === undefined ? {} : { containmentStartedAtTick: record.containmentStartedAtTick }),
+            lockdownApplied: record.lockdownApplied,
+          },
+        ] as const;
+      }),
+    };
   }
 
   /**
-   * Only metrics survive a restore. Live response bookkeeping references
-   * the *previous* `NavigationSystem` instance's request queue, exactly
-   * like #25's jobs and #26's guards -- a restored open incident therefore
-   * has no active response and is driven by `advanceResponse`'s
-   * no-record path above: it lapses at its deadline rather than silently
-   * resolving, which is the consistent-failure outcome issue #28 requires
-   * rather than a hidden success.
+   * Restores the response bookkeeping, minus the one part of it a save cannot
+   * carry: the path requests. Those named slots in the *previous*
+   * `NavigationSystem` instance's queue, which a fresh one never received and
+   * would never resolve, so `travelIssued` starts `false` and the first
+   * scheduled `advanceResponse` re-issues them -- the same "restart the leg,
+   * keep the job" convention `SearchSystem.loadSnapshot`, `JobBoard` and
+   * `GuardRoster` all follow.
+   *
+   * The cost of that restart is one `IncidentResponseSystem` interval on a
+   * response saved mid-travel, and nothing at all on one saved after its
+   * responders arrived (`containmentStartedAtTick` is carried, so containment
+   * neither restarts nor double-counts, and a responder already on the post
+   * tile issues no request). Measured and pinned by
+   * `tests/integration/incident-response-restore.test.ts`.
    */
   public loadSnapshot(snapshot: ReturnType<IncidentResponseSystem['getSnapshot']>): void {
     this.responses.clear();
+    for (const [incidentId, response] of snapshot.responses) {
+      this.responses.set(incidentId, {
+        incidentId,
+        guardIds: [...response.guardIds],
+        pathRequestIdsByGuard: new Map(),
+        arrivedGuardIds: new Set(response.arrivedGuardIds),
+        containmentStartedAtTick: response.containmentStartedAtTick,
+        lockdownApplied: response.lockdownApplied,
+        travelIssued: false,
+      });
+    }
     this.incidentsResolved = snapshot.metrics.incidentsResolved;
     this.incidentsLapsed = snapshot.metrics.incidentsLapsed;
     this.respondersDispatched = snapshot.metrics.respondersDispatched;

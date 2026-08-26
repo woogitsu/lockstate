@@ -24,10 +24,12 @@ import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from 
  *
  * ## Why this needs no save-version bump, asserted rather than claimed
  *
- * `SAVE_SCHEMA_VERSION` was 4 when this file was written and is 5 now, and
- * **neither number is this system's**: the bump belongs to ADR 0028 phase 1,
- * which took `capacity` off a room instance and put a rectangle on it. What
- * this file asserts is unchanged and is the part that matters --
+ * `SAVE_SCHEMA_VERSION` was 4 when this file was written and is 6 now, and
+ * **no number in that sequence is this system's**: V5 belongs to ADR 0028
+ * phase 1, which took `capacity` off a room instance and put a rectangle on it,
+ * and V6 belongs to #352, which put the in-flight incident-response record into
+ * the payload so a restore could release the guards and the lockdown it had
+ * claimed. What this file asserts is unchanged and is the part that matters --
  * `StateIncomeSystem` holds no state at all
  * -- no accumulator, no last-paid tick -- so it adds no field to the payload,
  * changes no field's units and changes no field's meaning, which are the three
@@ -83,14 +85,16 @@ function saveAndLoad(runtime: SimulationRuntime): { restored: SimulationRuntime;
     envelope.saveSchemaVersion,
     'the income line adds no save field, so it must not have moved the save version',
   ).toBe(SAVE_SCHEMA_VERSION);
-  // V5 since ADR 0028 phase 1, and the assertion is kept pinned rather than
-  // deleted: what it guards is that a bump has a *reason*, not that the number
-  // never moves. The reason for this one is object placement -- a room instance
-  // stops carrying its capacity and starts carrying its rectangle -- and it is
-  // nothing to do with the income line, which still adds no field to the
-  // payload. The two paragraphs below the version check are what actually
-  // enforce that.
-  expect(SAVE_SCHEMA_VERSION, 'a bump needs its own reason; the income line is not one').toBe(5);
+  // V6 since #352, and the assertion is kept pinned rather than deleted: what
+  // it guards is that a bump has a *reason*, not that the number never moves.
+  // Two bumps have happened under it now and neither is this system's -- V5 was
+  // object placement (a room instance stopped carrying its capacity and started
+  // carrying its rectangle) and V6 is the incident-response record (a save
+  // carries the guards and the lockdown a response claimed, so a restore can
+  // release them). Neither adds a field for the income line, which still adds
+  // none of its own. The two paragraphs below the version check are what
+  // actually enforce that.
+  expect(SAVE_SCHEMA_VERSION, 'a bump needs its own reason; the income line is not one').toBe(6);
 
   const serialized = JSON.stringify(envelope);
   const decoded = decodeSaveEnvelope(JSON.parse(serialized) as unknown);

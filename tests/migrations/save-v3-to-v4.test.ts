@@ -95,6 +95,9 @@ function v3EnvelopeWithPrisoner(): { readonly envelope: SaveEnvelopeV3; readonly
    * the very schema this test is walking a save forward from.
    *
    *   - `objects` did not exist before V5 and is dropped.
+   *   - `incidents.response.responses` did not exist before V6 (#352) and is
+   *     dropped. A V3 build could not have written it -- it snapshotted
+   *     metrics only, which is what issue #352 measured the cost of.
    *   - a room instance carried an authored `capacity` and
    *     `objectCapabilities` and no rectangle, so each row is rewritten into
    *     that shape. `0` and `[]` are not chosen here: they are what
@@ -103,6 +106,7 @@ function v3EnvelopeWithPrisoner(): { readonly envelope: SaveEnvelopeV3; readonly
    *     `migrateSaveEnvelopeV4ToV5` relies on in the other direction.
    */
   const { objects: _objects, ...simulationWithoutObjects } = bundle.simulation;
+  const { responses: _responses, ...responseWithoutRecords } = bundle.simulation.incidents.response;
   const payload = {
     kernel: bundle.kernel,
     world: bundle.world,
@@ -110,6 +114,7 @@ function v3EnvelopeWithPrisoner(): { readonly envelope: SaveEnvelopeV3; readonly
     ...(bundle.entities === undefined ? {} : { entities: bundle.entities }),
     simulation: {
       ...simulationWithoutObjects,
+      incidents: { ...bundle.simulation.incidents, response: responseWithoutRecords },
       prisoners: {
         ...bundle.simulation.prisoners,
         components: { ...components, needs: wholeLevelNeeds },

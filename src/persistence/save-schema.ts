@@ -21,6 +21,7 @@ import {
   migrateSaveEnvelopeV2ToV3,
   migrateSaveEnvelopeV3ToV4,
   migrateSaveEnvelopeV4ToV5,
+  migrateSaveEnvelopeV5ToV6,
 } from './save-migrations';
 import type { KernelSnapshot } from '../simulation/kernel/kernel';
 import type { WorldSnapshotV1 } from '../simulation/world/sparse-world';
@@ -30,7 +31,7 @@ import { MAX_ZONE_DIMENSION_TILES } from '../simulation/rooms/zoning';
 import { ACTOR_IDENTITY_SNAPSHOT_VERSION, ACTOR_KINDS, type ActorIdentitySnapshot } from '../simulation/identity/actor-identity';
 
 /** The version every newly written save carries. Older versions are still readable via `saveMigrationChain`. */
-export const SAVE_SCHEMA_VERSION = 5 as const;
+export const SAVE_SCHEMA_VERSION = 6 as const;
 
 // --- Kernel / RNG ---
 
@@ -730,7 +731,65 @@ const contrabandSectionSchema = z
 
 const incidentStateSchema = z.enum(['active', 'notified', 'responding', 'resolved', 'lapsed']);
 
-const incidentsSectionSchema = z
+const incidentResponseMetricsSchema = z
+  .object({
+    incidentsResolved: z.number().int().min(0),
+    incidentsLapsed: z.number().int().min(0),
+    respondersDispatched: z.number().int().min(0),
+    routeFailures: z.number().int().min(0),
+  })
+  .strict();
+
+/** Frozen historical shape (V3-V5): metrics only, which is the whole of issue #352. */
+const incidentResponseSchemaV5 = z.object({ metrics: incidentResponseMetricsSchema }).strict();
+
+/**
+ * V6 (#352): the in-flight responses themselves, one row per open incident
+ * that has responders committed to it.
+ *
+ * `IncidentResponseSystem.releaseResponse` reads this record to return what a
+ * closing response claimed -- the responders and the sector lockdown -- and
+ * both of those claims *are* persisted elsewhere in this payload
+ * (`deploymentPhase: 'on-search'` in `securitySectionSchema`,
+ * `sectorControlStates` in the same section). Carrying the claims without the
+ * attribution made every claim permanent on restore, so this is a required
+ * field at V6 rather than an optional one: at V6 an empty array means "no
+ * response is in flight", which is a fact a writer always knows.
+ *
+ * `pathRequestIdsByGuard` is deliberately **not** here: it names slots in a
+ * `NavigationSystem` queue that no longer exists after a restore, which is the
+ * exclusion `docs/PERSISTENCE.md` states for every subsystem holding a request
+ * id -- and for this one, unlike before V6, the claim about it is now true.
+ */
+const incidentResponseSchemaV6 = z
+  .object({
+    metrics: incidentResponseMetricsSchema,
+    responses: z.array(
+      z.tuple([
+        z.string().min(1),
+        z
+          .object({
+            guardIds: z.array(entityIdSchema),
+            arrivedGuardIds: z.array(entityIdSchema),
+            containmentStartedAtTick: tickSchema.optional(),
+            lockdownApplied: z.boolean(),
+          })
+          .strict(),
+      ]),
+    ),
+  })
+  .strict();
+
+/**
+ * The shared shape of the `incidents` section, parameterised by the one thing
+ * that differs between versions: the `response` sub-section (V5 vs V6).
+ *
+ * A factory rather than two copies, for the reason `sessionSystemsShapeFor`
+ * gives: the historical version is frozen by the argument it is instantiated
+ * with, and the two shapes cannot drift apart in any other respect.
+ */
+const incidentsSectionSchemaFor = <Response extends z.ZodTypeAny>(response: Response) =>
+  z
   .object({
     log: z.array(
       z.tuple([
@@ -789,20 +848,14 @@ const incidentsSectionSchema = z
         sequence: z.number().int().min(0),
       })
       .strict(),
-    response: z
-      .object({
-        metrics: z
-          .object({
-            incidentsResolved: z.number().int().min(0),
-            incidentsLapsed: z.number().int().min(0),
-            respondersDispatched: z.number().int().min(0),
-            routeFailures: z.number().int().min(0),
-          })
-          .strict(),
-      })
-      .strict(),
+    response,
   })
   .strict();
+
+/** Frozen historical shape: a response is metrics only (#352 is what it cost). */
+const incidentsSectionSchemaV5 = incidentsSectionSchemaFor(incidentResponseSchemaV5);
+/** Current shape: an in-flight response is carried, so a restore can release what it claimed. */
+const incidentsSectionSchemaV6 = incidentsSectionSchemaFor(incidentResponseSchemaV6);
 
 // --- Actor identity (V3, issue #75 / ADR 0015) ---
 //
@@ -894,20 +947,22 @@ const economySectionSchema = z
   .strict();
 
 /**
- * The shared shape of the `simulation` section, parameterised by the two things
- * that differ between versions: the need-level bound (V3 vs V4) and the
- * room-instance row (V4 vs V5).
+ * The shared shape of the `simulation` section, parameterised by the three
+ * things that differ between versions: the need-level bound (V3 vs V4), the
+ * room-instance row (V4 vs V5) and the incidents section (V5 vs V6).
  *
- * A factory over both axes rather than three copies of several hundred lines,
- * which is what `docs/PERSISTENCE.md`'s "Adding a V5 later" step 1 asks for:
- * the historical version is frozen by the arguments it is instantiated with,
- * and the shapes cannot drift apart in any other respect. Generic in the
- * room-instance schema rather than taking a `z.ZodTypeAny`, so the inferred
- * payload type keeps the row's real shape instead of widening to `any`.
+ * A factory over all three axes rather than four copies of several hundred
+ * lines, which is what `docs/PERSISTENCE.md`'s "Adding a V6 later" step 1 asks
+ * for: the historical version is frozen by the arguments it is instantiated
+ * with, and the shapes cannot drift apart in any other respect. Generic in the
+ * room-instance and incidents schemas rather than taking a `z.ZodTypeAny`, so
+ * the inferred payload type keeps their real shape instead of widening to
+ * `any`.
  */
-const sessionSystemsShapeFor = <RoomInstance extends z.ZodTypeAny>(
+const sessionSystemsShapeFor = <RoomInstance extends z.ZodTypeAny, Incidents extends z.ZodTypeAny>(
   needLevelMax: number,
   roomInstance: RoomInstance,
+  incidents: Incidents,
 ) =>
   ({
     prisoners: prisonersSectionSchemaFor(needLevelMax, roomInstance),
@@ -915,17 +970,31 @@ const sessionSystemsShapeFor = <RoomInstance extends z.ZodTypeAny>(
     navigation: navigationSectionSchema,
     security: securitySectionSchema,
     contraband: contrabandSectionSchema,
-    incidents: incidentsSectionSchema,
+    incidents,
     economy: economySectionSchema.optional(),
   }) as const;
 
 /** Frozen historical shape: whole-level needs, as every V3 save on disk carries them. */
-const sessionSystemsV3Schema = z.object(sessionSystemsShapeFor(NEED_LEVEL_MAX_V3, roomInstanceSchemaV4)).strict();
+const sessionSystemsV3Schema = z
+  .object(sessionSystemsShapeFor(NEED_LEVEL_MAX_V3, roomInstanceSchemaV4, incidentsSectionSchemaV5))
+  .strict();
 /** Frozen historical shape: scaled needs (#259), authored room capacity, no objects section. */
-const sessionSystemsV4Schema = z.object(sessionSystemsShapeFor(NEED_LEVEL_MAX_V4, roomInstanceSchemaV4)).strict();
-/** Current shape: room instances carry their rectangle and no derived fields, and placed objects have a section (ADR 0028). */
+const sessionSystemsV4Schema = z
+  .object(sessionSystemsShapeFor(NEED_LEVEL_MAX_V4, roomInstanceSchemaV4, incidentsSectionSchemaV5))
+  .strict();
+/** Frozen historical shape: room instances carry their rectangle and no derived fields, and placed objects have a section (ADR 0028). */
 const sessionSystemsV5Schema = z
-  .object({ ...sessionSystemsShapeFor(NEED_LEVEL_MAX_V4, roomInstanceSchemaV5), objects: objectsSectionSchema.optional() })
+  .object({
+    ...sessionSystemsShapeFor(NEED_LEVEL_MAX_V4, roomInstanceSchemaV5, incidentsSectionSchemaV5),
+    objects: objectsSectionSchema.optional(),
+  })
+  .strict();
+/** Current shape: an in-flight incident response is carried (#352). */
+const sessionSystemsV6Schema = z
+  .object({
+    ...sessionSystemsShapeFor(NEED_LEVEL_MAX_V4, roomInstanceSchemaV5, incidentsSectionSchemaV6),
+    objects: objectsSectionSchema.optional(),
+  })
   .strict();
 
 // --- Envelope ---
@@ -1036,6 +1105,38 @@ const savePayloadV5Schema = z
   })
   .strict();
 
+/**
+ * V6 (#352): `simulation.incidents.response` gains `responses` -- the
+ * in-flight response records themselves.
+ *
+ * This crosses the same line V4 and V5 crossed, and by the "Adding an optional
+ * field without a version bump" test in `docs/PERSISTENCE.md` it cannot be the
+ * optional-field pattern: **absence is ambiguous, and the ambiguity is the
+ * bug.** A V5 save with a `'notified'` incident, four `'on-search'` guards and
+ * a `'lockdown'` sector says nothing about whether those guards and that
+ * lockdown belong to the incident, and the reader guessed "no response exists"
+ * — which left `releaseResponse` with nothing to release and the claims
+ * permanent (there is no other caller in `src/` that can move a guard out of
+ * `'on-search'`, and no dismiss command). An optional field would preserve
+ * exactly that guess for every save written from here on.
+ *
+ * `migrateSaveEnvelopeV5ToV6` is what resolves it for the saves already
+ * written, by attributing the responders the payload does record rather than
+ * inventing any.
+ *
+ * Everything outside that one field is byte-identical to V5.
+ */
+const savePayloadV6Schema = z
+  .object({
+    kernel: kernelSnapshotSchema,
+    world: worldSnapshotSchema,
+    construction: constructionSnapshotSchema,
+    entities: entityStoreSnapshotV2Schema.optional(),
+    simulation: sessionSystemsV6Schema.optional(),
+    identity: actorIdentitySnapshotSchema.optional(),
+  })
+  .strict();
+
 /** Historical V1 payload shape, retained so V1 saves can still be validated and migrated. */
 export type SavePayloadV1 = DeepReadonly<z.infer<typeof savePayloadV1Schema>>;
 /** Historical V2 payload shape. Only the migration chain and `migrateSaveEnvelopeV2ToV3` should name this. */
@@ -1044,9 +1145,11 @@ export type SavePayloadV2 = DeepReadonly<z.infer<typeof savePayloadV2Schema>>;
 export type SavePayloadV3 = DeepReadonly<z.infer<typeof savePayloadV3Schema>>;
 /** Historical V4 payload shape. Only the migration chain and `migrateSaveEnvelopeV4ToV5` should name this. */
 export type SavePayloadV4 = DeepReadonly<z.infer<typeof savePayloadV4Schema>>;
+/** Historical V5 payload shape. Only the migration chain and `migrateSaveEnvelopeV5ToV6` should name this. */
 export type SavePayloadV5 = DeepReadonly<z.infer<typeof savePayloadV5Schema>>;
+export type SavePayloadV6 = DeepReadonly<z.infer<typeof savePayloadV6Schema>>;
 /** The payload shape newly written saves use. Prefer this over the versioned alias at call sites that just mean "a save payload". */
-export type SavePayload = SavePayloadV5;
+export type SavePayload = SavePayloadV6;
 
 /**
  * The envelope's own fields, without `payload`. Kept separate so the two
@@ -1106,13 +1209,19 @@ const saveEnvelopeV4ObjectSchema = z
 const saveEnvelopeV4Schema = withOrderedTimestamps(saveEnvelopeV4ObjectSchema);
 
 const saveEnvelopeV5ObjectSchema = z
-  .object({ ...saveEnvelopeMetadataShape(SAVE_SCHEMA_VERSION), payload: savePayloadV5Schema })
+  .object({ ...saveEnvelopeMetadataShape(5), payload: savePayloadV5Schema })
   .strict();
 
 const saveEnvelopeV5Schema = withOrderedTimestamps(saveEnvelopeV5ObjectSchema);
 
-/** Validates only the envelope's own fields; `payload` is validated separately by `savePayloadV5Schema`. */
-const saveEnvelopeMetadataV5Schema = withOrderedTimestamps(
+const saveEnvelopeV6ObjectSchema = z
+  .object({ ...saveEnvelopeMetadataShape(SAVE_SCHEMA_VERSION), payload: savePayloadV6Schema })
+  .strict();
+
+const saveEnvelopeV6Schema = withOrderedTimestamps(saveEnvelopeV6ObjectSchema);
+
+/** Validates only the envelope's own fields; `payload` is validated separately by `savePayloadV6Schema`. */
+const saveEnvelopeMetadataV6Schema = withOrderedTimestamps(
   z.object(saveEnvelopeMetadataShape(SAVE_SCHEMA_VERSION)).strict(),
 );
 
@@ -1124,13 +1233,15 @@ export type SaveEnvelopeV2 = DeepReadonly<z.infer<typeof saveEnvelopeV2ObjectSch
 export type SaveEnvelopeV3 = DeepReadonly<z.infer<typeof saveEnvelopeV3ObjectSchema>>;
 /** Historical V4 envelope shape. Only the migration chain and `migrateSaveEnvelopeV4ToV5` should name this. */
 export type SaveEnvelopeV4 = DeepReadonly<z.infer<typeof saveEnvelopeV4ObjectSchema>>;
+/** Historical V5 envelope shape. Only the migration chain and `migrateSaveEnvelopeV5ToV6` should name this. */
 export type SaveEnvelopeV5 = DeepReadonly<z.infer<typeof saveEnvelopeV5ObjectSchema>>;
+export type SaveEnvelopeV6 = DeepReadonly<z.infer<typeof saveEnvelopeV6ObjectSchema>>;
 /**
  * The envelope shape newly written saves use. Call sites that simply mean "a
  * save envelope" use this alias, so the next version bump does not sweep a
  * rename through the repository the way bumping to V2 did.
  */
-export type SaveEnvelope = SaveEnvelopeV5;
+export type SaveEnvelope = SaveEnvelopeV6;
 
 // --- Migration chain ---
 // Every historical version registers its schema once and is never edited;
@@ -1143,7 +1254,8 @@ saveMigrationChain.registerSchema(zodVersionSchema(1, saveEnvelopeV1Schema));
 saveMigrationChain.registerSchema(zodVersionSchema(2, saveEnvelopeV2Schema));
 saveMigrationChain.registerSchema(zodVersionSchema(3, saveEnvelopeV3Schema));
 saveMigrationChain.registerSchema(zodVersionSchema(4, saveEnvelopeV4Schema));
-saveMigrationChain.registerSchema(zodVersionSchema(SAVE_SCHEMA_VERSION, saveEnvelopeV5Schema));
+saveMigrationChain.registerSchema(zodVersionSchema(5, saveEnvelopeV5Schema));
+saveMigrationChain.registerSchema(zodVersionSchema(SAVE_SCHEMA_VERSION, saveEnvelopeV6Schema));
 saveMigrationChain.registerMigration({
   fromVersion: 1,
   toVersion: 2,
@@ -1163,6 +1275,11 @@ saveMigrationChain.registerMigration({
   fromVersion: 4,
   toVersion: 5,
   migrate: (input) => migrateSaveEnvelopeV4ToV5(input as SaveEnvelopeV4),
+});
+saveMigrationChain.registerMigration({
+  fromVersion: 5,
+  toVersion: 6,
+  migrate: (input) => migrateSaveEnvelopeV5ToV6(input as SaveEnvelopeV5),
 });
 
 export type SaveDecodeErrorCode = MigrationErrorCode | 'checksum-mismatch';
@@ -1364,7 +1481,7 @@ export interface CreateSaveEnvelopeInput {
  * live runtime snapshots.
  *
  * The payload is validated **exactly once** here. The envelope's own fields
- * are validated separately by `saveEnvelopeMetadataV5Schema`, which does not
+ * are validated separately by `saveEnvelopeMetadataV6Schema`, which does not
  * re-walk the payload it was just handed; the composed result is then marked
  * trusted so `PrisonSaveRepository.save` does not walk it a third time (#49).
  *
@@ -1372,7 +1489,7 @@ export interface CreateSaveEnvelopeInput {
  * before — validity is still proven, just not proven repeatedly.
  */
 export function createSaveEnvelope(input: CreateSaveEnvelopeInput): TrustedSaveEnvelope {
-  const payload = savePayloadV5Schema.parse({
+  const payload = savePayloadV6Schema.parse({
     kernel: input.kernel,
     world: input.world,
     construction: input.construction,
@@ -1381,7 +1498,7 @@ export function createSaveEnvelope(input: CreateSaveEnvelopeInput): TrustedSaveE
     ...(input.identity === undefined ? {} : { identity: input.identity }),
   });
 
-  const metadata = saveEnvelopeMetadataV5Schema.parse({
+  const metadata = saveEnvelopeMetadataV6Schema.parse({
     saveSchemaVersion: SAVE_SCHEMA_VERSION,
     gameVersion: input.gameVersion,
     prisonId: input.prisonId,

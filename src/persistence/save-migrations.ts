@@ -8,9 +8,11 @@ import type {
   SaveEnvelopeV3,
   SaveEnvelopeV4,
   SaveEnvelopeV5,
+  SaveEnvelopeV6,
   SavePayloadV1,
   SavePayloadV3,
   SavePayloadV4,
+  SavePayloadV5,
 } from './save-schema';
 
 /**
@@ -337,4 +339,295 @@ export function migrateSaveEnvelopeV4ToV5(input: SaveEnvelopeV4): SaveEnvelopeV5
     checksum: computeSaveChecksum(migratedPayload as unknown as JsonValue),
     payload: migratedPayload,
   } as SaveEnvelopeV5;
+}
+
+/** V5's `simulation` section, the only part of the payload V5 -> V6 reshapes. */
+type SimulationV5 = NonNullable<SavePayloadV5['simulation']>;
+
+/**
+ * V5's tuple rows, with their positions restored.
+ *
+ * `DeepReadonly` distributes over `readonly (infer Entry)[]`, so it maps a
+ * `z.tuple([A, B])` row to `readonly (A | B)[]` -- the arity is lost and the
+ * row cannot be destructured. Every element type below is *derived* from the
+ * payload type rather than restated, so none of them can drift from the
+ * schema; only the positions are asserted, and by the time this step runs
+ * `MigrationChain` has already validated the input against
+ * `saveEnvelopeV5Schema`, whose rows are `z.tuple`s -- so the positions are a
+ * fact about the value, not an assumption about it.
+ */
+type IncidentRowV5 = readonly [string, Exclude<SimulationV5['incidents']['log'][number][number], string>];
+type GuardRowV5 = readonly [number, Exclude<SimulationV5['security']['guards']['records'][number][number], number>];
+type SearchJobRowV5 = readonly [string, Exclude<SimulationV5['contraband']['search']['active'][number][number], string>];
+
+/**
+ * The one row type restated rather than derived, because both of its positions
+ * are strings and their union collapses to `string`.
+ *
+ * Safe against a future fourth control state without an edit here: this step
+ * only ever *reads* `'lockdown'` and only ever *writes* `'normal'`, and passes
+ * every other value through untouched.
+ */
+type SectorControlRowV5 = readonly [string, 'normal' | 'restricted' | 'lockdown'];
+
+/** One V6 response row: what `IncidentResponseSystem.releaseResponse` needs in order to return what the response claimed. */
+type ResponseRowV6 = readonly [
+  string,
+  {
+    readonly guardIds: readonly number[];
+    readonly arrivedGuardIds: readonly number[];
+    readonly containmentStartedAtTick?: number;
+    readonly lockdownApplied: boolean;
+  },
+];
+
+function incidentRows(simulation: SimulationV5): readonly IncidentRowV5[] {
+  return simulation.incidents.log as readonly IncidentRowV5[];
+}
+
+function guardRows(simulation: SimulationV5): readonly GuardRowV5[] {
+  return simulation.security.guards.records as readonly GuardRowV5[];
+}
+
+function sectorControlRows(simulation: SimulationV5): readonly SectorControlRowV5[] {
+  return simulation.security.sectorControlStates as readonly SectorControlRowV5[];
+}
+
+/**
+ * The incident states during which a response is committed to an incident.
+ * `'active'` is deliberately absent: `tryDispatch` transitions to `'notified'`
+ * in the same call that claims the guards and applies the lockdown, so an
+ * `'active'` incident has claimed nothing and needs no record.
+ */
+const RESPONDED_INCIDENT_STATES: ReadonlySet<string> = new Set(['notified', 'responding']);
+
+/**
+ * ...and the states during which a lockdown may legitimately still be held.
+ * Wider than the set above by `'active'`, because `releaseResponse` refuses to
+ * lift a lockdown while *any* incident in the sector is still open -- so a
+ * sector in `'lockdown'` with only an `'active'` incident in it is a live,
+ * correct state rather than stranded residue.
+ */
+const OPEN_INCIDENT_STATES: ReadonlySet<string> = new Set(['active', 'notified', 'responding']);
+
+/**
+ * The responders a V5 payload records without attributing: every guard in the
+ * `'on-search'` deployment phase that no active search job claims.
+ *
+ * **This is a derivation, not a guess, and it rests on a fact.** Exactly two
+ * things in `src/` have ever set `'on-search'` --
+ * `IncidentResponseSystem.tryDispatch` and `SearchSystem.assignQueuedOrders`
+ * (`grep -rn "setDeploymentPhase(" src/`) -- and a search job's guards are in
+ * the payload (`contraband.search.active`). So an `'on-search'` guard that no
+ * job names was put there by an incident response and by nothing else.
+ *
+ * Ascending entity id, from a payload already written in that order.
+ */
+function unattributedResponders(simulation: SimulationV5): readonly number[] {
+  const claimedBySearch = new Set<number>();
+  for (const row of simulation.contraband.search.active as readonly SearchJobRowV5[]) {
+    for (const guardId of row[1].guardIds) claimedBySearch.add(guardId);
+  }
+  const responders: number[] = [];
+  for (const [guardId, record] of guardRows(simulation)) {
+    if (record.deploymentPhase === 'on-search' && !claimedBySearch.has(guardId)) responders.push(guardId);
+  }
+  return responders;
+}
+
+/**
+ * Rebuilds `incidents.response` at V6, attributing the responders above to the
+ * incidents that are holding them.
+ *
+ * **A V5 save cannot say which responder belongs to which incident**, and this
+ * is the one place the step has to choose. It gives them all to the lowest-id
+ * incident that has responders committed (`'notified'` or `'responding'`) and
+ * gives every other such incident an empty responder list. Three properties
+ * make that the honest choice rather than a convenient one:
+ *
+ * - **It is exact for a single responded-to incident**, which is the case the
+ *   defect was measured on and by far the common one.
+ * - **It never strands anything, in any case.** Every responder ends up named
+ *   by exactly one record, so whichever incident closes first releases them;
+ *   and every record carries its own `lockdownApplied`, so every sector a
+ *   response locked down is lifted when its own incident closes, whether or not
+ *   that incident was given any guards.
+ * - **The worst mis-attribution costs one incident outcome, once.** Guards
+ *   pointed at the wrong sector re-travel there and count toward that
+ *   incident's arrival quota, so a save with two responded-to incidents may
+ *   resolve one and lapse the other where a continuous session would have done
+ *   the reverse. That is a play outcome the save genuinely does not determine.
+ *   The alternative -- leaving them unattributed -- costs the player the guards
+ *   and the sector *permanently*, which is not a play outcome at all.
+ *
+ * `arrivedGuardIds` is empty and `containmentStartedAtTick` absent because a V5
+ * save records neither: a restored responder therefore re-travels (arriving
+ * immediately if it is already standing on the post tile) and a restored
+ * containment restarts its timer, which is the same bounded restart
+ * `SearchSystem.loadSnapshot` and `GuardRoster.loadSnapshot` already take.
+ */
+function attributeResponses(simulation: SimulationV5): readonly ResponseRowV6[] {
+  const lockdownSectorIds = new Set(
+    sectorControlRows(simulation)
+      .filter((row) => row[1] === 'lockdown')
+      .map((row) => row[0]),
+  );
+  const responded = incidentRows(simulation)
+    .filter((row) => RESPONDED_INCIDENT_STATES.has(row[1].state))
+    .map((row) => [row[0], row[1].sectorId] as const)
+    .sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+  if (responded.length === 0) return [];
+
+  const responders = unattributedResponders(simulation);
+  return responded.map(
+    ([incidentId, sectorId], index) =>
+      [
+        incidentId,
+        {
+          guardIds: index === 0 ? responders : [],
+          arrivedGuardIds: [],
+          lockdownApplied: lockdownSectorIds.has(sectorId),
+        },
+      ] as const,
+  );
+}
+
+/**
+ * Releases what a V5 save has *already* stranded: responders and a lockdown
+ * left behind by an earlier restore, whose incident has since lapsed.
+ *
+ * This is the population that most needs the migration. A save written after a
+ * restore carries the damage rather than the response -- guards `'on-search'`
+ * with no incident left to release them, and a sector `'lockdown'` with none
+ * left to lift it -- and no record can be reconstructed for an incident that is
+ * already terminal, so `attributeResponses` cannot reach them. Nothing in
+ * `src/` can either (issue #352: `GuardRoster.unassign`'s callers are all
+ * unreachable for an `'on-search'` guard, and there is no dismiss command).
+ *
+ * **Both repairs are provable from the payload rather than assumed.** For the
+ * guards, `unattributedResponders` states the fact they rest on. For the
+ * sectors, `IncidentResponseSystem` is the only writer of `'lockdown'` in
+ * `src/` (`grep -rn "setControlState" src/`), and it holds one only while an
+ * incident in that sector is open -- so `'lockdown'` with no open incident is
+ * unambiguously residue. `'restricted'` is never touched.
+ *
+ * The guard row is rebuilt to exactly what `GuardRoster.unassign` produces:
+ * phase `'unassigned'` with no sector, no path request and no patrol
+ * bookkeeping. The lockdown needs no door edits -- `navigation.doors` records
+ * each governed door at its *baseline* state (see `doorsSnapshot` in
+ * `src/simulation/runtime/session-systems.ts`) and
+ * `SecuritySectorRegistry.loadSnapshot` re-cascades the restored control state
+ * onto it, so writing `'normal'` here is what unlocks the doors on load.
+ */
+function releaseStrandedClaims(
+  simulation: SimulationV5,
+  attributed: readonly ResponseRowV6[],
+): { readonly guards: readonly GuardRowV5[]; readonly sectorControlStates: readonly SectorControlRowV5[] } {
+  const stillClaimed = new Set<number>();
+  for (const [, response] of attributed) for (const guardId of response.guardIds) stillClaimed.add(guardId);
+  const strandedGuardIds = new Set(unattributedResponders(simulation).filter((guardId) => !stillClaimed.has(guardId)));
+
+  const openSectorIds = new Set(
+    incidentRows(simulation)
+      .filter((row) => OPEN_INCIDENT_STATES.has(row[1].state))
+      .map((row) => row[1].sectorId),
+  );
+
+  return {
+    guards: guardRows(simulation).map(([guardId, record]) =>
+      strandedGuardIds.has(guardId)
+        ? ([guardId, { staffRoleId: record.staffRoleId, tileX: record.tileX, tileY: record.tileY, deploymentPhase: 'unassigned' }] as const)
+        : ([guardId, record] as const),
+    ),
+    sectorControlStates: sectorControlRows(simulation).map(([sectorId, state]) =>
+      state === 'lockdown' && !openSectorIds.has(sectorId) ? ([sectorId, 'normal'] as const) : ([sectorId, state] as const),
+    ),
+  };
+}
+
+/**
+ * V5 -> V6: `simulation.incidents.response` starts carrying the in-flight
+ * response records, so a restore can release what a response claimed (#352).
+ *
+ * This step does something none of the four before it does: it **rewrites two
+ * other sections of the payload**, `security.guards.records` and
+ * `security.sectorControlStates`. That needs its own justification, because the
+ * rule the earlier steps follow is that a migration reshapes the field the
+ * version changed and invents nothing.
+ *
+ * It invents nothing here either. Every value it writes is *derived* from the
+ * same payload, by two facts about `src/` that `unattributedResponders` and
+ * `releaseStrandedClaims` state and that `tests/migrations/save-v5-to-v6.test.ts`
+ * re-measures rather than cites. What makes writing them right rather than an
+ * overreach is that the alternative is not neutral: leaving them alone is not
+ * "declining to guess", it is choosing the one outcome the player can never
+ * undo. A restored V5 save then keeps a sector in permanent lockdown and its
+ * responders permanently unusable, with the hiring charge already spent and no
+ * command in the game able to reverse either. Ending an emergency response
+ * early is a play outcome; a prison that is silently four guards smaller
+ * forever is a corrupt save.
+ *
+ * **What a player notices on loading a V5 save.** If the incident was still
+ * open, the response resumes: the responders walk to the incident again and it
+ * is contained or lapses on its own deadline, one `IncidentResponseSystem`
+ * interval later than a continuous session would have reached it (and, if it
+ * had already reached `'responding'`, with its containment timer restarted --
+ * at most `containmentTicks`). If the save was written *after* an earlier
+ * restore had already stranded them, the lockdown lifts and the guards report
+ * for duty the moment the save loads, and the incident that stranded them
+ * stays in the log as `'lapsed'`, which is what happened to it.
+ *
+ * The checksum is recomputed for the reason V1 -> V2 recomputes it, and with
+ * the same guarantee: `decodeSaveEnvelope` compares the *stored* checksum
+ * against the payload as written, at its declared version, only after the whole
+ * chain has run -- so this function's output is never the value that comparison
+ * examines. Note what follows from that, and from every step doing the same: a
+ * checksum can never catch a field this chain drops or mis-writes, which is why
+ * the tests name the fields rather than the digest.
+ *
+ * Pure: builds new objects and never mutates `input`.
+ */
+export function migrateSaveEnvelopeV5ToV6(input: SaveEnvelopeV5): SaveEnvelopeV6 {
+  const { saveSchemaVersion: _version, checksum: _checksum, payload, ...metadata } = input;
+
+  const simulation = upgradeSimulationSection(payload.simulation);
+
+  const migratedPayload = {
+    kernel: payload.kernel,
+    world: payload.world,
+    construction: payload.construction,
+    ...(payload.entities === undefined ? {} : { entities: payload.entities }),
+    ...(simulation === undefined ? {} : { simulation }),
+    ...(payload.identity === undefined ? {} : { identity: payload.identity }),
+  };
+
+  return {
+    saveSchemaVersion: 6,
+    ...metadata,
+    checksum: computeSaveChecksum(migratedPayload as unknown as JsonValue),
+    payload: migratedPayload,
+  } as SaveEnvelopeV6;
+}
+
+/**
+ * `simulation` stays optional and an absent section stays absent -- a V5 save
+ * written by a build with no subsystem state genuinely has none, and this step
+ * may no more invent one than the four before it may.
+ */
+function upgradeSimulationSection(simulation: SimulationV5 | undefined) {
+  if (simulation === undefined) return undefined;
+  const responses = attributeResponses(simulation);
+  const released = releaseStrandedClaims(simulation, responses);
+  return {
+    ...simulation,
+    security: {
+      ...simulation.security,
+      sectorControlStates: released.sectorControlStates,
+      guards: { ...simulation.security.guards, records: released.guards },
+    },
+    incidents: {
+      ...simulation.incidents,
+      response: { metrics: simulation.incidents.response.metrics, responses },
+    },
+  };
 }

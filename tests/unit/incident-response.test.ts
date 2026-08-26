@@ -168,21 +168,64 @@ describe('IncidentResponseSystem: real guards, real routes, real lockdown', () =
   });
 
   /**
-   * Live response bookkeeping references the previous NavigationSystem's
-   * request queue, so a restored open incident has no active response --
-   * it must lapse at its deadline rather than silently resolving.
+   * Since save-schema V6 (#352) the response record survives a restore, so a
+   * restored mid-travel response resumes: it re-issues the path requests the
+   * *previous* `NavigationSystem` instance owned, arrives, contains the
+   * incident and -- the part that was the defect -- releases the guard it
+   * claimed.
+   *
+   * Before V6 this test asserted the incident lapsed, which was true and was
+   * not the whole story: the guard stayed `'on-search'` forever and the sector
+   * stayed locked down, because `releaseResponse` had no record left to read.
+   * The two assertions that mattered are kept below -- no hidden success, and
+   * `incidentsResolved` is honest -- and the case where they still apply is
+   * pinned by the test after this one.
    */
-  it('a restored mid-response incident lapses rather than hidden-succeeding', () => {
+  it('a restored mid-response incident resumes and releases the guard it claimed', () => {
     const policy: IncidentResponsePolicy = { ...DEFAULT_INCIDENT_RESPONSE_POLICY, responseDeadlineTicks: 200 };
     const original = buildHarness(policy);
     original.guards.hire('staff-role.guard', original.cellBlock.canteenTiles[0]!);
     original.incidents.open({ id: 'incident-1', type: 'assault', sectorId: 'block-a', participantIds: [1], severity: 2, causeFactors: [] }, 0);
     original.kernel.step(); // dispatch happens; guard is mid-route
     expect(original.incidents.get('incident-1')!.state).toBe('notified');
+    expect(original.guards.getDeploymentPhase(0)).toBe('on-search');
 
+    // The three snapshots a real restore applies, in `restoreSessionSystems`'
+    // order: the roster the response points at, then the log, then the response.
     const restored = buildHarness(policy);
+    restored.guards.loadSnapshot(original.guards.getSnapshot());
     restored.incidents.loadSnapshot(original.incidents.getSnapshot());
     restored.response.loadSnapshot(original.response.getSnapshot());
+
+    for (let tick = 0; tick < 500 && restored.incidents.get('incident-1')!.state !== 'resolved'; tick += 1) restored.kernel.step();
+
+    expect(restored.incidents.get('incident-1')!.state).toBe('resolved');
+    expect(restored.response.getMetrics().incidentsResolved).toBe(1);
+    // The whole of #352: the responder goes back into the pool.
+    expect(restored.guards.getDeploymentPhase(0)).toBe('unassigned');
+    expect(restored.guards.unassignedGuardIds()).toEqual([0]);
+  });
+
+  /**
+   * The residual no-record path, which V6 narrows rather than removes: a
+   * payload can still name an open incident and no response for it (the
+   * V5 -> V6 migration emits that when it cannot attribute responders). Such an
+   * incident must lapse at its deadline rather than silently resolving -- issue
+   * #28's consistent-failure outcome -- and, since no record means nothing was
+   * claimed, nothing is left stranded by it either.
+   */
+  it('an open incident restored with no response record lapses rather than hidden-succeeding', () => {
+    const policy: IncidentResponsePolicy = { ...DEFAULT_INCIDENT_RESPONSE_POLICY, responseDeadlineTicks: 200 };
+    const original = buildHarness(policy);
+    original.guards.hire('staff-role.guard', original.cellBlock.canteenTiles[0]!);
+    original.incidents.open({ id: 'incident-1', type: 'assault', sectorId: 'block-a', participantIds: [1], severity: 2, causeFactors: [] }, 0);
+    original.kernel.step();
+    expect(original.incidents.get('incident-1')!.state).toBe('notified');
+
+    const restored = buildHarness(policy);
+    restored.guards.loadSnapshot(original.guards.getSnapshot());
+    restored.incidents.loadSnapshot(original.incidents.getSnapshot());
+    restored.response.loadSnapshot({ ...original.response.getSnapshot(), responses: [] });
 
     for (let tick = 0; tick < 500 && restored.incidents.get('incident-1')!.state === 'notified'; tick += 1) restored.kernel.step();
 
