@@ -2,13 +2,43 @@
 
 ## Status
 
-**Proposed — pending human approval.** Not accepted.
+**Accepted, 2026-08-26 — with open question 4 promoted to blocking.** The three
+decisions and the surface that shipped with this document (#367) are approved as
+written. What is *not* approved is leaving the catalogue as the donor
+indefinitely: **open question 4 ("is the catalogue the right donor?") is now a
+condition on this acceptance rather than a note.** The catalogue needs a surface
+of its own — its own scroll, a filter, or a different donor — before more rows
+arrive, and until it has one this decision is approved knowing the price is
+rising.
 
-The implementing change is on the same branch as this document and this ADR
+Why the promotion, stated with the arithmetic so the next reader can check it:
+the amendment at the foot of this document measured the price at **four**
+`BUILDABLE_REGISTRY` rows and reported that at 900x600, with a queue, three of
+the four are behind a scroll. ADR 0028 phase 4 then landed **21** rows. At the
+44px row height and the 44px list box this document measured at that viewport,
+that is **one row of twenty-one visible** — derived from this ADR's own two
+figures rather than re-measured, and flagged as derived. The trade decision 3
+makes is still the right one: a reachable queue beats a complete list. But
+"choosing what to build means scrolling a list showing one of twenty-one
+options" is not a price this ADR argued for, and accepting it silently would be
+accepting a different decision from the one written down.
+
+The implementing change was on the same branch as this document and this ADR
 arrived with it, which is the shape §2 of
-[`STATUS-QUEUE.md`](./STATUS-QUEUE.md) warns about: an ADR that lands alongside
-its code is `Proposed` on `main` from the moment it merges and can sit there
-unnoticed. Its rule is followed here — the queue entry is in the same commit.
+[`STATUS-QUEUE.md`](./STATUS-QUEUE.md) warns about: such a document reaches
+`main` unapproved from the moment it merges and can sit there unnoticed. Its
+rule was followed — the queue entry was in the same commit — and it still sat
+for a day, which is the evidence that the rule makes such an ADR *visible*
+rather than *safe*.
+
+The wording of that last sentence is deliberate, and worth a line because it
+will look like a stylistic tic to the next editor: naming the status this
+document used to hold, next to this document's own number, trips
+`adr-status-reference-contract.test.ts`. That gate matches on the status word and
+**cannot tell a general statement about a shape from a claim about a particular
+ADR** — `docs/adr/README.md` records the same blind spot for the same reason. The
+sentence says "unapproved" instead, and the gate's inability to read it is the
+cost of a gate that catches real drift.
 
 ### The number
 
