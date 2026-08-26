@@ -2,7 +2,7 @@ import type { LocalizationKey } from '../../content/localization';
 import { deriveSimulationMessageKey } from '../../content/simulation-message-keys';
 import type { MessageParameters } from '../../services/localization/format';
 import { createActionButton, type ActionButton } from '../primitives/action-button';
-import { createChoiceGroup, type ChoiceGroup } from '../primitives/choice-group';
+import { createChoiceGroup, type ChoiceGroup, type ChoiceOption } from '../primitives/choice-group';
 import { createCollapsibleSection, type CollapsibleSection } from '../primitives/collapsible-section';
 import { element, eyebrowText, nextUiId, valueText } from '../primitives/dom';
 import { createListRow, type ListRow } from '../primitives/list-row';
@@ -169,6 +169,52 @@ export interface BuildPanel {
  */
 function edgeLabelKey(edge: HudBuildEdge): LocalizationKey {
   return deriveSimulationMessageKey('build-edge', edge);
+}
+
+/** The panel's own lookup, built once in `createBuildPanel` from the injected `HudLocalizer`. */
+type Translate = (key: LocalizationKey, parameters?: MessageParameters) => string;
+
+/**
+ * The edge options the numeric route offers, as data.
+ *
+ * Exported, and pure, for the same reason `BuildPanel.getSelection` is on the
+ * handle: what the panel *says* has to be assertable without a DOM. The
+ * default Vitest environment is `node` (`docs/TESTING.md`), so nothing
+ * headless can call `createBuildPanel` at all -- and the previous guard on
+ * this mapping was a `readFileSync` of this file asserting it contained the
+ * substring `deriveSimulationMessageKey('build-edge'`. That assertion is
+ * satisfied by a body that derives the key, throws it away and returns
+ * `'build-edge.north.name'` for every edge, which labels the West option
+ * "North" on screen with the whole suite green.
+ *
+ * A mapping from an id to the text shown for it is exactly the kind of claim
+ * `docs/TESTING.md` puts in the headless layer, so it is one here, over real
+ * text from a real catalog.
+ */
+export function buildEdgeChoiceOptions(t: Translate): readonly ChoiceOption[] {
+  return HUD_BUILD_EDGES.map((id) => ({ id, label: t(edgeLabelKey(id)) }));
+}
+
+/**
+ * What the target readout says for a given aim, including the case where the
+ * pointer is aimed at nothing.
+ *
+ * Split out beside `buildEdgeChoiceOptions` and for the same reason: this is
+ * the *second* place an edge becomes a label, and it is the one where passing
+ * the wrong edge is invisible -- the option row at least shows both labels
+ * side by side, while the readout shows one string and looks plausible
+ * whatever edge produced it.
+ */
+export function formatBuildTargetText(t: Translate, target: BuildPanelTarget | undefined): string {
+  if (target === undefined) return t(HUD_MESSAGE_KEY.buildTargetNone);
+  return target.segments > 1
+    ? t(HUD_MESSAGE_KEY.buildTargetRun, {
+        x: target.x,
+        y: target.y,
+        edge: t(edgeLabelKey(target.edge)),
+        count: target.segments,
+      })
+    : t(HUD_MESSAGE_KEY.buildTargetValue, { x: target.x, y: target.y, edge: t(edgeLabelKey(target.edge)) });
 }
 
 export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
@@ -542,7 +588,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
 
   const edgeChoice: ChoiceGroup = createChoiceGroup({
     legend: t(HUD_MESSAGE_KEY.buildEdge),
-    options: HUD_BUILD_EDGES.map((id) => ({ id, label: t(edgeLabelKey(id)) })),
+    options: buildEdgeChoiceOptions(t),
     selectedId: edge,
     onSelect: (id) => {
       edge = id as HudBuildEdge;
@@ -664,20 +710,11 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   }
 
   function setTarget(target: BuildPanelTarget | undefined): void {
+    targetValue.textContent = formatBuildTargetText(t, target);
     if (target === undefined) {
-      targetValue.textContent = t(HUD_MESSAGE_KEY.buildTargetNone);
       delete targetBlock.dataset['target'];
       return;
     }
-    targetValue.textContent =
-      target.segments > 1
-        ? t(HUD_MESSAGE_KEY.buildTargetRun, {
-            x: target.x,
-            y: target.y,
-            edge: t(edgeLabelKey(target.edge)),
-            count: target.segments,
-          })
-        : t(HUD_MESSAGE_KEY.buildTargetValue, { x: target.x, y: target.y, edge: t(edgeLabelKey(target.edge)) });
     targetBlock.dataset['target'] = `${target.x},${target.y},${target.edge},${target.segments}`;
   }
 
