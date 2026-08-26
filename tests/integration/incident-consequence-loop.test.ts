@@ -159,7 +159,7 @@ describe('an incident has a consequence for the prisoner who was in it', () => {
     ]);
   });
 
-  it('puts that prisoner on a different timetable, and their day measurably falls apart', () => {
+  it('puts that prisoner on a different timetable, and their day measurably changes shape', () => {
     // The regime is the reachable half of the consequence, and it is the half a
     // player watches. `ActionSystem` reads `classificationGroupIndex` on every
     // reconsideration and resolves a `RegimeSchedule` from it, so a tier that
@@ -193,18 +193,62 @@ describe('an incident has a consequence for the prisoner who was in it', () => {
     expect(projectPrisonerDetail(withIncident.runtime.prisoners, withIncident.entityId)?.classificationGroupId).toBe('high-risk');
     expect(projectPrisonerDetail(clean.runtime.prisoners, clean.entityId)?.classificationGroupId).toBe('general-population');
 
-    // `NEED_IDS` order: hunger, sleep, hygiene, bladder, safety, recreation.
-    // Measured at tick 70,000: the reclassified prisoner reads
-    // [0, 0, 0, 369, 141, 0] and the clean one [0, 1000, 0, 86, 1000, 0].
-    // Asserted as relations plus one anchor rather than as the two vectors,
-    // because the exact permille is a balance figure and the *direction* is the
-    // mechanic: a prisoner on the restricted timetable stops resting and stops
-    // feeling safe.
-    const [, hardSleep, , , hardSafety] = needs(withIncident);
-    const [, cleanSleep, , , cleanSafety] = needs(clean);
-    expect(hardSleep).toBe(0);
-    expect(cleanSleep).toBeGreaterThanOrEqual(500);
-    expect(hardSafety!).toBeLessThan(cleanSafety!);
+    /*
+     * `NEED_IDS` order: hunger, sleep, hygiene, bladder, safety, recreation.
+     * Measured at tick 70,000: the reclassified prisoner reads
+     * **[973, 1000, 0, 965, 1000, 0]** and the clean one
+     * **[867, 1000, 0, 847, 1000, 0]**.
+     *
+     * **This block used to read [0, 0, 0, 369, 141, 0] against
+     * [0, 1000, 0, 86, 1000, 0], and asserted `hardSleep === 0` as the
+     * mechanic: "a prisoner on the restricted timetable stops resting and stops
+     * feeling safe". That was not the timetable. It was
+     * [ADR 0041](../../docs/adr/0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md)'s
+     * defect, read as a consequence.** The high-risk regime allows `meal` for
+     * 2,200 of the day's 2,400 ticks, and `action.eat-meal` outscores every
+     * other legal candidate at a large hunger deficit -- so with no canteen in
+     * this prison the reclassified prisoner selected it on essentially every
+     * reconsideration, failed to resolve it, and did **nothing at all** for
+     * 2,200 ticks a day. Sleep at zero was not a prisoner kept awake; it was a
+     * prisoner who never started a single action. The clean prisoner scored
+     * better only because the general-population day has two blocks in which
+     * `sleep` is the *only* legal category, where no meal could crowd it out.
+     *
+     * With the fallback the direction reverses, and the honest reading is that
+     * on this prison the restricted timetable is not a punishment on any need
+     * this prison can serve: it is 2,200 ticks a day of categories a bed and a
+     * cell can answer, against a general-population day that spends about 1,000
+     * ticks in `work`/`education` and `recreation` blocks where nothing in
+     * `DEFAULT_ACTIONS` resolves at all. That is a statement about the content
+     * catalogue rather than about this mechanism, and it is asserted rather
+     * than argued -- ADR 0032's consequence is the *tier* and the *timetable*,
+     * both of which are pinned above, and neither of which depends on which
+     * way the need levels fall.
+     */
+    const [hardHunger, hardSleep, hardHygiene, hardBladder, hardSafety, hardRecreation] = needs(withIncident);
+    const [cleanHunger, cleanSleep, , cleanBladder] = needs(clean);
+
+    // The two days really did diverge, which is the claim the tier exists to
+    // make. Two independently built sessions, so nothing here compares a
+    // fixture with itself.
+    expect(needs(withIncident)).not.toEqual(needs(clean));
+
+    // The restricted timetable spends more of the day in categories this prison
+    // can answer, so the two needs a cell serves end higher, not lower.
+    expect(hardHunger!).toBeGreaterThan(cleanHunger!);
+    expect(hardBladder!).toBeGreaterThan(cleanBladder!);
+    // And both rest fully: the fixture's cell has a bed, and `action.sleep`
+    // resolves through `own-accommodation` on either timetable.
+    expect(hardSleep).toBe(1_000);
+    expect(cleanSleep).toBe(1_000);
+    expect(hardSafety).toBe(1_000);
+    // Neither prisoner can reach hygiene or recreation at all: this prison
+    // zones no shower room, no yard and no common room, and no action targeting
+    // those has an `own-accommodation` sibling to fall back to (ADR 0041
+    // alternative A says so, and this is that sentence measured). Pinned so the
+    // divergence above cannot be credited to a need neither prisoner can serve.
+    expect(hardHygiene).toBe(0);
+    expect(hardRecreation).toBe(0);
   });
 
   it('brings them back down as clean time accrues, so the loop does not only ratchet one way', () => {

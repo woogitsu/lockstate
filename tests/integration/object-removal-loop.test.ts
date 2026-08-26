@@ -493,16 +493,40 @@ describe('a removal that drops capacity below the claims held on a room (ADR 002
     submit(runtime, 'remove-yard-bed', packCommand({ type: 'RemoveObject', ...YARD_BED_TILE }));
     expect(runtime.prisoners.roomInstances.totalUseClaims).toBe(2);
 
-    // Nothing in `ActionSystem`'s three release sites consults a capacity, which
-    // is why a dropped capacity can neither leak a claim nor strand one. A
-    // claim released twice, or released without having been taken, would drive
-    // the registry-wide counter negative and silently *raise* every room's
-    // effective capacity for the rest of the session. Five days of real
-    // scheduling later -- through every recreation block in them, so the claims
-    // really were taken and released many times over -- it is exactly zero, and
-    // both prisoners are still housed, so nothing was released out of the
-    // residency collection either.
-    expect(() => stepTo(runtime, 14_000)).not.toThrow();
+    /*
+     * Nothing in `ActionSystem`'s three release sites consults a capacity, which
+     * is why a dropped capacity can neither leak a claim nor strand one. A claim
+     * that is taken and never released would accumulate: two prisoners can hold
+     * at most two at a time, so a **ceiling of 2 sampled on every tick of five
+     * days** -- through every recreation block in them, so the claims really
+     * were taken and released many times over -- is the statement that no claim
+     * outlived its action. A claim released twice, or released without having
+     * been taken, would drive the registry-wide counter below the number of
+     * performers and silently *raise* every room's effective capacity for the
+     * rest of the session.
+     *
+     * **The per-tick ceiling replaced a single sample at tick 14,000, and the
+     * reason is worth recording** ([ADR 0041](../../docs/adr/0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md)).
+     * That sample read zero only because both prisoners were standing idle
+     * through the `[1800, 2000)` block, whose `recreation` category they could
+     * once select and never resolve. With the fallback they spend that block in
+     * the yard, so tick 14,000 lands on the last tick of a legitimately held
+     * pair of claims -- measured: both `performing action.yard-recreation`,
+     * target `room.yard:16:4`, `phaseStartedAtTick` 13,900, `minDurationTicks`
+     * 100. Nothing leaked; the sample tick had simply been chosen when the yard
+     * was unreachable. A ceiling over every tick cannot be fooled by that, and
+     * the zero is re-read at tick 15,000, a tick-of-day of 600 in the
+     * `work`/`education` block where no action in `DEFAULT_ACTIONS` resolves in
+     * this prison at all.
+     */
+    let maxUseClaims = 0;
+    expect(() => {
+      for (let tick = runtime.kernel.tick + 1; tick <= 15_000; tick += 1) {
+        stepTo(runtime, tick);
+        maxUseClaims = Math.max(maxUseClaims, runtime.prisoners.roomInstances.totalUseClaims);
+      }
+    }).not.toThrow();
+    expect(maxUseClaims, 'two prisoners can hold at most two claims at once, however many they take and release').toBe(2);
     expect(runtime.prisoners.roomInstances.totalUseClaims).toBe(0);
     expect(runtime.prisoners.roomInstances.useOccupancyOf(yardInstanceId)).toBe(0);
     expect(runtime.prisoners.roomInstances.totalOccupancy).toBe(2);
