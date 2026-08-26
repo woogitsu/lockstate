@@ -126,6 +126,99 @@ describe('the wire vocabulary is exactly what the ten domains can produce', () =
     expect([...produced].sort()).toEqual([...REFUSAL_REASONS].sort());
   });
 
+  it('pairs every domain reason with the wire id it is meant to have, not merely with some wire id', () => {
+    /*
+     * The set check above compares two *bags* of ids, so it holds for any
+     * permutation: swapping `ZONE_REFUSAL_REASONS`'s `below-minimum-size` and
+     * `duplicate-instance-id` values keeps both sides identical, keeps every
+     * `Record` exhaustive, keeps the namespace prefixes intact, keeps the
+     * shared-spelling cases green -- and left 238 files / 2,696 tests green
+     * when measured at v0.0.121, while shipping a player who drew a room too
+     * small being told the room already exists. Twelve of the thirty-six wire
+     * ids are named by no other test in the suite at all, so for those the
+     * pairing had nothing anywhere.
+     *
+     * Written out as literals rather than derived. A `` `${namespace}.${key}` ``
+     * expression would be the production tables' own rule re-implemented in
+     * the test, which is the shape `docs/TESTING.md` records as the fixture
+     * supplying both sides -- and it would also make an *intended* divergence
+     * impossible to express here. These are transcribed from the ten tables'
+     * declarations, which is what makes an accidental edit to either side show
+     * up as a disagreement.
+     */
+    expect(ADMIT_REFUSAL_REASONS).toEqual({
+      'no-accommodation': 'admit.no-accommodation',
+      'population-full': 'admit.population-full',
+    });
+    expect(BUILD_REFUSAL_REASONS).toEqual({
+      'out-of-bounds': 'build.out-of-bounds',
+      unbuildable: 'build.unbuildable',
+      'unbuildable-terrain': 'build.unbuildable-terrain',
+      'unknown-buildable': 'build.unknown-buildable',
+      'unowned-land': 'build.unowned-land',
+      'water-blocked': 'build.water-blocked',
+    });
+    expect(HIRE_REFUSAL_REASONS).toEqual({
+      'insufficient-funds': 'hire.insufficient-funds',
+      'roster-full': 'hire.roster-full',
+      'unknown-role': 'hire.unknown-role',
+    });
+    expect(PLACE_OBJECT_REFUSAL_REASONS).toEqual({
+      'duplicate-order': 'place-object.duplicate-order',
+      'not-a-placeable-object': 'place-object.not-a-placeable-object',
+      'out-of-bounds': 'place-object.out-of-bounds',
+      'outside-room': 'place-object.outside-room',
+      'tile-occupied': 'place-object.tile-occupied',
+      'unknown-buildable': 'place-object.unknown-buildable',
+      'unowned-land': 'place-object.unowned-land',
+    });
+    expect(PURCHASE_CANCEL_REFUSAL_REASONS).toEqual({ 'not-pending': 'cancel-purchase.not-pending' });
+    expect(PURCHASE_REFUSAL_REASONS).toEqual({
+      'duplicate-order': 'purchase.duplicate-order',
+      'insufficient-funds': 'purchase.insufficient-funds',
+      'invalid-quantity': 'purchase.invalid-quantity',
+      'unknown-material': 'purchase.unknown-material',
+    });
+    expect(RELEASE_GUARD_REFUSAL_REASONS).toEqual({
+      'not-held': 'release-guard.not-held',
+      'unknown-guard': 'release-guard.unknown-guard',
+    });
+    expect(REMOVE_OBJECT_REFUSAL_REASONS).toEqual({ 'nothing-to-remove': 'remove-object.nothing-to-remove' });
+    expect(UNZONE_REFUSAL_REASONS).toEqual({
+      'invalid-area': 'unzone.invalid-area',
+      'nothing-to-remove': 'unzone.nothing-to-remove',
+      'room-occupied': 'unzone.room-occupied',
+    });
+    expect(ZONE_REFUSAL_REASONS).toEqual({
+      'below-minimum-size': 'zone.below-minimum-size',
+      'duplicate-instance-id': 'zone.duplicate-instance-id',
+      'invalid-area': 'zone.invalid-area',
+      'out-of-bounds': 'zone.out-of-bounds',
+      'overlaps-existing-room': 'zone.overlaps-existing-room',
+      'unknown-room-type': 'zone.unknown-room-type',
+      'unowned-land': 'zone.unowned-land',
+    });
+
+    // Every declared wire id is paired above, exactly once. Without this an
+    // eleventh table -- or an eleventh member of an existing one -- could be
+    // added with no pair written here and the ten assertions would still be
+    // about whatever they were about before.
+    const paired = [
+      ...Object.values(ADMIT_REFUSAL_REASONS),
+      ...Object.values(BUILD_REFUSAL_REASONS),
+      ...Object.values(HIRE_REFUSAL_REASONS),
+      ...Object.values(PLACE_OBJECT_REFUSAL_REASONS),
+      ...Object.values(PURCHASE_CANCEL_REFUSAL_REASONS),
+      ...Object.values(PURCHASE_REFUSAL_REASONS),
+      ...Object.values(RELEASE_GUARD_REFUSAL_REASONS),
+      ...Object.values(REMOVE_OBJECT_REFUSAL_REASONS),
+      ...Object.values(UNZONE_REFUSAL_REASONS),
+      ...Object.values(ZONE_REFUSAL_REASONS),
+    ];
+    expect(paired).toHaveLength(REFUSAL_REASONS.length);
+    expect(new Set(paired).size, 'two domain reasons share one wire id').toBe(REFUSAL_REASONS.length);
+  });
+
   it('covers every build fail reason the construction system declares', () => {
     // `BUILD_REFUSAL_REASONS` is a `Record` over the union, so `tsc` already
     // guarantees this -- but the union and the runtime tuple are two
@@ -347,6 +440,19 @@ describe('a zoning rectangle the simulation refuses reaches the session log', ()
     );
 
     expect(runtime.refusals.last?.reason).toBe('zone.out-of-bounds');
+  });
+
+  it('records a rectangle smaller than the room type allows, under its own wire id', () => {
+    // One of the twelve wire ids no test named literally before #416, driven
+    // end to end so the *pairing* is proven by the session rather than only by
+    // the table: `room.cell` authors a 2x3 minimum, this is 1x1, and the
+    // sentence the player gets must be the one about size. A table whose
+    // `below-minimum-size` pointed at `zone.duplicate-instance-id` would send
+    // them looking for a room that is not there.
+    const runtime = createNewSimulationRuntime(0x261);
+    submit(runtime, 0, packCommand({ type: 'ZoneRoom', roomId: 'room.cell', x: 2, y: 2, width: 1, height: 1 }));
+
+    expect(runtime.refusals.last).toEqual({ sequence: 1, tick: 0, reason: 'zone.below-minimum-size' });
   });
 
   it('records a room type the prison does not know', () => {
