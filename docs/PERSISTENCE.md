@@ -7,11 +7,11 @@ Supabase sync (#20) is a separate issue with its own document: its schema, RPC
 and client-side sync/conflict policy (`src/persistence/cloud/`) are covered in
 [CLOUD_SAVE.md](./CLOUD_SAVE.md), not here.
 
-## Envelope shape (`SaveEnvelope`, currently V4)
+## Envelope shape (`SaveEnvelope`, currently V6)
 
 ```
 {
-  saveSchemaVersion: 4,
+  saveSchemaVersion: 6,
   gameVersion: string,     // build/version identifier, e.g. "lockstate-0.0.0"
   prisonId: string,
   revision: number,        // caller-managed monotonic counter; optimistic-concurrency
@@ -38,7 +38,8 @@ and client-side sync/conflict policy (`src/persistence/cloud/`) are covered in
       contraband: { items, intelligence, informants, confiscations,
                     searchPolicies, searchContainerLocations, search },
       incidents:  { log, sectorRisk, gangs, tunnels,
-                    watchedSectorIds, trigger, response },
+                    watchedSectorIds, trigger,
+                    response: { metrics, responses } },        // `responses` is V6, #352
       economy?:   { treasury, procurement },                  // #96 / #249
     },
     identity?: {                                              // V3, issue #75 / ADR 0015
@@ -59,11 +60,13 @@ are deliberately separate, because the simulation may not import
 keeps evolving.
 
 `SaveEnvelope`/`SavePayload`/`TrustedSaveEnvelope` are the names call sites
-use for "the current version"; `SaveEnvelopeV1`…`V4` name specific historical
+use for "the current version"; `SaveEnvelopeV1`…`V5` name specific historical
 shapes and should appear only in `save-schema.ts` and `save-migrations.ts`.
 V2 exists because #50 changed the entity section; V3 because #70 added
 `simulation`; V4 because #259 changed the *units* of the need levels inside
-it — see the three version sections below.
+it; V5 because ADR 0028 took `capacity` off a room instance and put a
+rectangle on it; V6 because #352 put the in-flight incident-response record
+into the payload — see the version sections below.
 
 ### Adding an optional field without a version bump
 
@@ -167,32 +170,41 @@ work are not.**
   persisted; a restored session rebuilds them from the same inputs. The
   pending queue is not a cache but it is not *state* either — it is work in
   flight, owned by a `NavigationSystem` instance that no longer exists after a
-  restore. Four of the five subsystems that hold a request id
-  (`PrisonerOperationsRuntime`, `GuardRoster`, `JobBoard`, `SearchSystem`) drop
-  it on restore and re-request on their next scheduled tick, and each of those
-  resets is proven idempotent in `tests/determinism/snapshot-restore-fidelity.test.ts`.
-  For those four the visible cost is a bounded delay, not lost progress; the
-  alternative — persisting request ids into a queue that never received them —
-  leaves actors stuck forever.
+  restore. All five subsystems that hold a request id
+  (`PrisonerOperationsRuntime`, `GuardRoster`, `JobBoard`, `SearchSystem`,
+  `IncidentResponseSystem`) drop it on restore and re-request on their next
+  scheduled tick. The first four resets are proven idempotent in
+  `tests/determinism/snapshot-restore-fidelity.test.ts`; the fifth is measured
+  in `tests/integration/incident-response-restore.test.ts`, because for it the
+  bound is a number rather than a property. The visible cost is a bounded delay,
+  not lost progress; the alternative — persisting request ids into a queue that
+  never received them — leaves actors stuck forever.
 
-  **`IncidentResponseSystem` was listed here as a fifth and does not belong,
-  which was measured rather than reasoned (#352).** It cannot re-request: the
-  incident lifecycle is forward-only, so `advanceResponse`'s no-record path can
-  never return to `tryDispatch`, and the incident lapses instead. That much its
-  own docstring states and intends. What the reset also discards is the record
-  `releaseResponse` reads to *return* what the response claimed — and both of
-  those things are persisted, so the loss is permanent rather than delayed. A
-  save taken one tick after a severity-8 dispatch comes back with its four
-  responders still `'on-search'` and its sector still `'lockdown'` (doors still
-  `'locked'`), unchanged 52,000 ticks later, while the continuous run resolves
-  the incident, lifts the lockdown and returns all six guards. `GuardRoster`'s
-  own `unassign` has no reachable caller for an `'on-search'` guard, and there
-  is no dismiss command, so the guards are unrecoverable. `SearchSystem` sets
-  the same phase and does *not* leak, because its active jobs are in the
-  payload and a restored job releases its guards — the difference is only
-  whether the record that owns the release survives the save. Fixing it is
-  either a V6 field or a restore-semantics decision, which is why #352 records
-  it instead of this document asserting the bounded-delay property for it.
+  **`IncidentResponseSystem` did not belong in that list until save-schema V6,
+  and what it cost was measured rather than reasoned (#352).** It could not
+  re-request: the incident lifecycle is forward-only, so `advanceResponse`'s
+  no-record path can never return to `tryDispatch`, and the incident lapsed
+  instead. That much its own docstring stated and intended. What the reset
+  *also* discarded is the record `releaseResponse` reads to **return** what the
+  response claimed — and both of those things are persisted, so the loss was
+  permanent rather than delayed. A save taken one tick after a severity-8
+  dispatch came back with its four responders still `'on-search'` and its sector
+  still `'lockdown'` (doors still `'locked'`), unchanged 52,000 ticks later,
+  while the continuous run resolved the incident, lifted the lockdown and
+  returned all six guards. `GuardRoster.unassign` has no reachable caller for an
+  `'on-search'` guard and there is no dismiss command, so those guards were
+  unrecoverable. `SearchSystem` sets the same phase and does *not* leak, because
+  its active jobs are in the payload and a restored job releases its guards —
+  the difference was only whether the record that owns the release survives the
+  save.
+
+  **V6 makes the record survive it**, which is why the entry above now reads
+  "all five". What is dropped is the request ids and nothing else, and the bound
+  is: **one `IncidentResponseSystem` interval — 10 ticks — for a response saved
+  while its responders were still travelling, and zero for one saved after they
+  arrived**, because `containmentStartedAtTick` is carried and a responder
+  already on the post tile issues no request. See "V6" below for the shape and
+  for what a legacy V5 save does.
 - **Per-system `requestSequence` counters** (`SearchSystem`,
   `DeploymentSystem`, `PatrolSystem`, `ActionSystem`). These only mint names
   for path requests against the queue above. Since no restored state can
@@ -235,7 +247,7 @@ work are not.**
     diagnostic counter with no reader in `src/`, absent from this payload, and
     reset to zero by a restore in any case.
 
-  The reason this stays an exclusion rather than becoming a V6 field is also
+  The reason this stays an exclusion rather than becoming a versioned field is also
   measured. Saving five ticks *earlier*, while the same job is `'travelling'`
   rather than `'performing'`, produces the identical profile — every job one
   `JobSystem` interval late, the wall one `ConstructionSystem` interval late —
@@ -497,17 +509,14 @@ trade-off to be recorded rather than decided in implementation code.
   A step never receives or returns the caller's original object reference in
   a way that lets it mutate the source fixture.
 
-`saveMigrationChain` registers the V1, V2, V3, V4 and V5 schemas and the
-`1 -> 2`, `2 -> 3`, `3 -> 4` and `4 -> 5` steps. The chain-walking, per-step
-validation and immutability guarantees are also exercised against a synthetic
+`saveMigrationChain` registers the V1 to V6 schemas and the `1 -> 2`, `2 -> 3`,
+`3 -> 4`, `4 -> 5` and `5 -> 6` steps. The chain-walking, per-step validation
+and immutability guarantees are also exercised against a synthetic
 multi-version fixture in `tests/unit/persistence-migration.test.ts`,
-independent of the real save versions; the real upgrades are covered in
-`tests/migrations/save-v1-to-v2.test.ts`,
-`tests/migrations/save-v2-to-v3.test.ts`,
-`tests/migrations/save-v3-to-v4.test.ts` and
-`tests/migrations/save-v4-to-v5.test.ts`, the last three each walking a frozen
-V1 fixture the whole way in one decode, which is what a save from the first
-release actually gets.
+independent of the real save versions; the real upgrades are covered one file
+per step in `tests/migrations/`, and all but the first walk a frozen V1 fixture
+the whole way in one decode, which is what a save from the first release
+actually gets.
 
 `tests/migrations/save-v1-to-v5-chain.test.ts` covers the one property those
 per-step files structurally cannot, and it is a lesson about how a migration
@@ -526,26 +535,38 @@ checked-in V1 fixture, so a loss is both caught and attributed to a link. The
 rule it stands for: a migration assertion must name a value the migration did
 not produce.
 
-### Adding a V6 later
+`tests/migrations/save-v5-to-v6.test.ts` follows that rule for the fifth link
+without extending the chain file: its V5 inputs come from a real captured
+session with `responses` stripped back off it, so `kernel`, `world`,
+`construction`, `entities` and `identity` are asserted against a payload no
+migration step produced, and the frozen-fixture case asserts the whole payload
+byte-identical across the step.
 
-The steps below are what V4 (#259) and V5 (ADR 0028) both did, and are the
-pattern to follow.
+### Adding a V7 later
+
+The steps below are what V4 (#259), V5 (ADR 0028) and V6 (#352) all did, and
+are the pattern to follow. They are written in terms of V6 because that is the
+version they were last walked for; read "6" as "the next number".
 
 1. Add the new interface/type and a `.strict()` Zod schema for it, alongside
    the existing ones — never edit a historical schema to match new code.
    Where two versions differ only in a bound or a leaf type, make the shared
    part a **factory** parameterised by that difference (as
-   `sessionSystemsShapeFor` is, over two axes since V5: the need-level bound
-   and the room-instance row) rather than copying several hundred lines: the
-   historical version is then frozen by the arguments it is instantiated with,
-   and the two shapes cannot drift apart in any other respect. Make the
-   factory *generic* in a schema it takes, so the inferred payload type keeps
-   the real shape instead of widening to `any`.
-2. `saveMigrationChain.registerSchema(zodVersionSchema(6, v6Schema))`.
-3. `saveMigrationChain.registerMigration({ fromVersion: 5, toVersion: 6, migrate })`,
+   `sessionSystemsShapeFor` is, over three axes since V6: the need-level bound,
+   the room-instance row and the incidents section) rather than copying several
+   hundred lines: the historical version is then frozen by the arguments it is
+   instantiated with, and the shapes cannot drift apart in any other respect.
+   Make the factory *generic* in a schema it takes, so the inferred payload type
+   keeps the real shape instead of widening to `any`.
+2. `saveMigrationChain.registerSchema(zodVersionSchema(7, v7Schema))`, and
+   change the version *the previous* envelope schema pins from
+   `SAVE_SCHEMA_VERSION` to its own literal — V6 is the first bump where the
+   outgoing schema had been written against the constant, and leaving it there
+   silently re-labels the frozen shape.
+3. `saveMigrationChain.registerMigration({ fromVersion: 6, toVersion: 7, migrate })`,
    pure and side-effect-free, in `src/persistence/save-migrations.ts`. If it
    changes the payload, recompute `checksum` in the step (see "Checksum").
-4. Bump `SAVE_SCHEMA_VERSION` to `6`. Call sites use the version-neutral
+4. Bump `SAVE_SCHEMA_VERSION` to `7`. Call sites use the version-neutral
    `SaveEnvelope`/`SavePayload`/`TrustedSaveEnvelope` aliases, so this step no
    longer sweeps a rename through the repository the way V2 did — but a test
    that hand-writes an envelope with a *literal* version does not benefit, so
@@ -560,8 +581,13 @@ pattern to follow.
    generated by the build you are changing. Where the frozen fixtures cannot
    reach the case under test — none of them carries a `simulation` section, so
    none can exercise a change *inside* it — construct the older payload by
-   hand from values chosen in the test, as `save-v3-to-v4.test.ts` does, so
-   the expected output is still not computed by the code under test.
+   hand from values chosen in the test, as `save-v3-to-v4.test.ts` does — or
+   from a real capture with the new field taken back off it, as
+   `save-v5-to-v6.test.ts` does — so the expected output is still not computed
+   by the code under test. Two live-capture-derived inputs already have to undo
+   what is newer than their version (`save-v3-to-v4` and `save-v4-to-v5` both
+   strip `objects` and `responses` and rebuild the room-instance rows), so
+   expect to add one line to each of those when a field arrives.
 6. If the new version adds *simulation* state, extend `EncodedSessionSystems`
    and its Zod mirror together, and decide per subsystem whether the state is
    authoritative or derived — recording the answer under "What is deliberately
@@ -575,6 +601,122 @@ pattern to follow.
    lossless if the recomputation is *proved* to land on the value that was
    dropped — `tests/migrations/save-v4-to-v5.test.ts` measures the premise it
    rests on rather than citing it.
+8. If the step has to write a section the version did **not** change — V6 is
+   the only one so far, and `docs/adr/0030-restoring-an-interrupted-incident-response.md`
+   is the decision that permits it — say which fact about `src/` makes each
+   written value a derivation rather than an invention, and put a test on the
+   fact rather than a citation of it. A step that repairs state is not the
+   default: the reason V6 may is that the alternative leaves the player with a
+   loss no command in the game can reverse.
+
+## V6: a save carries the incident response it was taken during (#352)
+
+One change, and it is the smallest one any bump in this chain has been made
+for: `simulation.incidents.response` gains `responses`, one row per open
+incident that has responders committed to it —
+
+```
+responses: [[incidentId, { guardIds, arrivedGuardIds,
+                           containmentStartedAtTick?, lockdownApplied }], ...]
+```
+
+sorted by incident id, with `arrivedGuardIds` sorted ascending, so the payload
+carries state rather than the order this instance's history happened to produce.
+
+**Why a required field and not the optional-field pattern.** Absence was
+ambiguous, and the ambiguity *was* the defect. A V5 save with a `'notified'`
+incident, four `'on-search'` guards and a `'lockdown'` sector says nothing
+about whether those guards and that lockdown belong to that incident, and the
+reader guessed "no response exists". `IncidentResponseSystem.releaseResponse`
+is the code that returns a closing response's claims, and it early-returns when
+there is no record — so the guess did not undo the claims, it made them
+permanent. Nothing else in `src/` can move a guard out of `'on-search'`
+(`GuardRoster.unassign`'s other callers are all unreachable for that phase, and
+there is no dismiss command) and nothing else writes or clears `'lockdown'`.
+Measured at v0.0.82 through the real save path: a severity-8 riot saved one
+tick after dispatch left four of six guards and one sector held, and 53,000
+further ticks moved nothing. An optional field would have preserved exactly
+that guess for every save written from V6 on.
+
+**`SearchSystem` is the shape this copies, and the control that proved it.**
+`SearchSystem` sets the same `'on-search'` phase and holds the same kind of
+in-flight path ids, and it does not leak — because its active jobs *are* in the
+payload, so a restored job re-travels, completes and releases its guards. V6
+gives the response the same treatment: the record is carried, the path requests
+are not (they name slots in a `NavigationSystem` queue that no longer exists),
+and a restored response re-issues them on its first scheduled update. What that
+costs is measured rather than asserted, in
+`tests/integration/incident-response-restore.test.ts`: **one
+`IncidentResponseSystem` interval — 10 ticks — for a response saved
+mid-travel, and zero for one saved after its responders arrived**, because
+`containmentStartedAtTick` is carried and an already-arrived responder issues no
+request. The same test compares a restored session against a continuous one at
+the tick the continuous one releases the guards, plus that delay — not after
+"enough" ticks, which is the assertion this defect would have passed.
+
+### What the V5 → V6 migration does, and what a player notices
+
+`migrateSaveEnvelopeV5ToV6` is the one step in this chain that rewrites
+sections the version did not change — `security.guards.records` and
+`security.sectorControlStates` — and it needs its own justification, because
+the rule the other steps follow is that a step reshapes the field the version
+changed and invents nothing.
+
+It invents nothing here either: every value it writes is *derived* from the
+same payload, by two facts about `src/` rather than by two guesses.
+
+- **An `'on-search'` guard that no active search job names is a responder.**
+  Exactly two things in `src/` have ever set that phase
+  (`grep -rn "setDeploymentPhase(" src/`), and one of them is `SearchSystem`,
+  whose jobs are in the payload.
+- **A sector in `'lockdown'` with no open incident in it is residue.**
+  `IncidentResponseSystem` is the only writer of `'lockdown'` in `src/`
+  (`grep -rn "setControlState" src/`), and it holds one only while an incident
+  in that sector is open. `'restricted'` is never touched.
+
+`tests/migrations/save-v5-to-v6.test.ts` re-measures both premises off a real
+session rather than citing them — including a session holding a search job's
+guards and a response's responders at the same time, which is what separates
+"a responder" from "any guard in that phase".
+
+What it then does splits by what the V5 save is:
+
+- **The response is still open** (`'notified'` or `'responding'`). The step
+  attributes the responders to it and records whether its sector is locked
+  down, and the *runtime* releases them the normal way when the incident
+  closes. A V5 save cannot say which responder belongs to which incident, so
+  where several incidents have responders committed they all go to the
+  lowest-id one and the others get an empty list. That is exact for a single
+  responded-to incident, never strands anything in any case (every responder is
+  named by exactly one record, and every record carries its own
+  `lockdownApplied`), and at worst costs one incident outcome once — guards
+  pointed at the wrong sector re-travel there and count toward that incident's
+  quota. A play outcome the save genuinely does not determine.
+- **The response was already stranded** by an earlier restore: the incident is
+  terminal and its guards and its lockdown are still held. No record can be
+  reconstructed for a closed incident, and nothing in `src/` can release them,
+  so the step releases them in the payload — the guard row is rewritten to
+  exactly what `GuardRoster.unassign` produces, and the sector's control state
+  to `'normal'`. The doors need no edit: `navigation.doors` records each
+  governed door at its *baseline* state and `SecuritySectorRegistry.loadSnapshot`
+  re-cascades the restored control state onto it, so writing `'normal'` is what
+  unlocks them.
+
+**Why releasing rather than leaving V5's behaviour alone**, which was the other
+honest option. Leaving them is not "declining to guess" — it is choosing the
+one outcome the player can never undo. A restored V5 save then keeps a sector in
+permanent lockdown and its responders permanently unusable, with the hiring
+charge already spent and no command in the game able to reverse either. What a
+player notices under the choice made here is smaller and recoverable: an
+emergency response that resumes one interval late, or — for a save that was
+already damaged — a lockdown that lifts and guards that report for duty the
+moment the save loads, with the incident that stranded them still in the log as
+`'lapsed'`, which is what happened to it. Ending an emergency response early is
+a play outcome; a prison that is silently four guards smaller forever is a
+corrupt save.
+
+`supabase/migrations/` is untouched: a save-schema version is a client-side
+payload shape and nothing about it reaches the database.
 
 ## V5: a room instance carries its rectangle, not its capacity (ADR 0028)
 

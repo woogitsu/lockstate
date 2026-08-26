@@ -1,4 +1,4 @@
-# One decision is awaiting approval — and where an accepted decision contradicts the code
+# Two decisions are awaiting approval — and where an accepted decision contradicts the code
 
 This file is for the repository owner and nobody else. It exists because
 `docs/adr/README.md` reports statuses and `tests/foundation/adr-numbering-contract.test.ts`
@@ -8,9 +8,9 @@ implementation.
 
 **Nothing here changes a status.** A status moves in the ADR and in the index,
 never in this file. What changed with this revision is what the file is *for*:
-§1 records **all thirteen** flips, §2 holds **the one decision awaiting
-approval — ADR 0029** — above the account of why the queue had been emptied and
-what that bought, and everything after it is the residue — one genuinely open
+§1 records **all thirteen** flips, §2 holds **the two decisions awaiting
+approval — ADR 0029 and ADR 0030** — above the account of why the queue had been
+emptied and what that bought, and everything after it is the residue — one genuinely open
 decision, one watch item, and the gaps between an accepted decision and the
 code. §6 used to be the inventory of stale sentences the flips left behind;
 **they are corrected, and that class is now asserted by a test**, so what it
@@ -165,15 +165,21 @@ gap, not a wrong status; §5 carries it, with what has and has not moved since
 
 ---
 
-## 2. The queue has exactly one entry: ADR 0029
+## 2. The queue has two entries: ADR 0029 and ADR 0030
 
-**This section's heading used to be "The queue is empty", and the entry below is
-the first thing to arrive since.** The rule that section states — *"any commit
-that adds a `Proposed` ADR adds an entry here in the same commit, giving the
-evidence, what settling it commits the project to, and the exact line that would
-replace the status"* — is followed, and the account of why the queue was emptied
-is kept below it unchanged, because it is the argument for why one row is worth
-reading.
+**This section's heading used to be "The queue is empty", and the entries below
+are what has arrived since.** The rule that section states — *"any commit that
+adds a `Proposed` ADR adds an entry here in the same commit, giving the evidence,
+what settling it commits the project to, and the exact line that would replace
+the status"* — is followed by both, and the account of why the queue was emptied
+is kept below them unchanged, because it is the argument for why a short list is
+worth reading.
+
+**The two are not equally urgent, and the difference is worth stating.** 0029's
+approval settles a decision already implemented and reversible by a further
+change. **0030's approval is load-bearing before its branch merges**: two of its
+three decisions rewrite a player's stored save the first time it is loaded, and
+cannot then be unmade for that save.
 
 ### ADR 0029 — concurrent-use claims on a room
 
@@ -213,8 +219,53 @@ reading.
   `**Accepted, YYYY-MM-DD.**`, and change that ADR's row in
   `docs/adr/README.md` from `Proposed — pending human approval` to
   `Accepted, YYYY-MM-DD`. Both in the same commit — the suite checks the pair.
-  The two paragraphs in `docs/adr/README.md` that now say one row is `Proposed`
-  go back to saying none is, and this entry is deleted.
+  Then update the two paragraphs in `docs/adr/README.md` that say two rows are
+  `Proposed`, and delete this entry.
+
+---
+
+### ADR 0030 — restoring an interrupted incident response
+
+- **What it is.** [ADR 0030](./0030-restoring-an-interrupted-incident-response.md),
+  *"What a restored session owes an incident response that was interrupted by a
+  save"*. Three decisions: the response record becomes persisted state
+  (save-schema **V6**); a legacy V5 save's already-claimed guards and lockdown
+  are **released** rather than left held; and a migration may write a section its
+  version did not change when every value is derived from a tested fact about
+  `src/` and the alternative is a loss the player cannot reverse.
+- **It arrived with its implementing change**, the same fragile case as 0029, and
+  is why this entry exists rather than the ADR sitting on `main` unnoticed.
+- **The evidence is a measurement, and it is issue #352's.** A severity-8 riot
+  saved one tick after dispatch: the continuous run releases four guards and
+  lifts the sector lockdown on tick 71; the restored one holds both, and 53,000
+  further ticks move nothing. `GuardRoster.unassign` has no reachable caller for
+  an `'on-search'` guard and no dismiss command exists, so the loss is terminal,
+  not slow. `SearchSystem` is the control: same phase, no leak, because its jobs
+  are in the payload.
+- **What approving it commits the project to.** `SAVE_SCHEMA_VERSION` at 6 with
+  a V5 → V6 step that reattributes and repairs; a `responses` array that is
+  **required** at V6 rather than optional; the restored-response delay pinned as
+  a number (one `IncidentResponseSystem` interval mid-travel, zero after
+  arrival); and the narrow, three-condition permission for a future migration to
+  repair state outside the field its version changed. It commits to no new
+  content, no gameplay rule and nothing in `supabase/migrations/`.
+- **What refusing it would cost.** Refusing decision 1 leaves the defect open,
+  or forces issue #352's second option: the same semantics decided across
+  `src/simulation/incidents/`, `src/simulation/security/` and
+  `restore-session.ts` instead of in one record. Refusing decision 2 alone keeps
+  V5 saves permanently broken — a sector in lockdown forever and its responders
+  unusable forever — which is the outcome the ADR argues is worse than an
+  incident that ends early. Refusing decision 3 means the V5 → V6 step may only
+  attribute, not repair, so a save written *after* an earlier restore — the
+  already-damaged population — gets no fix at all.
+- **The exact line that would replace the status.** In
+  `docs/adr/0030-restoring-an-interrupted-incident-response.md`, replace
+  `**Proposed — pending human approval.** Not accepted.` with
+  `**Accepted, YYYY-MM-DD.**`, and change that ADR's row in
+  `docs/adr/README.md` from `Proposed — pending human approval` to
+  `Accepted, YYYY-MM-DD`. Both in the same commit — the suite checks the pair.
+  Then update the two paragraphs in `docs/adr/README.md` that say two rows are
+  `Proposed`, and delete this entry.
 
 ---
 
