@@ -187,6 +187,41 @@ describe('IncidentResponseSystem: real guards, real routes, real lockdown', () =
     for (let tick = 0; tick < 500 && restored.incidents.get('incident-1')!.state === 'notified'; tick += 1) restored.kernel.step();
 
     expect(restored.incidents.get('incident-1')!.state).toBe('lapsed');
+    // Narrower than the call above it: `incidentsResolved` is 0 on a system that
+    // was never given a snapshot at all, so this pins the lapse and not the
+    // restore. The case below is the one that reads what `loadSnapshot` carried.
     expect(restored.response.getMetrics().incidentsResolved).toBe(0);
+  });
+
+  /**
+   * The counters `IncidentResponseSystem.loadSnapshot`'s own comment calls the
+   * only thing that survives a restore -- "Only metrics survive a restore" --
+   * driven so that dropping them fails here (#375).
+   *
+   * Measured at v0.0.98: replacing the four assignments in that method with
+   * `return;` left this file 10/10 green, and the whole suite at 216/217 files
+   * -- one failure, and not here. The mutation was killed, but only by
+   * `tests/determinism/snapshot-restore-fidelity.test.ts`, which is not the file
+   * that names the mechanism -- the shape `tests/unit/camera-coordinates.test.ts`
+   * records as having let #115 ship.
+   *
+   * Four distinct non-zero counters, written out rather than read back, so a
+   * `loadSnapshot` that drops one or assigns one twice fails. Each is a state
+   * this system reaches: the cases above drive a resolution, a lapse, a
+   * dispatch and (via `security-patrol.test.ts`'s sibling path) a route
+   * failure.
+   */
+  it('carries every response counter it is handed, and clears the live bookkeeping with them', () => {
+    const harness = buildHarness();
+    expect(harness.response.getMetrics()).toEqual({ incidentsResolved: 0, incidentsLapsed: 0, respondersDispatched: 0, routeFailures: 0 });
+
+    harness.response.loadSnapshot({ metrics: { incidentsResolved: 4, incidentsLapsed: 3, respondersDispatched: 2, routeFailures: 1 } });
+
+    expect(harness.response.getMetrics()).toEqual({
+      incidentsResolved: 4,
+      incidentsLapsed: 3,
+      respondersDispatched: 2,
+      routeFailures: 1,
+    });
   });
 });

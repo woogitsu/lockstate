@@ -292,6 +292,110 @@ describe('a populated prison survives save -> load', () => {
     }
   });
 
+  it('keeps the patrol record and the deployment failures the prison earned, which no test read across a save before (#375)', () => {
+    /*
+     * The seam issue #375 found unguarded. `DeploymentSystem.loadSnapshot` and
+     * `PatrolSystem.loadSnapshot` are called by exactly one place in `src/` --
+     * `restoreSimulationRuntime` -- and, until #375, by nothing in `tests/`;
+     * `tests/unit/security-snapshot-restore.test.ts` now drives the two methods
+     * directly and this is the same fact through the real save envelope, which
+     * is what proves the two sections survive Zod validation, `JSON.stringify`
+     * and `decodeSaveEnvelope` rather than only an in-process call.
+     *
+     * Why the session-level guards missed it: `carriedScopeState`
+     * (`tests/helpers/determinism-state.ts`) omits both metric surfaces on
+     * purpose, and `snapshot-restore-fidelity.test.ts`'s bundle comparison
+     * names its fields one at a time and names neither of these two.
+     */
+    const runtime = buildPopulatedPrison();
+
+    const patrolBefore = runtime.patrolSystem.getMetrics();
+    const deploymentBefore = runtime.deploymentSystem.getMetrics();
+    // Non-vacuous, and this is the whole of it: a prison whose patrol had
+    // completed nothing could not tell a restore that carries the counter from
+    // one that leaves a fresh system's zero in place.
+    expect(patrolBefore.loopsCompletedOnTime + patrolBefore.loopsCompletedLate).toBeGreaterThan(0);
+
+    // The deployment half is **vacuous here and says so**: `deploymentFailures`
+    // only moves when a guard's route to its post fails, which this scenario
+    // never does, so the equality below holds for a restore that carries the
+    // counter and for one that leaves a fresh zero. Pinned rather than left
+    // implicit, so a scenario that later strands a guard fails here and asks for
+    // this comment to go instead of quietly making the assertion mean something.
+    // The non-vacuous guard on that counter is the literal donor in
+    // `tests/unit/security-snapshot-restore.test.ts`.
+    expect(deploymentBefore).toEqual({ deploymentFailures: 0 });
+
+    const restored = saveAndLoad(runtime);
+
+    expect(restored.patrolSystem.getMetrics()).toEqual(patrolBefore);
+    expect(restored.deploymentSystem.getMetrics()).toEqual(deploymentBefore);
+  });
+
+  it('keeps the utility networks a prison wired, nodes, connections and the failed one (#375)', () => {
+    /*
+     * `runtime.electricity`/`runtime.water` are captured into every save and
+     * restored on every load, and **nothing anywhere populated them** -- no
+     * production path and no fixture -- so both were always empty on both
+     * sides of the boundary. Measured at v0.0.98: deleting the two
+     * `loadSnapshot` calls from `restoreSimulationRuntime` left **217 files /
+     * 2,463 tests green**, because an empty network restored onto an empty
+     * network is the same answer either way. That is #375's fourth shape:
+     * a fixture that builds an empty instance of the thing whose non-empty
+     * behaviour is the subject.
+     *
+     * The nodes are wired here rather than in `buildPopulatedPrison` because no
+     * other case in this file is about them, and through the network's own
+     * `addNode`/`connect`/`setFailed` -- the same calls `#25`'s unit tests make
+     * -- so this is a document a real save can carry rather than a shape
+     * invented to make an assertion fire. A failed producer is included
+     * deliberately: `failedNodeIds` is the one section of the payload whose loss
+     * changes an *evaluation* rather than only a listing.
+     */
+    const runtime = buildPopulatedPrison();
+    runtime.electricity.addNode({ id: 'generator-0', kind: 'producer', capacityOrDemand: 10 });
+    runtime.electricity.addNode({ id: 'lighting-0', kind: 'consumer', capacityOrDemand: 4 });
+    runtime.electricity.connect('generator-0', 'lighting-0');
+    runtime.water.addNode({ id: 'pump-0', kind: 'producer', capacityOrDemand: 6 });
+    runtime.water.addNode({ id: 'shower-0', kind: 'consumer', capacityOrDemand: 6 });
+    runtime.water.connect('pump-0', 'shower-0');
+    runtime.water.setFailed('pump-0', true);
+
+    // The premise, asserted rather than assumed: the two networks are in
+    // different states, and one of them is disabled by the failure.
+    expect(runtime.electricity.evaluate().states.get('lighting-0')).toBe('powered');
+    expect(runtime.water.evaluate().states.get('shower-0')).toBe('disabled-no-supply');
+
+    const restored = saveAndLoad(runtime);
+
+    // The graph, written out rather than read back off the source network.
+    expect(restored.electricity.getSnapshot()).toEqual({
+      type: 'electricity',
+      nodes: [
+        { id: 'generator-0', kind: 'producer', capacityOrDemand: 10 },
+        { id: 'lighting-0', kind: 'consumer', capacityOrDemand: 4 },
+      ],
+      connections: [['generator-0', 'lighting-0']],
+      failedNodeIds: [],
+    });
+    expect(restored.water.getSnapshot()).toEqual({
+      type: 'water',
+      nodes: [
+        { id: 'pump-0', kind: 'producer', capacityOrDemand: 6 },
+        { id: 'shower-0', kind: 'consumer', capacityOrDemand: 6 },
+      ],
+      connections: [['pump-0', 'shower-0']],
+      failedNodeIds: ['pump-0'],
+    });
+
+    // And behaviourally, which is the half a listing cannot give: the restored
+    // prison still has light and still has no water, because the failure came
+    // back with the graph.
+    expect(restored.electricity.evaluate().states.get('lighting-0')).toBe('powered');
+    expect(restored.water.isFailed('pump-0')).toBe(true);
+    expect(restored.water.evaluate().states.get('shower-0')).toBe('disabled-no-supply');
+  });
+
   it('keeps the names it minted, for prisoners and staff alike, and projects them after the restore', () => {
     const runtime = buildPopulatedPrison();
 
