@@ -308,6 +308,49 @@ export interface SavePanelImportFile {
 }
 
 /**
+ * Mints the id of a new prison: the local repository's primary key, and the
+ * same value the cloud slot is created under.
+ *
+ * **It must be a UUID, and that is a schema requirement rather than a style
+ * preference.** `prisons.id` is `uuid`
+ * (`supabase/migrations/20260822190100_create_prisons.sql`), and every cloud
+ * operation passes this value into a `uuid` parameter or compares it against a
+ * `uuid` column -- `create_prison(p_prison_id uuid, ...)`,
+ * `create_save_version(p_prison_id uuid, ...)`, `.eq('id', ...)` on `prisons`
+ * and `.eq('prison_id', ...)` on `save_versions`. PostgreSQL raises `22P02`
+ * *during argument coercion*, so a non-UUID id fails before the function body
+ * runs: before the `auth.uid()` fail-closed check, before the advisory lock and
+ * before the slot-capacity trigger.
+ *
+ * This minted `prison-${Date.now().toString(36)}`, which no `uuid` column
+ * accepts, so every cloud-save call was unreachable for every prison the game
+ * created (#338). It was latent only because nothing constructs a
+ * `SupabaseCloudSaveClient` yet.
+ *
+ * The id is caller-supplied rather than server-generated on purpose. The
+ * migration's own header states why -- "so a client can create the cloud slot
+ * with the prison id its local repository already uses" -- and this is a
+ * local-first stack: `SessionController.createPrison` writes the slot and
+ * generation 1 to IndexedDB before any network call exists, so the id has to
+ * exist offline. `create_prison` does accept `null` and generate one, but
+ * adopting a server id would mean either forbidding offline creation or
+ * rewriting a local primary key after a round trip.
+ *
+ * `crypto.randomUUID()` is the repository's convention for main-thread ids
+ * (`src/persistence/session/worker-session-host.ts`,
+ * `src/ui/simulation-commands.ts`). It does not endanger determinism: a prison
+ * id never enters simulation state -- `prisonId` appears nowhere under
+ * `src/simulation/` -- and this module is not in the import closure
+ * `tests/determinism/ambient-nondeterminism-contract.test.ts` walks out of
+ * `src/simulation/`. It also removes a quieter property of the old scheme:
+ * `Date.now().toString(36)` is guessable to the millisecond, which is a bad
+ * thing to hand a table whose primary key is global across every account.
+ */
+export function newPrisonId(): string {
+  return crypto.randomUUID();
+}
+
+/**
  * A deliberately minimal DOM save/load panel -- the first real consumer of
  * the local-first persistence stack, and the piece issue #19 was left open
  * for ("wiring the repository into the app... there's no session/save UI
@@ -531,7 +574,7 @@ export class SavePanel {
 
   public requestCreate(): AsyncActionOutcome {
     return this.start('create', async () => {
-      const prisonId = `prison-${Date.now().toString(36)}`;
+      const prisonId = newPrisonId();
       this.setStatus({ kind: 'saving', messageKey: SAVE_PANEL_MESSAGE_KEY.statusCreating });
       try {
         this.setStatus(describeSaveResult(await this.controller.createPrison(prisonId, 'New Prison')));

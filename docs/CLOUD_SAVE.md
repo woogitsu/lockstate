@@ -663,6 +663,91 @@ admits the row. Those need a running PostgREST, which is `pnpm verify:stack`'s
 job and is in no CI gate (#105 owner check 4). What it closes is the neighbouring
 gap, which is the half that can be closed without a stack.
 
+## The prison id has a type, and the client is the one that mints it
+
+**A cloud prison id is a UUID, and it is the same value as the local prison
+id.** `prisons.id` is `uuid` (`20260822190100_create_prisons.sql:7`), and every
+cloud operation either passes it into a `uuid` parameter — `create_prison(
+p_prison_id uuid, …)`, `create_save_version(p_prison_id uuid, …)` — or compares
+it against a `uuid` column: `.eq('id', …)` on `prisons`, `.eq('prison_id', …)`
+on `save_versions`. The bounds table above gives `game_version`, `checksum` and
+`storage_path` a documented domain and said nothing about this one, which is the
+gap #338 fell through.
+
+The producer did not mint that type. `src/ui/save-panel.ts` minted
+`prison-${Date.now().toString(36)}`, and PostgreSQL raises `22P02` *during
+argument coercion*, so the failure lands before the function body runs — before
+the `auth.uid()` fail-closed check, before the advisory lock, before the
+slot-capacity trigger. Executed against the schema `pnpm verify:sql` builds, as
+`authenticated` with a JWT subject set:
+
+```
+select * from public.create_prison('prison-mfa1x2y','lockstate-0.0.80',1,'New Prison');
+ERROR:  invalid input syntax for type uuid: "prison-mfa1x2y"
+```
+
+Every one of the four `SupabaseCloudSaveClient` operations failed that way, for
+every prison the game creates, on every project — the same
+no-configuration-works shape as #192, one layer earlier. It was latent only
+because nothing constructs the client yet (`grep -rn 'import.meta.env' src/`
+returns no match), which also means no `prisons` row anywhere carries a
+non-UUID id: none could be inserted.
+
+**Why the client mints it rather than the database.** `prisons.id` defaults to
+`gen_random_uuid()` and `create_prison` passes `coalesce(p_prison_id,
+gen_random_uuid())`, so a caller *may* send `null` and let the server choose.
+The client does not, and should not. The RPC's header states the reason —
+"`p_prison_id` is caller-supplied so a client can create the cloud slot with the
+prison id its local repository already uses" — and the stack is local-first:
+`SessionController.createPrison` writes the slot and generation 1 to IndexedDB
+before any network call exists, so the id has to exist offline, before there is
+a server to ask. Adopting a server-chosen id would mean either forbidding
+offline prison creation or rewriting a local primary key after a round trip, and
+it would give up the local-id-equals-cloud-id property deliberately on purpose
+here. #343 reaches the same conclusion from the other direction: dropping the
+parameter "breaks the local-id-equals-cloud-id property the header asks for".
+
+**What the UUID does and does not do for #343.** #343 is that a caller-supplied
+id colliding with a row the caller cannot see escapes as a raw `23505` with the
+id echoed in `DETAIL`, which confirms the existence of another account's prison.
+A random 122-bit id does not close that — the missing status and the `DETAIL`
+echo are SQL-side and remain #343's to fix — but it does remove the part that
+made it cheap to aim: `Date.now().toString(36)` is guessable to the millisecond,
+so under the old scheme the ids of real prisons were predictable, and a global
+primary key plus a confirmation oracle plus a guessable id space is a worse
+combination than any one of the three.
+
+**Existing local saves keep their old ids, and this is a one-way break for the
+cloud only.** The save panel is wired into `src/main.ts`, so prisons created
+before the fix exist on real devices with `prison-<base36>` ids in IndexedDB.
+Nothing about them breaks: `identifierSchema` still admits them, the local
+repository still keys on them, and they load and autosave exactly as before —
+local-first persistence never needed a UUID. What they cannot do is register in
+the cloud once the cloud client is wired (#287); `registerPrison` would pass the
+legacy id into `uuid` and get the `22P02` above.
+
+That is recorded as a known break rather than fixed here, because every way of
+fixing it is a decision this document should not make implicitly. Rewriting a
+legacy local id is a primary-key rewrite across the local repository, the slot
+metadata and the save envelope's own `prisonId`; carrying a separate cloud id
+alongside the local one gives up the local-id-equals-cloud-id property on
+purpose; and deriving a UUID from the legacy id by hash invents an id scheme.
+Whichever is chosen belongs to the cloud-wiring issue and, per `CLAUDE.md`, to
+an ADR rather than to implementation code — and it is bounded work, because a
+legacy-id prison is detectable exactly by not matching the canonical UUID form.
+
+`tests/foundation/cloud-prison-id-domain-contract.test.ts` is the gate. It reads
+the declared type of every prison id out of `supabase/migrations/`, discovering
+the sites rather than listing them, requires all of them to be `uuid`, and
+asserts the real producer's output matches the canonical UUID form — a strict
+subset of what PostgreSQL's `uuid` accepts, measured by execution. The
+expectation comes from the DDL and the value from the producer, which is the
+separation the previous gates lacked: `pnpm verify:sql` proves the SQL against
+itself and never sees a TypeScript producer, and
+`tests/unit/persistence-cloud-supabase-client.test.ts` drives the client with
+`'prison-1'` through a stand-in that never casts, so the double went on
+accepting exactly the argument the real column refuses.
+
 ## The server's timestamps are the server's
 
 `20260824140000_protect_server_timestamps.sql` (#194) closes the `created_at`
