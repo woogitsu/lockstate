@@ -9,7 +9,7 @@ import {
   type WorkerToMainMessage,
 } from '../../src/simulation/protocol/types';
 import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
-import { hudAlertsFromWorkerMessage } from '../../src/ui/simulation-alerts';
+import { hudAlertsFromWorkerMessage, hudRefusalFromWorkerMessage } from '../../src/ui/simulation-alerts';
 
 /**
  * The main thread's refusal translation: the alerts list's first producer.
@@ -340,5 +340,103 @@ describe('what the player is told about a fault is a key, and the key is real', 
       expect(row?.labelKey).not.toBe(localizer.format(String(row?.labelKey)));
       expect(row?.labelKey).toMatch(/^[a-z][a-z0-9.-]*$/u);
     }
+  });
+});
+
+/**
+ * The same refusal, read for the surface the player can actually see.
+ *
+ * The list this file's other blocks cover is inside `.hud__corner`, which
+ * `hud.css` drops at 720px and below, in a section that starts folded at
+ * every size -- so #261 joined the seam and left the sentence on screen at no
+ * viewport. `hudRefusalFromWorkerMessage` is the second reading, for
+ * `HudViewModel.refusal` and the always-laid-out band that carries it; the
+ * band's own visibility is measured in a real browser
+ * (`tests/browser/ui-shell.spec.ts`, `tests/browser/app-shell.spec.ts`),
+ * because nothing here can see a layout.
+ *
+ * The tri-state is the whole of what is asserted below, and it is the part a
+ * `toEqual` on the happy path would not reach: `undefined` must mean "this
+ * message said nothing, leave the band alone" and `'none'` must mean "it did
+ * say, and there is nothing to show". Collapsing them leaves a refusal from a
+ * finished session standing across the top of the world.
+ */
+describe('the same refusal is read a second time, for the band that is always laid out', () => {
+  it('carries the refusal as a key and its ordinal, and nothing else', () => {
+    // The ordinal and not the tick: the band uses it to tell a republication
+    // of the refusal it is already showing from a newly decided one, and
+    // `tick` is the tick the refusal happened on rather than an identity.
+    expect(hudRefusalFromWorkerMessage(publication({ sequence: 7, tick: 12, reason: 'remove-object.nothing-to-remove' }))).toEqual({
+      sequence: 7,
+      labelKey: 'hud.alert.refusal.remove-object.nothing-to-remove',
+    });
+  });
+
+  it('agrees with the list about which sentence the refusal is', () => {
+    // One record on the wire, two surfaces: a band and a log that disagreed
+    // about what was refused would be worse than either alone. Asserted over
+    // every reason the protocol declares rather than a sample, because the
+    // two lookups could drift one entry at a time.
+    for (const reason of REFUSAL_REASONS) {
+      const message = publication({ sequence: 1, tick: 3, reason });
+      const row = hudAlertsFromWorkerMessage(message)?.[0];
+      const notice = hudRefusalFromWorkerMessage(message);
+      expect(notice).not.toBe('none');
+      expect(notice).not.toBeUndefined();
+      expect(typeof notice === 'object' ? notice.labelKey : undefined).toBe(row?.labelKey);
+    }
+  });
+
+  it('resolves to real text in the bundled default locale, for every reason', () => {
+    // The same gate the list's keys get: a key is a string, so a typo
+    // type-checks and renders as its own dotted self on somebody's screen --
+    // and now it would do so in a band that is on screen at every viewport.
+    const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
+    for (const reason of REFUSAL_REASONS) {
+      const notice = hudRefusalFromWorkerMessage(publication({ sequence: 1, tick: 3, reason }));
+      const key = typeof notice === 'object' ? notice.labelKey : undefined;
+      expect(key, `${reason} produced no key`).toBeDefined();
+      const text = localizer.format(String(key));
+      expect(text, `${String(key)} has no default-locale entry`).not.toBe(key);
+      expect(text.trim().length).toBeGreaterThan(0);
+      // ADR 0011 at the boundary: the wire vocabulary stops here.
+      expect(String(key)).not.toBe(reason);
+      expect(text).not.toContain(reason);
+    }
+  });
+
+  it("says 'none' -- not undefined -- when the session has refused nothing", () => {
+    // The distinction the band depends on. `undefined` would make a session
+    // that has refused nothing indistinguishable from a message that is not
+    // about refusals at all, and the band would keep a withdrawn sentence.
+    expect(hudRefusalFromWorkerMessage(publication())).toBe('none');
+  });
+
+  it("says 'none' when the session stops", () => {
+    expect(
+      hudRefusalFromWorkerMessage({
+        protocolVersion: SIMULATION_PROTOCOL_VERSION,
+        messageId: 'stopped-2',
+        replyTo: 'shutdown-2',
+        kind: 'simulation/stopped',
+        payload: { tick: 900, reason: 'shutdown-requested' },
+      } as WorkerToMainMessage),
+    ).toBe('none');
+  });
+
+  it('says nothing at all about a message that is not about refusals', () => {
+    expect(
+      hudRefusalFromWorkerMessage({
+        protocolVersion: SIMULATION_PROTOCOL_VERSION,
+        messageId: 'clock-2',
+        kind: 'simulation/clock-state',
+        payload: { tick: 40, clock: { mode: 'running', speed: 1 } },
+      } as WorkerToMainMessage),
+    ).toBeUndefined();
+  });
+
+  it('is pure: the same message gives the same answer', () => {
+    const message = publication({ sequence: 3, tick: 8, reason: 'zone.overlaps-existing-room' });
+    expect(hudRefusalFromWorkerMessage(message)).toEqual(hudRefusalFromWorkerMessage(message));
   });
 });

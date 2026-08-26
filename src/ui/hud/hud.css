@@ -231,14 +231,20 @@
    screen for an empty world, and there is no hover on touch. */
 .hud-unavailable__text { white-space: normal; }
 
-/* ------------------------------------------------------------------ */
-/* The refusal line: what a control that was refused says (issue #207) */
-/* ------------------------------------------------------------------ */
+/* ------------------------------------------------------------------- */
+/* The refusal line: what was refused, whoever refused it (#207, #220)  */
+/* ------------------------------------------------------------------- */
 
 /*
  * Deliberately *not* in `.hud__corner`: that region is `display: none` at
  * 720px and below, and a refusal that only reaches wide screens is the defect
  * with a narrower window. This row survives every breakpoint in this file.
+ *
+ * It carries both producers -- a command this thread refused before sending
+ * it, and one the simulation refused after accepting it -- because the second
+ * was going to the alerts list inside that same `.hud__corner`, and the
+ * section it lands in starts folded so it was invisible at *every* viewport.
+ * One line, so one sentence at a time; `hud.ts` holds the rule.
  *
  * `pointer-events` stays `none` (inherited from `.hud`): the line carries no
  * control, so a click on it belongs to the world underneath, exactly like the

@@ -294,6 +294,23 @@ export interface RefusalProbe {
   readonly text: string;
   /** `data-action` of the line, i.e. which action it is about. */
   readonly action: string | null;
+  /**
+   * `data-source` of the line: which producer the standing sentence came from
+   * (issue #220, made structural). `'host'` is a command this thread refused
+   * before sending it; `'simulation'` is one the worker refused after
+   * accepting it. `null` while the line has nothing to say.
+   */
+  readonly source: string | null;
+  /**
+   * The line's border box.
+   *
+   * Measured rather than inferred, because that is the whole lesson of #220:
+   * a row can be in the DOM, match a selector and satisfy `toContainText`
+   * while occupying a 0x0 box in a folded section. `visible` and these two
+   * are asserted together so neither can stand in for the other.
+   */
+  readonly width: number;
+  readonly height: number;
   /** `title` of every control the HUD has marked as having failed. */
   readonly failedControls: readonly string[];
   /** True when every marked control's `aria-describedby` is the refusal line's id. */
@@ -301,6 +318,25 @@ export interface RefusalProbe {
   /** The line's `role` and `aria-live`, so "a live region says it" is asserted and not assumed. */
   readonly role: string | null;
   readonly ariaLive: string | null;
+}
+
+/**
+ * The same measurement, for the alerts list's first real row.
+ *
+ * The comparison #220 rests on and the reason the band exists: at 375x812 the
+ * region holding this row is `display: none` outright, and at 1280x800 it is
+ * inside a section that starts folded. Asserting the band's box without also
+ * measuring this one would prove the band is laid out but not that it was
+ * needed.
+ */
+export interface AlertRowProbe {
+  /** True when a non-empty-state row exists in the list at all. */
+  readonly present: boolean;
+  /** True when that row is actually laid out (`offsetParent !== null`). */
+  readonly visible: boolean;
+  readonly width: number;
+  readonly height: number;
+  readonly text: string;
 }
 
 export interface RepaintFormatterCost {
@@ -387,6 +423,8 @@ export interface LockstateUiHarness {
   /** Makes the host's handler reject every intent, which is what a refusal is. */
   failIntents(enabled: boolean): void;
   refusalProbe(): RefusalProbe;
+  /** The alerts list's first non-empty row, measured the same way. */
+  alertRowProbe(): AlertRowProbe;
   /** The HUD's rendered text, for the before/after comparison issue #207 was filed on. */
   hudText(): string;
   transportDisabled(): boolean;

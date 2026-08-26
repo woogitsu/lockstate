@@ -369,12 +369,56 @@ export interface HudStaffViewModel {
   readonly roles: readonly HudStaffRoleViewModel[];
 }
 
+/**
+ * What the *simulation* last refused, for the band that says so.
+ *
+ * The structural half of issue #220's fix. #220 measured that a message
+ * routed to the alerts list is on screen at no viewport -- `hud.css` drops
+ * `.hud__corner` entirely at 720px and below, and the alerts section starts
+ * folded (`INITIAL_HUD_SHELL_STATE`), so the row is `offsetParent === null`
+ * with a 0x0 box at every size until the player opens it -- and moved one
+ * message out. It moved that message and no other, so every refusal the
+ * worker decided after accepting a command went on arriving in the same
+ * invisible place: a wall on unowned land, a purchase the treasury cannot
+ * cover, a room over one already there, and -- since ADR 0028 phase 3 -- a
+ * world press with no object under it. This field is the route out for all of
+ * them, and it is the *class* of message that moves rather than one more
+ * instance of it, so a ninth command route added tomorrow is visible by
+ * construction instead of re-opening the hole.
+ *
+ * **A key, never text** (ADR 0011). The mapping from the wire's refusal id to
+ * a message key is `src/ui/simulation-alerts.ts`, which is where it already
+ * was for the list row -- the HUD may not import `src/simulation/**`
+ * (`AGENTS.md` boundary 1) and does not learn what was refused, only what to
+ * say.
+ *
+ * `sequence` is the refusal's own 1-based ordinal from the session's
+ * `RefusalLog`, and it is load-bearing rather than decorative: the counts
+ * channel is a *snapshot on a cadence*, so it republishes an unchanged
+ * refusal beside a changed count up to twice a second. The band uses the
+ * ordinal to tell a republication of the refusal it is already showing from a
+ * newly decided one, which is the difference between leaving a later
+ * host-side refusal alone and stealing the line back from it.
+ *
+ * Absent means the session has refused nothing -- or has ended, which empties
+ * it for the reason `EMPTY_HUD_VIEW_MODEL.counts` zeroes the counts: a
+ * refusal by a simulation that no longer exists is not something the player
+ * can act on.
+ */
+export interface HudRefusalNoticeViewModel {
+  readonly sequence: number;
+  /** A message key, never text. */
+  readonly labelKey: LocalizationKey;
+}
+
 export interface HudViewModel {
   readonly counts: HudCountsViewModel;
   readonly clock: HudClockViewModel;
   readonly alerts: readonly HudAlertViewModel[];
   /** Absent until this session has designated a room. Not zeroed -- see the interface. */
   readonly zoning?: HudZoningNoticeViewModel;
+  /** Absent until this session has refused something. See the interface. */
+  readonly refusal?: HudRefusalNoticeViewModel;
 }
 
 /**

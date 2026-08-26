@@ -220,8 +220,14 @@ export const HUD_MESSAGE_KEY = {
    * it is sent -- no session at all, and a total the last published balance
    * cannot cover -- because they leave the prison in the same state and there
    * is nothing different for the player to do about them. What it does *not*
-   * cover is a refusal the worker makes after accepting the command; that has
-   * no route back at all (`src/simulation/runtime/session-commands.ts`).
+   * cover is a refusal the worker makes after accepting the command, and that
+   * is a division of labour rather than a gap: since #261 all eight command
+   * routes record to the session's `RefusalLog`
+   * (`src/simulation/runtime/session-commands.ts`), and the sentence comes
+   * from `hud.alert.refusal.*` -- the simulation's own vocabulary, mapped in
+   * `src/ui/simulation-alerts.ts`, which can say *why* where these keys can
+   * only say *what*. Both land on the same band; see the refusal element in
+   * `hud.ts` for the one-line rule that governs it.
    *
    * Deliberately no key for the thrown `Error`'s own text. Those messages are
    * hard-coded English raised on the main thread (`src/ui/simulation-commands.ts`,

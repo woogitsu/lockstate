@@ -25,6 +25,7 @@ import { SavePanel, type SavePanelSessions } from '../../src/ui/save-panel';
 import { CURRENT_SAVE_RESTORED_SCOPE } from '../../src/simulation/runtime/restore-session';
 import type {
   AlertProbe,
+  AlertRowProbe,
   BuildLayoutProbe,
   BuildProbe,
   ButtonState,
@@ -750,6 +751,12 @@ window.lockstateUiHarness = {
       visible: line !== null && line.offsetParent !== null,
       text: line?.textContent ?? '',
       action: line?.dataset['action'] ?? null,
+      source: line?.dataset['source'] ?? null,
+      // The box, alongside `offsetParent` rather than instead of it. #220's
+      // whole finding is that a message can satisfy a text assertion from
+      // inside a 0x0 subtree, so the geometry is read and asserted.
+      width: line?.getBoundingClientRect().width ?? 0,
+      height: line?.getBoundingClientRect().height ?? 0,
       failedControls: marked.map((control) => control.getAttribute('title') ?? control.textContent ?? ''),
       describedByRefusal:
         line !== null &&
@@ -757,6 +764,21 @@ window.lockstateUiHarness = {
         marked.every((control) => control.getAttribute('aria-describedby') === line.id),
       role: line?.getAttribute('role') ?? null,
       ariaLive: line?.getAttribute('aria-live') ?? null,
+    };
+  },
+
+  alertRowProbe(): AlertRowProbe {
+    // The empty-state row is excluded: it is the list saying it has nothing,
+    // and counting it as a row would make "the refusal is not on screen"
+    // unprovable.
+    const row = document.querySelector<HTMLElement>('.hud-alerts__list [data-alert]:not([data-alert="empty"])');
+    const rect = row?.getBoundingClientRect();
+    return {
+      present: row !== null,
+      visible: row !== null && row.offsetParent !== null,
+      width: rect?.width ?? 0,
+      height: rect?.height ?? 0,
+      text: row?.textContent ?? '',
     };
   },
 
