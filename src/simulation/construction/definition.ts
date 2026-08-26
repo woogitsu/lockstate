@@ -378,6 +378,88 @@ export const BUILDABLE_REGISTRY = new Map<string, BuildableDefinition>([
     materialsRequired: [{ itemId: 'item.brick', quantity: 2 }],
     placesObjectId: 'object.washing-machine',
   }],
+  /*
+   * Catering. Five rows that finish `room.kitchen`, `room.canteen`,
+   * `room.holding-cell` and `room.common-room`, and the group ADR 0028 phase 4
+   * names second: "`action.eat-meal` in a canteen".
+   *
+   * **The canteen is the room where #326's arithmetic becomes observable**, and
+   * these rows are what make it so -- ADR 0029 said as much ("it becomes
+   * observable in phase 4, when those objects become placeable"). A canteen
+   * furnished to its catalogue minimum -- two dining tables and four benches --
+   * derives:
+   *
+   *     concurrentUseCapacity            = 2*3 + 4*2 = 14   (nothing's ceiling)
+   *     concurrentUse(canteen, 'dining') = 2*3       =  6   (the ceiling)
+   *
+   * because `object.dining-table` declares `'dining'` and `object.bench`
+   * declares `'seating'` and `'recreation'` and **not** `'dining'`. So the room
+   * seats six diners while fourteen tiles of furniture stand in it, and the
+   * fourteen bounds nothing. That is the #326 amendment working as written, and
+   * these rows do not touch it: the amendment explicitly left open whether a
+   * bench should carry `'dining'` and refused to change the row "so that a
+   * number comes out the way a prior document said it would". **No capability
+   * in `src/content/object-catalog.ts` is edited by this phase**, for that
+   * reason. `tests/integration/furnished-prison-loop.test.ts` measures both
+   * numbers off the real command path.
+   *
+   * Materials by the block's rule. Brick for the three kitchen appliances --
+   * a fired stove body, a masonry prep counter, a machine fridge -- and plank
+   * for the two pieces of timber furniture. Widths 2, 2, 1, 3 and 2, so
+   * quantities and work follow with nothing chosen per row.
+   */
+  ['stove-brick', {
+    id: 'stove-brick',
+    category: 'object',
+    name: 'Stove',
+    workRequired: 60,
+    materialsRequired: [{ itemId: 'item.brick', quantity: 2 }],
+    placesObjectId: 'object.stove',
+  }],
+  ['prep-counter-brick', {
+    id: 'prep-counter-brick',
+    category: 'object',
+    name: 'Prep Counter',
+    workRequired: 60,
+    materialsRequired: [{ itemId: 'item.brick', quantity: 2 }],
+    placesObjectId: 'object.prep-counter',
+  }],
+  ['fridge-brick', {
+    id: 'fridge-brick',
+    category: 'object',
+    name: 'Fridge',
+    workRequired: 30,
+    materialsRequired: [{ itemId: 'item.brick', quantity: 1 }],
+    placesObjectId: 'object.fridge',
+  }],
+  /*
+   * The widest object in the catalogue at `3x2`, so the most expensive row
+   * here: three planks and 90 work. It is also the only one whose capability
+   * is the ceiling on a need -- `action.eat-meal` asks for `'dining'` and this
+   * is the only object that declares it.
+   */
+  ['dining-table-wooden', {
+    id: 'dining-table-wooden',
+    category: 'object',
+    name: 'Dining Table',
+    workRequired: 90,
+    materialsRequired: [{ itemId: 'item.wood-plank', quantity: 3 }],
+    placesObjectId: 'object.dining-table',
+  }],
+  /*
+   * Required by three room types -- `room.holding-cell`, `room.canteen` and
+   * `room.common-room` -- which makes it the most reused row in the catalogue,
+   * and the one that finishes `action.common-room-recreation` by supplying the
+   * `'recreation'` the #326 amendment gave that action to ask for.
+   */
+  ['bench-wooden', {
+    id: 'bench-wooden',
+    category: 'object',
+    name: 'Bench',
+    workRequired: 60,
+    materialsRequired: [{ itemId: 'item.wood-plank', quantity: 2 }],
+    placesObjectId: 'object.bench',
+  }],
 ]);
 
 export type BuildableItemReferenceError = {

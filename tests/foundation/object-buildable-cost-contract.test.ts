@@ -63,8 +63,8 @@ describe('an object buildable costs what its footprint says it costs', () => {
     // moving would mean the rows are not in the registry. Phase 4 adds
     // seventeen rows in four groups, so this ends at 19 object buildables of
     // 21 rows; `door-wooden` and `wall-brick` are the two that place no object.
-    expect(objectBuildables.length).toBe(4);
-    expect(BUILDABLE_REGISTRY.size).toBe(6);
+    expect(objectBuildables.length).toBe(9);
+    expect(BUILDABLE_REGISTRY.size).toBe(11);
     // Every id the filter kept really does name a declared object.
     // `validateBuildableObjectReferences` throws at import for a broken
     // reference, so this is the assertion that the throw is doing its job
