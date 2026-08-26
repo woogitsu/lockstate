@@ -142,6 +142,35 @@ the schema rather than in the handler, so an over-large window never decodes —
 without one, "the UI may choose the window" and "the UI may ask for all five
 thousand rows" would be the same request.
 
+**The one publication on a cadence that does carry a list, and why it is not a
+contradiction.** ADR 0040 slice 1 (#414) publishes `simulation/delta` on a
+100 ms ceiling with one **fixed-width** record per live actor. That is a list,
+on a timer, whose length grows with the prison — the shape this contract exists
+to refuse — and it is admitted here rather than exempted, because what the
+contract is actually protecting is the *cost* of the send and this channel
+answers it by the record width instead of by `offset`/`limit`:
+
+- The **boundary** cost is flat: an `array-buffer` body is validated by a schema
+  id, a content type and a `byteLength` cross-check and is never walked, so
+  decoding the whole message measures 0.0049 ms at 500 actors and 0.0051 ms at
+  5,000 (`docs/RENDERING.md` carries the table). A paged JSON reply is bounded
+  at 500 rows; this is bounded at one comparison.
+- The **payload** is 16 bytes an actor: 8,016 bytes at 500 and 80,016 at 5,000,
+  against 596,659 for the session bundle the renderer used to poll for the same
+  three fields.
+- A **window would be wrong here** in a way it is not for a roster. The receiver
+  draws every actor it is told about and culls by camera range; a worker-chosen
+  page would be exactly the truncation-the-UI-cannot-scroll this contract
+  forbids one paragraph up, and a caller-chosen one would need the renderer to
+  know which actors it is missing, which is the base-tick problem in a worse
+  place. ADR 0040's answer is the keyframe interval and, in a later slice,
+  changed-only records — bounding what is *sent*, rather than bounding what is
+  *asked for*.
+
+So the rule stands as written for anything carrying rows of view-model objects,
+and this is the recorded exception with the property that replaces it: a payload
+the boundary does not walk, at a width that is a constant.
+
 The twelfth is #29's "earned today" accrual, and it is the first count here
 that is not a *level*. Every other one moves only when a discrete event moves
 it, which is what lets `publishStatusCounts` skip a publication whose counts

@@ -405,11 +405,18 @@ the `kind` first, does not know it, and classifies it as
 outcome is a readout that never appears rather than a payload interpreted as
 something else. Both peers are emitted from one build in any case.
 
-`simulation/delta` is still not adopted and still has no sender. A projection
-reply is a **level** read at a tick, not a diff from a base tick, so nothing
-here needs `baseTick`, a base-tick contract, or an answer for a receiver that
-missed the base — the three things #157 finding 5 says a delta sender would
-still require beyond the schema that already exists.
+`simulation/delta` was still not adopted and had no sender when this section
+was written. It has one since ADR 0040 slice 1 (#414):
+`state-machine.ts#publishRenderDelta` posts an unsolicited keyframe of actor
+positions on the tick loop, carrying an `array-buffer` body — the first
+production use of that transport, and of this kind, since the protocol's first
+commit. What that changes for *this* section is nothing: a projection reply is
+a **level** read at a tick, not a diff from a base tick, so nothing here needs
+`baseTick`, a base-tick contract, or an answer for a receiver that missed the
+base — the three things #157 finding 5 says a delta sender would still require
+beyond the schema that already exists. Slice 1 needs only the first of the
+three, because it publishes keyframes alone; the base-tick contract lands with
+the changed-only messages that need it.
 
 ### What this does not do
 

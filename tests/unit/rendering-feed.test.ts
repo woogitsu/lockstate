@@ -17,6 +17,7 @@ import {
   type SimulationMessageSource,
 } from '../../src/rendering/feed/simulation-snapshot-feed';
 import { selectActorPose } from '../../src/rendering/actors/actor-pose';
+import { writeRenderActorsPayload } from '../helpers/render-actors-reader';
 
 /**
  * The feed is where the renderer touches the worker protocol, so it is worth
@@ -89,10 +90,14 @@ function snapshotReplyFor(bundle: SessionSnapshotBundle, replyTo: string, tick: 
   } as unknown as WorkerToMainMessage;
 }
 
-function newFeed(client: FakeClient): { feed: SimulationSnapshotFeed; errors: Error[] } {
+function newFeed(
+  client: FakeClient,
+  options: { readonly pollIntervalSeconds?: number } = {},
+): { feed: SimulationSnapshotFeed; errors: Error[] } {
   const errors: Error[] = [];
   let counter = 0;
   const feed = new SimulationSnapshotFeed(client, {
+    ...options,
     generateMessageId: () => `render-${(counter += 1)}`,
     onError: (error) => errors.push(error),
   });
@@ -161,7 +166,11 @@ describe('simulation snapshot feed', () => {
 
   it('polls again once the clock is running, at its interval', () => {
     const client = new FakeClient();
-    const { feed } = newFeed(client);
+    // The interval is stated here rather than taken from the default, so this
+    // case is about the *rule* and the case below is about the shipped figure.
+    // They were one test until ADR 0040 slice 1 moved the default from 2 s to
+    // 30 s, at which point a test that asserted both said neither clearly.
+    const { feed } = newFeed(client, { pollIntervalSeconds: 2 });
 
     client.emit(ready('running'));
     feed.readFrame(0);
@@ -171,6 +180,36 @@ describe('simulation snapshot feed', () => {
     expect(client.sent).toHaveLength(1);
 
     feed.readFrame(2.5);
+    expect(client.sent).toHaveLength(2);
+  });
+
+  it('polls on a thirty-second consistency interval by default, not on the render path', () => {
+    /*
+     * The shipped figure, as a literal, because it is the half of ADR 0040
+     * slice 1 that is a decision rather than a mechanism: with the actors on
+     * `simulation/delta`, this request is a consistency net and no longer the
+     * data path, so it goes from 2 s to 30 s -- fifteen times fewer full
+     * session-bundle captures on the worker and fifteen times fewer
+     * `jsonValueSchema` walks on this thread.
+     *
+     * A literal rather than the module's own constant on purpose: importing
+     * `DEFAULT_POLL_INTERVAL_SECONDS` would make this assertion true for any
+     * value it holds, which is the self-comparison `docs/TESTING.md` names.
+     * The old default is checked too, so a revert reads as a failure here
+     * rather than as a silently slower poll.
+     */
+    const client = new FakeClient();
+    const { feed } = newFeed(client);
+
+    client.emit(ready('running'));
+    feed.readFrame(0);
+    client.emit(snapshotReply(client.lastRequestId, 0));
+
+    feed.readFrame(2.5); // Would have polled under the old 2 s default.
+    feed.readFrame(29.9);
+    expect(client.sent).toHaveLength(1);
+
+    feed.readFrame(30);
     expect(client.sent).toHaveLength(2);
   });
 
@@ -210,7 +249,7 @@ describe('simulation snapshot feed', () => {
 
   it('does not rebuild the view when the simulation has not advanced', () => {
     const client = new FakeClient();
-    const { feed } = newFeed(client);
+    const { feed } = newFeed(client, { pollIntervalSeconds: 2 });
 
     client.emit(ready('running'));
     feed.readFrame(0);
@@ -298,6 +337,192 @@ describe('simulation snapshot feed', () => {
 
     feed.readFrame(30);
     expect(client.sent).toHaveLength(1);
+  });
+});
+
+/**
+ * The receiving half of ADR 0040 slice 1.
+ *
+ * Every buffer here is built by `writeRenderActorsPayload`, a hand-written
+ * writer over the ADR's layout table, so the feed's production decoder is
+ * driven by bytes it did not produce -- `tests/helpers/render-actors-reader.ts`
+ * says why at length.
+ */
+describe('the render delta channel feeds the actors', () => {
+  function delta(
+    tick: number,
+    records: readonly { entityId: number; packedFields: number; tileX: number; tileY: number }[],
+    overrides: {
+      readonly baseTick?: number;
+      readonly flags?: number;
+      readonly layoutVersion?: number;
+      readonly schemaId?: string;
+      readonly schemaVersion?: number;
+    } = {},
+  ): WorkerToMainMessage {
+    const data = writeRenderActorsPayload({
+      layoutVersion: overrides.layoutVersion ?? 1,
+      flags: overrides.flags ?? 1,
+      records,
+      removed: [],
+    });
+    return {
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: `delta-${String(tick)}`,
+      kind: 'simulation/delta',
+      payload: {
+        baseTick: overrides.baseTick ?? tick - 1,
+        tick,
+        delta: {
+          schemaId: overrides.schemaId ?? 'lockstate.render-actors',
+          schemaVersion: overrides.schemaVersion ?? 1,
+          transport: 'array-buffer',
+          contentType: 'application/x-lockstate-render-actors',
+          byteLength: data.byteLength,
+          data,
+        },
+      },
+    } as unknown as WorkerToMainMessage;
+  }
+
+  const RECORD = { entityId: 12, packedFields: 0, tileX: 5, tileY: 7 };
+
+  /** A feed holding a real world, so "the world is left alone" is a statement about something. */
+  function feedWithWorld(): { client: FakeClient; feed: SimulationSnapshotFeed; errors: Error[] } {
+    const client = new FakeClient();
+    const { feed, errors } = newFeed(client);
+    client.emit(ready('running'));
+    feed.readFrame(0);
+    client.emit(snapshotReply(client.lastRequestId, 1));
+    feed.readFrame(0.1);
+    return { client, feed, errors };
+  }
+
+  it('replaces the actors and leaves the world and the structures alone', () => {
+    const { client, feed } = feedWithWorld();
+    const before = feed.readFrame(0.2);
+    expect(before.world.loadedChunkCount).toBeGreaterThan(0);
+
+    client.emit(delta(4, [RECORD]));
+    const after = feed.readFrame(0.3);
+
+    expect(after.actors).toEqual([
+      { id: 12, assetId: PRISONER_ACTOR_ASSET_ID, tileX: 5, tileY: 7, deltaX: 0, deltaY: 0 },
+    ]);
+    // The same objects, not merely equal ones: the tile painter and the
+    // structure layer must have nothing to redo.
+    expect(after.world).toBe(before.world);
+    expect(after.structures).toBe(before.structures);
+  });
+
+  it('does not move the revision, so the tile painter does not repaint', () => {
+    /*
+     * `RenderFrame.revision` is geometry-only -- "increments whenever `world`
+     * or `structures` change" -- and `TileLayer` repaints on a change of
+     * revision or of visible range and on nothing else. An actor-only update
+     * that bumped it would repaint every visible chunk up to ten times a
+     * second to move some sprites, which is the cost this channel exists to
+     * remove rather than to add.
+     */
+    const { client, feed } = feedWithWorld();
+    const revision = feed.readFrame(0.2).revision;
+    expect(revision).toBe(1);
+
+    for (let tick = 2; tick <= 12; tick += 1) client.emit(delta(tick, [{ ...RECORD, tileX: tick }]));
+
+    const after = feed.readFrame(0.3);
+    expect(after.revision).toBe(revision);
+    // Non-vacuous: eleven deltas really were applied, and the last one won.
+    expect(after.actors[0]!.tileX).toBe(12);
+  });
+
+  it('draws actors before any snapshot has arrived, on a frame with no world', () => {
+    // The channel is the data path for actors, so it must not be gated on the
+    // consistency poll having answered -- which, at thirty seconds, it may not
+    // have.
+    const client = new FakeClient();
+    const { feed } = newFeed(client);
+    client.emit(ready('running'));
+
+    client.emit(delta(2, [RECORD]));
+    const frame = feed.readFrame(0);
+    expect(frame.actors).toHaveLength(1);
+    expect(frame.revision).toBe(0);
+  });
+
+  it('discards a coalesced or reordered publication instead of moving actors backwards', () => {
+    const { client, feed } = feedWithWorld();
+    client.emit(delta(9, [{ ...RECORD, tileX: 9 }]));
+    expect(feed.readFrame(0.2).actors[0]!.tileX).toBe(9);
+
+    client.emit(delta(5, [{ ...RECORD, tileX: 5 }]));
+    client.emit(delta(9, [{ ...RECORD, tileX: 99 }]));
+    expect(feed.readFrame(0.3).actors[0]!.tileX).toBe(9);
+
+    client.emit(delta(10, [{ ...RECORD, tileX: 10 }]));
+    expect(feed.readFrame(0.4).actors[0]!.tileX).toBe(10);
+  });
+
+  it('accepts a delta from a new session at a tick the previous one had passed', () => {
+    // Two prisons paused at the same tick are two different simulations, which
+    // is the reason `simulation/ready` clears what the feed last drew. Without
+    // it the second session's actors would be discarded as stale.
+    const { client, feed } = feedWithWorld();
+    client.emit(delta(9, [{ ...RECORD, tileX: 9 }]));
+    expect(feed.readFrame(0.2).actors[0]!.tileX).toBe(9);
+
+    client.emit(ready('running'));
+    client.emit(delta(2, [{ ...RECORD, tileX: 2 }]));
+    expect(feed.readFrame(0.3).actors[0]!.tileX).toBe(2);
+  });
+
+  it('keeps the actors it has when a payload is one it cannot read', () => {
+    const cases: readonly [string, WorkerToMainMessage, RegExp][] = [
+      ['a schema id from another read model', delta(6, [RECORD], { schemaId: 'lockstate.something-else' }), /understands "lockstate.render-actors"/],
+      ['a payload version this build does not know', delta(6, [RECORD], { schemaVersion: 2 }), /v2/],
+      ['a header version this build does not know', delta(6, [RECORD], { layoutVersion: 2 }), /layout 2/],
+      ['a changed-only message, which slice 1 cannot apply', delta(6, [RECORD], { flags: 0 }), /keyframes only/],
+    ];
+
+    for (const [why, message, expected] of cases) {
+      const { client, feed, errors } = feedWithWorld();
+      client.emit(delta(4, [{ ...RECORD, tileX: 4 }]));
+      expect(feed.readFrame(0.2).actors[0]!.tileX, why).toBe(4);
+
+      client.emit(message);
+      const after = feed.readFrame(0.3);
+      expect(after.actors[0]!.tileX, why).toBe(4);
+      expect(errors.at(-1)?.message, why).toMatch(expected);
+    }
+  });
+
+  it('reports a body whose length contradicts its own header rather than drawing a phantom', () => {
+    const { client, feed, errors } = feedWithWorld();
+    const truncated = delta(6, [RECORD]) as { payload: { delta: { data: ArrayBuffer; byteLength: number } } };
+    truncated.payload.delta.data = truncated.payload.delta.data.slice(0, 24);
+    truncated.payload.delta.byteLength = 24;
+
+    client.emit(truncated as unknown as WorkerToMainMessage);
+    expect(feed.readFrame(0.3).actors).toEqual([]);
+    expect(errors.at(-1)?.message).toMatch(/must be 32 bytes, got 24/);
+  });
+
+  it('lets a later snapshot correct the actors, since the poll is still a consistency net', () => {
+    const { client, feed } = feedWithWorld();
+    client.emit(delta(4, [RECORD]));
+    expect(feed.readFrame(0.2).actors).toHaveLength(1);
+
+    feed.readFrame(31);
+    client.emit(snapshotReply(client.lastRequestId, 40));
+    const after = feed.readFrame(31.1);
+
+    // A fresh session's bundle carries no prisoners, so the snapshot's answer
+    // is "none" and it is the answer that stands. That is the point of the net:
+    // the two paths disagreeing must resolve towards the authoritative capture.
+    expect(after.actors).toEqual([]);
+    // And the geometry it carried did move the revision, so this case is not
+    // quietly asserting that the snapshot was ignored.
+    expect(after.revision).toBe(2);
   });
 });
 
