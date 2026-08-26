@@ -51,11 +51,18 @@ function loadedWorld(size = 32): SparseWorld {
 
 /**
  * Runs a `ConstructionSystem` far enough for every submitted order to reach a
- * terminal state. A `wall-brick` needs 50 work at +10 per scheduled tick, and
- * the system is scheduled every 10 ticks, so ~80 ticks is the real cost of one
- * wall; 200 leaves room without depending on the exact number.
+ * terminal state.
+ *
+ * A `wall-brick` needs 50 work at +10 per scheduled tick and the system is
+ * scheduled every 10 ticks, so one wall costs ~70 ticks. **The default is no
+ * longer ~80-with-headroom, because the orders no longer overlap:** the crew
+ * builds one order at a time, so a *queue* of walls costs 60 more ticks each
+ * (one tick to take the crew, five to work) and the twelve-segment perimeter
+ * below finishes at tick 730 rather than 70. 900 leaves room without
+ * depending on the exact number; the exact numbers are pinned in
+ * `construction-crew-capacity.test.ts` instead, where they are the subject.
  */
-function runToCompletion(kernel: Kernel, ticks = 200): void {
+function runToCompletion(kernel: Kernel, ticks = 900): void {
   for (let i = 0; i < ticks; i += 1) kernel.step();
 }
 

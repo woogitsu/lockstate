@@ -156,6 +156,25 @@ export interface DoorPlacementSink {
   onDoorOrderReverted(definitionId: string, location: TilePosition, edge: BuildEdge): boolean;
 }
 
+/**
+ * The one build crew, and the only worker id an order is ever assigned to.
+ *
+ * It was already the only id: `update` wrote `'mock-worker-1'` onto every
+ * order that reached `assigned`, and then advanced every `in-progress` order
+ * on every scheduled tick -- so one crew was named and an unbounded number of
+ * them worked. Naming it here is what lets the two halves say the same thing:
+ * one id, one order in progress at a time.
+ *
+ * **Deliberately not a capacity number.** A `MAX_CONCURRENT_ORDERS = 1` would
+ * be a balance value somebody would reasonably want to tune, and a tunable
+ * crew size is a decision about the jobs system rather than about this
+ * placeholder -- ADR 0028 says so in terms ("Adding a cap is a jobs-system
+ * decision (#26) that affects walls too"). The rule below is therefore
+ * expressed as "the crew is busy or it is not", with no number to raise. The
+ * moment a second crew is wanted, that is an ADR and not an edit here.
+ */
+const MOCK_CREW_WORKER_ID = 'mock-worker-1';
+
 export class ConstructionSystem implements SystemRegistration {
   public readonly id = 'construction';
   public readonly order = 100;
@@ -370,8 +389,65 @@ export class ConstructionSystem implements SystemRegistration {
     return this.orderedOrders();
   }
 
+  /**
+   * Advances every order by one scheduled tick, with **one order in progress
+   * at a time**.
+   *
+   * Before this, money was the only thing that stood between a player and a
+   * finished prison: every `assigned` order started on the tick it was
+   * assigned, and every `in-progress` order advanced on every scheduled tick,
+   * so a hundred walls finished in the time one wall takes (ADR 0028 measured
+   * it: "a hundred objects take the same wall-clock time as one"). The clocks
+   * meant nothing, because nothing was ever waited for.
+   *
+   * So the mock crew becomes an actual crew of one: the order already in
+   * progress continues, and a waiting order starts only when the crew is
+   * free. Everything else about the lifecycle is untouched -- materials are
+   * still allocated the moment they are available, and the per-order tick
+   * cost is unchanged, so a *single* order still finishes exactly when it
+   * used to.
+   *
+   * **Whether the crew is free is decided once, before the walk, and not
+   * re-decided as it proceeds.** The walk is `orderedOrders()`, ascending id,
+   * which is the canonical sequence the whole class uses. If occupancy were
+   * re-read per order, then an order finishing during this pass would free the
+   * crew for any waiting order sorting *after* it and not for one sorting
+   * before -- so whether a queue lost a tick at each handover would depend on
+   * the ids the session happened to mint. Deciding once makes the handover
+   * cost the same one scheduled tick for every queue: the finishing tick, then
+   * a promotion tick, then progress. It is still fully determined by order
+   * state, so it survives a save (see below) and involves no RNG.
+   *
+   * **Orders already in progress when a pre-existing save loads are all
+   * allowed to finish -- they are not paused down to one.** A save written
+   * before this rule can hold any number of `in-progress` orders, and the
+   * alternative was to deterministically pause all but the first. That is the
+   * worse surprise: the player left a prison with six walls rising and would
+   * come back to five stopped for a reason nothing in the game explains, with
+   * their progress frozen rather than lost. Letting old work drain costs
+   * nothing permanent -- the crew simply reads as busy until the last of it
+   * finishes, and the queue behind it is single-file from then on. This is a
+   * choice and not an oversight: the code that produces it is the occupancy
+   * check treating *any* in-progress order as a busy crew, so grandfathering
+   * needs no restore-time branch and no save-schema field (`state`,
+   * `progress` and `assignedWorkerId` are already persisted, so the rule is
+   * derived entirely from state a v0.0.76 save already carries).
+   *
+   * This is a pacing placeholder, not a model of labour: no builder walks
+   * anywhere, the crew has no identity beyond `MOCK_CREW_WORKER_ID`, and no
+   * staff role gates it. Wiring it to `staff-role.maintenance-worker` would
+   * be worse than not wiring it, because staff assignment does not filter by
+   * role yet (`GuardRoster.unassignedGuardIds()` hands out anyone), which is
+   * the same defect the Staff panel avoids by exposing only guards.
+   */
   public update(context: SimulationContext): void {
-    for (const order of this.orderedOrders()) {
+    const orders = this.orderedOrders();
+    // Read once, before the walk. See the note above on why this is not
+    // re-read per order, and why an old save's several in-progress orders all
+    // read as one busy crew here rather than being paused.
+    let crewBusy = orders.some((candidate) => candidate.state === 'in-progress');
+
+    for (const order of orders) {
       const def = getBuildableDefinition(order.definitionId);
       
       switch (order.state) {
@@ -394,8 +470,14 @@ export class ConstructionSystem implements SystemRegistration {
         }
 
         case 'assigned':
-          // Mock job assignment: immediately start
-          order.assignedWorkerId = 'mock-worker-1';
+          // The crew is the constraint. A waiting order keeps its allocated
+          // materials and is retried on the next scheduled tick, exactly as a
+          // `materials-pending` order waits on the container above; because
+          // the walk is by ascending id, the one that starts is always the
+          // first eligible id and never the first submission.
+          if (crewBusy) break;
+          crewBusy = true;
+          order.assignedWorkerId = MOCK_CREW_WORKER_ID;
           order.state = 'in-progress';
           break;
 
