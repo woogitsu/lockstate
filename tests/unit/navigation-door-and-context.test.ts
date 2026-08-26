@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
-import { DoorRegistry, type DoorDefinition } from '../../src/simulation/navigation/door';
+import { DoorRegistry, MINIMUM_DOOR_COST_MULTIPLIER, type DoorDefinition } from '../../src/simulation/navigation/door';
 import { checkDoorAccess, doorTraversalCost, type RouteContext } from '../../src/simulation/navigation/route-context';
 
 function makeDoor(overrides: Partial<DoorDefinition> = {}): DoorDefinition {
@@ -78,6 +78,41 @@ describe('DoorRegistry', () => {
     doors.register(makeDoor());
     expect(() => doors.register(makeDoor({ id: 'door-2' }))).toThrow(RangeError); // same edge, different id
     expect(() => doors.register(makeDoor({ position: { x: tileCoordinate(9), y: tileCoordinate(9) } }))).toThrow(RangeError); // same id, different edge
+  });
+
+  /**
+   * The precondition `boundedLocalSearch` cannot check for itself.
+   *
+   * Its Manhattan heuristic charges one step per remaining tile and its
+   * closed set is never reopened, so a door cheaper than a plain step makes
+   * the heuristic overestimate and the route it returns is no longer the
+   * cheapest one inside its own bound -- with no failure to observe, just a
+   * longer path. `docs/NAVIGATION.md`'s "Known correctness caveat" promises
+   * optimality *within* the regions the portal search chose, so this is the
+   * guard that keeps that sentence true;
+   * `tests/unit/navigation-local-search-admissibility.test.ts` measures what
+   * it buys and what its absence costs.
+   *
+   * `NaN` is here because it is the case a bare `< 1` comparison lets
+   * through -- `NaN < 1` is `false` -- and a `NaN` door cost makes every
+   * route across it cost `NaN`.
+   */
+  it('rejects a costMultiplier below a plain step, or one that is not a finite number', () => {
+    const doors = new DoorRegistry();
+    for (const costMultiplier of [MINIMUM_DOOR_COST_MULTIPLIER - Number.EPSILON, 0.99, 0.75, 0.25, 0, -1, Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]) {
+      expect(() => doors.register(makeDoor({ costMultiplier })), `costMultiplier ${costMultiplier}`).toThrow(RangeError);
+    }
+    // Refused before anything is written: the registry is untouched, so the
+    // edge and the id are both still free.
+    expect(doors.all()).toEqual([]);
+    expect(doors.structuralRevision).toBe(0);
+    expect(doors.accessRevision).toBe(0);
+
+    for (const costMultiplier of [MINIMUM_DOOR_COST_MULTIPLIER, 1.5, 2, 10]) {
+      const registry = new DoorRegistry();
+      registry.register(makeDoor({ costMultiplier }));
+      expect(registry.getById('door-1')?.costMultiplier).toBe(costMultiplier);
+    }
   });
 
   it('setState updates the stored door on both lookup paths and bumps accessRevision + that door\'s own version, but not structuralRevision', () => {

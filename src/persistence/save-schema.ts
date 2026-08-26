@@ -12,6 +12,7 @@ import { MAX_PURCHASE_QUANTITY } from '../simulation/economy';
 import { NEED_MAX_SCALED } from '../simulation/prisoners/needs';
 import { WORLD_CHUNK_SIZE_LIMIT } from '../simulation/world/coordinates';
 import { WORLD_SNAPSHOT_VERSION } from '../simulation/world/sparse-world';
+import { MINIMUM_DOOR_COST_MULTIPLIER } from '../simulation/navigation/door';
 import { MigrationChain, type MigrationError, type MigrationErrorCode } from './migration';
 import { zodVersionSchema } from './zod-version-schema';
 import { computeSaveChecksum } from './checksum';
@@ -553,7 +554,20 @@ const doorDefinitionSchema = z
     state: z.enum(['open', 'closed', 'locked']),
     requiredSecurityClearance: z.number().int().min(0),
     requiredPermission: z.string().min(1).optional(),
-    costMultiplier: z.number(),
+    /**
+     * Bounded, like `requiredSecurityClearance` above and unlike the bare
+     * `z.number()` this was: a save is the one boundary an authored door cost
+     * can cross, and a multiplier below a plain step makes
+     * `boundedLocalSearch`'s heuristic inadmissible (see
+     * `MINIMUM_DOOR_COST_MULTIPLIER`). Shared with the historical V3/V4
+     * shapes deliberately: no build of this game has ever written a value
+     * below `1` -- the only producers are `createGradedDoor` and
+     * `BuildableDefinition.placesDoor`, both `1` -- so the tightening
+     * rejects no save that exists, and leaving the historical leaf loose
+     * would let a migrated payload deliver the value `DoorRegistry.register`
+     * now throws on.
+     */
+    costMultiplier: z.number().min(MINIMUM_DOOR_COST_MULTIPLIER),
   })
   .strict();
 

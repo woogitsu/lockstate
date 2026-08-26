@@ -189,11 +189,36 @@ so the diagnostic stays deterministic.
 
 Region IDs are assigned by iterating loaded chunks in `compareChunkPositions`
 order and tiles within each chunk in row-major order, so identical world
-state always produces identical region IDs. Both the portal-graph Dijkstra
-and the local A* break ties on the tile/region's canonical string key
-(`tileKey`), never on iteration/insertion order of a `Map`/`Set`, so
-identical requests always return identical routes — verified directly by
-a determinism test in `tests/unit/navigation-router.test.ts`.
+state always produces identical region IDs.
+
+**Three** canonical orders then decide which route comes back when more than
+one costs the same, and none of them is the iteration/insertion order of a
+`Map`/`Set`:
+
+1. the local A*'s frontier takes the least f-score and breaks equal f on the
+   tile's canonical string key (`tileKey`, `local-search.ts`);
+2. the portal-graph Dijkstra's frontier takes the least distance and breaks
+   equal distance on the region id (`region-dijkstra.ts`);
+3. `buildNavigationGraph` sorts `portals` by door id before any search sees
+   them (`region-graph.ts`), which is what chooses between two doors joining
+   the same pair of regions. This section named only the first two until
+   #365; the sort is the third thing a route depends on, and
+   `constructedDoorIdFor`'s docstring already treated it as one.
+
+`tests/determinism/navigation-search-tie-breaks.test.ts` is the guard for all
+three. It states each canonical answer as a concrete route **and** asserts
+the alternative is genuinely available at the same cost, so no case there can
+pass because there was only ever one route to find. Measured, reverting one
+site at a time: the A* tie-break fails one case, the Dijkstra tie-break one,
+the portal sort two.
+
+Repeatability — identical requests return identical routes — is the weaker,
+separate claim, and `tests/unit/navigation-router.test.ts`'s "is
+deterministic: identical requests return identical routes" is what verifies
+it. That case calls `findRoute` twice on one graph, which is identical under
+either rule, so it cannot see any of the three orders above; this section
+cited it for the stronger claim until #365, and all three reverts leave it
+green.
 
 ## Invalidation and caching
 
