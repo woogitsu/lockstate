@@ -4,6 +4,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import {
+  assertMetricBounds,
   BENCHMARK_HARNESS_VERSION,
   BENCHMARK_RESULT_SCHEMA_VERSION,
   normalizeRunResult,
@@ -44,6 +45,55 @@ function verifyHarnessMath() {
   });
   assert.throws(() => parseBenchmarkArguments(['--profile', 'unknown']), /Unsupported benchmark profile/u);
   assert.throws(() => parseBenchmarkArguments(['--unexpected']), /Unknown benchmark argument/u);
+
+  verifyMetricBoundsGate();
+}
+
+/**
+ * The gate that gates the gate (#410).
+ *
+ * `assertMetricBounds` is the only thing standing between a counted-work
+ * regression and a green CI run, and a bound checker that silently does
+ * nothing looks exactly like a workload that never regressed. So each
+ * direction is exercised here, on fixtures rather than on real scenario
+ * output: a ceiling that must fire and one that must not, a floor both ways,
+ * an `equals` both ways, a metric that is missing or not a number, and a
+ * scenario that declares bounds but returns no metrics at all.
+ */
+function verifyMetricBoundsGate() {
+  const metrics = { totalExpansions: 16_087, resolvedOk: 160 };
+
+  assertMetricBounds('fixture', 'smoke', undefined, null);
+  assertMetricBounds('fixture', 'smoke', {}, metrics);
+  assertMetricBounds('fixture', 'smoke', { totalExpansions: { max: 16_900 } }, metrics);
+  assertMetricBounds('fixture', 'smoke', { totalExpansions: { max: 16_087 } }, metrics);
+  assertMetricBounds('fixture', 'smoke', { totalExpansions: { min: 1 } }, metrics);
+  assertMetricBounds('fixture', 'smoke', { resolvedOk: { equals: 160 } }, metrics);
+
+  assert.throws(
+    () => assertMetricBounds('fixture', 'smoke', { totalExpansions: { max: 16_086 } }, metrics),
+    /metric "totalExpansions" is 16087, above its ceiling of 16086/u,
+  );
+  assert.throws(
+    () => assertMetricBounds('fixture', 'smoke', { totalExpansions: { min: 16_088 } }, metrics),
+    /below its floor of 16088/u,
+  );
+  assert.throws(
+    () => assertMetricBounds('fixture', 'smoke', { resolvedOk: { equals: 159 } }, metrics),
+    /expected exactly 159/u,
+  );
+  assert.throws(
+    () => assertMetricBounds('fixture', 'smoke', { missingMetric: { max: 1 } }, metrics),
+    /bounds metric "missingMetric", which is undefined rather than a finite number/u,
+  );
+  assert.throws(
+    () => assertMetricBounds('fixture', 'smoke', { latencyTicks: { max: 1 } }, { latencyTicks: { p95: 3 } }),
+    /rather than a finite number/u,
+  );
+  assert.throws(
+    () => assertMetricBounds('fixture', 'smoke', { totalExpansions: { max: 1 } }, null),
+    /declares metricBounds for profile smoke but returned no metrics object/u,
+  );
 }
 
 async function verifyScenario(resultScenario, profile) {
@@ -71,6 +121,11 @@ async function verifyScenario(resultScenario, profile) {
   } else {
     assert.equal(resultScenario.metrics, undefined);
   }
+
+  // Re-checked against the *stored* metrics rather than trusted from the
+  // producing run: a result file is the thing a reviewer reads and attaches
+  // to an issue, so it has to be the thing the ceiling is enforced on.
+  assertMetricBounds(resultScenario.id, profile, registeredScenario.profiles[profile]?.metricBounds, resultScenario.metrics ?? null);
 
   for (const sample of resultScenario.samplesMs) {
     assertFiniteNumber(sample, `${resultScenario.id} sample`);

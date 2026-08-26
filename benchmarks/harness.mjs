@@ -1,7 +1,12 @@
 import { performance } from 'node:perf_hooks';
 
 export const BENCHMARK_RESULT_SCHEMA_VERSION = 1;
-export const BENCHMARK_HARNESS_VERSION = 1;
+/**
+ * v2 adds `metricBounds` (see `assertMetricBounds`). The stored result shape
+ * is unchanged -- a bound is a property of the scenario, not of the result --
+ * so `schemaVersion` stays at 1.
+ */
+export const BENCHMARK_HARNESS_VERSION = 2;
 
 function assertPositiveInteger(value, label) {
   if (!Number.isInteger(value) || value <= 0) {
@@ -93,6 +98,56 @@ export function normalizeRunResult(value) {
   return { checksum: normalizeChecksum(value), metrics: null };
 }
 
+/**
+ * Enforces a profile's declared bounds on a scenario's structured metrics
+ * (#410), turning the benchmark suite from a report into a gate.
+ *
+ * A bound is `{ max }`, `{ min }` and/or `{ equals }` against one top-level
+ * numeric metric, and every one is a **literal written down by a human after
+ * a measured run** -- never a value computed from the run it gates. Both
+ * directions matter and both are available on purpose: a ceiling catches work
+ * that grew, and an exact `equals` on an outcome count catches a change that
+ * made work shrink by breaking the workload rather than improving it.
+ *
+ * Deliberately restricted to counted, deterministic quantities. Nothing here
+ * may be pointed at a duration: `docs/BENCHMARKING.md`'s refusal to gate CI
+ * on wall clock stands, and the harness's own `samplesMs`/`summary` are not
+ * reachable from a bound.
+ */
+export function assertMetricBounds(scenarioId, profileName, metricBounds, metrics) {
+  if (metricBounds === undefined) return;
+
+  if (metrics === null || typeof metrics !== 'object') {
+    throw new Error(`Scenario ${scenarioId} declares metricBounds for profile ${profileName} but returned no metrics object.`);
+  }
+
+  for (const [metricName, bound] of Object.entries(metricBounds)) {
+    const value = metrics[metricName];
+
+    if (!Number.isFinite(value)) {
+      throw new Error(
+        `Scenario ${scenarioId} (${profileName}) bounds metric "${metricName}", which is ${String(value)} rather than a finite number.`,
+      );
+    }
+
+    if (bound.equals !== undefined && value !== bound.equals) {
+      throw new Error(
+        `Scenario ${scenarioId} (${profileName}) metric "${metricName}" is ${value}, expected exactly ${bound.equals}.`,
+      );
+    }
+    if (bound.max !== undefined && value > bound.max) {
+      throw new Error(
+        `Scenario ${scenarioId} (${profileName}) metric "${metricName}" is ${value}, above its ceiling of ${bound.max}.`,
+      );
+    }
+    if (bound.min !== undefined && value < bound.min) {
+      throw new Error(
+        `Scenario ${scenarioId} (${profileName}) metric "${metricName}" is ${value}, below its floor of ${bound.min}.`,
+      );
+    }
+  }
+}
+
 export async function runBenchmarkScenario(scenario, profileName) {
   const profile = scenario.profiles[profileName];
 
@@ -134,6 +189,8 @@ export async function runBenchmarkScenario(scenario, profileName) {
       `Scenario ${scenario.id} is nondeterministic: measured iterations produced ${uniqueChecksums.size} checksums.`,
     );
   }
+
+  assertMetricBounds(scenario.id, profileName, profile.metricBounds, lastMetrics);
 
   return {
     id: scenario.id,
