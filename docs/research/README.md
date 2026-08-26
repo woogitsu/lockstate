@@ -95,3 +95,10 @@ it the same way.
 - **Construction is effectively instantaneous** — a wall completes in about
   2.5 seconds, with no labour cap and every order in parallel. Money, not
   time, is the only constraint on building today.
+  **Overtaken in its second half (#348).** A single wall still finishes on the
+  same tick it always did, so "a wall completes in about 2.5 seconds" survives
+  unchanged. Orders are no longer parallel: one order holds the crew at a time
+  and a waiting order takes it in the canonical ascending-id sequence, so a
+  twelve-wall perimeter finishes at tick 730 rather than at 70. Money is
+  therefore no longer the only constraint on building, which is the half of
+  this finding an economy memo would have leaned on.

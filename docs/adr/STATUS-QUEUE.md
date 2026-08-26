@@ -392,7 +392,15 @@ audited in one direction.
   `'seating'` and `'recreation'` and not `'dining'`. The empty zoned room above
   still derives zero for every capability, so ADR 0027's tripwire below is
   unaffected: what changed is that an action naming **no** capability now has no
-  object-derived ceiling at all, which is `room.yard` and nothing else.
+  object-derived ceiling at all, which is `room.yard` and nothing else. A
+  **third** amendment (#348) touches no decision at all: it corrects the
+  *measurement* under decision 4, which said "every order advances every
+  scheduled tick, so a hundred objects take the same wall-clock time as one".
+  Construction now runs one order at a time, so a twelve-wall perimeter finishes
+  at tick 730 rather than 70 while a single wall still finishes at 70. Decision
+  4's own ruling — that a labour cap is #26's to make, and that furniture must
+  not be the one buildable that waits — is untouched and is satisfied rather
+  than contradicted, because the queue applies to every buildable alike.
 - **ADR 0027's subject is unreachable, so its effects are not observable.** New
   as of this commit and the reason its status line is qualified. The rating seam
   that was approved is live, and it is inert: a zoned room with nothing placed in

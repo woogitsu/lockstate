@@ -821,6 +821,15 @@ decision about what to build next.
     `+10` per scheduled tick regardless of workers. No construction
     projection was written for this reason.
 
+    **That sentence is now half true (#348), and the false half is the half a
+    projection would have to show.** Still one mock worker id, still `+10` per
+    scheduled tick, still nothing that models a worker. What changed is that
+    only **one order at a time** advances: the crew is busy or it is not, and a
+    waiting order takes it in the canonical ascending-id sequence. So a queue
+    is no longer free — a twelve-wall perimeter finishes at tick 730 rather
+    than 70 — and "how far along is this, and what is it waiting behind" became
+    a question a player can now ask and the interface still cannot answer.
+
     Issue #74 added a Build **panel** without closing this. The panel is
     handed its option list as view-model data — `{definitionId, labelKey,
     occupiesEdge, material?}` — and the id→key mapping lives at the
