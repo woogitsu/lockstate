@@ -104,17 +104,25 @@ export class RefusalLog {
  *
  * A `Record` over the closed `BuildOrderFailReason` union rather than a
  * template-literal expression, so this is **exhaustive at compile time**: a
- * sixth fail reason added to `BUILD_ORDER_FAIL_REASONS` fails to compile here
+ * seventh fail reason added to `BUILD_ORDER_FAIL_REASONS` fails to compile here
  * until somebody decides what the player is told about it. That is the
  * property a `` `build.${reason}` `` concatenation would not have -- it would
  * silently mint a `RefusalReason` the protocol enum rejects and the message
  * catalog has no key for, and the refusal would vanish at the decoder exactly
  * as it used to vanish in the simulation.
+ *
+ * `unknown-buildable` arrived sixth and it is the table's own demonstration of
+ * why the exhaustiveness is worth the ceremony: the reason it was missing was
+ * that nothing refused the condition at all -- `submitOrder` approved an order
+ * for a buildable nobody declared, and `update` threw on it out of a scheduled
+ * system update from then on. Adding the check without adding the sentence
+ * would not compile.
  */
 export const BUILD_REFUSAL_REASONS: Readonly<Record<BuildOrderFailReason, RefusalReason>> = {
   'out-of-bounds': 'build.out-of-bounds',
   unbuildable: 'build.unbuildable',
   'unbuildable-terrain': 'build.unbuildable-terrain',
+  'unknown-buildable': 'build.unknown-buildable',
   'unowned-land': 'build.unowned-land',
   'water-blocked': 'build.water-blocked',
 };

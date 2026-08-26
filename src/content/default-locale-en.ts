@@ -205,6 +205,22 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.alert.refusal.build.out-of-bounds': 'The build order failed — that tile is outside the map.',
   'hud.alert.refusal.build.unbuildable': 'The build order failed — nothing can be built on that tile.',
   'hud.alert.refusal.build.unbuildable-terrain': 'The build order failed — the ground there cannot be built on.',
+  /*
+   * The one `build.*` sentence that is not about a tile.
+   *
+   * Worded almost exactly like `place-object.unknown-buildable` below, and
+   * differing only in what did not happen -- "the build order failed" against
+   * "the object was not placed" -- because the condition really is identical:
+   * both commands carry a `BUILDABLE_REGISTRY` id and neither can do anything
+   * with one the registry does not hold. What the player needs from the two is
+   * which control they pressed, which is the half that differs.
+   *
+   * No id in the sentence. The refusal channel carries no coordinates, order id
+   * or definition id (`RefusalLog`), so there is nothing to interpolate, and a
+   * stable content id is not player-facing text under any circumstances
+   * (ADR 0011).
+   */
+  'hud.alert.refusal.build.unknown-buildable': 'The build order failed — that is not something this prison knows how to build.',
   'hud.alert.refusal.build.unowned-land': 'The build order failed — you do not own that land.',
   'hud.alert.refusal.build.water-blocked': 'The build order failed — there is water on that tile.',
   /*
