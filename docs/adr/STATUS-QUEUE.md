@@ -985,11 +985,22 @@ one direction.
   and recorded here: it is a docs-truth task inside an accepted ADR and it belongs
   in a change of its own.
 - **ADR 0022 was written against v0.0.30 and its structural citations have
-  drifted.** `HudIntent` declares **sixteen** members rather than the seven the
+  drifted.** `HudIntent` declares **eighteen** members rather than the seven the
   ADR counts — `docs/adr/0022-room-zoning-surface.md:82` says
   `src/ui/hud/hud.ts:153-195` *"declares seven members and none of them is a
-  room"*, and the union now runs `src/ui/hud/hud.ts:270-491` — three of
+  room"*, and the union now runs `src/ui/hud/hud.ts:270-553`, ending where
+  `HudUnavailableNotice` begins — three of
   them room-related (`zone-room`, `unzone-room`, `arm-room-tool`);
+  (**This entry said "sixteen" and gave the range as `:270-491`.** The count was
+  wrong by two and the range short by 62 lines, and both were wrong **when
+  written**: counting the same way at the previous anchor `8d29aa6` also gives
+  eighteen, and the set has not changed since. That is worth recording where it
+  happened, because this entry's entire subject is somebody else's drifted hand
+  count and its stated moral is that a count in prose is the least durable
+  citation this corpus has. It then made the same mistake in the sentence saying
+  so — which is the argument for the rule §6 now closes with, and the reason the
+  count above is stated with the boundary that lets a reader re-derive it rather
+  than on its own.)
   **`AWAITING_PRODUCER` is now empty**, which is more than this entry's old
   claim that `ZoneRoom` is not in it: #312 gave `ZoneRoom` a producer and #367
   gave the last one, `CancelBuildOrder`, its own
