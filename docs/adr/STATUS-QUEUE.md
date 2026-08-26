@@ -1,4 +1,4 @@
-# One decision is awaiting approval — and where an accepted decision contradicts the code
+# What the owner still has to decide, and where an accepted decision contradicts the code
 
 This file is for the repository owner and nobody else. It exists because
 `docs/adr/README.md` reports statuses and `tests/foundation/adr-numbering-contract.test.ts`
@@ -8,25 +8,70 @@ implementation.
 
 **Nothing here changes a status.** A status moves in the ADR and in the index,
 never in this file. What changed with this revision is what the file is *for*:
-§1 records **all thirteen** flips, §2 holds **the one decision awaiting approval —
-ADR 0031** — above the account of why the queue had been emptied the first time
-and what that bought (ADR 0029 was accepted on 2026-08-26 and its entry deleted;
-0031 arrived immediately after), and everything after it is the residue — one genuinely open
-decision, one watch item, and the gaps between an accepted decision and the
-code. §6 used to be the inventory of stale sentences the flips left behind;
+§1 records **all thirteen** flips, §2 records that **the approval queue is
+empty** — above the account of why it had been emptied the first time and what
+that bought (ADR 0029 was accepted on 2026-08-26 and its entry deleted; 0031
+arrived immediately after and was itself accepted) — and everything after it is
+the residue — one genuinely open decision, one watch item, and the gaps between
+an accepted decision and the code.
+
+**This sentence and the title above it were both false, and this is the second
+time this file's title has rotted the same way.** They read *"One decision is
+awaiting approval"* and *"§2 holds the one decision awaiting approval — ADR
+0031"*, while §2's own heading three hundred lines below said **"The queue is
+empty"** and its subsection said 0031 was accepted. ADR 0031 was accepted at
+`e560656` (#389, **v0.0.104**), which is **seventeen releases** before this
+anchor — and, more to the point, `git merge-base --is-ancestor e560656 8d29aa6`
+confirms it predates the *previous* anchor too, so the last re-anchor did not
+catch it either.
+
+**Why neither delta pass caught it, which is the useful part.** The delta method
+this header describes reads the intersection of `git diff <anchor>..HEAD` with
+the enumerated file set below. `docs/adr/0031-build-queue-cancellation-surface.md`
+is in that set — but it has not changed since either anchor, because the flip
+that falsified this sentence happened *before* both of them. **A delta pass can
+only find claims that a file in the set falsified during that delta.** It is
+structurally blind to a claim that was already false when the window opened, and
+to a file contradicting itself, which is what this was: the title and §2 of the
+same document disagreed, and no diff anywhere would have said so. The cheap check
+that does find it is not a diff at all — it is reading the file's own headings
+against each other, which takes a minute and had not been done. The title is now
+worded so that it states the file's subject rather than a count, because a count
+in a title is the same rotting shape as an absence in a sentence and this one
+rotted twice. §6 used to be the inventory of stale sentences the flips left behind;
 **they are corrected, and that class is now asserted by a test**, so what it
 holds instead is the account of what moved, what may not be touched, and what
 the test cannot see. Deciding is still the owner's; this file only makes the
 next decision cheap.
 
-Re-anchored at `main` @ `8d29aa6` (**v0.0.111**) by the delta method this header
-describes, from `dbe271f` (v0.0.98). 109 files changed; **thirteen** intersect the
-declared set, and reading only those thirteen falsified **three** claims — the
-command-union count, the `'object.*'` literal count, and one drifted
-`docs/HUD_PROJECTIONS.md` line — each corrected in place with what it used to say.
-Two claims the delta *could* have falsified and did not: `AWAITING_PRODUCER` is
-still empty (both new commands shipped with producers), and `minQuantity` is still
-unchecked (`src/simulation/rooms/requirements.ts:19` and
+Re-anchored at `main` @ `54418b6` (**v0.0.121**) by the delta method this header
+describes, from `8d29aa6` (v0.0.111). 51 files changed; **seven** intersect the
+declared set, and reading only those seven falsified **seven** citations and
+**one** claim of substance — each corrected in place with what it used to say.
+
+**What this pass found, and the shape it found it in.** Every one of the seven
+falsified citations was a *line number*, and not one of the sentences those
+numbers point at had changed: the command union still discriminates thirteen,
+`state-machine.ts` still makes exactly four `transition()` calls and still
+targets `'ready'` from none of them, and `protocol/handshake` still has exactly
+nine occurrences in `src/`, all of them the receiver or the schema. That is the
+third consecutive pass to report the same ratio, and this file has now said
+three times that **a `file:line` into a file under active edit is its least
+durable citation and a quoted sentence is its most.** Saying it a fourth time is
+not the useful response; §6's closing paragraph now carries what would be.
+
+The one claim of substance the delta falsified is §4's, and it is the one this
+file had singled out as *not* having moved: `.github/workflows/migrate-database.yml`
+and `docs/DEPLOYMENT.md` were both edited by #423 at `4f738ae` (v0.0.116), which
+ends the "twenty-one releases without moving" that §4 recorded as its outcome.
+The constraint §4 watches is intact — every mechanism citation was re-read and
+still lands — but the sentence asserting the *absence* of movement is exactly the
+shape this corpus keeps finding rots first, and it rotted five releases after it
+was written.
+
+Two claims the delta *could* have falsified and did not, carried forward and
+re-checked at this anchor: `AWAITING_PRODUCER` is still empty, and `minQuantity`
+is still unchecked (`src/simulation/rooms/requirements.ts:19` and
 `src/simulation/presentation/room-projection.ts:74` both still say so).
 
 **Why this anchor moved twice in one day, and it is not carelessness.** Every
@@ -476,10 +521,10 @@ Functions in that table live in
 of that table was re-read against the file at this commit: `:45` and `:91`,
 `:150` with its trigger at `:188`, the exception's `hint` at `:178`, and
 `:71-73`'s `as $$ select 4194304 $$;`. Both
-absences were re-verified at `8d29aa6` by grepping the whole
+absences were re-verified at `54418b6` by grepping the whole
 `supabase/migrations/` tree for a total-bytes, retention or pruning mechanism
 (`total_bytes`, `retention`, `prune`, `268435456`, `max_revisions`). **That grep
-is no longer clean and the finding is unchanged**: it now returns exactly one
+is no longer clean and the finding is unchanged**: it returns exactly one
 hit, `20260826130000_server_stamp_updated_at.sql:68`, which is *prose* — a
 comment naming a future retention job as the reason that migration bounds what it
 bounds. A reader re-running the grep should expect it and not mistake a sentence
@@ -553,17 +598,32 @@ Supabase staging project *"automatically, on every merge to `main`"* with gating
 *"none"* (`docs/DEPLOYMENT.md`, "Automated deployment"), rollback is not
 automated, and the trigger is the merge rather than the diff — PR #87 touched no
 file under `supabase/migrations/` and nine migrations were applied anyway
-(`docs/DEPLOYMENT.md:143-147` for the table, `:159` for the 71-second window and
-`:161` for #87 itself, all re-read here). The half of the decision that *is* in
-this repository stays verified at `8d29aa6`:
+(`docs/DEPLOYMENT.md:143-147` for the table, `:160` for the 71-second window and
+`:162` for #87 itself, all re-read here; this entry cited `:159` and `:161`, one
+line short of each, because #423 inserted two rows into the table above them).
+The half of the decision that *is* in this repository stays verified at `54418b6`:
 `.github/workflows/migrate-database.yml` is `workflow_dispatch:` (`:34`) with no
 `push:`, requires a typed `confirm_project_ref` (`:41`), and its apply job is
-environment-gated (`:65`). **`git diff cddaebb..main` over that file is still
-empty, and so is `git diff 83c3121..main`** — neither this workflow nor
-`docs/DEPLOYMENT.md` appears in either delta, so nothing in this section has
-moved across twenty-one releases. That is the outcome to record rather than to
-leave implied, because a watch item nobody re-checked is indistinguishable from
-one that did not move. The one thing that *did* move nearby is #382's two new
+environment-gated (`:65`) — all three re-read at this anchor and all three still
+land.
+
+**This entry used to say that nothing here had moved, and that is now false.** It
+read: *"`git diff cddaebb..main` over that file is still empty, and so is
+`git diff 83c3121..main` — neither this workflow nor `docs/DEPLOYMENT.md` appears
+in either delta, so nothing in this section has moved across twenty-one
+releases."* Both files were edited by **#423 at `4f738ae` (v0.0.116)**, which
+closed the deploy gate: `.github/workflows/migrate-database.yml` gained five
+lines and `docs/DEPLOYMENT.md` thirteen. So the run of untouched releases ended
+five releases after the sentence claiming it was written.
+
+**What did and did not follow from that.** The mechanism this section watches is
+unchanged — every citation above was re-read rather than assumed, and #423
+tightened the *frontend* deploy gate without touching the migration path. What
+the edit falsified is only the sentence asserting the absence of movement, which
+is the shape this corpus keeps finding rots first: adding the thing an absence
+denies never touches the sentence denying it. Recording the outcome was right;
+stating it as a standing property rather than as a reading at a named commit was
+what made it rot. Rewritten above as a reading at this anchor. The one thing that *did* move nearby is #382's two new
 migrations, and they reach a hosted database by exactly the mechanism this
 section is about — which is the risk being live rather than the constraint being
 broken.
@@ -840,8 +900,10 @@ one direction.
 - **ADR 0006 / ADR 0003 decision 4 — the handshake gates nothing.** `'ready'` is
   a member of `WorkerState` (`src/simulation/worker/state-machine.ts:28`) and no
   `transition()` call targets it; the file makes exactly four, and they reach
-  `'faulted'` (`:455`), `'paused'` (`:566`), `'paused'`/`'running'` (`:601`) and
-  `'shutting-down'` (`:825`). Nothing in `src/` sends a `protocol/handshake` at
+  `'faulted'` (`:455`), `'paused'` (`:584`), `'paused'`/`'running'` (`:619`) and
+  `'shutting-down'` (`:843`). Three of those four moved: this entry cited `:566`,
+  `:601` and `:825`, each eighteen lines short, because #427 added the transport
+  acknowledgement above them. The count, the states and `:455` are unchanged. Nothing in `src/` sends a `protocol/handshake` at
   all — re-read at this commit, all nine occurrences are the receiver
   (`state-machine.ts:472`, `:502`), the transferables switch, the kind list or the
   schema. So ADR 0006's state 2 describes a state the machine cannot
@@ -853,7 +915,7 @@ one direction.
   0024's has been deleted. The fix is in the code, and the open decision is
   whether to send the handshake or delete `'ready'` (issue #274, Q4).
 - **ADR 0010 — the telemetry layer is inert.** Nothing outside
-  `src/services/telemetry/` imports it, re-verified at `8d29aa6` by grepping the
+  `src/services/telemetry/` imports it, re-verified at `54418b6` by grepping the
   whole of `src/` for that path — every hit is inside the directory itself — so
   consent is never asked for and `record()` is never called. The prohibition half of the ADR
   holds; the sentence *"telemetry is fed from the main thread's orchestration
@@ -883,9 +945,16 @@ one direction.
 
   **Understated:** the third figure has no source. ADR 0025 says its inherited
   budget is *"the 3.9px at 900×600 that ADR 0022 and `hud.css` both record"*.
-  Re-verified at `8d29aa6` by grepping the whole tree: **`3.9` appears in no ADR
+  Re-verified at `54418b6` by grepping the whole tree: **`3.9` appears in no ADR
   but 0025 — `docs/adr/0025-guard-hiring-surface.md:70` and `:182` — in no
-  `.css` file, and nowhere in `src/`.** Re-run after #377, which is the first
+  `.css` file, and nowhere in `src/`.** One caveat this entry should have carried
+  from the start: a bare `grep '3\.9'` also hits
+  `docs/adr/0022-room-zoning-surface.md:562`, which reads *"÷ 12.2 is 23.9"* — a
+  substring, not a second source. `git show 8d29aa6:docs/adr/0022-room-zoning-surface.md`
+  carries that same line, so the grep was never clean and the sentence was
+  imprecise the day it was written rather than overtaken since. The finding is
+  unaffected: 23.9 is not 3.9, and there are five `.css` files under `src/ui/`,
+  `hud.css` among them, with no `3.9` in any of them. Re-run after #377, which is the first
   change to touch `src/ui/hud/hud.css` since this entry was written and so the
   one that could have supplied the missing source; it did not, and
   `src/ui/hud/build-panel.ts`, ADR 0022 and ADR 0025 are all untouched in that
@@ -947,7 +1016,8 @@ one direction.
   `83c3121` and it is **still eleven** — the one count in this section that has
   held across the eleven releases to `dbe271f`, because #367 wired an existing
   member rather than adding one. **It no longer holds at that count.**
-  `simulationCommandSchema` (`src/simulation/protocol/commands.ts:437`) now
+  `simulationCommandSchema` (`src/simulation/protocol/commands.ts:465`; this
+  entry cited `:437`, which #420 pushed down by twenty-eight lines) still
   discriminates **thirteen**, matching thirteen `type: z.literal` members: #392
   added `CancelMaterialPurchase` and #394 added `ReleaseGuardAssignment`, both
   with producers in the same change, so `AWAITING_PRODUCER` stayed empty while
@@ -1268,6 +1338,16 @@ gained six lines and its `:592-598` citation was re-read rather than assumed —
 it still lands**, which is the one case where "the file changed" and "the
 citation moved" came apart.
 
+**At `54418b6` two of those six are no longer in untouched files, and they came
+apart in opposite directions** — which is worth recording because the sentence
+above rests each of the six on the file having not changed, not on anyone having
+looked. #423 edited both. `docs/DEPLOYMENT.md:163` **moved to `:164`**: it now
+lands on the blank line above the paragraph it names. `.github/workflows/migrate-database.yml:20`
+**still lands**, re-read rather than assumed, as `docs/TRUSTED_SERVICES.md` was.
+The other four — `0016:173`, `0013:15` and `:19-21`, `README.md:59` — are still
+in files `git diff 8d29aa6..HEAD` reports as untouched, and were spot-checked
+anyway: all four land.
+
 That is the whole cost of the second pass, and the ratio across both is the
 argument for the practice this file keeps recommending and keeps failing to
 follow: **a `file:line` into a document under active edit is the least durable
@@ -1276,6 +1356,41 @@ subsection needed fifteen corrections — eight line citations at `83c3121`, six
 more at `dbe271f`, and exactly **one** correction of substance, the ADR the
 `income.ts` count referred to. **Fourteen of fifteen were numbers**, and not one
 of the sentences those numbers point at has changed.
+
+**The third pass, at `54418b6`, made it twenty-three across three: twenty-one
+line citations and two corrections of substance.** Seven numbers moved here — the
+command union's, three of the four `transition()` sites, and three in
+`docs/DEPLOYMENT.md` — and again not one of the sentences behind them had
+changed. The count is still thirteen, the transitions are still four, `'ready'`
+is still unreachable.
+
+**So this file has now diagnosed the same defect three times and fixed it zero
+times, and repeating the diagnosis a fourth time is not the useful response.**
+What would be, stated as a proposal for the owner rather than as something done
+here, because it changes how the corpus is cited and that is a decision:
+
+1. **Stop citing a bare `file:line` into a document under active edit.** Every
+   correction in this subsection across three passes has been a number pointing
+   at an unchanged sentence. A citation of the form *"`docs/DEPLOYMENT.md`, the
+   paragraph beginning 'The reasoning that put migrations'"* survives every edit
+   that does not change the sentence, which is all of them so far. Code citations
+   are different and should stay `file:line`: they are checked by grep, not read
+   by eye, and `src/` moves for reasons that do change meaning.
+2. **This one is assertable, unlike the rest of this file.** A test can extract
+   each quoted sentence from this document and require it to appear verbatim in
+   the file named. That catches the drift that actually happens — a quote going
+   stale — and it cannot be satisfied by moving a number without reading
+   anything, which is the honest boundary
+   `tests/foundation/adr-status-queue-anchor-contract.test.ts` names about
+   itself.
+3. **The cost is a one-off rewrite of the citations in §§3-6** and a rule that
+   new entries quote rather than count lines. The benefit is that the delta pass
+   this header describes stops spending most of its budget on numbers.
+
+The separate structural change this file has also diagnosed and not made — one
+file per entry in a directory, so two commits can add two entries without
+touching each other — is a different problem (contention on a single 90 KB file)
+with a different fix, and is not addressed by the above.
 
 ### Cannot be edited at all
 
