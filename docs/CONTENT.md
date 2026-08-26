@@ -52,9 +52,42 @@ catalog's own schema can catch a *dangling* reference — a room requiring an
 object id nobody registered. `validate-catalog.ts`'s
 `validateRoomObjectReferences` checks every room's object requirements
 against the real object registry and reports each dangling one as a
-structured `missing-object-reference` error; `src/content/index.ts` runs
-this once against the default catalogs at import time, exactly like each
-catalog's own self-validation.
+structured `missing-object-reference` error; **`room-catalog.ts` runs this
+once against the default catalogs at its own import time**, immediately
+after `defaultRoomContentRegistry` is built, exactly like each catalog's own
+self-validation.
+
+It says `room-catalog.ts` rather than `src/content/index.ts` because of
+issue #315, and the difference is the whole point. The check used to sit in
+the barrel, and this document and the barrel both said it failed fast at
+startup. It never ran in a shipped build: `src/content/index.ts` has one
+importer under `src/` (`src/simulation/rooms/definition.ts`), whose own only
+importer is a test, so nothing in the production graph reached the module and
+the bundler dropped it. Measured in the artefact, not inferred from the
+source — `dist/assets/index-*.js` contained each catalog's own
+`Default room catalog failed validation` / `Default object catalog failed
+validation` throw, and no occurrence of `cross-reference validation` at all.
+The check ran under `vite dev` and in `pnpm test`; a build a player loads
+with a dangling reference booted and broke later, which is the exact failure
+the sentence promised it could not.
+
+Running it in production was measured rather than assumed before it was
+chosen: 26 object requirements across 18 rooms against 20 objects,
+0.12–0.18 ms for the first cold call in each of five fresh processes, and
++327 bytes minified (+108 gzipped) on the client chunk, with the same again
+on the simulation worker chunk (+326 / +93). Two things keep it there:
+`tests/foundation/content-validation-reachability-contract.test.ts` fails if
+the module holding the check stops being reachable from `src/main.ts` or the
+simulation worker entry, and a `vite.config.ts` plugin fails the build if the
+emitted client chunk does not contain the throw — reachable and emitted are
+different facts, and only the bundler can settle the second. Both run in CI
+via `pnpm verify`.
+
+A barrel is the wrong home for a startup guarantee in general: it is the
+module a direct import is free to skip, so whether the guarantee holds
+depends on which specifier a consumer happens to write. Beside the registry
+it validates, it cannot be skipped — every reader of
+`defaultRoomContentRegistry` imports `room-catalog.ts`.
 
 ## Localization keys, separate from logic IDs
 
