@@ -6,6 +6,8 @@ import type { Kernel } from '../kernel/kernel';
 import type { NavigationSystem } from '../navigation/navigation-system';
 import { ActionSystem, type PrisonerRouteContextResolver } from './action-system';
 import type { ClassificationInput } from './classification';
+import { ClassificationReviewSystem } from './classification-review-system';
+import type { DisciplinaryEvidenceSource } from './disciplinary-record';
 import { ACTION_PHASES, CurrentActionComponent, PositionComponent, PrisonerColdState, PrisonerRecordComponent } from './components';
 import { type AccommodationPolicy, IntakeSystem } from './intake-system';
 import { NeedsComponent } from './needs';
@@ -52,6 +54,19 @@ export interface PrisonerOperationsRuntimeOptions {
   readonly identity?: ActorIdentityMinter;
   /** Overrides the stream identity draws from. Defaults to `ACTOR_IDENTITY_RNG_STREAM`; a session must have registered whichever name is used. */
   readonly identityRngStreamName?: string;
+  /**
+   * Already-recorded incident and confiscation evidence, read by
+   * `ClassificationReviewSystem` (ADR 0032). Omitted, the review still runs and
+   * still moves a tier -- clean-conduct credit needs no evidence to accrue --
+   * so a test or scenario that wires no incident pipeline behaves sensibly
+   * rather than throwing.
+   *
+   * A port rather than the two registries, because `IncidentLog` and
+   * `ConfiscationLedger` are session-level: they span this runtime and the
+   * guard roster, exactly as `ActorIdentityRegistry` does, and owning them here
+   * would misfile them.
+   */
+  readonly disciplinaryEvidence?: DisciplinaryEvidenceSource;
 }
 
 /**
@@ -59,7 +74,7 @@ export interface PrisonerOperationsRuntimeOptions {
  * driven utility-AI action selection) the same way `NavigationSystem`
  * composes issue #22's navigation scheduling: one object owning the
  * `EntityStore`-backed state and the `Kernel`-registrable systems that
- * operate on it. `registerOn(kernel)` wires all three systems; nothing
+ * operate on it. `registerOn(kernel)` wires all four systems; nothing
  * here spawns a prisoner or a room instance on its own -- that is real
  * session/scenario setup, not implicit default content.
  */
@@ -75,6 +90,7 @@ export class PrisonerOperationsRuntime {
   public readonly intakeSystem: IntakeSystem;
   public readonly needsDecaySystem: NeedsDecaySystem;
   public readonly actionSystem: ActionSystem;
+  public readonly classificationReviewSystem: ClassificationReviewSystem;
 
   private readonly bitset: ComponentBitset;
   private readonly query: EntityQuery;
@@ -102,6 +118,12 @@ export class PrisonerOperationsRuntime {
       options.identityRngStreamName,
     );
     this.needsDecaySystem = new NeedsDecaySystem(this.entityStore, this.query, this.needs);
+    this.classificationReviewSystem = new ClassificationReviewSystem(
+      this.entityStore,
+      this.query,
+      this.records,
+      options.disciplinaryEvidence,
+    );
     this.actionSystem = new ActionSystem(
       this.entityStore,
       this.query,
@@ -119,6 +141,7 @@ export class PrisonerOperationsRuntime {
 
   public registerOn(kernel: Kernel): void {
     kernel.registerSystem(this.intakeSystem);
+    kernel.registerSystem(this.classificationReviewSystem);
     kernel.registerSystem(this.needsDecaySystem);
     kernel.registerSystem(this.actionSystem);
   }

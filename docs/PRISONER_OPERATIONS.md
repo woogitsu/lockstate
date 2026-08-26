@@ -143,6 +143,17 @@ iteration order. The one intentional RNG use in this whole slice is
 tie-breaking and named RNG only where explicitly intended"); everything
 else here is a pure function of state.
 
+**That is still one draw and not two, and it stayed one deliberately.**
+`ClassificationReviewSystem` rewrites the very field that draw produces
+(see *Classification: a tier that moves* below) and takes no draw of its
+own. A draw there would advance `prisoners.classification` on a tick that
+has nothing to do with an admission, so reviewing one prisoner would shift
+the classification of every prisoner admitted afterwards -- one population's
+conduct leaking into another's intake, which is the coupling a named-stream
+discipline exists to prevent. `tests/unit/prisoners-classification-review.test.ts`
+runs the review on a kernel with **no streams registered at all**, so any
+draw throws rather than merely being noticed.
+
 ## Room instances: the minimal, real bridge #17/#23 don't provide
 
 #23's content catalog does not track individual *placed* room instances or
@@ -509,6 +520,24 @@ rather than recomputed, whether the player may override one, and how a
 cell-scoped risk reaches the sector-scoped trigger system are open questions
 in [ADR 0027](./adr/0027-cell-sharing-assessment.md), not settled in code.
 
+**Two of those three moved, and it is worth being precise about which.**
+[ADR 0032](adr/0032-incident-consequences-and-classification-review.md)
+decides that a *disciplinary* record is derived rather than stored, and gives
+the reasoning and the cost -- but a **cell-sharing rating** is a different
+object, a snapshot of what was known at one placement decision, and nothing
+records one: `findBestAvailable` still recomputes and still stores nothing,
+so 0027 question 1 is untouched where it is actually asked. 0032 answers
+0027 question 2's *adjudication* half the same way 0027 answers its
+placement half -- deferred, because both need a command type -- so the two
+now share one blocker rather than two. Question 3 is neither answered nor
+touched: there is still no cell-to-sector mapping.
+
+What *did* change under this rating is its input. `riskTier` moves now, so
+the distance term is measuring a quantity that varies over a session rather
+than one fixed at the gate -- which is the mutability 0027's Consequences
+section named as the thing that turns a placement filter into a feedback
+loop.
+
 **This paragraph used to say none of it changed an outcome today. It does now.**
 What it said was accurate when written: 36 of the cell registrations in this tree
 are `capacity: 1` and a zoned one was `capacity: 0`, so every *free* instance
@@ -560,6 +589,122 @@ arriving prisoner rather than rejecting them) -- it only becomes
 registry at all*, a structural gap retrying can never fix. Backlog is
 tracked (`accommodationBacklogTicks`) as the architecture's required
 "observable unmet demand, not hidden success."
+
+## Classification: a tier that moves, and what an incident costs (#78, #80)
+
+`classifyPrisoner`'s tier used to be written once, at the
+`'classification'` stage, and never again -- a four-value `RiskTier`
+collapsing into a boolean at its last step and then standing for the rest
+of the session. [ADR 0032](adr/0032-incident-consequences-and-classification-review.md)
+makes it move, and makes an incident the thing that moves it.
+
+**A disciplinary record is derived, not stored, and that is what lets this
+change fit an existing save.** `disciplinary-record.ts`'s
+`buildDisciplinaryIndex` folds two logs the save already carries --
+`IncidentLog`'s terminal records and `ConfiscationLedger`'s events -- into
+authored integer points per prisoner. Nothing accumulates and no schema
+moves, which was not a preference: `SAVE_SCHEMA_VERSION` is 5 and V6 was
+already contended by another branch, so a *recorded* record would have been
+queued behind it rather than merely more expensive.
+
+The one datum a review needs that no field holds is *when the prisoner was
+classified*, and it is recoverable rather than guessed.
+`IntakeSystem` writes `sentenceEndTick = tick + sentenceLengthTicks` at the
+`'classification'` stage and both operands are persisted, so
+`classifiedAtTickOf` is that arithmetic run backwards. It answers
+`undefined` for the one case it cannot survive -- a sentence long enough to
+wrap the `Uint32Array` sum, which `admitPrisonerSchema` permits -- and such
+a prisoner is never reviewed, because inventing a classification tick would
+move their tier on somebody else's clock.
+
+**What counts as a finding, and the two limits worth knowing before reading
+the mechanic as more than it is.** A finding attaches when an incident
+reaches a terminal state (`'resolved'` or `'lapsed'`), and it attaches to
+**every participant**. `IncidentTriggerSystem` fills `participantIds` from
+the sector's occupants, so the list is "who was there" and not "who did
+it", and the injured list cannot narrow it: `IncidentResponseSystem.lapse`
+injures every participant and its resolved path injures nobody, so
+`injuredEntityIds` is a function of the response and carries no information
+about culpability at all. Identifying a culprit *is* adjudication, which
+issue #80 asks to be a player decision and ADR 0032 defers because it needs
+a command type. And a contraband find is charged to the prisoner it was
+found **on**; a stash found in a cell is charged to nobody, because a cell
+stash has no owner in the model and splitting it across the occupants would
+invent one.
+
+**`prisoners.classification-review` (order 55) is an absolute recomputation,
+not a step.** It runs once every `CLASSIFICATION_REVIEW_INTERVAL_TICKS` and
+rewrites `riskTier` and `classificationGroupIndex` -- both existing,
+already-persisted slots -- from four named factors that sum to the score:
+the same long-sentence and prior-incident terms intake already weighed, a
+capped findings term, and a capped clean-conduct credit that runs from the
+last finding or from classification for a prisoner who has never had one.
+The alternative considered was "move at most one tier per review", which
+reads better and was rejected on determinism: it makes the tier a function
+of how many times the system happened to run, so a save restored across a
+scheduled review could hold a different tier at the same tick with the same
+evidence. An absolute recomputation is idempotent, so nothing about the
+schedule can reach the outcome.
+
+Both caps are what stop the loop dead-ending in either direction, which is
+issue #80's "time without a finding must count for something, or the loop
+only ratchets one way". `IncidentRecord.severity` is deliberately **not** a
+term: it is a `number` with no integer guarantee anywhere in its production
+path, and a float inside a score that decides a persisted `Uint8Array` slot
+buys no granularity a four-value tier can use.
+
+**The tier scale and the housing group are two axes**, which is the question
+issue #78 asks outright. The tier is the four-value `RiskTier`; the group is
+`CLASSIFICATION_GROUP_IDS`, and a group *is* a `RegimeSchedule` --
+so a third group means authoring another gapless daily timetable and a
+message key under `simulation-message-keys.ts`'s completeness gate.
+`classificationGroupIdForTier` is the one definition of what tier 3 means,
+called from both the intake draw and the review, so the two cannot drift.
+
+**Intake classification is now provisional**, and that is the one existing
+behaviour this changed. The screening draw stands until the prisoner has
+served a full review period; the first review then reaches the deterministic
+assessment. The variance keeps its meaning -- it models a screening at the
+gate being imprecise -- and a review correcting it is the point of having
+reviews.
+
+**What a moved tier reaches, measured rather than asserted.** Three
+consumers, all already wired:
+
+- **The regime**, which is the half a player watches. `ActionSystem` reads
+  `classificationGroupIndex` on every reconsideration, so a prisoner who
+  reaches tier 3 moves onto the high-risk timetable -- sleep/meal/hygiene for
+  2,200 of the day's 2,400 ticks. Measured through the real commands and
+  kernel in `tests/integration/incident-consequence-loop.test.ts`: two
+  identical prisons, identical seed, identical commands, differing only in
+  one riot record, have equal need levels at tick 40,000; by tick 70,000 the
+  reclassified prisoner's `sleep` need reads 0 against 1,000 and their
+  `safety` need 141 against 1,000.
+- **Placement**, through `rateCellSharing`. Its one term is the worst
+  classification distance across a cell's live occupants, so a sitting
+  prisoner's tier moving changes where the *next* arrival is housed. ADR 0027
+  named exactly this as the thing that would turn its placement filter into
+  the feedback loop #79 asked for.
+- **The published projections.** `projectPrisonerRoster`,
+  `projectPrisonerDetail` and `projectStatusStrip`'s
+  `counts.prisonersHighRisk` all carry the tier and the group already; that
+  count could previously only ever change on an admission.
+
+**What it does not reach is a HUD panel, and that gap is older than this
+change.** `prisonersHighRisk` crosses the worker boundary on the
+status-counts channel and `hudCountsFromWorkerMessage` drops it, because the
+strip has no high-risk chip and there is no prisoner roster panel at all --
+the same "shipping the system before the surface" state the *out of scope*
+section at the end of this document records.
+
+**And nothing relocates a prisoner, which is why this is the classification
+consequence and not the sanction.** `room.solitary-cell` is an intake
+destination: `DEFAULT_ACCOMMODATION_POLICY` sends high-risk *arrivals*
+there, and a prisoner who is reclassified to high-risk while already housed
+**stays where they are**. Moving an already-placed prisoner does not exist in
+`src/` in either direction, and a sanction that expires needs both. So a
+player who sees somebody in solitary still cannot tell "arrived high-risk"
+from "did something", because only the first is possible.
 
 ## Action execution: idle -> travelling -> performing, via real navigation
 
