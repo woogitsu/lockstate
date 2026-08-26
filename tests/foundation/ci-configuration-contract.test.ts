@@ -1522,4 +1522,266 @@ describe('deploy trigger and checkout contract', () => {
       "github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'",
     );
   });
+
+  /**
+   * Phrases the reasoning above the `staging` job's `if:` must still carry, and
+   * what each one is load-bearing for. Substrings rather than a second copy of
+   * the comment: the wording stays editable, the argument does not quietly go
+   * missing. Same shape, and the same reason, as REQUIRED_REASONING in the
+   * deploy concurrency contract above.
+   */
+  const REQUIRED_STAGING_GUARD_REASONING: Readonly<Record<string, string>> = {
+    "a fork's branch can be named `main`":
+      "why `branches: [main]` on the trigger is not the fork check: that filter matches the triggering run's head branch, and a fork picks that name freely.",
+    'What is NOT the mitigation':
+      "that ci.yml's own fork guards are not what protects this deploy. Relying on them means relying on what GitHub reports as the `conclusion` of a run whose every job skipped, which nothing in this repository establishes.",
+    head_sha:
+      "the step the whole finding turns on: the `Checkout` below builds the triggering run's head commit, so a run this guard accepts is a commit this job publishes.",
+    'no gate of any kind':
+      'what a `workflow_dispatch` of `staging` passed through before the ref term -- no CI, no environment approval -- and so why that alternative is restricted rather than trusted.',
+  };
+
+  /**
+   * The `||`-separated alternatives of a folded job guard, each trimmed.
+   *
+   * Why the guard is split before anything is asserted about it: GitHub gives
+   * `&&` higher precedence than `||`, so each alternative is an independent
+   * path to the job running, and a term gates only the path that carries it.
+   * `A && B || C` runs on `C` alone. Asserting that a term appears *somewhere
+   * in the guard* therefore does not assert that it gates anything -- the term
+   * could have moved onto the other alternative, or a third alternative could
+   * have been added beside it, and a whole-string `toContain` would still
+   * pass. The same scoping reason `jobBlock` exists rather than a whole-file
+   * search.
+   */
+  function guardAlternatives(guard: string, job: string): readonly string[] {
+    const alternatives = guard
+      .split('||')
+      .map((alternative) => alternative.trim())
+      .filter((alternative) => alternative.length > 0);
+
+    // Vacuity guard: an empty list satisfies nothing below, but it would blame
+    // the workflow for a broken split.
+    expect(
+      alternatives.length,
+      `the \`if:\` guard on the \`${job}:\` job in ${DEPLOY} split into no alternatives; the parser is broken.`,
+    ).toBeGreaterThan(0);
+
+    return alternatives;
+  }
+
+  /**
+   * The one `||` alternative of a job guard that tests for a given event.
+   *
+   * Exactly one, asserted rather than assumed: with the same event tested on
+   * two alternatives, "this alternative requires X" stops being a statement
+   * about what the job does, because the other one does not require it.
+   */
+  function guardAlternativeFor(guard: string, job: string, eventName: string): string {
+    const matching = guardAlternatives(guard, job).filter((alternative) =>
+      alternative.includes(`github.event_name == '${eventName}'`),
+    );
+
+    expect(
+      matching.length,
+      `the \`if:\` guard on the \`${job}:\` job in ${DEPLOY} no longer has exactly one \`||\` alternative testing \`github.event_name == '${eventName}'\` (found ${matching.length}). Everything asserted below is about which terms gate that path, and that can only be read off one alternative: split the path in two, or fold it into another, and a term can be present in the guard while gating nothing. Restructure if the shape has to change, and pin the new shape here in the same commit.`,
+    ).toBe(1);
+
+    return matching[0] ?? '';
+  }
+
+  it('deploys only a CI run that a push started, never one a pull request started', async () => {
+    const guard = jobGuard(jobBlock(await readRepositoryFile(DEPLOY), 'staging'), 'staging');
+    const automatic = guardAlternativeFor(guard, 'staging', 'workflow_run');
+
+    // The leading `&&` is part of the pinned text on purpose. Without it the
+    // assertion is satisfied by `... || github.event.workflow_run.event ==
+    // 'push'`: the term present, and gating nothing. That is the mutation this
+    // file's header calls a gate weaker than it looks.
+    expect(
+      automatic,
+      `the \`staging\` job in ${DEPLOY} no longer requires the triggering CI run to have been started by a *push*. ci.yml runs on \`pull_request\` and on \`workflow_dispatch\` as well, and \`branches: [main]\` filters the triggering run's HEAD BRANCH rather than its event: a pull request opened from a fork whose branch is named \`main\`, and a manual dispatch of CI on \`main\`, both produce a completed CI run this trigger accepts. CI passing is not a merge. Restore \`&& github.event.workflow_run.event == 'push'\`.`,
+    ).toContain("&& github.event.workflow_run.event == 'push'");
+  });
+
+  it('deploys only a CI run whose commit came from this repository, never a fork of it', async () => {
+    const guard = jobGuard(jobBlock(await readRepositoryFile(DEPLOY), 'staging'), 'staging');
+    const automatic = guardAlternativeFor(guard, 'staging', 'workflow_run');
+
+    // Pinned with its leading `&&` for the same reason as the term above.
+    expect(
+      automatic,
+      `the \`staging\` job in ${DEPLOY} no longer requires the triggering CI run's head commit to have come from this repository. ci.yml triggers on a bare \`pull_request\`, so a pull request opened from a FORK starts a CI run that belongs to this repository and carries the fork's head branch and the fork's commit -- and the \`Checkout\` step deliberately builds \`workflow_run.head_sha\`, so that commit is what \`wrangler deploy\` publishes to the Worker holding the lockstate.io Custom Domain. ci.yml's own fork guards do not close this: they make every job of such a run *skip*, and what GitHub reports as that run's \`conclusion\` is established nowhere in this repository -- one unguarded job added to ci.yml would settle it the wrong way, with nothing connecting the two files. Restore \`&& github.event.workflow_run.head_repository.full_name == github.repository\`.`,
+    ).toContain('&& github.event.workflow_run.head_repository.full_name == github.repository');
+  });
+
+  it('publishes a manual staging dispatch only from main', async () => {
+    const guard = jobGuard(jobBlock(await readRepositoryFile(DEPLOY), 'staging'), 'staging');
+    const dispatched = guardAlternativeFor(guard, 'staging', 'workflow_dispatch');
+
+    // The whole conjunction rather than the ref term alone: `github.ref` is
+    // the ref this job checks out, so the term has to sit on the alternative
+    // that does the checking out, conjoined to it rather than beside it.
+    expect(
+      dispatched.replace(/[()]/gu, '').trim(),
+      `the \`staging\` job in ${DEPLOY} no longer restricts a manual dispatch to \`main\`. A \`workflow_dispatch\` checks out \`github.ref\` -- any branch, any tag -- and this job runs no \`pnpm verify\` and sits behind no environment approval, so without this term dispatching \`staging\` publishes an arbitrary ref straight to the Worker that serves lockstate.io, gated by nothing. \`main\` is the branch the automatic path publishes anyway. If a stronger gate replaces it -- the dispatched ref's own CI, or required reviewers on the \`staging\` environment -- that is the owner's decision to record, and its new shape is pinned here in the same commit.`,
+    ).toContain(
+      "github.event_name == 'workflow_dispatch' && inputs.target == 'staging' && github.ref == 'refs/heads/main'",
+    );
+  });
+
+  it('offers exactly the two paths above, so a third cannot be added unnoticed', async () => {
+    const guard = jobGuard(jobBlock(await readRepositoryFile(DEPLOY), 'staging'), 'staging');
+    const alternatives = guardAlternatives(guard, 'staging');
+
+    // Every assertion above scopes itself to one alternative, which is what
+    // makes it mean anything -- and is also what makes it blind to a new
+    // alternative beside it. `A || B || anything` runs on `anything`. This is
+    // the term that turns "these two paths are gated" into "these are the
+    // paths".
+    expect(
+      alternatives.length,
+      `the \`if:\` guard on the \`staging\` job in ${DEPLOY} now has ${alternatives.length} \`||\` alternatives rather than 2. Each one is an independent path to publishing the Worker that serves lockstate.io, and the assertions above are each scoped to one of the two this contract knows about, so a third is unchecked by construction. Adding a path here is a deployment decision: say what gates it, and assert that here in the same commit.`,
+    ).toBe(2);
+  });
+
+  it('still explains why each of those terms is there, beside the terms', async () => {
+    const jobLines = jobBlock(await readRepositoryFile(DEPLOY), 'staging');
+    const guardStart = jobLines.findIndex(
+      (line) => line.search(/\S/u) === 4 && /^if:/u.test(line.trim()),
+    );
+
+    expect(
+      guardStart,
+      `the \`staging\` job in ${DEPLOY} has no job-level \`if:\` for a comment to sit above.`,
+    ).toBeGreaterThan(0);
+
+    const reasoning = jobLines
+      .slice(0, guardStart)
+      .filter((line) => line.trim().startsWith('#'))
+      .join('\n');
+
+    // Vacuity guard: every phrase below is equally absent from an empty
+    // string, so this says which of the two failures happened.
+    expect(
+      reasoning.length,
+      `the \`if:\` on the \`staging\` job in ${DEPLOY} carries no comment above it at all, or the comment parse is broken.`,
+    ).toBeGreaterThan(400);
+
+    const missing = Object.keys(REQUIRED_STAGING_GUARD_REASONING).filter(
+      (phrase) => !reasoning.includes(phrase),
+    );
+
+    expect(
+      missing.map((phrase) => `${phrase} -- ${REQUIRED_STAGING_GUARD_REASONING[phrase]}`),
+      `the reasoning above the \`staging\` job's \`if:\` in ${DEPLOY} no longer makes this part of its argument. Three of those terms are there for reasons invisible from this file -- a fork's branch can be named \`main\`, ci.yml's fork guards are not what protects the deploy, and a dispatch checks out an arbitrary ref past no gate at all -- and a term whose reason has been deleted is a term the next reader tidies away. Restore it; or, if a term genuinely changed, rewrite the argument and update this map to the phrases the new one turns on.`,
+    ).toEqual([]);
+  });
+});
+
+/**
+ * `.github/workflows/ci.yml` triggers on a bare `pull_request` and every job in
+ * it runs on `[self-hosted, ...]`, so each job is a path from "someone opened a
+ * pull request from a fork" to "their code ran on the owner's machine": the
+ * steps check the fork's ref out and `pnpm verify` executes what it finds
+ * there. One term on each job closes that, and nothing in the workflow makes a
+ * job added later inherit it -- `needs:` skips a dependent when its dependency
+ * skips, which is a property of today's graph rather than of the workflow, and
+ * `if: always()` or a job with no `needs:` chain has none of it.
+ *
+ * Deliberately not folded into the deploy contract above, because it is no
+ * longer the same statement. deploy.yml's `staging` job now tests
+ * `workflow_run.event` and `workflow_run.head_repository.full_name` for itself,
+ * so this guard is not what stands between a fork and the public site. What it
+ * stands between is a fork and the runner.
+ */
+describe('fork pull request execution contract', () => {
+  const CI = '.github/workflows/ci.yml';
+
+  /**
+   * The job-level guard, as one exact line. A literal written here rather than
+   * read out of the workflow: a term derived from the file it is checking holds
+   * for whatever the file happens to say.
+   */
+  const FORK_GUARD =
+    "    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository";
+
+  /** Every top-level job under `jobs:`, mapped to the lines of its block. */
+  function jobBlocks(workflow: string): ReadonlyMap<string, readonly string[]> {
+    const lines = workflow.split(/\r?\n/u);
+    const start = lines.indexOf('jobs:');
+
+    expect(
+      start,
+      `${CI} has no top-level \`jobs:\` block, so nothing below is reading what it thinks it is.`,
+    ).toBeGreaterThanOrEqual(0);
+
+    const blocks = new Map<string, string[]>();
+    let current: string[] | undefined;
+
+    for (const line of lines.slice(start + 1)) {
+      const header = /^ {2}([A-Za-z][\w-]*):\s*$/u.exec(line);
+      if (header) {
+        current = [];
+        blocks.set(header[1] ?? '', current);
+        continue;
+      }
+      // A new top-level key ends `jobs:`.
+      if (line.trim().length > 0 && !/^\s/u.test(line)) break;
+      current?.push(line);
+    }
+
+    // Vacuity guard: with no jobs parsed, "every job carries the guard" is
+    // true of nothing at all.
+    expect(
+      blocks.size,
+      `no jobs parsed out of ${CI}; the parser is broken.`,
+    ).toBeGreaterThanOrEqual(3);
+
+    return blocks;
+  }
+
+  it('guards every job against a fork pull request, including one added later', async () => {
+    const blocks = jobBlocks(await readRepositoryFile(CI));
+    const names = [...blocks.keys()];
+
+    // Named so a rename fails here, in the commit that renames, rather than
+    // leaving this contract quietly checking a set of jobs that has moved on.
+    // `toContain` rather than an exact set: a NEW job must satisfy the
+    // assertion below rather than this one.
+    for (const job of ['verify', 'assets', 'browser']) {
+      expect(
+        names,
+        `${CI} no longer has a \`${job}:\` job. If it was renamed, rename it here in the same commit; if it was removed, say so here -- a gate this contract cannot find is a gate this contract does not check.`,
+      ).toContain(job);
+    }
+
+    // Comments are dropped first, and the guard is matched as a whole line at
+    // job-level indentation: a comment *describing* the guard, or a
+    // step-level `if:` deeper in the job, must not be able to satisfy an
+    // assertion that the job carries it.
+    const guarded = names.filter((job) =>
+      (blocks.get(job) ?? [])
+        .filter((line) => !line.trim().startsWith('#'))
+        .some((line) => line === FORK_GUARD),
+    );
+
+    // Positive presence first, so the assertion below cannot pass by finding
+    // nothing. Deliberately `> 0` rather than a floor of three: a floor would
+    // fire first when a single job lost its guard, reporting "no job carries
+    // it" about a file where two still do, and the next reader would go
+    // looking for the wrong defect. Which jobs are unguarded is the assertion
+    // below; this one only distinguishes "a guard was removed" from "the exact
+    // line pinned in FORK_GUARD was reformatted, so this contract now matches
+    // nothing anywhere".
+    expect(
+      guarded.length,
+      `no job in ${CI} carries the fork guard as a job-level \`if:\` at all. Either every one of them lost it, or the exact line pinned in FORK_GUARD has been reformatted and this contract is matching nothing -- check which before treating it as the security failure it would otherwise be.`,
+    ).toBeGreaterThan(0);
+
+    expect(
+      names.filter((job) => !guarded.includes(job)),
+      `these jobs in ${CI} carry no fork guard. This workflow triggers on a bare \`pull_request\` and runs on a self-hosted runner, so an unguarded job executes a fork's code -- \`vite.config.ts\`, everything under \`tests/\` -- on the owner's machine, in a workspace reused between jobs and between runs. Add \`if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository\` to each, exactly as the other jobs spell it. If a job genuinely must run on a fork's pull request, it needs a reason written beside it and an exception recorded here in the same commit.`,
+    ).toEqual([]);
+  });
 });

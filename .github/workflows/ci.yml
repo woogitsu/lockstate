@@ -25,6 +25,35 @@ env:
 
 jobs:
   verify:
+    # A fork's pull request must not run on this runner, and must not become a
+    # deployment. Two separate reasons; this guard is the whole answer to the
+    # first and only half an answer to the second.
+    #
+    # The runner. `runs-on` is self-hosted, so these steps execute on a machine
+    # the owner keeps, whose workspace is reused between jobs and between runs
+    # (several comments below turn on that reuse). `pnpm verify` executes the
+    # checked-out ref's own code -- `vite.config.ts`, every file under `tests/`
+    # -- so without this term, opening a pull request from a fork is enough to
+    # run arbitrary code there.
+    #
+    # The deployment, and read this before treating the guard as sufficient.
+    # This workflow triggers on a bare `pull_request`, so a fork's pull request
+    # starts a CI run that belongs to THIS repository, and deploy.yml triggers
+    # on a completed run of it. Skipping every job here does NOT establish that
+    # such a run cannot deploy: that depends on what GitHub reports as the
+    # run's `conclusion` when all of its jobs were skipped, which nothing in
+    # this repository establishes. deploy.yml's `staging` job therefore tests
+    # `workflow_run.event` and `workflow_run.head_repository.full_name` itself,
+    # and its comment explains why the requirement belongs there rather than
+    # here. Stated in both files because the connection is invisible from
+    # either one alone.
+    #
+    # Every job in this workflow carries this term, and
+    # tests/foundation/ci-configuration-contract.test.ts requires that of a new
+    # one. `needs:` is not a substitute: a dependent job is skipped when its
+    # dependency is, but that is the shape of today's graph rather than a
+    # property of the workflow, and a job added with no `needs:` chain to
+    # `verify`, or with `if: always()`, carries no protection at all.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: [self-hosted, Linux, X64, wsl2]
     timeout-minutes: 30
@@ -153,6 +182,8 @@ jobs:
   # Separate does not mean optional -- same precedent as `verify:sql`
   # (docs/TESTING.md), which found three real defects the first time it was run.
   assets:
+    # Same fork guard as `verify`, for the same two reasons; see the comment
+    # there. Repeated rather than inherited because `needs:` does not imply it.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     # Only so a failing build does not spend metered LFS bandwidth. Nothing in
     # this job depends on `verify` having provisioned anything.
@@ -280,6 +311,8 @@ jobs:
   # check becomes non-optional without becoming part of them -- the same
   # precedent as `verify:sql` and `verify:assets`.
   browser:
+    # Same fork guard as `verify`, for the same two reasons; see the comment
+    # there. Repeated rather than inherited because `needs:` does not imply it.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     # Ordered after `assets` for two reasons, neither of them a data dependency.
     #
