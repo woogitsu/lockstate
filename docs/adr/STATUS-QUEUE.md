@@ -291,8 +291,15 @@ because it is still the argument for why one row is worth reading.
   accepted text's "only fields that depend on it" reads, it is unavoidable for one
   shared object, and it costs the single Dijkstra pass sharing exists to amortise.
   The narrow half moved to `RouteCache`, whose per-route entries are bounded by
-  their own origin's reach. Approving means accepting that trade rather than
-  overlooking it.
+  their own origin's reach — and even that is wide on a real prison shape, because
+  one corridor touches every cell door. The doors a route provably cannot cross
+  are excluded on an argument stated at `portalCannotBeCrossedBetween` (entering a
+  leaf cell means paying for its door twice, so it is on no shortest route and no
+  tied one), which is worth **2,670 work units against 266** on the ten-tick
+  measurement with one unrelated cell door toggling every tick. Approving means
+  accepting that trade rather than overlooking it, and accepting that the rest
+  cannot be tightened without the origin-rooted second search sharing exists to
+  avoid.
 - **What refusing it would cost.** Refusing means deciding that a shared plan may
   differ from the plan `findRoute` returns — and then the accepted sentence quoted
   above still has to be rewritten, because it is false either way, and

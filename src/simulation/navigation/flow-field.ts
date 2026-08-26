@@ -3,7 +3,7 @@ import { tileKey, type TilePosition } from '../world/coordinates';
 import { boundedLocalSearch, type SearchStats } from './local-search';
 import type { DoorRegistry } from './door';
 import type { NavigationGraph, Portal, RegionId } from './region-graph';
-import { runRegionDijkstra } from './region-dijkstra';
+import { portalCannotBeCrossedBetween, runRegionDijkstra } from './region-dijkstra';
 import { checkDoorAccess, routeContextFingerprint, type RouteContext } from './route-context';
 import { captureDoorDependencies, doorDependenciesStillHold, type DoorDependencies } from './route-dependencies';
 import { sliceIntoSegments } from './router';
@@ -85,9 +85,24 @@ export function computeRegionFlowField(
   };
 }
 
-/** Doors incident to `regionId`, added to `doorDependencies`; see `runRegionDijkstra` for why incidence is the right rule. */
-function addIncidentDoors(graph: NavigationGraph, regionId: RegionId, doorDependencies: Set<string>): void {
-  for (const portal of graph.regionPortals.get(regionId) ?? []) doorDependencies.add(portal.doorId);
+/**
+ * Doors incident to `regionId` that a route between `originRegion` and the
+ * field's destination could actually cross, added to `doorDependencies`. See
+ * `runRegionDijkstra` for why incidence is the rule and
+ * `portalCannotBeCrossedBetween` for the one exclusion, both shared with
+ * `findRoute` so the two agree on what a request depends on.
+ */
+function addIncidentDoors(
+  graph: NavigationGraph,
+  regionId: RegionId,
+  originRegion: RegionId,
+  destinationRegion: RegionId,
+  doorDependencies: Set<string>,
+): void {
+  for (const portal of graph.regionPortals.get(regionId) ?? []) {
+    if (portalCannotBeCrossedBetween(graph, portal, originRegion, destinationRegion)) continue;
+    doorDependencies.add(portal.doorId);
+  }
 }
 
 /**
@@ -150,10 +165,10 @@ export function findRouteUsingFlowField(
 
   if (doorDependencies !== undefined && originRegion !== destinationRegion) {
     const reach = field.steps.get(originRegion)?.costToDestination ?? Number.POSITIVE_INFINITY;
-    addIncidentDoors(graph, destinationRegion, doorDependencies);
+    addIncidentDoors(graph, destinationRegion, originRegion, destinationRegion, doorDependencies);
     for (const [regionId, step] of field.steps) {
       if (step.costToDestination > reach) continue;
-      addIncidentDoors(graph, regionId, doorDependencies);
+      addIncidentDoors(graph, regionId, originRegion, destinationRegion, doorDependencies);
     }
   }
 

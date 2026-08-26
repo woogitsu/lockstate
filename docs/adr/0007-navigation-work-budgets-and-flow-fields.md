@@ -429,6 +429,23 @@ Two consequences worth stating, because they pull in opposite directions:
   lives in `RouteCache`, which since #359 holds a per-route entry for
   field-resolved requests whose dependency set is bounded by that request's own
   origin.
+- **A route's set is still wide enough to matter, and one class of door is
+  excluded from it on a proof rather than on a guess.** A corridor touches every
+  cell door, so on the shape a prison actually has, nearly every door in a block
+  is inside every route's reach. `portalCannotBeCrossedBetween` drops the doors a
+  route provably *cannot* cross: a cell is a leaf region, so any route entering it
+  must leave by the same door and pay for it twice, and dropping that excursion is
+  a strictly cheaper route between the same two tiles — so such a door is on no
+  shortest route and on no tied one, whatever its state. Measured on
+  `buildCellBlockFixture(24)`, eight legs each tick for ten ticks with one
+  unrelated cell door toggling every tick, sharing off: **2,670 work units without
+  that exclusion, 266 with it**, for identical routes — against 358 for the old,
+  insufficient dependency set. It is not applied to a field, which answers for
+  every origin including one behind such a door. What cannot be tightened further
+  without a second search is the rest: a destination-rooted pass knows each
+  region's distance to the destination and not its distance from this origin, and
+  the tight test needs both. Buying that back would cost the origin-rooted pass
+  sharing exists to avoid.
 
 ### Sharing sits behind the route cache, not in front of it
 
