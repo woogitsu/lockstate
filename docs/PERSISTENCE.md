@@ -20,6 +20,7 @@ and client-side sync/conflict policy (`src/persistence/cloud/`) are covered in
   updatedAt: number,       // unix ms, must not precede createdAt
   checksum: string,        // 16 hex chars, see "Checksum" below
   payload: {
+    masterSeed?: number,                                      // u32, #412; absent means 0
     kernel: { tick, expectedSequence, rngStates, commands },  // Kernel.snapshot()
     world: { ... },                                           // SparseWorld.snapshot()
     construction: { orders, undoStack, redoStack,              // ConstructionSystem.snapshot()
@@ -68,10 +69,11 @@ it — see the three version sections below.
 
 ### Adding an optional field without a version bump
 
-Three payload fields have been added since their section was first written --
-`construction.orders[].edge` (#74) and `construction.currentTransaction` /
-`currentTransactionId` (#108) -- and none of them bumped the schema version.
-The conditions that make that correct, rather than merely convenient, are:
+Four payload fields have been added since their section was first written --
+`construction.orders[].edge` (#74), `construction.currentTransaction` /
+`currentTransactionId` (#108) and `masterSeed` (#412) -- and none of them
+bumped the schema version. The conditions that make that correct, rather than
+merely convenient, are:
 
 - **The field is optional, and absent means what the older build already
   did.** An order with no `edge` resolves to `DEFAULT_BUILD_EDGE`; a
@@ -96,6 +98,58 @@ save from a build that never recorded the open gesture simply has no entry for
 it, so the newest gesture at the time of that save stays outside the undo
 history. The fix stops the loss; it does not reconstruct it, and a migration
 that invented an entry would be asserting a gesture the save never recorded.
+
+`masterSeed` (#412) is the fourth, and the one whose absence is unambiguous as
+a matter of *fact about the corpus* rather than of convention: production has
+never supplied another value (`src/main.ts` constructs `SessionController`
+with no `masterSeed`, and the controller takes `?? 0`), so every save written
+before the field existed was written by a session seeded at 0. The cost of not
+bumping is worth recording, because "no bump is needed" is true and "no bump
+costs nothing" is not: `.strict()` means an *older* build reading a save that
+carries the key refuses it as `invalid-shape`, where a V6 bump would have
+given the same refusal the label `unsupported-version`. Both builds refuse it;
+only the diagnosis differs. See [ADR 0038](./adr/0038-what-makes-a-save-compatible.md) §4.
+
+### What makes a save compatible, and where a named RNG stream fits
+
+[ADR 0038](./adr/0038-what-makes-a-save-compatible.md) states the rule the
+section above is one instance of:
+
+> A save is compatible with a build when the build can interpret every section
+> the save carries, and every section the build needs and the save omits has
+> exactly one meaning. Absence is a fact about the save's age and is honoured
+> with the value the writing build would have held; a *value* the build cannot
+> interpret is a fact about the blob and is refused.
+
+`kernel.rngStates` is the place that rule had to be extended to, because a
+section can be **short** as well as absent (#415). A save that omits a named
+stream this build registers used to restore silently and then throw
+`RangeError: Unknown RNG stream` out of `Kernel.step()` at the first draw --
+between 5 and 600 ticks later depending on what the player did, and never at
+the load that caused it. `Kernel.restoreState` now **merges** the snapshot's
+streams over the ones the freshly built runtime already holds instead of
+replacing the instance:
+
+- a stream the bundle carries wins, so a restore is still exact;
+- a stream this build registers and the bundle omits keeps the state
+  `deriveXoshiroState(masterSeed, name)` gave it -- which is why `masterSeed`
+  stopped being inert, and why the two issues were answered together;
+- a stream the bundle carries and this build does not register is **kept**, so
+  loading a save never loses a stream. The repository's own
+  `save-v1-in-progress.json` carries `world.terrain`, which nothing registers.
+
+The expected set is not declared anywhere and deliberately so: the kernel
+being restored onto already holds exactly the streams this build registers,
+correctly derived, because `restoreSimulationRuntime` builds the runtime
+first. There is no registry of stream names and no second list to keep in step
+with `new-session.ts`.
+
+Two consequences for this document's own rules. Adding a named RNG stream is
+no longer a save-format change, which is what makes named streams usable as
+`docs/DETERMINISM.md` intends. And a save that is corrupted by *losing* a
+stream it genuinely had is now silently repaired rather than reported -- an
+accepted loss of signal, because the checksum is what detects a corrupted
+payload and a payload that passes it did not lose a stream in transit.
 
 ### Chunk size is bounded, and why that is a format decision
 
@@ -668,6 +722,13 @@ fails the test instead of quietly migrating a value it had assumed away.
 
 `supabase/migrations/` is untouched: a save-schema version is a client-side
 payload shape and nothing about it reaches the database.
+
+**V5 gained one more optional field after it shipped.** `masterSeed` (#412,
+[ADR 0038](./adr/0038-what-makes-a-save-compatible.md) §4) is not part of what
+V5 changed relative to V4; it was added later under "Adding an optional field
+without a version bump" above. A V5 save written before it exists is still a
+valid V5 save and still loads, which is the whole content of the claim that no
+bump was needed.
 
 ## V4: need levels are stored scaled (#259)
 

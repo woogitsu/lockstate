@@ -1,38 +1,56 @@
 # ADR 0038: What makes a save compatible
 
-> **Placeholder title and placeholder number.** `0038` is unassigned and the
-> filename slug is provisional; the owner assigns ADR numbers centrally. **This
-> document pre-commits to renumbering without argument** if another branch has
-> taken whatever number it is given, and to being retitled — no citation of it
-> is load-bearing yet. Two agents took 0034 within an hour last session; that is
-> what this paragraph exists to prevent.
+> **0038 was assigned centrally**, after this draft returned and alongside 0039
+> and 0040, which is the practice `AGENTS.md` records precisely so that two
+> agents drafting at once cannot take one number — as two did with 0034 last
+> session. The evidence the index prescribes was run as well: the open pull
+> requests were enumerated and there is exactly one (#355), carrying no ADR.
+> **This document still pre-commits to renumbering without argument** if an
+> unmerged branch turns out to hold 0038, and every citation of "ADR 0038" added
+> by the same branch moves with it.
 
 ## Status
 
 **Accepted, 2026-08-26 — by the owner's explicit delegation. The owner did not
 read this document.** Asked about this decision the owner answered, in Polish,
 that they did not follow it and told the agent to handle it — *"nie czaję? ogarnij
-to"* — and, of the accessibility decision alongside it, *"nie możesz sam tego
-porobić?"* ("can't you do this yourself?"). **That is a real approval of the
-judgement delegated and not of the text.** What was delegated is narrow and is
-worth stating: the owner approved *that someone decide and act*, not this option
-over the alternatives below. The argument in this document is the whole of the
-warrant, and **a reader who disagrees with it should treat the decision as open**
-rather than as settled by someone who weighed it — the same standing ADRs 0034,
-0035, 0036 and 0037 carry, for the same reason.
-
-**The number was assigned centrally** after this draft returned, per
-`AGENTS.md`. The draft pre-committed to renumbering and that commitment stands:
-if another branch holds this number, this document moves without argument.
+to"* — and, when the work widened, *"rób tak żeby było dobrze, działaj
+autonomicznie, rób research i sam decyduj"* ("make it good, act autonomously, do
+the research and decide yourself"). **That is a real approval of the judgement
+delegated and not of the text.** What was delegated is narrow and worth stating:
+the owner approved *that someone decide and act*, not this option over the
+alternatives below. The argument in this document is the whole of the warrant,
+and **a reader who disagrees with it should treat the decision as open** rather
+than as settled by someone who weighed it — the same standing ADRs 0034, 0035,
+0036 and 0037 carry, for the same reason.
 
 It answers issue #415's stated
 owner decision ("refuse the restore, or seed the missing stream
 deterministically") and, in the same rule, settles issue #412's one sentence.
 
+**The implementation landed on `work/415-save-compatibility` ahead of this
+approval, deliberately, and this document is what it should be judged against.**
+The reason is the same one ADR 0037 gives for its stopgap: the defect is not
+hypothetical. `tests/fixtures/persistence/save-v1-fresh-prison.json` is a
+shipped fixture that restores clean and then faults the worker irrecoverably on
+the player's first Admit (measured below), so leaving it while a decision was
+taken was not a neutral choice. What is reversible, and how far, is stated
+under *Alternatives considered*: the reversal target is narrow and deliberately
+so — the merge in `Kernel.restoreState` becoming a comparison that throws.
+Sections 4 and 5 stand either way. Nothing is written to disk that a reversal
+would have to migrate back: the repair recomputes on every load, and the one
+byte of format this adds (`masterSeed`) is optional in both directions.
+
 ## Context
 
 Two issues ask the same question from opposite sides, which is why one document
 answers both.
+
+**Every `file:line` below is pinned to `main` @ `54418b6` (v0.0.121), before the
+change this document argues for.** They are citations of the defect, so they
+describe the tree as it was; `kernel.ts:250` in particular is the line that no
+longer exists. The measurements were taken on that tree by running the
+repository's own modules.
 
 **#415.** A session bundle that lacks a named RNG stream this build needs
 restores **silently**, and dies later. Verified on `main` @ `54418b6`
@@ -324,24 +342,48 @@ would decide half of #403 inside a #415 change.
   (`persistence/checksum.ts`) is what detects a corrupted payload, and a payload
   that passes the checksum did not lose a stream in transit.
 
-## What the acceptance criteria need, in this repository's terms
+## What the acceptance criteria need, in this repository's terms — and where each landed
 
 - A test that is **red on unfixed `main`**: restore a bundle with a named stream
   removed, then assert the observable outcome — the restored kernel's stream set,
   or a `RestoredScope` that says the stream was re-seeded — not that an exception
-  happened somewhere. Today that test's subject restores clean and dies between
-  5 and 600 ticks later depending on the scenario, so the assertion must be on
-  state and not on survival.
+  happened somewhere. On the unfixed tree that test's subject restores clean and
+  dies between 5 and 600 ticks later depending on the scenario, so the assertion
+  must be on state and not on survival.
+  → `tests/determinism/save-rng-stream-compatibility.test.ts`, four of whose
+  seven cases were red on the unfixed tree, each asserting a stream set or a set
+  of state words. The `RestoredScope` arm was **not** built; see open question 1,
+  which stays open.
 - The expected stream set in the test must be **written out by name**, never read
   from the code under test (`docs/TESTING.md`; #415's own Required Verification).
   The four names are `prisoners.classification`, `contraband.detection`,
   `contraband.intelligence`, `identity.actor-name`.
+  → `REGISTERED_STREAMS` in that file, and the derived state *words* for two
+  seeds are literals beside it, so a re-seed from anything other than
+  `(masterSeed, name)` fails even though the stream would exist.
 - A round-trip test for §3: restore a bundle carrying an unregistered stream
   (`world.terrain` is a real one, in `save-v1-in-progress.json`) and assert the
   next capture still carries it.
+  → Same file. It is a guard rather than a repair and passed on the unfixed tree
+  too: replacing the instance kept an unregistered stream for the same reason it
+  lost a registered one. What it denies is the other merge a reader might write,
+  where the build's own set is the authority.
 - A `masterSeed` test that does **not** pass the seed in and read it back out of
   the same object: write a save at seed X through the real envelope path, decode
   it, and assert the decoded payload reports X.
+  → `tests/integration/session-save-master-seed.test.ts`, all four cases red on
+  the unfixed tree. It also pins the case the plumbing could plausibly get wrong:
+  a session **loaded** from a save at seed X, re-saved by a controller configured
+  with a different seed, still reports X.
+
+One acceptance criterion of #415 has no test of its own because the fix removes
+its subject: *"a bundle missing a stream the build needs is detected at restore,
+not at the first draw."* Under this decision there is nothing to detect — the
+absence is honoured, not refused — so what is asserted instead is that the
+condition can no longer reach `Kernel.step()` at all: a stream-short save driven
+through the **real worker entry module** for 120 ticks posts no `protocol/error`,
+where the unfixed tree posted
+`{"code":"internal-error","recoverable":false}` after 5.
 
 ## Open questions
 
