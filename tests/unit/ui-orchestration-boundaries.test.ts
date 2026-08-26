@@ -24,7 +24,8 @@ import {
  * There were five such modules when this file was written (869 lines);
  * `save-panel-messages.ts` (#208) made six, `brand-badge.ts` with
  * `brand-messages.ts` made eight, `simulation-alerts.ts` (#261) made nine, and
- * `simulation-projections.ts` (#104) makes ten. The vacuity guard below is the
+ * `simulation-projections.ts` (#104) makes ten, and `simulation-intake.ts` (#104's
+ * third consumer) makes eleven. The vacuity guard below is the
  * list a new one has to be added to.
  *
  * ## Why this is a separate file, and not a widening of the HUD gate
@@ -207,6 +208,20 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
       'Type-only: `WorkerToMainMessage` from `src/simulation/protocol/types`. It reads counts off snapshot messages into a HUD view model and nothing else; 57 lines, no simulation code runs because of it.',
   },
   {
+    file: 'src/ui/simulation-intake.ts',
+    tree: 'content',
+    kind: 'value',
+    reason:
+      "Value: `deriveSimulationMessageKey` from `src/content/simulation-message-keys`, to label an intake stage. The only `value` content dependency in this manifest, and it is one on purpose: the alternative is a hand-written table of six `intake-stage.*.name` strings, which is exactly the drift that module's derivation rule exists to prevent -- it says a message key is *never* hand-authored, so that renaming a stage renames its key in one edit. The function composes a string from a namespace and an id; it reads no catalogue, resolves no text and holds no state, so calling it runs no content logic in the sense this manifest measures. `src/ui/hud/build-panel.ts` makes the same call for `build-order-state` under the HUD's own stricter gate, which is what settles that the dependency is content-shaped rather than simulation-shaped.",
+  },
+  {
+    file: 'src/ui/simulation-intake.ts',
+    tree: 'simulation',
+    kind: 'type-only',
+    reason:
+      "Type-only: `PrisonerPopulationCountsViewModel` from `src/simulation/presentation/prisoner-projection`. The seventh of the translators outside `src/ui/hud/` and the third that reads a *pulled* read model, so it is `simulation-build-queue.ts`'s entry above one projection over: it names the view-model shape `hud/prisoner-population` answers with and turns it into `HudIntakePipelineViewModel`. The stage union it classifies is read off that same view-model type rather than from `src/simulation/prisoners/components.ts`, deliberately, so this module's one simulation dependency stays on the presentation layer instead of reaching into the prisoner runtime. Erased, so no simulation code runs on its account -- the projection executes in the worker. A `value` import appearing here would mean the pipeline had started being counted on the main thread from records it does not own, which is the second source of truth `AGENTS.md` boundary 1 forbids.",
+  },
+  {
     file: 'src/ui/simulation-projections.ts',
     tree: 'simulation',
     kind: 'value',
@@ -308,6 +323,7 @@ describe('UI orchestration boundaries', () => {
       'src/ui/simulation-clock.ts',
       'src/ui/simulation-commands.ts',
       'src/ui/simulation-counts.ts',
+      'src/ui/simulation-intake.ts',
       'src/ui/simulation-projections.ts',
       'src/ui/simulation-room-needs.ts',
       'src/ui/simulation-zoning.ts',
