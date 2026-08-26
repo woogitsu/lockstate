@@ -144,12 +144,29 @@ describe('kernel system ordering', () => {
    * per ADR 0009, by retiring incompatible challenge submissions through
    * the definition allow-lists.
    *
-   * ## The two times this list has changed, and what the ADR 0009 step came to
+   * ## The three times this list has changed, and what the ADR 0009 step came to
    *
-   * `procurement` (order 110) was added with the purchase loop (#96, #89), and
+   * `procurement` (order 110) was added with the purchase loop (#96, #89),
    * `economy.state-income` (order 120) with the state's per-prisoner-day
-   * payment (#29, ADR 0017 decision 3). Both are reviewed edits, and the
-   * ADR 0009 finding below applies unchanged to the second.
+   * payment (#29, ADR 0017 decision 3), and
+   * `prisoners.classification-review` (order 55) with the periodic
+   * reclassification that gives an incident a consequence for the prisoner in
+   * it (#78, #80, ADR 0032). All three are reviewed edits, and the ADR 0009
+   * finding below applies unchanged to each.
+   *
+   * **What the third one does and does not disturb.**
+   * `prisoners.classification-review` is inserted into the gap between
+   * `prisoners.intake` (50) and `prisoners.needs-decay` (60), so no existing
+   * system moves -- the gap is why the order was chosen, and it has to be
+   * *before* `prisoners.actions` (250) because a tier written on a tick must be
+   * the tier the same tick resolves a regime schedule from. It is scheduled
+   * once every ten in-game days (`intervalTicks: 24,000`, `phaseTicks:
+   * 23,999`), and every determinism test in this directory runs the scenario for
+   * 400 ticks -- so, exactly like `economy.state-income` below, it is
+   * registered, pinned here, and never fires in any of them. The recorded
+   * scenario's outcome is byte-identical because of the schedule, not because
+   * the system is inert: `tests/integration/incident-consequence-loop.test.ts`
+   * runs past the phase and watches a tier move.
    *
    * **What the second one does and does not disturb.** `economy.state-income`
    * is appended *after* `procurement` and before `navigation` (150), so no
@@ -182,6 +199,7 @@ describe('kernel system ordering', () => {
   it('pins the declared execution order of a real session', () => {
     expect(buildDeterminismScenario().kernel.systemExecutionOrder).toEqual([
       { id: 'prisoners.intake', order: 50 },
+      { id: 'prisoners.classification-review', order: 55 },
       { id: 'prisoners.needs-decay', order: 60 },
       { id: 'construction', order: 100 },
       { id: 'procurement', order: 110 },

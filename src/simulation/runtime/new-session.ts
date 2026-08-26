@@ -34,7 +34,7 @@ import { ACTOR_IDENTITY_RNG_STREAM, ActorIdentityRegistry } from '../identity';
 import { Kernel } from '../kernel';
 import { NavigationSystem, type NavigationSystemOptions } from '../navigation';
 import { Container, ContainerMaterialsProvider, ContainerRegistry, JobBoard, JobSystem, JobWorkerPool, UtilityNetwork } from '../operations';
-import { NEED_MAX, PrisonerJobWorkerAdapter, PrisonerOperationsRuntime } from '../prisoners';
+import { NEED_MAX, PrisonerJobWorkerAdapter, PrisonerOperationsRuntime, type DisciplinaryEvidenceSource } from '../prisoners';
 import { ObjectPlacementService, PlacedObjectRegistry, RoomCapacityResolver } from '../objects';
 import { TopologyManager } from '../rooms/topology';
 import { RoomZoningService } from '../rooms/zoning';
@@ -249,7 +249,34 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   // sequence `prisoners.classification` hands the arrival after them.
   const actorIdentity = new ActorIdentityRegistry();
 
-  const prisoners = new PrisonerOperationsRuntime({ capacity: DEFAULT_PRISONER_CAPACITY, navigation, identity: actorIdentity });
+  /*
+   * The two evidence logs, constructed here rather than beside the systems that
+   * write them, because `PrisonerOperationsRuntime` now reads them.
+   *
+   * ADR 0032 makes a prisoner's disciplinary record a *derivation* over these
+   * two, so `ClassificationReviewSystem` has to be handed them at
+   * construction -- and both are bare constructors with no dependencies, so
+   * hoisting them costs nothing and inverts no arrow. `IncidentTriggerSystem`,
+   * `IncidentResponseSystem` and `SearchSystem` are still handed the same
+   * instances further down; they are the writers, this is the reader.
+   *
+   * `all()`, never `drain()`: see `DisciplinaryEvidenceSource`. Draining would
+   * force the record to become accumulated persisted state, which is the save
+   * bump ADR 0032 decision 1 declines to take.
+   */
+  const incidents = new IncidentLog();
+  const confiscations = new ConfiscationLedger();
+  const disciplinaryEvidence: DisciplinaryEvidenceSource = {
+    incidents: () => incidents.all(),
+    confiscations: () => confiscations.all(),
+  };
+
+  const prisoners = new PrisonerOperationsRuntime({
+    capacity: DEFAULT_PRISONER_CAPACITY,
+    navigation,
+    identity: actorIdentity,
+    disciplinaryEvidence,
+  });
 
   /*
    * ADR 0028 phase 1's three collaborators, and the knot between two of them.
@@ -394,7 +421,6 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   const contraband = new ContrabandRegistry();
   const intelligence = new IntelligenceLedger();
   const informants = new InformantRegistry();
-  const confiscations = new ConfiscationLedger();
   const searchPolicies: SearchPolicyDefinition[] = [];
   const searchContainerLocations = new Map<string, TilePosition>();
   const intelligenceSystem = new IntelligenceSystem(intelligence);
@@ -433,7 +459,6 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   // contraband intelligence pressure) rather than a parallel state model;
   // a scenario can pass richer sampling by constructing its own
   // IncidentTriggerSystem, exactly like #27's TargetLocationResolver seam.
-  const incidents = new IncidentLog();
   const sectorRisk = new SectorRiskTracker();
   const gangs = new GangRegistry();
   const tunnels = new TunnelRegistry();
