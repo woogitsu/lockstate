@@ -163,3 +163,137 @@ describe('zoning a room through the real command path (#261)', () => {
     expect(runtime.world.getZoning(tile(0, 0))).toBe(0);
   });
 });
+
+/**
+ * Issue #337: **un-zoning one of two adjacent same-type rooms took both, and
+ * made an empty room beside an occupied one unremovable.**
+ *
+ * Everything below goes through the real kernel, the real decoder, the real
+ * session command router, the real construction system and the real intake
+ * system. Nothing calls `RoomZoningService` or `RoomInstanceRegistry` directly:
+ * the defect is reachable from two player drags, so the proof is too.
+ *
+ * The save round trip is the second half. What resolves a tile to a room
+ * instance is the instance's own rectangle, which lives in
+ * `simulation.prisoners.roomInstanceDefinitions` and has since ADR 0028 phase 1
+ * -- so if that rectangle did not survive a save, un-zoning a restored prison
+ * would fall back to the old region behaviour and take the neighbour again.
+ * Asserted after a real `createSaveEnvelope` -> `decodeSaveEnvelope` ->
+ * `restoreSimulationRuntime`, not after an in-memory copy.
+ */
+describe('un-zoning one of two adjacent same-type rooms (#337)', () => {
+  /** Two `room.cell`s at their authored 2x3 minimum, sharing the edge at x = 6. */
+  const LEFT = { x: 4, y: 6, width: 2, height: 3 } as const;
+  const RIGHT = { x: 6, y: 6, width: 2, height: 3 } as const;
+  const leftId = roomInstanceIdFor(CELL, tile(LEFT.x, LEFT.y));
+  const rightId = roomInstanceIdFor(CELL, tile(RIGHT.x, RIGHT.y));
+
+  function submit(runtime: SimulationRuntime, id: string, payload: ReturnType<typeof packCommand>): void {
+    runtime.kernel.submitCommand(id, runtime.kernel.expectedSequence, runtime.kernel.tick, payload);
+    runtime.kernel.step();
+  }
+
+  function stepTo(runtime: SimulationRuntime, target: number): void {
+    while (runtime.kernel.tick < target) runtime.kernel.step();
+  }
+
+  function submitUnzoneRoom(
+    runtime: SimulationRuntime,
+    id: string,
+    rect: { readonly x: number; readonly y: number; readonly width: number; readonly height: number },
+  ): void {
+    submit(runtime, id, packCommand({ type: 'UnzoneRoom', ...rect }));
+  }
+
+  /** Two adjacent cells zoned as two separate drags -- the gesture the issue describes. */
+  function prisonWithTwoAdjacentCells(): SimulationRuntime {
+    const runtime = createNewSimulationRuntime(SEED);
+    submitZoneRoom(runtime, 'cmd-zone-left', { roomId: CELL, ...LEFT });
+    submitZoneRoom(runtime, 'cmd-zone-right', { roomId: CELL, ...RIGHT });
+    expect(projectStatusCounts(runtime, runtime.kernel.tick).rooms, 'two drags, two rooms').toBe(2);
+    return runtime;
+  }
+
+  it('removes only the room the drag covers, and the survivor is still there after a save and load', () => {
+    const runtime = prisonWithTwoAdjacentCells();
+
+    submitUnzoneRoom(runtime, 'cmd-unzone-left', LEFT);
+
+    expect(runtime.prisoners.roomInstances.getById(rightId), 'the neighbour must survive the drag').toBeDefined();
+    expect(runtime.prisoners.roomInstances.getById(leftId), 'and the covered room must go').toBeUndefined();
+    expect(projectStatusCounts(runtime, runtime.kernel.tick).rooms).toBe(1);
+    expect(runtime.world.getZoning(tile(RIGHT.x, RIGHT.y)), 'the survivor keeps its paint').toBe(
+      defaultRoomContentRegistry.getById(CELL)!.numericId,
+    );
+    expect(runtime.world.getZoning(tile(LEFT.x, LEFT.y)), 'the removed room loses its own').toBe(0);
+
+    const restored = saveAndLoad(runtime);
+
+    // The rectangle is what resolves a tile to an instance, so a restore that
+    // lost it would answer this differently. Read back as the player would see
+    // it, then proven load-bearing by a second removal on the restored prison.
+    expect(restored.prisoners.roomInstances.getById(rightId)).toMatchObject({
+      anchorTile: tile(RIGHT.x, RIGHT.y),
+      width: RIGHT.width,
+      height: RIGHT.height,
+    });
+    expect(projectStatusCounts(restored, restored.kernel.tick).rooms).toBe(1);
+
+    // Re-zone the space the removal freed, then un-zone the *new* room. If the
+    // restored prison had fallen back to region removal, this drag would take
+    // the survivor with it.
+    submitZoneRoom(restored, 'cmd-rezone-left', { roomId: CELL, ...LEFT });
+    expect(projectStatusCounts(restored, restored.kernel.tick).rooms).toBe(2);
+    submitUnzoneRoom(restored, 'cmd-unzone-left-again', { x: LEFT.x, y: LEFT.y, width: 1, height: 1 });
+
+    expect(restored.prisoners.roomInstances.getById(rightId), 'still the neighbour, on a restored prison').toBeDefined();
+    expect(restored.prisoners.roomInstances.getById(leftId)).toBeUndefined();
+    expect(projectStatusCounts(restored, restored.kernel.tick).rooms).toBe(1);
+  });
+
+  it('leaves an admitted prisoner housed in the neighbour the drag did not cover', () => {
+    const runtime = prisonWithTwoAdjacentCells();
+    // One bed, in the right-hand cell only, so intake can only house the
+    // arrival there -- the left cell derives `residentCapacity: 0`.
+    submit(
+      runtime,
+      'buy-plank',
+      packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 1 }),
+    );
+    submit(
+      runtime,
+      'place-bed',
+      packCommand({ type: 'PlaceObject', orderId: 'bed-1', definitionId: 'bed-wooden', x: RIGHT.x, y: RIGHT.y }),
+    );
+    stepTo(runtime, 200);
+    submit(
+      runtime,
+      'admit',
+      packCommand({ type: 'AdmitPrisoner', sentenceLengthTicks: 10_000, priorIncidents: 0, x: 16, y: 16 }),
+    );
+    stepTo(runtime, 240);
+
+    const arrival = runtime.prisoners.entityStore.getIdByIndex(0);
+    expect(runtime.prisoners.coldState.getAccommodation(arrival), 'the bed is in the right-hand cell').toBe(rightId);
+    expect(runtime.prisoners.roomInstances.occupancyOf(rightId)).toBe(1);
+
+    // The drag the player reaches for: remove the empty cell they mis-dragged.
+    submitUnzoneRoom(runtime, 'cmd-unzone-left', LEFT);
+
+    // Accepted -- an empty room is removable even though its neighbour is
+    // occupied.
+    expect(runtime.prisoners.roomInstances.getById(leftId), 'the empty room must go').toBeUndefined();
+    expect(runtime.world.getZoning(tile(LEFT.x, LEFT.y))).toBe(0);
+
+    // And the occupant is not stranded: the room they name still exists, still
+    // holds them, and still reads as occupied on the strip.
+    expect(runtime.prisoners.coldState.getAccommodation(arrival)).toBe(rightId);
+    expect(runtime.prisoners.roomInstances.getById(rightId), 'the room that reference names must exist').toBeDefined();
+    expect(runtime.prisoners.roomInstances.occupantsOf(rightId)).toEqual([arrival]);
+    expect(projectStatusCounts(runtime, runtime.kernel.tick)).toMatchObject({
+      rooms: 1,
+      roomCapacity: 1,
+      roomOccupants: 1,
+    });
+  });
+});

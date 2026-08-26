@@ -1,5 +1,6 @@
 import { defaultRoomContentRegistry, type RoomCatalogDefinition } from '../../content/room-catalog';
 import type { ContentRegistry } from '../../content/registry';
+import { roomBoundsOf, roomInstanceContaining } from '../objects/room-capacity';
 import type { RoomInstance, RoomInstanceRegistry } from '../prisoners/room-instance-registry';
 import { canBuildAt, type BuildabilityRequirement } from '../world/buildability';
 import { tileCoordinate, tileToChunk, type TilePosition } from '../world/coordinates';
@@ -57,9 +58,18 @@ import {
  * rectangle then names the instance (`roomInstanceContaining`,
  * `src/simulation/objects/room-capacity.ts`). That is the one new persisted
  * field ADR 0028 decision 6 pays for, and it is what gives every rule about a
- * room's contents a domain. Two adjacent same-type rectangles are still two
- * instances and `unzone` still treats them as one region -- neither is changed
- * here.
+ * room's contents a domain.
+ *
+ * **Issue #337 is the second thing that rectangle pays for.** `unzone` used to
+ * resolve a covered tile to a room *type* and clear the connected run of it, so
+ * two adjacent same-type rectangles -- two instances at the `zone` end since
+ * this service existed -- were one region at the removal end, and clipping a
+ * corner off one of them took both. It now resolves each covered tile through
+ * `roomInstanceContaining` and clears that instance's rectangle, so both ends
+ * agree. The plane is unchanged and still carries no instance id: the issue
+ * proposed adding one per tile, which the rectangle makes unnecessary, and a
+ * second persisted copy of a derivable fact is the shape ADR 0028 decision 6
+ * removed rather than one to add back.
  *
  * ## Capacity and object capabilities: derived, and no longer aspirational
  *
@@ -316,6 +326,18 @@ const ZONING_REQUIREMENT: BuildabilityRequirement = {
   allowWater: true,
 };
 
+/**
+ * The key a tile takes in `unzone`'s visited set.
+ *
+ * One function rather than the literal repeated at each site, because the two
+ * collectors below write into the same `Map` and a key that disagreed between
+ * them would let a tile be visited twice -- which is the one thing that set
+ * exists to prevent.
+ */
+function tileKeyOf(tile: TilePosition): string {
+  return `${tile.x},${tile.y}`;
+}
+
 /** The id an instance zoned at `anchor` gets. Exported because a test asserting reproducibility must not restate the format. */
 export function roomInstanceIdFor(roomCatalogId: string, anchor: TilePosition): string {
   return `${roomCatalogId}:${anchor.x}:${anchor.y}`;
@@ -532,41 +554,48 @@ export class RoomZoningService {
    *
    * ## What "the rooms the rectangle touches" means
    *
-   * Not "the tiles inside the rectangle". Each zoned tile the rectangle
-   * covers is grown into the connected run of tiles holding the **same room
-   * numeric id**, four-connected, and that whole run is cleared. Two
-   * consequences, both deliberate and both stated rather than discovered:
+   * Not "the tiles inside the rectangle". Each zoned tile the rectangle covers
+   * is resolved to the **room instance** that contains it, and that instance's
+   * whole rectangle is cleared. Two consequences, both deliberate and both
+   * stated rather than discovered:
    *
    *   - **A partial drag removes a whole room.** Clipping a corner off a 6x6
    *     canteen clears all 36 tiles. The alternative -- clearing only the
    *     covered tiles -- leaves the plane painted where the registry has no
    *     instance, or an instance whose anchor tile is no longer zoned, and
    *     that inconsistency is exactly the state `zone` is careful never to
-   *     create. Growing to the region keeps this module's invariant intact:
-   *     the plane is painted if and only if an instance is registered, because
-   *     a room's tiles are a contiguous rectangle of one type and therefore
-   *     always lie in one region together with their anchor.
-   *   - **Two adjacent rooms of the same type are removed together**, because
-   *     they are one region in a plane that stores a type per tile and no
-   *     instance id. That is the same limitation `zone` already has in the
-   *     other direction -- two adjacent same-type rectangles are two separate
-   *     `RoomInstance`s rather than one L-shaped room -- and neither is
-   *     changed here. Both end at the same place: the plane would have to
-   *     carry an instance id per tile, which is a persistence-format decision
-   *     (`docs/HUD_PROJECTIONS.md` gap 11) rather than something to settle
-   *     inside a command handler.
+   *     create. Growing to the instance keeps this module's invariant intact:
+   *     the plane is painted if and only if an instance is registered.
+   *   - **Two adjacent rooms of the same type are *not* removed together**
+   *     (issue #337). They are two instances at the `zone` end and now two at
+   *     this end too, because what resolves a tile is the instance's rectangle
+   *     rather than the type painted in the plane. This used to be the
+   *     opposite statement, and it cost the player twice over: a mis-drag
+   *     removed a neighbour they meant to keep, and an empty room beside an
+   *     occupied one could not be removed at all, because the occupancy check
+   *     below ran over the whole reached region. `removedInstanceIds` stays
+   *     plural -- a drag can genuinely cover several rooms -- but a drag that
+   *     covers one room now removes one room. See `collectRemovableRegion` for
+   *     why this needed nothing new in the save format.
    *
    * ## Determinism and bounds
    *
    * The rectangle is walked in the same canonical order `zone` uses (ascending
-   * y then x) and the flood fill uses one visited set for the whole command, so
-   * the *set* of cleared tiles is a function of the request and of the world.
-   * That set is then **sorted back into that same order** before anything reads
-   * it, because the visited set's own iteration order is the order the fill
-   * happened to reach tiles in -- see the comment at the sort. Total work is
-   * bounded by the rectangle's area plus the tiles actually cleared, never by
-   * the size of the world, and `removedInstanceIds` is sorted, so two runs of
-   * the same commands produce an identical outcome.
+   * y then x) and both collectors share one visited set for the whole command,
+   * so the *set* of cleared tiles is a function of the request and of the
+   * world. That set is then **sorted back into that same order** before
+   * anything reads it, because the visited set's own iteration order is the
+   * order the tiles happened to be reached in -- see the comment at the sort.
+   * Resolving a tile to its instance is deterministic for the same reason:
+   * `roomInstanceContaining` scans `allByRoomCatalogId`, which is sorted by
+   * instance id rather than in registration order.
+   *
+   * Total work is bounded by the rectangle's area plus the tiles actually
+   * cleared, never by the size of the world. A tile already collected is
+   * skipped before it is resolved, so the number of instance lookups is bounded
+   * by the number of *rooms* the rectangle covers rather than by its area, and
+   * `removedInstanceIds` is sorted, so two runs of the same commands produce an
+   * identical outcome.
    *
    * ## Occupancy
    *
@@ -601,10 +630,16 @@ export class RoomZoningService {
     const tiles = new Map<string, TilePosition>();
     for (let offsetY = 0; offsetY < request.height; offsetY += 1) {
       for (let offsetX = 0; offsetX < request.width; offsetX += 1) {
-        this.collectZonedRegion(
-          { x: tileCoordinate(request.x + offsetX), y: tileCoordinate(request.y + offsetY) },
-          tiles,
-        );
+        const tile: TilePosition = {
+          x: tileCoordinate(request.x + offsetX),
+          y: tileCoordinate(request.y + offsetY),
+        };
+        // A tile already collected is a tile whose room is already going, so
+        // it needs no second resolution. This is what keeps the cost of a
+        // 64x64 drag proportional to the *rooms* it covers rather than to its
+        // area times the registry.
+        if (tiles.has(tileKeyOf(tile))) continue;
+        this.collectRemovableRegion(tile, tiles);
       }
     }
 
@@ -669,8 +704,82 @@ export class RoomZoningService {
   }
 
   /**
+   * Adds every tile that has to go because the removal covers `origin`.
+   *
+   * ## The instance, not the region (issue #337)
+   *
+   * A covered tile is resolved to the **room instance** that contains it, and
+   * that instance's own rectangle is what gets cleared. That is the whole of
+   * the fix: `unzone` used to grow each covered tile into its connected
+   * *same-type* run, so two cells the player zoned as two separate drags were
+   * one region in a plane that stores a type per tile, and clipping a corner
+   * off one removed both -- or, when the neighbour held a resident, refused the
+   * removal of the empty one. Both readings followed from resolving in types.
+   *
+   * **Nothing new is persisted for this, and the plane is unchanged.** The
+   * issue proposed storing an instance id per tile, which would be a
+   * save-schema decision; it is not needed, because a `RoomInstance` has
+   * carried its rectangle since [ADR 0028](../../../docs/adr/0028-object-placement-and-derived-room-capacity.md)
+   * phase 1 and `roomInstanceContaining` (`../objects/room-capacity.ts`) is the
+   * function object placement already asks "which room is this tile in". A
+   * second copy of that fact in the plane could disagree with the rectangle it
+   * was derived from, which is exactly why ADR 0028 decision 6 *removed* the
+   * last persisted derived value from a room instance.
+   *
+   * The two consequences `unzone`'s own comment states are unchanged by this:
+   * a partial drag still removes the whole room it clipped, because the
+   * instance's whole rectangle is collected; and a drag that genuinely covers
+   * several rooms still removes all of them, because every covered tile is
+   * resolved.
+   *
+   * ## The tiles no instance claims
+   *
+   * A painted tile that resolves to no instance keeps the old flood fill, and
+   * that is not a leftover. Two states produce one: a V4 room instance records
+   * no rectangle (`roomBoundsOf` answers `undefined` and there is no honest
+   * default -- see `../objects/room-capacity.ts`), and a save written before
+   * zoning painted the plane can leave paint with no instance at all. Removal
+   * exists so that no designation is permanent, so those tiles must stay
+   * clearable; resolving them to nothing and leaving them would be the
+   * unremovable-room defect this command was built to close.
+   */
+  private collectRemovableRegion(origin: TilePosition, into: Map<string, TilePosition>): void {
+    if (this.world.getZoning(origin) === 0) return;
+
+    const instance = roomInstanceContaining(this.world, this.roomInstances, origin, this.rooms);
+    if (instance === undefined) {
+      this.collectUnclaimedZonedRegion(origin, into);
+      return;
+    }
+
+    // Non-`undefined` by construction: `roomInstanceContaining` answers an
+    // instance only when its rectangle contains the tile, and a rectangle is
+    // what `roomBoundsOf` reads.
+    const bounds = roomBoundsOf(instance);
+    if (bounds === undefined) return;
+    for (let y = bounds.y; y < bounds.y + bounds.height; y += 1) {
+      for (let x = bounds.x; x < bounds.x + bounds.width; x += 1) {
+        const tile: TilePosition = { x: tileCoordinate(x), y: tileCoordinate(y) };
+        // Only what is actually painted. `setZoning` *materialises* a chunk, so
+        // writing a zero over a tile that already holds one would grow the
+        // world on the way to removing nothing -- the same reason `zone`
+        // checks every tile before it writes any.
+        if (this.world.getZoning(tile) === 0) continue;
+        into.set(tileKeyOf(tile), tile);
+      }
+    }
+  }
+
+  /**
    * Adds `origin` and every tile four-connected to it through the same room
-   * numeric id to `into`.
+   * numeric id to `into`, **stopping at any tile a room instance claims**.
+   *
+   * The fill `unzone` used to run over every covered tile, now reached only for
+   * paint no instance owns (see `collectRemovableRegion`). The stop condition
+   * is what keeps it from being the old defect wearing a smaller hat: an
+   * unclaimed run touching a real room must not drag that room's tiles out from
+   * under it, because clearing the plane where an instance is registered breaks
+   * this module's invariant in the direction `zone` is careful never to.
    *
    * Walls are deliberately *not* barriers here. The plane is what the player
    * sees tinted and what `zone` refuses to overlap, so removal has to be able
@@ -682,7 +791,7 @@ export class RoomZoningService {
    * a zoned run cannot exceed the plane's own painted extent, which no single
    * `zone` can grow beyond `MAX_ZONE_DIMENSION_TILES` squared.
    */
-  private collectZonedRegion(origin: TilePosition, into: Map<string, TilePosition>): void {
+  private collectUnclaimedZonedRegion(origin: TilePosition, into: Map<string, TilePosition>): void {
     const zoning = this.world.getZoning(origin);
     if (zoning === 0) return;
 
@@ -692,9 +801,10 @@ export class RoomZoningService {
       // what this produces is the *set* of tiles reached, cleared afterwards
       // in a plane where every write is the same value.
       const tile = stack.pop() as TilePosition;
-      const key = `${tile.x},${tile.y}`;
+      const key = tileKeyOf(tile);
       if (into.has(key)) continue;
       if (this.world.getZoning(tile) !== zoning) continue;
+      if (roomInstanceContaining(this.world, this.roomInstances, tile, this.rooms) !== undefined) continue;
       into.set(key, tile);
       stack.push(
         { x: tileCoordinate(tile.x + 1), y: tile.y },
