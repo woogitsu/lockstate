@@ -49,6 +49,28 @@ import { Xoshiro128StarStar } from '../../src/simulation/rng/xoshiro128starstar'
  * pin on the arithmetic period, which observes the counter and not one of
  * its consequences.
  *
+ * ## Two things this file did not cover, found by mutating what it guards (#169)
+ *
+ * A tripwire is only worth what it detects, so its own coverage was measured
+ * rather than assumed, and both gaps were in the *guard* rather than in the
+ * defect the cases describe.
+ *
+ * **The generation check was not exercised at all.** Every
+ * `isAlive(stale) === false` here used to be asserted between a `destroy` and
+ * the following `spawn`, with the slot on the free list -- so it was satisfied
+ * by `alive[index] !== 1` and never reached the generation comparison. Removing
+ * the generation term from `isAlive` entirely, which is #110's fix and the
+ * exact guard whose failure at the wrap is this file's whole subject, left
+ * **all 190 test files and 2,229 tests green**. The assertion now runs with the
+ * slot *occupied*, where only the generation can reject the id.
+ *
+ * **The period was not pinned here.** Every loop below runs exactly 4,096
+ * cycles, so any wrap period dividing 4,096 lands on the same starting
+ * generation and satisfies every assertion. The `& 0xF` mutation above passed
+ * all six original cases for that reason. It is pinned now, in its own case,
+ * and the reason it cannot be left to `actor-identity.test.ts` alone is given
+ * there.
+ *
  * ## Latency, stated so the severity is not overstated
  *
  * Nothing in `src/` destroys an entity, so no index is recycled even once
@@ -76,11 +98,19 @@ describe('EntityId generation wrap (#169, DEFECT PINNED -- see this file’s hea
     const stale = store.spawn();
 
     store.destroy(stale);
-    expect(store.isAlive(stale)).toBe(false); // correct, for the first 4,095 recycles
     let latest = store.spawn();
     for (let cycle = 1; cycle < WRAP_PERIOD; cycle += 1) {
-      store.destroy(latest);
+      // Asserted here -- *after* the respawn, with the slot occupied --
+      // rather than between the destroy and the spawn, and that placement is
+      // the whole assertion. With the slot on the free list `isAlive` returns
+      // false on `alive[index] !== 1` and never reaches the generation
+      // comparison, so the same expectation written one line earlier passes
+      // just as well against a store that has no generation check at all.
+      // Here the slot is alive and only the generation can reject the id, so
+      // this is the guard #110 added, exercised 4,095 times.
       expect(store.isAlive(stale)).toBe(false);
+      expect(store.isAlive(latest)).toBe(true);
+      store.destroy(latest);
       latest = store.spawn();
     }
 
@@ -89,6 +119,45 @@ describe('EntityId generation wrap (#169, DEFECT PINNED -- see this file’s hea
     // can no longer say so.
     expect(latest).toBe(stale);
     expect(store.isAlive(stale)).toBe(true); // DEFECT: should still be false
+  });
+
+  it('rejects a stale handle for every one of the 4,095 recycles before the wrap, and only wraps at 4,096', () => {
+    // The period itself, pinned here rather than only in
+    // `actor-identity.test.ts`. Two reasons it belongs in this file too.
+    //
+    // First, it was not covered here at all: every assertion in this file is
+    // satisfied by *any* wrap period that divides 4,096, because the loops
+    // run exactly 4,096 cycles and land back on the starting generation
+    // either way. Measured -- with `& 0xFFF` mutated to `& 0xF`, a 256x
+    // shorter fuse and a 256x worse version of exactly the defect this file
+    // documents, all six cases here passed and only `actor-identity.test.ts`
+    // failed.
+    //
+    // Second, `actor-identity.test.ts`'s pin is the one ADR 0026 names as the
+    // cost of option A ("refuse to recycle an index past its last
+    // generation"), because under A the id genuinely never comes back. So the
+    // sole guard on this counter is scheduled to be re-baselined by one of
+    // the options this file exists to gate -- which would leave the period
+    // unpinned at precisely the moment someone is editing the counter. This
+    // case survives A on its own terms: it asserts that a stale handle is
+    // rejected while its slot is *live*, which is what A strengthens rather
+    // than removes, and the wrap assertion is the one line A changes.
+    const store = new EntityStore(4);
+    const stale = store.spawn();
+    store.destroy(stale);
+
+    let latest = store.spawn();
+    let recycles = 1;
+    while (latest !== stale) {
+      if (recycles > WRAP_PERIOD) throw new Error(`no wrap within ${WRAP_PERIOD} recycles`);
+      store.destroy(latest);
+      latest = store.spawn();
+      recycles += 1;
+    }
+
+    // 4,096 is a literal from the 12-bit field (`GENERATION_MASK`), not a
+    // value read back out of the store.
+    expect(recycles).toBe(WRAP_PERIOD);
   });
 
   it('DEFECT: a stale handle destroys the live entity now holding the slot', () => {
