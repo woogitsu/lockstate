@@ -320,6 +320,20 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
       'Type-only: `RoomListViewModel` and `RoomDetailViewModel` from `src/simulation/presentation/room-projection`. The fifth of the translators outside `src/ui/hud/`, and the first that reads a *pulled* read model rather than a publication: it names the two view-model shapes `hud/room-list` and `hud/room-detail` answer with, and turns the `missing-capability` verdict inside them into `HudRoomNeedsViewModel`. Erased, so no simulation code runs on its account -- the projections themselves execute in the worker, and everything this module knows about the channel it gets from `src/ui/simulation-projections.ts` beside it, which is an intra-tree import. A `value` import appearing here would mean the readout had started projecting rooms on the main thread from state it does not own, which is the second source of truth `AGENTS.md` boundary 1 forbids and the reason the verdict is asked for rather than computed.',
   },
   {
+    file: 'src/ui/telemetry-consent-prompt.ts',
+    tree: 'content',
+    kind: 'type-only',
+    reason:
+      'Type-only: `LocalizationKey` from `src/content/localization`, to type the `TelemetryConsentLocalizer` port the composition root satisfies with the page\'s one `Localizer`. The same erased naming-of-a-key-type `save-panel-messages.ts`, `simulation-alerts.ts` and `brand-badge.ts` make; no content code runs because of it.',
+  },
+  {
+    file: 'src/ui/telemetry-consent-prompt.ts',
+    tree: 'services',
+    kind: 'value',
+    reason:
+      'Value: `EMPTY_TELEMETRY_CONSENT_DRAFT`, `TELEMETRY_CONSENT_MESSAGE_KEY`, `TELEMETRY_CONSENT_ROWS` and `setTelemetryConsentCategory` from `src/services/telemetry/consent-flow`. This is the manifest\'s point rather than an exception to it: the *value* import is what makes this module thin. Every decision the consent surface takes -- which categories exist, which label each carries, what the draft starts as, what a toggle does to it -- is computed there and none of it is computed here, because `vitest.config.ts` runs in `node` with no jsdom, so a decision taken in this file would be a privacy control with no headless coverage. The direction is UI-onto-a-services-contract and the reverse is structurally impossible: `tests/unit/services-layer-boundaries.test.ts` refuses `document.`/`window.` anywhere under `src/services/`. A *type-only* import appearing here would be the regression, not the improvement -- it would mean the rules had moved into the DOM.',
+  },
+  {
     file: 'src/ui/simulation-zoning.ts',
     tree: 'simulation',
     kind: 'type-only',
@@ -357,6 +371,7 @@ describe('UI orchestration boundaries', () => {
       'src/ui/simulation-projections.ts',
       'src/ui/simulation-room-needs.ts',
       'src/ui/simulation-zoning.ts',
+      'src/ui/telemetry-consent-prompt.ts',
     ]);
     // And the import scanner really is reading them.
     expect(orchestrationFiles.flatMap(({ source }) => findImports(source)).length).toBeGreaterThan(15);
