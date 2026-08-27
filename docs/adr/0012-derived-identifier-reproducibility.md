@@ -91,9 +91,37 @@ Requirements:
 - not treated as stable across recomputes by any consumer, and never persisted,
   hashed or compared across a save boundary.
 
-`GlobalTopologyId` is category 2 and does not currently meet it: the counter
+`GlobalTopologyId` is category 2 and **now meets it**. The counter resets:
+`nextGlobalId` is a function-local of `recomputeGlobalTopology`
+(`src/simulation/rooms/topology.ts:256`, incremented at `:262`), so ids are
+handed out from 1 in canonical sorted order on every recompute, and the two
+things that have to hold together for that are written beside the declaration
+at `:249-255`.
+
+**This paragraph said the opposite until it was corrected, and the old wording
+is kept rather than overwritten**, because what it cost is the point. It read:
+*"`GlobalTopologyId` is category 2 and does not currently meet it: the counter
 must reset per recompute (or the id must be derived from the component's own
-canonical key) so that identical geometry yields identical ids.
+canonical key) so that identical geometry yields identical ids."* That was
+written in `dc3d7da` and was true then. It stopped being true when `bd49852`
+(PR #295, issue #112) made the counter function-local at v0.0.39, and **this
+document was updated around it eight hours and seven releases later** in
+`98c933d`, which added the Status note and the Consequences note without
+touching this sentence — so the **Status** above and the **Consequences** below
+have both recorded the fix landing while the *Decision* went on denying it.
+A reader who stops at the Decision, as a reader of an ADR is meant to, came
+away believing a live determinism defect that had been closed **eighty-two
+releases** earlier — v0.0.39 to v0.0.121, counted as `chore(release)` commits
+in `bd49852..b710c62`. That is the failure mode `docs/AGENT_WORKFLOW.md` §4 names
+last: reading a document's own headings against each other is a different check
+from any diff, and no diff was ever going to catch this one.
+
+**What this ADR still reserves is not that counter.** It is the world-streaming
+policy: whether an unloaded chunk should be *representable* in a topology at
+all, and if so from what persisted geometry. The Consequences below state that
+question, and state why dropping an unloaded chunk's retained topology was the
+only answer available compatible with the category-2 requirement — that closes
+the residue, not the policy.
 
 ### Neither category may be left implicit
 A counter that is neither snapshotted nor reset is the failure mode this ADR
