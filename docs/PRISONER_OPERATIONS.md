@@ -147,7 +147,9 @@ requires. `selectBestAction` is its head, derived rather than restated.
 function of needs.** So the ranking says what a prisoner *wants* and
 `ActionSystem.beginNextAction` says what they can *have*: it walks the ranked
 candidates and starts the first one whose target resolves, **in the same
-reconsideration cycle** (ADR 0041 decision 1). Before that walk it took one
+reconsideration cycle**
+([ADR 0041](./adr/0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md)
+decision 1). Before that walk it took one
 answer and gave up, which made every
 lower-ranked candidate unreachable in that cycle -- and in the next, since
 nothing about the prisoner's state had changed in between. `action.eat-meal`
@@ -156,16 +158,12 @@ category, so a prison with no canteen chose the canteen for ever and fed
 nobody: measured at 0 performing ticks of `action.eat-in-cell` and hunger
 pinned at the floor, at 1, 4 and 24 prisoners alike, so it was never a
 contention effect. `tests/integration/cell-only-meal-fallback.test.ts` is the
-run. Ordering the *contended* scan by need urgency is ADR 0041 decision 2 and
+run. Ordering the *contended* scan by need urgency is
+[ADR 0041](./adr/0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md)
+decision 2 and
 is deliberately not done -- ADR 0029 decision 5's unfairness is unchanged, and
-under contention a loser now eats a worse meal rather than nothing.
-
-*ADR 0041 is referenced here by number and not by link, deliberately: the
-decision was accepted and the code implementing it is on this branch, but the
-document itself is on a separate branch and is not yet a file under
-`docs/adr/`. `tests/foundation/documentation-links-contract.test.ts` would go
-red on a link to it, which is the gate working. The link is owed the moment the
-ADR lands, and this paragraph is what a reader is owed until then.*
+under contention a loser now eats a worse meal rather than nothing, which is
+measured in `tests/integration/contended-canteen-meal-fallback.test.ts`.
 
 The one intentional RNG use in this whole slice is
 `classification.ts`'s screening-variance draw (issue #24: "deterministic
