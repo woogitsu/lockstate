@@ -97,16 +97,48 @@ jobs:
           # and naming this setting, if it ever finds itself on a shallow
           # checkout -- so deleting this line does not quietly disable it.
           #
-          # WHAT THE DEPTH COSTS, MEASURED RATHER THAN FEARED. This
-          # repository's bulk is the ~55 MB of art in Git LFS, which never
-          # enters the git pack, so history here is small: a full clone packs to
-          # 5.61 MiB over 7,971 objects against 3.47 MiB over 945 objects at
-          # `--depth 1`. That is 2.14 MiB and about half a second for 1,115
-          # commits across every ref. A narrower fetch was costed and rejected:
-          # the deepest commit the documentation cites today is 782 commits back
-          # on an 833-commit branch, so a `fetch-depth` that answered the
-          # current corpus would save 51 commits and would go stale the first
-          # time anything cited an older one.
+          # WHAT THE DEPTH COSTS, MEASURED RATHER THAN FEARED -- AND EVERY
+          # NUMBER BELOW CARRIES THE COMMAND THAT PRODUCES IT, BECAUSE THE
+          # ABSOLUTES ROT AND THE COMMANDS DO NOT.
+          #
+          # They rot fast. The figures that first stood here were about five
+          # commits stale in the commit that landed them, and re-taking them
+          # only restarts the clock. So: run these, do not trust the numerals.
+          # Taken at `4ae2e39`, GIT_LFS_SKIP_SMUDGE=1 so the number is about
+          # the git pack alone, against github.com and therefore including
+          # round trips. All refs, because that is what `fetch-depth: 0`
+          # fetches.
+          #
+          #   git clone --no-local https://github.com/matmaxalez/lockstate
+          #     -> in-pack 9440   size-pack 7.39 MiB
+          #   git clone --no-local --depth 1 https://github.com/matmaxalez/lockstate
+          #     -> in-pack  922   size-pack 3.29 MiB
+          #   git rev-list --count --remotes=origin --tags   -> 1086
+          #
+          # So the depth costs about 4.1 MiB and 8,500 objects for 1,086
+          # commits. This repository's bulk is the ~55 MB of art in Git LFS,
+          # which never enters the git pack; that is why history is this cheap
+          # and it is the fact to re-check if the number ever jumps.
+          #
+          # One of those counts is NOT monotonic and reads as a mistake
+          # otherwise: commits-across-every-ref went DOWN, 1,115 -> 1,086,
+          # because delete-branches.yml removes merged branches and their
+          # unmerged commits stop being reachable. A falling count here is the
+          # cleanup working.
+          #
+          # A narrower fetch was costed and rejected, and that conclusion has
+          # survived every re-measurement so far:
+          #
+          #   git rev-list --count 4ae2e39            -> 845     (branch length)
+          #   git rev-list --count b904a1b..4ae2e39   -> 794     (deepest cited)
+          #
+          # `b904a1b` is the oldest commit the documentation cites, so a
+          # `fetch-depth` answering today's corpus needs 795 of 845 and saves
+          # 50 commits -- and would go stale the first time anything cited an
+          # older one. The gate collects those tokens itself
+          # (tests/foundation/documentation-commit-citation-contract.test.ts);
+          # re-derive with `git rev-list --count <token>..<tip>` over them
+          # rather than trusting `b904a1b` to still be the deepest.
           #
           # AND IT IS PAID ONCE, WHICH IS THE PART THE REUSED WORKSPACE
           # DECIDES. This runner keeps its workspace between jobs and between
@@ -121,15 +153,42 @@ jobs:
           # `main`, so a full fetch here is not a new cost on this machine.
           #
           # The `assets` and `browser` jobs keep the default depth, because
-          # neither reads history. That re-shallows this workspace after this
-          # job, and that is measured rather than assumed to be harmless:
-          # `git fetch --depth=1` against a complete repository writes
-          # `.git/shallow` and drops `git rev-list --count` from 833 to 1 while
-          # deleting no objects, so the next run's `--unshallow` finds
-          # everything already local -- 0.055 s and no change to the pack.
-          # Measured over a local transport in a development container, so the
-          # round trips to github.com are not in that number; the object
-          # transfer, which is the part that could have been large, is.
+          # neither reads history -- and so does deploy.yml's `staging` job.
+          # That re-shallows this workspace after this job, and it is measured
+          # rather than assumed to be harmless. TWO SEPARATE FETCHES, and the
+          # sentence that used to stand here ran them together:
+          #
+          #   1. THE RE-SHALLOW, which is cheap and leaves the objects alone.
+          #      Against the COMPLETE clone above:
+          #
+          #        git fetch --no-tags --prune --no-recurse-submodules \
+          #          --depth=1 origin <sha>
+          #          rev-list --count HEAD   845 -> 1
+          #          .git/shallow            written
+          #          in-pack / size-pack     unchanged, not one object deleted
+          #          wall 0.553 s over file://, 1.082 s over https
+          #
+          #   2. THE `--unshallow` THE NEXT RUN OF THIS JOB PAYS, which is the
+          #      more expensive of the two and is where the old sentence was
+          #      wrong. It read "the next run's `--unshallow` finds everything
+          #      already local -- 0.055 s and no change to the pack"; that
+          #      figure belongs to the fetch in (1), and the `--unshallow` does
+          #      not reliably reuse what is on disk:
+          #
+          #        git fetch --unshallow
+          #          over file://   wall 0.296 s, pack unchanged
+          #          over https     wall 2.180 s, pack 7863 -> 8315 objects,
+          #                                        6.99 -> 7.78 MiB
+          #
+          #      Transport decides it, so a single number for this one would be
+          #      a fiction. Both were taken here; the runner pays the https
+          #      shape. Still small in absolute terms -- which is the point --
+          #      but it is a real fetch and not a no-op, so do not cite it as
+          #      free.
+          #
+          # A local transport keeps the round trips to github.com out of the
+          # number; the object transfer, which is the part that could have been
+          # large, is in both.
           fetch-depth: 0
 
       - name: Setup Node

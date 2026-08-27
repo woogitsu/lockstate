@@ -34,12 +34,17 @@ import { describe, expect, it } from 'vitest';
  * The owner delegated the call. The first way out was taken, because the cost
  * turned out to be small enough to measure rather than argue about: this
  * repository's bulk is the ~55 MB of art in Git LFS and never enters the git
- * pack, so a full clone packs to 5.61 MiB over 7,971 objects against 3.47 MiB
- * over 945 objects at `--depth 1` -- 2.14 MiB for 1,115 commits across every
- * ref -- and the self-hosted runner reuses its workspace, so the deepening is
- * an `--unshallow` paid once and an incremental fetch after that. The full
- * costing, including the narrower fetches that were rejected, is in the
- * comment on that checkout step; it belongs beside the setting.
+ * pack, so the whole of history is a few MiB more than one commit of it, and
+ * the self-hosted runner reuses its workspace, so the deepening is an
+ * `--unshallow` rather than a clone.
+ *
+ * **The figures are deliberately not repeated here.** They live in the comment
+ * on that checkout step, each beside the command that produces it, and a second
+ * copy in this file would be a second thing to rot -- which is exactly what
+ * happened to the copy this paragraph used to carry: it still read 5.61 MiB and
+ * 1,115 commits after the workflow's own numbers had been corrected. The
+ * narrower fetches that were costed and rejected are argued there too. It
+ * belongs beside the setting.
  *
  * **The skip was refused outright, and this file is written so it cannot come
  * back.** A gate that passes on a checkout too shallow to answer is worse than
