@@ -82,6 +82,21 @@ trusted mutation to record actor, reason and prior value, and no audit trail
 on the trusted write path exists yet (#105 finding 8), so a truncated ledger
 would leave no record that it happened.
 
+#### Amendment, 2026-08-26 (#382, issue #280 finding F14): a Data API role holds exactly the DML privileges its zone needs
+
+**Nobody has approved this, and a reader acting on it should know that.** The two
+paragraphs below are exactly as #382 wrote them, and they stay here in §2 beside
+the `TRUNCATE` ruling they generalise — this heading adds a name and a date, so
+that the ruling is findable and countable instead of folded into prose. #382
+recorded it as decided, on the reading that it *applies* §2's existing zone
+taxonomy rather than deciding anything new. That reading may well be right and it
+is not checkable either way, which is what ruling 1 of
+[`README.md`](./README.md)'s *"An amendment to an accepted ADR"* section settles;
+its ruling 3 is why this amendment has a row in
+[`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2 rather than a status of its own. The
+`Accepted` above is ADR 0008's and does not move either way. The warrant behind
+the two paragraphs below is #382's judgement, not the owner's.
+
 **Generalised, 2026-08-26 (issue #280 finding F14): a Data API role holds
 exactly the DML privileges its zone needs on a table, and nothing else.**
 `TRUNCATE` was the first ambient privilege Supabase's `grant all on tables`
@@ -109,6 +124,17 @@ The residue on sequences was `UPDATE`, which is `setval` — latent only
 because every key in this schema is a `uuid` (#280 finding F15). **The rule
 this settles for every future table is that a new relation in `public`
 starts closed, and its migration opens exactly what it means to open.**
+
+#### Amendment, 2026-08-26 (#382, issue #194): authority over a row is not authority over the record of when it was written
+
+**Unapproved on the same terms as the amendment above**, and recorded here for
+the same reason: the two paragraphs below are #382's text unchanged, and the only
+warrant behind them is #382's judgement. This is the sharper of the two, because
+it narrows an accepted classification — it says so itself, two sentences in — and
+ruling 1 of [`README.md`](./README.md)'s *"An amendment to an accepted ADR"*
+section uses exactly that word as its demonstration that "applies" and "amends"
+cannot be told apart from outside the editor's head. See
+[`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2 for what the owner is being asked.
 
 **Authority over a row is not authority over the record of when it was
 written.** Decided 2026-08-26 for issue #194, and it is the one ruling in

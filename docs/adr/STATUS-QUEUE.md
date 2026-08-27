@@ -8,12 +8,12 @@ implementation.
 
 **Nothing here changes a status.** A status moves in the ADR and in the index,
 never in this file. What changed with this revision is what the file is *for*:
-§1 records **all thirteen** flips, §2 records that **the approval queue is
-empty** — above the account of why it had been emptied the first time and what
-that bought (ADR 0029 was accepted on 2026-08-26 and its entry deleted; 0031
-arrived immediately after and was itself accepted) — and everything after it is
-the residue — one genuinely open decision, one watch item, and the gaps between
-an accepted decision and the code.
+§1 records **all thirteen** flips, §2 holds **one entry — the two dated rulings
+#382 wrote into ADR 0008 §2** — above the account of why the queue had been
+emptied three times and what that bought (ADR 0029 was accepted on 2026-08-26
+and its entry deleted; 0031 arrived immediately after and was itself accepted)
+— and everything after it is the residue — one genuinely open decision, one
+watch item, and the gaps between an accepted decision and the code.
 
 **This sentence and the title above it were both false, and this is the second
 time this file's title has rotted the same way.** They read *"One decision is
@@ -43,6 +43,18 @@ rotted twice. §6 used to be the inventory of stale sentences the flips left beh
 holds instead is the account of what moved, what may not be touched, and what
 the test cannot see. Deciding is still the owner's; this file only makes the
 next decision cheap.
+
+**Four places in this file count the queue, and the next editor has to sweep all
+four.** They are: this paragraph, the title above it, §2's own heading, and §5's
+preamble. They have disagreed before — *"One decision is awaiting approval"*,
+*"§2 holds **the one decision awaiting approval — ADR 0031**"*, *"## 2. The
+queue is empty"* and *"**The queue is not empty** — §2 holds **two** entries"*,
+all four in the same document, recorded as **ARC-07, CONFIRMED** in
+`docs/research/audit-2026-08-26/04-architecture.md`. The drift is structural
+rather than careless: §2's count is edited when a decision is accepted, and the
+other three are edited when somebody remembers them. **Nothing mechanical can
+compare an English count in one paragraph to an English count in another**, so
+naming the four places here is the whole of the defence.
 
 Re-anchored at `main` @ `54418b6` (**v0.0.121**) by the delta method this header
 describes, from `8d29aa6` (v0.0.111). 51 files changed; **seven** intersect the
@@ -316,32 +328,45 @@ cells is exercised nowhere, because no shipped session yet furnishes two.
 
 ---
 
-## 2. The queue is empty
+## 2. One entry: the two rulings #382 added to ADR 0008 §2
 
 **This heading has now read "empty", "exactly one entry: ADR 0029", "empty
-again", one entry, two, one, and now empty for the third time** — 0031, 0032,
-0033 and 0007's amendment were all accepted on 2026-08-26. Two of those four
+again", one entry, two, one, empty for the third time, and now one again** —
+0031, 0032, 0033 and 0007's amendment were all accepted on 2026-08-26. Two of those four
 never appeared here at all, which is the failure recorded at the foot of this
 section, and the churn in this heading is the point rather than noise: it is the
-only place a reader can see how fast this corpus moves. The second is not a new
-document: it is an amendment to ADR **0007**, which is Accepted and stays
-Accepted. An amendment is queued here for the same reason a new ADR is — it
-decides something the sections above it do not, and nothing else in the corpus
-would tell the owner that a decision is waiting. `adr-numbering-contract.test.ts`
-counts documents by their `Status` line, so an amendment inside an accepted ADR is
-invisible to every mechanical gate there is; this row is the only thing that says
-it exists. 0029 was accepted on 2026-08-26 and
+only place a reader can see how fast this corpus moves. **The entry it holds now
+is the second amendment to be queued here rather than a new document**, after
+0007's — and unlike 0007's it is queued by a decision recorded in
+`docs/adr/README.md` rather than by its author's own instinct. An amendment is queued here for the
+same reason a new ADR is: it decides something the sections above it do not, and
+nothing else in the corpus would tell the owner that a decision is waiting.
+`adr-numbering-contract.test.ts` counts documents by their `Status` line, so an
+amendment inside an accepted ADR is invisible to every mechanical gate there is;
+this row is the only thing that says it exists. 0029 was accepted on 2026-08-26 and
 its entry was deleted, which is what this section's own rule prescribed — the
 entry said *"this entry is deleted"* as part of the exact recipe for accepting
-it, and following that recipe is the whole point of writing one. 0031 arrived
-immediately after, so the row below is a different decision rather than the same
-one returning.
+it, and following that recipe is the whole point of writing one.
 
 The rule this section states — *"any commit that adds an outstanding ADR adds an
 entry here in the same commit, giving the evidence, what settling it commits the
 project to, and the exact line that would replace the status"* — is followed by
 0031, and the account of why the queue was emptied is kept below unchanged,
 because it is the argument for why one row is worth reading.
+
+**The rule's trigger is unchanged by the 2026-08-27 ruling, and that is the
+ruling's main point.** `docs/adr/README.md`'s *"An amendment to an accepted ADR"*
+section settles what this file filed in §5 as the owner's question — whether
+*"applies an accepted decision"* and *"amends an accepted decision"* can be told
+apart by anything a reader can check. They cannot, so **the answer is not to
+widen this rule to cover amendments as a class**: exactly one of the seventeen
+post-hoc additions in `docs/adr/` ever had a row here, and widening a rule this
+section already calls *"unsatisfiable under concurrency"* would have condemned
+sixteen of them on the day it landed. What the ruling requires instead is form —
+an amendment is a dated `Amendment`/`Addendum` section that says in its own
+opening whether it was approved — so that *outstanding*, which is and stays the
+trigger, is something a reader can see rather than reconstruct. The entry below
+is the one case where nobody could see it.
 
 What the round trip is worth recording for: 0029 arrived on the same branch as
 its implementing code, and **it sat `Proposed` on `main` for a day while that
@@ -352,6 +377,68 @@ landing and the status moving is the cost, and it is not zero.
 
 The account of why the queue was emptied the first time is kept below unchanged,
 because it is still the argument for why one row is worth reading.
+
+### ADR 0008 §2's two rulings (#382) — awaiting approval
+
+**What is waiting.** Two rulings #382 wrote into
+[ADR 0008](./0008-trusted-service-boundary.md) §2 on 2026-08-26 as decided, with
+no approval caveat and — until 2026-08-27 — no heading, no date in the document
+structure and no row here. ADR 0008 is `Accepted` and **stays** `Accepted`; that
+keyword is not what is in question and no status moves either way on this. Both
+rulings now sit under dated `#### Amendment, 2026-08-26 (#382, …)` headings in §2,
+each with an opening paragraph saying that the only warrant behind it is #382's
+judgement.
+
+1. **A Data API role holds exactly the DML privileges its zone needs on a table,
+   and nothing else** (issue #280 finding F14). Its own words for the general
+   part: *"The rule this settles for every future table is that a new relation in
+   `public` starts closed, and its migration opens exactly what it means to
+   open."*
+2. **Authority over a row is not authority over the record of when it was
+   written** (issue #194). It narrows §2's *"Prison simulation state, saves,
+   settings — Z0/Z1 (client-authoritative, RLS-scoped)"* row by ruling a
+   `created_at`/`updated_at` column out of a row's *content*: the timestamp's
+   authority is Z2 even on a table whose payload is Z0's.
+
+**The evidence, and it is not in dispute.** Both are executed in SQL, not merely
+written down. `20260826120000_revoke_ambient_table_privileges.sql` revokes
+`REFERENCES`, `TRIGGER` and `MAINTAIN` and the `ALTER DEFAULT PRIVILEGES` entries
+that handed them back; `20260826130000_server_stamp_updated_at.sql` stamps
+`updated_at` from a `BEFORE INSERT OR UPDATE` trigger on `prisons`, `profiles`
+and `user_settings` and keeps the column out of every client grant. So the
+question is not whether the code matches the rulings — it does — but whether the
+rulings are the project's or one pull request's.
+
+**What approving commits the project to.** Ruling 1 binds every migration written
+from now on: a new relation in `public` starts with a null ACL and its own
+migration opens exactly the privileges it needs, which is a per-table cost paid
+forever in exchange for the class of ambient-privilege defect that produced #163,
+#280 F14 and F15. Ruling 2 says a client never writes a server timestamp, and
+pre-commits the alternative: *"If a client-side edit time is ever needed for
+reconciliation it gets its own column, named for what it is (`client_edited_at`)"*
+— so approving it also closes off the cheaper option of reusing `updated_at` for
+that.
+
+**The exact edit that accepts them.** In
+[ADR 0008](./0008-trusted-service-boundary.md) §2, both `#### Amendment` headings
+gain `— approved <date>` and their opening paragraphs lose the sentence saying
+nobody has approved them, replaced by who approved what; the two rulings'
+own paragraphs are not touched, because they are the text being approved. The
+`0008` row in [`README.md`](./README.md) is unaffected — its status keyword is
+`Accepted` either way. **And this entry is deleted**, which is the recipe this
+section prescribes and the thing following it is for.
+
+**If the answer is no**, the two rulings do not simply get struck: the two
+migrations above have shipped, so rejecting either is a decision to write a
+migration that reverses it, and the ADR text becomes the record of a rule that
+was tried. Say which of the two, because they are independent — ruling 1 is about
+grants on future tables, ruling 2 about one column's authority — and #382 argued
+them separately.
+
+**Why this is one entry rather than two.** They landed in one pull request, on one
+reading of §2's zone taxonomy, and the governance question they raised is common
+to both. The substance is separable and the answer may differ per ruling; the row
+is shared because the thing the owner has not seen is the same thing twice.
 
 ### ADR 0031 — accepted 2026-08-26, and the entry is deleted
 
@@ -644,7 +731,9 @@ to say that "with the queue empty that is the whole of what this section can be:
 either a decision is accepted and the code has not caught up, which is a code or
 wiring gap, or two documents state different numbers, which is a docs-truth job".
 That premise is withdrawn all the same, and with it the claim that those two
-shapes are exhaustive: there are two more, described below.
+shapes are exhaustive: there are two more, described below. **And the queue is
+not empty now** — §2 holds one entry, the two rulings #382 wrote into ADR 0008
+§2 — so the "with the queue empty" opening no longer describes the file either.
 
 **Corrected at this anchor, and it is the sharper defect of the two.** The
 paragraph above then read *"**The queue is not empty** — §2 holds **two**
@@ -671,20 +760,28 @@ will never move.** #380 queued an **amendment** to ADR 0007, which is Accepted a
 stays Accepted, on the argument §2 now states — that
 `adr-numbering-contract.test.ts` counts documents by their `Status` line, so an
 amendment inside an accepted ADR *"is invisible to every mechanical gate there
-is; this row is the only thing that says it exists"*. Its heading carries the
-approval state instead
-(`docs/adr/0007-navigation-work-budgets-and-flow-fields.md:319`, *"## Amendment,
-2026-08-26 (awaiting approval)"*). Nothing in §§3-6 could have held that: every
-entry here is keyed to an ADR's status or to code, and this is neither. It is
-also why the README's *"One row is outstanding"* line was **not a contradiction**
-of §2's entry count — the README counts rows in its own table, and an amendment
-has no row. **That citation is corrected here twice over: this entry read
-`docs/adr/README.md:108`'s "One row is outstanding: 0031", and the sentence is
-neither at that line nor about that ADR** — it now reads *"One row is
-outstanding: 0033"* and sits far below `:108`, which is prose about how the
-surrounding paragraph is worded for a test. Cited by quotation rather than by
-line from here on, which is what this file's own §6 concluded and kept not
-doing. The entries below are recorded so that
+is; this row is the only thing that says it exists"*. Its heading carried the
+approval state instead — this entry quoted it as *"## Amendment, 2026-08-26
+(awaiting approval)"*, and on acceptance the heading became *"## Amendment,
+accepted 2026-08-26: the shared plan is the plan `findRoute` computes…"*, so the
+quote is history rather than a live citation and is kept as one. Nothing in §§3-6
+could have held that: every entry here is keyed to an ADR's status or to code, and
+this is neither. It is also why a README sentence counting outstanding *rows* is
+not a contradiction of §2's count — the README counts rows in its own table, and
+an amendment has no row. **This shape is no longer only a fourth case: it is a
+class with a rule.** `docs/adr/README.md`'s *"An amendment to an accepted ADR"*
+section, decided 2026-08-27, is what §2's live entry rests on, and this paragraph
+is the first instance it was written from.
+
+**This entry has now cited the README wrongly twice, by line both times.** It
+read `docs/adr/README.md:108`'s *"One row is outstanding: 0031"* when the
+sentence was neither at that line nor about that ADR; corrected to *"One row is
+outstanding: 0033"*, which the README has since **withdrawn**, because 0033 was
+accepted on 2026-08-26. A line number is the part of a citation that rots first
+and the part a reader checks last. **Cited by quotation rather than by line from
+here on**, which is what this file's own §6 concluded and kept not doing.
+
+The entries below are recorded so that
 reading this file does not leave the impression that the corpus was audited in
 one direction.
 
@@ -732,7 +829,11 @@ one direction.
   awaiting approval**: #356 accepted it on 2026-08-26
   (`docs/adr/0029-concurrent-room-use-claims.md:5`, *"**Accepted,
   2026-08-26.**"*, plus its index row), so phase 6 now rests on an Accepted
-  decision and the queue's one pending entry is ADR 0031 instead. Phase 4 — the
+  decision. **This sentence went on to say "and the queue's one pending entry is
+  ADR 0031 instead", which is withdrawn** — 0031 was accepted on 2026-08-26 and
+  §2's one entry is now ADR 0008 §2's two rulings. A phase's footing does not
+  depend on what else is in the queue, so the clause was decoration that could
+  only rot; what it was for is the sentence before it. Phase 4 — the
   rest of the object catalogue — is
   untouched at `dbe271f`: exactly two `'object.*'` ids appeared as literals
   under `src/` outside `src/content/`, both on `BUILDABLE_REGISTRY` rows.
@@ -1100,10 +1201,51 @@ one direction.
   because the sentences after the false clause survived. The same phrase in
   `docs/research/` stays untouched for the reason that directory's README gives.
 
-- **NEW — two dated rulings were written into ADR 0008's Accepted body with no
-  queue row, on the same day #380 argued that such a thing needs one.** This is
-  for the owner rather than a defect this file can settle, and it is here because
-  nothing else would surface it. #382 added both to
+- **ANSWERED 2026-08-27 — two dated rulings were written into ADR 0008's Accepted
+  body with no queue row, on the same day #380 argued that such a thing needs
+  one.** The governance question this entry filed as the owner's is decided and
+  the rule is `docs/adr/README.md`'s *"An amendment to an accepted ADR: what form
+  it takes, and when it needs a queue row"*; **the two rulings' own substance is
+  still the owner's and is now in §2 as this file's one live entry.** The entry
+  below is kept as written, because it is the argument the ruling answers and
+  because this file's practice is to quote what it corrects rather than overwrite
+  it. What the ruling settled, in four lines:
+
+  1. **No.** *"Applies"* and *"amends"* are not distinguishable by anything a
+     reader can check — the test would be *"does the ADR as it stood already
+     entail this?"*, a re-derivation from the old text, and an ADR exists to
+     spare the next reader exactly that. So **no rule turns on the difference.**
+  2. **The queue rule is therefore not widened to cover amendments as a class.**
+     Counted on disk: seventeen post-hoc additions live in `docs/adr/`, and
+     **exactly one of them ever had a row here** — 0007's second amendment.
+     Widening the rule would have condemned sixteen on the day it landed, and
+     this section already calls that rule *"unsatisfiable under concurrency"*.
+  3. **What is required instead is form, and the corpus already keeps it**:
+     fifteen `Amendment`/`Addendum` sections across nine ADRs, fourteen of them
+     already dated in the heading. The two exceptions were ADR 0008's rulings,
+     which had no section at all — the only unsectioned dated rulings in the
+     directory — and ADR 0033's undated heading. ADR 0008's are corrected in the
+     same commit as this entry, text untouched.
+  4. **The trigger stays *outstanding*.** An amendment says in its own opening
+     whether it was approved; one that says nothing reads as outstanding without
+     anyone having to reconstruct who wrote it. Ten of the seventeen are covered
+     that way today; the seven that are not are named in
+     `docs/adr/README.md` ruling 3, and five of them are a backlog this decision
+     does not condemn.
+
+  **Also corrected: this entry's closing citation.** It said *"Two ADR numbers
+  are unused — `docs/adr/README.md:102-106` records **0032** as next free and
+  0030 as 'held by an unmerged branch'"*. That file now states **0038** as next
+  free, and 0030 is still held. The point the clause was making survives —
+  nothing here was blocked on a number — but the line-range citation did not, on a
+  file this same entry is a claim about and which this same commit edits. That is
+  the argument for citing by quoted phrase rather than by line, which is what the
+  rest of §5 already does and what the entries above it were rewritten to do.
+
+  The entry as filed, unchanged:
+
+  This is for the owner rather than a defect this file can settle, and it is here
+  because nothing else would surface it. #382 added both to
   `docs/adr/0008-trusted-service-boundary.md` §2: *"**Generalised, 2026-08-26
   (issue #280 finding F14): a Data API role holds exactly the DML privileges its
   zone needs on a table, and nothing else**"*, which states *"the rule this
