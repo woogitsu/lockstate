@@ -89,7 +89,12 @@ describe('kernel system ordering', () => {
     ]);
   });
 
-  it('dispatches all due commands, in sequence order, before any system runs that tick', () => {
+  // The title names the tie-break rather than "sequence order", because
+  // sequence is only ever the tie-break: `first` and `second` share tick 0,
+  // which is the *only* reason sequence decides between them. ADR 0020's
+  // 2026-08-27 amendment is about precisely this conflation, and a case title
+  // that repeated it would be the same claim in a place grep would not find.
+  it('dispatches every due command before any system runs that tick, breaking a shared tick by sequence', () => {
     const log: string[] = [];
     const kernel = new Kernel();
     kernel.setCommandHandler((command) => log.push(`cmd:${command.id}`));
