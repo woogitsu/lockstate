@@ -35,13 +35,17 @@
 -- and 9: "Ledger idempotency beyond the payment webhook" (nineteen) and
 -- "The definition oracle" (ten), and of the twelve added for issues #189 and
 -- #191: "Trusted-tier column bounds" (seven), "ranked_score is finite"
--- (four) and "challenge_version has a floor" (one). `pnpm verify:sql`
--- reports 88/88 for this suite. That figure is what drifted before -- it
--- read 76/76 for as long as nobody re-ran it after #189 and #191 -- so treat
--- it as a claim to check rather than as a fact to trust.
+-- (four) and "challenge_version has a floor" (one). The same is true of the
+-- sixteen added for the two mutation-found gaps: the two mirroring the
+-- provider-key property that the derived key already had (ADR 0008 threat T6),
+-- and the fourteen in "The five scalar CHECKs suite 008 names and nothing
+-- exercised". `pnpm verify:sql` reports 104/104 for this suite. That figure is
+-- what drifted before -- it read 76/76 for as long as nobody re-ran it after
+-- #189 and #191 -- so treat it as a claim to check rather than as a fact to
+-- trust.
 
 begin;
-select plan(88);
+select plan(104);
 
 insert into auth.users (id, email) values
   ('33333333-3333-3333-3333-333333333333', 'entitled@example.test'),
@@ -431,6 +435,50 @@ select throws_ok(
   '23505',
   null,
   'a privileged direct insert of an identical provider-less event is refused by the index, not by the RPC'
+);
+
+-- The same property for the OTHER key, which had no counterpart here at all.
+-- ADR 0008 section 5 threat T6 names `(provider, provider_event_id)`
+-- uniqueness as the mitigation for a forged or replayed payment webhook, and
+-- section 3 step 4 makes `provider_event_id` the Z3 idempotency key -- so this
+-- index is a *named* control and not an incidental one.
+--
+-- Nothing noticed when it was dropped: `record_entitlement_event()`'s own
+-- lookup still answers `duplicate`, so every assertion above stayed green
+-- while the DATA lost the property. Measured on a fresh schema copy with the
+-- index dropped, one webhook event id replayed once folded to
+-- `{"ledgerRevision": 2, "grantedSaveSlots": 12}` -- 5 + 7 slots from one
+-- event. The row below differs from the `promo.campaign`/`campaign-x` row
+-- above in every field except the pair, which is what makes the pair the only
+-- thing that can be refusing it: the natural key is partial on
+-- `provider is null` and cannot fire here.
+select throws_ok(
+  $$ insert into public.entitlement_events
+       (user_id, product_id, capability, event_type, source, quantity,
+        provider, provider_event_id, occurred_at, actor_kind, actor_id, reason)
+     values ('44444444-4444-4444-4444-444444444444', 'product.save-slots.plus-5', 'save-slots',
+             'revoke', 'support-adjustment', 7, 'promo.campaign', 'campaign-x',
+             '2026-08-09T00:00:00Z'::timestamptz, 'staff', 'staff.test', 'a different event entirely') $$,
+  '23505',
+  null,
+  'a privileged direct insert reusing (provider, provider_event_id) is refused by the index too: T6''s named mitigation holds of the data'
+);
+
+-- Vacuity guard for the assertion above. `throws_ok` on a unique violation
+-- cannot say WHICH object refused, so an index dropped and a different one
+-- coincidentally covering the same tuple would read as a pass. This names the
+-- object, its uniqueness and its predicate -- and the predicate is load-bearing
+-- rather than decorative: without `where provider is not null` the pair
+-- `(null, null)` that every non-provider event carries would be unique across
+-- the whole ledger and the append-only log could hold exactly one such row.
+select is(
+  (select i.indisunique::text || ' ' || coalesce(pg_get_expr(i.indpred, i.indrelid), '<none>')
+     from pg_index i
+     join pg_class c on c.oid = i.indexrelid
+     join pg_namespace n on n.oid = c.relnamespace and n.nspname = 'public'
+    where c.relname = 'entitlement_events_provider_event_key'),
+  'true (provider IS NOT NULL)',
+  'the provider idempotency key exists as a UNIQUE index partial on `provider is not null`, which is what ADR 0008 T6 names'
 );
 
 -- --- Challenges ---
@@ -1255,6 +1303,218 @@ select throws_ok(
   '23514',
   null,
   'a challenge version of zero is refused, as it already is on the definitions table'
+);
+
+-- --- The five scalar CHECKs suite 008 names and nothing exercised ------
+--
+-- Suite 008 asserts that these constraint objects EXIST and cover the columns
+-- they claim to; its header used to add that "suites 001, 002, 004 and 006"
+-- assert what they refuse. They did not, for nine of the thirteen objects that
+-- suite names -- five of them on this suite's two tables. Measured: every CHECK
+-- in `public` was dropped and re-added under the same name over the same
+-- `conkey` with a predicate admitting everything
+-- (`check (num_nonnulls(<same columns>) >= 0)`), and all 287 assertions stayed
+-- green for these five. Suite 008 cannot notice that, and it is right not to
+-- try: a coverage rule reads the catalog, and an in-place rewrite leaves the
+-- catalog entry looking identical (#280 recorded that as a residual).
+--
+-- Both directions, the shape suites 004 and 006 already use: one past the
+-- bound must be refused, and the value exactly at it must be admitted --
+-- because a database that refuses what the TypeScript contract permits is a
+-- defect rather than hardening (#105 finding 4). The admitting half is also
+-- what makes the refusing half non-vacuous: a constraint rewritten to refuse
+-- *everything* would pass a `throws_ok` on its own.
+--
+-- Every insert below is privileged and direct, not through
+-- `record_entitlement_event()`: the RPC has bounds of its own, and what is
+-- being asserted is that the property is true of the DATA for any writer.
+-- `occurred_at` differs on every row so `entitlement_events_natural_event_key`
+-- can never be what refuses one of these.
+
+-- `entitlement_events_quantity_check` -- the SQL half of
+-- `MAX_SAVE_SLOTS_PER_GRANT` (src/services/entitlements/products.ts). It is a
+-- two-sided `between 1 and 25`, so both edges are driven: a widening to
+-- `between 1 and 10000`, hand-written rather than generated, survived the whole
+-- suite too, and only the upper edge catches that one.
+select throws_ok(
+  $$ insert into public.entitlement_events
+       (user_id, product_id, capability, event_type, source, quantity, occurred_at,
+        actor_kind, actor_id, reason)
+     values ('33333333-3333-3333-3333-333333333333', 'product.save-slots.plus-5', 'save-slots',
+             'grant', 'promotional', 26, '2026-09-01T00:00:00Z'::timestamptz,
+             'system', 'bounds-probe', 'quantity one past the ceiling') $$,
+  '23514',
+  null,
+  'a grant of 26 slots in one event is refused: MAX_SAVE_SLOTS_PER_GRANT is enforced by the database, not only by products.ts'
+);
+
+select lives_ok(
+  $$ insert into public.entitlement_events
+       (user_id, product_id, capability, event_type, source, quantity, occurred_at,
+        actor_kind, actor_id, reason)
+     values ('33333333-3333-3333-3333-333333333333', 'product.save-slots.plus-5', 'save-slots',
+             'grant', 'promotional', 25, '2026-09-02T00:00:00Z'::timestamptz,
+             'system', 'bounds-probe', 'quantity exactly at the ceiling') $$,
+  'a grant of exactly 25 is admitted: the bound is inclusive, and the ceiling is 25 rather than something larger'
+);
+
+select throws_ok(
+  $$ insert into public.entitlement_events
+       (user_id, product_id, capability, event_type, source, quantity, occurred_at,
+        actor_kind, actor_id, reason)
+     values ('33333333-3333-3333-3333-333333333333', 'product.save-slots.plus-5', 'save-slots',
+             'grant', 'promotional', 0, '2026-09-03T00:00:00Z'::timestamptz,
+             'system', 'bounds-probe', 'quantity one below the floor') $$,
+  '23514',
+  null,
+  'and a grant of zero is refused at the other edge: an event that grants nothing is not a fact worth recording'
+);
+
+select lives_ok(
+  $$ insert into public.entitlement_events
+       (user_id, product_id, capability, event_type, source, quantity, occurred_at,
+        actor_kind, actor_id, reason)
+     values ('33333333-3333-3333-3333-333333333333', 'product.save-slots.plus-5', 'save-slots',
+             'grant', 'promotional', 1, '2026-09-04T00:00:00Z'::timestamptz,
+             'system', 'bounds-probe', 'quantity exactly at the floor') $$,
+  'a grant of exactly 1 is admitted, so the floor is inclusive too'
+);
+
+-- `entitlement_events_schema_version_check` -- a pin, not a range, and ADR 0008
+-- section 3 is what makes it one: a version 2 event has a different meaning,
+-- so it needs the migration that defines that meaning before a row can claim
+-- it. The natural-key index deliberately excludes `schema_version` *because*
+-- this pin makes it unable to distinguish two rows; if this constraint stopped
+-- holding, that key would silently start admitting duplicates as well.
+select throws_ok(
+  $$ insert into public.entitlement_events
+       (schema_version, user_id, product_id, capability, event_type, source, quantity,
+        occurred_at, actor_kind, actor_id, reason)
+     values (2, '33333333-3333-3333-3333-333333333333', 'product.save-slots.plus-5', 'save-slots',
+             'grant', 'promotional', 5, '2026-09-05T00:00:00Z'::timestamptz,
+             'system', 'bounds-probe', 'schema version two') $$,
+  '23514',
+  null,
+  'an event claiming schema version 2 is refused: the version is pinned, so a new one needs a migration by design'
+);
+
+select lives_ok(
+  $$ insert into public.entitlement_events
+       (schema_version, user_id, product_id, capability, event_type, source, quantity,
+        occurred_at, actor_kind, actor_id, reason)
+     values (1, '33333333-3333-3333-3333-333333333333', 'product.save-slots.plus-5', 'save-slots',
+             'grant', 'promotional', 5, '2026-09-06T00:00:00Z'::timestamptz,
+             'system', 'bounds-probe', 'schema version one, stated explicitly') $$,
+  'version 1 named explicitly is admitted, so the pin is a pin at 1 and not a refusal of the column'
+);
+
+-- `entitlement_events_expiry_after_occurrence`. The boundary is exclusive --
+-- `expires_at > occurred_at` -- so equality is the value one past the bound
+-- and one microsecond later is the value exactly at it. A microsecond is the
+-- `timestamptz` resolution, so this is genuinely the adjacent value and not a
+-- comfortable margin.
+select throws_ok(
+  $$ insert into public.entitlement_events
+       (user_id, product_id, capability, event_type, source, quantity, occurred_at, expires_at,
+        actor_kind, actor_id, reason)
+     values ('33333333-3333-3333-3333-333333333333', 'product.save-slots.plus-5', 'save-slots',
+             'grant', 'promotional', 5, '2026-09-07T00:00:00Z'::timestamptz,
+             '2026-09-07T00:00:00Z'::timestamptz,
+             'system', 'bounds-probe', 'expiring at the instant it occurs') $$,
+  '23514',
+  null,
+  'a grant that expires at the instant it occurs is refused: it would be a grant of nothing, recorded as one of something'
+);
+
+select lives_ok(
+  $$ insert into public.entitlement_events
+       (user_id, product_id, capability, event_type, source, quantity, occurred_at, expires_at,
+        actor_kind, actor_id, reason)
+     values ('33333333-3333-3333-3333-333333333333', 'product.save-slots.plus-5', 'save-slots',
+             'grant', 'promotional', 5, '2026-09-08T00:00:00Z'::timestamptz,
+             '2026-09-08T00:00:00.000001Z'::timestamptz,
+             'system', 'bounds-probe', 'expiring one microsecond later') $$,
+  'one microsecond of validity is admitted: the constraint orders the two timestamps and does not impose a minimum duration'
+);
+
+-- `entitlement_events_reason_check` -- the other survivor on this table, and a
+-- text one rather than a scalar, so suite 007 holds its coverage. A
+-- hand-written widening from 200 to 200000 survived all 287 assertions: the
+-- reason is written by a trusted caller, but "trusted" is who may write it and
+-- not how much they may write.
+select throws_ok(
+  $$ insert into public.entitlement_events
+       (user_id, product_id, capability, event_type, source, quantity, occurred_at,
+        actor_kind, actor_id, reason)
+     values ('33333333-3333-3333-3333-333333333333', 'product.save-slots.plus-5', 'save-slots',
+             'grant', 'promotional', 5, '2026-09-09T00:00:00Z'::timestamptz,
+             'system', 'bounds-probe', repeat('r', 201)) $$,
+  '23514',
+  null,
+  'a reason one character over 200 is refused, so a widening of that bound cannot pass unnoticed'
+);
+
+select lives_ok(
+  $$ insert into public.entitlement_events
+       (user_id, product_id, capability, event_type, source, quantity, occurred_at,
+        actor_kind, actor_id, reason)
+     values ('33333333-3333-3333-3333-333333333333', 'product.save-slots.plus-5', 'save-slots',
+             'grant', 'promotional', 5, '2026-09-10T00:00:00Z'::timestamptz,
+             'system', 'bounds-probe', repeat('r', 200)) $$,
+  'a reason of exactly 200 characters is admitted: the bound is inclusive'
+);
+
+-- `challenge_definitions_window`. Exclusive again -- `closes_at > opens_at` --
+-- so a window that closes at the instant it opens is the value one past the
+-- bound. What makes a window wrong is its ordering rather than its position in
+-- the calendar, which is why the constraint is relational and why the probe has
+-- to be too.
+select throws_ok(
+  $$ insert into public.challenge_definitions
+       (challenge_id, version, definition, definition_hash, signature, opens_at, closes_at, published_at)
+     values ('challenge.window-probe', 1, '{"id":"challenge.window-probe"}'::jsonb, repeat('a', 16),
+             '{"algorithm":"ed25519","keyId":"key.test","value":"AAAA"}'::jsonb,
+             '2026-09-11T00:00:00Z'::timestamptz, '2026-09-11T00:00:00Z'::timestamptz,
+             '2026-09-10T00:00:00Z'::timestamptz) $$,
+  '23514',
+  null,
+  'a challenge that closes at the instant it opens is refused: an empty window is a definition nobody could ever submit against'
+);
+
+select lives_ok(
+  $$ insert into public.challenge_definitions
+       (challenge_id, version, definition, definition_hash, signature, opens_at, closes_at, published_at)
+     values ('challenge.window-probe', 1, '{"id":"challenge.window-probe"}'::jsonb, repeat('a', 16),
+             '{"algorithm":"ed25519","keyId":"key.test","value":"AAAA"}'::jsonb,
+             '2026-09-11T00:00:00Z'::timestamptz, '2026-09-11T00:00:00.000001Z'::timestamptz,
+             '2026-09-10T00:00:00Z'::timestamptz) $$,
+  'a window one microsecond wide is admitted: the constraint orders the bounds and does not impose a minimum duration'
+);
+
+-- `challenge_definitions_version_check`. Suite 002 already drives the identical
+-- floor on `challenge_submissions.challenge_version` (immediately above), and
+-- that asymmetry is exactly how this gap survived: the derived column was
+-- probed and the column it derives from was not.
+select throws_ok(
+  $$ insert into public.challenge_definitions
+       (challenge_id, version, definition, definition_hash, signature, opens_at, closes_at, published_at)
+     values ('challenge.version-probe', 0, '{"id":"challenge.version-probe"}'::jsonb, repeat('b', 16),
+             '{"algorithm":"ed25519","keyId":"key.test","value":"AAAA"}'::jsonb,
+             '2026-09-12T00:00:00Z'::timestamptz, '2026-09-13T00:00:00Z'::timestamptz,
+             '2026-09-11T00:00:00Z'::timestamptz) $$,
+  '23514',
+  null,
+  'a definition at version zero is refused, which is the floor challenge_submissions.challenge_version is already held to'
+);
+
+select lives_ok(
+  $$ insert into public.challenge_definitions
+       (challenge_id, version, definition, definition_hash, signature, opens_at, closes_at, published_at)
+     values ('challenge.version-probe', 1, '{"id":"challenge.version-probe"}'::jsonb, repeat('b', 16),
+             '{"algorithm":"ed25519","keyId":"key.test","value":"AAAA"}'::jsonb,
+             '2026-09-12T00:00:00Z'::timestamptz, '2026-09-13T00:00:00Z'::timestamptz,
+             '2026-09-11T00:00:00Z'::timestamptz) $$,
+  'version 1 is admitted, so the floor is inclusive and versions start where the contract says they do'
 );
 
 

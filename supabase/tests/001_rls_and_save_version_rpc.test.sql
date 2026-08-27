@@ -5,11 +5,13 @@
 -- 19/19 each. Everything added since has been run only the second way,
 -- because the stack run needs container images that were not reachable when
 -- they were written: the thirteen for issue #105 finding 11 (the
--- "storage_path" section), the five for issue #194's `created_at` half, and
--- the six for its `updated_at` half (the two server-timestamp sections at
--- the end). `pnpm verify:sql` reports 43/43 for this suite. That figure is
--- what drifted before -- it read 32/32 for as long as nobody re-ran it after
--- #194 -- so treat it as a claim to check rather than as a fact to trust.
+-- "storage_path" section), the five for issue #194's `created_at` half, the
+-- six for its `updated_at` half (the two server-timestamp sections), the eight
+-- for the scalar CHECKs suite 008 names and nothing exercised, and the three
+-- pinning #340's two-branch refusal (the last two sections).
+-- `pnpm verify:sql` reports 54/54 for this suite. That figure is what drifted
+-- before -- it read 32/32 for as long as nobody re-ran it after #194 -- so
+-- treat it as a claim to check rather than as a fact to trust.
 --
 --   * `supabase test db` against the REAL Supabase local stack (CLI 2.115.0,
 --     PostgreSQL 17 + pgTAP, with GoTrue, PostgREST, Storage and Realtime
@@ -29,7 +31,7 @@
 -- which drives the same contract through /auth/v1 and /rest/v1.
 
 begin;
-select plan(43);
+select plan(54);
 
 -- Two auth.users rows to test cross-owner isolation. Inserting directly
 -- into auth.users is the standard way to seed fixtures for RLS pgTAP tests.
@@ -515,6 +517,186 @@ select is(
     where user_id = '11111111-1111-1111-1111-111111111111'),
   true,
   'an UPDATE that never names updated_at still moves it to now(): the column is the server''s, and current'
+);
+
+reset role;
+
+-- --- The four scalar CHECKs suite 008 names and nothing exercised ------
+--
+-- Suite 008 asserts that these constraint objects EXIST and cover the columns
+-- they claim to; its header used to add that "suites 001, 002, 004 and 006"
+-- assert what they refuse. They did not, for nine of the thirteen objects that
+-- suite names -- four of them on this suite's two tables. Measured: every CHECK
+-- in `public` was dropped and re-added under the same name over the same
+-- `conkey` with a predicate admitting everything
+-- (`check (num_nonnulls(<same columns>) >= 0)`), and all 287 assertions stayed
+-- green for these four. A coverage rule reads the catalog, and an in-place
+-- rewrite leaves the catalog entry looking identical -- so the gap is in this
+-- suite rather than in that one (#280 recorded it as a residual).
+--
+-- Both directions, the shape the storage_path section above already uses: one
+-- past the bound must be refused, and the value exactly at it must be admitted.
+-- The admitting half is what makes the refusing half non-vacuous -- a
+-- constraint rewritten to refuse *everything* would pass a `throws_ok` alone.
+--
+-- Probed as the privileged role, for the reason the storage_path section gives:
+-- no client role can write `current_revision` or reach `save_versions` at all,
+-- so the client tier cannot distinguish a bound that holds from one that is
+-- merely unreachable. A backfill or an importer is who these hold against.
+
+insert into auth.users (id, email) values
+  ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'scalar-bounds@example.test');
+
+-- `prisons_slot_index_positive`. `slot_index >= 0`, so -1 is one past the bound
+-- and 0 is exactly at it. Zero is a real slot rather than a sentinel -- suite
+-- 004 creates prisons from `generate_series(0, 4)` -- which is why the floor is
+-- `>= 0` and not `> 0`, and why the admitting half is worth asserting.
+select throws_ok(
+  $$ insert into public.prisons (id, owner_id, game_version, slot_index)
+     values ('bbbbbbbb-0000-0000-0000-000000000001',
+             'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'lockstate-0.0.0', -1) $$,
+  '23514',
+  null,
+  'a negative slot index is refused: a slot that cannot be addressed is not a slot'
+);
+
+select lives_ok(
+  $$ insert into public.prisons (id, owner_id, game_version, slot_index)
+     values ('bbbbbbbb-0000-0000-0000-000000000001',
+             'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'lockstate-0.0.0', 0) $$,
+  'slot index 0 is admitted: the floor is inclusive, which is what makes the first free slot usable'
+);
+
+-- `prisons_current_revision_non_negative`. `current_revision >= 0`, and 0 is
+-- the value a prison is created at -- the first assertion of the RPC section
+-- above depends on it ("first save at revision 1 succeeds when current_revision
+-- is 0"), so admitting 0 is not a formality.
+select throws_ok(
+  $$ insert into public.prisons (id, owner_id, game_version, slot_index, current_revision)
+     values ('bbbbbbbb-0000-0000-0000-000000000002',
+             'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'lockstate-0.0.0', 1, -1) $$,
+  '23514',
+  null,
+  'a negative current_revision is refused: the pointer counts saves, and there is no save before the first'
+);
+
+select lives_ok(
+  $$ insert into public.prisons (id, owner_id, game_version, slot_index, current_revision)
+     values ('bbbbbbbb-0000-0000-0000-000000000002',
+             'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'lockstate-0.0.0', 1, 0) $$,
+  'current_revision 0 is admitted: that is the state every new prison starts in'
+);
+
+-- `save_versions_revision_positive`. `revision > 0`, so 0 is one past the bound
+-- and 1 is exactly at it. This one is strict where the two above are not, and
+-- deliberately: revision 0 would collide with the `current_revision = 0` a
+-- prison holds before its first save, so "the cloud is at revision 0" has to
+-- keep meaning "there is nothing here".
+select throws_ok(
+  $$ insert into public.save_versions (prison_id, revision, save_schema_version, checksum, payload, byte_size)
+     values ('bbbbbbbb-0000-0000-0000-000000000001', 0, 1, 'scalar-probe-r0', '{"tick":0}'::jsonb, 10) $$,
+  '23514',
+  null,
+  'a save version at revision 0 is refused: revision 0 is the empty state, not a stored save'
+);
+
+select lives_ok(
+  $$ insert into public.save_versions (prison_id, revision, save_schema_version, checksum, payload, byte_size)
+     values ('bbbbbbbb-0000-0000-0000-000000000001', 1, 1, 'scalar-probe-r1', '{"tick":0}'::jsonb, 10) $$,
+  'revision 1 is admitted, so the floor is exactly where the first save lands'
+);
+
+-- `save_versions_byte_size_non_negative`. Reachable only on the Storage-backed
+-- path, and that is a property of the schema rather than of this test:
+-- `enforce_save_version_size()` *measures* a JSONB payload and overwrites
+-- `byte_size` with the measurement, so a negative claim on a JSONB row is
+-- corrected before the CHECK ever sees it. A Storage-backed row has nothing to
+-- measure, so its `byte_size` stays the caller's figure -- which is exactly
+-- what 20260823100000's header says, and exactly why the claim still needs
+-- bounding. The path is the owner's own so the `LS004` prefix trigger passes
+-- and this constraint is what answers.
+select throws_ok(
+  $$ insert into public.save_versions (prison_id, revision, save_schema_version, checksum, storage_path, byte_size)
+     values ('bbbbbbbb-0000-0000-0000-000000000001', 2, 1, 'scalar-probe-neg',
+             'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/probe.json', -1) $$,
+  '23514',
+  null,
+  'a negative byte_size is refused on the one path that keeps the caller''s figure rather than measuring it'
+);
+
+select lives_ok(
+  $$ insert into public.save_versions (prison_id, revision, save_schema_version, checksum, storage_path, byte_size)
+     values ('bbbbbbbb-0000-0000-0000-000000000001', 2, 1, 'scalar-probe-zero',
+             'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/probe.json', 0) $$,
+  'a byte_size of exactly 0 is admitted: an empty object is a legitimate size, and the floor is inclusive'
+);
+
+-- --- create_save_version()'s two refusals for one question (#340) ------
+--
+-- WHAT THIS SECTION PINS, AND WHY IT LOOKS BACKWARDS. `create_save_version()`
+-- answers "is this prison yours?" and "does this prison exist?" with two
+-- different SQLSTATEs and two different messages
+-- (20260822190300_create_save_version_rpc.sql:96 and :105), while the RLS
+-- policy on the same table refuses to answer the second question at all -- the
+-- foreign row simply is not visible. That is an existence oracle, it is filed
+-- as #340, and this suite could not see it: the assertion above uses
+-- `throws_ok(..., '42501', null, ...)`, which reads the SQLSTATE and leaves the
+-- message free, and no assertion in any of the eleven suites called this
+-- function with a prison id that does not exist. #340's proposed merged
+-- refusal applied verbatim left all 287 green.
+--
+-- Suite 002 pins the fixed version of exactly this shape for the challenge RPC
+-- ("a challenge id that does not exist is refused with a message that says
+-- nothing about existence"), and the honest thing here would be to assert that
+-- shape and let it fail until the migration lands. It is not asserted that way
+-- for one reason and it is worth stating: the fix is a migration, this agent
+-- may not write one, and a suite that is red on `main` is a gate nobody reads.
+-- pgTAP's `todo` is the idiom for exactly that and it does not survive this
+-- harness -- `select todo(...)` emits `not ok N - … # TODO`, and
+-- `scripts/verify-supabase-sql.mjs`'s TAP parser matches `/^not ok \d+/` with
+-- no TODO exemption, so the whole run goes red anyway (verified). Nor is there
+-- a precedent for it: `todo` appears in none of the eleven suites.
+--
+-- So today's two-branch behaviour is pinned instead, messages included. That is
+-- deliberately a pin on a DEFECT, and it is written to be impossible to
+-- misread as approval: the migration that merges these two branches MUST
+-- update these three assertions, and cannot land silently. The first two are
+-- what #340 fixes; the third is what makes it a disclosure rather than a
+-- cosmetic inconsistency, and it stays true either way.
+
+create function pg_temp.save_version_answer(p_prison_id uuid)
+returns text
+language plpgsql as $$
+declare
+  v_status text;
+begin
+  select status into v_status from public.create_save_version(
+    p_prison_id, 1, 1, 'oracle-probe-0001', '{"tick": 0}'::jsonb, null, 10);
+  return 'status=' || v_status;
+exception when others then
+  return sqlstate || ': ' || sqlerrm;
+end;
+$$;
+
+select set_config('request.jwt.claim.sub', '22222222-2222-2222-2222-222222222222', true);
+set local role authenticated;
+
+select is(
+  pg_temp.save_version_answer('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
+  '42501: not authorized for prison aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+  'TODAY: a prison that exists and belongs to someone else is refused with 42501 and a message naming the prison (#340 -- this assertion must change when the two branches merge)'
+);
+
+select is(
+  pg_temp.save_version_answer('99999999-9999-9999-9999-999999999999'),
+  'P0001: prison 99999999-9999-9999-9999-999999999999 does not exist',
+  'TODAY: a prison that does not exist is refused with a DIFFERENT sqlstate and a message that says so -- the two answers together are the oracle #340 reports'
+);
+
+select is(
+  (select count(*)::int from public.prisons where id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
+  0,
+  'and the same caller cannot see that prison through RLS at all, which is what makes the pair above a disclosure rather than a wording inconsistency'
 );
 
 reset role;
