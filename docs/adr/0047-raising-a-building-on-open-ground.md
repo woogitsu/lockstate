@@ -401,7 +401,7 @@ the owner wants it, it is a change to ADR 0045 decision 8 and theirs to make.
 > with one owned chunk the two faces coincide with the edge of the materialised
 > world; and the `canBuildAt` line this document cites as
 > `src/simulation/construction/system.ts:266` has moved into `admits`
-> (`:347`), called from `submitOrder` (`:311`).
+> (`:353`), called from `submitOrder` (`:313`).
 
 The fix from correction 1, stated as a decision because it changes a rule
 `docs/WORLD.md` records and a test pins.

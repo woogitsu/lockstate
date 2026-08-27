@@ -106,7 +106,7 @@ pricing, selection and UI; it is not the ownership test.
 - Checks terrain properties (e.g. `requiresBuildableTerrain`, `allowWater`).
 
 It has three production callers, each supplying its own requirement set:
-`ConstructionSystem.submitOrder` (`src/simulation/construction/system.ts:351`,
+`ConstructionSystem.submitOrder` (`src/simulation/construction/system.ts:353`,
 inside `admits`, with `SUBMISSION_REQUIREMENT`), `ObjectPlacementService`
 (`src/simulation/objects/object-placement-service.ts:349`,
 `PLACEMENT_REQUIREMENT`) and room zoning (`src/simulation/rooms/zoning.ts:423`,
@@ -135,7 +135,7 @@ of both and satisfied by either. The world keeps one slot per edge and keeps it
 on the north and west side, so the south face of owned land is addressed as the
 north edge of the first unowned row and its east face as the west edge of the
 first unowned column; `ConstructionSystem.submitOrder`
-(`src/simulation/construction/system.ts:311`) asks `admits` (`:347`) about the
+(`src/simulation/construction/system.ts:313`) asks `admits` (`:349`) about the
 order's own tile and, only if that refuses, about the tile across the named
 edge. Non-edge buildables are unaffected — an object is addressed by a tile and
 has no far side, which is what `occupiesTileEdge` decides — and the refusal the
