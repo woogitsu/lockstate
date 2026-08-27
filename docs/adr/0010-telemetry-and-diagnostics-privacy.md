@@ -90,17 +90,28 @@ batch rather than retrying forever. Nothing in `src/simulation/` or the
 render loop may import the sink; telemetry is to be fed from the main thread's
 orchestration layer, off the tick and frame paths.
 
-**As of 2026-08-24 that feed does not exist.** No module outside
-`src/services/telemetry/` calls into this layer: the only reference to it
-anywhere else in `src/` is the barrel re-export `export * from './telemetry'`
-(`src/services/index.ts:21`), and nothing imports that barrel either. So
-`TelemetryConsent` is never asked for, `record()` is never called and
-`BatchingTelemetrySink` never flushes. Every module specified here is built and
-tested — `tests/unit/services-telemetry.test.ts` — and none is wired —
-the same posture [ADR 0008](./0008-trusted-service-boundary.md) states
-explicitly for the server-side deployment units, which this ADR inherits
-without having said so. Wiring the first `record()` call is the moment the
-boot path must also obtain consent; it obtains none today.
+**That feed did not exist between 2026-08-24 and 2026-08-27, and what this
+paragraph used to say about the present is superseded by
+[ADR XXXX](./XXXX-shipping-the-telemetry-pipeline.md).** For those three days no
+module outside `src/services/telemetry/` called into this layer: the only
+reference to it anywhere else in `src/` was the barrel re-export
+`export * from './telemetry'` in `src/services/index.ts`, and nothing imported
+that barrel either — so `TelemetryConsent` was never asked for, `record()` was
+never called, and `BatchingTelemetrySink` never flushed. That paragraph also
+said the wiring of the first `record()` call is the moment the boot path must
+also obtain consent, and that is exactly how it was wired.
+
+**What is true now.** `src/main.ts` builds the pipeline, mounts the consent
+prompt and drives the sink from an idle callback, and `HttpTelemetryTransport`
+exists. But the transport's destination comes from deployment configuration, no
+deployment sets it, and with it absent nothing is constructed at all — so *no
+build of this repository sends anything*, and the consent prompt is not mounted
+either, because asking for consent to a collection that cannot happen is the
+defect [ADR 0044](./0044-what-happens-to-a-service-tier-nothing-calls.md) named.
+Nothing in the decisions above changed. ADR XXXX records what shipping them
+costs, including data-protection obligations this repository documents nowhere
+and a conflict with ADR 0008 §3's rule that no unauthenticated mutation endpoint
+exists.
 
 ### Release correlation without public source maps
 `vite.config.ts` keeps `sourcemap: false` for shipped assets. Diagnostics

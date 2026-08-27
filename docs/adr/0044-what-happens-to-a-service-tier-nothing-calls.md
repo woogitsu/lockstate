@@ -196,7 +196,7 @@ survived three inventories.
 | `src/persistence/cloud/` | A signed-in account, which does not exist in `src/` at all (#34 is the account/save-slot UX). Server half live in CI. | The owner deciding cloud save is out of scope — which deletes `supabase/` and every pgTAP assertion with it (321 at the time of writing), not 481 lines. |
 | `src/services/challenges/` | ADR 0009's gate list, which its own Status refuses to discharge: `Accepted — implementation gated`. Server half live in CI. | A decision that there will be no public ranking, superseding ADR 0009. |
 | `src/services/entitlements/` | A payment provider, which #36's own Out of scope requires a commercial and legal review to choose; and, for the free-tier half, cloud save, since the slots counted are cloud slots. Server half live in CI. | A decision that there will be no paid tier. |
-| `src/services/telemetry/` | An ingestion endpoint nobody has chosen, and a consent surface no module in `src/ui/` provides. **No server half.** | A decision that Lockstate collects no telemetry, superseding ADR 0010 and `docs/TELEMETRY.md`'s retention table. |
+| ~~`src/services/telemetry/`~~ **— discharged 2026-08-27** | It was waiting on an ingestion endpoint nobody had chosen and a consent surface no module in `src/ui/` provided. Open question 2 below went to the owner and came back *yes*, so both were built: [ADR XXXX](./XXXX-shipping-the-telemetry-pipeline.md). The tree has left `tests/foundation/trusted-tier-reachability-contract.test.ts`'s `PARKED_TREES` for its `WIRED_TREES`, and the "deliberately empty" I/O allow-list named below now holds exactly one entry. | n/a — it is wired. What would make it dead is unchanged in kind: a decision that Lockstate collects no telemetry. |
 
 **Why keep, for the three with a live server half.** Deleting the client half of
 a tier whose server half runs in CI does not reduce the amount of unexercised
@@ -206,7 +206,9 @@ verified, and #36's own remainder section already says these are *"a layer nobod
 has connected"* rather than a layer that was abandoned. Reversing that costs
 2,045 lines and buys an inconsistency.
 
-**Why keep telemetry, which is the one where deletion is arguable.** It is the
+**Why keep telemetry, which is the one where deletion is arguable.** *(Kept as
+written, and now history: the leash was short and it was pulled in on
+2026-08-27. Read it for why keeping it was right, not for the tree's state.)* It is the
 implementation of an **Accepted** ADR (0010) and of `docs/TELEMETRY.md`'s
 retention commitments. Deleting it leaves an Accepted decision describing code
 that does not exist, which is precisely the document-disagrees-with-code defect
@@ -289,9 +291,16 @@ the follow-up starts from a list rather than a re-measurement.
    the client half is written, `#338`'s non-UUID prison id is fixed, and the two
    deploy secrets are already required. What is missing is an account UX (#34)
    and the decision itself.
-2. **Does Lockstate collect telemetry?** Also the owner's. A "no" is a real
-   answer that supersedes ADR 0010 and makes 771 lines and ten shipped strings
-   deletable in one reviewable commit.
+2. **Does Lockstate collect telemetry? — ANSWERED 2026-08-27: yes.** It was the
+   owner's and the owner ruled. The pipeline was finished rather than deleted:
+   the `sink.record` bypass closed, a consent surface built, a host pump wired,
+   and a configuration-driven transport added that ships nothing while its
+   configuration is absent — which it is in every build here.
+   [ADR XXXX](./XXXX-shipping-the-telemetry-pipeline.md) is the record, and it
+   carries the questions the answer created rather than settled: where the
+   endpoint terminates, whether ADR 0008 §3 gains an unauthenticated-ingest
+   exception, and the data-protection obligations nothing in this repository
+   documents.
 3. **The ten trusted-tier strings ship and their code does not.** Nothing renders
    them, so nothing is visibly wrong; but `localization-key-completeness` proves
    them complete, which is a gate proving a property of text no surface can
@@ -311,6 +320,11 @@ the follow-up starts from a list rather than a re-measurement.
    and recorded because it was assumed to exist.
 
 ## What would change my mind
+
+**Updated 2026-08-27.** The owner's answer to open question 2 settled this
+section in the direction it did not anticipate: telemetry was neither deleted
+nor left parked. The paragraph stands as written, because its reasoning was
+sound and its conclusion — keep it — held.
 
 The weakest claim in this document is that **keeping telemetry is right**. It is
 the only tree with no server half, no scheduled consumer, no chosen endpoint, and
