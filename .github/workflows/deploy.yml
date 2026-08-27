@@ -217,6 +217,43 @@ jobs:
     environment:
       name: staging
       url: ${{ steps.deploy.outputs.url }}
+    # THE COMMIT THIS JOB BUILDS, NAMED EXPLICITLY, BECAUSE THE AMBIENT ONE IS
+    # WRONG HERE AND ONLY HERE.
+    #
+    # `tooling/build-identity.mjs` stamps the bundle -- the badge, the save
+    # envelope's `gameVersion`, the worker's `workerBuildId` -- from the first
+    # of `LOCKSTATE_COMMIT_SHA`, `CF_PAGES_COMMIT_SHA`, `GITHUB_SHA` that is
+    # set, then `git`. For a `workflow_run` run GitHub sets `GITHUB_SHA` to the
+    # DEFAULT BRANCH'S TIP, not the ref the `Checkout` step below deliberately
+    # takes -- the same fact that makes that `ref:` line necessary. So without
+    # this, the published bundle carried a version read out of one commit's tree
+    # and a commit id read out of a different commit, and the commit it named
+    # was the one that had NOT been built.
+    #
+    # Seen, in one run rather than reasoned about: Deploy run 33005151972
+    # (`success`) reports `head_sha` 2a53baa, `chore(release): v0.0.118`, while
+    # its own checkout log resolves `ref: 64cd3799e0ab...` -- 64cd379, which
+    # carries `0.0.114`. That deploy shipped 64cd379's tree stamped 2a53baa,
+    # seven commits apart. Every recent successful Deploy run has a
+    # `chore(release)` head_sha, so this was the ordinary case.
+    #
+    # The expression is the `Checkout` step's `ref:` expression with `github.ref`
+    # swapped for `github.sha`, and it has to stay that way: on a
+    # `workflow_dispatch` the checkout takes `github.ref` and `github.sha` is
+    # that ref's tip, so the two agree; on a `workflow_run` both take the
+    # triggering run's head. If one of them is ever edited, edit the other in
+    # the same commit -- tests/foundation/build-commit-identity-contract.test.ts
+    # requires this job to pass an explicit sha, and says so when it stops.
+    #
+    # At job level, not step level, because two steps below run a `vite build`:
+    # the bundle scan builds once, and `cloudflare-task.mjs deploy` builds again
+    # inside the deploy process. A stamp on only one of them would put the wrong
+    # commit on the artefact that is actually published.
+    #
+    # The `production` job needs no counterpart: it takes no `ref:`, so it
+    # checks out `GITHUB_SHA` and the ambient value is already the built commit.
+    env:
+      LOCKSTATE_COMMIT_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
     steps:
       # A `workflow_run` run is NOT checked out at the commit that triggered it.
       # It defaults to the head of the default branch, so with two merges close
