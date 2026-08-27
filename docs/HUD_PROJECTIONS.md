@@ -945,16 +945,25 @@ decision about what to build next.
 
 ### Security
 
-23. **No sector membership model.** Which prisoners, rooms or tiles are in
-    a sector is session/scenario knowledge supplied through
-    `SectorOccupantResolver`; the simulation does not own it. Since
-    [ADR 0036](./adr/0036-a-derived-default-security-sector.md) a session
-    derives **one** sector for the whole prison, and the resolver
-    `new-session.ts` supplies for it counts prisoners standing exactly on its
-    post tile — which happens to be the arrival tile, so it finds the arrivals
-    a full prison cannot house. That works because there is one sector; a
-    second one needs a real tile-to-sector map first, and this gap is where it
-    would go.
+23. **No sector membership model a *panel* can read.** Which prisoners, rooms
+    or tiles are in a sector is supplied to the simulation through
+    `SectorOccupantResolver`, and no projection publishes the answer.
+
+    **The simulation half of this gap closed** with
+    [ADR 0048](./adr/0048-what-a-sectors-occupants-are.md): the derived sector
+    is the prison, so its occupants are every prisoner standing on owned land
+    (`src/simulation/security/sector-occupancy.ts`). This entry used to say the
+    resolver "counts prisoners standing exactly on its post tile — which
+    happens to be the arrival tile, so it finds the arrivals a full prison
+    cannot house", and that was true and was the defect: a *housed* prisoner
+    was in no sector at all.
+
+    What is still missing is the projection. A room's `security` block stays
+    absent because `RoomProjectionOptions.sectorIdByRoomInstanceId` is never
+    supplied, and a **room**-to-sector map is a different question from a
+    prisoner-to-sector one — ADR 0048 answers the second and declines the
+    first, because a room has an extent and a sector still does not.
+
 24. **Sector risk is withheld by design.** If a "tension" gauge is wanted,
     revealing `SectorRiskTracker`'s score is a product decision about
     exposing a hidden calculation, not a projection gap.
