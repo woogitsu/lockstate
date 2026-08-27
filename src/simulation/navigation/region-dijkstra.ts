@@ -1,4 +1,5 @@
 import type { DoorRegistry } from './door';
+import { FrontierHeap } from './frontier-heap';
 import type { SearchStats } from './local-search';
 import { doorTraversalCost } from './route-context';
 import type { NavigationGraph, Portal, RegionId } from './region-graph';
@@ -16,6 +17,16 @@ export interface RegionDijkstraResult {
  * every recorded predecessor). Ties break on the region id, matching every
  * other deterministic tie-break in this module -- never iteration/insertion
  * order.
+ *
+ * The frontier is a `FrontierHeap` ordered by `(distance, region id)` rather
+ * than the linear scan this search used until #413. `(distance, region id)` is
+ * unique per frontier region, so the pair is a total order and the heap
+ * dequeues exactly the region the scan would have chosen; only the cost of
+ * choosing it changed, from `O(|frontier|)` to `O(log |frontier|)`. Relaxation
+ * pushes a second, strictly cheaper entry instead of decreasing a key in
+ * place, so the `visited` check below is what discards the superseded copy --
+ * and it is checked before `stats.expansions`, because a discarded copy is not
+ * a region expansion and must not be charged to ADR 0007's budget as one.
  *
  * `doorDependencies`, when supplied, is filled with **every door this search's
  * answer depends on** -- not only the doors it crossed. That is the set a
@@ -54,19 +65,16 @@ export function runRegionDijkstra(
   const dist = new Map<RegionId, number>([[source, 0]]);
   const prevPortal = new Map<RegionId, Portal>();
   const visited = new Set<RegionId>();
-  const frontier = new Map<RegionId, number>([[source, 0]]);
+  const frontier = new FrontierHeap<RegionId, RegionId>();
+  frontier.push(0, source, source);
 
   while (frontier.size > 0) {
-    let currentRegion: RegionId | undefined;
-    let bestDist = Number.POSITIVE_INFINITY;
-    for (const [region, distance] of frontier) {
-      if (distance < bestDist || (distance === bestDist && (currentRegion === undefined || region < currentRegion))) {
-        bestDist = distance;
-        currentRegion = region;
-      }
-    }
-    if (currentRegion === undefined) break;
-    frontier.delete(currentRegion);
+    const currentRegion = frontier.minimumTieBreak;
+    // The distance this entry was pushed with. It is `dist.get(currentRegion)`
+    // for the entry that survives the `visited` check: any cheaper entry for
+    // this region would have been dequeued first and settled it.
+    const bestDist = frontier.minimumCost;
+    frontier.pop();
     if (visited.has(currentRegion)) continue;
     visited.add(currentRegion);
     if (stats !== undefined) stats.expansions += 1;
@@ -83,7 +91,7 @@ export function runRegionDijkstra(
       if (tentative < (dist.get(otherRegion) ?? Number.POSITIVE_INFINITY)) {
         dist.set(otherRegion, tentative);
         prevPortal.set(otherRegion, portal);
-        frontier.set(otherRegion, tentative);
+        frontier.push(tentative, otherRegion, otherRegion);
       }
     }
   }
