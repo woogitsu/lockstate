@@ -91,8 +91,11 @@ render loop may import the sink; telemetry is to be fed from the main thread's
 orchestration layer, off the tick and frame paths.
 
 **That feed did not exist between 2026-08-24 and 2026-08-27, and what this
-paragraph used to say about the present is superseded by
-[ADR XXXX](./XXXX-shipping-the-telemetry-pipeline.md).** For those three days no
+paragraph used to say about the present is what
+[ADR 0046](./0046-shipping-the-telemetry-pipeline.md) proposes to replace. That
+ADR is Proposed, so the replacement is not in force**: the layer is built and
+every build configures it to send nowhere. The account below is true of those
+three days however 0046 is decided. For those three days no
 module outside `src/services/telemetry/` called into this layer: the only
 reference to it anywhere else in `src/` was the barrel re-export
 `export * from './telemetry'` in `src/services/index.ts`, and nothing imported
@@ -108,7 +111,7 @@ deployment sets it, and with it absent nothing is constructed at all — so *no
 build of this repository sends anything*, and the consent prompt is not mounted
 either, because asking for consent to a collection that cannot happen is the
 defect [ADR 0044](./0044-what-happens-to-a-service-tier-nothing-calls.md) named.
-Nothing in the decisions above changed. ADR XXXX records what shipping them
+Nothing in the decisions above changed. ADR 0046 records what shipping them
 costs, including data-protection obligations this repository documents nowhere
 and a conflict with ADR 0008 §3's rule that no unauthenticated mutation endpoint
 exists.

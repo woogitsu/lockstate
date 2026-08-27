@@ -2,7 +2,7 @@
  * The client's model of *who the player is*, as a state machine.
  *
  * Issue #34 asks for "local-only start and optional anonymous cloud session"
- * and an "account upgrade/linking flow"; ADR XXXX (this module's decision
+ * and an "account upgrade/linking flow"; ADR 0043 (this module's decision
  * record) is why those are five states rather than a pair of booleans, and
  * why every transition has to declare what it may do to the player's local
  * saves.
@@ -153,7 +153,7 @@ export function applyAccountEvent(state: AccountSessionState, event: AccountEven
 
   switch (state.kind) {
     case 'local-only':
-      // `link-identity` is not accepted here on purpose (ADR XXXX decision 1):
+      // `link-identity` is not accepted here on purpose (ADR 0043 decision 1):
       // linking upgrades an existing anonymous `auth.users` row, and a direct
       // sign-in would create a different one, which is an adoption flow rather
       // than an upgrade.

@@ -1,4 +1,4 @@
-# ADR XXXX: Shipping the telemetry pipeline, and what shipping it obliges
+# ADR 0046: Shipping the telemetry pipeline, and what shipping it obliges
 
 ## Status
 
@@ -20,9 +20,12 @@ and cannot, until somebody sets two deployment variables** — which is the whol
 point of decision 2 and is the state every build in this repository is in.
 Accepting or rejecting this ADR changes no behaviour on its own.
 
-**Numbered `XXXX` by the central-assignment rule** (`docs/AGENT_WORKFLOW.md`
-§2), and this document pre-commits to renumbering without argument.
-`docs/adr/README.md` is deliberately not edited here.
+**Drafted as `XXXX` under the central-assignment rule** (`docs/AGENT_WORKFLOW.md`
+§2) and assigned 0046 on landing, the next free number after 0042, 0043 and
+0045 were taken in the same integration pass. The draft did not edit
+`docs/adr/README.md`; the index row, the heading and the references to this ADR
+from `docs/TELEMETRY.md`, `docs/ARCHITECTURE.md`, ADR 0010 and ADR 0044 were one
+edit made by the integrator.
 
 ## Context
 
@@ -361,8 +364,8 @@ All of it blocks the deployment.
   relationship. It would also require widening `connect-src`. If the owner
   prefers one, the bounded changes are: a new ADR and a data-processing review;
   `connect-src` gains the vendor origin; `resolveTelemetryIngestion` accepts an
-  absolute origin; and this ADR is superseded rather than amended, because its
-  first decision is the one that changed.
+  absolute origin; and this ADR would be replaced rather than amended, because
+  its first decision is the one that would have changed.
 - **A cross-origin first-party host** — for example a Supabase Edge Function on
   the project's own domain. Rejected *for now*, and it is the closest
   alternative: it is still first-party and creates no new processor, but it

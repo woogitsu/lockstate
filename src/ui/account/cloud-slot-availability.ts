@@ -22,7 +22,7 @@ import { type AccountSessionState, hasCloudIdentity } from './account-session';
  * when there is a cloud identity at all.** `enforce_prison_slot_capacity`
  * counts rows in `public.prisons`; a player who has never signed in has none,
  * so applying a five-slot cap to their local prisons would be inventing a
- * restriction the server does not impose (ADR XXXX decision 4).
+ * restriction the server does not impose (ADR 0043 decision 4).
  */
 export interface CloudSlotAvailability {
   /**

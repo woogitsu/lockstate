@@ -4,7 +4,7 @@ Issue #36 requires diagnostics that are useful to engineering and
 uninteresting to a privacy regulator. The decision record is
 [ADR 0010](./adr/0010-telemetry-and-diagnostics-privacy.md); shipping it —
 the transport, the consent surface and the host pump — is decided in
-[ADR XXXX](./adr/XXXX-shipping-the-telemetry-pipeline.md). The implementation
+[ADR 0046](./adr/0046-shipping-the-telemetry-pipeline.md). The implementation
 is `src/services/telemetry/`, tested in `tests/unit/services-telemetry.test.ts`,
 `tests/unit/services-telemetry-consent-flow.test.ts`,
 `tests/unit/services-telemetry-pump.test.ts` and
@@ -63,7 +63,7 @@ when these four strings shipped inside the bundle with nothing rendering them.
 
 There is no way to reopen the decision after it is made. That is the part of the
 current implementation that least matches ADR 0010's "the player must be able to
-change it"; it needs a settings surface, and ADR XXXX records it as an open
+change it"; it needs a settings surface, and ADR 0046 records it as an open
 question rather than a finished story.
 
 ## Event schema
@@ -197,7 +197,7 @@ wrong fix and is explicitly rejected.
 **These numbers are not enforced by anything today.** Retention is the
 ingestion side's to enforce and no ingestion side exists; the client's
 obligation is only to send the minimum that makes them meaningful, and it does.
-[ADR XXXX](./adr/XXXX-shipping-the-telemetry-pipeline.md) lists what the
+[ADR 0046](./adr/0046-shipping-the-telemetry-pipeline.md) lists what the
 ingestion side must do before this table is true — a scheduled deletion job, no
 stored IP address, no join from a session id to anything, server-side schema
 validation, request bounds, and a written resolution of the conflict with
