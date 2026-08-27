@@ -661,6 +661,38 @@ describe('a save taken during an incident response releases what the response cl
     expect(captureSessionSnapshot(restored).simulation?.security.sectorControlStates).toEqual(SECTOR_CONTROL_STATES_IN_LOCKDOWN);
   });
 
+  /**
+   * ## Why this one case carries an explicit timeout
+   *
+   * It restores the same payload into two independent sessions and steps both
+   * to every checkpoint, so its cost is the simulation running twice. Measured
+   * alone on this container: **1,966 ms** against `vitest.config.ts`'s global
+   * `testTimeout: 5_000` -- 39% of the budget, with the other fifteen cases in
+   * this file finishing in single-digit milliseconds. Under a full-suite run on
+   * four cores it has been observed to exceed 5,000 ms and fail as a timeout,
+   * repeatedly, on an unmodified tree, while passing in isolation.
+   *
+   * **A timeout failure here names the wrong thing.** The message says the test
+   * timed out; a reader has to already know that this file is fine and the box
+   * is busy. That is the same "manufactured confidence in reverse" that
+   * `docs/TESTING.md` warns about for a gate that cannot fail -- a gate that
+   * fails for a reason unrelated to its subject is no more informative.
+   *
+   * So the budget is stated rather than inherited, and stated *here* rather
+   * than raised globally, because the global number is right for the other
+   * 2,800 cases and this is the only integration case that legitimately needs
+   * more.
+   *
+   * **This is not the same fix as the one the sha-citation gate needs**, and
+   * the difference is the whole reason this comment exists.
+   * `documentation-commit-citation-contract.test.ts` also sits at the line, but
+   * its cost was *accidental* -- one `git rev-parse` spawned per cited sha, four
+   * times over -- so the answer there was to remove the cost, not to budget for
+   * it. Here the cost is the work the case exists to do. **Raising a timeout to
+   * cover an accidental cost hides it; stating one for an inherent cost
+   * documents it.** If a future change makes this case slow for a new reason,
+   * the number above is what it has to be re-measured against.
+   */
   it('is deterministic: two sessions restored from one payload agree tick for tick', () => {
     const bundle = captureSessionSnapshot(buildRespondingPrison());
     const first = loadBundle(bundle);
@@ -681,7 +713,7 @@ describe('a save taken during an incident response releases what the response cl
     expect(observe(first).unassignedGuardCount).toBe(GUARDS_HIRED);
     expect(observe(first).incident).toBe('resolved');
     expect(first.incidentResponseSystem.getMetrics().respondersDispatched).toBe(REQUIRED_RESPONDERS * 2);
-  });
+  }, 20_000);
 });
 
 /**
