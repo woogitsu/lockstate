@@ -96,8 +96,20 @@ The question this ADR turns on is not "is it reachable" — all four answer the
 same — but **is anything of it running at all**, and there the four split cleanly.
 
 **Three of them have a live server half.** `supabase/` holds 23 migrations and 11
-pgTAP suites, 287 assertions, executed on every CI run through `pnpm verify:sql`
-after `scripts/provision-postgres.sh`. Cloud save's tables and its
+pgTAP suites — **321** assertions at the time of writing, which `pnpm verify:sql`
+prints on its last line — executed on every CI run through `pnpm verify:sql`
+after `scripts/provision-postgres.sh`.
+
+> **This document said 287 and was overtaken within the hour it landed**, by the
+> pass that closed nine CHECK constraints and ADR 0008 T6's unasserted index.
+> Kept as a correction rather than silently updated, because it is the cheapest
+> possible demonstration of the rule the corpus keeps re-learning: **a count in
+> prose rots, and it rots fastest when the thing it counts is under active
+> work.** The argument here does not turn on the number — it turns on *there
+> being a live server half at all* — which is exactly why the number should have
+> been written with the command that derives it in the first place. It now is.
+
+ Cloud save's tables and its
 `create_prison`/`create_save_version` RPCs are in it; so are `entitlements`,
 `entitlement_events` and `record_entitlement_event`; so are the challenge tables
 and `submit_challenge_evidence`. `scripts/verify-supabase-stack.mjs` drives all
@@ -181,7 +193,7 @@ survived three inventories.
 
 | tree | what it is waiting on | what would make it dead |
 | --- | --- | --- |
-| `src/persistence/cloud/` | A signed-in account, which does not exist in `src/` at all (#34 is the account/save-slot UX). Server half live in CI. | The owner deciding cloud save is out of scope — which deletes `supabase/` and 287 pgTAP assertions with it, not 481 lines. |
+| `src/persistence/cloud/` | A signed-in account, which does not exist in `src/` at all (#34 is the account/save-slot UX). Server half live in CI. | The owner deciding cloud save is out of scope — which deletes `supabase/` and every pgTAP assertion with it (321 at the time of writing), not 481 lines. |
 | `src/services/challenges/` | ADR 0009's gate list, which its own Status refuses to discharge: `Accepted — implementation gated`. Server half live in CI. | A decision that there will be no public ranking, superseding ADR 0009. |
 | `src/services/entitlements/` | A payment provider, which #36's own Out of scope requires a commercial and legal review to choose; and, for the free-tier half, cloud save, since the slots counted are cloud slots. Server half live in CI. | A decision that there will be no paid tier. |
 | `src/services/telemetry/` | An ingestion endpoint nobody has chosen, and a consent surface no module in `src/ui/` provides. **No server half.** | A decision that Lockstate collects no telemetry, superseding ADR 0010 and `docs/TELEMETRY.md`'s retention table. |
