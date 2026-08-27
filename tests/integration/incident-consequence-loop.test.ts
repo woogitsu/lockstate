@@ -7,6 +7,7 @@ import {
   restoreSimulationRuntime,
   type SessionSnapshotBundle,
 } from '../../src/simulation/runtime/restore-session';
+import { wallRoomPerimeter } from '../helpers/room-walls';
 
 /**
  * [ADR 0032](../../docs/adr/0032-incident-consequences-and-classification-review.md):
@@ -86,6 +87,7 @@ function stepTo(runtime: SimulationRuntime, tick: number): void {
 function housedPrisoner(seed = SEED): { readonly runtime: SimulationRuntime; readonly entityId: number } {
   const runtime = createNewSimulationRuntime(seed);
   submit(runtime, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 1 }));
+  wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
   submit(runtime, 'zone-cell', packCommand({ type: 'ZoneRoom', roomId: CELL, ...CELL_RECT }));
   submit(runtime, 'place-bed', packCommand({ type: 'PlaceObject', orderId: 'bed-1', definitionId: 'bed-wooden', ...BED_TILE }));
   // The bed is standing by tick 150 (100 ticks of delivery delay plus three

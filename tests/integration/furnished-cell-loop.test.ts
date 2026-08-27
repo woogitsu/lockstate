@@ -11,6 +11,7 @@ import {
   restoreSimulationRuntime,
   type SessionSnapshotBundle,
 } from '../../src/simulation/runtime/restore-session';
+import { wallRoomPerimeter } from '../helpers/room-walls';
 
 /**
  * [ADR 0028](../../docs/adr/0028-object-placement-and-derived-room-capacity.md)
@@ -95,6 +96,7 @@ function prisonWithBedOrdered(): SimulationRuntime {
   const runtime = createNewSimulationRuntime(SEED);
   submit(runtime, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 1 }));
   submit(runtime, 'buy-brick', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-2', itemId: 'item.brick', quantity: 1 }));
+  wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
   submit(runtime, 'zone-cell', packCommand({ type: 'ZoneRoom', roomId: CELL, ...CELL_RECT }));
   submit(runtime, 'place-bed', packCommand({ type: 'PlaceObject', orderId: 'bed-1', definitionId: 'bed-wooden', ...BED_TILE }));
   return runtime;
@@ -398,6 +400,7 @@ describe('what the toilet does and does not change in the running prison', () =>
       const runtime = createNewSimulationRuntime(SEED);
       submit(runtime, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 1 }));
       submit(runtime, 'buy-brick', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-2', itemId: 'item.brick', quantity: 1 }));
+      wallRoomPerimeter(runtime.world, { x: 10, y: 10, width: 5, height: 5 }, { doors: runtime.navigation.doors });
       submit(runtime, 'zone-common', packCommand({ type: 'ZoneRoom', roomId: 'room.common-room', x: 10, y: 10, width: 5, height: 5 }));
       submit(runtime, 'place', packCommand({ type: 'PlaceObject', orderId: 'o-1', definitionId, x: 11, y: 11 }));
       stepTo(runtime, 200);
@@ -465,6 +468,7 @@ describe('what the toilet does and does not change in the running prison', () =>
     const runtime = createNewSimulationRuntime(SEED);
     submit(runtime, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 1 }));
     submit(runtime, 'buy-brick', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-2', itemId: 'item.brick', quantity: 1 }));
+    wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
     submit(runtime, 'zone-cell', packCommand({ type: 'ZoneRoom', roomId: CELL, ...CELL_RECT }));
     submit(runtime, 'place-toilet', packCommand({ type: 'PlaceObject', orderId: 'a-toilet', definitionId: 'toilet-brick', x: 5, y: 6 }));
     submit(runtime, 'place-bed', packCommand({ type: 'PlaceObject', orderId: 'b-bed', definitionId: 'bed-wooden', x: 4, y: 6 }));

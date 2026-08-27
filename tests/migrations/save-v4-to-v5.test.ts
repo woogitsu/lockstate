@@ -6,6 +6,7 @@ import {
   migrateSaveEnvelopeV3ToV4,
   migrateSaveEnvelopeV4ToV5,
 } from '../../src/persistence/save-migrations';
+import { wallRoomPerimeter } from '../helpers/room-walls';
 import {
   SAVE_SCHEMA_VERSION,
   decodeSaveEnvelope,
@@ -79,6 +80,7 @@ function submit(runtime: SimulationRuntime, id: string, payload: ReturnType<type
 function sessionWithABed(): SimulationRuntime {
   const runtime = createNewSimulationRuntime(0x0b1ec7);
   submit(runtime, 'buy', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 1 }));
+  wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
   submit(runtime, 'zone', packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT }));
   submit(runtime, 'place', packCommand({ type: 'PlaceObject', orderId: 'bed-1', definitionId: 'bed-wooden', x: 4, y: 6 }));
   while (runtime.kernel.tick < 200) runtime.kernel.step();
@@ -91,6 +93,7 @@ function sessionWithABed(): SimulationRuntime {
  */
 function v4EnvelopeWithARoom(): SaveEnvelopeV4 {
   const runtime = createNewSimulationRuntime(0x5ca1e);
+  wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
   submit(runtime, 'zone', packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT }));
   const bundle = captureSessionSnapshot(runtime);
   if (bundle.simulation === undefined) throw new Error('a captured session must carry a simulation section');
@@ -139,6 +142,7 @@ describe('save-schema V4 -> V5 migration', () => {
     // starts authoring a capacity this file fails instead of quietly migrating
     // a value it had assumed away.
     const runtime = createNewSimulationRuntime(3);
+    wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
     submit(runtime, 'zone', packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT }));
 
     expect(runtime.prisoners.roomInstances.getById(CELL_INSTANCE_ID)).toMatchObject({

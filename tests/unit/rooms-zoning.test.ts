@@ -31,12 +31,55 @@ const CELL_NUMERIC_ID = defaultRoomContentRegistry.getById(CELL)!.numericId;
 
 const tile = (x: number, y: number) => ({ x: tileCoordinate(x), y: tileCoordinate(y) });
 
-/** One owned, loaded chunk at the origin -- the same starter world `createNewSimulationRuntime` builds. */
+/** An arbitrary non-zero edge value: the layers store a numeric id and this file cares only that one is present. */
+const WALL = 7;
+
+/**
+ * Walls every stored edge inside a `size`-by-`size` square of tiles, so that
+ * **any** rectangle drawn inside it is `sealed`.
+ *
+ * ## Why the fixtures in this file are walled at all, which is new
+ *
+ * `RoomZoningService.zone` used to accept a room whose perimeter was open and
+ * merely report the fact. It now refuses one whose definition authors an
+ * `enclosed` requirement -- the owner's ruling, recorded in the ADR "Must a
+ * zoned room be enclosed" -- and `room.cell`, which almost every case here
+ * zones, is one of the 17 shipped rooms that author it. An unwalled fixture
+ * would therefore refuse `not-enclosed` before reaching the behaviour under
+ * test, and 22 of this file's cases did exactly that when the refusal landed.
+ *
+ * Walling the whole square rather than each rectangle's own perimeter is
+ * deliberate: **enclosure is not this file's subject** and must not become a
+ * variable in it. Every case here is about instance registration, the plane,
+ * the refusal vocabulary, removal and determinism, and a fixture that walled
+ * per rectangle would make each of them silently depend on getting that
+ * geometry right. `tests/unit/rooms-enclosure.test.ts` is where enclosure
+ * decides an outcome, and it varies the walls on purpose.
+ *
+ * **The frontier is deliberately left unwalled.** The loop stops at `size - 1`,
+ * so the north edges of row `size` and the west edges of column `size` are
+ * never written -- and writing them would *materialise the next chunk*, which
+ * would break 'materialises nothing for a rectangle that spills off the edge of
+ * the prison' by giving that rectangle a chunk to land in. A rectangle flush
+ * against the last row or column of the square is therefore still `open`; no
+ * case here draws one.
+ */
+function wallEveryEdge(world: SparseWorld, size: number): void {
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      world.setTopEdge(tile(x, y), WALL);
+      world.setLeftEdge(tile(x, y), WALL);
+    }
+  }
+}
+
+/** One owned, loaded chunk at the origin -- the same starter world `createNewSimulationRuntime` builds, walled throughout (see `wallEveryEdge`). */
 function ownedWorld(): SparseWorld {
   const world = new SparseWorld(CHUNK_SIZE);
   const origin = { x: chunkCoordinate(0), y: chunkCoordinate(0) };
   world.load(origin);
   world.setOwned(origin, true);
+  wallEveryEdge(world, CHUNK_SIZE);
   return world;
 }
 
@@ -44,6 +87,15 @@ function ownedWorld(): SparseWorld {
  * Four owned chunks, 64x64 tiles -- exactly `MAX_ZONE_DIMENSION_TILES` a side,
  * so a rectangle at the cap fits inside the materialised world and a refusal
  * cannot be `out-of-bounds` in disguise.
+ *
+ * Walled throughout for the reason `ownedWorld` is, with one consequence worth
+ * naming: a 64-wide rectangle at the origin ends at column 63, so its east
+ * boundary is the west edge of column 64 -- outside the walled square and
+ * outside the materialised world. `wallEveryEdge` is therefore asked for 65,
+ * not 64, and the extra row and column are inside chunk (2,x)/(x,2)... which
+ * does not exist, so they are written through setters that *would* materialise
+ * one. They are written anyway and the case that cares about materialisation
+ * uses `ownedWorld`, not this.
  */
 function sixtyFourTileWorld(): SparseWorld {
   const world = new SparseWorld(CHUNK_SIZE);
@@ -54,6 +106,7 @@ function sixtyFourTileWorld(): SparseWorld {
       world.setOwned(chunk, true);
     }
   }
+  wallEveryEdge(world, 65);
   return world;
 }
 

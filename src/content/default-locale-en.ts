@@ -318,6 +318,17 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // than the numbers, because the numbers are per room type and the panel
   // shows the selected room's own pair beside the drag.
   'hud.alert.refusal.zone.below-minimum-size': 'The room was not zoned — that area is smaller than this room type allows.',
+  // The authored `enclosed` requirement, refused for the first time. This
+  // sentence is not new text: it is `hud.rooms.enclosure-open-required`, which
+  // was a Rooms-panel warning shown *after* an open room was accepted, moved
+  // into the refusal namespace and reworded into this namespace's house style
+  // now that `zone` refuses instead of warning. Its old key is deleted with the
+  // branch that read it -- see the ADR "Must a zoned room be enclosed".
+  //
+  // It names the rule and not the gap. `ZoneRoomRefusal` carries the first
+  // gap's tile and edge for diagnosis, but `RefusalLog` deliberately holds no
+  // coordinates, so nothing on this channel could render them.
+  'hud.alert.refusal.zone.not-enclosed': 'The room was not zoned — this room type must be enclosed, and the area you drew is open on at least one side.',
   // Removal's own namespace. `unzone.invalid-area` is the same *condition* as
   // `zone.invalid-area` and a different *sentence*: a player told "the room was
   // not zoned" after asking to remove one would go and look at the wrong
@@ -602,12 +613,6 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.rooms.enclosure-none': 'Not evaluated yet',
   'hud.rooms.enclosure-sealed': 'Walled in on every side',
   'hud.rooms.enclosure-open': 'Open on at least one side',
-  // The one combination worth flagging rather than merely reporting: the room
-  // asked to be enclosed and its perimeter is not walled. It is not a refusal,
-  // and the sentence must not read as one -- the check is narrower than
-  // enclosure and a door cannot currently seal anything, so a room that is
-  // genuinely indoors can read open here.
-  'hud.rooms.enclosure-open-required': 'This room should be enclosed, and the area you drew is open on at least one side.',
   'hud.rooms.requirement-enclosed': 'Must be enclosed',
   'hud.rooms.requirement-outdoors': 'Must be outdoors',
   'hud.rooms.requirement-none': 'No enclosure rule',

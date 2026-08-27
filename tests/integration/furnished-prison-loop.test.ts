@@ -4,6 +4,7 @@ import { NEED_SCALE } from '../../src/simulation/prisoners/needs';
 import { projectRoomDetail } from '../../src/simulation/presentation/room-projection';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { wallRoomPerimeter } from '../helpers/room-walls';
 
 /**
  * [ADR 0028](../../docs/adr/0028-object-placement-and-derived-room-capacity.md)
@@ -118,8 +119,11 @@ function zonedPrison(): SimulationRuntime {
   const runtime = createNewSimulationRuntime(SEED);
   submit(runtime, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: PLANKS }));
   submit(runtime, 'buy-brick', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-2', itemId: 'item.brick', quantity: BRICKS }));
+  wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
   submit(runtime, 'zone-cell', packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT }));
+  wallRoomPerimeter(runtime.world, SHOWER_RECT, { doors: runtime.navigation.doors });
   submit(runtime, 'zone-shower', packCommand({ type: 'ZoneRoom', roomId: 'room.shower-room', ...SHOWER_RECT }));
+  wallRoomPerimeter(runtime.world, CANTEEN_RECT, { doors: runtime.navigation.doors });
   submit(runtime, 'zone-canteen', packCommand({ type: 'ZoneRoom', roomId: 'room.canteen', ...CANTEEN_RECT }));
   return runtime;
 }

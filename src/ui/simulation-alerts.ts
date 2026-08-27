@@ -60,6 +60,7 @@ const REFUSAL_LABEL_KEYS: Readonly<Record<RefusalReason, LocalizationKey>> = {
   'zone.below-minimum-size': 'hud.alert.refusal.zone.below-minimum-size',
   'zone.duplicate-instance-id': 'hud.alert.refusal.zone.duplicate-instance-id',
   'zone.invalid-area': 'hud.alert.refusal.zone.invalid-area',
+  'zone.not-enclosed': 'hud.alert.refusal.zone.not-enclosed',
   'zone.out-of-bounds': 'hud.alert.refusal.zone.out-of-bounds',
   'zone.overlaps-existing-room': 'hud.alert.refusal.zone.overlaps-existing-room',
   'zone.unknown-room-type': 'hud.alert.refusal.zone.unknown-room-type',

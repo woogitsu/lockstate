@@ -10,6 +10,7 @@ import {
   restoreSimulationRuntime,
   type SessionSnapshotBundle,
 } from '../../src/simulation/runtime/restore-session';
+import { wallRoomPerimeter } from '../helpers/room-walls';
 import { projectStatusCounts } from '../../src/simulation/worker/status-counts';
 
 /**
@@ -119,6 +120,7 @@ function prisonWithFurnishedCell(seed = SEED): SimulationRuntime {
   const runtime = createNewSimulationRuntime(seed);
   submit(runtime, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 1 }));
   submit(runtime, 'buy-brick', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-2', itemId: 'item.brick', quantity: 1 }));
+  wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
   submit(runtime, 'zone-cell', packCommand({ type: 'ZoneRoom', roomId: CELL, ...CELL_RECT }));
   submit(runtime, 'place-bed', packCommand({ type: 'PlaceObject', orderId: 'bed-1', definitionId: 'bed-wooden', ...BED_TILE }));
   submit(runtime, 'place-toilet', packCommand({ type: 'PlaceObject', orderId: 'toilet-1', definitionId: 'toilet-brick', ...TOILET_TILE }));
@@ -214,6 +216,7 @@ describe('a removed object takes its capacity and its capability with it', () =>
 
   it('cancels a placement still being built, so a tile under a stalled order is not claimed for the session', () => {
     const runtime = createNewSimulationRuntime(SEED);
+    wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
     submit(runtime, 'zone-cell', packCommand({ type: 'ZoneRoom', roomId: CELL, ...CELL_RECT }));
     // No plank bought, so the order waits in `materials-pending` for ever. This
     // is the trap: nothing stands on the tile, so a removal that only looked at
@@ -244,6 +247,7 @@ describe('a removed object takes its capacity and its capability with it', () =>
   it('gives back the materials a cancelled order had allocated, and does not refund a built object', () => {
     const runtime = createNewSimulationRuntime(SEED);
     submit(runtime, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 2 }));
+    wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
     submit(runtime, 'zone-cell', packCommand({ type: 'ZoneRoom', roomId: CELL, ...CELL_RECT }));
     submit(runtime, 'place-bed', packCommand({ type: 'PlaceObject', orderId: 'bed-1', definitionId: 'bed-wooden', ...BED_TILE }));
     // Past the delivery and past the allocation, but not past the work: the
@@ -294,6 +298,7 @@ describe('a bed removed from an occupied cell evicts nobody (ADR 0028 decision 2
   function prisonWithHousedPrisoner(): { readonly runtime: SimulationRuntime; readonly prisoner: number } {
     const runtime = prisonWithFurnishedCell();
     submit(runtime, 'buy-more', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-3', itemId: 'item.wood-plank', quantity: 1 }));
+    wallRoomPerimeter(runtime.world, SECOND_CELL_RECT, { doors: runtime.navigation.doors });
     submit(runtime, 'zone-cell-2', packCommand({ type: 'ZoneRoom', roomId: CELL, ...SECOND_CELL_RECT }));
     submit(runtime, 'place-bed-2', packCommand({ type: 'PlaceObject', orderId: 'bed-2', definitionId: 'bed-wooden', ...SECOND_BED_TILE }));
     stepTo(runtime, 200);
@@ -410,8 +415,11 @@ describe('a removal that drops capacity below the claims held on a room (ADR 002
   } {
     const runtime = createNewSimulationRuntime(SEED);
     submit(runtime, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 3 }));
+    wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
     submit(runtime, 'zone-cell', packCommand({ type: 'ZoneRoom', roomId: CELL, ...CELL_RECT }));
+    wallRoomPerimeter(runtime.world, SECOND_CELL_RECT, { doors: runtime.navigation.doors });
     submit(runtime, 'zone-cell-2', packCommand({ type: 'ZoneRoom', roomId: CELL, ...SECOND_CELL_RECT }));
+    wallRoomPerimeter(runtime.world, YARD_RECT, { doors: runtime.navigation.doors });
     submit(runtime, 'zone-yard', packCommand({ type: 'ZoneRoom', roomId: YARD, ...YARD_RECT }));
     submit(runtime, 'bed-1', packCommand({ type: 'PlaceObject', orderId: 'bed-1', definitionId: 'bed-wooden', ...BED_TILE }));
     submit(runtime, 'bed-2', packCommand({ type: 'PlaceObject', orderId: 'bed-2', definitionId: 'bed-wooden', ...SECOND_BED_TILE }));
@@ -618,6 +626,7 @@ describe('a removal is deterministic and survives a save', () => {
   it('keeps the registry in canonical (y, x) order across a removal from the middle', () => {
     const runtime = createNewSimulationRuntime(SEED);
     submit(runtime, 'buy', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.brick', quantity: 3 }));
+    wallRoomPerimeter(runtime.world, YARD_RECT, { doors: runtime.navigation.doors });
     submit(runtime, 'zone-yard', packCommand({ type: 'ZoneRoom', roomId: YARD, ...YARD_RECT }));
     // Three toilets down one column, so the middle one can be taken out of the
     // middle of the sorted walk. Toilets rather than beds because a toilet is

@@ -2600,26 +2600,42 @@ test.describe('the Rooms panel', () => {
     expect(refusal.text).toBe('Nothing was removed — the request was refused.');
   });
 
-  test('reads out what the simulation found about the room, and warns only when it disagrees', async ({ page }) => {
-    // A readout, never a refusal. `RoomZoningService` accepts a room drawn in
-    // open ground either way, because the check it can honestly make is narrower
-    // than enclosure and a door cannot currently seal anything -- so refusing
-    // would block a legitimate designation. The panel's job is to *say so*.
+  test('reads out what the simulation found about the room, and no longer warns about it', async ({ page }) => {
+    /*
+     * **This case used to be called '... and warns only when it disagrees'**,
+     * and its first block asserted `noteTone: 'warning'` with the sentence
+     * *"This room should be enclosed, and the area you drew is open on at least
+     * one side."* under a comment reading *"A readout, never a refusal.
+     * `RoomZoningService` accepts a room drawn in open ground either way ... so
+     * refusing would block a legitimate designation. The panel's job is to *say
+     * so*."*
+     *
+     * It was right then and is wrong now, and the change is a ruling rather
+     * than a bug: `zone` refuses an `enclosed` room whose perimeter is open
+     * (the ADR "Must a zoned room be enclosed"), so no *accepted* zoning can
+     * report that pair and the panel's warning branch, its message key
+     * `hud.rooms.enclosure-open-required` and its English text are all deleted.
+     * The sentence now reaches the player as
+     * `hud.alert.refusal.zone.not-enclosed`, in the alerts list, at the moment
+     * they can still act on it.
+     *
+     * The `open` + `enclosed` pair is kept here as an input on purpose. The
+     * harness reports a notice directly, so it can still construct a pair the
+     * simulation no longer produces -- and asserting that the panel stays calm
+     * about it is what proves the branch is gone rather than merely unreached.
+     */
     await page.evaluate(() =>
       window.lockstateUiHarness.reportZoning({ sequence: 1, enclosure: 'open', requirement: 'enclosed' }),
     );
 
     const warned = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
     expect(warned.enclosureText).toBe('Open on at least one side');
-    expect(warned.noteTone, 'an enclosed room reported open is the one pair worth flagging').toBe('warning');
-    expect(warned.noteText).toBe(
-      'This room should be enclosed, and the area you drew is open on at least one side.',
-    );
+    expect(warned.noteTone, 'the pair is refused upstream now, so the panel has nothing to flag').toBe('');
     await expectLaidOut(page, '.hud-rooms__enclosure', 'the enclosure readout');
 
-    // The yard is authored `outdoors` and is *correct* when it is open, so the
-    // same answer must not be warned about. A panel that toned the answer itself
-    // rather than the pair would fail here.
+    // The yard is authored `outdoors` and is *correct* when it is open. This
+    // is the pair an accepted zoning can still carry, and it was never warned
+    // about.
     await page.evaluate(() =>
       window.lockstateUiHarness.reportZoning({ sequence: 2, enclosure: 'open', requirement: 'outdoors' }),
     );
