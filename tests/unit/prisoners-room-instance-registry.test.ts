@@ -541,6 +541,75 @@ describe('RoomInstanceRegistry', () => {
     });
   });
 
+  describe('loadSnapshot', () => {
+    /**
+     * **A save is a file the player's browser produced, and the occupancy list
+     * inside it is not a set.** `src/persistence/save-schema.ts:503` validates
+     * `roomInstanceOccupancy` as
+     * `z.array(z.tuple([z.string().min(1), z.array(entityIdSchema)]))` -- there
+     * is no uniqueness constraint anywhere on that inner array, so a corrupt or
+     * hand-edited save carrying the same entity id twice inside one instance's
+     * list passes validation and reaches this method intact.
+     *
+     * `loadSnapshot` recounts `occupiedPlaceCount` from the restored `Set`
+     * rather than from the payload's length, and that is the whole of the
+     * defence. Changing `this.occupiedPlaceCount += target.size` to
+     * `+= occupants.length` leaves the entire suite green while this happens:
+     *
+     * ```text
+     * CLEAN     [occupancyOf, totalOccupancy] = [1, 1]
+     * MUTATED   [occupancyOf, totalOccupancy] = [1, 2]
+     * ```
+     *
+     * The divergence is money, not bookkeeping. `StateIncomeSystem` bills the
+     * state per in-game day off `totalOccupancy` (`src/simulation/economy/income.ts:321`
+     * and `:325`), so a duplicated id in a save pays the player for a prisoner
+     * who does not exist, for the rest of the session -- while `occupancyOf`,
+     * which every capacity gate reads, still says one. The two counts must not
+     * be able to disagree.
+     */
+    it('recounts occupancy from the restored set, so a duplicated entity id in a save is not an extra occupied place', () => {
+      const registry = new RoomInstanceRegistry();
+      registry.register({ instanceId: 'room.cell:0:0', roomCatalogId: 'room.cell', anchorTile: TILE, residentCapacity: 2, concurrentUseCapacity: 2, objectCapabilities: ['sleep-surface'] });
+
+      registry.loadSnapshot([['room.cell:0:0', [7, 7]]]);
+
+      expect(registry.occupancyOf('room.cell:0:0'), 'one entity is one resident however many times the payload names it').toBe(1);
+      expect(registry.totalOccupancy, 'the economy input must agree with the per-instance count').toBe(1);
+      expect(registry.occupantsOf('room.cell:0:0')).toEqual([7]);
+
+      // And the room still has the free bed the honest count says it has: a
+      // second resident is admitted rather than refused against a capacity the
+      // duplicate had already eaten.
+      expect(registry.findAvailableResidence('room.cell', 'sleep-surface')?.instanceId).toBe('room.cell:0:0');
+      expect(registry.assign('room.cell:0:0', 9)).toBe(true);
+      expect(registry.totalOccupancy).toBe(2);
+    });
+
+    it('keeps the two counts equal for an ordinary payload, so the case above is about the duplicate and not about restoring at all', () => {
+      const registry = new RoomInstanceRegistry();
+      registry.register({ instanceId: 'cell-1', roomCatalogId: 'room.cell', anchorTile: TILE, residentCapacity: 2, concurrentUseCapacity: 2, objectCapabilities: ['sleep-surface'] });
+      registry.register({ instanceId: 'cell-2', roomCatalogId: 'room.cell', anchorTile: TILE, residentCapacity: 2, concurrentUseCapacity: 2, objectCapabilities: ['sleep-surface'] });
+
+      registry.loadSnapshot([['cell-1', [3, 4]], ['cell-2', [5]]]);
+
+      expect(registry.occupancyOf('cell-1')).toBe(2);
+      expect(registry.occupancyOf('cell-2')).toBe(1);
+      expect(registry.totalOccupancy).toBe(3);
+
+      // A second load replaces rather than accumulates, which is what makes
+      // `totalOccupancy` a function of the payload and not of the load history.
+      registry.loadSnapshot([['cell-1', [3]]]);
+      expect(registry.totalOccupancy).toBe(1);
+      expect(registry.occupancyOf('cell-2')).toBe(0);
+    });
+
+    it('throws rather than silently dropping occupants for an instance id the registry does not have', () => {
+      const registry = new RoomInstanceRegistry();
+      expect(() => registry.loadSnapshot([['room.cell:9:9', [1]]])).toThrow(RangeError);
+    });
+  });
+
   it('instancesOccupiedBy lists every instance holding an entity, sorted', () => {
     const registry = new RoomInstanceRegistry();
     registry.register({ instanceId: 'a', roomCatalogId: 'room.yard', anchorTile: TILE, residentCapacity: 5, concurrentUseCapacity: 5, objectCapabilities: [] });
