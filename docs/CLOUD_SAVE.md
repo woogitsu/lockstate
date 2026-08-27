@@ -38,8 +38,8 @@ design. That gap is now closed except where noted:
   it has been executed only against plain PostgreSQL. The date is what
   defines the set here, not this list: the list stood at eleven while twelve
   postdated the run. The counts above are the stack-run counts, not today's.
-  `pnpm verify:sql` is at 287 assertions
-  (43/43, 88/88, 35/35, 26/26, 8/8, 23/23, 11/11, 12/12, 25/25, 10/10, 6/6), measured on the run that
+  `pnpm verify:sql` is at 321 assertions
+  (54/54, 104/104, 35/35, 33/33, 8/8, 23/23, 11/11, 12/12, 25/25, 10/10, 6/6), measured on the run that
   produced this line; re-running `supabase test db` is what would raise the
   stack figure to match.
 - **Executed through GoTrue and PostgREST:** `pnpm verify:stack`
@@ -56,7 +56,7 @@ design. That gap is now closed except where noted:
   key, which is the only place PostgREST's mapping of that credential onto
   the role is exercised at all.
 - **Executed against plain PostgreSQL 16.13/18.6 + pgTAP:** every
-  migration and every suite via `pnpm verify:sql` — 287 assertions — which
+  migration and every suite via `pnpm verify:sql` — 321 assertions — which
   prepares a scratch database with
   `scripts/sql/supabase-compat-harness.sql`. This is the only path the
   #105 hardening has run on. That harness
@@ -111,13 +111,51 @@ design. That gap is now closed except where noted:
   the DDL has now run there. None of the checks above has. The local stack
   runs the same images, but nothing here has exercised a real project's
   networking, quotas or connection pooling.
-- **Not applied anywhere but a scratch database:** the twelve migrations
-  dated `20260824` — everything from
-  `20260824090000_pin_trigger_function_search_path.sql` through
-  `20260824150000_revoke_trusted_truncate.sql`. They are all
-  newer than the hosted apply above, so the hosted project still carries the
-  declarations, grants, constraints and function bodies as they stood on
-  2026-08-23 until they are pushed. Two of them can refuse to apply on a
+
+  **What applies them**, which this document recorded the *fact* of without
+  ever naming the *mechanism* — the consequence
+  [ADR-0016](./adr/0016-migration-delivery-mechanism.md) left explicitly
+  undischarged against this file: **staging is applied automatically, on every
+  merge to `main`, through Supabase's own GitHub integration; production is
+  not.** Production migrations are a manual dispatch of
+  `.github/workflows/migrate-database.yml`, gated by environment approval and a
+  typed project ref, defaulting to `dry_run: true`. The consequence that follows
+  is ADR 0016's, restated here because a reader of this file alone would not
+  otherwise meet it: **a merge to `main` that touches `supabase/migrations/` is
+  a deployment, and reviewing that pull request is reviewing one.**
+- **Not applied anywhere but a scratch database:** **everything dated after
+  `20260823100000`**. That is the whole of the claim, deliberately without a
+  count — run
+
+  ```bash
+  ls supabase/migrations/ | awk 'substr($0,1,14) > "20260823100000"'
+  ```
+
+  and read the answer. `substr($0,1,14)` rather than a bare `$0 >` comparison:
+  the filenames carry a descriptive suffix, so
+  `20260823100000_bound_free_tier_capacity.sql` sorts *after* the bare
+  timestamp string and a whole-name comparison silently includes the boundary
+  migration itself (15 lines instead of 14).
+
+  This bullet said "the twelve migrations dated `20260824`" and that was wrong
+  in exactly the way `docs/DEPLOYMENT.md`'s identical sentence was wrong before
+  `1ec7d16` replaced its count with a derivation: **there are two more, dated
+  `20260826`**, so fourteen postdate the nine recorded as applied above. The
+  omitted pair is `20260826120000_revoke_ambient_table_privileges.sql` — a
+  privilege revocation — and `20260826130000_server_stamp_updated_at.sql`, the
+  server-side `updated_at` stamping. Both are the same class of control this
+  paragraph goes on to enumerate as missing from the hosted project, which is
+  precisely why `1ec7d16` called the omission out rather than just fixing the
+  arithmetic. This document already knew they existed: the bullet three
+  sections above names "the two dated `20260826` for #280 and #194's open
+  half", and this one omitted them anyway. A count beside a directory that
+  computes it is the shape that keeps failing here.
+
+  They are all newer than the hosted apply above, so the hosted project still
+  carries the declarations, grants, constraints and function bodies as they
+  stood on 2026-08-23 — including the ambient table privileges `20260826120000`
+  revokes and without the `updated_at` stamping `20260826130000` adds — until
+  they are pushed. Two of them can refuse to apply on a
   populated project rather than applying silently, which is deliberate and is
   what their headers describe: the ledger's natural-key index if two
   provider-less `entitlement_events` rows are identical in every recorded
@@ -128,12 +166,17 @@ design. That gap is now closed except where noted:
   `20260824101000`, `20260824120000` and `20260824130000` add CHECK
   constraints without `NOT VALID`, so PostgreSQL validates the existing rows
   and a violating one refuses the migration too.
-  `20260824150000_revoke_trusted_truncate.sql` (#163) is the newest of them
-  and is worth naming on its own: a single `REVOKE`, applied to a scratch
+  `20260824150000_revoke_trusted_truncate.sql` (#163) is worth naming on its
+  own: a single `REVOKE`, applied to a scratch
   database only, so whatever `TRUNCATE` the hosted project grants
   `service_role` is untouched until it is pushed — and what that is remains
   unverified, since every grant observed here is the harness's model of
-  Supabase's defaults.
+  Supabase's defaults. This sentence used to call it "the newest of them",
+  which stopped being true the moment `20260826120000` landed — the same
+  staleness the count above had, in a superlative rather than in a number, so
+  it is named rather than only corrected. `20260826120000` revokes ambient
+  table privileges and is unverified against the hosted project for exactly the
+  same reason.
 - **Fully implemented and unit-tested:** `PrisonSyncEngine`,
   `resolveSyncConflict` and `MemoryCloudSaveClient`
   (`src/persistence/cloud/`) — the client-side sync/conflict policy is
