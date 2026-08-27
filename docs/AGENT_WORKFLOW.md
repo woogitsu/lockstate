@@ -127,6 +127,34 @@ close them before the branch is called done.
 - **Never write a fixture that supplies both sides of a comparison.** An expected
   value computed by the code under test holds for any implementation.
   `docs/TESTING.md` lists the forms this takes here.
+- **A measurement is not a diagnosis, and neither is a cause an impact.** This
+  is the sibling of the rule below and it caught a model that was obeying that
+  one. On 2026-08-27 an agent compared the response headers of `lockstate.io`
+  and the `workers.dev` host, found five missing on the domain, ruled out
+  caching properly, dated the commit that introduced them — every step
+  measured, every number real — and then wrote into `docs/DEPLOYMENT.md` that
+  this was a **defect** and that ADR 0021's security posture was "not in force
+  on the host players visit". Both were invented. The owner had switched that
+  domain's deploy off deliberately, and nobody plays the game yet. One sentence
+  from them demolished a paragraph that had looked rigorous because the
+  *evidence* was rigorous.
+  So: state the observation, then say separately what would establish the cause
+  and what would establish the impact. **"I measured X; I do not know why, and
+  I do not know what it costs" is a complete and useful report.** Words like
+  *defect*, *incident*, *regression*, *users affected* are claims about cause
+  and impact, and each needs its own evidence.
+- **Ask about state this repository cannot read.** Cloudflare and Supabase
+  dashboard settings, whether a custom domain is attached and to what, whether
+  a deploy is switched off, who is actually using the thing — none of it is in
+  git and no amount of measurement will produce it. `docs/DEPLOYMENT.md` already
+  says the domain binding "is therefore **not reproducible from this
+  repository**"; treat that sentence as a general rule, not a footnote about one
+  binding. When a finding depends on unreadable state, the finding is a
+  question.
+- **A correction is cheap while it is still yours.** The paragraph above was
+  wrong for eleven minutes because it was rewritten as soon as the owner said
+  so, and the commit that removed it says what it had claimed. Marking both
+  directions (§4) applies to your own mistakes first.
 - **Never report a result you did not obtain.** Run it, paste it. Open every
   `file:line` you cite. This project has paid hours for confident false findings,
   including audit reports citing line numbers for code nobody opened.
