@@ -357,15 +357,24 @@ the rooms this decision has just made hardest to create.
 Nor is there a hidden coupling in the other direction: `unzone` reads the zoning
 plane and the instance registry and never the edge layers.
 
-**One real asymmetry was found while checking, and it is left alone
-deliberately.** `zone` and `unzone` carry a byte-identical `width < 1 || height
-< 1 || width > MAX_ZONE_DIMENSION_TILES || height > MAX_ZONE_DIMENSION_TILES`
-condition. Issue #445 reported the `>` on `zone`'s copy as a surviving mutant;
-`zone`'s copy is now guarded by *"accepts a rectangle exactly
-MAX_ZONE_DIMENSION_TILES per side, so the cap is inclusive"*. `unzone`'s copy
-has no such test, so `>` → `>=` there still survives. That is a real gap and it
-belongs to #445's follow-up, not to this ADR: fixing it here would put an
-unrelated behaviour change in a commit about enclosure.
+**The duplicated size cap was checked and is not a gap — and this paragraph is
+a correction of an earlier draft of itself.** `zone` and `unzone` carry a
+byte-identical `width < 1 || height < 1 || width > MAX_ZONE_DIMENSION_TILES ||
+height > MAX_ZONE_DIMENSION_TILES` condition, and issue #445 reported the `>` on
+`zone`'s copy as a surviving mutant. This section first said that `zone`'s copy
+was now guarded and `unzone`'s was not, and that the survivor carried forward.
+**That was wrong, and it was wrong in the direction of asserting a defect
+without opening the file.** Both copies are guarded, in adjacent cases in
+`tests/unit/rooms-zoning.test.ts`: *"accepts a rectangle exactly
+MAX_ZONE_DIMENSION_TILES per side, so the cap is inclusive"* and *"accepts a
+removal rectangle exactly MAX_ZONE_DIMENSION_TILES per side, so the cap is
+inclusive here too"*, the second of which says in its own comment that `unzone`
+carried "its own copy of the same hole". #445's survivor list predates both.
+
+The duplication itself remains — one condition written twice, in two methods,
+with no shared constant beyond `MAX_ZONE_DIMENSION_TILES` — and this ADR does
+not touch it, because factoring it out is an unrelated change in a commit about
+enclosure.
 
 ### 7. Only `enclosed`. An `outdoors` or `none` room is accepted at any perimeter
 
