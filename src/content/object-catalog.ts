@@ -65,8 +65,29 @@ export const objectDefinitionSchema = z
     nameKey: identifierSchema,
     category: objectCategorySchema,
     footprint: objectFootprintSchema,
-    /** Capability tags rooms can require by object id today (see room-catalog.ts), and future jobs/needs systems can query by capability. */
-    capabilities: z.array(identifierSchema).max(16),
+    /**
+     * Capability tags rooms can require by object id today (see
+     * room-catalog.ts), and future jobs/needs systems can query by capability.
+     *
+     * **`.min(1)`, because an empty list is not "an object with no
+     * capabilities" -- it is a room requirement that can never be met.**
+     * `requirementStatus` in
+     * `src/simulation/presentation/room-projection.ts` reads
+     * `definition.capabilities.length === 0` and returns
+     * `'missing-capability'` on the spot, so an object authored with `[]`
+     * makes every room requiring it permanently unsatisfiable, and silently:
+     * the room reports a missing capability, the player places the object the
+     * requirement names, and the report does not change. The bound was
+     * `.max(16)` with no minimum, so the schema accepted it.
+     *
+     * The alternative -- treating `[]` as vacuously satisfied, which is what
+     * `Array.prototype.every` would do without the explicit length check --
+     * was not chosen and is not this schema's call to make: it would let a
+     * capability-less object satisfy any requirement naming it. Refusing the
+     * data is the narrower fix, and it fails at catalog load with the id in
+     * the report rather than in a projection three layers away.
+     */
+    capabilities: z.array(identifierSchema).min(1).max(16),
   })
   .strict();
 
