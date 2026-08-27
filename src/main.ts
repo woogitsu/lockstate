@@ -74,6 +74,7 @@ import { Localizer } from './services/localization/localizer';
 import { createBrandBadge } from './ui/brand-badge';
 import { createTelemetryConsentPrompt } from './ui/telemetry-consent-prompt';
 import { createTelemetryPipeline } from './services/telemetry/pipeline';
+import { createCrashReporter } from './services/telemetry/crash-reporting';
 import type { CancelScheduledPump } from './services/telemetry/pump';
 import { BUILD_IDENTITY } from './shared/build-identity';
 import './styles.css';
@@ -96,6 +97,96 @@ import './styles.css';
  * `allowedGameVersions`, and no definition anywhere names the old literal.
  */
 const GAME_VERSION = BUILD_IDENTITY.id;
+
+/**
+ * Where telemetry is allowed to go, and by default nowhere.
+ *
+ * Two compile-time strings, replaced by `tooling/telemetry-config.mjs` through
+ * `vite.config.ts`'s `define`, exactly as `src/shared/build-identity.ts`'s two
+ * are and for the same reason: a bundle has no environment to read. They are
+ * read *here* because choosing the environment is the composition root's job --
+ * the same sentence this file already carries about
+ * `resolveBrowserKeyValueStore()`.
+ *
+ * `import.meta.env` is deliberately not used. It would be the more idiomatic
+ * Vite spelling and it is refused by
+ * `tests/foundation/documentation-claims-contract.test.ts`, whose scan for a
+ * module reaching Supabase configuration matches the expression itself; a
+ * `define` keeps that gate meaning what it says.
+ *
+ * Both are guarded with `typeof`, the one form that does not throw for an
+ * identifier that was never declared: in the default Vitest environment there
+ * is no `define` at all, so the guard takes the empty branch and telemetry
+ * resolves to absent -- which is also what an ordinary `pnpm build` with
+ * nothing configured produces.
+ */
+declare const __LOCKSTATE_TELEMETRY_INGEST_PATH__: string | undefined;
+declare const __LOCKSTATE_TELEMETRY_ENVIRONMENT__: string | undefined;
+
+/**
+ * The telemetry pipeline, or nothing at all.
+ *
+ * `createTelemetryPipeline` constructs no transport, no sink, no recorder and
+ * no session id when the configuration above is absent, which is every build
+ * in this repository today. Nothing here reaches the network, and no consent
+ * prompt is mounted below, because asking a player to consent to a collection
+ * that cannot happen is the defect ADR 0044 named: the consent strings shipped
+ * inside the bundle for months while the code that would render them did not.
+ */
+const telemetry = createTelemetryPipeline({
+  ingestion: {
+    path: typeof __LOCKSTATE_TELEMETRY_INGEST_PATH__ === 'string' ? __LOCKSTATE_TELEMETRY_INGEST_PATH__ : undefined,
+    environment:
+      typeof __LOCKSTATE_TELEMETRY_ENVIRONMENT__ === 'string' ? __LOCKSTATE_TELEMETRY_ENVIRONMENT__ : undefined,
+  },
+  buildVersion: BUILD_IDENTITY.id,
+  commit: BUILD_IDENTITY.commit,
+  store: resolveBrowserKeyValueStore(),
+  now: () => Date.now(),
+});
+
+/**
+ * The producers, and the whole reason the block above moved to the top of this
+ * file.
+ *
+ * Until this change **nothing in `src/` outside `src/services/telemetry/`
+ * called `record()` or `recordError()`** -- the pipeline was a complete
+ * conveyor with nothing placed on it. ADR 0010 names the boot-path crash as
+ * the case a developer cannot reproduce, and a listener registered after two
+ * thousand lines of module evaluation cannot see one: a module-scope throw is
+ * reported to whatever is listening *at the moment it happens*. So the
+ * pipeline and these two listeners are the first thing this file does after
+ * `GAME_VERSION`, ahead of the `Worker`, the scene, the HUD and persistence.
+ *
+ * `createCrashReporter` holds every decision: which registered event name,
+ * which attributes, what happens when the recorder throws, and how many
+ * reports one page load may build. These two lines hold the browser binding
+ * and nothing else -- the same split ADR 0046 §4 drew for the consent surface,
+ * for the same reason: `vitest.config.ts` runs in `node` with no jsdom, so a
+ * rule written here would have no headless coverage at all.
+ *
+ * Built only when the pipeline is, and that is deliberate rather than
+ * incidental. With no ingestion destination configured -- every build in this
+ * repository -- there is no recorder to feed, and registering a global error
+ * listener that can only discard what it catches is surface for no benefit.
+ * ADR 0046 §2's rule is that the absent configuration constructs *nothing*.
+ */
+const crashReporter =
+  telemetry.enabled === false
+    ? undefined
+    : createCrashReporter({ recorder: telemetry.pipeline.recorder, now: () => Date.now() });
+
+if (crashReporter !== undefined) {
+  window.addEventListener('error', (event: ErrorEvent) => {
+    // `event.error` is absent for a cross-origin script error, where the
+    // message is all the browser will say; passing it keeps the report honest
+    // rather than empty.
+    crashReporter.reportUnhandledError(event.error ?? event.message, 'page-error');
+  });
+  window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
+    crashReporter.reportUnhandledError(event.reason, 'page-rejection');
+  });
+}
 
 /**
  * The page's channel to whichever simulation worker is current.
@@ -139,6 +230,11 @@ try {
   simulationWorkers.open();
 } catch (error) {
   console.error('The simulation worker could not be started; the world will not render.', error);
+  // The failure is reported on the route this page already has for it -- the
+  // same catch that raises the player-facing notice -- rather than through a
+  // channel of telemetry's own inside `SimulationClient`. See the
+  // `onWorkerAvailability` binding below for the other half.
+  crashReporter?.reportWorkerLoss('boot', error);
 }
 /** The channel, or nothing at all when this browser refused to start a worker. */
 const simulation: SimulationWorkerChannel | undefined = simulationWorkers.isOpen ? simulationWorkers : undefined;
@@ -828,53 +924,6 @@ function requireSimulation(commands: SimulationCommandSender | undefined): Simul
  * resolves, and before this line it would have painted the raw key.
  */
 const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
-
-/**
- * Where telemetry is allowed to go, and by default nowhere.
- *
- * Two compile-time strings, replaced by `tooling/telemetry-config.mjs` through
- * `vite.config.ts`'s `define`, exactly as `src/shared/build-identity.ts`'s two
- * are and for the same reason: a bundle has no environment to read. They are
- * read *here* because choosing the environment is the composition root's job --
- * the same sentence this file already carries about
- * `resolveBrowserKeyValueStore()`.
- *
- * `import.meta.env` is deliberately not used. It would be the more idiomatic
- * Vite spelling and it is refused by
- * `tests/foundation/documentation-claims-contract.test.ts`, whose scan for a
- * module reaching Supabase configuration matches the expression itself; a
- * `define` keeps that gate meaning what it says.
- *
- * Both are guarded with `typeof`, the one form that does not throw for an
- * identifier that was never declared: in the default Vitest environment there
- * is no `define` at all, so the guard takes the empty branch and telemetry
- * resolves to absent -- which is also what an ordinary `pnpm build` with
- * nothing configured produces.
- */
-declare const __LOCKSTATE_TELEMETRY_INGEST_PATH__: string | undefined;
-declare const __LOCKSTATE_TELEMETRY_ENVIRONMENT__: string | undefined;
-
-/**
- * The telemetry pipeline, or nothing at all.
- *
- * `createTelemetryPipeline` constructs no transport, no sink, no recorder and
- * no session id when the configuration above is absent, which is every build
- * in this repository today. Nothing here reaches the network, and no consent
- * prompt is mounted below, because asking a player to consent to a collection
- * that cannot happen is the defect ADR 0044 named: the consent strings shipped
- * inside the bundle for months while the code that would render them did not.
- */
-const telemetry = createTelemetryPipeline({
-  ingestion: {
-    path: typeof __LOCKSTATE_TELEMETRY_INGEST_PATH__ === 'string' ? __LOCKSTATE_TELEMETRY_INGEST_PATH__ : undefined,
-    environment:
-      typeof __LOCKSTATE_TELEMETRY_ENVIRONMENT__ === 'string' ? __LOCKSTATE_TELEMETRY_ENVIRONMENT__ : undefined,
-  },
-  buildVersion: BUILD_IDENTITY.id,
-  commit: BUILD_IDENTITY.commit,
-  store: resolveBrowserKeyValueStore(),
-  now: () => Date.now(),
-});
 
 /**
  * Without a worker there is no simulation and no session, so there is
@@ -2145,6 +2194,17 @@ async function bootPersistence(workers: SimulationWorkerChannel, hud: HudHandle)
        */
       onWorkerAvailability: (available) => {
         hud.setUnavailable(available ? undefined : SIMULATION_UNAVAILABLE_NOTICE);
+        // The existing report route, read a second time. `WorkerPerSessionHost`
+        // already tells this file every time it fails to obtain a worker, so
+        // the producer binds to that callback rather than being pushed down
+        // into the host: `SimulationClient` records, one module over, that a
+        // failure belongs "on the route the protocol already has rather than
+        // through a channel of this class's own", and adding a telemetry
+        // dependency to `src/persistence/session/` would be that channel.
+        //
+        // No thrown value is passed because the callback carries none. A
+        // fabricated `errorName` would be worse than the absent one.
+        if (!available) crashReporter?.reportWorkerLoss('session');
       },
     });
 

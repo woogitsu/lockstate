@@ -85,6 +85,71 @@ Registered events today: `diagnostic.unhandled-error`,
 `performance.tick-budget`, `performance.frame-budget`,
 `gameplay.scenario-completed`. An unregistered name is refused.
 
+## Producers: what actually emits an event
+
+The pipeline had no producer at all until 2026-08-27. `record()` and
+`recordError()` were called from nowhere outside `src/services/telemetry/`, so
+consent, admission, sampling, redaction, batching and a transport were a
+complete conveyor with nothing placed on it.
+
+Every decision a producer makes is in
+`src/services/telemetry/crash-reporting.ts`; `src/main.ts` holds the browser
+binding and nothing else. That is the line ADR 0046 §4 drew for the consent
+surface, for the same reason: `vitest.config.ts` runs in `node` with no jsdom,
+so a rule written beside the listener would have no headless coverage. Only two
+things are consequently browser-only — that the listeners are registered, and
+that a real thrown error reaches the reporter.
+
+| Registered event | Producer | Where it binds |
+| --- | --- | --- |
+| `diagnostic.unhandled-error` | `reportUnhandledError` | the page's `error` and `unhandledrejection` listeners, registered at the top of `src/main.ts` |
+| `diagnostic.worker-terminated` | `reportWorkerLoss` | the boot `catch` around the first worker, and `WorkerPerSessionHost`'s existing `onWorkerAvailability(false)` callback |
+| `diagnostic.save-decode-failed` | **none** | see below |
+| `performance.tick-budget`, `performance.frame-budget` | **none** | both would have to be fed from the tick or frame path, which ADR 0010 and `docs/ARCHITECTURE.md` forbid; a producer would need a sampled off-path aggregate first |
+| `gameplay.scenario-completed` | **none** | there is no scenario completion to observe yet |
+
+The listeners go in **before** the `Worker`, the scene, the HUD and
+persistence. A module-scope throw is reported to whatever is listening at the
+moment it happens, so a listener registered further down cannot see the boot
+crash — the one case ADR 0010 singles out as impossible to reproduce on a
+developer machine.
+
+`diagnostic.save-decode-failed` has no producer because nothing carries a
+`SaveDecodeError` to a place a producer may bind.
+`PrisonSaveRepository.loadCurrent` walks past a generation that fails to decode
+with a bare `continue` and reports only `no-valid-generation` at the end, which
+conflates decode failure with a snapshot the worker refused (#103, #403) — so
+producing the event from that reason would mislabel a restore bug as save
+corruption. The only route that carries the error out is
+`importEnvelope`'s `rejected`, which surfaces in `src/ui/save-panel.ts`, a
+DOM module the headless suite cannot execute. Giving this event a producer
+needs an observer on the repository's load path; that is a change in
+`src/persistence/`, not in the telemetry layer, and it is not made here.
+
+### A crash reporter that can itself crash is worse than none
+
+Four properties, tested in `tests/unit/services-telemetry-crash-reporting.test.ts`:
+
+- **It never throws.** Every call into the recorder — and the injected clock —
+  is wrapped, and a failure is counted rather than re-raised. A throw out of an
+  `error` listener has nowhere to go.
+- **It never recurses.** A report already in flight suppresses a nested one, so
+  a failure *on the reporting path* arriving back through the same handler
+  stops at one frame.
+- **It is bounded per page load.** `DEFAULT_MAX_CRASH_REPORTS` is 20, below the
+  sink's 60-per-minute bucket and its 200-event queue, so an error storm cannot
+  spend the main thread building envelopes or start evicting the earliest
+  report — the one most likely to name the original cause.
+- **Consent still gates everything.** A producer is not a route around the
+  gate: with no decision on record, a produced event is refused by the recorder
+  before an envelope exists and by the sink's admission gate if one ever did.
+
+`reportWorkerLoss` carries **no free text at all** — `area` and `phase` come
+from closed sets the module declares, and `errorName` is the error's class, not
+its message. `reportUnhandledError` cannot: an error message and a stack are
+the whole content of a crash report. Redaction is the last line there, and it
+is not sufficient — see ADR 0046 on what it does not catch.
+
 ## Never collected by default
 
 Save payloads or any fragment of them; prison, entity or command data;

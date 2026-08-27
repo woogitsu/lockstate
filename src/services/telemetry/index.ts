@@ -1,6 +1,7 @@
 export * from './admission';
 export * from './consent';
 export * from './consent-flow';
+export * from './crash-reporting';
 export * from './diagnostics';
 export * from './events';
 export * from './http-transport';
