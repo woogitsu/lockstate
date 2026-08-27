@@ -2351,3 +2351,209 @@ describe('checkout credential persistence contract', () => {
     ).toEqual([]);
   });
 });
+
+/**
+ * The `browser` job keeps the evidence of its own failures.
+ *
+ * ## The defect
+ *
+ * `tests/browser/` is the layer that keeps finding defects nothing else can
+ * (docs/TESTING.md), and its CI job failed twice on this branch with a
+ * 60-second page-load timeout inside a setup helper. Neither failure was
+ * diagnosable, because the one artefact that would have discriminated between
+ * the candidate causes -- the `error-context.md` Playwright writes beside a
+ * failure, an ARIA snapshot of the page at the moment it gave up -- was
+ * written into the runner's workspace and then deleted, unread, by the next
+ * run's `git clean -ffdx`. Measured rather than assumed at the time:
+ * `git grep -n "upload-artifact" -- .github/` matched nothing anywhere in the
+ * repository, no step in any job carried `if: failure()`, and the GitHub API
+ * reported `total_count: 0` artifacts for the failing run.
+ *
+ * ## Why this is a contract and not just the step
+ *
+ * The step alone is one commit away from being deleted as noise by someone
+ * reading a workflow whose runs are all green -- which is exactly the state
+ * this repository was in for the whole life of the `browser` job. What the
+ * assertions below hold is not "an upload step exists" but that the *names*
+ * on it are still the names of the things that produce the evidence: the
+ * `tee` target in the suite step, and Playwright's `outputDir`. Renaming
+ * either one without following it here is the realistic way this quietly
+ * starts uploading nothing, and it fails in the commit that does it.
+ *
+ * ## What it deliberately does not check
+ *
+ * That the upload succeeds, that the runner can reach the artifact service,
+ * or that anybody reads what it stores. Nothing here can answer those. It
+ * also does not pin `retention-days` or `if-no-files-found`: both are policy
+ * a later reader may legitimately retune, and neither decides whether the
+ * evidence survives the job.
+ */
+describe('browser failure evidence contract', () => {
+  const CI = '.github/workflows/ci.yml';
+  const PLAYWRIGHT_CONFIG = 'tests/browser/playwright.config.ts';
+
+  /**
+   * Playwright's `outputDir` when the config does not name one, relative to
+   * the workspace root the job runs in. At the pinned @playwright/test the
+   * default is `path.join(packageJsonDir, 'test-results')`, and the nearest
+   * `package.json` above `tests/browser/` is the repository root's -- so the
+   * directory lands beside the checkout rather than under `tests/browser/`.
+   * The assertion that the config still names no `outputDir` is what keeps
+   * this constant honest.
+   */
+  const DEFAULT_OUTPUT_DIR = 'test-results/';
+
+  /**
+   * The steps of one top-level job, by line range rather than by re-parsing
+   * the job structure: `parseWorkflowSteps` above already reads every step of
+   * every job, and a second structural parser would be a second thing to keep
+   * right.
+   */
+  function jobSteps(contents: string, job: string): readonly WorkflowStep[] {
+    const lines = contents.split(/\r?\n/u);
+    const header = `  ${job}:`;
+    const start = lines.indexOf(header);
+
+    expect(
+      start,
+      `${CI} has no \`${header.trim()}\` job at top-level job indentation. If it was renamed, rename it here in the same commit -- a job this contract cannot find is a job this contract does not check.`,
+    ).toBeGreaterThanOrEqual(0);
+
+    // The next thing at job indentation or shallower ends the block. Comments
+    // are skipped rather than treated as the end: in this file a paragraph at
+    // two-space indentation introduces the job *after* it, and stopping there
+    // would be right for the range but wrong the moment the paragraph moves.
+    let end = lines.length;
+    for (let index = start + 1; index < lines.length; index += 1) {
+      const line = lines[index] ?? '';
+      if (line.trim().length === 0 || /^\s*#/u.test(line)) {
+        continue;
+      }
+      if (/^ {0,2}\S/u.test(line)) {
+        end = index;
+        break;
+      }
+    }
+
+    // `WorkflowStep.line` is 1-based; `start` and `end` index the same array
+    // from 0, so the open interval below is `(start, end]` in 1-based terms.
+    return parseWorkflowSteps(CI, contents).filter((step) => step.line > start + 1 && step.line <= end);
+  }
+
+  /** The lines of a step's `path: |` block, trimmed, comments dropped. */
+  function pathEntries(step: WorkflowStep): readonly string[] {
+    const start = step.lines.findIndex((line) => /^path:\s*\|-?\s*$/u.test(line.trim()));
+    if (start === -1) {
+      return [];
+    }
+
+    const blockIndent = (step.lines[start] ?? '').search(/\S/u);
+    const entries: string[] = [];
+    for (const line of step.lines.slice(start + 1)) {
+      if (line.trim().length === 0) {
+        continue;
+      }
+      if (line.search(/\S/u) <= blockIndent) {
+        break;
+      }
+      if (line.trim().startsWith('#')) {
+        continue;
+      }
+      entries.push(line.trim());
+    }
+
+    return entries;
+  }
+
+  it('uploads, on failure, exactly the two things the browser suite leaves behind', async () => {
+    const contents = await readRepositoryFile(CI);
+    const steps = jobSteps(contents, 'browser');
+
+    // Vacuity guard, in the shape the two contracts above use: every
+    // assertion below is about a step found in this list, and a list of none
+    // satisfies nothing rather than failing.
+    expect(
+      steps.length,
+      `no steps were parsed out of the \`browser\` job in ${CI}. The line-range filter or \`parseWorkflowSteps\` is broken; fix it rather than the workflow.`,
+    ).toBeGreaterThan(0);
+
+    // The log filename is read out of the step that writes it rather than
+    // written down here, so renaming the `tee` target and not the upload
+    // fails below instead of silently uploading a file that no longer exists.
+    const teeTargets = steps.flatMap((step) =>
+      step.lines
+        .filter((line) => !line.trim().startsWith('#'))
+        .flatMap((line) => {
+          const match = /\|\s*tee\s+(\S+)/u.exec(line);
+          return match?.[1] === undefined ? [] : [match[1]];
+        }),
+    );
+
+    expect(
+      teeTargets,
+      `the \`browser\` job in ${CI} no longer pipes its suite output through \`tee\` to exactly one file. That file is half of what the failure upload collects -- the whole stdout of the run, rather than the tail GitHub renders -- so if it is gone, or if there are now two, decide what the upload should carry and say so here in the same commit.`,
+    ).toHaveLength(1);
+
+    const suiteLog = teeTargets[0] ?? '';
+
+    const uploads = steps.filter((step) => {
+      const used = stepScalar(step, 'uses');
+      if (used === undefined) {
+        return false;
+      }
+      const hash = used.value.indexOf('#');
+      const reference = (hash === -1 ? used.value : used.value.slice(0, hash)).trim();
+      return /^actions\/upload-artifact(?:@|$)/u.test(reference);
+    });
+
+    expect(
+      uploads,
+      `the \`browser\` job in ${CI} runs no \`actions/upload-artifact\` step. Without one, a failing run's \`error-context.md\` files and its \`${suiteLog}\` are written into the self-hosted runner's workspace and deleted by the next run's \`git clean -ffdx\` -- which is exactly the state two undiagnosable timeout failures on this job were left in. Restore the step rather than this assertion.`,
+    ).toHaveLength(1);
+
+    const upload = uploads[0] as WorkflowStep;
+
+    // `always()` would upload an empty artifact on every green run; a missing
+    // condition would do the same and also run when the suite passed. The
+    // cost of `failure()` is that a *cancelled* job -- `timeout-minutes`, or
+    // the concurrency group -- uploads nothing, which the step's own comment
+    // records as a deliberate trade.
+    expect(
+      stepScalar(upload, 'if')?.value,
+      `the failure-evidence upload in the \`browser\` job of ${CI} must be conditioned on \`if: failure()\`. Unconditional, it stores an empty artifact on every green run; on \`always()\` the same. If a job that is being *cancelled* rather than failed now needs to upload too, that is \`always()\` plus a re-read of the comment on the step, not a silent widening.`,
+    ).toBe('failure()');
+
+    // The suite step must have run before there is anything to collect, and a
+    // step ordered above it would upload the previous run's leftovers.
+    const suiteStep = steps.find((step) =>
+      step.lines.some((line) => !line.trim().startsWith('#') && line.includes(`| tee ${suiteLog}`)),
+    );
+
+    expect(
+      suiteStep === undefined ? -1 : upload.line - suiteStep.line,
+      `the failure-evidence upload in the \`browser\` job of ${CI} is ordered before the step that runs the suite, so it would collect whatever the previous run left in the reused workspace rather than this run's evidence.`,
+    ).toBeGreaterThan(0);
+
+    expect(
+      pathEntries(upload),
+      `the failure-evidence upload in the \`browser\` job of ${CI} must collect exactly Playwright's output directory and the suite log. \`${DEFAULT_OUTPUT_DIR}\` is where the \`error-context.md\` for each failing test lands and is the artefact that separates "the harness server never came up" from "the page came up and what the helper waited for never appeared"; \`${suiteLog}\` is the full stdout. If the \`tee\` target above was renamed, rename it here too.`,
+    ).toEqual([DEFAULT_OUTPUT_DIR, suiteLog]);
+  });
+
+  it('keeps the upload path pointing at the directory Playwright actually writes', async () => {
+    const config = await readRepositoryFile(PLAYWRIGHT_CONFIG);
+
+    // The upload names a literal `test-results/` because the config names no
+    // `outputDir` and Playwright's default resolves there. That is a fact
+    // about the config, so it is asserted against the config: the day someone
+    // sets `outputDir`, the upload above starts collecting an empty directory
+    // and nothing else in this repository would notice.
+    expect(
+      config
+        .split(/\r?\n/u)
+        .filter((line) => /^\s*outputDir\s*:/u.test(line))
+        .map((line) => line.trim()),
+      `${PLAYWRIGHT_CONFIG} now sets \`outputDir\`, and ${CI}'s failure-evidence upload still collects the default \`${DEFAULT_OUTPUT_DIR}\`. One of the two has to move: point the upload at the configured directory and update DEFAULT_OUTPUT_DIR here, in this commit. Playwright resolves an unset \`outputDir\` to \`<package.json dir>/test-results\`, which for this config is the repository root -- that is the only reason the literal in the workflow is right.`,
+    ).toEqual([]);
+  });
+});
