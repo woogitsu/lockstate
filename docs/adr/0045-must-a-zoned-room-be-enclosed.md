@@ -43,8 +43,24 @@ build on, and that the ruling promotes that from a wrong readout to a wrong
 refusal. Asked to choose between counting an unowned neighbour as a wall and
 leaving the refusal correct, the owner rejected the framing and asked for a
 different world model instead: owned land as open ground, with the player
-raising a building — foundation and walls — and rooms living inside it. That is
-a successor ADR, and until it lands this consequence stands unfixed and known.
+raising a building — foundation and walls — and rooms living inside it.
+
+**That routing was wrong, and [ADR 0047](./0047-raising-a-building-on-open-ground.md)
+says so.** A building has a south boundary stored on the row below it for
+exactly the reason a room does, so the building layer inherits this consequence
+verbatim rather than dissolving it. The cause is not the world model; it is one
+asymmetric predicate. `submitOrder` tests ownership of the order's *own* tile,
+so the north and west faces of owned land are wallable and the south and east
+faces are not — the same physical wall on the same property line. ADR 0047's
+slice 0 is the fix, it is roughly one predicate plus the bounds check beside it,
+and it answers this consequence without the building layer at all.
+
+Until slice 0 lands the consequence stands unfixed and known. Today's damage is
+bounded, and the reason is worth recording because it will stop being true: no
+land purchase exists — `canPurchaseParcel` has no caller and there is no
+`PurchaseParcel` command — so a session owns one chunk and only its last row and
+column are affected. **The option this document weighed, that the player buys
+the adjoining parcel, named a route the player cannot take.**
 
 ## Context
 

@@ -1,15 +1,11 @@
-# ADR XXXX: Raising a building on open ground
+# ADR 0047: Raising a building on open ground
 
-> **The number is a placeholder.** ADR numbers in this repository are assigned
-> centrally after parallel drafts return — `AGENTS.md` and
-> `docs/AGENT_WORKFLOW.md` §2 both say so. This draft carries `XXXX`, does not
-> edit `docs/adr/README.md`, and **pre-commits to being renumbered without
-> argument** if the number it is given is taken by an unmerged branch. The
-> author could not enumerate open pull requests from this worktree, so the
-> allocation is the integrator's and not this document's.
->
-> `tests/foundation/adr-numbering-contract.test.ts` is red while this file sits
-> on disk under a placeholder name. That is expected and known.
+> **Drafted as `XXXX`; assigned 0047 on landing.** ADR numbers in this
+> repository are assigned centrally after parallel drafts return — `AGENTS.md`
+> and `docs/AGENT_WORKFLOW.md` §2 both say so, and the author could not
+> enumerate open pull requests from a worktree. Five drafts returned in the
+> 2026-08-27 pass and were numbered in the order they landed: 0042 and 0043
+> into the two gaps README recorded, then 0045, 0046 and this one.
 
 ## Status
 
