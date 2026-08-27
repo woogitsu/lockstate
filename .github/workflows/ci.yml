@@ -564,3 +564,38 @@ jobs:
             echo "::error::the browser suite skipped tests; running them is the entire point of this job"
             exit 1
           fi
+
+      # A red in this job used to leave nothing behind to read.
+      #
+      # Playwright writes `test-results/<test>/error-context.md` for every
+      # failure -- the page's accessibility snapshot at the moment it gave up,
+      # which is the one artefact that separates a `waitForSelector` that timed
+      # out on a page which never painted from one that painted something else.
+      # This job uploads no artifacts (the run that this step was written for,
+      # 33052080098, lists zero), `test-results/` is gitignored, and the next
+      # job to land on this self-hosted runner reuses the workspace. So the
+      # file exists for minutes and is never seen: investigating the browser
+      # reds of 2026-08-27 -- two on this branch and three on `main` inside the
+      # thirty most recent completed runs -- had nothing but a stack trace.
+      #
+      # Printed into the log rather than uploaded as an artifact on purpose.
+      # The log is already open in front of whoever is reading the red, it is
+      # retained on the same schedule as the rest of the job, and it needs no
+      # new `uses:` to pin, audit and keep pinned. `nullglob` rather than a
+      # `find` pipeline so that "no file was written" is itself reported: a
+      # silent step here would be indistinguishable from a step that ran and
+      # found nothing, which is the failure mode this whole step exists to end.
+      - name: Report what Playwright captured at each failure
+        if: failure()
+        run: |
+          shopt -s globstar nullglob
+          contexts=(test-results/**/error-context.md)
+          if [ ${#contexts[@]} -eq 0 ]; then
+            echo "no test-results/**/error-context.md was written"
+            exit 0
+          fi
+          for context in "${contexts[@]}"; do
+            echo "::group::${context}"
+            cat "${context}"
+            echo "::endgroup::"
+          done
