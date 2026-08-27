@@ -171,15 +171,19 @@ Nothing here changes a status; this table only reports them.
 | [0041](./0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md) | What happens when a prisoner's chosen action has nowhere to go | Accepted, 2026-08-26 — by delegation; it takes the fallback and leaves ADR 0029 decision 5's fairness half open as its tracked successor |
 | [0042](./0042-attaching-consequences-to-the-simulation-loop.md) | The consequence chain is built and has no producer a player can reach | Proposed, 2026-08-27 — the ordering of a whole product loop, deliberately not self-approved; it corrects #446's "no consequences attached" to name the real gap, and #440–#443 are its evidence |
 | [0043](./0043-account-session-states-and-what-they-may-do-to-local-data.md) | Account session states, and what each may do to local data | Proposed, 2026-08-27 — the client identity model #34 needs and did not have; every transition records whether local data is preserved or discarded, and it is deliberately not self-approved |
+| [0045](./0045-must-a-zoned-room-be-enclosed.md) | Must a zoned room be enclosed | Proposed, 2026-08-27 — the owner ruled that `zone` must refuse an open room; the ADR's decision 8, that `enclosed` means the room's own boundary is closed rather than topologically indoors, is the inference that ruling rests on and is the part to check |
 | [0044](./0044-what-happens-to-a-service-tier-nothing-calls.md) | What happens to a service tier nothing calls | Accepted, 2026-08-27 — by delegation; #378, and it keeps all four trees on stated terms rather than deleting any of them. The owner did not read it, and its two product questions (does cloud save ship, does Lockstate collect telemetry) are recorded open |
 
-**Next free number: 0045.** 0044 is the highest number on disk — assigned
-centrally to the #378 draft, out of order, while 0042 and 0043 were held for
-parallel drafts that had not merged. So **0042 and 0043 are genuinely free and
-this line cannot say so**: the number it states is `max(on disk) + 1`, which is
-what `tests/foundation/adr-numbering-contract.test.ts` asserts, and an
-out-of-order assignment makes that a ceiling rather than the next gap. Read the
-table for the gaps. 0041 is this table's newest *contiguous* row and **0030 is still
+**Next free number: 0046.** The gaps this paragraph used to record are gone:
+0042 and 0043 were held for parallel drafts that had not merged, and both were
+taken in the 2026-08-27 integration pass — 0042 by the consequence-loop ADR,
+0043 by the account-session ADR — with 0045 going to the third draft in the same
+pass. **Both directions are marked rather than overwritten**, because the reason
+those gaps existed is the durable part: the stated number is `max(on disk) + 1`,
+which is what `tests/foundation/adr-numbering-contract.test.ts` asserts, so an
+out-of-order assignment turns this line into a ceiling rather than the next gap,
+and a reader must still read the table rather than this line. There is no gap
+below 0045 today; the next out-of-order assignment recreates one. 0041 is this table's newest *contiguous* row and **0030 is still
 held by an unmerged branch** — the incident-response restore change, which
 allocated it in the same hour it was stated free here. It is listed nowhere above
 because nothing is merged under that number yet, which is precisely the gap a

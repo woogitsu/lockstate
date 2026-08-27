@@ -1,20 +1,16 @@
-# ADR XXXX: Must a zoned room be enclosed
+# ADR 0045: Must a zoned room be enclosed
 
-> **This draft carries a placeholder number and pre-commits, without argument,
-> to being renumbered on landing.** ADR numbers in this repository are assigned
-> centrally after parallel drafts return — `AGENTS.md` and
-> `docs/AGENT_WORKFLOW.md` §2 both say so, because two agents took `0034` within
-> an hour of each other last session. `docs/adr/README.md` is deliberately **not**
-> edited here: its index row and this file's heading and filename are one edit,
-> and it belongs to whoever integrates the drafts.
+> **The number was a placeholder; 0045 was assigned on landing.** ADR numbers in
+> this repository are assigned centrally after parallel drafts return —
+> `AGENTS.md` and `docs/AGENT_WORKFLOW.md` §2 both say so, because two agents
+> took `0034` within an hour of each other last session. This draft carried
+> `XXXX` and did not edit `docs/adr/README.md`; the index row, heading and
+> filename were one edit made by the integrator.
 >
-> **One consequence, disclosed rather than discovered:**
-> `tests/foundation/adr-numbering-contract.test.ts` derives an ADR's number from
-> its filename, requires the filename to match `^\d{4}-`, and requires a
-> matching row in `docs/adr/README.md`. A placeholder fails all three. That gate
-> is therefore **red on this branch by construction** and goes green the moment
-> a number is assigned. `tests/foundation/` is another agent's surface this
-> session, so it is not touched here either.
+> Three drafts returned in that pass and the two genuine gaps went first: 0042
+> to the consequence-loop ADR and 0043 to the account-session ADR. This one took
+> 0045, the stated next free number, so README's next-free line moved to 0046
+> and the paragraph recording those gaps is now a record of gaps that were used.
 
 ## Status
 
