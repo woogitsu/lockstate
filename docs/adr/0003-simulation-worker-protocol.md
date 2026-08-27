@@ -80,7 +80,21 @@ and drop a readout, not corrupt state.
 
 Publication is a **read**: the worker posts `Kernel.tick` and
 `FixedStepClock.control` after the tick loop has finished stepping, at most
-every 250 ms and only when the tick has moved. It calls nothing on the kernel.
+every 250 ms. It calls nothing on the kernel.
+
+The clause this sentence used to carry -- "and only when the tick has moved" --
+overstated what that check does on this channel. `publishClockState` does return
+early when the tick has not moved, but the branch never withholds a message:
+while `running`, a tick is at most 50 ms of wall time, so the interval cannot
+open with the tick standing still. Instrumented over the tick-loop suite, the
+early return was taken 221 times and **not once** with the interval open; the
+largest elapsed time on that path was 45 ms against a 250 ms interval (#444
+item 4). The interval is the gate; the equality check is belt-and-braces. The
+contrast is worth keeping: `publishRenderDelta`'s identical pair of lines *is*
+load-bearing, because nothing resets its published-tick fields, so on the first
+wake the interval is trivially open and only the tick test stops a delta that
+`deltaMessageSchema` refuses. See both docblocks in
+`src/simulation/worker/state-machine.ts`.
 This is what keeps clock control compatible with ADR 0009's determinism
 guarantee, and `tests/determinism/clock-transport.test.ts` is the executable
 form of that claim.

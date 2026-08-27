@@ -931,12 +931,17 @@ export class SimulationWorkerStateMachine {
    *
    * This is the general route the two special cases asked for. `simulation/clock-state`
    * and `simulation/status-counts` are each a *publication* of one projection
-   * on a cadence, and each needed a message kind of its own to exist; the nine
-   * read models left over could not have nine more without the protocol
+   * on a cadence, and each needed a message kind of its own to exist; the
+   * read models left over could not each have one without the protocol
    * growing with the read model. So this handler is written against
    * `PROJECTION_CATALOG` rather than against any projection: the kind names
    * the *family*, the payload's `projectionId` selects the member, and adding
-   * a twelfth is a catalog entry rather than a protocol change.
+   * another is a catalog entry rather than a protocol change.
+   *
+   * Both sentences carried a tally before (`the nine read models`, `a twelfth`)
+   * and both were already wrong at `06f5d7d`, the commit that wrote them, where
+   * `PROJECTION_IDS` held twelve. Derive the number instead of restating it:
+   * `node -e "import('./src/simulation/protocol/types.ts').then(m => console.log(m.PROJECTION_IDS.length))"`.
    *
    * **Pull, not push, and that is the design.** A level the player is always
    * looking at belongs on a cadence -- which is why the counts stay where they
