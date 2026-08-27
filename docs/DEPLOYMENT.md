@@ -199,50 +199,48 @@ State 3 is what `version.yml` produces after every merge. Its bump commit is pus
 
 ### What currently serves lockstate.io
 
-> **Measured 2026-08-27 and the two paragraphs below are false. Both are kept,
-> because the arrangement they describe is what the deploy pipeline still
-> assumes, and the gap between the two is the defect.**
+> **Measured 2026-08-27. The deploy reaches**
+> **`https://lockstate-staging.matmaxalez94.workers.dev/`**, and that is the
+> URL to open to see the current build. The two paragraphs below describe an
+> arrangement that is not in force.
 >
-> **The deploy reaches `https://lockstate-staging.matmaxalez94.workers.dev/`.**
-> That URL serves the current build. `lockstate.io` serves a **different, older
-> one**, and the two were compared rather than assumed:
+> **`lockstate.io` does not receive the deploy, and that is deliberate — the
+> owner has it switched off.** It is not a defect and it is not an incident.
+> Recorded 2026-08-27, in the owner's words: *"Nikt nie gra, tylko ja znam tę
+> domenę. Lockstate.io ma wyłączony deploy, to nie błąd."*
+>
+> **What the two hosts actually serve**, compared rather than assumed, and kept
+> because it is how you can tell at a glance which one you are looking at:
 >
 > | | `workers.dev` | `lockstate.io` |
 > |---|---|---|
 > | bundle | `assets/index-ByAs-HH3.js` | `assets/index-CwVFOnxX.js` |
-> | `Content-Security-Policy` | present | **absent** |
-> | `Strict-Transport-Security` | present | **absent** |
-> | `Cross-Origin-Opener-Policy` | present | **absent** |
-> | `Cross-Origin-Embedder-Policy` | present | **absent** |
-> | `Cross-Origin-Resource-Policy` | present | **absent** |
+> | `Content-Security-Policy`, `Strict-Transport-Security`, `Cross-Origin-{Opener,Embedder,Resource}-Policy` | present | absent |
 > | `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` | present | present |
 >
-> **Caching is ruled out, not waved away.** A path that has never existed
-> (`/nonexistent-<nanoseconds>`, answered by the SPA fallback) returns from
-> `lockstate.io` without those five headers and from `workers.dev` with all of
-> them, on the same request, with `Cache-Control: no-cache` sent. A path that
-> has never been requested cannot carry a cached response.
+> The five that differ entered `public/_headers` at `cea6849` (2026-08-24), so
+> the domain is pinned to a build from before it. Derive the distance rather
+> than trusting a number here: `git rev-list --count cea6849..origin/main`.
 >
-> The five absent headers entered `public/_headers` at `cea6849`
-> ("Add a CSP, HSTS and cross-origin isolation to the static-asset response
-> headers", 2026-08-24), which is on `main` and contained in 121 tags with 562
-> commits after it. So the domain has been serving a build from before that
-> commit, and **ADR 0021's security posture is not in force on the host players
-> visit.** Derive the numbers rather than trusting these:
-> `git rev-list --count cea6849..origin/main` and
-> `git tag --contains cea6849 | wc -l`.
+> Caching is not the explanation — a path that has never existed, answered by
+> the SPA fallback, returns from `lockstate.io` without those five headers and
+> from `workers.dev` with all of them on the same request. That is worth
+> knowing only so nobody re-investigates it: **the difference is the switched
+> -off deploy, not a cache and not a header bug.** `public/_headers` is applied
+> correctly wherever the current build is published.
 >
-> **The most likely cause is the trap the next bullet describes, already
-> sprung** — the domain sitting on the `lockstate` Worker rather than on
-> `lockstate-staging`. This repository cannot read that back; only
-> Cloudflare → Workers → Settings → Domains & Routes shows it. Tracked as an
-> issue rather than guessed at here.
+> **What this does change, and it is the only thing:** a merge to `main`
+> publishes to the `workers.dev` host, not to `lockstate.io`. Any sentence
+> below or in an ADR that treats a merge as "updating the public site" is
+> describing the arrangement, not today. **When the domain is switched back
+> on, that stops being true and this note has to go** — the paragraphs below
+> are then correct again, which is why they were marked rather than deleted.
 
 **One Worker, not two.** `lockstate.io` is served by **`lockstate-staging`** — the Worker the `staging` job deploys — through a Custom Domain attached by hand in the Cloudflare dashboard. Production and staging are the same thing for now, by the owner's decision.
 
 Two consequences follow, and the second is a trap:
 
-- **A merge to `main` already updates the public site.** The `staging` job runs on every push to `main`, so `lockstate.io` tracks `main` with no further configuration. Nothing needs to be enabled for that to happen; it is happening. **Measured false on 2026-08-27** — see the note above. A merge updates `lockstate-staging.matmaxalez94.workers.dev`; `lockstate.io` did not move.
+- **A merge to `main` already updates the public site.** The `staging` job runs on every push to `main`, so `lockstate.io` tracks `main` with no further configuration. Nothing needs to be enabled for that to happen; it is happening. **Not in force on 2026-08-27** — the owner has the domain's deploy switched off, so a merge updates `lockstate-staging.matmaxalez94.workers.dev` and `lockstate.io` stays where it is. See the note above; this bullet becomes true again when the domain is switched back on.
 - **Dispatching the `production` job would silently take the domain away.** A Workers Custom Domain is an account-scoped record with exactly one owner. `wrangler.jsonc` declares `lockstate.io` under `env.production`, whose Worker is named `lockstate` — a Worker that has never been deployed. Running that job transfers the live domain onto it, and wrangler does not warn. Do not dispatch it until production is genuinely meant to take over, and expect a few seconds of the site serving a freshly-created Worker when you do.
 
 Staging deploys cannot damage the arrangement: `routes` appears only under `env.production` in `wrangler.jsonc`, never at the top level, so the staging environment neither inherits it nor manages any route. Wrangler leaves routes it was not told about alone.
