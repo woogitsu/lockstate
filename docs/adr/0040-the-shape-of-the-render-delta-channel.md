@@ -379,7 +379,45 @@ replaces `frame.actors` and leaves `world` and `structures` untouched; the exist
 `revision` counter is documented as geometry-only
 (`src/rendering/feed/render-feed.ts:29-34`) and does not move for an actor-only
 update, so `TileLayer` does not repaint. The snapshot poll's interval relaxes from
-2 s to 30 s and becomes a consistency net rather than the data path. Delete the
+2 s to 30 s and becomes a consistency net rather than the data path.
+
+> **Amendment, 2026-08-27: the sentence above was not delivered by slice 1, and
+> the slice made the poll more frequent rather than less.** Approved on the
+> owner's standing delegation to decide autonomously, which approves the
+> judgement and **not this text**; a reader who disagrees should treat it as open.
+>
+> The interval was written but never binding. `SimulationSnapshotFeed` marked
+> itself dirty on **`clockRunning` being true** rather than on the clock
+> *starting*, and the worker publishes an unsolicited `simulation/clock-state`
+> every 250 ms for the life of a running session, so `nextPollAt` was never the
+> constraint. Driving the real feed for 30 running seconds cost **121** full
+> session-snapshot requests where this paragraph implies 2 — and where the 2 s
+> interval it replaced would have cost 16. Every applied snapshot moves the
+> geometry revision, so `TileLayer.releaseAll()` and the full tile walk ran about
+> four times a second in a prison where nothing had changed.
+>
+> **The neighbouring claim in this paragraph is unaffected and was re-checked:**
+> an actor-only delta genuinely does not move `revision`, and `TileLayer`
+> genuinely does not repaint for one. What was false is only the poll's cost.
+>
+> It is now delivered — 121 → 2, measured the same way — and the rule is two
+> conditions rather than one, because the transition alone would have been a
+> visible regression: `projectExecuteTick` schedules a command a lead ahead of
+> the tick it was sent at, so the poll that a command acceptance triggers
+> captures a world the command has not reached yet, and narrowing the clock rule
+> without adding anything would have left a player's wall unseen until the next
+> 30-second poll. The bug was masking that by polling four times a second. So the
+> feed also marks dirty once an unsolicited `clock-state` reports a tick at or
+> past the highest `scheduledForTick` an acceptance named — once per command
+> burst, not per readout.
+>
+> The guard that missed this is worth naming, because it was careful about
+> everything except the one thing that mattered: the interval case emitted
+> `ready('running')` and then only advanced the frame reader, so it pinned the
+> interval **on a wire trace a running worker never produces**. It now emits the
+> worker's own publications, which alone turns it red against the old code.
+
+Delete the
 `UNSENT_WORKER_TO_MAIN_KINDS['simulation/delta']` entry in
 `tests/foundation/message-kind-reachability-contract.test.ts:152-153` — that gate
 is written to fail when a sender appears, so this is a required step and not an
