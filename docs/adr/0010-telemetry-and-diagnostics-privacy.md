@@ -104,10 +104,27 @@ never called, and `BatchingTelemetrySink` never flushed. That paragraph also
 said the wiring of the first `record()` call is the moment the boot path must
 also obtain consent, and that is exactly how it was wired.
 
+**That last sentence had no referent until 2026-08-27, later the same day, and
+saying which direction it moved in is the point of recording it.** ADR 0046
+wired the consent surface, the pump and the transport and produced **no
+event**: `git grep -lI "recorder\.\(record\|recordError\)" -- src/ | grep -v
+"src/services/telemetry/"` returned nothing at 30db0e9, so there was no
+"wiring of the first `record()` call" for the sentence to be about — the
+consent half arrived alone and the sentence read as though both had. It is true
+as written from the change that added
+`src/services/telemetry/crash-reporting.ts` and its four call sites in
+`src/main.ts` — the first `record()` calls this repository has ever had, wired
+from the same `createTelemetryPipeline` resolution that mounts the prompt, so
+that with no decision on record a produced event is refused before an envelope
+exists.
+
 **What is true now.** `src/main.ts` builds the pipeline, mounts the consent
-prompt and drives the sink from an idle callback, and `HttpTelemetryTransport`
-exists. But the transport's destination comes from deployment configuration, no
-deployment sets it, and with it absent nothing is constructed at all — so *no
+prompt, drives the sink from an idle callback, and — since the producers landed
+— feeds it: the page's `error` and `unhandledrejection` listeners produce
+`diagnostic.unhandled-error`, and the two places this thread learns it has lost
+a simulation worker produce `diagnostic.worker-terminated`.
+`HttpTelemetryTransport` exists. But the transport's destination comes from
+deployment configuration, no deployment sets it, and with it absent nothing is constructed at all — so *no
 build of this repository sends anything*, and the consent prompt is not mounted
 either, because asking for consent to a collection that cannot happen is the
 defect [ADR 0044](./0044-what-happens-to-a-service-tier-nothing-calls.md) named.
