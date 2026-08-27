@@ -392,6 +392,17 @@ the owner wants it, it is a change to ADR 0045 decision 8 and theirs to make.
 
 ### 6. An edge order is permitted when either of the two tiles it separates qualifies
 
+> **Landed as slice 0, issue #448.** This decision — and only this decision —
+> is implemented. The rest of this document is still *Proposed* and the Status
+> section above still governs it. Three things below are worth reading against
+> the code rather than as a plan: the frontier ring in consequence 1 is
+> **deferred**, with the reason recorded in `docs/WORLD.md`; the refusal a
+> player actually met was `out-of-bounds` rather than `unowned-land`, because
+> with one owned chunk the two faces coincide with the edge of the materialised
+> world; and the `canBuildAt` line this document cites as
+> `src/simulation/construction/system.ts:266` has moved into `admits`
+> (`:347`), called from `submitOrder` (`:311`).
+
 The fix from correction 1, stated as a decision because it changes a rule
 `docs/WORLD.md` records and a test pins.
 
@@ -597,7 +608,7 @@ any of them.
 
 | # | Slice | Why here | Unblocks |
 | --- | --- | --- | --- |
-| **0** | **The symmetric edge rule** (decision 6, without the frontier ring) | It is a defect, it is independent of everything else, and every later phase stands on it | A room flush against the edge of owned land becomes sealable; ADR 0045's recorded consequence is answered |
+| **0** ✅ | **The symmetric edge rule** (decision 6, without the frontier ring) — **landed, #448** | It is a defect, it is independent of everything else, and every later phase stands on it | A room flush against the edge of owned land becomes sealable; ADR 0045's recorded consequence is answered |
 | 1 | **Grass** (decision 1) | One line, visible, gives the terrain layer a producer | The owner sees the thing they asked to see |
 | 2 | **The floor plane** (decision 2), world + snapshot + render view + painter, no rule | Storage and pixels, with nothing gated on them yet, so no fixture moves | Everything below |
 | 3 | **The foundation buildable** — a `'floor'` `BuildableCategory`, a `placesFloorId`, a `finalizeConstruction` branch, a `revertConstruction` branch, a catalogue row, an area drag with a cap | The player can now pour concrete | Phase 4 |

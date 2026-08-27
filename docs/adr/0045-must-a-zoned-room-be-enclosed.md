@@ -55,12 +55,26 @@ faces are not — the same physical wall on the same property line. ADR 0047's
 slice 0 is the fix, it is roughly one predicate plus the bounds check beside it,
 and it answers this consequence without the building layer at all.
 
-Until slice 0 lands the consequence stands unfixed and known. Today's damage is
-bounded, and the reason is worth recording because it will stop being true: no
-land purchase exists — `canPurchaseParcel` has no caller and there is no
-`PurchaseParcel` command — so a session owns one chunk and only its last row and
-column are affected. **The option this document weighed, that the player buys
-the adjoining parcel, named a route the player cannot take.**
+**Slice 0 has landed (issue #448), and this consequence is closed.**
+`ConstructionSystem.submitOrder` now asks its bounds and ownership questions of
+*both* tiles an edge separates and takes either answer, so the south and east
+faces of owned land are buildable and a room flush against that edge can be
+sealed and zoned. The paragraph above it said *"until slice 0 lands the
+consequence stands unfixed and known"*, and that sentence is kept rather than
+overwritten because the bounded-damage reasoning under it is the durable part:
+no land purchase exists — `canPurchaseParcel` has no caller and there is no
+`PurchaseParcel` command — so a session owned one chunk and only its last row
+and column were ever affected. **The option this document weighed, that the
+player buys the adjoining parcel, named a route the player cannot take**, and it
+is now a route nobody needs. The case is
+`tests/integration/edge-of-owned-land-room.test.ts`.
+
+One thing #448 found that the routing above did not: the refusal a player met
+was `out-of-bounds`, not `unowned-land`. With one owned chunk the south and east
+faces of owned land are also the edge of the *materialised* world, and the
+bounds check runs before ownership is consulted — so widening ownership alone
+would have fixed nothing observable. Both halves moved together, exactly as
+ADR 0047 decision 6 said they had to.
 
 ## Context
 
@@ -479,7 +493,11 @@ it is the constraint the ruling chose.
   branch, and it is measured above rather than estimated.
 - **A room flush against the edge of owned land is unzonable** until the
   adjoining parcel is bought, because its south and east boundaries are stored on
-  tiles outside it. See Context. Not solved here.
+  tiles outside it. See Context. Not solved here. **Closed by issue #448**, and
+  not by a parcel purchase: the cause was one asymmetric predicate, and an edge
+  order is now permitted when either of the two tiles it separates qualifies.
+  Both directions are kept because the bullet records what this decision cost at
+  the time it was taken.
 - **The player's route to a room is now build-then-zone.** Zoning is still free
   and instant; what it now requires is that the walls already exist. Nothing
   forces the walls to be built in any particular order, and nothing prevents the
