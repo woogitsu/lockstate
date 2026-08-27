@@ -237,11 +237,39 @@ describe('IncidentResponseSystem: real guards, real routes, real lockdown', () =
   });
 
   /**
-   * Live response bookkeeping references the previous NavigationSystem's
-   * request queue, so a restored open incident has no active response --
-   * it must lapse at its deadline rather than silently resolving.
+   * **The reason this lapses is the empty roster, and it is asserted rather
+   * than left implicit.**
+   *
+   * This case used to carry the comment *"live response bookkeeping references
+   * the previous NavigationSystem's request queue, so a restored open incident
+   * has no active response -- it must lapse at its deadline rather than
+   * silently resolving"*, and that stopped being the restore outcome when
+   * ADR 0033's amendment (its open question 1, built) made
+   * `redispatchInterruptedResponses` mount a *fresh* response to a still-open
+   * incident no record claims. A restored mid-response incident in a staffed
+   * prison now resolves -- the sibling case below runs exactly that, and
+   * `tests/integration/incident-response-restore.test.ts` prices it through the
+   * real save path.
+   *
+   * What is left here is the first of that pass's refusals: `buildHarness`
+   * builds its own empty `GuardRoster`, so the restored session has nobody to
+   * claim and `claimableResponders` returns `undefined`. The lapse is then
+   * ADR 0033 decision 1's outcome, which is still issue #28's consistent
+   * failure rather than a hidden success. The premise is asserted below so that
+   * a harness which one day carries guards over fails here instead of quietly
+   * turning this case into the sibling one.
+   *
+   * **This case is why the rotted sentence survived.** `docs/INCIDENTS.md`'s
+   * "Snapshot/restore" section carried the same claim, cited this file as
+   * proving it directly, and its correction names exactly this: *"The cited
+   * test still passes, which is why nothing caught it: its `restored` harness
+   * hires no guard, so there is nobody to re-dispatch — a special case that was
+   * being read as the general rule."* Correcting the document left the special
+   * case still reading as the general rule here and in
+   * `IncidentResponseSystem.loadSnapshot`'s docstring; this commit closes both,
+   * which is the class rather than the instance.
    */
-  it('a restored mid-response incident lapses rather than hidden-succeeding', () => {
+  it('a restored mid-response incident whose pool cannot refill lapses rather than hidden-succeeding', () => {
     const policy: IncidentResponsePolicy = { ...DEFAULT_INCIDENT_RESPONSE_POLICY, responseDeadlineTicks: 200 };
     const original = buildHarness(policy);
     original.guards.hire('staff-role.guard', original.cellBlock.canteenTiles[0]!);
@@ -252,6 +280,9 @@ describe('IncidentResponseSystem: real guards, real routes, real lockdown', () =
     const restored = buildHarness(policy);
     restored.incidents.loadSnapshot(original.incidents.getSnapshot());
     restored.response.loadSnapshot(original.response.getSnapshot());
+    // The refusal this case is about, named: no responder is claimable, so the
+    // re-dispatch cannot run and the incident falls through to the deadline.
+    expect(restored.guards.unassignedGuardIds()).toEqual([]);
 
     for (let tick = 0; tick < 500 && restored.incidents.get('incident-1')!.state === 'notified'; tick += 1) restored.kernel.step();
 
@@ -260,6 +291,48 @@ describe('IncidentResponseSystem: real guards, real routes, real lockdown', () =
     // was never given a snapshot at all, so this pins the lapse and not the
     // restore. The case below is the one that reads what `loadSnapshot` carried.
     expect(restored.response.getMetrics().incidentsResolved).toBe(0);
+  });
+
+  /**
+   * The other side of the same refusal, and the claim the `loadSnapshot`
+   * docstring now makes: a restored mid-response incident whose pool *can*
+   * refill is re-dispatched to and **resolves**, at unit level, on the first
+   * scheduled update after the load.
+   *
+   * The two cases differ by one line -- whether the restored harness has a
+   * guard -- so what they isolate is the re-dispatch itself rather than any
+   * property of the save path.
+   */
+  it('a restored mid-response incident whose pool can refill is re-dispatched to and resolves', () => {
+    const policy: IncidentResponsePolicy = { ...DEFAULT_INCIDENT_RESPONSE_POLICY, responseDeadlineTicks: 200 };
+    const original = buildHarness(policy);
+    original.guards.hire('staff-role.guard', original.cellBlock.canteenTiles[0]!);
+    original.incidents.open({ id: 'incident-1', type: 'assault', sectorId: 'block-a', participantIds: [1], severity: 2, causeFactors: [] }, 0);
+    original.kernel.step(); // dispatch happens; guard is mid-route
+    expect(original.incidents.get('incident-1')!.state).toBe('notified');
+
+    const restored = buildHarness(policy);
+    // The responder the save stranded, as a restored session actually carries
+    // it: still on `'on-search'`, claimed by a record that no longer exists.
+    restored.guards.hire('staff-role.guard', restored.cellBlock.canteenTiles[0]!);
+    const strandedGuardId = restored.guards.allGuardIds()[0]!;
+    restored.guards.setDeploymentPhase(strandedGuardId, 'on-search');
+    restored.incidents.loadSnapshot(original.incidents.getSnapshot());
+    restored.response.loadSnapshot(original.response.getSnapshot());
+    expect(restored.guards.unassignedGuardIds()).toEqual([]); // held by the claim, before the sweep
+
+    for (let tick = 0; tick < 500 && restored.incidents.get('incident-1')!.state !== 'resolved'; tick += 1) restored.kernel.step();
+
+    // Released, re-claimed and released again -- and the outcome is the
+    // contained one, not the lapse ADR 0033 decision 1 alone would have left.
+    expect(restored.incidents.get('incident-1')!.state).toBe('resolved');
+    expect(restored.incidents.get('incident-1')!.outcome).toEqual({ injuredEntityIds: [], propertyDamage: 1, escaped: false });
+    expect(restored.guards.getDeploymentPhase(strandedGuardId)).toBe('unassigned');
+    // The counter the snapshot carried, plus the second dispatch that really
+    // happened -- read off the original rather than written as a literal.
+    expect(restored.response.getMetrics().respondersDispatched).toBe(
+      original.response.getMetrics().respondersDispatched + 1,
+    );
   });
 
   /**
