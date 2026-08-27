@@ -276,8 +276,33 @@ function git(args: readonly string[]): string {
   return result.stdout;
 }
 
+/**
+ * Memoised, because this gate gets slower every time the repository does the
+ * thing it exists to encourage.
+ *
+ * Each lookup is a `git rev-parse` subprocess, four of the tests below call
+ * this over the whole corpus, and the corpus only grows -- a citation is how a
+ * claim about a tree stops expiring, so writing more of them is correct and
+ * each one used to cost four processes. Measured on the container that found
+ * this: adding three citations in one change took `resolves every cited commit`
+ * from inside Vitest's 5s budget to 5.66s, and the file's own duration was
+ * already 7.9s for eight tests. That is a gate failing for a reason that has
+ * nothing to do with what it checks.
+ *
+ * A `Map` rather than a raised timeout, because the timeout would have to be
+ * raised again: `docs/AGENT_WORKFLOW.md` warns against raising a timeout to
+ * hide a problem, and the problem here is repeated identical work. The
+ * resolution is a pure function of the token and the checked-out repository,
+ * neither of which changes during a run, so caching it changes no answer --
+ * `undefined` is cached too, since a fabricated sha is exactly the token the
+ * four tests ask about most.
+ */
+const commitCache = new Map<string, string | undefined>();
+
 /** The full commit id a token names, or `undefined` if it names none. */
 function commitFor(token: string): string | undefined {
+  if (commitCache.has(token)) return commitCache.get(token);
+
   const result = spawnSync('git', ['rev-parse', '--verify', '--quiet', `${token}^{commit}`], {
     cwd: REPOSITORY_ROOT,
     encoding: 'utf8',
@@ -288,7 +313,9 @@ function commitFor(token: string): string | undefined {
   }
 
   const stdout = result.stdout.trim();
-  return stdout.length === 0 ? undefined : stdout;
+  const commit = stdout.length === 0 ? undefined : stdout;
+  commitCache.set(token, commit);
+  return commit;
 }
 
 function filesUnder(directory: string, extensions: readonly string[]): readonly string[] {

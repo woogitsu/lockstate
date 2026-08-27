@@ -138,6 +138,34 @@ design. That gap is now closed except where noted:
   `resolveSyncConflict` and `MemoryCloudSaveClient`
   (`src/persistence/cloud/`) — the client-side sync/conflict policy is
   pure TypeScript, including a two-concurrent-pushes test.
+- **Not executed by the shipped build, because the shipped build never loads
+  it:** every module under `src/persistence/cloud/` is outside the production
+  import graph. Walked from the two entry points `vite.config.ts` declares,
+  nothing the browser runs imports the cloud client, the sync engine or their
+  types; nothing under `src/` calls `createClient` at all, and the two modules
+  naming `@supabase/supabase-js` import it `import type`, so the SDK
+  contributes no code to the bundle either.
+
+  **This belongs in this section rather than further down**, because this
+  section's job is to say what has and has not run and "no code path a player
+  can take reaches this tier" is the strongest such statement available about
+  it. The fact was already in this document — under "Conflict resolution",
+  where it reads as a remark about that subsection — and in
+  `docs/ARCHITECTURE.md`, which states it in the topology and in the
+  persistence paragraph. What was missing is that a reader of the executed
+  inventory above would finish it without learning that the client half of
+  everything it inventories has no caller.
+
+  It is a decision rather than an oversight, and the decision is written down:
+  [ADR 0044](./adr/0044-what-happens-to-a-service-tier-nothing-calls.md) keeps
+  this tree on stated terms — it is waiting on a signed-in account, which does
+  not exist in `src/` (#34), and what would make it dead is the owner deciding
+  cloud save is out of scope. Two gates hold the state in both directions:
+  `tests/foundation/documentation-claims-contract.test.ts` fails if any module
+  outside `src/persistence/cloud/` reads Supabase configuration, and
+  `tests/foundation/trusted-tier-reachability-contract.test.ts` fails if the
+  production graph reaches any module *in* it. Both failure messages name this
+  document, because wiring it means correcting this bullet in the same change.
 
 ### Running the local stack
 
@@ -1441,6 +1469,15 @@ that #19's follow-up wiring did produce (`src/ui/save-panel.ts` over
 `SessionController`) drives the *local* repository only; `SessionController`
 touches Supabase nowhere, and no module in `src/ui/` imports
 `src/persistence/cloud/`.
+
+**This paragraph is not the place a reader looks for that fact, and it stayed
+the only place for three days.** It is now stated in "What has and has not been
+executed" at the top, where the inventory is, and generalised there from
+`src/ui/` to the whole production import graph — which is the stronger and the
+checkable claim. #378 reported this document as not carrying the fact at all,
+which was already false when it was written (`5e1018d`, 2026-08-23, added the
+sentence above); what was true is that it was here rather than there. Both
+statements are kept rather than one overwriting the other.
 
 ## Anonymous identity upgrade
 
