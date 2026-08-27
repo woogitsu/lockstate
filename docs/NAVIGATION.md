@@ -212,6 +212,25 @@ one costs the same, and none of them is the iteration/insertion order of a
    #365; the sort is the third thing a route depends on, and
    `constructedDoorIdFor`'s docstring already treated it as one.
 
+Both frontiers are a `FrontierHeap` (`frontier-heap.ts`) since #413, not the
+linear scan that picked the minimum until then, and the first two rules above
+are exactly what makes that swap safe. A binary heap is not a stable sort: among
+entries its comparator calls *equal*, sift direction and insertion history
+decide which surfaces first, so a frontier ordered by cost alone would make the
+route a function of heap internals. The comparator is therefore total by
+construction rather than by care — cost first, then a tie-break key that is
+unique per frontier node and derived from search state (the `tileKey`, the
+region id, the same keys compared in the same direction as before), so the
+minimum is unique and pop order is fully determined whatever arrangement the
+array is in. The heap has no decrease-key: a relaxation pushes a second,
+strictly cheaper entry and the superseded copy is discarded when it surfaces,
+which is why both searches check `closed`/`visited` **before** charging an
+expansion to the budget — a discarded copy is not an expansion. Verified rather
+than argued: at `3d54e4b` (v0.0.121 plus #410) the three
+`navigation.production.*` benchmark scenarios — 500 real requests plus two
+corner-to-corner routes — return byte-identical checksums and identical counted
+work before and after the swap.
+
 A fourth thing decides which route comes back, and it is not an ordering: the
 **end the region search is rooted at**. A tie-break among equal-cost
 predecessors is applied from the search's own source, so the same three rules
@@ -240,6 +259,21 @@ asserts the alternative is genuinely available at the same cost, so no case ther
 pass because there was only ever one route to find. Measured, reverting one
 site at a time: the A* tie-break fails one case, the Dijkstra tie-break one,
 the portal sort two.
+
+That guard had one hole, found and closed by #413's mutation runs and worth
+recording because the reason generalises. `buildDiamond`'s comment claims its
+door ids make the portal order point the opposite way to the region-id order,
+and that is true of the *source* region's portals — but the region search is
+rooted at the destination (the fourth thing, above), so the order that decides
+the tie is the **destination** region's portal list, and there it pointed the
+same way as the region ids. Measured: deleting `region-dijkstra.ts`'s tie-break
+outright, so ties fall to frontier order, left that case green; only reversing
+it went red. A second fixture, `buildMirroredDiamond`, names the same four doors
+so the destination's portal order reaches the higher-numbered region first, and
+it fails under both mutations. `tests/unit/navigation-frontier-heap.test.ts` is
+the unit-level half: it drains seeded entry sets against an independently
+written sort, over ~2,000 entries of which more than half tie on cost, and pins
+that the same entry set drains the same way whatever order it was pushed in.
 
 Repeatability — identical requests return identical routes — is the weaker,
 separate claim, and `tests/unit/navigation-router.test.ts`'s "is
@@ -348,6 +382,39 @@ rationale lives in
   `workBudget` and defers the rest once spent, always processing at least
   one request per tick so an unusually expensive request can't stall the
   queue forever.
+
+  **What one expansion costs, and what the budget therefore does and does
+  not bound.** Until #413 the unit was not proportional to time: both
+  frontiers selected their minimum by scanning, so an expansion cost more
+  the larger the search got. Measured at `3d54e4b` (v0.0.121 plus #410,
+  Node 24.19.0, this container — the ratios travel, the absolute numbers do
+  not), one `findRoute` corner-to-corner across one open square region,
+  which is the shape with the largest frontier:
+
+  | region | expansions | µs/expansion before | after | route ms before | after |
+  | --- | --- | --- | --- | --- | --- |
+  | 32×32 | 987 | 2.75 | 1.35 | 2.7 | 1.3 |
+  | 64×64 | 4,030 | 5.44 | 1.48 | 21.9 | 6.0 |
+  | 128×128 | 16,162 | 10.31 | 1.93 | 166.7 | 31.2 |
+  | 256×256 | 65,200 | 19.23 | 2.46 | 1,253.8 | 160.2 |
+
+  A 66× growth in search size moved the unit 7.0× before and 1.8× after, so
+  the unit is now close to constant and a budget denominated in it is
+  reasoning about something stable. Draining 250 requests through the real
+  `NavigationSystem` (the `navigation.production.*` benchmark workloads)
+  moved less, because those frontiers are small: 4.67 → 4.12 ms/tick mean on
+  the meal rush, 4.43 → 3.58 on the lockdown return, for identical counted
+  work.
+
+  What the heap did **not** change is what the budget bounds. It is still
+  counted work, not wall clock, and `processTick` still tests
+  `usedBudget >= workBudget` before a request and never inside one, so one
+  request can still charge many times the per-tick allowance: 65,200
+  expansions is 32.6× `workBudgetPerTick` at its shipped 2,000, and it now
+  costs 160 ms instead of 1,254 ms — smaller, and still three ticks' worth
+  of a 50 ms tick in one tick. Changing the budget's *value* or the "always
+  process one request" rule is an open decision (#413), deliberately not
+  taken alongside the data-structure change.
 - **Priority + age-based fairness.** Requests are ordered by
   `priority + floor(waitedTicks / agingIntervalTicks)`, then enqueue tick,
   then request id — never Map iteration order. Aging guarantees any
