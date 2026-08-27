@@ -1,4 +1,4 @@
-# ADR XXXX: Account session states, and what each may do to local data
+# ADR 0043: Account session states, and what each may do to local data
 
 ## Status
 
@@ -7,12 +7,13 @@
 records a decision that has to exist before any account UI can be written, and
 whoever integrates it should either accept it or say which transition is wrong.
 
-**This ADR carries a placeholder number and pre-commits to being renumbered.**
+**The number was a placeholder; 0043 was assigned on landing.**
 `docs/AGENT_WORKFLOW.md` §2 assigns ADR numbers centrally, after drafts come
-back, because two agents once took `0034` within an hour. `docs/adr/README.md`
-is deliberately **not** edited here; adding the row and renaming this file to
-the assigned `NNNN-` prefix belongs to whoever integrates it, and
-`tests/foundation/adr-numbering-contract.test.ts` stays red until they do.
+back, because two agents once took `0034` within an hour. This draft carried
+`XXXX` and did not edit `docs/adr/README.md`. 0043 was one of the two gaps that
+README's own paragraph records as genuinely free, so taking it left the stated
+next free number (0045, `max(on disk) + 1`) correct and untouched. Its sibling
+gap 0042 went to the consequence-loop ADR in the same integration pass.
 
 ## Context
 
