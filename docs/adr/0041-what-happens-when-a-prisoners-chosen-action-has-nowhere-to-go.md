@@ -107,6 +107,9 @@ candidates and walks them in order until one resolves, instead of taking
 **2. Ordering the contended scan by need urgency is the tracked successor, not
 part of this decision.** It is recorded here as the answer to ADR 0029 decision
 5's fairness half and is deliberately not taken now — see below.
+**Tracked as issue #434**, which carries the three obstacles this document named:
+which need decides urgency, the `O(N log N)` per-cycle cost, and the determinism
+constraint ADR 0020 and ADR 0029 decision 7 put on a second iteration order.
 
 ## Alternatives, with their real costs
 
@@ -235,6 +238,10 @@ all, so this option no longer describes a defensible position.
   implementation.
 
 ## Open questions
+
+**All three are now tracked, so none of them is waiting on this document to be
+re-read.** 1 and 3 are one issue because answering either answers the other:
+#436. 2 is #435.
 
 1. **Should a fallback be bounded?** Walking the whole list means a prisoner
    always does *something* if anything resolves. Whether that is right, or

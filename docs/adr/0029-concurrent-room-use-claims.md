@@ -673,7 +673,12 @@ amended together.
   written up separately as a proposal, with options and costs, and is
   deliberately **not** implemented here — decision 5's own reason stands, that a
   fix is a per-tick ordering decision over the whole population and therefore
-  ADR 0020's territory.
+  ADR 0020's territory. **That proposal is [ADR
+  0041](0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md),
+  which took decision 5's base half and deferred its fairness half as decision
+  2 — now tracked as issue #434.** So the reader's job here is no longer to
+  notice that something is owed; it is to read #434 before re-arguing the
+  ordering question from this section.
 - **§*What is owed, and to whom*'s second bullet is discharged as a
   measurement** and re-owed as a decision.
 - **An amendment moves no `Status` line, so nothing mechanical in this
