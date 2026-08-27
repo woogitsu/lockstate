@@ -404,7 +404,7 @@ recording as one rule over two collections rather than as two rules:
   **neither half of that expression is in the code**. `claims.size` counts every
   claim on the instance whatever it consumes, which is `claimCountOf`'s question
   and not any ceiling's; `concurrentUseCapacity` is the all-objects total the
-  *Two capacities, not one* section above calls **"still the all-objects total
+  "Two capacities, not one" section above calls **"still the all-objects total
   and is nothing's ceiling"** -- so the two halves of this document already
   contradicted each other. The sentence was
   **true when it landed** at `955756f` (#328) -- `claimUse` really did read
