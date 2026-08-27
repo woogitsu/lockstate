@@ -8,8 +8,9 @@ implementation.
 
 **Nothing here changes a status.** A status moves in the ADR and in the index,
 never in this file. What changed with this revision is what the file is *for*:
-§1 records **all thirteen** flips, §2 holds **one entry — the two dated rulings
-#382 wrote into ADR 0008 §2** — above the account of why the queue had been
+§1 records **all thirteen** flips, §2 holds **two entries — the two dated rulings
+#382 wrote into ADR 0008 §2, and the 2026-08-27 amendment scoping that ADR's §3
+by authority** — above the account of why the queue had been
 emptied three times and what that bought (ADR 0029 was accepted on 2026-08-26
 and its entry deleted; 0031 arrived immediately after and was itself accepted)
 — and everything after it is the residue — one genuinely open decision, one
@@ -162,14 +163,16 @@ files**, and every claim in them cites one. The set, in full:
   `docs/research/2026-08-25-economy-rate.md`.
 - ADRs **0002, 0008, 0009, 0010, 0012, 0013, 0015, 0016, 0017, 0022, 0023, 0025,
   0026, 0027, 0028, 0029, 0031**.
-- Fifteen files under `src/`: `ui/hud/messages.ts`, `ui/hud/projection.ts`,
+- Sixteen files under `src/` — fifteen until 2026-08-27, when §2's new entry
+  began citing `persistence/cloud/sync-engine.ts` and this list gained it in the
+  same commit, which is what the paragraph below requires: `ui/hud/messages.ts`, `ui/hud/projection.ts`,
   `ui/hud/hud.ts`, `ui/hud/build-panel.ts`, `content/procurement-catalog.ts`,
   `content/room-catalog.ts`, `simulation/economy/income.ts`,
   `simulation/rooms/zoning.ts`, `simulation/rooms/topology.ts`,
   `simulation/worker/state-machine.ts`, `simulation/protocol/commands.ts`,
   `simulation/protocol/types.ts`, `simulation/construction/definition.ts`,
   `simulation/prisoners/intake-system.ts`,
-  `services/challenges/verification.ts`.
+  `services/challenges/verification.ts`, `persistence/cloud/sync-engine.ts`.
 - Six under `tests/`: `foundation/adr-status-reference-contract.test.ts`,
   `foundation/unconsumed-command-contract.test.ts`,
   `unit/ui-hud-messages.test.ts`, `unit/objects-room-capacity.test.ts`,
@@ -328,7 +331,7 @@ cells is exercised nowhere, because no shipped session yet furnishes two.
 
 ---
 
-## 2. One entry: the two rulings #382 added to ADR 0008 §2
+## 2. Two entries, both inside ADR 0008: #382's two rulings in §2, and 2026-08-27's scope clause for §3
 
 **This heading has now read "empty", "exactly one entry: ADR 0029", "empty
 again", one entry, two, one, empty for the third time, and now one again** —
@@ -439,6 +442,70 @@ them separately.
 reading of §2's zone taxonomy, and the governance question they raised is common
 to both. The substance is separable and the answer may differ per ruling; the row
 is shared because the thing the owner has not seen is the same thing twice.
+
+### ADR 0008 §3's scope clause (2026-08-27) — the reading is the owner's, the wording is not
+
+**What is waiting, and it is narrower than the entry above.** The owner **has**
+decided the substance: the amendment of 2026-08-26 recorded that §3's scope was
+unstated and put two readings to them — bind §3 by *runtime* (§1's zone list) or
+by *authority* (§2's table) — and they chose **by authority**. The amendment
+dated 2026-08-27 at the foot of
+[ADR 0008](./0008-trusted-service-boundary.md) writes that choice down. ADR 0008
+is `Accepted` and **stays** `Accepted`; no status moves, and the `0008` row in
+[`README.md`](./README.md) is unaffected.
+
+**So why a row at all.** Two reasons, and the first is the one this section's
+own text gives: *"an amendment inside an accepted ADR is invisible to every
+mechanical gate there is; this row is the only thing that says it exists."* The
+second is that a choice between two readings does not approve the consequences
+drawn from it, and this amendment draws several the owner has not seen. Those
+are what is outstanding:
+
+1. **The clause's wording is the editor's.** The owner's draft, quoted in the
+   2026-08-26 amendment, was *"every mutation path over Z2-authoritative
+   state"*. What landed is *"every mutation path over state that §2's authority
+   table assigns to Z2, and only those"*, plus a decide-versus-touch test. The
+   amendment argues both changes; neither was put to the owner.
+2. **`create_save_version` falls outside §3, and the argument for it is the
+   weakest joint.** The pointer columns `current_revision` and
+   `current_version_id` are out of every client grant and
+   `src/persistence/cloud/sync-engine.ts` orders reconciliation by one of them,
+   which is close to what §2's 2026-08-26 ruling calls the server's own
+   statement. The amendment distinguishes them — the pointer is caller-proposed
+   and server-validated, a timestamp is server-computed — and says in terms that
+   a reader who disagrees should add a §2 row rather than re-argue the
+   paragraph. That is a real fork.
+3. **A new threat row, T13**, for flood, forgery and retention evasion against
+   an unauthenticated ingest. It is an addition to an accepted threat model.
+4. **An obligation the clause creates rather than removes:** a telemetry
+   retention or deletion job is *inside* §3, because deciding what is kept is
+   the half §2 assigns to Z2. So is the `service_role` column `UPDATE` that
+   writes a challenge verdict, which §1's runtime list would not obviously have
+   caught.
+
+**What approving commits the project to.** That §3's six steps are demanded of
+entitlements, payment facts, challenge submissions and challenge verdicts, and
+are **not** demanded of cloud saves, prison creation or telemetry ingest; and
+that any future path claiming either answer names a §2 row first, adding one in
+the same commit if none covers it.
+
+**What it does not buy, and the amendment says so in its own part 6.** §3 step
+1's only enforcement is the pgTAP suites. They sweep database roles by literal
+name — `anon`, `authenticated`, `service_role` — so a dedicated Worker role would
+be unswept, and a Worker calling a `SECURITY DEFINER` function with a server key
+is indistinguishable from any other holder of that key to PostgreSQL. **Nothing
+red appears if this boundary is later got wrong.**
+
+**If the answer is no on any of the four**, the clause itself still stands —
+the reading was the owner's — and what changes is the consequence. Say which
+number, because they are independent.
+
+**The exact edit that accepts them.** The 2026-08-27 `## Amendment` heading in
+[ADR 0008](./0008-trusted-service-boundary.md) gains `— approved <date>`, and
+its opening paragraph's second half — the one saying the wording and the
+consequences are the editor's and open — is replaced by who approved what. The
+clause, the table and T13 are not touched, because they are the text being
+approved. **And this entry is deleted.**
 
 ### ADR 0031 — accepted 2026-08-26, and the entry is deleted
 
@@ -732,8 +799,9 @@ either a decision is accepted and the code has not caught up, which is a code or
 wiring gap, or two documents state different numbers, which is a docs-truth job".
 That premise is withdrawn all the same, and with it the claim that those two
 shapes are exhaustive: there are two more, described below. **And the queue is
-not empty now** — §2 holds one entry, the two rulings #382 wrote into ADR 0008
-§2 — so the "with the queue empty" opening no longer describes the file either.
+not empty now** — §2 holds two entries, the two rulings #382 wrote into ADR 0008
+§2 and the 2026-08-27 amendment scoping that ADR's §3 — so the "with the queue
+empty" opening no longer describes the file either.
 
 **Corrected at this anchor, and it is the sharper defect of the two.** The
 paragraph above then read *"**The queue is not empty** — §2 holds **two**
