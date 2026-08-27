@@ -40,6 +40,23 @@ function ownedWorld(): SparseWorld {
   return world;
 }
 
+/**
+ * Four owned chunks, 64x64 tiles -- exactly `MAX_ZONE_DIMENSION_TILES` a side,
+ * so a rectangle at the cap fits inside the materialised world and a refusal
+ * cannot be `out-of-bounds` in disguise.
+ */
+function sixtyFourTileWorld(): SparseWorld {
+  const world = new SparseWorld(CHUNK_SIZE);
+  for (let y = 0; y < 2; y += 1) {
+    for (let x = 0; x < 2; x += 1) {
+      const chunk = { x: chunkCoordinate(x), y: chunkCoordinate(y) };
+      world.load(chunk);
+      world.setOwned(chunk, true);
+    }
+  }
+  return world;
+}
+
 function service(world: SparseWorld, registry = new RoomInstanceRegistry()): {
   readonly zoning: RoomZoningService;
   readonly rooms: RoomInstanceRegistry;
@@ -222,6 +239,51 @@ describe('a zoning request the prison cannot honour is refused, with a reason', 
     ).toMatchObject({ reason: 'invalid-area' });
   });
 
+  it('accepts a rectangle exactly MAX_ZONE_DIMENSION_TILES per side, so the cap is inclusive', () => {
+    // The sibling of 'accepts the authored minimum exactly': the minimum bound
+    // has that assertion and the maximum had none, so turning
+    // `request.width > MAX_ZONE_DIMENSION_TILES` into `>=` refused every room
+    // of exactly the largest legal width and left the whole suite green. 64x64
+    // is the room catalogue's own ceiling, so the largest room content can
+    // author has to be zonable.
+    //
+    // The value is pinned as a literal as well, because the requests below
+    // spell the constant under test on both sides of the comparison, and that
+    // holds for any value the constant could have.
+    expect(MAX_ZONE_DIMENSION_TILES).toBe(64);
+
+    // Both cases start from four owned chunks -- 64x64 tiles -- so a full-length
+    // side is inside the materialised world and the outcome is `zoned` rather
+    // than the `out-of-bounds` a one-chunk world would answer. A refusal for a
+    // different reason would satisfy an assertion written on
+    // `reason !== 'invalid-area'`, so the assertion is on acceptance.
+    const wide = service(sixtyFourTileWorld()).zoning.zone(
+      { roomCatalogId: CELL, x: 0, y: 0, width: MAX_ZONE_DIMENSION_TILES, height: 3 },
+      0,
+    );
+    expect(wide, 'the widest legal room must be zonable').toMatchObject({ kind: 'zoned' });
+
+    // The height half of the same condition, on its own line in `zone` and so
+    // its own mutation. A fresh world, because the two rectangles would
+    // otherwise overlap at the origin.
+    const tall = service(sixtyFourTileWorld()).zoning.zone(
+      { roomCatalogId: CELL, x: 0, y: 0, width: 2, height: MAX_ZONE_DIMENSION_TILES },
+      0,
+    );
+    expect(tall, 'the tallest legal room must be zonable').toMatchObject({ kind: 'zoned' });
+
+    // One tile more is still refused, so the pair brackets the bound instead of
+    // only pushing it outwards. Refused before any tile is read, so the world
+    // it is asked of does not matter.
+    const { zoning } = service(sixtyFourTileWorld());
+    expect(
+      zoning.zone({ roomCatalogId: CELL, x: 0, y: 0, width: MAX_ZONE_DIMENSION_TILES + 1, height: 3 }, 0),
+    ).toMatchObject({ reason: 'invalid-area' });
+    expect(
+      zoning.zone({ roomCatalogId: CELL, x: 0, y: 0, width: 2, height: MAX_ZONE_DIMENSION_TILES + 1 }, 0),
+    ).toMatchObject({ reason: 'invalid-area' });
+  });
+
   it('refuses rather than throwing when the registry already holds the anchor\'s instance', () => {
     // The shape a save written before zoning painted the plane has, and the
     // shape a scenario that registers instances directly has: an instance
@@ -393,6 +455,26 @@ describe('a designation can be removed, which is what makes one recoverable', ()
       zoning.unzone({ x: 0, y: 0, width: MAX_ZONE_DIMENSION_TILES + 1, height: 1 }, 0),
       'an unbounded width would walk the coordinate space inside one tick',
     ).toMatchObject({ reason: 'invalid-area' });
+  });
+
+  it('accepts a removal rectangle exactly MAX_ZONE_DIMENSION_TILES per side, so the cap is inclusive here too', () => {
+    // `unzone` carries its own copy of the same bound, and its own copy of the
+    // same hole: `>` -> `>=` on either side survived the suite exactly as it
+    // did in `zone`. A player who drags a removal the full 64 tiles must clear
+    // the rooms under it rather than be told the area is not a rectangle.
+    const wide = service(sixtyFourTileWorld());
+    wide.zoning.zone({ roomCatalogId: CELL, x: 0, y: 0, width: 2, height: 3 }, 0);
+    expect(
+      wide.zoning.unzone({ x: 0, y: 0, width: MAX_ZONE_DIMENSION_TILES, height: 3 }, 1),
+      'the widest legal removal must clear the room it covers',
+    ).toMatchObject({ kind: 'unzoned', clearedTiles: 6 });
+
+    const tall = service(sixtyFourTileWorld());
+    tall.zoning.zone({ roomCatalogId: CELL, x: 0, y: 0, width: 2, height: 3 }, 0);
+    expect(
+      tall.zoning.unzone({ x: 0, y: 0, width: 2, height: MAX_ZONE_DIMENSION_TILES }, 1),
+      'the tallest legal removal must clear the room it covers',
+    ).toMatchObject({ kind: 'unzoned', clearedTiles: 6 });
   });
 
   it('refuses a rectangle holding no designation at all, rather than reporting a silent success', () => {

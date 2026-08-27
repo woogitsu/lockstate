@@ -77,6 +77,69 @@ describe('a rectangle whose own perimeter is walled reads as sealed', () => {
     });
   });
 
+  it('finds a gap at the last tile of every side, not only inside one', () => {
+    // Three of the four perimeter loops had nothing asserting that their end
+    // bound is inclusive: the fixture above varies *which side* the gap is on
+    // and never *where along the side*, so `x <= right` -> `x < right` on the
+    // north row, on the south row, and `y <= bottom` -> `y < bottom` on the
+    // west column all survived the suite. A room whose only gap sits at the
+    // last index of one of those sides read `sealed`, and the Rooms panel's
+    // `hud.rooms.enclosure-open-required` warning never appeared.
+    //
+    // Width and height are deliberately different (3 and 2, so `right` is 6
+    // and `bottom` is 5). With a square the row bound and the column bound are
+    // the same number, and a gap at the last column is also at the last row --
+    // so a surviving row mutation is masked by the intact column loop finding
+    // the same tile's other edge, and the case proves neither.
+    const rectangle = { x: 4, y: 4, width: 3, height: 2 };
+    const walled = (): SparseWorld => {
+      const world = ownedWorld();
+      wallPerimeter(world, rectangle);
+      expect(
+        roomPerimeterEnclosure(world, rectangle),
+        'each case must start from a rectangle with no gap at all',
+      ).toEqual({ enclosure: 'sealed' });
+      return world;
+    };
+
+    // North row, last tile: x = right = 6, on tile (6, 4)'s own north edge.
+    const north = walled();
+    north.setTopEdge(tile(6, 4), 0);
+    expect(roomPerimeterEnclosure(north, rectangle)).toEqual({
+      enclosure: 'open',
+      gap: { tile: tile(6, 4), edge: 'north' },
+    });
+
+    // South row, last tile: x = right = 6, stored as the north edge of the row
+    // below, y = bottom + 1 = 6.
+    const south = walled();
+    south.setTopEdge(tile(6, 6), 0);
+    expect(roomPerimeterEnclosure(south, rectangle)).toEqual({
+      enclosure: 'open',
+      gap: { tile: tile(6, 6), edge: 'north' },
+    });
+
+    // West column, last tile: y = bottom = 5, on tile (4, 5)'s own west edge.
+    const west = walled();
+    west.setLeftEdge(tile(4, 5), 0);
+    expect(roomPerimeterEnclosure(west, rectangle)).toEqual({
+      enclosure: 'open',
+      gap: { tile: tile(4, 5), edge: 'west' },
+    });
+
+    // East column, last tile: y = bottom = 5, stored as the west edge of the
+    // column to the right, x = right + 1 = 7. This loop was already killed by
+    // the case below, which happens to put its east gap on the last row; it is
+    // pinned here on purpose so that case can move without silently unguarding
+    // the fourth loop.
+    const east = walled();
+    east.setLeftEdge(tile(7, 5), 0);
+    expect(roomPerimeterEnclosure(east, rectangle)).toEqual({
+      enclosure: 'open',
+      gap: { tile: tile(7, 5), edge: 'west' },
+    });
+  });
+
   it('reads the south boundary as the north edge of the row below, and the east as the west of the column right', () => {
     // The world stores only north and west edges, so a rectangle's south and
     // east boundaries live on its *neighbours*. A check that looked for a south
