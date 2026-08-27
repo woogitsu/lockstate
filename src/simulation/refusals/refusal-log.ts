@@ -278,11 +278,19 @@ export const RELEASE_GUARD_REFUSAL_REASONS: Readonly<Record<GuardReleaseRefusalR
  * like two of `BUILD_REFUSAL_REASONS`'s, which is why the wire ids are
  * namespaced rather than flat: they are the same *condition* and a different
  * *sentence*, because the player asked for a room and not a wall.
+ *
+ * `not-enclosed` is the eighth and the one that carries an owner's ruling
+ * rather than a mechanism: `roomPerimeterEnclosure` used to refuse nothing and
+ * the Rooms panel warned about the answer after the fact. It now refuses, so
+ * the sentence the panel used to show as a warning
+ * (`hud.rooms.enclosure-open-required`, deleted with this change) is this
+ * table's entry instead. See the ADR "Must a zoned room be enclosed".
  */
 export const ZONE_REFUSAL_REASONS: Readonly<Record<ZoneRoomRefusalReason, RefusalReason>> = {
   'below-minimum-size': 'zone.below-minimum-size',
   'duplicate-instance-id': 'zone.duplicate-instance-id',
   'invalid-area': 'zone.invalid-area',
+  'not-enclosed': 'zone.not-enclosed',
   'out-of-bounds': 'zone.out-of-bounds',
   'overlaps-existing-room': 'zone.overlaps-existing-room',
   'unknown-room-type': 'zone.unknown-room-type',

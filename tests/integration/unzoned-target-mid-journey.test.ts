@@ -3,6 +3,7 @@ import { DEFAULT_ACTIONS } from '../../src/simulation/prisoners/actions';
 import { projectPrisonerDetail } from '../../src/simulation/presentation/prisoner-projection';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { wallRoomPerimeter } from '../helpers/room-walls';
 
 /**
  * **A player may un-zone a room a prisoner is walking to, and until now the
@@ -76,7 +77,9 @@ function prisonWithACanteen(): SimulationRuntime {
   const runtime = createNewSimulationRuntime(SEED);
   submit(runtime, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 4 }));
   submit(runtime, 'buy-brick', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-2', itemId: 'item.brick', quantity: 1 }));
+  wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
   submit(runtime, 'zone-cell', packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT }));
+  wallRoomPerimeter(runtime.world, CANTEEN_RECT, { doors: runtime.navigation.doors });
   submit(runtime, 'zone-canteen', packCommand({ type: 'ZoneRoom', roomId: 'room.canteen', ...CANTEEN_RECT }));
   submit(runtime, 'bed', packCommand({ type: 'PlaceObject', orderId: 'o-bed', definitionId: 'bed-wooden', x: 4, y: 6 }));
   submit(runtime, 'toilet', packCommand({ type: 'PlaceObject', orderId: 'o-toilet', definitionId: 'toilet-brick', x: 5, y: 6 }));

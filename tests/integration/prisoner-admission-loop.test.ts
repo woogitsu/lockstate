@@ -11,6 +11,7 @@ import {
 } from '../../src/simulation/runtime/restore-session';
 import { projectStatusCounts } from '../../src/simulation/worker/status-counts';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
+import { wallRoomPerimeter } from '../helpers/room-walls';
 
 /**
  * Issue #261 step 4: **an `AdmitPrisoner` command puts a prisoner in the
@@ -105,6 +106,11 @@ const CANTEEN_MINIMUM = { width: 6, height: 6 } as const;
 
 function zoneCell(runtime: SimulationRuntime, id: string, roomId: string = CELL): void {
   const size = roomId === CANTEEN ? CANTEEN_MINIMUM : CELL_MINIMUM;
+  // Walls first, and a door, because `zone` refuses an `enclosed` room whose
+  // perimeter is open and every room this file zones authors that
+  // requirement. The door is what keeps the room reachable once it is sealed;
+  // see `tests/helpers/room-walls.ts`.
+  wallRoomPerimeter(runtime.world, { x: 4, y: 6, ...size }, { doors: runtime.navigation.doors });
   submit(runtime, id, packCommand({ type: 'ZoneRoom', roomId, x: 4, y: 6, ...size }));
 }
 
@@ -125,6 +131,10 @@ function stepTo(runtime: SimulationRuntime, tick: number): void {
  * new session starts paused and both presses land before the clock runs.
  */
 function zoneAndAdmitAtTickZero(runtime: SimulationRuntime): void {
+  // Before the commands are queued rather than between them: writing an edge
+  // is not a command, so doing it here keeps both commands due at tick 0,
+  // which is the whole point of this helper.
+  wallRoomPerimeter(runtime.world, { x: 4, y: 6, width: 2, height: 3 }, { doors: runtime.navigation.doors });
   runtime.kernel.submitCommand(
     'cmd-zone',
     runtime.kernel.expectedSequence,
@@ -297,6 +307,7 @@ describe('admitting a prisoner through the real command path (#261 step 4)', () 
     const runtime = createNewSimulationRuntime(SEED);
     // `room.solitary-cell`'s authored minimum is 2x2, read from the catalogue
     // rather than assumed; the zoning service evaluates it since #312.
+    wallRoomPerimeter(runtime.world, { x: 4, y: 6, width: 2, height: 2 }, { doors: runtime.navigation.doors });
     submit(runtime, 'cmd-zone-solitary', packCommand({ type: 'ZoneRoom', roomId: SOLITARY_CELL, x: 4, y: 6, width: 2, height: 2 }));
     // Asserted before the admission so a solitary cell refused for its own
     // reasons cannot pass for the admission behaviour under test.

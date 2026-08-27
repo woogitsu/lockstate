@@ -17,6 +17,7 @@ import {
 } from '../../src/simulation/refusals';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { chunkCoordinate } from '../../src/simulation/world/coordinates';
+import { wallRoomPerimeter } from '../helpers/room-walls';
 
 /**
  * What the simulation refuses, and how it says so (issue #261).
@@ -193,6 +194,11 @@ describe('the wire vocabulary is exactly what the ten domains can produce', () =
       'below-minimum-size': 'zone.below-minimum-size',
       'duplicate-instance-id': 'zone.duplicate-instance-id',
       'invalid-area': 'zone.invalid-area',
+      // The eighth, and the only one whose *sentence* moved rather than being
+      // newly written: it is `hud.rooms.enclosure-open-required`, which the
+      // Rooms panel showed as a warning about an accepted room, now that `zone`
+      // refuses instead (the ADR "Must a zoned room be enclosed").
+      'not-enclosed': 'zone.not-enclosed',
       'out-of-bounds': 'zone.out-of-bounds',
       'overlaps-existing-room': 'zone.overlaps-existing-room',
       'unknown-room-type': 'zone.unknown-room-type',
@@ -468,12 +474,18 @@ describe('a zoning rectangle the simulation refuses reaches the session log', ()
 
   it('records a rectangle that overlaps a room already there', () => {
     const runtime = createNewSimulationRuntime(0x261);
-    const zone = (sequence: number, x: number, y: number): void =>
+    const zone = (sequence: number, x: number, y: number): void => {
+      // Walled before it is asked for, because `zone` refuses an `enclosed`
+      // room whose perimeter is open and `room.cell` authors that requirement.
+      // Both rectangles are walled, so the refusal below is the overlap and
+      // not the walls -- which is the whole subject of this case.
+      wallRoomPerimeter(runtime.world, { x, y, width: 3, height: 3 });
       submit(
         runtime,
         sequence,
         packCommand({ type: 'ZoneRoom', roomId: 'room.cell', x, y, width: 3, height: 3 }),
       );
+    };
 
     zone(0, 2, 2);
     expect(runtime.refusals.last).toBeUndefined();
@@ -535,6 +547,7 @@ describe('a removal the simulation refuses reaches the same session log', () => 
   it('says nothing about a removal the simulation carried out', () => {
     // The direction that makes the assertion above mean something.
     const runtime = createNewSimulationRuntime(0x261);
+    wallRoomPerimeter(runtime.world, { x: 2, y: 2, width: 2, height: 3 });
     submit(
       runtime,
       0,
@@ -551,6 +564,13 @@ describe('a removal the simulation refuses reaches the same session log', () => 
     // kernel rather than against the service: before it, a stray designation
     // was refused as `overlaps-existing-room` for ever.
     const runtime = createNewSimulationRuntime(0x261);
+    // Both rectangles walled up front, so every refusal in the sequence below
+    // is the one the case is about. The 2x2 holding cell shares three sides
+    // with the 2x3 cell and needs its own south wall; the shared segments are
+    // written twice and that is a no-op, exactly as two adjacent rooms share a
+    // wall in play.
+    wallRoomPerimeter(runtime.world, { x: 2, y: 2, width: 2, height: 3 });
+    wallRoomPerimeter(runtime.world, { x: 2, y: 2, width: 2, height: 2 });
     submit(
       runtime,
       0,

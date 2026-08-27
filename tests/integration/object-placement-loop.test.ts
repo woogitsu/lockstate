@@ -10,6 +10,7 @@ import {
   restoreSimulationRuntime,
   type SessionSnapshotBundle,
 } from '../../src/simulation/runtime/restore-session';
+import { wallRoomPerimeter } from '../helpers/room-walls';
 import { projectStatusCounts } from '../../src/simulation/worker/status-counts';
 
 /**
@@ -77,6 +78,7 @@ function stepTo(runtime: SimulationRuntime, tick: number): void {
 function prisonWithBedOrdered(seed = SEED): SimulationRuntime {
   const runtime = createNewSimulationRuntime(seed);
   submit(runtime, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 1 }));
+  wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
   submit(runtime, 'zone-cell', packCommand({ type: 'ZoneRoom', roomId: CELL, ...CELL_RECT }));
   submit(runtime, 'place-bed', packCommand({ type: 'PlaceObject', orderId: 'bed-1', definitionId: 'bed-wooden', ...BED_TILE }));
   return runtime;
@@ -297,6 +299,8 @@ describe('what the placement does to the rest of the prison', () => {
     // again -- which is the next assertion.
     expect(runtime.placedObjects.size).toBe(1);
 
+    wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
+
     submit(runtime, 'rezone', packCommand({ type: 'ZoneRoom', roomId: CELL, ...CELL_RECT }));
 
     // A newly zoned room counts objects that were already standing there.
@@ -394,6 +398,7 @@ describe('what the placement does to the rest of the prison', () => {
     // or accepted on the state at its own tick, and none of the three depends
     // on which of the others ran first.
     const reordered = createNewSimulationRuntime(SEED);
+    wallRoomPerimeter(reordered.world, CELL_RECT, { doors: reordered.navigation.doors });
     submit(reordered, 'zone-cell', packCommand({ type: 'ZoneRoom', roomId: CELL, ...CELL_RECT }));
     submit(reordered, 'place-bed', packCommand({ type: 'PlaceObject', orderId: 'bed-1', definitionId: 'bed-wooden', ...BED_TILE }));
     submit(reordered, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 1 }));

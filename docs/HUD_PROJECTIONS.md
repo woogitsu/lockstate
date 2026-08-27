@@ -331,8 +331,17 @@ designation would be in the DOM and painted at no viewport — the exact defect
   remember which room type was selected when the player released the pointer.
   Neither value is a message key and neither is a sentence, so ADR 0011's
   separation is untouched — `src/ui/hud/rooms-panel.ts` decides which sentence
-  the pair deserves, and the one combination worth warning about (`enclosed`
-  asked for, `open` found) is about the pair rather than either member.
+  the pair deserves.
+
+  **This bullet used to end "and the one combination worth warning about
+  (`enclosed` asked for, `open` found) is about the pair rather than either
+  member".** That pair no longer reaches an accepted designation: `zone` refuses
+  it (the ADR *"Must a zoned room be enclosed"*), so the panel's warning, its
+  `hud.rooms.enclosure-open-required` key and its English text are deleted, and
+  the sentence is `hud.alert.refusal.zone.not-enclosed` on the refusal channel
+  instead. What an accepted notice can now carry is `sealed` against anything,
+  or `open` against `outdoors`/`none` — every one of them correct, so the panel
+  reads them out and tones none of them.
 - **Snapshot-shaped, for the reason `refusal` is.** "The last room designated
   was open against an enclosed requirement" is true of the session at any tick;
   an event would not be, and this publication is rate-limited and skippable.
@@ -349,9 +358,15 @@ designation would be in the DOM and painted at no viewport — the exact defect
 - **Not snapshotted**, like `RefusalLog`: it is a notice about something the
   player did moments ago rather than a condition of the prison, so a restored
   session starts with none.
-- **It refuses nothing.** `src/simulation/rooms/enclosure.ts` states in full why
-  the simulation cannot honestly refuse on this answer; gap 14 below records the
-  wider question it is narrower than.
+- **It is a readout of an accepted designation, and the refusal is a separate
+  channel.** This bullet used to read *"It refuses nothing.
+  `src/simulation/rooms/enclosure.ts` states in full why the simulation cannot
+  honestly refuse on this answer"*, and the owner has ruled otherwise. `zone`
+  refuses an `enclosed` room whose perimeter is open, under
+  `zone.not-enclosed`, which travels on `RefusalLog` like every other refusal;
+  this notice still carries only what was *accepted*. Gap 14 below records what
+  the wider, topological question would still need — and no longer waits on it,
+  because `enclosed` now means "this room's own boundary is closed".
 
 `hudZoningFromWorkerMessage` (`src/ui/simulation-zoning.ts`) is the translator,
 and it returns three states rather than two: `undefined` for "this message says
@@ -760,17 +775,28 @@ decision about what to build next.
       authored `minWidth`, `minHeight` and `minTiles` through
       `src/simulation/rooms/requirements.ts` and refuses
       `below-minimum-size`. Before it, a 1×1 canteen was a legal room.
-    - `enclosed` / `outdoors` is *reported*, not enforced.
-      `src/simulation/rooms/enclosure.ts` answers whether the rectangle's own
-      perimeter is walled and the answer travels on
-      `simulation/status-counts`'s new `zoning` field. It refuses nothing,
-      because the check is narrower than enclosure, and because it runs at
-      designation time while the walls usually go up afterwards. (It also used
-      to say that `edgeNumericIdFor` wrote `0` for `door-wooden`, so no sealed
-      room could have a way in; a completed door order now writes
-      `DOOR_EDGE_NUMERIC_ID` and registers a real door, so a sealed room with a
-      door in it is exactly what the check reports.) Gap 14 below is the wider
-      question.
+    - `enclosed` is *enforced too*, and this line used to say the opposite.
+      It read *"`enclosed` / `outdoors` is **reported**, not enforced ... It
+      refuses nothing, because the check is narrower than enclosure, and
+      because it runs at designation time while the walls usually go up
+      afterwards."* The owner ruled that `roomPerimeterEnclosure` is not to
+      stay advisory, and `RoomZoningService.zone` now refuses
+      `not-enclosed` for a definition authoring `enclosed` whose rectangle's
+      own perimeter is open. The ADR *"Must a zoned room be enclosed"* is the
+      decision, and what it settles is also the *meaning* of `enclosed`: this
+      room's own boundary is closed, rather than this room is topologically
+      indoors — against which the check is exact rather than narrow.
+
+      **`outdoors` is still only reported**, and deliberately: a walled
+      exercise yard is an ordinary prison yard, and `outdoors` is a claim about
+      a roof, which this world model does not represent. `none` likewise.
+
+      (This bullet also used to note that `edgeNumericIdFor` wrote `0` for
+      `door-wooden`, so no sealed room could have a way in; a completed door
+      order now writes `DOOR_EDGE_NUMERIC_ID` and registers a real door, so a
+      sealed room with a door in it is exactly what the check reports — and
+      that is what keeps the refusal above from making every room a box nobody
+      can enter.) Gap 14 below is the wider question.
 
     `object` requirements are gated on the *derived* capability list since
     ADR 0028 phase 1 rather than on a declared one, which changes where the
@@ -796,12 +822,17 @@ decision about what to build next.
     what is missing is a decision about what a room that has become too small
     should do, which that ADR leaves open.
 
-    The wider enclosure question is unanswered and its two obstacles are
-    worth naming: `TopologyManager` does region *detection* and exposes no
-    enclosure query, and `TopologyManager.update()` has **no caller anywhere
-    in `src/`** — it is constructed in `runtime/new-session.ts` and absent
-    from the `registerSystem` block beside it, so `getTopologyId` answers `0`
-    for every tile in a running session. A region id alone would not be
+    The wider *topological* enclosure question is unanswered, and it is no
+    longer on anyone's critical path: `enclosed` is defined as "this room's own
+    boundary is closed" (the ADR *"Must a zoned room be enclosed"*), which the
+    rectangle predicate answers exactly. It is recorded here because a future
+    decision could want the topological reading back as a **widening** — letting
+    a sub-room inside a sealed hall through — and because its two obstacles are
+    worth naming either way: `TopologyManager` does region *detection* and
+    exposes no enclosure query, and `TopologyManager.update()` has **no caller
+    anywhere in `src/`** — it is constructed in `runtime/new-session.ts` and
+    absent from the `registerSystem` block beside it, so `getTopologyId` answers
+    `0` for every tile in a running session. A region id alone would not be
     enough either: a region reaching the edge of the materialised world is
     indistinguishable from one bounded by walls there.
 15. **`RoomInstanceRegistry` has no `all()` or `size()`.** Enumeration

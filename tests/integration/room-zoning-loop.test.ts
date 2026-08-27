@@ -67,6 +67,45 @@ function saveAndLoad(runtime: SimulationRuntime): SimulationRuntime {
   return restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle, SEED).runtime;
 }
 
+/** An arbitrary non-zero edge value; the layers store a numeric id and enclosure cares only that one is present. */
+const WALL = 7;
+
+/**
+ * Walls a rectangle's perimeter, on the two edges the world stores.
+ *
+ * Needed since `RoomZoningService.zone` began refusing an `enclosed` room whose
+ * perimeter is open (the ADR "Must a zoned room be enclosed"): `room.cell` and
+ * `room.canteen` both author `enclosed`, so a rectangle dragged over the
+ * starter prison's open ground is now `not-enclosed` and never reaches the
+ * behaviour these cases are about.
+ *
+ * Written directly rather than through `PlaceBuildOrder`, and that is a
+ * deliberate limit on what this file claims. A real player buys bricks and
+ * waits for ten wall orders; this writes the edges the completed orders would
+ * have written, because the subject here is the `ZoneRoom` command path and not
+ * the construction one. `tests/integration/door-construction-loop.test.ts` is
+ * the file that refuses to shortcut the edge layer, for the opposite reason.
+ *
+ * **Called only where the zoning is meant to be accepted.** The refusal cases
+ * below deliberately do not wall: `x: 40, y: 40` must stay outside the
+ * materialised world, and `setTopEdge`/`setLeftEdge` would grow it there.
+ */
+function wallRoom(
+  runtime: SimulationRuntime,
+  rect: { readonly x: number; readonly y: number; readonly width: number; readonly height: number },
+): void {
+  const right = rect.x + rect.width - 1;
+  const bottom = rect.y + rect.height - 1;
+  for (let x = rect.x; x <= right; x += 1) {
+    runtime.world.setTopEdge(tile(x, rect.y), WALL);
+    runtime.world.setTopEdge(tile(x, bottom + 1), WALL);
+  }
+  for (let y = rect.y; y <= bottom; y += 1) {
+    runtime.world.setLeftEdge(tile(rect.x, y), WALL);
+    runtime.world.setLeftEdge(tile(right + 1, y), WALL);
+  }
+}
+
 /** Dispatches one `ZoneRoom` through the kernel, at the sequence the kernel is expecting. */
 function submitZoneRoom(
   runtime: SimulationRuntime,
@@ -91,6 +130,7 @@ describe('zoning a room through the real command path (#261)', () => {
     expect(runtime.prisoners.roomInstances.allByRoomCatalogId(CELL)).toEqual([]);
     expect(projectStatusCounts(runtime, runtime.kernel.tick).rooms).toBe(0);
 
+    wallRoom(runtime, { x: 4, y: 6, width: 2, height: 3 });
     submitZoneRoom(runtime, 'cmd-zone-1', { roomId: CELL, x: 4, y: 6, width: 2, height: 3 });
 
     const counts = projectStatusCounts(runtime, runtime.kernel.tick);
@@ -112,6 +152,7 @@ describe('zoning a room through the real command path (#261)', () => {
 
   it('survives a save and load, in both of the two places a zoned room lives', () => {
     const runtime = createNewSimulationRuntime(SEED);
+    wallRoom(runtime, { x: 4, y: 6, width: 2, height: 3 });
     submitZoneRoom(runtime, 'cmd-zone-1', { roomId: CELL, x: 4, y: 6, width: 2, height: 3 });
 
     const restored = saveAndLoad(runtime);
@@ -208,6 +249,8 @@ describe('un-zoning one of two adjacent same-type rooms (#337)', () => {
   /** Two adjacent cells zoned as two separate drags -- the gesture the issue describes. */
   function prisonWithTwoAdjacentCells(): SimulationRuntime {
     const runtime = createNewSimulationRuntime(SEED);
+    wallRoom(runtime, LEFT);
+    wallRoom(runtime, RIGHT);
     submitZoneRoom(runtime, 'cmd-zone-left', { roomId: CELL, ...LEFT });
     submitZoneRoom(runtime, 'cmd-zone-right', { roomId: CELL, ...RIGHT });
     expect(projectStatusCounts(runtime, runtime.kernel.tick).rooms, 'two drags, two rooms').toBe(2);

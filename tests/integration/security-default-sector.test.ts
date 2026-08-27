@@ -6,6 +6,8 @@ import {
   restoreSimulationRuntime,
   type SessionSnapshotBundle,
 } from '../../src/simulation/runtime/restore-session';
+import { tileCoordinate } from '../../src/simulation/world/coordinates';
+import { wallRoomPerimeter } from '../helpers/room-walls';
 import { hashFullRuntime } from '../helpers/determinism-state';
 
 /**
@@ -108,6 +110,7 @@ function phases(runtime: SimulationRuntime): readonly string[] {
 function overcrowdedPrison(seed = SEED): SimulationRuntime {
   const runtime = createNewSimulationRuntime(seed);
   submit(runtime, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 1 }));
+  wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
   submit(runtime, 'zone-cell', packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT }));
   submit(runtime, 'place-bed', packCommand({ type: 'PlaceObject', orderId: 'bed-1', definitionId: 'bed-wooden', ...BED_TILE }));
   // 100 ticks of delivery delay plus build progress; 200 is the margin the
@@ -425,8 +428,20 @@ describe('what a sector does not bring back, measured rather than assumed', () =
     submit(runtime, 'buy-door-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-2', itemId: 'item.wood-plank', quantity: 4 }));
     submit(runtime, 'build-door', packCommand({ type: 'PlaceBuildOrder', orderId: 'door-1', definitionId: 'door-wooden', x: 5, y: 6 }));
     stepTo(runtime, 600);
-    const doorIds = runtime.navigation.doors.all().map((door) => door.id);
-    expect(doorIds).toHaveLength(1);
+    // Named rather than counted. This used to read
+    // `expect(doorIds).toHaveLength(1)`, which was true when the prison's only
+    // door was the one this case builds -- and stopped being true when the
+    // fixture began walling its cell, because a walled cell needs a door to be
+    // reachable at all (`tests/helpers/room-walls.ts`). The count was never the
+    // claim; the claim is about *this* door, so it is looked up by the edge it
+    // was built on instead, which is strictly more specific than the old
+    // assertion and does not care how many other doors the prison has.
+    const builtDoor = runtime.navigation.doors.getByEdge(
+      { x: tileCoordinate(5), y: tileCoordinate(6) },
+      'top',
+    );
+    expect(builtDoor, 'the ordered door must have been built for this case to mean anything').toBeDefined();
+    const doorIds = [builtDoor!.id];
 
     runtime.securitySectors.setControlState(DEFAULT_SECTOR_ID, 'lockdown');
 

@@ -689,18 +689,27 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
   });
 
   /*
-   * One line, three jobs, and it is one line rather than three because the
-   * three cannot be true at once.
+   * One line, two jobs: the arm hint (or the removal hint) while nothing is
+   * pending, and the too-small warning when the pending rectangle is under the
+   * selected room's authored minimum.
    *
-   * It is the arm hint while nothing is pending, the too-small warning when the
-   * pending rectangle is under the selected room's authored minimum, and the
-   * enclosure warning when the simulation reports an accepted room as open
-   * against an `enclosed` requirement. A line per state would cost 26.4px to
-   * show two sentences that are never both relevant.
+   * **It had a third job and no longer does.** It also showed
+   * `hud.rooms.enclosure-open-required` when the simulation reported an
+   * *accepted* room as open against an `enclosed` requirement, and the
+   * too-small warning won over it "because it is about the rectangle the player
+   * is still holding while the other is about a room they already made".
+   * `RoomZoningService.zone` now refuses that pair rather than accepting it
+   * (the ADR "Must a zoned room be enclosed"), so no accepted zoning can report
+   * it, the branch was unreachable, and the sentence moved to
+   * `hud.alert.refusal.zone.not-enclosed`.
    *
-   * The too-small warning wins over the enclosure one, because it is about the
-   * rectangle the player is still holding while the other is about a room they
-   * already made.
+   * The precedence argument survives its own conclusion and is worth keeping:
+   * this line belongs to the rectangle the player is still holding. The warning
+   * this panel is now missing is the *pre-confirm* one -- telling them the drag
+   * will be refused before they press Confirm -- and it cannot be built here,
+   * because `src/ui/hud/**` may not import the simulation and the panel has no
+   * edge data. It needs the pending rectangle's enclosure carried across the
+   * worker boundary, which is a HUD-projection decision and not this one.
    */
   const note = eyebrowText(t(HUD_MESSAGE_KEY.roomsArmHint), 'hud-rooms__note');
 
@@ -727,16 +736,6 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
       note.dataset['tone'] = 'warning';
       return;
     }
-    if (
-      pending === undefined &&
-      notice !== undefined &&
-      notice.requirement === 'enclosed' &&
-      notice.enclosure === 'open'
-    ) {
-      note.textContent = t(HUD_MESSAGE_KEY.roomsEnclosureOpenRequired);
-      note.dataset['tone'] = 'warning';
-      return;
-    }
     note.textContent = t(removing ? HUD_MESSAGE_KEY.roomsRemoveHint : HUD_MESSAGE_KEY.roomsArmHint);
     delete note.dataset['tone'];
   }
@@ -745,13 +744,23 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    * The enclosure readout: what the simulation actually found, for the last
    * room designated.
    *
-   * A *readout* and never a refusal, and the panel is where that distinction is
-   * made visible. `RoomZoningService` evaluates the requirement and accepts the
-   * room either way, because the check it can honestly make is narrower than
-   * enclosure -- a room drawn inside a larger sealed building reads as open --
-   * and because a completed door order writes nothing into the world, so
-   * refusing every unsealed `enclosed` room would make 17 of the 18 room types
-   * designatable only as a box with no way in.
+   * **A readout, and it is now a confirmation rather than a hedge.** This used
+   * to say "a *readout* and never a refusal ... `RoomZoningService` evaluates
+   * the requirement and accepts the room either way", and gave two reasons: the
+   * check is narrower than enclosure, and "a completed door order writes
+   * nothing into the world, so refusing every unsealed `enclosed` room would
+   * make 17 of the 18 room types designatable only as a box with no way in".
+   *
+   * The second was already stale when it was written here: a completed
+   * `door-wooden` order writes `DOOR_EDGE_NUMERIC_ID` and registers a
+   * `DoorDefinition`, so a sealed room with a way in is expressible and
+   * `src/simulation/rooms/enclosure.ts` had recorded the correction. The first
+   * has been overtaken by the owner's ruling -- `zone` refuses an `enclosed`
+   * room whose perimeter is open (the ADR "Must a zoned room be enclosed").
+   *
+   * So the pair this can render is now `sealed` against anything, or `open`
+   * against `outdoors`/`none`. Every one of them is correct by construction,
+   * which is why nothing here is toned as a warning any more.
    */
   const enclosureValue = valueText(t(HUD_MESSAGE_KEY.roomsEnclosureNone), 'hud-rooms__enclosure-value');
   const enclosureBlock = element('div', {

@@ -20,6 +20,7 @@ import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { buildPrisonerScenarioFixture } from '../helpers/prisoner-fixture';
+import { wallRoomPerimeter } from '../helpers/room-walls';
 
 const RNG_STREAM = 'prisoners.classification';
 
@@ -290,6 +291,12 @@ describe('IntakeSystem: deterministic stage-by-stage pipeline', () => {
        * by hand, are a convenience rather than the only available route.
        */
       const runtime = createNewSimulationRuntime(7);
+      // Walled first: `zone` refuses an `enclosed` room whose perimeter is
+      // open, and both of these author that requirement. The subject here is
+      // what a zoned room *holds*, so the walls are setup rather than the
+      // thing under test.
+      wallRoomPerimeter(runtime.world, { x: 2, y: 2, width: 3, height: 3 });
+      wallRoomPerimeter(runtime.world, { x: 8, y: 2, width: 3, height: 3 });
       const cell = runtime.roomZoning.zone({ roomCatalogId: 'room.cell', x: 2, y: 2, width: 3, height: 3 }, 0);
       const solitary = runtime.roomZoning.zone({ roomCatalogId: 'room.solitary-cell', x: 8, y: 2, width: 3, height: 3 }, 0);
       if (cell.kind !== 'zoned' || solitary.kind !== 'zoned') {

@@ -739,6 +739,7 @@ export const REFUSAL_REASONS = [
   'zone.below-minimum-size',
   'zone.duplicate-instance-id',
   'zone.invalid-area',
+  'zone.not-enclosed',
   'zone.out-of-bounds',
   'zone.overlaps-existing-room',
   'zone.unknown-room-type',

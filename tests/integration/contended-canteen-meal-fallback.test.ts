@@ -3,6 +3,7 @@ import { DEFAULT_ACTIONS } from '../../src/simulation/prisoners/actions';
 import { NEED_SCALE } from '../../src/simulation/prisoners/needs';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { wallRoomPerimeter } from '../helpers/room-walls';
 
 /**
  * [ADR 0041](../../docs/adr/0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md)
@@ -121,8 +122,10 @@ function prison(diningTables: 1 | 2): SimulationRuntime {
   submit(runtime, 'buy-plank', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: PLANKS }));
   submit(runtime, 'buy-brick', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-2', itemId: 'item.brick', quantity: BRICKS }));
   for (const [n, cell] of CELLS.entries()) {
+    wallRoomPerimeter(runtime.world, { x: cell.x, y: cell.y, width: 2, height: 3 }, { doors: runtime.navigation.doors });
     submit(runtime, `zone-cell-${n}`, packCommand({ type: 'ZoneRoom', roomId: 'room.cell', x: cell.x, y: cell.y, width: 2, height: 3 }));
   }
+  wallRoomPerimeter(runtime.world, CANTEEN_RECT, { doors: runtime.navigation.doors });
   submit(runtime, 'zone-canteen', packCommand({ type: 'ZoneRoom', roomId: 'room.canteen', ...CANTEEN_RECT }));
   for (const [n, cell] of CELLS.entries()) {
     submit(runtime, `bed-${n}`, packCommand({ type: 'PlaceObject', orderId: `o-bed-${n}`, definitionId: 'bed-wooden', x: cell.x, y: cell.y }));

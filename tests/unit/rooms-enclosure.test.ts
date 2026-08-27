@@ -14,12 +14,18 @@ import { SparseWorld } from '../../src/simulation/world/sparse-world';
  * definitions carry one of them; nothing in `src/` had ever read either, so a
  * cell zoned in the middle of open ground was accepted in silence.
  *
- * What is asserted here is deliberately the *narrow* predicate:
- * `roomPerimeterEnclosure` answers whether this rectangle's own perimeter is
- * walled, which is a real property of the world read from the two edge layers.
- * It is not a region-enclosure query, and the tests say so rather than
- * pretending otherwise -- see `src/simulation/rooms/enclosure.ts`, and the
- * final block below, which pins the gap as a gap.
+ * What is asserted here is `roomPerimeterEnclosure`: whether this rectangle's
+ * own perimeter is walled, read from the two edge layers.
+ *
+ * **The second describe block used to be called "the answer is reported on an
+ * accepted designation and refuses nothing", and it is now the opposite.** The
+ * owner ruled that `roomPerimeterEnclosure` is not to stay advisory and that
+ * `zone` must refuse an open room (issue #446's third open question; the ADR
+ * "Must a zoned room be enclosed" is the decision). What that ruling settles is
+ * also the *meaning* of `enclosed`: it is "this room's own boundary is closed"
+ * rather than "this room is topologically indoors", and against that question
+ * this predicate is exact rather than narrow. The final block below used to pin
+ * the difference as a false negative; it now pins it as the rule.
  */
 
 const CHUNK_SIZE = 32;
@@ -187,52 +193,192 @@ describe('a rectangle whose own perimeter is walled reads as sealed', () => {
   });
 });
 
-describe('the answer is reported on an accepted designation and refuses nothing', () => {
-  it('accepts a cell drawn in open ground, and says it is open against an enclosed requirement', () => {
-    // The behaviour the Rooms panel's warning line is built on, and the reason
-    // it is a warning: a room drawn in open ground *succeeds*. It used to
-    // succeed silently, which is the whole defect -- the player was told
-    // nothing about a requirement the content authors and the simulation had
-    // never read.
+describe('an enclosed room whose perimeter is open is refused', () => {
+  /*
+   * ## The assertion that reversed, quoted before it is replaced
+   *
+   * This block opened with a case called *'accepts a cell drawn in open
+   * ground, and says it is open against an enclosed requirement'*, whose body
+   * was:
+   *
+   *     const outcome = zoning.zone({ roomCatalogId: 'room.cell', x: 4, y: 4, width: 2, height: 3 }, 9);
+   *     expect(outcome.kind).toBe('zoned');
+   *     ...
+   *     expect(outcome.enclosure).toBe('open');
+   *     expect(zoning.lastNotice).toEqual({ sequence: 1, tick: 9, enclosure: 'open', requirement: 'enclosed' });
+   *
+   * under a comment reading *"a room drawn in open ground **succeeds**. It used
+   * to succeed silently, which is the whole defect -- the player was told
+   * nothing about a requirement the content authors and the simulation had
+   * never read."*
+   *
+   * **That test was right when it was written and is wrong now**, and the
+   * difference is a ruling rather than a bug. It was right because `zone`'s
+   * contract said the enclosure answer is reported and never enforced, and
+   * because the reason given for that -- the predicate is narrower than
+   * topological enclosure -- was true under the reading of `enclosed` then in
+   * force. The owner has since ruled that `zone` must refuse an open room, and
+   * with it that `enclosed` means "this room's own boundary is closed". Under
+   * that reading the same call must be refused, so the assertion is inverted
+   * here rather than deleted, and the old text is quoted above so a reader can
+   * see which of the two statements the codebase is making.
+   */
+  it('refuses a cell drawn in open ground, naming the requirement it fails', () => {
     const world = ownedWorld();
     const zoning = new RoomZoningService(world, new RoomInstanceRegistry());
 
     const outcome = zoning.zone({ roomCatalogId: 'room.cell', x: 4, y: 4, width: 2, height: 3 }, 9);
 
-    expect(outcome.kind).toBe('zoned');
-    if (outcome.kind !== 'zoned') throw new Error('unreachable');
-    expect(outcome.enclosure).toBe('open');
-    expect(outcome.enclosureRequirement).toBe('enclosed');
-    expect(zoning.lastNotice).toEqual({ sequence: 1, tick: 9, enclosure: 'open', requirement: 'enclosed' });
+    expect(outcome).toMatchObject({ kind: 'refused', reason: 'not-enclosed', tick: 9 });
   });
 
-  it('reports sealed for the same cell inside its own walls', () => {
+  it('writes nothing at all when it refuses: no paint, no instance, no notice', () => {
+    // The property `zone` has always had for its other seven refusals, extended
+    // to the eighth. It matters more here than elsewhere: this check is the
+    // last one before the write, so a refusal returned from the wrong place
+    // would leave a painted plane with no instance -- the one inconsistency
+    // this service is careful never to create.
     const world = ownedWorld();
-    wallPerimeter(world, { x: 4, y: 4, width: 2, height: 3 });
-    const zoning = new RoomZoningService(world, new RoomInstanceRegistry());
+    const rooms = new RoomInstanceRegistry();
+    const zoning = new RoomZoningService(world, rooms);
 
-    const outcome = zoning.zone({ roomCatalogId: 'room.cell', x: 4, y: 4, width: 2, height: 3 }, 0);
+    zoning.zone({ roomCatalogId: 'room.cell', x: 4, y: 4, width: 2, height: 3 }, 0);
 
-    if (outcome.kind !== 'zoned') throw new Error('the zone must be accepted for this test to mean anything');
-    expect(outcome.enclosure).toBe('sealed');
+    expect(world.getZoning(tile(4, 4)), 'the anchor tile must be unpainted').toBe(0);
+    expect(world.getZoning(tile(5, 6)), 'and so must the far corner').toBe(0);
+    expect(rooms.allByRoomCatalogId('room.cell')).toEqual([]);
+    expect(zoning.lastNotice, 'a refusal is not a designation').toBeUndefined();
+    expect(zoning.recentRefusals().map((refusal) => refusal.reason)).toEqual(['not-enclosed']);
   });
 
-  it('reports the yard as outdoors, so the requirement is read and not assumed', () => {
-    // 17 of the 18 rooms are `enclosed`; a function returning a constant would
-    // pass every other assertion in this file. `room.yard` is the one that says
-    // otherwise, and it is correct when it is open.
+  it('names the first perimeter gap by tile *and* edge, because a tile alone is ambiguous', () => {
+    // The world stores a north edge and a west edge per tile, so `tile(4, 4)`
+    // does not say which wall is missing. Both halves are asserted, and the
+    // fixture is chosen so they disagree with each other: the gap is opened on
+    // tile (5, 4)'s *north* edge, and tile (5, 4)'s *west* edge is walled. A
+    // refusal that carried the wrong edge, or dropped it, fails here; one that
+    // carried the wrong tile fails too, because (5, 4) is not the anchor.
+    const world = ownedWorld();
+    const rectangle = { x: 4, y: 4, width: 3, height: 2 };
+    wallPerimeter(world, rectangle);
+    world.setTopEdge(tile(5, 4), 0);
+
+    const outcome = new RoomZoningService(world, new RoomInstanceRegistry()).zone(
+      { roomCatalogId: 'room.holding-cell', ...rectangle },
+      0,
+    );
+
+    expect(outcome).toMatchObject({
+      kind: 'refused',
+      reason: 'not-enclosed',
+      tile: tile(5, 4),
+      edge: 'north',
+    });
+    // And a west gap, so `edge` cannot be a constant. Resealing the north gap
+    // and opening tile (4, 5)'s west edge moves the answer to the third of the
+    // four perimeter loops: a refusal hard-coding `'north'`, or dropping the
+    // field, fails one of these two halves whichever way it is written.
+    world.setTopEdge(tile(5, 4), WALL);
+    world.setLeftEdge(tile(4, 5), 0);
+
+    expect(
+      new RoomZoningService(world, new RoomInstanceRegistry()).zone(
+        { roomCatalogId: 'room.holding-cell', ...rectangle },
+        1,
+      ),
+    ).toMatchObject({ reason: 'not-enclosed', tile: tile(4, 5), edge: 'west' });
+  });
+
+  it('accepts the same cell once its perimeter is walled', () => {
+    // The other side of the refusal, and the reason the rule is a rule rather
+    // than a wall: the player can satisfy it. Same room, same rectangle, same
+    // world plus ten wall segments.
+    const world = ownedWorld();
+    const rectangle = { x: 4, y: 4, width: 2, height: 3 };
+    wallPerimeter(world, rectangle);
+    const zoning = new RoomZoningService(world, new RoomInstanceRegistry());
+
+    const outcome = zoning.zone({ roomCatalogId: 'room.cell', ...rectangle }, 9);
+
+    expect(outcome).toMatchObject({ kind: 'zoned', enclosure: 'sealed', enclosureRequirement: 'enclosed' });
+    expect(zoning.lastNotice).toEqual({ sequence: 1, tick: 9, enclosure: 'sealed', requirement: 'enclosed' });
+  });
+
+  it('refuses on the requirement and not on the answer: an open yard is still accepted', () => {
+    // The scoping assertion, and the one that fails if somebody simplifies the
+    // condition to `enclosure === 'open'`. `room.yard` is the single shipped
+    // room authoring `outdoors`, a yard on open ground reads `open`, and it is
+    // *correct*: `sealed` is a statement about walls and `outdoors` is a
+    // statement about a roof, which this world does not model. The same
+    // rectangle, drawn as a cell, is refused two lines down.
     const world = ownedWorld();
     const zoning = new RoomZoningService(world, new RoomInstanceRegistry());
 
-    const outcome = zoning.zone({ roomCatalogId: 'room.yard', x: 0, y: 0, width: 8, height: 8 }, 0);
+    expect(
+      zoning.zone({ roomCatalogId: 'room.yard', x: 0, y: 0, width: 8, height: 8 }, 0),
+      'the one outdoors room must not be caught by an enclosed room\'s rule',
+    ).toMatchObject({ kind: 'zoned', enclosure: 'open', enclosureRequirement: 'outdoors' });
 
-    if (outcome.kind !== 'zoned') throw new Error('the zone must be accepted for this test to mean anything');
-    expect(outcome.enclosureRequirement).toBe('outdoors');
-    expect(outcome.enclosure).toBe('open');
+    expect(
+      zoning.zone({ roomCatalogId: 'room.canteen', x: 10, y: 0, width: 6, height: 6 }, 1),
+      'while an enclosed room over equally open ground is refused',
+    ).toMatchObject({ kind: 'refused', reason: 'not-enclosed' });
+  });
+
+  it('lets every cheaper refusal win: bounds, ownership and overlap are all decided first', () => {
+    /*
+     * The order of the checks, asserted rather than left to the comment that
+     * states it. Each case below is *both* open and something else, so a
+     * `not-enclosed` answer would mean enclosure had been moved ahead of that
+     * check.
+     *
+     * The bounds case is the one that is about correctness rather than about
+     * advice. `roomPerimeterEnclosure` reads the north edge of the row below
+     * the rectangle and the west edge of the column to its right, and
+     * `getTopEdge`/`getLeftEdge` answer 0 for a chunk that does not exist -- so
+     * a rectangle reaching outside the materialised world always reads `open`,
+     * and would be diagnosed with a gap on a tile that is not there.
+     */
+    const world = ownedWorld();
+
+    // Out of bounds: chunk (1,0) does not exist, and the rectangle is open too.
+    expect(
+      new RoomZoningService(world, new RoomInstanceRegistry()).zone(
+        { roomCatalogId: 'room.cell', x: 30, y: 0, width: 4, height: 3 },
+        0,
+      ),
+    ).toMatchObject({ reason: 'out-of-bounds' });
+
+    // Unowned: a loaded chunk the player does not own, and open.
+    const unowned = new SparseWorld(CHUNK_SIZE);
+    unowned.load({ x: chunkCoordinate(0), y: chunkCoordinate(0) });
+    expect(
+      new RoomZoningService(unowned, new RoomInstanceRegistry()).zone(
+        { roomCatalogId: 'room.cell', x: 0, y: 0, width: 2, height: 3 },
+        0,
+      ),
+    ).toMatchObject({ reason: 'unowned-land' });
+
+    // Overlapping: a sealed room is zoned first, then a second rectangle that
+    // covers one of its tiles and is itself open.
+    const overlapped = ownedWorld();
+    wallPerimeter(overlapped, { x: 0, y: 0, width: 2, height: 3 });
+    const zoning = new RoomZoningService(overlapped, new RoomInstanceRegistry());
+    expect(zoning.zone({ roomCatalogId: 'room.cell', x: 0, y: 0, width: 2, height: 3 }, 0).kind).toBe('zoned');
+    expect(
+      zoning.zone({ roomCatalogId: 'room.cell', x: 1, y: 2, width: 2, height: 3 }, 1),
+    ).toMatchObject({ reason: 'overlaps-existing-room' });
   });
 
   it('counts designations rather than ticks, and carries no notice before the first one', () => {
+    // Unchanged in what it asserts and changed in its fixture: the two rooms it
+    // zones are walled first, because an unwalled cell is now refused and this
+    // case is about the *ordinal*, not about enclosure. The middle call is
+    // still a refusal -- a duplicate anchor -- so the sequence still has a
+    // refusal to skip over, which is the whole point of it.
     const world = ownedWorld();
+    wallPerimeter(world, { x: 0, y: 0, width: 2, height: 3 });
+    wallPerimeter(world, { x: 4, y: 0, width: 2, height: 3 });
     const zoning = new RoomZoningService(world, new RoomInstanceRegistry());
 
     expect(zoning.lastNotice, 'a session that has zoned nothing reports nothing').toBeUndefined();
@@ -244,7 +390,7 @@ describe('the answer is reported on an accepted designation and refuses nothing'
     // Two accepted designations, so the sequence is 2 and not 3: a refusal is
     // not a designation, and the notice's ordinal is what lets the main thread
     // tell a republished notice from a new one.
-    expect(zoning.lastNotice).toEqual({ sequence: 2, tick: 5, enclosure: 'open', requirement: 'enclosed' });
+    expect(zoning.lastNotice).toEqual({ sequence: 2, tick: 5, enclosure: 'sealed', requirement: 'enclosed' });
   });
 });
 
@@ -295,28 +441,54 @@ describe('the requirement readers are a pure read of authored content', () => {
   });
 });
 
-describe('what enclosure detection does not yet answer', () => {
-  it('reports a room drawn inside a larger sealed building as open, which is a false negative', () => {
-    // Pinned as a *limitation*, not as correct behaviour. The perimeter check
-    // is narrower than enclosure: this room is topologically indoors and reads
-    // `open`, because its own boundary carries no wall. That is exactly why
-    // nothing refuses on the answer -- refusing here would block a legitimate
-    // designation -- and it is the gap a region-level query would close.
-    //
-    // `TopologyManager` does region *detection* and exposes no enclosure query;
-    // its own comment says the mapping "would be used later to query if a
-    // global room is enclosed", and `TopologyManager.update()` has no caller in
-    // `src/` at all, so `getTopologyId` answers 0 for every tile in a running
-    // session. Closing this needs that query built and a rule about the
-    // materialised world's frontier, which nobody has written.
+describe('what the ruling costs: an open-plan room inside a sealed hall', () => {
+  it('refuses a room drawn inside a larger sealed building, which is the rule and not a defect', () => {
+    /*
+     * **This case used to be called 'reports a room drawn inside a larger
+     * sealed building as open, which is a false negative'**, and its comment
+     * pinned the answer as *"a limitation, not correct behaviour ... exactly
+     * why nothing refuses on the answer -- refusing here would block a
+     * legitimate designation -- and it is the gap a region-level query would
+     * close."*
+     *
+     * The world's answer is unchanged; what changed is what it means. Under
+     * `enclosed` = "this room's own boundary is closed" this room is not an
+     * enclosed room, and `zone` refuses it. So the case is kept, its geometry
+     * is kept, and it now pins the *cost of the ruling* -- every room must be
+     * walled -- instead of pinning a defect. Adjacent rooms may share a wall,
+     * so that is subdivision rather than double-walling.
+     *
+     * `TopologyManager` is still the thing a topological reading would need:
+     * it does region *detection*, exposes no enclosure query, and its
+     * `update()` has no caller in `src/` at all, so `getTopologyId` answers 0
+     * for every tile in a running session. Nothing waits on it any more, and
+     * it is what a future *widening* would be built on.
+     */
     const world = ownedWorld();
-    wallPerimeter(world, { x: 0, y: 0, width: 12, height: 12 }); // the building
+    const building = { x: 0, y: 0, width: 12, height: 12 };
+    wallPerimeter(world, building);
     const inner = { x: 4, y: 4, width: 3, height: 3 }; // a room inside it, no partitions
 
     expect(roomPerimeterEnclosure(world, inner)).toMatchObject({ enclosure: 'open' });
     expect(
-      roomPerimeterEnclosure(world, { x: 0, y: 0, width: 12, height: 12 }),
+      roomPerimeterEnclosure(world, building),
       'the building itself is sealed, so the check is not simply broken',
     ).toEqual({ enclosure: 'sealed' });
+
+    const zoning = new RoomZoningService(world, new RoomInstanceRegistry());
+    expect(
+      zoning.zone({ roomCatalogId: 'room.holding-cell', ...inner }, 0),
+      'topologically indoors is not the question any more',
+    ).toMatchObject({ kind: 'refused', reason: 'not-enclosed' });
+
+    // And the way out of it, so the cost is bounded rather than absolute:
+    // partition the inner room and the same rectangle is accepted.
+    wallPerimeter(world, inner);
+    expect(
+      new RoomZoningService(world, new RoomInstanceRegistry()).zone(
+        { roomCatalogId: 'room.holding-cell', ...inner },
+        1,
+      ),
+    ).toMatchObject({ kind: 'zoned', enclosure: 'sealed' });
   });
 });

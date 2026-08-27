@@ -413,11 +413,18 @@ export const HUD_MESSAGE_KEY = {
    * `roomsMinimum` states the authored floor, so the rule is readable *before*
    * the drag rather than only in the refusal after it. `roomsEnclosureSealed`
    * and `roomsEnclosureOpen` are the readout of what the simulation actually
-   * found, and `roomsEnclosureOpenRequired` is the one case that is worth
-   * flagging: the room asked to be enclosed and the rectangle's perimeter is
-   * not. It is a *warning*, never a refusal -- see
-   * `src/simulation/rooms/enclosure.ts` for why the simulation cannot honestly
-   * refuse on it.
+   * found.
+   *
+   * **There used to be a `roomsEnclosureOpenRequired` here** -- "the one case
+   * that is worth flagging: the room asked to be enclosed and the rectangle's
+   * perimeter is not. It is a *warning*, never a refusal." It is deleted, and
+   * the deletion is the point rather than a tidy-up. `RoomZoningService.zone`
+   * now refuses that pair (the ADR "Must a zoned room be enclosed"), so an
+   * *accepted* zoning can no longer report it and the branch that read the key
+   * was unreachable in every session, fresh or restored -- an orphaned locale
+   * key, which `docs/LOCALIZATION.md` treats as a defect class. The sentence is
+   * not lost: it is `hud.alert.refusal.zone.not-enclosed`, said at the moment
+   * the player can still act on it.
    */
   roomsTitle: 'hud.rooms.title',
   roomsCatalogue: 'hud.rooms.catalogue',
@@ -442,7 +449,6 @@ export const HUD_MESSAGE_KEY = {
   roomsEnclosureNone: 'hud.rooms.enclosure-none',
   roomsEnclosureSealed: 'hud.rooms.enclosure-sealed',
   roomsEnclosureOpen: 'hud.rooms.enclosure-open',
-  roomsEnclosureOpenRequired: 'hud.rooms.enclosure-open-required',
   roomsRequirementEnclosed: 'hud.rooms.requirement-enclosed',
   roomsRequirementOutdoors: 'hud.rooms.requirement-outdoors',
   roomsRequirementNone: 'hud.rooms.requirement-none',

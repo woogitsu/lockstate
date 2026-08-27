@@ -198,6 +198,13 @@ export interface ZoneRoomRequest {
  * above `MAX_ZONE_DIMENSION_TILES`), and it is the same refusal whichever room
  * type asked for it, whereas this one depends entirely on which room the
  * player picked.
+ *
+ * `not-enclosed` is the eighth, and it is a content refusal of the same kind:
+ * it fires only for a definition that authors an `enclosed` requirement, so the
+ * same rectangle is refused for a cell and accepted for a yard. It is the one
+ * member here that carries a *ruling* rather than a mechanism -- see the
+ * enclosure evaluation in `zone` for what changed, and the ADR
+ * "Must a zoned room be enclosed" for why.
  */
 export type ZoneRoomRefusalReason =
   | 'unknown-room-type'
@@ -206,14 +213,34 @@ export type ZoneRoomRefusalReason =
   | 'out-of-bounds'
   | 'unowned-land'
   | 'overlaps-existing-room'
-  | 'duplicate-instance-id';
+  | 'duplicate-instance-id'
+  | 'not-enclosed';
 
 export interface ZoneRoomRefusal {
   readonly kind: 'refused';
   readonly reason: ZoneRoomRefusalReason;
   readonly request: ZoneRoomRequest;
-  /** The tile that decided a per-tile refusal (`out-of-bounds`, `unowned-land`, `overlaps-existing-room`); absent for a refusal about the request as a whole. */
+  /**
+   * The tile that decided a per-tile refusal (`out-of-bounds`, `unowned-land`,
+   * `overlaps-existing-room`), or the tile carrying the first perimeter gap on
+   * a `not-enclosed` one; absent for a refusal about the request as a whole.
+   */
   readonly tile?: TilePosition;
+  /**
+   * Which of `tile`'s two stored edges is the gap, on a `not-enclosed` refusal.
+   *
+   * The world keeps a north edge and a west edge per tile, so `tile` alone does
+   * not say which is missing -- and a gap on the rectangle's *south* or *east*
+   * boundary is stored on the neighbour, so the pair is the only way to name
+   * the wall the player has to build. Absent on every other reason, none of
+   * which has an edge to name.
+   *
+   * Diagnosis only, exactly like `tile`: what crosses the worker boundary is
+   * the reason and nothing else (`../refusals/refusal-log.ts` deliberately
+   * carries no coordinates), so this is read from `recentRefusals` inside the
+   * worker.
+   */
+  readonly edge?: 'north' | 'west';
   readonly tick: number;
 }
 
@@ -224,9 +251,13 @@ export interface ZoneRoomAccepted {
    * Whether the rectangle that was just zoned is walled in along its own
    * perimeter, and what the room definition asks for.
    *
-   * Carried on the *accepted* outcome and not used to refuse one. See
-   * `zone`'s comment on the enclosure evaluation for why, and
-   * `./enclosure.ts` for what the answer does and does not mean.
+   * **This used to say "carried on the accepted outcome and not used to refuse
+   * one", and that is no longer true.** An `enclosed` definition against an
+   * `open` rectangle is now `not-enclosed` and never reaches here, so on an
+   * accepted outcome the pair is either `sealed` against anything, or `open`
+   * against `outdoors`/`none`. It is still carried, because the pair is what
+   * the Rooms panel's readout renders and because `outdoors` is a real reading
+   * the player is entitled to see confirmed.
    */
   readonly enclosure: RoomEnclosure;
   readonly enclosureRequirement: RoomEnclosureRequirement;
@@ -449,6 +480,61 @@ export class RoomZoningService {
       }
     }
 
+    /*
+     * The enclosure requirement, enforced -- and this is the sentence that
+     * changed.
+     *
+     * It used to read "evaluated, and deliberately not enforced ... It refuses
+     * nothing, and that is the decision rather than caution", and it gave two
+     * reasons. The owner has ruled the other way (issue #446's third open
+     * question): `roomPerimeterEnclosure` is not to stay advisory and `zone`
+     * must refuse an open room. The ADR "Must a zoned room be enclosed" is the
+     * decision; what follows is only what a reader of this function needs.
+     *
+     * **What the ruling actually changes is the meaning of `enclosed`.** The
+     * old reason for not refusing was that this check is *narrower* than
+     * enclosure: a rectangle drawn inside a larger sealed building, with no
+     * partitions of its own, reads `open` while being topologically indoors, so
+     * refusing on it would block a designation that reading calls legitimate.
+     * That reading is now not in force. `enclosed` means "this room's own
+     * boundary is closed", and against that question this function is not a
+     * narrow proxy but an exact answer -- which is why the region-level query
+     * `./enclosure.ts` names as the thing to build first is no longer a
+     * prerequisite for anything here. The cost is stated rather than hidden:
+     * an open-plan room inside a sealed hall is no longer zonable, and every
+     * room must be walled (adjacent rooms may share a wall, so this is
+     * subdivision and not double-walling).
+     *
+     * **Only `enclosed`.** `outdoors` (`room.yard`, the one shipped room that
+     * authors it) and `none` accept any perimeter. A walled exercise yard is
+     * the archetype rather than the exception, and `outdoors` is a claim about
+     * a *roof*, which this world model does not have -- so the mirror-image
+     * refusal would answer the question with the wrong instrument.
+     *
+     * **Last, and before any write.** Not on cost: this is `2 * (width +
+     * height)` edge reads against the loop above's `width * height` tiles, so
+     * for a 2x3 cell it is the *more* expensive of the two and the two cross
+     * over around 4x4. It is last because `roomPerimeterEnclosure` reads the
+     * north edge of the row below the rectangle and the west edge of the
+     * column to its right, and `getTopEdge`/`getLeftEdge` answer `0` for a
+     * chunk that does not exist -- so for a request reaching outside the
+     * materialised world it would name a gap on a tile that is not there.
+     * `out-of-bounds` has to win, and so does `unowned-land`: it is the same
+     * rule that puts `below-minimum-size` ahead of the per-tile checks, which
+     * is that the player is told the thing they can act on. Sending somebody to
+     * wall land they do not own is worse advice than the truth about the land.
+     *
+     * One call, before the write, serving both outcomes -- the refusal here and
+     * the notice below. It used to run *after* the plane was painted, which was
+     * harmless (`setZoning` writes the zoning plane, never an edge layer) and
+     * is not a place a refusal can be returned from.
+     */
+    const enclosure = roomPerimeterEnclosure(this.world, request);
+    const requirement = enclosureRequirement(definition);
+    if (requirement === 'enclosed' && enclosure.enclosure === 'open') {
+      return this.refuse('not-enclosed', request, tick, enclosure.gap?.tile, enclosure.gap?.edge);
+    }
+
     for (let offsetY = 0; offsetY < request.height; offsetY += 1) {
       for (let offsetX = 0; offsetX < request.width; offsetX += 1) {
         this.world.setZoning(
@@ -482,45 +568,21 @@ export class RoomZoningService {
     const instance = this.roomInstances.getById(instanceId) ?? registered;
 
     /*
-     * The enclosure requirement, evaluated -- and deliberately not enforced.
+     * The notice, from the answer computed before the write.
      *
-     * `RoomRequirement.type` has included `'enclosed'` and `'outdoors'` since
-     * #17 and all 18 definitions carry one of them; nothing in `src/` had ever
-     * evaluated either, so a cell zoned in the middle of open ground was
-     * accepted in silence. `roomPerimeterEnclosure` is the honest half of
-     * that: it answers whether *this rectangle's own perimeter* is walled,
-     * which is a real property of the world read from the two edge layers.
+     * The evaluation itself, and the ruling that made it a refusal rather than
+     * a readout, are above the write. What is left here is publication: the
+     * pair goes onto the notice, reaches the Rooms panel through
+     * `simulation/status-counts`, and tells the player what they designated.
      *
-     * **It refuses nothing, and that is the decision rather than caution.**
-     * Two facts make a refusal wrong here, and `./enclosure.ts` records both
-     * in full:
-     *
-     *   - The check is narrower than enclosure. A room drawn inside a larger
-     *     sealed building with no partitions of its own reads `open` while
-     *     being indoors, so refusing on it would block a legitimate
-     *     designation. The wider question needs region-level enclosure, and
-     *     `TopologyManager` does region *detection* with no enclosure query
-     *     and no caller for its `update()`.
-     *   - Refusing every `'enclosed'` room that is not sealed would refuse
-     *     rooms a player can zone today, on a check that runs at *designation
-     *     time* while the walls are usually built afterwards. (This bullet used
-     *     to give a stronger reason -- that a sealed room could not have a door,
-     *     because `edgeNumericIdFor` wrote `0` for `door-wooden` and a completed
-     *     door order changed nothing in the world. That stopped being true when
-     *     doors became buildable: a door writes `DOOR_EDGE_NUMERIC_ID` and
-     *     registers itself, so a sealed room with a way in is now expressible.
-     *     The decision not to refuse is unchanged, and the reason above is the
-     *     one that survives.)
-     *
-     * So the answer is *reported* instead: it goes onto the notice below,
-     * reaches the Rooms panel through `simulation/status-counts`, and the
-     * player is told what they designated rather than stopped from
-     * designating it. The day something gates on enclosure -- an occupancy
-     * rule, an intake requirement -- this is the function it should ask, and
-     * the region query is the thing to build first.
+     * On an accepted zoning the pair can now only be `sealed` against anything,
+     * or `open` against `outdoors`/`none` -- `open` against `enclosed` was
+     * refused above. That is why the panel's `hud.rooms.enclosure-open-required`
+     * warning was deleted with this change rather than left as a branch nothing
+     * can reach: the sentence it carried is now
+     * `hud.alert.refusal.zone.not-enclosed`, said at the moment the player can
+     * still act on it.
      */
-    const enclosure = roomPerimeterEnclosure(this.world, request);
-    const requirement = enclosureRequirement(definition);
     this._lastNotice = {
       sequence: (this._lastNotice?.sequence ?? 0) + 1,
       tick,
@@ -854,13 +916,19 @@ export class RoomZoningService {
     request: ZoneRoomRequest,
     tick: number,
     tile?: TilePosition,
+    edge?: 'north' | 'west',
   ): ZoneRoomRefusal {
     const refusal: ZoneRoomRefusal = {
       kind: 'refused',
       reason,
       request: { ...request },
       tick,
+      // Spread rather than assigned, because `exactOptionalPropertyTypes` makes
+      // `{ tile: undefined }` a different type from `{}` -- and because a
+      // refusal that carried an explicit `undefined` edge would read as "the
+      // gap has no edge" rather than "this reason names none".
       ...(tile === undefined ? {} : { tile }),
+      ...(edge === undefined ? {} : { edge }),
     };
     this.refusals.push(refusal);
     if (this.refusals.length > MAX_RECORDED_ZONING_REFUSALS) this.refusals.shift();
