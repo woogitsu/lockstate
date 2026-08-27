@@ -1309,6 +1309,26 @@ another entry that a re-read catches and no gate can. What remains true is the
 part that matters: it is not a wrong status, and the deployment document carries
 the trap.
 
+Also not here as a decision, and **new at this pass: ADR 0003 has no amendment
+for the `zoning` sibling of `simulation/status-counts`.** The ADR gained an
+amendment when `refusal` was added to that payload (*"Amendment, 2026-08-24:
+`simulation/status-counts` also carries the last refusal"*), and a second
+optional sibling was added by #312 with no matching amendment and no mention of
+the word anywhere in the document. Two sentences in the body then described the
+payload as the counts plus `tick`, `schemaVersion` and a refusal; both are
+corrected in place at this pass, and both now point here. What is *not* an
+editor's call is whether the ADR should carry a third amendment stating the
+`zoning` shape and its compatibility argument the way the refusal one does, or
+whether the corrected sentences are enough -- that is the owner's, and it is the
+only thing this entry asks for. **It is not a wrong status and not a code gap:**
+`zoningNoticeSchema` is declared, `.strict()`, optional, produced by the worker
+and decoded on the main thread, with `tests/unit/ui-simulation-zoning.test.ts`
+driving the notice through a real `simulation/status-counts` message; the
+document is what is
+behind the code, in the same way and for the same reason that
+`src/simulation/protocol/transferables.ts`'s comment said "Eleven integers" for
+two days after the twelfth landed (#444).
+
 ---
 
 ## 6. Stale status references: cleared, and now asserted
