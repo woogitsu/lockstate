@@ -327,6 +327,54 @@ describe('PathRequestQueue: the tick budget bounds expanded nodes, not requests'
     expect(Math.min(...perRequest)).toBeGreaterThan(1);
   });
 
+  /**
+   * Where the ceiling actually sits. #416 hardened what the budget is
+   * *denominated in*; the comparison that stops the loop is still an
+   * inclusive one, and nothing has ever been handed the one budget that
+   * separates `>=` from `>`. The case above asserts
+   * `beforeTheLast < WORK_BUDGET`, which a `>` only violates when the running
+   * total lands on 200 exactly -- it does not -- so measured at 83d9616,
+   * weakening `usedBudget >= params.workBudget` to `>` left this file,
+   * `navigation-path-request-queue.test.ts` and `navigation-system.test.ts`
+   * green, 34/34. What that mutation ships is one further request's whole
+   * expansion, every tick, above the declared ceiling.
+   *
+   * The budget here is **measured rather than written out** because a literal
+   * cannot land on the boundary: what a leg costs is the router's business and
+   * changes with it. That measurement is an *input*, not an expected value --
+   * every assertion below is a literal count of requests -- so this is not a
+   * fixture supplying both sides of its own comparison. The reference run is
+   * the same fixture with the same enqueue order and its own cold caches, and
+   * `processTick` sorts once before spending anything, so the request it
+   * serves first and what that costs are identical in all three runs; the
+   * assertion that the boundary run's one outcome cost exactly `firstCost`
+   * fails loudly if that ever stops being true.
+   */
+  it('stops the tick at the budget rather than one request past it', () => {
+    const reference = drainOneTick(100_000);
+    expect(reference.resolved).toHaveLength(REQUEST_COUNT); // the reference really did see the whole batch
+    const firstCost = reference.resolved[0]?.expansions;
+    const secondCost = reference.resolved[1]?.expansions;
+    if (firstCost === undefined || secondCost === undefined) throw new Error('The reference run must resolve at least two requests.');
+    // Non-degeneracy: a leg that cost one expansion, or a second leg that cost
+    // none, would make `>=` and `>` agree here and the boundary untestable.
+    expect(firstCost).toBeGreaterThan(1);
+    expect(secondCost).toBeGreaterThan(0);
+
+    // Budget == what the first request spends. `usedBudget` reaches the budget
+    // exactly, and the tick must stop there.
+    const atBudget = drainOneTick(firstCost);
+    expect(atBudget.resolved, 'a tick whose budget is exactly spent must stop').toHaveLength(1);
+    expect(atBudget.resolved[0]?.expansions).toBe(firstCost);
+    expect(atBudget.queue.size()).toBe(REQUEST_COUNT - 1);
+
+    // One unit of budget above it, and the second request is admitted -- so
+    // the cut above is the budget biting at its boundary and not the batch
+    // running out or some other stop condition.
+    const justOver = drainOneTick(firstCost + 1);
+    expect(justOver.resolved).toHaveLength(2);
+  });
+
   it('admits more requests when the budget is raised and fewer when it is lowered', () => {
     // The budget is the *cause* of the cut rather than a coincidence of the
     // batch: the same sixteen requests, three budgets, monotonically more work
