@@ -1717,17 +1717,29 @@ describe('fork pull request execution contract', () => {
     ).toBeGreaterThanOrEqual(0);
 
     const blocks = new Map<string, string[]>();
+    /** Two-space-indented lines this parser could not read as a job header. */
+    const unreadable: string[] = [];
     let current: string[] | undefined;
 
-    for (const line of lines.slice(start + 1)) {
-      // The `(?:#.*)?` is load-bearing and must not be "simplified" away. Without
-      // it a job header carrying a trailing comment -- `  lint-docs: # remove
-      // after #999` -- matches nothing, so the job is never added to `blocks`,
-      // never appears in `names`, and is never checked for the fork guard. That
-      // was measured, not imagined: the byte-identical job without the comment
-      // fails this test, and with it the whole file stayed green. This parser
-      // must fail closed, the way the deploy-side one at `guardOf` does.
-      const header = /^ {2}([A-Za-z][\w-]*):\s*(?:#.*)?$/u.exec(line);
+    for (const [offset, line] of lines.slice(start + 1).entries()) {
+      // Every character class here is load-bearing and none may be
+      // "simplified" away. What makes an unmatched header dangerous rather
+      // than merely unhelpful: a line this pattern misses is not a break, it
+      // falls through to `current?.push(line)` and is APPENDED TO THE PREVIOUS
+      // JOB'S BLOCK -- which still carries its own guard. So the new job does
+      // not appear in `names`, is not checked, and nothing goes red. Three
+      // spellings, each measured by appending a guardless job to ci.yml:
+      //
+      //   lint-docs:    -> FAIL, expected [ 'lint-docs' ] to deeply equal []
+      //   _lint-docs:   -> whole file green
+      //   "lint-docs":  -> whole file green
+      //
+      // `(?:#.*)?` is the first of the three and was measured the same way: a
+      // job header carrying a trailing comment -- `  lint-docs: # remove after
+      // #999` -- matched nothing, and the byte-identical job without the
+      // comment failed. `_` is in the class because GitHub's job id grammar
+      // admits it, and the optional quotes because YAML admits those.
+      const header = /^ {2}"?([A-Za-z_][\w-]*)"?:\s*(?:#.*)?$/u.exec(line);
       if (header) {
         current = [];
         blocks.set(header[1] ?? '', current);
@@ -1735,8 +1747,27 @@ describe('fork pull request execution contract', () => {
       }
       // A new top-level key ends `jobs:`.
       if (line.trim().length > 0 && !/^\s/u.test(line)) break;
+
+      // AND THE HALF THAT MAKES IT FAIL CLOSED. Widening the pattern closes
+      // three spellings; this closes the fourth, whatever it turns out to be.
+      // Inside `jobs:` a line at exactly two-space indentation IS a job
+      // header -- everything belonging to a job is indented four or more --
+      // so one this parser cannot read is a job it is about to hide inside
+      // its predecessor. That is a failure with its own message rather than a
+      // silent append. Comments at this indentation are ordinary here (ci.yml
+      // introduces `assets` and `browser` with a paragraph each) and are the
+      // only exemption.
+      if (/^ {2}\S/u.test(line) && !/^ {2}#/u.test(line)) {
+        unreadable.push(`${CI}:${String(start + 2 + offset)}: ${line.trim()}`);
+      }
+
       current?.push(line);
     }
+
+    expect(
+      unreadable,
+      `these lines sit at job-header indentation in ${CI} and this parser cannot read them as job headers. It does not skip such a line, it appends it to the PREVIOUS job's block -- so a job spelled this way is never checked for the fork guard and this contract stays green about it, which is the whole failure mode the pattern above records measuring three times. Either the line is a job header in a spelling the pattern does not admit, in which case widen it and add the spelling to that list, or something other than a job now lives directly under \`jobs:\` and this parser needs to know about it.`,
+    ).toEqual([]);
 
     // Vacuity guard: with no jobs parsed, "every job carries the guard" is
     // true of nothing at all.
