@@ -40,7 +40,7 @@ reads one `# ADR 0040:` heading and one status keyword per file (`ADR_HEADING`,
 `statusKeyword`) and reconciles it with the index table; an amendment appended to
 an Accepted ADR inherits that file's `Accepted` and is invisible to every gate in
 the repository — so an unapproved decision would read as approved by inspection.
-`docs/adr/STATUS-QUEUE.md:319-333` says this in its own words — *"an amendment
+[`STATUS-QUEUE.md`](./STATUS-QUEUE.md) **§2** says this in its own words — *"an amendment
 inside an accepted ADR is invisible to every mechanical gate there is; this row is
 the only thing that says it exists"* — and the 2026-08-26 amendment to ADR 0007
 took the other route, an amendment plus a queue row. That route works; a numbered
@@ -468,7 +468,13 @@ alone.
    is a version bump.
 4. **`world/render-snapshot` has a route and no reader, and slice 4 would give it
    one — or delete it.** Nine of the fifteen catalogued read models are in that
-   state (`tests/foundation/projection-reachability-contract.test.ts:64-65` says
-   ten; measured at `54418b6` it is nine, and the sentence was one too many when it
-   was written). Whether the render geometry path reuses that projection or
+   state, measured at `54418b6` and re-measured at `b710c62`.
+   `tests/foundation/projection-reachability-contract.test.ts` **said ten and now
+   says nine**, with the grep that re-derives it written into its header comment;
+   this question had nine right before that file did. The cause turned out to be
+   an arithmetic slip rather than a stale measurement — six ids are read by five
+   modules, because `src/ui/simulation-room-needs.ts` requests two, so counting
+   reader *files* gives ten and counting read *models* gives nine.
+   `docs/HUD_PROJECTIONS.md` §9 carried the identical slip from the identical
+   cause. Whether the render geometry path reuses that projection or
    replaces it should be decided in slice 4, not assumed now.
