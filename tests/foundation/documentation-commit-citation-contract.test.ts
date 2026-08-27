@@ -133,11 +133,20 @@ import { describe, expect, it } from 'vitest';
  *
  * ## It bites, and it bit before any mutation
  *
- * Run against `fa12249` the publication case fails naming
- * `docs/NAVIGATION.md`, twice, for a `3d54e4b` that exists in the container
- * that wrote the sentence and on no ref this repository publishes. See
- * `UNPUBLISHED_BY_ORIGIN` for what that commit is; it is a class rather than an
- * accident, and it is the reason the publication case exists at all.
+ * Run against `fa12249` the publication case failed naming
+ * `docs/NAVIGATION.md`, twice, for a sha that existed in the container that
+ * wrote the sentence and on no ref this repository publishes: the tip of an
+ * unpushed agent worktree branch, which the coordinator's cherry-pick had
+ * already rewritten into a different commit. Both anchors now name the
+ * published commit, whose measured trees are byte-identical, and that document
+ * says beside them what the difference is.
+ *
+ * The token itself is deliberately not written here. Citing a dead sha to
+ * explain why dead shas are bad would make this comment the ninth failure of
+ * its own gate -- and it would be a real failure, not a false one, because a
+ * reader cannot resolve it either. See `UNPUBLISHED_BY_ORIGIN` for the class;
+ * it is a class rather than an accident, and it is the reason the publication
+ * case exists at all.
  */
 
 const REPOSITORY_ROOT = resolve(__dirname, '../..');
@@ -216,27 +225,30 @@ const NAMES_NO_COMMIT_BY_DESIGN: ReadonlyMap<string, string> = new Map([
  * moment it lands. That is not a hypothesis; it is the entry below.
  */
 const UNPUBLISHED_BY_ORIGIN: ReadonlyMap<string, string> = new Map([
-  [
-    '3d54e4b',
-    // `docs/NAVIGATION.md` anchors two measurements -- the frontier-heap
-    // checksum comparison and the µs/expansion table -- at "`3d54e4b`
-    // (v0.0.121 plus #410)". That commit is the tip of a local
-    // `work/410-benchmarks` worktree branch and is on no remote: `git branch -r
-    // --contains 3d54e4b` is empty. #410's work is published as `c201547`,
-    // whose patch-id is identical -- git patch-id --stable reports
-    // d74d25bc1b0c0116061f947dda2f850b72ec5fb2 for both -- and whose `src/`,
-    // `benchmarks/` and `tooling/` trees are byte-identical to it, so the
-    // measured code is published even though the tree the measurement names is
-    // not.
-    //
-    // Re-pointing the anchor at `c201547` is deliberately NOT done here. The
-    // parenthetical "(v0.0.121 plus #410)" is true of `3d54e4b` and false of
-    // `c201547`, which also carries #424 and three documentation commits, and
-    // re-anchoring a measurement onto a tree nobody measured on is the defect
-    // this repository keeps paying for rather than a correction of it. It
-    // belongs to whoever holds the numbers.
-    'the tip of an unpushed work/410-benchmarks worktree branch, cited by docs/NAVIGATION.md as a measurement anchor; published equivalent c201547, same patch-id, identical src/ and benchmarks/ trees',
-  ],
+  // Empty, and that is a state to defend rather than a gap.
+  //
+  // It held one entry when this gate first ran: `docs/NAVIGATION.md` anchored
+  // both of its frontier-heap measurements at a commit that existed on this
+  // disk and on no remote -- the tip of an unpushed `work/410-benchmarks`
+  // worktree branch, cited as "(v0.0.121 plus #410)". The measurements were
+  // real; the sha nobody else could resolve was the problem.
+  //
+  // It was settled by naming the published commit whose *measured* trees are
+  // the same trees, rather than by allowlisting the unreachable one: `c201547`
+  // has an identical subject and byte-identical `src/`, `benchmarks/` and
+  // `tooling/`, which are the only trees a navigation benchmark reads, and
+  // `docs/NAVIGATION.md` now says so in a note beside the anchor including what
+  // else `c201547` carries that the worktree commit did not. That is the shape
+  // an entry here should be pushed into before it is written: an allowlist
+  // entry preserves a citation nobody can check, and this gate exists because
+  // of citations nobody can check.
+  //
+  // What the class is, since it will recur: `docs/AGENT_WORKFLOW.md`'s
+  // worktree-and-cherry-pick method rewrites every commit it lands, so any sha
+  // an agent reads out of its own worktree and writes into a document is dead
+  // the moment the coordinator picks it. `git branch -r --contains <sha>` is
+  // the check. Add an entry only when the anchor genuinely cannot move -- and
+  // say why it cannot, not merely that it does not.
 ]);
 
 /**

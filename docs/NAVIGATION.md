@@ -226,10 +226,24 @@ array is in. The heap has no decrease-key: a relaxation pushes a second,
 strictly cheaper entry and the superseded copy is discarded when it surfaces,
 which is why both searches check `closed`/`visited` **before** charging an
 expansion to the budget — a discarded copy is not an expansion. Verified rather
-than argued: at `3d54e4b` (v0.0.121 plus #410) the three
+than argued: at `c201547` (v0.0.121 plus #410) the three
 `navigation.production.*` benchmark scenarios — 500 real requests plus two
 corner-to-corner routes — return byte-identical checksums and identical counted
 work before and after the swap.
+
+> **What `c201547` is, because the run was not taken on it.** Both measurements
+> in this document were taken in a worktree, on that worktree's own commit,
+> which the coordinator then cherry-picked — so the sha the run printed is on no
+> remote and nobody but its author can resolve it. `c201547` is the published
+> form of the same change: identical subject, and `src/`, `benchmarks/` and
+> `tooling/` byte-identical (`git rev-parse c201547:src` and the two others match
+> the worktree commit's exactly), which are the only trees these scenarios read.
+> It differs by carrying #424 and three documentation commits as well, none of
+> which this benchmark opens. Stated rather than substituted quietly, because
+> re-pointing an anchor at a tree nobody measured on is the defect this
+> repository keeps paying for; the point here is that the measured trees are the
+> same tree.
+
 
 A fourth thing decides which route comes back, and it is not an ordering: the
 **end the region search is rooted at**. A tie-break among equal-cost
@@ -386,9 +400,10 @@ rationale lives in
   **What one expansion costs, and what the budget therefore does and does
   not bound.** Until #413 the unit was not proportional to time: both
   frontiers selected their minimum by scanning, so an expansion cost more
-  the larger the search got. Measured at `3d54e4b` (v0.0.121 plus #410,
+  the larger the search got. Measured at `c201547` (v0.0.121 plus #410,
   Node 24.19.0, this container — the ratios travel, the absolute numbers do
-  not), one `findRoute` corner-to-corner across one open square region,
+  not; see the note above on what that sha is), one `findRoute`
+  corner-to-corner across one open square region,
   which is the shape with the largest frontier:
 
   | region | expansions | µs/expansion before | after | route ms before | after |
