@@ -1015,12 +1015,18 @@ one direction.
   what persisted geometry. That is a decision, not a code gap — which is why it
   belongs here and the eviction no longer does.
 - **ADR 0006 / ADR 0003 decision 4 — the handshake gates nothing.** `'ready'` is
-  a member of `WorkerState` (`src/simulation/worker/state-machine.ts:28`) and no
-  `transition()` call targets it; the file makes exactly four, and they reach
-  `'faulted'` (`:455`), `'paused'` (`:584`), `'paused'`/`'running'` (`:619`) and
-  `'shutting-down'` (`:843`). Three of those four moved: this entry cited `:566`,
-  `:601` and `:825`, each eighteen lines short, because #427 added the transport
-  acknowledgement above them. The count, the states and `:455` are unchanged. Nothing in `src/` sends a `protocol/handshake` at
+  a member of the `WorkerState` union (`src/simulation/worker/state-machine.ts:33-39`)
+  and no `transition()` call targets it; `grep -n "this.transition(" src/simulation/worker/state-machine.ts`
+  is the enumeration and it returns exactly four, reaching `'faulted'`,
+  `'paused'`, `'paused'`/`'running'` and `'shutting-down'` (`:590`, `:725`,
+  `:760`, `:984` as of `83d9616`). **All four anchors have now moved twice, and
+  in both directions the entry has been wrong about which moved.** It first read
+  `:566`, `:601`, `:825`; those were corrected to `:584`, `:619`, `:843` with
+  `:455` declared unchanged — and at `83d9616` every one of the four is wrong,
+  `:455` included, so the "unchanged" was the least durable part of the
+  correction. The count and the four target states have held throughout; the
+  grep above is what the next reader should run instead of trusting any of these
+  numbers. Nothing in `src/` sends a `protocol/handshake` at
   all — re-read at this commit, all nine occurrences are the receiver
   (`state-machine.ts:472`, `:502`), the transferables switch, the kind list or the
   schema. So ADR 0006's state 2 describes a state the machine cannot
@@ -1144,9 +1150,12 @@ one direction.
   `83c3121` and it is **still eleven** — the one count in this section that has
   held across the eleven releases to `dbe271f`, because #367 wired an existing
   member rather than adding one. **It no longer holds at that count.**
-  `simulationCommandSchema` (`src/simulation/protocol/commands.ts:465`; this
-  entry cited `:437`, which #420 pushed down by twenty-eight lines) still
-  discriminates **thirteen**, matching thirteen `type: z.literal` members: #392
+  `simulationCommandSchema`, declared
+  `export const simulationCommandSchema = z.discriminatedUnion('type', [` in
+  `src/simulation/protocol/commands.ts` (`:467` as of `83d9616`; this entry cited
+  `:437` and then `:465`, and both were overtaken), still discriminates
+  **thirteen**, matching the thirteen hits of
+  `grep -c "type: z.literal" src/simulation/protocol/commands.ts`: #392
   added `CancelMaterialPurchase` and #394 added `ReleaseGuardAssignment`, both
   with producers in the same change, so `AWAITING_PRODUCER` stayed empty while
   the count moved. `AdmitPrisoner` (#306) still concerns a prisoner. The

@@ -82,7 +82,10 @@ The header at `:16-25` calls itself a placeholder for exactly this channel.
 **The whole cost is boundary validation, not rendering.**
 `src/simulation/worker/client.ts:94` decodes every inbound message;
 `src/simulation/protocol/decode.ts:110` runs the union schema; the snapshot's body
-is `jsonValueSchema` (`src/simulation/protocol/types.ts:59-66`, `:41-43`), which is
+is `jsonValueSchema` -- `data: jsonValueSchema,` inside `structuredClonePayloadSchema`
+(`src/simulation/protocol/types.ts:59-66`), declared as
+`export const jsonValueSchema = z.custom<JsonValue>(` at `:43-45` (this cited
+`:41-43`) -- which is
 `isJsonValue` (`src/shared/json.ts:95-104`) recursing with an
 `Object.getOwnPropertyDescriptor` per array element (`:52`) and per object key
 (`:77`). Measured on a built prison (64 loaded chunks, 5,000 prisoners): 41.3 ms
@@ -205,9 +208,13 @@ periodically and on the first wake after `simulation/ready`.
 
 - **Rejected as a fix, though it should eventually be reached.**
   `src/simulation/presentation/world-projection.ts:27-45` carries chunk terrain RLE
-  and **no actors at all**; every catalogue entry posts
-  `transport: 'structured-clone'` (`src/simulation/worker/projection-catalog.ts:439`),
-  so it pays the same deep walk; and a pull is the wrong direction for a level the
+  and **no actors at all**; every catalogue entry is posted with
+  `transport: 'structured-clone' as const,`, which `PROJECTION_CATALOG` never
+  spells at all -- `handleRequestProjection` stamps it on every reply
+  (`src/simulation/worker/state-machine.ts:973` as of `83d9616`). This bullet
+  cited `projection-catalog.ts:439`, the `world/render-snapshot` entry's
+  `project` callback, and that file contains no `transport:` on any line.
+  So it pays the same deep walk; and a pull is the wrong direction for a level the
   player is always looking at — ADR 0003's 2026-08-25 amendment draws that line
   itself.
 
@@ -321,8 +328,11 @@ Tile coordinates are plain `i32` because that is exactly what the simulation hol
 ### Cadence
 
 A ceiling of **100 ms**, checked before the diff runs, in
-`SimulationWorkerStateMachine.onTickLoop` beside the two publications already there
-(`src/simulation/worker/state-machine.ts:238-256`), and **skipped entirely when
+`SimulationWorkerStateMachine.onTickLoop`, beside the two publications already
+there -- `this.publishClockState(now);` and `this.publishStatusCounts(now);`
+(`src/simulation/worker/state-machine.ts:290-310` as of `83d9616`; this cited
+`:238-256`, which is the block of cadence *fields* rather than the loop) -- and
+**skipped entirely when
 nothing changed** — the `STATUS_COUNTS_PUBLISH_INTERVAL_MS` pattern
 (`:70-72`), a ceiling and not a rate. A keyframe at most every 2 s and on the first
 wake after `simulation/ready`.
@@ -481,10 +491,15 @@ alone.
   carries a **bounded-width record list**, so contract 5's objection to unbounded
   lists on a timer is answered by the record width and the keyframe interval rather
   than by `offset`/`limit`.
-- `src/simulation/protocol/transferables.ts:30-36`'s comment — *"Nothing builds one
-  today: every catalog entry posts `transport: 'structured-clone'`"* — stays true
-  of the projection catalogue and becomes false of the protocol as a whole; it
-  needs one clause.
+- `src/simulation/protocol/transferables.ts`'s `simulation/projection` comment —
+  *"Nothing builds one today: every catalog entry posts
+  `transport: 'structured-clone'`"* — stays true of the projection catalogue and
+  becomes false of the protocol as a whole; it needs one clause. **Discharged at
+  `c99a4a8` (#414):** that clause is written, so the sentence quoted above is the
+  *former* wording and the comment now reads *"Nothing in the projection
+  catalogue builds one … That is no longer true of the protocol as a whole"*.
+  The quotation is kept rather than replaced, because a Consequences bullet that
+  silently adopts the text it predicted stops being readable as a prediction.
 - The `array-buffer` transport acquires its first production user, four days and
   121 releases after it was written.
 

@@ -223,11 +223,17 @@ The intent carries ids and numbers only:
 ```
 
 Verified against both ends. `zoneRoomSchema`
-(`src/simulation/protocol/commands.ts:37-45`) is
+(`src/simulation/protocol/commands.ts`, declared `export const zoneRoomSchema = z.object({`
+at `:67` as of `83d9616`; this cited `:37-45`, which had drifted onto the
+doc comment above `placeBuildOrderSchema`) is
 `{ type: 'ZoneRoom', roomId: string, x: int, y: int, width: int, height: int,
 transactionId?: string }`, `.strict()`; `RoomZoningService.zone` takes
-`ZoneRoomRequest` (`zoning.ts:112-121`) whose first field is `roomCatalogId`
-and is fed from `simCommand.roomId` at `session-commands.ts:62`. So `roomId` is
+`ZoneRoomRequest`, declared `export interface ZoneRoomRequest {` with
+`readonly roomCatalogId: string;` as its first field (`zoning.ts:164-165`), and
+is fed from `simCommand.roomId`, written `roomCatalogId: simCommand.roomId,` in
+`session-commands.ts` (`:113`). Both line numbers are as of `83d9616`; this
+sentence cited `zoning.ts:112-121` and `session-commands.ts:62`, which #444
+found had drifted onto two unrelated comments. So `roomId` is
 the right name for the intent field — it is the field name the wire format and
 every queued command in an existing save already use, and it holds a room
 *catalog* id (`room.cell`), never an instance id.

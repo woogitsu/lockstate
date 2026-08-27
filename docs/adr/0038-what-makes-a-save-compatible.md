@@ -82,11 +82,19 @@ restores **silently**, and dies later. Verified on `main` @ `54418b6`
   off three optional *sections* and knows nothing about streams, so the restore
   reports `save.scope.rng-streams` as **restored** while a stream is missing.
 - The failure surfaces at the first draw, from
-  `NamedRngStreams.get` (`src/simulation/rng/streams.ts:22`), inside
-  `Kernel.step()`'s system loop (`kernel.ts:212-216`).
-- `onTickLoop`'s catch (`src/simulation/worker/state-machine.ts:254-255`) calls
-  `fault('internal-error', …)` with no options, so `fault` takes
-  `recoverable = false` (`:454`) and `transition('faulted')` (`:455`).
+  `NamedRngStreams.get`, whose one line is a guard throwing
+  `RangeError` on an unknown name (`src/simulation/rng/streams.ts:22`) -- inside `Kernel.step()`'s system loop,
+  the `for (const system of this._systems)` walk under `// 2. Execute systems due
+  at this tick` (`kernel.ts:237-242` as of `83d9616`; this cited `:212-216`,
+  which had drifted onto the doc comment above the command drain).
+- `SimulationWorkerStateMachine.onTickLoop`'s `catch (e)` calls
+  `this.fault('internal-error', …)` with no options, so `fault` takes
+  `const recoverable = options.recoverable ?? false;` and then
+  `if (!recoverable) this.transition('faulted');`
+  (`src/simulation/worker/state-machine.ts:307-309` and `:589-590` as of
+  `83d9616`; this bullet cited `:254-255`, `:454` and `:455`, all three of which
+  had drifted -- the first onto the delta-cadence fields, the other two into an
+  unrelated comment).
   Measured, through the real `SimulationWorkerStateMachine`:
 
   ```
