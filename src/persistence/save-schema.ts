@@ -221,10 +221,49 @@ const constructionSnapshotSchema = z
 // `capacity`. This schema is frozen historical shape: it exists only so the
 // migration chain can validate a save written by an older build before
 // upgrading it, and must never be edited to match new code.
+//
+// The `capacity` bound below is the one edit that is *not* "matching new
+// code", on the same footing as #102's `chunkSize` cap: it narrows what
+// counts as a valid save at a version, for a field that sizes allocations,
+// and it removes only values no writer produced. See the field's own comment.
 
 const entityStoreSnapshotV1Schema = z
   .object({
-    capacity: z.number().int().min(0),
+    /**
+     * Bounded at the same `0xf_ffff` `entityStoreSnapshotV2Schema` uses just
+     * below, and for the same reason `chunkSize` is bounded
+     * above: **this number sizes allocations,
+     * before anything has checked it.** `upgradeEntityLiveness`
+     * (`save-migrations.ts`) builds a `Uint16Array` + `Uint8Array` +
+     * `Uint32Array` straight from it -- 7 bytes per slot -- and V1's schema
+     * never required the three arrays to be `capacity` long, so an *empty*
+     * array set reaches that allocation. `decodeSaveEnvelope` runs the whole
+     * migration chain **before** verifying the checksum, so the checksum is
+     * no obstacle either (it is an integrity check, not a signature).
+     * Measured on the shipped `save-v1-in-progress.json` with only this field
+     * changed: `capacity: 10000000` allocated +70.0 MB from a 1,566-byte
+     * envelope and was refused only afterwards; `capacity: 4294967295` threw
+     * `RangeError: Array buffer allocation failed` **out of**
+     * `decodeSaveEnvelope`, which aborted `PrisonSaveRepository.loadCurrent`'s
+     * recovery walk before it could reach the older good generation.
+     *
+     * `0xf_ffff` is `INDEX_MASK` (`simulation/entity/entity-store.ts:13`), the
+     * ceiling `EntityStore`'s own constructor enforces at `:83`, so this is
+     * not a number invented for a schema. **It narrows nothing that was
+     * loadable**: V2's identical bound already refused every such save one
+     * step later, as `migration-produced-invalid-output` -- above `0xf_ffff` a
+     * refusal was already certain, and all this moves is *when* (before the
+     * allocation instead of after) and the label on it.
+     *
+     * The widest capacity any writer in this repository produces is
+     * `DEFAULT_PRISONER_CAPACITY`, 5,000 (`runtime/new-session.ts:244,326`);
+     * a sweep of every numeric and symbolic `capacity` assignment in `src/`
+     * and `tests/` finds nothing above it, and both checked-in V1 fixtures
+     * carry 8. ADR 0038 §1 classifies this as a *value* the build cannot
+     * interpret -- refused -- rather than an absence to be honoured, so it is
+     * not a compatibility change and needs no version bump.
+     */
+    capacity: z.number().int().min(0).max(0xf_ffff),
     nextAvailableIndex: z.number().int().min(0),
     maxActiveIndex: z.number().int().min(-1),
     freeCount: z.number().int().min(0),

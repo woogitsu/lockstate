@@ -153,10 +153,14 @@ export function parseImportedSave(text: string): ParsedImportFile {
  *   runs and therefore without a version, while every structural failure is
  *   raised *at* the version the file declared and carries it.
  * - **`invalid-shape` at a version, `no-migration-path`,
- *   `migration-produced-invalid-output`** -- it declares itself a save of a
- *   version this build knows and its contents do not hold up. The decoder's
- *   own message rides along as `{detail}`, the same convention every other
- *   spliced diagnostic in this panel uses.
+ *   `migration-produced-invalid-output`, `migration-step-threw`** -- it
+ *   declares itself a save of a version this build knows and its contents do
+ *   not hold up. The decoder's own message rides along as `{detail}`, the same
+ *   convention every other spliced diagnostic in this panel uses. The last of
+ *   the four is reached when a migration step threw rather than returning;
+ *   it says the same sentence to the player deliberately, because what the
+ *   player can do about it is identical, and the distinction it preserves is
+ *   for whoever reads the `{detail}`.
  *
  * A failure with no `rejected` at all is a *write* failure -- the envelope
  * decoded and storage refused it -- so it goes to `describeSaveResult`, which

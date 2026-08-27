@@ -205,6 +205,85 @@ be — a gameplay and world-extent question with no ADR behind it yet — rather
 than a bound on a field that lies about its own cost, so it is deliberately
 not decided here.
 
+### Entity capacity is bounded at every version, for the same reason
+
+`chunkSize` was the first field found to size an allocation before anything
+checked it. It was not the only one.
+
+`payload.entities.capacity` sizes three typed arrays inside
+`upgradeEntityLiveness` (`src/persistence/save-migrations.ts`) — a
+`Uint16Array`, a `Uint8Array` and a `Uint32Array`, **7 bytes per slot** — and
+V1's schema never required the three JSON arrays to be `capacity` long, so an
+*empty* array set reaches that allocation. `decodeSaveEnvelope` runs the whole
+migration chain **before** verifying the checksum, so the checksum is no
+obstacle here either. Measured on the shipped
+`tests/fixtures/persistence/save-v1-in-progress.json` with only that field
+changed:
+
+```
+capacity 10000000   -> +70.0 MB of ArrayBuffer from a 1,566-byte envelope,
+                       then refused as migration-produced-invalid-output
+capacity 4294967295 -> RangeError: Array buffer allocation failed
+```
+
+The second line is the one that mattered. The `RangeError` escaped
+`decodeSaveEnvelope`, and `PrisonSaveRepository.loadCurrent` calls that
+unguarded once per generation — so a corrupt newest generation did not fail and
+let the walk continue, it **aborted the walk**, and the older good generation
+was never reached. `importSave` threw at the player for the same reason.
+
+V2's `entityStoreSnapshotV2Schema` has always bounded `capacity` at `0xf_ffff`;
+V1's did not. The fix mirrors V2's bound onto V1, and it narrows nothing that
+was loadable: above `0xf_ffff` a refusal was already certain, one step later,
+as `migration-produced-invalid-output`. All that moves is *when* the refusal
+happens — before the allocation instead of after it — and its label.
+
+- **`0xf_ffff` is not a number invented for a schema.** It is `INDEX_MASK`
+  (`src/simulation/entity/entity-store.ts`), the entity-id index ceiling
+  `EntityStore`'s own constructor enforces, so a store larger than this could
+  not address its own slots.
+- **No migration step and no version bump**, on #102's precedent and ADR 0038
+  §1: a *value* the build cannot interpret is a fact about the blob and is
+  refused, where an *absent section* is a fact about the save's age and is
+  honoured. The widest capacity any writer in this repository produces is
+  `DEFAULT_PRISONER_CAPACITY`, 5,000; a sweep of every `capacity` assignment in
+  `src/` and `tests/` finds nothing above it, and both checked-in V1 fixtures
+  carry 8. The narrowing removes only values no writer produced.
+- **How reachable this was is genuinely open.** There is no evidence a V1 save
+  exists in any player's IndexedDB, and if none ever shipped this has the
+  standing #102 has: a hand-edited, corrupted or synthesised file — which is
+  still a real route, through the save panel's Import control.
+
+### A migration step that throws is a verdict, not an exception
+
+The class behind that instance, and the more valuable half.
+`MigrationChain.migrate` called `step.migrate(currentValue)` unwrapped, so a
+step that threw for *any* reason broke three stated contracts at once:
+`decodeSaveEnvelope`'s "unknown or future versions, structural corruption and
+checksum mismatches each fail with a distinct, actionable error code",
+`loadCurrent`'s promise to "walk the remaining generations newest-first and
+adopt the first one that validates", and the taxonomy table below.
+
+Steps are contracted to be pure total functions, so reaching that catch means
+one is defective — but a defective step must still produce a *refusal the
+recovery walk can act on*, because the alternative is that one bad generation
+costs the player every older good one. `migrate` now returns
+`migration-step-threw` at the version the step started from, with the thrown
+value's own words in the message.
+
+`migration-step-threw` is its own code rather than a reuse of
+`migration-produced-invalid-output`, whose meaning is precisely "the step *ran*
+and its output failed the destination schema" — a step that threw produced no
+output for a schema to reject. Adding it is additive: every consumer of the
+union is non-exhaustive (`describeImportResult` ends in a `default:` arm,
+`loadCurrent` treats any `ok !== true` alike), and the player-facing sentence
+is unchanged.
+
+This is ADR 0038 §5 applied one boundary earlier: *"whatever is refused is
+refused at restore, and is never an `internal-error`"* — a save-compatibility
+condition is a declared verdict. §5 says it for the restore boundary; the
+decode boundary owes its caller the same thing.
+
 ### What is deliberately excluded from the payload
 
 Every entry here is an exclusion with a stated reason, not a gap. The rule
@@ -1228,10 +1307,11 @@ single generic failure:
 
 | Code | Meaning |
 | --- | --- |
-| `invalid-shape` | Not an object, missing/non-numeric `saveSchemaVersion`, or fails its declared version's schema (includes malformed/truncated saves, `updatedAt < createdAt`, and a `world.chunkSize` above `WORLD_CHUNK_SIZE_LIMIT`). |
+| `invalid-shape` | Not an object, missing/non-numeric `saveSchemaVersion`, or fails its declared version's schema (includes malformed/truncated saves, `updatedAt < createdAt`, a `world.chunkSize` above `WORLD_CHUNK_SIZE_LIMIT`, and an `entities.capacity` above `0xf_ffff` at any version). |
 | `unsupported-version` | `saveSchemaVersion` is newer than the latest version this build knows about. |
 | `no-migration-path` | A declared or intermediate version has no registered schema/migration (e.g. version `0`, or a gap in the chain). |
 | `migration-produced-invalid-output` | A migration step ran but its output failed the destination version's schema — a bug in the migration, not the input. |
+| `migration-step-threw` | A migration step threw instead of returning, so there was no output for a schema to reject. Distinct from the row above because it says something different to whoever has to fix it, and because the alternative — letting the exception escape — aborts `loadCurrent`'s recovery walk instead of failing one generation. |
 | `checksum-mismatch` | The envelope parses and migrates cleanly, but its checksum does not match its payload — corruption, not a shape problem. |
 
 ## Size hook
