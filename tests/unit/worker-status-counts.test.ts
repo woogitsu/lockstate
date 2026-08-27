@@ -224,6 +224,15 @@ describe('publishing the status counts', () => {
       // 8 on each of those two rooms, which is the figure that stopped being
       // expressible: nothing authors an occupancy any more.
       roomCapacity: 4,
+      // The same 4, because every capacity-bearing room in this scenario is a
+      // `room.cell`: the yard and the canteen derive 0 and there is no
+      // infirmary. The two figures are pinned apart in
+      // `tests/unit/hud-projections.test.ts` ("does not count an infirmary's
+      // medical beds as somewhere to live"), on a prison built for the
+      // purpose; here they agree because the prison makes them agree, which is
+      // itself worth asserting -- a scoping rule that dropped `room.cell`
+      // would read 0 in this payload.
+      accommodationCapacity: 4,
       roomOccupants: 0,
       activeIncidents: 0,
       contrabandDiscovered: 0,
@@ -615,22 +624,52 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       expect(counts.prisoners).toBe(actorCount);
       expect(counts.rooms).toBe(CELL_COUNT);
       expect(counts.staff).toBe(GUARD_COUNT);
-      // Twelve integers, whatever the population. It was ten until the
-      // treasury balance joined them (#96) and eleven until #29's
-      // "earned today" accrual did; the exact count is pinned rather
-      // than bounded so that a *list* arriving here -- the thing this channel
-      // is shaped to exclude -- cannot slip in as "one more field". A scalar
-      // being added is a one-line, visible edit; that is the point.
+      // Thirteen integers, whatever the population. It was ten until the
+      // treasury balance joined them (#96), eleven until #29's
+      // "earned today" accrual did and twelve until `accommodationCapacity`
+      // gave the strip's occupancy bar a denominator; the exact count is
+      // pinned rather than bounded so that a *list* arriving here -- the thing
+      // this channel is shaped to exclude -- cannot slip in as "one more
+      // field". A scalar being added is a one-line, visible edit; that is the
+      // point.
       //
       // This is what a status-counts
       // payload is, and why it needs no paging.
-      expect(Object.keys(counts)).toHaveLength(12);
+      expect(Object.keys(counts)).toHaveLength(13);
+      // And the exclusion stated directly, rather than only as a byte budget
+      // that a list would happen to breach. The key count above cannot see a
+      // field that *stayed* one key and became a list, and the size bound
+      // below can only see it while the list is long enough to notice; this
+      // sees it at length zero, at any population, for ever.
+      //
+      // Added with the thirteenth count, because that field moved the size
+      // bound and a relaxed bound needs the property it was standing in for to
+      // be asserted somewhere it cannot be relaxed.
+      for (const [key, value] of Object.entries(counts)) {
+        expect(typeof value, `counts.${key} is not a scalar`).toBe('number');
+        expect(Number.isInteger(value), `counts.${key} is not an integer`).toBe(true);
+      }
       // And the refusal beside them is one fixed record of three scalars, not
       // a queue: exactly the shape a snapshot channel can carry honestly
       // (`RefusalLog`). A queue would put the one growing thing this channel
       // is designed to exclude right next to the counts.
       expect(Object.keys(payload.refusal)).toHaveLength(3);
-      expect(JSON.stringify(payload).length).toBeLessThan(400);
+      // 436 and not 400, and the difference is one field rather than a round
+      // number. ADR 0003 predicted this exact moment -- *"a thirteenth count
+      // with a name as long as the twelfth would breach it, and should be read
+      // as this channel's soft limit making itself felt rather than as an
+      // arbitrary threshold to raise"* -- so the raise is derived rather than
+      // chosen: `accommodationCapacity` costs 28 bytes here, the largest
+      // declared payload measures 416-418 with it, and 436 leaves the same 18
+      // bytes of head room the 400 had before this change. A *fourteenth*
+      // count with a name as long as the thirteenth therefore breaches this
+      // too, which is the property being preserved.
+      //
+      // ADR 0003 also said the head room under 400 was 18 bytes when it was
+      // in fact 10: re-measured on this tree before any of this landed, the
+      // largest payload was 388-390 and not the 380-382 that paragraph states.
+      // The number is re-derived from a run rather than adjusted by 28.
+      expect(JSON.stringify(payload).length).toBeLessThan(436);
 
       // Reported evidence, never a gate (docs/BENCHMARKING.md).
       console.log(

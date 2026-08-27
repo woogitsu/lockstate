@@ -46,6 +46,11 @@ export function projectStatusCounts(runtime: SimulationRuntime, tick: number): S
     // answers both the prisoner source and the room source.
     prisoners: runtime.prisoners,
     rooms: runtime.prisoners,
+    // The policy object `IntakeSystem` itself holds, not a second default:
+    // `accommodationCapacity` is the denominator the strip divides by, and a
+    // session running a custom policy must not have the readout and the
+    // housing rule disagree about which rooms are accommodation.
+    accommodationPolicy: runtime.prisoners.accommodationPolicy,
     staff: runtime.securityGuards,
     incidents: runtime.incidents,
     searchSystem: runtime.searchSystem,

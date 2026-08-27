@@ -3,6 +3,11 @@ import type { RoomCatalogDefinition } from '../../content/room-catalog';
 import { defaultRoomContentRegistry } from '../../content/room-catalog';
 import type { ClockControl } from '../clock/fixed-step-clock';
 import {
+  DEFAULT_ACCOMMODATION_POLICY,
+  resolveAccommodationTargets,
+  type AccommodationPolicy,
+} from '../prisoners/intake-system';
+import {
   DAY_LENGTH_TICKS,
   DEFAULT_REGIME_SCHEDULES,
   resolveActiveRegimeBlock,
@@ -55,6 +60,19 @@ export interface StatusStripSource {
   readonly treasury?: { readonly balanceMinorUnits: number };
   /** Defaults to the shipped schedules; a session running custom regimes passes its own. */
   readonly regimeSchedules?: readonly RegimeSchedule[];
+  /**
+   * The accommodation policy this session's `IntakeSystem` is running, which
+   * is what `accommodationCapacity` below is scoped by.
+   *
+   * Optional and defaulted exactly the way `regimeSchedules` above is, and for
+   * the same reason: the shipped policy is what every session in `src/` runs,
+   * and a session running a custom one passes it so the readout and the
+   * housing rule cannot disagree about what a bed is for.
+   * `src/simulation/worker/status-counts.ts` passes
+   * `PrisonerOperationsRuntime.accommodationPolicy`, which *is* the object
+   * `IntakeSystem` holds rather than a second copy of the default.
+   */
+  readonly accommodationPolicy?: AccommodationPolicy;
 }
 
 export interface StatusStripOptions {
@@ -108,6 +126,40 @@ export interface StatusStripViewModel {
     /** Registered room instances, not zoned tiles. */
     readonly rooms: number;
     readonly roomCapacity: number;
+    /**
+     * How many prisoners this prison has somewhere to **live**: the summed
+     * `residentCapacity` of the room instances `IntakeSystem` would house an
+     * arrival in.
+     *
+     * The denominator the status strip's Prisoners chip divides by, and the
+     * one number behind its over-capacity warning
+     * (`occupancyTone`, `src/ui/hud/projection.ts`). Overcrowding is what
+     * `IncidentTriggerSystem` now riots over (ADR 0048 decision 2), so this is
+     * the difference between a riot arriving as a surprise and a player
+     * watching it come.
+     *
+     * **Not `roomCapacity` above, and the difference is medical beds.**
+     * `roomCapacity` sums every registered instance's `residentCapacity`, and
+     * `deriveRoomCapacity` credits that for any object declaring
+     * `'sleep-surface'` -- which `object.medical-bed` does as well as
+     * `object.bed`. A furnished infirmary therefore "derives a residency it has
+     * no intake route to use"
+     * (`src/simulation/construction/definition.ts`, the `medical-bed-wooden`
+     * row), because `IntakeSystem` asks the registry only for the room types
+     * its `AccommodationPolicy` names. Publishing `roomCapacity` as the
+     * prisoner denominator would overstate it by every medical bed the player
+     * has built.
+     *
+     * A canteen, a yard and a shower room contribute **zero** to both numbers,
+     * which is worth stating because the comment this field replaces in
+     * `src/ui/simulation-counts.ts` said otherwise: a bench, a dining table
+     * and a shower head declare no `'sleep-surface'`, so they raise
+     * `concurrentUseCapacity` and nothing else.
+     *
+     * Scoped from the policy rather than from a room id written here
+     * (`AGENTS.md` boundary 6) -- see `resolveAccommodationTargets`.
+     */
+    readonly accommodationCapacity: number;
     readonly roomOccupants: number;
     readonly activeIncidents: number;
     /** Cumulative items found by searches this session. Read from the search system's own counter, not from the drainable confiscation ledger. */
@@ -151,11 +203,61 @@ function clockViewModel(tick: number, control: ClockControl | undefined): ClockV
 }
 
 /**
+ * The summed `residentCapacity` of every room instance an arrival could be
+ * housed in.
+ *
+ * **`allByRoomCatalogId` per target, not the catalogue fan-out
+ * `collectRoomInstances` walks**, and the reason is the one already written
+ * beside `stateIncomeAccruedTodayMinorUnits` below: the fan-out cannot see an
+ * instance registered under a room-catalog id the *content registry* does not
+ * define (gap 15), while `IntakeSystem` reaches the registry directly and would
+ * house somebody there regardless. This asks the registry the same question
+ * `findAvailableResidence` asks, so the denominator cannot be smaller than the
+ * set of beds intake will actually fill.
+ *
+ * **The capability is checked, not assumed.** For the shipped policy it is
+ * redundant -- `residentCapacity` is nonzero only when a `'sleep-surface'`
+ * object stands in the room, so the two conditions coincide -- but a policy
+ * naming any other capability would make them come apart, and the gate
+ * `findAvailableResidence` applies is the capability one.
+ *
+ * **Instances are counted once.** Two targets may name one room type, and a
+ * room with four beds is four places however many ways a prisoner could be
+ * sent to it.
+ *
+ * Deterministic: `allByRoomCatalogId` returns its cached ascending-instance-id
+ * sort, the target list is authored, and the `Set` is membership-tested rather
+ * than iterated. `O(accommodation instances)`, which is a subset of the
+ * `O(roomInstances)` walk this function already pays for.
+ */
+function accommodationCapacityOf(source: RoomProjectionSource, policy: AccommodationPolicy): number {
+  let capacity = 0;
+  const counted = new Set<string>();
+
+  for (const target of resolveAccommodationTargets(policy)) {
+    for (const instance of source.roomInstances.allByRoomCatalogId(target.roomCatalogId)) {
+      if (counted.has(instance.instanceId)) continue;
+      if (
+        target.requiredObjectCapability !== undefined &&
+        !instance.objectCapabilities.includes(target.requiredObjectCapability)
+      ) {
+        continue;
+      }
+      counted.add(instance.instanceId);
+      capacity += instance.residentCapacity;
+    }
+  }
+
+  return capacity;
+}
+
+/**
  * The always-visible header strip.
  *
  * **Cost.** One `Uint8Array` walk of entity indices for the prisoner
  * counts (no per-prisoner allocation), `O(staff)` for the roster,
- * `O(roomInstances)` for the room totals, `O(openIncidents)` for the
+ * `O(roomInstances)` for the room totals, a second `O(accommodation
+ * instances)` pass for `accommodationCapacity`, `O(openIncidents)` for the
  * incident count. Nothing here builds a per-actor object, so it is safe to
  * re-project every frame at the 5,000-actor tier.
  */
@@ -168,6 +270,11 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
     .reduce((sum, entry) => sum + entry.count, 0);
   const prisonersHighRisk =
     population.byClassificationGroupId.find((entry) => entry.classificationGroupId === 'high-risk')?.count ?? 0;
+
+  const accommodationCapacity =
+    source.rooms === undefined
+      ? 0
+      : accommodationCapacityOf(source.rooms, source.accommodationPolicy ?? DEFAULT_ACCOMMODATION_POLICY);
 
   let roomCount = 0;
   let roomCapacity = 0;
@@ -222,6 +329,7 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
       staffUnassigned,
       rooms: roomCount,
       roomCapacity,
+      accommodationCapacity,
       roomOccupants,
       activeIncidents: source.incidents?.openIncidents().length ?? 0,
       contrabandDiscovered: source.searchSystem?.getMetrics().itemsDiscovered ?? 0,

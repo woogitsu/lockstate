@@ -580,6 +580,37 @@ export const statusCountsSchema = z
     staffUnassigned: countSchema,
     rooms: countSchema,
     roomCapacity: countSchema,
+    /**
+     * How many prisoners the prison has somewhere to live: the summed
+     * `residentCapacity` of the room instances `IntakeSystem` would house an
+     * arrival in (`accommodationCapacityOf`,
+     * `src/simulation/presentation/status-strip-projection.ts`).
+     *
+     * A thirteenth count, and the field the strip's occupancy bar and
+     * over-capacity warning are the denominator of.
+     * `HudCountsViewModel.prisonerCapacity` maps straight from it; before this
+     * existed that field was the literal `0`, so the warning could not fire in
+     * any session.
+     *
+     * **A sibling of `roomCapacity` rather than a replacement for it**,
+     * because the two are different true facts and each has a reader. A
+     * furnished infirmary raises `roomCapacity` -- `object.medical-bed`
+     * declares `'sleep-surface'` -- and raises nothing here, because no
+     * classification group's `AccommodationPolicy` names `room.infirmary`.
+     * Collapsing them would either overstate the prisoner denominator by every
+     * medical bed or understate the Rooms readout by every one.
+     *
+     * `countSchema`'s floor of `0` is its own invariant: it is a sum of
+     * `residentCapacity`, which `deriveRoomCapacity` builds from footprint
+     * widths bounded below at 1.
+     *
+     * **`HUD_VIEW_MODEL_SCHEMA_VERSION` is deliberately not bumped**, for the
+     * reason spelled out on `treasuryMinorUnits` below: one constant covers
+     * every projection in `src/simulation/presentation/`, so raising it because
+     * the status strip gained a field would assert that the other three changed
+     * too.
+     */
+    accommodationCapacity: countSchema,
     roomOccupants: countSchema,
     activeIncidents: countSchema,
     contrabandDiscovered: countSchema,

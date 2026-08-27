@@ -173,6 +173,12 @@ describe('simulation worker protocol', () => {
             staffUnassigned: 1,
             rooms: 6,
             roomCapacity: 158,
+            // Deliberately **not** 158. The total counts every registered
+            // instance's resident capacity, including an infirmary's medical
+            // beds; this counts only the rooms intake would house somebody in.
+            // A fixture that gave both the same figure could not tell a
+            // decoder that read the wrong one apart from a correct one.
+            accommodationCapacity: 150,
             roomOccupants: 3,
             activeIncidents: 0,
             contrabandDiscovered: 7,
@@ -371,6 +377,13 @@ describe('simulation worker protocol', () => {
       staffUnassigned: 1,
       rooms: 6,
       roomCapacity: 158,
+      // Present for the same reason `treasuryMinorUnits` and
+      // `stateIncomeAccruedTodayMinorUnits` below are: without it every payload
+      // here is already invalid for a *missing count*, so each refusal would
+      // pass while proving nothing about the thing it names. Same figure as the
+      // fixture at the top of this file, for the same reason it is that figure
+      // there.
+      accommodationCapacity: 150,
       roomOccupants: 3,
       activeIncidents: 0,
       contrabandDiscovered: 7,
@@ -463,6 +476,7 @@ describe('simulation worker protocol', () => {
       staffUnassigned: 0,
       rooms: 0,
       roomCapacity: 0,
+      accommodationCapacity: 0,
       roomOccupants: 0,
       activeIncidents: 0,
       contrabandDiscovered: 0,
