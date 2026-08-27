@@ -1,6 +1,16 @@
 /**
+ * DRIVES PRODUCTION CODE, NOT A MODEL OF IT.
+ *
  * The first benchmark scenarios in this repository that **import and drive
- * production code** (#410).
+ * production code** (#410). The line above is the second of the two kind
+ * markers `docs/BENCHMARKING.md`'s scenario rule 9 requires, and
+ * `tests/foundation/benchmark-scenario-kind-contract.test.ts` checks it
+ * against the mechanical fact -- that this file imports
+ * `../production-modules.mjs` -- in both directions, so neither the claim nor
+ * the import can go without the other going red. (That gate reads only the
+ * first lines of a file, so it cannot tell a marker from a mention of one:
+ * naming the modelled marker up here would read as carrying it. The other
+ * marker's spelling is in the gate, and in the five files that use it.)
  *
  * Every other scenario in `benchmarks/scenarios/` re-implements the subsystem
  * whose name it carries: `entity-soa.mjs` declares its own `EntityStore`,

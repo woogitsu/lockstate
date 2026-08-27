@@ -28,7 +28,10 @@ matter (#410). A **production** scenario imports `src/` through
 count. A **modelled** scenario re-implements the same *shape* of algorithm in
 `.mjs`, so its numbers hold for any implementation — including one this
 repository does not have. A modelled scenario is directional evidence and can
-never be a gate.
+never be a gate. Which one a file is, is declared in its own first lines and
+checked against its imports by
+`tests/foundation/benchmark-scenario-kind-contract.test.ts` — see scenario rule
+9 below, which is the rule that table used to record by hand.
 
 | Scenario | Subject | Kind |
 | --- | --- | --- |
@@ -134,6 +137,29 @@ A benchmark scenario must:
    or models it — and if it models it, never let its `description` claim
    otherwise. A scenario named after a subsystem it does not import is the
    defect #410 was filed about.
+
+Rule 9 is the one rule here with a gate:
+`tests/foundation/benchmark-scenario-kind-contract.test.ts`. Every file in
+`benchmarks/scenarios/` opens with exactly one of two markers,
+`// MODELLED, NOT PRODUCTION.` or `DRIVES PRODUCTION CODE, NOT A MODEL OF IT.`,
+and the gate checks the marker against the mechanical fact — whether the file
+imports `benchmarks/production-modules.mjs`, the only route from a `.mjs`
+benchmark into `src/` — in **both** directions. A file claiming to drive
+production code while importing nothing is the false gate #410 was about, and
+nothing else in the harness can see it. A modelled scenario's `description`
+must also open with `MODELLED, not production:`.
+
+It exists because the rule above did not sweep. #410 fixed the three modelled
+navigation descriptions by hand and left the class: measured on the tree that
+added the gate, four of the six scenario files — `entity-soa.mjs`,
+`kernel-throughput.mjs`, `world-chunk-size.mjs` and `foundation-smoke.mjs` —
+opened with a bare seed constant and said nothing, for the whole of rule 9's
+life. `kernel.throughput.benchmark`'s description read *"Evaluates headless
+**Kernel** tick loop throughput"* while importing nothing from `src/`, and
+`Kernel` is the exported production class at
+`src/simulation/kernel/kernel.ts` — #410's defect verbatim, in the file beside
+the one #410 corrected. Fixing four descriptions is what the previous pass did;
+this time the class is checked.
 
 Warm-up iterations allow JIT and allocation paths to stabilize. They are never mixed with measured samples.
 
