@@ -535,6 +535,44 @@ describe('RoomInstanceRegistry', () => {
       expect(chosen?.instanceId).toBe('cell-3');
     });
 
+    it('gives a tie above the floor to the lowest instance id, not to the last candidate rated (#445)', () => {
+      // **The rating has to exceed zero or this case is vacuous, and that is
+      // exactly why every other case here misses what it guards.** The tie
+      // cases above all rate candidates `0`, and `if (rating <= 0) break;` on
+      // the line after the comparison fires on the very first candidate, so no
+      // second rating is ever produced and `<` and `<=` cannot be told apart.
+      // The one case that rates above the floor uses a strictly decreasing
+      // 3, 2, 1 and so never ties. Reversing the comparison to `<=` -- which
+      // hands a tie to the *highest* instance id -- therefore survived the
+      // whole suite.
+      //
+      // It is reachable in ordinary play, not a contrived rating:
+      // `rateCellSharing` returns `max |riskTier difference|`, an integer 0-3
+      // (`src/simulation/prisoners/cell-sharing.ts`), so once no empty cell is
+      // free, two occupied cells one tier away from the arrival both rate `1`
+      // and which prisoner gets which cellmate -- the whole subject of #79 --
+      // flips.
+      //
+      // Registration order is deliberately not sorted order, so the answer
+      // depends on the comparison and `allByRoomCatalogId`'s sort rather than
+      // on which instance happened to be registered first.
+      const registry = new RoomInstanceRegistry();
+      registry.register({ instanceId: 'cell-3', roomCatalogId: 'room.cell', anchorTile: TILE, residentCapacity: 2, concurrentUseCapacity: 2, objectCapabilities: [] });
+      registry.register({ instanceId: 'cell-1', roomCatalogId: 'room.cell', anchorTile: TILE, residentCapacity: 2, concurrentUseCapacity: 2, objectCapabilities: [] });
+      registry.register({ instanceId: 'cell-2', roomCatalogId: 'room.cell', anchorTile: TILE, residentCapacity: 2, concurrentUseCapacity: 2, objectCapabilities: [] });
+
+      const visited: string[] = [];
+      const chosen = registry.findBestAvailable('room.cell', (_occupants, instance) => {
+        visited.push(instance.instanceId);
+        return 2;
+      });
+
+      // A tie is not a reason to stop: every candidate is still rated, and the
+      // first one seen keeps the win.
+      expect(visited).toEqual(['cell-1', 'cell-2', 'cell-3']);
+      expect(chosen?.instanceId).toBe('cell-1');
+    });
+
     it('returns undefined when no instance of the room type exists at all', () => {
       const registry = new RoomInstanceRegistry();
       expect(registry.findBestAvailable('room.cell', () => 0)).toBeUndefined();
