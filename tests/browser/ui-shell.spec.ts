@@ -2107,6 +2107,127 @@ test.describe('HUD shell', () => {
 
       expect(await page.evaluate(() => window.lockstateUiHarness.takeUnhandledRejections())).toEqual([]);
     });
+
+    /**
+     * The coverage block (ADR 0048 consequence 1), from the one layer that can
+     * see it.
+     *
+     * These four cases exist because the agent that built the block could not
+     * run a browser, said so, and added `reportStaffCoverage` and
+     * `StaffCoverageProbe` for someone who could. **A harness affordance with
+     * no spec behind it is the same defect as a locale key with no code behind
+     * it** -- something declared, wired to nothing, and green.
+     *
+     * The first case is the one that matters most, and it closes a measured
+     * survivor: deleting `staffPanel.setCoverage(next.staffCoverage)` from
+     * `mountHud` leaves `tsc` clean and the whole vitest suite green, because
+     * `vitest.config.ts` runs in `environment: 'node'` with no jsdom and
+     * `mountHud` is therefore unreachable from `pnpm test` at all. Its
+     * neighbour `setHeldGuards` is a survivor for the same reason -- this is a
+     * class, not one slip.
+     */
+    test.describe('guard coverage (ADR 0048)', () => {
+      const COVERAGE_VIEWPORTS = [
+        [1440, 900],
+        [1280, 720],
+        [1024, 768],
+        [900, 600],
+        [375, 812],
+      ] as const;
+
+      test('paints what the host reports, which is the pass-through no headless test can reach', async ({ page }) => {
+        await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+        await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
+
+        await page.evaluate(() =>
+          window.lockstateUiHarness.reportStaffCoverage({ required: 2, assigned: 0, shortage: 2 }),
+        );
+        const unguarded = (await page.evaluate(() => window.lockstateUiHarness.staffProbe())).coverage;
+
+        // `data-tone` rather than the sentence, so the assertion survives
+        // translation; the sentence itself is asserted below.
+        expect(unguarded.tone).toBe('danger');
+        expect(unguarded.blockLaidOut).toBe(true);
+
+        // And it follows a second report rather than latching on the first,
+        // which is what a player hiring a guard experiences.
+        await page.evaluate(() =>
+          window.lockstateUiHarness.reportStaffCoverage({ required: 2, assigned: 1, shortage: 1 }),
+        );
+        expect((await page.evaluate(() => window.lockstateUiHarness.staffProbe())).coverage.tone).toBe('warning');
+
+        await page.evaluate(() =>
+          window.lockstateUiHarness.reportStaffCoverage({ required: 2, assigned: 2, shortage: 0 }),
+        );
+        expect((await page.evaluate(() => window.lockstateUiHarness.staffProbe())).coverage.tone).toBe('success');
+      });
+
+      test('draws nothing at all before the first reply, rather than a green badge', async ({ page }) => {
+        await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+        await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
+
+        // The distinction the probe was built for: "no answer yet" and "the
+        // prison is covered" are different states, and a block that read
+        // `Covered` before the worker had said anything would be a lie the
+        // player cannot tell from the truth.
+        const before = (await page.evaluate(() => window.lockstateUiHarness.staffProbe())).coverage;
+        expect(before.blockLaidOut).toBe(false);
+        expect(before.tone).toBeNull();
+
+        await page.evaluate(() => window.lockstateUiHarness.reportStaffCoverage(undefined));
+        const withdrawn = (await page.evaluate(() => window.lockstateUiHarness.staffProbe())).coverage;
+        expect(withdrawn.blockLaidOut).toBe(false);
+      });
+
+      test('says the word beside the colour, so the state does not depend on seeing it', async ({ page }) => {
+        await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+        await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
+        await page.evaluate(() =>
+          window.lockstateUiHarness.reportStaffCoverage({ required: 2, assigned: 0, shortage: 2 }),
+        );
+
+        const probe = (await page.evaluate(() => window.lockstateUiHarness.staffProbe())).coverage;
+
+        expect(probe.badgeText.length, 'the badge carries a colour and no word').toBeGreaterThan(0);
+        expect(probe.badgeTone).toBe('danger');
+        // The hint tells the player what to do, not what is about to happen:
+        // ADR 0048 measured that a shortage does not always precede a riot
+        // (twelve prisoners with one guard never riot), so promising one would
+        // be false.
+        expect(probe.hintText).toContain('2');
+        expect(probe.hintText.toLowerCase()).not.toContain('riot');
+        // No unresolved key reaches the screen.
+        expect(probe.summaryText).not.toContain('hud.');
+        expect(probe.badgeText).not.toContain('hud.');
+        expect(probe.hintText).not.toContain('hud.');
+      });
+
+      test('does not push the panel into a scroll at any shipped viewport', async ({ page }) => {
+        // The block's author named this as their weakest claim: they argued
+        // from another block's 219px at one viewport that a two-line block at
+        // the top cannot push the hire control below the fold, and could
+        // measure none of it. This is that measurement.
+        for (const [width, height] of COVERAGE_VIEWPORTS) {
+          await page.setViewportSize({ width, height });
+          await page.evaluate(() => window.lockstateUiHarness.mountHudShell());
+          await page.evaluate(() => window.lockstateUiHarness.clickTab('security'));
+          await page.evaluate(() =>
+            window.lockstateUiHarness.reportStaffCoverage({ required: 2, assigned: 0, shortage: 2 }),
+          );
+
+          const probe = await page.evaluate(() => window.lockstateUiHarness.staffProbe());
+
+          expect(probe.coverage.blockLaidOut, `the coverage block has no box at ${width}x${height}`).toBe(true);
+          expect(
+            probe.coverage.blockBox?.bottom ?? Number.POSITIVE_INFINITY,
+            `the coverage block is below the Staff panel's fold at ${width}x${height}`,
+          ).toBeLessThanOrEqual(probe.panelVisibleBottom);
+          // The hire control is the cure the block prescribes, so it staying
+          // reachable is the whole point of putting the block above it.
+          expect(probe.hireLabel.length, `the hire control is gone at ${width}x${height}`).toBeGreaterThan(0);
+        }
+      });
+    });
   });
 
 
