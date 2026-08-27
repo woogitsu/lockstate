@@ -169,6 +169,11 @@ export const SIMULATION_ENUM_GROUPS = [
       'action.yard-recreation': 'Yard Time',
       'action.common-room-recreation': 'Common Room',
       'action.classroom-education': 'Class',
+      // Not "Free Association", which is the *category*'s label two groups
+      // up. A roster cell says what the prisoner is doing, and repeating the
+      // regime's own word for the block would make the two columns read as
+      // the same fact; the shorter form is also what the wing calls it.
+      'action.free-association': 'Association',
     },
   },
   {

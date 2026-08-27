@@ -45,10 +45,33 @@ function sameTile(a: TilePosition, b: TilePosition): boolean {
   return a.x === b.x && a.y === b.y;
 }
 
-function applyNeedEffects(needs: NeedsComponent, index: number, action: ActionDefinition, ticksElapsed: number): void {
+/**
+ * Applies one interval's worth of an action's need effects, and answers
+ * **whether it applied any** -- which is not the same question as "did this
+ * action run".
+ *
+ * An `ActionDefinition` may legitimately declare no need effect at all:
+ * `action.free-association` is the catalogue's first such entry and exists to
+ * give a regime block that grants out-of-cell time something to grant, not to
+ * fill a bar (`actions.ts`). `continuePerforming` stamps
+ * `needFulfilledLastTick` from this answer rather than from the fact that it
+ * reached the line, because that field is projected to the HUD verbatim
+ * (`presentation/prisoner-projection.ts`'s `PrisonerActionViewModel`) and a
+ * "need fulfilled at tick N" that no need was fulfilled at is a sentence the
+ * simulation would be telling a player and not keeping.
+ *
+ * Written as a loop flag rather than as `Object.keys(...).length > 0` on the
+ * caller's side so it costs no allocation on a path that runs once per
+ * performing prisoner per reconsideration cycle, and so the answer is what the
+ * loop *did* rather than what a second reading of the definition predicts.
+ */
+function applyNeedEffects(needs: NeedsComponent, index: number, action: ActionDefinition, ticksElapsed: number): boolean {
+  let appliedAny = false;
   for (const [needId, perTick] of Object.entries(action.needEffectsPerTick) as [keyof typeof action.needEffectsPerTick, number][]) {
     needs.adjust(index, needId, perTick * ticksElapsed);
+    appliedAny = true;
   }
+  return appliedAny;
 }
 
 /**
@@ -198,8 +221,9 @@ export class ActionSystem implements SystemRegistration {
       }
     }
 
-    applyNeedEffects(this.needs, index, action, this.schedule.intervalTicks);
-    this.currentAction.needFulfilledLastTick[index] = tick;
+    if (applyNeedEffects(this.needs, index, action, this.schedule.intervalTicks)) {
+      this.currentAction.needFulfilledLastTick[index] = tick;
+    }
 
     const elapsed = tick - this.currentAction.phaseStartedAtTick[index]!;
     if (elapsed >= action.minDurationTicks) {
