@@ -401,6 +401,16 @@ It would also be incomplete on its own, because a restored queue can hold
 commands ahead of anything that sender has submitted; one more reason the
 sentence had to be corrected rather than the code.
 
+**That issue is #437**, and the inversion was reproduced a second time before it
+was filed, by a different reader and from this section's description alone —
+which is the only reason it is stated as a defect here rather than as a
+prediction. The independent run reports the three commands accepted with no
+refusal at `(sequence 0, tick 0)`, `(sequence 1, tick 21)` and `(sequence 2, tick
+0)`, and, once the queue drains, `first` **cancelled** with `second` still alive
+at `materials-pending`, `undoStack` empty and `redoStack` holding `first`. The
+stacks are the part this section understated: after the inversion the player
+cannot undo again, and Redo offers back a wall they never asked to remove.
+
 ### The guard
 
 `tests/determinism/command-queue-admission.test.ts` pins this decision, and was
