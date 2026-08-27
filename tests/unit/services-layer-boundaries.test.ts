@@ -158,14 +158,113 @@ describe('trusted services layer boundaries', () => {
     }
   });
 
+  /**
+   * Simulation may branch on a stable content id; it may never read a
+   * translated string (ADR 0011, restated as a boundary rule in
+   * `docs/ARCHITECTURE.md`: *"Simulation code may branch on a stable id; it
+   * may never read translated text."*).
+   *
+   * **This rule was a specifier check, and a barrel walked past it.** The
+   * only pattern was `/from ['"][^'"]*localization['"]/`, which matches the
+   * module's own path and nothing else. `src/simulation/rooms/definition.ts`
+   * imported `resolveLocalizationKey` and `defaultLocaleEnCatalog` from
+   * `'../../content'` -- the barrel that re-exports `./localization` -- and
+   * assigned the resolved English string into `RoomDefinition.name`. Measured
+   * across all 145 files under `src/simulation/`: the specifier pattern
+   * flagged **zero**, and exactly one file called `resolveLocalizationKey`,
+   * the one it could not see. ADR 0011 says the rule is "enforced by a test";
+   * for that file it was not.
+   *
+   * The gap was not hypothetical to the specifier rule's *other* reader
+   * either. `src/simulation/runtime/restore-session.ts` types
+   * `RestoredScopeEntry.labelKey` as `string` rather than `LocalizationKey`
+   * and says why in a comment: the alias "would buy a documentation nicety at
+   * the cost of the import that gate exists to refuse". One module contorted
+   * to satisfy the specifier check while another routed around it, which is
+   * the signature of a rule that names a path instead of a capability.
+   *
+   * So the check is by **symbol** as well as by specifier. A symbol name
+   * survives re-export: renaming the import path, adding a barrel, or
+   * aliasing the module cannot hide the fact that a simulation module names
+   * the function that turns a key into text.
+   *
+   * What is deliberately *not* flagged:
+   *
+   * - `LocalizationKey`, and any `*Key` field or literal. A message key is a
+   *   stable ASCII identifier, not translated text -- ADR 0011's own table
+   *   puts them in different namespaces, and carrying one through the
+   *   simulation to be resolved by the UI at the last moment is the
+   *   architecture, not a violation of it.
+   * - `deriveSimulationMessageKey`. It *computes* a key from a stable id and
+   *   reads no catalog. `src/simulation/presentation/guard-release-projection.ts`
+   *   already names it in prose as what the UI should call.
+   *
+   * Comments are stripped before matching, so prose naming the forbidden
+   * symbol -- which several simulation modules deliberately carry, precisely
+   * to explain why they do not import it -- is not a violation. The direction
+   * makes that safe rather than lax: this is a "must not contain" rule, so a
+   * surviving comment would fail *loudly* on prose, never pass silently
+   * (`unconsumed-content-contract`'s hazard is the opposite direction).
+   */
+  const FORBIDDEN_LOCALIZATION_SYMBOLS: readonly (readonly [string, RegExp])[] = [
+    // `src/content/localization.ts` -- the resolution primitives.
+    ['resolveLocalizationKey', /\bresolveLocalizationKey\b/],
+    ['buildLocalizationCatalog', /\bbuildLocalizationCatalog\b/],
+    ['LocalizationCatalog', /\bLocalizationCatalog\b/],
+    // The assembled default-locale text. Holding it is holding the strings.
+    ['defaultLocaleEnCatalog', /\bdefaultLocaleEnCatalog\b/],
+    // `src/services/localization/` -- already unreachable by the
+    // services-layer rule above, listed here so the barrel route is closed
+    // for the runtime as well as for the content-side primitive.
+    ['Localizer', /\bLocalizer\b/],
+    ['pseudoLocalizeText', /\bpseudoLocalizeText\b/],
+    ['messageCatalogFromLocalizationCatalog', /\bmessageCatalogFromLocalizationCatalog\b/],
+  ];
+
   it('keeps the simulation free of localization runtime dependencies', () => {
-    // Simulation may branch on stable content ids; it may never read a
-    // translated string (ADR 0011).
     for (const { relative, source } of simulationFiles) {
       expect(source, `${relative} must not import the localization runtime`).not.toMatch(
         /from ['"][^'"]*localization['"]/,
       );
     }
+  });
+
+  it('keeps the simulation from naming a localization symbol, whatever specifier it arrives by', () => {
+    const offenders: string[] = [];
+
+    for (const { relative, source } of simulationFiles) {
+      const code = stripComments(source);
+      for (const [name, pattern] of FORBIDDEN_LOCALIZATION_SYMBOLS) {
+        if (pattern.test(code)) offenders.push(`${relative} names ${name}`);
+      }
+    }
+
+    expect(
+      offenders,
+      'a module under src/simulation/ resolves a localization key to text. ADR 0011 forbids it: carry the key (a stable id) and let the UI resolve it, as src/simulation/runtime/restore-session.ts does with RestoredScopeEntry.labelKey',
+    ).toEqual([]);
+  });
+
+  it('cannot pass because the symbol list stopped matching anything, or the scan stopped seeing files', () => {
+    // Both halves of the rule above can fail open. A typo in a pattern, or a
+    // rename in `src/content/localization.ts`, would leave the assertion
+    // green while gating nothing -- so the symbols are checked to still exist
+    // where they are declared, against the real source text.
+    const localizationSources = [
+      readFileSync(join(SOURCE_ROOT, 'content/localization.ts'), 'utf8'),
+      readFileSync(join(SOURCE_ROOT, 'content/default-locale-en.ts'), 'utf8'),
+      ...collectTypeScriptFiles(join(SOURCE_ROOT, 'services/localization')).map((path) => readFileSync(path, 'utf8')),
+    ].join('\n');
+
+    const vanished = FORBIDDEN_LOCALIZATION_SYMBOLS.filter(([, pattern]) => !pattern.test(localizationSources)).map(
+      ([name]) => name,
+    );
+    expect(
+      vanished,
+      'these symbols no longer exist under src/content/localization.ts, src/content/default-locale-en.ts or src/services/localization/: the rule above is gating a name nothing declares. Rename the entry or remove it',
+    ).toEqual([]);
+
+    expect(simulationFiles.length).toBeGreaterThan(100);
   });
 
   it('reaches Supabase only through a declared adapter, and only as a type', () => {

@@ -105,9 +105,9 @@ real label.
 ## Feeding issue #17's room vocabulary
 
 `src/simulation/rooms/definition.ts`'s `RoomRegistry`/`RoomDefinition`
-(issue #17) are unchanged in shape. `roomDefinitionFromCatalog` converts one
-validated `RoomCatalogDefinition` into that shape (resolving `nameKey` to
-`name` via a locale catalog, `en` by default);
+(issue #17) are unchanged in shape apart from one field.
+`roomDefinitionFromCatalog` converts one validated `RoomCatalogDefinition`
+into that shape, carrying `nameKey` straight across;
 `buildRoomRegistryFromCatalog` does this for a whole catalog — replacing #17's two hard-coded entries
 with issue #23's full, validated, representative set. What the integration
 establishes is that a catalog-driven room type resolves, including by the
@@ -129,6 +129,31 @@ object-placement work that has since shipped without using it, so what keeps it
 is that it is the runtime-side room vocabulary, and it is kept for the same
 reason `tests/foundation/unconsumed-content-contract.test.ts` keeps declared
 ids that no code reads yet.
+
+**The one field that did change is `RoomDefinition.name`, now `nameKey`.** It
+used to be `readonly name: string`, assigned
+`resolveLocalizationKey(locale, entry.nameKey)` — an English string, resolved
+against `defaultLocaleEnCatalog`, stored in a `src/simulation/` type. ADR 0011
+and `docs/ARCHITECTURE.md` both forbid that outright: *"Simulation code may
+branch on a stable id; it may never read translated text."* ADR 0011 further
+says the rule is *"enforced by a test that keeps `src/simulation/` free of
+localization imports"*, and for this module it was not — the test matched the
+import *specifier* (`/from ['"][^'"]*localization['"]/`) and this module
+imported the resolver from `'../../content'`, the barrel that re-exports it.
+Across all 145 files under `src/simulation/` the specifier rule flagged zero,
+and exactly one file called the resolver: the one it could not see.
+`tests/unit/services-layer-boundaries.test.ts` now also matches the symbols by
+name, which no re-export can route around, and `roomDefinitionFromCatalog`
+lost its `locale` parameter entirely rather than having it made optional —
+there is no longer anything for a caller to pass.
+
+Two things kept this from being a player-visible bug rather than only a
+boundary one, and both are worth stating because neither is a reason it was
+acceptable. `buildRoomRegistryFromCatalog` has no `src/` consumer (the
+paragraph above), so no shipped path executed the resolution; and the
+resolution was to `en` in a repository that ships one authored locale, so the
+wrong-locale text it would have produced did not yet differ from the right
+one. The defect was real in the tree and dead at runtime.
 
 ## Representative catalog scope
 
