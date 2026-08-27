@@ -380,6 +380,71 @@ describe('the reader that asks the worker what the rooms are missing', () => {
     });
   });
 
+  it('spends its budget in requests as well as in needs, so a prison of raced rooms is not a burst', async () => {
+    /*
+     * The bound `RoomNeedsReader.read` states -- "at most `1 +
+     * ROOM_NEEDS_NAMED_LIMIT` messages" -- was a statement about *needs named*,
+     * and the loop advanced that counter only from a detail that came back with
+     * a view. So the two cases the method's own next paragraph calls expected --
+     * a room unzoned between the list and the detail, and a room finished
+     * between them -- left the counter where it was and the loop asked about the
+     * next room, and the next, for as many unfinished rooms as the list held.
+     * The real bound was `1 + unfinishedRoomIds(list).length`, on a reader the
+     * Rooms tab drives on the counts cadence.
+     *
+     * Eight unfinished cells, every detail answered the way the race answers.
+     * The figures are literals rather than `1 + ROOM_NEEDS_NAMED_LIMIT`: the
+     * claim under test is the *shape* of the bound, and an expectation written
+     * from the reader's own budget would hold whichever quantity it counted,
+     * which is the self-comparison `docs/TESTING.md` names. Before this was
+     * pinned the same trace sent 9.
+     */
+    const source = registryOf(
+      cell(0, 0, []),
+      cell(4, 0, []),
+      cell(8, 0, []),
+      cell(12, 0, []),
+      cell(0, 4, []),
+      cell(4, 4, []),
+      cell(8, 4, []),
+      cell(12, 4, []),
+    );
+    const { list } = project(source);
+    expect(unfinishedRoomIds(list)).toHaveLength(8);
+
+    const channel = new FakeChannel();
+    let next = 0;
+    const reader = new RoomNeedsReader(channel, {
+      generateMessageId: () => `req-${String((next += 1))}`,
+      replyTimeoutMs: 1_000,
+    });
+
+    const pending = reader.read();
+    await settle();
+    channel.deliver(reply(channel.idOf(0), 'hud/room-list', list));
+    await settle();
+
+    // Answer whatever it asks, until it stops asking. The ceiling is a guard
+    // against a loop that never terminates, not part of the claim.
+    let answered = 1;
+    while (answered < channel.sent.length && answered < 32) {
+      channel.deliver({
+        protocolVersion: SIMULATION_PROTOCOL_VERSION,
+        messageId: `reply-gone-${String(answered)}`,
+        replyTo: channel.idOf(answered),
+        kind: 'simulation/projection',
+        payload: { projectionId: 'hud/room-detail', tick: 7 },
+      } as WorkerToMainMessage);
+      answered += 1;
+      await settle();
+    }
+
+    await expect(pending).resolves.toBeDefined();
+    // One list and one detail: the panel can name one thing, so the reader
+    // spends one question on finding it and reports what it has.
+    expect(channel.sent).toHaveLength(2);
+  });
+
   it('rejects when the worker refuses, so the host can take the readout off', async () => {
     const channel = new FakeChannel();
     let next = 0;
