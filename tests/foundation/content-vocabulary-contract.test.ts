@@ -323,9 +323,16 @@ describe('the message-key namespaces are counted, and no call site names one tha
    * to `DEFAULT_ACTIONS` and labelled `'Association'`
    * ([ADR 0042](../../docs/adr/0042-attaching-consequences-to-the-simulation-loop.md)
    * decision 1). The `action` namespace has no `deriveSimulationMessageKey`
-   * call site -- no panel renders a prisoner's current action yet, which is
-   * `docs/HUD_PROJECTIONS.md` gap 3 rather than anything about this entry --
-   * so the new label lands in the unreachable column with the other 151.
+   * call site, and the reason is not this entry: **nothing under `src/ui/`
+   * requests `hud/prisoner-roster` or `hud/prisoner-detail` at all.** Six
+   * projections have a painter -- `hud/build-queue`, `hud/prisoner-population`,
+   * `hud/pending-deliveries`, `hud/held-guards`, `hud/room-list` and
+   * `hud/room-detail`; the two that carry a prisoner's current action have a
+   * route and no panel on the end of it, which is the state
+   * `tests/foundation/projection-reachability-contract.test.ts` exists to
+   * distinguish from having no route. So the new label lands in the
+   * unreachable column with the other 151, exactly as this docblock says the
+   * table was written to do.
    *
    * That number is **not** a defect list, and the distinction is the same one
    * `unconsumed-content-contract`'s docblock spends its length on. These
