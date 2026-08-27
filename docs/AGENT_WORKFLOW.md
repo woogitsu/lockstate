@@ -33,9 +33,16 @@ what it was doing.
    not invent work, and do not restate findings already recorded.
 
 **A routine is not a licence to act unattended on anything irreversible.** It
-resumes work already in scope. Merging, deploying, deleting branches and
-anything touching a hosted service remain the owner's call, exactly as
-`AGENTS.md` says.
+resumes work already in scope. Deleting branches and anything touching a hosted
+service remain the owner's call, exactly as `AGENTS.md` says.
+
+**Amended 2026-08-27.** Merging is no longer on that list, and the sentence
+above used to put it there. Under the owner's standing mandate (`AGENTS.md`,
+"The owner's standing mandate") a green, ordinary increment may be merged
+without asking — *and merging publishes to `lockstate.io`*, so what makes it
+safe is the four exclusions that mandate keeps, not the merge being harmless.
+Both directions are marked rather than overwritten, because the reason merging
+was reserved has not gone away; only the permission has changed.
 
 ---
 
@@ -70,6 +77,47 @@ They came from a shared tree and from shared ADR *numbers*.
   probe has broken `pnpm verify` collection more than once.
 
 ---
+
+### What the 2026-08-27 session cost, in mechanics
+
+Eight agents ran in parallel that day. None of these is taste; each was paid for.
+
+- **`pnpm <script>` does not work in a worktree** whose `node_modules` is a
+  symlink outside the project root — pnpm's pre-run check aborts with
+  `ERR_PNPM_UNSAFE_MODULES_DIR`. Four agents hit it independently. Call the
+  binaries the scripts wrap:
+  `node /workspace/lockstate/node_modules/typescript/bin/tsc -b --pretty false`,
+  `node /workspace/lockstate/node_modules/vitest/vitest.mjs run <files>`.
+- **`vitest.config.ts` sets `environment: 'node'` and there is no jsdom.** Code
+  that touches `document` is therefore unreachable from `pnpm test` *at all* —
+  not merely untested. A mutation there survives because nothing could observe
+  it. The answer is to extract the decision into a pure function, not to report
+  a survivor: that is how `orderPrisonsForDisplay` came to exist.
+- **The browser suite needs Git LFS content.** `public/assets/**` is pointer
+  text in a fresh container, so `pnpm test:browser` fails at atlas decode by
+  design. `bash scripts/provision-git-lfs.sh && git lfs pull` makes it runnable,
+  and an agent that must verify a browser change should do that rather than
+  push a guess. A worktree does not carry the blobs; work in the main checkout
+  when the browser suite is the thing being verified.
+- **Do not run a suite while another agent is running one.** Timing-sensitive
+  tests flake under contention and this repository has measured it: identical
+  clean trees gave 9, 5 and 5 failures, every one a `Test timed out in 5000ms`.
+  A cheap grep now beats a contended measurement.
+- **A change that breaks fixtures breaks them wherever they live.** ADR 0045's
+  refusal turned about 104 tests red in 16 files; the agent fixed those and
+  missed `tests/browser/app-shell.spec.ts`, because it could not run the browser
+  suite. Ask what *else* asserts the behaviour you just changed, and name the
+  suites you did not run.
+
+### Handovers between parallel agents
+
+An agent that finds a defect outside its own surface cannot fix it, and the
+agent that owns that surface has already finished by the time the report lands.
+**The integrator owns the gap.** Three corrections fell through it in one
+session — a stale `docs/TESTING.md` paragraph, an ADR sentence, a comment
+carrying two tallies — and each was found by an agent forbidden to touch the
+file it lived in. Collect every "handing this over" line from every report and
+close them before the branch is called done.
 
 ## 3. The method every agent is held to
 
