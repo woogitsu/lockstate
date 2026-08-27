@@ -296,26 +296,105 @@ function git(args: readonly string[]): string {
  * neither of which changes during a run, so caching it changes no answer --
  * `undefined` is cached too, since a fabricated sha is exactly the token the
  * four tests ask about most.
+ *
+ * ## And a batch, because the `Map` only removed three of the four passes
+ *
+ * The `Map` turned 4N subprocesses into N. N is still one subprocess per
+ * distinct token and it still grows with the corpus, so the cost did not stop
+ * scaling -- it got a constant factor. Re-measured on an idle container after
+ * the `Map` landed, `--reporter=verbose`:
+ *
+ * ```
+ * npx vitest run tests/foundation/documentation-commit-citation-contract.test.ts
+ *   resolves every cited commit                            564 ms
+ * npx vitest run tests/foundation/          # 31 files, the load that matters
+ *   resolves every cited commit             1913 / 2792 / 2073 ms, three runs
+ * ```
+ *
+ * Solo is comfortable; **under directory scope one case was spending 38-56% of
+ * `vitest.config.ts`'s 5,000 ms `testTimeout` on process startup**, on an idle
+ * machine, and the marginal citation costs about 26 ms of that budget. This
+ * gate exists to make writing citations cheap, so a design where the corpus
+ * growing walks a case back into a timeout is the wrong shape however far away
+ * the wall currently is.
+ *
+ * So `resolveTokens` asks once for everything. `git cat-file --batch-check`
+ * reads revisions on stdin and answers one line per input line:
+ * `<oid> <type> <size>` when the revision resolves, or the input echoed back
+ * with a single word (`missing`, `ambiguous`) when it does not. `^{commit}`
+ * peels inside it, so a token naming a tree is `missing` there exactly as
+ * `git rev-parse --verify --quiet <token>^{commit}` exits non-zero for it.
+ *
+ * `git` is still the only authority on what a sha resolves to, which is the
+ * rule stated on `git` above and the reason the two mechanisms were run
+ * against each other before the swap rather than reasoned about: the whole
+ * corpus, plus the shapes around its edges -- `HEAD`, a tag name, an
+ * abbreviated and a full tree id, an all-zero abbreviation, a non-hexadecimal
+ * run, the empty string. **Zero disagreements**, twice: at `b710c62`, 74
+ * distinct tokens, and again at `4ae2e39`, 76. The token count is the moving
+ * part -- it is `checked.length` plus the allowlists, and the case below
+ * asserts only a floor on it for that reason -- so what is worth re-running is
+ * the comparison, not the number:
+ *
+ * ```
+ * # the same distinct tokens through both mechanisms, outside Vitest.
+ * # At 4ae2e39, 76 of them:
+ * git rev-parse --verify --quiet <token>^{commit}, in a loop   1418 ms
+ * git cat-file --batch-check, one process                        22 ms
+ * ```
+ *
+ * (Those probes are described rather than quoted on purpose: an all-zero
+ * seven-character run written in the citation form *is* a citation, and this
+ * gate correctly failed on the first draft of this comment for exactly that. A
+ * file that scans itself has to write about shas the way it asks every other
+ * file to.)
  */
 const commitCache = new Map<string, string | undefined>();
 
-/** The full commit id a token names, or `undefined` if it names none. */
-function commitFor(token: string): string | undefined {
-  if (commitCache.has(token)) return commitCache.get(token);
+/**
+ * Resolve tokens against `git` and record the answers, at one process for the
+ * whole batch. See the comment on `commitCache` for the mechanism and what it
+ * was checked against.
+ */
+function resolveTokens(tokens: readonly string[]): void {
+  const pending = [...new Set(tokens)].filter((token) => !commitCache.has(token));
+  if (pending.length === 0) return;
 
-  const result = spawnSync('git', ['rev-parse', '--verify', '--quiet', `${token}^{commit}`], {
+  const result = spawnSync('git', ['cat-file', '--batch-check'], {
     cwd: REPOSITORY_ROOT,
     encoding: 'utf8',
+    input: `${pending.map((token) => `${token}^{commit}`).join('\n')}\n`,
+    maxBuffer: 16 * 1024 * 1024,
   });
 
   if (result.error !== undefined) {
-    throw new Error(`git rev-parse could not be run: ${result.error.message}`);
+    throw new Error(`git cat-file --batch-check could not be run: ${result.error.message}`);
   }
 
-  const stdout = result.stdout.trim();
-  const commit = stdout.length === 0 ? undefined : stdout;
-  commitCache.set(token, commit);
-  return commit;
+  const lines = result.stdout.split('\n').filter((line) => line.length > 0);
+
+  // Answers are paired with inputs **by position**, which is the one way this
+  // could go quietly wrong: a line count that did not match would attribute
+  // every verdict to the wrong token, and the corpus would still look checked.
+  // So it is a failure and not a repair. `--batch-check` answers one line per
+  // input line even for a revision it cannot resolve, so the only routes here
+  // are a token carrying whitespace and a `git` not behaving as documented.
+  if (lines.length !== pending.length) {
+    throw new Error(
+      `git cat-file --batch-check answered ${String(lines.length)} lines for ${String(pending.length)} revisions. This code pairs answers with inputs by position, so a mismatch means every verdict below would be attributed to the wrong token; refusing to report one. Look for a citation token containing whitespace.`,
+    );
+  }
+
+  pending.forEach((token, index) => {
+    const fields = lines[index]!.split(' ');
+    commitCache.set(token, fields.length === 3 && fields[1] === 'commit' ? fields[0]! : undefined);
+  });
+}
+
+/** The full commit id a token names, or `undefined` if it names none. */
+function commitFor(token: string): string | undefined {
+  if (!commitCache.has(token)) resolveTokens([token]);
+  return commitCache.get(token);
 }
 
 function filesUnder(directory: string, extensions: readonly string[]): readonly string[] {
@@ -363,6 +442,19 @@ const citations: readonly Citation[] = scannedFiles.flatMap((path) => {
 const checked: readonly Citation[] = citations.filter(
   ({ token }) => !NAMES_NO_COMMIT_BY_DESIGN.has(token) && !UNPUBLISHED_BY_ORIGIN.has(token),
 );
+
+// Everything any case below will ask about, resolved here: collection time,
+// which is outside every per-case timeout, in one process. The allowlist keys
+// are included because `keeps the allowlists honest` resolves those too, and
+// `resolveTokens` de-duplicates, so a token that is both cited and allowlisted
+// is asked about once. `commitFor` still answers for a token that is not in
+// this set -- it just spawns to do it, which is what this line exists to stop
+// being the normal case rather than something it forbids.
+resolveTokens([
+  ...citations.map(({ token }) => token),
+  ...NAMES_NO_COMMIT_BY_DESIGN.keys(),
+  ...UNPUBLISHED_BY_ORIGIN.keys(),
+]);
 
 const isShallow = git(['rev-parse', '--is-shallow-repository']).trim() === 'true';
 
