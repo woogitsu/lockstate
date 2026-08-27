@@ -96,13 +96,23 @@ function phases(runtime: SimulationRuntime): readonly string[] {
  *
  * The two arrivals it cannot house are the fixture, and they are honest rather
  * than contrived. `IntakeSystem` leaves them at the `accommodation-assignment`
- * stage standing on the arrival tile — measured: tile (16, 16), which is the
- * derived sector's post tile — and their `safety` need decays at
- * `NEED_DECAY_PER_TICK.safety` with nothing to restore it. That is what puts
- * `needsPressure` into `sampleSectorRisk`, through
- * `resolveSectorOccupants`, which counts prisoners standing exactly on the post
- * tile. The housed prisoner stays in its cell at (4, 6) and is not an occupant,
- * which is the placeholder ADR 0036 decision 5 records rather than fixes.
+ * stage standing on the arrival tile, with nothing to restore any of their six
+ * needs: no bed to sleep in, no cell to eat or use a toilet in, and no shower
+ * room or yard anywhere in the prison.
+ *
+ * The third prisoner is housed, and since
+ * [ADR 0048](../../docs/adr/0048-what-a-sectors-occupants-are.md) they are an
+ * occupant too -- the sector is the prison, not the post tile -- so the sample
+ * is the mean of three prisoners' mean deficits rather than the two homeless
+ * ones' `safety` alone. The housed one is why `needsPressure` sits below 0.4
+ * rather than near 1: a bed and a cell to eat in keep three of their six needs
+ * met.
+ *
+ * **This fixture used to depend on the arrival tile and the derived post tile
+ * being the same tile.** It no longer does, and that is the point of the
+ * change: a housed prisoner in a cell across the prison is an occupant of the
+ * sector they live in. ADR 0036 decision 2 still relies on that coincidence for
+ * its other two reasons, which is why the case above still asserts it.
  *
  * No guards are hired here, so `staffingShortfall` is 1: the derived sector asks
  * for one guard and has none.
@@ -202,15 +212,22 @@ describe('an incident is triggered, responded to and closed, in a session starte
   /**
    * The measured tick a riot opens at, for this seed and this fixture.
    *
-   * Written out rather than searched for: it is a fact about
-   * `NEED_DECAY_PER_TICK.safety` (0.01 a tick from a full 255),
-   * `DEFAULT_SECTOR_RISK_POLICY` (needs weighted 0.5, staffing 0.3, hot at 0.6,
-   * three consecutive samples) and `IncidentTriggerSystem`'s 50-tick cadence.
-   * `needsPressure` crosses 0.6 — the level that, with a shortfall of 1, first
-   * puts the score over the threshold — and three samples later the riot opens.
-   * If any of those move, this line has to move and a reviewer has to see it.
+   * Written out rather than searched for: it is a fact about `NEED_DECAY_PER_TICK`
+   * (all six of them, not `safety`'s 0.01 alone), `DEFAULT_SECTOR_RISK_POLICY`
+   * (needs weighted 1, staffing 0.3, hot at 0.65, twelve consecutive samples) and
+   * `IncidentTriggerSystem`'s 50-tick cadence. `needsPressure` crosses 0.35 --
+   * the level that, with a shortfall of 1, first puts the score over the
+   * threshold -- and twelve samples later the riot opens. If any of those move,
+   * this line has to move and a reviewer has to see it.
+   *
+   * **It was 15,600 before ADR 0048**, when the sample was the two homeless
+   * prisoners' `safety` deficit alone and had to reach 0.6 on a need that falls
+   * at 0.01 a tick. Nearly four times sooner is the intended change rather than
+   * a side effect: `bladder` falls at 0.08 a tick and `hunger` at 0.05, so a
+   * prisoner with nowhere to go is in a bad way in a day and a half instead of
+   * in six and a half.
    */
-  const RIOT_TICK = 15_600;
+  const RIOT_TICK = 4_000;
 
   it('opens a riot in the derived sector from real needs and real understaffing', () => {
     const runtime = overcrowdedPrison();
@@ -225,11 +242,13 @@ describe('an incident is triggered, responded to and closed, in a session starte
       id: 'incident.riot.1',
       type: 'riot',
       sectorId: DEFAULT_SECTOR_ID,
-      severity: 6,
+      severity: 7,
       startedAtTick: RIOT_TICK,
       state: 'active',
-      // The two arrivals with nowhere to sleep, and not the housed one.
-      participantIds: [1, 2],
+      // Everybody in the prison, the housed prisoner included: the sector is
+      // the prison (ADR 0048), so a riot in it is not confined to whoever
+      // happened to be standing on the post tile.
+      participantIds: [0, 1, 2],
     });
     // The cause factors say which real inputs did it, so this cannot pass on a
     // riot that fired for some other reason.
@@ -240,7 +259,12 @@ describe('an incident is triggered, responded to and closed, in a session starte
       'contraband-pressure',
     ]);
     expect(riots[0]!.causeFactors.find((factor) => factor.kind === 'staffing-shortfall')?.value).toBe(1);
-    expect(riots[0]!.causeFactors.find((factor) => factor.kind === 'needs-pressure')?.value).toBeGreaterThanOrEqual(0.6);
+    // The measured value, not a bound: 0.3888... is 7/18, which is what three
+    // prisoners come to when two of them have all six needs on the floor and the
+    // third has three of six met by a bed and a cell to eat in. A `>= 0.35`
+    // bound would also pass for a sample that had drifted to 0.9, which is a
+    // different prison.
+    expect(riots[0]!.causeFactors.find((factor) => factor.kind === 'needs-pressure')?.value).toBeCloseTo(0.3889, 4);
     expect(riots[0]!.causeFactors.find((factor) => factor.kind === 'contraband-pressure')?.value).toBe(0);
   });
 
@@ -252,9 +276,11 @@ describe('an incident is triggered, responded to and closed, in a session starte
     /*
      * Five hires, at a tile the guards have to walk from.
      *
-     * A severity-6 riot needs three responders
+     * A severity-7 riot needs four responders
      * (`respondersPerSeverityPoint` 0.5), and one hire is taken by the sector's
-     * own requirement, so five is two more than the minimum. It is also the
+     * own requirement -- three prisoners against
+     * `DEFAULT_SECTOR_PRISONERS_PER_GUARD`'s eight is still one guard -- so
+     * five is exactly the minimum. It is also the
      * only order in which this is reachable: the shortfall that *causes* the
      * riot is exactly the state in which the pool is empty, so the responders
      * have to arrive after it — which is the play ADR 0036 decision 3 describes
@@ -266,17 +292,17 @@ describe('an incident is triggered, responded to and closed, in a session starte
       runtime.kernel.step();
     }
 
-    // Contained inside the 600-tick deadline, with the lockdown a severity-6
+    // Contained inside the 600-tick deadline, with the lockdown a severity-7
     // riot calls for (`lockdownSeverityThreshold` is 6) actually applied.
     expect(runtime.incidents.get('incident.riot.1')!.state).toBe('responding');
     expect(runtime.securitySectors.getControlState(DEFAULT_SECTOR_ID)).toBe('lockdown');
-    expect(phases(runtime)).toEqual(['on-post', 'on-search', 'on-search', 'on-search', 'unassigned']);
-    expect(runtime.incidentResponseSystem.claimedGuardIds()).toEqual([1, 2, 3]);
+    expect(phases(runtime)).toEqual(['on-post', 'on-search', 'on-search', 'on-search', 'on-search']);
+    expect(runtime.incidentResponseSystem.claimedGuardIds()).toEqual([1, 2, 3, 4]);
     // Every responder walked from (0, 0) and is standing on the post tile: the
     // destination `requireDefinition(incident.sectorId).postTile` resolves to,
     // which on `main` throws because nothing registered the sector.
-    for (const guardId of [1, 2, 3]) expect(runtime.securityGuards.getTile(guardId)).toEqual(ORIGIN);
-    expect(runtime.incidentResponseSystem.getMetrics()).toMatchObject({ respondersDispatched: 3, routeFailures: 0 });
+    for (const guardId of [1, 2, 3, 4]) expect(runtime.securityGuards.getTile(guardId)).toEqual(ORIGIN);
+    expect(runtime.incidentResponseSystem.getMetrics()).toMatchObject({ respondersDispatched: 4, routeFailures: 0 });
 
     while (runtime.incidents.openIncidents().length > 0 && runtime.kernel.tick < RIOT_TICK + 600) runtime.kernel.step();
 

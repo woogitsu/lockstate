@@ -68,6 +68,27 @@ produces one incident, not one per subsequent sample. Only one open
 incident per sector exists at a time, which keeps response staffing
 attributable.
 
+**Four gates, not two.** The streak and the one-open-incident rule are the two
+above; [ADR 0048](./adr/0048-what-a-sectors-occupants-are.md) added the other
+two, and both became necessary only once the trigger could fire in a playable
+prison at all:
+
+- **A quiet period.** `DEFAULT_SECTOR_QUIET_TICKS_AFTER_INCIDENT` is 4,800 ticks
+  -- two in-game days -- measured from the previous incident's *start*, so the
+  incident's own life sits inside it. Without it a prison whose conditions never
+  improve re-arms in one sustained window and riots again: measured at **49
+  riots in 20 in-game days** in an over-admitted unguarded starter prison, each
+  one a fresh record with fresh disciplinary points. The gate reads a derived
+  per-sector index on `IncidentLog` (`lastIncidentStartedAtTick`, maintained in
+  `open` and rebuilt in `loadSnapshot`), never a scan of `all()` -- the log is
+  never pruned, which is the same reason `openIdsBySectorId` exists.
+- **A participant floor.** `DEFAULT_MINIMUM_RIOT_PARTICIPANTS` is 2. A riot is a
+  collective act, `IncidentLog` already carries `'assault'` for what one
+  prisoner does, and `lapse` injures every participant. A sector below the floor
+  still samples, still scores and still accumulates its streak; it simply has
+  nobody to riot, and it opens one on the first sampling point after a second
+  prisoner arrives.
+
 Every iteration order in this system is explicitly sorted (sector ids, gang
 ids, entity ids) -- issue #28's "without nondeterministic iteration."
 
@@ -248,26 +269,74 @@ re-derived on load rather than persisted.
 
 The default risk sampler derives its inputs from the systems already
 constructed for that session: staffing shortfall from
-`DeploymentSystem.getCoverageReport`, needs pressure from the `safety` need
-of prisoners standing in the sector, and contraband pressure from #27's
-`IntelligenceLedger` records scoped to that sector. Sector occupancy uses
-the sector's post tile; a richer sector-membership model is scenario
-knowledge, and a scenario wanting one constructs its own
-`IncidentTriggerSystem` with a custom `SectorRiskSampler`/
-`SectorOccupantResolver` — the same injection seam #25's `JobWorkerAdapter`
-and #27's `TargetLocationResolver` use.
+`DeploymentSystem.getCoverageReport`, needs pressure from the prisoners in the
+sector, and contraband pressure from #27's `IntelligenceLedger` records scoped
+to that sector. The injection seam is unchanged -- a scenario wanting different
+inputs constructs its own `IncidentTriggerSystem` with a custom
+`SectorRiskSampler`/`SectorOccupantResolver`, the same way #25's
+`JobWorkerAdapter` and #27's `TargetLocationResolver` work.
+
+**Two of those inputs changed with
+[ADR 0048](./adr/0048-what-a-sectors-occupants-are.md), and this paragraph used
+to describe both of them wrongly by describing them accurately.** It said
+occupancy "uses the sector's post tile" and that needs pressure came from "the
+`safety` need", and both were true:
+
+- **Occupancy** counted prisoners standing on exactly one tile of the 1,024 a
+  prison owns. `ActionSystem` teleports an arrival to their room's anchor, so a
+  *housed* prisoner was never an occupant; the only occupants any prison ever
+  had were arrivals it could not house, who stay on the arrival tile -- which
+  ADR 0036 derived to be the post tile. It is now every prisoner standing on
+  owned land, and `docs/SECURITY.md`'s "What a sector's occupants are" carries
+  the rule.
+- **Needs pressure** was the mean `safety` deficit, and `action.sleep` restores
+  `safety` twenty times faster than it decays, so the term read ~0 for anybody
+  with a bed and ~1 for anybody without one: it measured homelessness. It is now
+  the mean over `NEED_IDS` of each occupant's deficit, averaged over the
+  occupants -- so a prison with no toilet, no shower room and no yard reads
+  about 0.44 where it used to read 0.
+
+The second change is not optional given the first. Widening the occupant set
+without widening the need set divides the same numerator by the whole
+population, so occupancy alone would have made the trigger *harder* to reach in
+every prison that houses anybody. ADR 0048 records the measurement.
+
 
 ### What that makes reachable, and the bound on it
 
 `tests/integration/security-default-sector.test.ts` drives the whole chain
 through real commands only: a cell zoned and furnished, three prisoners admitted
-for its one bed, and the two it cannot house left standing on the arrival tile —
-which is also the derived sector's post tile, so they *are* its occupants. Their
-`safety` need decays untended, `needsPressure` crosses 0.6 against a
-`staffingShortfall` of 1, and `DEFAULT_SECTOR_RISK_POLICY`'s three-sample window
-opens a **severity-6 riot at tick 15,600**. Five `HireStaff` commands later three
-responders walk from (0, 0) to the post tile, the sector locks down, and the riot
-is `resolved` with `propertyDamage: 3` and nobody injured.
+for its one bed, and the two it cannot house left standing on the arrival tile
+with nothing to restore any of their six needs. `needsPressure` reaches 0.389 --
+the mean of three prisoners' mean deficits, the housed one included -- against a
+`staffingShortfall` of 1, and `DEFAULT_SECTOR_RISK_POLICY`'s twelve-sample
+window opens a **severity-7 riot at tick 4,000**. Five `HireStaff` commands
+later four responders walk from (0, 0) to the post tile, the sector locks down,
+and the riot is `resolved` with `propertyDamage: 3` and nobody injured.
+
+> **Both of those figures moved with ADR 0048**, and the direction is the point.
+> The paragraph read *"`needsPressure` crosses 0.6 ... opens a **severity-6 riot
+> at tick 15,600**"* when the sample was the two homeless prisoners' `safety`
+> alone. Nearly four times sooner is the intended change: `bladder` falls at
+> 0.08 a tick and `hunger` at 0.05, against `safety`'s 0.01.
+
+`tests/integration/incident-trigger-reachability.test.ts` is the other half of
+that claim and the more important one -- a trigger that fires in every prison is
+as broken as one that fires in none. It measures four prisons rather than one,
+and the assertions about the quiet ones are its subject:
+
+| prison | guards | riots in 12.5 in-game days |
+| --- | --- | --- |
+| 8 furnished cells with shower, canteen and yard, 8 prisoners | 1, then 0 | **none, either way** |
+| 8 cells with beds and nothing else, 8 prisoners | 0 | riots |
+| the same | 1 | **none** |
+| furnished, 16 prisoners for 8 beds | 1 | riots, with `required: 2, shortage: 1` |
+| the same | 2 | **none** |
+| furnished, 16 prisoners for 4 beds | 6 | riots, and every one **contained with nobody injured** |
+
+So: needs cause unrest, staffing amplifies it, and past about three times bed
+capacity staffing stops buying prevention and starts buying containment.
+
 
 **The bound is worth naming, because it decides the shape of the play.**
 `DeploymentSystem` and `IncidentResponseSystem` draw from the same

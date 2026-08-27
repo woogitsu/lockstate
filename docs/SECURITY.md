@@ -184,7 +184,7 @@ root and fills three collections, because filling one of them changes nothing:
 | collection | value | why the other two are needed |
 | --- | --- | --- |
 | `securitySectors` | `security-sector.prison`, `grade.general`, **no doors**, post tile at the middle of the first owned chunk in canonical `(y, x)` order | -- |
-| `securitySchedules` | one guard, all day | `DeploymentSystem.requiredGuardCountFor` answers `0` for a sector with no schedule, so a sector alone posts nobody |
+| `securitySchedules` | one guard, all day -- a **floor** since ADR 0048, not the whole requirement | `DeploymentSystem.requiredGuardCountFor` answers `0` for a sector with no schedule, so a sector alone posts nobody |
 | `incidentSectorIds` | that one id | `IncidentTriggerSystem` samples only the ids it is handed, so a staffed sector nothing watches opens no incident |
 
 A derived sector is not fabricated *content*: it carries no authored geometry,
@@ -196,9 +196,53 @@ carried alone. `SAVE_SCHEMA_VERSION` stays 5 and no migration exists; a save
 written before ADR 0036 gains the sector on load.
 
 **Its post tile is the tile `NEW_PRISON_ORIGIN_TILE` holds** (16, 16 for a new
-session's 32-tile chunk), and that is load-bearing three times over: a hire is
-posted without a route request, an unhoused arrival standing there is a sector
-occupant for `resolveSectorOccupants`, and the tile is on owned walkable ground.
+session's 32-tile chunk), and that is load-bearing twice over: a hire is posted
+without a route request, and the tile is on owned walkable ground.
+
+> **It used to be load-bearing a third time**, and this paragraph said so: *"an
+> unhoused arrival standing there is a sector occupant for
+> `resolveSectorOccupants`"*. That was true and it was the only way any prison
+> had occupants, because the resolver counted prisoners standing on exactly that
+> tile and `ActionSystem` moves a housed prisoner to their room's anchor.
+> [ADR 0048](./adr/0048-what-a-sectors-occupants-are.md) replaced the rule, so
+> occupancy no longer rests on the coincidence -- see "What a sector's occupants
+> are" below.
+
+### What a sector's occupants are
+
+[ADR 0048](./adr/0048-what-a-sectors-occupants-are.md) decision 1:
+**the derived sector is the prison, so its occupants are every living prisoner
+standing on land the prison owns** (`world.isTileOwned`, the same rule the
+renderer shades from, ADR 0019). Any *other* registered sector keeps the
+post-tile rule, because `SecuritySectorDefinition` records a grade, doors, a post
+tile and an optional patrol route and none of those is an area -- the derived
+sector is the one sector whose area is known without anyone drawing it.
+
+`src/simulation/security/sector-occupancy.ts` holds the rule and answers it two
+ways: `resolveSectorOccupants` for the list `IncidentTriggerSystem` samples and
+records as participants, and `countSectorOccupants` for the number
+`DeploymentSystem` scales its requirement by. Both walk the live prisoner
+indices and sort by entity id; neither is persisted, and no save-schema field
+moved.
+
+### A requirement that grows with the prison
+
+[ADR 0048](./adr/0048-what-a-sectors-occupants-are.md) decision 3:
+`DeploymentSystem.requiredGuardCountFor` answers
+`max(scheduled, ceil(occupants / DEFAULT_SECTOR_PRISONERS_PER_GUARD))`, with the
+constant at 8. It **only ever raises** -- a schedule is authored data and the
+population is a demand on top of it -- and **a scheduled zero is an exemption
+that stays zero**, which is what lets a save carry one and what
+`tests/helpers/default-security-sector.ts` relies on.
+
+The reason is arithmetic rather than flavour: `staffingShortfall` is
+`shortage / required`, so a requirement pinned at one is `1` before the first
+hire and `0` for ever afterwards, whatever the population. That is issue #442's
+"hiring one guard makes the incident system unreachable", and it is why the
+scaling is applied in `requiredGuardCountFor` rather than by rewriting the
+schedule: that method is the one place the requirement is read, by
+`assignUnassignedGuards` and by `getCoverageReport` both, so what is enforced
+and what the projections publish cannot disagree.
 
 **What it does not bring back**, measured in
 `tests/integration/security-default-sector.test.ts`:

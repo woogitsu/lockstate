@@ -35,13 +35,23 @@ import { ACTOR_IDENTITY_RNG_STREAM, ActorIdentityRegistry } from '../identity';
 import { Kernel } from '../kernel';
 import { NavigationSystem, type NavigationSystemOptions } from '../navigation';
 import { Container, ContainerMaterialsProvider, ContainerRegistry, JobBoard, JobSystem, JobWorkerPool, UtilityNetwork } from '../operations';
-import { NEED_MAX, PrisonerJobWorkerAdapter, PrisonerOperationsRuntime, type DisciplinaryEvidenceSource } from '../prisoners';
+import { NEED_IDS, NEED_MAX, PrisonerJobWorkerAdapter, PrisonerOperationsRuntime, type DisciplinaryEvidenceSource } from '../prisoners';
 import { ObjectPlacementService, PlacedObjectRegistry, RoomCapacityResolver } from '../objects';
 import { TopologyManager } from '../rooms/topology';
 import { RoomZoningService } from '../rooms/zoning';
 import { deriveXoshiroState } from '../rng/seed';
 import { NamedRngStreams } from '../rng/streams';
-import { applyDefaultSecuritySector, DeploymentSystem, GuardReleaseService, GuardRoster, PatrolSystem, SecuritySectorRegistry, type DeploymentSchedule } from '../security';
+import {
+  applyDefaultSecuritySector,
+  countSectorOccupants,
+  DeploymentSystem,
+  GuardReleaseService,
+  GuardRoster,
+  PatrolSystem,
+  resolveSectorOccupants,
+  SecuritySectorRegistry,
+  type DeploymentSchedule,
+} from '../security';
 import { chunkCoordinate, tileCoordinate, type ChunkPosition, type TilePosition } from '../world/coordinates';
 import { SparseWorld } from '../world/sparse-world';
 
@@ -499,7 +509,26 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   // above -- and it holds no state, so nothing here joins the save.
   const staffHiring = new StaffHiringService(securityGuards, treasury);
   const securitySchedules: DeploymentSchedule[] = [];
-  const deploymentSystem = new DeploymentSystem(securitySectors, securityGuards, navigation, securitySchedules);
+  /*
+   * The fifth argument is the constructor's own default, restated (and skipped)
+   * only so the sixth can be supplied: how many prisoners each sector holds, so
+   * its authored requirement scales with the population it is guarding
+   * ([ADR 0048](../../../docs/adr/0048-what-a-sectors-occupants-are.md)
+   * decision 3). It is the same occupancy rule the risk sampler divides by --
+   * one definition of "who is in this sector", read two ways -- and it counts
+   * rather than listing, because the requirement needs a number.
+   */
+  const deploymentSystem = new DeploymentSystem(
+    securitySectors,
+    securityGuards,
+    navigation,
+    securitySchedules,
+    undefined,
+    (sectorId) => {
+      const sector = securitySectors.getDefinition(sectorId);
+      return sector === undefined ? 0 : countSectorOccupants(sector, world, prisoners);
+    },
+  );
   const patrolSystem = new PatrolSystem(securitySectors, securityGuards, navigation);
 
   // Issue #27's contraband/intelligence/search substrate: no contraband
@@ -588,32 +617,47 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    */
   applyDefaultSecuritySector({ world, sectors: securitySectors, schedules: securitySchedules, watchedSectorIds: incidentSectorIds });
 
-  const resolveSectorOccupants: SectorOccupantResolver = (sectorId) => {
+  /*
+   * Who is in a sector, per
+   * [ADR 0048](../../../docs/adr/0048-what-a-sectors-occupants-are.md): the
+   * derived default sector is the prison, so its occupants are every prisoner
+   * standing on owned land; any other registered sector keeps the post-tile
+   * rule, because nothing but the derivation knows another sector's area. The
+   * rule and the reasons are in `src/simulation/security/sector-occupancy.ts`;
+   * this is the wiring, and deliberately holds none of the rule itself.
+   */
+  const resolveOccupants: SectorOccupantResolver = (sectorId) => {
     const sector = securitySectors.getDefinition(sectorId);
-    if (sector === undefined) return [];
-    // Occupancy by the sector's own post tile: prisoners standing on it.
-    // A richer sector-membership model is scenario knowledge (see docs/INCIDENTS.md).
-    const occupants: number[] = [];
-    for (let index = 0; index <= prisoners.entityStore.maxActiveIndex; index += 1) {
-      if (!prisoners.entityStore.isIndexAlive(index)) continue;
-      if (prisoners.position.tileX[index] === sector.postTile.x && prisoners.position.tileY[index] === sector.postTile.y) {
-        occupants.push(prisoners.entityStore.getIdByIndex(index));
-      }
-    }
-    return occupants.sort((a, b) => a - b);
+    return sector === undefined ? [] : resolveSectorOccupants(sector, world, prisoners);
   };
 
   const sampleSectorRisk: SectorRiskSampler = (sectorId, tick) => {
     const coverage = deploymentSystem.getCoverageReport(tick).find((entry) => entry.sectorId === sectorId);
     const staffingShortfall = coverage === undefined || coverage.required === 0 ? 0 : coverage.shortage / coverage.required;
 
-    const occupants = resolveSectorOccupants(sectorId);
+    /*
+     * Every need, not `safety` alone (ADR 0048 decision 2).
+     *
+     * `action.sleep` restores `safety` at 0.2 a tick against a decay of 0.01,
+     * so the old single-need term read ~0 for anybody with a bed and ~1 for
+     * anybody without one -- it measured homelessness, and it measured nothing
+     * else. The mean over `NEED_IDS` reads what the prison actually withholds:
+     * hunger with no canteen and no cell to eat in, `bladder` with no toilet,
+     * `hygiene` with no shower room, `recreation` with no yard.
+     *
+     * `NEED_IDS` in its declared order, which is the iteration discipline
+     * `NeedsComponent` uses everywhere; the sum is over floats, so the order is
+     * load-bearing for bit-reproducibility rather than merely tidy.
+     */
+    const occupants = resolveOccupants(sectorId);
     let needsPressure = 0;
     if (occupants.length > 0) {
       let deficitSum = 0;
       for (const entityId of occupants) {
         const index = prisoners.entityStore.getIndex(entityId);
-        deficitSum += (NEED_MAX - prisoners.needs.get(index, 'safety')) / NEED_MAX;
+        let occupantDeficit = 0;
+        for (const needId of NEED_IDS) occupantDeficit += (NEED_MAX - prisoners.needs.get(index, needId)) / NEED_MAX;
+        deficitSum += occupantDeficit / NEED_IDS.length;
       }
       needsPressure = deficitSum / occupants.length;
     }
@@ -624,7 +668,8 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     return { needsPressure, staffingShortfall, contrabandPressure };
   };
 
-  const incidentTriggerSystem = new IncidentTriggerSystem(incidents, sectorRisk, gangs, incidentSectorIds, sampleSectorRisk, resolveSectorOccupants);
+  const incidentTriggerSystem = new IncidentTriggerSystem(incidents, sectorRisk, gangs, incidentSectorIds, sampleSectorRisk, resolveOccupants);
+
   // The policy and the route-context resolver are the constructor's own
   // defaults, restated (and skipped) only so the seventh argument can be
   // supplied: the live view of which guards `SearchSystem` is holding on the
