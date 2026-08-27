@@ -35,7 +35,9 @@ and threat model) and [ADR 0009](./adr/0009-challenge-verification-strategy.md)
   check, and the security audit of that run found a second — see "Defects
   this tooling found" below.
 - **Also executed against a plain PostgreSQL 16/18 + pgTAP:** every
-  migration and every suite — 287 assertions, and the only path the #105
+  migration and every suite — **321** assertions (`pnpm verify:sql` prints the
+  total on its last line; it read 287 until the 2026-08-27 pass that closed nine
+  unguarded CHECK constraints and ADR 0008 T6's unasserted index), and the only path the #105
   hardening has run on. First run on 16.13 + pgTAP 1.3.2, since also on
   18.6 + pgTAP 1.3.4 — no major version is required or pinned. Reproduce
   with:
@@ -171,9 +173,19 @@ exercised at all.
 | Z2 | Edge Function / Worker / `SECURITY DEFINER` SQL | server-authoritative state |
 | Z3 | Provider webhook delivered to a Z2 endpoint | only what its signature proves |
 
-Full authority table and the twelve modelled threats (T1–T12) are in
-ADR 0008. The rule they all reduce to: **a JWT proves who is asking, never
-that what they claim is true.**
+Full authority table and the modelled threats — numbered `T1` upward, each row
+naming an actor capability and the asset it reaches — are in ADR 0008. The rule
+they all reduce to: **a JWT proves who is asking, never that what they claim is
+true.**
+
+*This sentence read "the twelve modelled threats (T1–T12)" until 2026-08-27,
+when ADR 0008's amendment scoping §3 by authority added **T13** for
+unauthenticated telemetry ingest. It is rewritten to name the subject rather
+than the tally, which is `docs/AGENT_WORKFLOW.md` §4's rule and the reason it
+went false: adding a row never touches the sentence counting the rows. The old
+count is kept here rather than deleted, because a correction that erases what
+it corrected leaves the next reader unable to tell which direction the drift
+went.*
 
 ## Verified challenges (`src/services/challenges/`)
 

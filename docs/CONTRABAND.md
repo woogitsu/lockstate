@@ -15,7 +15,12 @@ Architecture notes: "hidden simulation state and player-visible
 intelligence projections are distinct." `ContrabandRegistry` is the
 ground truth of what contraband actually exists, where, and how it got
 there -- this is never exposed wholesale to a UI. `IntelligenceLedger`
-records are the *only* thing a future security-desk UI would read: a
+records are one of the things a security-desk UI reads — and, since
+`src/simulation/presentation/contraband-projection.ts:53-60` takes five sources
+(`searchSystem`, `confiscations`, `intelligence`, `informants` and
+`searchPolicies`), not the only one. **This sentence said "the *only* thing"**,
+which an added source falsifies without touching it; that projection's own
+header (`:22-31`) already restates the intended rule more narrowly. A
 confidence-scoped, expiring belief about a target, never the raw truth.
 `ContrabandRegistry.getMovementHistory` (an item's full source-to-present
 trail) is explicitly a **debug tool**, not a normal-UI projection --
@@ -141,7 +146,10 @@ issue #27 requires: `ConfiscationEvent` carries the item's full
 provenance, where it was found, which search order and guard found it,
 and when -- "confiscation records provenance/evidence and emits typed
 downstream events." `all()` is read-only inspection; `drain()` is how a
-future consumer (#28's incident/disciplinary pipeline, not built yet)
+future consumer (#28's incident/disciplinary pipeline, **which has since been
+built** — `src/simulation/incidents/` and
+`src/simulation/prisoners/disciplinary-record.ts`, whose `:76-80` explicitly
+declines to `drain()`, so `drain` still has no caller in `src/`)
 would take ownership of pending events without the ledger growing
 unbounded across a long session.
 

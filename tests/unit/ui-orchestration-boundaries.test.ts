@@ -65,9 +65,14 @@ import {
  * an unrecorded dependency, an entry whose dependency is gone, and an entry
  * whose kind has drifted.
  *
- * Two rules are asserted outright rather than through the manifest, because
- * both are true of the whole tree today with nothing to forgive: no module
- * here imports a package, and no module here builds a live simulation. The
+ * One rule is asserted outright over the whole tree with nothing to forgive:
+ * no module here builds a live simulation. The package rule used to be the
+ * second, and is not any more -- `src/ui/account/account-preferences.ts`
+ * imports `zod` to version a persisted record, so the tier-wide claim is now
+ * a top-level claim plus one named exception. Both directions are left
+ * standing rather than overwritten: the sentence was true of the whole tree
+ * until the account subtree landed, and the exception is written down where
+ * a reader looking for the old absolute will find it. The
  * second is `AGENTS.md` boundary 1 in the form #206 found unguarded in the
  * renderer; the forms live in `tests/helpers/module-boundaries.ts` and are
  * checked against the declarations `src/simulation/**` really exports.
@@ -78,6 +83,20 @@ const OWN_TREE = 'ui';
 
 /** Subtrees of `src/ui/` that `tests/unit/ui-hud-messages.test.ts` already collects and gates. */
 const GATED_ELSEWHERE = ['hud', 'primitives'] as const;
+
+/**
+ * Subtrees of `src/ui/` that *this* file collects and gates.
+ *
+ * `src/ui/account/**` is the client-side identity and save-list model ADR 0043
+ * decides. It is not the HUD's, so `ui-hud-messages.test.ts` does not collect
+ * it, and it is not top-level, so the orchestration manifest did not either --
+ * which is exactly the hole the coverage gate below exists to catch, and it
+ * caught this one on the integration run rather than in the next audit.
+ */
+const GATED_HERE = ['account'] as const;
+
+const isSubtree = (subtree: string | undefined, list: readonly string[]): boolean =>
+  subtree !== undefined && list.includes(subtree);
 
 function collectTypeScriptFiles(directory: string): readonly string[] {
   const files: string[] = [];
@@ -106,16 +125,30 @@ const subtreeOf = ({ file }: ScannedSource): string | undefined => {
 /** The top level only: `src/ui/*.ts`. */
 const orchestrationFiles = allUiFiles.filter((entry) => subtreeOf(entry) === undefined);
 
+/** The subtrees this file gates, currently `src/ui/account/**`. */
+const gatedHereFiles = allUiFiles.filter((entry) => isSubtree(subtreeOf(entry), GATED_HERE));
+
+/** Everything this file is the boundary gate for. */
+const gatedFiles = [...orchestrationFiles, ...gatedHereFiles];
+
 /**
  * Every layer outside `src/ui/` that a top-level UI module is allowed to know,
  * and how.
  *
- * Sixteen entries, which is the whole cross-layer dependency surface of the
- * composition tier. Written down rather than inferred, because the point of
- * the list is that it converts "we know `build-tool.ts` is special" from
- * folklore into a line CI reads -- and because a reviewer can audit sixteen
- * facts. The count is the list's own length and is corrected whenever an
- * entry is added or removed: it read "ten" while the list held fourteen, and
+ * The whole cross-layer dependency surface of the tier this file gates.
+ * Written down rather than inferred, because the point of the list is that it
+ * converts "we know `build-tool.ts` is special" from folklore into a line CI
+ * reads -- and because a reviewer can audit a finite set of facts.
+ *
+ * **This paragraph no longer states how many.** It has now rotted twice in the
+ * same place: it read "ten" while the list held fourteen, and it read
+ * "sixteen" while the list held twenty-eight. A tally written beside the thing
+ * it counts is edited by nobody who adds to the list, which is
+ * `docs/AGENT_WORKFLOW.md` §4's rule about counts, demonstrated on the very
+ * file that narrates it. Derive it instead:
+ * `node -e "const s=require('fs').readFileSync(F,'utf8'),a=s.slice(s.indexOf('const ALLOWED_FOREIGN_TREES'));console.log([...a.slice(0,a.indexOf('\n];')).matchAll(/file: '/g)].length)"`.
+ *
+ * The correction that *did* hold is kept because it is a different claim:
  * the last change to it removed `build-tool.ts -> simulation`, which the
  * `stale` check below failed on before anybody looked (issue #225 -- the tool
  * stopped assembling `PlaceBuildOrder` commands and now reports the gesture to
@@ -320,15 +353,57 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
       'Type-only: `RoomListViewModel` and `RoomDetailViewModel` from `src/simulation/presentation/room-projection`. The fifth of the translators outside `src/ui/hud/`, and the first that reads a *pulled* read model rather than a publication: it names the two view-model shapes `hud/room-list` and `hud/room-detail` answer with, and turns the `missing-capability` verdict inside them into `HudRoomNeedsViewModel`. Erased, so no simulation code runs on its account -- the projections themselves execute in the worker, and everything this module knows about the channel it gets from `src/ui/simulation-projections.ts` beside it, which is an intra-tree import. A `value` import appearing here would mean the readout had started projecting rooms on the main thread from state it does not own, which is the second source of truth `AGENTS.md` boundary 1 forbids and the reason the verdict is asked for rather than computed.',
   },
   {
+    file: 'src/ui/telemetry-consent-prompt.ts',
+    tree: 'content',
+    kind: 'type-only',
+    reason:
+      'Type-only: `LocalizationKey` from `src/content/localization`, to type the `TelemetryConsentLocalizer` port the composition root satisfies with the page\'s one `Localizer`. The same erased naming-of-a-key-type `save-panel-messages.ts`, `simulation-alerts.ts` and `brand-badge.ts` make; no content code runs because of it.',
+  },
+  {
+    file: 'src/ui/telemetry-consent-prompt.ts',
+    tree: 'services',
+    kind: 'value',
+    reason:
+      'Value: `EMPTY_TELEMETRY_CONSENT_DRAFT`, `TELEMETRY_CONSENT_MESSAGE_KEY`, `TELEMETRY_CONSENT_ROWS` and `setTelemetryConsentCategory` from `src/services/telemetry/consent-flow`. This is the manifest\'s point rather than an exception to it: the *value* import is what makes this module thin. Every decision the consent surface takes -- which categories exist, which label each carries, what the draft starts as, what a toggle does to it -- is computed there and none of it is computed here, because `vitest.config.ts` runs in `node` with no jsdom, so a decision taken in this file would be a privacy control with no headless coverage. The direction is UI-onto-a-services-contract and the reverse is structurally impossible: `tests/unit/services-layer-boundaries.test.ts` refuses `document.`/`window.` anywhere under `src/services/`. A *type-only* import appearing here would be the regression, not the improvement -- it would mean the rules had moved into the DOM.',
+  },
+  {
     file: 'src/ui/simulation-zoning.ts',
     tree: 'simulation',
     kind: 'type-only',
     reason:
       'Type-only: `WorkerToMainMessage` from `src/simulation/protocol/types`. The fourth of the translators outside `src/ui/hud/`, the same shape as `simulation-counts.ts` and `simulation-alerts.ts` beside it and for the same reason: the HUD may not import the simulation (`AGENTS.md` boundary 1), so the module that has to know both a protocol message and a view model sits outside `src/ui/hud/`. It reads what the last accepted zoning said about itself off a status-counts publication and returns three plain fields; no simulation code runs because of it, and unlike the other three it names no `content` dependency at all, because it maps no id onto a message key -- the Rooms panel decides which sentence the enum pair deserves.',
   },
+  {
+    file: 'src/ui/account/account-preferences.ts',
+    tree: 'persistence',
+    kind: 'value',
+    reason:
+      "Value: `MigrationChain` from `src/persistence/migration` and `zodVersionSchema` from `src/persistence/zod-version-schema`. Account preferences are a *persisted* record, so `AGENTS.md` boundary 7 applies to them -- every persistent format must have a version and migration strategy -- and this is the repository's one implementation of that. A type-only import cannot satisfy the boundary, because the obligation is to run the chain, not to name it. The direction is UI-onto-a-persistence-mechanism, never persistence-onto-UI: nothing under `src/persistence/` knows this module exists, which is what keeps boundary 5 (persistence consumes explicit snapshots and does not reach into renderer internals) true in both directions. What would make this entry wrong is a save *payload* type appearing here -- preferences are account metadata and #34 is explicit that they stay outside the prison snapshot.",
+  },
+  {
+    file: 'src/ui/account/account-preferences.ts',
+    tree: 'shared',
+    kind: 'type-only',
+    reason:
+      "Type-only: `KeyValueStore` from `src/shared/key-value-store`. The module names the storage port it is handed and never constructs one, which is what keeps it testable in `environment: 'node'` where there is no `localStorage` -- the composition root supplies the real store and the tests supply a map. Erased, so no storage code runs on its account. A `value` import here would mean the preferences module had started choosing its own backing store, which is the composition root's job and the reason this tier is separated from `src/main.ts` at all.",
+  },
+  {
+    file: 'src/ui/account/cloud-slot-availability.ts',
+    tree: 'services',
+    kind: 'value',
+    reason:
+      "Value: `evaluateSaveSlotAccess` and `evaluateSaveSlotEntitlement` from `src/services/entitlements/projection`, plus three erased types. This is the module that answers how many prisons an identity may keep, and #34 requires that the five-free-slot policy be account metadata rather than hard-coded logic -- so the number is *asked for* rather than restated, and this import is what makes that true. It adds only whether the ladder `applies` at all. A copy of the ladder here, or a literal 5, would be the contamination #34's fourth acceptance criterion forbids, and `tests/foundation/account-metadata-boundaries.test.ts` pins the client's answer against the SQL's.",
+  },
+  {
+    file: 'src/ui/account/save-list-projection.ts',
+    tree: 'persistence',
+    kind: 'type-only',
+    reason:
+      "Type-only: `PrisonSlotMetadata` from `src/persistence/local/store`. The save list is a fold of local slot metadata and cloud metadata into one row per prison, so it must name the local record's shape; it never reads or writes one, and the composition root hands it the values. Erased, so no persistence code runs on its account. A `value` import would mean the projection had started opening the store itself, which would put an IndexedDB dependency in a module whose whole point is that it is a pure function -- and `src/ui/account/`'s reachability from `pnpm test` is the reason ADR 0043's states are testable at all, the DOM half being unreachable under `environment: 'node'`.",
+  },
 ];
 
-const dependencies = findCrossTreeDependencies(orchestrationFiles, OWN_TREE);
+const dependencies = findCrossTreeDependencies(gatedFiles, OWN_TREE);
 const report = reportCrossTreeViolations(dependencies, ALLOWED_FOREIGN_TREES);
 
 describe('UI orchestration boundaries', () => {
@@ -357,6 +432,7 @@ describe('UI orchestration boundaries', () => {
       'src/ui/simulation-projections.ts',
       'src/ui/simulation-room-needs.ts',
       'src/ui/simulation-zoning.ts',
+      'src/ui/telemetry-consent-prompt.ts',
     ]);
     // And the import scanner really is reading them.
     expect(orchestrationFiles.flatMap(({ source }) => findImports(source)).length).toBeGreaterThan(15);
@@ -370,7 +446,7 @@ describe('UI orchestration boundaries', () => {
     // fails here, rather than being discovered by the next audit.
     const ungated = allUiFiles
       .map((entry) => ({ file: entry.file, subtree: subtreeOf(entry) }))
-      .filter((entry) => entry.subtree !== undefined && !GATED_ELSEWHERE.includes(entry.subtree as (typeof GATED_ELSEWHERE)[number]))
+      .filter((entry) => entry.subtree !== undefined && !isSubtree(entry.subtree, GATED_ELSEWHERE) && !isSubtree(entry.subtree, GATED_HERE))
       .map((entry) => entry.file);
     expect(
       ungated,
@@ -398,6 +474,39 @@ describe('UI orchestration boundaries', () => {
         .filter((specifier) => !specifier.startsWith('.'));
       expect(packages, `${file} now imports a package`).toEqual([]);
     }
+  });
+
+  it('lets the account subtree import zod and nothing else', () => {
+    // The tier-wide "no package" claim stopped being true when
+    // `src/ui/account/` landed, so the exception is gated rather than merely
+    // described in the header. `account-preferences.ts` persists a record and
+    // `AGENTS.md` boundary 7 obliges it to version and migrate one; the
+    // repository's schema vocabulary is zod, and `src/persistence/` uses it
+    // for exactly this. Naming it here is what stops the exception widening
+    // into "the account tree may import packages", which is how a stated
+    // exception usually rots.
+    const allowed = ['zod'];
+    const byFile = gatedHereFiles.map(({ file, source }) => ({
+      file,
+      packages: findImports(source)
+        .map((site) => site.specifier)
+        .filter((specifier) => !specifier.startsWith('.'))
+        .filter((specifier) => !allowed.includes(specifier)),
+    }));
+    // Denominator first: an empty collection reports no violations and reads
+    // exactly like compliance, which is the failure mode this family exists
+    // to avoid.
+    expect(byFile.length, 'the account subtree is empty or was renamed').toBeGreaterThan(3);
+    expect(
+      byFile.filter((entry) => entry.packages.length > 0),
+      'a src/ui/account/ module imports a package other than zod. The tier imports no packages; zod is the one exception and it is here because a persisted record must be versioned',
+    ).toEqual([]);
+    // And the exception is real rather than defensive wording: something in
+    // the subtree does import zod, so removing the allowance would fail.
+    expect(
+      gatedHereFiles.some(({ source }) => findImports(source).some((site) => site.specifier === 'zod')),
+      'nothing in src/ui/account/ imports zod any more -- delete the allowance rather than leaving it standing',
+    ).toBe(true);
   });
 
   it('depends on no layer outside src/ui/ that is not recorded with a reason', () => {

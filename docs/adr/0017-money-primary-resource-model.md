@@ -295,3 +295,112 @@ None of that is licensed to be decided in implementation code. What this
 acceptance changes is that the *answers* are no longer open; the schedules,
 prices and degradation steps that follow from them are #29's, and remain out of
 scope here per decision 5.
+
+## Amendment, 2026-08-27: the purchase surface this ADR twice calls missing has shipped, #89 is closed, and decision 4's "read by no code" is now true of two of its three ids
+
+*This amends **the Context paragraph, the "#89 is still open" consequence and
+decision 4's parenthetical count**. No decision moves: 1 through 8 are unchanged,
+and decision 4's instruction — **do not delete them as dead content** — is
+reinforced rather than weakened by what follows, because one of the three ids it
+protects is now load-bearing. What has gone false is a set of statements about
+the tree. The form is ADR 0029's amendment and ADR 0034 §9's: the old wording is
+quoted rather than overwritten.*
+
+*Status is untouched: this ADR remains **Accepted**. Read at `792bf94`
+(v0.0.121); every `file:line` below was opened on that tree and every count below
+was produced by re-running the enumeration rather than copied from an earlier
+one.*
+
+### 1. `src/` mints `PurchaseMaterials`, and has since `c2b5a28`
+
+The Context says:
+
+> #89's symptom survives for a different reason: nothing in `src/` mints a
+> `PurchaseMaterials` command, so a player still cannot buy anything.
+
+and the Consequences repeat it as a heading:
+
+> **#89 is still open, and its cause has changed.** No longer "nothing can supply
+> materials" — the store link is closed and verified by mutation — but "nothing
+> can ask for materials to be supplied". No code in `src/` produces a
+> `PurchaseMaterials` command, so a build order placed in a real session still
+> waits forever. The owner has decided the surface: a quantity stepper on the
+> Build panel.
+
+**All four sentences are false.** `src/main.ts:1863` is
+`sender.submit({ type: 'PurchaseMaterials', orderId: …, itemId: intent.itemId,
+quantity: intent.quantity })`, reached from the `'purchase-materials'` HUD intent
+at `:1795`. The stepper the last sentence describes as *decided* is **built**:
+`src/ui/hud/build-panel.ts:125` is *"Buy the selected buildable's material, in
+the quantity the stepper shows (#89)"* and `:896` constructs the number field.
+The producer landed in `c2b5a28`, *"Give the player a way to spend the treasury
+(#282)"*, on 2026-08-24 at v0.0.33, and **#89 was closed as completed the same
+day**, by that pull request.
+
+This is not a subtle contradiction that needed an audit to surface. The
+repository holds a foundation gate that *asserts* the producer exists:
+`tests/foundation/unconsumed-command-contract.test.ts:285` is
+`expect(producersOf('PurchaseMaterials')).toEqual(['src/main.ts'])` and `:319`
+requires that file to contain the literal `type: 'PurchaseMaterials'`. So a green
+suite and this ADR have been saying opposite things for roughly eighty-eight
+releases, and this document was edited three times in that window — `1db8c16`
+and `4f711d5` on 2026-08-25, `c228e3e` on 2026-08-26 — without either sentence
+being touched. **DOC-ROTTED**, and it is the reading of the ADR that is
+dangerous: the Context still opens *"Nothing in a Lockstate prison can be
+built"*, so a fresh agent takes the core loop to be broken and may set out to
+build a surface that exists.
+
+**What the two passages should say:** the purchase surface shipped in #282 and
+#89 is closed; what decision 4 still lacks is the *physical* route, which the
+Consequences already record correctly a few lines above (*"decision 4's physical
+route is not [built] either — a delivery is deposited at no tile"*).
+
+### 2. Decision 4's count: 11 of 18 rooms is still exact; 18 of 20 objects is now 1 of 20
+
+Decision 4 says:
+
+> **`room.delivery-bay`, `object.loading-dock-door` and `room.storage-room` are
+> the intended physical route.** All three already exist in the content catalogs
+> and are read by no code (#124 records that 11 of 18 room ids and 18 of 20
+> object ids are declared and unread).
+
+Re-enumerated at `792bf94` — every id in `src/content/room-catalog.ts` and
+`src/content/object-catalog.ts`, searched across `src/` with comment text
+stripped, excluding the two catalogues themselves and `default-locale-en.ts`:
+
+| | then | now |
+| --- | --- | --- |
+| room ids declared / unread | 18 / 11 | **18 / 11 — unchanged and still exact** |
+| object ids declared / unread | 20 / 18 | **20 / 1** |
+
+The one object id still unread is `object.sink`. The other nineteen are read by
+`src/simulation/construction/definition.ts`, which acquired seventeen buildable
+rows in `b097e70` (ADR 0028 phase 4, #384) on 2026-08-26 at v0.0.98.
+
+**That includes one of decision 4's own three ids.**
+`src/simulation/construction/definition.ts:614-621` is a `BUILDABLE_REGISTRY`
+row, `loading-dock-door-wooden`, carrying `placesObjectId:
+'object.loading-dock-door'`. A player can build a loading dock door today. So
+*"All three … are read by no code"* is **false for `object.loading-dock-door`**
+and remains true for `room.delivery-bay` and `room.storage-room`, which occur in
+`src/` only in the catalogues, the locale map and comments.
+
+**A bare tally beside a table that can be recomputed is the shape
+`docs/AGENT_WORKFLOW.md` §4 names as rotting first**, and this is the instance:
+adding nineteen readers never touched the sentence saying there were none. The
+durable form is the one the enumeration produces — name the ids, or name the
+file that reads them — and decision 4's instruction survives either way, because
+"do not delete this as dead content" was right and the content stopped being
+dead.
+
+### What was checked and found intact
+
+Decisions 1, 2, 3 and 5 through 8 are unchanged and unchallenged.
+`Treasury.spend` still refuses rather than overdrawing
+(`src/simulation/economy/treasury.ts:94-98`), so the Consequences' statement that
+answer 3's degradation ladder is unreachable still holds for the reason given.
+`StateIncomeSystem`'s cadence is as recorded. The `room.storage-room` and
+`room.delivery-bay` half of decision 4 is exactly as described. And the
+"Consequences" bullet correcting the income line — the one that says the
+paragraph *"went on saying the opposite, because no test reads English"* — is the
+same defect class this amendment records twice more, in the same document.

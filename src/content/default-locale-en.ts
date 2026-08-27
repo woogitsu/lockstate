@@ -77,6 +77,23 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // `OBJECT_CATEGORY_NAME_KEYS` in `src/content/object-catalog.ts` holds the
   // keys, and its type is what fails the build if an eighth category arrives
   // without one.
+  //
+  // **The sentence this comment used to open with -- that the seven were being
+  // "named for the first time" -- was false the day it was written.** The
+  // `object-category` group in `simulation-message-keys.ts` had already
+  // derived `object-category.<id>.name` for the same seven ids from the same
+  // `objectCategorySchema`, and authored English for all of them. So there
+  // were two families, differing by a dot where the other has a hyphen, and
+  // two of the seven carried *different words*: this file's "Plumbing" and
+  // "Catering" against that table's "Sanitation" and "Food Service". Both
+  // families were in the assembled catalog at once, because the collision
+  // check compares exact keys and these keys are not equal.
+  //
+  // That table's two labels now match these, because this is the family with
+  // a consumer (`src/main.ts:461`) and the family ADR 0035 §7 decided on;
+  // `tests/foundation/content-vocabulary-contract.test.ts` fails on any
+  // future pair that diverges. The copy above is unchanged and remains the
+  // authority for it.
   'object.category.furniture.name': 'Furniture',
   'object.category.sanitation.name': 'Plumbing',
   'object.category.food-service.name': 'Catering',
@@ -301,6 +318,17 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // than the numbers, because the numbers are per room type and the panel
   // shows the selected room's own pair beside the drag.
   'hud.alert.refusal.zone.below-minimum-size': 'The room was not zoned — that area is smaller than this room type allows.',
+  // The authored `enclosed` requirement, refused for the first time. This
+  // sentence is not new text: it is `hud.rooms.enclosure-open-required`, which
+  // was a Rooms-panel warning shown *after* an open room was accepted, moved
+  // into the refusal namespace and reworded into this namespace's house style
+  // now that `zone` refuses instead of warning. Its old key is deleted with the
+  // branch that read it -- see the ADR "Must a zoned room be enclosed".
+  //
+  // It names the rule and not the gap. `ZoneRoomRefusal` carries the first
+  // gap's tile and edge for diagnosis, but `RefusalLog` deliberately holds no
+  // coordinates, so nothing on this channel could render them.
+  'hud.alert.refusal.zone.not-enclosed': 'The room was not zoned — this room type must be enclosed, and the area you drew is open on at least one side.',
   // Removal's own namespace. `unzone.invalid-area` is the same *condition* as
   // `zone.invalid-area` and a different *sentence*: a player told "the room was
   // not zoned" after asking to remove one would go and look at the wrong
@@ -550,7 +578,10 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.refusal.release-guard': 'Nobody was released — the request was refused and the guard is still assigned.',
 
   'hud.rooms.title': 'Rooms',
-  'hud.rooms.catalogue': 'Room type',
+  // Names both halves of the section it heads: the room-type list, and the
+  // coordinate form folded away at its foot (#411). It read "Room type" while
+  // the list was all there was.
+  'hud.rooms.catalogue': 'Room type and area',
   'hud.rooms.catalogue-empty': 'No room types are available',
   'hud.rooms.selected': 'Selected',
   'hud.rooms.arm': 'Draw on map',
@@ -559,10 +590,13 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.rooms.remove': 'Remove rooms',
   'hud.rooms.remove-active': 'Stop removing',
   // Says what a removal drag actually does, because it is not "clear the tiles
-  // you dragged over": each covered tile is grown into its whole connected
-  // same-type run before anything is cleared, so clipping a corner off a
-  // canteen takes the whole canteen. Telling the player that up front is the
-  // difference between a rule and a surprise.
+  // you dragged over": each covered tile is resolved to the room containing it
+  // and that whole room is cleared, so clipping a corner off a canteen takes
+  // the whole canteen. Telling the player that up front is the difference
+  // between a rule and a surprise. The sentence is unchanged by issue #337 and
+  // the mechanism above is not: removal used to take the connected same-type
+  // *run*, which meant "all of it" could reach a second room the player never
+  // dragged over -- the one case where this string was a lie.
   'hud.rooms.remove-hint': 'Drag across any part of a room to remove all of it.',
   'hud.rooms.area': 'Area',
   'hud.rooms.area-none': 'Nothing selected',
@@ -579,15 +613,25 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.rooms.enclosure-none': 'Not evaluated yet',
   'hud.rooms.enclosure-sealed': 'Walled in on every side',
   'hud.rooms.enclosure-open': 'Open on at least one side',
-  // The one combination worth flagging rather than merely reporting: the room
-  // asked to be enclosed and its perimeter is not walled. It is not a refusal,
-  // and the sentence must not read as one -- the check is narrower than
-  // enclosure and a door cannot currently seal anything, so a room that is
-  // genuinely indoors can read open here.
-  'hud.rooms.enclosure-open-required': 'This room should be enclosed, and the area you drew is open on at least one side.',
   'hud.rooms.requirement-enclosed': 'Must be enclosed',
   'hud.rooms.requirement-outdoors': 'Must be outdoors',
   'hud.rooms.requirement-none': 'No enclosure rule',
+  // The typed route to a rectangle (#411). The wording mirrors the Build
+  // panel's own fallback deliberately: the same two sentences answer the same
+  // two questions, and a player who has met one has met the other.
+  'hud.rooms.coordinates': 'Enter coordinates',
+  'hud.rooms.coordinates-hint': 'The keyboard route. Dragging on the map is quicker.',
+  // What pressing it does, and it is not "designate": it produces the same
+  // rectangle a released drag produces, and the confirm control below still
+  // has to be pressed. Naming it "Designate" would promise a designation that
+  // the too-small rule may refuse to let happen.
+  'hud.rooms.coordinates-submit': 'Use these tiles',
+  'hud.rooms.tile-x': 'Tile X',
+  'hud.rooms.tile-y': 'Tile Y',
+  'hud.rooms.width': 'Width',
+  'hud.rooms.height': 'Height',
+  'hud.rooms.step-down': 'Decrease {field}',
+  'hud.rooms.step-up': 'Increase {field}',
   // What a room the player already designated is still missing. "Not ready"
   // rather than "Incomplete" or "Invalid": the room exists, it is painted on
   // the map and it counts in the status strip -- what it cannot yet do is the

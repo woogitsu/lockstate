@@ -187,13 +187,50 @@ describe('IntelligenceSystem: the decay a running session actually performs', ()
     // about, wearing a different hat. So the budget is stated, and the
     // assertion below is what makes it honest: it fails immediately, rather
     // than looping, if the configured decay cannot finish the job inside it.
+    //
+    // This arithmetic is deliberately kept, and #375's sweep re-measured it
+    // rather than replacing it: it is a precondition on the fixture, not the
+    // expectation, and it is the loud kind. `0.1 -> 0.001` fails here reading
+    // "expected 0.08 to be greater than 0.9", and the S10 decay of `0` fails
+    // here too instead of hanging. Deriving it from the exported constant is
+    // also what lets the magnitude stay unpinned, per this block's own note.
     const TICK_BUDGET = 4_000;
     const decayedWithinBudget = DEFAULT_INTELLIGENCE_DECAY_PER_INTERVAL * Math.floor(TICK_BUDGET / interval);
     expect(decayedWithinBudget, 'the configured decay cannot expire a tip inside the budget').toBeGreaterThan(
       INITIAL_CONFIDENCE,
     );
 
-    for (let tick = 0; tick < TICK_BUDGET; tick += 1) runtime.kernel.step();
+    // What *was* vacuous is the outcome. "Gone after 4,000 ticks" is issue
+    // #375's highest-risk shape -- a pin on `undefined`, which cannot tell
+    // "the tip decayed to the floor and expired" from "something dropped it",
+    // and does not even require that the tip was ever there. Measured:
+    // deleting every record `decayAll` touches, regardless of confidence --
+    // a wipe on the very first decay interval, and the opposite of the
+    // expiry this case is named for -- left this case green, while the two
+    // cases above it caught it.
+    expect(runtime.intelligence.get(id), 'the tip was never in the ledger to expire').toBeDefined();
+
+    let expiredAfterSteps: number | undefined;
+    let lastSeenConfidence = INITIAL_CONFIDENCE;
+    for (let tick = 0; tick < TICK_BUDGET; tick += 1) {
+      runtime.kernel.step();
+      const record = runtime.intelligence.get(id);
+      if (record === undefined) {
+        expiredAfterSteps = tick + 1;
+        break;
+      }
+      lastSeenConfidence = record.confidence;
+    }
+
+    // It survived more than one decay interval, so it left by decaying rather
+    // than by being swept, and it was last seen inside one interval's decay of
+    // the floor, so it left *at* the floor rather than early. Both are stated
+    // against the observed cadence and the exported minimum, so a rebalanced
+    // magnitude keeps them green.
+    expect(expiredAfterSteps, 'the tip never expired inside the budget').toBeDefined();
+    expect(expiredAfterSteps!, 'the tip was dropped on its first decay, which is a wipe and not expiry').toBeGreaterThan(interval);
+    expect(lastSeenConfidence).toBeGreaterThan(MIN_INTELLIGENCE_CONFIDENCE);
+    expect(lastSeenConfidence).toBeLessThanOrEqual(MIN_INTELLIGENCE_CONFIDENCE + DEFAULT_INTELLIGENCE_DECAY_PER_INTERVAL);
 
     expect(runtime.intelligence.get(id)).toBeUndefined();
     expect(runtime.intelligence.forTarget('prisoner', '1')).toEqual([]);

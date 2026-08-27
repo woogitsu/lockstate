@@ -36,10 +36,17 @@ normalised judgement. Two heading styles are in use — some ADRs carry a
 above carries `Accepted` in some form, several with a qualifier the ADR itself
 carries.
 
-**Every ADR in this directory is accepted.** Eight decisions were approved on
-2026-08-26: 0031, 0032, 0033, ADR 0007's amendment, then 0034, 0035 and 0036
-within the same few hours, and 0037 the same evening — which is the rate this
-corpus actually moves at.
+**Every ADR in this directory is accepted.** The table above is the count, and
+this paragraph deliberately no longer carries one. It used to read *"Eight
+decisions were approved on 2026-08-26"* and enumerate them; three more were
+approved the same evening — 0038, 0039 and 0040, all under the same delegation —
+which made the sentence wrong again without anything touching it. **A tally in
+prose beside a table that computes the same tally is this corpus's most reliably
+rotting shape**, and it has now rotted here three ways in one day: an ADR
+arriving Proposed, that ADR being accepted, and three more arriving at all. What
+the day is evidence of is unchanged and is the part worth keeping: this corpus
+moves at several decisions an evening, so a sentence that enumerates them is
+stale before it is read.
 
 **This paragraph was corrected twice on 2026-08-26, in opposite directions, and
 both edits are marked rather than overwritten.** 0037 arrived Proposed, which
@@ -89,8 +96,9 @@ mechanical gate in this repository can see it — `adr-numbering-contract.test.t
 counts documents by their `Status` line. While 0007's amendment was pending, the
 §2 queue entry was the only record that a decision was outstanding; now that it is
 accepted and the entry is deleted, the amendment's own opening paragraph is the
-only record it ever was. If a future amendment needs to be visible, §2 is the only
-place that can do it.
+only record it ever was. What form an amendment takes, and when it needs a §2
+row, is settled below in *"An amendment to an accepted ADR"* — that section is
+the rule and this paragraph is the defect it was written for.
 
 A note on how this paragraph is worded, because it matters to a test:
 `tests/foundation/adr-status-reference-contract.test.ts` scans for a sentence
@@ -157,8 +165,27 @@ Nothing here changes a status; this table only reports them.
 | [0035](./0035-buildable-catalogue-category-filter.md) | Choosing what to build out of twenty-one rows — filtering the catalogue by the categories content already authors | Accepted, 2026-08-26 — by delegation; it narrows #390's claim rather than closing it |
 | [0036](./0036-a-derived-default-security-sector.md) | A default security sector, derived from the world rather than authored | Accepted, 2026-08-26 — by delegation; it answers ADR 0034 decision 9 |
 | [0037](./0037-goods-in-a-carriers-hands-when-a-carry-job-dies.md) | Where goods go when a carry job dies with them in a carrier's hands | Accepted, 2026-08-26 — by delegation; the owner approved *that* someone decide, not the option chosen |
+| [0038](./0038-what-makes-a-save-compatible.md) | What makes a save compatible | Accepted, 2026-08-26 — by delegation; it settles #415 and #412's sentence, and the owner did not read it |
+| [0039](./0039-a-keyboard-route-to-room-zoning.md) | A keyboard route to room zoning | Accepted, 2026-08-26 — by delegation; #411, a route the game is unfinishable without |
+| [0040](./0040-the-shape-of-the-render-delta-channel.md) | The shape of the render delta channel | Accepted, 2026-08-26 — by delegation; it decides the channel and explicitly does **not** decide simulation-side locomotion |
+| [0041](./0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md) | What happens when a prisoner's chosen action has nowhere to go | Accepted, 2026-08-26 — by delegation; it takes the fallback and leaves ADR 0029 decision 5's fairness half open as its tracked successor |
+| [0042](./0042-attaching-consequences-to-the-simulation-loop.md) | The consequence chain is built and has no producer a player can reach | Proposed, 2026-08-27 — the ordering of a whole product loop, deliberately not self-approved; it corrects #446's "no consequences attached" to name the real gap, and #440–#443 are its evidence |
+| [0043](./0043-account-session-states-and-what-they-may-do-to-local-data.md) | Account session states, and what each may do to local data | Proposed, 2026-08-27 — the client identity model #34 needs and did not have; every transition records whether local data is preserved or discarded, and it is deliberately not self-approved |
+| [0045](./0045-must-a-zoned-room-be-enclosed.md) | Must a zoned room be enclosed | Accepted, 2026-08-27 — on decisions 1 and 8 only, both the owner's own: `zone` refuses an open room, and `enclosed` means the room's own boundary is closed rather than topologically indoors. Decisions 2–7 are the author's and stay open. Its edge-of-owned-land consequence is superseded by a successor ADR on buildings, not answered |
+| [0046](./0046-shipping-the-telemetry-pipeline.md) | Shipping the telemetry pipeline, and what shipping it obliges | Proposed, 2026-08-27 — the owner ruled that telemetry ships, after an audit rather than in the dark; the pipeline is built and sends nothing, because no ingestion destination is configured in any build. **It cannot be deployed until ADR 0008 §3.1's "No unauthenticated mutation endpoint exists" is reconciled with an unauthenticated ingest**, which is the owner's and is not decided here |
+| [0047](./0047-raising-a-building-on-open-ground.md) | Raising a building on open ground | Proposed, 2026-08-27 — the owner asked for a building layer so that rooms live inside a structure rather than on bare land. **Its headline finding is a refusal**: the building layer does *not* dissolve ADR 0045's edge-of-owned-land consequence, because a building has a south boundary for the same reason a room does. The real cause is an asymmetric ownership predicate on edge orders, and slice 0 fixes that on its own |
+| [0044](./0044-what-happens-to-a-service-tier-nothing-calls.md) | What happens to a service tier nothing calls | Accepted, 2026-08-27 — by delegation; #378, and it keeps all four trees on stated terms rather than deleting any of them. The owner did not read it, and its two product questions (does cloud save ship, does Lockstate collect telemetry) are recorded open |
 
-**Next free number: 0038.** 0037 is this table's newest row and **0030 is still
+**Next free number: 0048.** The gaps this paragraph used to record are gone:
+0042 and 0043 were held for parallel drafts that had not merged, and both were
+taken in the 2026-08-27 integration pass — 0042 by the consequence-loop ADR,
+0043 by the account-session ADR — with 0045 going to the third draft in the same
+pass. **Both directions are marked rather than overwritten**, because the reason
+those gaps existed is the durable part: the stated number is `max(on disk) + 1`,
+which is what `tests/foundation/adr-numbering-contract.test.ts` asserts, so an
+out-of-order assignment turns this line into a ceiling rather than the next gap,
+and a reader must still read the table rather than this line. There is no gap
+below 0045 today; the next out-of-order assignment recreates one. 0041 is this table's newest *contiguous* row and **0030 is still
 held by an unmerged branch** — the incident-response restore change, which
 allocated it in the same hour it was stated free here. It is listed nowhere above
 because nothing is merged under that number yet, which is precisely the gap a
@@ -227,13 +254,25 @@ thing again. That is a fact about one hour, not a reason to stop checking. 0032
 pre-commits in its own Status to renumbering if a branch turns up holding it,
 which is the habit the two previous collisions taught.
 
-**One row is outstanding: 0033.** It arrived with the change that implements it
-— the shape [`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2 names as fragile — and
-**its queue entry is owed rather than written**, for a stated reason rather than
-a collision: the brief that change was done under names `STATUS-QUEUE.md` as a
-file it may not touch, so the entry is quoted in its pull request instead. That
-is the precedent 0032 set an hour earlier, and 0032's own debt was paid in the
-commit that accepted it. This one is the next edit to that file to clear.
+**This paragraph said "One row is outstanding: 0033" and it is withdrawn: 0033
+was accepted on 2026-08-26 and its row above says so.** Kept as a correction
+rather than deleted, because it is another instance of the shape this file's
+*"Status values in this table"* section names — a sentence asserting a count,
+going false when the count moved, and nothing mechanical noticing.
+`adr-numbering-contract.test.ts` compares 0033's row to 0033's own status and
+both say `Accepted`, so the tree stayed green while this sentence contradicted
+the table.
+
+What was true of 0033 and is worth carrying: it arrived with the change that
+implements it — the shape [`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2 names as
+fragile — and **its queue entry was owed rather than written**, for a stated
+reason rather than a collision: the brief that change was done under named
+`STATUS-QUEUE.md` as a file it may not touch, so the entry was quoted in its pull
+request instead. That is the precedent 0032 set an hour earlier, and 0032's own
+debt was paid in the commit that accepted it. 0033's never was, and it is now
+moot rather than paid — one of the four cases §2 counts under *"Four ADRs have now
+been accepted without ever appearing in this queue"*, and the reason §2 calls the
+rule unsatisfiable rather than under-obeyed.
 
 0031 and 0032 arrived the same way and are now Accepted. 0031's entry was in the
 same commit, per §2's rule, and was deleted on acceptance; 0032's was never
@@ -262,6 +301,228 @@ the enumeration catches it, and it has to be run by whoever can actually see the
 open pull requests — when the author cannot, the number is provisional until
 someone else checks.
 
+## An amendment to an accepted ADR: what form it takes, and when it needs a queue row
+
+**Decided 2026-08-27. This section is the rule, and like the rest of this file it
+changes no status.** The question it settles was filed in
+[`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §5 as the owner's rather than as a defect
+that file could close: *"whether 'applies an accepted decision' and 'amends an
+accepted decision' are distinguishable by anything a reader can check"*, and if
+not, whether the §2 queue rule should cover both.
+
+**The owner delegated the call, and this is an approval of the judgement
+delegated rather than of the text below** — the instruction was *"Z tym ci.yml to
+nie wiem, żrob by było dobrze z tymi ADR tak samo, zrób dobrze"* ("About that
+ci.yml I don't know, do it so that it's right — same with those ADRs, do it
+right"). It is recorded as a weaker warrant on purpose, the way 0034 through 0037
+record theirs: **a reader who disagrees with any ruling in this section should
+treat the decision as open, not as settled by someone who weighed it with the
+owner.** What was delegated is which rule to write; what was not delegated, and
+what nobody has approved, is the substance of the two rulings in
+[ADR 0008](./0008-trusted-service-boundary.md) §2 that raised the question — see
+ruling 3.
+
+### 1. The distinction does not exist, and no rule here turns on it
+
+**"Applies" and "amends" are not distinguishable by anything a reader can check,
+and the reason is structural rather than a matter of drafting.** The test a
+reader would have to run is *"does the ADR as it stood already entail this?"*,
+which is a re-derivation from the old text. An ADR exists to spare the next
+reader exactly that derivation, so a rule whose trigger is the derivation's
+outcome cannot be applied by the reader the rule is written for. What is left is
+the editor's account of their own reasoning, and an account is not a check.
+
+The corpus supplies the demonstration rather than the principle. Both rulings
+#382 added to [ADR 0008](./0008-trusted-service-boundary.md) §2 change what that
+section requires of future work:
+
+- Before, §2 ruled on `TRUNCATE` and argued the case from what `TRUNCATE` alone
+  reaches past — row level security, row triggers. After, it states that *"a
+  Data API role holds exactly the DML privileges its zone needs on a table, and
+  nothing else"* and that *"a new relation in `public` starts closed, and its
+  migration opens exactly what it means to open"*. A migration author asking
+  whether §2 forbids handing `REFERENCES` to `authenticated` on a new table gets
+  no answer from the first text and a plain no from the second.
+- The second ruling **says so in its own words**: it is *"the one ruling in this
+  section that narrows the row above rather than the one below it"*. Carving
+  `created_at`/`updated_at` out of §2's *"Prison simulation state, saves,
+  settings — Z0/Z1 (client-authoritative, RLS-scoped)"* row narrows that row, and
+  narrowing an accepted classification is amending it whatever account the editor
+  gives of it.
+
+That both edits are also faithful *applications* of §2's zone taxonomy is very
+likely true, and it does not help: the two categories are not exclusive, which is
+the whole reason the line cannot be drawn. #382's stated reason — *"the question
+is asked again by every table that gets a timestamp"* — is a good reason to
+record the rule and no evidence at all about which side of a line it falls on.
+**So no rule in this repository distinguishes the two, and the rest of this
+section is written not to need the distinction.**
+
+### 2. What is checkable is form, and the corpus already follows it
+
+**The rule: an amendment to an ADR is a section whose heading begins
+`Amendment` or `Addendum` and carries the date it was written.** Not a bold
+sentence inside a Decision section, not an edit folded into surrounding prose.
+That is checkable by grep, by a reader, and by a test, and it asks nothing about
+what the editor meant.
+
+Measured over `docs/adr/` at `54418b6` (v0.0.121) — 35 ADRs — there are **15 such sections
+across nine documents** (0003 ×4, 0006, 0007 ×2, 0022, 0023, 0026, 0028 ×3,
+0031, 0033) and **14 of the 15 already carry the date in the heading**. So this
+rule is the convention the corpus already keeps, written down; it is not a new
+demand.
+
+**Those two numbers are anchored to `54418b6` because that is where they were
+counted, and the branch this section lands on is already past it.** Re-run on
+this tree: **39 ADRs, 24 such sections, 23 of them dated**, the one undated
+heading still being 0033's. The nine additional sections are 0014, 0015, 0017,
+0019 and 0020 (five ADRs re-read against the code and amended), 0029's, and ADR
+0008's three — two of which are the rulings this section gives headings to. The
+ratio the argument rests on did not move: it went from 14 of 15 to 23 of 24, and
+the single exception is the same document. Stated as two counts rather than one
+because a count with no commit beside it is the shape this whole section exists
+to stop, and quietly restating the first number against a different tree would
+have been that shape. Two additions on disk do not satisfy it, and they are the whole
+exception set:
+
+- **[ADR 0008](./0008-trusted-service-boundary.md) §2's two dated rulings**,
+  which had no heading and no section at all. They are the only unsectioned
+  dated rulings anywhere in `docs/adr/`. Corrected in the same commit as this
+  section: both paragraphs are **left word for word** and stay in §2 beside the
+  `TRUNCATE` ruling they generalise, each now opened by a dated `Amendment`
+  heading, because the fix a reader needs is a name and a date rather than a
+  relocation.
+- **[ADR 0033](./0033-releasing-an-interrupted-incident-response-at-runtime.md)'s
+  amendment heading**, which names no date. Left as it is on purpose: a body is
+  amended in its own commit and by whoever takes the decision, which is the
+  ground [`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §5 already states for leaving
+  other ADR bodies verbatim. It is one word owed by that document's next editor.
+
+**A rule that turns the existing corpus red on the day it lands is a bad rule.**
+This one leaves 14 of 15 sections untouched and names its two exceptions, which
+is the argument for it over the three alternatives in ruling 4 — each of which
+condemns most of the corpus.
+
+### 3. The queue trigger does not change; what changes is that it can be read
+
+§2 of [`STATUS-QUEUE.md`](./STATUS-QUEUE.md) triggers on an **outstanding**
+decision. **That stays the trigger, and it is not extended to amendments as a
+class.** What this section adds is the half that made it unreadable: **an
+amendment states in its own opening whether it has been approved and by whom, so
+that whether it is outstanding is something a reader can see instead of
+reconstruct.**
+
+That is why #380 was right to queue its ADR 0007 amendment — it declined to
+self-approve and marked its heading *"(awaiting approval)"* — and it is right for
+a reason that has nothing to do with applying versus amending. Ten of the 17
+post-hoc additions on disk are covered today, by their own opening (0006,
+0007 ×2, 0028 ×3, 0033), by their ADR's `Status` (0022, 0023, 0031), or by both.
+**Seven are not: 0003's four amendments, 0026's addendum, and ADR 0008's two
+rulings.** This section does **not** condemn the first five; they are named as a
+backlog for whoever edits those documents next, and the count is what asserting
+this half mechanically would cost.
+
+**And an approval sentence can itself rot, which is the limit of this half.**
+0033's amendment opens *"Status of this section: `Proposed`, with the rest of
+this document"* — true when it was written, stale since 0033 was accepted, and
+**deliberately outside every gate**, because
+`adr-status-reference-contract.test.ts` blanks `Amendment` sections precisely so
+that a historical status inside one is not reported as a false claim. So the
+requirement is that an amendment *state* its approval position, not that the
+statement stay current; keeping it current is the same habit as moving a status,
+and nothing mechanical will ever hold it.
+
+**ADR 0008's two are different, and they have a §2 row as of this commit.** Not
+because a class rule forces one, but on the instance: they state a rule *"for
+every future table"* in `public`, so they bind every migration written after
+them; nothing in the corpus records that anyone approved them; and the owner has
+never been shown them. ADR 0008's own `Status` keyword does not move, no row in
+the table above changes its status, and the substance of neither ruling is
+disturbed by this — what changes is that the owner can see the two decisions and
+say yes or no to them.
+
+### 4. The alternatives, and what each would have condemned
+
+- **Extend the §2 rule to every post-acceptance edit.** Condemns **16 of the 17**
+  post-hoc additions on disk: exactly one of them — 0007's second amendment — ever
+  had a row, and [`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2 records that the row it
+  did have was *"the only thing that says it exists"*. It also adds surface to a
+  rule that same section already diagnoses as *"unsatisfiable under concurrency"*
+  and as having failed more often than it worked. Rejected: a rule already being
+  routed around does not get widened.
+- **Keep the applies/amends line and write the test for it.** There is no test to
+  write; see ruling 1. Rejected as unimplementable rather than as unattractive.
+- **Require each ADR's `## Status` to name every amendment it carries.**
+  Checkable, and it is the shape 0022, 0023, 0031 and 0033 already use — but only
+  those four of the nine amended documents do. It condemns **11 of the 15
+  sections** across five ADRs — 0003's four, 0006's, 0007's two, 0026's addendum
+  and 0028's three are invisible from a `Status` that reads `Accepted` and
+  nothing else. Rejected: it would make five documents this decision has no
+  business editing fail on the day it landed, which is the shape of rule that
+  gets deleted rather than obeyed.
+- **A new ADR for this.** Rejected: this file already states the directory's
+  conventions — the filename form, the numbering rule, the next free number, the
+  amendment gap itself — so a rule about how `docs/adr/` records things belongs
+  here. `CLAUDE.md` forbids inventing replacement architecture where a governing
+  document exists, and the parallel process
+  [`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2 actually needs (one queue file per
+  entry, so two commits stop colliding) is a different job with its own cost and
+  is still owed.
+
+### 5. Which half a gate can hold, and which half it cannot
+
+Said plainly, because the rulings above would otherwise read as enforced. **None
+of this section is asserted by any test today.**
+
+**The checkable half, and it is not landed here.** Two predicates, both greppable
+off disk in the shape `adr-numbering-contract.test.ts` already uses for filenames
+and headings:
+
+```
+1. every heading matching /^#{2,6}\s+[*_`]*(Amendment|Addendum)\b/i
+   also matches /\b20\d\d-\d\d-\d\d\b/
+2. no paragraph outside such a section matches a decision verb
+   (decided|settled|generalised|ruled|narrowed) within ~60 characters
+   of a /\b20\d\d-\d\d-\d\d\b/ date
+```
+
+Two implementation notes, because both were found by running the predicates
+rather than by reading:
+
+- **Match the *opener*, not the word.** A heading merely *containing*
+  "amendment" catches sub-headings inside an amendment — ADR 0007's *"The
+  decision this amendment adds…"*, ADR 0022's *"Open questions this amendment
+  does not answer"* — and reports them as undated amendments. At `54418b6`,
+  anchoring on the first word instead takes the count from 17 to 15.
+- **A section ends at the next heading of the same or shallower level**, not at
+  the next heading of any level.
+  `adr-status-reference-contract.test.ts`'s `withoutAmendmentSections` uses the
+  any-level rule, which is correct for what *it* does and wrong for predicate 2:
+  under the any-level rule ADR 0007's *"### The gate"* falls outside its own
+  amendment and its back-reference to *"the deferred-status decision amended on
+  2026-08-25"* reads as a loose dated ruling.
+
+**Counted after this commit: 24 amendment sections, 23 of them dated** — the two
+ADR 0008 rulings are inside that count rather than beside it, which is the whole
+point of giving them headings. So
+predicate 1 has exactly one failure on disk (0033's heading) and predicate 2 has
+none — both stated because they were run, not guessed at. **This sentence read
+"17 amendment sections, 16 of them dated" when it was written and that was true
+of `54418b6`; it is corrected rather than amended away, because it went stale
+between being measured and being merged, which is a shorter half-life than any
+claim this section warns about.** They are
+**not** in `tests/foundation/` yet: that directory was held by concurrent work
+when this landed, which is the same contention
+[`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2 records as the reason its own rule
+keeps failing. A stated debt is the honest record; a section describing itself as
+gated when it is not would be the worse outcome.
+
+**The half nothing can hold.** Whether an amendment's substance was approved;
+whether an *"approved by the owner"* sentence is true; and whether an edit was an
+application or an amendment. The first two are what
+[`STATUS-QUEUE.md`](./STATUS-QUEUE.md) exists for and they are answered by a
+human reading evidence. The third is answered in ruling 1 by not asking it.
+
 ## Why nothing between 0024 and 0028 is missing any more, and 0028 was allocated out of band
 
 **Every number from 0019 to 0028 now has a document in this directory**, which
@@ -289,9 +550,13 @@ comments and `tests/`, none of which any assertion would have reported as
 same rule, which is the one recorded further down for the kernel ADR: **take the
 lowest number free without coordinating with unmerged or held work.** 0028 was
 then allocated out of band — by the owner, across the open branches — and `0029`
-is stated above because
+was the number stated above **at the time**, because
 `tests/foundation/adr-numbering-contract.test.ts` derives the next free number
-from the highest number on disk rather than from the lowest unused one.
+from the highest number on disk rather than from the lowest unused one — which
+is still how it works, and is why the bolded line above has since moved well
+past 0029. **This sentence named 0029 in the present tense and went stale the
+next time that line moved**; it is the mechanism that matters here, not the
+number, so the number is no longer restated.
 
 Two consequences worth stating rather than leaving to be rediscovered. **A gap
 closes from below as those PRs merge**, and each merge is a row added here, not a
@@ -321,8 +586,10 @@ opening balance, which is ADR 0017 decision 1 — so this table releases the
 number, exactly as the previous version of this section said it should on that
 outcome.
 
-**0018 is therefore available.** It is not the next free number (0029 is), and
-it should not be reached for preferentially: a gap in the sequence is easier to
+**0018 is therefore available.** It is not the next free number — the bolded
+**Next free number** line above is the only place that says which is, and this
+parenthetical used to name one and contradict it — and 0018
+should not be reached for preferentially: a gap in the sequence is easier to
 read than a number reused years apart. Take it only if a future ADR is a direct
 successor to what #91 proposed, where sharing the number would be
 informative rather than confusing.

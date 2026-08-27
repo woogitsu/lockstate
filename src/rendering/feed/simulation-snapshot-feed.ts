@@ -5,35 +5,50 @@ import {
   SESSION_SNAPSHOT_SCHEMA_VERSION,
   type SessionSnapshotBundle,
 } from '../../simulation/runtime/restore-session';
+import {
+  decodeRenderActorsPayload,
+  RENDER_ACTORS_LAYOUT_VERSION,
+  RENDER_ACTORS_SCHEMA_ID,
+  RENDER_ACTORS_SCHEMA_VERSION,
+} from '../../simulation/protocol/render-actors-payload';
 import { structuresFromConstruction } from '../world/structures';
 import { WorldRenderView } from '../world/world-view';
+import { actorsFromDelta } from './actors-from-delta';
 import { actorsFromSnapshot } from './actors-from-snapshot';
 import { EMPTY_RENDER_FRAME, type RenderFeed, type RenderFrame } from './render-feed';
 
 /**
  * Feeds the renderer from the simulation worker over the existing protocol.
  *
- * ### Why this polls snapshots
+ * ### Two channels, and what each one is for
  *
  * ADR-0003's protocol publishes three things to the main thread: correlated
- * snapshots, `simulation/delta` and domain events. Only the snapshot path is
- * implemented today -- nothing emits a delta -- so a snapshot request is the
- * only way world geometry can legally reach the renderer. The renderer is
- * therefore a *reader* of the same request/response the save path uses, with
- * `reason: 'consistency-check'` distinguishing its requests from saves.
+ * snapshots, `simulation/delta` and domain events. Two of the three now reach
+ * this feed.
  *
- * That is deliberately a placeholder for a render-delta channel, and it is
- * priced accordingly: each poll makes the worker capture a full session
- * bundle. So this feed does not poll on a timer. It polls when the world can
- * actually have changed:
+ * **Actors arrive on `simulation/delta`** (ADR 0040 slice 1). The worker
+ * publishes an unsolicited keyframe of the live population on a 100 ms ceiling,
+ * as an `array-buffer` payload whose body the protocol decoder does not walk.
+ * This is the data path for anything that moves, and applying one replaces
+ * `frame.actors` and touches nothing else.
+ *
+ * **Geometry still arrives on a snapshot request**, and that request is now a
+ * consistency net rather than the render path. Each one makes the worker
+ * capture a full session bundle and makes this thread deep-walk it, so the feed
+ * asks only when the world can actually have changed:
  *
  * - once when a session becomes ready, to get the initial world;
- * - after any command is accepted, since commands are what change geometry;
+ * - after any command is accepted, since commands are what change geometry,
+ *   and again once the simulation reaches the tick that command was scheduled
+ *   for, which is when it actually changed any;
+ * - when the clock *starts*, since that is when orders queued against a paused
+ *   prison run;
  * - on an interval only while the simulation clock is running.
  *
- * A paused, idle session costs exactly one request. A running one costs one
- * bundle capture per interval, which is the same work an autosave already
- * does and is why the interval is seconds rather than frames.
+ * A paused, idle session costs exactly one request. The interval is tens of
+ * seconds precisely because the actors no longer ride on it; carrying chunk
+ * geometry on the delta channel, and retiring the poll for renders altogether,
+ * is ADR 0040's slice 4 and is not this one.
  *
  * ### Boundaries
  *
@@ -59,7 +74,36 @@ export interface SimulationSnapshotFeedOptions {
   readonly onError?: (error: Error) => void;
 }
 
-const DEFAULT_POLL_INTERVAL_SECONDS = 2;
+/**
+ * How often the consistency poll fires while the clock runs.
+ *
+ * Was 2 s, when this request was the only way any part of a frame could
+ * arrive and actors therefore moved in two-second jumps. Since ADR 0040 slice 1
+ * the actors arrive on `simulation/delta` at a 100 ms ceiling and the only
+ * thing left on this path is geometry, which changes when the player builds
+ * something -- and a build is a command, which already sets `dirty` and polls
+ * immediately. So the interval no longer bounds how stale anything a player
+ * looks at can be; it bounds how long a *disagreement* could persist between
+ * the world this feed holds and the world the worker holds, if one ever arose
+ * by a route neither `dirty` nor the delta covers.
+ *
+ * Thirty seconds is ADR 0040's figure for that job. The saving is the whole
+ * point of the slice: each poll costs the worker a full `captureSessionSnapshot`
+ * and costs this thread a `jsonValueSchema` walk of the result, so this is
+ * fifteen times fewer of both.
+ *
+ * **That last sentence was false from the day it was written and is true now.**
+ * It arrived with `ea117cd` (2026-08-26) beside a `simulation/clock-state` case
+ * that had marked the world dirty on the running *state* since `d7b4a56`
+ * (2026-08-23), and the worker publishes one of those up to four times a second
+ * while the clock runs -- so this interval was never the binding constraint and
+ * a thirty-second session cost 121 requests rather than 2, which is worse than
+ * the 16 the 2 s default it replaced would have cost. `handleMessage` now reads
+ * the transition, and `tests/unit/rendering-feed.test.ts` pins the count over
+ * thirty running seconds against the worker's own publication cadence, which is
+ * the trace the case that missed this did not put on the wire.
+ */
+const DEFAULT_POLL_INTERVAL_SECONDS = 30;
 const DEFAULT_REQUEST_TIMEOUT_SECONDS = 15;
 
 export class SimulationSnapshotFeed implements RenderFeed {
@@ -71,7 +115,35 @@ export class SimulationSnapshotFeed implements RenderFeed {
   private pendingMessageId: string | undefined;
   private pendingSince = 0;
   private nextPollAt = Number.POSITIVE_INFINITY;
+  /**
+   * The tick an accepted command is scheduled for, while this feed is still
+   * waiting for the simulation to reach it.
+   *
+   * A tick of *this* session, so it is cleared with one for the reason
+   * `lastAppliedTick` is: a tick number carried across a session boundary is a
+   * statement about a different simulation, and a second prison starting at
+   * tick 0 would otherwise look like the first one's order having already run.
+   */
+  private awaitedCommandTick: number | undefined;
   private lastAppliedTick: number | undefined;
+  /**
+   * The tick of the last applied `simulation/delta`, tracked separately from
+   * `lastAppliedTick`.
+   *
+   * **Separate on purpose, and the shared field would be a bug.**
+   * `lastAppliedTick` guards the snapshot path's "an unchanged tick means the
+   * decoded view we already hold is still correct" skip -- a statement about
+   * `world` and `structures`. A delta says nothing about either, so letting one
+   * advance that field would make the feed skip the very snapshot that builds
+   * the world, and a session could run with nothing painted under its actors.
+   *
+   * What this field is for is ordering: the transport may coalesce or reorder,
+   * and a payload arriving with a tick at or behind the one already applied
+   * would move actors backwards. It is cleared with a session for the reason
+   * `lastAppliedTick` is -- two prisons paused at the same tick are two
+   * different simulations.
+   */
+  private lastDeltaTick: number | undefined;
 
   private readonly pollIntervalSeconds: number;
   private readonly requestTimeoutSeconds: number;
@@ -119,16 +191,72 @@ export class SimulationSnapshotFeed implements RenderFeed {
         // ordinary case -- would otherwise leave the first one's world painted
         // under the second one's name.
         this.lastAppliedTick = undefined;
+        this.lastDeltaTick = undefined;
+        this.awaitedCommandTick = undefined;
         break;
 
-      case 'simulation/clock-state':
-        this.clockRunning = message.payload.clock.mode === 'running';
-        // A clock that just started may have executed queued commands.
-        if (this.clockRunning) this.dirty = true;
+      case 'simulation/delta':
+        this.applyDelta(message.payload);
         break;
+
+      case 'simulation/clock-state': {
+        const running = message.payload.clock.mode === 'running';
+        // The **transition**, not the state. A clock that just started may have
+        // executed commands queued while it was paused; a clock that is merely
+        // still running has changed nothing this message reports, and the
+        // worker posts one of these up to four times a second for the life of
+        // a running session (`CLOCK_STATE_PUBLISH_INTERVAL_MS`). Reading the
+        // state here asked for a full session snapshot on every one of them --
+        // 121 requests over thirty running seconds where this file's own header
+        // promised 2, each costing a `captureSessionSnapshot`, a
+        // `jsonValueSchema` walk and, through the frame revision, a whole
+        // `TileLayer` rebuild on the thread that draws.
+        //
+        // Both routes are read, and they carry different halves of the answer:
+        // the unsolicited publication is silent while the tick stands still, so
+        // a resume that changes only the control is reported by the correlated
+        // reply `handleSetClock` sends and by nothing else.
+        if (running && !this.clockRunning) this.dirty = true;
+        this.clockRunning = running;
+
+        // The other half of "a command changed the world": *when* it did.
+        //
+        // A command is scheduled a lead ahead of the tick it was sent at
+        // (`SimulationCommandSender.projectExecuteTick`, twenty ticks -- one
+        // second at the kernel's 20 Hz), so the poll its acceptance triggers
+        // below captures a world it has not touched yet. Without this the
+        // player's wall would appear on the next thirty-second consistency
+        // poll, which is what makes the transition rule alone insufficient
+        // rather than merely stricter.
+        //
+        // Only on an unsolicited publication: the tick loop steps and *then*
+        // publishes, so one of these reporting `scheduledForTick` is posted
+        // after the tick that dispatched the command. `handleSetClock`'s
+        // correlated reply reports the tick without having stepped it, and
+        // treating that as the command having run would clear the wait for a
+        // snapshot taken one tick early.
+        if (
+          message.replyTo === undefined &&
+          this.awaitedCommandTick !== undefined &&
+          message.payload.tick >= this.awaitedCommandTick
+        ) {
+          this.awaitedCommandTick = undefined;
+          this.dirty = true;
+        }
+        break;
+      }
 
       case 'simulation/command-result':
-        if (message.payload.status === 'queued') this.dirty = true;
+        if (message.payload.status === 'queued') {
+          this.dirty = true;
+          // The latest scheduled tick, so a burst of orders is one wait and not
+          // a queue of them: a snapshot taken once the last has run shows all
+          // of them, and every earlier one is already in it.
+          this.awaitedCommandTick =
+            this.awaitedCommandTick === undefined
+              ? message.payload.scheduledForTick
+              : Math.max(this.awaitedCommandTick, message.payload.scheduledForTick);
+        }
         break;
 
       case 'simulation/snapshot':
@@ -141,6 +269,8 @@ export class SimulationSnapshotFeed implements RenderFeed {
         this.sessionReady = false;
         this.clockRunning = false;
         this.pendingMessageId = undefined;
+        this.lastDeltaTick = undefined;
+        this.awaitedCommandTick = undefined;
         break;
 
       case 'protocol/error':
@@ -190,6 +320,85 @@ export class SimulationSnapshotFeed implements RenderFeed {
     }
   }
 
+  /**
+   * Applies a render delta: the actors, and nothing else.
+   *
+   * ### `revision` deliberately does not move
+   *
+   * `RenderFrame.revision` is geometry-only -- "increments whenever `world` or
+   * `structures` change" (`render-feed.ts`) -- and `TileLayer` repaints on a
+   * change of revision or of visible range and on nothing else. This channel
+   * changes neither `world` nor `structures`, so bumping the counter here would
+   * make every tile in view repaint up to ten times a second to move some
+   * sprites, which is the opposite of what the channel is for. The frame object
+   * is still replaced rather than mutated, because a `RenderFrame` is immutable
+   * view data and `readFrame` hands it out; only the `actors` field differs, and
+   * `world` and `structures` are carried across by reference.
+   *
+   * ### What it refuses, and why it keeps the actors it has
+   *
+   * A payload this build cannot read is reported and dropped, leaving the
+   * previous frame standing. The buffer arrived by transfer and cannot be
+   * replayed -- the transfer moved it -- so there is nothing to retry, and the
+   * next publication is at most one interval away. Refusing loudly and drawing
+   * the last good set is strictly better than blanking a prison over one bad
+   * message.
+   *
+   * A **non-keyframe** payload is dropped for a different reason: this build
+   * sends only keyframes, so a diff is a message from a worker newer than this
+   * receiver, and applying its record list as if it were the complete live set
+   * would delete every actor that merely did not move. ADR 0040 puts the
+   * base-tick rule that reads one in its slice 3.
+   */
+  private applyDelta(payload: Extract<WorkerToMainMessage, { kind: 'simulation/delta' }>['payload']): void {
+    const { delta } = payload;
+    if (delta.schemaId !== RENDER_ACTORS_SCHEMA_ID || delta.schemaVersion !== RENDER_ACTORS_SCHEMA_VERSION) {
+      this.onError(
+        new Error(
+          `Worker sent a delta "${delta.schemaId}" v${String(delta.schemaVersion)}; this renderer understands "${RENDER_ACTORS_SCHEMA_ID}" v${String(RENDER_ACTORS_SCHEMA_VERSION)}.`,
+        ),
+      );
+      return;
+    }
+    if (delta.transport !== 'array-buffer') {
+      this.onError(new Error(`Render deltas must use the array-buffer transport, got "${delta.transport}".`));
+      return;
+    }
+
+    // Coalesced or reordered: the frame we hold is already at or ahead of this
+    // message, so applying it would move actors backwards.
+    if (this.lastDeltaTick !== undefined && payload.tick <= this.lastDeltaTick) return;
+
+    let decoded;
+    try {
+      decoded = decodeRenderActorsPayload(delta.data);
+    } catch (error) {
+      this.onError(error instanceof Error ? error : new Error(String(error)));
+      return;
+    }
+
+    if (decoded.layoutVersion !== RENDER_ACTORS_LAYOUT_VERSION) {
+      this.onError(
+        new Error(
+          `Worker sent render-actors layout ${String(decoded.layoutVersion)}; this renderer reads ${String(RENDER_ACTORS_LAYOUT_VERSION)}.`,
+        ),
+      );
+      return;
+    }
+    if (!decoded.keyframe) {
+      this.onError(new Error('Worker sent a changed-only render delta; this renderer applies keyframes only.'));
+      return;
+    }
+
+    this.frame = {
+      revision: this.frame.revision,
+      world: this.frame.world,
+      structures: this.frame.structures,
+      actors: actorsFromDelta(decoded),
+    };
+    this.lastDeltaTick = payload.tick;
+  }
+
   private apply(payload: Extract<WorkerToMainMessage, { kind: 'simulation/snapshot' }>['payload']): void {
     const { snapshot } = payload;
     if (snapshot.schemaId !== SESSION_SNAPSHOT_SCHEMA_ID || snapshot.schemaVersion !== SESSION_SNAPSHOT_SCHEMA_VERSION) {
@@ -234,8 +443,11 @@ export class SimulationSnapshotFeed implements RenderFeed {
         // Positions only. The bundle publishes no velocity and no facing, so
         // every prisoner is drawn with the idle clip and the pose module's
         // default facing; `actors-from-snapshot.ts` states which fields are
-        // defaults rather than simulation state. A render-delta channel is
-        // still what would publish real motion.
+        // defaults rather than simulation state. That is not something the
+        // delta channel fixes and this comment used to say it was: the
+        // simulation moves an actor only on arrival at a route's destination,
+        // so neither path has a velocity to carry. Simulation-side locomotion
+        // is the missing piece, and it is its own decision.
         actors: actorsFromSnapshot(bundle.simulation, bundle.entities),
       };
       this.lastAppliedTick = payload.tick;

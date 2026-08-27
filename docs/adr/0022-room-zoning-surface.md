@@ -78,8 +78,22 @@ holds that as a gated fact — `ZoneRoom` is one of three commands in
 `AWAITING_PRODUCER` (`:106-107`), and its entry says so in the terms this ADR
 answers: *"Room zoning still has no interface at all: every member of
 `HudIntent` is a tab, a panel, the clock, a build order, the build tool or the
-undo pair, and none is about a room."* That is true of `main`: `HudIntent`
-(`src/ui/hud/hud.ts:153-195`) declares seven members and none of them is a room.
+undo pair, and none is about a room."* That was true of `main` when this
+document was written, at v0.0.30: `HudIntent` declared seven members and none of
+them was a room.
+
+**Both halves of that sentence have since been overtaken, and the anchor it
+carried is now actively misleading.** It cited `src/ui/hud/hud.ts:153-195`.
+`HudIntent` is now at `src/ui/hud/hud.ts:270-540` and declares **eighteen**
+members, three of them room-related — `zone-room`, `unzone-room` and
+`arm-room-tool`, which are this ADR's own decision having shipped. And
+`hud.ts:153` now declares **`HudRoomGesture`**, the room gesture this document
+introduced. So a reader following the old anchor to check *"none of them is a
+room"* lands on a type that is about nothing else. The count and the anchor are
+corrected here rather than left as
+[`STATUS-QUEUE.md`](./STATUS-QUEUE.md) recorded them, because that entry said
+this belonged in a change of its own and this is that change; the historical
+claim is kept, dated, because it is what the decision below was made against.
 
 So the whole zoning vocabulary — the plane, the instance registry, the six
 refusal reasons, `MAX_ZONE_DIMENSION_TILES` — is reachable only from a test.
@@ -209,11 +223,17 @@ The intent carries ids and numbers only:
 ```
 
 Verified against both ends. `zoneRoomSchema`
-(`src/simulation/protocol/commands.ts:37-45`) is
+(`src/simulation/protocol/commands.ts`, declared `export const zoneRoomSchema = z.object({`
+at `:67` as of `83d9616`; this cited `:37-45`, which had drifted onto the
+doc comment above `placeBuildOrderSchema`) is
 `{ type: 'ZoneRoom', roomId: string, x: int, y: int, width: int, height: int,
 transactionId?: string }`, `.strict()`; `RoomZoningService.zone` takes
-`ZoneRoomRequest` (`zoning.ts:112-121`) whose first field is `roomCatalogId`
-and is fed from `simCommand.roomId` at `session-commands.ts:62`. So `roomId` is
+`ZoneRoomRequest`, declared `export interface ZoneRoomRequest {` with
+`readonly roomCatalogId: string;` as its first field (`zoning.ts:164-165`), and
+is fed from `simCommand.roomId`, written `roomCatalogId: simCommand.roomId,` in
+`session-commands.ts` (`:113`). Both line numbers are as of `83d9616`; this
+sentence cited `zoning.ts:112-121` and `session-commands.ts:62`, which #444
+found had drifted onto two unrelated comments. So `roomId` is
 the right name for the intent field — it is the field name the wire format and
 every queued command in an existing save already use, and it holds a room
 *catalog* id (`room.cell`), never an instance id.
@@ -718,6 +738,20 @@ Left open deliberately, and none of them decided in code.
    wide for 104px of content). So a numeric route needs somewhere to live that
    costs no always-visible height, and finding one is a design decision that is
    still not made here.
+
+   **Now answered, by [ADR 0039](./0039-a-keyboard-route-to-room-zoning.md)
+   (#411), and the figure above needs a footnote rather than a correction.**
+   7.9px is right and it is the *fold gap*; what the decision needed was how much
+   a new block can take before something moves, measured per host. Grown a pixel
+   at a time against the panel's height, its fold gap and the three boxes that
+   carry it: the panel body affords 32px at 1280×720 and 0px at 900×600, the
+   catalogue section's own body 41px and 4px, and `.hud-rooms__list` at least
+   400px at both. A collapsed section header is 44px, so this item's conclusion
+   holds twice over — and the answer is that the route lives *inside the
+   scroller*, which is decision 1's own principle for the Build catalogue ("a
+   longer list is absorbed by the list rather than by the panel") pointed at the
+   box that actually absorbs. Measured with the real form, folded and open, this
+   panel's arrival geometry is unchanged at all six viewports.
 
 2. **Two adjacent same-type rectangles are still two `RoomInstance`s, and
    removal treats them as one region.** Unchanged in the first direction and

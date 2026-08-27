@@ -37,7 +37,24 @@ export type MigrationErrorCode =
   | 'invalid-shape'
   | 'unsupported-version'
   | 'no-migration-path'
-  | 'migration-produced-invalid-output';
+  | 'migration-produced-invalid-output'
+  /**
+   * A step threw instead of returning. Distinct from
+   * `migration-produced-invalid-output` because that code's whole meaning is
+   * "the step *ran* and its output failed the destination schema"; a step that
+   * threw produced no output to fail one, and the two say different things to
+   * whoever has to fix it. Collapsing them would also make
+   * `docs/PERSISTENCE.md`'s taxonomy row for that code false.
+   *
+   * Every consumer of this union is non-exhaustive by construction --
+   * `describeImportResult` (`src/ui/save-panel.ts`) ends in a `default:` arm
+   * and `PrisonSaveRepository.loadCurrent` treats any `ok !== true` alike --
+   * so adding an arm is additive rather than a breaking widening. It changes
+   * no player-facing string: the panel's `default:` already routes it to the
+   * same "this save's contents do not hold up" sentence, with the message as
+   * `{detail}`.
+   */
+  | 'migration-step-threw';
 
 export interface MigrationError {
   readonly code: MigrationErrorCode;
@@ -63,6 +80,17 @@ export type MigrationResult<T = unknown> =
       readonly declaredValue: unknown;
     }
   | { readonly ok: false; readonly error: MigrationError };
+
+/**
+ * The thrown value as one line of diagnostic, without assuming it is an
+ * `Error`: a step is arbitrary code and `throw 'nope'` is legal. The message
+ * is spliced into the panel's `{detail}` for an import, so it has to be a
+ * string in every case rather than `[object Object]` in one of them.
+ */
+function describeThrown(error: unknown): string {
+  if (error instanceof Error) return `${error.name}: ${error.message}`;
+  return String(error);
+}
 
 /**
  * A forward-only Vn -> Vn+1 migration dispatcher. Historical version schemas
@@ -157,7 +185,29 @@ export class MigrationChain {
         };
       }
 
-      const migrated = step.migrate(currentValue);
+      // A step that throws is a **verdict**, not an exception the caller has
+      // to catch. `decodeSaveEnvelope` is a total function returning
+      // `{ok:false, error}` -- `PrisonSaveRepository.loadCurrent`'s recovery
+      // walk and `importSave` both call it unguarded, so an exception escaping
+      // here does not merely fail one generation, it aborts the walk that
+      // would have reached an older good one. Steps are contracted to be pure
+      // total functions, so reaching this catch means one is defective (or is
+      // being handed a value its own version's schema admitted and it cannot
+      // process); either way the answer the boundary owes its caller is a
+      // refusal with a code, at the version the step started from.
+      let migrated: unknown;
+      try {
+        migrated = step.migrate(currentValue);
+      } catch (error) {
+        return {
+          ok: false,
+          error: {
+            code: 'migration-step-threw',
+            message: `Migration ${currentVersion} -> ${step.toVersion} threw: ${describeThrown(error)}`,
+            atVersion: currentVersion,
+          },
+        };
+      }
       const nextSchema = this.schemas.get(step.toVersion);
       if (nextSchema === undefined) {
         throw new Error(`Invariant violated: schema for version ${step.toVersion} is missing after registration.`);

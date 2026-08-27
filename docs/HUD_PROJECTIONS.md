@@ -142,6 +142,35 @@ the schema rather than in the handler, so an over-large window never decodes —
 without one, "the UI may choose the window" and "the UI may ask for all five
 thousand rows" would be the same request.
 
+**The one publication on a cadence that does carry a list, and why it is not a
+contradiction.** ADR 0040 slice 1 (#414) publishes `simulation/delta` on a
+100 ms ceiling with one **fixed-width** record per live actor. That is a list,
+on a timer, whose length grows with the prison — the shape this contract exists
+to refuse — and it is admitted here rather than exempted, because what the
+contract is actually protecting is the *cost* of the send and this channel
+answers it by the record width instead of by `offset`/`limit`:
+
+- The **boundary** cost is flat: an `array-buffer` body is validated by a schema
+  id, a content type and a `byteLength` cross-check and is never walked, so
+  decoding the whole message measures 0.0049 ms at 500 actors and 0.0051 ms at
+  5,000 (`docs/RENDERING.md` carries the table). A paged JSON reply is bounded
+  at 500 rows; this is bounded at one comparison.
+- The **payload** is 16 bytes an actor: 8,016 bytes at 500 and 80,016 at 5,000,
+  against 596,659 for the session bundle the renderer used to poll for the same
+  three fields.
+- A **window would be wrong here** in a way it is not for a roster. The receiver
+  draws every actor it is told about and culls by camera range; a worker-chosen
+  page would be exactly the truncation-the-UI-cannot-scroll this contract
+  forbids one paragraph up, and a caller-chosen one would need the renderer to
+  know which actors it is missing, which is the base-tick problem in a worse
+  place. ADR 0040's answer is the keyframe interval and, in a later slice,
+  changed-only records — bounding what is *sent*, rather than bounding what is
+  *asked for*.
+
+So the rule stands as written for anything carrying rows of view-model objects,
+and this is the recorded exception with the property that replaces it: a payload
+the boundary does not walk, at a width that is a constant.
+
 The twelfth is #29's "earned today" accrual, and it is the first count here
 that is not a *level*. Every other one moves only when a discrete event moves
 it, which is what lets `publishStatusCounts` skip a publication whose counts
@@ -302,8 +331,17 @@ designation would be in the DOM and painted at no viewport — the exact defect
   remember which room type was selected when the player released the pointer.
   Neither value is a message key and neither is a sentence, so ADR 0011's
   separation is untouched — `src/ui/hud/rooms-panel.ts` decides which sentence
-  the pair deserves, and the one combination worth warning about (`enclosed`
-  asked for, `open` found) is about the pair rather than either member.
+  the pair deserves.
+
+  **This bullet used to end "and the one combination worth warning about
+  (`enclosed` asked for, `open` found) is about the pair rather than either
+  member".** That pair no longer reaches an accepted designation: `zone` refuses
+  it (the ADR *"Must a zoned room be enclosed"*), so the panel's warning, its
+  `hud.rooms.enclosure-open-required` key and its English text are deleted, and
+  the sentence is `hud.alert.refusal.zone.not-enclosed` on the refusal channel
+  instead. What an accepted notice can now carry is `sealed` against anything,
+  or `open` against `outdoors`/`none` — every one of them correct, so the panel
+  reads them out and tones none of them.
 - **Snapshot-shaped, for the reason `refusal` is.** "The last room designated
   was open against an enclosed requirement" is true of the session at any tick;
   an event would not be, and this publication is rate-limited and skippable.
@@ -320,9 +358,15 @@ designation would be in the DOM and painted at no viewport — the exact defect
 - **Not snapshotted**, like `RefusalLog`: it is a notice about something the
   player did moments ago rather than a condition of the prison, so a restored
   session starts with none.
-- **It refuses nothing.** `src/simulation/rooms/enclosure.ts` states in full why
-  the simulation cannot honestly refuse on this answer; gap 14 below records the
-  wider question it is narrower than.
+- **It is a readout of an accepted designation, and the refusal is a separate
+  channel.** This bullet used to read *"It refuses nothing.
+  `src/simulation/rooms/enclosure.ts` states in full why the simulation cannot
+  honestly refuse on this answer"*, and the owner has ruled otherwise. `zone`
+  refuses an `enclosed` room whose perimeter is open, under
+  `zone.not-enclosed`, which travels on `RefusalLog` like every other refusal;
+  this notice still carries only what was *accepted*. Gap 14 below records what
+  the wider, topological question would still need — and no longer waits on it,
+  because `enclosed` now means "this room's own boundary is closed".
 
 `hudZoningFromWorkerMessage` (`src/ui/simulation-zoning.ts`) is the translator,
 and it returns three states rather than two: `undefined` for "this message says
@@ -522,9 +566,22 @@ It needs no new persisted state and no save-schema version: everything it reads 
 `security.guards.records` and the live claim views of the two `'on-search'`
 claimants, all of which a V5 save has held all along.
 
-Ten of the fifteen catalogued read models still have a route and nobody on the
-end of it. That is the honest state of this channel, and it is a different
+**Nine** of the fifteen catalogued read models still have a route and nobody on
+the end of it: **six are read, by five modules.** Both numbers are stated
+because the difference between them is what made the previous sentence wrong.
+It said ten, having counted reader *modules* rather than read models —
+`src/ui/simulation-room-needs.ts` asks for two, `hud/room-list` and
+`hud/room-detail`, so five modules and six read models are the same fact
+counted twice. It was already nine at the commit that wrote it.
+
+The six with a reader are `hud/build-queue`, `hud/pending-deliveries`,
+`hud/held-guards`, `hud/prisoner-population`, `hud/room-list` and
+`hud/room-detail`; a `grep` for the quoted id under `src/ui/` is the whole
+derivation. That is the honest state of this channel, and it is a different
 sentence from the one this section used to carry.
+
+`tests/foundation/projection-reachability-contract.test.ts` carries the same
+sentence and is not corrected here; it is another agent's surface.
 
 ## Gaps: fields a panel plausibly wants that the simulation does not have
 
@@ -694,6 +751,21 @@ decision about what to build next.
     `ROOM_NEEDS_NAMED_LIMIT` in `src/ui/hud/rooms-panel.ts` carries the
     measurement, including what a three-row version did to the panel's fold.
 
+    **That budget is now measured per host rather than as one number, because
+    the panel has more than one place to put something** (ADR 0038, #411).
+    Growing a fixed-height block in each candidate until the panel's height, its
+    fold gap or any of `.hud-rooms > .ui-panel__body`, `.hud-rooms__catalogue`
+    and the catalogue's `.ui-section__body` moves, in the state this readout is
+    showing: the panel body affords **32px at 1280×720 and 0px at 900×600**, the
+    catalogue section's body **41px and 4px**, and `.hud-rooms__list` at least
+    400px at both — the list being the one box here that is meant to hold more
+    than it shows. A collapsed section header is 44px, so anything that must be
+    *always* visible is refused at both viewports and the scroller is the only
+    answer. The typed route to a rectangle is inside it for exactly that reason,
+    and costs this readout nothing: with the form folded and with it open, the
+    panel's height, fold gap and last block's bottom edge are identical to their
+    figures before it existed, at all six viewports.
+
     **Two of the three area requirements this gap listed as
     `'not-evaluated'` are now evaluated**, and by the zoning service rather
     than by a projection — which is why they are recorded here rather than
@@ -703,17 +775,28 @@ decision about what to build next.
       authored `minWidth`, `minHeight` and `minTiles` through
       `src/simulation/rooms/requirements.ts` and refuses
       `below-minimum-size`. Before it, a 1×1 canteen was a legal room.
-    - `enclosed` / `outdoors` is *reported*, not enforced.
-      `src/simulation/rooms/enclosure.ts` answers whether the rectangle's own
-      perimeter is walled and the answer travels on
-      `simulation/status-counts`'s new `zoning` field. It refuses nothing,
-      because the check is narrower than enclosure, and because it runs at
-      designation time while the walls usually go up afterwards. (It also used
-      to say that `edgeNumericIdFor` wrote `0` for `door-wooden`, so no sealed
-      room could have a way in; a completed door order now writes
-      `DOOR_EDGE_NUMERIC_ID` and registers a real door, so a sealed room with a
-      door in it is exactly what the check reports.) Gap 14 below is the wider
-      question.
+    - `enclosed` is *enforced too*, and this line used to say the opposite.
+      It read *"`enclosed` / `outdoors` is **reported**, not enforced ... It
+      refuses nothing, because the check is narrower than enclosure, and
+      because it runs at designation time while the walls usually go up
+      afterwards."* The owner ruled that `roomPerimeterEnclosure` is not to
+      stay advisory, and `RoomZoningService.zone` now refuses
+      `not-enclosed` for a definition authoring `enclosed` whose rectangle's
+      own perimeter is open. The ADR *"Must a zoned room be enclosed"* is the
+      decision, and what it settles is also the *meaning* of `enclosed`: this
+      room's own boundary is closed, rather than this room is topologically
+      indoors — against which the check is exact rather than narrow.
+
+      **`outdoors` is still only reported**, and deliberately: a walled
+      exercise yard is an ordinary prison yard, and `outdoors` is a claim about
+      a roof, which this world model does not represent. `none` likewise.
+
+      (This bullet also used to note that `edgeNumericIdFor` wrote `0` for
+      `door-wooden`, so no sealed room could have a way in; a completed door
+      order now writes `DOOR_EDGE_NUMERIC_ID` and registers a real door, so a
+      sealed room with a door in it is exactly what the check reports — and
+      that is what keeps the refusal above from making every room a box nobody
+      can enter.) Gap 14 below is the wider question.
 
     `object` requirements are gated on the *derived* capability list since
     ADR 0028 phase 1 rather than on a declared one, which changes where the
@@ -739,12 +822,17 @@ decision about what to build next.
     what is missing is a decision about what a room that has become too small
     should do, which that ADR leaves open.
 
-    The wider enclosure question is unanswered and its two obstacles are
-    worth naming: `TopologyManager` does region *detection* and exposes no
-    enclosure query, and `TopologyManager.update()` has **no caller anywhere
-    in `src/`** — it is constructed in `runtime/new-session.ts` and absent
-    from the `registerSystem` block beside it, so `getTopologyId` answers `0`
-    for every tile in a running session. A region id alone would not be
+    The wider *topological* enclosure question is unanswered, and it is no
+    longer on anyone's critical path: `enclosed` is defined as "this room's own
+    boundary is closed" (the ADR *"Must a zoned room be enclosed"*), which the
+    rectangle predicate answers exactly. It is recorded here because a future
+    decision could want the topological reading back as a **widening** — letting
+    a sub-room inside a sealed hall through — and because its two obstacles are
+    worth naming either way: `TopologyManager` does region *detection* and
+    exposes no enclosure query, and `TopologyManager.update()` has **no caller
+    anywhere in `src/`** — it is constructed in `runtime/new-session.ts` and
+    absent from the `registerSystem` block beside it, so `getTopologyId` answers
+    `0` for every tile in a running session. A region id alone would not be
     enough either: a region reaching the edge of the materialised world is
     indistinguishable from one bounded by walls there.
 15. **`RoomInstanceRegistry` has no `all()` or `size()`.** Enumeration

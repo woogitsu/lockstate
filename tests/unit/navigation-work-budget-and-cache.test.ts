@@ -240,3 +240,152 @@ describe('PathRequestQueue: flow-field sharing composes with the route cache rat
     expect(run.routeCacheSize).toBe(1); // 72 requests, one distinct leg
   });
 });
+
+/**
+ * The work budget is a ceiling on **expansions**, not on requests (#416).
+ *
+ * `AGENTS.md` boundary 9 -- "pathfinding must be budgeted and hierarchical,
+ * never unrestricted full-map A* per agent per frame" -- is enforced in
+ * exactly one place: `PathRequestQueue.processTick` adds each resolved
+ * request's `stats.expansions` to `usedBudget` and stops once that reaches
+ * `params.workBudget`. Every test above passes a budget in and none of them
+ * asks what was spent, so the unit the budget is *denominated in* was
+ * unasserted: replacing `usedBudget += stats.expansions;` with
+ * `usedBudget += 1;` -- which turns the tick budget into a request count and
+ * lets one tick expand many times its budget -- left 238 files and 2,696
+ * tests green when measured at `54418b6` (v0.0.121).
+ *
+ * The neighbouring cases cannot see it. "Defers requests once the tick budget
+ * is spent" runs at `workBudget: 1`, where a per-request counter and a
+ * per-expansion counter both stop after one request; the difference only
+ * appears at a budget large enough to admit several requests, and only if
+ * something adds the expansions up.
+ *
+ * Nothing here is compared against a number the budget arithmetic produced:
+ * the budget is a literal chosen so it admits some of the batch and not all of
+ * it, and the per-request costs come back on the resolved payload from
+ * `findRoute`'s own `SearchStats`, which `usedBudget` never writes to.
+ */
+describe('PathRequestQueue: the tick budget bounds expanded nodes, not requests', () => {
+  const WORK_BUDGET = 200;
+  const REQUEST_COUNT = 16;
+
+  function drainOneTick(workBudget: number): { queue: PathRequestQueue; resolved: readonly { expansions: number }[] } {
+    const fixture = buildCellBlockFixture(20);
+    const graph = buildFixtureGraph(fixture.world, fixture.doors, fixture.chunkPositions);
+    // Sharing off (threshold far above the batch) and a cold cache, so every
+    // request pays a real search and the budget is the only thing that can
+    // stop the loop.
+    const queue = new PathRequestQueue({ agingIntervalTicks: 1_000, flowFieldActivationThreshold: 1_000 });
+    const destination = fixture.canteenTiles[0];
+    if (destination === undefined) throw new Error('Fixture must have a canteen.');
+
+    for (let index = 0; index < REQUEST_COUNT; index += 1) {
+      const origin = fixture.cellTiles[index % fixture.cellTiles.length];
+      if (origin === undefined) throw new Error('Fixture must have cells.');
+      queue.enqueue(
+        { id: `req-${String(index).padStart(2, '0')}`, origin, destination, context: GUARD, priority: 0 },
+        0,
+      );
+    }
+
+    const resolved = queue.processTick({
+      tick: 0,
+      workBudget,
+      world: fixture.world,
+      doors: fixture.doors,
+      graph,
+      routeCache: new RouteCache(),
+      flowFieldCache: new FlowFieldCache(),
+    });
+    return { queue, resolved };
+  }
+
+  it('stops the tick within one request of the budget, counting expanded nodes', () => {
+    const { queue, resolved } = drainOneTick(WORK_BUDGET);
+
+    // Non-vacuity, in both directions: the budget really bit (some of the
+    // batch is still waiting) and it really was reached (the tick did not
+    // simply run out of work).
+    expect(resolved.length).toBeGreaterThan(0);
+    expect(resolved.length).toBeLessThan(REQUEST_COUNT);
+    expect(queue.size()).toBe(REQUEST_COUNT - resolved.length);
+
+    const perRequest = resolved.map((outcome) => outcome.expansions);
+    const spent = perRequest.reduce((sum, expansions) => sum + expansions, 0);
+    expect(spent).toBeGreaterThanOrEqual(WORK_BUDGET);
+
+    // The ceiling itself. The loop admits a request while `usedBudget` is
+    // still under budget, so everything *before* the last one it took must
+    // have cost less than the budget in total -- that sum is `usedBudget` as
+    // it stood when the last request was let in.
+    const beforeTheLast = perRequest.slice(0, -1).reduce((sum, expansions) => sum + expansions, 0);
+    expect(beforeTheLast, 'a tick expanded more nodes than its budget allowed').toBeLessThan(WORK_BUDGET);
+
+    // And the unit: every leg in this fixture costs many expansions, so a
+    // budget spent one-per-request would be counting the wrong thing.
+    expect(Math.min(...perRequest)).toBeGreaterThan(1);
+  });
+
+  /**
+   * Where the ceiling actually sits. #416 hardened what the budget is
+   * *denominated in*; the comparison that stops the loop is still an
+   * inclusive one, and nothing has ever been handed the one budget that
+   * separates `>=` from `>`. The case above asserts
+   * `beforeTheLast < WORK_BUDGET`, which a `>` only violates when the running
+   * total lands on 200 exactly -- it does not -- so measured at 83d9616,
+   * weakening `usedBudget >= params.workBudget` to `>` left this file,
+   * `navigation-path-request-queue.test.ts` and `navigation-system.test.ts`
+   * green, 34/34. What that mutation ships is one further request's whole
+   * expansion, every tick, above the declared ceiling.
+   *
+   * The budget here is **measured rather than written out** because a literal
+   * cannot land on the boundary: what a leg costs is the router's business and
+   * changes with it. That measurement is an *input*, not an expected value --
+   * every assertion below is a literal count of requests -- so this is not a
+   * fixture supplying both sides of its own comparison. The reference run is
+   * the same fixture with the same enqueue order and its own cold caches, and
+   * `processTick` sorts once before spending anything, so the request it
+   * serves first and what that costs are identical in all three runs; the
+   * assertion that the boundary run's one outcome cost exactly `firstCost`
+   * fails loudly if that ever stops being true.
+   */
+  it('stops the tick at the budget rather than one request past it', () => {
+    const reference = drainOneTick(100_000);
+    expect(reference.resolved).toHaveLength(REQUEST_COUNT); // the reference really did see the whole batch
+    const firstCost = reference.resolved[0]?.expansions;
+    const secondCost = reference.resolved[1]?.expansions;
+    if (firstCost === undefined || secondCost === undefined) throw new Error('The reference run must resolve at least two requests.');
+    // Non-degeneracy: a leg that cost one expansion, or a second leg that cost
+    // none, would make `>=` and `>` agree here and the boundary untestable.
+    expect(firstCost).toBeGreaterThan(1);
+    expect(secondCost).toBeGreaterThan(0);
+
+    // Budget == what the first request spends. `usedBudget` reaches the budget
+    // exactly, and the tick must stop there.
+    const atBudget = drainOneTick(firstCost);
+    expect(atBudget.resolved, 'a tick whose budget is exactly spent must stop').toHaveLength(1);
+    expect(atBudget.resolved[0]?.expansions).toBe(firstCost);
+    expect(atBudget.queue.size()).toBe(REQUEST_COUNT - 1);
+
+    // One unit of budget above it, and the second request is admitted -- so
+    // the cut above is the budget biting at its boundary and not the batch
+    // running out or some other stop condition.
+    const justOver = drainOneTick(firstCost + 1);
+    expect(justOver.resolved).toHaveLength(2);
+  });
+
+  it('admits more requests when the budget is raised and fewer when it is lowered', () => {
+    // The budget is the *cause* of the cut rather than a coincidence of the
+    // batch: the same sixteen requests, three budgets, monotonically more work
+    // done.
+    const small = drainOneTick(50);
+    const medium = drainOneTick(WORK_BUDGET);
+    const large = drainOneTick(100_000);
+
+    expect(small.resolved.length).toBeLessThan(medium.resolved.length);
+    expect(medium.resolved.length).toBeLessThan(large.resolved.length);
+    expect(large.resolved).toHaveLength(REQUEST_COUNT); // a budget nothing can exhaust drains the batch
+    expect(large.queue.size()).toBe(0);
+  });
+});

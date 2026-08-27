@@ -28,7 +28,7 @@ import type { HudZoningNoticeViewModel } from './hud/view-model';
  * would be in the DOM and painted at no viewport, which is exactly the defect
  * #220 moved "simulation unavailable" out of the alerts list to fix.
  *
- * ## Three fields, and no room id
+ * ## Three fields out of four, and no room id
  *
  * The notice carries two enums and two integers and no room id at all, so this
  * function invents nothing and looks nothing up. `requirement` says what the

@@ -12,12 +12,33 @@ import type { SparseWorld } from '../world/sparse-world';
  * boundary is its whole frontier -- so a `sealed` answer is a true statement
  * about the tiles inside it.
  *
- * It is **not** a region-enclosure query, and the difference is a false
- * negative rather than a false positive. A rectangle drawn strictly inside a
- * larger sealed building, with no partition walls of its own, is reported
- * `open` here while being topologically indoors. Answering *that* needs the
- * enclosing region rather than the rectangle, which nothing in this
- * repository computes:
+ * ## What `enclosed` means, and why that settles whether this is narrow
+ *
+ * **This section used to call the difference below a false negative, and it is
+ * now a definition.** It said: this is not a region-enclosure query, a
+ * rectangle drawn strictly inside a larger sealed building with no partition
+ * walls of its own is reported `open` while being topologically indoors, and
+ * "the narrowness is why nothing *refuses* a room on it".
+ *
+ * The owner has ruled that `zone` must refuse an open room (issue #446's third
+ * open question; the ADR "Must a zoned room be enclosed" is the decision). What
+ * that ruling settles is not only the outcome but the *question*: a room
+ * definition's `enclosed` requirement now means **this room's own boundary is
+ * closed**, not "this room is topologically indoors". Against that question
+ * this function is not a narrow proxy for something better -- it is the exact
+ * answer, with no false negatives and no false positives, in
+ * `2 * (width + height)` edge reads.
+ *
+ * The consequence is a rule about layout rather than a defect: a rectangle
+ * inside a larger sealed hall, with no partitions of its own, is not an
+ * enclosed room and `RoomZoningService.zone` refuses it `not-enclosed`.
+ * Adjacent rooms may share a wall -- room A's east boundary and room B's west
+ * boundary are the same stored edge -- so this is subdivision, not
+ * double-walling.
+ *
+ * The paragraphs below are kept because they are still true and still bound
+ * what a *region* query would cost, should a future decision want the
+ * topological reading back as a widening. Nothing here waits on them any more:
  *
  * - `TopologyManager` (`./topology.ts`) does **region detection**, not
  *   enclosure. It flood-fills each chunk across zero-valued edges, joins the
@@ -33,9 +54,12 @@ import type { SparseWorld } from '../world/sparse-world';
  *   `registerSystem` block beside it, so no tick recomputes it and
  *   `getTopologyId` answers `0` for every tile in a running session.
  *
- * So this module deliberately implements the narrower predicate it can state
- * honestly, and the narrowness is why nothing *refuses* a room on it -- see
- * `RoomZoningService.zone`.
+ * So this module implements the predicate it can state honestly, and since the
+ * ruling above that predicate *is* the rule -- `RoomZoningService.zone` refuses
+ * an `enclosed` room whose answer here is `open`. Only `enclosed`: `outdoors`
+ * (`room.yard`) and `none` accept any perimeter, because a walled exercise yard
+ * is an ordinary prison yard and because `outdoors` is a claim about a roof,
+ * which this world model does not represent at all.
  *
  * ## A sealed room can have a door in it, and that is recent
  *

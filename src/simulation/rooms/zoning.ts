@@ -1,5 +1,6 @@
 import { defaultRoomContentRegistry, type RoomCatalogDefinition } from '../../content/room-catalog';
 import type { ContentRegistry } from '../../content/registry';
+import { roomBoundsOf, roomInstanceContaining } from '../objects/room-capacity';
 import type { RoomInstance, RoomInstanceRegistry } from '../prisoners/room-instance-registry';
 import { canBuildAt, type BuildabilityRequirement } from '../world/buildability';
 import { tileCoordinate, tileToChunk, type TilePosition } from '../world/coordinates';
@@ -57,9 +58,18 @@ import {
  * rectangle then names the instance (`roomInstanceContaining`,
  * `src/simulation/objects/room-capacity.ts`). That is the one new persisted
  * field ADR 0028 decision 6 pays for, and it is what gives every rule about a
- * room's contents a domain. Two adjacent same-type rectangles are still two
- * instances and `unzone` still treats them as one region -- neither is changed
- * here.
+ * room's contents a domain.
+ *
+ * **Issue #337 is the second thing that rectangle pays for.** `unzone` used to
+ * resolve a covered tile to a room *type* and clear the connected run of it, so
+ * two adjacent same-type rectangles -- two instances at the `zone` end since
+ * this service existed -- were one region at the removal end, and clipping a
+ * corner off one of them took both. It now resolves each covered tile through
+ * `roomInstanceContaining` and clears that instance's rectangle, so both ends
+ * agree. The plane is unchanged and still carries no instance id: the issue
+ * proposed adding one per tile, which the rectangle makes unnecessary, and a
+ * second persisted copy of a derivable fact is the shape ADR 0028 decision 6
+ * removed rather than one to add back.
  *
  * ## Capacity and object capabilities: derived, and no longer aspirational
  *
@@ -188,6 +198,13 @@ export interface ZoneRoomRequest {
  * above `MAX_ZONE_DIMENSION_TILES`), and it is the same refusal whichever room
  * type asked for it, whereas this one depends entirely on which room the
  * player picked.
+ *
+ * `not-enclosed` is the eighth, and it is a content refusal of the same kind:
+ * it fires only for a definition that authors an `enclosed` requirement, so the
+ * same rectangle is refused for a cell and accepted for a yard. It is the one
+ * member here that carries a *ruling* rather than a mechanism -- see the
+ * enclosure evaluation in `zone` for what changed, and the ADR
+ * "Must a zoned room be enclosed" for why.
  */
 export type ZoneRoomRefusalReason =
   | 'unknown-room-type'
@@ -196,14 +213,34 @@ export type ZoneRoomRefusalReason =
   | 'out-of-bounds'
   | 'unowned-land'
   | 'overlaps-existing-room'
-  | 'duplicate-instance-id';
+  | 'duplicate-instance-id'
+  | 'not-enclosed';
 
 export interface ZoneRoomRefusal {
   readonly kind: 'refused';
   readonly reason: ZoneRoomRefusalReason;
   readonly request: ZoneRoomRequest;
-  /** The tile that decided a per-tile refusal (`out-of-bounds`, `unowned-land`, `overlaps-existing-room`); absent for a refusal about the request as a whole. */
+  /**
+   * The tile that decided a per-tile refusal (`out-of-bounds`, `unowned-land`,
+   * `overlaps-existing-room`), or the tile carrying the first perimeter gap on
+   * a `not-enclosed` one; absent for a refusal about the request as a whole.
+   */
   readonly tile?: TilePosition;
+  /**
+   * Which of `tile`'s two stored edges is the gap, on a `not-enclosed` refusal.
+   *
+   * The world keeps a north edge and a west edge per tile, so `tile` alone does
+   * not say which is missing -- and a gap on the rectangle's *south* or *east*
+   * boundary is stored on the neighbour, so the pair is the only way to name
+   * the wall the player has to build. Absent on every other reason, none of
+   * which has an edge to name.
+   *
+   * Diagnosis only, exactly like `tile`: what crosses the worker boundary is
+   * the reason and nothing else (`../refusals/refusal-log.ts` deliberately
+   * carries no coordinates), so this is read from `recentRefusals` inside the
+   * worker.
+   */
+  readonly edge?: 'north' | 'west';
   readonly tick: number;
 }
 
@@ -214,9 +251,13 @@ export interface ZoneRoomAccepted {
    * Whether the rectangle that was just zoned is walled in along its own
    * perimeter, and what the room definition asks for.
    *
-   * Carried on the *accepted* outcome and not used to refuse one. See
-   * `zone`'s comment on the enclosure evaluation for why, and
-   * `./enclosure.ts` for what the answer does and does not mean.
+   * **This used to say "carried on the accepted outcome and not used to refuse
+   * one", and that is no longer true.** An `enclosed` definition against an
+   * `open` rectangle is now `not-enclosed` and never reaches here, so on an
+   * accepted outcome the pair is either `sealed` against anything, or `open`
+   * against `outdoors`/`none`. It is still carried, because the pair is what
+   * the Rooms panel's readout renders and because `outdoors` is a real reading
+   * the player is entitled to see confirmed.
    */
   readonly enclosure: RoomEnclosure;
   readonly enclosureRequirement: RoomEnclosureRequirement;
@@ -315,6 +356,18 @@ const ZONING_REQUIREMENT: BuildabilityRequirement = {
   requiresWalkableTerrain: false,
   allowWater: true,
 };
+
+/**
+ * The key a tile takes in `unzone`'s visited set.
+ *
+ * One function rather than the literal repeated at each site, because the two
+ * collectors below write into the same `Map` and a key that disagreed between
+ * them would let a tile be visited twice -- which is the one thing that set
+ * exists to prevent.
+ */
+function tileKeyOf(tile: TilePosition): string {
+  return `${tile.x},${tile.y}`;
+}
 
 /** The id an instance zoned at `anchor` gets. Exported because a test asserting reproducibility must not restate the format. */
 export function roomInstanceIdFor(roomCatalogId: string, anchor: TilePosition): string {
@@ -427,6 +480,61 @@ export class RoomZoningService {
       }
     }
 
+    /*
+     * The enclosure requirement, enforced -- and this is the sentence that
+     * changed.
+     *
+     * It used to read "evaluated, and deliberately not enforced ... It refuses
+     * nothing, and that is the decision rather than caution", and it gave two
+     * reasons. The owner has ruled the other way (issue #446's third open
+     * question): `roomPerimeterEnclosure` is not to stay advisory and `zone`
+     * must refuse an open room. The ADR "Must a zoned room be enclosed" is the
+     * decision; what follows is only what a reader of this function needs.
+     *
+     * **What the ruling actually changes is the meaning of `enclosed`.** The
+     * old reason for not refusing was that this check is *narrower* than
+     * enclosure: a rectangle drawn inside a larger sealed building, with no
+     * partitions of its own, reads `open` while being topologically indoors, so
+     * refusing on it would block a designation that reading calls legitimate.
+     * That reading is now not in force. `enclosed` means "this room's own
+     * boundary is closed", and against that question this function is not a
+     * narrow proxy but an exact answer -- which is why the region-level query
+     * `./enclosure.ts` names as the thing to build first is no longer a
+     * prerequisite for anything here. The cost is stated rather than hidden:
+     * an open-plan room inside a sealed hall is no longer zonable, and every
+     * room must be walled (adjacent rooms may share a wall, so this is
+     * subdivision and not double-walling).
+     *
+     * **Only `enclosed`.** `outdoors` (`room.yard`, the one shipped room that
+     * authors it) and `none` accept any perimeter. A walled exercise yard is
+     * the archetype rather than the exception, and `outdoors` is a claim about
+     * a *roof*, which this world model does not have -- so the mirror-image
+     * refusal would answer the question with the wrong instrument.
+     *
+     * **Last, and before any write.** Not on cost: this is `2 * (width +
+     * height)` edge reads against the loop above's `width * height` tiles, so
+     * for a 2x3 cell it is the *more* expensive of the two and the two cross
+     * over around 4x4. It is last because `roomPerimeterEnclosure` reads the
+     * north edge of the row below the rectangle and the west edge of the
+     * column to its right, and `getTopEdge`/`getLeftEdge` answer `0` for a
+     * chunk that does not exist -- so for a request reaching outside the
+     * materialised world it would name a gap on a tile that is not there.
+     * `out-of-bounds` has to win, and so does `unowned-land`: it is the same
+     * rule that puts `below-minimum-size` ahead of the per-tile checks, which
+     * is that the player is told the thing they can act on. Sending somebody to
+     * wall land they do not own is worse advice than the truth about the land.
+     *
+     * One call, before the write, serving both outcomes -- the refusal here and
+     * the notice below. It used to run *after* the plane was painted, which was
+     * harmless (`setZoning` writes the zoning plane, never an edge layer) and
+     * is not a place a refusal can be returned from.
+     */
+    const enclosure = roomPerimeterEnclosure(this.world, request);
+    const requirement = enclosureRequirement(definition);
+    if (requirement === 'enclosed' && enclosure.enclosure === 'open') {
+      return this.refuse('not-enclosed', request, tick, enclosure.gap?.tile, enclosure.gap?.edge);
+    }
+
     for (let offsetY = 0; offsetY < request.height; offsetY += 1) {
       for (let offsetX = 0; offsetX < request.width; offsetX += 1) {
         this.world.setZoning(
@@ -460,45 +568,21 @@ export class RoomZoningService {
     const instance = this.roomInstances.getById(instanceId) ?? registered;
 
     /*
-     * The enclosure requirement, evaluated -- and deliberately not enforced.
+     * The notice, from the answer computed before the write.
      *
-     * `RoomRequirement.type` has included `'enclosed'` and `'outdoors'` since
-     * #17 and all 18 definitions carry one of them; nothing in `src/` had ever
-     * evaluated either, so a cell zoned in the middle of open ground was
-     * accepted in silence. `roomPerimeterEnclosure` is the honest half of
-     * that: it answers whether *this rectangle's own perimeter* is walled,
-     * which is a real property of the world read from the two edge layers.
+     * The evaluation itself, and the ruling that made it a refusal rather than
+     * a readout, are above the write. What is left here is publication: the
+     * pair goes onto the notice, reaches the Rooms panel through
+     * `simulation/status-counts`, and tells the player what they designated.
      *
-     * **It refuses nothing, and that is the decision rather than caution.**
-     * Two facts make a refusal wrong here, and `./enclosure.ts` records both
-     * in full:
-     *
-     *   - The check is narrower than enclosure. A room drawn inside a larger
-     *     sealed building with no partitions of its own reads `open` while
-     *     being indoors, so refusing on it would block a legitimate
-     *     designation. The wider question needs region-level enclosure, and
-     *     `TopologyManager` does region *detection* with no enclosure query
-     *     and no caller for its `update()`.
-     *   - Refusing every `'enclosed'` room that is not sealed would refuse
-     *     rooms a player can zone today, on a check that runs at *designation
-     *     time* while the walls are usually built afterwards. (This bullet used
-     *     to give a stronger reason -- that a sealed room could not have a door,
-     *     because `edgeNumericIdFor` wrote `0` for `door-wooden` and a completed
-     *     door order changed nothing in the world. That stopped being true when
-     *     doors became buildable: a door writes `DOOR_EDGE_NUMERIC_ID` and
-     *     registers itself, so a sealed room with a way in is now expressible.
-     *     The decision not to refuse is unchanged, and the reason above is the
-     *     one that survives.)
-     *
-     * So the answer is *reported* instead: it goes onto the notice below,
-     * reaches the Rooms panel through `simulation/status-counts`, and the
-     * player is told what they designated rather than stopped from
-     * designating it. The day something gates on enclosure -- an occupancy
-     * rule, an intake requirement -- this is the function it should ask, and
-     * the region query is the thing to build first.
+     * On an accepted zoning the pair can now only be `sealed` against anything,
+     * or `open` against `outdoors`/`none` -- `open` against `enclosed` was
+     * refused above. That is why the panel's `hud.rooms.enclosure-open-required`
+     * warning was deleted with this change rather than left as a branch nothing
+     * can reach: the sentence it carried is now
+     * `hud.alert.refusal.zone.not-enclosed`, said at the moment the player can
+     * still act on it.
      */
-    const enclosure = roomPerimeterEnclosure(this.world, request);
-    const requirement = enclosureRequirement(definition);
     this._lastNotice = {
       sequence: (this._lastNotice?.sequence ?? 0) + 1,
       tick,
@@ -532,41 +616,48 @@ export class RoomZoningService {
    *
    * ## What "the rooms the rectangle touches" means
    *
-   * Not "the tiles inside the rectangle". Each zoned tile the rectangle
-   * covers is grown into the connected run of tiles holding the **same room
-   * numeric id**, four-connected, and that whole run is cleared. Two
-   * consequences, both deliberate and both stated rather than discovered:
+   * Not "the tiles inside the rectangle". Each zoned tile the rectangle covers
+   * is resolved to the **room instance** that contains it, and that instance's
+   * whole rectangle is cleared. Two consequences, both deliberate and both
+   * stated rather than discovered:
    *
    *   - **A partial drag removes a whole room.** Clipping a corner off a 6x6
    *     canteen clears all 36 tiles. The alternative -- clearing only the
    *     covered tiles -- leaves the plane painted where the registry has no
    *     instance, or an instance whose anchor tile is no longer zoned, and
    *     that inconsistency is exactly the state `zone` is careful never to
-   *     create. Growing to the region keeps this module's invariant intact:
-   *     the plane is painted if and only if an instance is registered, because
-   *     a room's tiles are a contiguous rectangle of one type and therefore
-   *     always lie in one region together with their anchor.
-   *   - **Two adjacent rooms of the same type are removed together**, because
-   *     they are one region in a plane that stores a type per tile and no
-   *     instance id. That is the same limitation `zone` already has in the
-   *     other direction -- two adjacent same-type rectangles are two separate
-   *     `RoomInstance`s rather than one L-shaped room -- and neither is
-   *     changed here. Both end at the same place: the plane would have to
-   *     carry an instance id per tile, which is a persistence-format decision
-   *     (`docs/HUD_PROJECTIONS.md` gap 11) rather than something to settle
-   *     inside a command handler.
+   *     create. Growing to the instance keeps this module's invariant intact:
+   *     the plane is painted if and only if an instance is registered.
+   *   - **Two adjacent rooms of the same type are *not* removed together**
+   *     (issue #337). They are two instances at the `zone` end and now two at
+   *     this end too, because what resolves a tile is the instance's rectangle
+   *     rather than the type painted in the plane. This used to be the
+   *     opposite statement, and it cost the player twice over: a mis-drag
+   *     removed a neighbour they meant to keep, and an empty room beside an
+   *     occupied one could not be removed at all, because the occupancy check
+   *     below ran over the whole reached region. `removedInstanceIds` stays
+   *     plural -- a drag can genuinely cover several rooms -- but a drag that
+   *     covers one room now removes one room. See `collectRemovableRegion` for
+   *     why this needed nothing new in the save format.
    *
    * ## Determinism and bounds
    *
    * The rectangle is walked in the same canonical order `zone` uses (ascending
-   * y then x) and the flood fill uses one visited set for the whole command, so
-   * the *set* of cleared tiles is a function of the request and of the world.
-   * That set is then **sorted back into that same order** before anything reads
-   * it, because the visited set's own iteration order is the order the fill
-   * happened to reach tiles in -- see the comment at the sort. Total work is
-   * bounded by the rectangle's area plus the tiles actually cleared, never by
-   * the size of the world, and `removedInstanceIds` is sorted, so two runs of
-   * the same commands produce an identical outcome.
+   * y then x) and both collectors share one visited set for the whole command,
+   * so the *set* of cleared tiles is a function of the request and of the
+   * world. That set is then **sorted back into that same order** before
+   * anything reads it, because the visited set's own iteration order is the
+   * order the tiles happened to be reached in -- see the comment at the sort.
+   * Resolving a tile to its instance is deterministic for the same reason:
+   * `roomInstanceContaining` scans `allByRoomCatalogId`, which is sorted by
+   * instance id rather than in registration order.
+   *
+   * Total work is bounded by the rectangle's area plus the tiles actually
+   * cleared, never by the size of the world. A tile already collected is
+   * skipped before it is resolved, so the number of instance lookups is bounded
+   * by the number of *rooms* the rectangle covers rather than by its area, and
+   * `removedInstanceIds` is sorted, so two runs of the same commands produce an
+   * identical outcome.
    *
    * ## Occupancy
    *
@@ -601,10 +692,16 @@ export class RoomZoningService {
     const tiles = new Map<string, TilePosition>();
     for (let offsetY = 0; offsetY < request.height; offsetY += 1) {
       for (let offsetX = 0; offsetX < request.width; offsetX += 1) {
-        this.collectZonedRegion(
-          { x: tileCoordinate(request.x + offsetX), y: tileCoordinate(request.y + offsetY) },
-          tiles,
-        );
+        const tile: TilePosition = {
+          x: tileCoordinate(request.x + offsetX),
+          y: tileCoordinate(request.y + offsetY),
+        };
+        // A tile already collected is a tile whose room is already going, so
+        // it needs no second resolution. This is what keeps the cost of a
+        // 64x64 drag proportional to the *rooms* it covers rather than to its
+        // area times the registry.
+        if (tiles.has(tileKeyOf(tile))) continue;
+        this.collectRemovableRegion(tile, tiles);
       }
     }
 
@@ -669,8 +766,82 @@ export class RoomZoningService {
   }
 
   /**
+   * Adds every tile that has to go because the removal covers `origin`.
+   *
+   * ## The instance, not the region (issue #337)
+   *
+   * A covered tile is resolved to the **room instance** that contains it, and
+   * that instance's own rectangle is what gets cleared. That is the whole of
+   * the fix: `unzone` used to grow each covered tile into its connected
+   * *same-type* run, so two cells the player zoned as two separate drags were
+   * one region in a plane that stores a type per tile, and clipping a corner
+   * off one removed both -- or, when the neighbour held a resident, refused the
+   * removal of the empty one. Both readings followed from resolving in types.
+   *
+   * **Nothing new is persisted for this, and the plane is unchanged.** The
+   * issue proposed storing an instance id per tile, which would be a
+   * save-schema decision; it is not needed, because a `RoomInstance` has
+   * carried its rectangle since [ADR 0028](../../../docs/adr/0028-object-placement-and-derived-room-capacity.md)
+   * phase 1 and `roomInstanceContaining` (`../objects/room-capacity.ts`) is the
+   * function object placement already asks "which room is this tile in". A
+   * second copy of that fact in the plane could disagree with the rectangle it
+   * was derived from, which is exactly why ADR 0028 decision 6 *removed* the
+   * last persisted derived value from a room instance.
+   *
+   * The two consequences `unzone`'s own comment states are unchanged by this:
+   * a partial drag still removes the whole room it clipped, because the
+   * instance's whole rectangle is collected; and a drag that genuinely covers
+   * several rooms still removes all of them, because every covered tile is
+   * resolved.
+   *
+   * ## The tiles no instance claims
+   *
+   * A painted tile that resolves to no instance keeps the old flood fill, and
+   * that is not a leftover. Two states produce one: a V4 room instance records
+   * no rectangle (`roomBoundsOf` answers `undefined` and there is no honest
+   * default -- see `../objects/room-capacity.ts`), and a save written before
+   * zoning painted the plane can leave paint with no instance at all. Removal
+   * exists so that no designation is permanent, so those tiles must stay
+   * clearable; resolving them to nothing and leaving them would be the
+   * unremovable-room defect this command was built to close.
+   */
+  private collectRemovableRegion(origin: TilePosition, into: Map<string, TilePosition>): void {
+    if (this.world.getZoning(origin) === 0) return;
+
+    const instance = roomInstanceContaining(this.world, this.roomInstances, origin, this.rooms);
+    if (instance === undefined) {
+      this.collectUnclaimedZonedRegion(origin, into);
+      return;
+    }
+
+    // Non-`undefined` by construction: `roomInstanceContaining` answers an
+    // instance only when its rectangle contains the tile, and a rectangle is
+    // what `roomBoundsOf` reads.
+    const bounds = roomBoundsOf(instance);
+    if (bounds === undefined) return;
+    for (let y = bounds.y; y < bounds.y + bounds.height; y += 1) {
+      for (let x = bounds.x; x < bounds.x + bounds.width; x += 1) {
+        const tile: TilePosition = { x: tileCoordinate(x), y: tileCoordinate(y) };
+        // Only what is actually painted. `setZoning` *materialises* a chunk, so
+        // writing a zero over a tile that already holds one would grow the
+        // world on the way to removing nothing -- the same reason `zone`
+        // checks every tile before it writes any.
+        if (this.world.getZoning(tile) === 0) continue;
+        into.set(tileKeyOf(tile), tile);
+      }
+    }
+  }
+
+  /**
    * Adds `origin` and every tile four-connected to it through the same room
-   * numeric id to `into`.
+   * numeric id to `into`, **stopping at any tile a room instance claims**.
+   *
+   * The fill `unzone` used to run over every covered tile, now reached only for
+   * paint no instance owns (see `collectRemovableRegion`). The stop condition
+   * is what keeps it from being the old defect wearing a smaller hat: an
+   * unclaimed run touching a real room must not drag that room's tiles out from
+   * under it, because clearing the plane where an instance is registered breaks
+   * this module's invariant in the direction `zone` is careful never to.
    *
    * Walls are deliberately *not* barriers here. The plane is what the player
    * sees tinted and what `zone` refuses to overlap, so removal has to be able
@@ -682,7 +853,7 @@ export class RoomZoningService {
    * a zoned run cannot exceed the plane's own painted extent, which no single
    * `zone` can grow beyond `MAX_ZONE_DIMENSION_TILES` squared.
    */
-  private collectZonedRegion(origin: TilePosition, into: Map<string, TilePosition>): void {
+  private collectUnclaimedZonedRegion(origin: TilePosition, into: Map<string, TilePosition>): void {
     const zoning = this.world.getZoning(origin);
     if (zoning === 0) return;
 
@@ -692,9 +863,10 @@ export class RoomZoningService {
       // what this produces is the *set* of tiles reached, cleared afterwards
       // in a plane where every write is the same value.
       const tile = stack.pop() as TilePosition;
-      const key = `${tile.x},${tile.y}`;
+      const key = tileKeyOf(tile);
       if (into.has(key)) continue;
       if (this.world.getZoning(tile) !== zoning) continue;
+      if (roomInstanceContaining(this.world, this.roomInstances, tile, this.rooms) !== undefined) continue;
       into.set(key, tile);
       stack.push(
         { x: tileCoordinate(tile.x + 1), y: tile.y },
@@ -744,13 +916,19 @@ export class RoomZoningService {
     request: ZoneRoomRequest,
     tick: number,
     tile?: TilePosition,
+    edge?: 'north' | 'west',
   ): ZoneRoomRefusal {
     const refusal: ZoneRoomRefusal = {
       kind: 'refused',
       reason,
       request: { ...request },
       tick,
+      // Spread rather than assigned, because `exactOptionalPropertyTypes` makes
+      // `{ tile: undefined }` a different type from `{}` -- and because a
+      // refusal that carried an explicit `undefined` edge would read as "the
+      // gap has no edge" rather than "this reason names none".
       ...(tile === undefined ? {} : { tile }),
+      ...(edge === undefined ? {} : { edge }),
     };
     this.refusals.push(refusal);
     if (this.refusals.length > MAX_RECORDED_ZONING_REFUSALS) this.refusals.shift();

@@ -44,12 +44,52 @@ import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from 
  *
  * ### Why the seed is passed rather than defaulted
  *
- * `restoreSimulationRuntime`'s `masterSeed` defaults to `0` and both
- * production restores take that default, because `masterSeed` is not in the
- * save payload at all (DET-03, reported separately and deliberately not
- * changed here -- it is a save-schema decision). Passing the real seed keeps
- * these cases measuring one defect: with `0` they would also fail, for the
- * second reason, and would stop being evidence about this one.
+ * **This paragraph used to read:** *"`restoreSimulationRuntime`'s `masterSeed`
+ * defaults to `0` and both production restores take that default, because
+ * `masterSeed` is not in the save payload at all (DET-03, reported separately
+ * and deliberately not changed here -- it is a save-schema decision). Passing
+ * the real seed keeps these cases measuring one defect: with `0` they would
+ * also fail, for the second reason, and would stop being evidence about this
+ * one."*
+ *
+ * **#412 falsified its premise on this branch, and the correction is kept
+ * beside it rather than overwriting it**, because a correction is no more
+ * durable than the claim it corrected and a reader needs to see which
+ * direction moved. `masterSeed` **is** in the save payload
+ * (`savePayloadV5Schema.masterSeed`, `src/persistence/save-schema.ts`) and in
+ * the bundle (`SessionSnapshotBundle.masterSeed`), and production restores
+ * take the recorded value: `restoreSimulationRuntime` opens with
+ * `createNewSimulationRuntime(bundle.masterSeed ?? masterSeed, ...)`, so the
+ * *bundle* wins wherever it records one.
+ *
+ * ### What the `masterSeed` parameter's authority actually is, measured
+ *
+ * Every call in this file passes `SCENARIO_SEED` against a bundle produced by
+ * `captureSessionSnapshot` of a runtime built at `SCENARIO_SEED`, so the
+ * bundle carries `10` and the argument is `10`. Instrumenting
+ * `restoreSimulationRuntime` and running this file reported
+ * `bundle-agrees value=10` four times and nothing else: **the argument here is
+ * inert, and these cases would read identically without it.** It is kept
+ * because it states the intent -- these cases are about stream ownership, not
+ * about seed plumbing -- and because it costs nothing.
+ *
+ * The parameter is *not* inert in general, and it is worth being exact rather
+ * than tidy about that. The same instrumentation over the whole suite found:
+ *
+ * - **no production caller passes it.** `runtime-host.ts` and
+ *   `simulation/worker/state-machine.ts` both call
+ *   `restoreSimulationRuntime(bundle)`, so production always takes the `= 0`
+ *   default -- which is the right value for a save that records none, by the
+ *   corpus fact ADR 0038 §4 states.
+ * - **36 test calls reach it with a bundle carrying no `masterSeed` and a
+ *   non-zero argument**, where it alone decides the seed: 20 at `0xbeef`
+ *   (`tests/integration/incident-response-restore.test.ts`, whose
+ *   `envelopeFor` helper does not forward `masterSeed` into the envelope), 8
+ *   at 10, 4 at 11, 3 at 728775 and 1 at 852001.
+ *
+ * So the parameter is the default for a bundle that records no seed, it is
+ * reachable, and it is overridden -- never consulted -- wherever the bundle
+ * does record one.
  */
 
 const HIRE_TILE: TilePosition = { x: tileCoordinate(0), y: tileCoordinate(0) };

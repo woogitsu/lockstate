@@ -55,6 +55,7 @@ export class SessionController {
   private readonly autosave: AutosaveScheduler;
   private session: ActiveSession | undefined;
   private lastSaveResult: SaveResult | undefined;
+  private retirementFailure: unknown;
 
   public constructor(
     private readonly repository: PrisonSaveRepository,
@@ -83,6 +84,19 @@ export class SessionController {
 
   public getLastSaveResult(): SaveResult | undefined {
     return this.lastSaveResult;
+  }
+
+  /**
+   * The error from the last load that restored a prison and then could not
+   * delete the generations it had refused, if there was one.
+   *
+   * Reported rather than swallowed: `loadPrison` deliberately does not fail a
+   * successful load over housekeeping (see there), and an error nothing can
+   * observe is indistinguishable from a bug that stopped retiring anything.
+   * Cleared by the next load that gets that far.
+   */
+  public getLastRetirementFailure(): unknown {
+    return this.retirementFailure;
   }
 
   public hasPendingAutosave(): boolean {
@@ -168,40 +182,57 @@ export class SessionController {
    * `SparseWorld.fromSnapshot`'s semantic checks — used to be returned as
    * `current` and stay current for ever, leaving the prison permanently
    * unloadable by the very mechanism the repository's rollback exists to
-   * provide. So a snapshot the host *rejects* demotes that generation and
-   * the next-newest one is tried, until one restores or the repository
-   * refuses to give up the last copy.
+   * provide. So a snapshot the host *rejects* is set aside and the
+   * next-newest generation is tried, until one restores or there is nothing
+   * left to try.
    *
-   * **The walk stops rather than emptying the window.** A rejected snapshot
-   * is not proof that the save is bad: the worker labels a bug in this
-   * build's own restore code `snapshot-incompatible` exactly as it labels a
-   * genuinely bad payload (`SimulationWorkerStateMachine.handleInitialize`
-   * catches every exception out of `restoreSimulationRuntime`), and such a
-   * cause is deterministic, so it rejects every generation this loop offers
-   * it. Demoting each one in turn deleted every save the player had --
-   * three generations to zero in one load, measured on v0.0.112. So
-   * `demoteGeneration` refuses to delete the last retained generation and
-   * reports that refusal, and this walk treats the refusal as its end: the
-   * prison is unloadable *by this build*, which is what
-   * `no-valid-generation` already says, and the save is still there for a
-   * fixed one. See `DemotionResult`.
+   * **A refused generation is retired only once a different one has actually
+   * restored** (#403 (d)). A rejected snapshot is not proof that the save is
+   * bad: the worker labels a bug in this build's own restore code
+   * `snapshot-incompatible` exactly as it labels a genuinely bad payload
+   * (`SimulationWorkerStateMachine.handleInitialize` catches every exception
+   * out of `restoreSimulationRuntime`), and such a cause is deterministic, so
+   * it rejects every generation this loop offers it. Retiring each one as it
+   * was refused deleted every save the player had -- three generations to
+   * zero in one load, measured on v0.0.112, and all but one after
+   * `demoteGeneration` gained its floor. Nothing is retired until a
+   * *different* generation has restored, so a deterministic cause now costs
+   * **no** generation at all: the prison is unloadable by this build, which
+   * is what `no-valid-generation` already says, and every save is still there
+   * for a build that can read it.
    *
-   * Only `SnapshotRestoreRejectedError` demotes anything. A host that timed
-   * out, was never started or has gone away propagates unchanged and costs
-   * no generation: the save may be perfectly good and deleting it would be
-   * the more expensive mistake.
+   * That is not a new rule; it is the one the decode path has always
+   * followed. `loadCurrent` walks past a generation that fails to decode and
+   * retires it only through `recoverToGeneration`, which runs after a later
+   * generation has decoded — so a window in which nothing decodes loses
+   * nothing. This walk now says the same about restoring.
+   *
+   * A generation that *is* retired here has earned it in the strongest sense
+   * available: another generation restored through the same code on the same
+   * build moments later, so what is wrong is that save. `demoteGeneration`
+   * still refuses to delete the last retained copy (see `DemotionResult`),
+   * which is now a second belt — the restored generation is always retained,
+   * so the window can no longer be walked empty in the first place.
+   *
+   * Only `SnapshotRestoreRejectedError` costs a generation anything. A host
+   * that timed out, was never started or has gone away propagates unchanged:
+   * the save may be perfectly good and deleting it would be the more
+   * expensive mistake.
    */
   public async loadPrison(prisonId: string): Promise<SessionLoadOutcome> {
-    const demoted = new Set<string>();
+    // Insertion-ordered, so this is both the set `loadCurrent` skips and the
+    // newest-first order the refused generations are retired in below.
+    const refused = new Set<string>();
 
     for (;;) {
-      const result = await this.repository.loadCurrent(prisonId);
+      const result = await this.repository.loadCurrent(prisonId, { skip: refused });
       if (!result.ok) return { ok: false, reason: result.reason };
-      if (demoted.has(result.generationId)) {
-        // Demotion is what makes this walk terminate. If a generation comes
-        // back after being demoted the repository did not retire it, and
-        // looping again would spin for ever inside a click handler.
-        throw new Error(`Save generation "${result.generationId}" was demoted and offered again; the prison cannot be loaded.`);
+      if (refused.has(result.generationId)) {
+        // The skip set is what makes this walk terminate: it only ever grows,
+        // so a repository that honours it runs out of candidates. One that
+        // offers a skipped generation back would spin for ever inside a click
+        // handler, so it is a contract violation and says so.
+        throw new Error(`Save generation "${result.generationId}" was refused and offered again; the prison cannot be loaded.`);
       }
 
       // The envelope's payload is structurally the session snapshot bundle;
@@ -218,24 +249,40 @@ export class SessionController {
         await this.host.startFromSnapshot(bundle);
       } catch (error) {
         if (!(error instanceof SnapshotRestoreRejectedError)) throw error;
-        const demotion = await this.repository.demoteGeneration(prisonId, result.generationId);
-        if (!demotion.demoted) {
-          // Nothing was retired, so there is no next candidate: either this
-          // was the player's last copy and the repository kept it (the
-          // floor), or the generation was already outside the retained
-          // window. Report the outcome a prison with nothing loadable in it
-          // already reports -- and leave what is on disk alone.
-          return { ok: false, reason: 'no-valid-generation' };
-        }
-        demoted.add(result.generationId);
+        // Set aside, not retired. Nothing on disk changes until something
+        // restores, so a walk that reaches the end of the window leaves the
+        // player with exactly what they had.
+        refused.add(result.generationId);
         continue;
       }
 
       this.adoptSession(prisonId, result.envelope.revision, result.envelope.createdAt);
 
+      // A different generation restored, which is what turns each refusal
+      // above from "this build cannot restore anything" into "this build
+      // cannot restore *that save*". Retire them newest-first, so the pointer
+      // `demoteGeneration` heals lands on the generation that just restored.
+      //
+      // After adoption, and failure-tolerant, because this is housekeeping
+      // and the load has already succeeded: the player's prison is restored
+      // and running, and a storage error while deleting a save that is known
+      // to be unrestorable must not be reported as a failed load. It costs
+      // one refused restore on the next load, which retires it then --
+      // the same self-healing the walk above is built on. (Before #403 (d)
+      // this call sat *ahead* of the successful restore, so a throw here
+      // could only fail a load that was failing anyway.)
+      this.retirementFailure = undefined;
+      try {
+        for (const refusedGenerationId of refused) {
+          await this.repository.demoteGeneration(prisonId, refusedGenerationId);
+        }
+      } catch (error) {
+        this.retirementFailure = error;
+      }
+
       return {
         ok: true,
-        recovered: demoted.size > 0 || result.outcome === 'recovered-previous',
+        recovered: refused.size > 0 || result.outcome === 'recovered-previous',
         scope: restoredScopeFor(bundle),
       };
     }
@@ -271,6 +318,12 @@ export class SessionController {
     const bundle = await this.host.capture();
     const timestamp = this.now();
     return createSaveEnvelope({
+      // The captured bundle's seed, never `this.masterSeed` (#412): that option
+      // is what a *new* prison is created with, and a session loaded from a
+      // save was seeded by whoever created it. Spread rather than passed
+      // straight through, so a host that reports no seed writes the same
+      // payload it wrote before the field existed.
+      ...(bundle.masterSeed === undefined ? {} : { masterSeed: bundle.masterSeed }),
       gameVersion: this.gameVersion,
       prisonId: session.prisonId,
       revision: session.revision + 1,

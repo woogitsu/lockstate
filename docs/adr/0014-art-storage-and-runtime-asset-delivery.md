@@ -170,3 +170,102 @@ Costs:
   That is one conditional request per atlas per five minutes, which is the
   correct price for being able to ship new art at all.
 - The deploy payload stays at 55 MB until the open question above is settled.
+
+## Amendment, 2026-08-27: "asserts this" covers two URLs out of a four-bullet list
+
+*This amends **the last bullet of §"Delivery and caching"**. No decision moves,
+and nothing in this ADR is false about `public/_headers`, `.gitattributes` or
+CI — all three re-verify exactly, and that is recorded below. What is over-stated
+is how much of §"Delivery and caching" the named verifier actually checks. The
+form is ADR 0029's amendment and ADR 0034 §9's: the old wording is quoted rather
+than overwritten.*
+
+*Status is untouched: this ADR remains **Accepted**. Read at `792bf94`
+(v0.0.121); every path and line below was opened on that tree, and the byte
+counts were computed from the Git LFS pointers' own `size` fields rather than
+from `du` on a pointer-only checkout.*
+
+### The bullet, and the two requests it makes
+
+§"Delivery and caching" ends:
+
+> `scripts/verify-deployment-preview.mjs` asserts this against the real workerd
+> preview, including that no response carries two cache lifetimes.
+
+"this" reads as the four bullets above it. `assertRuntimeArtCachePolicy`
+(`scripts/verify-deployment-preview.mjs:185-226`) builds a check list of
+**two** entries and fetches exactly those:
+
+- `/assets/actors/asset-registry.json`, asserted non-`immutable` and
+  `must-revalidate` (`:189`, `:218-224`);
+- the first `.png` under `dist/game-content/source-art/`, asserted `immutable`
+  (`:193-199`, `:215-216`).
+
+The "no response carries two cache lifetimes" assertion is real — `cacheControl`
+must match `max-age=` exactly once (`:208-213`) — but it runs **inside that same
+loop**, so it applies to those two responses and not to "no response".
+
+Three things the bullets state are therefore asserted by nothing:
+
+- **the `/assets/:file` rule** for Vite's fingerprinted output — the rule the
+  second bullet exists for, and the one whose overlap with `/assets/actors/*`
+  produced the concatenated header the bullet describes;
+- **the atlas PNGs and manifests under `/assets/actors/`** other than
+  `asset-registry.json`, which the third bullet names explicitly;
+- **`source-art.v1.json`**, named in the fourth bullet as the mutable catalog
+  that must *not* be immutable. It sits at
+  `public/game-content/source-art.v1.json` — beside the directory, not inside it
+  — so `/game-content/source-art/*` (`public/_headers:75`) does not match it and
+  **no rule in `public/_headers` matches it at all**. Its non-immutability today
+  is an accident of no rule matching, and a future `/game-content/*` rule would
+  make it immutable without touching the sentence that says it is not.
+
+**Label: TRUE-BUT-FRAGILE, not FALSE.** Both directions of the cache policy are
+covered, which is what `docs/research/audit-2026-08-26/07-cicd-supplychain.md:51`
+says and is accurate; what is over-claimed is coverage, and the cheapest fix is
+to add `/game-content/source-art.v1.json` and one `/assets/actors/*.png` to the
+check list rather than to soften the sentence.
+
+### What was re-verified and is intact
+
+Every other citation and count in this ADR holds at `792bf94`, re-run rather than
+inherited:
+
+- **`.gitattributes:1-4`** routes exactly the four patterns the Context lists,
+  and `git ls-files '*.blend'` returns **6** — so the correction already recorded
+  in §"Verification" (*"This sentence previously gave its reason as 'only `*.png`
+  is LFS-tracked', which is false"*) is still both true and still the right
+  reading. That correction is issue #274's finding A15 and it is **closed**; a
+  refresher does not need to re-open it. The `six` is a bare count and is flagged
+  as such, not corrected.
+- **The Context's sizes.** `public/game-content/source-art/` holds **23** `.png`
+  files totalling **35.8 MB**, and the ten LFS-tracked PNGs under
+  `public/assets/` total **16.4 MB** — so "36 MB", "the 23 owner-supplied intake
+  sheets" and "the explicit pull … moves ~17 MB" are all accurate. `public/` as a
+  whole is **52.3 MB** with pointer sizes substituted, and a real
+  `node scripts/cloudflare-task.mjs build production` at `792bf94` produces a
+  `dist/` of **54.3 MB** by the same measure — so "the production bundle is
+  55 MB" is right to within a megabyte, and "36 MB of the 55 MB bundle" in the
+  open question is right as well. Four bare numbers across two paragraphs, all
+  currently right, all with nothing under them.
+- **`assets/intermediate/` is git-ignored** (`.gitignore:20`).
+- **The CI job** is as described: `.github/workflows/ci.yml:200` declares
+  `assets`, `:206` is `needs: verify`, `:210-223` records why it is deliberately
+  not `lfs: true`, `:231` runs `scripts/provision-git-lfs.sh`, `:253` is
+  `git lfs pull --include="public/assets/actors"`, and `:269` is the pointer
+  check. The `browser` job (`:329`) does the same pull at `:377` and declares
+  `needs: assets` at `:343`.
+- **The validator** recognises a pointer (`tooling/validate-runtime-atlas.mjs:32`)
+  and asserts the PNG signature (`:31`, `:60-61`).
+- **`public/_headers`** is exclusive as described: `/assets/:file` immutable
+  (`:61-62`), `/assets/actors/*` revalidating (`:70-71`),
+  `/game-content/source-art/*` immutable (`:75-76`).
+- **"a regression fails `pnpm verify:deployment`"** holds, and only through one
+  indirection worth naming: `package.json:30` runs
+  `scripts/verify-cloudflare-deployment.mjs`, which invokes
+  `verify-deployment-preview.mjs` at its `:8`. And "the real workerd preview" is
+  accurate rather than loose — `@cloudflare/vite-plugin` (`package.json:43`,
+  `vite.config.ts:1`) is what makes `vite preview` serve `dist/` through workerd
+  and apply `public/_headers`.
+- **The open question** is unchanged: nothing under `public/game-content/` is
+  imported by any module in `src/`, so it is still 36 MB nothing loads.

@@ -1,6 +1,7 @@
 import { cloudflare } from '@cloudflare/vite-plugin';
 import { defineConfig, type Plugin } from 'vite';
 import { buildIdentityDefines } from './tooling/build-identity.mjs';
+import { telemetryDefines } from './tooling/telemetry-config.mjs';
 
 /**
  * The exact text `src/content/room-catalog.ts` throws when a room requires an
@@ -76,7 +77,13 @@ export default defineConfig({
   // `tests/browser/vite.config.ts` needs the same ones -- the browser suite is
   // the only layer that can prove the injection works, and a second copy there
   // would prove the copy.
-  define: buildIdentityDefines(),
+  //
+  // `telemetryDefines()` is the telemetry ingestion destination, on the same
+  // terms: nothing secret, absent unless a deployment sets it, and validated
+  // in `src/services/telemetry/ingestion-config.ts` rather than here. With
+  // both variables unset -- which is every workflow in this repository -- it
+  // resolves to two empty strings and no transport is ever constructed.
+  define: { ...buildIdentityDefines(), ...telemetryDefines() },
   build: {
     target: 'es2022',
     // Public source maps would expose original game source in Static Assets.

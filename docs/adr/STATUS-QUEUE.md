@@ -1,4 +1,4 @@
-# One decision is awaiting approval — and where an accepted decision contradicts the code
+# What the owner still has to decide, and where an accepted decision contradicts the code
 
 This file is for the repository owner and nobody else. It exists because
 `docs/adr/README.md` reports statuses and `tests/foundation/adr-numbering-contract.test.ts`
@@ -8,25 +8,84 @@ implementation.
 
 **Nothing here changes a status.** A status moves in the ADR and in the index,
 never in this file. What changed with this revision is what the file is *for*:
-§1 records **all thirteen** flips, §2 holds **the one decision awaiting approval —
-ADR 0031** — above the account of why the queue had been emptied the first time
-and what that bought (ADR 0029 was accepted on 2026-08-26 and its entry deleted;
-0031 arrived immediately after), and everything after it is the residue — one genuinely open
-decision, one watch item, and the gaps between an accepted decision and the
-code. §6 used to be the inventory of stale sentences the flips left behind;
+§1 records **all thirteen** flips, §2 holds **three entries — the two dated rulings
+#382 wrote into ADR 0008 §2, the 2026-08-27 amendment scoping that ADR's §3
+by authority, and the preconditions on the change that gives this project its
+first server-side entry point** — above the account of why the queue had been
+emptied three times and what that bought (ADR 0029 was accepted on 2026-08-26
+and its entry deleted; 0031 arrived immediately after and was itself accepted)
+— and everything after it is the residue — one genuinely open decision, one
+watch item, and the gaps between an accepted decision and the code.
+
+**This sentence and the title above it were both false, and this is the second
+time this file's title has rotted the same way.** They read *"One decision is
+awaiting approval"* and *"§2 holds the one decision awaiting approval — ADR
+0031"*, while §2's own heading three hundred lines below said **"The queue is
+empty"** and its subsection said 0031 was accepted. ADR 0031 was accepted at
+`e560656` (#389, **v0.0.104**), which is **seventeen releases** before this
+anchor — and, more to the point, `git merge-base --is-ancestor e560656 8d29aa6`
+confirms it predates the *previous* anchor too, so the last re-anchor did not
+catch it either.
+
+**Why neither delta pass caught it, which is the useful part.** The delta method
+this header describes reads the intersection of `git diff <anchor>..HEAD` with
+the enumerated file set below. `docs/adr/0031-build-queue-cancellation-surface.md`
+is in that set — but it has not changed since either anchor, because the flip
+that falsified this sentence happened *before* both of them. **A delta pass can
+only find claims that a file in the set falsified during that delta.** It is
+structurally blind to a claim that was already false when the window opened, and
+to a file contradicting itself, which is what this was: the title and §2 of the
+same document disagreed, and no diff anywhere would have said so. The cheap check
+that does find it is not a diff at all — it is reading the file's own headings
+against each other, which takes a minute and had not been done. The title is now
+worded so that it states the file's subject rather than a count, because a count
+in a title is the same rotting shape as an absence in a sentence and this one
+rotted twice. §6 used to be the inventory of stale sentences the flips left behind;
 **they are corrected, and that class is now asserted by a test**, so what it
 holds instead is the account of what moved, what may not be touched, and what
 the test cannot see. Deciding is still the owner's; this file only makes the
 next decision cheap.
 
-Re-anchored at `main` @ `8d29aa6` (**v0.0.111**) by the delta method this header
-describes, from `dbe271f` (v0.0.98). 109 files changed; **thirteen** intersect the
-declared set, and reading only those thirteen falsified **three** claims — the
-command-union count, the `'object.*'` literal count, and one drifted
-`docs/HUD_PROJECTIONS.md` line — each corrected in place with what it used to say.
-Two claims the delta *could* have falsified and did not: `AWAITING_PRODUCER` is
-still empty (both new commands shipped with producers), and `minQuantity` is still
-unchecked (`src/simulation/rooms/requirements.ts:19` and
+**Four places in this file count the queue, and the next editor has to sweep all
+four.** They are: this paragraph, the title above it, §2's own heading, and §5's
+preamble. They have disagreed before — *"One decision is awaiting approval"*,
+*"§2 holds **the one decision awaiting approval — ADR 0031**"*, *"## 2. The
+queue is empty"* and *"**The queue is not empty** — §2 holds **two** entries"*,
+all four in the same document, recorded as **ARC-07, CONFIRMED** in
+`docs/research/audit-2026-08-26/04-architecture.md`. The drift is structural
+rather than careless: §2's count is edited when a decision is accepted, and the
+other three are edited when somebody remembers them. **Nothing mechanical can
+compare an English count in one paragraph to an English count in another**, so
+naming the four places here is the whole of the defence.
+
+Re-anchored at `main` @ `54418b6` (**v0.0.121**) by the delta method this header
+describes, from `8d29aa6` (v0.0.111). 51 files changed; **seven** intersect the
+declared set, and reading only those seven falsified **seven** citations and
+**one** claim of substance — each corrected in place with what it used to say.
+
+**What this pass found, and the shape it found it in.** Every one of the seven
+falsified citations was a *line number*, and not one of the sentences those
+numbers point at had changed: the command union still discriminates thirteen,
+`state-machine.ts` still makes exactly four `transition()` calls and still
+targets `'ready'` from none of them, and `protocol/handshake` still has exactly
+nine occurrences in `src/`, all of them the receiver or the schema. That is the
+third consecutive pass to report the same ratio, and this file has now said
+three times that **a `file:line` into a file under active edit is its least
+durable citation and a quoted sentence is its most.** Saying it a fourth time is
+not the useful response; §6's closing paragraph now carries what would be.
+
+The one claim of substance the delta falsified is §4's, and it is the one this
+file had singled out as *not* having moved: `.github/workflows/migrate-database.yml`
+and `docs/DEPLOYMENT.md` were both edited by #423 at `4f738ae` (v0.0.116), which
+ends the "twenty-one releases without moving" that §4 recorded as its outcome.
+The constraint §4 watches is intact — every mechanism citation was re-read and
+still lands — but the sentence asserting the *absence* of movement is exactly the
+shape this corpus keeps finding rots first, and it rotted five releases after it
+was written.
+
+Two claims the delta *could* have falsified and did not, carried forward and
+re-checked at this anchor: `AWAITING_PRODUCER` is still empty, and `minQuantity`
+is still unchecked (`src/simulation/rooms/requirements.ts:19` and
 `src/simulation/presentation/room-projection.ts:74` both still say so).
 
 **Why this anchor moved twice in one day, and it is not carelessness.** Every
@@ -99,20 +158,23 @@ files**, and every claim in them cites one. The set, in full:
 
 - `package.json` and `supabase/migrations/**` (§3);
   `.github/workflows/migrate-database.yml`, `docs/DEPLOYMENT.md` and
-  `wrangler.jsonc` (§4).
+  `wrangler.jsonc` (§4). `supabase/tests/003_data_api_grants.test.sql` was added
+  on 2026-08-27, when §2's third entry began citing the role sweep it holds.
 - `docs/CLOUD_SAVE.md`, `docs/TRUSTED_SERVICES.md`, `docs/HUD_PROJECTIONS.md`,
   `README.md`, `docs/adr/README.md` and
   `docs/research/2026-08-25-economy-rate.md`.
 - ADRs **0002, 0008, 0009, 0010, 0012, 0013, 0015, 0016, 0017, 0022, 0023, 0025,
   0026, 0027, 0028, 0029, 0031**.
-- Fifteen files under `src/`: `ui/hud/messages.ts`, `ui/hud/projection.ts`,
+- Sixteen files under `src/` — fifteen until 2026-08-27, when §2's new entry
+  began citing `persistence/cloud/sync-engine.ts` and this list gained it in the
+  same commit, which is what the paragraph below requires: `ui/hud/messages.ts`, `ui/hud/projection.ts`,
   `ui/hud/hud.ts`, `ui/hud/build-panel.ts`, `content/procurement-catalog.ts`,
   `content/room-catalog.ts`, `simulation/economy/income.ts`,
   `simulation/rooms/zoning.ts`, `simulation/rooms/topology.ts`,
   `simulation/worker/state-machine.ts`, `simulation/protocol/commands.ts`,
   `simulation/protocol/types.ts`, `simulation/construction/definition.ts`,
   `simulation/prisoners/intake-system.ts`,
-  `services/challenges/verification.ts`.
+  `services/challenges/verification.ts`, `persistence/cloud/sync-engine.ts`.
 - Six under `tests/`: `foundation/adr-status-reference-contract.test.ts`,
   `foundation/unconsumed-command-contract.test.ts`,
   `unit/ui-hud-messages.test.ts`, `unit/objects-room-capacity.test.ts`,
@@ -271,32 +333,48 @@ cells is exercised nowhere, because no shipped session yet furnishes two.
 
 ---
 
-## 2. The queue is empty
+## 2. Three entries: #382's two rulings in ADR 0008 §2, 2026-08-27's scope clause for its §3, and the Worker that lands with telemetry ingest
 
 **This heading has now read "empty", "exactly one entry: ADR 0029", "empty
-again", one entry, two, one, and now empty for the third time** — 0031, 0032,
-0033 and 0007's amendment were all accepted on 2026-08-26. Two of those four
+again", one entry, two, one, empty for the third time, one again, and — on
+2026-08-27 — three** —
+0031, 0032, 0033 and 0007's amendment were all accepted on 2026-08-26. Two of those four
 never appeared here at all, which is the failure recorded at the foot of this
 section, and the churn in this heading is the point rather than noise: it is the
-only place a reader can see how fast this corpus moves. The second is not a new
-document: it is an amendment to ADR **0007**, which is Accepted and stays
-Accepted. An amendment is queued here for the same reason a new ADR is — it
-decides something the sections above it do not, and nothing else in the corpus
-would tell the owner that a decision is waiting. `adr-numbering-contract.test.ts`
-counts documents by their `Status` line, so an amendment inside an accepted ADR is
-invisible to every mechanical gate there is; this row is the only thing that says
-it exists. 0029 was accepted on 2026-08-26 and
+only place a reader can see how fast this corpus moves. **Two of the three
+entries it holds are amendments rather than new documents**. Counting from this
+section's own record that 0007's was the first amendment ever to have a row here,
+the amendments queued in this file are 0007's — by its author's own instinct —
+and ADR 0008's two, both queued by the ruling recorded in
+`docs/adr/README.md`. An amendment is queued here for the
+same reason a new ADR is: it decides something the sections above it do not, and
+nothing else in the corpus would tell the owner that a decision is waiting.
+`adr-numbering-contract.test.ts` counts documents by their `Status` line, so an
+amendment inside an accepted ADR is invisible to every mechanical gate there is;
+this row is the only thing that says it exists. 0029 was accepted on 2026-08-26 and
 its entry was deleted, which is what this section's own rule prescribed — the
 entry said *"this entry is deleted"* as part of the exact recipe for accepting
-it, and following that recipe is the whole point of writing one. 0031 arrived
-immediately after, so the row below is a different decision rather than the same
-one returning.
+it, and following that recipe is the whole point of writing one.
 
 The rule this section states — *"any commit that adds an outstanding ADR adds an
 entry here in the same commit, giving the evidence, what settling it commits the
 project to, and the exact line that would replace the status"* — is followed by
 0031, and the account of why the queue was emptied is kept below unchanged,
 because it is the argument for why one row is worth reading.
+
+**The rule's trigger is unchanged by the 2026-08-27 ruling, and that is the
+ruling's main point.** `docs/adr/README.md`'s *"An amendment to an accepted ADR"*
+section settles what this file filed in §5 as the owner's question — whether
+*"applies an accepted decision"* and *"amends an accepted decision"* can be told
+apart by anything a reader can check. They cannot, so **the answer is not to
+widen this rule to cover amendments as a class**: exactly one of the seventeen
+post-hoc additions in `docs/adr/` ever had a row here, and widening a rule this
+section already calls *"unsatisfiable under concurrency"* would have condemned
+sixteen of them on the day it landed. What the ruling requires instead is form —
+an amendment is a dated `Amendment`/`Addendum` section that says in its own
+opening whether it was approved — so that *outstanding*, which is and stays the
+trigger, is something a reader can see rather than reconstruct. The entry below
+is the one case where nobody could see it.
 
 What the round trip is worth recording for: 0029 arrived on the same branch as
 its implementing code, and **it sat `Proposed` on `main` for a day while that
@@ -307,6 +385,186 @@ landing and the status moving is the cost, and it is not zero.
 
 The account of why the queue was emptied the first time is kept below unchanged,
 because it is still the argument for why one row is worth reading.
+
+### ADR 0008 §2's two rulings (#382) — awaiting approval
+
+**What is waiting.** Two rulings #382 wrote into
+[ADR 0008](./0008-trusted-service-boundary.md) §2 on 2026-08-26 as decided, with
+no approval caveat and — until 2026-08-27 — no heading, no date in the document
+structure and no row here. ADR 0008 is `Accepted` and **stays** `Accepted`; that
+keyword is not what is in question and no status moves either way on this. Both
+rulings now sit under dated `#### Amendment, 2026-08-26 (#382, …)` headings in §2,
+each with an opening paragraph saying that the only warrant behind it is #382's
+judgement.
+
+1. **A Data API role holds exactly the DML privileges its zone needs on a table,
+   and nothing else** (issue #280 finding F14). Its own words for the general
+   part: *"The rule this settles for every future table is that a new relation in
+   `public` starts closed, and its migration opens exactly what it means to
+   open."*
+2. **Authority over a row is not authority over the record of when it was
+   written** (issue #194). It narrows §2's *"Prison simulation state, saves,
+   settings — Z0/Z1 (client-authoritative, RLS-scoped)"* row by ruling a
+   `created_at`/`updated_at` column out of a row's *content*: the timestamp's
+   authority is Z2 even on a table whose payload is Z0's.
+
+**The evidence, and it is not in dispute.** Both are executed in SQL, not merely
+written down. `20260826120000_revoke_ambient_table_privileges.sql` revokes
+`REFERENCES`, `TRIGGER` and `MAINTAIN` and the `ALTER DEFAULT PRIVILEGES` entries
+that handed them back; `20260826130000_server_stamp_updated_at.sql` stamps
+`updated_at` from a `BEFORE INSERT OR UPDATE` trigger on `prisons`, `profiles`
+and `user_settings` and keeps the column out of every client grant. So the
+question is not whether the code matches the rulings — it does — but whether the
+rulings are the project's or one pull request's.
+
+**What approving commits the project to.** Ruling 1 binds every migration written
+from now on: a new relation in `public` starts with a null ACL and its own
+migration opens exactly the privileges it needs, which is a per-table cost paid
+forever in exchange for the class of ambient-privilege defect that produced #163,
+#280 F14 and F15. Ruling 2 says a client never writes a server timestamp, and
+pre-commits the alternative: *"If a client-side edit time is ever needed for
+reconciliation it gets its own column, named for what it is (`client_edited_at`)"*
+— so approving it also closes off the cheaper option of reusing `updated_at` for
+that.
+
+**The exact edit that accepts them.** In
+[ADR 0008](./0008-trusted-service-boundary.md) §2, both `#### Amendment` headings
+gain `— approved <date>` and their opening paragraphs lose the sentence saying
+nobody has approved them, replaced by who approved what; the two rulings'
+own paragraphs are not touched, because they are the text being approved. The
+`0008` row in [`README.md`](./README.md) is unaffected — its status keyword is
+`Accepted` either way. **And this entry is deleted**, which is the recipe this
+section prescribes and the thing following it is for.
+
+**If the answer is no**, the two rulings do not simply get struck: the two
+migrations above have shipped, so rejecting either is a decision to write a
+migration that reverses it, and the ADR text becomes the record of a rule that
+was tried. Say which of the two, because they are independent — ruling 1 is about
+grants on future tables, ruling 2 about one column's authority — and #382 argued
+them separately.
+
+**Why this is one entry rather than two.** They landed in one pull request, on one
+reading of §2's zone taxonomy, and the governance question they raised is common
+to both. The substance is separable and the answer may differ per ruling; the row
+is shared because the thing the owner has not seen is the same thing twice.
+
+### ADR 0008 §3's scope clause (2026-08-27) — the reading is the owner's, the wording is not
+
+**What is waiting, and it is narrower than the entry above.** The owner **has**
+decided the substance: the amendment of 2026-08-26 recorded that §3's scope was
+unstated and put two readings to them — bind §3 by *runtime* (§1's zone list) or
+by *authority* (§2's table) — and they chose **by authority**. The amendment
+dated 2026-08-27 at the foot of
+[ADR 0008](./0008-trusted-service-boundary.md) writes that choice down. ADR 0008
+is `Accepted` and **stays** `Accepted`; no status moves, and the `0008` row in
+[`README.md`](./README.md) is unaffected.
+
+**So why a row at all.** Two reasons, and the first is the one this section's
+own text gives: *"an amendment inside an accepted ADR is invisible to every
+mechanical gate there is; this row is the only thing that says it exists."* The
+second is that a choice between two readings does not approve the consequences
+drawn from it, and this amendment draws several the owner has not seen. Those
+are what is outstanding:
+
+1. **The clause's wording is the editor's.** The owner's draft, quoted in the
+   2026-08-26 amendment, was *"every mutation path over Z2-authoritative
+   state"*. What landed is *"every mutation path over state that §2's authority
+   table assigns to Z2, and only those"*, plus a decide-versus-touch test. The
+   amendment argues both changes; neither was put to the owner.
+2. **`create_save_version` falls outside §3, and the argument for it is the
+   weakest joint.** The pointer columns `current_revision` and
+   `current_version_id` are out of every client grant and
+   `src/persistence/cloud/sync-engine.ts` orders reconciliation by one of them,
+   which is close to what §2's 2026-08-26 ruling calls the server's own
+   statement. The amendment distinguishes them — the pointer is caller-proposed
+   and server-validated, a timestamp is server-computed — and says in terms that
+   a reader who disagrees should add a §2 row rather than re-argue the
+   paragraph. That is a real fork.
+3. **A new threat row, T13**, for flood, forgery and retention evasion against
+   an unauthenticated ingest. It is an addition to an accepted threat model.
+4. **An obligation the clause creates rather than removes:** a telemetry
+   retention or deletion job is *inside* §3, because deciding what is kept is
+   the half §2 assigns to Z2. So is the `service_role` column `UPDATE` that
+   writes a challenge verdict, which §1's runtime list would not obviously have
+   caught.
+
+**What approving commits the project to.** That §3's six steps are demanded of
+entitlements, payment facts, challenge submissions and challenge verdicts, and
+are **not** demanded of cloud saves, prison creation or telemetry ingest; and
+that any future path claiming either answer names a §2 row first, adding one in
+the same commit if none covers it.
+
+**What it does not buy, and the amendment says so in its own part 6.** §3 step
+1's only enforcement is the pgTAP suites. They sweep database roles by literal
+name — `anon`, `authenticated`, `service_role` — so a dedicated Worker role would
+be unswept, and a Worker calling a `SECURITY DEFINER` function with a server key
+is indistinguishable from any other holder of that key to PostgreSQL. **Nothing
+red appears if this boundary is later got wrong.**
+
+**If the answer is no on any of the four**, the clause itself still stands —
+the reading was the owner's — and what changes is the consequence. Say which
+number, because they are independent.
+
+**The exact edit that accepts them.** The 2026-08-27 `## Amendment` heading in
+[ADR 0008](./0008-trusted-service-boundary.md) gains `— approved <date>`, and
+its opening paragraph's second half — the one saying the wording and the
+consequences are the editor's and open — is replaced by who approved what. The
+clause, the table and T13 are not touched, because they are the text being
+approved. **And this entry is deleted.**
+
+### The first server-side entry point (2026-08-27) — the order is decided, the pre-merge approval is not
+
+**What is not waiting.** The owner has decided the *order*: telemetry ingest
+needs a `main` in `wrangler.jsonc`, they were offered "separate staging from
+production first" or "add the Worker together with the ingest", and they chose
+the second — one deliberate change, with what lands on `lockstate.io` written
+down and approved before it merges. That choice is recorded in
+[`docs/DEPLOYMENT.md`](../DEPLOYMENT.md), "The first server entry point lands
+with the ingest, not before", which is where a person looks before touching what
+serves the live site.
+
+**Why it is nonetheless in this file.** Because the condition attached to the
+choice is a **future approval that nothing will ask for**. `lockstate.io` is
+served by `lockstate-staging`; the `staging` job publishes on every merge to
+`main` whose CI concludes `success`; and the gate on that row is a CI conclusion,
+not an approval. So the merge that adds `main` is the act that puts executing
+code on the public site, and no workflow will pause to ask. This row is the
+standing reminder that the approval is owed, and it is deleted by the change that
+obtains it.
+
+**What the owner is being asked for, and when.** Not now — at the pull request
+that adds `main`. Nine items, listed in full in that `docs/DEPLOYMENT.md`
+section and summarised here so this row is readable on its own: the commit and
+the fact that merging it publishes; which requests the handler claims and that
+everything else still falls through to Static Assets; what the Worker may hold;
+what it must not — **never a `service_role` key**, because that role may call
+`record_entitlement_event`, so a public Worker holding it would hold the
+paid-entitlement write path; server-side validation, bounding, and a
+server-decided occurrence time and weight; whether `public/_headers` changes;
+rollback; the wrangler trap; and ADR 0002's amendment.
+
+**The credential is the sharp one, and it is unswept either way.**
+`supabase/tests/003_data_api_grants.test.sql` pins the privilege surface of
+`anon`, `authenticated` and `service_role`, each named as a literal. A dedicated
+least-privilege role for the Worker — which is the mitigation — is seen by none
+of it unless that suite's role list is extended in the same change. Extending a
+pinned list is what adding a role looks like here.
+
+**Whether ADR 0002 needs amending now: no, and the reason is which sentence goes
+false.** Its rejected alternative *"Add a Worker server entry point now"* is
+**honoured** rather than overturned — it was rejected because *"a placeholder
+server would add routing and security surface without product value"*, and a
+Worker that arrives carrying the ingest is not a placeholder. What goes false is
+the Decision bullet *"Deploy the current application as an assets-only Worker
+with no application-server entry point"*, and it goes false in the commit that
+adds `main`, not on the day the decision to do it was recorded. Amending it today
+would put the document ahead of the code. **If the owner disagrees and wants ADR
+0002 amended now, that is the one part of this row that is a decision rather
+than a reminder.**
+
+**And this entry is deleted** by the pull request that adds `main`, in the same
+commit — which is this file's standing rule that landing the change an entry
+describes means updating the entry with it.
 
 ### ADR 0031 — accepted 2026-08-26, and the entry is deleted
 
@@ -476,10 +734,10 @@ Functions in that table live in
 of that table was re-read against the file at this commit: `:45` and `:91`,
 `:150` with its trigger at `:188`, the exception's `hint` at `:178`, and
 `:71-73`'s `as $$ select 4194304 $$;`. Both
-absences were re-verified at `8d29aa6` by grepping the whole
+absences were re-verified at `54418b6` by grepping the whole
 `supabase/migrations/` tree for a total-bytes, retention or pruning mechanism
 (`total_bytes`, `retention`, `prune`, `268435456`, `max_revisions`). **That grep
-is no longer clean and the finding is unchanged**: it now returns exactly one
+is no longer clean and the finding is unchanged**: it returns exactly one
 hit, `20260826130000_server_stamp_updated_at.sql:68`, which is *prose* — a
 comment naming a future retention job as the reason that migration bounds what it
 bounds. A reader re-running the grep should expect it and not mistake a sentence
@@ -553,17 +811,32 @@ Supabase staging project *"automatically, on every merge to `main`"* with gating
 *"none"* (`docs/DEPLOYMENT.md`, "Automated deployment"), rollback is not
 automated, and the trigger is the merge rather than the diff — PR #87 touched no
 file under `supabase/migrations/` and nine migrations were applied anyway
-(`docs/DEPLOYMENT.md:143-147` for the table, `:159` for the 71-second window and
-`:161` for #87 itself, all re-read here). The half of the decision that *is* in
-this repository stays verified at `8d29aa6`:
+(`docs/DEPLOYMENT.md:143-147` for the table, `:160` for the 71-second window and
+`:162` for #87 itself, all re-read here; this entry cited `:159` and `:161`, one
+line short of each, because #423 inserted two rows into the table above them).
+The half of the decision that *is* in this repository stays verified at `54418b6`:
 `.github/workflows/migrate-database.yml` is `workflow_dispatch:` (`:34`) with no
 `push:`, requires a typed `confirm_project_ref` (`:41`), and its apply job is
-environment-gated (`:65`). **`git diff cddaebb..main` over that file is still
-empty, and so is `git diff 83c3121..main`** — neither this workflow nor
-`docs/DEPLOYMENT.md` appears in either delta, so nothing in this section has
-moved across twenty-one releases. That is the outcome to record rather than to
-leave implied, because a watch item nobody re-checked is indistinguishable from
-one that did not move. The one thing that *did* move nearby is #382's two new
+environment-gated (`:65`) — all three re-read at this anchor and all three still
+land.
+
+**This entry used to say that nothing here had moved, and that is now false.** It
+read: *"`git diff cddaebb..main` over that file is still empty, and so is
+`git diff 83c3121..main` — neither this workflow nor `docs/DEPLOYMENT.md` appears
+in either delta, so nothing in this section has moved across twenty-one
+releases."* Both files were edited by **#423 at `4f738ae` (v0.0.116)**, which
+closed the deploy gate: `.github/workflows/migrate-database.yml` gained five
+lines and `docs/DEPLOYMENT.md` thirteen. So the run of untouched releases ended
+five releases after the sentence claiming it was written.
+
+**What did and did not follow from that.** The mechanism this section watches is
+unchanged — every citation above was re-read rather than assumed, and #423
+tightened the *frontend* deploy gate without touching the migration path. What
+the edit falsified is only the sentence asserting the absence of movement, which
+is the shape this corpus keeps finding rots first: adding the thing an absence
+denies never touches the sentence denying it. Recording the outcome was right;
+stating it as a standing property rather than as a reading at a named commit was
+what made it rot. Rewritten above as a reading at this anchor. The one thing that *did* move nearby is #382's two new
 migrations, and they reach a hosted database by exactly the mechanism this
 section is about — which is the risk being live rather than the constraint being
 broken.
@@ -583,32 +856,60 @@ that disagree with each other. **None is a status defect.** This paragraph used
 to say that "with the queue empty that is the whole of what this section can be:
 either a decision is accepted and the code has not caught up, which is a code or
 wiring gap, or two documents state different numbers, which is a docs-truth job".
-**The queue is not empty** — §2 holds **two** entries — so that premise is
-withdrawn, and with it the claim that those two shapes are exhaustive. There are
-two more, one standing in each of §2's rows.
+That premise is withdrawn all the same, and with it the claim that those two
+shapes are exhaustive: there are two more, described below. **And the queue is
+not empty now** — §2 holds three entries: the two rulings #382 wrote into ADR 0008
+§2, the 2026-08-27 amendment scoping that ADR's §3, and the preconditions on the
+first server-side entry point — so the "with the queue empty" opening no longer
+describes the file either.
+
+**Corrected at this anchor, and it is the sharper defect of the two.** The
+paragraph above then read *"**The queue is not empty** — §2 holds **two**
+entries"*, while §2's own heading three hundred lines above says **"The queue is
+empty"** and its subsections record both entries as deleted on acceptance. **One
+file, two sections, flatly opposite.** The two entries were ADR 0031 and ADR
+0007's amendment, both accepted on 2026-08-26; §2 was updated and this paragraph
+was not. Nothing mechanical could catch it — the gates over `docs/adr/` compare a
+status word to a document, never a document to itself.
 
 **Third: the code has run ahead of a decision nobody has approved.** #367 shipped
 the `hud/build-queue` read model, the per-order cancel control and the Build
-panel's one-row catalogue floor while
-`docs/adr/0031-build-queue-cancellation-surface.md:5` still reads `**Proposed —
-pending human approval.** Not accepted.` That is not a defect — §2 exists to make
-exactly that visible, and the ADR arrived in the same commit as the code, which is
-the rule §2 states — but a section written on the assumption that an unapproved
-decision cannot have an implementation would mis-file it.
+panel's one-row catalogue floor **before** ADR 0031 was approved. **This entry
+said `docs/adr/0031-build-queue-cancellation-surface.md:5` "still reads
+`**Proposed — pending human approval.** Not accepted.`" — it reads "Accepted,
+2026-08-26 — with open question 4 promoted to blocking", and has since `e560656`
+(#389).** That is not a defect — §2 exists to make exactly that visible, and the
+ADR arrived in the same commit as the code, which is the rule §2 states — but a
+section written on the assumption that an unapproved decision cannot have an
+implementation would mis-file it.
 
 **Fourth, and newer: a decision is waiting inside a document whose `Status` line
 will never move.** #380 queued an **amendment** to ADR 0007, which is Accepted and
 stays Accepted, on the argument §2 now states — that
 `adr-numbering-contract.test.ts` counts documents by their `Status` line, so an
 amendment inside an accepted ADR *"is invisible to every mechanical gate there
-is; this row is the only thing that says it exists"*. Its heading carries the
-approval state instead
-(`docs/adr/0007-navigation-work-budgets-and-flow-fields.md:319`, *"## Amendment,
-2026-08-26 (awaiting approval)"*). Nothing in §§3-6 could have held that: every
-entry here is keyed to an ADR's status or to code, and this is neither. It is
-also why `docs/adr/README.md:108`'s *"One row is outstanding: 0031"* is **true
-and not a contradiction** of §2's "two entries" — the README counts rows in its
-own table, and an amendment has no row. The entries below are recorded so that
+is; this row is the only thing that says it exists"*. Its heading carried the
+approval state instead — this entry quoted it as *"## Amendment, 2026-08-26
+(awaiting approval)"*, and on acceptance the heading became *"## Amendment,
+accepted 2026-08-26: the shared plan is the plan `findRoute` computes…"*, so the
+quote is history rather than a live citation and is kept as one. Nothing in §§3-6
+could have held that: every entry here is keyed to an ADR's status or to code, and
+this is neither. It is also why a README sentence counting outstanding *rows* is
+not a contradiction of §2's count — the README counts rows in its own table, and
+an amendment has no row. **This shape is no longer only a fourth case: it is a
+class with a rule.** `docs/adr/README.md`'s *"An amendment to an accepted ADR"*
+section, decided 2026-08-27, is what §2's live entry rests on, and this paragraph
+is the first instance it was written from.
+
+**This entry has now cited the README wrongly twice, by line both times.** It
+read `docs/adr/README.md:108`'s *"One row is outstanding: 0031"* when the
+sentence was neither at that line nor about that ADR; corrected to *"One row is
+outstanding: 0033"*, which the README has since **withdrawn**, because 0033 was
+accepted on 2026-08-26. A line number is the part of a citation that rots first
+and the part a reader checks last. **Cited by quotation rather than by line from
+here on**, which is what this file's own §6 concluded and kept not doing.
+
+The entries below are recorded so that
 reading this file does not leave the impression that the corpus was audited in
 one direction.
 
@@ -656,7 +957,11 @@ one direction.
   awaiting approval**: #356 accepted it on 2026-08-26
   (`docs/adr/0029-concurrent-room-use-claims.md:5`, *"**Accepted,
   2026-08-26.**"*, plus its index row), so phase 6 now rests on an Accepted
-  decision and the queue's one pending entry is ADR 0031 instead. Phase 4 — the
+  decision. **This sentence went on to say "and the queue's one pending entry is
+  ADR 0031 instead", which is withdrawn** — 0031 was accepted on 2026-08-26 and
+  §2's one entry is now ADR 0008 §2's two rulings. A phase's footing does not
+  depend on what else is in the queue, so the clause was decoration that could
+  only rot; what it was for is the sentence before it. Phase 4 — the
   rest of the object catalogue — is
   untouched at `dbe271f`: exactly two `'object.*'` ids appeared as literals
   under `src/` outside `src/content/`, both on `BUILDABLE_REGISTRY` rows.
@@ -838,10 +1143,18 @@ one direction.
   what persisted geometry. That is a decision, not a code gap — which is why it
   belongs here and the eviction no longer does.
 - **ADR 0006 / ADR 0003 decision 4 — the handshake gates nothing.** `'ready'` is
-  a member of `WorkerState` (`src/simulation/worker/state-machine.ts:28`) and no
-  `transition()` call targets it; the file makes exactly four, and they reach
-  `'faulted'` (`:455`), `'paused'` (`:566`), `'paused'`/`'running'` (`:601`) and
-  `'shutting-down'` (`:825`). Nothing in `src/` sends a `protocol/handshake` at
+  a member of the `WorkerState` union (`src/simulation/worker/state-machine.ts:33-39`)
+  and no `transition()` call targets it; `grep -n "this.transition(" src/simulation/worker/state-machine.ts`
+  is the enumeration and it returns exactly four, reaching `'faulted'`,
+  `'paused'`, `'paused'`/`'running'` and `'shutting-down'` (`:590`, `:725`,
+  `:760`, `:984` as of `83d9616`). **All four anchors have now moved twice, and
+  in both directions the entry has been wrong about which moved.** It first read
+  `:566`, `:601`, `:825`; those were corrected to `:584`, `:619`, `:843` with
+  `:455` declared unchanged — and at `83d9616` every one of the four is wrong,
+  `:455` included, so the "unchanged" was the least durable part of the
+  correction. The count and the four target states have held throughout; the
+  grep above is what the next reader should run instead of trusting any of these
+  numbers. Nothing in `src/` sends a `protocol/handshake` at
   all — re-read at this commit, all nine occurrences are the receiver
   (`state-machine.ts:472`, `:502`), the transferables switch, the kind list or the
   schema. So ADR 0006's state 2 describes a state the machine cannot
@@ -853,7 +1166,7 @@ one direction.
   0024's has been deleted. The fix is in the code, and the open decision is
   whether to send the handshake or delete `'ready'` (issue #274, Q4).
 - **ADR 0010 — the telemetry layer is inert.** Nothing outside
-  `src/services/telemetry/` imports it, re-verified at `8d29aa6` by grepping the
+  `src/services/telemetry/` imports it, re-verified at `54418b6` by grepping the
   whole of `src/` for that path — every hit is inside the directory itself — so
   consent is never asked for and `record()` is never called. The prohibition half of the ADR
   holds; the sentence *"telemetry is fed from the main thread's orchestration
@@ -883,9 +1196,16 @@ one direction.
 
   **Understated:** the third figure has no source. ADR 0025 says its inherited
   budget is *"the 3.9px at 900×600 that ADR 0022 and `hud.css` both record"*.
-  Re-verified at `8d29aa6` by grepping the whole tree: **`3.9` appears in no ADR
+  Re-verified at `54418b6` by grepping the whole tree: **`3.9` appears in no ADR
   but 0025 — `docs/adr/0025-guard-hiring-surface.md:70` and `:182` — in no
-  `.css` file, and nowhere in `src/`.** Re-run after #377, which is the first
+  `.css` file, and nowhere in `src/`.** One caveat this entry should have carried
+  from the start: a bare `grep '3\.9'` also hits
+  `docs/adr/0022-room-zoning-surface.md:562`, which reads *"÷ 12.2 is 23.9"* — a
+  substring, not a second source. `git show 8d29aa6:docs/adr/0022-room-zoning-surface.md`
+  carries that same line, so the grep was never clean and the sentence was
+  imprecise the day it was written rather than overtaken since. The finding is
+  unaffected: 23.9 is not 3.9, and there are five `.css` files under `src/ui/`,
+  `hud.css` among them, with no `3.9` in any of them. Re-run after #377, which is the first
   change to touch `src/ui/hud/hud.css` since this entry was written and so the
   one that could have supplied the missing source; it did not, and
   `src/ui/hud/build-panel.ts`, ADR 0022 and ADR 0025 are all untouched in that
@@ -900,11 +1220,22 @@ one direction.
   and recorded here: it is a docs-truth task inside an accepted ADR and it belongs
   in a change of its own.
 - **ADR 0022 was written against v0.0.30 and its structural citations have
-  drifted.** `HudIntent` declares **sixteen** members rather than the seven the
+  drifted.** `HudIntent` declares **eighteen** members rather than the seven the
   ADR counts — `docs/adr/0022-room-zoning-surface.md:82` says
   `src/ui/hud/hud.ts:153-195` *"declares seven members and none of them is a
-  room"*, and the union now runs `src/ui/hud/hud.ts:270-491` — three of
+  room"*, and the union now runs `src/ui/hud/hud.ts:270-553`, ending where
+  `HudUnavailableNotice` begins — three of
   them room-related (`zone-room`, `unzone-room`, `arm-room-tool`);
+  (**This entry said "sixteen" and gave the range as `:270-491`.** The count was
+  wrong by two and the range short by 62 lines, and both were wrong **when
+  written**: counting the same way at the previous anchor `8d29aa6` also gives
+  eighteen, and the set has not changed since. That is worth recording where it
+  happened, because this entry's entire subject is somebody else's drifted hand
+  count and its stated moral is that a count in prose is the least durable
+  citation this corpus has. It then made the same mistake in the sentence saying
+  so — which is the argument for the rule §6 now closes with, and the reason the
+  count above is stated with the boundary that lets a reader re-derive it rather
+  than on its own.)
   **`AWAITING_PRODUCER` is now empty**, which is more than this entry's old
   claim that `ZoneRoom` is not in it: #312 gave `ZoneRoom` a producer and #367
   gave the last one, `CancelBuildOrder`, its own
@@ -947,8 +1278,12 @@ one direction.
   `83c3121` and it is **still eleven** — the one count in this section that has
   held across the eleven releases to `dbe271f`, because #367 wired an existing
   member rather than adding one. **It no longer holds at that count.**
-  `simulationCommandSchema` (`src/simulation/protocol/commands.ts:437`) now
-  discriminates **thirteen**, matching thirteen `type: z.literal` members: #392
+  `simulationCommandSchema`, declared
+  `export const simulationCommandSchema = z.discriminatedUnion('type', [` in
+  `src/simulation/protocol/commands.ts` (`:467` as of `83d9616`; this entry cited
+  `:437` and then `:465`, and both were overtaken), still discriminates
+  **thirteen**, matching the thirteen hits of
+  `grep -c "type: z.literal" src/simulation/protocol/commands.ts`: #392
   added `CancelMaterialPurchase` and #394 added `ReleaseGuardAssignment`, both
   with producers in the same change, so `AWAITING_PRODUCER` stayed empty while
   the count moved. `AdmitPrisoner` (#306) still concerns a prisoner. The
@@ -1003,10 +1338,51 @@ one direction.
   because the sentences after the false clause survived. The same phrase in
   `docs/research/` stays untouched for the reason that directory's README gives.
 
-- **NEW — two dated rulings were written into ADR 0008's Accepted body with no
-  queue row, on the same day #380 argued that such a thing needs one.** This is
-  for the owner rather than a defect this file can settle, and it is here because
-  nothing else would surface it. #382 added both to
+- **ANSWERED 2026-08-27 — two dated rulings were written into ADR 0008's Accepted
+  body with no queue row, on the same day #380 argued that such a thing needs
+  one.** The governance question this entry filed as the owner's is decided and
+  the rule is `docs/adr/README.md`'s *"An amendment to an accepted ADR: what form
+  it takes, and when it needs a queue row"*; **the two rulings' own substance is
+  still the owner's and is now in §2 as this file's one live entry.** The entry
+  below is kept as written, because it is the argument the ruling answers and
+  because this file's practice is to quote what it corrects rather than overwrite
+  it. What the ruling settled, in four lines:
+
+  1. **No.** *"Applies"* and *"amends"* are not distinguishable by anything a
+     reader can check — the test would be *"does the ADR as it stood already
+     entail this?"*, a re-derivation from the old text, and an ADR exists to
+     spare the next reader exactly that. So **no rule turns on the difference.**
+  2. **The queue rule is therefore not widened to cover amendments as a class.**
+     Counted on disk: seventeen post-hoc additions live in `docs/adr/`, and
+     **exactly one of them ever had a row here** — 0007's second amendment.
+     Widening the rule would have condemned sixteen on the day it landed, and
+     this section already calls that rule *"unsatisfiable under concurrency"*.
+  3. **What is required instead is form, and the corpus already keeps it**:
+     fifteen `Amendment`/`Addendum` sections across nine ADRs, fourteen of them
+     already dated in the heading. The two exceptions were ADR 0008's rulings,
+     which had no section at all — the only unsectioned dated rulings in the
+     directory — and ADR 0033's undated heading. ADR 0008's are corrected in the
+     same commit as this entry, text untouched.
+  4. **The trigger stays *outstanding*.** An amendment says in its own opening
+     whether it was approved; one that says nothing reads as outstanding without
+     anyone having to reconstruct who wrote it. Ten of the seventeen are covered
+     that way today; the seven that are not are named in
+     `docs/adr/README.md` ruling 3, and five of them are a backlog this decision
+     does not condemn.
+
+  **Also corrected: this entry's closing citation.** It said *"Two ADR numbers
+  are unused — `docs/adr/README.md:102-106` records **0032** as next free and
+  0030 as 'held by an unmerged branch'"*. That file now states **0038** as next
+  free, and 0030 is still held. The point the clause was making survives —
+  nothing here was blocked on a number — but the line-range citation did not, on a
+  file this same entry is a claim about and which this same commit edits. That is
+  the argument for citing by quoted phrase rather than by line, which is what the
+  rest of §5 already does and what the entries above it were rewritten to do.
+
+  The entry as filed, unchanged:
+
+  This is for the owner rather than a defect this file can settle, and it is here
+  because nothing else would surface it. #382 added both to
   `docs/adr/0008-trusted-service-boundary.md` §2: *"**Generalised, 2026-08-26
   (issue #280 finding F14): a Data API role holds exactly the DML privileges its
   zone needs on a table, and nothing else**"*, which states *"the rule this
@@ -1035,9 +1411,15 @@ one direction.
   accepted decision" and "amends an accepted decision" are distinguishable by
   anything a reader can check**, and if not, whether the queue rule should cover
   both. Recorded, not decided; ADR 0008's `Status` is `Accepted` and no status is
-  wrong either way. Two ADR numbers are unused — `docs/adr/README.md:102-106`
-  records **0032** as next free and 0030 as *"held by an unmerged branch"* — so
-  nothing here was blocked on a number.
+  wrong either way. Numbers were free at the time — the index's **Next free
+  number** line said so, and still records 0030 as *"held by an unmerged
+  branch"* — so nothing here was blocked on a number. **This entry cited
+  `docs/adr/README.md:102-106` and said that range "records **0032** as next
+  free". Both halves are stale:** the index has since passed 0038, 0039 and 0040
+  and now states 0041, and `:102-106` is prose about how a neighbouring
+  paragraph is worded for a test, not the next-free line at all. Cited by name
+  rather than by line and number, because this is the third correction of the
+  same shape in this file.
 
 Also not here as a decision: **ADR 0002**, whose configuration matches the ADR
 exactly (`wrangler.jsonc:12` for `lockstate-staging`, `:20` for `lockstate`)
@@ -1054,6 +1436,26 @@ anchors, so the sentence was wrong when it was written and not overtaken —
 another entry that a re-read catches and no gate can. What remains true is the
 part that matters: it is not a wrong status, and the deployment document carries
 the trap.
+
+Also not here as a decision, and **new at this pass: ADR 0003 has no amendment
+for the `zoning` sibling of `simulation/status-counts`.** The ADR gained an
+amendment when `refusal` was added to that payload (*"Amendment, 2026-08-24:
+`simulation/status-counts` also carries the last refusal"*), and a second
+optional sibling was added by #312 with no matching amendment and no mention of
+the word anywhere in the document. Two sentences in the body then described the
+payload as the counts plus `tick`, `schemaVersion` and a refusal; both are
+corrected in place at this pass, and both now point here. What is *not* an
+editor's call is whether the ADR should carry a third amendment stating the
+`zoning` shape and its compatibility argument the way the refusal one does, or
+whether the corrected sentences are enough -- that is the owner's, and it is the
+only thing this entry asks for. **It is not a wrong status and not a code gap:**
+`zoningNoticeSchema` is declared, `.strict()`, optional, produced by the worker
+and decoded on the main thread, with `tests/unit/ui-simulation-zoning.test.ts`
+driving the notice through a real `simulation/status-counts` message; the
+document is what is
+behind the code, in the same way and for the same reason that
+`src/simulation/protocol/transferables.ts`'s comment said "Eleven integers" for
+two days after the twelfth landed (#444).
 
 ---
 
@@ -1152,10 +1554,16 @@ never recorded before this round:
   question, so the comment moved down 29 lines and the file now carries two.)
 - `src/simulation/economy/income.ts` — *"a ninth `Proposed` document in
   `docs/adr/`"*. **This entry then said "there is exactly one, and it is 0029",
-  and that is now false: 0029 was accepted on 2026-08-26 (#356) and the one
-  `Proposed` document is ADR 0031** (`docs/adr/README.md:100` is the single
-  `Proposed` row in the index, and `docs/adr/0031-build-queue-cancellation-surface.md:5`
-  is its status line). Re-read at this commit: `income.ts` carries no count at
+  which was falsified when 0029 was accepted on 2026-08-26 (#356); the
+  replacement said the one `Proposed` document was ADR 0031, and that was
+  falsified the same day at `e560656` (#389) when 0031 was accepted too. At this
+  anchor no ADR in the directory is `Proposed`.** The two line citations that
+  came with it — `docs/adr/README.md:100` as "the single `Proposed` row" and
+  `0031-build-queue-cancellation-surface.md:5` as its status line — are stale for
+  the same reason and are dropped rather than re-pointed. **That is the same
+  sentence rotting three times inside one file**, which is the argument for the
+  rule §6 closes with: a count of documents in a status is something the index
+  already computes, so prose should not restate it. Re-read at this commit: `income.ts` carries no count at
   all, which is why the correction itself did not go stale with the number — the
   argument for keeping the rate on issue #29 never depended on the count, so the
   count is gone from it, and that is the durable half. The stale sentence was
@@ -1268,6 +1676,16 @@ gained six lines and its `:592-598` citation was re-read rather than assumed —
 it still lands**, which is the one case where "the file changed" and "the
 citation moved" came apart.
 
+**At `54418b6` two of those six are no longer in untouched files, and they came
+apart in opposite directions** — which is worth recording because the sentence
+above rests each of the six on the file having not changed, not on anyone having
+looked. #423 edited both. `docs/DEPLOYMENT.md:163` **moved to `:164`**: it now
+lands on the blank line above the paragraph it names. `.github/workflows/migrate-database.yml:20`
+**still lands**, re-read rather than assumed, as `docs/TRUSTED_SERVICES.md` was.
+The other four — `0016:173`, `0013:15` and `:19-21`, `README.md:59` — are still
+in files `git diff 8d29aa6..HEAD` reports as untouched, and were spot-checked
+anyway: all four land.
+
 That is the whole cost of the second pass, and the ratio across both is the
 argument for the practice this file keeps recommending and keeps failing to
 follow: **a `file:line` into a document under active edit is the least durable
@@ -1276,6 +1694,41 @@ subsection needed fifteen corrections — eight line citations at `83c3121`, six
 more at `dbe271f`, and exactly **one** correction of substance, the ADR the
 `income.ts` count referred to. **Fourteen of fifteen were numbers**, and not one
 of the sentences those numbers point at has changed.
+
+**The third pass, at `54418b6`, made it twenty-three across three: twenty-one
+line citations and two corrections of substance.** Seven numbers moved here — the
+command union's, three of the four `transition()` sites, and three in
+`docs/DEPLOYMENT.md` — and again not one of the sentences behind them had
+changed. The count is still thirteen, the transitions are still four, `'ready'`
+is still unreachable.
+
+**So this file has now diagnosed the same defect three times and fixed it zero
+times, and repeating the diagnosis a fourth time is not the useful response.**
+What would be, stated as a proposal for the owner rather than as something done
+here, because it changes how the corpus is cited and that is a decision:
+
+1. **Stop citing a bare `file:line` into a document under active edit.** Every
+   correction in this subsection across three passes has been a number pointing
+   at an unchanged sentence. A citation of the form *"`docs/DEPLOYMENT.md`, the
+   paragraph beginning 'The reasoning that put migrations'"* survives every edit
+   that does not change the sentence, which is all of them so far. Code citations
+   are different and should stay `file:line`: they are checked by grep, not read
+   by eye, and `src/` moves for reasons that do change meaning.
+2. **This one is assertable, unlike the rest of this file.** A test can extract
+   each quoted sentence from this document and require it to appear verbatim in
+   the file named. That catches the drift that actually happens — a quote going
+   stale — and it cannot be satisfied by moving a number without reading
+   anything, which is the honest boundary
+   `tests/foundation/adr-status-queue-anchor-contract.test.ts` names about
+   itself.
+3. **The cost is a one-off rewrite of the citations in §§3-6** and a rule that
+   new entries quote rather than count lines. The benefit is that the delta pass
+   this header describes stops spending most of its budget on numbers.
+
+The separate structural change this file has also diagnosed and not made — one
+file per entry in a directory, so two commits can add two entries without
+touching each other — is a different problem (contention on a single 90 KB file)
+with a different fix, and is not addressed by the above.
 
 ### Cannot be edited at all
 

@@ -43,48 +43,81 @@ export type SaveImportResult =
  *
  * Demotion **deletes** a generation, and the only thing that justifies
  * deleting a save is that a better one remains. The caller that drives it
- * (`SessionController.loadPrison`) walks the retained window newest-first and
- * demotes every generation the host refuses, and the *usual* reason a host
- * refuses one is deterministic — a payload shape this build cannot restore, or
- * a bug in this build's own restore code, which
- * `SimulationWorkerStateMachine.handleInitialize` labels
+ * (`SessionController.loadPrison`) walks the retained window newest-first, and
+ * the *usual* reason a host refuses a generation is deterministic — a payload
+ * shape this build cannot restore, or a bug in this build's own restore code,
+ * which `SimulationWorkerStateMachine.handleInitialize` labels
  * `snapshot-incompatible` identically to a genuinely bad blob because it
  * catches every exception from `restoreSimulationRuntime`. A deterministic
- * cause fails on *every* generation, so one load walked the whole window and
- * deleted all of it: measured on v0.0.112, three good generations became zero
- * in a single load, and the prison stayed unloadable afterwards even once the
- * failure was removed, because there was nothing left to load. One generation
- * is enough for it: the same walk deleted a legitimate V1 save that had
- * migrated and checksummed cleanly on the way in.
- * `tests/integration/session-restore-failure.test.ts`'s "never the last copy"
- * pins both cases.
+ * cause fails on *every* generation, so a walk that demoted each refusal as it
+ * happened deleted the whole window: measured on v0.0.112, three good
+ * generations became zero in a single load, and the prison stayed unloadable
+ * afterwards even once the failure was removed, because there was nothing left
+ * to load. One generation is enough for it: the same walk deleted a legitimate
+ * V1 save that had migrated and checksummed cleanly on the way in.
  *
- * `'last-generation-retained'` is the floor that stops it: the last retained
- * generation is never deleted, however confidently it has been refused. It
- * costs the player nothing but a refused load -- a prison whose only
- * generation cannot be restored and a prison with an empty window both answer
- * `no-valid-generation` from `SessionController.loadPrison` (`loadCurrent`
- * still returns the retained envelope, which is the point), both keep their
- * row in the prison list, and `delete()` still clears either one -- and it is
- * the difference between a save that a fixed build can still open and a save
- * that no longer exists.
+ * **`loadPrison` now calls this only once a *different* generation has
+ * actually restored** (#403 (d)). That is what "a better one remains" means
+ * literally rather than by assumption: another generation went through the
+ * same restore code on the same build moments earlier and came back a running
+ * simulation, so what is wrong is this save. A deterministic cause reaches
+ * this method not at all, and costs nothing.
+ * `tests/integration/session-restore-failure.test.ts` pins both halves --
+ * "a deterministic refusal costs no generation at all" for the walk that
+ * retires nothing, and "demotes the unrestorable generation, restores the
+ * previous one" for the retirement a success earns.
+ *
+ * `'last-generation-retained'` is the floor underneath that, and it is now a
+ * second belt rather than the thing holding the window up: the last retained
+ * generation is never deleted, however confidently it has been refused.
+ * `loadPrison` can no longer reach it -- the generation that restored is
+ * always retained, so a demotion driven by it always leaves at least that one
+ * behind -- but the floor is what any *other* caller runs into, and what
+ * catches a future walk that forgets the rule above. It costs the player
+ * nothing but a refused load: a prison whose only generation cannot be
+ * restored and a prison with an empty window both answer `no-valid-generation`
+ * from `SessionController.loadPrison` (`loadCurrent` still returns the
+ * retained envelope, which is the point), both keep their row in the prison
+ * list, and `delete()` still clears either one -- and it is the difference
+ * between a save that a fixed build can still open and a save that no longer
+ * exists.
  *
  * `'not-retained'` is the pre-existing no-op: an unknown prison, or a
  * generation already outside the retained window. It is reported rather than
  * swallowed so a caller looping over generations cannot mistake "nothing
  * happened" for progress and spin.
  *
- * This also aligns demotion with what the *decode* path has always done.
+ * Both rules came from the *decode* path, which has always had them.
  * `loadCurrent` drops confirmed-corrupt generations through
  * `recoverToGeneration`, which runs **only after** a generation has validated
  * -- when nothing in the window validates it deletes nothing at all. Demotion
- * was the one path in this file that would empty a window.
+ * was the one path in this file that would empty a window; it no longer is.
  */
 export type DemotionResult =
   | { readonly demoted: true }
   | { readonly demoted: false; readonly reason: 'last-generation-retained' | 'not-retained' };
 
 export type LoadRecoveryOutcome = 'current' | 'recovered-previous';
+
+export interface LoadCurrentOptions {
+  /**
+   * Generations the caller has already tried and cannot use, for a reason
+   * this method structurally cannot see: a save that passed schema, migration
+   * and checksum and then failed to *restore*. They are passed over as if they
+   * were not retained -- neither returned, nor retired to get past them.
+   *
+   * That second half is the point (#403 (d)). The walk used to advance by
+   * *deleting*: `loadCurrent` re-derives its candidate list from metadata on
+   * every call, so it kept handing back the same generation until the caller
+   * retired one, and retiring one deletes it. A restore failure whose cause is
+   * this build's own code is deterministic, so it refuses every generation in
+   * turn -- and each refusal cost a generation. Skipping costs none, and the
+   * caller retires what it refused only once a *different* generation has
+   * actually restored, which is the rule the decode path below has always
+   * followed.
+   */
+  readonly skip?: ReadonlySet<string>;
+}
 
 export type LoadResult =
   | { readonly ok: true; readonly envelope: SaveEnvelope; readonly generationId: string; readonly outcome: LoadRecoveryOutcome }
@@ -246,20 +279,37 @@ export class PrisonSaveRepository {
    * generations newest-first and adopt the first one that validates,
    * updating the pointer so the corrupt generation is not retried on every
    * boot. Returns `no-valid-generation` only when nothing in the retained
-   * window validates.
+   * window validates -- and, exactly as before, having deleted nothing in
+   * that case.
+   *
+   * **Nothing is deleted here except generations this call proved
+   * undecodable, and only once a *later* one has decoded.** A generation the
+   * caller asked to `skip` is not judged by this method at all, so it is
+   * neither returned nor retired; see `LoadCurrentOptions.skip`.
    */
-  public async loadCurrent(prisonId: string): Promise<LoadResult> {
+  public async loadCurrent(prisonId: string, options: LoadCurrentOptions = {}): Promise<LoadResult> {
     const metadata = readSlot(await this.store.runTransaction('readonly', (tx) => tx.getMetadata(prisonId)), prisonId);
     if (metadata === undefined) return { ok: false, reason: 'not-found' };
 
-    const candidates = [...metadata.generationIds].reverse(); // newest first
-    for (const generationId of candidates) {
+    const candidates = [...metadata.generationIds].reverse().filter((id) => options.skip?.has(id) !== true); // newest first
+    for (const [index, generationId] of candidates.entries()) {
       const raw = await this.store.runTransaction('readonly', (tx) => tx.getGeneration(prisonId, generationId));
       const decoded = raw === undefined ? undefined : decodeSaveEnvelope(raw);
       if (decoded?.ok !== true) continue;
 
-      if (generationId !== metadata.currentGenerationId) {
-        await this.recoverToGeneration(prisonId, generationId, candidates);
+      // Everything this walk passed over is confirmed-invalid: it was read
+      // and it did not decode. Skipped generations are not in `candidates`,
+      // so they can never end up here.
+      const confirmedInvalid = candidates.slice(0, index);
+      // The other reason the generation that decoded is not the current one
+      // is a pointer that has fallen outside the retained window, which this
+      // read heals. A pointer that is retained and simply older than the
+      // generation returned is left alone -- moving it would be a write on a
+      // read that retired nothing.
+      const pointerIsRetained =
+        metadata.currentGenerationId !== undefined && metadata.generationIds.includes(metadata.currentGenerationId);
+      if (confirmedInvalid.length > 0 || !pointerIsRetained) {
+        await this.recoverToGeneration(prisonId, generationId, confirmedInvalid);
       }
 
       return {
@@ -291,7 +341,8 @@ export class PrisonSaveRepository {
    * by every read path and would never be deleted by `delete()` either, so
    * un-pointing alone would leak it. The caller decides what counts as
    * confirmed-unrestorable; `SessionController.loadPrison` demotes only on a
-   * `SnapshotRestoreRejectedError`, never on a host that failed to answer.
+   * `SnapshotRestoreRejectedError`, never on a host that failed to answer, and
+   * only once a different generation has restored (#403 (d)).
    *
    * **The last retained generation is never demoted**, and that floor is the
    * reason this method reports what it did instead of returning `void`. See
@@ -325,15 +376,17 @@ export class PrisonSaveRepository {
     });
   }
 
+  /**
+   * Points the slot at `recoveredGenerationId` and deletes the generations
+   * the caller proved invalid on the way to it. It runs **only after** a
+   * generation has decoded, which is why the decode path has never been able
+   * to empty a window: when nothing decodes, this is never called.
+   */
   private async recoverToGeneration(
     prisonId: string,
     recoveredGenerationId: string,
-    triedNewestFirst: readonly string[],
+    confirmedInvalid: readonly string[],
   ): Promise<void> {
-    // Everything newer than the recovered generation was confirmed invalid above; drop it.
-    const recoveredIndex = triedNewestFirst.indexOf(recoveredGenerationId);
-    const confirmedInvalid = triedNewestFirst.slice(0, recoveredIndex);
-
     await this.store.runTransaction('readwrite', async (tx) => {
       const metadata = readSlot(await tx.getMetadata(prisonId), prisonId);
       if (metadata === undefined) return;

@@ -20,6 +20,7 @@ import { packCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { buildPrisonerScenarioFixture } from '../helpers/prisoner-fixture';
+import { wallRoomPerimeter } from '../helpers/room-walls';
 
 const RNG_STREAM = 'prisoners.classification';
 
@@ -290,6 +291,12 @@ describe('IntakeSystem: deterministic stage-by-stage pipeline', () => {
        * by hand, are a convenience rather than the only available route.
        */
       const runtime = createNewSimulationRuntime(7);
+      // Walled first: `zone` refuses an `enclosed` room whose perimeter is
+      // open, and both of these author that requirement. The subject here is
+      // what a zoned room *holds*, so the walls are setup rather than the
+      // thing under test.
+      wallRoomPerimeter(runtime.world, { x: 2, y: 2, width: 3, height: 3 });
+      wallRoomPerimeter(runtime.world, { x: 8, y: 2, width: 3, height: 3 });
       const cell = runtime.roomZoning.zone({ roomCatalogId: 'room.cell', x: 2, y: 2, width: 3, height: 3 }, 0);
       const solitary = runtime.roomZoning.zone({ roomCatalogId: 'room.solitary-cell', x: 8, y: 2, width: 3, height: 3 }, 0);
       if (cell.kind !== 'zoned' || solitary.kind !== 'zoned') {
@@ -398,23 +405,51 @@ describe('IntakeSystem: deterministic stage-by-stage pipeline', () => {
     });
 
     it('ignores an occupant that is no longer alive rather than reading a recycled slot', () => {
-      // `RoomInstanceRegistry.release` is never called for a destroyed
-      // prisoner (#31), so an occupant set can name an entity that no longer
-      // exists, and `EntityStore.getIndex` masks without checking. Reading
-      // that id's record would return whoever now holds the recycled index.
-      // With the liveness filter the dead tier-3 resident contributes
-      // nothing, so 'shared-a' rates 0 and wins the tie on instance id;
-      // without it, it would rate 3 and the arrival would be sent to
-      // 'shared-b'.
+      /*
+       * `RoomInstanceRegistry.release` is never called for a destroyed
+       * prisoner (#31), so an occupant set can name an entity that no longer
+       * exists, and `EntityStore.getIndex` masks without checking. Reading
+       * that id's record would return whoever now holds the recycled index.
+       *
+       * **Somebody else has to be holding it, and that is what this case used
+       * to be missing.** It destroyed the resident and admitted the arrival
+       * immediately, so `EntityStore.spawn` handed the arrival the freed index
+       * itself (`freeIndices` is LIFO) and `sharingViewsOf` read the arrival's
+       * *own* `riskTier` back out of the dead id -- a distance of 0, a rating
+       * of 0, and `shared-a` winning either way. Measured on the shipped
+       * fixture: `deadIndex 0, arrivalIndex 0, sameSlot true`, and deleting
+       * `if (!this.store.isAlive(occupant)) continue;` left this file 18/18
+       * green. The comment claiming "it would rate 3" was describing an
+       * outcome the fixture could not produce.
+       *
+       * So the freed slot is filled first, by a tier-3 entity that is not in
+       * any cell. Now the dead id aliases *that* record: with the liveness
+       * filter `shared-a` rates 0 and wins the tie on instance id; without it,
+       * `shared-a` rates 3 and the arrival is sent to `shared-b`, which is
+       * what the case always claimed to be testing.
+       */
       const prison = sharedCellPrison();
       const dead = prison.seatResident('shared-a', 3);
       prison.store.destroy(dead);
       expect(prison.roomInstances.occupantsOf('shared-a')).toEqual([dead]);
 
+      // Whoever the store hands the freed index to next. Housed nowhere, so
+      // the only way it can reach the rating is through the stale id.
+      const squatter = prison.store.spawn();
+      prison.records.riskTier[prison.store.getIndex(squatter)] = 3;
+
       const arrival = prison.admit(LOW_RISK);
       const kernel = makeKernel();
       kernel.registerSystem(prison.intakeSystem);
       for (let i = 0; i < 20; i += 1) kernel.step();
+
+      // The three facts that make the assertion below mean what it says. The
+      // last one is the guard: without it this case can silently return to
+      // comparing the arrival with itself, which is how it passed for as long
+      // as it did.
+      expect(prison.store.isAlive(dead)).toBe(false);
+      expect(prison.store.getIndex(dead), 'the dead id now aliases the squatter').toBe(prison.store.getIndex(squatter));
+      expect(prison.store.getIndex(dead), 'the arrival must not be the one holding the recycled slot').not.toBe(prison.store.getIndex(arrival));
 
       expect(prison.coldState.getAccommodation(arrival)).toBe('shared-a');
     });

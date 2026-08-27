@@ -620,20 +620,37 @@ export class IncidentResponseSystem implements SystemRegistration {
    *
    * Live response bookkeeping references the *previous* `NavigationSystem`
    * instance's request queue, exactly like #25's jobs and #26's guards, so a
-   * restored open incident has no active response and is driven by
-   * `advanceResponse`'s no-record path above: it lapses at its deadline rather
-   * than silently resolving, which is the consistent-failure outcome issue #28
-   * requires rather than a hidden success. That much the predecessor of this
-   * docstring said, and it was true.
+   * restored open incident has no active response and no record of the one it
+   * lost.
    *
-   * What it did not account for is that the discarded record is also what
-   * `releaseResponse` reads in order to **return** what the response claimed,
-   * and that both claims -- `deploymentPhase: 'on-search'` on each responder,
-   * `'lockdown'` on the incident's sector -- are themselves in the payload. So
-   * dropping the attribution did not undo the claim; it made it permanent.
-   * `releaseOrphanedClaims` is the answer, and it runs on the first scheduled
-   * update rather than here: a snapshot load is re-hydration, and the state
-   * change it owes belongs on a tick that the kernel drives.
+   * **What this docstring used to say next, kept beside the correction rather
+   * than overwritten:** *"it is driven by `advanceResponse`'s no-record path
+   * above: it lapses at its deadline rather than silently resolving, which is
+   * the consistent-failure outcome issue #28 requires rather than a hidden
+   * success."* That was true of the predecessor of this docstring and it stayed
+   * true of ADR 0033's first four decisions, and it is **no longer the ordinary
+   * restore outcome.** ADR 0033's amendment (its open question 1, built) has
+   * the same update that runs the sweep mount a *fresh* response to every
+   * still-open incident no record claims, so a restored session reaches the
+   * continuous run's own outcome -- measured on issue #352's reproduction,
+   * `'resolved'` with `injuredEntityIds: []` and `propertyDamage: 4`, one
+   * system interval later than the continuous run rather than a lapse with
+   * `[1,2,3]` and `8`. The no-record lapse is what is left when the re-dispatch
+   * is *refused*, and `redispatchInterruptedResponses` lists the four refusals.
+   * Nothing about the lifecycle changed to allow it: it is still forward-only,
+   * `LEGAL_TRANSITIONS` is untouched, and what was separated is dispatching
+   * from notifying.
+   *
+   * What the predecessor did not account for at all is that the discarded
+   * record is also what `releaseResponse` reads in order to **return** what the
+   * response claimed, and that both claims -- `deploymentPhase: 'on-search'` on
+   * each responder, `'lockdown'` on the incident's sector -- are themselves in
+   * the payload. So dropping the attribution did not undo the claim; it made it
+   * permanent. `releaseOrphanedClaims` is the answer, and it runs on the first
+   * scheduled update rather than here: a snapshot load is re-hydration, and the
+   * state change it owes belongs on a tick that the kernel drives. The
+   * re-dispatch follows it on that same update, out of the pool the release
+   * refilled.
    */
   public loadSnapshot(snapshot: ReturnType<IncidentResponseSystem['getSnapshot']>): void {
     this.responses.clear();

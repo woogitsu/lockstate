@@ -135,10 +135,37 @@ new action is one more entry here -- never a new branch in
 
 `utility-ai.ts`'s `scoreAction` is `sum(need deficit x action's per-tick
 effect on that need)` -- an action addressing a more depleted need, or
-addressing a need more strongly, scores higher. `selectBestAction` picks
-the highest score among *already-filtered-legal* candidates, breaking an
-exact tie deterministically by ascending action id -- never by RNG or
-iteration order. The one intentional RNG use in this whole slice is
+addressing a need more strongly, scores higher. `rankActions` orders the
+*already-filtered-legal* candidates by descending score, breaking an exact
+tie deterministically by ascending action id -- never by RNG or iteration
+order. Action ids are unique, so that comparator never answers `0` and the
+ranking is a **total order derived from state**, which is what
+[ADR 0029](./adr/0029-concurrent-room-use-claims.md) decision 7 commitment 3
+requires. `selectBestAction` is its head, derived rather than restated.
+
+**Scoring has no availability term, and cannot have one -- it is a pure
+function of needs.** So the ranking says what a prisoner *wants* and
+`ActionSystem.beginNextAction` says what they can *have*: it walks the ranked
+candidates and starts the first one whose target resolves, **in the same
+reconsideration cycle**
+([ADR 0041](./adr/0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md)
+decision 1). Before that walk it took one
+answer and gave up, which made every
+lower-ranked candidate unreachable in that cycle -- and in the next, since
+nothing about the prisoner's state had changed in between. `action.eat-meal`
+scores strictly above `action.eat-in-cell` on the same need in the same `meal`
+category, so a prison with no canteen chose the canteen for ever and fed
+nobody: measured at 0 performing ticks of `action.eat-in-cell` and hunger
+pinned at the floor, at 1, 4 and 24 prisoners alike, so it was never a
+contention effect. `tests/integration/cell-only-meal-fallback.test.ts` is the
+run. Ordering the *contended* scan by need urgency is
+[ADR 0041](./adr/0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md)
+decision 2 and
+is deliberately not done -- ADR 0029 decision 5's unfairness is unchanged, and
+under contention a loser now eats a worse meal rather than nothing, which is
+measured in `tests/integration/contended-canteen-meal-fallback.test.ts`.
+
+The one intentional RNG use in this whole slice is
 `classification.ts`'s screening-variance draw (issue #24: "deterministic
 tie-breaking and named RNG only where explicitly intended"); everything
 else here is a pure function of state.
@@ -241,13 +268,15 @@ that are worth stating here rather than leaving to be discovered:
   `unmetDemandCycles`, and retry on the next cycle.
 - **Nothing a player can build is affected yet, and that is the honest
   reading.** Every room type whose actions resolve by catalogue id derives its
-  ceiling from the objects in it, and the two placeable buildables supply
-  `'sleep-surface'` (`bed-wooden`) and `'sanitation'` (`toilet-brick`) -- neither
-  of which any `room-catalog-id` action asks for, since `action.sleep` and
-  `action.use-toilet` both target `own-accommodation`. So a canteen, shower room,
-  common room and classroom all derive 0 for the capability their action wants
-  and those actions are unreachable. The ceiling becomes observable in phase 4,
-  when those objects become placeable. Before the #326 amendment this was *not*
+  ceiling from the objects in it. **This paragraph used to read "the two
+  placeable buildables supply `'sleep-surface'` (`bed-wooden`) and
+  `'sanitation'` (`toilet-brick`)" and concluded that a canteen, shower room,
+  common room and classroom all derive 0, so those actions are unreachable until
+  phase 4 makes the objects placeable.** Phase 4 shipped at `b097e70` (#384,
+  v0.0.98): `src/simulation/construction/definition.ts` now declares nineteen
+  rows carrying a `placesObjectId`, dining tables, benches and shower heads among
+  them, and that same file works the canteen arithmetic this paragraph said was
+  not yet observable (`:386-397`). The ceiling is observable now. Before the #326 amendment this was *not*
   the case and the difference was an accident: a bed or a toilet standing in a
   common room gave its capability-blind ceiling a value, so
   `action.common-room-recreation` became reachable off furniture that has
@@ -363,15 +392,45 @@ recording as one rule over two collections rather than as two rules:
   `object` requirement reads `'missing-capability'` and a second cell is what
   `findAvailableResidence` now answers with.
 - **Concurrent use.** `claimUse` refuses at
-  `claims.size >= concurrentUseCapacity` and `findAvailableForUse` skips
-  likewise, so the room stops taking new users while the prisoners already
-  performing there finish. Their claims drain through `ActionSystem`'s three
-  release sites, none of which consults a capacity -- which is what makes a
-  dropped capacity unable to leak a claim -- and `releaseUse` is total, so it
-  cannot double-release one either. Measured on a yard seating one:
-  `concurrentUseCapacity` goes 1 to 0 with a claim held, the holder keeps
-  performing, `findAvailableForUse` answers nothing, and `totalUseClaims` is back
-  to 0 when the action ends and still 0 after five in-game days.
+  `useOccupancyOf(instanceId, capability) >= concurrentUseCapacityFor(instance, capability)`,
+  and `findAvailableForUse` skips on that same comparison, so the room stops
+  taking new users **of the thing whose objects went** while the prisoners
+  already performing there finish. Their claims drain through `ActionSystem`'s
+  three release sites, none of which consults a capacity -- which is what makes
+  a dropped capacity unable to leak a claim -- and `releaseUse` is total, so it
+  cannot double-release one either.
+
+  *This bullet said `claims.size >= concurrentUseCapacity` until now, and
+  **neither half of that expression is in the code**. `claims.size` counts every
+  claim on the instance whatever it consumes, which is `claimCountOf`'s question
+  and not any ceiling's; `concurrentUseCapacity` is the all-objects total the
+  "Two capacities, not one" section above calls **"still the all-objects total
+  and is nothing's ceiling"** -- so the two halves of this document already
+  contradicted each other. The sentence was
+  **true when it landed** at `955756f` (#328) -- `claimUse` really did read
+  `claims.size >= instance.concurrentUseCapacity` there, and took no capability
+  argument at all -- and became false at `8a5fdcc` (#335), which scoped the
+  ceiling to the capability being asked for.*
+
+  **Measured on a canteen, because a yard can no longer demonstrate a ceiling
+  at all.** A canteen seating two, with two prisoners performing
+  `action.eat-meal` in it, has every object removed: the `'dining'` breakdown
+  goes with them, both claims stand rather than being released, and
+  `findAvailableForUse('room.canteen', 'dining')` answers nothing while a fresh
+  claimant's `claimUse` is refused -- then `totalUseClaims` is back to 0 once
+  the two `minDurationTicks: 40` meals end. That is
+  `tests/unit/prisoners-concurrent-room-use.test.ts`'s *"lowers a ceiling under
+  a standing claim without evicting anybody, and shuts the door behind it"*.
+
+  *The yard the previous version of this bullet measured on cannot show any of
+  it since #326.* `action.yard-recreation` names no capability, so
+  `concurrentUseCapacityFor(instance, undefined)` is `+Infinity` by case 1 --
+  `room.yard` is the one genuinely unbounded room. Probed on a resolved yard
+  registered at `concurrentUseCapacity: 1`: three `claimUse` calls all return
+  `true`, and after driving the capacity 1 to 0 `findAvailableForUse` **still**
+  returns the instance and a fourth `claimUse` **still** returns `true`, for
+  `totalUseClaims: 4`. A room type with no ceiling is the wrong place to
+  demonstrate one biting.
 
 **The two alternatives were considered and are worse, for the same reason.**
 Releasing the claims at the removal would leave prisoners performing in a room
@@ -715,6 +774,25 @@ multi-rate scheduler"). All pathfinding is delegated to #21/#22's real
 failure (permission-denied, unreachable) returns the prisoner to `'idle'`
 and counts as observable unmet demand rather than getting stuck.
 
+**A room removed from under a walk does the same, and until now it did
+neither.** `RoomZoningService.unzone` refuses on `claimCountOf > 0`, and by
+[ADR 0029](./adr/0029-concurrent-room-use-claims.md) decision 2 a traveller
+holds no claim -- so a canteen somebody is *eating in* cannot be un-zoned and a
+canteen somebody is *walking to* can. `continueTravelling`'s vanished-instance
+exit used to set the phase back to `'idle'` and return, leaving
+`currentActionTargetInstanceId` naming the removed room and counting nothing.
+That target is not transient: `beginNextAction` overwrites it only when some
+candidate resolves, and `projectPrisonerDetail` publishes it as
+`targetRoomInstanceId` whatever the phase, so the HUD named a room the player
+had already demolished. Measured through the real commands -- prisoner
+`'travelling'` to `room.canteen:8:8` with `claimCountOf` 0, `UnzoneRoom`
+accepted with no refusal, and twenty ticks later `staleTarget
+"room.canteen:8:8", canteenExists false, unmetDemandCycles 14 -> 14`. Both
+exits back to `'idle'` now clear the target, and the vanished-instance one
+counts the unmet cycle, which is the convention `continuePerforming` already
+followed for the same two conditions.
+`tests/integration/unzoned-target-mid-journey.test.ts` is the run.
+
 **Abstracted arrival, by explicit design.** On a resolved route, a
 prisoner's tile position updates directly to the destination -- there is
 no tile-by-tile locomotion simulation. This mirrors #21/#22's own explicit
@@ -794,11 +872,17 @@ re-benchmark navigation throughput at scale -- see
 Full violence/gangs/contraband/rehabilitation systems (#27/#28/#30); final
 personality/trait depth (#39); advanced crowd steering; tile-by-tile
 locomotion/rendering; the complete final need/action catalog and balance;
-real object-placement tracking (the reason `RoomInstanceRegistry` exists
-as an explicit, minimal bridge instead); UI/save-file integration (a session
-UI does now exist -- the HUD and save panel mounted by `src/main.ts` -- but
-the only prisoner state it surfaces is the status strip's population counts
-(#104) -- no roster, no needs, no actions and no cell assignment reaches a
+**"real object-placement tracking" was listed here as out of scope and is
+removed, because it shipped**: `PlacedObjectRegistry` and `RemoveObject` are
+described by this same document at `:178-180` and `:315-325`, so the exclusion
+contradicted the body above it from `6cededc` (#320, v0.0.61) onward. `RoomInstanceRegistry`
+remains the explicit, minimal bridge it was built as;
+UI/save-file integration (a session
+UI does now exist -- the HUD and save panel mounted by `src/main.ts` -- and it
+surfaces the status strip's population counts and, since `a613d04` (#383), the
+Intake panel's six stage counts and two group counts, which
+`src/ui/simulation-intake.ts:162` reads from the `hud/prisoner-population`
+projection -- no roster, no needs, no actions and no cell assignment reaches a
 panel, matching #19/#22's precedent of shipping the system before the
 surface; the save-file half was closed later,
 by #70).

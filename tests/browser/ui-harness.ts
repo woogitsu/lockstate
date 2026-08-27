@@ -1330,18 +1330,45 @@ window.lockstateUiHarness = {
     return true;
   },
 
-  clickRoomsControl(control: 'arm' | 'remove' | 'confirm' | 'cancel' | 'fold'): boolean {
+  clickRoomsControl(
+    control: 'arm' | 'remove' | 'confirm' | 'cancel' | 'fold' | 'coordinates' | 'coordinates-submit',
+  ): boolean {
     // `fold` is the panel's own header control rather than one of the four in
     // the actions row, and it is reached by class because that is what it is:
     // `.ui-panel__toggle` is not unique on a mounted HUD, so it is scoped to
-    // this panel the same way every other selector here is.
+    // this panel the same way every other selector here is. `coordinates` is
+    // the same kind of exception one level down: the typed route's disclosure
+    // header is a `.ui-section__header`, of which the panel has two.
     const button =
       control === 'fold'
         ? document.querySelector<HTMLButtonElement>('.hud-rooms > .ui-panel__header > .ui-panel__toggle')
-        : document.querySelector<HTMLButtonElement>(`.hud-rooms__${control}`);
+        : control === 'coordinates'
+          ? document.querySelector<HTMLButtonElement>('.hud-rooms__coordinates > .ui-section__header')
+          : document.querySelector<HTMLButtonElement>(`.hud-rooms__${control}`);
     if (button === null) return false;
     // A real click, so a disabled or `hidden` control genuinely does not fire.
     button.click();
+    return true;
+  },
+
+  typeRoomCoordinates(values: { x?: number; y?: number; width?: number; height?: number }): boolean {
+    const fields: readonly (readonly ['x' | 'y' | 'width' | 'height', string])[] = [
+      ['x', '.hud-rooms__coord-x input'],
+      ['y', '.hud-rooms__coord-y input'],
+      ['width', '.hud-rooms__coord-width input'],
+      ['height', '.hud-rooms__coord-height input'],
+    ];
+    for (const [name, selector] of fields) {
+      const value = values[name];
+      if (value === undefined) continue;
+      const input = document.querySelector<HTMLInputElement>(selector);
+      if (input === null) return false;
+      input.value = String(value);
+      // What a browser does when a typed field loses focus, and the only event
+      // `NumberField` listens to. Bubbling, because that is how the real one
+      // travels.
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    }
     return true;
   },
 
@@ -1464,6 +1491,14 @@ window.lockstateUiHarness = {
       cancelLaidOut: laidOut('.hud-rooms__cancel'),
       confirmText: document.querySelector<HTMLElement>('.hud-rooms__confirm')?.textContent?.trim() ?? '',
       confirmDisabled: document.querySelector<HTMLButtonElement>('.hud-rooms__confirm')?.disabled ?? false,
+      coordinates: [
+        '.hud-rooms__coord-x input',
+        '.hud-rooms__coord-y input',
+        '.hud-rooms__coord-width input',
+        '.hud-rooms__coord-height input',
+      ].map((selector) => document.querySelector<HTMLInputElement>(selector)?.value ?? ''),
+      coordinatesFolded:
+        document.querySelector<HTMLElement>('.hud-rooms__coordinates')?.dataset['collapsed'] ?? '',
       armPressed: document.querySelector<HTMLElement>('.hud-rooms__arm')?.getAttribute('aria-pressed') ?? '',
       removePressed:
         document.querySelector<HTMLElement>('.hud-rooms__remove')?.getAttribute('aria-pressed') ?? '',

@@ -145,12 +145,15 @@ const UNSENT_MAIN_TO_WORKER_KINDS: Readonly<Record<string, string>> = {
 /**
  * Worker-to-main kinds nothing under `src/` sends, with why.
  *
- * `simulation/delta` is the half of #274 A1 that the audit found true; A1's
- * point was that the *other* half of that ADR sentence ("no schema") is false.
+ * It held two entries until ADR 0040 slice 1 (#414) gave `simulation/delta` a
+ * sender -- `state-machine.ts#publishRenderDelta`, unprompted on the tick loop
+ * -- which is the direction this gate is written to fail in: the entry could
+ * not survive the sender, so deleting it was a step of that change and not a
+ * tidy-up after it. #274 A1's finding was true when it was written and is now
+ * closed; A1's other half, that the ADR sentence claiming "no schema" was
+ * false, was already false then.
  */
 const UNSENT_WORKER_TO_MAIN_KINDS: Readonly<Record<string, string>> = {
-  'simulation/delta':
-    '#274 A1, the half of that finding which holds. The kind has a full schema with a `superRefine` enforcing `tick > baseTick` (`types.ts#deltaMessageSchema`), is a member of `types.ts#workerToMainMessageSchema` and has a transfer-list case (`transferables.ts#collectProtocolTransferables`), and no module constructs one: the worker publishes whole snapshots on request and `simulation/status-counts` unprompted. `SimulationSnapshotFeed` says so in its own header -- "Only the snapshot path is implemented today -- nothing emits a delta".',
   'simulation/event':
     'Declared in the kind union with a schema (`types.ts#eventMessageSchema`) and a transfer-list case that unwraps an `ArrayBuffer` payload (`transferables.ts#collectProtocolTransferables`), and constructed by nothing. It has no main-thread reader either: the six main-thread modules that `switch (message.kind)` -- `simulation-snapshot-feed.ts`, `simulation-alerts.ts`, `simulation-clock.ts`, `simulation-commands.ts`, `simulation-counts.ts` and `simulation-zoning.ts` -- each have a `default` and no case for it, so one that did arrive would be dropped. That enumeration is counted rather than asserted: KIND_SWITCHING_MODULES below is derived from the scan, and a seventh dispatcher, a rename, or a module that grows a `simulation/event` case fails this gate instead of quietly making this sentence false. It has already worked twice: #283 made four dispatchers five, and the Rooms tab (ADR 0022, amended) made five six with `simulation-zoning.ts`, which reads the enclosure notice off `simulation/status-counts` -- and neither could be landed without coming back to this sentence. ADR 0003 lists "asynchronous domain events" among the families the protocol must support.',
 };
@@ -615,9 +618,12 @@ describe('every protocol message kind has a sender, and every sent kind can be p
      * means. That is strictly more than a line number could ever prove.
      */
     // The denominator, in the shape the rest of this file pins its figures:
-    // thirteen distinct symbols across four modules is what is being verified,
+    // twelve distinct symbols across four modules is what is being verified,
     // so a citation that reverts to a line number reduces it and is visible
-    // rather than merely unchecked.
+    // rather than merely unchecked. It was thirteen until #414 deleted the
+    // `simulation/delta` entry, which was the only sentence citing
+    // `deltaMessageSchema` and `workerToMainMessageSchema`; the sender it
+    // gained is cited in that entry's place.
     const distinct = new Set(ANCHORED_CITATIONS.map((citation) => `${citation.basename}#${citation.symbol}`));
     expect(
       [...distinct].sort(),
@@ -627,12 +633,11 @@ describe('every protocol message kind has a sender, and every sent kind can be p
       'state-machine.ts#handleHandshake',
       'state-machine.ts#handleMessage',
       'state-machine.ts#handlePing',
+      'state-machine.ts#publishRenderDelta',
       'transferables.ts#collectProtocolTransferables',
       'types.ts#MAIN_TO_WORKER_MESSAGE_KINDS',
-      'types.ts#deltaMessageSchema',
       'types.ts#eventMessageSchema',
       'types.ts#pingMessageSchema',
-      'types.ts#workerToMainMessageSchema',
       'worker-session-host.ts#DEFAULT_REPLY_TIMEOUT_MS',
       'worker-session-host.ts#initialize',
       'worker-session-host.ts#request',
@@ -878,12 +883,18 @@ describe('every protocol message kind has a sender, and every sent kind can be p
 
   it('measures the state #274 A1 and A2 describe, exactly', () => {
     // The denominators, stated so the gate reports a fact and not only guards
-    // one. Four of twenty kinds have no sender and two more are sent but
+    // one. Three of twenty kinds have no sender and two more are sent but
     // unprovokable, so a third of the protocol was declared and dead when this
-    // was written and a fifth of it still is. Making the figures exact means a
-    // kind that quietly loses its last sender cannot be settled by adding a
+    // was written and a quarter of it still is. Making the figures exact means
+    // a kind that quietly loses its last sender cannot be settled by adding a
     // list entry alone -- the count has to change too, and a reviewer sees
     // that the protocol got emptier.
+    //
+    // It moved in the other direction for the first time with ADR 0040 slice 1
+    // (#414): `simulation/delta` gained a sender, so the figures below went
+    // from four unsent and sixteen sent to three and seventeen. That is the
+    // outcome this gate exists to require of a kind that stops being dead --
+    // the same commit that adds the sender has to come back here.
     //
     // The two kinds #104's projection channel added -- `simulation/request-projection`
     // and `simulation/projection` -- moved every figure below and none of the
@@ -891,13 +902,13 @@ describe('every protocol message kind has a sender, and every sent kind can be p
     // request the main thread really constructs, so neither needed an entry.
     // That is the outcome this gate exists to require of a new kind.
     expect([...unsentMainToWorker]).toEqual(['protocol/handshake', 'protocol/ping']);
-    expect([...unsentWorkerToMain]).toEqual(['simulation/delta', 'simulation/event']);
+    expect([...unsentWorkerToMain]).toEqual(['simulation/event']);
     expect([...unreachableWorkerToMain]).toEqual(['protocol/handshake-accepted', 'protocol/pong']);
 
     const sent = ALL_KINDS.filter((kind) => sendingFiles(kind).length > 0);
-    expect(sent.length).toBe(16);
-    expect(ALL_KINDS.length - sent.length).toBe(4);
-    expect(sent.length - unreachableWorkerToMain.length).toBe(14);
+    expect(sent.length).toBe(17);
+    expect(ALL_KINDS.length - sent.length).toBe(3);
+    expect(sent.length - unreachableWorkerToMain.length).toBe(15);
   });
 
   it('names only kinds the protocol declares, in both lists and in the union itself', () => {

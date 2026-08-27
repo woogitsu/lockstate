@@ -37,15 +37,35 @@ describe('the catalog registry is built from issue #23s validated content catalo
     }
   });
 
-  it('resolves a human-readable name from the nameKey, not the raw key', () => {
+  /*
+   * These two cases asserted the opposite until the ADR 0011 boundary was
+   * enforced: one required `cell.name` to be `'Cell'` and the other required
+   * `roomDefinitionFromCatalog(entry, new Map())` to fall back to
+   * `'room.cell.name'`. Both were assertions *about a locale resolution
+   * happening inside `src/simulation/`*, which is what
+   * `docs/ARCHITECTURE.md` forbids -- "Simulation code may branch on a stable
+   * id; it may never read translated text" -- and which
+   * `tests/unit/services-layer-boundaries.test.ts` only failed to catch
+   * because its rule matched an import specifier and the resolver arrived
+   * through the `src/content` barrel.
+   *
+   * So the subject changes rather than the coverage: the conversion is still
+   * pinned end to end, but on the fact that now holds. `RoomDefinition`
+   * carries `nameKey`, the resolver and the `locale` parameter are gone, and
+   * a locale catalog no longer reaches this layer for a fallback to be
+   * observable in. The fallback itself is not lost -- it is
+   * `resolveLocalizationKey`'s own behaviour and is covered where it lives.
+   */
+  it('carries the catalog nameKey across unresolved, so no locale text enters the simulation type', () => {
     const cell = catalogRegistry.getById('room.cell');
-    expect(cell?.name).toBe('Cell');
+    expect(cell?.nameKey).toBe('room.cell.name');
+    expect(cell?.nameKey).toBe(defaultRoomContentRegistry.getById('room.cell')!.nameKey);
   });
 
-  it('roomDefinitionFromCatalog falls back to the raw key when a locale entry is missing', () => {
-    const entry = defaultRoomContentRegistry.getById('room.cell')!;
-    const converted = roomDefinitionFromCatalog(entry, new Map());
-    expect(converted.name).toBe('room.cell.name');
+  it('carries every room nameKey across, not just the one asserted above', () => {
+    for (const entry of defaultRoomContentRegistry.all()) {
+      expect(roomDefinitionFromCatalog(entry).nameKey).toBe(entry.nameKey);
+    }
   });
 
   it('buildRoomRegistryFromCatalog rejects duplicate ids, matching RoomRegistry.register()s existing contract', () => {

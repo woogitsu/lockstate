@@ -1,6 +1,7 @@
 import type { SparseWorld } from '../world/sparse-world';
 import { tileKey, type TilePosition } from '../world/coordinates';
 import { DoorRegistry } from './door';
+import { FrontierHeap } from './frontier-heap';
 import { neighbors, resolveEdge, type NavigationGraph, type RegionId } from './region-graph';
 import { doorTraversalCost } from './route-context';
 
@@ -105,6 +106,21 @@ function heuristic(tile: TilePosition, destination: TilePosition): number {
  * canonical string key so identical inputs always produce the identical
  * route, required for deterministic replay.
  *
+ * The frontier is a `FrontierHeap` ordered by `(f, tile key)`, not the linear
+ * scan this search used until #413. The selection *rule* is unchanged -- least
+ * f, ties to the canonically-smallest tile key, and that pair is unique per
+ * frontier node, so the rule is a total order and the next node is the same
+ * node the scan would have picked. What changed is the cost of applying it:
+ * `O(log |frontier|)` per expansion instead of `O(|frontier|)`, so the
+ * expansion ADR 0007's budget counts is close to a constant amount of work
+ * rather than one that grows with the search.
+ *
+ * The heap has no decrease-key: a relaxation pushes a second, strictly cheaper
+ * entry for the tile, and the superseded entry is discarded on the way out
+ * (`closed` already holds it). A discarded entry is deliberately **not**
+ * counted in `stats.expansions` -- it is not an expansion, and the counted
+ * work must keep meaning what it meant before the frontier changed shape.
+ *
  * Optimal within its own bound only while every traversable edge costs at
  * least `PLAIN_STEP_COST`; see `heuristic`, and
  * `MINIMUM_DOOR_COST_MULTIPLIER` for where that is kept true. This is a
@@ -130,23 +146,19 @@ export function boundedLocalSearch(
 
   const gScore = new Map<string, number>([[originKey, 0]]);
   const cameFrom = new Map<string, TilePosition>();
-  const open = new Map<string, TilePosition>([[originKey, origin]]);
+  const open = new FrontierHeap<string, TilePosition>();
   const closed = new Set<string>();
+  open.push(heuristic(origin, destination), originKey, origin);
 
   while (open.size > 0) {
-    let currentKey: string | undefined;
-    let currentTile: TilePosition | undefined;
-    let bestF = Number.POSITIVE_INFINITY;
+    const currentKey = open.minimumTieBreak;
+    const currentTile = open.minimumValue;
+    open.pop();
 
-    for (const [key, tile] of open) {
-      const f = (gScore.get(key) ?? Number.POSITIVE_INFINITY) + heuristic(tile, destination);
-      if (f < bestF || (f === bestF && (currentKey === undefined || key < currentKey))) {
-        bestF = f;
-        currentKey = key;
-        currentTile = tile;
-      }
-    }
-    if (currentKey === undefined || currentTile === undefined) break;
+    // A tile relaxed again while it was still on the frontier has a cheaper
+    // entry that was popped earlier, so this one is the superseded copy of an
+    // already-closed tile. Not a node, not an expansion.
+    if (closed.has(currentKey)) continue;
     if (stats !== undefined) stats.expansions += 1;
 
     if (currentKey === destinationKey) {
@@ -164,7 +176,6 @@ export function boundedLocalSearch(
       return { waypoints, cost: gScore.get(currentKey) ?? 0 };
     }
 
-    open.delete(currentKey);
     closed.add(currentKey);
     const currentG = gScore.get(currentKey) ?? Number.POSITIVE_INFINITY;
 
@@ -179,7 +190,7 @@ export function boundedLocalSearch(
       if (tentativeG < (gScore.get(neighborKey) ?? Number.POSITIVE_INFINITY)) {
         cameFrom.set(neighborKey, currentTile);
         gScore.set(neighborKey, tentativeG);
-        open.set(neighborKey, neighbor);
+        open.push(tentativeG + heuristic(neighbor, destination), neighborKey, neighbor);
       }
     }
   }

@@ -95,9 +95,10 @@ export class WorkerPerSessionHost implements SessionRuntimeHost {
    *
    * Note what this costs the recovery walk in `SessionController.loadPrison`:
    * a refused generation is retried against a *new* worker rather than the one
-   * that refused it. That is a worker start per demoted generation -- at most
-   * three, since three is what the repository retains -- and it is the price
-   * of the rule being total. The worker that refused a snapshot is still
+   * that refused it. That is a worker start per *refused* generation -- at
+   * most three, since three is what the repository retains, and refusing one
+   * no longer retires it (#403 (d)) -- and it is the price of the rule being
+   * total. The worker that refused a snapshot is still
    * usable in principle (it installed no runtime and stays `uninitialized`,
    * which is why that fault is raised `recoverable`), but the main thread
    * cannot tell it apart from the one that faulted while restoring, and

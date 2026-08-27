@@ -206,6 +206,57 @@ describe('SimulationCommandSender gets the two numbers right', () => {
     expect(executeAt).toBeGreaterThanOrEqual(1_100 + 500);
   });
 
+  /**
+   * Issue #445: a snapshot repeating a tick the client already knows still
+   * has to re-anchor the clock estimate.
+   *
+   * `noteTick` sets two fields -- `lastTick` *and* `lastTickAt` -- so the
+   * comparison in `baseline` decides freshness, not just novelty. Narrowing
+   * it to `payload.tick > this.lastTick` leaves `lastTick` correct and
+   * `lastTickAt` stale, and `projectExecuteTick` then adds the whole elapsed
+   * interval a second time: the order is scheduled further into the future
+   * than intended, which is worst right after a pause or a load, when the
+   * worker reports the same tick repeatedly while wall time runs on.
+   *
+   * The repeated-snapshot case above cannot see this, and could not be
+   * extended to: it runs on a *paused* clock, where `projectExecuteTick`
+   * returns `lastTick` unchanged and no timestamp can matter. This one needs
+   * a running clock, so it is a separate case rather than an extra assertion
+   * there.
+   *
+   * Every expected tick below is a literal. Each is stated in the comment as
+   * the arithmetic the projection is *supposed* to do, but the assertion is
+   * the number, so re-deriving it from `leadTicks` or from elapsed time --
+   * the production expression in the test's clothes -- cannot make it agree
+   * with a broken projection.
+   */
+  it('re-anchors the clock estimate on a snapshot repeating the tick it already knows', () => {
+    transport.emit(ready(0, true)); // running, speed 1
+    transport.emit(snapshot(500, 0)); // tick 500 reported at nowMs = 1_000
+
+    nowMs += 2_000; // 2s unobserved -> 40 ticks
+
+    // The control that makes the rest non-vacuous: elapsed time really does
+    // move the projection here, so a later assertion of a *smaller* tick is
+    // evidence of a re-anchor rather than of a projection that ignores time.
+    sender.submit(PLACE_WALL); // 500 + 40 + 20
+
+    // The worker reports the same tick again -- an idle or just-unpaused
+    // session does exactly this -- 2s later than the report before it.
+    transport.emit(snapshot(500, 0));
+
+    // No time has passed since that report, so the projection is the reported
+    // tick plus the lead and nothing else. With the timestamp left stale it is
+    // the first order's number all over again.
+    sender.submit(PLACE_WALL); // 500 + 0 + 20
+
+    nowMs += 1_000; // 1s from the *new* anchor -> 20 ticks
+
+    sender.submit(PLACE_WALL); // 500 + 20 + 20
+
+    expect(executeTicks()).toEqual([560, 520, 540]);
+  });
+
   it('never lets a stale snapshot pull the sequence backwards', () => {
     transport.emit(ready(0));
     transport.emit(snapshot(0, 0));

@@ -4,6 +4,7 @@ import { createActionButton, type ActionButton } from '../primitives/action-butt
 import { createCollapsibleSection, type CollapsibleSection } from '../primitives/collapsible-section';
 import { element, eyebrowText, valueText } from '../primitives/dom';
 import { createListRow, type ListRow } from '../primitives/list-row';
+import { createNumberField, type NumberField } from '../primitives/number-field';
 import { createPanel } from '../primitives/panel';
 import { HUD_MESSAGE_KEY } from './messages';
 import type {
@@ -76,11 +77,59 @@ import type {
  *
  * **The confirm gates removals too**, and that is deliberate rather than
  * uniformity for its own sake. A removal drag grows every tile it covers into
- * that tile's whole connected same-type run, so clipping the corner of a 6x6
- * canteen removes all 36 tiles. That is the right behaviour -- the alternative
+ * the whole room instance that claims it, so clipping the corner of a 6x6
+ * canteen removes all 36 tiles. (This read "that tile's whole connected
+ * same-type run" until #337, which is a different rule with the same
+ * consequence here and a worse one next door: it took the neighbouring room
+ * too. The tile now resolves through the instance's rectangle.) That is the
+ * right behaviour -- the alternative
  * leaves the zoning plane painted where the registry has no instance -- and it
  * is exactly the behaviour a confirm step should be shown for. It is also what
  * makes removal usable on touch: drag, read the area, tap once more.
+ *
+ * ### Two producers of a rectangle, one path through the panel
+ *
+ * A rectangle can be dragged on the world or typed into the folded
+ * "Enter coordinates" form at the foot of the catalogue, and *nothing
+ * downstream can tell which* (#411). Both go through `adoptPendingArea`, so
+ * the confirm control, the too-small warning, the area readout, the fold and
+ * the `ZoneRoom`/`UnzoneRoom` the host composes are reached unchanged. That is
+ * the whole of the mechanism, and it is why removal gained a keyboard route in
+ * the same stroke: the confirm row is driven by *whether* a rectangle is
+ * pending, never by who set it.
+ *
+ * Until the form existed the drag was the only producer, and the world canvas
+ * cannot take keyboard focus at all -- so a keyboard-only player could reach
+ * every control in this panel and still not zone anything, and with no room to
+ * hold anybody every `AdmitPrisoner` was refused for the rest of the session.
+ * `AGENTS.md` boundary 10 is not satisfied by "it works with a mouse", and the
+ * Build panel had carried the same fallback since the day it shipped.
+ *
+ * **Why it lives inside `.hud-rooms__list`**, which is a stranger home than it
+ * looks. The panel has no always-visible height to spend. Measured on the
+ * assembled page in the state a player is in after their first room -- one
+ * zoned unfinished room, so `.hud-rooms__needs` has a box -- by growing a
+ * fixed-height block a pixel at a time in each candidate host until the panel's
+ * height, its fold gap, or any of `.ui-panel__body`, `.hud-rooms__catalogue`
+ * and the catalogue's `.ui-section__body` moves:
+ *
+ *   - the panel body affords **32px at 1280x720 and 0px at 900x600**;
+ *   - the catalogue section's own body, which is where ADR 0022's successor
+ *     draft put this form, affords **41px and 4px** -- that body is not the
+ *     scroll region, the list inside it is, and at both viewports the list is
+ *     already on its one-row floor;
+ *   - this list affords **at least 400px at both**, which was the probe's own
+ *     cap rather than a limit it found.
+ *
+ * A collapsed section header is 44px, so the first two are refused and the
+ * scroller is the only answer -- it is the one box in this panel that is meant
+ * to hold more than it shows. So the form is the last thing in it, below the
+ * eighteen rows. Measured with the real form, folded (45px) and open
+ * (252.56px), at 1440x900, 1280x800, 1280x720, 1024x768, 900x600 and 375x812:
+ * the panel's height, its fold gap, the last block's bottom edge, its
+ * `scrollTop` and the list's own height are identical to their figures before
+ * this form existed, and no box is shorter than its own content. Opening it
+ * adds 208px to the list's scroll height and nothing to the panel's.
  *
  * ### Boundaries
  *
@@ -192,6 +241,26 @@ export interface RoomsPanel {
  */
 export const ROOM_NEEDS_NAMED_LIMIT = 1;
 
+/**
+ * The largest side a *typed* rectangle may name, per axis.
+ *
+ * A second declaration of the simulation's `MAX_ZONE_DIMENSION_TILES`, and it
+ * has to be: `AGENTS.md` boundary 1 forbids `src/ui/hud/**` importing
+ * `src/simulation/**` at all, which `tests/unit/ui-hud-messages.test.ts`
+ * enforces. Two declarations of one number drift, so
+ * `tests/unit/ui-hud-rooms-panel.test.ts` imports both and holds them
+ * together -- the shape `HUD_BUILD_EDGES` and `BUILD_EDGES` already use.
+ *
+ * It bounds the width and height fields and nothing else. **Tile X and tile Y
+ * take no bound**, exactly as the Build panel's coordinates do: a tile outside
+ * the owned world has to produce the refusal it already produces, on the
+ * control that was pressed, rather than being silently clamped to somewhere
+ * the player did not ask for. The renderer's drag applies the same cap on the
+ * sides (`MAX_ZONE_SIDE_TILES`), so the two routes can express exactly the same
+ * set of rectangles.
+ */
+export const MAX_ROOM_SIDE_TILES = 64;
+
 function requirementLabelKey(requirement: HudRoomEnclosureRequirement): LocalizationKey {
   switch (requirement) {
     case 'enclosed':
@@ -263,8 +332,18 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    * that is the whole reason this reads `pending === undefined` rather than
    * `armed`: the moment there is something to confirm, the panel is the only
    * place the player can confirm it.
+   *
+   * **An open coordinate form ends the pass too**, and that clause is not
+   * tidiness (#411). The fold exists to uncover the world for a *drag*; a
+   * player who has opened the typed route is not dragging, and folding the
+   * panel would take the form they are typing into off the screen. It was a
+   * dead end rather than an inconvenience: pressing "Remove rooms" arms the
+   * tool, so a keyboard player reaching for a removal watched the panel --
+   * and the only route they have to a rectangle -- fold itself away. Measured
+   * as such: the keyboard removal spec in `tests/browser/app-shell.spec.ts`
+   * ran out of Tab presses on a folded panel until this clause existed.
    */
-  const drawing = (): boolean => armed && pending === undefined;
+  const drawing = (): boolean => armed && pending === undefined && coordinates.isCollapsed();
   const folded = (): boolean => (drawing() ? drawingFolded : playerFolded);
 
   // ---- what kind of room -------------------------------------------
@@ -324,6 +403,155 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
   // second row of a list the player is going to scroll anyway.
   catalogue.element.classList.add('hud-rooms__catalogue');
   catalogue.body.append(catalogueList);
+
+  // ---- the typed route ---------------------------------------------
+  /*
+   * Four numbers, and the disclosure that keeps them out of the way.
+   *
+   * The four are the panel's own copy of the pending rectangle, held here
+   * rather than read back out of the DOM because `NumberField` is deliberately
+   * *controlled*: a field reports the value it was asked for and changes
+   * nothing until its owner calls `setValue`, so the owner has to be the one
+   * holding it. `1x1` is the starting size rather than the selected room's
+   * authored minimum: seeding from the room type would be the panel deciding a
+   * rectangle the player did not say, and the minimum is already stated two
+   * blocks down and enforced by the confirm control.
+   */
+  let coordX = 0;
+  let coordY = 0;
+  let coordWidth = 1;
+  let coordHeight = 1;
+
+  const clampSide = (value: number): number => Math.min(Math.max(Math.trunc(value), 1), MAX_ROOM_SIDE_TILES);
+
+  const coordinateField = (
+    labelKey: LocalizationKey,
+    className: string,
+    write: (value: number) => void,
+    value: number,
+    bounds?: { readonly min: number; readonly max: number },
+  ): NumberField => {
+    const label = t(labelKey);
+    const field: NumberField = createNumberField({
+      label,
+      value,
+      decrementLabel: t(HUD_MESSAGE_KEY.roomsStepDown, { field: label }),
+      incrementLabel: t(HUD_MESSAGE_KEY.roomsStepUp, { field: label }),
+      ...(bounds ?? {}),
+      onChange: (next) => {
+        write(next);
+        field.setValue(next);
+      },
+    });
+    field.element.classList.add(className);
+    return field;
+  };
+
+  const xField = coordinateField(
+    HUD_MESSAGE_KEY.roomsTileX,
+    'hud-rooms__coord-x',
+    (next) => {
+      coordX = next;
+    },
+    coordX,
+  );
+  const yField = coordinateField(
+    HUD_MESSAGE_KEY.roomsTileY,
+    'hud-rooms__coord-y',
+    (next) => {
+      coordY = next;
+    },
+    coordY,
+  );
+  const widthField = coordinateField(
+    HUD_MESSAGE_KEY.roomsWidth,
+    'hud-rooms__coord-width',
+    (next) => {
+      coordWidth = next;
+    },
+    coordWidth,
+    { min: 1, max: MAX_ROOM_SIDE_TILES },
+  );
+  const heightField = coordinateField(
+    HUD_MESSAGE_KEY.roomsHeight,
+    'hud-rooms__coord-height',
+    (next) => {
+      coordHeight = next;
+    },
+    coordHeight,
+    { min: 1, max: MAX_ROOM_SIDE_TILES },
+  );
+
+  /*
+   * The form's own control, and the reason the fields do not set the
+   * rectangle themselves.
+   *
+   * This is the typed route's *release*: it produces a pending rectangle,
+   * exactly as letting go of a drag does, and the confirm control below still
+   * has to be pressed. Three things follow from a press rather than a
+   * keystroke, and the third is the one that decided it:
+   *
+   *   - a half-typed rectangle is never pending, so the arm and remove
+   *     controls do not vanish and come back between two fields;
+   *   - the same four numbers can be used twice, which matters for a row of
+   *     identical cells;
+   *   - and they *have* to be usable twice. `NumberField` reports on `change`,
+   *     and a field re-entered with the value it already holds fires nothing
+   *     -- so a form that only listened to its fields would go dead after the
+   *     first designation, with four numbers on screen and no way to say them
+   *     again. Measured: the keyboard removal spec in
+   *     `tests/browser/app-shell.spec.ts` ran out of Tab presses looking for a
+   *     confirm control that a re-typed identical rectangle never revealed.
+   */
+  const coordinatesSubmit: ActionButton = createActionButton({
+    // No icon and no tone, exactly as the Build panel's own submit carries
+    // neither: the primary-tone control on this panel is "Draw on map", and a
+    // second one would argue with it about which route is the main one.
+    label: t(HUD_MESSAGE_KEY.roomsCoordinatesSubmit),
+    onActivate: () => {
+      adoptPendingArea({ x: coordX, y: coordY, width: coordWidth, height: coordHeight });
+    },
+  });
+  coordinatesSubmit.element.classList.add('hud-rooms__coordinates-submit');
+
+  /** A rectangle that arrived from somewhere else, taken into the four fields. */
+  function showCoordinates(next: RoomsPanelArea): void {
+    coordX = Math.trunc(next.x);
+    coordY = Math.trunc(next.y);
+    coordWidth = clampSide(next.width);
+    coordHeight = clampSide(next.height);
+    xField.setValue(coordX);
+    yField.setValue(coordY);
+    widthField.setValue(coordWidth);
+    heightField.setValue(coordHeight);
+  }
+
+  // Folded on arrival, for the reason the Build panel's own coordinates
+  // section is: it is the fallback route, and an open form of number fields
+  // would read as the way you are meant to zone.
+  const coordinates: CollapsibleSection = createCollapsibleSection({
+    eyebrow: t(HUD_MESSAGE_KEY.roomsCoordinates),
+    collapsed: true,
+    onToggle: (collapsed) => {
+      coordinates.setCollapsed(collapsed);
+      // Whether this form is open is one of the three things that decide
+      // whether a drawing pass is in progress, so the panel's fold is
+      // recomputed here as it is on every other change to those three.
+      paintFold();
+    },
+  });
+  coordinates.element.classList.add('hud-rooms__coordinates');
+  coordinates.body.append(
+    eyebrowText(t(HUD_MESSAGE_KEY.roomsCoordinatesHint), 'hud-rooms__coordinates-hint'),
+    element('div', { className: 'hud-rooms__coords', children: [xField.element, yField.element] }),
+    element('div', { className: 'hud-rooms__coords', children: [widthField.element, heightField.element] }),
+    coordinatesSubmit.element,
+  );
+  // Inside the scroller and not beside it. See the header comment: the list is
+  // the only box in this panel with height to give, and a block placed here
+  // costs the panel nothing at any viewport while the same block one level up
+  // overflows the catalogue at two of them.
+  catalogueList.append(coordinates.element);
 
   // ---- the rule, read before the drag ------------------------------
   /*
@@ -461,18 +689,27 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
   });
 
   /*
-   * One line, three jobs, and it is one line rather than three because the
-   * three cannot be true at once.
+   * One line, two jobs: the arm hint (or the removal hint) while nothing is
+   * pending, and the too-small warning when the pending rectangle is under the
+   * selected room's authored minimum.
    *
-   * It is the arm hint while nothing is pending, the too-small warning when the
-   * pending rectangle is under the selected room's authored minimum, and the
-   * enclosure warning when the simulation reports an accepted room as open
-   * against an `enclosed` requirement. A line per state would cost 26.4px to
-   * show two sentences that are never both relevant.
+   * **It had a third job and no longer does.** It also showed
+   * `hud.rooms.enclosure-open-required` when the simulation reported an
+   * *accepted* room as open against an `enclosed` requirement, and the
+   * too-small warning won over it "because it is about the rectangle the player
+   * is still holding while the other is about a room they already made".
+   * `RoomZoningService.zone` now refuses that pair rather than accepting it
+   * (the ADR "Must a zoned room be enclosed"), so no accepted zoning can report
+   * it, the branch was unreachable, and the sentence moved to
+   * `hud.alert.refusal.zone.not-enclosed`.
    *
-   * The too-small warning wins over the enclosure one, because it is about the
-   * rectangle the player is still holding while the other is about a room they
-   * already made.
+   * The precedence argument survives its own conclusion and is worth keeping:
+   * this line belongs to the rectangle the player is still holding. The warning
+   * this panel is now missing is the *pre-confirm* one -- telling them the drag
+   * will be refused before they press Confirm -- and it cannot be built here,
+   * because `src/ui/hud/**` may not import the simulation and the panel has no
+   * edge data. It needs the pending rectangle's enclosure carried across the
+   * worker boundary, which is a HUD-projection decision and not this one.
    */
   const note = eyebrowText(t(HUD_MESSAGE_KEY.roomsArmHint), 'hud-rooms__note');
 
@@ -499,16 +736,6 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
       note.dataset['tone'] = 'warning';
       return;
     }
-    if (
-      pending === undefined &&
-      notice !== undefined &&
-      notice.requirement === 'enclosed' &&
-      notice.enclosure === 'open'
-    ) {
-      note.textContent = t(HUD_MESSAGE_KEY.roomsEnclosureOpenRequired);
-      note.dataset['tone'] = 'warning';
-      return;
-    }
     note.textContent = t(removing ? HUD_MESSAGE_KEY.roomsRemoveHint : HUD_MESSAGE_KEY.roomsArmHint);
     delete note.dataset['tone'];
   }
@@ -517,13 +744,23 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    * The enclosure readout: what the simulation actually found, for the last
    * room designated.
    *
-   * A *readout* and never a refusal, and the panel is where that distinction is
-   * made visible. `RoomZoningService` evaluates the requirement and accepts the
-   * room either way, because the check it can honestly make is narrower than
-   * enclosure -- a room drawn inside a larger sealed building reads as open --
-   * and because a completed door order writes nothing into the world, so
-   * refusing every unsealed `enclosed` room would make 17 of the 18 room types
-   * designatable only as a box with no way in.
+   * **A readout, and it is now a confirmation rather than a hedge.** This used
+   * to say "a *readout* and never a refusal ... `RoomZoningService` evaluates
+   * the requirement and accepts the room either way", and gave two reasons: the
+   * check is narrower than enclosure, and "a completed door order writes
+   * nothing into the world, so refusing every unsealed `enclosed` room would
+   * make 17 of the 18 room types designatable only as a box with no way in".
+   *
+   * The second was already stale when it was written here: a completed
+   * `door-wooden` order writes `DOOR_EDGE_NUMERIC_ID` and registers a
+   * `DoorDefinition`, so a sealed room with a way in is expressible and
+   * `src/simulation/rooms/enclosure.ts` had recorded the correction. The first
+   * has been overtaken by the owner's ruling -- `zone` refuses an `enclosed`
+   * room whose perimeter is open (the ADR "Must a zoned room be enclosed").
+   *
+   * So the pair this can render is now `sealed` against anything, or `open`
+   * against `outdoors`/`none`. Every one of them is correct by construction,
+   * which is why nothing here is toned as a warning any more.
    */
   const enclosureValue = valueText(t(HUD_MESSAGE_KEY.roomsEnclosureNone), 'hud-rooms__enclosure-value');
   const enclosureBlock = element('div', {
@@ -739,6 +976,31 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
     paintFold();
   }
 
+  /**
+   * A rectangle becomes the pending one, whoever produced it (#411).
+   *
+   * The single assignment both routes go through -- a finished world gesture
+   * and the coordinate form -- so there is exactly one path from "there is a
+   * rectangle" to the confirm control, the refusals it can earn and the
+   * command the host composes. A second producer that set `pending` its own
+   * way would be the parallel path #411's second acceptance criterion forbids.
+   */
+  function adoptPendingArea(next: RoomsPanelArea | undefined): void {
+    pending = next;
+    area = undefined;
+    // A finished rectangle opens the panel, whatever was folded before it.
+    // `drawing()` already ends the pass, which covers the fold this surface
+    // applied itself; this line covers the other one -- a player who had
+    // folded the panel by hand before arming would otherwise be holding a
+    // rectangle whose only two controls are inside a body that is not on
+    // screen, which is the defect being fixed rather than a variant of it.
+    // It is an *event*, not an invariant: the header control still folds the
+    // panel while a rectangle is pending, because a control that did nothing
+    // would be worse than a panel in the way.
+    if (next !== undefined) playerFolded = false;
+    paintActions();
+  }
+
   function paintArea(): void {
     const shown = pending ?? area;
     if (shown === undefined) {
@@ -818,19 +1080,13 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
       paintArea();
     },
     setPendingArea(next: RoomsPanelArea | undefined): void {
-      pending = next;
-      area = undefined;
-      // A finished rectangle opens the panel, whatever was folded before it.
-      // `drawing()` already ends the pass, which covers the fold this surface
-      // applied itself; this line covers the other one -- a player who had
-      // folded the panel by hand before arming would otherwise be holding a
-      // rectangle whose only two controls are inside a body that is not on
-      // screen, which is the defect being fixed rather than a variant of it.
-      // It is an *event*, not an invariant: the header control still folds the
-      // panel while a rectangle is pending, because a control that did nothing
-      // would be worse than a panel in the way.
-      if (next !== undefined) playerFolded = false;
-      paintActions();
+      // The dragged rectangle is taken into the coordinate fields as well, so
+      // the two routes hold one rectangle between them rather than two: a
+      // player who drags 6x5 and wanted 6x6 can nudge the height instead of
+      // dragging again, and a form that still showed 0,0,1,1 beside a pending
+      // 12x9 would be a second, stale statement of the same thing.
+      if (next !== undefined) showCoordinates(next);
+      adoptPendingArea(next);
     },
     setZoningNotice(next: HudZoningNoticeViewModel | undefined): void {
       notice = next;

@@ -62,6 +62,40 @@ export function reduceStackFrame(line: string): string | undefined {
   return redactText(`${functionName}(${fileName === undefined || fileName === '' ? '<unknown>' : fileName}${suffix})`);
 }
 
+/** V8: every frame line begins `at `, after leading whitespace. */
+const V8_FRAME_LINE = /^\s*at\s/;
+
+/**
+ * SpiderMonkey and JavaScriptCore: `functionName@location:line:col`, with no
+ * `at ` to key on.
+ *
+ * The position at the end is what makes this a *frame* rather than any line
+ * containing an at-sign, and requiring it is a defect fix rather than a
+ * tightening. The rule used to be the bare `@`, and the comment below said why
+ * it was there -- and a V8 header line is `Name: message`, so **any error
+ * message containing an at-sign was admitted as a frame**. An email address in
+ * a message is exactly that case, and it did not merely duplicate the message:
+ * `reduceStackFrame` splits on the first at-sign and rewrites it as
+ * `name(location)`, so `mail alice@example.com` became the frame
+ * `RangeError: mail alice(example.com)` -- past the point where
+ * `SENSITIVE_VALUE_PATTERNS`' email pattern can match it, because the at-sign
+ * it keys on is gone. `errorMessage` was correctly redacted to
+ * `mail [redacted]` while `frames` carried both halves of the same address in
+ * clear. Measured against this file as it stood at 30db0e9:
+ * `buildCrashDiagnosticAttributes` for a `RangeError('mail alice@example.com')`
+ * produced `frames: 'RangeError: mail alice(example.com) |
+ * boot(main-a1b2.js:12:9)'`. The regression is pinned in
+ * `tests/unit/services-telemetry.test.ts`, in both directions -- the header
+ * line stays out, and an engine that writes no header keeps its frames.
+ *
+ * It was latent only because nothing produced a telemetry event; it stops
+ * being latent in the change that adds the first producer.
+ *
+ * SpiderMonkey and JavaScriptCore omit the header line entirely, so nothing
+ * that was a frame stops being one.
+ */
+const AT_SIGN_FRAME_LINE = /@\S*:\d+:\d+\s*$/;
+
 export function reduceStack(stack: string | undefined, maxFrames = MAX_STACK_FRAMES): readonly string[] {
   if (stack === undefined) return [];
   const frames: string[] = [];
@@ -69,7 +103,7 @@ export function reduceStack(stack: string | undefined, maxFrames = MAX_STACK_FRA
     if (frames.length >= maxFrames) break;
     // The first line of a V8 stack repeats "Name: message"; the message is
     // reported separately (already redacted) and must not be duplicated here.
-    if (/^\s*at\s|@/.test(line) === false) continue;
+    if (V8_FRAME_LINE.test(line) === false && AT_SIGN_FRAME_LINE.test(line) === false) continue;
     const frame = reduceStackFrame(line);
     if (frame !== undefined) frames.push(frame);
   }

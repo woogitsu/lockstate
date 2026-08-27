@@ -316,6 +316,25 @@ describe('publishing the status counts', () => {
     expect(harness.publications()).toHaveLength(1);
   });
 
+  /**
+   * The figure every written-out bound in this file is derived from.
+   *
+   * Those bounds used to be recomputed as `1 + Math.ceil(harness.elapsedMs /
+   * STATUS_COUNTS_PUBLISH_INTERVAL_MS)` -- the production constant put
+   * through the production formula, so the ceiling moved by exactly the
+   * factor the traffic did and the comparison could not notice. Measured:
+   * `500 -> 100`, five times the projections and five times the messages on
+   * the channel issue #104 exists to keep off the frame budget, left the
+   * whole suite green -- 238 files, 2,696 tests -- and this file 20/20.
+   *
+   * So the bounds are literals now, and this is the guard that keeps them
+   * honest: retuning the interval fails here, naming the reason, instead of
+   * silently re-scaling every ceiling in the file.
+   */
+  test('publishes on the 500 ms interval the bounds in this file are written against', () => {
+    expect(STATUS_COUNTS_PUBLISH_INTERVAL_MS, 'the written-out bounds in this file assume a 500 ms interval').toBe(500);
+  });
+
   test('sends no more than one message per publish interval, and never the same counts twice running', () => {
     const harness = new Harness(scenarioSnapshot());
     harness.run(1);
@@ -324,9 +343,17 @@ describe('publishing the status counts', () => {
     const publications = harness.publications();
     // One readout at initialize, then at most one per interval of simulated
     // time. The loop woke 200 times to produce this.
-    expect(publications.length).toBeLessThanOrEqual(
-      1 + Math.ceil(harness.elapsedMs / STATUS_COUNTS_PUBLISH_INTERVAL_MS),
-    );
+    //
+    // Written out rather than recomputed as `1 + Math.ceil(harness.elapsedMs
+    // / STATUS_COUNTS_PUBLISH_INTERVAL_MS)`, which was the production
+    // constant put through the production formula and so moved with it (#375
+    // -- the case above this one carries the measurement). 10,000 ms at a
+    // 500 ms interval is twenty windows, plus the readout at initialize:
+    // twenty-one. Matched exactly rather than bounded, because this
+    // scenario's counts change on every window and therefore saturate the
+    // limiter -- observed at 21 -- so it also fails for a channel gone quiet.
+    expect(harness.elapsedMs).toBe(10_000);
+    expect(publications.length).toBe(21);
 
     // And it does move -- otherwise the bound above would be satisfied by a
     // channel that published once and then broke.
@@ -345,10 +372,11 @@ describe('publishing the status counts', () => {
     harness.run(1);
     for (let wake = 0; wake < 100; wake += 1) harness.advance(10); // 1s of simulated time, 100 wakes.
 
-    expect(vi.mocked(projectStatusCounts).mock.calls.length).toBeLessThanOrEqual(
-      1 + Math.ceil(harness.elapsedMs / STATUS_COUNTS_PUBLISH_INTERVAL_MS),
-    );
-    expect(vi.mocked(projectStatusCounts).mock.calls.length).toBeGreaterThan(0);
+    // 1,000 ms at a 500 ms interval is two windows, plus the readout at
+    // initialize: three, against a hundred wakes. Observed at 3, so the
+    // limiter is saturated here too and the equality is the bound.
+    expect(harness.elapsedMs).toBe(1_000);
+    expect(vi.mocked(projectStatusCounts).mock.calls.length).toBe(3);
   });
 
   /**
@@ -471,10 +499,14 @@ describe('publishing the status counts', () => {
 
     for (let wake = 0; wake < 200; wake += 1) harness.advance(50);
 
-    const refusalCount = 2;
-    expect(vi.mocked(projectStatusCounts).mock.calls.length).toBeLessThanOrEqual(
-      1 + refusalCount + Math.ceil(harness.elapsedMs / STATUS_COUNTS_PUBLISH_INTERVAL_MS),
-    );
+    // 10,050 ms at a 500 ms interval is twenty-one windows, plus the readout
+    // at initialize, plus one per refusal: twenty-four.
+    expect(harness.elapsedMs).toBe(10_050);
+    expect(vi.mocked(projectStatusCounts).mock.calls.length).toBeLessThanOrEqual(24);
+    // Observed at 22: both refusals landed inside a window the interval had
+    // already opened, so neither spent its allowance. Stated, so the bound
+    // above cannot also be met by a channel that stopped projecting.
+    expect(vi.mocked(projectStatusCounts).mock.calls.length).toBe(22);
   });
 
   test('is still a message the main thread accepts once it carries a refusal', () => {

@@ -147,15 +147,25 @@ export class RoomNeedsReader {
    * One list read, then one detail read per unfinished room until the panel's
    * rows are full.
    *
-   * **At most `1 + ROOM_NEEDS_NAMED_LIMIT` messages**, which today is two. The
-   * loop stops on the panel's naming budget rather than on the room count, so
-   * the cost is bounded by what the panel can show and not by how many rooms are
-   * unfinished -- and the header's counts come from the list, which is one
-   * message however large the prison is.
+   * **At most `1 + ROOM_NEEDS_NAMED_LIMIT` messages**, which today is two, and
+   * that is now a bound on *requests* rather than on needs named. The loop stops
+   * on the panel's naming budget rather than on the room count, so the cost is
+   * bounded by what the panel can show and not by how many rooms are unfinished
+   * -- and the header's counts come from the list, which is one message however
+   * large the prison is.
+   *
+   * The sentence was **false as written**: the budget it named was spent in
+   * needs, and a detail that answered with no `view` named none, so the loop
+   * asked about the next room instead of stopping. Eight unfinished cells whose
+   * details all raced away cost nine requests, not two
+   * (`tests/unit/ui-simulation-room-needs.test.ts` pins the figure), which is
+   * the unbounded-in-the-prison read the paragraph existed to deny.
    *
    * A detail that comes back with no `view` is dropped, not an error: the room
    * was removed between the two requests, which is the race
    * `ProjectionReply.view`'s own comment says a caller is expected to handle.
+   * It still costs one of the two messages, because it was one of the two
+   * messages.
    *
    * `undefined` while another read is in flight. A caller on a cadence must not
    * queue a second question about a prison it has not heard the answer for
@@ -173,15 +183,31 @@ export class RoomNeedsReader {
       if (list.view === undefined) return undefined;
 
       const details: RoomDetailViewModel[] = [];
-      let named = 0;
+      // Questions asked, not needs found. Counting needs made the loop's stop
+      // condition depend on what came *back*, so a detail that answered with no
+      // view -- the unzoned-in-between race two paragraphs below calls expected,
+      // and equally a room that finished between the two reads -- left the
+      // budget untouched and the loop moved to the next room. That made the real
+      // bound `1 + unfinishedRoomIds(list).length`: measured at nine requests
+      // with eight unfinished cells, on a reader the Rooms tab drives on the
+      // counts cadence. A question costs the worker whether or not it is
+      // answered, so a question is what the budget has to be spent in.
+      //
+      // The counters coincide in the ordinary case -- a detail for a room the
+      // list called unfinished names at least one missing requirement -- so this
+      // changes nothing about what a settled prison shows. What it gives up is a
+      // raced tick naming one fewer thing than it might have; the next
+      // publication asks again, off a list that no longer holds the room that
+      // moved, and the header's counts come from that list either way.
+      let asked = 0;
       for (const instanceId of unfinishedRoomIds(list.view)) {
-        if (named >= ROOM_NEEDS_NAMED_LIMIT) break;
+        if (asked >= ROOM_NEEDS_NAMED_LIMIT) break;
+        asked += 1;
         const reply = await this.requester.request<RoomDetailViewModel>('hud/room-detail', {
           target: { kind: 'id', id: instanceId },
         });
         if (reply.view === undefined) continue;
         details.push(reply.view);
-        named += reply.view.requirements.filter((requirement) => requirement.status === 'missing-capability').length;
       }
 
       return roomNeedsFromProjections(list.view, details);

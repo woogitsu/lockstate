@@ -134,8 +134,10 @@ export function createSessionCommandHandler(
       //
       // It carries no room id, because removal names no room type: what comes
       // out is whatever the rectangle covers. `RoomZoningService.unzone`
-      // states what "covers" means -- each covered zoned tile is grown into
-      // its connected same-type run before anything is cleared -- and both
+      // states what "covers" means -- each covered zoned tile is resolved to
+      // the room *instance* containing it and that instance's whole rectangle
+      // is cleared (issue #337; it used to be the connected same-type run,
+      // which took a neighbour the drag never touched) -- and both
       // consequences of that choice.
       //
       // The refusal takes the same route a refused zoning does and lands in

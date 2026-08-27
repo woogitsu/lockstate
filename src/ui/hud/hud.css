@@ -1648,6 +1648,49 @@
   overflow-y: auto;
 }
 
+/*
+ * The typed route to a rectangle, inside the one box that can pay for it
+ * (#411).
+ *
+ * It is the last child of the scroller rather than a block of the panel or a
+ * peer section, and that is a measurement rather than a preference. Measured
+ * on the assembled page with one zoned unfinished room -- the state a player is
+ * in when they most need this -- against `.hud-rooms > .ui-panel__body`,
+ * `.hud-rooms__catalogue` and the catalogue's own `.ui-section__body`:
+ *
+ *   - a 44px block in the **panel body** is refused, the same way ADR 0022
+ *     refused a peer section: the slack is 2px at 900x600 and 40px at
+ *     1280x720;
+ *   - a 44px block in the **catalogue section body** overflows
+ *     `.hud-rooms__catalogue` by 40px at 900x600 and 3px at 1280x720, because
+ *     that body is not the scroll region -- this list is, and at both
+ *     viewports it is already on its one-row floor;
+ *   - the same block **here** costs nothing at 1440x900, 1280x800, 1280x720,
+ *     1024x768, 900x600 or 375x812, folded or open, at every size tried up to
+ *     195px. Every box above keeps its height, the fold gap does not move and
+ *     no box ends up shorter than its own content.
+ *
+ * `flex: 0 0 auto` because the rest of this column shrinks and this must not:
+ * a squeezed form would paint its own fields over the rows above it, which is
+ * #174's defect with a new cause. The scroller absorbs it instead, which is
+ * what the scroller is for.
+ */
+.hud-rooms__list > .hud-rooms__coordinates { flex: 0 0 auto; }
+
+/* Two fields to a row, as `.hud-build__coords` lays out its pair -- at the
+   rail's 264px a four-field column would be four scrolls deep, and a single
+   row of four would put every stepper under its own tap target. */
+.hud-rooms__coords {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+/* `display: block` for the reason `.hud-rooms__note` has it: an eyebrow is
+   inline by default, and an inline hint beside a grid reads as a stray word. */
+.hud-rooms__coordinates-hint { display: block; }
+
 /* The gesture block: arm or confirm, the area readout, and the one note line. */
 .hud-rooms__map {
   display: flex;

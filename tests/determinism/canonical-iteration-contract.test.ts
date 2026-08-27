@@ -49,7 +49,9 @@ import {
  * `src/rendering/` remains outside, which is a real limit and not an
  * oversight: a `Map`-order walk there is not guarded here. Measured with the
  * same scanner, that tree holds 11 unordered enumerations (9 distinct
- * expressions). It is deliberately excluded -- AGENTS.md's first
+ * expressions). Re-measured at `80fd343` the way this sentence describes --
+ * `SCANNED_ROOTS` repointed at `src/rendering/` in a scratch copy of this file
+ * -- and it is still exactly 11, after #414 added modules to that tree. It is deliberately excluded -- AGENTS.md's first
  * architectural boundary is that rendering is not simulation, its sprite
  * pools iterate insertion order by design, and its order reaches neither a
  * save nor a hash, so covering it would add nine exemptions whose reason is

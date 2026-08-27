@@ -11,12 +11,28 @@ permissions:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  # Cancel superseded PR runs, never a run on `main`. For a push to `main` the
-  # ref is constant, so `true` meant two merges landing close together
-  # cancelled the earlier commit's CI -- while that commit was already live,
-  # since a merge deploys. It left a shipped commit with no completed gate
-  # result and nothing reporting the hole. A merge queue of one is worth the
-  # extra minutes.
+  # Cancel superseded PR runs. For a push to `main` the ref is constant, so
+  # `true` meant two merges landing close together cancelled the earlier
+  # commit's CI -- while that commit was already live, since a merge deploys.
+  # It left a shipped commit with no completed gate result and nothing
+  # reporting the hole. A merge queue of one is worth the extra minutes.
+  #
+  # THIS DOES NOT MEAN A RUN ON `main` IS NEVER CANCELLED, and the sentence
+  # above used to say that it did. `cancel-in-progress` governs the run that is
+  # ALREADY RUNNING; GitHub separately keeps at most one PENDING run per
+  # concurrency group, whatever this setting says. So a third push arriving
+  # while one run is in progress and a second waits cancels the second -- which
+  # never starts, and records no jobs at all. Runs 33004940891 and 33005035205
+  # are both that: pushes to `main` on 2026-08-26, both `cancelled`, both with
+  # zero jobs. `main` sees this often enough to matter -- eight of the sixty
+  # most recent completed CI runs started by a push to `main`, measured over
+  # 2026-08-25T18:08Z to 2026-08-26T19:45Z.
+  #
+  # The consequence is a deployment one, and it is now reported rather than
+  # inferred: deploy.yml triggers on this workflow's COMPLETION and its
+  # `staging` job requires `conclusion == 'success'`, so a commit whose CI was
+  # cancelled here is never published as itself. deploy.yml's `staging-blocked`
+  # job says so out loud (#424); before it, that was silent.
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
@@ -62,6 +78,118 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
+          # ALL HISTORY, BECAUSE `pnpm verify` READS HISTORY.
+          # tests/foundation/documentation-commit-citation-contract.test.ts
+          # resolves every commit sha this repository cites in `docs/**` and
+          # `tests/**` through `git rev-parse`, which is the only mechanical
+          # answer to a *fabricated* sha in prose. That is not hypothetical:
+          # `0269665` shipped a `d0b6e18` that names nothing, in the very commit
+          # whose subject was dating an undated count, and
+          # docs/HANDOVER-2026-08-26.md records a second fabrication in its own
+          # draft, caught by hand before the push.
+          #
+          # At the action's default depth of 1 the checkout holds one commit, so
+          # that check would fail for every citation in the corpus for a reason
+          # that has nothing to do with whether the citation is right. That is
+          # why the handover concluded the gate could not be built here, and why
+          # a gate that skipped itself on a shallow clone was the wrong answer
+          # to it: it would never run where it matters. The test fails, loudly
+          # and naming this setting, if it ever finds itself on a shallow
+          # checkout -- so deleting this line does not quietly disable it.
+          #
+          # WHAT THE DEPTH COSTS, MEASURED RATHER THAN FEARED -- AND EVERY
+          # NUMBER BELOW CARRIES THE COMMAND THAT PRODUCES IT, BECAUSE THE
+          # ABSOLUTES ROT AND THE COMMANDS DO NOT.
+          #
+          # They rot fast. The figures that first stood here were about five
+          # commits stale in the commit that landed them, and re-taking them
+          # only restarts the clock. So: run these, do not trust the numerals.
+          # Taken at `4ae2e39`, GIT_LFS_SKIP_SMUDGE=1 so the number is about
+          # the git pack alone, against github.com and therefore including
+          # round trips. All refs, because that is what `fetch-depth: 0`
+          # fetches.
+          #
+          #   git clone --no-local https://github.com/matmaxalez/lockstate
+          #     -> in-pack 9440   size-pack 7.39 MiB
+          #   git clone --no-local --depth 1 https://github.com/matmaxalez/lockstate
+          #     -> in-pack  922   size-pack 3.29 MiB
+          #   git rev-list --count --remotes=origin --tags   -> 1086
+          #
+          # So the depth costs about 4.1 MiB and 8,500 objects for 1,086
+          # commits. This repository's bulk is the ~55 MB of art in Git LFS,
+          # which never enters the git pack; that is why history is this cheap
+          # and it is the fact to re-check if the number ever jumps.
+          #
+          # One of those counts is NOT monotonic and reads as a mistake
+          # otherwise: commits-across-every-ref went DOWN, 1,115 -> 1,086,
+          # because delete-branches.yml removes merged branches and their
+          # unmerged commits stop being reachable. A falling count here is the
+          # cleanup working.
+          #
+          # A narrower fetch was costed and rejected, and that conclusion has
+          # survived every re-measurement so far:
+          #
+          #   git rev-list --count 4ae2e39            -> 845     (branch length)
+          #   git rev-list --count b904a1b..4ae2e39   -> 794     (deepest cited)
+          #
+          # `b904a1b` is the oldest commit the documentation cites, so a
+          # `fetch-depth` answering today's corpus needs 795 of 845 and saves
+          # 50 commits -- and would go stale the first time anything cited an
+          # older one. The gate collects those tokens itself
+          # (tests/foundation/documentation-commit-citation-contract.test.ts);
+          # re-derive with `git rev-list --count <token>..<tip>` over them
+          # rather than trusting `b904a1b` to still be the deepest.
+          #
+          # AND IT IS PAID ONCE, WHICH IS THE PART THE REUSED WORKSPACE
+          # DECIDES. This runner keeps its workspace between jobs and between
+          # runs (the `if:` comment above turns on that, and so do the LFS
+          # comments below), so `actions/checkout` fetches into an existing
+          # repository instead of cloning. At the pinned v6 its `fetch()` adds
+          # `--unshallow` exactly when `.git/shallow` exists and `fetch-depth`
+          # is not positive, so the deepening happens on the first run after
+          # this line lands and every later run is an ordinary incremental
+          # `git fetch --prune`. version.yml already checks this repository out
+          # at `fetch-depth: 0` on the same runner label on every push to
+          # `main`, so a full fetch here is not a new cost on this machine.
+          #
+          # The `assets` and `browser` jobs keep the default depth, because
+          # neither reads history -- and so does deploy.yml's `staging` job.
+          # That re-shallows this workspace after this job, and it is measured
+          # rather than assumed to be harmless. TWO SEPARATE FETCHES, and the
+          # sentence that used to stand here ran them together:
+          #
+          #   1. THE RE-SHALLOW, which is cheap and leaves the objects alone.
+          #      Against the COMPLETE clone above:
+          #
+          #        git fetch --no-tags --prune --no-recurse-submodules \
+          #          --depth=1 origin <sha>
+          #          rev-list --count HEAD   845 -> 1
+          #          .git/shallow            written
+          #          in-pack / size-pack     unchanged, not one object deleted
+          #          wall 0.553 s over file://, 1.082 s over https
+          #
+          #   2. THE `--unshallow` THE NEXT RUN OF THIS JOB PAYS, which is the
+          #      more expensive of the two and is where the old sentence was
+          #      wrong. It read "the next run's `--unshallow` finds everything
+          #      already local -- 0.055 s and no change to the pack"; that
+          #      figure belongs to the fetch in (1), and the `--unshallow` does
+          #      not reliably reuse what is on disk:
+          #
+          #        git fetch --unshallow
+          #          over file://   wall 0.296 s, pack unchanged
+          #          over https     wall 2.180 s, pack 7863 -> 8315 objects,
+          #                                        6.99 -> 7.78 MiB
+          #
+          #      Transport decides it, so a single number for this one would be
+          #      a fiction. Both were taken here; the runner pays the https
+          #      shape. Still small in absolute terms -- which is the point --
+          #      but it is a real fetch and not a no-op, so do not cite it as
+          #      free.
+          #
+          # A local transport keeps the round trips to github.com out of the
+          # number; the object transfer, which is the part that could have been
+          # large, is in both.
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -436,3 +564,67 @@ jobs:
             echo "::error::the browser suite skipped tests; running them is the entire point of this job"
             exit 1
           fi
+
+      # THE EVIDENCE, WHICH THIS JOB USED TO THROW AWAY.
+      #
+      # This job has failed twice on a 60-second page-load timeout inside a
+      # setup helper, and neither failure could be diagnosed from the log.
+      # Playwright writes an `error-context.md` beside each failure -- an ARIA
+      # snapshot of the page at the moment it gave up, which is the one
+      # artefact that separates "the harness server never came up" from "the
+      # page came up and the thing being waited for never appeared". Nothing
+      # in this workflow ran `if: failure()` and nothing anywhere in
+      # `.github/` used `actions/upload-artifact`, so both snapshots were
+      # written into the runner's workspace and deleted by the next run's
+      # `git clean -ffdx` (deploy.yml's checkout comment records observing
+      # exactly that clean removing `browser-suite.log` and `test-results/`).
+      # The GitHub API reported zero artifacts for both runs.
+      #
+      # THE TWO PATHS, AND WHY THEY ARE THESE TWO.
+      #
+      # `test-results/` is Playwright's `outputDir`. It is not written down in
+      # `tests/browser/playwright.config.ts`, which sets no `outputDir` at
+      # all, so the default applies: at the pinned @playwright/test 1.56.1
+      # that is `path.join(packageJsonDir, 'test-results')`, and the nearest
+      # `package.json` above `tests/browser/` is the repository root's -- so
+      # it lands beside this workspace's root, which is where the step below
+      # looks. `tests/foundation/ci-configuration-contract.test.ts` fails if
+      # that config ever names an `outputDir` without this path following it.
+      #
+      # `browser-suite.log` is the `tee` target in the step above, and it is
+      # the whole stdout of the run rather than the tail GitHub renders.
+      #
+      # The payload is small on purpose and it is a property of the config,
+      # not a hope: `use:` sets no `trace`, no `screenshot` and no `video`,
+      # and all three default to off, so `test-results/` holds an
+      # `error-context.md` per failing test and nothing else. If any of those
+      # is ever turned on, revisit `retention-days` before assuming this stays
+      # cheap.
+      #
+      # `if: failure()` and not `always()`: a green run has no evidence worth
+      # keeping and `test-results/` is empty, so an unconditional upload would
+      # be an empty artifact on every run. It does mean a job *cancelled* --
+      # by the 30-minute `timeout-minutes`, or by the concurrency group --
+      # uploads nothing, because `failure()` is false for a cancellation. Both
+      # observed failures were Playwright test failures well inside that
+      # budget, so this covers them; a job that starts timing out at the
+      # thirty-minute mark instead needs `if: always()` and a re-read of this
+      # comment.
+      #
+      # The name carries `run_attempt` as well as `run_id` because a re-run of
+      # a failed job reuses the run id, and v4 refuses to overwrite an
+      # existing artifact name rather than merging into it.
+      - name: Upload the browser suite's failure evidence
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: browser-failure-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            test-results/
+            browser-suite.log
+          retention-days: 7
+          # The suite step can fail before Playwright writes anything -- the
+          # `no passing tests` guard, or a crash in the port probe -- and an
+          # upload that fails the job for finding nothing would turn a
+          # diagnosable failure into two.
+          if-no-files-found: ignore

@@ -125,6 +125,42 @@ const REQUIRED_WIRINGS: readonly RequiredWiring[] = [
       'Issue #261, and the other half of the same seam. The key reaches the HUD rather than the command sender so that a refusal paints the refusal line instead of a `console.warn` -- the defect #225 removed from the build drag. `MountHudOptions.editHistory` is optional, so deleting this argument compiles, and the HUD then registers no sink: `BuildTool.undo()` drops the request and the player gets silence from a key that is bound. Measured: with `editHistory: tool` deleted, `tsc` is clean and all 1,780 tests pass, because `tests/browser/ui-shell.spec.ts` mounts the HUD with a source of its own.',
   },
   {
+    what: 'the telemetry pump is started, so the sink ever flushes',
+    source: 'pipeline.startPump(',
+    reason:
+      'Issues #36 and #446, and the same shape as #146 exactly. `BatchingTelemetrySink` is deliberately timer-free -- its own header says "the host calls `pump(now)` from its own idle or interval orchestration" -- and for the whole life of the subsystem no host did, so nothing ever flushed and `git log --all -S "recorder.pump"` was empty. `startTelemetryPump` has its own unit tests over an injected scheduler and they pass whether or not anything calls it; the browser primitive it needs (`requestIdleCallback`) exists only here. Deleting this call leaves `tsc` clean and every test green while restoring a sink that queues forever and sends nothing, which is precisely the state ADR 0044 recorded.',
+  },
+  {
+    what: 'the telemetry consent prompt is mounted when there is somewhere to send',
+    source: 'createTelemetryConsentPrompt({',
+    reason:
+      'Issue #36, and the defect ADR 0044 called the clearest single statement of what was wrong: the four `telemetry.consent.*` strings shipped inside the bundle through `defaultMessageCatalogEn` while nothing rendered them, so "a player downloads the consent prompt for a telemetry system that cannot send". `localization-key-completeness` proves those keys resolve and would keep proving it with nothing on screen; `createTelemetryConsentPrompt` is browser-only code no headless test executes. Deleting this call leaves `tsc` clean and the suite green and returns the keys to being text no surface reaches -- and, worse than before, leaves a build that has an ingestion destination configured collecting nothing while never asking, because the gate defaults closed. Guarded by `telemetry.enabled` on purpose: with no destination configured there is nothing to consent to and the prompt must not appear.',
+  },
+  {
+    what: 'the page\'s unhandled errors reach the telemetry recorder',
+    source: "crashReporter.reportUnhandledError(event.error ?? event.message, 'page-error')",
+    reason:
+      'Issues #36 and #446. Between the pipeline landing and this line, `git grep -lI "recorder\\.\\(record\\|recordError\\)" -- src/ | grep -v "src/services/telemetry/"` returned nothing: consent, admission, batching, sampling, redaction and a transport, and **not one event produced anywhere**. `createCrashReporter` has its own unit tests over an injected recorder and they pass whether or not a listener calls it, and a listener is browser-only code no headless test executes -- which is exactly the shape of #146 and #261. The registration must also stay near the top of the file: a module-scope throw is reported to whatever is listening at the moment it happens, so a listener registered after the worker, the scene and the HUD cannot see the boot crash ADR 0010 calls the one a developer cannot reproduce. Measured while this was built: deleting this line and the three below leaves `tsc` clean and 427 tests across `tests/foundation/` and the telemetry and boundary units green.',
+  },
+  {
+    what: 'an unhandled promise rejection reaches the telemetry recorder',
+    source: "crashReporter.reportUnhandledError(event.reason, 'page-rejection')",
+    reason:
+      'Issues #36 and #446, and the half that is easiest to lose. Almost everything this page does after first paint is a promise -- `bootPersistence`, every save, every worker request -- so a rejection is the *likelier* crash shape here, and it reaches a different browser event with a different payload property than the line above. The only `unhandledrejection` listener anywhere in `src/` before this change was `src/simulation/worker/worker.ts`, which routes into the worker protocol and never into telemetry, so deleting this line returns the main thread to reporting no rejection at all while `tsc` stays clean and the suite stays green.',
+  },
+  {
+    what: 'a simulation worker that will not start at boot is recorded as a diagnostic',
+    source: "crashReporter?.reportWorkerLoss('boot', error)",
+    reason:
+      'Issues #36, #82 and #446. `diagnostic.worker-terminated` is registered with the purpose "detect simulation worker loss, which is invisible to the player until state stops advancing", and nothing produced it. The producer binds to the catch that already raises #82\'s player-facing notice rather than being pushed into `SimulationClient` or `WorkerPerSessionHost`, because `SimulationClient` records one module over that a failure belongs "on the route the protocol already has rather than through a channel of this class\'s own" -- and a telemetry import under `src/simulation/` is refused outright by `tests/unit/services-layer-boundaries.test.ts`. Deleting it is invisible: `console.error` beside it keeps the log line, so nothing else changes.',
+  },
+  {
+    what: 'a simulation worker lost after boot is recorded as a diagnostic',
+    source: "if (!available) crashReporter?.reportWorkerLoss('session')",
+    reason:
+      'Issues #36, #149 and #446, and the case the boot binding cannot cover. Since a session boundary is a worker boundary, construction can fail long after first paint, and `WorkerPerSessionHost` reports it through `onWorkerAvailability(false)` -- a route this file already reads for the HUD notice. That callback carries no thrown value, which is why the report carries no error class rather than a fabricated one. Deleting this line leaves the HUD notice intact and the diagnostic silent, with `tsc` clean and every test green, which is precisely the state that made this whole list necessary.',
+  },
+  {
     what: 'the lifecycle save handler is attached to the controller',
     source: 'new LifecycleSaveHandler(controller).attach()',
     reason:

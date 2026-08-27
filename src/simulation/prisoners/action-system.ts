@@ -18,7 +18,7 @@ import {
 import type { NeedsComponent } from './needs';
 import { findRegimeSchedule, resolveActiveRegimeBlock, type RegimeSchedule } from './regime';
 import type { RoomInstance, RoomInstanceRegistry } from './room-instance-registry';
-import { isActionCategoryAllowed, selectBestAction } from './utility-ai';
+import { isActionCategoryAllowed, rankActions } from './utility-ai';
 
 function phaseIndex(phase: (typeof ACTION_PHASES)[number]): number {
   return ACTION_PHASES.indexOf(phase);
@@ -234,10 +234,48 @@ export class ActionSystem implements SystemRegistration {
     if (targetInstanceId !== undefined) this.roomInstances.releaseUse(targetInstanceId, entityId);
   }
 
+  /**
+   * ## The three exits, and why two of them count an unmet cycle and one does not
+   *
+   * Every exit back to `idle` clears `currentActionTargetInstanceId`, and that
+   * is not tidiness: a target left standing outlives the journey it belonged
+   * to. `projectPrisonerDetail` publishes it as `targetRoomInstanceId`
+   * (`presentation/prisoner-projection.ts`) whatever the phase, and
+   * `beginNextAction` overwrites it only when some candidate resolves -- so a
+   * prisoner who is idle *and* finds nothing to do keeps publishing the target
+   * of a walk that already failed, indefinitely.
+   *
+   * The counting follows `continuePerforming`'s convention rather than a new
+   * one, because the two methods answer the same two questions:
+   *
+   * - **A target that has stopped existing** counts an unmet cycle. The
+   *   prisoner wanted a room, the room is gone, and that is exactly what
+   *   `unmetDemandCycles` is documented to count ("no legal action had a
+   *   reachable, available target"). `continuePerforming` counts it for the
+   *   same reason.
+   * - **Bookkeeping that cannot be read back** does not. A traveller with no
+   *   path request demanded nothing this cycle that anything refused; it is the
+   *   mirror of `continuePerforming`'s unreadable action index, which also
+   *   releases, resets and does not count.
+   *
+   * **Only the middle exit is reachable in play, and it was measured rather
+   * than reasoned about.** `RoomZoningService.unzone` refuses on
+   * `claimCountOf > 0`, and by ADR 0029 decision 2 a traveller holds no claim,
+   * so a player may un-zone a canteen a prisoner is walking to. Driven through
+   * the real commands: the prisoner is `travelling` to `room.canteen:8:8` at
+   * tick 2,021 with `claimCountOf` 0, `UnzoneRoom` is accepted with no refusal,
+   * and twenty ticks later this method finds the instance gone. The first exit
+   * has no such path -- `beginNextAction` writes the request in the same
+   * statement run that writes the phase, and `PrisonerOperationsRuntime.loadSnapshot`
+   * drops every restored traveller to `idle` and clears both -- so it is
+   * defence in depth, and `tests/integration/unzoned-target-mid-journey.test.ts`
+   * covers the one that is not.
+   */
   private continueTravelling(entityId: number, index: number, tick: number): void {
     const requestId = this.coldState.getPathRequestId(entityId);
     if (requestId === undefined) {
       this.currentAction.phase[index] = phaseIndex('idle');
+      this.coldState.setActionTarget(entityId, undefined);
       return;
     }
 
@@ -259,6 +297,8 @@ export class ActionSystem implements SystemRegistration {
     const instance = targetInstanceId === undefined ? undefined : this.roomInstances.getById(targetInstanceId);
     if (instance === undefined) {
       this.currentAction.phase[index] = phaseIndex('idle');
+      this.coldState.setActionTarget(entityId, undefined);
+      this.unmetDemandCycles += 1;
       return;
     }
 
@@ -313,55 +353,78 @@ export class ActionSystem implements SystemRegistration {
     return this.roomInstances.claimUse(instanceId, entityId, action.requiredObjectCapability);
   }
 
+  /**
+   * Picks and starts one action for a prisoner who is idle, **falling back to
+   * the next-best legal candidate when the best one has nowhere to go** --
+   * [ADR 0041](../../../docs/adr/0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md)
+   * decision 1.
+   *
+   * This method used to take `selectBestAction`'s single answer and return when
+   * its target failed to resolve, which made every lower-ranked candidate
+   * unreachable in that cycle -- and, since nothing about the prisoner's state
+   * changed in the meantime, unreachable in the next cycle too, for the same
+   * reason. `action.eat-meal` scores strictly above `action.eat-in-cell` on the
+   * same need in the same `meal` category, so a prison with no canteen chose the
+   * canteen meal for ever and **fed nobody at all**: measured at 0 performing
+   * ticks of `action.eat-in-cell` and hunger pinned at the floor, in a cell-only
+   * prison at 1, 4 and 24 prisoners
+   * (`tests/integration/cell-only-meal-fallback.test.ts` records the run).
+   *
+   * The walk is the whole of the change. Nothing new is stored, no RNG is drawn,
+   * the population's iteration order is untouched, and the four determinism
+   * commitments of ADR 0029 decision 7 hold as they stood: the candidate order is
+   * `rankActions`' total order over state, and a candidate that fails to resolve
+   * or is refused a seat has written nothing when the next one is tried -- which
+   * is why the claim is still settled before the action index, the target and
+   * `actionsStarted`.
+   *
+   * `unmetDemandCycles` keeps its meaning exactly ("no legal action had a
+   * reachable, available target"): it is now counted once, after every candidate
+   * has been tried, rather than at the first that failed. ADR 0041 open question
+   * 2 asks whether it should instead count a prisoner who got a *worse* action
+   * than the one they wanted; that is a different number and is not decided here.
+   */
   private beginNextAction(entityId: number, index: number, tick: number): void {
     const classificationGroupId = classificationGroupIdFromIndex(this.records.classificationGroupIndex[index]!);
     const schedule = findRegimeSchedule(this.regimeSchedules, classificationGroupId);
     const block = resolveActiveRegimeBlock(schedule, tick);
     const legalActions = DEFAULT_ACTIONS.filter((action) => isActionCategoryAllowed(action, block.allowedCategories));
-
-    const chosen = selectBestAction(this.needs, index, legalActions);
-    if (chosen === undefined) {
-      this.unmetDemandCycles += 1;
-      return;
-    }
-
-    const target = this.resolveTargetInstance(entityId, chosen);
-    if (target === undefined) {
-      this.unmetDemandCycles += 1;
-      return;
-    }
-
     const currentTile: TilePosition = { x: tileCoordinate(this.position.tileX[index]!), y: tileCoordinate(this.position.tileY[index]!) };
 
-    // The no-travel path into `performing` is the second of the two places a
-    // claim is taken, and it is settled *before* anything is written: a refusal
-    // must not leave an action index, a target or an `actionsStarted` behind for
-    // an action that never began. It can only be refused when several prisoners
-    // reconsider on the same tick, since `findAvailableForUse` was consulted two
-    // statements ago and nothing else moves in between.
-    const arrivesImmediately = sameTile(currentTile, target.anchorTile);
-    if (arrivesImmediately && !this.claimUseIfNeeded(entityId, chosen, target.instanceId)) {
-      this.unmetDemandCycles += 1;
-      return;
-    }
+    for (const chosen of rankActions(this.needs, index, legalActions)) {
+      const target = this.resolveTargetInstance(entityId, chosen);
+      if (target === undefined) continue;
 
-    this.currentAction.actionIndex[index] = actionIndexOf(chosen.id);
-    this.coldState.setActionTarget(entityId, target.instanceId);
-    this.actionsStarted += 1;
+      // The no-travel path into `performing` is the second of the two places a
+      // claim is taken, and it is settled *before* anything is written: a refusal
+      // must not leave an action index, a target or an `actionsStarted` behind for
+      // an action that never began. It can only be refused when several prisoners
+      // reconsider on the same tick, since `findAvailableForUse` was consulted two
+      // statements ago and nothing else moves in between.
+      const arrivesImmediately = sameTile(currentTile, target.anchorTile);
+      if (arrivesImmediately && !this.claimUseIfNeeded(entityId, chosen, target.instanceId)) continue;
 
-    if (arrivesImmediately) {
-      this.currentAction.phase[index] = phaseIndex('performing');
+      this.currentAction.actionIndex[index] = actionIndexOf(chosen.id);
+      this.coldState.setActionTarget(entityId, target.instanceId);
+      this.actionsStarted += 1;
+
+      if (arrivesImmediately) {
+        this.currentAction.phase[index] = phaseIndex('performing');
+        this.currentAction.phaseStartedAtTick[index] = tick;
+        return;
+      }
+
+      this.requestSequence += 1;
+      const requestId = `prisoner.${entityId}.${this.requestSequence}`;
+      const routeContext = this.routeContextResolver(classificationGroupId, this.records.riskTier[index]!);
+      this.navigation.requestRoute(requestId, currentTile, target.anchorTile, routeContext, 1, tick);
+      this.coldState.setPathRequestId(entityId, requestId);
+      this.currentAction.phase[index] = phaseIndex('travelling');
       this.currentAction.phaseStartedAtTick[index] = tick;
       return;
     }
 
-    this.requestSequence += 1;
-    const requestId = `prisoner.${entityId}.${this.requestSequence}`;
-    const routeContext = this.routeContextResolver(classificationGroupId, this.records.riskTier[index]!);
-    this.navigation.requestRoute(requestId, currentTile, target.anchorTile, routeContext, 1, tick);
-    this.coldState.setPathRequestId(entityId, requestId);
-    this.currentAction.phase[index] = phaseIndex('travelling');
-    this.currentAction.phaseStartedAtTick[index] = tick;
+    this.unmetDemandCycles += 1;
   }
 
   private resolveTargetInstance(entityId: number, action: ActionDefinition): RoomInstance | undefined {

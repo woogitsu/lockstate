@@ -105,7 +105,19 @@ pricing, selection and UI; it is not the ownership test.
 - Verifies land ownership (`requiresOwnedLand`).
 - Checks terrain properties (e.g. `requiresBuildableTerrain`, `allowWater`).
 
-Its one production caller is `ConstructionSystem.submitOrder`, which refuses a
+It has three production callers, each supplying its own requirement set:
+`ConstructionSystem.submitOrder` (`src/simulation/construction/system.ts:266`,
+`SUBMISSION_REQUIREMENT`), `ObjectPlacementService`
+(`src/simulation/objects/object-placement-service.ts:349`,
+`PLACEMENT_REQUIREMENT`) and room zoning (`src/simulation/rooms/zoning.ts:423`,
+`ZONING_REQUIREMENT`). **This document said "its one production caller" from
+`f1d5c30` until this correction**; the second arrived at `041a379` (#269) and
+the third at `6cededc` (#320), so the sentence had been wrong for about a
+hundred releases. The terrain clause below is scoped to `SUBMISSION_REQUIREMENT`
+and does not describe the other two — `zoning.ts:307` records that `canBuildAt`
+defaults terrain checks **on**.
+
+`ConstructionSystem.submitOrder` refuses a
 build order whose tile the player does not own — the order is `failed` with
 `failReason: 'unowned-land'` rather than queued, because ownership is
 permission and permission cannot be queued (#215). That caller passes
@@ -124,7 +136,12 @@ unowned land on the far side, and a prison is a perimeter.
 - `version`: snapshot format version (`1`),
 - `chunkSize`: chunk dimension (default `32`, at most `WORLD_CHUNK_SIZE_LIMIT`),
 - `ownedChunks`: sorted list of owned chunk positions,
-- `chunks`: sorted chunk records with revisions and optional RLE terrain,
+- `chunks`: sorted chunk records with revisions and, each optional, the RLE
+  terrain plane and the `topEdge`, `leftEdge` and `zoning` planes
+  (`src/simulation/world/sparse-world.ts:44-54`). **This bullet named only
+  terrain** from `2ef4194` until this correction, through eleven later edits to
+  this file, while walls, doors and the zoning plane were all persisted —
+  `docs/NAVIGATION.md:78-80` relies on the opposite,
 - `parcels`: sorted registered parcel definitions,
 - `ownedParcels`: sorted list of owned parcel IDs.
 

@@ -29,9 +29,14 @@
 -- checks read -- `auth.uid()` is fed here by `set_config` -- nor that
 -- PostgREST turns SQLSTATE LS001 into a response a client can act on.
 -- `pnpm verify:stack` (scripts/verify-supabase-stack.mjs) covers both.
+--
+-- The seven in "The absolute ceiling, and the clamp that applies it" have been
+-- run only the plain-PostgreSQL way; the stack run needs container images that
+-- were not reachable when they were written. `pnpm verify:sql` reports 33/33
+-- for this suite -- a claim to check rather than a fact to trust.
 
 begin;
-select plan(26);
+select plan(33);
 
 insert into auth.users (id, email) values
   ('55555555-5555-5555-5555-555555555555', 'free-tier@example.test'),
@@ -317,6 +322,94 @@ select throws_ok(
 );
 
 reset role;
+
+-- --- The absolute ceiling, and the clamp that applies it --------------
+--
+-- ADR 0013 states capacity as `least(50, 5 + grantedSaveSlots)`, and
+-- src/services/entitlements/products.ts calls the 50 "an absolute ceiling ...
+-- applied to every computed capacity -- including one folded from a real server
+-- ledger and one restored from a tampered local cache (threat T5)". The SQL is
+-- the authoritative copy of that rule, and until now nothing asserted either
+-- half of it: `max_save_slot_capacity()` appeared in this repository's suites
+-- only in grant inventories (003) and declaration inventories (005), never its
+-- value and never its effect. Both `max_save_slot_capacity 50 -> 999` and
+-- deleting the `least()` from `account_save_slot_capacity()` left all 287
+-- assertions green.
+--
+-- The section above already reads capacity at 5 and at 10, so what is missing
+-- is the top: the number itself, and a capacity computation that the ceiling
+-- has to bite on.
+
+select is(
+  public.max_save_slot_capacity(),
+  50,
+  'the absolute ceiling is 50, which is the figure ADR 0013 and MAX_TOTAL_SAVE_SLOTS both state'
+);
+
+insert into auth.users (id, email) values
+  ('77777777-7777-7777-7777-777777777777', 'ceiling@example.test');
+
+-- Through the real trusted path first, at the largest grant the ledger admits:
+-- `entitlement_events_quantity_check` caps one event at 25, so 50 slots take
+-- two events. `recompute_entitlement_projection()` clamps the *granted* half at
+-- 45 (20260823090000:182), so this account's projection reads 45 and its
+-- capacity reads 5 + 45 = 50 -- the two clamps meeting exactly, which is why
+-- this assertion alone cannot tell them apart and the tampered projection below
+-- is the one that can.
+set local role service_role;
+select lives_ok(
+  $$ select * from public.record_entitlement_event(
+       '77777777-7777-7777-7777-777777777777', 'product.save-slots.plus-5', 'save-slots', 'grant',
+       'payment-webhook', 25, 'provider.test', 'evt-ceiling-1', now() - interval '4 hours',
+       'provider', 'provider.test', 'purchase-completed', null) $$,
+  'the trusted path grants the largest quantity one event may carry'
+);
+select lives_ok(
+  $$ select * from public.record_entitlement_event(
+       '77777777-7777-7777-7777-777777777777', 'product.save-slots.plus-5', 'save-slots', 'grant',
+       'payment-webhook', 25, 'provider.test', 'evt-ceiling-2', now() - interval '3 hours',
+       'provider', 'provider.test', 'purchase-completed', null) $$,
+  'and a second event of the same size, so fifty slots have genuinely been granted'
+);
+reset role;
+
+select is(
+  (select (value ->> 'grantedSaveSlots')::int from public.entitlements
+    where user_id = '77777777-7777-7777-7777-777777777777' and key = 'save-slots'),
+  45,
+  'the projection clamps the granted half at 45, so fifty granted slots are recorded as forty-five'
+);
+
+select is(
+  public.account_save_slot_capacity('77777777-7777-7777-7777-777777777777'),
+  50,
+  'and capacity reads 50: five free plus the forty-five the projection kept'
+);
+
+-- The half the ledger cannot reach, and the one the ceiling exists for. ADR
+-- 0008 threat T5 is a projection that is wrong -- a bug in the recompute, a
+-- restore from a bad backup, a future writer that forgets the clamp -- and the
+-- `least()` in `account_save_slot_capacity()` is what bounds the damage to this
+-- number instead of to whatever the row says. Written directly rather than
+-- through the ledger for exactly that reason: the ledger's own clamp would
+-- otherwise be doing the work and this assertion would prove nothing about the
+-- ceiling. Reproduced live at `{"grantedSaveSlots": 100000}`.
+update public.entitlements
+   set value = '{"grantedSaveSlots": 100000, "ledgerRevision": 99}'::jsonb
+ where user_id = '77777777-7777-7777-7777-777777777777' and key = 'save-slots';
+
+select is(
+  (select (value ->> 'grantedSaveSlots')::int from public.entitlements
+    where user_id = '77777777-7777-7777-7777-777777777777' and key = 'save-slots'),
+  100000,
+  'the projection now claims a hundred thousand slots, so the assertion below is not passing on a row that was already sane'
+);
+
+select is(
+  public.account_save_slot_capacity('77777777-7777-7777-7777-777777777777'),
+  50,
+  'capacity is still 50: the ceiling is applied to every computed capacity, including one folded from a projection that is wrong (ADR 0008 T5)'
+);
 
 select * from finish();
 rollback;

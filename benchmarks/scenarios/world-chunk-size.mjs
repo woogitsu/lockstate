@@ -1,3 +1,17 @@
+// MODELLED, NOT PRODUCTION.
+//
+// The chunk storage measured below is hand-rolled in this file. Nothing here
+// imports `SparseWorld` or anything else from `src/`.
+//
+// This one carries more weight than the other modelled scenarios and the
+// marker is not a formality: `docs/BENCHMARKING.md` records that
+// [ADR 0004](../../docs/adr/0004-chunk-size-selection.md) decided the
+// production chunk size on these two scenarios' numbers. So an accepted
+// architectural decision rests on a model of the production module rather
+// than on the module. #410 converted the navigation family to real imports
+// and deliberately left this one; re-deciding the chunk size against the real
+// `SparseWorld` is its own piece of work and is not claimed anywhere.
+
 const SPARSE_EDGE_SEED = 0x3d7b8a1c;
 const DENSE_PRISON_SEED = 0x5e2a9f4b;
 
@@ -153,7 +167,7 @@ export const worldChunkSizeSparseEdgeScenario = Object.freeze({
   id: 'world.chunk-size-sparse-edge',
   version: 1,
   description:
-    'Evaluates 16x16, 32x32 and 64x64 chunk candidates on sparse edge parcel expansion, boundary crossings and sparse overhead.',
+    'MODELLED, not production: hand-rolled chunk storage in this benchmark file, no SparseWorld import, evaluating 16x16, 32x32 and 64x64 chunk candidates on sparse edge parcel expansion, boundary crossings and sparse overhead. ADR 0004 chose the production chunk size on these numbers, so that decision rests on a model of the module rather than the module.',
   seed: SPARSE_EDGE_SEED,
   profiles: Object.freeze({
     smoke: Object.freeze({
@@ -176,7 +190,7 @@ export const worldChunkSizeDensePrisonScenario = Object.freeze({
   id: 'world.chunk-size-dense-prison',
   version: 1,
   description:
-    'Evaluates 16x16, 32x32 and 64x64 chunk candidates on dense 128x128 prison terrain access, buildability checks and mutation throughput.',
+    'MODELLED, not production: hand-rolled chunk storage in this benchmark file, no SparseWorld import, evaluating 16x16, 32x32 and 64x64 chunk candidates on dense 128x128 prison terrain access, buildability checks and mutation throughput. ADR 0004 chose the production chunk size on these numbers, so that decision rests on a model of the module rather than the module.',
   seed: DENSE_PRISON_SEED,
   profiles: Object.freeze({
     smoke: Object.freeze({

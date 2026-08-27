@@ -1,9 +1,14 @@
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { readdirSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { stripComments } from '../helpers/canonical-iteration';
-import { findImports } from '../helpers/module-boundaries';
+import {
+  PRODUCTION_ENTRY_POINTS,
+  reachableModules,
+  readFromDisk,
+  repositoryRoot,
+  type ReadModule,
+} from '../helpers/production-reachability';
 
 /**
  * A startup guarantee has to live in a module the shipped build actually
@@ -47,78 +52,6 @@ import { findImports } from '../helpers/module-boundaries';
  * downloads. Both are on the CI path through `pnpm verify`.
  */
 
-const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-
-/**
- * Where the shipped build starts. Two, because the simulation kernel is its
- * own bundle: `src/main.ts` builds the worker through Vite's `?worker` import
- * of `src/simulation/worker/worker.ts`, which the walk below follows, but
- * naming it explicitly means the worker graph is still covered if the
- * construction ever moves.
- */
-const PRODUCTION_ENTRY_POINTS = ['src/main.ts', 'src/simulation/worker/worker.ts'] as const;
-
-/** Reads a repository-relative path, or `undefined` when there is no such module. */
-type ReadModule = (repoPath: string) => string | undefined;
-
-/**
- * Resolves a relative specifier to a repository-relative `.ts` path.
- *
- * Bare specifiers (`phaser`, `zod`, `node:fs`) resolve to nothing: a package
- * cannot contain this repository's content validation. A `?worker`/`?url`
- * query is stripped before resolution, because `./worker.ts?worker` is
- * `./worker.ts` as far as the module graph is concerned -- and that is the one
- * specifier the client entry uses to reach the whole simulation kernel, so a
- * resolver that dropped it would silently walk half the application.
- */
-function resolveModule(importer: string, specifier: string, read: ReadModule): string | undefined {
-  if (!specifier.startsWith('.')) return undefined;
-  const withoutQuery = specifier.split('?')[0]!;
-  const joined = path.posix.normalize(path.posix.join(path.posix.dirname(importer), withoutQuery));
-  for (const candidate of [joined, `${joined}.ts`, `${joined}/index.ts`]) {
-    if (!candidate.endsWith('.ts')) continue;
-    if (read(candidate) !== undefined) return candidate;
-  }
-  return undefined;
-}
-
-/**
- * Every module the production build loads, following value imports only.
- *
- * Type-only imports are excluded because they are erased: a module reached
- * exclusively by `import type` contributes no code and runs no side effect,
- * which is exactly the distinction this gate turns on. `findImports` makes
- * that call, and it is the same scanner
- * `tests/unit/*-module-boundaries.test.ts` uses, pinned by fixtures in
- * `tests/unit/module-boundaries.test.ts` -- a second copy of the rule here is
- * how #188 happened.
- *
- * Takes its reader as an argument so the walk itself can be exercised against
- * a written-out graph rather than only against the real tree, where a walk
- * that quietly stopped following imports would look exactly like a tree with
- * nothing wrong in it.
- */
-function reachableModules(read: ReadModule, entryPoints: readonly string[]): ReadonlySet<string> {
-  const reached = new Set<string>();
-  const pending = [...entryPoints];
-
-  while (pending.length > 0) {
-    const current = pending.pop()!;
-    if (reached.has(current)) continue;
-    const source = read(current);
-    if (source === undefined) continue;
-    reached.add(current);
-
-    for (const site of findImports(source)) {
-      if (site.typeOnly) continue;
-      const resolved = resolveModule(current, site.specifier, read);
-      if (resolved !== undefined && !reached.has(resolved)) pending.push(resolved);
-    }
-  }
-
-  return reached;
-}
-
 /**
  * A `throw` that runs when the module is imported, as opposed to one inside a
  * function or method that runs when something calls it.
@@ -136,12 +69,6 @@ const IMPORT_TIME_THROW = /^ {0,2}throw\b/mu;
 /** The text `src/content/room-catalog.ts` throws, and the marker `vite.config.ts` looks for in the artefact. */
 const CROSS_REFERENCE_THROW = 'failed cross-reference validation';
 
-const readFromDisk: ReadModule = (repoPath) => {
-  const absolute = path.join(repositoryRoot, repoPath);
-  if (!existsSync(absolute)) return undefined;
-  return readFileSync(absolute, 'utf8');
-};
-
 /** Every content module, as repository-relative paths, sorted. */
 function contentModules(): readonly string[] {
   return readdirSync(path.join(repositoryRoot, 'src', 'content'))
@@ -150,6 +77,14 @@ function contentModules(): readonly string[] {
     .map((name) => path.posix.join('src', 'content', name));
 }
 
+/*
+ * The walk moved to `tests/helpers/production-reachability.ts` when
+ * `tests/foundation/trusted-tier-reachability-contract.test.ts` (#378) needed
+ * to ask a second question of it, and these fixtures moved nowhere: they are
+ * what pins it, so they keep exercising it from here rather than being
+ * duplicated beside the second caller. A second copy of a scanning rule is
+ * #188, and this walk sits directly on the scanner that defect was found in.
+ */
 describe('the walk itself, against a written-out graph', () => {
   const graph = (files: Record<string, string>): ReadModule => (repoPath) => files[repoPath];
 
@@ -167,6 +102,23 @@ describe('the walk itself, against a written-out graph', () => {
       'src/lib/thing.ts': 'export type Thing = number;\n',
     });
     expect([...reachableModules(read, ['src/main.ts'])]).toEqual(['src/main.ts']);
+  });
+
+  it('follows a type-only import when asked, which is how "erased" is told apart from "absent"', () => {
+    // The option `trusted-tier-reachability-contract.test.ts` turns on to
+    // distinguish a module that contributes no code because it is erased
+    // (`src/persistence/local/store.ts`, all interfaces) from one that
+    // contributes none because nothing reaches it at all. Both come back
+    // unreachable from the default walk, and only one of them is a candidate
+    // for deletion.
+    const read = graph({
+      'src/main.ts': "import type { Thing } from './lib/thing';\nexport const x: Thing = 1;\n",
+      'src/lib/thing.ts': 'export type Thing = number;\n',
+    });
+    expect([...reachableModules(read, ['src/main.ts'], { followTypeOnly: true })].sort()).toEqual([
+      'src/lib/thing.ts',
+      'src/main.ts',
+    ]);
   });
 
   it('follows a `?worker` specifier, which is how the client entry reaches the simulation kernel', () => {

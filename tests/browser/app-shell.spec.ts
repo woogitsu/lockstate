@@ -801,6 +801,579 @@ async function dragRectangleOnWorld(page: Page, options: { readonly minY?: numbe
 }
 
 /**
+ * Every *trusted* pointer press that reached the page, in order.
+ *
+ * The keyboard-only specs below are only worth their name while nothing in
+ * them presses anything with a pointer, and "nothing presses anything" is not
+ * a property a reader can check by looking: a `.click()` added later by
+ * somebody tidying the spec would make it pass for the wrong reason, which is
+ * exactly the class of failure #411 says let the defect ship. So the page
+ * records the presses itself. `isTrusted` is the discriminator that matters --
+ * a `click()` dispatched from page script carries `isTrusted === false`, while
+ * every press Playwright drives through the browser's input pipeline carries
+ * `true` -- and it cannot be forged from page script.
+ *
+ * Capture phase and on `document`, so a listener further down that stops
+ * propagation cannot hide a press from it.
+ */
+interface TrustedPressRecorder {
+  __trustedPresses?: string[];
+}
+
+async function installTrustedPointerTripwire(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    const store = window as unknown as TrustedPressRecorder;
+    store.__trustedPresses = [];
+    const record = (event: Event): void => {
+      if (!event.isTrusted) return;
+      const target = event.target;
+      const where = target instanceof Element ? target.tagName.toLowerCase() : 'a non-element';
+      const named = target instanceof Element && target.className !== '' ? `.${String(target.className)}` : '';
+      (store.__trustedPresses ??= []).push(`${event.type} on ${where}${named}`);
+    };
+    document.addEventListener('pointerdown', record, true);
+    document.addEventListener('mousedown', record, true);
+  });
+}
+
+async function trustedPresses(page: Page): Promise<readonly string[]> {
+  return page.evaluate(() => (window as unknown as TrustedPressRecorder).__trustedPresses ?? []);
+}
+
+/** Whether the control holding focus is the one asked for. One round trip. */
+async function focusIs(page: Page, target: FocusTarget): Promise<boolean> {
+  return page.evaluate(
+    ({ selector, text }) => {
+      const active = document.activeElement;
+      if (!(active instanceof HTMLElement)) return false;
+      if (!active.matches(selector)) return false;
+      return text === null || (active.textContent ?? '').trim() === text;
+    },
+    { selector: target.selector, text: target.text ?? null },
+  );
+}
+
+/** What has focus right now, in enough detail to name it in a failure. */
+async function focusedControl(page: Page): Promise<string> {
+  return page.evaluate(() => {
+    const active = document.activeElement;
+    if (!(active instanceof HTMLElement)) return 'nothing focusable';
+    return `<${active.tagName.toLowerCase()} class="${active.className}">${(active.textContent ?? '').trim().slice(0, 60)}`;
+  });
+}
+
+/** A control this file reaches with `Tab`, and how it recognises it. */
+interface FocusTarget {
+  readonly selector: string;
+  /**
+   * The control's accessible text, for a selector that names more than one
+   * control. Matched against `textContent`, which for an icon button is the
+   * screen-reader span `createIconButton` always renders -- so this is the
+   * word a player hears rather than a class the markup happens to carry.
+   */
+  readonly text?: string;
+}
+
+/**
+ * How far a single `Tab` hop is allowed to travel before it is a failure
+ * rather than a journey. One full cycle of the page's focusable controls on
+ * the busiest tab is inside this; a control that is not in the tab order at
+ * all is not.
+ */
+const MAX_TAB_PRESSES_PER_HOP = 48;
+
+/**
+ * Presses `Tab` until the focused control is the one asked for, and answers
+ * with how many presses that took.
+ *
+ * **Discovered rather than hard-coded**, deliberately. A spec that pressed
+ * `Tab` a literal seven times would be pinning today's DOM order and would
+ * fail on any change to it, including one that left every control perfectly
+ * reachable. What #411 asks for is that each control *is* reachable and that
+ * the order is sensible, so the count is measured and then bounded by the
+ * caller -- and reported, so a tab order that grew is visible at a failure
+ * rather than silent.
+ */
+async function tabTo(page: Page, description: string, target: FocusTarget): Promise<number> {
+  return walkFocus(page, 'Tab', description, target);
+}
+
+/**
+ * The same hop, backwards.
+ *
+ * `Shift+Tab` is as much a keyboard route as `Tab` is, and a control *behind*
+ * the one holding focus is reached by pressing it -- which is what a player
+ * filling one form over and over does, and what `wallRectanglesFromTheKeyboard`
+ * below does ten times per room. Forwards-only, the walk from the *Place order*
+ * button back to the *Tile X* field is a full lap of every focusable control on
+ * the page; backwards it is seven presses, and each press costs a round trip.
+ *
+ * It is deliberately the same function with the same bound, so a control that
+ * is unreachable in one direction fails the same way in the other.
+ */
+async function shiftTabTo(page: Page, description: string, target: FocusTarget): Promise<number> {
+  return walkFocus(page, 'Shift+Tab', description, target);
+}
+
+async function walkFocus(
+  page: Page,
+  key: 'Tab' | 'Shift+Tab',
+  description: string,
+  target: FocusTarget,
+): Promise<number> {
+  for (let presses = 1; presses <= MAX_TAB_PRESSES_PER_HOP; presses += 1) {
+    await page.keyboard.press(key);
+    const reached = await page.evaluate(
+      ({ selector, text }) => {
+        const active = document.activeElement;
+        if (!(active instanceof HTMLElement)) return false;
+        if (!active.matches(selector)) return false;
+        return text === null || (active.textContent ?? '').trim() === text;
+      },
+      { selector: target.selector, text: target.text ?? null },
+    );
+    if (reached) return presses;
+  }
+  throw new Error(
+    `${MAX_TAB_PRESSES_PER_HOP} ${key} presses never reached ${description} (${target.selector}${
+      target.text === undefined ? '' : ` labelled "${target.text}"`
+    }); focus ended on ${await focusedControl(page)}`,
+  );
+}
+
+/**
+ * Types a number into one of the Rooms panel's coordinate fields, with the
+ * keyboard alone, and answers with how many `Tab` presses reaching it took.
+ *
+ * `Control+a` before the digits, because the field is controlled and already
+ * holds a value: typing without selecting first would append to it. The
+ * `change` event that carries the value to the panel fires when focus leaves
+ * the input, which is what the caller's next hop does -- so the last field
+ * typed is committed by the `Tab` that reaches the confirm control, and the
+ * assertions in these tests are ordered around that deliberately.
+ */
+async function typeCoordinate(
+  page: Page,
+  field: 'x' | 'y' | 'width' | 'height',
+  value: number,
+): Promise<number> {
+  const presses = await tabTo(page, `the ${field} coordinate field`, {
+    selector: `.hud-rooms__coord-${field} input`,
+  });
+  await page.keyboard.press('Control+a');
+  await page.keyboard.type(String(value));
+  return presses;
+}
+
+/**
+ * The rectangle the Rooms panel is currently holding, off its own `data-area`.
+ *
+ * That attribute is what a finished drag writes and what the typed route
+ * writes too (`the Rooms panel yields the world it is drawn on` asserts the
+ * pair), so it is the one place on the page that says which *tiles* a gesture
+ * landed on -- the gesture itself is in CSS pixels and the camera is between
+ * the two.
+ */
+async function pendingRoomRectangle(page: Page): Promise<TileRectangle> {
+  const area = await page.locator('.hud-rooms__area').getAttribute('data-area');
+  const parts = (area ?? '').split(',').map((part) => Number.parseInt(part, 10));
+  if (parts.length !== 4 || parts.some((part) => !Number.isInteger(part))) {
+    throw new Error(`the Rooms panel is holding no rectangle to read: data-area is ${String(area)}`);
+  }
+  return { x: parts[0] ?? 0, y: parts[1] ?? 0, width: parts[2] ?? 0, height: parts[3] ?? 0 };
+}
+
+/** The four numbers both coordinate forms take, and the shape `data-area` prints. */
+interface TileRectangle {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+/** One `wall-brick` order: the tile it is anchored to, and which of that tile's two edges it fills. */
+interface WallSegment {
+  readonly x: number;
+  readonly y: number;
+  readonly edge: 'north' | 'west';
+}
+
+/**
+ * Every order a player has to place before `RoomZoningService.zone` will take
+ * these rectangles.
+ *
+ * ADR 0045 ("Must a zoned room be enclosed") is Accepted on decision 1: `zone`
+ * **refuses** a room whose definition authors an `enclosed` requirement and
+ * whose perimeter is open, and `room.cell` -- with sixteen of the other
+ * seventeen shipped definitions -- authors it. The ADR states the consequence
+ * as a route rather than a rule: *"The player's route to a room is now
+ * build-then-zone."* These three tests drive the real UI against a real worker,
+ * so that is the route they take; there is no `SparseWorld` here to hand to
+ * `tests/helpers/room-walls.ts`, and nothing that stubbed one would be proving
+ * what this file exists to prove.
+ *
+ * `SparseWorld` stores a **north** edge and a **west** edge per tile, so a
+ * rectangle's south boundary is the north edge of the row *below* it and its
+ * east boundary is the west edge of the column to its *right* -- tiles outside
+ * the rectangle, which is why a room flush against the edge of owned land is
+ * unzonable (ADR 0045, Consequences). Every rectangle these tests draw is well
+ * inside the single 32x32 chunk `createNewSimulationRuntime` owns.
+ *
+ * Deduplicated across rectangles, because two rooms that share a boundary share
+ * the stored edge: the Rooms panel's second drag lands directly below the first
+ * and the two overlap on two segments, and ordering a wall twice on one edge is
+ * an order that builds nothing while the crew is busy. Deduplicating is also
+ * what makes the count this returns the number the build queue will show.
+ *
+ * North first, then west, so the edge chooser is pressed twice for a whole
+ * prison rather than once per segment.
+ */
+function perimeterSegments(rectangles: readonly TileRectangle[]): readonly WallSegment[] {
+  const seen = new Set<string>();
+  const segments: WallSegment[] = [];
+  const add = (segment: WallSegment): void => {
+    const key = `${segment.x},${segment.y},${segment.edge}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    segments.push(segment);
+  };
+  for (const edge of ['north', 'west'] as const) {
+    for (const rectangle of rectangles) {
+      if (edge === 'north') {
+        for (let x = rectangle.x; x < rectangle.x + rectangle.width; x += 1) {
+          add({ x, y: rectangle.y, edge });
+          add({ x, y: rectangle.y + rectangle.height, edge });
+        }
+      } else {
+        for (const x of [rectangle.x, rectangle.x + rectangle.width]) {
+          for (let y = rectangle.y; y < rectangle.y + rectangle.height; y += 1) add({ x, y, edge });
+        }
+      }
+    }
+  }
+  return segments;
+}
+
+/**
+ * The Build panel's two coordinate fields, by position rather than by label.
+ *
+ * `tabTo` recognises a control by `matches()` against the *focused* element,
+ * and an accessible-name lookup is not available there -- so the selector has
+ * to be structural. `.hud-build__coords` holds exactly the two `.ui-number`
+ * roots and nothing else (`build-panel.ts`), and `wallRectanglesFromTheKeyboard`
+ * checks that the first of them really is the field labelled "Tile X" before it
+ * types a single digit, so a reordering of that row fails loudly instead of
+ * silently walling the transpose of the room.
+ */
+const BUILD_TILE_X_FIELD = '.hud-build__coords > .ui-number:nth-child(1) .ui-number__input';
+const BUILD_TILE_Y_FIELD = '.hud-build__coords > .ui-number:nth-child(2) .ui-number__input';
+
+/**
+ * Builds the walls these rectangles need, through the application, with the
+ * keyboard alone -- and leaves the session paused, as a new one arrives.
+ *
+ * ### Why the walls are built rather than written
+ *
+ * See `perimeterSegments` above for the ruling. What this adds is the *route*:
+ * buy the bricks, order every segment, run the clock until the crew has laid
+ * them, stop it again. That is what ADR 0045 says a player now does, and it is
+ * the only thing available on this page -- `tests/helpers/room-walls.ts` writes
+ * edges into a fixture's `SparseWorld` directly, and the world these tests zone
+ * in lives in a real worker on the other side of a `postMessage`.
+ *
+ * It is also the honest shape for a file whose whole subject is that the real
+ * halves are joined. Nothing here is stubbed, intercepted or injected: the
+ * bricks are bought with a real `PurchaseMaterials`, they arrive
+ * `PROCUREMENT_DELIVERY_DELAY_TICKS` later, `ConstructionSystem` allocates them
+ * out of the same container a player's would come from, and the edge each
+ * completed order writes is the edge `roomPerimeterEnclosure` reads.
+ *
+ * ### The keyboard, in a test that does not require it
+ *
+ * Two of the three callers are #411's keyboard-only specs and cannot press
+ * anything with a pointer at all -- `installTrustedPointerTripwire` fails them
+ * if they do. The third could, and does not, for a measured reason: a pointer
+ * press on this panel costs ~530 ms of Playwright actionability against a HUD
+ * the renderer repaints, and a key press costs ~15 ms. Thirty segments is
+ * ~64 s of clicking against ~3 s of typing. One helper, the cheaper route, and
+ * the route the panel's own hint calls "the keyboard route".
+ *
+ * ### What it costs, measured
+ *
+ * `wall-brick` is `workRequired: 50` and `ConstructionSystem` advances **one**
+ * order by 10 per scheduled tick on a 10-tick schedule, so a segment is six
+ * scheduled ticks -- 60 kernel ticks, 3 s of wall time at x1 and 0.75 s at x4.
+ * That is why this presses *Fast forward* twice: at x1 a thirty-segment prison
+ * would spend 90 s inside a 60 s test budget. It is the player's own control,
+ * pressed for the reason a player presses it.
+ */
+async function wallRectanglesFromTheKeyboard(
+  page: Page,
+  rectangles: readonly TileRectangle[],
+): Promise<readonly WallSegment[]> {
+  const segments = perimeterSegments(rectangles);
+
+  await tabTo(page, 'the Build tab', { selector: '.ui-tab[data-tab="build"]' });
+  await page.keyboard.press('Enter');
+  await expect(page.locator('.hud-build')).toBeVisible();
+
+  // A vacuity guard, not a claim: every order below is for whatever this row
+  // says, so a catalogue that arrived with something else selected would wall
+  // the room in beds.
+  await expect(
+    page.locator('.hud-build__list [data-selected="true"]'),
+    'the Build catalogue did not arrive with a wall selected, so these orders are for something else',
+  ).toHaveAttribute('data-buildable', 'wall-brick');
+
+  // ---- the bricks -----------------------------------------------------
+  // Two per segment, out of `wall-brick`'s `materialsRequired`, and the panel
+  // prints the arithmetic so it is asserted rather than assumed.
+  const bricks = 2 * segments.length;
+  const buyToggle = page.locator('.hud-build__buy-toggle');
+  // Backwards: the tab bar is the last thing in the document and this panel is
+  // above it, so forwards from the Build tab is a lap of the whole page --
+  // which, with this panel open, is more than `MAX_TAB_PRESSES_PER_HOP`.
+  await shiftTabTo(page, 'the buy disclosure', { selector: '.hud-build__buy-toggle' });
+  if ((await buyToggle.getAttribute('aria-expanded')) === 'false') await page.keyboard.press('Enter');
+  await expect(page.locator('.hud-build__buy')).toBeVisible();
+
+  await tabTo(page, 'the buy quantity field', { selector: '.hud-build__buy .ui-number__input' });
+  await page.keyboard.press('Control+a');
+  await page.keyboard.type(String(bricks));
+  await page.keyboard.press('Enter');
+  const buy = page.locator('.hud-build__buy-submit');
+  await expect(buy, 'the buy control does not offer the bricks this perimeter needs').toHaveText(
+    localeText('hud.build.buy-submit')
+      .replace('{count}', fundsText(bricks))
+      .replace('{material}', localeText('item.brick.name'))
+      .replace('{total}', fundsText(bricks * unitPriceOf('item.brick'))),
+  );
+  await tabTo(page, 'the buy control', { selector: '.hud-build__buy-submit' });
+  await page.keyboard.press('Enter');
+  // Nothing was refused: the starting balance is 25,000 and this is well
+  // inside it. A refusal here would leave every order below in
+  // `materials-pending` for ever, and the failure would surface as a room
+  // that never zoned rather than as a purchase that never went through.
+  await expect(page.locator('.hud__refusal'), 'the brick purchase was refused').toBeHidden();
+  // Folded again, so the panel is left the shape the caller found it -- and
+  // backwards, because the disclosure is above the control that opened it.
+  await shiftTabTo(page, 'the buy disclosure', { selector: '.hud-build__buy-toggle' });
+  await page.keyboard.press('Enter');
+  await expect(page.locator('.hud-build__buy')).toBeHidden();
+
+  // ---- one order per segment, through the numeric route ----------------
+  const coordinates = page.locator('.hud-build__coordinates');
+  await tabTo(page, 'the Build panel coordinates disclosure', {
+    selector: '.hud-build__coordinates > .ui-section__header',
+  });
+  if ((await coordinates.getAttribute('data-collapsed')) === 'true') await page.keyboard.press('Enter');
+  await expect(coordinates).toHaveAttribute('data-collapsed', 'false');
+
+  // The structural selectors really are the labelled fields. Compared by the
+  // `id` the label points at, so this is the same control the accessible name
+  // resolves to and not two selectors that happen to agree.
+  expect(
+    await page.locator(BUILD_TILE_X_FIELD).getAttribute('id'),
+    'the first field in the Build panel coordinate row is not the one labelled Tile X',
+  ).toBe(await page.getByRole('spinbutton', { name: localeText('hud.build.tile-x') }).getAttribute('id'));
+  expect(
+    await page.locator(BUILD_TILE_Y_FIELD).getAttribute('id'),
+    'the second field in the Build panel coordinate row is not the one labelled Tile Y',
+  ).toBe(await page.getByRole('spinbutton', { name: localeText('hud.build.tile-y') }).getAttribute('id'));
+
+  /*
+   * The same hop, taken thirty times, without paying to discover it thirty
+   * times.
+   *
+   * `tabTo` asks the page where focus landed after **every** press, which is
+   * what makes it a discovery rather than a hard-coded count -- and on this
+   * page a press costs ~57 ms and a `page.evaluate` another ~50 ms, because
+   * both queue behind a renderer painting every frame. (On a blank page a
+   * press is ~1.5 ms; the difference is the real application, not Playwright.)
+   * At fourteen presses per segment that is the difference between ~1 s and
+   * ~2.1 s a wall, and this loop runs it ten to thirty times.
+   *
+   * So each *kind* of hop is discovered once, with the walk, and repeated
+   * blindly after that -- then checked. The check is not decoration: if the
+   * count no longer lands on the control, the walk runs again and re-learns
+   * it, so a change to the form's tab order costs one slow lap rather than a
+   * wrong field silently receiving the digits. Nothing here pins a number a
+   * reader would have to maintain.
+   */
+  const strides = new Map<string, number>();
+  const hopTo = async (name: string, key: 'Tab' | 'Shift+Tab', target: FocusTarget): Promise<void> => {
+    const learned = strides.get(name);
+    if (learned !== undefined) {
+      for (let press = 0; press < learned; press += 1) await page.keyboard.press(key);
+      if (await focusIs(page, target)) return;
+    }
+    strides.set(name, await walkFocus(page, key, name, target));
+  };
+
+  let chosenEdge: WallSegment['edge'] | undefined;
+  let chosenColumn: number | undefined;
+  let entered = false;
+  for (const segment of segments) {
+    /*
+     * Only the fields that changed are retyped, which is what
+     * `perimeterSegments` orders its output for: a wall run down one column
+     * moves the *Tile Y* field and nothing else, and reaching that field is
+     * four presses where reaching *Tile X* and coming back is fourteen.
+     *
+     * The first hop of all is forwards -- focus is on the section's header and
+     * the fields are after it. Every hop after that is backwards, because the
+     * previous order left focus on *Place order*, the last control in the
+     * section, and forwards from there is a lap of the page.
+     */
+    if (!entered) {
+      await tabTo(page, 'the Tile X field', { selector: BUILD_TILE_X_FIELD });
+      entered = true;
+    } else if (segment.x !== chosenColumn) {
+      await hopTo('the Tile X field, from Place order', 'Shift+Tab', { selector: BUILD_TILE_X_FIELD });
+    } else {
+      await hopTo('the Tile Y field, from Place order', 'Shift+Tab', { selector: BUILD_TILE_Y_FIELD });
+    }
+    if (segment.x !== chosenColumn) {
+      await page.keyboard.press('Control+a');
+      await page.keyboard.type(String(segment.x));
+      chosenColumn = segment.x;
+      await hopTo('the Tile Y field', 'Tab', { selector: BUILD_TILE_Y_FIELD });
+    }
+    await page.keyboard.press('Control+a');
+    await page.keyboard.type(String(segment.y));
+    if (chosenEdge !== segment.edge) {
+      await tabTo(page, `the ${segment.edge} edge option`, {
+        selector: `.hud-build__coordinates [data-choice="${segment.edge}"]`,
+      });
+      await page.keyboard.press('Enter');
+      chosenEdge = segment.edge;
+      // From the chooser rather than from the field: a different distance, so
+      // a different hop.
+      await tabTo(page, 'the Place order control', { selector: '.hud-build__coordinates .ui-action' });
+    } else {
+      // This hop is also what commits the Tile Y field, which reports on
+      // `change`, and `change` fires when focus leaves the input.
+      await hopTo('the Place order control, from the Tile Y field', 'Tab', {
+        selector: '.hud-build__coordinates .ui-action',
+      });
+    }
+    await page.keyboard.press('Enter');
+  }
+
+  // Folded again, backwards, before anything leaves this panel. Two reasons
+  // and the second is not cosmetic: it leaves the Build panel the shape the
+  // caller found it, and it takes nine controls back out of the tab order --
+  // with the section open, the caller's next hop to another tab is 49 presses
+  // and `MAX_TAB_PRESSES_PER_HOP` is 48.
+  await shiftTabTo(page, 'the Build panel coordinates disclosure', {
+    selector: '.hud-build__coordinates > .ui-section__header',
+  });
+  await page.keyboard.press('Enter');
+  await expect(coordinates).toHaveAttribute('data-collapsed', 'true');
+
+  // Nothing was refused on this thread: `submit` throws with no session, and
+  // that would leave nothing to build and no sign of why.
+  await expect(page.locator('.hud__refusal'), 'an order for a wall segment was refused').toBeHidden();
+
+  // ---- and the crew, at the speed a player would use -------------------
+  await tabTo(page, 'the Play control', {
+    selector: '.hud-strip__transport button',
+    text: localeText('hud.transport.play'),
+  });
+  await page.keyboard.press('Enter');
+  await expect(
+    page.locator('.hud-strip__transport button', { hasText: localeText('hud.transport.play') }),
+    'the worker never accepted the set-clock, so no order can be dispatched',
+  ).toHaveAttribute('aria-pressed', 'true');
+
+  /*
+   * Every order reached the worker, counted before the crew has finished one.
+   *
+   * It has to be here rather than before the clock runs: `hud/build-queue` is
+   * a projection of what the *simulation* holds, and a command queued against
+   * a paused clock has not been dispatched, so the panel carries no
+   * `data-queued` at all until the first tick. And it has to be before *Fast
+   * forward*: a wall is six scheduled ticks, which is 3 s at x1 and 0.75 s at
+   * x4, so at x1 there is a comfortable window in which the number is the
+   * whole perimeter and at x4 there is not.
+   *
+   * Without it, a segment the form silently dropped would surface twenty
+   * seconds later as a room that would not zone, which names the symptom and
+   * not the cause.
+   */
+  await expect
+    .poll(async () => page.locator('.hud-build').getAttribute('data-queued'), {
+      message: 'the worker did not receive one build order per perimeter segment',
+      timeout: 10_000,
+    })
+    .toBe(String(segments.length));
+
+  /*
+   * Twice: `nextFastForwardSpeed` steps 1 -> 2 -> 4 and stops there
+   * (`SIMULATION_SPEEDS`), and a third press would go back to 2.
+   *
+   * The shape of these hops is dictated by two things about the transport, and
+   * both were measured here rather than assumed.
+   *
+   *  1. **Pressing a transport control drops focus to `<body>`.** What Tab
+   *     does next is then decided by the browser's *sequential focus
+   *     navigation starting point*, which the press left on the button --
+   *     so one `Tab` lands on the control after it and one `Shift+Tab` on the
+   *     control before it, and the button just pressed is reachable in neither
+   *     direction without going round. That is why the second press hops back
+   *     to *Play* first: forwards from *Fast forward* is a full lap of the
+   *     page, and a lap with the Build panel open is past
+   *     `MAX_TAB_PRESSES_PER_HOP`.
+   *  2. The speed it asks for next is computed from the speed in the *view
+   *     model*, which is the worker's answer arriving over `postMessage`. So
+   *     the readout is waited on between the presses: a second press that read
+   *     a stale 1 would ask for 2 again, which left the clock at x2 and the
+   *     crew at half the rate this budget assumes.
+   *
+   * `×4` is the readout's own text (`status-strip.ts` writes `×${speed}`),
+   * not the `hud.clock.speed` sentence beside it: that one is the
+   * screen-reader label and lives in a different node.
+   */
+  const fastForward: FocusTarget = {
+    selector: '.hud-strip__transport button',
+    text: localeText('hud.transport.fast-forward'),
+  };
+  await tabTo(page, 'the Fast forward control', fastForward);
+  await page.keyboard.press('Enter');
+  await expect(page.locator('.hud-clock__speed')).toHaveText(`×${fundsText(2)}`);
+  await shiftTabTo(page, 'the Play control', {
+    selector: '.hud-strip__transport button',
+    text: localeText('hud.transport.play'),
+  });
+  await tabTo(page, 'the Fast forward control', fastForward);
+  await page.keyboard.press('Enter');
+  await expect(page.locator('.hud-clock__speed')).toHaveText(`×${fundsText(4)}`);
+
+  await expect
+    .poll(async () => page.locator('.hud-build').getAttribute('data-queued'), {
+      message: `the crew never finished the ${segments.length} wall segments`,
+      timeout: 90_000,
+    })
+    .toBeNull();
+
+  // Stopped again, so the caller inherits the paused session a new prison
+  // arrives as -- which is what lets every "a command queued against a paused
+  // clock is not dispatched until it runs" claim below stay true.
+  // Backwards, for the reason above: the starting point is still *Fast
+  // forward*, and *Pause* is two controls behind it and a whole lap ahead.
+  await shiftTabTo(page, 'the Pause control', {
+    selector: '.hud-strip__transport button',
+    text: localeText('hud.transport.pause'),
+  });
+  await page.keyboard.press('Enter');
+  await expect(
+    page.locator('.hud-strip__transport button', { hasText: localeText('hud.transport.pause') }),
+  ).toHaveAttribute('aria-pressed', 'true');
+
+  return segments;
+}
+
+/**
  * Every element a player can press, anywhere on the assembled page.
  *
  * Deliberately not scoped to `.hud`: the collision issue #88 reported was
@@ -1938,6 +2511,36 @@ test.describe('the assembled application', () => {
        * measured in "the Rooms panel yields the world it is drawn on" below.
        */
       await page.locator('.ui-tab[data-tab="rooms"]').click();
+
+      /*
+       * The Rooms panel's typed route (#411, ADR 0038), expanded for exactly
+       * the reason the Build panel's coordinates are expanded above: its
+       * thirteen controls are in the DOM at every moment and laid out at none
+       * of the states visited so far, so without this state the accounting
+       * assertion at the foot of the sweep fails and names all thirteen --
+       * which is the gate doing its job rather than a reason to exempt them.
+       *
+       * They live inside `.hud-rooms__list`, which is a scroll container at
+       * every viewport, so most of them are out of view when the form opens.
+       * That is not a collision and `controlReachability` scrolls each control
+       * into view before hit-testing it, which is the question worth asking:
+       * once it is on screen, can it be pressed.
+       *
+       * Folded again afterwards, because an open form ends the drawing pass --
+       * the panel stays out of the world's way only while the form is closed,
+       * and the drag below needs that fold at 375x812.
+       */
+      const roomCoordinates = page.locator('.hud-rooms__coordinates > .ui-section__header');
+      if ((await roomCoordinates.getAttribute('aria-expanded')) === 'false') await roomCoordinates.click();
+      const typedRoute = await controlReachability(page);
+      inventory = typedRoute.controls;
+      for (const index of typedRoute.measured) everMeasured.add(index);
+      expect(
+        typedRoute.unreachable,
+        `controls covered by something else with the Rooms coordinates expanded at ${width}x${height}`,
+      ).toEqual([]);
+      if ((await roomCoordinates.getAttribute('aria-expanded')) === 'true') await roomCoordinates.click();
+
       const roomArm = page.locator('.hud-rooms__arm');
       await expect(roomArm, `the Rooms panel's arm control is missing at ${width}x${height}`).toBeVisible();
       await roomArm.click();
@@ -3029,6 +3632,11 @@ test.describe('the assembled application', () => {
   test('the Rooms panel says what a zoned room is missing, and says nothing when nothing is (#331)', async ({
     page,
   }) => {
+    // Slow, and the ADR is the reason: two `enclosed` cells cannot be zoned
+    // until their thirty wall segments are built, and this test measures the
+    // readout for *two* rooms because two are what make it report more needs
+    // than it has rows for. See the keyboard specs below for the arithmetic.
+    test.slow();
     await page.setViewportSize({ width: 1280, height: 800 });
     await openApp(page);
     await page.getByRole('button', { name: 'New prison' }).click();
@@ -3125,16 +3733,60 @@ test.describe('the assembled application', () => {
       ).toBe(false);
     }
 
-    // ---- two cells zoned, and nothing standing in either -------------
+    /*
+     * ---- where the two cells will go, and the walls they now need --------
+     *
+     * `RoomZoningService.zone` refuses an `enclosed` room whose perimeter is
+     * open (ADR 0045 decision 1, the owner's ruling) and `room.cell` authors
+     * that requirement, so a cell drawn on the starter prison's open ground is
+     * no longer a cell -- the count below would sit at 0 and everything this
+     * test measures would be measuring an empty panel.
+     *
+     * The rectangles are **discovered rather than chosen**, because they have
+     * to be the ones the drags below produce and those depend on where the HUD
+     * leaves bare world at this viewport. So each drag is made once as a probe,
+     * its rectangle read off the panel's own `data-area`, and then cancelled;
+     * the walls go up around exactly those tiles; and the same gesture is made
+     * again for real. `dragRectangleOnWorld` aims by scanning the page from the
+     * top left for the first point whose whole gesture lands on the canvas, so
+     * it is deterministic at a fixed viewport -- and rather than rely on that
+     * quietly, the second gesture's rectangle is asserted to be the first's.
+     * A drag that landed somewhere else fails here, naming both rectangles,
+     * instead of failing forty seconds later as a room that would not zone.
+     */
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.locator('.ui-tab[data-tab="rooms"]').click();
     await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
     await page.locator('.hud-rooms__arm').click();
     expect(await dragRectangleOnWorld(page), 'a room drag found no bare world').toBe(true);
+    const firstCell = await pendingRoomRectangle(page);
+    await page.locator('.hud-rooms__cancel').click();
+    expect(await dragRectangleOnWorld(page, { minY: 320 }), 'a second room drag found no bare world').toBe(
+      true,
+    );
+    const secondCell = await pendingRoomRectangle(page);
+    await page.locator('.hud-rooms__cancel').click();
+    // Two rooms and not one rectangle drawn twice, which is what the second
+    // drag's `minY` is for -- and if they were the same the second zoning
+    // below would be refused `overlaps-existing-room`.
+    expect(secondCell, 'both room drags found the same rectangle').not.toEqual(firstCell);
+
+    await wallRectanglesFromTheKeyboard(page, [firstCell, secondCell]);
+
+    // ---- two cells zoned, and nothing standing in either -------------
+    await page.locator('.ui-tab[data-tab="rooms"]').click();
+    await page.locator('.hud-rooms__list [data-room="room.cell"]').click();
+    await page.locator('.hud-rooms__arm').click();
+    expect(await dragRectangleOnWorld(page), 'a room drag found no bare world').toBe(true);
+    expect(
+      await pendingRoomRectangle(page),
+      'the drag no longer lands on the rectangle its walls were built around',
+    ).toEqual(firstCell);
     await page.locator('.hud-rooms__confirm').click();
-    // A new session starts paused and a command queued against a paused clock
-    // is not dispatched, so the room does not register until the clock runs.
-    // The count moving from 0 is the proof that a real worker took it.
+    // The walls above left the clock stopped again, exactly as a new session
+    // arrives, and a command queued against a stopped clock is not dispatched
+    // -- so the room does not register until it runs. The count moving from 0
+    // is the proof that a real worker took it.
     await page.getByRole('button', { name: localeText('hud.transport.play') }).click();
     await expect(page.locator('[data-metric="rooms"]')).toContainText('1');
 
@@ -3167,6 +3819,10 @@ test.describe('the assembled application', () => {
     expect(await dragRectangleOnWorld(page, { minY: 320 }), 'a second room drag found no bare world').toBe(
       true,
     );
+    expect(
+      await pendingRoomRectangle(page),
+      'the second drag no longer lands on the rectangle its walls were built around',
+    ).toEqual(secondCell);
     await page.locator('.hud-rooms__confirm').click();
     await expect(page.locator('[data-metric="rooms"]')).toContainText('2');
 
@@ -3265,6 +3921,333 @@ test.describe('the assembled application', () => {
         `the rail with the room readout showing at ${width}x${height}`,
       ).toEqual({ railOverflow: 0, offScreen: [], stuck: [] });
     }
+  });
+
+  /**
+   * The whole player loop, driven with `Tab` and the keys and nothing else
+   * (#411).
+   *
+   * ### What was wrong
+   *
+   * The only producer of a room rectangle was a pointer drag on the world
+   * canvas, and the canvas cannot take keyboard focus at all. Zoning gates
+   * accommodation and `AdmitPrisoner` refuses an arrival with nowhere to put
+   * it, so a keyboard-only player did not merely lose a convenience: every
+   * admission was refused for the rest of the session and the game could not
+   * be finished.
+   *
+   * ### Why this test is shaped the way it is
+   *
+   * Three things about it are deliberate, and each closes a way it could pass
+   * while a player still could not play.
+   *
+   *  1. **It asserts results, never controls.** #411 says so outright: *"Do
+   *     not assert merely that a control exists; assert the command was issued
+   *     and the room exists afterwards."* A control-existence assertion would
+   *     have passed on the day the Rooms panel shipped, with no keyboard route
+   *     in it. So the claims are `[data-metric="rooms"]` moving 0 -> 1 with a
+   *     real simulation worker behind it, and a prisoner admitted after that.
+   *  2. **The pre-state is asserted.** Both counts are read as `0` before a key
+   *     is pressed, so a prison leaked by an earlier test cannot let this one
+   *     pass on somebody else's room.
+   *  3. **A trusted-pointer tripwire runs for the whole test.** No browser spec
+   *     in this repository had ever pressed `Tab` before this one, and the
+   *     easiest way to "fix" a keyboard spec that has gone red is to reach for
+   *     `.click()`. The page records every trusted `pointerdown`/`mousedown`
+   *     that reaches it; the assertion is that there were none, and the last
+   *     two lines make one on purpose so a recorder that never attached cannot
+   *     read as silence.
+   */
+  test('zones a room and admits a prisoner with the keyboard alone (#411)', async ({ page }) => {
+    /*
+     * **Slow, and the reason is the ADR rather than the test.**
+     *
+     * `test.slow()` triples the 60 s budget, and it is used here for the same
+     * kind of reason the save round trip above uses it: this test now builds a
+     * prison before it can zone a room in it. ADR 0045 made an `enclosed`
+     * room's walls a precondition of `zone`, so the keyboard-only loop is ten
+     * `wall-brick` orders long before it reaches the Rooms panel at all --
+     * and a keyboard interaction with the assembled page costs ~130 ms
+     * (~1.5 ms on a blank page: it is the renderer's frame, not Playwright),
+     * which puts the ten orders alone at ~30 s. Measured end to end at ~65 s.
+     *
+     * It is not a timeout raised over a flaky assertion. Nothing below is
+     * weakened, nothing polls for longer, and the wall-building itself is
+     * asserted at every step -- the purchase, the order count the worker
+     * received, the speed the clock reached and the queue draining to nothing.
+     */
+    test.slow();
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await installTrustedPointerTripwire(page);
+    await openApp(page);
+
+    const metric = (id: string) => page.locator(`[data-metric="${id}"] .ui-stat__value`);
+    const hops: { target: string; presses: number }[] = [];
+    const hop = async (description: string, target: FocusTarget): Promise<void> => {
+      hops.push({ target: description, presses: await tabTo(page, description, target) });
+    };
+
+    // Pre-state: nothing is zoned and nobody is admitted, so the two numbers
+    // this test moves both start where it can see them start.
+    await expect(metric('rooms'), 'a prison leaked from an earlier test').toHaveText('0');
+    await expect(metric('prisoners'), 'a prisoner leaked from an earlier test').toHaveText('0');
+
+    // ---- a prison ----------------------------------------------------
+    await hop('the New prison button', {
+      selector: '.save-panel__button',
+      text: localeText('save.action.create'),
+    });
+    await page.keyboard.press('Enter');
+    await expect(page.locator('.save-panel__item-label').first()).toContainText('New Prison');
+
+    /*
+     * ---- and the walls the cell has to have first (ADR 0045) ----------
+     *
+     * The loop this test measures grew a step. `RoomZoningService.zone`
+     * refuses a room whose definition authors an `enclosed` requirement and
+     * whose perimeter is open -- the owner's ruling, ADR 0045 decision 1 --
+     * and `room.cell` authors it. So "the whole player loop" now begins with
+     * bricks, and a keyboard-only player who cannot lay a wall cannot reach a
+     * cell however reachable the Rooms panel is.
+     *
+     * That makes this a **stronger** test of the same claim rather than a
+     * detour around a new obstacle: the route it walks is now buy, order,
+     * build, zone, admit, and every press of it is a key. Nothing about the
+     * three properties in the header changes -- results are still what is
+     * asserted, the pre-state is still read, and the tripwire still runs.
+     *
+     * The rectangle is the one typed below, so the room and its walls cannot
+     * drift apart.
+     */
+    const cell: TileRectangle = { x: 4, y: 4, width: 2, height: 3 };
+    await wallRectanglesFromTheKeyboard(page, [cell]);
+
+    // ---- the Rooms tab, and what the room is for ----------------------
+    await hop('the Rooms tab', { selector: '.ui-tab[data-tab="rooms"]' });
+    await page.keyboard.press('Enter');
+    await expect(page.locator('.hud-rooms')).toBeVisible();
+
+    await hop('the Cell row in the catalogue', { selector: '.hud-rooms__list [data-room="room.cell"]' });
+    await page.keyboard.press('Enter');
+    // A vacuity guard rather than a claim: if this press did not land, every
+    // number below would be about a room type nobody chose.
+    await expect(page.locator('.hud-rooms__list [data-room="room.cell"]')).toHaveAttribute(
+      'data-selected',
+      'true',
+    );
+
+    // ---- and where it goes, typed ------------------------------------
+    await hop('the coordinates disclosure', { selector: '.hud-rooms__coordinates > .ui-section__header' });
+    await page.keyboard.press('Enter');
+    await expect(page.locator('.hud-rooms__coordinates')).toHaveAttribute('data-collapsed', 'false');
+
+    // The rectangle the walls above were built around, typed in. Inside the
+    // starting parcel -- `createNewSimulationRuntime` loads and owns chunk
+    // (0,0) at 32 tiles a side -- and `room.cell`'s authored minimum exactly
+    // (`minWidth: 2, minHeight: 3, minTiles: 6`), because every tile of
+    // perimeter beyond it is another wall this player has to order by hand.
+    for (const [field, value] of [
+      ['x', cell.x],
+      ['y', cell.y],
+      ['width', cell.width],
+      ['height', cell.height],
+    ] as const) {
+      hops.push({ target: `the ${field} field`, presses: await typeCoordinate(page, field, value) });
+    }
+
+    // ---- the rectangle, then the confirm ------------------------------
+    // The form's own control is the typed route's release: it produces the
+    // pending rectangle a finished drag produces, and nothing more. This hop
+    // is also what commits the height field, since a field reports on
+    // `change` and `change` fires when focus leaves the input.
+    await hop('the form control', { selector: '.hud-rooms__coordinates-submit' });
+    await page.keyboard.press('Enter');
+    // The four numbers reached the panel's pending rectangle, and they are the
+    // four that were typed -- read off the panel's own `data-area`, which is
+    // the attribute a pointer drag writes.
+    await expect(page.locator('.hud-rooms__area')).toHaveAttribute(
+      'data-area',
+      `${cell.x},${cell.y},${cell.width},${cell.height}`,
+    );
+    await hop('the confirm control', { selector: '.hud-rooms__confirm' });
+    await page.keyboard.press('Enter');
+
+    // A new session starts paused, and a command queued against a paused clock
+    // is not dispatched until it runs. The count moving is the proof that a
+    // real simulation worker accepted a real `ZoneRoom`.
+    await hop('the Play control', {
+      selector: '.hud-strip__transport button',
+      text: localeText('hud.transport.play'),
+    });
+    await page.keyboard.press('Enter');
+    await expect(metric('rooms'), 'no room reached the worker from the typed rectangle').toHaveText('1');
+
+    // ---- and the loop the room unblocks -------------------------------
+    await hop('the Overview tab', { selector: '.ui-tab[data-tab="overview"]' });
+    await page.keyboard.press('Enter');
+    await hop('the Admit control', { selector: '.hud-intake__admit' });
+    await page.keyboard.press('Enter');
+    await expect(metric('prisoners'), 'the admission was refused, so the loop is still broken').toHaveText(
+      '1',
+    );
+
+    /*
+     * #411's "reachable in a sensible tab order", as a number.
+     *
+     * Every hop above is already bounded by `MAX_TAB_PRESSES_PER_HOP`, which
+     * is what "reachable" means here -- `tabTo` throws otherwise, and that is
+     * how this test failed before the route existed. The tighter bound is
+     * placed on the route this change adds: from the chosen room type to the
+     * disclosure, through the four fields, to the confirm control. Those are
+     * the hops a player takes over and over, and the ones a regression in this
+     * panel's DOM order would lengthen.
+     *
+     * It is deliberately not placed on the hops *between* panels. Reaching the
+     * tab bar from the status strip crosses every focusable control in the
+     * HUD, which is a fact about the page's document order and has nothing to
+     * say about this route; bounding it here would make an unrelated control
+     * added anywhere on the page fail a Rooms panel test.
+     */
+    const routeHops = new Set([
+      'the coordinates disclosure',
+      'the x field',
+      'the y field',
+      'the width field',
+      'the height field',
+      'the form control',
+      'the confirm control',
+    ]);
+    const summary = hops.map((entry) => `${entry.target}: ${entry.presses}`).join(', ');
+    expect(
+      hops.filter((entry) => routeHops.has(entry.target) && entry.presses > 20).map((entry) => entry.target),
+      `a control on the typed route took more than 20 Tab presses to reach (${summary})`,
+    ).toEqual([]);
+    // And the route was actually walked, rather than the filter above quietly
+    // matching nothing because a name was reworded.
+    expect(
+      hops.filter((entry) => routeHops.has(entry.target)).length,
+      `the typed route's hops were not recorded (${summary})`,
+    ).toBe(routeHops.size);
+
+    // ---- the tripwire -------------------------------------------------
+    expect(
+      await trustedPresses(page),
+      'a pointer press reached the page, so this test did not prove a keyboard-only route',
+    ).toEqual([]);
+    // And the recorder was live throughout, which is the half that stops the
+    // assertion above from being a green light for a listener that never
+    // attached. One deliberate pointer press, after every claim is made.
+    await page.locator('.ui-tab[data-tab="build"]').click();
+    expect(
+      await trustedPresses(page),
+      'the tripwire recorded nothing for a real pointer press, so it was never watching',
+    ).not.toEqual([]);
+  });
+
+  /**
+   * Removal, from the keyboard, with no separate work behind it (#411).
+   *
+   * `zone-room` and `unzone-room` are the two `HudIntent` kinds that had no
+   * keyboard producer at all, and they were unreachable for one reason: both
+   * need a rectangle, and the only producer of one was a drag. The Rooms
+   * panel's confirm row is driven by *whether* a rectangle is pending and not
+   * by which producer set it, so a second producer of `pending` reaches both.
+   * That is a claim about the panel's shape rather than an obvious
+   * consequence, so it is measured here -- and measured as #411 asks, on the
+   * command rather than on the control: the room count goes back to 0, which
+   * only a real `UnzoneRoom` reaching the worker can do.
+   */
+  test('takes a room back with the keyboard alone, through the same confirm control (#411)', async ({
+    page,
+  }) => {
+    // Slow for the reason the test above is, and the same ten wall segments
+    // behind it: see that comment.
+    test.slow();
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await installTrustedPointerTripwire(page);
+    await openApp(page);
+
+    const metric = (id: string) => page.locator(`[data-metric="${id}"] .ui-stat__value`);
+    await expect(metric('rooms'), 'a prison leaked from an earlier test').toHaveText('0');
+
+    /*
+     * The rectangle, and the walls it now needs before `zone` will take it
+     * (ADR 0045 decision 1; see the test above). Un-zoning needs no walls of
+     * its own -- decision 6 gives `unzone` no symmetric refusal, and that is
+     * checked here by the count going back to 0 with the perimeter still
+     * standing -- but there is nothing to take back until a room exists.
+     *
+     * The cell's own minimum, rather than the 4x4 this used to type: it is the
+     * smallest rectangle `room.cell` accepts (`minWidth: 2, minHeight: 3,
+     * minTiles: 6`), so it is ten wall segments instead of sixteen, and what
+     * this test is about is which producer set the pending rectangle rather
+     * than how big it was.
+     */
+    const cell: TileRectangle = { x: 6, y: 6, width: 2, height: 3 };
+
+    /** Type one rectangle and confirm it, whichever mode the panel is in. */
+    const typeRectangleAndConfirm = async (): Promise<void> => {
+      await tabTo(page, 'the coordinates disclosure', {
+        selector: '.hud-rooms__coordinates > .ui-section__header',
+      });
+      if ((await page.locator('.hud-rooms__coordinates').getAttribute('data-collapsed')) === 'true') {
+        await page.keyboard.press('Enter');
+      }
+      for (const [field, value] of [
+        ['x', cell.x],
+        ['y', cell.y],
+        ['width', cell.width],
+        ['height', cell.height],
+      ] as const) {
+        await typeCoordinate(page, field, value);
+      }
+      await tabTo(page, 'the form control', { selector: '.hud-rooms__coordinates-submit' });
+      await page.keyboard.press('Enter');
+      await tabTo(page, 'the confirm control', { selector: '.hud-rooms__confirm' });
+      await page.keyboard.press('Enter');
+    };
+
+    await tabTo(page, 'the New prison button', {
+      selector: '.save-panel__button',
+      text: localeText('save.action.create'),
+    });
+    await page.keyboard.press('Enter');
+    await expect(page.locator('.save-panel__item-label').first()).toContainText('New Prison');
+
+    await wallRectanglesFromTheKeyboard(page, [cell]);
+
+    await tabTo(page, 'the Rooms tab', { selector: '.ui-tab[data-tab="rooms"]' });
+    await page.keyboard.press('Enter');
+    await expect(page.locator('.hud-rooms')).toBeVisible();
+    await tabTo(page, 'the Cell row in the catalogue', {
+      selector: '.hud-rooms__list [data-room="room.cell"]',
+    });
+    await page.keyboard.press('Enter');
+
+    await typeRectangleAndConfirm();
+    await tabTo(page, 'the Play control', {
+      selector: '.hud-strip__transport button',
+      text: localeText('hud.transport.play'),
+    });
+    await page.keyboard.press('Enter');
+    await expect(metric('rooms'), 'no room reached the worker from the typed rectangle').toHaveText('1');
+
+    // ---- and back out again -------------------------------------------
+    await tabTo(page, 'the removal toggle', { selector: '.hud-rooms__remove' });
+    await page.keyboard.press('Enter');
+    await expect(page.locator('.hud-rooms__remove')).toHaveAttribute('aria-pressed', 'true');
+    await typeRectangleAndConfirm();
+    await expect(metric('rooms'), 'the typed rectangle never reached UnzoneRoom').toHaveText('0');
+
+    expect(
+      await trustedPresses(page),
+      'a pointer press reached the page, so this test did not prove a keyboard-only route',
+    ).toEqual([]);
+    await page.locator('.ui-tab[data-tab="build"]').click();
+    expect(
+      await trustedPresses(page),
+      'the tripwire recorded nothing for a real pointer press, so it was never watching',
+    ).not.toEqual([]);
   });
 
   test('every runtime atlas reaches the page over HTTP and decodes at its authored size', async ({ page }) => {

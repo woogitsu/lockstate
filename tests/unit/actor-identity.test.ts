@@ -365,6 +365,40 @@ describe('actor identity is deterministic through a real session', () => {
 // The HUD surface.
 // ---------------------------------------------------------------------------
 
+/**
+ * One written-out name per prisoner in `runNamedScenario`'s intake order, in
+ * place of the minted ones.
+ *
+ * The alternative -- `expect(row.name).toEqual(registry.getName('prisoner',
+ * row.entityId))` -- put the accessor the projection itself calls on both
+ * sides of the comparison, so it agreed with itself for any `getName` at all
+ * (#375). Measured: making `getName` hand back entity `0`'s name for every
+ * actor of its kind left this whole file 26/26 green, while the roster panel
+ * showed one prisoner's name against all eight rows.
+ *
+ * The names are literals rather than the values the placeholder pool happens
+ * to mint, because `PLACEHOLDER_ACTOR_NAME_POOL` is explicitly a placeholder:
+ * pinning drawn names here would re-baseline the day it is replaced, and the
+ * mint itself is already pinned against literals by
+ * `tests/determinism/session-restore-rng-ownership.test.ts`. The initial
+ * letter tracks the entity id so a row that reads the wrong actor's entry is
+ * legible in the failure diff rather than merely unequal.
+ *
+ * `rename` throws for an actor with no identity, so these calls are also the
+ * assertion that the scenario really minted eight names: the case cannot
+ * degrade into labelling a population the pipeline never named.
+ */
+const LABELLED_PRISONERS = [
+  { entityId: 0, name: { givenName: 'Ada', familyName: 'Ashcroft' } },
+  { entityId: 1, name: { givenName: 'Bruno', familyName: 'Bellweather' } },
+  { entityId: 2, name: { givenName: 'Cleo', familyName: 'Castellan' } },
+  { entityId: 3, name: { givenName: 'Dara', familyName: 'Dunmore' } },
+  { entityId: 4, name: { givenName: 'Emil', familyName: 'Eastcote' } },
+  { entityId: 5, name: { givenName: 'Faye', familyName: 'Fairholm' } },
+  { entityId: 6, name: { givenName: 'Gus', familyName: 'Garrowby' } },
+  { entityId: 7, name: { givenName: 'Hana', familyName: 'Holloway' } },
+] as const;
+
 describe('identity reaches the HUD through the projections', () => {
   it('labels prisoner roster rows and the detail view when an identity source is supplied', () => {
     const { fixture, registry } = runNamedScenario(77);
@@ -372,17 +406,27 @@ describe('identity reaches the HUD through the projections', () => {
     const unnamed = projectPrisonerRoster(fixture.prisoners, { limit: 50 });
     expect(unnamed.rows.every((row) => row.name === undefined)).toBe(true);
 
-    const named = projectPrisonerRoster(fixture.prisoners, { limit: 50 }, { identity: registry });
-    expect(named.rows).toHaveLength(PRISONER_COUNT);
-    for (const row of named.rows) {
-      expect(row.name).toBeDefined();
-      expect(row.name).toEqual(registry.getName('prisoner', row.entityId));
-    }
+    // The pipeline named every arrival, and it handed them the ids the
+    // literals below are written against.
+    const minted = projectPrisonerRoster(fixture.prisoners, { limit: 50 }, { identity: registry });
+    expect(minted.rows).toHaveLength(PRISONER_COUNT);
+    expect(minted.rows.every((row) => row.name !== undefined)).toBe(true);
+    expect(minted.rows.map((row) => row.entityId)).toEqual(LABELLED_PRISONERS.map((entry) => entry.entityId));
 
-    const entityId = named.rows[0]!.entityId;
+    for (const { entityId, name } of LABELLED_PRISONERS) registry.rename('prisoner', entityId, name);
+
+    const named = projectPrisonerRoster(fixture.prisoners, { limit: 50 }, { identity: registry });
+    expect(named.rows.map((row) => ({ entityId: row.entityId, name: row.name }))).toEqual(
+      LABELLED_PRISONERS.map((entry) => ({ entityId: entry.entityId, name: { ...entry.name } })),
+    );
+
+    // Not the first prisoner, so a detail view that reads any entry of the
+    // right *kind* rather than this actor's own is a failure and not a
+    // coincidence.
+    const { entityId, name } = LABELLED_PRISONERS[3]!;
     const detail = projectPrisonerDetail(fixture.prisoners, entityId, { identity: registry })!;
-    expect(detail.name).toBeDefined();
-    expect(detail.name).toEqual(registry.getName('prisoner', entityId));
+    expect(detail.name).toEqual({ givenName: 'Dara', familyName: 'Dunmore' });
+    expect(detail.name).toEqual({ ...name });
     expect(projectPrisonerDetail(fixture.prisoners, entityId)!.name).toBeUndefined();
   });
 
@@ -407,10 +451,21 @@ describe('identity reaches the HUD through the projections', () => {
 
   it('hands out a copy, never a reference into registry state', () => {
     const { fixture, registry } = runNamedScenario(88);
-    const row = projectPrisonerRoster(fixture.prisoners, { limit: 1 }, { identity: registry }).rows[0]!;
+    // The third prisoner rather than the first: `not.toBe` alone is satisfied
+    // by any object at all, and its companion used to be
+    // `toEqual(registry.getName('prisoner', row.entityId))` -- the same call
+    // the projection makes, on both sides (#375). A written-out name on a row
+    // that is not entity `0` makes the pair say "the right value, in a
+    // different object".
+    const target = 2;
+    const before = projectPrisonerRoster(fixture.prisoners, { limit: 50 }, { identity: registry }).rows[target]!;
+    registry.rename('prisoner', before.entityId, { givenName: 'Cleo', familyName: 'Castellan' });
 
+    const row = projectPrisonerRoster(fixture.prisoners, { limit: 50 }, { identity: registry }).rows[target]!;
+
+    expect(row.entityId).toBe(before.entityId);
+    expect(row.name).toEqual({ givenName: 'Cleo', familyName: 'Castellan' });
     expect(row.name).not.toBe(registry.getName('prisoner', row.entityId));
-    expect(row.name).toEqual(registry.getName('prisoner', row.entityId));
   });
 
   it('leaves the registry untouched when projecting', () => {

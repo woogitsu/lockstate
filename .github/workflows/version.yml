@@ -122,12 +122,23 @@ name: Version
 # precedent was not: that workflow had never succeeded either.
 #
 # **The shared workspace is safe anyway, and this is the argument rather than a
-# hope.** Every job in ci.yml -- `verify` (:32), `assets` (:178) and `browser`
-# (:298) -- runs its own `actions/checkout`, which cleans the workspace and
+# hope.** Every job in ci.yml -- the `verify`, `assets` and `browser` jobs --
+# runs its own `actions/checkout`, which cleans the workspace and
 # resets it to that job's commit before anything else happens. So nothing this
 # job leaves behind can reach the tree a later CI job measures. The gate also
 # compares a checked-out commit against itself, and the bump is a commit of its
 # own, so it is not the kind of thing that gate can see in the first place.
+#
+# Those three jobs are cited by NAME and not by line, which is a correction and
+# is the way ci.yml cross-references itself ("the `verify` job", "the `assets`
+# job"). This paragraph used to read `verify` (:32), `assets` (:178), `browser`
+# (:298); the real headers were 43, 253 and 382, so all three pointers were
+# wrong while the claim they support was true. And they moved again in the
+# commit that fixed them -- 253 and 382 became 312 and 441 when a comment above
+# them grew. `docs/AGENT_WORKFLOW.md` section 4: cite code by `file:line`
+# because grep checks it, but a line number into a file under active edit is
+# the least durable citation here. `grep -n '^  verify:$'` is the check, and a
+# job name is what survives.
 #
 # One residual effect, stated because it is real: `git config user.name` below
 # is repo-local and persists in the reused workspace. No other job in this

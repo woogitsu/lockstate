@@ -82,6 +82,21 @@ trusted mutation to record actor, reason and prior value, and no audit trail
 on the trusted write path exists yet (#105 finding 8), so a truncated ledger
 would leave no record that it happened.
 
+#### Amendment, 2026-08-26 (#382, issue #280 finding F14): a Data API role holds exactly the DML privileges its zone needs
+
+**Nobody has approved this, and a reader acting on it should know that.** The two
+paragraphs below are exactly as #382 wrote them, and they stay here in §2 beside
+the `TRUNCATE` ruling they generalise — this heading adds a name and a date, so
+that the ruling is findable and countable instead of folded into prose. #382
+recorded it as decided, on the reading that it *applies* §2's existing zone
+taxonomy rather than deciding anything new. That reading may well be right and it
+is not checkable either way, which is what ruling 1 of
+[`README.md`](./README.md)'s *"An amendment to an accepted ADR"* section settles;
+its ruling 3 is why this amendment has a row in
+[`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2 rather than a status of its own. The
+`Accepted` above is ADR 0008's and does not move either way. The warrant behind
+the two paragraphs below is #382's judgement, not the owner's.
+
 **Generalised, 2026-08-26 (issue #280 finding F14): a Data API role holds
 exactly the DML privileges its zone needs on a table, and nothing else.**
 `TRUNCATE` was the first ambient privilege Supabase's `grant all on tables`
@@ -109,6 +124,17 @@ The residue on sequences was `UPDATE`, which is `setval` — latent only
 because every key in this schema is a `uuid` (#280 finding F15). **The rule
 this settles for every future table is that a new relation in `public`
 starts closed, and its migration opens exactly what it means to open.**
+
+#### Amendment, 2026-08-26 (#382, issue #194): authority over a row is not authority over the record of when it was written
+
+**Unapproved on the same terms as the amendment above**, and recorded here for
+the same reason: the two paragraphs below are #382's text unchanged, and the only
+warrant behind them is #382's judgement. This is the sharper of the two, because
+it narrows an accepted classification — it says so itself, two sentences in — and
+ruling 1 of [`README.md`](./README.md)'s *"An amendment to an accepted ADR"*
+section uses exactly that word as its demonstration that "applies" and "amends"
+cannot be told apart from outside the editor's head. See
+[`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2 for what the owner is being asked.
 
 **Authority over a row is not authority over the record of when it was
 written.** Decided 2026-08-26 for issue #194, and it is the one ruling in
@@ -140,6 +166,9 @@ gets its own column, named for what it is** (`client_edited_at`), so the trust
 boundary is visible where the value is read rather than inferred from a grant.
 
 ### 3. Mandatory shape of a Z2 entry point
+
+*What "trusted mutation path" covers is stated by the amendment of 2026-08-27 at
+the foot of this document. Read it before applying the six steps to a path.*
 
 Every trusted mutation path, without exception, is:
 
@@ -192,6 +221,7 @@ Every trusted mutation path, without exception, is:
 | T10 | Telemetry becomes tracking | Product drift | Player trust, legality | Opt-in consent, category gating, documented retention/deletion; ADR 0010 |
 | T11 | Trusted call blocks the game | Bad integration | Playability | All service calls are off the tick/frame path and fail soft |
 | T12 | Translated text changes simulation behavior | Content authoring drift | Determinism | Stable IDs are separate from message keys and text; ADR 0011 |
+| T13 | Flooded, forged or back-dated events posted to an unauthenticated telemetry ingest | Anyone who can reach the endpoint, with no account and no credential | Diagnostic signal, storage cost, the retention promise | Server-side validation against the versioned envelope schema and a bounded body, batch and rate; the **server** decides the stored occurrence time and the weight an event carries, never the payload; append-only, with no account column to join to. Added 2026-08-27 with §3's scope clause, because scoping §3 by authority is what leaves this path outside steps 1, 2, 4 and 6 — see that amendment |
 
 ## Alternatives considered
 
@@ -221,3 +251,425 @@ Every trusted mutation path, without exception, is:
 - Public ranking stays gated on ADR 0009's runner plus a security review.
 - Each of entitlements, diagnostics and localization gets its own ADR
   refining this boundary rather than re-deciding it.
+
+## Amendment, 2026-08-27: §3's "without exception" has an exception, and it is the oldest and busiest `SECURITY DEFINER` function in the schema
+
+*This amends **§3, "Mandatory shape of a Z2 entry point"**. No decision moves and
+no zone or authority row changes. What is recorded is that §3's scope is
+unstated, and that under the only reading §1 supports it is contradicted by
+shipped SQL — including by a gap §2 of this same document already admits. The
+form is ADR 0029's and ADR 0034 §9's: the old wording is quoted rather than
+overwritten.*
+
+*Status is untouched: this ADR remains **Accepted**. Read at `792bf94`
+(v0.0.121); every migration named below was opened on that tree.*
+
+### The sentence, and the function it does not describe
+
+§3 opens:
+
+> Every trusted mutation path, without exception, is:
+> 1. **Authenticate** … 2. **Authorize** … 3. **Validate** … 4. **Deduplicate** —
+> every mutation carries a caller-supplied idempotency key … 5. **Apply** — as an
+> append to an audit log first; derived projections are computed from that log,
+> never written independently. 6. **Audit** — record actor, reason, source, and
+> prior/next value.
+
+§1 defines Z2 as *"Supabase Edge Function / Cloudflare Worker / `SECURITY
+DEFINER` SQL"*. Nine migrations declare `security definer` functions on this
+tree; `public.create_save_version`
+(`supabase/migrations/20260822190300_create_save_version_rpc.sql:53-153`) is one
+of them, is the path every cloud save on `main` goes through, and is the function
+§3 step 2 names as its own precedent (*"same rule as `create_save_version`"*).
+Measured against the six steps:
+
+- **Steps 1–3 hold.** `auth.uid()` is the only principal
+  (`:104`), the owner check is explicit and fails closed on a NULL subject
+  (`:104-106`), and the arguments are typed and pre-validated (`:79-84`).
+- **Step 4 does not.** The signature (`:53-61`) carries no caller-supplied
+  idempotency key. Replay safety is *derived* — a row already at
+  `(prison_id, revision, checksum)` returns `idempotent_replay` (`:121-130`) —
+  which is a good design and is not the one this step describes.
+- **Step 5 does not.** `update public.prisons set current_version_id = …,
+  current_revision = … ` (`:145-149`) writes the projection directly. Nothing is
+  appended to a log and nothing is folded. The entitlements path is the only one
+  in the schema shaped the way step 5 requires
+  (`public.record_entitlement_event` → `public.recompute_entitlement_projection`,
+  `supabase/migrations/20260823090000_create_entitlement_events.sql:215-251`).
+- **Step 6 does not.** No actor, reason, source or prior value is recorded. Nor
+  can it be: **§2 of this ADR already says so** — *"no audit trail on the trusted
+  write path exists yet (#105 finding 8)"* — and uses that absence as an argument
+  for revoking `TRUNCATE`. So this document asserts a mandatory step in §3 and
+  records its absence in §2, three sections apart, and nothing mechanical can see
+  that: the gates over `docs/adr/` compare a status word to a document and never
+  a document to itself.
+
+`public.submit_challenge_evidence` and `public.create_prison` are in the same
+position for steps 5 and 6.
+
+### Which is wrong, the document or the code
+
+**The document, on scope — probably.** The defensible reading is that §3 governs
+paths that mutate **server-authoritative** state, and `create_save_version`
+mutates state §2's own authority table classifies as **Z0/Z1
+(client-authoritative, RLS-scoped)**. The function's own closing comment takes
+that view explicitly: *"a cloud save is client-authoritative state (ADR 0008's
+authority table) … and no trusted path writes saves"*
+(`20260822190300_create_save_version_rpc.sql:171-174`). Under that reading the
+six steps are right and merely mis-scoped, and the fix is one clause in §3.
+
+**But §3 as written does not permit that reading**, because §1 defines a zone by
+its *runtime* and not by the authority of what it touches, and
+`create_save_version` is `SECURITY DEFINER` SQL. An agent applying §3 literally
+to the next RPC that touches a save will demand an idempotency key and an audit
+log for it; an agent applying it by authority will not. Nothing in the document
+tells them apart, and the two answers differ in real work.
+
+**This is recorded, not decided.** It is the owner's call whether §3 gains
+*"every mutation path over Z2-authoritative state"*, or whether the three
+functions above acquire steps 4–6. No `Status` moves either way, and neither
+answer makes any zone, authority row or threat-model row wrong.
+
+*Added 2026-08-27, after the paragraph above and leaving it word for word: the
+owner has answered, and the answer is the first of the two. The amendment at the
+foot of this document is that answer; what it costs, and where its wording
+departs from the draft quoted above, is stated there. This paragraph is left
+standing rather than rewritten because a superseded question is the only record
+of what was asked.*
+
+### What was checked and found intact
+
+Every code and SQL citation in this ADR resolves and every absolute in it holds
+at `792bf94`. `20260824090100_revoke_client_truncate.sql`,
+`20260824150000_revoke_trusted_truncate.sql`,
+`20260826120000_revoke_ambient_table_privileges.sql`,
+`20260824140000_protect_server_timestamps.sql` and
+`20260826130000_server_stamp_updated_at.sql` all exist under
+`supabase/migrations/`, and the last one creates `before insert or update`
+triggers on exactly the three tables §2 names — `prisons` (`:161-163`),
+`profiles` (`:166-168`) and `user_settings`. T3's `evidence_digest` is a real
+column with a real unique constraint
+(`20260824100000_bind_challenge_evidence_to_payload.sql:252`, `:291-292`). T9's
+`sourcemap: false` is at `vite.config.ts:84`. The Consequences bullet holds in
+both halves: `grep -rn "from '.*services/" src/simulation/` is empty, nothing
+under `src/services/` imports Phaser or touches the DOM, and
+`supabase/` holds `config.toml`, `migrations` and `tests` and no `functions`
+directory at all, so the deployment units really are still uncreated while the
+modules they will host exist. (That directory is named here without a rooted
+path on purpose: `documentation-links-contract.test.ts` refuses a cited path
+that is not on disk, and this one is absent by design.)
+
+Two forward commitments are worth a reader's attention and neither is a defect.
+The Consequences bullet *"Each of entitlements, diagnostics and localization gets
+its own ADR"* is met for diagnostics ([ADR 0010](./0010-telemetry-and-diagnostics-privacy.md))
+and localization ([ADR 0011](./0011-localization-architecture.md)); for
+entitlements the nearest document is
+[ADR 0013](./0013-free-tier-cloud-save-capacity.md), which names itself *"an
+engineering decision inside the boundary ADR 0008 already set"* rather than a
+refinement of the boundary. And §4's *"No trusted-service call is on the frame or
+tick path"* is currently true the uninteresting way: `docs/adr/STATUS-QUEUE.md`
+§5 already records that nothing outside `src/services/telemetry/` imports that
+layer at all. A rule that no call site can violate is not yet a rule that has
+been tested.
+
+## Amendment, 2026-08-27: §3 is scoped by authority, so telemetry ingest needs no exception
+
+*This answers the amendment above, which recorded §3's scope as unstated and
+left the choice to the owner. **The owner has chosen the "by authority"
+reading**: §3 gains a scope clause, and an unauthenticated telemetry ingest
+falls **outside** it. No exception is carved for telemetry, and none is needed.
+Status is untouched: this ADR remains **Accepted**.*
+
+*What is the owner's is the reading, and nothing else. **The wording of the
+clause below is not theirs, and neither is any consequence drawn from it** — the
+function-by-function application, the guard in part 3, the new
+threat row T13, the account of what is unenforced and the amplification path in
+part 7 are this editor's work under that choice. A reader who disagrees with a
+consequence should treat that consequence as open; the reading itself is not
+open. `docs/adr/README.md`'s "An amendment to an accepted ADR" section requires
+an amendment to state that position in its own opening, and its ruling 3 is why
+this one carries a row in [`STATUS-QUEUE.md`](./STATUS-QUEUE.md) §2 rather than
+a status of its own — `adr-numbering-contract.test.ts` counts documents by their
+`Status` line, so a section inside an Accepted ADR is invisible to every
+mechanical gate in `docs/adr/`.*
+
+*Read on the tree at `30db0e9`. Every SQL, test and source citation below was
+opened there.*
+
+### Part 1. The clause
+
+> **Scope.** §3 binds every mutation path over state that **§2's authority table
+> assigns to Z2**, and only those. A path is measured by the state it is
+> entrusted to *decide* — not by the runtime it happens to run in, and not by
+> every column a statement inside it touches.
+
+The amendment above drafted this as *"every mutation path over Z2-authoritative
+state"*. That is the same decision; the wording is changed twice, and each
+change buys something the draft does not.
+
+- **"that §2's authority table assigns to Z2", rather than the bare adjective
+  "Z2-authoritative".** A loose "Z2-authoritative" is an argument any future
+  endpoint can make about itself, and it is unanswerable, because there is
+  nothing to check the argument against. Naming the table moves the guard inside
+  the clause: scope is decided by a **row**, and a row is a thing a reader can
+  point at or fail to find. Part 3 of this amendment is that guard stated as an obligation.
+- **"and only those", plus decide-versus-touch.** Without it the clause does not
+  answer the case it was written for. `public.create_save_version` writes a save
+  payload — Z0/Z1 by §2's first row — and in the same block writes
+  `prisons.updated_at`, which §2's own 2026-08-26 amendment rules Z2-authoritative
+  on exactly that table. Read as "touches any column whose authority is Z2", the
+  clause pulls the function straight back into §3 and settles nothing. Read as
+  "decides", it settles it: what that function is entrusted to decide is the
+  content of a save, and a server-stamped timestamp is not something it decides
+  at all.
+
+**§1 is unchanged and is still a runtime taxonomy.** The clause does not
+redefine Z2; it says which question §3 is answering. A path can run in Z2 and be
+outside §3, and — part 2 below — a path can be inside §3 without running in Z2's
+function-shaped form at all.
+
+### Part 2. What the clause settles, path by path
+
+Measured against the SQL rather than against the ADR. Every `security definer`
+function in `supabase/migrations/` that any role may `EXECUTE`, plus the one Z2
+write path that is a bare table grant:
+
+| Path | What it is entrusted to decide | §2 row | §3? |
+| --- | --- | --- | --- |
+| `public.create_save_version` | a save version's content, and which version a prison points at | Prison simulation state, saves, settings — **Z0/Z1** | **outside** |
+| `public.create_prison` | that a prison row exists, in a slot | same row | **outside** |
+| `public.submit_challenge_evidence` | that a submission exists, filed `pending` against a definition | Challenge submissions and rank — **Z2** | **inside** |
+| `service_role`'s column `UPDATE` on `challenge_submissions` | the verification verdict and the ranked score | same row | **inside** |
+| `public.record_entitlement_event` | that a grant or revocation happened, and on whose authority | Entitlement grants/revocations — **Z2 only**; Payment/store facts — **Z3 → Z2** | **inside** |
+| `public.recompute_entitlement_projection` | nothing on its own | derived from the row above | inside, but not an entry point |
+| a telemetry ingest endpoint (not built) | nothing — the client is the source | Telemetry/diagnostic events — **Z0 produced, Z2 gated** | **outside** |
+| a telemetry retention/deletion job (not built) | which events survive, and for how long | the *gated* half of that same row | **inside** |
+
+**`create_save_version` — outside, and this is the concrete thing the owner
+accepted.** Steps 4, 5 and 6 are not owed by it. The earlier amendment measured
+that all three are absent and asked whether the document or the code was wrong;
+under this clause the code is right and the document was mis-scoped. Steps 1–3
+hold anyway and are not a courtesy: `auth.uid()` is the only principal, the
+owner check fails closed on a NULL subject, and the arguments are typed and
+pre-validated. The function's own closing comment already took this view —
+*"a cloud save is client-authoritative state (ADR 0008's authority table) … and
+no trusted path writes saves"*
+(`supabase/migrations/20260822190300_create_save_version_rpc.sql:171-174`) — and
+the clause is that comment promoted from a comment to a rule.
+
+**The objection to that, stated because it is the weakest joint in this
+amendment.** `prisons.current_revision` and `prisons.current_version_id` are out
+of every client grant — `revoke update on public.prisons from authenticated,
+anon` at `supabase/migrations/20260822190100_create_prisons.sql:107`, with the
+comment above it naming `create_save_version` as *"the sole path able to advance
+the pointer columns"* — and `src/persistence/cloud/sync-engine.ts` decides
+reconciliation order from `current_revision`. A column no client may write, that
+another subsystem trusts to order writes, looks very like the thing §2's
+2026-08-26 amendment ruled Z2-authoritative. **The distinguishing test is that
+amendment's own:** it separates a row's *content* from *the server's statement
+about the write*. `updated_at` is computed by the server and the caller cannot
+propose it. `current_revision` is `p_new_revision`, a caller-supplied argument
+the server accepts or refuses; the server decides only whether it is next, which
+is validation of content, not authorship of a fact. So the pointer columns fall
+on the content side and `create_save_version` stays outside §3. **If a later
+reader disagrees, the remedy is not to re-argue this paragraph: it is to add a
+row to §2's table for the pointer columns, at which point §3 binds them by the
+clause itself.** That is the shape this whole amendment is built to have.
+
+**`create_prison` — outside, on the same ground**, and note what does *not*
+follow. It calls `public.account_save_slot_capacity`, which folds the
+entitlement ledger. Reading Z2 state is not mutating it, so the capacity read
+does not pull the function into §3; what would is a path that *writes* capacity,
+and no such path exists outside `record_entitlement_event`.
+
+**`submit_challenge_evidence` — inside, and it very nearly meets the steps.**
+Step 4's substance is met and by something stronger than the step describes: the
+dedup key is `evidence_digest`, a stored generated column the server computes
+from the payload, so a caller cannot choose it. The step's literal wording asks
+for *"a caller-supplied idempotency key"*, and this is deliberately not one —
+T3's row already records why the caller's claimed hash keys nothing. **This
+amendment does not rewrite step 4**; it records that a server-derived key
+satisfies its purpose more completely than a caller-supplied one, and leaves the
+wording for whoever next edits §3. Steps 5 and 6 are owed: the submissions table
+is close to being its own append log, but no actor, reason, source or prior
+value is recorded for the verdict.
+
+**The verdict write is inside §3 and has nowhere to put it.** `grant update
+(verification_status, rejection_code, ranked_score, verified_at) on
+public.challenge_submissions to service_role`
+(`supabase/migrations/20260823090100_create_challenge_tables.sql:156-157`) is a
+mutation over Z2-authoritative state — rank — performed by a bare table grant,
+not by a function. §1's runtime list would not obviously have caught it: a
+`service_role` PostgREST `PATCH` is not an Edge Function, a Worker or
+`SECURITY DEFINER` SQL. **The clause pulls it in.** That is worth stating
+plainly, because the by-authority reading is otherwise easy to read as a pure
+loosening: here it binds a path the runtime reading arguably did not. What binds
+it today is one trigger,
+`public.enforce_challenge_verification_transition`, which makes the verdict
+one-way; steps 4, 5 and 6 have no home on a bare grant, and giving them one
+means the verifier writes through a function. Recorded as an obligation of the
+replay runner, which is ADR 0009's and is not built.
+
+**`record_entitlement_event` — inside, fully, and already shaped for it.** It is
+the one path in the schema that meets steps 4 and 5 as written: a caller-supplied
+`p_provider_event_id` keys the dedup for the Z3 path, an append to
+`entitlement_events` precedes the projection, and the projection is recomputed
+from the ledger rather than written independently. Step 6 is met in its first
+three terms by columns rather than by a separate record — `actor_kind` and
+`actor_id` are `not null` with checks at
+`supabase/migrations/20260823090000_create_entitlement_events.sql:31-32`, and
+`reason` and `source` travel with every event — and its fourth, prior/next
+value, is implicit in the fold rather than recorded. **§2 of this document says
+*"no audit trail on the trusted write path exists yet (#105 finding 8)"*, and
+that sentence is left exactly as it is.** The measurement above does not
+contradict it if it means a separate audit of trusted *operations*; it does if it
+means the ledger. Marked in both directions rather than resolved, because
+resolving it is #105's editor's call and not this amendment's.
+
+**Telemetry ingest — outside, which is the decision.** §2 classifies the events
+as *"Z0 produced, Z2 gated"*, with the rationale *"Client is the source but is
+never trusted with retention policy."* What the ingest endpoint decides is
+nothing: it records what an untrusted source said. So steps 1, 2, 4 and 6 are
+not owed by it, and §3 step 1's *"No unauthenticated mutation endpoint exists"*
+is not contradicted by building it. That sentence entered at `5979b43`, the
+commit that created this ADR, and has never been edited
+(`git log -S "No unauthenticated mutation endpoint exists" --all -- docs/adr/0008-trusted-service-boundary.md`).
+It was vacuously true of HTTP the day it was written — the same commit's
+Consequences say server-side deployment units are *"deliberately not created"* —
+and it is non-vacuous, true and enforced about `SECURITY DEFINER` SQL, where
+every entry point in the table above derives its principal from `auth.uid()` or
+is granted to `service_role` alone. The clause is what makes that reading the
+document's rather than a reader's.
+
+**The retention job — inside, and this one is not obvious.** Deciding which
+events survive *is* the half §2 assigns to Z2. A scheduled deletion is a
+mutation over it, so §3 binds it: the job records what rule it applied, over
+what window, and what it removed. That is a real obligation this clause creates,
+not one it removes.
+
+### Part 3. The clause is not a loophole, and §2's table is why
+
+**A path may not claim this clause without pointing at a row.** Concretely, and
+binding on every future change:
+
+1. **To assert that §3 does not apply, name the §2 row that assigns the state to
+   something other than Z2.** "It is not really Z2-authoritative" is not an
+   argument; it is the absence of one.
+2. **To assert that §3 does apply, name the row that assigns it to Z2.**
+3. **If no row covers the state, the change adds one, in the same commit, before
+   it claims either answer.** A new kind of state with no row is not
+   out-of-scope by default. It is unclassified, and unclassified state does not
+   get the benefit of the doubt.
+
+This is the same discipline §2's 2026-08-26 amendment states for privileges — *"a
+new relation in `public` starts closed, and its migration opens exactly what it
+means to open"* — applied to authority instead of to grants. **Nothing asserts
+it.** No test reads §2's table, and part 6 below is the wider version of that
+admission.
+
+### Part 4. What telemetry does **not** get out of: steps 3 and 5
+
+The clause puts the ingest outside §3 as a whole. It does **not** put it outside
+server-side validation or append-only storage, and those two bind whether or not
+§3 formally reaches the path:
+
+- **Step 3, validate.** The client validates its own envelopes and the client is
+  Z0 — untrusted by this ADR's own first row. Two fields make this concrete
+  rather than hygienic, and both are on the wire today:
+  - `sampleRate` (`src/services/telemetry/events.ts:50`) exists so *"the receiver
+    can weight instead of guessing"*. A receiver that weights by `1 / sampleRate`
+    and believes the client is an amplifier: an event sent with `0.001` counts as
+    a thousand. The server must weight from what it configured, not from what
+    arrived.
+  - `occurredAt` (`src/services/telemetry/events.ts:39`) is
+    `z.number().int().min(0)` — any non-negative integer. A retention job that
+    deletes on a stored client timestamp deletes nothing that was sent with a
+    timestamp far enough in the future. The stored occurrence time must be the
+    server's; keeping the client's is fine as a separate, clearly named column.
+- **Step 5, apply as an append.** Aggregates are folded from the stored events,
+  never written independently. This is the same rule that makes the entitlement
+  ledger auditable and it costs nothing here.
+
+**Bounding the input — body size, batch size, request rate — is an obligation of
+the telemetry pipeline's own ADR**, which lists it among the preconditions
+ingestion must meet before it is deployed. It is named here by subject rather
+than by section number on purpose: that document is under active edit, and
+`docs/AGENT_WORKFLOW.md` §4 is explicit that a section anchor into a document
+under edit is this corpus's least durable citation.
+
+### Part 5. Threat model: T13 is added
+
+Recommended and added, in §5's table above. The two existing telemetry rows do
+not cover it: **T8** is *"Diagnostics exfiltrate save contents or PII"* with the
+actor capability *"Our own bug"*, and **T10** is *"Telemetry becomes tracking"*
+with the capability *"Product drift"*. Both model **us** as the actor. Neither
+models a third party writing *into* the ingest, and an endpoint that anyone can
+reach with no credential is exactly that actor's opportunity. T13 names flood,
+forgery and retention evasion together because one mitigation set answers all
+three, and because splitting them would suggest a receiver could sensibly
+address one and not the others.
+
+The row is stated as a threat rather than as a prohibition: the endpoint is
+permitted, and what T13 records is the price of permitting it.
+
+### Part 6. What is **not** gated, and it is the whole of §3 step 1's enforcement
+
+Said plainly, because everything above would otherwise read as backed by CI.
+
+**No test in this repository can see the surface this decision permits.** The
+pgTAP suites are the only enforcement §3 step 1 has, and they sweep **database
+roles**, not HTTP callers:
+
+- `supabase/tests/003_data_api_grants.test.sql` asserts the exact table, column
+  and function privilege set of `anon`, `authenticated` and `service_role`, each
+  named as a literal — `has_function_privilege('service_role', p.oid, 'EXECUTE')`
+  at `supabase/tests/003_data_api_grants.test.sql:607` is the shape, and the
+  three role names are spelled out throughout. A fourth database role, created
+  for a Worker to hold, is **swept by none of it**. The suite's separate
+  PUBLIC-grantee assertion does not reach a named role either.
+- **A Worker calling a `SECURITY DEFINER` function with a server-side key is
+  `authenticated` or `service_role` to PostgreSQL**, whoever reached the Worker.
+  The database cannot distinguish an operator from the open internet, and nothing
+  in this repository observes who reached the Worker. There is no HTTP surface
+  here to observe: the deployment units are still not created, exactly as this
+  ADR's Consequences say.
+
+So **§3 step 1's only enforcement is structurally blind to unauthenticated HTTP
+ingest.** That is not an argument against the owner's choice — an authenticated
+ingest would be equally invisible to it — but it means nothing red will appear if
+this boundary is later got wrong, and no reader should infer otherwise from the
+existence of eleven pgTAP suites. What holds the boundary here is review.
+
+### Part 7. The amplification path, and the role that answers it
+
+**If the Worker's server-side key is `service_role`, a publicly reachable Worker
+holds the paid-entitlement write path.** `record_entitlement_event` is granted to
+`service_role` and to nothing else
+(`supabase/migrations/20260824110000_generalize_entitlement_idempotency.sql:346-348`),
+and `supabase/tests/003_data_api_grants.test.sql` pins that as *"service_role may call exactly
+one RPC: the Z3 -> Z2 payment-webhook write path"*
+(`supabase/tests/003_data_api_grants.test.sql:609`). `service_role` additionally
+holds the verdict `UPDATE` on `challenge_submissions`. So the blast radius of a
+bug in an unauthenticated telemetry handler is not telemetry: it is entitlements
+and leaderboard rank, reached through the same key.
+
+**The mitigation is a dedicated least-privilege database role** holding `EXECUTE`
+on the ingest function and nothing else — not `service_role`, and not
+`authenticated`. Two things about it, both due before the ingest ships:
+
+- Such a role is **unswept**, per part 6 above. Adding it means extending
+  `003_data_api_grants.test.sql`'s role list in the same change; extending a
+  pinned list is what adding a role looks like here.
+- The role's key is a Z2 credential and §4's *"No service-role credential ever
+  reaches Z0/Z1"* covers it by intent. It is worth reading as covering any
+  elevated database role, not only the one Supabase happens to name
+  `service_role`.
+
+### Part 8. What this amendment does not change
+
+No zone, no authority row, no rule in §4 and no existing threat row. §3's six
+steps are untouched — including step 4's *"caller-supplied"*, which part 2 above
+records as a poorer fit than the schema's own answer without rewriting it.
+§3 step 1's sentence is untouched, and this amendment's position is that it was
+never false: it is about the paths §3 governs, and after the clause an
+unauthenticated telemetry ingest is not one of them.

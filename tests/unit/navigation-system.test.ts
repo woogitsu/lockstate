@@ -103,6 +103,93 @@ describe('NavigationSystem: wired into SimulationRuntime', () => {
   });
 });
 
+/**
+ * The configured budget is the one the tick actually spends (#416).
+ *
+ * `AGENTS.md` boundary 9 forbids unrestricted pathfinding, and the whole of
+ * this system's compliance with it is one line: `update` passes
+ * `workBudget: this.options.workBudgetPerTick` into `processTick`. The queue's
+ * own tests pass a budget in directly, so none of them can see that line at
+ * all -- replacing it with `workBudget: Number.MAX_SAFE_INTEGER`, which is
+ * literally "run every pending A* this tick, however many there are", left
+ * **238 files / 2,696 tests green** when measured at `54418b6` (v0.0.121).
+ * The scenarios below drive 250 actors to completion and assert what came back, never how
+ * many ticks of work it was allowed to cost, so an unbounded queue satisfies
+ * them faster.
+ *
+ * A single tick is the whole subject here, because "per tick" is what the
+ * budget bounds; `driveToCompletion` deliberately is not used.
+ */
+describe('NavigationSystem: the configured work budget bounds a single tick', () => {
+  const WORK_BUDGET = 200;
+  const REQUEST_COUNT = 16;
+
+  function oneTick(workBudgetPerTick: number) {
+    const fixture = buildCellBlockFixture(20);
+    const navigation = new NavigationSystem(
+      fixture.world,
+      // Sharing off and aging irrelevant over one tick, so the budget is the
+      // only thing that can stop the queue.
+      { workBudgetPerTick, agingIntervalTicks: 1_000, flowFieldActivationThreshold: 1_000 },
+      fixture.doors,
+    );
+    navigation.setLoadedChunks(fixture.chunkPositions);
+
+    const kernel = new Kernel();
+    kernel.registerSystem(navigation);
+
+    const destination = fixture.canteenTiles[0]!;
+    const ids: string[] = [];
+    for (let index = 0; index < REQUEST_COUNT; index += 1) {
+      const id = `req-${String(index).padStart(2, '0')}`;
+      ids.push(id);
+      navigation.requestRoute(id, fixture.cellTiles[index % fixture.cellTiles.length]!, destination, { role: 'guard', securityClearance: 5 }, 0, kernel.tick);
+    }
+
+    kernel.step(); // exactly one tick
+
+    const expansions = ids
+      .map((id) => navigation.getResult(id))
+      .filter((outcome): outcome is NonNullable<typeof outcome> => outcome !== undefined)
+      .map((outcome) => outcome.expansions);
+    return { navigation, expansions };
+  }
+
+  it('spends its configured budget, not the whole queue, on one tick', () => {
+    const { navigation, expansions } = oneTick(WORK_BUDGET);
+
+    // Forward progress, and a bound on it. `pendingCount() > 0` is the
+    // assertion `workBudget: Number.MAX_SAFE_INTEGER` cannot satisfy: an
+    // unbounded tick leaves nothing waiting.
+    expect(expansions.length).toBeGreaterThan(0);
+    expect(navigation.pendingCount(), 'one tick drained a queue its budget could not pay for').toBeGreaterThan(0);
+    expect(expansions.length + navigation.pendingCount()).toBe(REQUEST_COUNT);
+
+    const spent = expansions.reduce((sum, count) => sum + count, 0);
+    expect(navigation.getQueueMetrics().totalExpansions).toBe(spent);
+    // The ceiling, stated so it holds whichever request was taken last: the
+    // queue always finishes the request it started, so at most one request's
+    // work may stand above the budget.
+    expect(spent - Math.max(...expansions), 'a tick expanded more nodes than the system budgeted').toBeLessThan(
+      WORK_BUDGET,
+    );
+    expect(spent).toBeGreaterThanOrEqual(WORK_BUDGET); // the budget was reached, so the bound above is not vacuous
+  });
+
+  it('carries a different configured budget through to a different amount of work', () => {
+    // The option is read rather than ignored: the only difference between
+    // these two systems is the number in their options.
+    const lean = oneTick(50);
+    const generous = oneTick(1_000);
+
+    expect(lean.expansions.length).toBeLessThan(generous.expansions.length);
+    expect(lean.navigation.getQueueMetrics().totalExpansions).toBeLessThan(
+      generous.navigation.getQueueMetrics().totalExpansions,
+    );
+    expect(lean.navigation.pendingCount()).toBeGreaterThan(generous.navigation.pendingCount());
+  });
+});
+
 describe('NavigationSystem: seeded actor-tier scenarios (stub actors via EntityStore)', () => {
   it('resolves every request within the tick budget for a 250-actor meal-rush scenario, sharing flow-field work', () => {
     const summary = runScenario(250, 0xc0ffee, 'meal-rush');

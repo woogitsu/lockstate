@@ -87,8 +87,44 @@ const GUARDS_HIRED = 6;
 const SEVERITY = 8;
 /** #352's reproduction hires every guard on the same origin tile. */
 const GUARD_ORIGIN = { x: tileCoordinate(0), y: tileCoordinate(0) } as const;
-/** `respondersPerSeverityPoint` is 0.5, so a severity-8 riot needs four. Derived from the policy, not copied. */
-const REQUIRED_RESPONDERS = Math.max(1, Math.ceil(SEVERITY * DEFAULT_INCIDENT_RESPONSE_POLICY.respondersPerSeverityPoint));
+/**
+ * `respondersPerSeverityPoint` is 0.5 and the requirement rounds up, so a
+ * severity-8 riot needs four.
+ *
+ * **A literal, and it used to be derived** -- `Math.max(1, Math.ceil(SEVERITY *
+ * DEFAULT_INCIDENT_RESPONSE_POLICY.respondersPerSeverityPoint))`, under a
+ * comment approving of the derivation. That is `IncidentResponseSystem`'s own
+ * expression copied into the test, and what it costs is precise, so it is
+ * worth stating precisely rather than overstating (#416): most assertions
+ * using this constant compare it against *observed* runtime state -- guard
+ * phases, dispatch metrics -- so they do bite when the requirement changes
+ * (measured: halving the requirement turns ten cases in this file red, with
+ * the derivation still in place). What a self-derived constant cannot do is
+ * notice a change to the *rule that computes it*: it re-derives, follows, and
+ * the comparison holds. `Math.ceil` -> `Math.floor` was a whole-suite survivor
+ * at `54418b6` (v0.0.121), and this file could never have been the one to
+ * catch it -- `SEVERITY` is 8, and half of an even number needs no rounding
+ * at all.
+ *
+ * The rule is now pinned where it belongs, in
+ * `tests/unit/incident-response.test.ts`, at odd severities where ceiling and
+ * floor differ. Here the policy inputs this figure was read from are asserted
+ * instead, so a changed policy fails loudly rather than silently re-deriving a
+ * number that no longer describes the scenario this file sets up.
+ */
+const REQUIRED_RESPONDERS = 4;
+/**
+ * The damage a *contained* severity-8 incident leaves behind.
+ *
+ * A literal for the same reason and found in the same sweep (#416): it was
+ * `Math.floor(SEVERITY / 2)`, which is `IncidentResponseSystem`'s own
+ * expression for this figure, so the assertion could not disagree with a
+ * changed rule. The production form also carries a `Math.min(10, ...)` cap
+ * that no severity in this file reaches, and that the derivation silently
+ * dropped -- a re-implementation is a second copy of a rule, and a second copy
+ * is a place for the two to differ.
+ */
+const CONTAINED_PROPERTY_DAMAGE = 4;
 const POST_TILE = { x: tileCoordinate(3), y: tileCoordinate(1) } as const;
 /**
  * The whole `security.sectorControlStates` payload while `SECTOR_ID` is locked
@@ -303,6 +339,20 @@ const RESOLVE_TICKS_LATE_BY_CONTAINMENT_PROGRESS = [
 const LAPSE_TICK = 611;
 
 describe('a save taken during an incident response releases what the response claimed', () => {
+  it('is set up on the policy this file assumes, so REQUIRED_RESPONDERS stays a description of it', () => {
+    // The half a derived constant used to hide (#416). `REQUIRED_RESPONDERS` is
+    // now the literal 4, so the inputs it was read from have to be pinned
+    // somewhere or a changed policy would leave nine assertions quietly
+    // describing a scenario that no longer happens. This is that somewhere --
+    // and unlike the derivation it replaces, it fails when the policy moves
+    // instead of following it.
+    expect(SEVERITY).toBe(8);
+    expect(DEFAULT_INCIDENT_RESPONSE_POLICY.respondersPerSeverityPoint).toBe(0.5);
+    expect(REQUIRED_RESPONDERS).toBe(4);
+    expect(CONTAINED_PROPERTY_DAMAGE).toBe(4);
+    expect(GUARDS_HIRED).toBeGreaterThan(REQUIRED_RESPONDERS); // the pool can fill two responses over
+  });
+
   it('reproduces the save-time state #352 measured: four responders committed and the sector locked down', () => {
     const runtime = buildRespondingPrison();
 
@@ -402,7 +452,7 @@ describe('a save taken during an incident response releases what the response cl
     // Non-vacuous: the shared value really is the contained one, and it really
     // is not the lapse ADR 0033 recorded.
     expect(continuousIncident.state).toBe('resolved');
-    expect(continuousIncident.outcome).toEqual({ injuredEntityIds: [], propertyDamage: Math.floor(SEVERITY / 2), escaped: false });
+    expect(continuousIncident.outcome).toEqual({ injuredEntityIds: [], propertyDamage: CONTAINED_PROPERTY_DAMAGE, escaped: false });
     expect(restoredIncident.outcome).not.toEqual({ injuredEntityIds: [1, 2, 3], propertyDamage: SEVERITY, escaped: false });
 
     // Every resource the response claimed is back where the continuous run put
@@ -554,7 +604,7 @@ describe('a save taken during an incident response releases what the response cl
     expect(restored.incidents.get('incident-a')!.state).toBe('resolved');
     expect(restored.incidents.get('incident-a')!.outcome).toEqual({
       injuredEntityIds: [],
-      propertyDamage: Math.floor(SEVERITY / 2),
+      propertyDamage: CONTAINED_PROPERTY_DAMAGE,
       escaped: false,
     });
 
@@ -611,6 +661,38 @@ describe('a save taken during an incident response releases what the response cl
     expect(captureSessionSnapshot(restored).simulation?.security.sectorControlStates).toEqual(SECTOR_CONTROL_STATES_IN_LOCKDOWN);
   });
 
+  /**
+   * ## Why this one case carries an explicit timeout
+   *
+   * It restores the same payload into two independent sessions and steps both
+   * to every checkpoint, so its cost is the simulation running twice. Measured
+   * alone on this container: **1,966 ms** against `vitest.config.ts`'s global
+   * `testTimeout: 5_000` -- 39% of the budget, with the other fifteen cases in
+   * this file finishing in single-digit milliseconds. Under a full-suite run on
+   * four cores it has been observed to exceed 5,000 ms and fail as a timeout,
+   * repeatedly, on an unmodified tree, while passing in isolation.
+   *
+   * **A timeout failure here names the wrong thing.** The message says the test
+   * timed out; a reader has to already know that this file is fine and the box
+   * is busy. That is the same "manufactured confidence in reverse" that
+   * `docs/TESTING.md` warns about for a gate that cannot fail -- a gate that
+   * fails for a reason unrelated to its subject is no more informative.
+   *
+   * So the budget is stated rather than inherited, and stated *here* rather
+   * than raised globally, because the global number is right for the other
+   * 2,800 cases and this is the only integration case that legitimately needs
+   * more.
+   *
+   * **This is not the same fix as the one the sha-citation gate needs**, and
+   * the difference is the whole reason this comment exists.
+   * `documentation-commit-citation-contract.test.ts` also sits at the line, but
+   * its cost was *accidental* -- one `git rev-parse` spawned per cited sha, four
+   * times over -- so the answer there was to remove the cost, not to budget for
+   * it. Here the cost is the work the case exists to do. **Raising a timeout to
+   * cover an accidental cost hides it; stating one for an inherent cost
+   * documents it.** If a future change makes this case slow for a new reason,
+   * the number above is what it has to be re-measured against.
+   */
   it('is deterministic: two sessions restored from one payload agree tick for tick', () => {
     const bundle = captureSessionSnapshot(buildRespondingPrison());
     const first = loadBundle(bundle);
@@ -631,7 +713,7 @@ describe('a save taken during an incident response releases what the response cl
     expect(observe(first).unassignedGuardCount).toBe(GUARDS_HIRED);
     expect(observe(first).incident).toBe('resolved');
     expect(first.incidentResponseSystem.getMetrics().respondersDispatched).toBe(REQUIRED_RESPONDERS * 2);
-  });
+  }, 20_000);
 });
 
 /**

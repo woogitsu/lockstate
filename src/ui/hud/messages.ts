@@ -400,18 +400,31 @@ export const HUD_MESSAGE_KEY = {
    * rather than a straight submit for a reason the removal control does not
    * remove: a designation can cover 4,096 tiles, and while `UnzoneRoom` now
    * makes that recoverable, "recoverable" is not the same as "costless" --
-   * removal grows each covered tile into its whole same-type run, so undoing
-   * an accidental overlap of two rooms takes both away. Two Point Hospital
-   * puts a confirm on the same gesture for the same reason.
+   * removal grows each covered tile into the whole room instance that claims
+   * it, so clipping one corner of a 6x6 canteen still takes all 36 tiles. Two
+   * Point Hospital puts a confirm on the same gesture for the same reason.
+   *
+   * This used to add "so undoing an accidental overlap of two rooms takes both
+   * away", and #337 made that false: removal is bounded to the instance the
+   * tile belongs to, resolved through the rectangle rather than by flooding the
+   * same-type region, so a neighbour of the same type survives. The confirm
+   * still earns its place on the clause above it.
    *
    * `roomsMinimum` states the authored floor, so the rule is readable *before*
    * the drag rather than only in the refusal after it. `roomsEnclosureSealed`
    * and `roomsEnclosureOpen` are the readout of what the simulation actually
-   * found, and `roomsEnclosureOpenRequired` is the one case that is worth
-   * flagging: the room asked to be enclosed and the rectangle's perimeter is
-   * not. It is a *warning*, never a refusal -- see
-   * `src/simulation/rooms/enclosure.ts` for why the simulation cannot honestly
-   * refuse on it.
+   * found.
+   *
+   * **There used to be a `roomsEnclosureOpenRequired` here** -- "the one case
+   * that is worth flagging: the room asked to be enclosed and the rectangle's
+   * perimeter is not. It is a *warning*, never a refusal." It is deleted, and
+   * the deletion is the point rather than a tidy-up. `RoomZoningService.zone`
+   * now refuses that pair (the ADR "Must a zoned room be enclosed"), so an
+   * *accepted* zoning can no longer report it and the branch that read the key
+   * was unreachable in every session, fresh or restored -- an orphaned locale
+   * key, which `docs/LOCALIZATION.md` treats as a defect class. The sentence is
+   * not lost: it is `hud.alert.refusal.zone.not-enclosed`, said at the moment
+   * the player can still act on it.
    */
   roomsTitle: 'hud.rooms.title',
   roomsCatalogue: 'hud.rooms.catalogue',
@@ -436,10 +449,39 @@ export const HUD_MESSAGE_KEY = {
   roomsEnclosureNone: 'hud.rooms.enclosure-none',
   roomsEnclosureSealed: 'hud.rooms.enclosure-sealed',
   roomsEnclosureOpen: 'hud.rooms.enclosure-open',
-  roomsEnclosureOpenRequired: 'hud.rooms.enclosure-open-required',
   roomsRequirementEnclosed: 'hud.rooms.requirement-enclosed',
   roomsRequirementOutdoors: 'hud.rooms.requirement-outdoors',
   roomsRequirementNone: 'hud.rooms.requirement-none',
+  /*
+   * The typed route to a rectangle (#411).
+   *
+   * Four numbers and the disclosure that holds them, so a rectangle can be
+   * *said* as well as dragged. `AGENTS.md` boundary 10 is not satisfied by "it
+   * works with a mouse", and until this existed the Rooms panel was the one
+   * surface in the HUD with no keyboard producer at all -- which made the game
+   * unfinishable without a pointer, because zoning gates accommodation and
+   * accommodation gates every admission.
+   *
+   * `roomsCatalogue` is reworded rather than left alone, and that is what these
+   * keys cost the panel besides themselves: the section that holds the room
+   * list now holds this form at its foot, so a header reading "Room type" would
+   * name half of its own contents -- the ADR 0011 objection ADR 0022 used
+   * against putting the Rooms panel behind an existing tab.
+   *
+   * `roomsStepDown` and `roomsStepUp` are the step buttons' full sentences,
+   * parameterized by the field's own label, exactly as `buildStepDown` and
+   * `buildStepUp` are for the Build panel: the visible content of those buttons
+   * is a symbol, so the sentence is all a screen reader has.
+   */
+  roomsCoordinates: 'hud.rooms.coordinates',
+  roomsCoordinatesHint: 'hud.rooms.coordinates-hint',
+  roomsCoordinatesSubmit: 'hud.rooms.coordinates-submit',
+  roomsTileX: 'hud.rooms.tile-x',
+  roomsTileY: 'hud.rooms.tile-y',
+  roomsWidth: 'hud.rooms.width',
+  roomsHeight: 'hud.rooms.height',
+  roomsStepDown: 'hud.rooms.step-down',
+  roomsStepUp: 'hud.rooms.step-up',
   /*
    * What a designated room is still missing (#331 milestone).
    *

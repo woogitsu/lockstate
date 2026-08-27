@@ -228,3 +228,102 @@ no decision recorded here.
   today. Rejected because "Prisoner #4108" is an id leaking into the
   interface, and because it makes the id — the least stable thing in the
   system — the thing a player memorises.
+
+## Amendment, 2026-08-27: eight of this document's `file:line` citations point at unrelated code, the function one of them names no longer exists, and `identity` is in three payload versions rather than two
+
+*This amends **the Context paragraph on the save envelope and the first two
+Consequences bullets**. No decision moves and no substantive claim in this ADR is
+withdrawn — everything the decision rests on re-verifies exactly, and that is
+recorded below rather than assumed. What has gone wrong is that this document
+cites production code by line number, and the code moved. The form is ADR 0029's
+amendment and ADR 0034 §9's: the old wording is quoted rather than overwritten.*
+
+*Status is untouched: this ADR remains **Accepted**. Read at `792bf94`
+(v0.0.121); every line cited below, old and new, was opened on that tree.*
+
+### The citations, and what is at each of them now
+
+`docs/AGENT_WORKFLOW.md` §4 rates a `file:line` into code as the *durable* kind
+of citation, because grep can check it. That is only true if somebody runs the
+grep. Nobody had, and every one of these was wrong:
+
+| This ADR says | What is there at `792bf94` | Where it actually is |
+| --- | --- | --- |
+| `save-schema.ts:784-794` — `sessionSystemsSchemaFor` | the middle of the `gangs` sub-schema | `sessionSystemsShapeFor`, `:922-934` |
+| `save-schema.ts:838` — V3 `identity` field | a comment about `poolId` tolerance | `:982` |
+| `save-schema.ts:868` — V4 `identity` field | `const MAX_PENDING_DELIVERIES = 4_096;` | `:1012` |
+| `save-schema.ts:715` — the identity snapshot shape | the contraband search queue | `actorIdentitySnapshotSchema`, `:841` |
+| `new-session.ts:187` — registers the stream | a doc comment on `guardRelease` | `:292` |
+| `new-session.ts:196` — constructs the registry | a doc comment on staffing requirements | `:301` |
+| `new-session.ts:198` — passes it to `PrisonerOperationsRuntime` | the same comment block | `:325` |
+| `new-session.ts:248` — constructs `GuardRoster` | `const DEFAULT_GUARD_CAPACITY = 500;` | `:496` |
+
+Two of those are worse than an offset. **`sessionSystemsSchemaFor` does not
+exist**: `grep -rn "sessionSystemsSchemaFor" src/ tests/` is empty. It was
+renamed to `sessionSystemsShapeFor` in `6cededc`, *"Object placement phase 1"*
+(#320), on 2026-08-25 at v0.0.61 — so this ADR names a symbol no grep can find,
+which is the one failure mode a code citation is supposed to be immune to.
+
+### And there are three payload versions now, not two
+
+The Context says:
+
+> `sessionSystemsSchemaFor` (`src/persistence/save-schema.ts:784-794`) persists
+> `prisoners`, `operations`, `navigation`, `security`, `contraband`, `incidents`
+> and `economy` as the `simulation` section of both the V3 and the V4 payload.
+
+and the Decision and Consequences each repeat the pairing — *"`identity` is a
+field of both the V3 and the V4 payload"*, *"`identity:
+actorIdentitySnapshotSchema.optional()` at … for V3 and … for V4"*.
+
+The **seven-key list is still exactly right** (`save-schema.ts:927-933`). The
+pairing is not. `identity: actorIdentitySnapshotSchema.optional()` occurs three
+times — `savePayloadV3Schema` (`:982`), `savePayloadV4Schema` (`:1012`) and
+`savePayloadV5Schema` (`:1077`) — because `6cededc` added V5 in the same commit
+that did the rename. **An enumeration of versions in prose beside a schema file
+that adds them is `docs/AGENT_WORKFLOW.md` §4's rotting shape**, and "both the V3
+and the V4" rots harder than a tally would, because it reads as exhaustive while
+naming no total.
+
+**What these passages should say:** *`identity` is a session-level field of every
+payload version that has one — V3 onward — and `sessionSystemsShapeFor` builds
+the `simulation` section they share.* Named by symbol rather than by line, and
+by "every version" rather than by a list, because both of those survive the next
+schema bump and neither of the current forms did.
+
+### What was re-verified and is intact
+
+Every claim the decision rests on holds, and each was re-run rather than
+inherited:
+
+- **The wiring is all there**, at the corrected lines:
+  `src/simulation/runtime/new-session.ts:292` registers `ACTOR_IDENTITY_RNG_STREAM`
+  as one of four streams derived from `masterSeed`, `:301` is `new
+  ActorIdentityRegistry()`, `:325` constructs `PrisonerOperationsRuntime` with it,
+  and `:496` is `new GuardRoster(DEFAULT_GUARD_CAPACITY, actorIdentity, () =>
+  kernel.rng.get(ACTOR_IDENTITY_RNG_STREAM))`.
+- **"`ActorIdentityRegistry.rename` exists today with no command wired to it"** —
+  still true. Every `.rename(` call site in the repository is in
+  `tests/unit/actor-identity.test.ts`. So the third thing this ADR asks a human
+  to accept is still genuinely open rather than quietly settled by shipping.
+- **"Nothing destroys a prisoner or a guard today"** — still true. Every
+  `.destroy(` in `src/` is a Phaser display object under `src/rendering/`.
+- **"`identity.actor-name` is drawn from by this module and nothing else"** —
+  still true. The two `kernel.rng.get(ACTOR_IDENTITY_RNG_STREAM)` sites are
+  `new-session.ts:496` and `src/simulation/prisoners/intake-system.ts:293`, and
+  both hand the stream to the registry rather than drawing from it themselves
+  (`:293` is `this.identity.assign('prisoner', entityId,
+  context.rng.get(this.identityRngStreamName))`).
+- **"`PLACEHOLDER_ACTOR_NAME_POOL` (32 given × 32 family names)"** — counted:
+  32 and 32.
+- **The disjointness assertion exists**, at
+  `tests/unit/actor-identity.test.ts:278`, against `defaultLocaleEnCatalog`.
+- **"No names; label rows by entity id … what the HUD does today"** — still true,
+  and it is the one worth a reader's attention. `grep -rn "givenName" src/ui/` is
+  **empty**. Four projections carry the name —
+  `src/simulation/presentation/prisoner-projection.ts:119` and `:141`,
+  `staff-projection.ts:81`, `guard-release-projection.ts:124` — and nothing in
+  the browser UI reads any of them. So a name is minted from a seeded stream,
+  carried in state, written to the save and projected across the worker boundary,
+  and no player has ever seen one. The gap this ADR opens with — *"a roster row
+  has nothing to label itself with"* — is still open, one consumer short.

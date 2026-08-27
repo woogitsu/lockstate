@@ -1,5 +1,6 @@
 import { type Page, expect, test } from '@playwright/test';
 import type { HudViewModel } from '../../src/ui/hud';
+import { MAX_ROOM_SIDE_TILES } from '../../src/ui/hud/rooms-panel';
 import './ui-harness-api'; // pulls in the `Window.lockstateUiHarness` global augmentation
 
 /**
@@ -2414,6 +2415,147 @@ test.describe('the Rooms panel', () => {
     ]);
   });
 
+  /**
+   * The typed route and the drag are one route (#411).
+   *
+   * This is the assertion behind #411's "the keyboard route issues the same
+   * command as the drag and is subject to the same refusals". It is not a claim
+   * about two code paths that happen to agree: the panel has one assignment
+   * that makes a rectangle pending, and the point of comparing the two
+   * producers is that a second path -- a typed route that composed its own
+   * intent, or skipped the confirm step -- would show up here as a difference
+   * even if both halves worked.
+   *
+   * The comparison is not the whole test, deliberately. Two routes that broke
+   * *identically* would agree with each other, so the command is also pinned
+   * against a literal written out here. The four numbers are the test's input;
+   * neither side of the equality is the test's own answer.
+   */
+  test('a typed rectangle and a dragged one produce the same command (#411)', async ({ page }) => {
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('arm'));
+    expect(
+      await page.evaluate(() => window.lockstateUiHarness.dragWorldRoom({ x: 4, y: 6, width: 2, height: 3 })),
+      'the HUD registered no room-gesture sink',
+    ).toBe(true);
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('confirm'));
+
+    // Disarming ends the drawing pass, which is what a player does when they
+    // give up on the map and reach for the numbers instead.
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('arm'));
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('coordinates'));
+    const opened = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    expect(opened.coordinatesFolded, 'the coordinate form did not open').toBe('false');
+    // The dragged rectangle came into the fields, so the two routes hold one
+    // rectangle between them rather than two.
+    expect(opened.coordinates, 'the drag did not reach the coordinate fields').toEqual(['4', '6', '2', '3']);
+
+    // A different rectangle first, so the numbers below cannot pass by being
+    // whatever the drag left behind.
+    expect(
+      await page.evaluate(() => window.lockstateUiHarness.typeRoomCoordinates({ x: 9, y: 9, width: 5, height: 5 })),
+      'a coordinate field is missing',
+    ).toBe(true);
+    const typing = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    expect(typing.area, 'typing alone made a rectangle pending').toBe('');
+    expect(typing.confirmLaidOut, 'typing alone revealed the confirm control').toBe(false);
+
+    await page.evaluate(() => window.lockstateUiHarness.typeRoomCoordinates({ x: 4, y: 6, width: 2, height: 3 }));
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('coordinates-submit'));
+
+    const pending = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    expect(pending.area, 'the typed rectangle is not the pending one').toBe('4,6,2,3');
+    expect(pending.confirmText, 'the confirm control does not describe the typed rectangle').toContain(
+      'Designate 2 × 3',
+    );
+    expect(await roomCommands(page), 'the typed route dispatched without a confirm').toHaveLength(1);
+
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('confirm'));
+
+    const commands = await roomCommands(page);
+    expect(commands, 'one command per confirm, whichever route produced the rectangle').toHaveLength(2);
+    expect(commands[1], 'the typed route composes a different command from the drag').toBe(commands[0]);
+    expect(commands[0]).toBe(
+      JSON.stringify({ kind: 'zone-room', roomId: 'room.cell', area: { x: 4, y: 6, width: 2, height: 3 } }),
+    );
+  });
+
+  /**
+   * What the typed route clamps, and what it deliberately does not (#411).
+   *
+   * The two sides are bounded because a rectangle wider than
+   * `MAX_ROOM_SIDE_TILES` is refused `invalid-area` by the simulation whatever
+   * produced it, and the drag already caps itself at the same number -- so a
+   * typed rectangle that could not be dragged would be a route with a different
+   * reach rather than a second way to say the same thing.
+   *
+   * Tile X and tile Y are **not** bounded, and that is the interesting half.
+   * The panel does not know where the owned world is; clamping a coordinate to
+   * a number the panel guessed would move a designation somewhere the player
+   * did not ask for and call it success. Out of bounds has a refusal, and the
+   * refusal is the honest answer.
+   */
+  test('the typed route bounds the sides and leaves the tile alone (#411)', async ({ page }) => {
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('coordinates'));
+    await page.evaluate(() =>
+      window.lockstateUiHarness.typeRoomCoordinates({ x: -40, y: 4096, width: 9999, height: 0 }),
+    );
+
+    const probe = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    expect(probe.coordinates, 'the fields did not clamp the sides, or clamped the tile').toEqual([
+      '-40',
+      '4096',
+      String(MAX_ROOM_SIDE_TILES),
+      '1',
+    ]);
+
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('coordinates-submit'));
+    // And the clamp is the rectangle's, not just the field's: what the panel
+    // holds is what it would send.
+    expect(await page.evaluate(() => window.lockstateUiHarness.roomsProbe())).toMatchObject({
+      area: `-40,4096,${MAX_ROOM_SIDE_TILES},1`,
+    });
+  });
+
+  /**
+   * A typed rectangle under the room's authored minimum is held and not sent
+   * (#411).
+   *
+   * The existing behaviour, now reached from the keyboard: the rectangle is
+   * real and the player asked for it, so the confirm control stays where it is
+   * and goes *disabled*, with the note beside it saying what is wrong. The
+   * assertion that matters is the last one -- pressing it dispatches nothing --
+   * because a disabled-looking control that still fired would be the same
+   * defect wearing a grey coat.
+   */
+  test('a typed rectangle below the authored minimum leaves the confirm disabled (#411)', async ({ page }) => {
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('coordinates'));
+    await page.evaluate(() =>
+      window.lockstateUiHarness.typeRoomCoordinates({ x: 3, y: 3, width: 2, height: 2 }),
+    );
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('coordinates-submit'));
+
+    const probe = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    // `room.cell` is authored 2x3, so 2x2 is short in one axis only -- a
+    // rectangle a rule that only compared areas would accept.
+    expect(probe.area, 'the too-small rectangle was not held').toBe('3,3,2,2');
+    expect(probe.confirmLaidOut, 'the control that cannot be pressed was taken away').toBe(true);
+    expect(probe.confirmDisabled, 'a rectangle under the authored minimum can be confirmed').toBe(true);
+    expect(probe.noteText).toBe('Too small — this room needs at least 2 × 3 tiles.');
+    expect(probe.noteTone, 'the warning does not read as a warning').toBe('warning');
+
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('confirm'));
+    expect(await roomCommands(page), 'the disabled confirm dispatched anyway').toEqual([]);
+
+    // And it is the rule rather than the rectangle: one more tile of height and
+    // the same route goes through.
+    await page.evaluate(() => window.lockstateUiHarness.typeRoomCoordinates({ height: 3 }));
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('coordinates-submit'));
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('confirm'));
+    expect(await roomCommands(page)).toEqual([
+      JSON.stringify({ kind: 'zone-room', roomId: 'room.cell', area: { x: 3, y: 3, width: 2, height: 3 } }),
+    ]);
+  });
+
   test('switching to removal discards a pending designation rather than reinterpreting it', async ({ page }) => {
     // The same four numbers mean "designate this" or "remove whatever is here",
     // and silently changing which would be the panel deciding something the
@@ -2458,26 +2600,42 @@ test.describe('the Rooms panel', () => {
     expect(refusal.text).toBe('Nothing was removed — the request was refused.');
   });
 
-  test('reads out what the simulation found about the room, and warns only when it disagrees', async ({ page }) => {
-    // A readout, never a refusal. `RoomZoningService` accepts a room drawn in
-    // open ground either way, because the check it can honestly make is narrower
-    // than enclosure and a door cannot currently seal anything -- so refusing
-    // would block a legitimate designation. The panel's job is to *say so*.
+  test('reads out what the simulation found about the room, and no longer warns about it', async ({ page }) => {
+    /*
+     * **This case used to be called '... and warns only when it disagrees'**,
+     * and its first block asserted `noteTone: 'warning'` with the sentence
+     * *"This room should be enclosed, and the area you drew is open on at least
+     * one side."* under a comment reading *"A readout, never a refusal.
+     * `RoomZoningService` accepts a room drawn in open ground either way ... so
+     * refusing would block a legitimate designation. The panel's job is to *say
+     * so*."*
+     *
+     * It was right then and is wrong now, and the change is a ruling rather
+     * than a bug: `zone` refuses an `enclosed` room whose perimeter is open
+     * (the ADR "Must a zoned room be enclosed"), so no *accepted* zoning can
+     * report that pair and the panel's warning branch, its message key
+     * `hud.rooms.enclosure-open-required` and its English text are all deleted.
+     * The sentence now reaches the player as
+     * `hud.alert.refusal.zone.not-enclosed`, in the alerts list, at the moment
+     * they can still act on it.
+     *
+     * The `open` + `enclosed` pair is kept here as an input on purpose. The
+     * harness reports a notice directly, so it can still construct a pair the
+     * simulation no longer produces -- and asserting that the panel stays calm
+     * about it is what proves the branch is gone rather than merely unreached.
+     */
     await page.evaluate(() =>
       window.lockstateUiHarness.reportZoning({ sequence: 1, enclosure: 'open', requirement: 'enclosed' }),
     );
 
     const warned = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
     expect(warned.enclosureText).toBe('Open on at least one side');
-    expect(warned.noteTone, 'an enclosed room reported open is the one pair worth flagging').toBe('warning');
-    expect(warned.noteText).toBe(
-      'This room should be enclosed, and the area you drew is open on at least one side.',
-    );
+    expect(warned.noteTone, 'the pair is refused upstream now, so the panel has nothing to flag').toBe('');
     await expectLaidOut(page, '.hud-rooms__enclosure', 'the enclosure readout');
 
-    // The yard is authored `outdoors` and is *correct* when it is open, so the
-    // same answer must not be warned about. A panel that toned the answer itself
-    // rather than the pair would fail here.
+    // The yard is authored `outdoors` and is *correct* when it is open. This
+    // is the pair an accepted zoning can still carry, and it was never warned
+    // about.
     await page.evaluate(() =>
       window.lockstateUiHarness.reportZoning({ sequence: 2, enclosure: 'open', requirement: 'outdoors' }),
     );

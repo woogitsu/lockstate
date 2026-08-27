@@ -124,6 +124,58 @@ describe('save-schema V1 -> V2 migration', () => {
     expect(decodeSaveEnvelope(broken)).toMatchObject({ ok: false, error: { code: 'invalid-shape', atVersion: 1 } });
   });
 
+  /**
+   * The other end of the same field, and the one that costs something.
+   *
+   * `capacity` sizes three typed arrays inside `upgradeEntityLiveness` -- 7
+   * bytes per slot -- and V1 never required the three arrays to be `capacity`
+   * long, so the array set below is *empty* and the allocation happens anyway.
+   * Unbounded, a 1.5 KB envelope bought 70 MB of allocation before anything
+   * refused it, and `0xffff_ffff` threw `RangeError: Array buffer allocation
+   * failed` **out of** `decodeSaveEnvelope`.
+   *
+   * Both cases are asserted as a *verdict at V1*, which is the whole point:
+   * refused before the allocation rather than after it, and refused with a
+   * code rather than by throwing. `0xf_ffff` is asserted alongside so this
+   * pins a boundary rather than "large numbers are bad" -- it is `INDEX_MASK`,
+   * the ceiling `EntityStore`'s own constructor enforces, and V2 has always
+   * refused anything above it one step later.
+   */
+  it('refuses a V1 entity capacity above the entity-index ceiling, before it sizes an allocation', () => {
+    const withCapacity = (capacity: number): unknown => {
+      const edited = JSON.parse(JSON.stringify(inProgressFixture)) as {
+        payload: { entities: { capacity: number; generations: number[]; freeIndices: number[]; alive: number[] } };
+      };
+      edited.payload.entities.capacity = capacity;
+      edited.payload.entities.generations = [];
+      edited.payload.entities.freeIndices = [];
+      edited.payload.entities.alive = [];
+      return edited;
+    };
+
+    // Refused at V1 by the schema, so no step ever runs and nothing is sized.
+    expect(decodeSaveEnvelope(withCapacity(0x10_0000))).toMatchObject({
+      ok: false,
+      error: { code: 'invalid-shape', atVersion: 1 },
+    });
+    expect(decodeSaveEnvelope(withCapacity(10_000_000))).toMatchObject({
+      ok: false,
+      error: { code: 'invalid-shape', atVersion: 1 },
+    });
+    expect(decodeSaveEnvelope(withCapacity(0xffff_ffff))).toMatchObject({
+      ok: false,
+      error: { code: 'invalid-shape', atVersion: 1 },
+    });
+
+    // The ceiling itself is not refused by *this* rule: it gets past the
+    // capacity bound and is then refused by the checksum, because the arrays
+    // were emptied. Anything else here would mean the bound was set wrong.
+    expect(decodeSaveEnvelope(withCapacity(0xf_ffff))).toMatchObject({
+      ok: false,
+      error: { code: 'checksum-mismatch', atVersion: 1 },
+    });
+  });
+
   it('shrinks the entity section without losing anything, versus the V1 shape it replaces', () => {
     const v1Bytes = new TextEncoder().encode(JSON.stringify(inProgressFixture.payload.entities)).length;
     const result = decodeSaveEnvelope(inProgressFixture);

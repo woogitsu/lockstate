@@ -90,17 +90,62 @@ batch rather than retrying forever. Nothing in `src/simulation/` or the
 render loop may import the sink; telemetry is to be fed from the main thread's
 orchestration layer, off the tick and frame paths.
 
-**As of 2026-08-24 that feed does not exist.** No module outside
-`src/services/telemetry/` calls into this layer: the only reference to it
-anywhere else in `src/` is the barrel re-export `export * from './telemetry'`
-(`src/services/index.ts:21`), and nothing imports that barrel either. So
-`TelemetryConsent` is never asked for, `record()` is never called and
-`BatchingTelemetrySink` never flushes. Every module specified here is built and
-tested — `tests/unit/services-telemetry.test.ts` — and none is wired —
-the same posture [ADR 0008](./0008-trusted-service-boundary.md) states
-explicitly for the server-side deployment units, which this ADR inherits
-without having said so. Wiring the first `record()` call is the moment the
-boot path must also obtain consent; it obtains none today.
+**That feed did not exist between 2026-08-24 and 2026-08-27, and what this
+paragraph used to say about the present is what
+[ADR 0046](./0046-shipping-the-telemetry-pipeline.md) proposes to replace. That
+ADR is Proposed, so the replacement is not in force**: the layer is built and
+every build configures it to send nowhere. The account below is true of those
+three days however 0046 is decided. For those three days no
+module outside `src/services/telemetry/` called into this layer: the only
+reference to it anywhere else in `src/` was the barrel re-export
+`export * from './telemetry'` in `src/services/index.ts`, and nothing imported
+that barrel either — so `TelemetryConsent` was never asked for, `record()` was
+never called, and `BatchingTelemetrySink` never flushed. That paragraph also
+said the wiring of the first `record()` call is the moment the boot path must
+also obtain consent, and that is exactly how it was wired.
+
+**That last sentence had no referent until 2026-08-27, later the same day, and
+saying which direction it moved in is the point of recording it.** ADR 0046
+wired the consent surface, the pump and the transport and produced **no
+event**: `git grep -lI "recorder\.\(record\|recordError\)" -- src/ | grep -v
+"src/services/telemetry/"` returned nothing at 30db0e9, so there was no
+"wiring of the first `record()` call" for the sentence to be about — the
+consent half arrived alone and the sentence read as though both had. It is true
+as written from the change that added
+`src/services/telemetry/crash-reporting.ts` and its four call sites in
+`src/main.ts` — the first `record()` calls this repository has ever had, wired
+from the same `createTelemetryPipeline` resolution that mounts the prompt, so
+that with no decision on record a produced event is refused before an envelope
+exists.
+
+**What is true now.** `src/main.ts` builds the pipeline, mounts the consent
+prompt, drives the sink from an idle callback, and — since the producers landed
+— feeds it: the page's `error` and `unhandledrejection` listeners produce
+`diagnostic.unhandled-error`, and the two places this thread learns it has lost
+a simulation worker produce `diagnostic.worker-terminated`.
+`HttpTelemetryTransport` exists. But the transport's destination comes from
+deployment configuration, no deployment sets it, and with it absent nothing is constructed at all — so *no
+build of this repository sends anything*, and the consent prompt is not mounted
+either, because asking for consent to a collection that cannot happen is the
+defect [ADR 0044](./0044-what-happens-to-a-service-tier-nothing-calls.md) named.
+Nothing in the decisions above changed. ADR 0046 records what shipping them
+costs, including data-protection obligations this repository documents nowhere.
+
+**It also recorded a conflict with ADR 0008 §3 step 1's rule that no
+unauthenticated mutation endpoint exists, and that conflict is overtaken.** The
+owner settled it on 2026-08-27 by scoping §3 rather than carving an exception
+into it: §3 binds every mutation path over state §2's authority table assigns to
+Z2, *and only those*, measured by the state a path is entrusted to decide. §2
+puts telemetry content in Z0 — the client is the source, and Z2 is entrusted
+only with retention — so ingest is outside §3 and needs no exception. See ADR
+0008's scope amendment, which also adds threat T13 for what an unauthenticated
+ingest can be abused into, and states plainly that §3 step 1's only enforcement
+sweeps database roles and is structurally blind to an HTTP surface.
+
+What that does **not** settle is deployment. Standing ingest up requires this
+project's first server-side execution surface, which the owner has directed
+lands together with the ingest as one reviewed change; `docs/DEPLOYMENT.md`
+carries the pre-merge checklist.
 
 ### Release correlation without public source maps
 `vite.config.ts` keeps `sourcemap: false` for shipped assets. Diagnostics

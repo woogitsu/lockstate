@@ -10,6 +10,11 @@ import {
   navigationMealRushScenario,
   navigationMixedDestinationScenario,
 } from './scenarios/navigation-actor-tiers.mjs';
+import {
+  navigationProductionLockdownReturnScenario,
+  navigationProductionMealRushScenario,
+  navigationProductionSingleRequestBudgetScenario,
+} from './scenarios/navigation-production.mjs';
 
 export const benchmarkScenarios = Object.freeze([
   foundationSmokeScenario,
@@ -20,6 +25,9 @@ export const benchmarkScenarios = Object.freeze([
   navigationMealRushScenario,
   navigationLockdownReturnScenario,
   navigationMixedDestinationScenario,
+  navigationProductionMealRushScenario,
+  navigationProductionLockdownReturnScenario,
+  navigationProductionSingleRequestBudgetScenario,
 ]);
 
 export function findBenchmarkScenario(id) {

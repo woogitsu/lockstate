@@ -77,10 +77,19 @@ describe('schema validation rejects malformed content with a clear, structured e
   });
 
   it('collects a schema error alongside a duplicate-id error in the same load() call', () => {
+    // The three rows carried `capabilities: []` as a don't-care filler until
+    // `objectDefinitionSchema` gained `.min(1)`, which refuses an empty list
+    // outright (an object with no capabilities makes every room requiring it
+    // permanently unsatisfiable -- see the field's own comment and
+    // `tests/foundation/content-vocabulary-contract.test.ts`). With `[]` every
+    // row now fails on *that* instead, which is the wrong subject: this case
+    // is about one duplicate id and one bad `schemaVersion` being collected in
+    // the same pass. A real capability keeps the two intended faults the only
+    // faults.
     const { registry, errors } = loadObjectCatalog([
-      { schemaVersion: 1, id: 'object.ok', numericId: 1, nameKey: 'x', category: 'furniture', footprint: { width: 1, height: 1 }, capabilities: [] },
-      { schemaVersion: 1, id: 'object.ok', numericId: 2, nameKey: 'x', category: 'furniture', footprint: { width: 1, height: 1 }, capabilities: [] }, // duplicate id
-      { schemaVersion: 99, id: 'object.bad', numericId: 3, nameKey: 'x', category: 'furniture', footprint: { width: 1, height: 1 }, capabilities: [] }, // bad schema version
+      { schemaVersion: 1, id: 'object.ok', numericId: 1, nameKey: 'x', category: 'furniture', footprint: { width: 1, height: 1 }, capabilities: ['probe'] },
+      { schemaVersion: 1, id: 'object.ok', numericId: 2, nameKey: 'x', category: 'furniture', footprint: { width: 1, height: 1 }, capabilities: ['probe'] }, // duplicate id
+      { schemaVersion: 99, id: 'object.bad', numericId: 3, nameKey: 'x', category: 'furniture', footprint: { width: 1, height: 1 }, capabilities: ['probe'] }, // bad schema version
     ]);
 
     expect(registry.size()).toBe(1);

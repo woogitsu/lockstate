@@ -61,8 +61,38 @@ import { PROJECTION_CATALOG } from '../../src/simulation/worker/projection-catal
  * missing -- so the entry is gone and the assertion that replaced it runs the
  * other way: **there must be a painter**, and deleting the last one fails here
  * rather than quietly returning the channel to a pipe with nothing on the end
- * of it. It still does not claim that every projection is painted; ten of the
- * fifteen catalogued read models have a route and no reader.
+ * of it. It still does not claim that every projection is painted; **nine of the
+ * fifteen catalogued read models have a route and no reader.**
+ *
+ * That number is stated with the way to re-derive it, because it is a tally and
+ * this file's whole subject is claims that rot. `PROJECTION_IDS`
+ * (`src/simulation/protocol/types.ts:314-330`) has fifteen members; grepping all
+ * fifteen as string literals across `src/ui/` and `src/rendering/` returns
+ * **six**, so fifteen minus six is nine. The six are `hud/room-list` and
+ * `hud/room-detail` (`simulation-room-needs.ts:172,179`), `hud/held-guards`
+ * (`simulation-held-guards.ts:148`), `hud/pending-deliveries`
+ * (`simulation-pending-deliveries.ts:149`), `hud/prisoner-population`
+ * (`simulation-intake.ts:162`) and `hud/build-queue`
+ * (`simulation-build-queue.ts:146`). `src/rendering/` matches none.
+ *
+ * **This said "ten", and the arithmetic slip is the interesting part rather than
+ * the digit.** Six ids are read by *five* modules, because
+ * `simulation-room-needs.ts` reads two of them -- so a count of reader files
+ * gives five and fifteen minus five gives ten. The sentence is about read
+ * *models*, not reader modules, and the two stop agreeing the moment one module
+ * requests two projections. It was already wrong when it was written, and the
+ * same off-by-one from the same cause was independently found in
+ * `docs/HUD_PROJECTIONS.md` §9; ADR 0040's open question 4 has had nine right
+ * all along.
+ *
+ * A literal grep can only prove a *lower* bound on readers -- a module that
+ * built an id at runtime would be invisible to it -- so that was checked
+ * separately rather than assumed: the only place in `src/ui/` or
+ * `src/rendering/` that holds a `ProjectionId` as a value instead of a literal
+ * is `simulation-projections.ts:159`, the requester's own signature, which is
+ * the transport every one of the six calls through rather than a reader of any
+ * particular projection. So there is no indirect resolution to miss, and nine is
+ * exact rather than an upper bound.
  *
  * The second painter is `src/ui/simulation-build-queue.ts`, and it is worth
  * naming because it closed a *different* gap from the room readout's. That one

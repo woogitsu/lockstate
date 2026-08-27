@@ -20,7 +20,14 @@ import {
   SIMULATION_PROTOCOL_VERSION 
 } from '../protocol/types';
 import type { JsonValue } from '../../shared/json';
+import { collectProtocolTransferables } from '../protocol/transferables';
+import {
+  RENDER_ACTORS_CONTENT_TYPE,
+  RENDER_ACTORS_SCHEMA_ID,
+  RENDER_ACTORS_SCHEMA_VERSION,
+} from '../protocol/render-actors-payload';
 import { PROJECTION_CATALOG, type ProjectionRequest } from './projection-catalog';
+import { encodeRenderActorsKeyframe } from './render-actors-keyframe';
 import { projectStatusCounts, statusCountsEqual } from './status-counts';
 
 export type WorkerState = 
@@ -88,6 +95,41 @@ export const CLOCK_STATE_PUBLISH_INTERVAL_MS = 250;
  * boundary at most two messages a second.
  */
 export const STATUS_COUNTS_PUBLISH_INTERVAL_MS = 500;
+
+/**
+ * How often, at most, the worker publishes `simulation/delta` -- the render
+ * delta channel of ADR 0040, slice 1.
+ *
+ * **A ceiling, not a rate**, in the same sense
+ * `STATUS_COUNTS_PUBLISH_INTERVAL_MS` is one and enforced by the cheaper of the
+ * two tests available: `publishRenderDelta` returns without encoding anything
+ * when the tick has not moved since the last publication. Nothing in this
+ * payload can change without the kernel stepping -- an actor's position is
+ * written by a system inside a tick and by nothing else -- so an unmoved tick
+ * is exactly "nothing changed", and a paused prison posts nothing at all. That
+ * is the same rule `publishClockState` uses and it is strictly stronger here,
+ * because it is also what keeps `deltaMessageSchema`'s `tick > baseTick`
+ * satisfiable: `baseTick` is the previous publication's tick, so publishing
+ * twice at one tick would be a message the main thread's decoder refuses.
+ * Stronger in a second sense measured by #444 item 4: here the tick test really
+ * fires with the interval open -- 31 times across the tick-loop test files, on
+ * the first wake of a session, when `_deltaPublishedAtMs` is still `-Infinity`
+ * -- whereas the same two lines in `publishClockState` never do.
+ *
+ * A fifth of the counts' interval and two and a half times the clock's,
+ * because the three readouts have different jobs. The counts are levels a
+ * player reads; the clock is a progress bar; this one is where the actors
+ * *are*, which is the thing the player is looking straight at. ADR 0040 puts
+ * it at 100 ms and gives the reason it is not per-tick: at x4 the tick loop
+ * runs up to 5 ticks per 15 ms wake, so a per-tick channel would put a
+ * population-sized buffer on the boundary ~66 times a second to move a handful
+ * of arrivals.
+ *
+ * Wall-clock milliseconds rather than a count of ticks, for the reason the
+ * other two intervals are: it governs how often the *main thread* is told, so
+ * it must be bounded in the units the main thread's frame budget is in.
+ */
+export const RENDER_DELTA_PUBLISH_INTERVAL_MS = 100;
 
 /**
  * How `handleInitialize` reports a snapshot it refuses to restore: correlated
@@ -201,6 +243,20 @@ export class SimulationWorkerStateMachine {
   private _publishedZoningSequence = 0;
   /** When the counts were last *projected*, which bounds the projection's cost as well as the message rate. */
   private _countsProjectedAtMs = Number.NEGATIVE_INFINITY;
+  /**
+   * The tick of the last `simulation/delta`, `0` for none, which is the
+   * `baseTick` the next one declares.
+   *
+   * `0` rather than `null` because tick 0 is genuinely the base a session's
+   * first publication is measured against, and because `deltaMessageSchema`
+   * refuses `tick <= baseTick` -- so a session that has published nothing and a
+   * session whose last publication was at tick 0 want the same behaviour, and
+   * tick 0 cannot be published at all. That is not a gap: a tick-0 session is
+   * exactly the case `simulation/ready` and the feed's first snapshot already
+   * cover.
+   */
+  private _publishedDeltaTick = 0;
+  private _deltaPublishedAtMs = Number.NEGATIVE_INFINITY;
 
   public constructor(
     private readonly port: MessagePortLike,
@@ -251,6 +307,7 @@ export class SimulationWorkerStateMachine {
 
       this.publishClockState(now);
       this.publishStatusCounts(now);
+      this.publishRenderDelta(now);
     } catch (e) {
       this.fault('internal-error', e instanceof Error ? e.message : String(e));
     }
@@ -270,10 +327,55 @@ export class SimulationWorkerStateMachine {
    * that says nothing new is noise. A *control* change is reported by the
    * correlated reply in `handleSetClock` instead, so pausing is never missed
    * just because the tick stood still.
+   *
+   * **The interval is the gate; the equality check is belt-and-braces** (#444
+   * item 4). Both sentences above, and ADR 0003's amendment ("at most every
+   * 250 ms and only when the tick has moved"), read as though the two
+   * conditions each rule out cases the other admits. Measured, the second rules
+   * out none:
+   *
+   * - `publishClockState` is called from `onTickLoop` and nowhere else, and
+   *   `onTickLoop`'s timer exists only while `running` -- `transition` starts
+   *   it for `running` and clears it for every other state, so the `paused`
+   *   arm of that method's own guard is unreachable too.
+   * - The only route into `running` is `handleSetClock`, which calls
+   *   `notePublished(kernel.tick, now)` immediately after `transition`. So
+   *   `_publishedTick` and `_publishedAtMs` are always a *matched pair*, set at
+   *   a moment when the loop was not running.
+   * - From there the interval opens at `now - _publishedAtMs >= 250`, and the
+   *   kernel steps at least once per 50 ms of wall time: `FixedStepClock(50)`,
+   *   `SIMULATION_SPEEDS` is `{1, 2, 4}` so ×1 is the slowest, and the 5-tick
+   *   budget per 15 ms wake is far above the ~1 tick per 3 wakes ×1 asks for.
+   *   At least five ticks have therefore run before the interval opens.
+   *
+   * Deleting the equality check changed not one published message across the
+   * 15 test files that drive the tick loop (151 tests). Instrumented instead of
+   * inferred: of 3,038 entries to this method, all with `state === 'running'`,
+   * 221 returned here on the unmoved tick and **none** of those 221 had the
+   * interval open -- the largest `now - _publishedAtMs` on this path was 45 ms
+   * against a 250 ms interval.
+   *
+   * The check stays. A defensive branch with no case behind it is not a defect;
+   * a sentence claiming it is load-bearing is, which is what this comment
+   * fixes. It also stops being decorative the moment `CLOCK_STATE_PUBLISH_INTERVAL_MS`
+   * drops below a tick of wall time, or a speed below ×1 joins
+   * `SIMULATION_SPEEDS` -- neither of which anything currently forbids.
+   *
+   * **`publishRenderDelta`'s identical-looking check is not in this position**,
+   * which is the useful contrast rather than a caveat. Nothing resets
+   * `_publishedDeltaTick`/`_deltaPublishedAtMs` the way `notePublished` resets
+   * this pair, so on the first wake of a session `_deltaPublishedAtMs` is still
+   * `-Infinity`, the interval is trivially open, and the tick test is the only
+   * thing stopping a delta with `tick === baseTick` -- which
+   * `deltaMessageSchema` refuses. Measured at 31 occurrences across the same 15
+   * files. Two methods, the same two lines, and only one of them dead.
    */
   private publishClockState(nowMilliseconds: number): void {
     if (this._kernel === null) return;
     const tick = this._kernel.tick;
+    // Belt-and-braces, not the gate: see the docblock. Unreachable while
+    // `running`, because the interval below cannot open inside one tick of
+    // wall time.
     if (tick === this._publishedTick) return;
     if (nowMilliseconds - this._publishedAtMs < CLOCK_STATE_PUBLISH_INTERVAL_MS) return;
 
@@ -291,6 +393,18 @@ export class SimulationWorkerStateMachine {
     });
   }
 
+  /**
+   * The two fields `publishClockState` gates on, written together and never
+   * apart.
+   *
+   * That is load-bearing and easy to lose: `handleInitialize` and
+   * `handleSetClock` both call this, so entering `running` always leaves the
+   * pair agreeing about one moment. Writing only the timestamp -- or only the
+   * tick -- would break the argument in `publishClockState`'s docblock that its
+   * equality check cannot fire while the interval is open, and would break it
+   * silently, because that check would then start doing the work the interval
+   * is credited with (#444 item 4).
+   */
   private notePublished(tick: number, nowMilliseconds: number): void {
     this._publishedTick = tick;
     this._publishedAtMs = nowMilliseconds;
@@ -417,6 +531,88 @@ export class SimulationWorkerStateMachine {
         ...(zoning === undefined ? {} : { zoning }),
       },
     });
+  }
+
+  /**
+   * Tells the main thread where the actors are, unprompted.
+   *
+   * ADR 0040 slice 1, and the first production user the `array-buffer`
+   * transport has had since the protocol's first commit. Before this the
+   * renderer read actor positions out of a *session bundle* it obtained by
+   * sending the persistence path's own `simulation/request-snapshot` every two
+   * seconds; the whole bundle then went through `jsonValueSchema`, which is
+   * `isJsonValue` recursing with an `Object.getOwnPropertyDescriptor` per array
+   * element and per object key. That is a main-thread cost proportional to the
+   * population and the loaded chunk count, paid to move two integers per
+   * prisoner. `arrayBufferPayloadSchema` validates a schema id, a content type
+   * and a `byteLength` cross-check and never looks inside the body, so this
+   * message's boundary cost is flat in the population -- which is what issue
+   * #414 asked for and what the size of the buffer, alone, does not give.
+   *
+   * **Keyframe only, and that is the slice.** Every message carries the
+   * complete live set. ADR 0040's changed-only messages need a worker-side
+   * mirror of what was last published and a base-tick rule on the receiver;
+   * both are its slice 3, and the `flags` word and the removal list are already
+   * in the layout so that landing them changes no version.
+   *
+   * **Strictly a report**, exactly like `publishClockState` and
+   * `publishStatusCounts`. It reads `Kernel.tick` and the prisoner position SoA
+   * after the tick loop has finished stepping, calls nothing on the kernel,
+   * steps nothing and writes nothing but the buffer it posts
+   * (`tests/determinism/render-delta-publication.test.ts`). There is no request
+   * that provokes it and no main-thread module that can ask for one, so there
+   * is no feedback path from the renderer into the simulation to close --
+   * `AGENTS.md` boundary 1, in the only form a publication can take it.
+   *
+   * **Two gates, and their order is the point**, as it is one method up. The
+   * tick test comes first because it is both the cheaper check and the
+   * correctness one: `deltaMessageSchema` refuses `tick <= baseTick`, so a
+   * second publication at an unmoved tick would be a message the main thread's
+   * decoder rejects. The interval is checked next, and both are field reads, so
+   * a wake that publishes nothing costs two comparisons. Only then does the
+   * encoder walk the store.
+   */
+  private publishRenderDelta(nowMilliseconds: number): void {
+    if (this._kernel === null || this._runtime === null) return;
+
+    const tick = this._kernel.tick;
+    // Nothing in this payload can move without a tick, so an unmoved tick is
+    // "nothing changed" -- the skip `STATUS_COUNTS_PUBLISH_INTERVAL_MS`
+    // describes, reached without a mirror of the last published positions.
+    if (tick <= this._publishedDeltaTick) return;
+    if (nowMilliseconds - this._deltaPublishedAtMs < RENDER_DELTA_PUBLISH_INTERVAL_MS) return;
+
+    const data = encodeRenderActorsKeyframe(this._runtime.prisoners);
+    const message: WorkerToMainMessage = {
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: crypto.randomUUID(),
+      // No `replyTo`, and `deltaMessageSchema` is built from
+      // `requestEnvelopeFields` so it has no slot for one: nobody asked for
+      // this. ADR 0003's 2026-08-24 amendment forbids an unsolicited message
+      // from presenting itself as a request response.
+      kind: 'simulation/delta',
+      payload: {
+        baseTick: this._publishedDeltaTick,
+        tick,
+        delta: {
+          schemaId: RENDER_ACTORS_SCHEMA_ID,
+          schemaVersion: RENDER_ACTORS_SCHEMA_VERSION,
+          transport: 'array-buffer',
+          contentType: RENDER_ACTORS_CONTENT_TYPE,
+          byteLength: data.byteLength,
+          data,
+        },
+      },
+    };
+
+    this._publishedDeltaTick = tick;
+    this._deltaPublishedAtMs = nowMilliseconds;
+    // Transferred rather than copied, which is what the transport is for and
+    // what `collectProtocolTransferables` has been able to say since the
+    // protocol's first commit without anything ever asking it. The buffer is
+    // freshly built here and read by nothing else, so detaching it costs this
+    // side nothing.
+    this.post(message, collectProtocolTransferables(message));
   }
 
   /**
@@ -563,11 +759,17 @@ export class SimulationWorkerStateMachine {
       // the one error `SessionController.loadPrison` demotes a save
       // generation for -- and demotion deletes.
       //
-      // Bounded rather than solved. `PrisonSaveRepository.demoteGeneration`
-      // refuses to delete the last retained generation (docs/PERSISTENCE.md,
-      // "Never the last copy"), which is what stops a deterministic failure
-      // here from walking a player's whole retained window; before that floor
-      // it did, measured at three generations to zero in one load. Telling
+      // Bounded rather than solved, and the bound has moved since this comment
+      // was written. It used to say the floor in
+      // `PrisonSaveRepository.demoteGeneration` -- which refuses to delete the
+      // last retained generation (docs/PERSISTENCE.md, "Never the last copy")
+      // -- is what stops a deterministic failure here from walking a player's
+      // whole retained window. That was true, and it cost all but one
+      // generation: measured at three to one in a single load, and at three to
+      // zero before the floor existed. It is now #403 mitigation (d) that does
+      // the stopping -- a refused generation is retired only once a *different*
+      // one has restored -- so a deterministic failure costs **nothing**, and
+      // the floor is the second belt rather than the first. Telling
       // the two causes apart is the fix this comment is not: it needs every
       // deliberate rejection on the restore path to be a declared verdict
       // rather than whichever error class was nearest, which is a decision
@@ -729,12 +931,17 @@ export class SimulationWorkerStateMachine {
    *
    * This is the general route the two special cases asked for. `simulation/clock-state`
    * and `simulation/status-counts` are each a *publication* of one projection
-   * on a cadence, and each needed a message kind of its own to exist; the nine
-   * read models left over could not have nine more without the protocol
+   * on a cadence, and each needed a message kind of its own to exist; the
+   * read models left over could not each have one without the protocol
    * growing with the read model. So this handler is written against
    * `PROJECTION_CATALOG` rather than against any projection: the kind names
    * the *family*, the payload's `projectionId` selects the member, and adding
-   * a twelfth is a catalog entry rather than a protocol change.
+   * another is a catalog entry rather than a protocol change.
+   *
+   * Both sentences carried a tally before (`the nine read models`, `a twelfth`)
+   * and both were already wrong at `06f5d7d`, the commit that wrote them, where
+   * `PROJECTION_IDS` held twelve. Derive the number instead of restating it:
+   * `node -e "import('./src/simulation/protocol/types.ts').then(m => console.log(m.PROJECTION_IDS.length))"`.
    *
    * **Pull, not push, and that is the design.** A level the player is always
    * looking at belongs on a cadence -- which is why the counts stay where they

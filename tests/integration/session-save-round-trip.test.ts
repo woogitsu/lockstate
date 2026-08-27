@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { createSaveEnvelope, decodeSaveEnvelope, SAVE_SCHEMA_VERSION } from '../../src/persistence/save-schema';
-import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
+import {
+  DEFAULT_PRISONER_CAPACITY,
+  createNewSimulationRuntime,
+  type SimulationRuntime,
+} from '../../src/simulation/runtime/new-session';
+import { EntityStore } from '../../src/simulation/entity/entity-store';
+import { encodeEntityStoreSnapshot } from '../../src/persistence/entity-codec';
 import { packCommand } from '../../src/simulation/protocol/commands';
 import {
   captureSessionSnapshot,
@@ -44,6 +50,9 @@ function saveAndLoad(runtime: SimulationRuntime): SimulationRuntime {
   const bundle = captureSessionSnapshot(runtime);
 
   const envelope = createSaveEnvelope({
+    // What `SessionController.buildEnvelope` now writes: the captured bundle's
+    // own seed (#412), so this helper stays the full save path it claims to be.
+    ...(bundle.masterSeed === undefined ? {} : { masterSeed: bundle.masterSeed }),
     gameVersion: 'lockstate-0.0.0',
     prisonId: PRISON_ID,
     revision: 1,
@@ -499,6 +508,85 @@ describe('a populated prison survives save -> load', () => {
     // The world and construction halves still come back, exactly as V2 did.
     expect(restored.world.snapshot()).toEqual(runtime.world.snapshot());
     expect(scope.restored.length).toBeGreaterThan(0);
+  });
+
+  /**
+   * The positive half of the case above, and until now the branch had none.
+   *
+   * `restoreSimulationRuntime`'s `else if (entityStore !== undefined)` arm --
+   * the one a migrated V1 or a native V2 save restores through -- was covered
+   * only by assertions that everything *else* comes back empty, and by
+   * `tests/integration/session-restore-failure.test.ts`'s case asserting that
+   * a V1 save **cannot** restore at all. Gutted to a no-op, that failure was
+   * the only attributable one in the suite: nothing asserted the branch
+   * restores anything.
+   *
+   * So this asserts the ledger itself, through the real save boundary.
+   *
+   * ### Why the ids are built here rather than taken from a session
+   *
+   * They are written out as literals -- `0`, `2`, and `0x10_0001` -- so the
+   * restored store cannot agree with the fixture by having computed both
+   * sides. `0x10_0001` is the interesting one: index 1 was destroyed and
+   * respawned, so its generation is 1, and an entity id is
+   * `(generation << 20) | index`. A restore that brought back the liveness
+   * bitmap but not the generation counters would hand out `1` again and fail
+   * here, while agreeing with any assertion phrased as "two entities are
+   * alive".
+   *
+   * This is issue #433's acceptance criterion 4 arriving early: a V2-shape
+   * bundle whose capacity matches this build's store restores its entities.
+   * What #433 still owes is the capacity *mismatch* -- a real V1 save carries
+   * 8 slots against this build's 5,000, and that is the case
+   * `session-restore-failure.test.ts` pins as a refusal.
+   */
+  it('brings a V2-shape save back with its entity ledger alive, ids and generations included', () => {
+    const source = new EntityStore(DEFAULT_PRISONER_CAPACITY);
+    const first = source.spawn();
+    const retired = source.spawn();
+    const third = source.spawn();
+    source.destroy(retired);
+    const reusedSlot = source.spawn();
+
+    // The fixture's own arithmetic, pinned before it is used as an
+    // expectation: index in the low 20 bits, generation above it.
+    expect([first, retired, third, reusedSlot]).toEqual([0, 1, 2, 0x10_0001]);
+
+    // A V2-shape payload: kernel, world, construction and `entities`, with no
+    // `simulation` and no `identity` -- exactly what the V1 -> V5 chain
+    // produces and what a native V2 build wrote.
+    const donor = createNewSimulationRuntime(SCENARIO_SEED);
+    const envelope = createSaveEnvelope({
+      gameVersion: 'lockstate-0.0.0',
+      prisonId: PRISON_ID,
+      revision: 1,
+      createdAt: 1_700_000_000_000,
+      updatedAt: 1_700_000_000_001,
+      kernel: donor.kernel.snapshot(),
+      world: donor.world.snapshot(),
+      construction: donor.construction.snapshot(),
+      entities: encodeEntityStoreSnapshot(source.getSnapshot()),
+    });
+    const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)) as unknown);
+    expect(decoded).toMatchObject({ ok: true, migrated: false });
+    if (!decoded.ok) throw new Error('the envelope must decode for this test to mean anything');
+
+    const payload = decoded.value.payload as unknown as SessionSnapshotBundle;
+    expect(payload.simulation).toBeUndefined();
+    const { runtime: restored } = restoreSimulationRuntime(payload);
+    const store = restored.prisoners.entityStore;
+
+    expect(store.isAlive(0)).toBe(true);
+    expect(store.isAlive(2)).toBe(true);
+    expect(store.isAlive(0x10_0001)).toBe(true);
+    // The generation, not merely the slot: index 1 answers with its *second*
+    // id, and the id it retired is refused.
+    expect(store.getIdByIndex(1)).toBe(0x10_0001);
+    expect(store.isAlive(1)).toBe(false);
+    // The allocator's own position, so a further spawn continues the writing
+    // session's sequence instead of colliding with it.
+    expect(store.maxActiveIndex).toBe(2);
+    expect(store.spawn()).toBe(3);
   });
 });
 

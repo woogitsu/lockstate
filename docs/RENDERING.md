@@ -125,21 +125,95 @@ correctness.
 `RenderFeed` is the seam. `SimulationSnapshotFeed` implements it over the
 existing worker protocol, and its behaviour is deliberate:
 
-ADR-0003 publishes snapshots, deltas and events to the main thread, but only
-the correlated snapshot path is implemented -- nothing emits a
-`simulation/delta` yet. A snapshot request is therefore the only legal way
-world geometry can reach the renderer, and the feed makes one with
-`reason: 'consistency-check'` so its requests are distinguishable from saves.
+ADR-0003 publishes snapshots, deltas and events to the main thread. Two of the
+three reach the feed, and they carry different halves of a frame.
 
-Because each request makes the worker capture a full session bundle, the feed
-does not poll on a timer. It polls when the world can actually have changed:
-once when a session becomes ready, after any command is accepted, and on an
-interval only while the clock is running. A paused, idle prison costs exactly
-one request.
+**Actors arrive on `simulation/delta`.** ADR 0040 slice 1 (#414) gave that kind
+its first sender: `SimulationWorkerStateMachine.publishRenderDelta` posts an
+unsolicited keyframe of the live prisoner population beside the clock and
+status-counts publications already on the tick loop, on a **100 ms ceiling**
+and skipped entirely while the tick stands still. The body is an
+`array-buffer` `versionedPayload` -- `lockstate.render-actors` v1, whose layout
+is defined once in `src/simulation/protocol/render-actors-payload.ts` -- and it
+is transferred rather than copied. Applying one replaces `RenderFrame.actors`
+and nothing else.
 
-**This is a placeholder, and its replacement is a simulation-side change**: a
-render delta channel that publishes geometry changes and actor state would let
-the feed drop polling entirely without the renderer changing at all.
+**Geometry still arrives on a snapshot request**, which is now a consistency net
+rather than the render path. The feed makes one with
+`reason: 'consistency-check'` so its requests are distinguishable from saves,
+and it asks only when the world can actually have changed: once when a session
+becomes ready, after any command is accepted, again once the simulation reaches
+the tick that command was scheduled for, when the clock *starts*, and on a
+**30-second** interval while the clock is running. A paused, idle prison costs
+exactly one request.
+
+A running one costs **two over thirty seconds** — the session's first, and the
+consistency poll at the end of the interval — and
+`tests/unit/rendering-feed.test.ts` pins that figure against the traffic a
+running worker actually puts on the boundary.
+
+> **This paragraph said the same thing before and was false when it was
+> written.** Between `d7b4a56` (2026-08-23) and the correction, the feed marked
+> its world dirty on every `simulation/clock-state` that reported a *running*
+> clock rather than on the transition into one, and
+> `SimulationWorkerStateMachine.publishClockState` posts one of those up to four
+> times a second for the life of a running session
+> (`CLOCK_STATE_PUBLISH_INTERVAL_MS`, 250 ms). So the interval was never the
+> binding constraint: thirty running seconds cost **121** requests, not 2 — and
+> not the 16 that the 2 s interval this figure replaced would have cost, which
+> makes the shipped behaviour worse than the one the slice was measured
+> against. The sentence arrived with `ea117cd` (2026-08-26), three days after
+> the line that falsified it, so the interval it promised was never once
+> observed. Each of those requests is a full `captureSessionSnapshot` on the
+> worker, a `jsonValueSchema` walk on this thread, and — because applying a
+> snapshot bumps the frame revision — a full `TileLayer` rebuild on the thread
+> that draws, which is the pass priced under *What is drawn, and what it costs*
+> as `loadedChunkCount * chunkSize^2`.
+
+### What the delta channel bought, measured
+
+At `54418b6` plus the slice-1 change, in-process, on a synthetic prison built by
+`createNewSimulationRuntime` with every chunk's terrain varied so the RLE is not
+one run per chunk. Both figures are per message, averaged over repeated runs in
+a fresh process per configuration:
+
+| | 500 prisoners, 16 chunks | 5,000 prisoners, 64 chunks |
+| --- | --- | --- |
+| `decodeWorkerToMainMessage(simulation/snapshot)` | 10.40 ms | 44.53 ms |
+| ...of which `isJsonValue` on the bundle | 9.79 ms | 45.39 ms |
+| `decodeWorkerToMainMessage(simulation/delta)` | **0.0049 ms** | **0.0051 ms** |
+| `WorldRenderView.fromSnapshot` | 0.58 ms | 1.35 ms |
+| `actorsFromSnapshot` | 0.22 ms | 0.19 ms |
+| `actorsFromDelta(decodeRenderActorsPayload(...))` | 0.05 ms | 0.32 ms |
+| session bundle, as JSON | 101,856 bytes | 596,659 bytes |
+| render-actors keyframe | 8,016 bytes | **80,016 bytes** |
+| the same actors as JSON rows | 11,811 bytes | 126,823 bytes |
+
+The delta's boundary cost is **flat in the population** -- a tenfold prison
+moves it by 0.0002 ms -- because `arrayBufferPayloadSchema` validates a schema
+id, a content type and a `byteLength` cross-check and never walks the body,
+where `jsonValueSchema` is `isJsonValue` recursing with an
+`Object.getOwnPropertyDescriptor` per array element and per object key.
+
+That walk is **essentially the whole of what decoding a snapshot costs**: the
+45.39 ms row and the 44.53 ms row are the same work measured two ways, and they
+straddle each other inside the run-to-run noise. Against the renderer's own
+decode of the same bundle — 1.35 + 0.19 + 0.002 ms for the world, the actors and
+the structures — the boundary is **97%** of the main-thread poll, which is
+#414's claim and ADR 0040's figure, reproduced. The worker's side of the delta
+is one walk of the position SoA: 0.11 ms at 5,000, against 3.94 ms to capture a
+full session bundle for one poll.
+
+What it does **not** buy, stated because the payload is where a reader will look
+for it: the record list is still one record per live actor, so the *bytes* and
+the receiver's own read still scale with the population. Only the validation
+stopped scaling. Changed-only messages are ADR 0040's slice 3, and the `flags`
+word and removal list are in the layout from slice 1 so that landing them needs
+no version bump.
+
+**Geometry is still polled**, and that is the remaining placeholder: carrying
+chunk geometry incrementally, and retiring `simulation/request-snapshot` as a
+render path altogether, is ADR 0040's slice 4.
 
 ### Actors on the frame
 
@@ -185,16 +259,31 @@ it is on.
 
 ## What is not rendered yet, and why
 
-- **Actor movement, and guards.** A snapshot is a set of positions at one
-  instant: it carries no velocity and no facing, so every prisoner is drawn with
-  the idle clip and `actor-pose.ts`'s default facing. Those are written as
-  documented defaults and labelled as such at the call site, not derived by
-  differencing two seconds-apart snapshots into an invented walk -- that would
-  be a renderer-side movement model, which architectural boundary 1 forbids.
-  Real motion is what a render delta channel would publish. Guards are the other
-  population whose tiles the bundle carries
-  (`simulation.security.guards`, as `GuardRecord.tileX`/`tileY`); decoding them
-  is a separate step with its own asset choice.
+- **Actor movement, and guards.** Every prisoner is drawn with the idle clip and
+  `actor-pose.ts`'s default facing, on both of the paths that reach the frame.
+  Those are written as documented defaults and labelled as such at the call
+  site, not derived by differencing two publications into an invented walk --
+  that would be a renderer-side movement model, which architectural boundary 1
+  forbids.
+
+  **The render delta channel is not what is missing for motion, and this
+  paragraph used to say it was.** The simulation updates an actor's position
+  only on arrival at a resolved route's destination
+  (`src/simulation/prisoners/components.ts` states the convention;
+  `action-system.ts` and `patrol-system.ts` each teleport and say so), so an
+  actor's authoritative position changes about twice per errand. A channel at
+  any cadence therefore delivers *fresher teleports*, not walking. What is
+  missing is simulation-side locomotion, which is its own decision and is not
+  taken by ADR 0040 -- and until it is taken, no cadence on this channel will
+  make an actor walk. The renderer's half is finished and proven:
+  `DemoActorFeed` produces fractional positions and real motion vectors and
+  `ActorLayer` draws them.
+
+  Guards are the other population whose tiles the simulation already holds
+  (`simulation.security.guards`, as `GuardRecord.tileX`/`tileY`), and they are
+  reachable **without** waiting for anything: the delta's record carries a
+  population ordinal for exactly this, and ADR 0040 puts guards in slice 2 with
+  their own asset choice.
 
 - **Environment art.** The 23 source sheets under
   `public/game-content/source-art/` are intake material awaiting a reviewed

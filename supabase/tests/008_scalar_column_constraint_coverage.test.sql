@@ -32,10 +32,53 @@
 -- `integer`, `bigint`, `smallint`, `numeric`, `double precision`, and
 -- `timestamp with time zone`.
 --
--- WHAT THIS SUITE DOES NOT ASSERT. Not that any bound is the right number, and
--- not that any constraint refuses anything -- suites 001, 002, 004 and 006 do
--- that for the columns they created. This one asserts coverage and
--- accountability, which no other suite holds.
+-- WHAT THIS SUITE DOES NOT ASSERT, AND WHERE THAT IS ASSERTED INSTEAD. Not
+-- that any bound is the right number, and not that any constraint refuses
+-- anything. This one asserts coverage and accountability, which no other suite
+-- holds.
+--
+-- This paragraph used to end "suites 001, 002, 004 and 006 do that for the
+-- columns they created", and that was false for nine of the thirteen
+-- constraint objects named below. It was found by mutation rather than by
+-- reading: every CHECK in `public` was dropped and re-added under the same name
+-- over the same `conkey` with a predicate admitting everything
+-- (`check (num_nonnulls(<same columns>) >= 0)`), and nine of these thirteen
+-- survived with all 287 assertions green -- `entitlement_events_quantity_check`
+-- (the SQL half of `MAX_SAVE_SLOTS_PER_GRANT`),
+-- `entitlement_events_schema_version_check`, `challenge_definitions_window`,
+-- `entitlement_events_expiry_after_occurrence`,
+-- `challenge_definitions_version_check`,
+-- `prisons_current_revision_non_negative`, `prisons_slot_index_positive`,
+-- `save_versions_revision_positive` and
+-- `save_versions_byte_size_non_negative`. This suite cannot see that, and it is
+-- right not to try: an in-place rewrite leaves the catalog entry it reads
+-- looking identical. #280 recorded the in-place-rewrite gap as a residual, and
+-- this sentence was the half of that residual that was untrue.
+--
+-- Where each of the thirteen is now driven, in both directions, verified by
+-- mutating each one alone and watching the named assertion go red:
+--
+--   suite 001  prisons_slot_index_positive, prisons_current_revision_non_negative,
+--              save_versions_revision_positive, save_versions_byte_size_non_negative
+--   suite 002  entitlement_events_quantity_check, entitlement_events_schema_version_check,
+--              entitlement_events_expiry_after_occurrence, challenge_definitions_window,
+--              challenge_definitions_version_check,
+--              challenge_submissions_challenge_version_check,
+--              challenge_submissions_ranked_score_finite
+--   suite 006  save_versions_save_schema_version_check, user_settings_schema_version_check
+--
+-- Suite 004 is no longer named here: it drives capacity arithmetic, not any
+-- constraint object this suite declares.
+--
+-- WHAT REMAINS OPEN, stated as a subject rather than as a tally so that adding
+-- a column cannot silently make it false. The mapping above is a LIST, and a
+-- list is exactly what this suite is shaped not to be: a scalar column added
+-- tomorrow gets a `mechanism` row here, this suite's rule confirms the object
+-- exists and constrains the column, and nothing anywhere will drive it. There
+-- is no rule that can demand a behavioural probe -- a probe needs a value, and
+-- only a person knows which value is one past the bound -- so the honest
+-- statement is that coverage is enforced and refusal is remembered. An
+-- `unconstrained-by-decision` entry has nothing to drive by construction.
 --
 -- EXECUTED against plain PostgreSQL via `pnpm verify:sql`.
 

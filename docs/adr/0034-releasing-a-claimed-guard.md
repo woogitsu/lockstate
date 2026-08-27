@@ -351,6 +351,50 @@ names the guard and never the claim.
 
 ### 9. The surface cannot be exercised in a session a player can start today, and that is a finding
 
+> **Update, 2026-08-26, and read it before acting on anything below: ADR 0036
+> answered this section, and §9's decision points 2 and 3 are discharged.**
+>
+> This section's load-bearing sentence — *"nothing in `src/` can hold a guard in
+> a new session"* — is **false**, and has been since `2926c54` (#398, ADR 0036,
+> v0.0.108), which landed **47 minutes** after this document was accepted at
+> `1dcee50` (v0.0.106). `src/simulation/security/default-sector.ts:253` calls
+> `targets.sectors.register(definition)`, reached through
+> `applyDefaultSecuritySector`, which `src/simulation/runtime/session-systems.ts:27`
+> imports for both a new session and a restore.
+> `DEFAULT_SECURITY_SECTOR_REQUIRED_GUARD_COUNT = 1` (`default-sector.ts:99`), so
+> the first hire is posted and held.
+> `tests/integration/security-default-sector.test.ts:154` drives that through the
+> real `HireStaff` command, and `tests/browser/app-shell.spec.ts:852-872` quotes
+> the sentence above and records in terms that *"the sentence above is false
+> now"*.
+>
+> **This matters because §9 point 2 offers the reader a course of action that is
+> now wrong.** It proposes that *"the surface should come out and the command
+> should wait for a sector"*, on the ground that it is a control for a state the
+> shipped game cannot reach. That ground is gone: `src/ui/simulation-held-guards.ts`,
+> the `'release-guard'` intent and `ReleaseGuardAssignment` are live and tested.
+> **Do not delete them on the strength of this section.** Point 3 asked for
+> exactly the fix ADR 0036 made — it became #396 — so the code did what this
+> document asked and this document was never told.
+>
+> The table below is left verbatim rather than rewritten, because what it
+> recorded was true when written and the record is worth more than a tidy page.
+> One row still holds, re-read at `c201547`: `SearchSystem.submitOrder` has no
+> caller in `src/`.
+>
+> (That sentence first named the shipped release in prose with no commit beside
+> it, and `tests/foundation/documentation-version-claim-contract.test.ts` refused
+> it: a bare current version is falsified by the very next merge's patch bump.
+> The gate #417 added caught the author of this Update writing the class of
+> defect the Update is about.)
+>
+> **Why no gate caught this.** Amending an accepted ADR moves no `Status` line,
+> and both `adr-numbering-contract.test.ts` and `adr-status-reference-contract.test.ts`
+> work from the status word — so a decision overtaken by a later decision is
+> invisible to every mechanical check in this repository. That is the trap
+> `docs/adr/STATUS-QUEUE.md` names, met again here; this Update is the only thing
+> that says so.
+
 **Stated first and plainly, because it is the most important sentence in this
 document.** The held-guards block draws nothing until the simulation reports a
 held guard, and **nothing in `src/` can hold a guard in a new session.** This was
@@ -390,10 +434,29 @@ Three things follow, and the second is the one the owner may want to overrule.
    specifically to prevent. **If the owner reads that as the wrong trade, the
    surface should come out and the command should wait for a sector.**
 3. **The real blocker is one registration, and it is not this document's.**
-   Nothing in `src/` creates a security sector, so #26's whole tier — deployment,
-   patrol, incidents, contraband search — is dark. That is a bigger finding than
+   Nothing in `src/` created a security sector, so #26's whole tier — deployment,
+   patrol, incidents, contraband search — was dark. That is a bigger finding than
    this ADR and it belongs in its own issue rather than being fixed in a
    gameplay-surface change.
+
+   **This point is now closed, and is kept in the past tense rather than
+   deleted, because it is what asked for the issue that closed it.** It became
+   **#396**, which is closed as completed by PR #398, *"Give every session a
+   security sector, derived from the world (#396, ADR 0034 decision 9)"* — the
+   decision recorded as
+   [ADR 0036](./0036-a-derived-default-security-sector.md). A new session now
+   registers a sector: `createNewSimulationRuntime` calls
+   `applyDefaultSecuritySector` (`src/simulation/runtime/new-session.ts:589`),
+   which registers the derived definition at
+   `src/simulation/security/default-sector.ts:253`, so the tier is reachable
+   from the front door. The amendment at the top of this document already said
+   the question was answered elsewhere; **this paragraph is the one that went on
+   asserting the defect, in the present tense, inside the decision a reader
+   stops at.** That is the same shape [ADR 0012](./0012-derived-identifier-reproducibility.md)
+   was corrected for in the same sweep as this — a Status or amendment recording
+   a fix while the body denies it — and finding it twice in one corpus is the
+   argument for reading a document's own headings against each other rather than
+   trusting that whoever landed the fix updated every mention of it.
 
 The simulation half of this change is fully exercised regardless:
 `tests/integration/security-guard-release.test.ts` drives all three claim kinds

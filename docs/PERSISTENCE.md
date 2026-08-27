@@ -20,6 +20,7 @@ and client-side sync/conflict policy (`src/persistence/cloud/`) are covered in
   updatedAt: number,       // unix ms, must not precede createdAt
   checksum: string,        // 16 hex chars, see "Checksum" below
   payload: {
+    masterSeed?: number,                                      // u32, #412; absent means 0
     kernel: { tick, expectedSequence, rngStates, commands },  // Kernel.snapshot()
     world: { ... },                                           // SparseWorld.snapshot()
     construction: { orders, undoStack, redoStack,              // ConstructionSystem.snapshot()
@@ -68,10 +69,12 @@ it — see the three version sections below.
 
 ### Adding an optional field without a version bump
 
-Three payload fields have been added since their section was first written --
-`construction.orders[].edge` (#74) and `construction.currentTransaction` /
-`currentTransactionId` (#108) -- and none of them bumped the schema version.
-The conditions that make that correct, rather than merely convenient, are:
+Five payload fields have been added since their section was first written --
+`construction.orders[].edge` (#74), `construction.currentTransaction` /
+`currentTransactionId` (#108), `masterSeed` (#412) and
+`simulation.contraband.intelligenceSequence` -- and none of them bumped the
+schema version. The conditions that make that correct, rather than merely
+convenient, are:
 
 - **The field is optional, and absent means what the older build already
   did.** An order with no `edge` resolves to `DEFAULT_BUILD_EDGE`; a
@@ -96,6 +99,71 @@ save from a build that never recorded the open gesture simply has no entry for
 it, so the newest gesture at the time of that save stays outside the undo
 history. The fix stops the loss; it does not reconstruct it, and a migration
 that invented an entry would be asserting a gesture the save never recorded.
+
+`masterSeed` (#412) is the fourth, and the one whose absence is unambiguous as
+a matter of *fact about the corpus* rather than of convention: production has
+never supplied another value (`src/main.ts` constructs `SessionController`
+with no `masterSeed`, and the controller takes `?? 0`), so every save written
+before the field existed was written by a session seeded at 0. The cost of not
+bumping is worth recording, because "no bump is needed" is true and "no bump
+costs nothing" is not: `.strict()` means an *older* build reading a save that
+carries the key refuses it as `invalid-shape`, where a V6 bump would have
+given the same refusal the label `unsupported-version`. Both builds refuse it;
+only the diagnosis differs. See [ADR 0038](./adr/0038-what-makes-a-save-compatible.md) §4.
+
+`simulation.contraband.intelligenceSequence` is the fifth, and its absence is
+unambiguous for the plainest reason of the five: it is what the reader already
+did. `IntelligenceLedger.loadSnapshot` derived the counter from the maximum
+surviving `intel.<n>` suffix unconditionally, so a save without the key gets
+exactly that, and the key exists because the derivation is *wrong* — `decayAll`
+deletes expired records, so the surviving maximum is a lower bound on what has
+been minted and a restored session re-minted an id the writing session had
+already used. `contrabandSectionSchema` is shared by the V3, V4 and V5
+session-systems shapes, so the key is equally valid in all three and no
+migration step has to add it. ADR 0012 category 1 is what requires the counter
+to be in the snapshot at all; `docs/DETERMINISM.md` records the divergence that
+remains for a save written before it was.
+
+### What makes a save compatible, and where a named RNG stream fits
+
+[ADR 0038](./adr/0038-what-makes-a-save-compatible.md) states the rule the
+section above is one instance of:
+
+> A save is compatible with a build when the build can interpret every section
+> the save carries, and every section the build needs and the save omits has
+> exactly one meaning. Absence is a fact about the save's age and is honoured
+> with the value the writing build would have held; a *value* the build cannot
+> interpret is a fact about the blob and is refused.
+
+`kernel.rngStates` is the place that rule had to be extended to, because a
+section can be **short** as well as absent (#415). A save that omits a named
+stream this build registers used to restore silently and then throw
+`RangeError: Unknown RNG stream` out of `Kernel.step()` at the first draw --
+between 5 and 600 ticks later depending on what the player did, and never at
+the load that caused it. `Kernel.restoreState` now **merges** the snapshot's
+streams over the ones the freshly built runtime already holds instead of
+replacing the instance:
+
+- a stream the bundle carries wins, so a restore is still exact;
+- a stream this build registers and the bundle omits keeps the state
+  `deriveXoshiroState(masterSeed, name)` gave it -- which is why `masterSeed`
+  stopped being inert, and why the two issues were answered together;
+- a stream the bundle carries and this build does not register is **kept**, so
+  loading a save never loses a stream. The repository's own
+  `save-v1-in-progress.json` carries `world.terrain`, which nothing registers.
+
+The expected set is not declared anywhere and deliberately so: the kernel
+being restored onto already holds exactly the streams this build registers,
+correctly derived, because `restoreSimulationRuntime` builds the runtime
+first. There is no registry of stream names and no second list to keep in step
+with `new-session.ts`.
+
+Two consequences for this document's own rules. Adding a named RNG stream is
+no longer a save-format change, which is what makes named streams usable as
+`docs/DETERMINISM.md` intends. And a save that is corrupted by *losing* a
+stream it genuinely had is now silently repaired rather than reported -- an
+accepted loss of signal, because the checksum is what detects a corrupted
+payload and a payload that passes it did not lose a stream in transit.
 
 ### Chunk size is bounded, and why that is a format decision
 
@@ -150,6 +218,85 @@ allocates in proportion to its own size (issue #102 measured 648 MB from a
 be — a gameplay and world-extent question with no ADR behind it yet — rather
 than a bound on a field that lies about its own cost, so it is deliberately
 not decided here.
+
+### Entity capacity is bounded at every version, for the same reason
+
+`chunkSize` was the first field found to size an allocation before anything
+checked it. It was not the only one.
+
+`payload.entities.capacity` sizes three typed arrays inside
+`upgradeEntityLiveness` (`src/persistence/save-migrations.ts`) — a
+`Uint16Array`, a `Uint8Array` and a `Uint32Array`, **7 bytes per slot** — and
+V1's schema never required the three JSON arrays to be `capacity` long, so an
+*empty* array set reaches that allocation. `decodeSaveEnvelope` runs the whole
+migration chain **before** verifying the checksum, so the checksum is no
+obstacle here either. Measured on the shipped
+`tests/fixtures/persistence/save-v1-in-progress.json` with only that field
+changed:
+
+```
+capacity 10000000   -> +70.0 MB of ArrayBuffer from a 1,566-byte envelope,
+                       then refused as migration-produced-invalid-output
+capacity 4294967295 -> RangeError: Array buffer allocation failed
+```
+
+The second line is the one that mattered. The `RangeError` escaped
+`decodeSaveEnvelope`, and `PrisonSaveRepository.loadCurrent` calls that
+unguarded once per generation — so a corrupt newest generation did not fail and
+let the walk continue, it **aborted the walk**, and the older good generation
+was never reached. `importSave` threw at the player for the same reason.
+
+V2's `entityStoreSnapshotV2Schema` has always bounded `capacity` at `0xf_ffff`;
+V1's did not. The fix mirrors V2's bound onto V1, and it narrows nothing that
+was loadable: above `0xf_ffff` a refusal was already certain, one step later,
+as `migration-produced-invalid-output`. All that moves is *when* the refusal
+happens — before the allocation instead of after it — and its label.
+
+- **`0xf_ffff` is not a number invented for a schema.** It is `INDEX_MASK`
+  (`src/simulation/entity/entity-store.ts`), the entity-id index ceiling
+  `EntityStore`'s own constructor enforces, so a store larger than this could
+  not address its own slots.
+- **No migration step and no version bump**, on #102's precedent and ADR 0038
+  §1: a *value* the build cannot interpret is a fact about the blob and is
+  refused, where an *absent section* is a fact about the save's age and is
+  honoured. The widest capacity any writer in this repository produces is
+  `DEFAULT_PRISONER_CAPACITY`, 5,000; a sweep of every `capacity` assignment in
+  `src/` and `tests/` finds nothing above it, and both checked-in V1 fixtures
+  carry 8. The narrowing removes only values no writer produced.
+- **How reachable this was is genuinely open.** There is no evidence a V1 save
+  exists in any player's IndexedDB, and if none ever shipped this has the
+  standing #102 has: a hand-edited, corrupted or synthesised file — which is
+  still a real route, through the save panel's Import control.
+
+### A migration step that throws is a verdict, not an exception
+
+The class behind that instance, and the more valuable half.
+`MigrationChain.migrate` called `step.migrate(currentValue)` unwrapped, so a
+step that threw for *any* reason broke three stated contracts at once:
+`decodeSaveEnvelope`'s "unknown or future versions, structural corruption and
+checksum mismatches each fail with a distinct, actionable error code",
+`loadCurrent`'s promise to "walk the remaining generations newest-first and
+adopt the first one that validates", and the taxonomy table below.
+
+Steps are contracted to be pure total functions, so reaching that catch means
+one is defective — but a defective step must still produce a *refusal the
+recovery walk can act on*, because the alternative is that one bad generation
+costs the player every older good one. `migrate` now returns
+`migration-step-threw` at the version the step started from, with the thrown
+value's own words in the message.
+
+`migration-step-threw` is its own code rather than a reuse of
+`migration-produced-invalid-output`, whose meaning is precisely "the step *ran*
+and its output failed the destination schema" — a step that threw produced no
+output for a schema to reject. Adding it is additive: every consumer of the
+union is non-exhaustive (`describeImportResult` ends in a `default:` arm,
+`loadCurrent` treats any `ok !== true` alike), and the player-facing sentence
+is unchanged.
+
+This is ADR 0038 §5 applied one boundary earlier: *"whatever is refused is
+refused at restore, and is never an `internal-error`"* — a save-compatibility
+condition is a declared verdict. §5 says it for the restore boundary; the
+decode boundary owes its caller the same thing.
 
 ### What is deliberately excluded from the payload
 
@@ -649,6 +796,22 @@ Three changes, and only one of them would have needed a bump on its own:
   asserts one that overlaps its neighbours. An instance with no rectangle is
   attributed no objects, so its capacity stays `0` — its
   pre-object-placement behaviour, and therefore not a regression.
+
+  **Issue #337 gave this field a second consumer, and no new field.**
+  `RoomZoningService.unzone` used to grow each covered tile into the connected
+  run of tiles holding the same room *type*, so two cells zoned as two separate
+  drags were one region and removing one removed both. It now resolves each
+  covered tile through `roomInstanceContaining` — the plane narrows the tile to
+  a room type, the rectangle names the instance — and clears that instance's
+  rectangle. The issue proposed storing an instance id per tile in the zoning
+  plane and correctly called that a save-schema question; it is not needed, and
+  adding it would have re-created exactly the shape the third bullet below
+  removes, a persisted value derivable from state it could disagree with. So
+  **#337 changed nothing in this format: no field, no section, no version
+  bump.** `SAVE_SCHEMA_VERSION` stays at 5. A V4 row's absent rectangle keeps
+  its own meaning here too: nothing resolves to such an instance, so its tiles
+  fall to the same-type fill they always used, which is what keeps a restored
+  V4 room removable rather than permanent.
 - **A room instance loses `capacity` and `objectCapabilities`.** This is what
   forces the bump: `capacity` was a *required* field, so removing it changes
   the shape. Both are now pure functions of (placed objects, room bounds, the
@@ -668,6 +831,13 @@ fails the test instead of quietly migrating a value it had assumed away.
 
 `supabase/migrations/` is untouched: a save-schema version is a client-side
 payload shape and nothing about it reaches the database.
+
+**V5 gained one more optional field after it shipped.** `masterSeed` (#412,
+[ADR 0038](./adr/0038-what-makes-a-save-compatible.md) §4) is not part of what
+V5 changed relative to V4; it was added later under "Adding an optional field
+without a version bump" above. A V5 save written before it exists is still a
+valid V5 save and still loads, which is the whole content of the claim that no
+bump was needed.
 
 ## V4: need levels are stored scaled (#259)
 
@@ -1151,10 +1321,11 @@ single generic failure:
 
 | Code | Meaning |
 | --- | --- |
-| `invalid-shape` | Not an object, missing/non-numeric `saveSchemaVersion`, or fails its declared version's schema (includes malformed/truncated saves, `updatedAt < createdAt`, and a `world.chunkSize` above `WORLD_CHUNK_SIZE_LIMIT`). |
+| `invalid-shape` | Not an object, missing/non-numeric `saveSchemaVersion`, or fails its declared version's schema (includes malformed/truncated saves, `updatedAt < createdAt`, a `world.chunkSize` above `WORLD_CHUNK_SIZE_LIMIT`, and an `entities.capacity` above `0xf_ffff` at any version). |
 | `unsupported-version` | `saveSchemaVersion` is newer than the latest version this build knows about. |
 | `no-migration-path` | A declared or intermediate version has no registered schema/migration (e.g. version `0`, or a gap in the chain). |
 | `migration-produced-invalid-output` | A migration step ran but its output failed the destination version's schema — a bug in the migration, not the input. |
+| `migration-step-threw` | A migration step threw instead of returning, so there was no output for a schema to reject. Distinct from the row above because it says something different to whoever has to fix it, and because the alternative — letting the exception escape — aborts `loadCurrent`'s recovery walk instead of failing one generation. |
 | `checksum-mismatch` | The envelope parses and migrates cleanly, but its checksum does not match its payload — corruption, not a shape problem. |
 
 ## Size hook
@@ -1378,7 +1549,14 @@ missing or fails validation, it walks the remaining generations newest-first
 and adopts the first one that validates — healing `currentGenerationId` and
 dropping the confirmed-corrupt generation(s) so the pointer does not force
 the same recovery scan on every subsequent load. `no-valid-generation` is
-returned only when nothing in the retained window validates.
+returned only when nothing in the retained window validates, and in that case
+nothing has been deleted: the deletion runs through `recoverToGeneration`,
+which is reached only after a generation has decoded.
+
+Its optional `skip` set (`LoadCurrentOptions`) is how a caller that judges a
+generation by something this method cannot see — a restore that threw — asks
+for the next candidate without one being deleted to get there. See "Retired on
+success, not on refusal" below.
 
 #### Demotion also covers saves that decode and cannot be restored (#103)
 
@@ -1409,14 +1587,23 @@ The chain it breaks: `handleInitialize` wraps `restoreSimulationRuntime` in a
 catch-all and reports *every* exception out of it as `snapshot-incompatible`,
 so a bug in this build's own restore code is indistinguishable from a bad
 blob; `WorkerSessionHost` turns that code into a
-`SnapshotRestoreRejectedError`; `loadPrison` demotes the generation and tries
-the next-newest. A cause of that shape is deterministic, so it rejects every
-generation in the window. Measured on `main` at v0.0.112: **three good
-generations became zero in one load**, and the prison stayed unloadable
-afterwards even once the failure was removed, because nothing was left to
-load. With the floor the same load leaves the oldest generation in place, and
-a build that can restore it loads the prison again
-(`tests/integration/session-restore-failure.test.ts`, "never the last copy").
+`SnapshotRestoreRejectedError`; `loadPrison` acts on it. A cause of that shape
+is deterministic, so it rejects every generation in the window. Measured on
+`main` at v0.0.112, when the walk demoted each generation as it was refused:
+**three good generations became zero in one load**, and the prison stayed
+unloadable afterwards even once the failure was removed, because nothing was
+left to load. With the floor the same load left the oldest generation in
+place, and a build that could restore it loaded the prison again.
+
+The floor is now the second belt rather than the first. What the same load
+costs today is nothing at all — see "Retired on success, not on refusal"
+below, which is the rule that stops it, and
+`tests/integration/session-restore-failure.test.ts`, "a deterministic refusal
+costs no generation at all", which measures it. The floor still stands
+underneath: `loadPrison` can no longer reach it, because the generation that
+restored is always retained, but it is what any other caller of
+`demoteGeneration` runs into and what catches a future walk that forgets the
+rule.
 
 It costs the player nothing but a refused load. A prison whose only generation
 cannot be restored and a prison with an empty window both answer
@@ -1438,8 +1625,50 @@ after** an older one has validated, and when nothing in the window validates
 `loadCurrent` deletes nothing at all. Demotion was the one path here that
 could empty a window.
 
-**Three things this does not settle, none of them decidable inside
-implementation code:**
+#### Retired on success, not on refusal (#403 (d))
+
+**A generation refused by the host is retired only once a *different*
+generation has actually restored.** That is the decode path's rule, stated
+above, applied to the one path in this file that did not follow it — and it is
+the whole of the difference between all-but-one and none.
+
+The walk used to advance *by deleting*: `loadCurrent` re-derives its candidate
+list from metadata on every call, so it kept returning the same generation
+until one was retired, and retiring one deletes it. `loadCurrent` now takes a
+`skip` set (`LoadCurrentOptions`) — generations the caller has tried and cannot
+use, for a reason schema, migration and checksum cannot see. They are passed
+over as if they were not retained: not returned, and not retired to get past
+them. `SessionController.loadPrison` accumulates its refusals into that set,
+and calls `demoteGeneration` for each of them **after** a generation has
+restored, newest-first, so the pointer `demoteGeneration` heals lands on the
+generation that just restored.
+
+Why a success is what earns the deletion: another generation went through the
+same restore code, on the same build, moments later, and came back a running
+simulation. That is the strongest available evidence that what is wrong is the
+*save* and not the build — the distinction the worker's catch-all cannot draw,
+and the one the whole of #403 turns on. Absent that evidence, nothing is
+deleted:
+
+| Cause of the refusal | Before | Now |
+| --- | --- | --- |
+| Deterministic (a code fault, or a shape no generation carries correctly) | every generation but one deleted | **none deleted**; `no-valid-generation`, window intact |
+| This save only (a genuinely bad newest generation) | that generation deleted, older one loaded | unchanged: that generation deleted, older one loaded |
+
+The second row is why this is not simply "delete less": #103's requirement that
+an unrestorable generation must not stay current for ever is unchanged, and
+`tests/integration/session-restore-failure.test.ts`'s "demotes the unrestorable
+generation, restores the previous one on the same worker" still pins it.
+
+Two consequences worth stating. A failed load now writes **nothing** — no
+deletion and no pointer move — so a prison that cannot be loaded is exactly as
+it was before the attempt. And the deterministic case retries every generation
+on every load rather than one, which costs a handful of refused restores on a
+recovery path that runs once per load; that is the price of not deleting saves
+a fixed build can still read.
+
+**Two things this does not settle, neither decidable inside implementation
+code:**
 
 1. **Classifying the failure.** A schema/checksum failure is a fact about the
    blob; an unexpected exception is a fact about our code, and only the first
@@ -1458,18 +1687,17 @@ implementation code:**
    `.strict()`, so a record written by a newer build makes `list()` refuse the
    whole prison list on an older one (see `CorruptSlotMetadataError` above).
    Un-pointing without deleting is not an option for the reason stated above.
-3. **Demoting only once a fallback has actually restored** — the decode path's
-   own rule, applied to restore failures. It would cost *no* generations
-   instead of all-but-one, and needs the walk to advance by skipping tried
-   generations rather than by deleting them (`loadCurrent` currently returns
-   the same generation until one is retired), which retires
-   `demoteGeneration`'s only production caller.
+The third — demoting only once a fallback has actually restored — is settled,
+and is the section above. It also removes most of what (2) was for: after it, a
+deterministic failure deletes nothing, so there is nothing left to quarantine
+in the case quarantine was designed for.
 
 Who calls it is deliberately narrow: `SessionController.loadPrison` demotes
 **only** on a `SnapshotRestoreRejectedError`, the error a host raises when the
-*snapshot* was refused. A host that timed out, was never started or has gone
-away propagates unchanged and costs no generation — demoting a good save
-because the worker was busy would be the more expensive mistake.
+*snapshot* was refused, and only once another generation has restored. A host
+that timed out, was never started or has gone away propagates unchanged and
+costs no generation — demoting a good save because the worker was busy would be
+the more expensive mistake.
 
 ### Autosave
 
@@ -1744,18 +1972,27 @@ pending command queue intact, seed determinism, and both fault paths.
   rather than starting an overlapping save.
 - `loadPrison` sends the validated envelope payload to the host and reports
   whether recovery fell back to an earlier generation. When the host *rejects*
-  the snapshot it demotes that generation and tries the next-newest one, so
-  the newest-first walk covers restore failures and not only decode failures
+  the snapshot it sets that generation aside and asks for the next-newest one,
+  passing what it has already refused as `loadCurrent`'s `skip` set, so the
+  newest-first walk covers restore failures and not only decode failures
   (#103, and "Demotion also covers saves that decode and cannot be restored"
-  above). A generation offered again after being demoted throws rather than
-  looping: demotion is what makes the walk terminate.
+  above). A generation offered again after being skipped throws rather than
+  looping: the skip set only grows, so it is what makes the walk terminate,
+  and a repository that ignored it would spin.
 
-  **The walk ends where demotion does.** A `DemotionResult` reporting that
-  nothing was retired — the last-copy floor, or a generation already outside
-  the window — ends it with `no-valid-generation`, the same answer a prison
-  with nothing loadable in it already gives, and leaves what is on disk
-  alone. See "Never the last copy" above for what that is worth and what it
-  costs.
+  **Nothing is retired until something has restored** ("Retired on success,
+  not on refusal" above). When a generation restores, every generation the
+  walk refused on the way to it is demoted, newest-first. When none does, the
+  walk ends with `no-valid-generation` — the same answer a prison with nothing
+  loadable in it already gives — having written nothing and deleted nothing.
+
+  That retirement runs *after* the session is adopted and does not fail the
+  load: the prison is restored and running, and a storage error while deleting
+  a save already known to be unrestorable costs one more refused restore on
+  the next load rather than the load the player just made. It is reported
+  through `getLastRetirementFailure()` rather than swallowed, because an error
+  nothing can observe is indistinguishable from a retirement that silently
+  stopped happening.
 
 Default autosave cadence is `DEFAULT_AUTOSAVE_INTERVAL_MS` (30s),
 justified by the measurements below rather than picked by feel — issue

@@ -69,6 +69,24 @@ export const DEFAULT_NAVIGATION_SYSTEM_OPTIONS: NavigationSystemOptions = {
 };
 
 export interface SimulationRuntime {
+  /**
+   * The u32 this session's named RNG streams were derived from
+   * (`deriveXoshiroState(masterSeed, name)`), recorded so the session can say
+   * *which run this is* (issue #412).
+   *
+   * On the runtime rather than on the `SessionController` deliberately: the
+   * authoritative simulation is what a save is captured from (AGENTS.md
+   * boundary 5), so a restored session reports the seed **its bundle** was
+   * written at, not the seed whichever host happened to be configured with.
+   * `captureSessionSnapshot` reads it from here and
+   * `restoreSimulationRuntime` feeds it back, so it survives a round trip
+   * instead of being re-supplied by the caller.
+   *
+   * It is not the only thing the seed does any more: since #415 it is also
+   * what a stream the bundle omits is re-seeded from, which is why #412 stopped
+   * being inert. See ADR 0038.
+   */
+  readonly masterSeed: number;
   readonly kernel: Kernel;
   readonly world: SparseWorld;
   readonly construction: ConstructionSystem;
@@ -647,6 +665,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   );
 
   return {
+    masterSeed,
     kernel,
     world,
     construction,

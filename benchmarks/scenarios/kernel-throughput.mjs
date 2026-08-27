@@ -1,3 +1,16 @@
+// MODELLED, NOT PRODUCTION.
+//
+// This file schedules mock systems over a tick loop it implements itself. It
+// imports nothing from `src/` -- in particular not `Kernel`
+// (src/simulation/kernel/kernel.ts), the exported production class whose name
+// this scenario's id and description used to claim outright. That is #410's
+// defect verbatim: a scenario named after a subsystem it does not import.
+// Corrected here per `docs/BENCHMARKING.md`'s scenario rule 9; the numbers
+// hold for any fixed-step scheduler and gate nothing about the real one.
+//
+// Backlog behaviour under a tick the scheduler cannot keep up with is still
+// unmeasured, by this file and by everything else.
+
 const KERNEL_THROUGHPUT_SEED = 0xabcdef12;
 
 function rotateLeft(value, shift) {
@@ -100,7 +113,7 @@ export const kernelThroughputScenario = Object.freeze({
   id: 'kernel.throughput.benchmark',
   version: 1,
   description:
-    'Evaluates headless Kernel tick loop throughput including command queue handling and deterministic multi-rate system scheduling.',
+    'MODELLED, not production: a hand-rolled fixed-step tick loop over mock systems, with its own command queue and multi-rate scheduling, measured for throughput. Imports nothing from src/ -- in particular not the production Kernel (src/simulation/kernel/kernel.ts), whose throughput this scenario does not measure.',
   seed: KERNEL_THROUGHPUT_SEED,
   profiles: Object.freeze({
     smoke: Object.freeze({
