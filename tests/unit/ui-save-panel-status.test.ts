@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_LOCALE } from '../../src/content/localization';
 import { Localizer, defaultMessageCatalogEn } from '../../src/services/localization';
+import type { PrisonSlotMetadata } from '../../src/persistence/local/store';
 import {
   type SaveMessage,
   describeActionFailure,
@@ -10,6 +11,7 @@ import {
   describeLoadFailure,
   describeRestoredScope,
   describeSaveResult,
+  orderPrisonsForDisplay,
   parseImportedSave,
 } from '../../src/ui/save-panel';
 import { SAVE_PANEL_MESSAGE_KEY, SAVE_PANEL_MESSAGE_KEYS } from '../../src/ui/save-panel-messages';
@@ -417,5 +419,71 @@ describe('describeRestoredScope: honest about what a save carries', () => {
     // a save still leaves derived and in-flight state behind, and the panel
     // is where the player is told so.
     expect(text).toContain('navigation caches');
+  });
+});
+
+/**
+ * Issue #445: the order of the prison list.
+ *
+ * Reversing `SavePanel.refresh`'s comparator survived the whole suite, and
+ * put the prison the player last touched at the *bottom* of their own list --
+ * the row they want is the one furthest from where they are looking, and the
+ * defect is visible to anyone with more than one prison. Nothing anywhere in
+ * `tests/` asserted an ordering on `updatedAt` (verified by grep across
+ * `tests/**` and `src/**\/*.test.ts` at the time of writing: every hit was a
+ * fixture field, a schema-validation case or a migration passthrough).
+ *
+ * The fixture is written so that neither of the two orders that could satisfy
+ * the assertion by accident does: the expected order is not the order the
+ * records are given in, and it is not their id order in either direction.
+ * `expectedOrder` is a written-out literal, never a sort of the fixture --
+ * re-deriving it here would be the comparator under test wearing the test's
+ * clothes.
+ */
+describe('orderPrisonsForDisplay: the player\'s most recent prison is at the top (#445)', () => {
+  function slot(prisonId: string, updatedAt: number): PrisonSlotMetadata {
+    return {
+      prisonId,
+      gameVersion: '0.0.0',
+      displayName: prisonId,
+      currentGenerationId: `${prisonId}-gen`,
+      generationIds: [`${prisonId}-gen`],
+      createdAt: 1_700_000_000_000,
+      updatedAt,
+    };
+  }
+
+  /** Given in an order that is neither by id nor by `updatedAt`. */
+  const stored: readonly PrisonSlotMetadata[] = [
+    slot('prison-d', 1_700_000_003_000),
+    slot('prison-a', 1_700_000_002_000),
+    slot('prison-c', 1_700_000_001_000),
+    slot('prison-b', 1_700_000_004_000),
+  ];
+  const givenOrder = ['prison-d', 'prison-a', 'prison-c', 'prison-b'];
+  const expectedOrder = ['prison-b', 'prison-d', 'prison-a', 'prison-c'];
+
+  it('is a fixture no accidental ordering can satisfy', () => {
+    // The guard that keeps the case below meaningful if this fixture is ever
+    // edited: an assertion that happens to agree with the order the records
+    // arrive in, or with their ids, proves nothing about the comparator.
+    const ids = [...givenOrder].sort();
+    expect(givenOrder).toEqual(stored.map((prison) => prison.prisonId));
+    expect(expectedOrder).not.toEqual(givenOrder);
+    expect(expectedOrder).not.toEqual([...givenOrder].reverse());
+    expect(expectedOrder).not.toEqual(ids);
+    expect(expectedOrder).not.toEqual([...ids].reverse());
+    expect(new Set(stored.map((prison) => prison.updatedAt)).size).toBe(stored.length);
+  });
+
+  it('lists the prisons newest first', () => {
+    expect(orderPrisonsForDisplay(stored).map((prison) => prison.prisonId)).toEqual(expectedOrder);
+  });
+
+  it('leaves the list the controller handed it untouched', () => {
+    // `listPrisons` returns a view of a list the controller may keep, so
+    // rendering must not reorder it as a side effect.
+    orderPrisonsForDisplay(stored);
+    expect(stored.map((prison) => prison.prisonId)).toEqual(givenOrder);
   });
 });

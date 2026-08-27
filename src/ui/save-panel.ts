@@ -355,6 +355,28 @@ export function newPrisonId(): string {
 }
 
 /**
+ * The order the prison list is rendered in: **most recently played first**.
+ *
+ * A separate exported function rather than an inline `sort` inside `refresh`
+ * because that is the only shape this rule can be proven in `pnpm test`:
+ * `refresh` writes to a real `document`, so the sole place it runs is
+ * `tests/browser/`, and the ordering therefore had no assertion anywhere
+ * (issue #445). Reversing the comparator survived the entire suite while
+ * sorting the player's most recent prison to the bottom of their own list.
+ *
+ * The input is copied before sorting. `SessionController.listPrisons` hands
+ * back a `readonly` view of a list it may keep, and sorting in place would
+ * reorder the caller's array as a side effect of rendering.
+ *
+ * Ties keep the order storage listed them in -- `Array.prototype.sort` is
+ * required to be stable -- which is a real outcome only for two saves written
+ * inside the same millisecond.
+ */
+export function orderPrisonsForDisplay(prisons: readonly PrisonSlotMetadata[]): readonly PrisonSlotMetadata[] {
+  return [...prisons].sort((a, b) => b.updatedAt - a.updatedAt);
+}
+
+/**
  * A deliberately minimal DOM save/load panel -- the first real consumer of
  * the local-first persistence stack, and the piece issue #19 was left open
  * for ("wiring the repository into the app... there's no session/save UI
@@ -546,7 +568,7 @@ export class SavePanel {
       return;
     }
 
-    for (const prison of [...prisons].sort((a, b) => b.updatedAt - a.updatedAt)) {
+    for (const prison of orderPrisonsForDisplay(prisons)) {
       const item = document.createElement('li');
       item.className = 'save-panel__item';
       if (prison.prisonId === activeId) item.dataset.active = 'true';
