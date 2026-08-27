@@ -106,6 +106,12 @@ document supports; the honest options are to correct the sentence, or to make
 two orders can never disagree. The first is a documentation fix; the second is a
 behaviour change to a boundary the HUD already depends on.
 
+> **Answered on 2026-08-27 — see "Decision, 2026-08-27" at the end of this
+> document. The paragraph above is left exactly as written, because it is the
+> question the decision was taken against, and one of its two premises did not
+> survive being measured: guarding `submitCommand` would not have made the
+> sentence true.**
+
 ### 2. The kernel has no tick rate. `FixedStepClock` has a 50 ms *simulated* step, and the wall-clock rate is 20, 40 or 80 ticks per second
 
 "Fixed Step Pacing" opens:
@@ -221,3 +227,186 @@ and serialized" is exact. `snapshot()` includes every stream (`kernel.ts:226`).
 `Math.random`, `Date.now` and `new Date(` do not occur anywhere under
 `src/simulation/`; the single ambient time source is `() => performance.now()`
 injected at the worker boundary (`src/simulation/worker/worker.ts:24`).
+
+## Decision, 2026-08-27: `submitCommand` keeps admitting a command scheduled behind one already queued
+
+*This closes the one question §1 of the amendment above left open. It changes no
+code and no persisted format; it records a **decision not to change one**, which
+is a decision and is recorded as one so nobody re-opens it from the same
+sentence. Status is untouched: this ADR remains **Accepted**. Read at `fa12249`
+(v0.0.121); every `file:line` below was opened on that tree, and every number
+quoted was produced by running the shipped classes rather than reasoned about.*
+
+### The delegation this rests on
+
+The owner delegated the judgement in these words, quoted verbatim:
+
+> "Z tym ci.yml to nie wiem, żrob by było dobrze z tymi ADR tak samo, zrób dobrze."
+>
+> ("About that ci.yml I don't know, do it so that it's right — same with those
+> ADRs, do it right.")
+
+That is **an approval of the judgement being delegated, not of the text below.**
+Nobody has signed off on this reasoning; the owner asked for it to be got right
+and has not read it. A reader who disagrees with it should treat the decision as
+open and say so, rather than treating this heading as settled precedent.
+
+### The decision
+
+`Kernel.submitCommand` **keeps** its three refusals — duplicate sequence,
+sequence gap, and `executeAtTick < tick` (`kernel.ts:119-137`) — and gains no
+fourth. A command whose `executeAtTick` is below the highest tick already in the
+queue is admitted, exactly as today, and the queue keeps dispatching in ascending
+`(executeAtTick, sequence)` order.
+
+### Every caller, and what each one submits
+
+There is **one** caller in `src/`:
+`src/simulation/worker/state-machine.ts:786`, inside `handleSubmitCommand`, which
+forwards `commandId`, `sequence`, `executeAtTick` and the packed command straight
+off a `simulation/submit-command` message. Nothing else in `src/` calls it —
+`Kernel.restore` and `restoreState` deliberately do not (below), and the only
+other occurrences of the name in `src/` are the Zod schema for that message
+(`src/simulation/protocol/types.ts:249`) and comments. `grep -rn submitCommand
+src tests` puts every other call site under `tests/`, and a test-only need would
+not have been a product need in any case.
+
+So the census is really a census of one message, and its `executeAtTick` is
+computed in exactly one place:
+`SimulationCommandSender.projectExecuteTick` (`src/ui/simulation-commands.ts:127-131`),
+read at `:202`. It returns `lastTick` while the clock is paused and
+`lastTick + ceil(elapsed × speed / 50) + leadTicks` while it runs, with
+`DEFAULT_LEAD_TICKS = 20` (`:64`).
+
+**Yes, something legitimately submits a tick below the highest already queued,
+and this is the timing.** The player gives an order while the clock runs — it is
+projected twenty-odd ticks into the future — and then pauses. `handleSetClock`
+answers with the kernel's exact tick (`state-machine.ts:763-773`), the HUD's
+projection collapses onto it, and the next order given during that pause carries
+a *lower* tick and a *higher* sequence than the one still queued. Driven through
+the shipped sender against the shipped worker, with a real `Kernel` and a real
+`FixedStepClock` inside it, that is:
+
+- order one accepted as `queued`, sequence 0, `scheduledForTick` **62**;
+- the pause reported at tick **42**;
+- order two accepted as `queued`, sequence 1, `scheduledForTick` **42**.
+
+Both `queued`, no refusal, and the kernel then holds sequence 1 at the head.
+`tests/determinism/command-queue-admission.test.ts` is that run.
+
+### What the refusal would have caught, stated at its strongest
+
+Not nothing. `Undo` and `Redo` travel in the same command stream and count
+positions in it, so a pause that backdates an order can invert an undo against
+the order it was meant to undo. Measured on a real `ConstructionSystem` with the
+real command handler: place `first` at tick 0; while running, place `second`
+projected to tick 21; pause and press Undo, projected to the current tick 1. The
+Undo dispatches at tick 1, **before** `second` exists, and the outcome is
+`{"first":"cancelled","second":"assigned"}` — the player's earlier wall is
+cancelled and the wall they were trying to take back gets built. That is a real,
+reachable, player-visible defect and it is the strongest case for the guard.
+
+It is still not a case *for this guard*, for four reasons, in descending order of
+weight.
+
+**1. The refusal cannot establish the invariant it exists for.** §1 above offered
+"correct the sentence, or make `submitCommand` refuse" as two routes to the same
+end. They are not. `Kernel.restore` states outright that it bypasses this
+validation — *"Bypassing submitCommand validation as this is a restore from valid
+state"* (`kernel.ts:315-316`) — `restoreState` assigns the queue directly
+(`:296`), and `kernelSnapshotSchema` validates `tick` and each `executeAtTick` as
+independent non-negative integers and never their relation
+(`src/persistence/save-schema.ts`). So a restored session can hold exactly the
+shape the front door would be refusing, no downstream reader could rely on the
+guard, and this ADR's original sentence would have stayed false for restored
+sessions either way. **Correcting the sentence was never one of two options; it
+was the only one.**
+
+**2. The cost is not one refusal, it is every refusal for the length of the
+pause.** `FixedStepClock.pump` returns `0` while paused
+(`src/simulation/clock/fixed-step-clock.ts:68`) and the worker's tick loop runs
+only in state `running` (`state-machine.ts:269-282`), so while the player is
+paused *nothing drains the command queued ahead*. It stays the highest tick in
+the queue, and every further order given during that pause meets the same
+refusal. Pausing to give orders carefully is the ordinary way this game is
+played; the guard turns the build controls off for the whole of it.
+
+**3. It refuses the first order after a load.** A save taken while orders are in
+flight carries them, and this repository's own determinism scenario is exactly
+that shape: captured at tick 0 with build orders still pending at ticks 30 and
+70. The restored session arrives `paused` at tick 0, so the player's very first
+action meets a queue whose highest tick is seventy ahead of anything the HUD will
+aim at. Not hypothetical: applying the guard as a mutation broke
+`tests/unit/worker-status-counts.test.ts`'s *"keeps carrying the standing refusal
+beside counts that do move"*, which is that flow.
+
+**4. A refusal costs the HUD its sequence baseline.** `SimulationCommandSender`
+clears `sequenceSynced` on any rejection (`src/ui/simulation-commands.ts:243-246`)
+because a rejection means its idea of the sequence is wrong in an unknown
+direction. So each refusal disables `submit` until the next `simulation/snapshot`
+re-baselines it — the correct response to a real desync, and an expensive one for
+a command that was never desynced.
+
+### The four shapes of "refuse", and why the shape does not rescue it
+
+- **Throw**, which is what `submitCommand` already does. Safe at this boundary,
+  and worth saying because it is easy to assume otherwise: the fault path #415
+  and #424 exist for is a throw *inside the tick loop*
+  (`state-machine.ts:307`), which becomes a terminal `internal-error`.
+  `handleSubmitCommand` catches separately (`:804-821`) and posts a `rejected`
+  command-result with `recoverable: true`, and `COMMAND_REJECTION_FAULT_CODES`
+  maps the kind to a fault code exhaustively (`:180-184`) — a fourth
+  `CommandRejectionKind` fails to compile until it is mapped, which is the design
+  working. Rejected on cost, not on mechanism.
+- **Drop.** Refused for the reason already recorded in `step()`: ADR 0009 makes
+  the command stream replay evidence and `Undo`/`Redo` count positions in it, so
+  discarding a command puts a hole in the log a replay reproduces from. Dropping
+  is corrupting where late is merely late.
+- **Clamp** — raise `executeAtTick` to the highest queued. Deterministic, and it
+  adds no state: the clamp would be a pure function of the queue. But it makes
+  the worker's acknowledgement untrue — `handleSubmitCommand` reports
+  `scheduledForTick: msg.payload.executeAtTick` (`:801`), the tick the main
+  thread *asked* for, so a clamp silently disagrees with what the HUD is told
+  unless that line changes too. And it puts the fix in the wrong layer: the
+  kernel would be second-guessing a projection it cannot see.
+- **Reschedule to the current tick.** Strictly worse than clamping: the same
+  silent rewrite, and it does not even fix the inversion, because the command
+  ahead is still ahead.
+
+### Determinism, and why this is not a save-schema question
+
+This decision adds no field, no map iteration, no clock read and no random draw.
+The comparator is unchanged and total, both its keys are already persisted, and
+every client restoring the same bundle dispatches in the same order — which the
+amendment above already established, and which `docs/DETERMINISM.md` already
+states correctly: *"The pending queue is sorted by `(executeAtTick, sequence)` —
+a total order — both on submission and on restore, so a restored queue dispatches
+identically to a live one."* No save version moves, and neither
+`docs/PERSISTENCE.md` nor ADR 0038 is engaged. That the code-adjacent document had
+the key right all along is itself part of the argument: this ADR was the only
+place that said otherwise.
+
+### What is left open, and is the owner's rather than this document's
+
+The inversion in "What the refusal would have caught" is **not fixed by this
+decision and is not closed by it.** Its correct home is one module over, in
+`SimulationCommandSender.projectExecuteTick`: return
+`Math.max(projection, highestTickThisSenderHasSubmitted)`. That makes the two
+orders agree at the source, refuses nothing, adds one cached echo to a class that
+holds only cached echoes, and touches neither the kernel, the save format nor
+determinism. It is a change to *when a paused order runs* — it would run in the
+order the player gave it rather than on the first step after play — so it is a
+product decision, it needs its own issue, and it is deliberately not taken here.
+It would also be incomplete on its own, because a restored queue can hold
+commands ahead of anything that sender has submitted; one more reason the
+sentence had to be corrected rather than the code.
+
+### The guard
+
+`tests/determinism/command-queue-admission.test.ts` pins this decision, and was
+mutation-tested against the guard it rejects. With that guard added to
+`submitCommand`, the end-to-end case reports `Cannot schedule command behind one
+already queued: tick 42 < queued 62`, two of its four cases fail, and so do
+`tests/unit/kernel.test.ts` and `tests/unit/worker-status-counts.test.ts`. The
+dispatch *ordering* stays pinned where it was, in
+`tests/determinism/kernel-system-order.test.ts`.

@@ -129,6 +129,15 @@ export class Kernel {
         `Command sequence gap: expected ${this._expectedSequence}, got ${sequence}`,
       );
     }
+    // `this._tick`, and deliberately **not** the highest `executeAtTick`
+    // already queued. A fourth refusal for that was considered and declined:
+    // the HUD legitimately backdates an order relative to the queue whenever a
+    // player gives one and then pauses inside its lead, and because a paused
+    // clock runs no tick, the command ahead never drains -- so refusing would
+    // disable input for the whole pause, and for the first order after loading
+    // a save that carries pending commands. See ADR 0020, *"`submitCommand`
+    // keeps admitting a command scheduled behind one already queued"*, and
+    // `tests/determinism/command-queue-admission.test.ts`.
     if (executeAtTick < this._tick) {
       throw new CommandRejectedError(
         'past-tick',
@@ -173,10 +182,15 @@ export class Kernel {
      * preference here:
      *
      * - Execute late, rather than skip.
-     *   [ADR 0020](../../../docs/adr/0020-deterministic-kernel.md): "At the
-     *   start of a tick, **all due commands** are dispatched in strict
-     *   sequence order before any systems run." A command whose tick has
-     *   passed is due, so `!==` never implemented that sentence for it.
+     *   [ADR 0020](../../../docs/adr/0020-deterministic-kernel.md), as
+     *   corrected by its 2026-08-27 amendment: "at the start of a tick, every
+     *   command whose `executeAtTick` has arrived or passed is dispatched
+     *   before any system runs, in ascending `(executeAtTick, sequence)`
+     *   order." A command whose tick has passed is due, so `!==` never
+     *   implemented that sentence for it. The load-bearing half is unchanged
+     *   by the amendment -- when #422 quoted this sentence the wording was
+     *   "all due commands ... in strict sequence order", and it was the "all
+     *   due" that decided this branch, not the key.
      * - And rather than *drop*, which was the other defensible reading.
      *   ADR 0009 makes the command stream replay evidence, and `Undo`/`Redo`
      *   travel in that same stream and count positions in it. Discarding a
@@ -198,6 +212,18 @@ export class Kernel {
      * Validating that relation at the save boundary would make this branch
      * unreachable again, and it belongs there rather than here.
      * `tests/determinism/kernel-system-order.test.ts` pins all three claims.
+     *
+     * **A live queue satisfying `executeAtTick >= this._tick` is not the same
+     * property as its ticks being non-decreasing in `sequence`, and only the
+     * first is guaranteed.** `submitCommand` compares the incoming tick against
+     * the *current* tick and deliberately not against the highest tick already
+     * queued, so a later command can sit ahead of an earlier one and dispatch
+     * first -- which the HUD reaches whenever a player gives an order and then
+     * pauses inside its twenty-tick lead. That is a decision and not an
+     * oversight: ADR 0020's section *"`submitCommand` keeps admitting a command
+     * scheduled behind one already queued"* records it, with what refusing
+     * would have cost, and `tests/determinism/command-queue-admission.test.ts`
+     * guards it.
      */
     while (true) {
       const nextCommand = this._commands[0];
