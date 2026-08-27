@@ -14,11 +14,37 @@
 
 ## Status
 
-**Proposed.** Decision 1 is the owner's own ruling, quoted below; decisions 2–8
-are the shape that ruling has to take in this codebase, and they are the
-author's judgement under the owner's standing delegation to decide autonomously
-and do it properly ("jakościowo, nie tanio"). A reader who disagrees with any of
-2–8 should treat it as open.
+**Accepted, 2026-08-27, on decisions 1 and 8; decisions 2–7 remain the author's
+judgement and stay open to a disagreeing reader.**
+
+Decision 1 is the owner's own ruling, quoted below. Decisions 2–8 are the shape
+that ruling has to take in this codebase, written under the owner's standing
+delegation to decide autonomously and do it properly ("jakościowo, nie tanio").
+
+**Decision 8 was put back to the owner rather than kept**, because the author
+named it as this document's weakest claim: the ruling settles the *outcome*
+(`zone` refuses an open room) and not what `enclosed` *means*, and no other
+reading of `enclosed` is implementable without first building the region query
+`TopologyManager` does not have. The owner was asked directly whether a room
+drawn inside a larger sealed hall should stay zonable, was shown the cost —
+every room needs its own closed boundary, so an open-plan sub-room becomes a
+subdivision — and answered **no: the room's own boundary must be closed.** So
+the redefinition is the owner's, not an inference, and the "false negative" this
+document argues is a chosen definition is now recorded as such.
+
+That closes the reversal route this document offered. It is still cheap —
+nothing is written to disk that a reversal would have to migrate back — but it
+is no longer the expected outcome.
+
+**The edge-of-owned-land consequence below is superseded rather than answered.**
+This document records that a room flush against the edge of owned land can never
+be sealed, because its south and east boundaries live on tiles the player cannot
+build on, and that the ruling promotes that from a wrong readout to a wrong
+refusal. Asked to choose between counting an unowned neighbour as a wall and
+leaving the refusal correct, the owner rejected the framing and asked for a
+different world model instead: owned land as open ground, with the player
+raising a building — foundation and walls — and rooms living inside it. That is
+a successor ADR, and until it lands this consequence stands unfixed and known.
 
 ## Context
 
