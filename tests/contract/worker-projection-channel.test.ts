@@ -342,25 +342,49 @@ describe('every declared projection has a publish route the worker really answer
   });
 
   it('never decodes a window larger than the protocol allows', () => {
-    // The ceiling is on the schema, not in the handler, so an over-large
-    // request never reaches the worker at all. Asserted here because the
-    // handler deliberately does not re-check it, and a schema that lost the
-    // bound would otherwise be invisible.
-    const oversized = decodeMainToWorkerMessage({
-      protocolVersion: SIMULATION_PROTOCOL_VERSION,
-      messageId: 'oversized',
-      kind: 'simulation/request-projection',
-      payload: { projectionId: 'hud/prisoner-roster', limit: MAX_PROJECTION_PAGE_LIMIT + 1 },
-    });
-    expect(oversized.ok).toBe(false);
+    /*
+     * The ceiling is on the schema, not in the handler, so an over-large
+     * request never reaches the worker at all. Asserted here because the
+     * handler deliberately does not re-check it, and a schema that lost the
+     * bound would otherwise be invisible.
+     *
+     * **The figure is pinned, and the pair below is written out.** #444 item 3:
+     * the two cases here used to be `MAX_PROJECTION_PAGE_LIMIT + 1` refused and
+     * `MAX_PROJECTION_PAGE_LIMIT` accepted, and nothing else. That is the
+     * production constant put through the production comparison, so it holds
+     * for *any* value the constant takes -- exactly the shape #375 fixed for
+     * the three sibling constants (`CLOCK_STATE_PUBLISH_INTERVAL_MS`,
+     * `STATUS_COUNTS_PUBLISH_INTERVAL_MS`, `RENDER_DELTA_PUBLISH_INTERVAL_MS`),
+     * and the fourth was missed. Measured: `500 -> 5000` left this file 11/11
+     * green, ten times the largest legal response with nothing to notice.
+     *
+     * So the ceiling is asserted as a literal and the boundary is stated in
+     * numbers that do not move with it. The derived pair is kept beside them
+     * because it is the half that still reads as the contract; the literals are
+     * the half that fails when the contract changes.
+     */
+    expect(
+      MAX_PROJECTION_PAGE_LIMIT,
+      'the written-out bounds below are the ceiling itself -- retuning it is a protocol change, so change these numbers deliberately rather than letting them follow',
+    ).toBe(500);
 
-    const atCeiling = decodeMainToWorkerMessage({
-      protocolVersion: SIMULATION_PROTOCOL_VERSION,
-      messageId: 'at-ceiling',
-      kind: 'simulation/request-projection',
-      payload: { projectionId: 'hud/prisoner-roster', limit: MAX_PROJECTION_PAGE_LIMIT },
-    });
-    expect(atCeiling.ok).toBe(true);
+    const decodeWithLimit = (messageId: string, limit: number): boolean =>
+      decodeMainToWorkerMessage({
+        protocolVersion: SIMULATION_PROTOCOL_VERSION,
+        messageId,
+        kind: 'simulation/request-projection',
+        payload: { projectionId: 'hud/prisoner-roster', limit },
+      }).ok;
+
+    // Written out. 501 rows is a refusal and 500 is not, whatever the constant
+    // says.
+    expect(decodeWithLimit('oversized-literal', 501)).toBe(false);
+    expect(decodeWithLimit('at-ceiling-literal', 500)).toBe(true);
+
+    // And the same boundary read off the constant, which is what a reader
+    // checks the two literals against.
+    expect(decodeWithLimit('oversized', MAX_PROJECTION_PAGE_LIMIT + 1)).toBe(false);
+    expect(decodeWithLimit('at-ceiling', MAX_PROJECTION_PAGE_LIMIT)).toBe(true);
   });
 
   it('rejects an id the vocabulary does not declare, at the decoder', () => {

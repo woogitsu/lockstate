@@ -111,6 +111,10 @@ export const STATUS_COUNTS_PUBLISH_INTERVAL_MS = 500;
  * because it is also what keeps `deltaMessageSchema`'s `tick > baseTick`
  * satisfiable: `baseTick` is the previous publication's tick, so publishing
  * twice at one tick would be a message the main thread's decoder refuses.
+ * Stronger in a second sense measured by #444 item 4: here the tick test really
+ * fires with the interval open -- 31 times across the tick-loop test files, on
+ * the first wake of a session, when `_deltaPublishedAtMs` is still `-Infinity`
+ * -- whereas the same two lines in `publishClockState` never do.
  *
  * A fifth of the counts' interval and two and a half times the clock's,
  * because the three readouts have different jobs. The counts are levels a
@@ -323,10 +327,55 @@ export class SimulationWorkerStateMachine {
    * that says nothing new is noise. A *control* change is reported by the
    * correlated reply in `handleSetClock` instead, so pausing is never missed
    * just because the tick stood still.
+   *
+   * **The interval is the gate; the equality check is belt-and-braces** (#444
+   * item 4). Both sentences above, and ADR 0003's amendment ("at most every
+   * 250 ms and only when the tick has moved"), read as though the two
+   * conditions each rule out cases the other admits. Measured, the second rules
+   * out none:
+   *
+   * - `publishClockState` is called from `onTickLoop` and nowhere else, and
+   *   `onTickLoop`'s timer exists only while `running` -- `transition` starts
+   *   it for `running` and clears it for every other state, so the `paused`
+   *   arm of that method's own guard is unreachable too.
+   * - The only route into `running` is `handleSetClock`, which calls
+   *   `notePublished(kernel.tick, now)` immediately after `transition`. So
+   *   `_publishedTick` and `_publishedAtMs` are always a *matched pair*, set at
+   *   a moment when the loop was not running.
+   * - From there the interval opens at `now - _publishedAtMs >= 250`, and the
+   *   kernel steps at least once per 50 ms of wall time: `FixedStepClock(50)`,
+   *   `SIMULATION_SPEEDS` is `{1, 2, 4}` so ×1 is the slowest, and the 5-tick
+   *   budget per 15 ms wake is far above the ~1 tick per 3 wakes ×1 asks for.
+   *   At least five ticks have therefore run before the interval opens.
+   *
+   * Deleting the equality check changed not one published message across the
+   * 15 test files that drive the tick loop (151 tests). Instrumented instead of
+   * inferred: of 3,038 entries to this method, all with `state === 'running'`,
+   * 221 returned here on the unmoved tick and **none** of those 221 had the
+   * interval open -- the largest `now - _publishedAtMs` on this path was 45 ms
+   * against a 250 ms interval.
+   *
+   * The check stays. A defensive branch with no case behind it is not a defect;
+   * a sentence claiming it is load-bearing is, which is what this comment
+   * fixes. It also stops being decorative the moment `CLOCK_STATE_PUBLISH_INTERVAL_MS`
+   * drops below a tick of wall time, or a speed below ×1 joins
+   * `SIMULATION_SPEEDS` -- neither of which anything currently forbids.
+   *
+   * **`publishRenderDelta`'s identical-looking check is not in this position**,
+   * which is the useful contrast rather than a caveat. Nothing resets
+   * `_publishedDeltaTick`/`_deltaPublishedAtMs` the way `notePublished` resets
+   * this pair, so on the first wake of a session `_deltaPublishedAtMs` is still
+   * `-Infinity`, the interval is trivially open, and the tick test is the only
+   * thing stopping a delta with `tick === baseTick` -- which
+   * `deltaMessageSchema` refuses. Measured at 31 occurrences across the same 15
+   * files. Two methods, the same two lines, and only one of them dead.
    */
   private publishClockState(nowMilliseconds: number): void {
     if (this._kernel === null) return;
     const tick = this._kernel.tick;
+    // Belt-and-braces, not the gate: see the docblock. Unreachable while
+    // `running`, because the interval below cannot open inside one tick of
+    // wall time.
     if (tick === this._publishedTick) return;
     if (nowMilliseconds - this._publishedAtMs < CLOCK_STATE_PUBLISH_INTERVAL_MS) return;
 
@@ -344,6 +393,18 @@ export class SimulationWorkerStateMachine {
     });
   }
 
+  /**
+   * The two fields `publishClockState` gates on, written together and never
+   * apart.
+   *
+   * That is load-bearing and easy to lose: `handleInitialize` and
+   * `handleSetClock` both call this, so entering `running` always leaves the
+   * pair agreeing about one moment. Writing only the timestamp -- or only the
+   * tick -- would break the argument in `publishClockState`'s docblock that its
+   * equality check cannot fire while the interval is open, and would break it
+   * silently, because that check would then start doing the work the interval
+   * is credited with (#444 item 4).
+   */
   private notePublished(tick: number, nowMilliseconds: number): void {
     this._publishedTick = tick;
     this._publishedAtMs = nowMilliseconds;
