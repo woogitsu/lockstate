@@ -410,12 +410,35 @@ describe('RoomInstanceRegistry', () => {
       // The condition every scenario in this repository is in: single-
       // occupancy cells, so every *free* instance holds nobody and every
       // rating is 0. Ties go to the lowest instance id.
+      //
+      // Both answers are now written out instead of one being compared to the
+      // other (#375). Two production methods asserted to agree is a comparison
+      // whose expected side the code under test produced -- and the fixture it
+      // stood on, two identical free cells with nobody in them, rejected no
+      // candidate at all, so "the pair agrees about who is *eligible*" was a
+      // claim nothing here could reach. Every instance below is one the two
+      // must rule out for a different stated reason, or keep for one:
+      // `cell-1` sorts first and is full, `cell-2` sorts next and has no bed,
+      // `cell-3` is the tie winner and `cell-4` the tie loser. Registration
+      // order is deliberately not sorted order, so the id sort is load-bearing
+      // rather than incidental.
       const registry = new RoomInstanceRegistry();
+      registry.register({ instanceId: 'cell-4', roomCatalogId: 'room.cell', anchorTile: TILE, residentCapacity: 1, concurrentUseCapacity: 1, objectCapabilities: ['sleep-surface'] });
+      registry.register({ instanceId: 'cell-1', roomCatalogId: 'room.cell', anchorTile: TILE, residentCapacity: 1, concurrentUseCapacity: 1, objectCapabilities: ['sleep-surface'] });
+      registry.register({ instanceId: 'cell-3', roomCatalogId: 'room.cell', anchorTile: TILE, residentCapacity: 1, concurrentUseCapacity: 1, objectCapabilities: ['sleep-surface'] });
       registry.register({ instanceId: 'cell-2', roomCatalogId: 'room.cell', anchorTile: TILE, residentCapacity: 1, concurrentUseCapacity: 1, objectCapabilities: [] });
-      registry.register({ instanceId: 'cell-1', roomCatalogId: 'room.cell', anchorTile: TILE, residentCapacity: 1, concurrentUseCapacity: 1, objectCapabilities: [] });
+      registry.assign('cell-1', 11);
 
-      expect(registry.findBestAvailable('room.cell', () => 0)?.instanceId).toBe(registry.findAvailableResidence('room.cell')?.instanceId);
-      expect(registry.findBestAvailable('room.cell', () => 0)?.instanceId).toBe('cell-1');
+      // With a bed required, `cell-1` is out on capacity and `cell-2` on the
+      // capability, so agreeing means agreeing on `cell-3` and not merely on
+      // whatever both happen to say.
+      expect(registry.findAvailableResidence('room.cell', 'sleep-surface')?.instanceId).toBe('cell-3');
+      expect(registry.findBestAvailable('room.cell', () => 0, 'sleep-surface')?.instanceId).toBe('cell-3');
+
+      // And with nothing required, which is the form the old case tested:
+      // `cell-1` is still full, and `cell-2`'s missing bed no longer matters.
+      expect(registry.findAvailableResidence('room.cell')?.instanceId).toBe('cell-2');
+      expect(registry.findBestAvailable('room.cell', () => 0)?.instanceId).toBe('cell-2');
     });
 
     it('still respects capacity and the required object capability', () => {
