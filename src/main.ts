@@ -72,6 +72,9 @@ import { DEFAULT_LOCALE } from './content/localization';
 import { defaultMessageCatalogEn } from './services/localization';
 import { Localizer } from './services/localization/localizer';
 import { createBrandBadge } from './ui/brand-badge';
+import { createTelemetryConsentPrompt } from './ui/telemetry-consent-prompt';
+import { createTelemetryPipeline } from './services/telemetry/pipeline';
+import type { CancelScheduledPump } from './services/telemetry/pump';
 import { BUILD_IDENTITY } from './shared/build-identity';
 import './styles.css';
 
@@ -825,6 +828,53 @@ function requireSimulation(commands: SimulationCommandSender | undefined): Simul
  * resolves, and before this line it would have painted the raw key.
  */
 const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
+
+/**
+ * Where telemetry is allowed to go, and by default nowhere.
+ *
+ * Two compile-time strings, replaced by `tooling/telemetry-config.mjs` through
+ * `vite.config.ts`'s `define`, exactly as `src/shared/build-identity.ts`'s two
+ * are and for the same reason: a bundle has no environment to read. They are
+ * read *here* because choosing the environment is the composition root's job --
+ * the same sentence this file already carries about
+ * `resolveBrowserKeyValueStore()`.
+ *
+ * `import.meta.env` is deliberately not used. It would be the more idiomatic
+ * Vite spelling and it is refused by
+ * `tests/foundation/documentation-claims-contract.test.ts`, whose scan for a
+ * module reaching Supabase configuration matches the expression itself; a
+ * `define` keeps that gate meaning what it says.
+ *
+ * Both are guarded with `typeof`, the one form that does not throw for an
+ * identifier that was never declared: in the default Vitest environment there
+ * is no `define` at all, so the guard takes the empty branch and telemetry
+ * resolves to absent -- which is also what an ordinary `pnpm build` with
+ * nothing configured produces.
+ */
+declare const __LOCKSTATE_TELEMETRY_INGEST_PATH__: string | undefined;
+declare const __LOCKSTATE_TELEMETRY_ENVIRONMENT__: string | undefined;
+
+/**
+ * The telemetry pipeline, or nothing at all.
+ *
+ * `createTelemetryPipeline` constructs no transport, no sink, no recorder and
+ * no session id when the configuration above is absent, which is every build
+ * in this repository today. Nothing here reaches the network, and no consent
+ * prompt is mounted below, because asking a player to consent to a collection
+ * that cannot happen is the defect ADR 0044 named: the consent strings shipped
+ * inside the bundle for months while the code that would render them did not.
+ */
+const telemetry = createTelemetryPipeline({
+  ingestion: {
+    path: typeof __LOCKSTATE_TELEMETRY_INGEST_PATH__ === 'string' ? __LOCKSTATE_TELEMETRY_INGEST_PATH__ : undefined,
+    environment:
+      typeof __LOCKSTATE_TELEMETRY_ENVIRONMENT__ === 'string' ? __LOCKSTATE_TELEMETRY_ENVIRONMENT__ : undefined,
+  },
+  buildVersion: BUILD_IDENTITY.id,
+  commit: BUILD_IDENTITY.commit,
+  store: resolveBrowserKeyValueStore(),
+  now: () => Date.now(),
+});
 
 /**
  * Without a worker there is no simulation and no session, so there is
@@ -2166,4 +2216,43 @@ const mountedHud =
 // interface there is no screen for a save panel to be on.
 if (simulation !== undefined && mountedHud !== undefined) {
   void bootPersistence(simulationWorkers, mountedHud);
+}
+
+/*
+ * The telemetry surface, mounted only when there is somewhere for telemetry to
+ * go.
+ *
+ * Both halves are here rather than inside `bootPersistence`: consent and
+ * diagnostics have nothing to do with whether IndexedDB opened or whether a
+ * worker started, and #82 is the standing lesson about putting an unrelated
+ * mount inside a function that runs only on the happy path.
+ *
+ * The pump is what makes `BatchingTelemetrySink`'s timer-free design work at
+ * all. It is deliberately an idle callback and never a frame callback: ADR
+ * 0010 and ADR 0008's T11 both put trusted-service work off the tick and frame
+ * paths, and `requestIdleCallback` is the one browser primitive that promises
+ * it. Safari has not shipped it, so the fallback is a plain timeout -- a
+ * telemetry flush that runs slightly less politely is better than one browser
+ * never flushing.
+ */
+if (telemetry.enabled && appRoot !== null) {
+  const pipeline = telemetry.pipeline;
+
+  if (pipeline.shouldAskForConsent) {
+    appRoot.append(
+      createTelemetryConsentPrompt({
+        localizer,
+        onDecision: (draft) => pipeline.applyConsentDecision(draft),
+      }).element,
+    );
+  }
+
+  pipeline.startPump((run, delayMs): CancelScheduledPump => {
+    if (typeof requestIdleCallback === 'function') {
+      const handle = requestIdleCallback(() => run(), { timeout: delayMs });
+      return () => cancelIdleCallback(handle);
+    }
+    const handle = setTimeout(run, delayMs);
+    return () => clearTimeout(handle);
+  });
 }
