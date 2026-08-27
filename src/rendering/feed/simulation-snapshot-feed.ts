@@ -38,7 +38,11 @@ import { EMPTY_RENDER_FRAME, type RenderFeed, type RenderFrame } from './render-
  * asks only when the world can actually have changed:
  *
  * - once when a session becomes ready, to get the initial world;
- * - after any command is accepted, since commands are what change geometry;
+ * - after any command is accepted, since commands are what change geometry,
+ *   and again once the simulation reaches the tick that command was scheduled
+ *   for, which is when it actually changed any;
+ * - when the clock *starts*, since that is when orders queued against a paused
+ *   prison run;
  * - on an interval only while the simulation clock is running.
  *
  * A paused, idle session costs exactly one request. The interval is tens of
@@ -87,6 +91,17 @@ export interface SimulationSnapshotFeedOptions {
  * point of the slice: each poll costs the worker a full `captureSessionSnapshot`
  * and costs this thread a `jsonValueSchema` walk of the result, so this is
  * fifteen times fewer of both.
+ *
+ * **That last sentence was false from the day it was written and is true now.**
+ * It arrived with `ea117cd` (2026-08-26) beside a `simulation/clock-state` case
+ * that had marked the world dirty on the running *state* since `d7b4a56`
+ * (2026-08-23), and the worker publishes one of those up to four times a second
+ * while the clock runs -- so this interval was never the binding constraint and
+ * a thirty-second session cost 121 requests rather than 2, which is worse than
+ * the 16 the 2 s default it replaced would have cost. `handleMessage` now reads
+ * the transition, and `tests/unit/rendering-feed.test.ts` pins the count over
+ * thirty running seconds against the worker's own publication cadence, which is
+ * the trace the case that missed this did not put on the wire.
  */
 const DEFAULT_POLL_INTERVAL_SECONDS = 30;
 const DEFAULT_REQUEST_TIMEOUT_SECONDS = 15;
@@ -100,6 +115,16 @@ export class SimulationSnapshotFeed implements RenderFeed {
   private pendingMessageId: string | undefined;
   private pendingSince = 0;
   private nextPollAt = Number.POSITIVE_INFINITY;
+  /**
+   * The tick an accepted command is scheduled for, while this feed is still
+   * waiting for the simulation to reach it.
+   *
+   * A tick of *this* session, so it is cleared with one for the reason
+   * `lastAppliedTick` is: a tick number carried across a session boundary is a
+   * statement about a different simulation, and a second prison starting at
+   * tick 0 would otherwise look like the first one's order having already run.
+   */
+  private awaitedCommandTick: number | undefined;
   private lastAppliedTick: number | undefined;
   /**
    * The tick of the last applied `simulation/delta`, tracked separately from
@@ -167,20 +192,71 @@ export class SimulationSnapshotFeed implements RenderFeed {
         // under the second one's name.
         this.lastAppliedTick = undefined;
         this.lastDeltaTick = undefined;
+        this.awaitedCommandTick = undefined;
         break;
 
       case 'simulation/delta':
         this.applyDelta(message.payload);
         break;
 
-      case 'simulation/clock-state':
-        this.clockRunning = message.payload.clock.mode === 'running';
-        // A clock that just started may have executed queued commands.
-        if (this.clockRunning) this.dirty = true;
+      case 'simulation/clock-state': {
+        const running = message.payload.clock.mode === 'running';
+        // The **transition**, not the state. A clock that just started may have
+        // executed commands queued while it was paused; a clock that is merely
+        // still running has changed nothing this message reports, and the
+        // worker posts one of these up to four times a second for the life of
+        // a running session (`CLOCK_STATE_PUBLISH_INTERVAL_MS`). Reading the
+        // state here asked for a full session snapshot on every one of them --
+        // 121 requests over thirty running seconds where this file's own header
+        // promised 2, each costing a `captureSessionSnapshot`, a
+        // `jsonValueSchema` walk and, through the frame revision, a whole
+        // `TileLayer` rebuild on the thread that draws.
+        //
+        // Both routes are read, and they carry different halves of the answer:
+        // the unsolicited publication is silent while the tick stands still, so
+        // a resume that changes only the control is reported by the correlated
+        // reply `handleSetClock` sends and by nothing else.
+        if (running && !this.clockRunning) this.dirty = true;
+        this.clockRunning = running;
+
+        // The other half of "a command changed the world": *when* it did.
+        //
+        // A command is scheduled a lead ahead of the tick it was sent at
+        // (`SimulationCommandSender.projectExecuteTick`, twenty ticks -- one
+        // second at the kernel's 20 Hz), so the poll its acceptance triggers
+        // below captures a world it has not touched yet. Without this the
+        // player's wall would appear on the next thirty-second consistency
+        // poll, which is what makes the transition rule alone insufficient
+        // rather than merely stricter.
+        //
+        // Only on an unsolicited publication: the tick loop steps and *then*
+        // publishes, so one of these reporting `scheduledForTick` is posted
+        // after the tick that dispatched the command. `handleSetClock`'s
+        // correlated reply reports the tick without having stepped it, and
+        // treating that as the command having run would clear the wait for a
+        // snapshot taken one tick early.
+        if (
+          message.replyTo === undefined &&
+          this.awaitedCommandTick !== undefined &&
+          message.payload.tick >= this.awaitedCommandTick
+        ) {
+          this.awaitedCommandTick = undefined;
+          this.dirty = true;
+        }
         break;
+      }
 
       case 'simulation/command-result':
-        if (message.payload.status === 'queued') this.dirty = true;
+        if (message.payload.status === 'queued') {
+          this.dirty = true;
+          // The latest scheduled tick, so a burst of orders is one wait and not
+          // a queue of them: a snapshot taken once the last has run shows all
+          // of them, and every earlier one is already in it.
+          this.awaitedCommandTick =
+            this.awaitedCommandTick === undefined
+              ? message.payload.scheduledForTick
+              : Math.max(this.awaitedCommandTick, message.payload.scheduledForTick);
+        }
         break;
 
       case 'simulation/snapshot':
@@ -194,6 +270,7 @@ export class SimulationSnapshotFeed implements RenderFeed {
         this.clockRunning = false;
         this.pendingMessageId = undefined;
         this.lastDeltaTick = undefined;
+        this.awaitedCommandTick = undefined;
         break;
 
       case 'protocol/error':

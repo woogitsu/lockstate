@@ -66,6 +66,29 @@ function snapshotReply(replyTo: string, tick: number): WorkerToMainMessage {
 }
 
 /**
+ * The unsolicited readout a running worker posts, and the message this file
+ * did not have.
+ *
+ * `SimulationWorkerStateMachine.publishClockState` posts one of these on every
+ * tick-loop wake where the tick has moved and `CLOCK_STATE_PUBLISH_INTERVAL_MS`
+ * has elapsed -- up to four a second, for the life of a running session. No
+ * `replyTo`, because nobody asked (ADR 0003 forbids an unsolicited message
+ * presenting itself as a response), which is what distinguishes it from the
+ * correlated reply `handleSetClock` sends.
+ *
+ * Every case below that claims something about a *running* clock has to lay
+ * these over its render frames, or it pins its claim on a wire trace a running
+ * worker never produces.
+ */
+const clockState = (tick: number, mode: 'paused' | 'running'): WorkerToMainMessage =>
+  ({
+    protocolVersion: SIMULATION_PROTOCOL_VERSION,
+    messageId: `clock-${String(tick)}`,
+    kind: 'simulation/clock-state',
+    payload: { tick, clock: mode === 'paused' ? { mode: 'paused' } : { mode: 'running', speed: 1 } },
+  }) as WorkerToMainMessage;
+
+/**
  * The same reply built around a caller-supplied bundle, so a test can put a
  * *populated* prison on the wire. Captured from a real runtime by the caller,
  * for the reason the file header gives: a change to the bundle shape must fail
@@ -205,12 +228,152 @@ describe('simulation snapshot feed', () => {
     feed.readFrame(0);
     client.emit(snapshotReply(client.lastRequestId, 0));
 
+    // The readouts a running worker posts while this interval elapses. Without
+    // them the case pins the interval on a wire a running session never puts
+    // on the boundary, and every `simulation/clock-state` in between is free to
+    // request a snapshot without failing anything here.
     feed.readFrame(2.5); // Would have polled under the old 2 s default.
+    client.emit(clockState(50, 'running'));
+    feed.readFrame(2.6);
+    client.emit(clockState(598, 'running'));
     feed.readFrame(29.9);
     expect(client.sent).toHaveLength(1);
 
     feed.readFrame(30);
     expect(client.sent).toHaveLength(2);
+  });
+
+  it('costs two requests over thirty running seconds, not one per clock readout', () => {
+    /*
+     * The figure `docs/RENDERING.md` prints, measured over the traffic a real
+     * running session produces rather than over `readFrame` alone: sixty render
+     * frames a second for thirty seconds, with the worker's own 250 ms
+     * `simulation/clock-state` cadence laid over them and every request
+     * answered, so the count is bounded by the feed's rule and not by the
+     * pending-request timeout.
+     *
+     * It is written out as a literal for the same reason the case above states
+     * 30: two is the *claim* -- one request to build the world when the session
+     * becomes ready, one consistency poll at t=30 -- and a count derived from
+     * the feed's own constants would hold for any rule it implements. Before
+     * this was pinned the same trace produced 121, because
+     * `simulation/clock-state` marked the world dirty on the running *state*
+     * rather than on the transition into it, and a snapshot request is a full
+     * `captureSessionSnapshot` on the worker, a `jsonValueSchema` walk on this
+     * thread and -- via the frame revision -- a full `TileLayer` rebuild on the
+     * thread that draws.
+     */
+    const client = new FakeClient();
+    const { feed } = newFeed(client);
+    // Captured once. A fresh capture per reply would make this case a
+    // measurement of `createNewSimulationRuntime` rather than of the feed.
+    const bundle = captureSessionSnapshot(createNewSimulationRuntime(7));
+
+    client.emit(ready('running'));
+    feed.readFrame(0);
+    client.emit(snapshotReplyFor(bundle, client.lastRequestId, 0));
+
+    const frames = 30 * 60;
+    let answered = 1;
+    let nextClockAtSeconds = 0.25;
+    let tick = 0;
+    for (let frame = 1; frame <= frames; frame += 1) {
+      const nowSeconds = frame / 60;
+      while (nowSeconds >= nextClockAtSeconds) {
+        // The kernel runs at 20 Hz, so a quarter second is five ticks. The
+        // number matters only in that it *moves*: a clock state whose tick
+        // stood still is one the worker would not have posted, and a snapshot
+        // at an unchanged tick is one this feed skips applying.
+        tick += 5;
+        client.emit(clockState(tick, 'running'));
+        nextClockAtSeconds += 0.25;
+      }
+      feed.readFrame(nowSeconds);
+      while (client.sent.length > answered) {
+        answered += 1;
+        client.emit(snapshotReplyFor(bundle, client.sent[answered - 1]!.messageId, tick));
+      }
+    }
+
+    expect(client.sent).toHaveLength(2);
+  });
+
+  it('polls when the clock starts, and not on the readouts saying it is still running', () => {
+    /*
+     * The transition is the event, and the state is not. A command queued while
+     * the clock was paused does not execute until the first tick after it
+     * starts (`Kernel.step` dispatches, and a paused clock does not step), so a
+     * clock that *started* genuinely can have changed the world. A clock that
+     * is merely still running has changed nothing this message reports.
+     */
+    const client = new FakeClient();
+    const { feed } = newFeed(client);
+    const bundle = captureSessionSnapshot(createNewSimulationRuntime(7));
+
+    client.emit(ready()); // Paused.
+    feed.readFrame(0);
+    client.emit(snapshotReplyFor(bundle, client.lastRequestId, 0));
+    expect(client.sent).toHaveLength(1);
+
+    client.emit(clockState(5, 'running'));
+    feed.readFrame(0.25);
+    expect(client.sent).toHaveLength(2);
+    client.emit(snapshotReplyFor(bundle, client.lastRequestId, 5));
+
+    client.emit(clockState(10, 'running'));
+    feed.readFrame(0.5);
+    client.emit(clockState(15, 'running'));
+    feed.readFrame(0.75);
+    expect(client.sent).toHaveLength(2);
+  });
+
+  it('polls again once the tick reaches a queued command, since that is when it changes the world', () => {
+    /*
+     * `SimulationCommandSender.projectExecuteTick` schedules a command a lead
+     * ahead of the tick it was sent at -- twenty ticks, a second at the
+     * kernel's 20 Hz -- so the poll the acceptance triggers captures a world
+     * the command has not touched yet. Something has to ask again once the
+     * simulation has actually reached it, and with the clock-state rule fixed
+     * to fire on the transition, nothing else would: the build would appear on
+     * the next thirty-second consistency poll.
+     *
+     * The tick the worker names in its own acceptance is what says when, so
+     * this needs no timer and no second copy of the lead.
+     */
+    const client = new FakeClient();
+    const { feed } = newFeed(client);
+    const bundle = captureSessionSnapshot(createNewSimulationRuntime(7));
+
+    client.emit(ready('running'));
+    feed.readFrame(0);
+    client.emit(snapshotReplyFor(bundle, client.lastRequestId, 0));
+
+    client.emit({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: 'result-1',
+      replyTo: 'command-1',
+      kind: 'simulation/command-result',
+      payload: { status: 'queued', commandId: 'command-1', sequence: 0, scheduledForTick: 20 },
+    } as WorkerToMainMessage);
+    feed.readFrame(0.1);
+    expect(client.sent).toHaveLength(2); // The acceptance, ahead of the effect.
+    client.emit(snapshotReplyFor(bundle, client.lastRequestId, 2));
+
+    client.emit(clockState(15, 'running')); // Not there yet.
+    feed.readFrame(0.75);
+    expect(client.sent).toHaveLength(2);
+
+    client.emit(clockState(20, 'running')); // The command has run.
+    feed.readFrame(1);
+    expect(client.sent).toHaveLength(3);
+    client.emit(snapshotReplyFor(bundle, client.lastRequestId, 20));
+
+    // And once, not on every readout after it.
+    client.emit(clockState(25, 'running'));
+    feed.readFrame(1.25);
+    client.emit(clockState(30, 'running'));
+    feed.readFrame(1.5);
+    expect(client.sent).toHaveLength(3);
   });
 
   it('polls immediately after a command is accepted, since commands change geometry', () => {

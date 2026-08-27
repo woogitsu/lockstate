@@ -142,8 +142,33 @@ and nothing else.
 rather than the render path. The feed makes one with
 `reason: 'consistency-check'` so its requests are distinguishable from saves,
 and it asks only when the world can actually have changed: once when a session
-becomes ready, after any command is accepted, and on a **30-second** interval
-while the clock is running. A paused, idle prison costs exactly one request.
+becomes ready, after any command is accepted, again once the simulation reaches
+the tick that command was scheduled for, when the clock *starts*, and on a
+**30-second** interval while the clock is running. A paused, idle prison costs
+exactly one request.
+
+A running one costs **two over thirty seconds** — the session's first, and the
+consistency poll at the end of the interval — and
+`tests/unit/rendering-feed.test.ts` pins that figure against the traffic a
+running worker actually puts on the boundary.
+
+> **This paragraph said the same thing before and was false when it was
+> written.** Between `d7b4a56` (2026-08-23) and the correction, the feed marked
+> its world dirty on every `simulation/clock-state` that reported a *running*
+> clock rather than on the transition into one, and
+> `SimulationWorkerStateMachine.publishClockState` posts one of those up to four
+> times a second for the life of a running session
+> (`CLOCK_STATE_PUBLISH_INTERVAL_MS`, 250 ms). So the interval was never the
+> binding constraint: thirty running seconds cost **121** requests, not 2 — and
+> not the 16 that the 2 s interval this figure replaced would have cost, which
+> makes the shipped behaviour worse than the one the slice was measured
+> against. The sentence arrived with `ea117cd` (2026-08-26), three days after
+> the line that falsified it, so the interval it promised was never once
+> observed. Each of those requests is a full `captureSessionSnapshot` on the
+> worker, a `jsonValueSchema` walk on this thread, and — because applying a
+> snapshot bumps the frame revision — a full `TileLayer` rebuild on the thread
+> that draws, which is the pass priced under *What is drawn, and what it costs*
+> as `loadedChunkCount * chunkSize^2`.
 
 ### What the delta channel bought, measured
 
