@@ -112,7 +112,12 @@ already sit.
 The payload is the projection's `counts` block field for field, as
 validated non-negative integers, plus the `tick` they were read at, the
 projection's own `schemaVersion` and -- since the 2026-08-24 amendment
-below -- an optional `refusal`. It is deliberately not a
+below -- an optional `refusal`. **It has carried a second optional sibling,
+`zoning`, since #312, and no amendment here records it**; `zoningNoticeSchema`
+and `statusCountsMessageSchema` in `src/simulation/protocol/types.ts` are the
+definition, and `docs/adr/STATUS-QUEUE.md` §5 carries the gap as the owner's
+call rather than an editor's. Read every sentence below that enumerates this
+payload as naming two siblings, not one. It is deliberately not a
 `versionedPayload`: that type exists to move an *opaque* `data` blob, and
 here the message kind already names which schema the payload follows, so
 declaring every field lets the boundary reject a negative or fractional
@@ -166,9 +171,16 @@ ADR 0009's determinism guarantee intact:
 driven through the real worker, publishing as it goes, to end byte-identical
 to the same sixty ticks stepped with no worker at all.
 
-No list crosses this channel: the payload is twelve integers beside at most
-one three-field refusal record, so `docs/HUD_PROJECTIONS.md` contract 5 has
-nothing to bound here yet. A projection with rows in it must be paged before
+No list crosses this channel: the payload is the `counts` block beside at
+most one refusal record and at most one zoning notice, every member of all
+three a scalar and none of them a list, so `docs/HUD_PROJECTIONS.md` contract 5
+has nothing to bound here yet. **That sentence read "twelve integers beside at
+most one three-field refusal record" and had been half-false since #312** --
+which is the same failure as the "eleven"/`344` this section spends three
+paragraphs on, one field further along, so the subject is stated here and the
+counting is left to `statusCountsSchema` and to
+`tests/unit/worker-status-counts.test.ts`, which asserts the key count and a
+ceiling on the serialized size. A projection with rows in it must be paged before
 it may be published on a timer, because a per-send cost that grows with the
 prison is the failure this cadence was chosen to avoid.
 

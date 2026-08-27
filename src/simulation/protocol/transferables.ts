@@ -51,11 +51,24 @@ export function collectProtocolTransferables(
     case 'protocol/pong':
     case 'simulation/ready':
     case 'simulation/clock-state':
-    // Eleven integers, and at most one three-field refusal record, under
-    // structured clone -- 344 bytes of JSON at the largest, measured at 5,000
-    // actors (`tests/unit/worker-status-counts.test.ts`). ADR 0003's
+    // The status-strip `counts` block under structured clone, beside at most
+    // one refusal record and at most one zoning notice. Every member is a
+    // plain integer and no member is a list, at any population -- which is the
+    // property that makes the cadence safe. `statusCountsSchema` in `./types`
+    // is what fixes the field set, and `tests/unit/worker-status-counts.test.ts`
+    // holds the two facts a number here would only duplicate: the key count of
+    // that schema, and a ceiling on the serialized payload. ADR 0003's
     // transferable policy reserves `ArrayBuffer` for payloads profiling shows
     // need ownership transfer, which this is the opposite of.
+    //
+    // This read "Eleven integers ... 344 bytes" until #444, and both halves had
+    // gone false on 2026-08-25: `zoning` joined `refusal` as a sibling of
+    // `counts`, and `stateIncomeAccruedTodayMinorUnits` made the counts twelve.
+    // ADR 0003 re-measured to 380-382 in the same change and named the failure
+    // mode it was avoiding -- "the word 'eleven' being edited to 'twelve' and
+    // the number left alone". This is the copy that was left alone, and the
+    // repair is to stop keeping a count and a measurement here at all rather
+    // than to write fresher ones.
     case 'simulation/status-counts':
     case 'simulation/command-result':
     case 'simulation/stopped':

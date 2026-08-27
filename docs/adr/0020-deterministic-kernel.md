@@ -55,11 +55,18 @@ reasoned about.*
 > At the start of a tick, all due commands are dispatched in strict sequence
 > order before any systems run.
 
-The second half is exact (`src/simulation/kernel/kernel.ts:202-216`: the drain
-loop runs to completion before the system loop begins, and the tick advances
-after both). The first half names the wrong key. `submitCommand` sorts the queue
-by `executeAtTick` **first** and by `sequence` only as the tie-break
-(`kernel.ts:141-144`), `restoreState` re-sorts the same way (`:297-300`), and
+The second half is exact: `Kernel.step()` in `src/simulation/kernel/kernel.ts`
+runs three numbered steps in order -- the `while (true)` drain loop to
+completion, then `// 2. Execute systems due at this tick`, then `// 3. Advance
+tick` and `this._tick++` (`:228-245` as of `83d9616`; this sentence cited
+`:202-216`, which #444 found had drifted onto the doc comment above the loop). The first half names the wrong key. `submitCommand` sorts the queue
+by `executeAtTick` **first** and by `sequence` only as the tie-break -- both
+sorts are written out as `if (a.executeAtTick !== b.executeAtTick) return
+a.executeAtTick - b.executeAtTick;` followed by `return a.sequence - b.sequence;`,
+in `Kernel.submitCommand` and again in `Kernel.restoreState`
+(`kernel.ts:150-153` and `:323-326` as of `83d9616`; this sentence cited
+`:141-144` and `:297-300`, which had drifted onto the past-tick refusal and onto
+a comment), and
 `Kernel.restore` a third time (`:319-322`). Sequence decides the order only
 among commands that share a tick.
 
