@@ -96,11 +96,35 @@ stable string), never a literal display name. `localization.ts`'s
 `resolveLocalizationKey(catalog, key)` looks a key up against an in-memory
 `LocalizationCatalog` and falls back to the key itself if unresolved — a
 missing translation is visible and debuggable rather than silently blank.
-There is no bundler-loaded translation pipeline yet (that belongs to a
-future UI/localization issue); `default-locale-en.ts` is the one built-in
-`en` catalog covering every `nameKey` the default room/object/staff-role
-catalogs use, enough for headless tests and any current dev UI to show a
-real label.
+`default-locale-en.ts` is the one built-in `en` catalog covering every
+`nameKey` the default room/object/staff-role catalogs use, enough for headless
+tests and any current dev UI to show a real label.
+
+**This passage used to continue: *"There is no bundler-loaded translation
+pipeline yet (that belongs to a future UI/localization issue)."* There is
+one.** `src/services/localization/` ships `MessageCatalogLoader` and
+`loadMessageCatalog` (`catalog.ts`), `Localizer` (`localizer.ts`),
+`format.ts`, `locale.ts` and the `en-XA` pseudo-locale (`pseudo.ts`) — the
+whole of ADR 0011. `src/content/localization.ts` has said the opposite since
+that layer landed (*"The actual localization runtime — fallback chains,
+plurals, `Intl` formatting, catalog loading and the pseudo-locale — lives in
+`src/services/localization/`"*), so the two content-layer documents
+contradicted each other rather than both being merely out of date.
+
+**Dated rather than merely contradicted, because the two are different
+faults.** The sentence was *true when it was written* and false three and a
+half hours later, the same day: `65b5fe2` added this document at 05:10 on
+2026-08-23, and `5979b43` added the trusted-services layer including
+`src/services/localization/` at 08:42. It is not a claim that was wrong on
+arrival; it is one that nothing revisited for the eight months since.
+
+The narrow reading that survives is worth keeping, because deleting the
+sentence outright would overcorrect: **nothing yet fetches a catalog.**
+`MessageCatalogLoader` is an interface, and the trusted-services layer performs
+no I/O at all — `tests/unit/services-layer-boundaries.test.ts` asserts exactly
+that, with an empty allow-list. So the infrastructure ships and the default
+locale is bundled; what does not exist is a wired *remote* catalog fetch, and
+that is a much smaller absence than "no pipeline".
 
 ## Feeding issue #17's room vocabulary
 
@@ -175,6 +199,29 @@ than the full final catalog" scope:
   a `permissions` list compatible with `RouteContext.permissions`, and
   `wageBand`/`skills` hooks — placeholders for issue #29's real economy and
   a future skills system, not a balanced economy themselves.
+
+**Three catalogues were missing from this list**, which had enumerated rooms,
+objects and staff roles only since it was written — the three `src/content/`
+shipped with. It now has six, and the three below are 16 of the 62 declared
+ids, so a quarter of the census was absent from the section describing the
+census. `tests/foundation/unconsumed-content-contract.test.ts` asserts the
+total exactly (`declared: 62`) and enumerates all six registries, which is why
+the number here can be stated rather than counted by hand:
+
+- **6 items** (`item-catalog.ts`): `item.brick` and `item.wood-plank`, the two
+  construction materials the buildable registry consumes and the only two
+  `PROCURABLE_MATERIALS` sells; plus `item.food-ration`, `item.clean-linen`,
+  `item.dirty-linen` and `item.waste`, which no module outside `src/content/`
+  names at all.
+- **5 contraband kinds** (`contraband-catalog.ts`): weapon, drug, phone, tool
+  and currency.
+- **5 security grades** (`security-grade-catalog.ts`): `grade.general`,
+  `grade.administrative`, `grade.medical`, `grade.high-security` and
+  `grade.staff-only`, each pairing a clearance on the same 0–10 scale as
+  `RouteContext.securityClearance` with a permission. `grade.general` is the
+  one with a `src/` consumer — `door-wooden` names it so a built door takes its
+  clearance and permission from a declared grade rather than hand-picked
+  numbers.
 
 ## What is out of scope here
 
