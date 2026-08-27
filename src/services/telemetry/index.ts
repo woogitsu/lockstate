@@ -3,6 +3,7 @@ export * from './consent';
 export * from './consent-flow';
 export * from './diagnostics';
 export * from './events';
+export * from './pump';
 export * from './recorder';
 export * from './redaction';
 export * from './sampling';
