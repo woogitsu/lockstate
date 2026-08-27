@@ -212,6 +212,38 @@ The domain is therefore **not reproducible from this repository** — it exists 
 
 The production job re-runs `pnpm verify` against the exact commit being shipped. CI having passed on `main` earlier is a statement about a different moment.
 
+### The first server entry point lands with the ingest, not before
+
+**Decided by the owner on 2026-08-27, and recorded here because this is the section a person checks before touching what serves the live site.** Nothing in this repository executes it yet: there is still no `main` in `wrangler.jsonc`, no Worker handler anywhere, and this section adds none.
+
+**What was decided.** Telemetry ingest needs the project's first server-side execution surface — a `main` entry point in `wrangler.jsonc`. The owner was offered two orders: separate staging from production first, so that a server entry point could be exercised somewhere that is not the public site; or add the Worker **together with** the ingest, as one deliberate change. **They chose the second**, with the condition that **exactly what lands on `lockstate.io` is written down and approved before the change merges**.
+
+**Why the condition is the whole of the decision.** `lockstate.io` is served by `lockstate-staging` (see "What currently serves lockstate.io" above), and the `staging` job publishes on every merge to `main` whose CI concludes `success`. The gate on that row of the table above is a **CI conclusion, not an approval**. So the merge that adds a `main` is the act that puts executing code on the public site; there is no later step at which anyone is asked. Whether the `staging` GitHub Environment carries required reviewers is a repository setting no file here can read — `deploy.yml` says so in a comment above the job, and "What can publish the staging Worker" above names environment reviewers as one of two stronger gates and says **"neither is taken here"**.
+
+#### What "approved before merge" has to contain
+
+A checklist, so the next change has one rather than a memory of this paragraph. Each item is a sentence somebody writes in the pull request and the owner says yes to; none of it is automatic.
+
+1. **What lands on `lockstate.io`.** Name the commit, and state in one line that merging it publishes a Worker with an executing `main` to the live site on the next CI success, with no further approval.
+2. **Which requests the handler claims, and what happens to the rest.** Adding a `main` puts a fetch handler in front of **every** request to the domain, the SPA shell and every fingerprinted `/assets/*` file included. Write out the paths the handler answers and state explicitly that everything else falls through to Static Assets unchanged. `assets.not_found_handling` is `single-page-application` in every environment today (`wrangler.jsonc`) and that must still be true afterwards.
+3. **What the Worker may hold.** Only what the ingest needs: the ingest path, the destination it writes validated events to, and one database credential.
+4. **What it must not hold.** Not a `service_role` key — that role may call `record_entitlement_event`, the paid-entitlement write path, so a `service_role` Worker key puts entitlements behind a public endpoint. The credential is a **dedicated least-privilege database role**, and `supabase/tests/003_data_api_grants.test.sql` gains it in the same change, because that suite names its roles as literals and will not otherwise see one. No credential of any kind under a `VITE_` name (see "Why `VITE_` is the dangerous prefix" below). No route the ingest does not need.
+5. **What it must do before it stores anything.** Server-side validation against the versioned envelope schema, and a bounded body, batch and request rate. The stored occurrence time and the weight an event carries are the **server's**, never the payload's. [ADR 0008](./adr/0008-trusted-service-boundary.md)'s 2026-08-27 amendment states why those two bind even though the ingest is outside §3, and the telemetry pipeline's own ADR lists the ingestion preconditions in full.
+6. **Whether `public/_headers` changes, stated either way.** A same-origin ingest leaves `connect-src 'self'` intact and needs no change; if a change turns out to be needed it is [ADR 0021](./adr/0021-http-response-security-headers.md)'s and the owner sees it on its own terms rather than as a side effect of telemetry.
+7. **Rollback, and how it differs from today's.** A bad static asset serves a stale page. A `main` that throws on the SPA shell takes the whole site down, on a domain whose binding is not reproducible from this repository. Say what reverts it and who can run that at 02:00.
+8. **The trap, restated because it is the one that costs the domain.** Do not reach for the `production` job as a way to try a server entry point somewhere safer first. Dispatching it transfers `lockstate.io` onto the Worker `lockstate`, which has never been deployed, and **wrangler does not warn** — it prints no diff of what currently holds the Custom Domain and asks nothing. See "What currently serves lockstate.io" above.
+9. **The ADR bullet that goes false, amended in the same commit.** See below.
+
+#### What this does to ADR 0002, and when
+
+[ADR 0002](./adr/0002-cloudflare-static-assets.md) is `Accepted`, and the sentence people expect to be the problem is not the one that is.
+
+- **The rejected alternative is honoured, not overturned.** ADR 0002 rejected *"Add a Worker server entry point now"* *"because no trusted server behavior is currently required. A placeholder server would add routing and security surface without product value."* The owner's choice is precisely **not** to add a placeholder: the entry point arrives carrying the ingest, which is the product value that rejection said was missing. What dates in that bullet is the word *"currently"*, and dating is what an ADR's alternatives are for.
+- **The Decision bullet does go false, and on a known commit.** *"Deploy the current application as an assets-only Worker with no application-server entry point"* stops being true in the commit that adds `main` to `wrangler.jsonc` — not before, and not on the day the decision to do it was recorded.
+- **This document's Contract paragraph survives untouched.** It says *"a server-side Worker entry point must not be added merely to serve the SPA"*. An ingest handler is not that, and the sentence needs no edit.
+
+**So ADR 0002 is amended when the change lands, not now** — in the same commit that adds `main`, as a dated `Amendment` section that quotes the Decision bullet rather than overwriting it, which is the form `docs/adr/README.md`'s *"An amendment to an accepted ADR"* section requires. Amending it today would put a document ahead of the code, which is the defect this corpus keeps paying for; ADR 0002's own "Operational note, 2026-08-24" is the precedent for recording a state of the world **in the commit where it is true**. What keeps the obligation from being a memory in the meantime is this section and the row in [`docs/adr/STATUS-QUEUE.md`](./adr/STATUS-QUEUE.md) §2, both of which name the bullet.
+
 ### Credentials
 
 Put every value into **GitHub Environment secrets** directly, under Settings → Environments. No token should pass through a message, a file, a commit or an issue — GitHub masks environment secrets in logs; a chat transcript does not.

@@ -173,9 +173,19 @@ exercised at all.
 | Z2 | Edge Function / Worker / `SECURITY DEFINER` SQL | server-authoritative state |
 | Z3 | Provider webhook delivered to a Z2 endpoint | only what its signature proves |
 
-Full authority table and the twelve modelled threats (T1–T12) are in
-ADR 0008. The rule they all reduce to: **a JWT proves who is asking, never
-that what they claim is true.**
+Full authority table and the modelled threats — numbered `T1` upward, each row
+naming an actor capability and the asset it reaches — are in ADR 0008. The rule
+they all reduce to: **a JWT proves who is asking, never that what they claim is
+true.**
+
+*This sentence read "the twelve modelled threats (T1–T12)" until 2026-08-27,
+when ADR 0008's amendment scoping §3 by authority added **T13** for
+unauthenticated telemetry ingest. It is rewritten to name the subject rather
+than the tally, which is `docs/AGENT_WORKFLOW.md` §4's rule and the reason it
+went false: adding a row never touches the sentence counting the rows. The old
+count is kept here rather than deleted, because a correction that erases what
+it corrected leaves the next reader unable to tell which direction the drift
+went.*
 
 ## Verified challenges (`src/services/challenges/`)
 
