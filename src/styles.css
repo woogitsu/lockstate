@@ -187,3 +187,92 @@ canvas {
   text-transform: none;
   overflow-wrap: anywhere;
 }
+
+/*
+ * Telemetry consent prompt (issue #36, ADR 0010).
+ *
+ * A card in the corner, not a modal and not an overlay: it blocks nothing,
+ * dims nothing and takes no focus, because refusing telemetry must cost a
+ * player nothing and a prompt that holds the game hostage is a dark pattern
+ * whatever its wording says. It is mounted by `src/main.ts` only when a build
+ * has an ingestion destination configured *and* no decision is on record, so
+ * on every build in this repository today it is never created at all.
+ *
+ * `z-index` sits above the HUD's rail (20) so the card is not covered by the
+ * Build panel the way the save panel once was (issue #88), and below nothing
+ * else -- there is no other fixed layer.
+ */
+.telemetry-consent {
+  position: fixed;
+  left: var(--space-3);
+  bottom: var(--space-3);
+  z-index: 30;
+  box-sizing: border-box;
+  width: min(22rem, calc(100vw - 2 * var(--space-3)));
+  padding: var(--space-3);
+  background: var(--surface-raised);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-body);
+  font-size: var(--text-size-body);
+  touch-action: auto;
+}
+
+.telemetry-consent__title {
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-size-body);
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.telemetry-consent__body {
+  margin: 0 0 var(--space-2);
+  color: var(--text-muted);
+  font-size: var(--text-size-label);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.telemetry-consent__rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+}
+
+/* The whole row is the label, so the tap target is the sentence rather than a
+   13px box -- the same reason `--tap-target` exists for the buttons below. */
+.telemetry-consent__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--tap-target);
+  cursor: pointer;
+}
+
+.telemetry-consent__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.telemetry-consent__action {
+  min-height: var(--tap-target);
+  padding: 0 var(--space-3);
+  color: var(--text-body);
+  background: var(--surface-overlay);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  cursor: pointer;
+}
+
+.telemetry-consent__action:hover {
+  background: var(--surface-active);
+  color: var(--text-heading);
+}
+
+.telemetry-consent__action:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
