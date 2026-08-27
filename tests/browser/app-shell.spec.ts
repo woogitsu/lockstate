@@ -1015,9 +1015,14 @@ interface WallSegment {
  * `SparseWorld` stores a **north** edge and a **west** edge per tile, so a
  * rectangle's south boundary is the north edge of the row *below* it and its
  * east boundary is the west edge of the column to its *right* -- tiles outside
- * the rectangle, which is why a room flush against the edge of owned land is
- * unzonable (ADR 0045, Consequences). Every rectangle these tests draw is well
- * inside the single 32x32 chunk `createNewSimulationRuntime` owns.
+ * the rectangle. That is what made a room flush against the edge of owned land
+ * unzonable (ADR 0045, Consequences), and issue #448 fixed it: an edge order is
+ * now permitted when either of the two tiles it separates qualifies, so the
+ * south and east faces of owned land are buildable. Every rectangle these tests
+ * draw is well inside the single 32x32 chunk `createNewSimulationRuntime` owns,
+ * so nothing here changed either way -- this paragraph is corrected rather than
+ * deleted because the storage fact above it is still the reason the perimeter
+ * helper below has to think in north and west.
  *
  * Deduplicated across rectangles, because two rooms that share a boundary share
  * the stored edge: the Rooms panel's second drag lands directly below the first

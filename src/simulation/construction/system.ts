@@ -1,10 +1,10 @@
 import { type SystemRegistration, type SimulationContext } from '../kernel/system';
 import { type BuildEdge, type BuildOrder, type BuildOrderFailReason, resolveBuildEdge } from './build-order';
-import { BUILDABLE_REGISTRY, edgeNumericIdFor, getBuildableDefinition } from './definition';
+import { BUILDABLE_REGISTRY, edgeNumericIdFor, getBuildableDefinition, occupiesTileEdge } from './definition';
 import { type ConstructionMaterialsProvider, UNLIMITED_MATERIALS_PROVIDER } from './materials-provider';
 import { SparseWorld } from '../world/sparse-world';
 import { type BuildabilityRequirement, canBuildAt } from '../world/buildability';
-import { type TilePosition, tileToChunk } from '../world/coordinates';
+import { type TilePosition, tileCoordinate, tileToChunk } from '../world/coordinates';
 
 export interface ConstructionSnapshot {
   readonly orders: readonly BuildOrder[];
@@ -45,6 +45,31 @@ export interface ConstructionSnapshot {
  */
 function isCancellable(state: BuildOrder['state']): boolean {
   return state !== 'cancelled' && state !== 'failed';
+}
+
+/**
+ * The other tile an edge order's edge belongs to.
+ *
+ * `BuildEdge` names only the two slots the world stores, so the tile across a
+ * `'north'` edge is the row above and the tile across a `'west'` edge is the
+ * column to the left. There is no `'south'` or `'east'` member to handle:
+ * `build-order.ts` explains at length why a caller thinking in those terms
+ * addresses the neighbouring tile instead, and this is the inverse of that
+ * translation rather than a second spelling of it.
+ *
+ * `undefined` for a location whose neighbour is not a safe integer.
+ * `PlaceBuildOrder` validates `x` and `y` as `z.number().int()` and bounds
+ * neither, so `Number.MIN_SAFE_INTEGER` is a coordinate a command can carry;
+ * `tileCoordinate` throws `RangeError` one below it, and a throw here would
+ * fault the worker out of a kernel command dispatch rather than refuse
+ * anything. The caller reads `undefined` as "no far side to fall back on",
+ * which leaves such an order refused for its own tile exactly as before.
+ */
+function tileAcrossEdge(location: TilePosition, edge: BuildEdge): TilePosition | undefined {
+  const x = edge === 'west' ? location.x - 1 : location.x;
+  const y = edge === 'north' ? location.y - 1 : location.y;
+  if (!Number.isSafeInteger(x) || !Number.isSafeInteger(y)) return undefined;
+  return { x: tileCoordinate(x), y: tileCoordinate(y) };
 }
 
 /**
@@ -241,38 +266,93 @@ export class ConstructionSystem implements SystemRegistration {
    * Then the two tile checks, in the order they were already in: a tile outside
    * the materialised world has no ownership to ask about, so `out-of-bounds` is
    * decided before `canBuildAt` is ever handed a chunk that does not exist.
+   * `admits` is that pair, asked of one tile.
+   *
+   * **For edge geometry the pair is asked of both tiles the edge separates,
+   * and either one admitting is enough** (issue #448, ADR 0047 decision 6).
+   * The world keeps one slot per edge and keeps it on the *north* and *west*
+   * side, so the south boundary of a rectangle is the north edge of the row
+   * below it and the east boundary is the west edge of the column to its
+   * right -- tiles outside the rectangle. Asking only the order's own tile
+   * therefore approved the north and west faces of owned land and refused the
+   * south and east faces: the same physical wall, on the same property line,
+   * decided by which of its two neighbours the world happened to keep the slot
+   * on. `docs/WORLD.md`'s own justification -- *"a prison is a perimeter"* --
+   * argues for the symmetric rule, and since ADR 0045 made `zone` refuse an
+   * open `enclosed` room the asymmetry was a wrong *refusal* rather than a
+   * wrong readout: a room flush against the edge of owned land could never be
+   * sealed, so it could never be zoned.
+   *
+   * Three properties of the widening, each deliberate:
+   *
+   * - **The far tile is consulted only when the order's own tile is refused**,
+   *   so the ordinary interior order costs exactly what it cost before, and a
+   *   refusal still grows no world -- `getChunk` and `canBuildAt` are reads,
+   *   and neither materialises a chunk the way a write does.
+   * - **The refusal the player is told about is still their own tile's.** It
+   *   is the tile they named and the one they can act on; reporting the far
+   *   tile's reason would answer a question nobody asked. Every refusal this
+   *   method could produce before it produces unchanged.
+   * - **Non-edge buildables are untouched.** An object is addressed by a tile
+   *   and has no far side, which is what `occupiesTileEdge` decides. It is the
+   *   predicate rather than `category === 'wall'` written out again, because a
+   *   door occupies an edge too and a second copy is how the two answers come
+   *   to disagree -- `src/main.ts` holds exactly such a copy and it already
+   *   does disagree, which `occupiesTileEdge`'s own comment now records.
+   *
+   * **What this makes reachable, stated rather than discovered.** An approved
+   * order whose own tile is in a chunk that does not exist yet writes its edge
+   * on completion, and `SparseWorld.setTopEdge` materialises the chunk to hold
+   * it -- so walling the south face of the world's frontier grows a fresh
+   * 32x32 chunk of unowned ground, which the render view draws because it draws
+   * every loaded chunk. That is a visible change and it is **not** hidden
+   * behind this fix; ADR 0047 decision 6 proposes a pre-materialised frontier
+   * ring as the way to make it deliberate, and `docs/WORLD.md` records why
+   * that is deferred rather than taken here.
    */
   public submitOrder(order: BuildOrder): void {
     if (this.orders.has(order.id)) {
       throw new Error(`BuildOrder ${order.id} already exists`);
     }
 
-    if (!BUILDABLE_REGISTRY.has(order.definitionId)) {
+    const definition = BUILDABLE_REGISTRY.get(order.definitionId);
+    if (definition === undefined) {
       order.state = 'failed';
       order.failReason = 'unknown-buildable';
       this.orders.set(order.id, order);
       return;
     }
 
-    const { chunk } = tileToChunk(order.location, this.world.tileChunkSize);
-    const chunkState = this.world.getChunk(chunk);
-    if (!chunkState) {
-      order.state = 'failed';
-      order.failReason = 'out-of-bounds';
-      this.orders.set(order.id, order);
-      return;
-    }
-
-    const buildability = canBuildAt(this.world, order.location, SUBMISSION_REQUIREMENT);
-    if (!buildability.buildable) {
-      order.state = 'failed';
-      order.failReason = SUBMISSION_FAIL_REASONS[buildability.reason] ?? 'unbuildable';
-      this.orders.set(order.id, order);
-      return;
+    const refusal = this.admits(order.location);
+    if (refusal !== undefined) {
+      const across = occupiesTileEdge(definition) ? tileAcrossEdge(order.location, resolveBuildEdge(order)) : undefined;
+      if (across === undefined || this.admits(across) !== undefined) {
+        order.state = 'failed';
+        order.failReason = refusal;
+        this.orders.set(order.id, order);
+        return;
+      }
     }
 
     order.state = 'approved';
     this.orders.set(order.id, order);
+  }
+
+  /**
+   * Whether one tile would carry this order, or the reason it would not.
+   *
+   * `undefined` means yes. The two checks are the two `submitOrder` already
+   * ran, in the order it already ran them, extracted so that both tiles of an
+   * edge can be asked the identical question -- a second copy of the pair is
+   * how the two sides of one wall would come to be judged by different rules.
+   */
+  private admits(tile: TilePosition): BuildOrderFailReason | undefined {
+    const { chunk } = tileToChunk(tile, this.world.tileChunkSize);
+    if (this.world.getChunk(chunk) === undefined) return 'out-of-bounds';
+
+    const buildability = canBuildAt(this.world, tile, SUBMISSION_REQUIREMENT);
+    if (buildability.buildable) return undefined;
+    return SUBMISSION_FAIL_REASONS[buildability.reason] ?? 'unbuildable';
   }
 
   public registerTransactionOrder(orderId: string, transactionId?: string): void {
