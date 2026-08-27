@@ -61,19 +61,29 @@ import { PROJECTION_CATALOG } from '../../src/simulation/worker/projection-catal
  * missing -- so the entry is gone and the assertion that replaced it runs the
  * other way: **there must be a painter**, and deleting the last one fails here
  * rather than quietly returning the channel to a pipe with nothing on the end
- * of it. It still does not claim that every projection is painted; **nine of the
+ * of it. It still does not claim that every projection is painted; **eight of the
  * fifteen catalogued read models have a route and no reader.**
  *
  * That number is stated with the way to re-derive it, because it is a tally and
  * this file's whole subject is claims that rot. `PROJECTION_IDS`
- * (`src/simulation/protocol/types.ts:314-330`) has fifteen members; grepping all
- * fifteen as string literals across `src/ui/` and `src/rendering/` returns
- * **six**, so fifteen minus six is nine. The six are `hud/room-list` and
- * `hud/room-detail` (`simulation-room-needs.ts:172,179`), `hud/held-guards`
- * (`simulation-held-guards.ts:148`), `hud/pending-deliveries`
- * (`simulation-pending-deliveries.ts:149`), `hud/prisoner-population`
- * (`simulation-intake.ts:162`) and `hud/build-queue`
- * (`simulation-build-queue.ts:146`). `src/rendering/` matches none.
+ * (`src/simulation/protocol/types.ts`, the tuple `PROJECTION_IDS`) has fifteen
+ * members; grepping all fifteen as string literals across `src/ui/` and
+ * `src/rendering/` returns **seven**, so fifteen minus seven is eight. The seven
+ * are `hud/room-list` and `hud/room-detail` (`simulation-room-needs.ts`),
+ * `hud/held-guards` (`simulation-held-guards.ts`), `hud/pending-deliveries`
+ * (`simulation-pending-deliveries.ts`), `hud/prisoner-population`
+ * (`simulation-intake.ts`), `hud/build-queue` (`simulation-build-queue.ts`) and
+ * `hud/staff` (`simulation-staff-coverage.ts`). `src/rendering/` matches none.
+ *
+ * **This said "nine of the fifteen" and "six", and both were right when written.**
+ * `src/ui/simulation-staff-coverage.ts` is the seventh reader (ADR 0048
+ * consequence 1): the Staff panel now renders how many guards the prison asks
+ * for against how many it has, which is the requirement `DeploymentSystem`
+ * scales with occupancy and which reached no surface at all before it. The
+ * `file:line` citations that used to sit beside each reader are gone rather than
+ * renumbered, for `docs/AGENT_WORKFLOW.md` §4's reason: a line number into a file
+ * under active edit is the least durable citation here, and every one of these
+ * pointed at a `request(` call that a single inserted comment moves.
  *
  * **This said "ten", and the arithmetic slip is the interesting part rather than
  * the digit.** Six ids are read by *five* modules, because
@@ -126,6 +136,20 @@ import { PROJECTION_CATALOG } from '../../src/simulation/worker/projection-catal
  * simulation and never reached this thread at all; this projection is what
  * carries it out, together with the one fact the roster cannot answer on its own
  * -- which of the two `'on-search'` claimants holds the guard.
+ *
+ * The sixth is `src/ui/simulation-staff-coverage.ts`, over `hud/staff`, and it
+ * is the first whose subject is neither a readout of what the prison holds nor
+ * an id a control aims at, but a **warning**. ADR 0048 made a riot reachable in
+ * a prison a player can build and scaled `requiredGuardCount` with occupancy, so
+ * a prison that outgrows its guards riots; its own Consequences record that
+ * `StaffCoverageRowViewModel` carried `required`/`assigned`/`shortage` and no
+ * panel rendered any of it, which left the build-up invisible. Measured in a
+ * 12-bed prison driven through the real command path: the report reads
+ * `required: 1` from the first admission through the eighth and `required: 2` on
+ * the tick the ninth lands -- 12,788 ticks before that prison's first riot. The
+ * reader carries the summed totals rather than the per-sector rows, because
+ * `applyDefaultSecuritySector` derives exactly one sector for every session a
+ * player can start.
  *
  * The third is `src/ui/simulation-intake.ts`, over `hud/prisoner-population`,
  * and it is the first one about *people* rather than about the building: it
@@ -193,6 +217,7 @@ const PAINTERS = [
   'simulation-intake.ts',
   'simulation-pending-deliveries.ts',
   'simulation-room-needs.ts',
+  'simulation-staff-coverage.ts',
 ] as const;
 
 const catalogSource = read(CATALOG_FILE);

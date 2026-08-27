@@ -29,6 +29,7 @@ import {
   type HudBuildableViewModel,
   type HudHandle,
   type HudHeldGuardsViewModel,
+  type HudStaffCoverageViewModel,
   type HudIntakePipelineViewModel,
   type HudIntent,
   type HudPendingDeliveriesViewModel,
@@ -48,6 +49,7 @@ import { hudZoningFromWorkerMessage } from './ui/simulation-zoning';
 import { BuildQueueReader } from './ui/simulation-build-queue';
 import { IntakePipelineReader } from './ui/simulation-intake';
 import { HeldGuardsReader } from './ui/simulation-held-guards';
+import { StaffCoverageReader } from './ui/simulation-staff-coverage';
 import { PendingDeliveriesReader } from './ui/simulation-pending-deliveries';
 import { RoomNeedsReader } from './ui/simulation-room-needs';
 import { SimulationCommandSender } from './ui/simulation-commands';
@@ -1085,6 +1087,26 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     client === undefined
       ? undefined
       : new HeldGuardsReader(client, (staffRoleId) => defaultStaffRoleRegistry.getById(staffRoleId)?.nameKey);
+  /**
+   * The sixth reader on #104's channel, and the first whose subject is a
+   * *warning* rather than a readout or a control
+   * ([ADR 0048](../../docs/adr/0048-what-a-sectors-occupants-are.md)
+   * consequence 1).
+   *
+   * What it makes visible is the requirement ADR 0048 decision 3 put on the
+   * derived sector: one guard per eight prisoners standing on owned land, as a
+   * floor over whatever the `DeploymentSchedule` authored. That number moves
+   * from 1 to 2 on the tick the ninth prisoner is admitted -- measured, in a
+   * prison built through the real command path -- and until this reader it
+   * reached nothing. `hud/staff` was catalogued and unread; `HeldGuardsReader`
+   * above says so in its own header, having needed more than this projection
+   * could give it. This block needs exactly what it gives.
+   *
+   * No lookup is handed over, unlike the two readers above it: the block renders
+   * three integers and three message keys of the HUD's own, so there is no
+   * content name for the composition root to resolve.
+   */
+  const staffCoverageReader = client === undefined ? undefined : new StaffCoverageReader(client);
   let activeTab: HudTabId = INITIAL_HUD_SHELL_STATE.activeTab;
 
   /**
@@ -1208,6 +1230,42 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       // button pointed at a roster that may not exist. The failure reaches no
       // control, because the player pressed nothing.
       .catch(() => applyHeldGuards(undefined));
+  };
+
+  /**
+   * Puts the coverage figures on the view model, or takes them off. The same
+   * absent-property dance the others do, and for the same reason: "nothing has
+   * asked" and "the prison has the guards it asks for" are different facts, and
+   * only the second is a statement about the prison (ADR 0048).
+   */
+  const applyStaffCoverage = (next: HudStaffCoverageViewModel | undefined): void => {
+    if (next === undefined) {
+      if (viewModel.staffCoverage === undefined) return;
+      const { staffCoverage: _cleared, ...withoutStaffCoverage } = viewModel;
+      viewModel = withoutStaffCoverage;
+    } else {
+      viewModel = { ...viewModel, staffCoverage: next };
+    }
+    hud?.update(viewModel);
+  };
+
+  const refreshStaffCoverage = (): void => {
+    if (staffCoverageReader === undefined || activeTab !== 'security') return;
+    void staffCoverageReader
+      .read()
+      .then((next) => {
+        // `undefined` is "a read was already in flight", not an answer, so it
+        // must leave what is on screen alone rather than blanking it.
+        if (next !== undefined) applyStaffCoverage(next);
+      })
+      // A refusal, a timeout, or a worker that went away. The block comes off
+      // rather than staying, for the reason the readouts above do and with a
+      // sharper edge than most: it is a *warning*, and a warning nothing is
+      // answering for is worse than no warning -- a green "Covered" left
+      // standing over a prison that stopped reporting would be the class of lie
+      // this layer exists to avoid. The failure reaches no control, because the
+      // player pressed nothing.
+      .catch(() => applyStaffCoverage(undefined));
   };
 
   const refreshRoomNeeds = (): void => {
@@ -1375,12 +1433,14 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       applyIntakePipeline(undefined);
       applyPendingDeliveries(undefined);
       applyHeldGuards(undefined);
+      applyStaffCoverage(undefined);
     } else {
       refreshRoomNeeds();
       refreshBuildQueue();
       refreshIntakePipeline();
       refreshPendingDeliveries();
       refreshHeldGuards();
+      refreshStaffCoverage();
     }
   });
 
@@ -1480,6 +1540,13 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           // exactly the same terms (ADR 0034).
           if (activeTab === 'security') refreshHeldGuards();
           else applyHeldGuards(undefined);
+          // And how many guards the prison asks for against how many it has, on
+          // the same tab and the same terms (ADR 0048). Arriving asks at once:
+          // waiting up to 500ms for the next counts publication would mean a
+          // player who opened this tab *because* they suspected they were short
+          // sees an empty block first.
+          if (activeTab === 'security') refreshStaffCoverage();
+          else applyStaffCoverage(undefined);
           // And the intake readout on the tab the Intake panel lives on, on
           // the same terms as both: arriving asks at once rather than waiting
           // up to 500ms for the next counts publication, and leaving takes the

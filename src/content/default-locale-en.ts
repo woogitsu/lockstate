@@ -546,6 +546,23 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.security.held-more': 'and {count} more',
   'hud.security.held-hint': 'A released guard stays hired and goes back to the pool.',
 
+  // The Staff panel's coverage block (ADR 0048). `hud.security.coverage-summary`
+  // is assigned against required, in the shape `hud.status.occupancy-value` set
+  // for a figure with a ceiling. The three badge words name three different
+  // prisons rather than three shades of one, and the two hints that follow a
+  // shortage name the action instead of restating the diagnosis -- the hire
+  // control is the next block down. `{count}` is the shortage, so it is the
+  // number of presses; both sentences are worded to read correctly at one as
+  // well as at several.
+  'hud.security.coverage': 'Guard coverage',
+  'hud.security.coverage-summary': '{assigned} of {required}',
+  'hud.security.coverage-met': 'Covered',
+  'hud.security.coverage-met-hint': 'This prison has the guards it asks for.',
+  'hud.security.coverage-short': 'Understaffed',
+  'hud.security.coverage-short-hint': 'Hire {count} more to cover this population.',
+  'hud.security.coverage-unguarded': 'Unguarded',
+  'hud.security.coverage-unguarded-hint': 'Nobody is on duty. Hire {count} to cover this population.',
+
   // What a refused control says (issue #207). Four comments in `src/` claimed
   // the HUD reported a refusal "on the control that was pressed" while the
   // only consumer of the failure was a `console.warn`, so a "Place order" with

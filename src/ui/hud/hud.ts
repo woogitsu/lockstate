@@ -1613,6 +1613,12 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // itself uses -- the panel decides the sentences, and this line decides
     // nothing.
     staffPanel.setHeldGuards(next.heldGuards);
+    // And how many guards the prison asks for against how many it has, on
+    // identical terms (ADR 0048). The requirement is `DeploymentSystem`'s, the
+    // panel decides which of three things to say about it, and this line
+    // decides nothing -- which is the whole reason the HUD may render a figure
+    // it could not have computed.
+    staffPanel.setCoverage(next.staffCoverage);
     // And where the arrivals are, on identical terms: pulled, absent when
     // nothing asked, and passed straight through. The projection decided how
     // many are at each stage and which stage is terminal; the panel decides the

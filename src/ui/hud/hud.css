@@ -820,6 +820,41 @@
 
 .hud-staff__note { white-space: normal; text-transform: none; letter-spacing: 0; }
 
+/* The coverage block (ADR 0048), first in the panel body. A `border-bottom`
+   rather than the `border-top` its two siblings carry, because it is above them
+   rather than below something: the hairline still separates two regions of one
+   panel, and there is no rule under the panel header for it to double up with.
+   `display: none` on `[hidden]` for the trap `.hud-staff__held` records one
+   block down -- a block whose children carry `.hud-staff__note` inherits a
+   `display` from the `max-height: 700px` block at the foot of this file, which
+   would otherwise override the attribute. */
+.hud-staff__coverage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hud-build-map-gutter);
+  padding: var(--hud-build-map-gutter) var(--space-1);
+  border-bottom: var(--hairline) solid var(--border-hairline);
+}
+
+.hud-staff__coverage[hidden] { display: none; }
+
+/* Name, figures and badge on one line, so the pair a player decides against is
+   one line rather than three readouts -- the shape `.hud-staff__held-header`
+   already uses. `flex-wrap` because the badge word is translated and "Unguarded"
+   is the longest of the three in English and need not be in another locale. */
+.hud-staff__coverage-header {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* Pushed to the right so the badge sits at the panel edge and the figures stay
+   beside the block's name, which is where the eye that opened this panel is. */
+.hud-staff__coverage-header > .ui-badge { margin-left: auto; }
+
+.hud-staff__coverage-summary { color: var(--text-heading); }
+
 /* The held-guards section (ADR 0034). Same gutter and hairline as
    `.hud-staff__actions` above it, so the two regions of one panel do not read as
    two designs -- and `display: none` on `[hidden]` for the trap

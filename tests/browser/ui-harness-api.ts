@@ -1,6 +1,7 @@
 import type {
   HudBuildQueueViewModel,
   HudHeldGuardsViewModel,
+  HudStaffCoverageViewModel,
   HudPendingDeliveriesViewModel,
   HudRoomNeedsViewModel,
   HudViewModel,
@@ -325,6 +326,32 @@ export interface HeldGuardRowProbe {
   readonly releaseDisabled: boolean;
 }
 
+/**
+ * The coverage block on the Staff panel
+ * ([ADR 0048](../../docs/adr/0048-what-a-sectors-occupants-are.md)
+ * consequence 1).
+ *
+ * Everything here is *measured* rather than read off an attribute, for
+ * `HeldGuardsProbe`'s reason: the block has no box until the first `hud/staff`
+ * reply, and "the attribute says hidden" and "the browser drew nothing" are
+ * different claims -- only the second is what a player experiences.
+ */
+export interface StaffCoverageProbe {
+  /** Whether the browser gave the block a box at all. `false` until the first reply, by design. */
+  readonly blockLaidOut: boolean;
+  /** `data-tone` on the block: which of the three states the panel decided, as a string. */
+  readonly tone: string | null;
+  /** The header's pair: assigned against required. */
+  readonly summaryText: string;
+  /** The badge's word, which is what makes the tone readable without colour. */
+  readonly badgeText: string;
+  /** `data-tone` on the badge itself, so a badge and a block that disagreed would show. */
+  readonly badgeTone: string | null;
+  /** The sentence under it -- the action, where there is one. */
+  readonly hintText: string;
+  readonly blockBox: LayoutBox | null;
+}
+
 /** The Staff panel on the Security tab (ADR 0025). */
 export interface StaffProbe {
   /** False while the Security tab is not the active one. */
@@ -339,6 +366,8 @@ export interface StaffProbe {
   readonly texts: readonly string[];
   /** Which guards are held, and by what (ADR 0034) -- see `HeldGuardsProbe`. */
   readonly held: HeldGuardsProbe;
+  /** What the prison asks for against what it has (ADR 0048) -- see `StaffCoverageProbe`. */
+  readonly coverage: StaffCoverageProbe;
   /**
    * The bottom of the panel's *client* box -- where its content starts being
    * clipped. The fold the reachability assertions compare a Release button's own
@@ -825,6 +854,17 @@ export interface LockstateUiHarness {
    * second draws a sentence, and the panel has to be handed each to prove it.
    */
   reportHeldGuards(held: HudHeldGuardsViewModel | undefined): void;
+  /**
+   * Publishes how many guards the prison asks for against how many it has,
+   * which in the real app is read over `simulation/request-projection` by
+   * `src/ui/simulation-staff-coverage.ts` (ADR 0048).
+   *
+   * `undefined` is "nothing has been asked", which is a different fact from a
+   * model reporting no shortage -- the first draws no block at all and the
+   * second draws a green badge, and the panel has to be handed each to prove
+   * that a prison nothing is answering for does not read as a covered one.
+   */
+  reportStaffCoverage(coverage: HudStaffCoverageViewModel | undefined): void;
   /** Presses the release control on the row aimed at `guardId`. Returns false when no such row is laid out. */
   pressGuardRelease(guardId: number): boolean;
   roomsProbe(): RoomsProbe;

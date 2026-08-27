@@ -335,10 +335,41 @@ after a second prisoner arrives.
 would need to see it coming are computed and not rendered, and none of them is
 this ADR's to fix:
 
-1. `StaffCoverageRowViewModel` carries `required`/`assigned`/`shortage` per
+1. ~~`StaffCoverageRowViewModel` carries `required`/`assigned`/`shortage` per
    sector, and no panel renders it — so the requirement rising from 1 to 2 at
    the ninth prisoner, which is the clearest warning the simulation now
-   produces, is invisible.
+   produces, is invisible.~~ **Closed on this branch, and this paragraph is what
+   prompted it.** The Staff panel's first block now says how many guards the
+   prison asks for against how many it has, in one of three states — *Covered*,
+   *Understaffed*, *Unguarded* — with the number of hires that clears the
+   shortage in the sentence under it and the hire control two blocks down.
+   `src/ui/simulation-staff-coverage.ts` reads `hud/staff`, which had been
+   catalogued and unread since #104 shipped it.
+
+   Three things worth carrying here rather than only in the commit. It renders
+   the **summed** `totals` and not the per-sector rows, because
+   `applyDefaultSecuritySector` derives exactly one sector for every session a
+   player can start, and a per-sector list that always has one row reads as
+   "here are your sectors" while being a readout of the only one there is; the
+   totals stay true with several, because `projectStaff` sums the per-sector
+   shortfalls rather than netting the requirement against the headcount. The
+   figures are **carried, not derived**: `required` is
+   `DeploymentSystem.requiredGuardCountFor`'s answer, which is decision 3's
+   rule, and a HUD that recomputed it would be a second definition of a number
+   the deployment system enforces. And *Unguarded* is a separate state from
+   *Understaffed* on decision 5's own evidence — a prison missing amenities
+   riots **only if it is also unguarded** — rather than a second shade of the
+   same warning.
+
+   Measured before it was built, in a 12-cell prison driven through the real
+   command path with nobody hired: `required: 1, assigned: 0, shortage: 1` from
+   the first admission through the eighth, and `required: 2, assigned: 0,
+   shortage: 2` **on the tick the ninth is admitted** — 12,788 ticks before that
+   prison's first riot at tick 13,200. What the block deliberately does not say
+   is that a riot is coming: the same prison holding twelve with one guard sits
+   at a shortage of 1 for 30,000 ticks and never riots, while sixteen with one
+   guard riots at 13,400 and stops at two. A shortage is a fact about staffing,
+   not a prediction.
 2. ~~`HudCountsViewModel.prisonerCapacity` is hard-coded to `0` in
    `src/ui/simulation-counts.ts`, so `occupancyTone`'s over-capacity warning on
    the Prisoners chip can never fire — the one existing signal for the main cause,
@@ -367,7 +398,13 @@ and prevent but cannot watch approaching. That is a real shortfall against
 "an incident must be something a player can see coming", and it is recorded here
 rather than worked around. **The second has since landed on this branch**, so a
 player can now watch the overcrowding rung of decision 5's ladder approach and
-still cannot watch the staffing one.
+still cannot watch the staffing one. **And now the first has too**, so both rungs
+a player can act on are on screen and what remains open is item 3: there is still
+nothing qualitative in place of the withheld risk score, so a prison whose
+*needs* are climbing with its staffing already covered — decision 5's fourth
+rung — still gives no warning before the riot. Marked rather than rewritten,
+because the sentence before each mark was true when it was written and the
+shortfall it names has closed one item at a time.
 
 ### What this does not change
 
