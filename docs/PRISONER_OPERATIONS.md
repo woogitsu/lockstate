@@ -774,6 +774,25 @@ multi-rate scheduler"). All pathfinding is delegated to #21/#22's real
 failure (permission-denied, unreachable) returns the prisoner to `'idle'`
 and counts as observable unmet demand rather than getting stuck.
 
+**A room removed from under a walk does the same, and until now it did
+neither.** `RoomZoningService.unzone` refuses on `claimCountOf > 0`, and by
+[ADR 0029](./adr/0029-concurrent-room-use-claims.md) decision 2 a traveller
+holds no claim -- so a canteen somebody is *eating in* cannot be un-zoned and a
+canteen somebody is *walking to* can. `continueTravelling`'s vanished-instance
+exit used to set the phase back to `'idle'` and return, leaving
+`currentActionTargetInstanceId` naming the removed room and counting nothing.
+That target is not transient: `beginNextAction` overwrites it only when some
+candidate resolves, and `projectPrisonerDetail` publishes it as
+`targetRoomInstanceId` whatever the phase, so the HUD named a room the player
+had already demolished. Measured through the real commands -- prisoner
+`'travelling'` to `room.canteen:8:8` with `claimCountOf` 0, `UnzoneRoom`
+accepted with no refusal, and twenty ticks later `staleTarget
+"room.canteen:8:8", canteenExists false, unmetDemandCycles 14 -> 14`. Both
+exits back to `'idle'` now clear the target, and the vanished-instance one
+counts the unmet cycle, which is the convention `continuePerforming` already
+followed for the same two conditions.
+`tests/integration/unzoned-target-mid-journey.test.ts` is the run.
+
 **Abstracted arrival, by explicit design.** On a resolved route, a
 prisoner's tile position updates directly to the destination -- there is
 no tile-by-tile locomotion simulation. This mirrors #21/#22's own explicit

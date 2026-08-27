@@ -234,10 +234,48 @@ export class ActionSystem implements SystemRegistration {
     if (targetInstanceId !== undefined) this.roomInstances.releaseUse(targetInstanceId, entityId);
   }
 
+  /**
+   * ## The three exits, and why two of them count an unmet cycle and one does not
+   *
+   * Every exit back to `idle` clears `currentActionTargetInstanceId`, and that
+   * is not tidiness: a target left standing outlives the journey it belonged
+   * to. `projectPrisonerDetail` publishes it as `targetRoomInstanceId`
+   * (`presentation/prisoner-projection.ts`) whatever the phase, and
+   * `beginNextAction` overwrites it only when some candidate resolves -- so a
+   * prisoner who is idle *and* finds nothing to do keeps publishing the target
+   * of a walk that already failed, indefinitely.
+   *
+   * The counting follows `continuePerforming`'s convention rather than a new
+   * one, because the two methods answer the same two questions:
+   *
+   * - **A target that has stopped existing** counts an unmet cycle. The
+   *   prisoner wanted a room, the room is gone, and that is exactly what
+   *   `unmetDemandCycles` is documented to count ("no legal action had a
+   *   reachable, available target"). `continuePerforming` counts it for the
+   *   same reason.
+   * - **Bookkeeping that cannot be read back** does not. A traveller with no
+   *   path request demanded nothing this cycle that anything refused; it is the
+   *   mirror of `continuePerforming`'s unreadable action index, which also
+   *   releases, resets and does not count.
+   *
+   * **Only the middle exit is reachable in play, and it was measured rather
+   * than reasoned about.** `RoomZoningService.unzone` refuses on
+   * `claimCountOf > 0`, and by ADR 0029 decision 2 a traveller holds no claim,
+   * so a player may un-zone a canteen a prisoner is walking to. Driven through
+   * the real commands: the prisoner is `travelling` to `room.canteen:8:8` at
+   * tick 2,021 with `claimCountOf` 0, `UnzoneRoom` is accepted with no refusal,
+   * and twenty ticks later this method finds the instance gone. The first exit
+   * has no such path -- `beginNextAction` writes the request in the same
+   * statement run that writes the phase, and `PrisonerOperationsRuntime.loadSnapshot`
+   * drops every restored traveller to `idle` and clears both -- so it is
+   * defence in depth, and `tests/integration/unzoned-target-mid-journey.test.ts`
+   * covers the one that is not.
+   */
   private continueTravelling(entityId: number, index: number, tick: number): void {
     const requestId = this.coldState.getPathRequestId(entityId);
     if (requestId === undefined) {
       this.currentAction.phase[index] = phaseIndex('idle');
+      this.coldState.setActionTarget(entityId, undefined);
       return;
     }
 
@@ -259,6 +297,8 @@ export class ActionSystem implements SystemRegistration {
     const instance = targetInstanceId === undefined ? undefined : this.roomInstances.getById(targetInstanceId);
     if (instance === undefined) {
       this.currentAction.phase[index] = phaseIndex('idle');
+      this.coldState.setActionTarget(entityId, undefined);
+      this.unmetDemandCycles += 1;
       return;
     }
 
