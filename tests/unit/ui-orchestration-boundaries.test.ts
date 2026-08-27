@@ -26,7 +26,10 @@ import {
  * `brand-messages.ts` made eight, `simulation-alerts.ts` (#261) made nine, and
  * `simulation-projections.ts` (#104) makes ten, and `simulation-intake.ts` (#104's
  * third consumer) makes eleven. The vacuity guard below is the
- * list a new one has to be added to.
+ * list a new one has to be added to, and it has been added to since: the guard
+ * enumerates every top-level module by name, so the count in this paragraph is
+ * the one thing here that rots and the list below is what a reader should
+ * count.
  *
  * ## Why this is a separate file, and not a widening of the HUD gate
  *
@@ -283,6 +286,13 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
       "Type-only: `PendingDeliveriesViewModel` from `src/simulation/presentation/procurement-projection`. The eighth of the translators outside `src/ui/hud/` and the fourth that reads a *pulled* read model, so it is `simulation-build-queue.ts`'s entry above one projection over: it names the view-model shape `hud/pending-deliveries` answers with and turns it into `HudPendingDeliveriesViewModel`. Erased, so no simulation code runs on its account -- the projection executes in the worker. A `value` import here would be worse than anywhere else in this manifest: it would mean money in transit had started being totalled on the main thread from deliveries it does not own, and every row it produced carries a purchase id that a press *refunds* (#285).",
   },
   {
+    file: 'src/ui/simulation-staff-coverage.ts',
+    tree: 'simulation',
+    kind: 'type-only',
+    reason:
+      "Type-only: `StaffViewModel` from `src/simulation/presentation/staff-projection`. The tenth of the translators outside `src/ui/hud/` and the sixth that reads a *pulled* read model, so it is `simulation-held-guards.ts`'s entry above one projection over: it names the view-model shape `hud/staff` answers with and turns its `totals` into `HudStaffCoverageViewModel`. Erased, so no simulation code runs on its account -- the projection executes in the worker, and it has to, because how many guards a sector requires is `DeploymentSystem.requiredGuardCountFor`'s answer over occupancy and an authored schedule (ADR 0048 decision 3), neither of which this thread holds. A `value` import here would mean the main thread had started deciding *how many guards this prison needs*, which is a second definition of a rule the deployment system enforces -- so the panel would eventually warn about a requirement nothing was acting on. It imports no `src/content/**` at all, unlike the two readers above it: the block renders three integers and the HUD's own message keys, so there is no content name to resolve.",
+  },
+  {
     file: 'src/ui/simulation-projections.ts',
     tree: 'simulation',
     kind: 'value',
@@ -431,6 +441,7 @@ describe('UI orchestration boundaries', () => {
       'src/ui/simulation-pending-deliveries.ts',
       'src/ui/simulation-projections.ts',
       'src/ui/simulation-room-needs.ts',
+      'src/ui/simulation-staff-coverage.ts',
       'src/ui/simulation-zoning.ts',
       'src/ui/telemetry-consent-prompt.ts',
     ]);

@@ -570,7 +570,10 @@ only when that system decides the claim is over. So a claim whose owner had lost
 track of it was permanent -- which is exactly what #352 was, measured at four
 guards and one sector still held 53,000 ticks after a restore. A guard id is a
 staff `EntityId` minted inside the simulation and it never reached the main thread
-at all: `hud/staff` was catalogued and read by nobody.
+at all: `hud/staff` was catalogued and read by nobody. (It has a reader now --
+see the sixth below -- and that reader takes the `totals` rather than the roster,
+so the paragraph after this one is unaffected: a coverage figure still cannot say
+which of the two `'on-search'` claimants holds a guard.)
 
 **And `hud/staff` would not have been enough even if it had been read**, which is
 where this differs from the queue's case and the deliveries'. It carries
@@ -585,17 +588,53 @@ It needs no new persisted state and no save-schema version: everything it reads 
 `security.guards.records` and the live claim views of the two `'on-search'`
 claimants, all of which a V5 save has held all along.
 
-**Nine** of the fifteen catalogued read models still have a route and nobody on
-the end of it: **six are read, by five modules.** Both numbers are stated
-because the difference between them is what made the previous sentence wrong.
+`src/ui/simulation-staff-coverage.ts` is the sixth, on the same three terms --
+`hud/staff`, while the Security tab is showing, on the counts cadence -- and it
+is the first whose subject is neither a readout of what the prison holds nor an
+id a control aims at, but a **warning**
+([ADR 0048](./adr/0048-what-a-sectors-occupants-are.md) consequence 1). Its
+window is `limit: 0`, which is the panel's-own-budget rule taken to its floor:
+the coverage block draws no roster row, and `StaffViewModel.totals` is summed
+over the whole roster regardless of the page, so a window of zero returns every
+figure it uses and no row it would discard.
+
+ADR 0048 made a riot reachable in a prison a player can build and scaled
+`requiredGuardCount` with occupancy -- one guard per eight prisoners standing on
+owned land, as a floor over whatever the `DeploymentSchedule` authored. Its own
+Consequences record what that left undone: `StaffCoverageRowViewModel` carried
+`required`/`assigned`/`shortage` per sector and **no panel rendered any of it**,
+so the requirement rising from 1 to 2 at the ninth prisoner -- the clearest
+warning the simulation produces -- was computed and invisible. Measured on this
+tree in a 12-bed prison driven through the real command path with nobody hired:
+the report reads `required: 1, assigned: 0, shortage: 1` from the first
+admission through the eighth and `required: 2, assigned: 0, shortage: 2` **on
+the tick the ninth is admitted**, 12,788 ticks before that prison's first riot at
+tick 13,200. Hiring answers it in 20 ticks -- `DeploymentSystem` runs every ten,
+so a hire standing on the post tile is assigned on the next update -- which is
+what makes the readout a control surface rather than a caption.
+
+It carries the summed `totals` rather than the per-sector `coverage` rows,
+because `applyDefaultSecuritySector` derives exactly one sector for every session
+a player can start (ADR 0036), so a per-sector list would be a list that always
+has one row. The totals survive a second sector: `projectStaff` sums the
+per-sector shortfalls rather than netting the requirement against the headcount,
+so a prison with one sector over-staffed and another short still reports a
+shortage. What stops being answerable then is *which* sector is short, which is a
+breakdown to add on the day a player can draw one.
+
+**Eight** of the fifteen catalogued read models still have a route and nobody on
+the end of it: **seven are read, by six modules.** Both numbers are stated
+because the difference between them is what made an earlier sentence wrong.
 It said ten, having counted reader *modules* rather than read models —
 `src/ui/simulation-room-needs.ts` asks for two, `hud/room-list` and
-`hud/room-detail`, so five modules and six read models are the same fact
-counted twice. It was already nine at the commit that wrote it.
+`hud/room-detail`, so the two counts differ by one for that reason alone. It was
+already nine at the commit that wrote it, and it is eight now that `hud/staff`
+has a reader; the pair is restated rather than one half edited, because the pair
+is what a reader checks.
 
-The six with a reader are `hud/build-queue`, `hud/pending-deliveries`,
-`hud/held-guards`, `hud/prisoner-population`, `hud/room-list` and
-`hud/room-detail`; a `grep` for the quoted id under `src/ui/` is the whole
+The seven with a reader are `hud/build-queue`, `hud/pending-deliveries`,
+`hud/held-guards`, `hud/prisoner-population`, `hud/room-list`, `hud/room-detail`
+and `hud/staff`; a `grep` for the quoted id under `src/ui/` is the whole
 derivation. That is the honest state of this channel, and it is a different
 sentence from the one this section used to carry.
 

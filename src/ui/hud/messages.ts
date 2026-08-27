@@ -265,6 +265,45 @@ export const HUD_MESSAGE_KEY = {
   securityHeldHint: 'hud.security.held-hint',
 
   /**
+   * The Staff panel's coverage block
+   * ([ADR 0048](../../../docs/adr/0048-what-a-sectors-occupants-are.md)
+   * consequence 1).
+   *
+   * `securityCoverageTitle` names the block and `securityCoverageSummary` is
+   * the pair the whole readout is about -- how many guards are assigned against
+   * how many the prison asks for -- in the shape `hud.status.occupancy-value`
+   * already set for a figure against its ceiling.
+   *
+   * Three badge words rather than a colour, for the reason
+   * `hud.status.incidents-active` carries one: the tone is an addition to the
+   * word and never a replacement for it, so the block reads the same in
+   * monochrome and to a screen reader. They name three different prisons and
+   * not three shades of one -- `securityCoverageMet` has what it asks for,
+   * `securityCoverageShort` has some of it, and `securityCoverageUnguarded` has
+   * nobody on duty at all, which is the rung of ADR 0048 decision 5's ladder
+   * where one hire is the whole of the difference between a prison that riots
+   * and one that does not.
+   *
+   * Each badge has a hint under it, and two of the three name the **action**
+   * rather than restating the diagnosis: the hire control is the next thing in
+   * this panel, so "understaffed" without "hire {count} more" would be a
+   * sentence that stops one line short of the button that answers it.
+   *
+   * `{count}` is the shortage rather than the requirement, so the number in the
+   * sentence is the number of presses. No plural form: `HudLocalizer` exposes
+   * `format` and not `formatPlural`, and both sentences are worded to read
+   * correctly at every count rather than at all but one of them.
+   */
+  securityCoverageTitle: 'hud.security.coverage',
+  securityCoverageSummary: 'hud.security.coverage-summary',
+  securityCoverageMet: 'hud.security.coverage-met',
+  securityCoverageMetHint: 'hud.security.coverage-met-hint',
+  securityCoverageShort: 'hud.security.coverage-short',
+  securityCoverageShortHint: 'hud.security.coverage-short-hint',
+  securityCoverageUnguarded: 'hud.security.coverage-unguarded',
+  securityCoverageUnguardedHint: 'hud.security.coverage-unguarded-hint',
+
+  /**
    * Labels for the two `BUILDABLE_REGISTRY` entries whose ids name no content
    * entry.
    *

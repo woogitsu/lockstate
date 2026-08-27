@@ -820,6 +820,48 @@ export interface HudViewModel {
    * `hud/held-guards` reply, which is a different fact from "no guard is held".
    */
   readonly heldGuards?: HudHeldGuardsViewModel;
+  /**
+   * How many guards the prison asks for against how many it has assigned, or
+   * absent because nothing asked
+   * ([ADR 0048](../../../docs/adr/0048-what-a-sectors-occupants-are.md)
+   * consequence 1).
+   *
+   * The sixth pulled field, on the same terms as the five above: absent is
+   * "nobody asked" and a zero shortage is "the prison has the guards it asks
+   * for", and the two must not render the same.
+   */
+  readonly staffCoverage?: HudStaffCoverageViewModel;
+}
+
+/**
+ * How many guards the prison asks for, and how many it has.
+ *
+ * The three figures `StaffViewModel.totals` publishes, carried across the
+ * boundary unchanged. **Not derived here and not derivable here**: `required`
+ * is `DeploymentSystem.requiredGuardCountFor`'s answer, which since
+ * [ADR 0048](../../../docs/adr/0048-what-a-sectors-occupants-are.md) decision 3
+ * is the larger of the authored `DeploymentSchedule` and one guard per eight
+ * prisoners standing on owned land. The HUD knows none of those inputs and must
+ * not learn them -- a second definition of "how many guards this prison needs"
+ * on this thread is exactly what `AGENTS.md` boundary 1 forbids, and it would
+ * disagree with the requirement the deployment system actually enforces the day
+ * either moved.
+ *
+ * `shortage` is carried rather than computed from the other two for a reason
+ * that is not style: it is the **sum of the per-sector shortages**, so a prison
+ * with one sector over-staffed and another short still reports a shortage,
+ * where `required - assigned` would net them out and read as covered. Today
+ * every session has one sector (`applyDefaultSecuritySector`), so the two agree;
+ * they stop agreeing the moment a second sector exists, and the field that
+ * survives that is the one the simulation summed.
+ */
+export interface HudStaffCoverageViewModel {
+  /** Guards the prison asks for, summed over every sector. */
+  readonly required: number;
+  /** Guards assigned to a sector -- already on post, or still walking there. */
+  readonly assigned: number;
+  /** Summed per-sector shortfall. Zero when every sector has what it asks for. */
+  readonly shortage: number;
 }
 
 /**

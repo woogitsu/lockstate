@@ -5,8 +5,15 @@ import { createCollapsibleSection, type CollapsibleSection } from '../primitives
 import { element, eyebrowText, valueText } from '../primitives/dom';
 import { createListRow, type ListRow } from '../primitives/list-row';
 import { createPanel } from '../primitives/panel';
+import { createStatusBadge, type BadgeTone } from '../primitives/status-badge';
 import { HUD_MESSAGE_KEY } from './messages';
-import type { HudHeldGuardViewModel, HudHeldGuardsViewModel, HudLocalizer, HudStaffViewModel } from './view-model';
+import type {
+  HudHeldGuardViewModel,
+  HudHeldGuardsViewModel,
+  HudLocalizer,
+  HudStaffCoverageViewModel,
+  HudStaffViewModel,
+} from './view-model';
 
 /**
  * The Staff panel, on the Security tab
@@ -33,6 +40,16 @@ import type { HudHeldGuardViewModel, HudHeldGuardsViewModel, HudLocalizer, HudSt
  * [ADR 0034](../../../docs/adr/0034-releasing-a-claimed-guard.md), a second
  * section listing the guards that are **held**, with what is holding each and a
  * control that releases it.
+ *
+ * Since [ADR 0048](../../../docs/adr/0048-what-a-sectors-occupants-are.md), a
+ * block above both saying how many guards the prison **asks for** against how
+ * many it has. That ADR's own Consequences record why it is here: the
+ * requirement rising from one to two at the ninth prisoner is the clearest
+ * warning the simulation produces, and until this block it was computed and
+ * rendered nowhere -- so a player could cause a riot and prevent one, and could
+ * not watch one approaching. It is on *this* panel because the diagnosis and
+ * the cure belong together: the sentence says how many more to hire and the
+ * control that hires them is two blocks down.
  *
  * That second section narrows this panel's own "**it is not a roster**" claim
  * and the narrowing is deliberate rather than accidental, so it is stated: the
@@ -146,6 +163,99 @@ export function formatHeldGuardText(
     : t(HUD_MESSAGE_KEY.securityHeldRow, { name: t(guard.roleLabelKey), claim });
 }
 
+/**
+ * What the coverage block says, decided in one pure function
+ * ([ADR 0048](../../../docs/adr/0048-what-a-sectors-occupants-are.md)
+ * consequence 1).
+ *
+ * Exported and pure for `formatHeldGuardText`'s reason and it applies harder
+ * here: the default Vitest environment is `node` (`docs/TESTING.md`), so
+ * nothing headless can call `createStaffPanel`, and *which of three things the
+ * panel tells the player about their staffing* is the whole of what this change
+ * adds. A rule that only ran inside a DOM builder would be unreachable from
+ * `pnpm test` rather than merely untested, which is the trap
+ * `orderPrisonsForDisplay` was extracted to escape.
+ *
+ * ### The three states, and why three
+ *
+ * `occupancyTone` is the precedent and it has two steps for one metric --
+ * `>= 0.9` warning, `> 1` danger -- because the second names a *different*
+ * prison rather than more of the first. The same is true here, and ADR 0048
+ * decision 5's measured ladder is where the boundary comes from rather than
+ * taste: *"A prison missing toilets, showers and a yard riots **only if it is
+ * also unguarded** -- one hire is the whole of the difference."* So a prison
+ * with nobody on duty is not a worse version of an understaffed one; it is the
+ * rung where the cheapest possible action changes the outcome, and it gets its
+ * own word.
+ *
+ * - **Unguarded** (`danger`): the prison asks for guards and has assigned none.
+ * - **Understaffed** (`warning`): it has some of what it asks for.
+ * - **Covered** (`success`): it has all of it.
+ *
+ * A `success` tone for the third rather than no tone, which is where this
+ * departs from `occupancyTone` deliberately. That function returns `undefined`
+ * below its warning band because *"a status strip where several things are
+ * always amber teaches players to ignore amber"* -- an argument about a strip
+ * of seven chips competing for one glance. This is one block on one panel a
+ * player opened to look at staffing, and the shape it follows is the Incidents
+ * chip's green "Clear": a block that says nothing when all is well is
+ * indistinguishable from one that has not loaded.
+ *
+ * ### What it deliberately does not say
+ *
+ * **Not "a riot is coming".** Measured on this tree: a 12-bed prison holding 12
+ * with one guard sits at a shortage of 1 for 30,000 ticks and never riots,
+ * while the same prison holding 16 with one guard riots at tick 13,400 and
+ * stops entirely at two guards. A shortage is a real and actionable fact about
+ * staffing; it is not a prediction, and a sentence promising one would be false
+ * in the first of those prisons.
+ */
+export interface StaffCoverageReadout {
+  readonly tone: BadgeTone;
+  /** The word beside the colour, so the colour never stands alone. */
+  readonly badgeKey: LocalizationKey;
+  /** The sentence under it: the action where there is one, the state where there is not. */
+  readonly hintKey: LocalizationKey;
+  /**
+   * How many more hires clear the shortage -- the projection's own summed
+   * figure, not `required - assigned`. Zero when nothing is short, and then it
+   * fills no placeholder because `securityCoverageMetHint` declares none.
+   */
+  readonly hireCount: number;
+}
+
+export function describeStaffCoverage(coverage: HudStaffCoverageViewModel): StaffCoverageReadout {
+  // Nobody on duty anywhere, in a prison that asks for somebody. Checked first
+  // because it is a *subset* of "short" rather than an alternative to it, and
+  // the more specific sentence is the one worth saying.
+  if (coverage.required > 0 && coverage.assigned <= 0) {
+    return {
+      tone: 'danger',
+      badgeKey: HUD_MESSAGE_KEY.securityCoverageUnguarded,
+      hintKey: HUD_MESSAGE_KEY.securityCoverageUnguardedHint,
+      hireCount: coverage.shortage,
+    };
+  }
+  if (coverage.shortage > 0) {
+    return {
+      tone: 'warning',
+      badgeKey: HUD_MESSAGE_KEY.securityCoverageShort,
+      hintKey: HUD_MESSAGE_KEY.securityCoverageShortHint,
+      hireCount: coverage.shortage,
+    };
+  }
+  // Includes a prison that asks for nobody: a `DeploymentSchedule` of zero is an
+  // *exemption* a save can carry (ADR 0048 decision 3), and "this prison has the
+  // guards it asks for" is true of a prison that asks for none. It is not
+  // reachable from `applyDefaultSecuritySector`, which authors a floor of one.
+  return {
+    tone: 'success',
+    badgeKey: HUD_MESSAGE_KEY.securityCoverageMet,
+    hintKey: HUD_MESSAGE_KEY.securityCoverageMetHint,
+    hireCount: 0,
+  };
+}
+
 export interface StaffPanel {
   readonly element: HTMLElement;
   /**
@@ -181,6 +291,15 @@ export interface StaffPanel {
    * is the same distinction `BuildPanel.setPendingDeliveries` draws.
    */
   setHeldGuards(held: HudHeldGuardsViewModel | undefined): void;
+  /**
+   * Repaint the coverage block from a fresh `hud/staff` reply (ADR 0048).
+   *
+   * `undefined` hides it, and it is a different state from a shortage of zero:
+   * "nothing has asked yet" must not render as "this prison has the guards it
+   * asks for", which is the same distinction `setHeldGuards` draws one method
+   * up and the reason both are `| undefined` rather than defaulted.
+   */
+  setCoverage(coverage: HudStaffCoverageViewModel | undefined): void;
   setVisible(visible: boolean): void;
 }
 
@@ -192,6 +311,70 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
   let selectedId = model.roles[0]?.staffRoleId;
 
   const selectedRole = () => model.roles.find((role) => role.staffRoleId === selectedId);
+
+  // ---- what the prison asks for, against what it has (ADR 0048) --------
+  /*
+   * First in the panel body, and the position is load-bearing rather than
+   * aesthetic. The held block below it was measured at 219.0px of a 467.0px
+   * panel at 900x600, which is the tightest viewport `HELD_GUARD_ROW_LIMIT`
+   * was fixed against; a block appended under that one would be the fourth
+   * delivery row's problem again (#220, #285), reachable only by scrolling a
+   * panel a player has no reason to think has more in it. A block *above*
+   * everything cannot be pushed below the fold by anything below it, and the
+   * region that gives up the height is `.hud-staff__list`, which already
+   * scrolls and already has a floor.
+   *
+   * Two lines, deliberately: a header pairing the block's name with the pair of
+   * figures, and one sentence. It is the smallest thing that lets a player act,
+   * because the action it names is the button two blocks down.
+   */
+  const coverageSummary = valueText('', 'hud-staff__coverage-summary');
+  const coverageBadge = createStatusBadge({ tone: 'neutral', text: '' });
+  const coverageHint = eyebrowText('', 'hud-staff__note');
+
+  const coverageBlock = element('div', {
+    className: 'hud-staff__coverage',
+    children: [
+      element('div', {
+        className: 'hud-staff__coverage-header',
+        children: [eyebrowText(t(HUD_MESSAGE_KEY.securityCoverageTitle)), coverageSummary, coverageBadge.element],
+      }),
+      coverageHint,
+    ],
+  });
+  /*
+   * No initial `hidden` here, for the reason `.hud-staff__held` states:
+   * `paintCoverage` runs once below the `panel.body.append` and is the single
+   * authority on whether this block has a box. A second assignment would be a
+   * line no test could fail on.
+   */
+
+  let coverage: HudStaffCoverageViewModel | undefined;
+
+  function paintCoverage(): void {
+    coverageBlock.hidden = coverage === undefined;
+    if (coverage === undefined) {
+      delete coverageBlock.dataset['tone'];
+      return;
+    }
+
+    const readout = describeStaffCoverage(coverage);
+    // The block's own handle for a browser probe, in the shape `data-held` and
+    // `data-guard` already use one section down: it lets a spec assert *which of
+    // the three states the panel decided* without matching translated text, so
+    // the assertion survives a reworded sentence. No stylesheet reads it -- the
+    // colour is the badge's, and the badge carries the word beside it.
+    coverageBlock.dataset['tone'] = readout.tone;
+    coverageSummary.textContent = t(HUD_MESSAGE_KEY.securityCoverageSummary, {
+      assigned: localizer.formatNumber(coverage.assigned),
+      required: localizer.formatNumber(coverage.required),
+    });
+    coverageBadge.update({ tone: readout.tone, text: t(readout.badgeKey) });
+    coverageHint.textContent =
+      readout.hireCount > 0
+        ? t(readout.hintKey, { count: localizer.formatNumber(readout.hireCount) })
+        : t(readout.hintKey);
+  }
 
   // ---- who to hire ---------------------------------------------------
   const roleList = element('div', { className: 'hud-staff__list' });
@@ -395,6 +578,7 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
     className: 'hud-staff',
   });
   panel.body.append(
+    coverageBlock,
     roles.element,
     element('div', {
       className: 'hud-staff__actions',
@@ -406,6 +590,7 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
   paintRoles();
   paintHire();
   paintHeld();
+  paintCoverage();
 
   return {
     element: panel.element,
@@ -416,6 +601,10 @@ export function createStaffPanel(options: StaffPanelOptions): StaffPanel {
     setHeldGuards(next: HudHeldGuardsViewModel | undefined): void {
       held = next;
       paintHeld();
+    },
+    setCoverage(next: HudStaffCoverageViewModel | undefined): void {
+      coverage = next;
+      paintCoverage();
     },
     setVisible(visible: boolean): void {
       panel.element.hidden = !visible;

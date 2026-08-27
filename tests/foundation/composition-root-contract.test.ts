@@ -161,6 +161,24 @@ const REQUIRED_WIRINGS: readonly RequiredWiring[] = [
       'Issues #36, #149 and #446, and the case the boot binding cannot cover. Since a session boundary is a worker boundary, construction can fail long after first paint, and `WorkerPerSessionHost` reports it through `onWorkerAvailability(false)` -- a route this file already reads for the HUD notice. That callback carries no thrown value, which is why the report carries no error class rather than a fabricated one. Deleting this line leaves the HUD notice intact and the diagnostic silent, with `tsc` clean and every test green, which is precisely the state that made this whole list necessary.',
   },
   {
+    what: 'the staffing warning has a reader at all',
+    source: 'new StaffCoverageReader(client)',
+    reason:
+      'ADR 0048 consequence 1. The Staff panel\'s coverage block is the only surface for the requirement `DeploymentSystem` scales with occupancy -- one guard per eight prisoners standing on owned land -- and it is a *pulled* field: `HudViewModel.staffCoverage` is optional and the panel draws no box until something answers, so a page that constructs no reader shows exactly what the repository showed before this change, which is nothing. `StaffCoverageReader` has its own unit tests over a fake channel and `staffCoverageFromProjection` is pure, so both stay green with this line gone; `hud/staff` had been catalogued and unread since #104 shipped it, which is the state deleting this line restores. Measured: with the construction replaced by `undefined`, `tsc` is clean and the unit and integration tests for this feature all pass.',
+  },
+  {
+    what: 'opening the Security tab asks for the coverage figures at once',
+    source: "if (activeTab === 'security') refreshStaffCoverage();",
+    reason:
+      'ADR 0048 consequence 1 (issue #442), and the half a player notices. Every other reader on #104\'s channel is asked twice -- once on arriving at its tab and once per counts publication -- and the arrival ask is what stops a block being empty for up to 500ms. It matters more here than for the readouts beside it because this one is a *warning*: a player who opened the Security tab because they suspected they were short would be shown nothing at all for half a second, which reads as "no problem" rather than as "not loaded yet". Deleting it leaves the cadence ask intact, so nothing fails and the block merely arrives late -- exactly the class of silent loss this list exists for.',
+  },
+  {
+    what: 'the coverage figures are refreshed on the counts cadence, not only on arrival',
+    source: 'refreshHeldGuards();\n      refreshStaffCoverage();',
+    reason:
+      'ADR 0048 consequence 1 (issue #442), and the half a player does *not* notice, which is why it is pinned in context rather than by its own name. `refreshStaffCoverage()` appears twice in this file and `toContain` cannot tell the two apart, so this entry names the cadence call by the line above it. Without it the block is painted once when the Security tab opens and never again: a player who leaves that tab showing while the ninth prisoner is admitted keeps reading a green "Covered" over a prison that has since outgrown its guards, which is worse than no readout. The whitespace is safe to pin because this repository has no formatter -- `agrees with package.json about whether a linter or formatter exists`, below, is the gate that keeps that true. Deleting the call leaves `tsc` clean and every test green.',
+  },
+  {
     what: 'the lifecycle save handler is attached to the controller',
     source: 'new LifecycleSaveHandler(controller).attach()',
     reason:

@@ -40,6 +40,7 @@ import type {
   BuildQueueRowProbe,
   HeldGuardRowProbe,
   HeldGuardsProbe,
+  StaffCoverageProbe,
   PendingDeliveriesProbe,
   PendingDeliveryRowProbe,
   LayoutBox,
@@ -50,7 +51,13 @@ import type {
   RoomsLayoutProbe,
   RoomsProbe,
 } from './ui-harness-api';
-import { HUD_MESSAGE_KEY, type HudBuildViewModel, type HudHeldGuardsViewModel, type HudStaffViewModel } from '../../src/ui/hud';
+import {
+  HUD_MESSAGE_KEY,
+  type HudBuildViewModel,
+  type HudHeldGuardsViewModel,
+  type HudStaffCoverageViewModel,
+  type HudStaffViewModel,
+} from '../../src/ui/hud';
 import '../../src/styles.css';
 
 /**
@@ -552,6 +559,32 @@ function buildQueueProbe(): BuildQueueProbe {
  * reason: the rows are pooled, so a row with no guard in it is present in the DOM
  * and must not be reported as one the player can see.
  */
+/**
+ * The coverage block, measured rather than read off attributes (ADR 0048).
+ *
+ * The badge's own `data-tone` is reported beside the block's, and not folded
+ * into one field: they are written by two different lines of `paintCoverage`,
+ * and a block tinted for a shortage over a badge still reading "Covered" is
+ * exactly the disagreement a single field would hide.
+ */
+function staffCoverageProbe(): StaffCoverageProbe {
+  const block = document.querySelector<HTMLElement>('.hud-staff__coverage');
+  const badge = block?.querySelector<HTMLElement>('.ui-badge') ?? null;
+  return {
+    blockLaidOut: block !== null && block.getClientRects().length > 0,
+    tone: block?.dataset['tone'] ?? null,
+    summaryText: block?.querySelector<HTMLElement>('.hud-staff__coverage-summary')?.textContent?.trim() ?? '',
+    badgeText: badge?.querySelector<HTMLElement>('.ui-badge__text')?.textContent?.trim() ?? '',
+    badgeTone: badge?.dataset['tone'] ?? null,
+    hintText:
+      [...(block?.querySelectorAll<HTMLElement>('.hud-staff__note') ?? [])]
+        .filter((line) => line.getClientRects().length > 0)
+        .map((line) => (line.textContent ?? '').trim())
+        .find((text) => text.length > 0) ?? '',
+    blockBox: layoutBoxOf(block),
+  };
+}
+
 function heldGuardsProbe(): HeldGuardsProbe {
   const block = document.querySelector<HTMLElement>('.hud-staff__held');
   const rows = [...document.querySelectorAll<HTMLElement>('.hud-staff__held-row')].filter(
@@ -1131,6 +1164,7 @@ window.lockstateUiHarness = {
         .map((node) => (node.textContent ?? '').trim())
         .filter((text) => text.length > 0),
       held: heldGuardsProbe(),
+      coverage: staffCoverageProbe(),
       // The fold, in the shape `buildLayoutProbe` reports the Build panel's: the
       // bottom of the *client* box, which is where content starts being clipped
       // and is unaffected by scrolling.
@@ -1145,6 +1179,13 @@ window.lockstateUiHarness = {
     hud?.update({
       ...BASE_VIEW_MODEL,
       ...(held === undefined ? {} : { heldGuards: held }),
+    });
+  },
+
+  reportStaffCoverage(coverage: HudStaffCoverageViewModel | undefined): void {
+    hud?.update({
+      ...BASE_VIEW_MODEL,
+      ...(coverage === undefined ? {} : { staffCoverage: coverage }),
     });
   },
 
