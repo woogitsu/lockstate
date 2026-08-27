@@ -567,14 +567,70 @@ export const SIMULATION_ENUM_GROUPS = [
     },
   },
   {
+    // **The one group whose ids are also named by a hand-authored key family,
+    // and the two families disagreed on two of the seven labels.**
+    //
+    // `OBJECT_CATEGORY_NAME_KEYS` in `src/content/object-catalog.ts` maps the
+    // same seven ids to `object.category.<id>.name`, and
+    // `default-locale-en.ts` authors text for all seven. This group derives
+    // `object-category.<id>.name`. The keys differ by one character -- a dot
+    // where the other has a hyphen -- so `validateSimulationEnumGroups`'
+    // `duplicate-key` check, which compares exact keys, cannot see them as
+    // related, and both families land in the assembled `en` catalog. Measured
+    // on `defaultLocaleEnCatalog` rather than inferred:
+    //
+    //     sanitation     authored="Plumbing"  derived="Sanitation"
+    //     food-service   authored="Catering"  derived="Food Service"
+    //
+    // and the other five agreed. `tests/foundation/content-vocabulary-contract.test.ts`
+    // now fails on any such pair, so the divergence is gated as a class rather
+    // than corrected as two instances.
+    //
+    // **The authored family's copy is the one that wins, and this table's two
+    // labels changed to match it -- not the other way round.** Three reasons,
+    // in order of force:
+    //
+    //  1. It is the family with a consumer. `src/main.ts:461` renders
+    //     `OBJECT_CATEGORY_NAME_KEYS[category]` in the Build panel's category
+    //     filter. Nothing anywhere calls
+    //     `deriveSimulationMessageKey('object-category', …)` -- the string
+    //     `'object-category'` appears in no `src/` or `tests/` file outside
+    //     this one -- so these seven derived keys reach no surface at all.
+    //  2. Its copy is deliberate and argued. `default-locale-en.ts` records
+    //     why `sanitation` reads "Plumbing" and `food-service` reads
+    //     "Catering": the id names the *domain* while the option has to name
+    //     the things in it, and a player hunting a shower head looks for
+    //     plumbing. "Sanitation" and "Food Service" here were the id spelled
+    //     with a capital letter, which is this table's default and is right
+    //     for the other five.
+    //  3. ADR 0035 §7 decided it, and is Accepted. Its table assigns "the
+    //     seven category *names*" to `OBJECT_CATEGORY_NAME_KEYS`, "beside the
+    //     schema that declares them", and it explicitly **rejects** the
+    //     computed alternative: *"A convention computed at the call site --
+    //     `object.category.${category}.name` -- type-checks against any
+    //     string and would have shipped exactly that."* Deleting
+    //     `OBJECT_CATEGORY_NAME_KEYS` in favour of
+    //     `deriveSimulationMessageKey` is that rejected option, so it is an
+    //     ADR amendment and not a cleanup.
+    //
+    // What agreement does **not** fix: there are still two places an object
+    // category's English name is written, which is what this module's own
+    // docblock exists to prevent ("the group table below is the single place
+    // an enum value is declared"). Agreement makes the duplication harmless
+    // and gated; it does not make it right. The architectural fix is to
+    // exempt `objectCategorySchema` in this file's completeness test on ADR
+    // 0035 §7's grounds -- the category name is content, and this table is the
+    // wrong home for it -- which needs an edit to
+    // `tests/unit/simulation-message-keys.test.ts`'s `UNLABELLED` list and a
+    // line in ADR 0035. It is proposed rather than taken here.
     namespace: 'object-category',
     sourceFile: 'src/content/object-catalog.ts',
     declaration: 'objectCategorySchema',
     form: 'zod-enum',
     labels: {
       furniture: 'Furniture',
-      sanitation: 'Sanitation',
-      'food-service': 'Food Service',
+      sanitation: 'Plumbing',
+      'food-service': 'Catering',
       security: 'Security',
       storage: 'Storage',
       utility: 'Utility',

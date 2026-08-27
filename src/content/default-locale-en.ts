@@ -77,6 +77,23 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // `OBJECT_CATEGORY_NAME_KEYS` in `src/content/object-catalog.ts` holds the
   // keys, and its type is what fails the build if an eighth category arrives
   // without one.
+  //
+  // **The sentence this comment used to open with -- that the seven were being
+  // "named for the first time" -- was false the day it was written.** The
+  // `object-category` group in `simulation-message-keys.ts` had already
+  // derived `object-category.<id>.name` for the same seven ids from the same
+  // `objectCategorySchema`, and authored English for all of them. So there
+  // were two families, differing by a dot where the other has a hyphen, and
+  // two of the seven carried *different words*: this file's "Plumbing" and
+  // "Catering" against that table's "Sanitation" and "Food Service". Both
+  // families were in the assembled catalog at once, because the collision
+  // check compares exact keys and these keys are not equal.
+  //
+  // That table's two labels now match these, because this is the family with
+  // a consumer (`src/main.ts:461`) and the family ADR 0035 §7 decided on;
+  // `tests/foundation/content-vocabulary-contract.test.ts` fails on any
+  // future pair that diverges. The copy above is unchanged and remains the
+  // authority for it.
   'object.category.furniture.name': 'Furniture',
   'object.category.sanitation.name': 'Plumbing',
   'object.category.food-service.name': 'Catering',
