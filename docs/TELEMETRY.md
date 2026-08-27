@@ -77,7 +77,7 @@ enqueued:
 | `sessionId` | Rotating per browser session. Never persisted, never derived from the account id. |
 | `release` | `buildVersion`, environment, optional commit — the source-map correlation handle. |
 | `consentVersion` | Which policy the player agreed to. |
-| `sampleRate` | The applied rate, so the receiver can weight rather than guess. |
+| `sampleRate` | The applied rate. A *trusted* receiver can weight by it; an unauthenticated ingest must not — see below. |
 | `attributes` | Scalars only; ≤ 24 entries; strings ≤ 200 characters. |
 
 Registered events today: `diagnostic.unhandled-error`,
@@ -265,9 +265,17 @@ obligation is only to send the minimum that makes them meaningful, and it does.
 [ADR 0046](./adr/0046-shipping-the-telemetry-pipeline.md) lists what the
 ingestion side must do before this table is true — a scheduled deletion job, no
 stored IP address, no join from a session id to anything, server-side schema
-validation, request bounds, and a written resolution of the conflict with
+validation, request bounds, a written resolution of the conflict with
 [ADR 0008](./adr/0008-trusted-service-boundary.md) §3's rule that no
-unauthenticated mutation endpoint exists. It also records that shipping this
+unauthenticated mutation endpoint exists, and two rules about not trusting the
+body: **retention must key on a server-stamped `received_at`**, because
+`occurredAt` has no upper bound and an event dated far in the future would
+never fall out of a window keyed on it; and **no aggregate may weight by the
+client's `sampleRate`**, because `1 / sampleRate` is a multiplier an
+unauthenticated caller controls, unbounded at the `0` the schema admits. The
+receiver takes the rate from its own copy of the event registry and treats the
+client's as a claim to compare. Neither has a client-side fix: an attacker who
+does not run this client is unaffected by anything this client validates. It also records that shipping this
 creates data-protection obligations this repository documents nowhere, and names
 them as open items for the owner. On an account
 deletion or data request, telemetry associated with that account is deleted

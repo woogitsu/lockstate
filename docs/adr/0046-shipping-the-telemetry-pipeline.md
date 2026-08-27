@@ -289,9 +289,36 @@ and 30 for gameplay aggregates, plus deletion on request. **Those promises are
 unenforced today and this change does not make them true.** What the ingestion
 side must do before they are:
 
-1. **A retention job that actually deletes.** Scheduled, on the stored
-   `occurred_at`, per category, with the deletion itself observable — a
-   documented promise with no job behind it is worse than no promise.
+1. **A retention job that actually deletes, keyed on a timestamp the client
+   did not supply.** Scheduled, per category, with the deletion itself
+   observable — a documented promise with no job behind it is worse than no
+   promise.
+
+   **Corrected.** This item used to say "on the stored `occurred_at`", and
+   that defeats the promise it is written to keep. `occurredAt` is
+   `z.number().int().min(0)` (`src/services/telemetry/events.ts:39`) — no upper
+   bound — and it arrives from an ingest that is unauthenticated by design.
+   A batch dated the year 4000 is admitted by the schema and then never
+   reaches a retention window keyed on it, so `docs/TELEMETRY.md`'s 90/90/30
+   table is defeated by a client-supplied integer with no exploit beyond
+   `curl`. Retention must run on a **server-stamped `received_at`**, written by
+   the endpoint, never read from the body, and never overwritable by a replay.
+
+   Nothing needs the client's value for anything load-bearing. Ordering within
+   a session is already carried by `event_id`, which is
+   `${sessionId}-${counter}` with a monotonic counter
+   (`src/services/telemetry/pipeline.ts:116`); the release identity answers
+   "which build"; and no analysis in this repository is described as depending
+   on wall-clock accuracy from an untrusted clock. So the honest treatment is
+   to store `occurred_at` as an untrusted attribute if clock-skew diagnosis is
+   ever wanted, or not to store it at all — and either way to key nothing on it.
+
+   **No client change follows, and proposing one would be theatre.** Bounding
+   `occurredAt` in `telemetryEnvelopeSchema` constrains only senders that run
+   this client, and the sender this item is about does not. The client's schema
+   is a correctness check on our own code; it is not, and cannot be, an
+   admission control on the endpoint. That is item 4's point and this is the
+   same point twice.
 2. **Do not store an IP address.** Every HTTP request carries one, and an IP is
    personal data that this design collects nowhere else. The endpoint must
    neither log it nor persist it; if a rate limiter needs one, it must key on a
@@ -313,19 +340,61 @@ side must do before they are:
    and this ADR does not resolve it.** Either ADR 0008 gains a narrow, stated
    exception for append-only, non-account-scoped, aggregate-only ingestion, or
    telemetry is not deployed. It should not be settled by an implementation.
+7. **Never weight by the client's `sample_rate`.** The envelope carries
+   `sampleRate: z.number().min(0).max(1)` and says why:
+   *"Travels with the event so the receiver can weight instead of guessing"*
+   (`src/services/telemetry/events.ts:49`), which ADR 0010 states as *"the
+   applied rate travels with the event so the receiver can weight correctly
+   instead of guessing"*. That is sound for a trusted sender and unsafe for
+   this one. Weighting an event by `1 / sample_rate` hands an unauthenticated
+   caller a multiplier: one fabricated event at `0.001` counts as a thousand,
+   and `0` is admitted by the schema, so the weight is unbounded — a single
+   `POST` can move any aggregate to any value.
+
+   The receiver must take the rate from **its own copy of the registry**,
+   keyed by `(schema_version, name)`, which is the only place a sample rate is
+   ever *decided*: `DEFAULT_TELEMETRY_EVENTS` declares one per event and the
+   client applies it or a per-recorder override. The client's `sample_rate` is
+   then a *claim to compare against*, useful for spotting a stale build or a
+   misconfigured override, and never a factor in an aggregate. A row whose
+   claimed rate disagrees with the registry's is a signal, not a weight.
+
+   **No client change follows here either**, for the reason item 1 gives: the
+   attacker this item is about does not run the client. The field stays on the
+   envelope because a receiver that reads it as a claim has a use for it; what
+   changes is that its documented purpose is now stated as conditional on a
+   trusted sender, which an unauthenticated ingest is not.
 
 **Proposed migration content, not written, because `supabase/migrations/` is
 history and not mine to add to.** If ingestion terminates in Supabase behind a
 Cloudflare Worker, the shape the rest of this repository would expect is: a
 `telemetry_events` table keyed by the client's `event_id` for idempotent
-replays; columns for `schema_version`, `name`, `category`, `occurred_at`,
-`session_id`, `release`, `consent_version`, `sample_rate` and a `jsonb`
-`attributes`; **no `user_id` column at all**, so the join in item 3 is
-structurally impossible rather than merely forbidden; no RLS policy granting
-`anon` or `authenticated` any verb, with all writes through a `SECURITY DEFINER`
-function the Worker calls with a server-side key; `TRUNCATE` revoked in line
-with ADR 0008; and a scheduled deletion by `occurred_at` and `category`
-implementing item 1. That is a sketch for review, not a specification.
+replays; a **server-stamped `received_at`** the endpoint writes and the body
+cannot set; columns for `schema_version`, `name`, `category`, `session_id`,
+`release`, `consent_version` and a `jsonb` `attributes`, with the client's
+`occurred_at` and `sample_rate` stored — if at all — as untrusted claims that
+nothing keys on and nothing multiplies by (items 1 and 7); **no `user_id`
+column at all**, so the *direct* join in item 3 is structurally impossible
+rather than merely forbidden; no RLS policy granting `anon` or `authenticated`
+any verb, with all writes through a `SECURITY DEFINER` function the Worker
+calls with a server-side key; `TRUNCATE` revoked in line with ADR 0008; and a
+scheduled deletion by `received_at` and `category` implementing item 1. That is
+a sketch for review, not a specification.
+
+**What the absent column does and does not buy, said exactly.** It removes the
+one-query join — there is no column to join `auth.users` or `prisons` *on*, and
+no view, policy or later migration can add the value back without an explicit
+schema change somebody has to write and review. It does **not** make
+re-identification impossible in general, and this paragraph used to imply that
+it did. `occurred_at`, `release` and `session_id` together are a correlation
+handle: matching an event's arrival against `prisons.updated_at`, an access
+log, or any other timestamped record that *does* carry an account is a timing
+correlation, and no shape of this table prevents one. Item 3's rule is
+therefore still doing work — the missing column enforces the easy half, and the
+hard half stays an operational commitment about what the ingestion side is
+allowed to correlate. Keeping `received_at` at a coarse granularity, and
+retaining no request log alongside it, is what narrows the remainder; nothing
+available here closes it.
 
 ### 8. The legal obligations are named, and are the owner's
 
