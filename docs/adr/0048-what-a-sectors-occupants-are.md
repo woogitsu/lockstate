@@ -339,10 +339,25 @@ this ADR's to fix:
    sector, and no panel renders it — so the requirement rising from 1 to 2 at
    the ninth prisoner, which is the clearest warning the simulation now
    produces, is invisible.
-2. `HudCountsViewModel.prisonerCapacity` is hard-coded to `0` in
+2. ~~`HudCountsViewModel.prisonerCapacity` is hard-coded to `0` in
    `src/ui/simulation-counts.ts`, so `occupancyTone`'s over-capacity warning on
    the Prisoners chip can never fire — the one existing signal for the main cause,
-   overcrowding, is switched off.
+   overcrowding, is switched off.~~ **Closed on this branch, and this paragraph
+   is what prompted it.** `simulation/status-counts` now carries a thirteenth
+   count, `accommodationCapacity` — the summed `residentCapacity` of the room
+   instances the session's `AccommodationPolicy` names — and `prisonerCapacity`
+   maps straight from it, so the occupancy bar renders and both the `>= 0.9`
+   warning and the `> 1` danger badge can fire. Marked rather than deleted
+   because item 3 below is still open and the three were listed as one
+   shortfall.
+
+   Two things worth carrying here rather than only in the commit. The
+   denominator is **not** `roomCapacity`: `object.medical-bed` declares
+   `'sleep-surface'`, so a furnished infirmary raises that total while intake
+   will never house anybody in one. And it is scoped from the policy rather
+   than from `room.cell`, so `room.solitary-cell` counts — which matters to
+   decision 5's ladder, because a prison of solitary cells is a prison with
+   beds.
 3. The `SectorRiskTracker` score is withheld from every projection by decision
    (issue #28's "without exposing all hidden calculations"), which is right for
    the raw number and leaves nothing qualitative in its place.
@@ -350,7 +365,9 @@ this ADR's to fix:
 Until at least the first two land, an incident is something a player can cause
 and prevent but cannot watch approaching. That is a real shortfall against
 "an incident must be something a player can see coming", and it is recorded here
-rather than worked around.
+rather than worked around. **The second has since landed on this branch**, so a
+player can now watch the overcrowding rung of decision 5's ladder approach and
+still cannot watch the staffing one.
 
 ### What this does not change
 

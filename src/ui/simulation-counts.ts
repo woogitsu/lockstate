@@ -25,18 +25,34 @@ export function hudCountsFromWorkerMessage(message: WorkerToMainMessage): HudCou
       return {
         prisoners: counts.prisoners,
         /**
-         * Left unknown on purpose, which the HUD renders as *no occupancy
-         * bar* rather than as "capacity zero".
+         * Straight through, and for the same reason
+         * `stateIncomeAccruedTodayMinorUnits` below is: the HUD may not derive
+         * a simulation figure. `accommodationCapacity` is the summed
+         * `residentCapacity` of the rooms `IntakeSystem` would house an
+         * arrival in, computed in the projection
+         * (`src/simulation/presentation/status-strip-projection.ts`).
          *
-         * The publication does carry a `roomCapacity`, and it is not this:
-         * it is the summed capacity of every registered room instance --
-         * canteens, yards and shower rooms included -- while this field is
-         * documented as total *cell* capacity and drives an
-         * over-capacity warning. Mapping one onto the other would put a
-         * plausible, wrong denominator on screen; the simulation has no
-         * cell-only capacity total to send yet.
+         * **This read `prisonerCapacity: 0` until the field existed**, which
+         * switched off the strip's only overcrowding signal: `occupancyTone`
+         * (`src/ui/hud/projection.ts`) returns `undefined` for a capacity
+         * `<= 0`, so the `> 1` danger badge and the `>= 0.9` warning could not
+         * fire in any session, and the occupancy bar was omitted entirely.
+         * ADR 0048 made overcrowding the thing a prison riots over, so the
+         * cause was on screen and the warning was not.
+         *
+         * The comment that stood here gave a **false** reason for a correct
+         * refusal: it said `roomCapacity` includes "canteens, yards and shower
+         * rooms", and it does not -- `deriveRoomCapacity` credits
+         * `residentCapacity` only for an object declaring `'sleep-surface'`,
+         * and a bench, a dining table and a shower head declare none, so a
+         * 40-seat canteen adds 0. Its last sentence named the real one: two
+         * objects carry that capability, `object.bed` and
+         * `object.medical-bed`, so `roomCapacity` counts an infirmary's beds
+         * while intake will never house anybody in one. That is the gap the
+         * new field closes, and it is why this is not simply
+         * `counts.roomCapacity`.
          */
-        prisonerCapacity: 0,
+        prisonerCapacity: counts.accommodationCapacity,
         staff: counts.staff,
         rooms: counts.rooms,
         activeIncidents: counts.activeIncidents,

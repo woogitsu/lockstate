@@ -129,7 +129,7 @@ per-prisoner object at all, so the always-visible strip is safe to
 re-project every frame at the stretch tier.
 
 The always-visible counts have no rows at all, which is what makes them
-publishable on a timer: `simulation/status-counts` (section 8) carries twelve
+publishable on a timer: `simulation/status-counts` (section 8) carries thirteen
 integers and at most one three-field refusal record, so there is nothing here
 for this contract to bound. A projection that carries rows must be paged
 before it may be published on a cadence — a per-send cost that grows with the
@@ -386,12 +386,31 @@ Two things deliberately do **not** cross:
   `tests/unit/segment-fill-agreement.test.ts`. What remains is an ordinary
   scope decision. Widening this channel is a change to make when a panel
   needs one of these values, not a correctness fix.
-- **A prisoner capacity.** `counts.roomCapacity` sums every registered room
-  instance — canteens and yards included — and the HUD's occupancy bar is
+- ~~**A prisoner capacity.**~~ **Closed, and the reason it was open was
+  half wrong.** This bullet read: *"`counts.roomCapacity` sums every registered
+  room instance — canteens and yards included — and the HUD's occupancy bar is
   documented as *cell* capacity with an over-capacity warning behind it. The
   simulation has no cell-only total, so `HudCountsViewModel.prisonerCapacity`
   stays `0` and the strip omits the bar rather than drawing a wrong
-  denominator.
+  denominator."*
+
+  **A canteen and a yard contribute nothing to `roomCapacity`**, and never
+  did. `deriveRoomCapacity` (`src/simulation/objects/room-capacity.ts`) credits
+  `residentCapacity` only for an object whose capabilities include
+  `'sleep-surface'`; a bench, a dining table and a shower head declare none, so
+  a 40-seat canteen adds 0. The *conclusion* was right for the reason the
+  bullet's own last clause named: `object.medical-bed` declares
+  `'sleep-surface'` too, so `roomCapacity` counts a furnished infirmary's beds
+  while `IntakeSystem` will never house anybody in one.
+
+  The channel now carries `accommodationCapacity` beside `roomCapacity` — the
+  summed `residentCapacity` of the room instances the session's
+  `AccommodationPolicy` names, which is `room.cell` and `room.solitary-cell`
+  under the shipped policy — and `HudCountsViewModel.prisonerCapacity` maps
+  straight from it. The bar and `occupancyTone`'s over-capacity warning are on,
+  which matters because ADR 0048 made overcrowding the thing a prison riots
+  over. `roomCapacity` stays exactly what it was: the Rooms readout's total,
+  with no reader in `src/ui/` yet.
 
 What this did **not** close, and section 9 does: the other nine projections
 in this directory had no route at all. Rosters, room lists, staff, security,

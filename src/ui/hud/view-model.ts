@@ -98,7 +98,20 @@ export interface HudClockViewModel {
  */
 export interface HudCountsViewModel {
   readonly prisoners: number;
-  /** Total cell capacity. `0` means "unknown/none", and the occupancy bar is then omitted rather than guessed. */
+  /**
+   * How many prisoners the prison has somewhere to live -- the denominator of
+   * the occupancy bar and of `occupancyTone`'s over-capacity warning.
+   *
+   * Published, never derived here: it is `counts.accommodationCapacity`
+   * (`src/ui/simulation-counts.ts`), the summed resident capacity of the rooms
+   * `IntakeSystem` would house an arrival in. It said "total cell capacity"
+   * while nothing filled it; the simulation now scopes it from the
+   * `AccommodationPolicy` rather than from a room id, so `room.solitary-cell`
+   * counts and a furnished infirmary does not.
+   *
+   * `0` still means "unknown/none", and the bar is then omitted rather than
+   * guessed -- which is the honest reading of a prison with no bed in it.
+   */
   readonly prisonerCapacity: number;
   readonly staff: number;
   readonly rooms: number;

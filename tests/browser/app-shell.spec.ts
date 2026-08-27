@@ -303,6 +303,27 @@ const INJECTED_STATUS_COUNTS = {
       staffUnassigned: 1,
       rooms: 12,
       roomCapacity: 48,
+      // Required, not optional, for the reason the paragraph above and the
+      // note on `stateIncomeAccruedTodayMinorUnits` below both give: the
+      // counts payload is `.strict()`, so a fixture missing this field is
+      // dropped whole by `decodeWorkerToMainMessage` and every assertion after
+      // the injection fails on a strip that was never updated.
+      //
+      // 40 of the 48 registered sleep surfaces stand in rooms intake would
+      // house somebody in; the other 8 are an infirmary's medical beds, which
+      // raise the room total and no denominator. Deliberately *not* 48, so a
+      // mapping that reached for `roomCapacity` would be visible here rather
+      // than plausible.
+      //
+      // 37 prisoners against 40 places is 92.5%, so the Prisoners chip now
+      // gains its occupancy bar and a `warning` tone under this fixture. That
+      // is the point of the change -- `prisonerCapacity` was the literal 0 and
+      // `occupancyTone` could never fire -- and it is visible in the DOM as a
+      // `.hud-metric__trailing` bar and `data-tone="warning"` on
+      // `[data-metric="prisoners"]`. The value assertions below read
+      // `.ui-stat__value`, which is the chip's own number and a sibling of the
+      // bar, so they are unaffected.
+      accommodationCapacity: 40,
       roomOccupants: 30,
       activeIncidents: 2,
       contrabandDiscovered: 5,
