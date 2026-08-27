@@ -56,11 +56,25 @@ repository's own modules.
 restores **silently**, and dies later. Verified on `main` @ `54418b6`
 (v0.0.121) by running the repository's own modules:
 
-- `Kernel.restoreState` (`src/simulation/kernel/kernel.ts:250`) does
-  `this._rng = new NamedRngStreams(snapshot.rngStates)` — **replace, not merge**.
-  The four streams `createNewSimulationRuntime` derived from `masterSeed` a
-  moment earlier (`src/simulation/runtime/new-session.ts:270-275`, installed at
-  `:276`) are discarded. Nothing compares the two sets.
+- `Kernel.restoreState` did `this._rng = new NamedRngStreams(snapshot.rngStates)`
+  — **replace, not merge**. The four streams `createNewSimulationRuntime` derived
+  from `masterSeed` a moment earlier (`src/simulation/runtime/new-session.ts:288-293`,
+  handed to the kernel at `:294`) were discarded. Nothing compared the two sets.
+
+  **This bullet is now history, and is kept in the past tense rather than
+  deleted.** It described `main` at `54418b6` and was true then; `bb7b862`
+  (#415), *"Merge a save's RNG streams onto the kernel's own instead of replacing
+  them"*, landed **six minutes after** this document did and made
+  `Kernel.restoreState` merge — `src/simulation/kernel/kernel.ts:310-321`, which
+  builds a `merged` map from the instance's own streams and then the snapshot's,
+  so the snapshot wins per name and an unmentioned stream keeps the state
+  `masterSeed` gave it. That is decision 2 below, implemented. The anchor this
+  bullet carried, `kernel.ts:250`, has drifted onto `Kernel.snapshot()`;
+  `restoreState` is at `:305`. **A Context section that reports "what the code
+  does today" against a named commit is the one kind of prose that is *supposed*
+  to go stale**, so the commit it was verified at is what makes it readable, and
+  re-dating it rather than rewriting it is what keeps the Decision below legible
+  as a change from something.
 - Nothing upstream compares them either. `rngStates: z.array(namedRngStreamStateSchema)`
   (`src/persistence/save-schema.ts:88`) has no minimum and no name set: a save
   carrying three streams, or zero, decodes `ok:true` with a valid checksum.
@@ -167,10 +181,28 @@ instead when absence is ambiguous or an existing field changed meaning.
 
 ### 2. A missing named RNG stream is an absence, and is seeded from `(masterSeed, streamName)`
 
-`restoreSimulationRuntime` **merges** the snapshot's streams over the streams the
-freshly-built runtime already holds, instead of replacing them. A stream the
+`Kernel.restoreState` **merges** the snapshot's streams over the streams the
+freshly-built runtime already holds, instead of replacing them
+(`src/simulation/kernel/kernel.ts:310-321`). A stream the
 bundle carries wins; a stream the build registers and the bundle omits keeps the
 state `deriveXoshiroState(masterSeed, streamName)` already gave it.
+
+(**This paragraph named `restoreSimulationRuntime`, and the merge is not
+there.** `restoreSimulationRuntime`
+(`src/simulation/runtime/restore-session.ts:367`) *calls*
+`runtime.kernel.restoreState(toKernelSnapshot(bundle.kernel))` at `:372`, and
+the merge is inside that — so the outer function is where the restore is
+entered, not where the streams are reconciled. This document already attributed
+it correctly twice: `## Status` says *"the merge in `Kernel.restoreState`"* and
+`## Alternatives considered` says *"it is the merge in `restoreState`"*. Only
+this section, the one that decides it, named the wrong function. **A document disagreeing with itself
+across its own headings is what `docs/AGENT_WORKFLOW.md` §4 says no diff will
+catch** — the two correct mentions and the wrong one were written in the same
+commit, so there was never a change for a reviewer to compare. It matters
+beyond tidiness because the reversal this decision commits to, described in
+`## Alternatives`, is a change *to the merge*: a reader implementing that
+reversal from this section alone would open the wrong function and find nothing
+to reverse.)
 
 Absence is unambiguous here as a matter of code, not of convention:
 `NamedRngStreams.snapshot()` (`rng/streams.ts:26-30`) emits **every** stream the

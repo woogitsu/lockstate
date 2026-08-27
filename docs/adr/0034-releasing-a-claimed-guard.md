@@ -434,10 +434,29 @@ Three things follow, and the second is the one the owner may want to overrule.
    specifically to prevent. **If the owner reads that as the wrong trade, the
    surface should come out and the command should wait for a sector.**
 3. **The real blocker is one registration, and it is not this document's.**
-   Nothing in `src/` creates a security sector, so #26's whole tier — deployment,
-   patrol, incidents, contraband search — is dark. That is a bigger finding than
+   Nothing in `src/` created a security sector, so #26's whole tier — deployment,
+   patrol, incidents, contraband search — was dark. That is a bigger finding than
    this ADR and it belongs in its own issue rather than being fixed in a
    gameplay-surface change.
+
+   **This point is now closed, and is kept in the past tense rather than
+   deleted, because it is what asked for the issue that closed it.** It became
+   **#396**, which is closed as completed by PR #398, *"Give every session a
+   security sector, derived from the world (#396, ADR 0034 decision 9)"* — the
+   decision recorded as
+   [ADR 0036](./0036-a-derived-default-security-sector.md). A new session now
+   registers a sector: `createNewSimulationRuntime` calls
+   `applyDefaultSecuritySector` (`src/simulation/runtime/new-session.ts:589`),
+   which registers the derived definition at
+   `src/simulation/security/default-sector.ts:253`, so the tier is reachable
+   from the front door. The amendment at the top of this document already said
+   the question was answered elsewhere; **this paragraph is the one that went on
+   asserting the defect, in the present tense, inside the decision a reader
+   stops at.** That is the same shape [ADR 0012](./0012-derived-identifier-reproducibility.md)
+   was corrected for in the same sweep as this — a Status or amendment recording
+   a fix while the body denies it — and finding it twice in one corpus is the
+   argument for reading a document's own headings against each other rather than
+   trusting that whoever landed the fix updated every mention of it.
 
 The simulation half of this change is fully exercised regardless:
 `tests/integration/security-guard-release.test.ts` drives all three claim kinds
