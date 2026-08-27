@@ -59,9 +59,84 @@ That was not a lost convenience. A prison with no room refuses every admission �
 which only `RoomZoningService.zone` mints in a live session. **So the game could
 not be finished without a pointer**, for the rest of the session, every session.
 
-Fifteen of the seventeen `HudIntent` kinds had a keyboard producer. The two that
-did not were `zone-room` and `unzone-room`, and both for one reason: each needs a
-rectangle, and the only producer of one was a drag.
+**Sixteen of the eighteen `HudIntent` kinds had a keyboard producer.** The two
+that did not were `zone-room` and `unzone-room`, and both for one reason: each
+needs a rectangle, and the only producer of one was a drag.
+
+Both halves of that sentence are now stated with the boundary that lets the next
+reader re-derive them, because the first half was **wrong on the day this
+document landed** and the second half had never been established at all.
+
+#### The count, and the four numbers that were live at once
+
+This paragraph read *"Fifteen of the seventeen `HudIntent` kinds had a keyboard
+producer"* until it was corrected. The union declares **eighteen** members and
+declared eighteen at `9a43f3e`, the commit that landed this document:
+`src/ui/hud/hud.ts:270-540`, opening at `export type HudIntent =` and closing at
+the `};` before the comment that introduces `HudUnavailableNotice` (`:554`) —
+`select-tab`, `set-clock`, `toggle-panel`, `place-build-order`, `place-object`,
+`remove-object`, `purchase-materials`, `admit-prisoner`, `hire-staff`,
+`arm-build-tool`, `undo`, `redo`, `cancel-build-order`,
+`cancel-material-purchase`, `release-guard`, `zone-room`, `unzone-room`,
+`arm-room-tool`. They are written out rather than summed on purpose; the
+boundary and the list are what a hand count skips.
+
+**Four figures for this one union were in the repository simultaneously when
+that sentence was written, and three of them were prose.**
+[ADR 0022](./0022-room-zoning-surface.md) `:82` says *"seven"*.
+[`STATUS-QUEUE.md`](./STATUS-QUEUE.md)'s entry — whose entire subject is ADR
+0022's drifted hand count — said *"fifteen"*, was corrected to *"sixteen"* in
+`518e58c`, and was corrected again to *"eighteen"* in `ab33903`, **twelve
+minutes after this document landed**. And this document said *"seventeen"*. So
+this was not a stale figure copied from a neighbour: it is a **fourth** wrong
+one, reached independently, in the one document whose whole subject is those
+intents — and it was produced in the same hour that the entry warning about
+exactly this defect was itself being corrected for the second time. That is the
+argument for `docs/AGENT_WORKFLOW.md` §4's first rule, met three times over in
+one union: a sentence stating a tally rots first, and a correction is no more
+durable than the claim it corrected.
+
+#### The two that had none, which had been asserted rather than shown
+
+Measured at `cf723b3` — the parent of `2073e9a`, the change this document
+decided, so this is the state *"What was wrong"* describes. A kind counts as
+having a keyboard producer when a player with no pointer can reach it: a
+natively focusable control, or a key binding.
+
+- **Fourteen reach a real `<button>`.** Every HUD control here is one:
+  `createActionButton` builds `element('button', …)`
+  (`src/ui/primitives/action-button.ts:37`), `createTabButton` likewise
+  (`tab-button.ts:44`), and a collapsible section's header is a `<button>` too
+  (`collapsible-section.ts:69`). That covers `select-tab`, `set-clock`,
+  `toggle-panel`, `arm-build-tool`, `arm-room-tool`, `hire-staff`,
+  `release-guard`, `admit-prisoner`, `purchase-materials`,
+  `cancel-material-purchase` and `cancel-build-order`; a catalogue row with an
+  `onActivate` is a `<button>` too (`list-row.ts:40`), so choosing *what* to
+  place is reachable as well. `place-build-order`, `place-object` and
+  `remove-object` add the Build panel's numeric fields, which are real
+  `<input type="number">` (`number-field.ts:46,50`) feeding the submit button —
+  the precedent this document's decision follows, and the one quoted below.
+- **Two are keys and nothing else.** `undo` and `redo` are `edit.undo` and
+  `edit.redo` (`src/input/actions.ts:11-12`), dispatched from the `keydown`
+  listener at `src/rendering/scene/world-scene.ts:335` and handled at `:585`
+  and `:588`. They have no on-screen control at all, which is its own gap and
+  is not this document's.
+- **`zone-room` and `unzone-room` had none, and the reason is sharper than "no
+  control".** Their control *was* keyboard-reachable — the confirm button is a
+  `createActionButton` like the rest. What had no keyboard producer was the
+  **rectangle it confirms**. At `cf723b3` the panel's `pending` had exactly one
+  writer that set it to anything other than `undefined`, `setPendingArea`
+  (`src/ui/hud/rooms-panel.ts:820`); its only caller anywhere in `src/` was
+  `src/ui/hud/hud.ts:1305`, fed from `worldRooms.attachGestures`, i.e.
+  `WorldScene.commitArea`, which is reached only from `finishPointer` on
+  `'pointerup'` (`src/rendering/scene/world-scene.ts:449`). So the player could
+  focus and press the confirm button all day and it would dispatch nothing.
+
+That is what makes this a keyboard *route* rather than a keyboard *control*, and
+it is why the decision below adds no control to the actions row: the row already
+had one that worked. **It is also why this sentence is written in the past
+tense and should stay there** — the form this document decides is the missing
+producer, so once it shipped the tally became eighteen of eighteen.
 
 The rule had been written down two days before the Rooms panel shipped, in
 `src/ui/hud/hud.ts`: the Build panel's numeric fields are *"what gives object
@@ -292,3 +367,39 @@ cannot catch this class at all.
    "Remove" in a list of room instances would be a better keyboard route than
    typing the rectangle again — the shape `cancel-build-order` already has.
    Neither blocks the other.
+5. **Is a collapsed `.ui-section` 44px or 45px? This document says both, and so
+   does the corpus around it.** `### The constraint` above states *"A collapsed
+   `.ui-section` header is 44px"* and prices the refusals against 44; open
+   question 1 above, ADR 0031's decision 3 (*"A collapsed `.ui-section` is
+   45px"*), ADR 0022's amendment (*"a 45px collapsed section"*) and
+   `src/ui/hud/build-panel.ts:380` (*"a collapsed section of its own is 45px"*)
+   all say 45. **This is recorded open rather than settled, and deliberately so
+   — nothing here picks a side.**
+
+   What the stylesheet suggests, which is a hypothesis and not the measurement:
+   the two figures may not name the same box. `.ui-section__header` carries
+   `min-height: var(--tap-target)` (`src/ui/primitives/primitives.css:368`) and
+   `--tap-target` is `44px` (`src/ui/tokens.css:150`), while `.ui-section`
+   itself carries `border-top: var(--hairline)` (`primitives.css:360`) with
+   `--hairline: 1px` (`tokens.css:121`) — so a collapsed *header* would be 44px
+   and a collapsed *section* 45px, which is exactly how the two phrasings
+   divide. ADR 0031's own decision 3 says a queue costs *"a 1px border and a
+   44px header"*, which is that reading written out. Against it:
+   `.ui-section:first-child` zeroes the border (`primitives.css:361`), so the
+   first section in a body would be 44px either way, and `min-height` is a floor
+   rather than a height, so neither number is forced by the CSS alone.
+
+   **What would settle it:** one `offsetHeight` read on a collapsed
+   `.ui-section` and on its `.ui-section__header`, in a first-child position and
+   in a later one, through `tests/browser/ui-harness.html` — the same harness
+   every other figure in this document was taken through. That could not be run
+   for this entry: the browser suite does not start in the container this was
+   written in, for want of Git LFS content, which is the same reason
+   `verify:assets` does not run there.
+
+   **What does not turn on it:** the refusals in `### The constraint` and in
+   `## Alternatives`. Both budgets a peer section is measured against (32px and
+   41px at 1280×720, 0px and 4px at 900×600) are below 44, so the section is
+   refused at 44 and refused by one more pixel at 45. A reader re-deriving those
+   refusals gets the same answer under either figure; a reader re-using the
+   figure for a *new* budget should measure it first.
