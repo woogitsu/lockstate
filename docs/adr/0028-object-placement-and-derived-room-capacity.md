@@ -312,7 +312,11 @@ Three reasons it is wrong here.
 **Cost model.** ADR 0005 states its own negative: iterating sparse component
 combinations requires walking up to `maxActiveIndex`. The runtime allocates
 5,000 slots for prisoners and a separate 500-slot store for guards
-(`src/simulation/runtime/new-session.ts:156-158`). Furniture is one to two
+(`DEFAULT_PRISONER_CAPACITY` and `DEFAULT_GUARD_CAPACITY`,
+`src/simulation/runtime/new-session.ts:244-246`; the anchor read `:156-158`,
+which was correct when this document was written at `ca5bb3f` and has drifted 88
+lines since — [ADR 0005](./0005-entity-storage-model.md) carries the same pair
+and the account of why naming the constants is the durable half). Furniture is one to two
 orders of magnitude more numerous than prisoners and **almost never changes** —
 a bed placed on tick 400 is byte-identical on tick 400,000 — so it is the worst
 possible tenant for a store whose iteration cost is proportional to its

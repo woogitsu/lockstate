@@ -21,8 +21,14 @@ recorded here as corrected rather than quietly dropped:
 - **"only `nosniff` is asserted anywhere"** — #153 added
   `SECURITY_HEADER_BASELINE` covering all four, and #160 added the reverse
   inclusion in `tests/foundation/ci-configuration-contract.test.ts`.
-- **"by a script no workflow runs"** — `.github/workflows/ci.yml:97` runs
+- **"by a script no workflow runs"** — `.github/workflows/ci.yml`'s
+  **"Verify Cloudflare deployment packages"** step (`:195`) runs
   `pnpm verify:deployment`, which runs `scripts/verify-deployment-preview.mjs`.
+  (The anchor read `:97`, which is now inside a comment about shallow-clone
+  handling in an unrelated step. The step name leads because `ci.yml` is edited
+  far more often than this ADR is read — the line moved 98 lines — and the name
+  is unique in the file, so `grep -n 'Verify Cloudflare deployment packages'`
+  re-derives the anchor after the next insertion.)
 
 The remaining clause — no CSP, no HSTS, no cross-origin isolation — was true,
 and both #105 and #138 deferred it for the same stated reason: a CSP "has a

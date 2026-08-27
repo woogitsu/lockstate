@@ -171,15 +171,32 @@ module doc, and `tests/determinism/` gains a pin for it.
   ([ADR 0007](./0007-navigation-work-budgets-and-flow-fields.md)), and the
   exception carried its own escape clause: if routing state ever enters a save,
   they become category 1. **That clause has since fired.** `pathRequestId` is a
-  field of the persisted job record (`src/persistence/save-schema.ts:419`) and
-  of the persisted guard record (`:468`), both inside the `simulation` section
-  of the shipped payload (`:837` for V3, `:867` for V4). What keeps it harmless
+  field of the persisted job record (`src/persistence/save-schema.ts:532`) and
+  of the persisted guard record (`:594`), both inside the `simulation` section
+  of the shipped payload — which is now **three** payload versions and not two:
+  `:981` for V3, `:1011` for V4 and `:1076` for V5. What keeps it harmless
   is therefore not the exception but explicit compensation on the restore side:
   `JobRegistry.loadSnapshot` clears `pathRequestId` for a `'travelling'` job
-  (`src/simulation/operations/job.ts:110`) and `GuardRoster.loadSnapshot` does
+  (`src/simulation/operations/job.ts:162`) and `GuardRoster.loadSnapshot` does
   the same for a `'travelling'` guard
   (`src/simulation/security/guard-roster.ts:198`), so no restored session
-  consumes an id minted by a previous one. Whether the taxonomy should now move
+  consumes an id minted by a previous one.
+  (**Four of the six anchors in this bullet had drifted and one claim had been
+  overtaken.** They read `save-schema.ts:419`, `:468`, `:837` for V3 and `:867`
+  for V4, and `job.ts:110`; `guard-roster.ts:198` had not moved. The
+  V3-and-V4 pairing is the substantive half: V5 was added by `6cededc` and
+  carries the same `simulation` section, so the compensation above covers a
+  third version that this bullet did not know existed. Both restore-side
+  clears are both spelled `restored.pathRequestId = undefined`, and
+  `grep -rn 'restored.pathRequestId = undefined' src/` returns exactly those two
+  and nothing else, so that is what re-derives this pair when the anchors next
+  move. (The looser `pathRequestId = undefined` returns four — two live clears
+  in `job-system.ts` and `guard-roster.ts` that are not restore-side — so the
+  `restored.` prefix is load-bearing in that grep, not decoration.)
+  [ADR 0015](./0015-actor-identity-allocation.md)'s amendment of 2026-08-27
+  found the identical V3/V4-versus-V5 drift in its own citations of these same
+  schemas, independently — two ADRs describing one file, both stopped counting
+  at V4.) Whether the taxonomy should now move
   these to category 1, and what that obliges, is left open rather than settled
   here; the acceptance above did not take it either.
 - Future gameplay systems get a decision to follow instead of a precedent to

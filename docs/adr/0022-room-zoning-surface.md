@@ -78,8 +78,22 @@ holds that as a gated fact — `ZoneRoom` is one of three commands in
 `AWAITING_PRODUCER` (`:106-107`), and its entry says so in the terms this ADR
 answers: *"Room zoning still has no interface at all: every member of
 `HudIntent` is a tab, a panel, the clock, a build order, the build tool or the
-undo pair, and none is about a room."* That is true of `main`: `HudIntent`
-(`src/ui/hud/hud.ts:153-195`) declares seven members and none of them is a room.
+undo pair, and none is about a room."* That was true of `main` when this
+document was written, at v0.0.30: `HudIntent` declared seven members and none of
+them was a room.
+
+**Both halves of that sentence have since been overtaken, and the anchor it
+carried is now actively misleading.** It cited `src/ui/hud/hud.ts:153-195`.
+`HudIntent` is now at `src/ui/hud/hud.ts:270-540` and declares **eighteen**
+members, three of them room-related — `zone-room`, `unzone-room` and
+`arm-room-tool`, which are this ADR's own decision having shipped. And
+`hud.ts:153` now declares **`HudRoomGesture`**, the room gesture this document
+introduced. So a reader following the old anchor to check *"none of them is a
+room"* lands on a type that is about nothing else. The count and the anchor are
+corrected here rather than left as
+[`STATUS-QUEUE.md`](./STATUS-QUEUE.md) recorded them, because that entry said
+this belonged in a change of its own and this is that change; the historical
+claim is kept, dated, because it is what the decision below was made against.
 
 So the whole zoning vocabulary — the plane, the instance registry, the six
 refusal reasons, `MAX_ZONE_DIMENSION_TILES` — is reachable only from a test.

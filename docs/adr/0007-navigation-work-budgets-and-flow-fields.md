@@ -16,13 +16,23 @@ without weakening #21's correctness or determinism guarantees.
 When this ADR was written, no real prisoner/staff entity model existed
 (#23/#24 own that). That is no longer true: six production systems under
 `src/simulation/` now call `NavigationSystem.requestRoute` —
-`incidents/response-system.ts:147`, `operations/job-system.ts:140`,
-`contraband/search-system.ts:177`, `prisoners/action-system.ts:205`,
+`incidents/response-system.ts:329`, `operations/job-system.ts:164`,
+`contraband/search-system.ts:262`, `prisoners/action-system.ts:380`,
 `security/deployment-system.ts:128` and `security/patrol-system.ts:103`. The
 decision below is unaffected by that and remains correct: `NavigationSystem`
 is still generic over `id: string`
-(`src/simulation/navigation/navigation-system.ts:66`) and each of the six
-supplies its own id shape, which is precisely what this Context argued for.
+(`src/simulation/navigation/navigation-system.ts:70`, in the `requestRoute`
+signature declared at `:69`) and each of the six supplies its own id shape,
+which is precisely what this Context argued for.
+
+**Five of those seven anchors were re-measured and had drifted; the count of six
+callers is unchanged and was re-derived, not carried over.** `grep -rn
+"requestRoute(" src/simulation/` excluding the declaration returns exactly these
+six files, one call each. The old anchors read `navigation-system.ts:66`,
+`response-system.ts:147`, `job-system.ts:140`, `search-system.ts:177` and
+`action-system.ts:205`; `deployment-system.ts:128` and `patrol-system.ts:103`
+had not moved. The count is the durable half of this sentence and the anchors
+are not, which is why the grep that produces it is written out here.
 
 Per the owner's explicit decision for this issue, the budget/queue/flow-field
 infrastructure is built and benchmarked against minimal synthetic "stub"

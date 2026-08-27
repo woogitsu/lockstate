@@ -93,9 +93,10 @@ them. The projections take live registries and entity stores, so they can
 only run inside the worker; with no message for their output the always-
 visible status strip painted the literal zeros of `EMPTY_HUD_VIEW_MODEL`
 for a whole session, however many prisoners the simulation held (issue
-#104). `simulation/delta` was declared in the kind union with a schema
-(`src/simulation/protocol/types.ts:400`) but no sender, which is not a route
-either.
+#104). `simulation/delta` was declared in the kind union
+(`src/simulation/protocol/types.ts:23`) with a schema (`deltaMessageSchema`,
+`:521-524`) but no sender, which is not a route either. (The schema anchor read
+`:400`, which is now inside `requestProjectionMessageSchema`'s payload.)
 
 `simulation/status-counts` is the first message that carries a projection.
 It follows the `simulation/clock-state` precedent above rather than
@@ -293,9 +294,17 @@ rather than with the boundary.
 So the protocol grows **once**, and the catalogue behind it grows instead:
 
 - `simulation/request-projection` (main-to-worker) names a `projectionId` from
-  a closed vocabulary — `PROJECTION_IDS` in `src/simulation/protocol/types.ts`,
-  twelve members today — with optional `offset`/`limit` and an optional
-  `target` (an entity id, or a string id) for the three detail projections.
+  a closed vocabulary — `PROJECTION_IDS` at
+  `src/simulation/protocol/types.ts:314-330`, **fifteen** members, one per line
+  between the `[` and the `] as const` — with optional `offset`/`limit` and an
+  optional `target` (an entity id, or a string id) for the three detail
+  projections, which are `hud/prisoner-detail`, `hud/room-detail` and
+  `hud/incident-detail`. (**This bullet said "twelve members today".** The
+  count is the half that rotted; "three detail projections" beside it was and
+  is correct, which is why the three are now named rather than tallied — a
+  reader can check a name against the list and cannot check a sum. The
+  vocabulary being closed is what makes the drift invisible: adding a member is
+  a one-line change in `types.ts` that no gate ties back to this sentence.)
 - `simulation/projection` (worker-to-main) answers exactly one of those. It
   carries the id, the tick it was read at, the page window it actually built,
   and the view model.
@@ -439,9 +448,11 @@ Message identifiers are correlation and diagnostics identifiers, not simulation 
 
 ### Implementation note, 2026-08-24: decision 4's handshake has no sender
 
-Decision 4's middle sentence — "a version-1 handshake advertises supported versions and capabilities before initialization" — describes a negotiation that no production code path performs, and has never performed. Every occurrence of `protocol/handshake` or `protocol/handshake-accepted` in `src/` is the receiver, the kind union or the schema: `src/simulation/protocol/types.ts:7`, `:17`, `:204`, `:304`; `src/simulation/protocol/transferables.ts:30`, `:35`; `src/simulation/worker/state-machine.ts:417`, `:444`, `:453`. The only senders in the repository are under `tests/` (`tests/contract/simulation-worker-entry.test.ts:103`, `tests/contract/simulation-worker-protocol.test.ts:58`, `tests/contract/worker-integration.test.ts:51`, `tests/unit/worker-state-machine.test.ts:26`), and `git log -S` over `src/` finds no commit that ever added one there. The main thread's first message to a worker is `simulation/initialize` (`src/persistence/session/worker-session-host.ts:137-144`), which `handleInitialize` accepts precisely because the state is still `'uninitialized'` (`state-machine.ts:472-474`).
+Decision 4's middle sentence — "a version-1 handshake advertises supported versions and capabilities before initialization" — describes a negotiation that no production code path performs, and has never performed. Every occurrence of `protocol/handshake` or `protocol/handshake-accepted` in `src/` is the receiver, the kind union or the schema: `src/simulation/protocol/types.ts:7`, `:18`, `:206`, `:425`; `src/simulation/protocol/transferables.ts:41`, `:50`; `src/simulation/worker/state-machine.ts:607`, `:637` (`handleHandshake`), `:646`. The only senders in the repository are under `tests/` (`tests/contract/simulation-worker-entry.test.ts:103`, `tests/contract/simulation-worker-protocol.test.ts:59`, `tests/contract/worker-integration.test.ts:51`, `tests/unit/worker-state-machine.test.ts:26`), and `git log -S` over `src/` finds no commit that ever added one there. The main thread's first message to a worker is `simulation/initialize` (`src/persistence/session/worker-session-host.ts:142`), which `handleInitialize` (`state-machine.ts:665`) accepts precisely because the state is still `'uninitialized'` (`:666-668`).
 
-Decision 4's third sentence is nevertheless true, by a route that is not the handshake: `protocolVersion: z.literal(SIMULATION_PROTOCOL_VERSION)` (`types.ts:154`) rejects any other envelope version at the decoder, before dispatch. That is why nothing is broken today — there is one envelope version, and the worker's handshake reply advertises no capabilities at all (`state-machine.ts:457`, `capabilities: []`). It is also why this is worth recording: the mechanism designed to detect a version mismatch is one nobody calls, so the day a version 2 exists it will not run.
+**Every `src/` anchor in the paragraph above was re-measured and eight of the nine had moved**; the finding itself is unchanged, and was re-established rather than assumed. The nine used to read `types.ts:7`, `:17`, `:204`, `:304`; `transferables.ts:30`, `:35`; `state-machine.ts:417`, `:444`, `:453`, and one test anchor was one line out (`simulation-worker-protocol.test.ts:58`). The substance holds exactly: grepping `protocol/handshake` across `src/` still returns four hits in `types.ts`, two in `transferables.ts` and three in `state-machine.ts`, all receivers or declarations, and the only senders are still those four test files. Two of the old anchors are worth naming because of *where* they now land: `state-machine.ts:444` and `:453` sit inside the body of an unsolicited `simulation/status-counts` post — a different message entirely, and one whose comments discuss what ADR 0003 forbids. A reader checking the handshake claim there would have found no handshake handling at all, in a passage that reads as though it were about this ADR, and could reasonably have concluded the paragraph was stale in substance rather than in anchors. That is the cost this sweep is paying down: a drifted anchor that lands on unrelated code is a stale citation, but one that lands on *plausible* code is a false finding waiting to be reported.
+
+Decision 4's third sentence is nevertheless true, by a route that is not the handshake: `protocolVersion: z.literal(SIMULATION_PROTOCOL_VERSION)` (`types.ts:156`) rejects any other envelope version at the decoder, before dispatch. That is why nothing is broken today — there is one envelope version, and the worker's handshake reply advertises no capabilities at all (`state-machine.ts:650`, `capabilities: []`). It is also why this is worth recording: the mechanism designed to detect a version mismatch is one nobody calls, so the day a version 2 exists it will not run.
 
 **Decision 4 is left standing rather than rewritten, because the repair is the owner's choice and not an editor's** (issue #274, Q4; issue #118 item 1): either send the handshake from `WorkerSessionHost` and make `'ready'` a reachable state, or delete `protocol/handshake`, `protocol/handshake-accepted` and `'ready'` and amend decision 4 together with [ADR 0006](./0006-simulation-worker-adapter.md)'s states 1-2. Until one is taken, read decision 4 as the design and this note as what `main` does.
 
