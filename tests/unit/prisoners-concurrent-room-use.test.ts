@@ -370,6 +370,16 @@ describe('a save restore neither leaks nor duplicates a concurrent-use claim', (
    * `RoomInstanceRegistry.loadSnapshot` plus `ActionSystem.reinstateUseClaims`
    * -- which is exactly the pair `PrisonerOperationsRuntime.loadSnapshot`
    * calls in that order.
+   *
+   * **The other half of the rebuild is not reachable from this file and is
+   * measured in `tests/integration/own-accommodation-claim-restore.test.ts`.**
+   * `reinstateUseClaims` filters on `action.target.kind !== 'room-catalog-id'`,
+   * and this fixture houses nobody (see `MEAL_BLOCK_START_TICK` above: *"no
+   * accommodation is set for anybody here"*), so no prisoner here can be
+   * performing an `own-accommodation` action and that half of the filter is
+   * structurally out of reach. Weakening it to `if (action === undefined)
+   * continue;` leaves every case in this file green while a restore invents a
+   * claim on a prisoner's own cell.
    */
   it('rebuilds exactly the claims the performing prisoners hold, and rebuilding twice does not double them', () => {
     const fixture = buildContentionFixture({ prisonerCount: 4, concurrentUseCapacity: 2 });
