@@ -1,3 +1,4 @@
+export * from './admission';
 export * from './consent';
 export * from './diagnostics';
 export * from './events';

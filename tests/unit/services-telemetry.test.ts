@@ -8,10 +8,14 @@ import {
   MemoryTelemetryTransport,
   REDACTED,
   TELEMETRY_CONSENT_VERSION,
+  TelemetryConsentGate,
   TelemetryRecorder,
+  type BatchingTelemetrySinkOptions,
   type ReleaseIdentity,
+  type TelemetryEnvelope,
   buildCrashDiagnosticAttributes,
   captureError,
+  consentGatedTelemetryAdmission,
   createTelemetryConsent,
   createTelemetrySessionId,
   isTelemetryAllowed,
@@ -45,18 +49,29 @@ function allConsent() {
   return createTelemetryConsent(NOW, { diagnostics: true, performance: true, gameplay: true });
 }
 
-function buildRecorder(options: { consent?: ReturnType<typeof allConsent> } = {}) {
+/**
+ * A sink whose admission gate reads the same consent the recorder does --
+ * the arrangement `createTelemetryPipeline` builds in production, and the
+ * only one in which the two cannot disagree.
+ */
+function buildSink(gate: TelemetryConsentGate, options: BatchingTelemetrySinkOptions = {}) {
   const transport = new MemoryTelemetryTransport();
-  const sink = new BatchingTelemetrySink(transport, { maxBatchSize: 2, flushIntervalMs: 1_000 });
+  const sink = new BatchingTelemetrySink(transport, consentGatedTelemetryAdmission({ consent: gate }), options);
+  return { sink, transport };
+}
+
+function buildRecorder(options: { consent?: ReturnType<typeof allConsent> } = {}) {
+  const gate = new TelemetryConsentGate(options.consent);
+  const { sink, transport } = buildSink(gate, { maxBatchSize: 2, flushIntervalMs: 1_000 });
   let counter = 0;
   const recorder = new TelemetryRecorder({
     sink,
     release,
     sessionId: 'session-fixture',
     newEventId: () => `event-${(counter += 1)}`,
-    ...(options.consent === undefined ? {} : { consent: options.consent }),
+    consent: gate,
   });
-  return { recorder, sink, transport };
+  return { recorder, sink, transport, gate };
 }
 
 describe('telemetry consent', () => {
@@ -229,8 +244,10 @@ describe('telemetry sampling', () => {
 
 describe('batching telemetry sink', () => {
   it('flushes once the batch is full and not before', async () => {
-    const transport = new MemoryTelemetryTransport();
-    const sink = new BatchingTelemetrySink(transport, { maxBatchSize: 2, flushIntervalMs: 60_000 });
+    const { sink, transport } = buildSink(new TelemetryConsentGate(allConsent()), {
+      maxBatchSize: 2,
+      flushIntervalMs: 60_000,
+    });
     const { recorder } = buildRecorder({ consent: allConsent() });
 
     const first = recorder.record('diagnostic.unhandled-error', { area: 'renderer' }, NOW);
@@ -248,7 +265,7 @@ describe('batching telemetry sink', () => {
   });
 
   it('drops the oldest events when the queue is full, and counts the drops', () => {
-    const sink = new BatchingTelemetrySink(new MemoryTelemetryTransport(), { maxQueueLength: 2, maxBatchSize: 10 });
+    const { sink } = buildSink(new TelemetryConsentGate(allConsent()), { maxQueueLength: 2, maxBatchSize: 10 });
     const { recorder } = buildRecorder({ consent: allConsent() });
     const decision = recorder.record('diagnostic.unhandled-error', { area: 'renderer' }, NOW);
     if (!decision.accepted) throw new Error('fixture event was rejected');
@@ -260,7 +277,7 @@ describe('batching telemetry sink', () => {
   });
 
   it('rate-limits within a window and recovers in the next one', () => {
-    const sink = new BatchingTelemetrySink(new MemoryTelemetryTransport(), {
+    const { sink } = buildSink(new TelemetryConsentGate(allConsent()), {
       rateLimit: { maxEvents: 1, windowMs: 1_000 },
     });
     const { recorder } = buildRecorder({ consent: allConsent() });
@@ -274,8 +291,11 @@ describe('batching telemetry sink', () => {
   });
 
   it('never propagates a transport failure to the caller', async () => {
-    const transport = new MemoryTelemetryTransport(() => true);
-    const sink = new BatchingTelemetrySink(transport, { maxBatchSize: 1 });
+    const sink = new BatchingTelemetrySink(
+      new MemoryTelemetryTransport(() => true),
+      consentGatedTelemetryAdmission({ consent: new TelemetryConsentGate(allConsent()) }),
+      { maxBatchSize: 1 },
+    );
     const { recorder } = buildRecorder({ consent: allConsent() });
     const decision = recorder.record('diagnostic.unhandled-error', { area: 'renderer' }, NOW);
     if (!decision.accepted) throw new Error('fixture event was rejected');
@@ -283,6 +303,146 @@ describe('batching telemetry sink', () => {
     sink.record(decision.envelope, NOW);
     await expect(sink.flush(NOW)).resolves.toBeUndefined();
     expect(sink.stats()).toMatchObject({ failedBatches: 1, sent: 0 });
+  });
+});
+
+/**
+ * The bypass, and the gate that closed it.
+ *
+ * `src/services/telemetry/recorder.ts` claimed in its header that *"no caller
+ * can construct an envelope that skips a privacy control by calling the sink
+ * directly with a hand-built object"*. `BatchingTelemetrySink.record` was
+ * public and did rate-limiting and queueing only, so that sentence was false
+ * for as long as it existed. Every test below is a hand-built object of
+ * exactly the shape it said was impossible.
+ *
+ * Each one is built by mutating **one field** of a real recorder-produced
+ * envelope, so the fixture cannot supply both sides of the comparison: the
+ * unmutated envelope is admitted by the same gate in the control below, which
+ * is what makes each refusal attributable to the field that was changed.
+ */
+describe('the sink admits nothing the recorder would have refused', () => {
+  function fixtureEnvelope(): TelemetryEnvelope {
+    const { recorder } = buildRecorder({ consent: allConsent() });
+    const decision = recorder.record('diagnostic.unhandled-error', { area: 'renderer' }, NOW);
+    if (!decision.accepted) throw new Error(`fixture event was rejected: ${decision.reason}`);
+    return decision.envelope;
+  }
+
+  it('admits the unmutated envelope, so every refusal below is attributable to its own mutation', () => {
+    const { sink } = buildSink(new TelemetryConsentGate(allConsent()));
+    expect(sink.record(fixtureEnvelope(), NOW)).toBe('queued');
+    expect(sink.stats()).toMatchObject({ queued: 1, refused: 0, lastRefusal: undefined });
+  });
+
+  it('refuses an envelope for a category the player declined, however it was built', () => {
+    // The whole defect in one call: a diagnostics envelope handed straight to
+    // a sink whose player said no to diagnostics.
+    const declined = createTelemetryConsent(NOW, { diagnostics: false, performance: true, gameplay: true });
+    const { sink, transport } = buildSink(new TelemetryConsentGate(declined));
+
+    expect(sink.record(fixtureEnvelope(), NOW)).toBe('refused');
+    expect(sink.stats()).toMatchObject({ queued: 0, refused: 1, lastRefusal: 'no-consent' });
+    expect(transport.sentEvents()).toEqual([]);
+  });
+
+  it('refuses an envelope with no consent on record at all', () => {
+    const { sink } = buildSink(new TelemetryConsentGate());
+    expect(sink.record(fixtureEnvelope(), NOW)).toBe('refused');
+    expect(sink.stats().lastRefusal).toBe('no-consent');
+  });
+
+  it('refuses attributes that never went through redaction', () => {
+    const { sink } = buildSink(new TelemetryConsentGate(allConsent()));
+    const smuggled: TelemetryEnvelope = {
+      ...fixtureEnvelope(),
+      attributes: { area: 'renderer', authToken: 'super-secret' },
+    };
+
+    expect(sink.record(smuggled, NOW)).toBe('refused');
+    expect(sink.stats().lastRefusal).toBe('unredacted');
+  });
+
+  it('refuses a value redaction would have rewritten, under an innocuous key', () => {
+    // The other half of redaction: not a sensitive *key*, a sensitive *value*.
+    const { sink } = buildSink(new TelemetryConsentGate(allConsent()));
+    const smuggled: TelemetryEnvelope = {
+      ...fixtureEnvelope(),
+      attributes: { area: 'renderer', note: 'wrote /home/matt/prison.sav' },
+    };
+
+    expect(sink.record(smuggled, NOW)).toBe('refused');
+    expect(sink.stats().lastRefusal).toBe('unredacted');
+  });
+
+  it('refuses a registered event relabelled into a category the player did allow', () => {
+    // Consent is per category, so the interesting attack is not "send without
+    // consent" but "send under a heading the player agreed to". `diagnostics`
+    // is off and `gameplay` is on; the envelope is a diagnostic wearing
+    // `gameplay`. Checking the registry's category rather than the envelope's
+    // is what refuses it.
+    const partial = createTelemetryConsent(NOW, { diagnostics: false, performance: false, gameplay: true });
+    const { sink } = buildSink(new TelemetryConsentGate(partial));
+    const relabelled: TelemetryEnvelope = { ...fixtureEnvelope(), category: 'gameplay' };
+
+    expect(sink.record(relabelled, NOW)).toBe('refused');
+    expect(sink.stats().lastRefusal).toBe('category-mismatch');
+  });
+
+  it('refuses an event name no registry entry declares a purpose for', () => {
+    const { sink } = buildSink(new TelemetryConsentGate(allConsent()));
+    const unregistered: TelemetryEnvelope = { ...fixtureEnvelope(), name: 'diagnostic.something-new' };
+
+    expect(sink.record(unregistered, NOW)).toBe('refused');
+    expect(sink.stats().lastRefusal).toBe('unknown-event');
+  });
+
+  it('refuses an object that is not a valid envelope at all', () => {
+    const { sink } = buildSink(new TelemetryConsentGate(allConsent()));
+    // `as` rather than a typed value on purpose: the gate's whole premise is
+    // that the caller's claim about the shape is not evidence, and a compiled
+    // bundle enforces no types.
+    const malformed = { ...fixtureEnvelope(), occurredAt: 'yesterday' } as unknown as TelemetryEnvelope;
+
+    expect(sink.record(malformed, NOW)).toBe('refused');
+    expect(sink.stats().lastRefusal).toBe('invalid-envelope');
+  });
+
+  it('does not spend the rate-limit budget on a refused envelope', () => {
+    // Otherwise a caller pushing rejects could rate-limit the recorder out of
+    // reporting the crash that caller is causing.
+    const gate = new TelemetryConsentGate(allConsent());
+    const { sink } = buildSink(gate, { rateLimit: { maxEvents: 1, windowMs: 60_000 } });
+    const unregistered: TelemetryEnvelope = { ...fixtureEnvelope(), name: 'diagnostic.something-new' };
+
+    expect(sink.record(unregistered, NOW)).toBe('refused');
+    expect(sink.record(unregistered, NOW)).toBe('refused');
+    expect(sink.record(fixtureEnvelope(), NOW)).toBe('queued');
+  });
+
+  it('stops admitting the moment consent is withdrawn through the recorder', () => {
+    // The recorder and the sink read one holder, so there is no window in
+    // which the recorder has stopped and the sink has not.
+    const { recorder, sink, gate } = buildRecorder({ consent: allConsent() });
+    const envelope = fixtureEnvelope();
+    expect(sink.record(envelope, NOW)).toBe('queued');
+
+    recorder.setConsent(withdrawTelemetryConsent(NOW + 1));
+    expect(gate.allows('diagnostics')).toBe(false);
+    expect(sink.record(envelope, NOW + 2)).toBe('refused');
+    expect(sink.stats().lastRefusal).toBe('no-consent');
+  });
+
+  it('never refuses an envelope the recorder itself produced', () => {
+    // The other direction. A gate that refused everything would satisfy every
+    // assertion above, and `sink-refused` is the reason the recorder reports
+    // when the two disagree -- it must be unreachable on the legitimate path.
+    const { recorder, sink } = buildRecorder({ consent: allConsent() });
+    for (const name of ['diagnostic.unhandled-error', 'diagnostic.save-decode-failed', 'diagnostic.worker-terminated']) {
+      const decision = recorder.record(name, { area: 'renderer' }, NOW);
+      expect(decision, `${name} was refused by the sink it was built for`).toMatchObject({ accepted: true });
+    }
+    expect(sink.stats().refused).toBe(0);
   });
 });
 
@@ -322,14 +482,14 @@ describe('telemetry recorder', () => {
   });
 
   it('does not record a sampled-out event at all', () => {
-    const transport = new MemoryTelemetryTransport();
-    const sink = new BatchingTelemetrySink(transport, { maxBatchSize: 1 });
+    const gate = new TelemetryConsentGate(allConsent());
+    const { sink } = buildSink(gate, { maxBatchSize: 1 });
     const recorder = new TelemetryRecorder({
       sink,
       release,
       sessionId: 'session-fixture',
       newEventId: () => 'event-1',
-      consent: allConsent(),
+      consent: gate,
       sampleRateOverrides: { 'performance.tick-budget': 0 },
     });
     expect(recorder.record('performance.tick-budget', { tickMs: 12 }, NOW)).toMatchObject({
