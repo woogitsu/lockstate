@@ -53,6 +53,24 @@ export const MIN_INTELLIGENCE_CONFIDENCE = 0.05;
  * target (not a full scan) so `SearchSystem` can cheaply look up existing
  * suspicion about the exact target it's about to search, per the issue's
  * "avoid scanning every entity/item" performance requirement.
+ *
+ * ### Identifier category (ADR 0012)
+ *
+ * `intel.<n>` is an **allocated identity** (category 1), stated here because
+ * ADR 0012's "Neither category may be left implicit" requires the declaring
+ * module to say so. The counter is owned by this class, is part of this
+ * subsystem's snapshot, and the id is carried rather than re-derived.
+ *
+ * ADR 0012's Decision asserted this subsystem "already satisfied" that; it did
+ * not, and the ADR's own Context table records why in the same breath --
+ * *"restored from max suffix"*. `decayAll` deletes expired records, so the
+ * maximum surviving suffix is a lower bound on what has been minted and not
+ * the counter. Measured before the fix: three reports, one decayed away, then
+ * one more report -- a continuous run mints `intel.4` and a run restored from
+ * that same save mints `intel.3`. The id had already crossed a save boundary
+ * (it is the key of every row in the payload's `intelligence` array), which is
+ * precisely the condition ADR 0012's Context warns turns this shape into a
+ * defect.
  */
 export class IntelligenceLedger {
   private readonly records = new Map<string, IntelligenceMutableRecord>();
@@ -107,7 +125,38 @@ export class IntelligenceLedger {
     return [...this.records.keys()].sort().map((id) => [id, { ...this.records.get(id)! }] as const);
   }
 
-  public loadSnapshot(snapshot: ReturnType<IntelligenceLedger['getSnapshot']>): void {
+  /**
+   * The allocation counter, so a save can carry it (ADR 0012 category 1).
+   *
+   * `getSnapshot` cannot: the ledger's records are the ids that *survive*, and
+   * `decayAll` deletes expired ones -- so the maximum surviving suffix is a
+   * lower bound on what has been minted, not the counter. Reconstructing the
+   * counter from the records is exactly the derivation this exists to stop
+   * being the only option.
+   */
+  public getSequence(): number {
+    return this.sequence;
+  }
+
+  /**
+   * `sequence` is the counter the writing session held, and is **optional**.
+   *
+   * Absent, the counter is derived from the maximum surviving id suffix --
+   * which is what this method did unconditionally before the field existed,
+   * so a save written by an older build restores exactly as it did (ADR 0038
+   * §1: absence is a fact about the save's age, honoured with the value the
+   * writing build would have held). That is why the save schema needs no
+   * version bump for it.
+   *
+   * The recorded value is taken as a **floor, not as gospel**:
+   * `Math.max(maxSequence, sequence)`. ADR 0012 category 1 requires the
+   * counter be restored "such that no future id can collide with a restored
+   * one", and a save whose recorded counter disagrees with its own records --
+   * hand-edited, or corrupted below the checksum's notice -- would otherwise
+   * re-mint an id that is still live in the same ledger. The floor makes the
+   * requirement hold for any input rather than for well-formed input.
+   */
+  public loadSnapshot(snapshot: ReturnType<IntelligenceLedger['getSnapshot']>, sequence?: number): void {
     this.records.clear();
     this.idsByTargetKey.clear();
     let maxSequence = 0;
@@ -123,7 +172,7 @@ export class IntelligenceLedger {
       const numericSuffix = Number(id.slice('intel.'.length));
       if (Number.isFinite(numericSuffix)) maxSequence = Math.max(maxSequence, numericSuffix);
     }
-    this.sequence = maxSequence;
+    this.sequence = sequence === undefined ? maxSequence : Math.max(maxSequence, sequence);
   }
 }
 

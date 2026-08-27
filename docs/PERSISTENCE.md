@@ -69,11 +69,12 @@ it — see the three version sections below.
 
 ### Adding an optional field without a version bump
 
-Four payload fields have been added since their section was first written --
+Five payload fields have been added since their section was first written --
 `construction.orders[].edge` (#74), `construction.currentTransaction` /
-`currentTransactionId` (#108) and `masterSeed` (#412) -- and none of them
-bumped the schema version. The conditions that make that correct, rather than
-merely convenient, are:
+`currentTransactionId` (#108), `masterSeed` (#412) and
+`simulation.contraband.intelligenceSequence` -- and none of them bumped the
+schema version. The conditions that make that correct, rather than merely
+convenient, are:
 
 - **The field is optional, and absent means what the older build already
   did.** An order with no `edge` resolves to `DEFAULT_BUILD_EDGE`; a
@@ -109,6 +110,19 @@ costs nothing" is not: `.strict()` means an *older* build reading a save that
 carries the key refuses it as `invalid-shape`, where a V6 bump would have
 given the same refusal the label `unsupported-version`. Both builds refuse it;
 only the diagnosis differs. See [ADR 0038](./adr/0038-what-makes-a-save-compatible.md) §4.
+
+`simulation.contraband.intelligenceSequence` is the fifth, and its absence is
+unambiguous for the plainest reason of the five: it is what the reader already
+did. `IntelligenceLedger.loadSnapshot` derived the counter from the maximum
+surviving `intel.<n>` suffix unconditionally, so a save without the key gets
+exactly that, and the key exists because the derivation is *wrong* — `decayAll`
+deletes expired records, so the surviving maximum is a lower bound on what has
+been minted and a restored session re-minted an id the writing session had
+already used. `contrabandSectionSchema` is shared by the V3, V4 and V5
+session-systems shapes, so the key is equally valid in all three and no
+migration step has to add it. ADR 0012 category 1 is what requires the counter
+to be in the snapshot at all; `docs/DETERMINISM.md` records the divergence that
+remains for a save written before it was.
 
 ### What makes a save compatible, and where a named RNG stream fits
 

@@ -227,6 +227,18 @@ export interface EncodedSecurity {
 export interface EncodedContraband {
   readonly items: ReturnType<ContrabandRegistry['getSnapshot']>;
   readonly intelligence: ReturnType<IntelligenceLedger['getSnapshot']>;
+  /**
+   * `IntelligenceLedger`'s allocation counter (ADR 0012 category 1).
+   *
+   * Optional, and **not** a save-schema version bump, on ADR 0038 §1's
+   * optional-field rule: absent means what every build did before the field
+   * existed -- derive the counter from the maximum surviving id suffix -- so a
+   * bundle written by an older build restores exactly as it did. It cannot be
+   * folded into `intelligence`, which is keyed by the ids that *survive*;
+   * `decayAll` deletes expired records, so the surviving maximum is a lower
+   * bound on what has been minted rather than the counter.
+   */
+  readonly intelligenceSequence?: number;
   readonly informants: readonly InformantRecord[];
   readonly confiscations: readonly ConfiscationEvent[];
   readonly searchPolicies: readonly SearchPolicyDefinition[];
@@ -523,6 +535,7 @@ export function captureSessionSystems(runtime: SimulationRuntime): EncodedSessio
     contraband: {
       items: runtime.contraband.getSnapshot(),
       intelligence: runtime.intelligence.getSnapshot(),
+      intelligenceSequence: runtime.intelligence.getSequence(),
       informants: runtime.informants.getSnapshot(),
       confiscations: runtime.confiscations.getSnapshot(),
       searchPolicies: [...runtime.searchPolicies].sort((a, b) => (a.scope < b.scope ? -1 : a.scope > b.scope ? 1 : 0)),
@@ -705,7 +718,7 @@ export function restoreSessionSystems(
 
   // 6. Contraband, intelligence and searches.
   runtime.contraband.loadSnapshot(systems.contraband.items);
-  runtime.intelligence.loadSnapshot(systems.contraband.intelligence);
+  runtime.intelligence.loadSnapshot(systems.contraband.intelligence, systems.contraband.intelligenceSequence);
   runtime.informants.loadSnapshot(systems.contraband.informants);
   runtime.confiscations.loadSnapshot(systems.contraband.confiscations);
   runtime.searchPolicies.length = 0;

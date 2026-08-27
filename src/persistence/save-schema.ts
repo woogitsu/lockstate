@@ -723,6 +723,33 @@ const contrabandSectionSchema = z
           .strict(),
       ]),
     ),
+    /**
+     * `IntelligenceLedger`'s allocation counter (ADR 0012 category 1, #431's
+     * neighbour rather than #431 itself).
+     *
+     * **Optional, and `SAVE_SCHEMA_VERSION` is not bumped**, on ADR 0038 §1's
+     * three conditions, each checked rather than assumed: the field is
+     * optional; absence has exactly one meaning -- the counter is derived from
+     * the maximum surviving id suffix, which is what every build did before
+     * this key existed, so an older save restores exactly as it did; and no
+     * existing field changed meaning. It is the same pattern `masterSeed`
+     * (§4), `entities`, `simulation` and `identity` already use, and it
+     * carries §4's one stated cost too: this section is `.strict()`, so an
+     * *older* build reading a save that carries this key refuses it as
+     * `invalid-shape` where a bump would have said `unsupported-version` --
+     * the label on a refusal both builds make either way.
+     *
+     * It cannot be folded into the `intelligence` array above, which is keyed
+     * by the ids that *survive*. `IntelligenceLedger.decayAll` deletes expired
+     * records, so the surviving maximum is a lower bound on what has been
+     * minted; a continuous run and a run restored from the same save minted
+     * `intel.4` and `intel.3` respectively before this field existed.
+     *
+     * `contrabandSectionSchema` is shared by the V3, V4 and V5 session-systems
+     * shapes, so -- exactly as `currentTransaction` above -- the key is
+     * equally valid in all three and no migration step has to add it.
+     */
+    intelligenceSequence: z.number().int().min(0).optional(),
     informants: z.array(
       z.object({ holderKind: z.enum(['prisoner', 'staff']), holderId: z.string().min(1), reliability: z.number() }).strict(),
     ),
