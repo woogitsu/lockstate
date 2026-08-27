@@ -67,9 +67,31 @@ asserts — were verified against this branch's `main` at v0.0.37, and every
 because it is the weaker half. The pixel budgets quoted in
 [ADR 0022](./0022-room-zoning-surface.md) and in `src/ui/hud/hud.css` were
 measured on a local merge of #282 and #283, both of which have since landed.
-This ADR takes two figures from them — the Build panel's 3.9px of always-visible
-headroom at 900×600, and the horizontal overflow a third button in
-`.hud-build__actions` causes — and does not re-measure them. What it *adds* is
+This ADR takes two things from them — the Build panel's always-visible headroom
+at 900×600, and the horizontal overflow a third button in
+`.hud-build__actions` causes — and does not re-measure them.
+
+**The headroom figure this paragraph used to state, 3.9px, is withdrawn rather
+than replaced.** It was attributed to ADR 0022 and `src/ui/hud/hud.css`, and
+neither records it: `3.9` appears in no other ADR, in no `.css` file and nowhere
+in `src/`. What those two sources actually record at 900×600 is **7.81px** —
+`hud.css` says *"the always-visible budget for a new block is 7.81px — the
+corrected figure, measured to 0.05px after #174's second half"*, and ADR 0022's
+table and amendment carry 7.8, 7.81 and 7.9 for the fold gap, against a
+superseded 11.8–12.2. So this was not a stale number; it was one nobody can
+source, and picking a replacement would be inventing a measurement rather than
+inheriting one, which is exactly what this paragraph says it is not doing. No
+figure is stated in its place because **this document's argument does not turn
+on it** — see decision 1 below, whose point is that the Build panel and this
+panel are never laid out together, so the budget is not a constraint on this
+surface at any value.
+
+*A guess at where it came from, offered as a guess:* `hud.css` continues,
+*"Roughly 4px of whichever it was had never been space at all: it was the
+catalogue laying its own gutter over the map block's hairline"*, and
+11.8 − 7.81 = 3.99. A figure for the space that turned out **not** to exist reads
+very like a figure for the space that does. Nothing confirms that reading, and
+it is recorded only so the next reader does not spend the same hour on it. What it *adds* is
 structural and needs no measurement: the Security tab renders no panel at all
 today, so a panel put there competes with nothing.
 
@@ -116,7 +138,7 @@ the eight ids as having no consumer anywhere at all.
 The HUD may not import the simulation. That is `AGENTS.md` boundary 1 in its
 strongest form for `src/ui/hud/**`, and `tests/unit/ui-hud-messages.test.ts`
 asserts it by scanning for the import. So the HUD cannot build a command: it
-emits a `HudIntent` (`src/ui/hud/hud.ts:153`) and `src/main.ts` turns it into
+emits a `HudIntent` (`src/ui/hud/hud.ts:270`) and `src/main.ts` turns it into
 one, in the `onIntent` switch. The two most recent producers took exactly that
 route and are the pattern this follows —
 `case 'place-build-order'` and `case 'purchase-materials'` in `src/main.ts`.
@@ -179,7 +201,8 @@ So the surface costs no tab, no catalogue row and no always-visible pixel in
 any panel that already exists. It is a second panel in the same slot, shown
 under the same rule, hidden whenever the Build panel is shown. **The two are
 never laid out at the same time**, which is what makes the Build panel's height
-budget — the 3.9px at 900×600 that ADR 0022 and `hud.css` both record — simply
+budget at 900×600 — whatever its value; see *Layout claims* above, where the
+figure this sentence used to quote is withdrawn as unsourceable — simply
 not a constraint on this surface.
 
 The panel holds one list of hireable roles and one action. It is not a staff
@@ -257,7 +280,8 @@ about to find.
 | `roster-full` | the roster is at the capacity its `EntityStore` was built with | `hire.roster-full` |
 
 `roster-full` is a guard rather than a policy. `EntityStore.spawn()` **throws**
-`'EntityStore capacity exhausted'` (`src/simulation/entity/entity-store.ts:102`),
+`'EntityStore capacity exhausted'` (`src/simulation/entity/entity-store.ts:118`;
+the anchor read `:102`),
 and a throw out of the kernel's command handler is not a refusal — it is a
 crashed tick. Checking the headcount against the capacity before spawning turns
 a structural fault into the ordinary refusal the player is told about, which is
