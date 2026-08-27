@@ -551,9 +551,22 @@ It needs no new persisted state and no save-schema version: everything it reads 
 `security.guards.records` and the live claim views of the two `'on-search'`
 claimants, all of which a V5 save has held all along.
 
-Ten of the fifteen catalogued read models still have a route and nobody on the
-end of it. That is the honest state of this channel, and it is a different
+**Nine** of the fifteen catalogued read models still have a route and nobody on
+the end of it: **six are read, by five modules.** Both numbers are stated
+because the difference between them is what made the previous sentence wrong.
+It said ten, having counted reader *modules* rather than read models —
+`src/ui/simulation-room-needs.ts` asks for two, `hud/room-list` and
+`hud/room-detail`, so five modules and six read models are the same fact
+counted twice. It was already nine at the commit that wrote it.
+
+The six with a reader are `hud/build-queue`, `hud/pending-deliveries`,
+`hud/held-guards`, `hud/prisoner-population`, `hud/room-list` and
+`hud/room-detail`; a `grep` for the quoted id under `src/ui/` is the whole
+derivation. That is the honest state of this channel, and it is a different
 sentence from the one this section used to carry.
+
+`tests/foundation/projection-reachability-contract.test.ts` carries the same
+sentence and is not corrected here; it is another agent's surface.
 
 ## Gaps: fields a panel plausibly wants that the simulation does not have
 
