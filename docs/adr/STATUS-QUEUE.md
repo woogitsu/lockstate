@@ -8,9 +8,10 @@ implementation.
 
 **Nothing here changes a status.** A status moves in the ADR and in the index,
 never in this file. What changed with this revision is what the file is *for*:
-§1 records **all thirteen** flips, §2 holds **two entries — the two dated rulings
-#382 wrote into ADR 0008 §2, and the 2026-08-27 amendment scoping that ADR's §3
-by authority** — above the account of why the queue had been
+§1 records **all thirteen** flips, §2 holds **three entries — the two dated rulings
+#382 wrote into ADR 0008 §2, the 2026-08-27 amendment scoping that ADR's §3
+by authority, and the preconditions on the change that gives this project its
+first server-side entry point** — above the account of why the queue had been
 emptied three times and what that bought (ADR 0029 was accepted on 2026-08-26
 and its entry deleted; 0031 arrived immediately after and was itself accepted)
 — and everything after it is the residue — one genuinely open decision, one
@@ -157,7 +158,8 @@ files**, and every claim in them cites one. The set, in full:
 
 - `package.json` and `supabase/migrations/**` (§3);
   `.github/workflows/migrate-database.yml`, `docs/DEPLOYMENT.md` and
-  `wrangler.jsonc` (§4).
+  `wrangler.jsonc` (§4). `supabase/tests/003_data_api_grants.test.sql` was added
+  on 2026-08-27, when §2's third entry began citing the role sweep it holds.
 - `docs/CLOUD_SAVE.md`, `docs/TRUSTED_SERVICES.md`, `docs/HUD_PROJECTIONS.md`,
   `README.md`, `docs/adr/README.md` and
   `docs/research/2026-08-25-economy-rate.md`.
@@ -331,17 +333,20 @@ cells is exercised nowhere, because no shipped session yet furnishes two.
 
 ---
 
-## 2. Two entries, both inside ADR 0008: #382's two rulings in §2, and 2026-08-27's scope clause for §3
+## 2. Three entries: #382's two rulings in ADR 0008 §2, 2026-08-27's scope clause for its §3, and the Worker that lands with telemetry ingest
 
 **This heading has now read "empty", "exactly one entry: ADR 0029", "empty
-again", one entry, two, one, empty for the third time, and now one again** —
+again", one entry, two, one, empty for the third time, one again, and — on
+2026-08-27 — three** —
 0031, 0032, 0033 and 0007's amendment were all accepted on 2026-08-26. Two of those four
 never appeared here at all, which is the failure recorded at the foot of this
 section, and the churn in this heading is the point rather than noise: it is the
-only place a reader can see how fast this corpus moves. **The entry it holds now
-is the second amendment to be queued here rather than a new document**, after
-0007's — and unlike 0007's it is queued by a decision recorded in
-`docs/adr/README.md` rather than by its author's own instinct. An amendment is queued here for the
+only place a reader can see how fast this corpus moves. **Two of the three
+entries it holds are amendments rather than new documents**. Counting from this
+section's own record that 0007's was the first amendment ever to have a row here,
+the amendments queued in this file are 0007's — by its author's own instinct —
+and ADR 0008's two, both queued by the ruling recorded in
+`docs/adr/README.md`. An amendment is queued here for the
 same reason a new ADR is: it decides something the sections above it do not, and
 nothing else in the corpus would tell the owner that a decision is waiting.
 `adr-numbering-contract.test.ts` counts documents by their `Status` line, so an
@@ -506,6 +511,60 @@ its opening paragraph's second half — the one saying the wording and the
 consequences are the editor's and open — is replaced by who approved what. The
 clause, the table and T13 are not touched, because they are the text being
 approved. **And this entry is deleted.**
+
+### The first server-side entry point (2026-08-27) — the order is decided, the pre-merge approval is not
+
+**What is not waiting.** The owner has decided the *order*: telemetry ingest
+needs a `main` in `wrangler.jsonc`, they were offered "separate staging from
+production first" or "add the Worker together with the ingest", and they chose
+the second — one deliberate change, with what lands on `lockstate.io` written
+down and approved before it merges. That choice is recorded in
+[`docs/DEPLOYMENT.md`](../DEPLOYMENT.md), "The first server entry point lands
+with the ingest, not before", which is where a person looks before touching what
+serves the live site.
+
+**Why it is nonetheless in this file.** Because the condition attached to the
+choice is a **future approval that nothing will ask for**. `lockstate.io` is
+served by `lockstate-staging`; the `staging` job publishes on every merge to
+`main` whose CI concludes `success`; and the gate on that row is a CI conclusion,
+not an approval. So the merge that adds `main` is the act that puts executing
+code on the public site, and no workflow will pause to ask. This row is the
+standing reminder that the approval is owed, and it is deleted by the change that
+obtains it.
+
+**What the owner is being asked for, and when.** Not now — at the pull request
+that adds `main`. Nine items, listed in full in that `docs/DEPLOYMENT.md`
+section and summarised here so this row is readable on its own: the commit and
+the fact that merging it publishes; which requests the handler claims and that
+everything else still falls through to Static Assets; what the Worker may hold;
+what it must not — **never a `service_role` key**, because that role may call
+`record_entitlement_event`, so a public Worker holding it would hold the
+paid-entitlement write path; server-side validation, bounding, and a
+server-decided occurrence time and weight; whether `public/_headers` changes;
+rollback; the wrangler trap; and ADR 0002's amendment.
+
+**The credential is the sharp one, and it is unswept either way.**
+`supabase/tests/003_data_api_grants.test.sql` pins the privilege surface of
+`anon`, `authenticated` and `service_role`, each named as a literal. A dedicated
+least-privilege role for the Worker — which is the mitigation — is seen by none
+of it unless that suite's role list is extended in the same change. Extending a
+pinned list is what adding a role looks like here.
+
+**Whether ADR 0002 needs amending now: no, and the reason is which sentence goes
+false.** Its rejected alternative *"Add a Worker server entry point now"* is
+**honoured** rather than overturned — it was rejected because *"a placeholder
+server would add routing and security surface without product value"*, and a
+Worker that arrives carrying the ingest is not a placeholder. What goes false is
+the Decision bullet *"Deploy the current application as an assets-only Worker
+with no application-server entry point"*, and it goes false in the commit that
+adds `main`, not on the day the decision to do it was recorded. Amending it today
+would put the document ahead of the code. **If the owner disagrees and wants ADR
+0002 amended now, that is the one part of this row that is a decision rather
+than a reminder.**
+
+**And this entry is deleted** by the pull request that adds `main`, in the same
+commit — which is this file's standing rule that landing the change an entry
+describes means updating the entry with it.
 
 ### ADR 0031 — accepted 2026-08-26, and the entry is deleted
 
@@ -799,9 +858,10 @@ either a decision is accepted and the code has not caught up, which is a code or
 wiring gap, or two documents state different numbers, which is a docs-truth job".
 That premise is withdrawn all the same, and with it the claim that those two
 shapes are exhaustive: there are two more, described below. **And the queue is
-not empty now** — §2 holds two entries, the two rulings #382 wrote into ADR 0008
-§2 and the 2026-08-27 amendment scoping that ADR's §3 — so the "with the queue
-empty" opening no longer describes the file either.
+not empty now** — §2 holds three entries: the two rulings #382 wrote into ADR 0008
+§2, the 2026-08-27 amendment scoping that ADR's §3, and the preconditions on the
+first server-side entry point — so the "with the queue empty" opening no longer
+describes the file either.
 
 **Corrected at this anchor, and it is the sharper defect of the two.** The
 paragraph above then read *"**The queue is not empty** — §2 holds **two**
