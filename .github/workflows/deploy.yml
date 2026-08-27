@@ -479,6 +479,46 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
+          # ALL HISTORY, FOR THE SAME REASON ci.yml's `verify` JOB TAKES IT:
+          # "Verify before shipping" below runs `pnpm verify`, and `pnpm verify`
+          # reads history. tests/foundation/documentation-commit-citation-contract.test.ts
+          # resolves every commit sha the documentation cites, and its first
+          # case fails -- deliberately, rather than skipping -- on a checkout
+          # too shallow to resolve any of them. Read the comment on ci.yml's
+          # `verify` checkout for what the depth costs and why a narrower one
+          # was rejected; this is the same decision, not a second one.
+          #
+          # Without this line the job takes `actions/checkout`'s default depth
+          # of 1, and `pnpm verify` fails here for a reason that has nothing to
+          # do with the commit being shipped. Reproduced against a depth-1
+          # clone of this branch:
+          #
+          #   FAIL ... > runs on a checkout deep enough to answer, and fails
+          #              rather than skipping when it is not
+          #   AssertionError: this checkout is shallow ... expected true to be false
+          #   Tests  3 failed | 5 passed (8)
+          #
+          # It is a fail-safe failure -- it happens before anything is
+          # published -- but it is a production deploy blocked on a documentation
+          # gate reporting a checkout, and the message names a shallow clone
+          # rather than the commit, so it reads as a broken gate.
+          #
+          # AND IT WAS NOT INTERMITTENT, WHICH IS THE PART WORTH KNOWING. The
+          # workspace on this runner is per REPOSITORY and shared across
+          # workflows -- read out of a real run's log, not inferred: Deploy run
+          # 33005151972's `staging` job worked in
+          # `_work/lockstate/lockstate` and its `git clean -ffdx` deleted
+          # `browser-suite.log` and `test-results/`, which only ci.yml's
+          # `browser` job creates. So CI's `assets` and `browser` jobs, and this
+          # workflow's own `staging` job, all leave that workspace shallow at
+          # the default depth. But this job did not merely inherit that state:
+          # at a positive `fetch-depth` `actions/checkout` issues
+          # `git fetch --depth=1` itself, which re-writes `.git/shallow` even
+          # against a complete repository (measured in ci.yml's comment, and
+          # visible as the `--depth=1` line in that run's log). The step would
+          # therefore have failed on every dispatch, including the first one
+          # after a cold clone -- not on some of them.
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6

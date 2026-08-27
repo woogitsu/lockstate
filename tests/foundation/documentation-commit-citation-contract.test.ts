@@ -152,6 +152,8 @@ import { describe, expect, it } from 'vitest';
 const REPOSITORY_ROOT = resolve(__dirname, '../..');
 
 const CI_WORKFLOW = '.github/workflows/ci.yml';
+const DEPLOY_WORKFLOW = '.github/workflows/deploy.yml';
+const WORKFLOWS_DIRECTORY = '.github/workflows';
 
 /**
  * A commit citation: a backtick span whose *entire* content is a hexadecimal
@@ -411,6 +413,64 @@ function filesUnder(directory: string, extensions: readonly string[]): readonly 
   return found;
 }
 
+interface VerifyJob {
+  /** Repository-relative workflow path, which is how a failure has to name it. */
+  readonly workflow: string;
+  readonly job: string;
+  /** The job's own lines, comments included; the caller drops those. */
+  readonly lines: readonly string[];
+}
+
+/**
+ * Every job in `.github/workflows/` whose steps run a bare `pnpm verify`, and
+ * therefore run this gate.
+ *
+ * Deliberately a discovery rather than a list. The defect this closes was a
+ * *second* such job -- `deploy.yml`'s `production` -- that nothing connected to
+ * the depth requirement, so a list written here would have had exactly the same
+ * hole as the case that named one workflow.
+ *
+ * The parsing is line-shaped rather than a YAML parse, matching every other
+ * workflow contract in this directory: a job header is two spaces, a name and a
+ * colon at end of line, and the job ends at the next line whose first
+ * non-whitespace character is at column 2 or less. That is the shape these
+ * files are written in, and `ci-configuration-contract.test.ts` reads them the
+ * same way.
+ *
+ * `run: pnpm verify` is matched **exactly**, on a comment-stripped line, and
+ * both halves matter. Comments first, because `deploy.yml` discusses
+ * `pnpm verify` in three comments inside jobs that do not run it, and prose
+ * about a step must never satisfy an assertion about the step. Exactly, because
+ * `pnpm verify:sql`, `pnpm verify:benchmark`, `pnpm verify:deployment` and
+ * `pnpm verify:assets` are different commands that do not run Vitest over
+ * `tests/foundation/` and must not be swept in by a prefix match.
+ */
+function jobsRunningVerify(): readonly VerifyJob[] {
+  const found: VerifyJob[] = [];
+
+  for (const path of filesUnder(join(REPOSITORY_ROOT, WORKFLOWS_DIRECTORY), ['.yml', '.yaml'])) {
+    const lines = readFileSync(path, 'utf8').split(/\r?\n/u);
+    const workflow = relative(REPOSITORY_ROOT, path).split('\\').join('/');
+
+    for (const [index, line] of lines.entries()) {
+      const header = /^ {2}([A-Za-z0-9_-]+):$/u.exec(line);
+      if (header === null) continue;
+
+      const body = lines.slice(index + 1);
+      const end = body.findIndex((next) => next.trim().length > 0 && next.search(/\S/u) <= 2);
+      const jobLines = end === -1 ? body : body.slice(0, end);
+
+      const runsVerify = jobLines
+        .filter((jobLine) => !jobLine.trim().startsWith('#'))
+        .some((jobLine) => /^-?\s*run:\s*pnpm verify$/u.test(jobLine.trim()));
+
+      if (runsVerify) found.push({ workflow, job: header[1]!, lines: jobLines });
+    }
+  }
+
+  return found;
+}
+
 const scannedFiles: readonly string[] = [
   ...filesUnder(join(REPOSITORY_ROOT, 'docs'), ['.md']),
   ...filesUnder(join(REPOSITORY_ROOT, 'tests'), ['.ts']),
@@ -481,39 +541,61 @@ describe('a commit sha cited in prose names a commit that exists', () => {
     ).toBe(false);
   });
 
-  it('reads the depth it needs out of the workflow, so deleting the setting fails here', async () => {
-    const workflow = readFileSync(join(REPOSITORY_ROOT, CI_WORKFLOW), 'utf8');
-    const lines = workflow.split(/\r?\n/u);
-    const jobStart = lines.indexOf('  verify:');
+  it('reads the depth it needs out of every job that runs it, so deleting the setting fails here', () => {
+    // This case used to name `ci.yml`'s `verify` job and only that job, and
+    // that was the bug rather than the shortcut: `deploy.yml`'s `production`
+    // job runs `pnpm verify` too -- "Verify before shipping", the gate on the
+    // commit about to become lockstate.io -- and its checkout took the
+    // action's default depth of 1. So the *deploy* ran this gate on a
+    // one-commit checkout and failed, reporting a shallow clone rather than
+    // anything about the commit. The subject is therefore "every job that runs
+    // `pnpm verify`", discovered from the workflows, not a list written here:
+    // a third such job added tomorrow is covered without editing this file,
+    // and `docs/AGENT_WORKFLOW.md` §4 is explicit that a sentence naming a
+    // subject outlives one naming a tally.
+    const runners = jobsRunningVerify();
+
+    // Vacuity guard, and it is a real one: `runsBareVerify` matches an exact
+    // `run: pnpm verify`, so a workflow that reformatted that step would leave
+    // this case asserting over nothing at all and passing.
+    const found = runners.map(({ workflow, job }) => `${workflow} ${job}`);
+
+    // The two known ones must still be among them. Not an exact-set assertion:
+    // a third job that runs `pnpm verify` should be *checked* by the loop
+    // below, not rejected by this line, and an exact set is the tally that
+    // rots. This is the floor, and the loop is the subject.
+    expect(
+      found,
+      `${CI_WORKFLOW}'s \`verify\` job no longer parses as running a bare \`pnpm verify\`. It is the job this whole gate depends on; if it was renamed or its step reformatted, say so here in the same commit. Without it the loop below asserts over less than it thinks. Found: ${found.join(', ') || '(nothing)'}`,
+    ).toContain(`${CI_WORKFLOW} verify`);
 
     expect(
-      jobStart,
-      `${CI_WORKFLOW} has no \`verify:\` job. That is the job that runs \`pnpm verify\` and therefore this gate; if it was renamed, rename it here in the same commit.`,
-    ).toBeGreaterThanOrEqual(0);
+      found,
+      `${DEPLOY_WORKFLOW}'s \`production\` job no longer parses as running a bare \`pnpm verify\`. That job's "Verify before shipping" step is the gate on the commit about to become lockstate.io, and it is the reason this case stopped being about one workflow. Found: ${found.join(', ') || '(nothing)'}`,
+    ).toContain(`${DEPLOY_WORKFLOW} production`);
 
-    const body = lines.slice(jobStart + 1);
-    const jobEnd = body.findIndex((line) => line.trim().length > 0 && line.search(/\S/u) <= 2);
-    const jobLines = jobEnd === -1 ? body : body.slice(0, jobEnd);
+    for (const { workflow, job, lines } of runners) {
+      // Second vacuity guard, per job: a block parsed down to nothing would
+      // fail the assertion below while blaming the workflow instead of this
+      // parser.
+      expect(
+        lines.length,
+        `the \`${job}:\` job in ${workflow} parsed to almost no lines; the job parser here is broken.`,
+      ).toBeGreaterThan(20);
 
-    // Vacuity guard: a block parsed down to nothing would fail the assertion
-    // below while blaming the workflow instead of this parser.
-    expect(
-      jobLines.length,
-      `the \`verify:\` job in ${CI_WORKFLOW} parsed to almost no lines; the job parser here is broken.`,
-    ).toBeGreaterThan(20);
+      // Comments dropped first. This file's comment explains the depth at
+      // length and names the setting, so a step that only *describes*
+      // `fetch-depth: 0` must not be able to satisfy an assertion that it sets
+      // it -- the same weakness the provisioning, version bump and deploy
+      // checkout contracts in `ci-configuration-contract.test.ts` were each
+      // rewritten to close.
+      const settings = lines.filter((line) => !line.trim().startsWith('#')).map((line) => line.trim());
 
-    // Comments dropped first. This file's comment explains the depth at
-    // length and names the setting, so a step that only *describes*
-    // `fetch-depth: 0` must not be able to satisfy an assertion that it sets
-    // it -- the same weakness the provisioning, version bump and deploy
-    // checkout contracts in `ci-configuration-contract.test.ts` were each
-    // rewritten to close.
-    const settings = jobLines.filter((line) => !line.trim().startsWith('#')).map((line) => line.trim());
-
-    expect(
-      settings,
-      `the \`verify\` job in ${CI_WORKFLOW} no longer checks out at \`fetch-depth: 0\`. At the action's default depth of 1 the checkout holds one commit, so every citation in \`docs/**\` and \`tests/**\` fails to resolve whether or not it is real and this gate reports the whole corpus as fabricated. Restore \`fetch-depth: 0\` on that step, and read the comment there before deciding a narrower depth is cheaper -- the deepest cited commit is 782 commits back on an 833-commit branch, so the honest choices are all of it or none of it.`,
-    ).toContain('fetch-depth: 0');
+      expect(
+        settings,
+        `the \`${job}\` job in ${workflow} runs \`pnpm verify\` and no longer checks out at \`fetch-depth: 0\`. At the action's default depth of 1 the checkout holds one commit, so every citation in \`docs/**\` and \`tests/**\` fails to resolve whether or not it is real and this gate reports the whole corpus as fabricated -- three of the eight cases here fail, and the first one names a shallow clone rather than a citation. Restore \`fetch-depth: 0\` on that job's checkout, and read the comment on ${CI_WORKFLOW}'s \`verify\` checkout before deciding a narrower depth is cheaper: the deepest cited commit is \`b904a1b\`, 795 of the 845 commits behind \`4ae2e39\`, so the honest choices are all of it or none of it. Re-derive that with \`git rev-list --count <sha>..<tip>\` over the tokens this file collects.`,
+      ).toContain('fetch-depth: 0');
+    }
   });
 
   it('finds citations to check, so nothing below can pass by reading nothing', () => {
