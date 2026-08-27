@@ -242,8 +242,15 @@ describe('publishing the clock while it runs', () => {
     for (let step = 0; step < 20; step += 1) advance(50); // 20 ticks over 1s.
 
     const reports = published(port);
-    expect(reports.length).toBeGreaterThan(0);
-    expect(reports.length).toBeLessThanOrEqual(Math.ceil(1_000 / CLOCK_STATE_PUBLISH_INTERVAL_MS));
+    // Written out rather than `Math.ceil(1_000 / CLOCK_STATE_PUBLISH_INTERVAL_MS)`,
+    // which recomputed the ceiling from the constant it was bounding, so the
+    // ceiling rose by exactly the factor the traffic did (#375). 1,000 ms at a
+    // 250 ms interval is four, and four is what the loop produces, so the
+    // equality is the bound and it fails in both directions. Measured: the
+    // derived form stayed green at `250 -> 50`, twenty reports against a
+    // ceiling that had grown to twenty; the two cases above this one caught it.
+    expect(CLOCK_STATE_PUBLISH_INTERVAL_MS, 'the bound below is written against a 250 ms interval').toBe(250);
+    expect(reports.length).toBe(4);
   });
 
   test('stops publishing once the clock is paused', () => {
