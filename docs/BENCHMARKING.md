@@ -45,9 +45,32 @@ checked against its imports by
 
 For the same 250-request meal rush, the modelled scenario reports 4,780 work
 units and the production one 16,087. Three mutations of real navigation code
-(a disabled A\* heuristic, a removed region-Dijkstra early exit, a work budget
-raised from 2,000 to 8,000) each turn every production scenario red and leave
-every modelled checksum bit-identical.
+turn **both drain scenarios** — `navigation.production.meal-rush` and
+`navigation.production.lockdown-return` — red, and leave every modelled
+checksum bit-identical. Measured on the smoke profile:
+
+| mutation of `src/` | `production.meal-rush` | `production.lockdown-return` | `production.single-request-budget` |
+| --- | --- | --- | --- |
+| `heuristic()` returns `0` (`local-search.ts:99`) | `totalExpansions` 24,195 > 16,900 | 27,672 > 20,900 | `expansionsForGuidedRequest` 2,077 > 70 |
+| region-Dijkstra early exit removed (`region-dijkstra.ts:81`) | 19,415 > 16,900 | 21,472 > 20,900 | passes, structurally |
+| `workBudgetPerTick` 2,000 → 8,000 (`new-session.ts:66`) | `maxExpansionsInOneTick` 8,035 > 2,400 | 8,063 > 2,400 | `workBudgetPerTick` 8,000 ≠ 2,000 |
+
+`navigation.production.single-request-budget` answers two of the three, and the
+third is a property of its layout rather than a gap in its bounds: it builds a
+single open region (`regionCount: 1` is one of its pinned metrics), so
+`runRegionDijkstra` has no second region to keep expanding into and the early
+exit has nothing to exit. Mutating it leaves that scenario's every metric
+byte-identical, and no bound can see a number that did not move.
+
+The budget mutation used to be the same shape of silence, and that one *was* a
+gap. `expansionsForOneRequest` came back byte-identical at 4,030 — the search
+never reads the budget — and the only two metrics that moved,
+`workBudgetPerTick` and `budgetOvershootRatio` (2.015 → 0.504), were bounded by
+nothing, so the scenario reported a single request taking *half* the per-tick
+allowance instead of twice it and stayed green. Both are bounded now
+(`workBudgetPerTick: { equals: 2_000 }` and a floor under the ratio), which is
+the rule below about a ceiling not being enough, applied to a denominator that
+grew rather than to a workload that broke.
 
 ### How a `.mjs` benchmark imports `.ts`
 

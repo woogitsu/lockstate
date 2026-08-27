@@ -216,6 +216,25 @@ async function runQueueDrain(seed, actorCount, mode) {
  * no ties to break and expands exactly one tile per step. It is the sensitive
  * half: 64 expansions for a 63-tile journey, and a ceiling of 70 that a
  * frontier-selection or heuristic regression cannot survive.
+ *
+ * **`workBudgetPerTick` and `budgetOvershootRatio` are bounded because the
+ * ratio's denominator was not.** Both are reported straight out of
+ * `DEFAULT_NAVIGATION_SYSTEM_OPTIONS`, and until they were bounded, raising
+ * the budget from ADR 0007's 2,000 to 8,000 left this scenario green: measured
+ * on the smoke profile, `expansionsForOneRequest` came back **byte-identical**
+ * at 4,030 -- the search does not read the budget -- and the only two metrics
+ * that moved were the two nothing was reading. `budgetOvershootRatio` merely
+ * recorded 0.504 instead of 2.015, which is the *headline finding of this
+ * scenario silently inverting*: a single request going twice over the
+ * allowance became one going half of it. That is `docs/BENCHMARKING.md`'s "a
+ * ceiling alone is not enough" in its second form -- not a workload that broke
+ * and lowered a count, but a denominator that grew. `equals: 2_000` pins the
+ * budget the way `maxExpansionsInOneTick` pins it on the drain scenarios, and
+ * the floor under the ratio (5% under measured, the mirror of the 5% headroom
+ * on every ceiling here) fails in the other direction too: if
+ * `PathRequestQueue` ever starts checking the budget *during* a request, this
+ * scenario's whole subject is gone and the floor makes deleting it a decision
+ * somebody writes down rather than a ceiling quietly relaxing.
  */
 async function runSingleRequestBudget(seed, side) {
   const layout = await buildOpenRegionLayout(side);
@@ -370,13 +389,15 @@ export const navigationProductionSingleRequestBudgetScenario = Object.freeze({
       warmupIterations: 1,
       measuredIterations: 3,
       operationsPerIteration: 64,
-      // measured on a 64x64 open region: 4,030 expansions diagonally (2.02x
+      // measured on a 64x64 open region: 4,030 expansions diagonally (2.015x
       // the per-tick budget), 64 expansions on the guided route.
       metricBounds: Object.freeze({
         expansionsForOneRequest: { max: 4_096 },
         expansionsForGuidedRequest: { max: 70 },
         regionCount: { equals: 1 },
         routeSegmentCount: { equals: 1 },
+        workBudgetPerTick: { equals: 2_000 },
+        budgetOvershootRatio: { min: 1.9 },
       }),
     }),
     full: Object.freeze({
@@ -384,12 +405,14 @@ export const navigationProductionSingleRequestBudgetScenario = Object.freeze({
       measuredIterations: 3,
       operationsPerIteration: 128,
       // measured on a 128x128 open region: 16,162 expansions diagonally
-      // (8.08x the per-tick budget), 128 expansions on the guided route.
+      // (8.081x the per-tick budget), 128 expansions on the guided route.
       metricBounds: Object.freeze({
         expansionsForOneRequest: { max: 16_384 },
         expansionsForGuidedRequest: { max: 140 },
         regionCount: { equals: 1 },
         routeSegmentCount: { equals: 1 },
+        workBudgetPerTick: { equals: 2_000 },
+        budgetOvershootRatio: { min: 7.6 },
       }),
     }),
   }),
