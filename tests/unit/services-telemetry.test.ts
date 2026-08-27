@@ -515,6 +515,46 @@ describe('crash diagnostics', () => {
     expect(frames.join(' ')).not.toContain('lockstate.io');
   });
 
+  it('keeps a V8 header line out of the frames even when the message contains an at-sign', () => {
+    /*
+     * The defect this pins, found while wiring the first producer. The frame
+     * filter used to admit any line containing `@`, on the reasoning that
+     * SpiderMonkey and JavaScriptCore frames have no `at ` to key on -- but a
+     * V8 stack's first line is `Name: message`, so a message containing an
+     * at-sign was admitted as a frame. That is not a cosmetic duplication:
+     * `reduceStackFrame` splits on the first at-sign and rewrites it as
+     * `name(location)`, which destroys the very shape `SENSITIVE_VALUE_PATTERNS`
+     * keys on, so the address survived into `frames` in clear while
+     * `errorMessage` beside it was correctly redacted.
+     */
+    const stack = [
+      'RangeError: mail alice@example.com',
+      '    at boot (https://lockstate.io/assets/main-a1b2.js:12:9)',
+    ].join('\n');
+
+    expect(reduceStack(stack)).toEqual(['boot(main-a1b2.js:12:9)']);
+
+    const attributes = buildCrashDiagnosticAttributes(
+      { name: 'RangeError', message: 'mail alice@example.com', stack },
+      { area: 'page-error' },
+    );
+    expect(attributes.errorMessage).toBe(`mail ${REDACTED}`);
+    expect(String(attributes.frames)).not.toContain('alice');
+    expect(String(attributes.frames)).not.toContain('example.com');
+  });
+
+  it('still reads a frame from an engine that writes no "at" and no header line', () => {
+    // The other direction, so the fix above cannot be over-tight: SpiderMonkey
+    // and JavaScriptCore emit `name@location:line:col` and no header, and both
+    // shapes must survive -- including the anonymous frame, whose function name
+    // is empty.
+    const stack = ['boot@https://lockstate.io/assets/main-a1b2.js:12:9', '@https://lockstate.io/assets/main-a1b2.js:3:1'].join(
+      '\n',
+    );
+
+    expect(reduceStack(stack)).toEqual(['boot(main-a1b2.js:12:9)', '<anonymous>(main-a1b2.js:3:1)']);
+  });
+
   it('cuts a deep stack to a bounded number of frames, and reports the bound it applied', () => {
     /*
      * Issue #264 S14: `MAX_STACK_FRAMES` could be raised from 12 to 100,000
