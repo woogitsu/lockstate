@@ -17,8 +17,11 @@ import {
   projectStatusStrip,
   toBoundedValue,
 } from '../../src/simulation/presentation';
+import { placedObjectAt } from '../../src/simulation/objects';
+import type { AccommodationPolicy } from '../../src/simulation/prisoners/intake-system';
 import { DAY_LENGTH_TICKS } from '../../src/simulation/prisoners/regime';
-import type { SimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from '../helpers/determinism-scenario';
 import { hashFullRuntime, toJsonValue } from '../helpers/determinism-state';
 
@@ -205,6 +208,114 @@ describe('status strip', () => {
     expect(strip.counts.activeIncidents).toBe(runtime.incidents.openIncidents().length);
     expect(strip.counts.contrabandDiscovered).toBe(runtime.searchSystem.getMetrics().itemsDiscovered);
     expect(strip.counts.roomOccupants).toBeGreaterThan(0);
+  });
+
+  /**
+   * A prison built to tell `roomCapacity` and `accommodationCapacity` apart.
+   *
+   * Not `buildDeterminismScenario`: every capacity-bearing room in that one is
+   * a `room.cell`, so the two figures agree there and a fixture in which they
+   * agree cannot fail if the scoping is dropped. This is still a real session
+   * -- `createNewSimulationRuntime`, real `PlacedObject`s, the real
+   * `RoomCapacityResolver` -- built so the two figures must differ.
+   *
+   * Five sleep surfaces stand in it and they are authored here, one line each:
+   * a bed in each of two cells, a bed in a solitary cell, and two medical beds
+   * in an infirmary. The canteen's dining table and bench are the objects the
+   * comment this change deleted blamed for the whole problem; they carry no
+   * `'sleep-surface'` and are here to show they cost nothing.
+   *
+   * So `roomCapacity` is 5 and `accommodationCapacity` is 3, and both are
+   * written out below rather than summed from the fixture -- a total derived
+   * the way the projection derives it would hold for any scoping rule at all.
+   */
+  const ACCOMMODATION_TILE = (x: number, y: number) => ({ x: tileCoordinate(x), y: tileCoordinate(y) });
+
+  function buildAccommodationPrison(): SimulationRuntime {
+    const runtime = createNewSimulationRuntime(SCENARIO_SEED);
+
+    for (const instance of [
+      { instanceId: 'cell-1', roomCatalogId: 'room.cell', anchorTile: ACCOMMODATION_TILE(2, 2), width: 2, height: 3 },
+      { instanceId: 'cell-2', roomCatalogId: 'room.cell', anchorTile: ACCOMMODATION_TILE(5, 2), width: 2, height: 3 },
+      { instanceId: 'solitary-1', roomCatalogId: 'room.solitary-cell', anchorTile: ACCOMMODATION_TILE(8, 2), width: 2, height: 2 },
+      { instanceId: 'infirmary-1', roomCatalogId: 'room.infirmary', anchorTile: ACCOMMODATION_TILE(2, 8), width: 4, height: 4 },
+      { instanceId: 'canteen-1', roomCatalogId: 'room.canteen', anchorTile: ACCOMMODATION_TILE(8, 8), width: 6, height: 6 },
+    ]) {
+      runtime.prisoners.roomInstances.register({
+        ...instance,
+        residentCapacity: 0,
+        concurrentUseCapacity: 0,
+        objectCapabilities: [],
+      });
+    }
+
+    for (const object of [
+      placedObjectAt('object.bed', ACCOMMODATION_TILE(2, 2), 0),
+      placedObjectAt('object.bed', ACCOMMODATION_TILE(5, 2), 0),
+      placedObjectAt('object.bed', ACCOMMODATION_TILE(8, 2), 0),
+      placedObjectAt('object.medical-bed', ACCOMMODATION_TILE(2, 8), 0),
+      placedObjectAt('object.medical-bed', ACCOMMODATION_TILE(4, 8), 0),
+      placedObjectAt('object.dining-table', ACCOMMODATION_TILE(8, 8), 0),
+      placedObjectAt('object.bench', ACCOMMODATION_TILE(8, 11), 0),
+    ]) {
+      if (!runtime.placedObjects.place(object)) {
+        throw new Error(`the fixture's ${object.objectId} at (${object.anchorTile.x}, ${object.anchorTile.y}) must be placeable`);
+      }
+    }
+    runtime.roomCapacity.resolveAll();
+
+    return runtime;
+  }
+
+  it('does not count an infirmary\'s medical beds as somewhere to live', () => {
+    const runtime = buildAccommodationPrison();
+    const strip = projectStatusStrip({ tick: 0, prisoners: runtime.prisoners, rooms: runtime.prisoners });
+
+    // Five sleep surfaces are registered, so the room total reads five --
+    // `object.medical-bed` declares `'sleep-surface'` exactly as `object.bed`
+    // does, which is correct and is why `src/simulation/construction/definition.ts`
+    // says an infirmary "derives a residency it has no intake route to use".
+    expect(strip.counts.roomCapacity).toBe(5);
+    // Three of them are somewhere `IntakeSystem` would put an arrival: the two
+    // cells and the solitary cell. The infirmary's two are not, and this is
+    // the whole difference between the published denominator and the total.
+    expect(strip.counts.accommodationCapacity).toBe(3);
+  });
+
+  it('counts a solitary cell, because the accommodation policy does', () => {
+    // The obvious wrong denominator is "sum over `room.cell`", which reads 2
+    // here. `DEFAULT_ACCOMMODATION_POLICY` lists `room.solitary-cell` for both
+    // classification groups, so a prison of solitary cells houses people and
+    // its beds are places (`IntakeSystem.resolveExistingTarget`).
+    const runtime = buildAccommodationPrison();
+    const strip = projectStatusStrip({ tick: 0, prisoners: runtime.prisoners, rooms: runtime.prisoners });
+
+    expect(strip.counts.accommodationCapacity).toBe(3);
+
+    const cellsOnly: AccommodationPolicy = {
+      resolveTargets: () => [{ roomCatalogId: 'room.cell', requiredObjectCapability: 'sleep-surface' }],
+    };
+    const scoped = projectStatusStrip({
+      tick: 0,
+      prisoners: runtime.prisoners,
+      rooms: runtime.prisoners,
+      accommodationPolicy: cellsOnly,
+    });
+
+    // Two, from the same prison. The room ids are read out of the policy and
+    // are not written into the projection (`AGENTS.md` boundary 6): a rule that
+    // hard-coded them would answer 3 to both of these.
+    expect(scoped.counts.accommodationCapacity).toBe(2);
+  });
+
+  it('reports no accommodation for a prison with no room source at all', () => {
+    // Not a guess and not a default: a runtime with no room registry has no
+    // beds, exactly as `stateIncomeAccruedTodayMinorUnits` reports 0 for one.
+    const runtime = buildAccommodationPrison();
+    const strip = projectStatusStrip({ tick: 0, prisoners: runtime.prisoners });
+
+    expect(strip.counts.accommodationCapacity).toBe(0);
+    expect(strip.counts.roomCapacity).toBe(0);
   });
 
   it('reports the clock as day number plus position within the in-game day', () => {

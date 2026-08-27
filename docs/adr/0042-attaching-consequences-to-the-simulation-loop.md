@@ -69,7 +69,12 @@ claim is wrong in a way that matters**
 `DEFAULT_ACTIONS` has eight entries spanning five categories
 (`src/simulation/prisoners/actions.ts:42-75`): `sleep`, `meal` ×2, `hygiene` ×2,
 `recreation` ×2, `education`. There is no `work` action and no
-`free-association` action. Derive it rather than trusting this sentence:
+`free-association` action. **Half of that is no longer true: decision 1 landed
+on 2026-08-27 and `action.free-association` is now the ninth entry.** The
+sentence is kept because the census below is measured against the eight, and
+because `work` — the larger hole, 1,000 general-population ticks a day against
+free-association's 400 — is still open. Derive it rather than trusting either
+version of this sentence:
 
 ```
 grep -o "category: '[a-z-]*'" src/simulation/prisoners/actions.ts | sort -u
@@ -281,6 +286,36 @@ not from which finding is worst.**
 Append one `free-association` action targeting `own-accommodation` with no need
 effect, at the end of `DEFAULT_ACTIONS`. Appending, not inserting, for the
 `actionIndex` reason above.
+
+**Landed 2026-08-27** as `action.free-association`, `minDurationTicks: 60`, with
+`tests/unit/prisoners-action-catalog.test.ts` pinning what every saved
+`actionIndex` means. That gate earned itself immediately: inserting the entry at
+index 0 instead of appending — which reinterprets the in-flight action of every
+prisoner in every save on disk — left **70 files and 636 tests green**, and only
+the new gate went red.
+
+Two things this decision did not anticipate, both found by implementing it:
+
+- **`continuePerforming` stamped `needFulfilledLastTick` unconditionally**, and
+  that field reaches the HUD verbatim through `projectPrisonerDetail`. The
+  catalogue's first zero-effect action would have made the game tell a player a
+  need was met at a tick where none was — `AGENTS.md`'s fourth exclusion in
+  miniature. Fixed with the action rather than after it.
+- **Step 2 needs more than a producer.** `ActionSystem` holds its schedules as
+  `private readonly regimeSchedules` (`action-system.ts:106`), handed over once
+  at construction (`prisoners/prisoner-operations-runtime.ts:137`), with no
+  mutator anywhere in `src/`. Nothing can move a live session onto the riot
+  schedule, so an incident producer alone would not reach this action. Step 2's
+  section below does not say so.
+
+**It changes nothing a player can see, and that is the expected outcome rather
+than a disappointment** — this decision's stated purpose is to unblock step 2's
+acceptance criterion, not to be visible. Measured: 0 performing ticks over 9,000
+ticks of a fully furnished prison. Three independent reasons, any one of them
+sufficient: the riot regime has no producer; the schedule array is immutable
+(above); and no panel renders a prisoner's action at all — `hud/prisoner-roster`
+and `hud/prisoner-detail` are requested by nothing outside `tests/`, and
+`world/render-snapshot` projects tiles, not prisoners.
 
 *Depends on:* nothing. *Unblocks:* step 2's acceptance criterion. A riot that
 leaves every participant with an empty candidate list is a record with no

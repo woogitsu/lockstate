@@ -46,6 +46,48 @@ The parts of it that are rules rather than advice:
 - Correcting the brief you were given is expected. "Already fixed, here are the
   numbers" is doing the job.
 
+## The owner's standing mandate, and the four things it does not cover
+
+Recorded 2026-08-27, in the owner's own words: *"pracuj autonomicznie cały czas
+… jak potrzebujesz decyzji to rób research i wybieraj jakościowo, nie tanio.
+Żeby gra była fajna i super, a nie po taniości zrobiona. Cena nie gra roli."*
+
+So, unless a rule below says otherwise:
+
+- **Decide rather than ask.** Where a choice is genuinely open, research it,
+  choose, and record why — in an ADR when it is architecture, in the commit
+  message when it is not. Coming back with a question you could have answered
+  by reading the code is not caution, it is the work undone.
+- **Cost is not a constraint, and quality is the deliverable.** Token use, API
+  spend and elapsed time do not justify a worse answer. The Product principle
+  above already said this about shortcuts; this says it about effort.
+- **Playability counts as correctness here.** A change that is right in every
+  test and makes the game duller has not succeeded. Say so when you see it.
+
+**Four things stay the owner's, and no mandate above reaches them.** Each is
+outward-facing or unrevertable, which is the whole reason:
+
+1. **A server-side execution surface.** Do not add `main` to `wrangler.jsonc`
+   and do not create a Worker. This project has never run server code; ADR 0002
+   rejected an entry point deliberately, and ADR 0046's telemetry ingest is the
+   first thing that would need one. `docs/DEPLOYMENT.md` carries the nine-item
+   pre-merge checklist that has to be worked and approved first.
+2. **`supabase/migrations/`.** An applied migration is history. Propose new
+   migration content in an ADR or an issue instead. Rollback is not automated.
+3. **Deploy configuration** — `public/_headers`, `.github/workflows/deploy.yml`,
+   the Cloudflare or Supabase dashboards. Nothing in this repository can read
+   back what those dashboards hold, so a change there cannot be verified here.
+4. **Anything that reaches a player as a promise the code does not keep.** A
+   locale key with no implementation behind it is the defect that forced the
+   telemetry decision; do not add one, in any tree.
+
+**Merging publishes.** `deploy.yml` fires on CI completion and its `staging` job
+publishes on every merge to `main`, and `lockstate.io` is attached by hand to
+that Worker — so a merge updates the public site with no further approval gate
+(`docs/DEPLOYMENT.md`, "What currently serves lockstate.io"). Merge green,
+ordinary increments under the mandate. Anything touching the four above goes to
+the owner with the evidence, not to `main`.
+
 ## Required workflow for every issue
 Before coding:
 - Read the issue, linked ADRs and relevant docs.

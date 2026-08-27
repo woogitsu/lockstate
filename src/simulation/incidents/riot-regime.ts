@@ -8,6 +8,23 @@ import { DAY_LENGTH_TICKS, type ActionCategory, type RegimeSchedule } from '../p
  * new branch in `ActionSystem`/`utility-ai.ts`. `'free-association'`
  * (unstructured milling about) and `'recreation'` are what remains legal:
  * work, education, meals and scheduled hygiene all stop.
+ *
+ * **`'free-association'` named content that did not exist when this comment
+ * was written, and now names `action.free-association`**
+ * (`../prisoners/actions.ts`). Both `'recreation'` actions target a zoned
+ * room, so until that entry was appended a rioting prisoner in a prison with
+ * no yard and no common room had no candidate at all: `beginNextAction`
+ * filtered the catalogue to two entries, resolved neither, and counted an
+ * unmet demand cycle for every reconsideration of every day the riot lasted
+ * ([ADR 0042](../../../docs/adr/0042-attaching-consequences-to-the-simulation-loop.md)
+ * decision 1, which lists this comment as one of three describing behaviour
+ * that could not happen).
+ *
+ * **Two things below this line still cannot happen, and this comment says so
+ * rather than implying otherwise.** `applyRiotRegimeOverride` has no caller in
+ * `src/`, and `ActionSystem` takes its schedule array as a `readonly`
+ * constructor field with no setter -- so a live session has no way to enter
+ * the regime this module builds. Both are ADR 0042 step 2's, not step 1's.
  */
 export const RIOT_ALLOWED_CATEGORIES: readonly ActionCategory[] = ['free-association', 'recreation'];
 

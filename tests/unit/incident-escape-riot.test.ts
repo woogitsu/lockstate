@@ -150,12 +150,25 @@ describe('riot regime override: reuses the existing regime/action framework', ()
     }
   });
 
+  /**
+   * **This test's own title outlived its assertions by the length of the
+   * repository.** It said "free-association and recreation remain" and checked
+   * only recreation, because until
+   * [ADR 0042](../../docs/adr/0042-attaching-consequences-to-the-simulation-loop.md)
+   * decision 1 appended `action.free-association` there was no action in that
+   * category to check — so the half of the sentence naming the category with
+   * no content was the half nothing held. A category "remaining" legal with
+   * nothing authored under it is exactly the state that left a rioting
+   * prisoner with an empty candidate list; `tests/unit/prisoners-free-association.test.ts`
+   * drives what one now does with it.
+   */
   it('work, education, meals and sleep all become illegal under a riot; free-association and recreation remain', () => {
     const block = resolveActiveRegimeBlock(buildRiotRegimeSchedule('general-population'), 600);
     const legalActionIds = DEFAULT_ACTIONS.filter((action) => isActionCategoryAllowed(action, block.allowedCategories)).map((action) => action.id);
 
     expect(legalActionIds).toContain('action.yard-recreation');
     expect(legalActionIds).toContain('action.common-room-recreation');
+    expect(legalActionIds).toContain('action.free-association');
     expect(legalActionIds).not.toContain('action.sleep');
     expect(legalActionIds).not.toContain('action.eat-meal');
     expect(legalActionIds).not.toContain('action.classroom-education');

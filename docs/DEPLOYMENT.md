@@ -199,11 +199,48 @@ State 3 is what `version.yml` produces after every merge. Its bump commit is pus
 
 ### What currently serves lockstate.io
 
+> **Measured 2026-08-27. The deploy reaches**
+> **`https://lockstate-staging.matmaxalez94.workers.dev/`**, and that is the
+> URL to open to see the current build. The two paragraphs below describe an
+> arrangement that is not in force.
+>
+> **`lockstate.io` does not receive the deploy, and that is deliberate — the
+> owner has it switched off.** It is not a defect and it is not an incident.
+> Recorded 2026-08-27, in the owner's words: *"Nikt nie gra, tylko ja znam tę
+> domenę. Lockstate.io ma wyłączony deploy, to nie błąd."*
+>
+> **What the two hosts actually serve**, compared rather than assumed, and kept
+> because it is how you can tell at a glance which one you are looking at:
+>
+> | | `workers.dev` | `lockstate.io` |
+> |---|---|---|
+> | bundle | `assets/index-ByAs-HH3.js` | `assets/index-CwVFOnxX.js` |
+> | `Content-Security-Policy`, `Strict-Transport-Security`, `Cross-Origin-{Opener,Embedder,Resource}-Policy` | present | absent |
+> | `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` | present | present |
+>
+> The five that differ entered `public/_headers` at `cea6849` (2026-08-24), so
+> the domain is pinned to a build from before it. Derive the distance rather
+> than trusting a number here: `git rev-list --count cea6849..origin/main`.
+>
+> Caching is not the explanation — a path that has never existed, answered by
+> the SPA fallback, returns from `lockstate.io` without those five headers and
+> from `workers.dev` with all of them on the same request. That is worth
+> knowing only so nobody re-investigates it: **the difference is the switched
+> -off deploy, not a cache and not a header bug.** `public/_headers` is applied
+> correctly wherever the current build is published.
+>
+> **What this does change, and it is the only thing:** a merge to `main`
+> publishes to the `workers.dev` host, not to `lockstate.io`. Any sentence
+> below or in an ADR that treats a merge as "updating the public site" is
+> describing the arrangement, not today. **When the domain is switched back
+> on, that stops being true and this note has to go** — the paragraphs below
+> are then correct again, which is why they were marked rather than deleted.
+
 **One Worker, not two.** `lockstate.io` is served by **`lockstate-staging`** — the Worker the `staging` job deploys — through a Custom Domain attached by hand in the Cloudflare dashboard. Production and staging are the same thing for now, by the owner's decision.
 
 Two consequences follow, and the second is a trap:
 
-- **A merge to `main` already updates the public site.** The `staging` job runs on every push to `main`, so `lockstate.io` tracks `main` with no further configuration. Nothing needs to be enabled for that to happen; it is happening.
+- **A merge to `main` already updates the public site.** The `staging` job runs on every push to `main`, so `lockstate.io` tracks `main` with no further configuration. Nothing needs to be enabled for that to happen; it is happening. **Not in force on 2026-08-27** — the owner has the domain's deploy switched off, so a merge updates `lockstate-staging.matmaxalez94.workers.dev` and `lockstate.io` stays where it is. See the note above; this bullet becomes true again when the domain is switched back on.
 - **Dispatching the `production` job would silently take the domain away.** A Workers Custom Domain is an account-scoped record with exactly one owner. `wrangler.jsonc` declares `lockstate.io` under `env.production`, whose Worker is named `lockstate` — a Worker that has never been deployed. Running that job transfers the live domain onto it, and wrangler does not warn. Do not dispatch it until production is genuinely meant to take over, and expect a few seconds of the site serving a freshly-created Worker when you do.
 
 Staging deploys cannot damage the arrangement: `routes` appears only under `env.production` in `wrangler.jsonc`, never at the top level, so the staging environment neither inherits it nor manages any route. Wrangler leaves routes it was not told about alone.

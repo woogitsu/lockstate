@@ -121,24 +121,24 @@ describe('submitOrder refuses an order on unowned land (#215)', () => {
     expect(order.failReason).toBe('out-of-bounds');
   });
 
-  it('checks the order\'s own tile, not the tile across the edge it occupies', () => {
+  it('approves an edge order when the order\'s own tile is owned and the tile across the edge is not', () => {
     /*
-     * A wall on the north edge of `(x, y)` is the same edge as the south side
-     * of `(x, y - 1)`, so "which tile must be owned" is a real question and
-     * this is the answer: the order's own tile.
+     * **This case is unchanged; its title is not.** It read *"checks the
+     * order's own tile, not the tile across the edge it occupies"* until
+     * #448, which is the half of the rule this fixture happens to exercise
+     * and is no longer the rule. The fixture has one owned side, so it passes
+     * under the one-sided predicate and under the symmetric one alike -- which
+     * is exactly why the title had to be rewritten by hand rather than being
+     * caught by a run. A test whose name asserts the opposite of the rule is
+     * worse than a failing one.
      *
-     * Requiring both would make it impossible to wall your own perimeter --
-     * every boundary edge of an owned parcel has an unowned tile on the far
-     * side of it, and a prison is a perimeter. So the rule is the one a fence
-     * on a property line follows.
+     * What it asserts, and still asserts: requiring *both* tiles would make it
+     * impossible to wall your own perimeter, because every boundary edge of an
+     * owned parcel has an unowned tile on the far side of it and a prison is a
+     * perimeter. The case below it is the other half -- the same wall,
+     * addressed from the unowned side -- and the two together are the rule.
      */
-    const world = worldWith(false);
-    world.registerParcel({
-      id: 'parcel-1',
-      bounds: { x: tileCoordinate(0), y: tileCoordinate(5), width: 11, height: 6 },
-      basePrice: 100,
-    });
-    world.setParcelOwned('parcel-1', true);
+    const world = ownedRows5To10();
 
     // (4, 5) is owned; (4, 4) directly north of it is not, and the order's
     // north edge is the boundary between them.
@@ -148,6 +148,125 @@ describe('submitOrder refuses an order on unowned land (#215)', () => {
     const order = createBuildOrder('order-perimeter', 'wall-brick', tile(4, 5), 'north');
     construction(world).submitOrder(order);
     expect(order.state).toBe('approved');
+  });
+
+  /*
+   * ==========================================================================
+   * Issue #448 / ADR 0047 decision 6: the same wall, from the other side.
+   * ==========================================================================
+   *
+   * `SparseWorld` keeps one slot per edge and keeps it on the tile to the
+   * *south* and to the *east* of it -- the north edge of `(x, y)` and the west
+   * edge of `(x, y)`. So the south face of owned land is addressed as the
+   * north edge of the first *unowned* row, and its east face as the west edge
+   * of the first unowned column. Asking only the order's own tile therefore
+   * approved two of the four faces of a parcel and refused the other two.
+   *
+   * Since ADR 0045 that was a wrong *refusal* rather than a wrong readout:
+   * `roomPerimeterEnclosure` reads a room's south boundary off the row below
+   * it, so a room flush against the edge of owned land could never be sealed
+   * and therefore could never be zoned.
+   * `tests/integration/edge-of-owned-land-room.test.ts` is that room.
+   */
+
+  it('approves the same wall addressed from the unowned side -- the south face of owned land', () => {
+    const world = ownedRows5To10();
+
+    // Row 10 is the last owned row, so the parcel's south boundary is the
+    // north edge of row 11 -- a tile the player does not own and never will,
+    // because it is the far side of their own property line.
+    expect(world.isTileOwned(tile(4, 10)), 'fixture: the last owned row').toBe(true);
+    expect(world.isTileOwned(tile(4, 11)), 'fixture: the order tile must NOT be owned').toBe(false);
+
+    const order = createBuildOrder('order-south-face', 'wall-brick', tile(4, 11), 'north');
+    construction(world).submitOrder(order);
+    expect(order.state, 'the south face of owned land is the same property line as its north face').toBe('approved');
+    expect(order.failReason).toBeUndefined();
+  });
+
+  it('approves the east face of owned land, which is the west edge of the first unowned column', () => {
+    const world = ownedRows5To10();
+
+    expect(world.isTileOwned(tile(10, 7)), 'fixture: the last owned column').toBe(true);
+    expect(world.isTileOwned(tile(11, 7)), 'fixture: the order tile must NOT be owned').toBe(false);
+
+    const order = createBuildOrder('order-east-face', 'wall-brick', tile(11, 7), 'west');
+    construction(world).submitOrder(order);
+    expect(order.state).toBe('approved');
+  });
+
+  it('still refuses an edge order when neither of the two tiles is owned', () => {
+    // The direction that stops "either side" from meaning "anywhere". Both
+    // tiles are inside the loaded chunk and neither is inside the parcel, so
+    // nothing about this order touches the property line at all.
+    const world = ownedRows5To10();
+    expect(world.isTileOwned(tile(4, 20)), 'fixture: the order tile must be unowned').toBe(false);
+    expect(world.isTileOwned(tile(4, 19)), 'fixture: the tile across the edge must be unowned too').toBe(false);
+
+    const order = createBuildOrder('order-nowhere', 'wall-brick', tile(4, 20), 'north');
+    construction(world).submitOrder(order);
+    expect(order.state).toBe('failed');
+    // The order's own tile's reason, not the far tile's: it is the tile the
+    // player named and the one they can do something about.
+    expect(order.failReason).toBe('unowned-land');
+  });
+
+  it('gives a buildable that is not edge geometry no far side to fall back on', () => {
+    /*
+     * `bed-wooden` is an object: it is addressed by a *tile*, and a tile has
+     * no second owner to consult. Without this, a widening written as "look at
+     * the neighbour too" would let a bed be placed one tile outside the fence
+     * because the tile behind it is owned -- which is a change to where objects
+     * may go, and #448 decided nothing of the kind. `occupiesTileEdge` is the
+     * predicate that separates the two, and deleting it from `submitOrder`
+     * fails here and nowhere else in this file.
+     */
+    const world = ownedRows5To10();
+    expect(world.isTileOwned(tile(4, 5)), 'fixture: the tile north of the order must be owned').toBe(true);
+
+    const order = createBuildOrder('order-bed-outside', 'bed-wooden', tile(4, 4), 'north');
+    construction(world).submitOrder(order);
+    expect(order.state).toBe('failed');
+    expect(order.failReason).toBe('unowned-land');
+  });
+
+  it('approves an edge order whose own tile is outside the materialised world when the far tile is owned', () => {
+    /*
+     * The world's own frontier, which is where this matters today: a new
+     * session owns exactly one 32x32 chunk, so the south face of the whole
+     * playable world is the north edge of row 32 -- a tile in a chunk that
+     * does not exist. `out-of-bounds` used to be decided before ownership was
+     * ever consulted, so widening ownership alone would have left this face
+     * refused; ADR 0047 decision 6 says both checks move together and this is
+     * that half.
+     *
+     * Completing such an order materialises chunk (0, 1). That is the visible
+     * consequence `docs/WORLD.md` records as deferred, and it is asserted
+     * rather than implied in `tests/integration/edge-of-owned-land-room.test.ts`.
+     */
+    const world = worldWith(true);
+    expect(world.getChunk({ x: chunkCoordinate(0), y: chunkCoordinate(1) }), 'fixture: the row below the world must not exist yet').toBeUndefined();
+    expect(world.isTileOwned(tile(5, 31)), 'fixture: the last owned row of the one owned chunk').toBe(true);
+
+    const order = createBuildOrder('order-world-south-face', 'wall-brick', tile(5, 32), 'north');
+    construction(world).submitOrder(order);
+    expect(order.state).toBe('approved');
+
+    // Submission is a read. A refusal must grow no world and neither may an
+    // approval: the chunk appears when the wall is *built*, not when it is
+    // ordered.
+    expect(world.getChunk({ x: chunkCoordinate(0), y: chunkCoordinate(1) }), 'submitting must not materialise anything').toBeUndefined();
+  });
+
+  it('still refuses an edge order when both of its tiles are outside the materialised world', () => {
+    // One row further out than the case above, so neither tile has a chunk to
+    // be owned in. `out-of-bounds` rather than `unowned-land`, because a tile
+    // that is not there has no owner to be missing.
+    const world = worldWith(true);
+    const order = createBuildOrder('order-beyond', 'wall-brick', tile(5, 33), 'north');
+    construction(world).submitOrder(order);
+    expect(order.state).toBe('failed');
+    expect(order.failReason).toBe('out-of-bounds');
   });
 
   it('does not check terrain, which is a separate decision and is turned off explicitly', () => {
@@ -174,4 +293,23 @@ describe('submitOrder refuses an order on unowned land (#215)', () => {
 
 function construction(world: SparseWorld): ConstructionSystem {
   return new ConstructionSystem(world);
+}
+
+/**
+ * A loaded, unowned chunk with one owned parcel covering rows 5..10 of
+ * columns 0..10.
+ *
+ * Four faces, none of them the chunk's own boundary, so each of the four is a
+ * property line with land on both sides of it and the four are decided by the
+ * ownership rule alone rather than by the edge of the world.
+ */
+function ownedRows5To10(): SparseWorld {
+  const world = worldWith(false);
+  world.registerParcel({
+    id: 'parcel-1',
+    bounds: { x: tileCoordinate(0), y: tileCoordinate(5), width: 11, height: 6 },
+    basePrice: 100,
+  });
+  world.setParcelOwned('parcel-1', true);
+  return world;
 }

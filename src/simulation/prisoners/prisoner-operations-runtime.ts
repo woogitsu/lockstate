@@ -9,7 +9,7 @@ import type { ClassificationInput } from './classification';
 import { ClassificationReviewSystem } from './classification-review-system';
 import type { DisciplinaryEvidenceSource } from './disciplinary-record';
 import { ACTION_PHASES, CurrentActionComponent, PositionComponent, PrisonerColdState, PrisonerRecordComponent } from './components';
-import { type AccommodationPolicy, IntakeSystem } from './intake-system';
+import { DEFAULT_ACCOMMODATION_POLICY, type AccommodationPolicy, IntakeSystem } from './intake-system';
 import { NeedsComponent } from './needs';
 import { NeedsDecaySystem } from './needs-system';
 import { DEFAULT_REGIME_SCHEDULES, type RegimeSchedule } from './regime';
@@ -87,6 +87,19 @@ export class PrisonerOperationsRuntime {
   public readonly position: PositionComponent;
   public readonly coldState = new PrisonerColdState();
 
+  /**
+   * The accommodation policy `intakeSystem` below is running, resolved once
+   * here rather than defaulted twice.
+   *
+   * Public because a *reader* of the prison needs the same answer the stage
+   * gets: `projectStatusCounts` scopes the status strip's
+   * `accommodationCapacity` by it, so the denominator the player sees and the
+   * rooms intake will actually fill are one authored fact. Defaulting again at
+   * the reader would be a second copy that a session passing its own policy
+   * would silently disagree with.
+   */
+  public readonly accommodationPolicy: AccommodationPolicy;
+
   public readonly intakeSystem: IntakeSystem;
   public readonly needsDecaySystem: NeedsDecaySystem;
   public readonly actionSystem: ActionSystem;
@@ -106,13 +119,14 @@ export class PrisonerOperationsRuntime {
     this.currentAction = new CurrentActionComponent(options.capacity);
     this.position = new PositionComponent(options.capacity);
 
+    this.accommodationPolicy = options.accommodationPolicy ?? DEFAULT_ACCOMMODATION_POLICY;
     this.intakeSystem = new IntakeSystem(
       this.entityStore,
       this.query,
       this.records,
       this.coldState,
       this.roomInstances,
-      options.accommodationPolicy,
+      this.accommodationPolicy,
       undefined,
       options.identity,
       options.identityRngStreamName,

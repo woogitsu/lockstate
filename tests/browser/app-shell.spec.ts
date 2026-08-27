@@ -303,6 +303,27 @@ const INJECTED_STATUS_COUNTS = {
       staffUnassigned: 1,
       rooms: 12,
       roomCapacity: 48,
+      // Required, not optional, for the reason the paragraph above and the
+      // note on `stateIncomeAccruedTodayMinorUnits` below both give: the
+      // counts payload is `.strict()`, so a fixture missing this field is
+      // dropped whole by `decodeWorkerToMainMessage` and every assertion after
+      // the injection fails on a strip that was never updated.
+      //
+      // 40 of the 48 registered sleep surfaces stand in rooms intake would
+      // house somebody in; the other 8 are an infirmary's medical beds, which
+      // raise the room total and no denominator. Deliberately *not* 48, so a
+      // mapping that reached for `roomCapacity` would be visible here rather
+      // than plausible.
+      //
+      // 37 prisoners against 40 places is 92.5%, so the Prisoners chip now
+      // gains its occupancy bar and a `warning` tone under this fixture. That
+      // is the point of the change -- `prisonerCapacity` was the literal 0 and
+      // `occupancyTone` could never fire -- and it is visible in the DOM as a
+      // `.hud-metric__trailing` bar and `data-tone="warning"` on
+      // `[data-metric="prisoners"]`. The value assertions below read
+      // `.ui-stat__value`, which is the chip's own number and a sibling of the
+      // bar, so they are unaffected.
+      accommodationCapacity: 40,
       roomOccupants: 30,
       activeIncidents: 2,
       contrabandDiscovered: 5,
@@ -1015,9 +1036,14 @@ interface WallSegment {
  * `SparseWorld` stores a **north** edge and a **west** edge per tile, so a
  * rectangle's south boundary is the north edge of the row *below* it and its
  * east boundary is the west edge of the column to its *right* -- tiles outside
- * the rectangle, which is why a room flush against the edge of owned land is
- * unzonable (ADR 0045, Consequences). Every rectangle these tests draw is well
- * inside the single 32x32 chunk `createNewSimulationRuntime` owns.
+ * the rectangle. That is what made a room flush against the edge of owned land
+ * unzonable (ADR 0045, Consequences), and issue #448 fixed it: an edge order is
+ * now permitted when either of the two tiles it separates qualifies, so the
+ * south and east faces of owned land are buildable. Every rectangle these tests
+ * draw is well inside the single 32x32 chunk `createNewSimulationRuntime` owns,
+ * so nothing here changed either way -- this paragraph is corrected rather than
+ * deleted because the storage fact above it is still the reason the perimeter
+ * helper below has to think in north and west.
  *
  * Deduplicated across rectangles, because two rooms that share a boundary share
  * the stored edge: the Rooms panel's second drag lands directly below the first

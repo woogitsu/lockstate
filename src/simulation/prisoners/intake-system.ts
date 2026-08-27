@@ -80,6 +80,58 @@ export const DEFAULT_ACCOMMODATION_POLICY: AccommodationPolicy = {
 };
 
 /**
+ * Every accommodation an arrival could be housed in, whatever the
+ * classification draw returns: the union of every group's targets, deduplicated
+ * on the pair the registry is asked for.
+ *
+ * The read-only counterpart of `IntakeSystem.resolveExistingTarget`, and it
+ * exists so that a *reader* of the prison -- the status strip's accommodation
+ * capacity (`src/simulation/presentation/status-strip-projection.ts`) -- asks
+ * the same authored question the stage asks, rather than naming `room.cell` in
+ * a condition of its own. `AGENTS.md` boundary 6: which room types house a
+ * resident is content, and the content lives in an `AccommodationPolicy`.
+ *
+ * **The union, and not one group's list**, for the reason
+ * `hasAccommodationTarget` gives: the draw picks the group two stages after
+ * admission, so the only true statement about a room instance ahead of the draw
+ * is "some arrival could be housed here". Under
+ * `DEFAULT_ACCOMMODATION_POLICY` that is `room.cell` and `room.solitary-cell`,
+ * both requiring `'sleep-surface'` -- both groups list both, in opposite
+ * orders, and this collapses the two orders into one set.
+ *
+ * **Deduplicated on `(roomCatalogId, requiredObjectCapability)` rather than on
+ * the room id alone.** Two groups may name one room type under different
+ * capability requirements, and those are two different questions to ask of an
+ * instance; collapsing them onto the room id would silently drop one. Nothing
+ * in the shipped policy does this -- it is what keeps a custom policy that does
+ * from reading wrong.
+ *
+ * Deterministic and draws nothing: `CLASSIFICATION_GROUP_IDS` order, then the
+ * policy's own declared order within each group. The `Set` is membership-tested
+ * and never iterated (`docs/DETERMINISM.md`).
+ */
+export function resolveAccommodationTargets(
+  policy: AccommodationPolicy = DEFAULT_ACCOMMODATION_POLICY,
+): readonly AccommodationTarget[] {
+  const targets: AccommodationTarget[] = [];
+  const seen = new Set<string>();
+
+  for (const classificationGroupId of CLASSIFICATION_GROUP_IDS) {
+    for (const target of policy.resolveTargets(classificationGroupId)) {
+      // `identifierSchema` (`src/simulation/protocol/types.ts`) admits no
+      // `\u0000`, and both halves of this pair are catalogue ids it validates,
+      // so the joined key cannot collide with a different pair.
+      const key = `${target.roomCatalogId}\u0000${target.requiredObjectCapability ?? ''}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      targets.push(target);
+    }
+  }
+
+  return targets;
+}
+
+/**
  * Deterministic intake pipeline (issue #24): each entity advances at most
  * one stage per scheduled tick, in ascending entity-id order (via
  * `EntityQuery`, never Map/Set iteration order). `accommodation-assignment`

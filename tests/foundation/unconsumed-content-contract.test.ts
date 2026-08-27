@@ -107,7 +107,6 @@ const AWAITING_CONSUMER: Readonly<Record<string, string>> = {
   // refuses legal -- which is how that test proves the minimum comes from
   // content rather than from a constant the service holds.
   'room.garbage-room': 'Declared with no reader anywhere; no build order, job, need or regime action names it.',
-  'room.infirmary': 'Declared with no reader anywhere.',
   'room.kitchen': 'Declared with no reader anywhere.',
   'room.laundry': 'Declared with no reader anywhere.',
   // Still unconsumed, but no longer for the reason this entry gave. It read
@@ -328,6 +327,15 @@ describe('every unconsumed content id is accounted for', () => {
       // the rack, and a capability-scoped ceiling reads capabilities rather than
       // object ids.
       //
+      // 16, not 15: `room.infirmary` gained a test consumer in
+      // `tests/unit/hud-projections.test.ts`, which stands two `object.medical-bed`s
+      // in one to prove that `accommodationCapacity` excludes the residency an
+      // infirmary derives and `roomCapacity` includes it. Its entry is removed
+      // from the list above rather than kept with a new reason, which is what
+      // this file's stale-entry gate asks for. `unconsumedBySrcOnly` did not
+      // move: no `src/` file names the room, because the projection reads the
+      // room types out of an `AccommodationPolicy` rather than naming any.
+      //
       // 31, not 33: `object.bench` and `object.dining-table` gained one in
       // `tests/helpers/determinism-scenario.ts`, which places both so a yard and
       // a canteen have a derived concurrent-use capacity (see their note in the
@@ -337,7 +345,7 @@ describe('every unconsumed content id is accounted for', () => {
       // generically and names no room id, so nothing moved in `src/` -- and the
       // 53 -> 52 below is ADR 0025's alone, for the reason above. The two
       // measures moved on different changes and each is stated where it moved.
-    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 16, unconsumedBySrcOnly: 32 });
+    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 15, unconsumedBySrcOnly: 32 });
   });
 
   it('scans a non-trivial catalog and a non-trivial consumer set, so this cannot pass vacuously', () => {

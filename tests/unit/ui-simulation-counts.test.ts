@@ -22,6 +22,12 @@ const COUNTS = {
   staffUnassigned: 2,
   rooms: 9,
   roomCapacity: 60,
+  // Deliberately smaller than `roomCapacity`, and deliberately not a round
+  // fraction of it: the two are different sums over the same registry, and a
+  // mapping that reached for the wrong one would still look plausible. Read as
+  // a prison whose nine rooms hold 60 sleep surfaces between them, 44 of which
+  // stand in rooms intake will house somebody in.
+  accommodationCapacity: 44,
   roomOccupants: 31,
   activeIncidents: 1,
   contrabandDiscovered: 5,
@@ -46,8 +52,9 @@ describe('the HUD counts are read from the worker', () => {
   it('maps every metric the strip renders onto the count the simulation published', () => {
     expect(hudCountsFromWorkerMessage(statusCounts())).toEqual({
       prisoners: 42,
-      // Unknown, deliberately -- see below.
-      prisonerCapacity: 0,
+      // The accommodation capacity, not the room capacity beside it -- see
+      // the case below for which is which and why it took a new field.
+      prisonerCapacity: 44,
       staff: 11,
       rooms: 9,
       activeIncidents: 1,
@@ -68,16 +75,59 @@ describe('the HUD counts are read from the worker', () => {
     });
   });
 
-  it('leaves the occupancy denominator unknown rather than reusing total room capacity', () => {
-    // `roomCapacity` is every registered room instance's capacity summed --
-    // canteens, yards and shower rooms included -- while the HUD field it
-    // would land in is documented as total *cell* capacity and drives an
-    // over-capacity warning. A prison with a 40-seat canteen is not a prison
-    // with 40 beds, and `prisonerCapacity: 0` makes the HUD omit the
-    // occupancy bar instead of drawing a wrong one.
-    const counts = hudCountsFromWorkerMessage(statusCounts({ ...COUNTS, roomCapacity: 500 }));
+  it('takes the occupancy denominator from the accommodation capacity, never from total room capacity', () => {
+    /*
+     * ## What this case used to assert, and why it was wrong when it was
+     * written
+     *
+     * It was `leaves the occupancy denominator unknown rather than reusing
+     * total room capacity`, it asserted `prisonerCapacity` was `0`, and it
+     * justified that with:
+     *
+     * > "`roomCapacity` is every registered room instance's capacity summed --
+     * > canteens, yards and shower rooms included -- while the HUD field it
+     * > would land in is documented as total *cell* capacity and drives an
+     * > over-capacity warning. A prison with a 40-seat canteen is not a prison
+     * > with 40 beds, and `prisonerCapacity: 0` makes the HUD omit the
+     * > occupancy bar instead of drawing a wrong one."
+     *
+     * **Both directions, because they point opposite ways.**
+     *
+     * The *reason* was false on the day it was written, not made false by this
+     * change. `deriveRoomCapacity` (`src/simulation/objects/room-capacity.ts`)
+     * adds an object's footprint width to `residentCapacity` only when its
+     * catalogue capabilities include `'sleep-surface'`, and
+     * `object.dining-table`, `object.bench` and `object.shower-head` declare
+     * none of it -- so a 40-seat canteen contributed exactly 0 to
+     * `roomCapacity`, and always had. It was measured all along and nobody
+     * read it: `tests/unit/worker-status-counts.test.ts` asserts
+     * `roomCapacity: 4` for a published scenario of six rooms whose yard holds
+     * a bench and whose canteen holds a dining table -- four beds, four
+     * places, the furniture contributing nothing -- while this comment three
+     * files away said that furniture was the reason the field could not be
+     * mapped.
+     *
+     * The *conclusion* was right, for the reason the comment's own last
+     * sentence named and then did not follow: "the simulation has no cell-only
+     * capacity total to send yet". Two catalogue objects carry
+     * `'sleep-surface'` -- `object.bed` and `object.medical-bed` -- so
+     * `roomCapacity` counts a furnished infirmary's beds, and
+     * `src/simulation/construction/definition.ts` says so outright beside the
+     * buildable `medical-bed-wooden` row: an infirmary "derives a residency it
+     * has no intake route to use". Mapping `roomCapacity` through would have
+     * overstated the denominator by every medical bed a player had built.
+     *
+     * ## What resolves it
+     *
+     * A thirteenth published count, `accommodationCapacity`, computed in the
+     * projection over the room types the session's `AccommodationPolicy`
+     * names. The HUD reads it and derives nothing.
+     */
+    const counts = hudCountsFromWorkerMessage(
+      statusCounts({ ...COUNTS, roomCapacity: 500, accommodationCapacity: 44 }),
+    );
 
-    expect(counts?.prisonerCapacity).toBe(0);
+    expect(counts?.prisonerCapacity).toBe(44);
   });
 
   it('reports zero counts as zero, so an empty prison is not mistaken for an unknown one', () => {

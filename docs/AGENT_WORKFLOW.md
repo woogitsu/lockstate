@@ -33,9 +33,16 @@ what it was doing.
    not invent work, and do not restate findings already recorded.
 
 **A routine is not a licence to act unattended on anything irreversible.** It
-resumes work already in scope. Merging, deploying, deleting branches and
-anything touching a hosted service remain the owner's call, exactly as
-`AGENTS.md` says.
+resumes work already in scope. Deleting branches and anything touching a hosted
+service remain the owner's call, exactly as `AGENTS.md` says.
+
+**Amended 2026-08-27.** Merging is no longer on that list, and the sentence
+above used to put it there. Under the owner's standing mandate (`AGENTS.md`,
+"The owner's standing mandate") a green, ordinary increment may be merged
+without asking — *and merging publishes to `lockstate.io`*, so what makes it
+safe is the four exclusions that mandate keeps, not the merge being harmless.
+Both directions are marked rather than overwritten, because the reason merging
+was reserved has not gone away; only the permission has changed.
 
 ---
 
@@ -71,6 +78,47 @@ They came from a shared tree and from shared ADR *numbers*.
 
 ---
 
+### What the 2026-08-27 session cost, in mechanics
+
+Eight agents ran in parallel that day. None of these is taste; each was paid for.
+
+- **`pnpm <script>` does not work in a worktree** whose `node_modules` is a
+  symlink outside the project root — pnpm's pre-run check aborts with
+  `ERR_PNPM_UNSAFE_MODULES_DIR`. Four agents hit it independently. Call the
+  binaries the scripts wrap:
+  `node /workspace/lockstate/node_modules/typescript/bin/tsc -b --pretty false`,
+  `node /workspace/lockstate/node_modules/vitest/vitest.mjs run <files>`.
+- **`vitest.config.ts` sets `environment: 'node'` and there is no jsdom.** Code
+  that touches `document` is therefore unreachable from `pnpm test` *at all* —
+  not merely untested. A mutation there survives because nothing could observe
+  it. The answer is to extract the decision into a pure function, not to report
+  a survivor: that is how `orderPrisonsForDisplay` came to exist.
+- **The browser suite needs Git LFS content.** `public/assets/**` is pointer
+  text in a fresh container, so `pnpm test:browser` fails at atlas decode by
+  design. `bash scripts/provision-git-lfs.sh && git lfs pull` makes it runnable,
+  and an agent that must verify a browser change should do that rather than
+  push a guess. A worktree does not carry the blobs; work in the main checkout
+  when the browser suite is the thing being verified.
+- **Do not run a suite while another agent is running one.** Timing-sensitive
+  tests flake under contention and this repository has measured it: identical
+  clean trees gave 9, 5 and 5 failures, every one a `Test timed out in 5000ms`.
+  A cheap grep now beats a contended measurement.
+- **A change that breaks fixtures breaks them wherever they live.** ADR 0045's
+  refusal turned about 104 tests red in 16 files; the agent fixed those and
+  missed `tests/browser/app-shell.spec.ts`, because it could not run the browser
+  suite. Ask what *else* asserts the behaviour you just changed, and name the
+  suites you did not run.
+
+### Handovers between parallel agents
+
+An agent that finds a defect outside its own surface cannot fix it, and the
+agent that owns that surface has already finished by the time the report lands.
+**The integrator owns the gap.** Three corrections fell through it in one
+session — a stale `docs/TESTING.md` paragraph, an ADR sentence, a comment
+carrying two tallies — and each was found by an agent forbidden to touch the
+file it lived in. Collect every "handing this over" line from every report and
+close them before the branch is called done.
+
 ## 3. The method every agent is held to
 
 - **A green suite is not a guarded suite.** A test proves nothing until the
@@ -79,6 +127,34 @@ They came from a shared tree and from shared ADR *numbers*.
 - **Never write a fixture that supplies both sides of a comparison.** An expected
   value computed by the code under test holds for any implementation.
   `docs/TESTING.md` lists the forms this takes here.
+- **A measurement is not a diagnosis, and neither is a cause an impact.** This
+  is the sibling of the rule below and it caught a model that was obeying that
+  one. On 2026-08-27 an agent compared the response headers of `lockstate.io`
+  and the `workers.dev` host, found five missing on the domain, ruled out
+  caching properly, dated the commit that introduced them — every step
+  measured, every number real — and then wrote into `docs/DEPLOYMENT.md` that
+  this was a **defect** and that ADR 0021's security posture was "not in force
+  on the host players visit". Both were invented. The owner had switched that
+  domain's deploy off deliberately, and nobody plays the game yet. One sentence
+  from them demolished a paragraph that had looked rigorous because the
+  *evidence* was rigorous.
+  So: state the observation, then say separately what would establish the cause
+  and what would establish the impact. **"I measured X; I do not know why, and
+  I do not know what it costs" is a complete and useful report.** Words like
+  *defect*, *incident*, *regression*, *users affected* are claims about cause
+  and impact, and each needs its own evidence.
+- **Ask about state this repository cannot read.** Cloudflare and Supabase
+  dashboard settings, whether a custom domain is attached and to what, whether
+  a deploy is switched off, who is actually using the thing — none of it is in
+  git and no amount of measurement will produce it. `docs/DEPLOYMENT.md` already
+  says the domain binding "is therefore **not reproducible from this
+  repository**"; treat that sentence as a general rule, not a footnote about one
+  binding. When a finding depends on unreadable state, the finding is a
+  question.
+- **A correction is cheap while it is still yours.** The paragraph above was
+  wrong for eleven minutes because it was rewritten as soon as the owner said
+  so, and the commit that removed it says what it had claimed. Marking both
+  directions (§4) applies to your own mistakes first.
 - **Never report a result you did not obtain.** Run it, paste it. Open every
   `file:line` you cite. This project has paid hours for confident false findings,
   including audit reports citing line numbers for code nobody opened.

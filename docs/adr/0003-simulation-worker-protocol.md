@@ -147,10 +147,17 @@ rather than one on each of the ~66 tick-loop wakes -- and posts nothing at
 all when none of the counts has changed. The tick stamp is what stops a
 readout from being taken for a statement about a later state than the one
 it describes. Measured per publication at 300 room instances and 40 guards:
-0.22-4.18 ms to project and 0.03-0.09 ms to structured-clone a 380-382 byte
-payload -- the largest form the channel can send, carrying twelve counts, a
+0.30-1.09 ms to project and 0.03-0.06 ms to structured-clone a 416-418 byte
+payload -- the largest form the channel can send, carrying thirteen counts, a
 refusal and the longest declared reason -- flat from 250 to 5,000 actors
 (`tests/unit/worker-status-counts.test.ts`, reported not asserted).
+
+**Those figures replace a `380-382` that had already stopped being current
+before the thirteenth count was written**, and the correction is recorded in
+both directions because the paragraph below is about exactly this failure. Run
+on the tree as it stood with twelve counts, the same case measured **388-390**,
+not 380-382 -- so the "18 bytes of head room" stated four paragraphs down was
+10. Nobody had re-run it; the drift is digits in the values, not a field.
 
 That byte figure **replaces** the `342-344` this paragraph used to state, and
 it replaces it by re-measurement rather than by re-labelling -- the whole point
@@ -171,13 +178,38 @@ the byte figure never moving off 380-382 -- which is exactly why
 `docs/BENCHMARKING.md` keeps this evidence reported rather than gated, and why
 the byte figure is the half of it worth quoting.
 
-What the test *asserts* is the shape and not any of these numbers -- twelve
-count keys, a refusal of exactly three scalars, and a serialized payload under
-400 bytes -- because the shape is the property that makes the cadence safe, and
-the population cannot move it. The 400-byte assertion now has 18 bytes of head
-room rather than 56: a thirteenth count with a name as long as the twelfth
-would breach it, and should be read as this channel's soft limit making itself
-felt rather than as an arbitrary threshold to raise.
+What the test *asserts* is the shape and not any of these numbers -- thirteen
+integers of counts, every one of them an integer scalar rather than a list, a
+refusal of exactly three scalars, and a serialized payload under 436 bytes -- because the shape is the
+property that makes the cadence safe, and the population cannot move it.
+
+**The thirteenth count arrived, and the paragraph that predicted it read:**
+*"The 400-byte assertion now has 18 bytes of head room rather than 56: a
+thirteenth count with a name as long as the twelfth would breach it, and should
+be read as this channel's soft limit making itself felt rather than as an
+arbitrary threshold to raise."* It was right that the limit would be felt and
+its arithmetic was one re-measurement out of date (see above). What was done
+about it, so that the raise is derived and not arbitrary:
+
+- `accommodationCapacity` costs 28 bytes of the largest declared payload, which
+  now measures 416-418. The bound moved to **436**, leaving the same 18 bytes
+  of head room the 400 was believed to have -- so a *fourteenth* count with a
+  name as long as the thirteenth breaches this bound too. The soft limit is
+  still felt, one field further along.
+- The property the byte bound was standing in for is now asserted directly:
+  every value in `counts` must be an integer scalar. A key count cannot see a
+  field that stayed one key and became a list, and a size bound can only see
+  one once it is long enough; this sees it at length zero, at any population.
+  A relaxed bound needs the thing it was proxying for pinned where it cannot be
+  relaxed.
+
+That the field was worth 28 bytes at all is the argument for it, not against:
+`HudCountsViewModel.prisonerCapacity` was the literal `0` until it existed, so
+`occupancyTone`'s over-capacity warning could not fire in any session, and
+ADR 0048 decision 2 had just made overcrowding the thing a prison riots over.
+It is a *simulation* figure -- the summed resident capacity of the rooms the
+session's `AccommodationPolicy` names -- so neither the pull route below nor a
+main-thread derivation could have carried it.
 
 It calls nothing on the kernel and advances nothing, which is what keeps
 ADR 0009's determinism guarantee intact:
@@ -188,7 +220,8 @@ to the same sixty ticks stepped with no worker at all.
 No list crosses this channel: the payload is the `counts` block beside at
 most one refusal record and at most one zoning notice, every member of all
 three a scalar and none of them a list, so `docs/HUD_PROJECTIONS.md` contract 5
-has nothing to bound here yet. **That sentence read "twelve integers beside at
+has nothing to bound here yet. That sentence is now *executable* rather than
+only asserted about the count of keys -- see the shape paragraph below. **That sentence read "twelve integers beside at
 most one three-field refusal record" and had been half-false since #312** --
 which is the same failure as the "eleven"/`344` this section spends three
 paragraphs on, one field further along, so the subject is stated here and the
@@ -381,10 +414,14 @@ against the next slice, without deciding any of them:
   counter is needed. Should a *row* projection ever want a cadence, finding 3's
   argument for a revision counter on the source registry stands untouched.
 
-Finding 4 — no cell-only capacity — is unaffected: it is a gap in the
-simulation, not in the channel, and `HudCountsViewModel.prisonerCapacity`
-still reports `0` so the strip omits the bar rather than drawing a wrong
-denominator.
+Finding 4 — no cell-only capacity — is unaffected *by this route*: it was a gap
+in the simulation, not in the channel. **It is closed as of the
+`accommodationCapacity` change** (see the amendment below): the simulation now
+publishes the summed resident capacity of the rooms its `AccommodationPolicy`
+names, and `HudCountsViewModel.prisonerCapacity` maps from it instead of
+reporting `0`. Both directions are marked because the reasoning still holds —
+the fix had to be a *simulation* figure on the cadence channel, and could not
+have been the pull route or a main-thread derivation.
 
 Decision 9 is untouched and is worth restating because this route sits next to
 it: a `simulation/command-result` of `status: 'queued'` means the message was

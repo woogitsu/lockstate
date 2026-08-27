@@ -907,10 +907,20 @@ export const DOOR_EDGE_NUMERIC_ID = 2;
  *
  * Two members of `BuildableCategory` are edge geometry now, which is why this
  * is a predicate and not `category === 'wall'` written out at each call site:
- * a `'wall'`, and any buildable that names a `placesDoor`. It is exported
- * because the composition root needs the same answer to decide whether the
- * Build panel shows its edge chooser (`src/main.ts`), and a second copy of the
- * rule there is how the two would come to disagree.
+ * a `'wall'`, and any buildable that names a `placesDoor`.
+ *
+ * **The composition root does not call it, and the two answers already
+ * disagree.** This said it was exported *"because the composition root needs
+ * the same answer to decide whether the Build panel shows its edge chooser
+ * (`src/main.ts`), and a second copy of the rule there is how the two would
+ * come to disagree"* -- future tense for something already true when it was
+ * written. `src/main.ts` publishes `occupiesEdge: definition.category ===
+ * 'wall'` and imports no predicate, so the Build panel's numeric route hides
+ * the edge chooser for `door-wooden`; `tests/integration/door-construction-loop.test.ts`
+ * records the same gap from the other side and leaves it open as a HUD
+ * question. The sentence is kept rather than replaced because the reason it
+ * gives is right and is why `submitOrder` calls this function rather than
+ * spelling the rule again (issue #448).
  */
 export function occupiesTileEdge(definition: BuildableDefinition): boolean {
   return definition.category === 'wall' || definition.placesDoor !== undefined;

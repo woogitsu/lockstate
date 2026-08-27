@@ -1,0 +1,133 @@
+import { describe, expect, it } from 'vitest';
+import { Kernel } from '../../src/simulation/kernel/kernel';
+import { NavigationSystem } from '../../src/simulation/navigation/navigation-system';
+import { buildCellBlockFixture } from '../helpers/navigation-fixture';
+import { DeploymentSystem } from '../../src/simulation/security/deployment-system';
+import { constantDeploymentSchedule, type DeploymentSchedule } from '../../src/simulation/security/deployment-schedule';
+import { GuardRoster } from '../../src/simulation/security/guard-roster';
+import { SecuritySectorRegistry } from '../../src/simulation/security/sector';
+import {
+  DEFAULT_SECTOR_PRISONERS_PER_GUARD,
+  resolveOccupancyScaledGuardCount,
+} from '../../src/simulation/security/sector-staffing';
+
+/**
+ * **A staffing requirement that moves with the population**
+ * ([ADR 0048](../../docs/adr/0048-what-a-sectors-occupants-are.md) decision 3,
+ * answering [ADR 0042](../../docs/adr/0042-attaching-consequences-to-the-simulation-loop.md)
+ * open question 2).
+ *
+ * The defect it closes is arithmetic rather than behavioural, and worth
+ * restating because a passing test does not show it: `staffingShortfall` is
+ * `shortage / required`, so with `required` pinned at one it is `1` before the
+ * first hire and `0` for ever after — issue #442's *"hiring one guard makes the
+ * incident system unreachable"*. Every figure below is the requirement, which
+ * is the denominator of that fraction.
+ */
+
+const SECTOR_ID = 'security-office';
+
+function buildScenario() {
+  const cellBlock = buildCellBlockFixture(12);
+  const navigation = new NavigationSystem(cellBlock.world, { workBudgetPerTick: 2_000, agingIntervalTicks: 10, flowFieldActivationThreshold: 100 }, cellBlock.doors);
+  navigation.setLoadedChunks(cellBlock.chunkPositions);
+  const sectors = new SecuritySectorRegistry(cellBlock.doors);
+  sectors.register({ id: SECTOR_ID, gradeId: 'grade.general', doorIds: ['cell-door-1'], postTile: cellBlock.cellTiles[1]! });
+  const guards = new GuardRoster(64);
+  return { cellBlock, navigation, sectors, guards };
+}
+
+describe('resolveOccupancyScaledGuardCount: the schedule is a floor, the population is a demand', () => {
+  it('leaves the authored count alone until the population has outgrown it', () => {
+    // Eight per guard, so a sector of eight still asks for the one its schedule
+    // authored, and the ninth arrival is what changes the answer.
+    expect(DEFAULT_SECTOR_PRISONERS_PER_GUARD).toBe(8);
+    expect(resolveOccupancyScaledGuardCount(1, 0)).toBe(1);
+    expect(resolveOccupancyScaledGuardCount(1, 8)).toBe(1);
+    expect(resolveOccupancyScaledGuardCount(1, 9)).toBe(2);
+    expect(resolveOccupancyScaledGuardCount(1, 16)).toBe(2);
+    expect(resolveOccupancyScaledGuardCount(1, 17)).toBe(3);
+  });
+
+  it('only ever raises, so a scenario that authored more than the rule asks for keeps it', () => {
+    // A schedule is authored data — a scenario, a save payload or
+    // `applyDefaultSecuritySector` put it there — and a rule that replaced it
+    // would make the authored number unreadable.
+    expect(resolveOccupancyScaledGuardCount(5, 8)).toBe(5);
+    expect(resolveOccupancyScaledGuardCount(5, 40)).toBe(5);
+    expect(resolveOccupancyScaledGuardCount(5, 41)).toBe(6);
+  });
+
+  it('treats a zero as an exemption rather than as a small number', () => {
+    // `applyDefaultSecuritySector`'s "anything already present wins" is what
+    // lets a save carry a zero, and `tests/helpers/default-security-sector.ts`
+    // relies on it for every fixture whose subject is not the default sector.
+    // Scaling an exemption up would withdraw it, and only after a save round
+    // trip.
+    expect(resolveOccupancyScaledGuardCount(0, 0)).toBe(0);
+    expect(resolveOccupancyScaledGuardCount(0, 500)).toBe(0);
+  });
+});
+
+describe('DeploymentSystem reports and enforces the scaled requirement, not two different numbers', () => {
+  it('raises required, assigned and shortage together as the sector fills up', () => {
+    const { cellBlock, navigation, sectors, guards } = buildScenario();
+    const schedules: DeploymentSchedule[] = [constantDeploymentSchedule(SECTOR_ID, 1)];
+    let occupants = 4;
+    const deployment = new DeploymentSystem(sectors, guards, navigation, schedules, undefined, () => occupants);
+
+    const kernel = new Kernel();
+    kernel.registerSystem(navigation);
+    kernel.registerSystem(deployment);
+
+    for (let index = 0; index < 3; index += 1) guards.hire('staff-role.guard', cellBlock.cellTiles[1]!);
+    for (let index = 0; index < 40; index += 1) kernel.step();
+
+    // Four prisoners: the authored one guard is enough, and the other two hires
+    // stay in the pool `IncidentResponseSystem` and `SearchSystem` draw from.
+    expect(deployment.getCoverageReport(0)).toEqual([{ sectorId: SECTOR_ID, required: 1, assigned: 1, shortage: 0 }]);
+    expect(guards.unassignedGuardIds()).toHaveLength(2);
+
+    occupants = 20;
+    for (let index = 0; index < 40; index += 1) kernel.step();
+
+    // Twenty prisoners: three guards, and all three hires are now posted. The
+    // requirement moved without the schedule moving — the schedule is still the
+    // one the fixture authored.
+    expect(deployment.getCoverageReport(0)).toEqual([{ sectorId: SECTOR_ID, required: 3, assigned: 3, shortage: 0 }]);
+    expect(guards.unassignedGuardIds()).toEqual([]);
+    expect(schedules).toEqual([constantDeploymentSchedule(SECTOR_ID, 1)]);
+  });
+
+  it('reports the shortage a growing prison has, rather than fabricating coverage', () => {
+    const { cellBlock, navigation, sectors, guards } = buildScenario();
+    const deployment = new DeploymentSystem(sectors, guards, navigation, [constantDeploymentSchedule(SECTOR_ID, 1)], undefined, () => 33);
+
+    const kernel = new Kernel();
+    kernel.registerSystem(navigation);
+    kernel.registerSystem(deployment);
+    guards.hire('staff-role.guard', cellBlock.cellTiles[1]!);
+    for (let index = 0; index < 40; index += 1) kernel.step();
+
+    // 33 occupants is five guards' worth; one is hired. `staffingShortfall`
+    // reads 4/5, which is the number the risk sampler divides by and the
+    // number the staff projection publishes.
+    expect(deployment.getCoverageReport(0)).toEqual([{ sectorId: SECTOR_ID, required: 5, assigned: 1, shortage: 4 }]);
+  });
+
+  it('is exactly the old system when no occupancy source is supplied', () => {
+    // The parameter is optional so every fixture written against a
+    // hand-authored schedule keeps its meaning; this is the assertion that says
+    // so rather than the type saying it.
+    const { cellBlock, navigation, sectors, guards } = buildScenario();
+    const deployment = new DeploymentSystem(sectors, guards, navigation, [constantDeploymentSchedule(SECTOR_ID, 1)]);
+
+    const kernel = new Kernel();
+    kernel.registerSystem(navigation);
+    kernel.registerSystem(deployment);
+    for (let index = 0; index < 4; index += 1) guards.hire('staff-role.guard', cellBlock.cellTiles[1]!);
+    for (let index = 0; index < 40; index += 1) kernel.step();
+
+    expect(deployment.getCoverageReport(0)).toEqual([{ sectorId: SECTOR_ID, required: 1, assigned: 1, shortage: 0 }]);
+  });
+});

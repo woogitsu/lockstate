@@ -464,11 +464,12 @@ export class SimulationWorkerStateMachine {
    *
    * Every payload carries the tick it was read at, so a readout can never be
    * mistaken for a statement about a later state, and no list crosses at all
-   * -- twelve integers of counts beside at most one refusal record, which is
+   * -- thirteen integers of counts beside at most one refusal record, which is
    * why `docs/HUD_PROJECTIONS.md` contract 5 (paging) has nothing to bound
    * here yet. It was eleven until #29's income line added
-   * `stateIncomeAccruedTodayMinorUnits`, and the number is checked against the
-   * projection's own schema rather than trusted
+   * `stateIncomeAccruedTodayMinorUnits` and twelve until `accommodationCapacity`
+   * gave the strip's occupancy bar a denominator, and the number is checked
+   * against the projection's own schema rather than trusted
    * (`tests/foundation/documentation-claims-contract.test.ts`).
    */
   private publishStatusCounts(nowMilliseconds: number): void {

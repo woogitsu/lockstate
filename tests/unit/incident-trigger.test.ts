@@ -3,16 +3,36 @@ import { Kernel } from '../../src/simulation/kernel/kernel';
 import { GangRegistry } from '../../src/simulation/incidents/gangs';
 import { IncidentLog } from '../../src/simulation/incidents/incident';
 import { DEFAULT_SECTOR_RISK_POLICY, SectorRiskTracker, type SectorRiskSample } from '../../src/simulation/incidents/sector-risk';
-import { IncidentTriggerSystem } from '../../src/simulation/incidents/trigger-system';
+import {
+  DEFAULT_MINIMUM_RIOT_PARTICIPANTS,
+  DEFAULT_SECTOR_QUIET_TICKS_AFTER_INCIDENT,
+  IncidentTriggerSystem,
+} from '../../src/simulation/incidents/trigger-system';
 
 const CALM: SectorRiskSample = { needsPressure: 0, staffingShortfall: 0, contrabandPressure: 0 };
 const HOT: SectorRiskSample = { needsPressure: 1, staffingShortfall: 1, contrabandPressure: 1 };
+
+/**
+ * Two prisoners, because a riot needs `DEFAULT_MINIMUM_RIOT_PARTICIPANTS` of
+ * them and most files below are about the *window* rather than about who is in
+ * the sector.
+ *
+ * It used to be nobody, which was invisible while occupancy fed only the
+ * participant list; since ADR 0048 it is also the gate on whether a riot can
+ * open at all, and a harness that supplied an empty sector would have made
+ * every sustained-window assertion below pass for the wrong reason. Two ids,
+ * not one, and deliberately out of ascending order so a fixture that stopped
+ * sorting would be visible.
+ */
+const TWO_OCCUPANTS = (): readonly number[] => [6, 2];
 
 function buildHarness(options: {
   readonly sectorIds: readonly string[];
   readonly sampleFor: (sectorId: string, tick: number) => SectorRiskSample;
   readonly occupants?: (sectorId: string) => readonly number[];
   readonly gangs?: GangRegistry;
+  /** Defaults to the production value; a file measuring the streak alone passes 0 to take the quiet period out of the way. */
+  readonly quietTicksAfterIncident?: number;
 }) {
   const incidents = new IncidentLog();
   const risk = new SectorRiskTracker(DEFAULT_SECTOR_RISK_POLICY);
@@ -23,7 +43,9 @@ function buildHarness(options: {
     gangs,
     options.sectorIds,
     options.sampleFor,
-    options.occupants ?? (() => []),
+    options.occupants ?? TWO_OCCUPANTS,
+    undefined,
+    options.quietTicksAfterIncident,
   );
   const kernel = new Kernel();
   kernel.registerSystem(trigger);
@@ -92,7 +114,12 @@ describe('IncidentTriggerSystem: sustained conditions, never a one-sample spike'
   });
 
   it('after the open riot is resolved, a fresh sustained window is required before another fires', () => {
-    const { incidents, trigger, kernel } = buildHarness({ sectorIds: ['block-a'], sampleFor: () => HOT });
+    // `quietTicksAfterIncident: 0` so this measures the streak and nothing
+    // else. With the production quiet period in the way the second riot is
+    // withheld for 4,800 ticks whatever the streak does, and this assertion
+    // would be true for a reason it is not about; the quiet period has its own
+    // test below.
+    const { incidents, trigger, kernel } = buildHarness({ sectorIds: ['block-a'], sampleFor: () => HOT, quietTicksAfterIncident: 0 });
 
     stepSamples(kernel, DEFAULT_SECTOR_RISK_POLICY.sustainedSamplesRequired);
     const first = incidents.openIncidents()[0]!;
@@ -106,6 +133,64 @@ describe('IncidentTriggerSystem: sustained conditions, never a one-sample spike'
 
     stepSamples(kernel, DEFAULT_SECTOR_RISK_POLICY.sustainedSamplesRequired);
     expect(trigger.getMetrics().riotsTriggered).toBe(2);
+  });
+
+  it('holds a permanently hot sector to one riot per quiet period, rather than one per window', () => {
+    // The defect this is here for was measured rather than reasoned about: with
+    // the streak reset as the only spacing, an overcrowded unguarded starter
+    // prison opened 49 riots in 20 in-game days.
+    const { incidents, trigger, kernel } = buildHarness({ sectorIds: ['block-a'], sampleFor: () => HOT });
+
+    function closeWhateverIsOpen(tick: number): void {
+      for (const open of incidents.openIncidents()) {
+        incidents.transition(open.id, 'lapsed', tick, { injuredEntityIds: [], propertyDamage: 0, escaped: false });
+      }
+    }
+
+    // Earn the window, then close the riot immediately so that only the quiet
+    // period -- not `openIncidentsInSector` -- can be what withholds the next.
+    stepSamples(kernel, DEFAULT_SECTOR_RISK_POLICY.sustainedSamplesRequired);
+    expect(trigger.getMetrics().riotsTriggered).toBe(1);
+    const firstRiotTick = incidents.all()[0]!.startedAtTick;
+    // The twelfth sampling point, at the 50-tick cadence with `phaseTicks: 0`:
+    // the system's samples land on 0, 50, ... 550, so the window closes on 550
+    // rather than on 600. Written out because it is the anchor every figure
+    // below is measured from.
+    expect(firstRiotTick).toBe(550);
+    closeWhateverIsOpen(kernel.tick);
+
+    // 4,800 ticks is 96 sampling points; 90 of them, every one hot, is seven
+    // and a half sustained windows and still inside the quiet period.
+    stepSamples(kernel, 90);
+    closeWhateverIsOpen(kernel.tick);
+    expect(kernel.tick - firstRiotTick).toBeLessThan(DEFAULT_SECTOR_QUIET_TICKS_AFTER_INCIDENT);
+    expect(trigger.getMetrics().riotsTriggered).toBe(1);
+
+    // Past it, and the sector -- which never improved -- riots again.
+    stepSamples(kernel, 10);
+    expect(kernel.tick - firstRiotTick).toBeGreaterThan(DEFAULT_SECTOR_QUIET_TICKS_AFTER_INCIDENT);
+    expect(trigger.getMetrics().riotsTriggered).toBe(2);
+  });
+
+  it('will not call one prisoner a riot, and opens one the moment there are two', () => {
+    let occupants: readonly number[] = [4];
+    const { incidents, trigger, kernel } = buildHarness({
+      sectorIds: ['block-a'],
+      sampleFor: () => HOT,
+      occupants: () => occupants,
+    });
+
+    // Permanently hot, far past the window, with one prisoner in the sector.
+    stepSamples(kernel, DEFAULT_SECTOR_RISK_POLICY.sustainedSamplesRequired + 20);
+    expect(incidents.all()).toEqual([]);
+    // The risk was recorded rather than suppressed: the streak is still running.
+    expect(trigger.getMetrics().riotsTriggered).toBe(0);
+
+    occupants = [4, 11];
+    stepSamples(kernel, 1);
+    expect(incidents.all()).toHaveLength(1);
+    expect(incidents.all()[0]!.participantIds).toEqual([4, 11]);
+    expect(DEFAULT_MINIMUM_RIOT_PARTICIPANTS).toBe(2);
   });
 
   it('handles many sectors independently and in deterministic sorted order', () => {
@@ -189,7 +274,9 @@ describe('IncidentTriggerSystem: gang retaliation feeds the same pipeline', () =
     const restoredIncidents = new IncidentLog();
     restoredIncidents.loadSnapshot(incidents.getSnapshot());
     const restoredRisk = new SectorRiskTracker(DEFAULT_SECTOR_RISK_POLICY);
-    const restoredTrigger = new IncidentTriggerSystem(restoredIncidents, restoredRisk, new GangRegistry(), ['block-a'], () => HOT, () => []);
+    // Occupants and a zero quiet period for the same reasons `buildHarness`
+    // supplies them: this file is about the id sequence, not about either gate.
+    const restoredTrigger = new IncidentTriggerSystem(restoredIncidents, restoredRisk, new GangRegistry(), ['block-a'], () => HOT, TWO_OCCUPANTS, undefined, 0);
     restoredTrigger.loadSnapshot(trigger.getSnapshot());
 
     expect(restoredTrigger.getMetrics()).toEqual(trigger.getMetrics());

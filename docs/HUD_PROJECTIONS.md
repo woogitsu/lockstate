@@ -129,7 +129,7 @@ per-prisoner object at all, so the always-visible strip is safe to
 re-project every frame at the stretch tier.
 
 The always-visible counts have no rows at all, which is what makes them
-publishable on a timer: `simulation/status-counts` (section 8) carries twelve
+publishable on a timer: `simulation/status-counts` (section 8) carries thirteen
 integers and at most one three-field refusal record, so there is nothing here
 for this contract to bound. A projection that carries rows must be paged
 before it may be published on a cadence — a per-send cost that grows with the
@@ -386,12 +386,31 @@ Two things deliberately do **not** cross:
   `tests/unit/segment-fill-agreement.test.ts`. What remains is an ordinary
   scope decision. Widening this channel is a change to make when a panel
   needs one of these values, not a correctness fix.
-- **A prisoner capacity.** `counts.roomCapacity` sums every registered room
-  instance — canteens and yards included — and the HUD's occupancy bar is
+- ~~**A prisoner capacity.**~~ **Closed, and the reason it was open was
+  half wrong.** This bullet read: *"`counts.roomCapacity` sums every registered
+  room instance — canteens and yards included — and the HUD's occupancy bar is
   documented as *cell* capacity with an over-capacity warning behind it. The
   simulation has no cell-only total, so `HudCountsViewModel.prisonerCapacity`
   stays `0` and the strip omits the bar rather than drawing a wrong
-  denominator.
+  denominator."*
+
+  **A canteen and a yard contribute nothing to `roomCapacity`**, and never
+  did. `deriveRoomCapacity` (`src/simulation/objects/room-capacity.ts`) credits
+  `residentCapacity` only for an object whose capabilities include
+  `'sleep-surface'`; a bench, a dining table and a shower head declare none, so
+  a 40-seat canteen adds 0. The *conclusion* was right for the reason the
+  bullet's own last clause named: `object.medical-bed` declares
+  `'sleep-surface'` too, so `roomCapacity` counts a furnished infirmary's beds
+  while `IntakeSystem` will never house anybody in one.
+
+  The channel now carries `accommodationCapacity` beside `roomCapacity` — the
+  summed `residentCapacity` of the room instances the session's
+  `AccommodationPolicy` names, which is `room.cell` and `room.solitary-cell`
+  under the shipped policy — and `HudCountsViewModel.prisonerCapacity` maps
+  straight from it. The bar and `occupancyTone`'s over-capacity warning are on,
+  which matters because ADR 0048 made overcrowding the thing a prison riots
+  over. `roomCapacity` stays exactly what it was: the Rooms readout's total,
+  with no reader in `src/ui/` yet.
 
 What this did **not** close, and section 9 does: the other nine projections
 in this directory had no route at all. Rosters, room lists, staff, security,
@@ -945,16 +964,25 @@ decision about what to build next.
 
 ### Security
 
-23. **No sector membership model.** Which prisoners, rooms or tiles are in
-    a sector is session/scenario knowledge supplied through
-    `SectorOccupantResolver`; the simulation does not own it. Since
-    [ADR 0036](./adr/0036-a-derived-default-security-sector.md) a session
-    derives **one** sector for the whole prison, and the resolver
-    `new-session.ts` supplies for it counts prisoners standing exactly on its
-    post tile — which happens to be the arrival tile, so it finds the arrivals
-    a full prison cannot house. That works because there is one sector; a
-    second one needs a real tile-to-sector map first, and this gap is where it
-    would go.
+23. **No sector membership model a *panel* can read.** Which prisoners, rooms
+    or tiles are in a sector is supplied to the simulation through
+    `SectorOccupantResolver`, and no projection publishes the answer.
+
+    **The simulation half of this gap closed** with
+    [ADR 0048](./adr/0048-what-a-sectors-occupants-are.md): the derived sector
+    is the prison, so its occupants are every prisoner standing on owned land
+    (`src/simulation/security/sector-occupancy.ts`). This entry used to say the
+    resolver "counts prisoners standing exactly on its post tile — which
+    happens to be the arrival tile, so it finds the arrivals a full prison
+    cannot house", and that was true and was the defect: a *housed* prisoner
+    was in no sector at all.
+
+    What is still missing is the projection. A room's `security` block stays
+    absent because `RoomProjectionOptions.sectorIdByRoomInstanceId` is never
+    supplied, and a **room**-to-sector map is a different question from a
+    prisoner-to-sector one — ADR 0048 answers the second and declines the
+    first, because a room has an extent and a sector still does not.
+
 24. **Sector risk is withheld by design.** If a "tension" gauge is wanted,
     revealing `SectorRiskTracker`'s score is a product decision about
     exposing a hidden calculation, not a projection gap.

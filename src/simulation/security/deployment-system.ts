@@ -4,6 +4,7 @@ import type { RouteContext } from '../navigation/route-context';
 import type { TilePosition } from '../world/coordinates';
 import { resolveStaffRouteContext } from './access-policy';
 import { resolveRequiredGuardCount, type DeploymentSchedule } from './deployment-schedule';
+import { resolveOccupancyScaledGuardCount, type SectorOccupantCountResolver } from './sector-staffing';
 import type { EntityId } from '../entity/entity-store';
 import type { GuardRoster } from './guard-roster';
 import type { SecuritySectorRegistry } from './sector';
@@ -47,6 +48,20 @@ export class DeploymentSystem implements SystemRegistration {
     private readonly navigation: NavigationSystem,
     private readonly schedules: readonly DeploymentSchedule[],
     private readonly routeContextResolver: (staffRoleId: string) => RouteContext = (staffRoleId) => resolveStaffRouteContext(staffRoleId),
+    /**
+     * How many prisoners each sector currently holds, so a requirement can
+     * scale with the population it is guarding
+     * (`src/simulation/security/sector-staffing.ts`,
+     * [ADR 0048](../../../docs/adr/0048-what-a-sectors-occupants-are.md)
+     * decision 3).
+     *
+     * **Optional, and absent means "the schedule is the whole requirement"** --
+     * which is what every unit fixture in `tests/unit/security-*.test.ts`
+     * wants, and what this system did for every caller before ADR 0048. A
+     * session supplies it; a test measuring deployment against a hand-authored
+     * schedule does not have to.
+     */
+    private readonly resolveOccupantCount?: SectorOccupantCountResolver,
   ) {}
 
   public getMetrics(): { readonly deploymentFailures: number } {
@@ -77,9 +92,18 @@ export class DeploymentSystem implements SystemRegistration {
     });
   }
 
+  /**
+   * The one place a sector's requirement is decided, which is why the
+   * occupancy scaling is applied here rather than by rewriting the schedule:
+   * `assignUnassignedGuards` and `getCoverageReport` both come through it, so
+   * what is enforced and what is reported cannot disagree.
+   */
   private requiredGuardCountFor(sectorId: string, tick: number): number {
     const schedule = findSchedule(this.schedules, sectorId);
-    return schedule === undefined ? 0 : resolveRequiredGuardCount(schedule, tick);
+    if (schedule === undefined) return 0;
+    const scheduled = resolveRequiredGuardCount(schedule, tick);
+    if (this.resolveOccupantCount === undefined) return scheduled;
+    return resolveOccupancyScaledGuardCount(scheduled, this.resolveOccupantCount(sectorId));
   }
 
   private assignedGuardCountFor(sectorId: string): number {

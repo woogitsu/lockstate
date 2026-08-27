@@ -6,3 +6,5 @@ export * from './guard-release';
 export * from './guard-roster';
 export * from './patrol-system';
 export * from './sector';
+export * from './sector-occupancy';
+export * from './sector-staffing';
