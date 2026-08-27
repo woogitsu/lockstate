@@ -129,9 +129,23 @@ build of this repository sends anything*, and the consent prompt is not mounted
 either, because asking for consent to a collection that cannot happen is the
 defect [ADR 0044](./0044-what-happens-to-a-service-tier-nothing-calls.md) named.
 Nothing in the decisions above changed. ADR 0046 records what shipping them
-costs, including data-protection obligations this repository documents nowhere
-and a conflict with ADR 0008 §3's rule that no unauthenticated mutation endpoint
-exists.
+costs, including data-protection obligations this repository documents nowhere.
+
+**It also recorded a conflict with ADR 0008 §3 step 1's rule that no
+unauthenticated mutation endpoint exists, and that conflict is overtaken.** The
+owner settled it on 2026-08-27 by scoping §3 rather than carving an exception
+into it: §3 binds every mutation path over state §2's authority table assigns to
+Z2, *and only those*, measured by the state a path is entrusted to decide. §2
+puts telemetry content in Z0 — the client is the source, and Z2 is entrusted
+only with retention — so ingest is outside §3 and needs no exception. See ADR
+0008's scope amendment, which also adds threat T13 for what an unauthenticated
+ingest can be abused into, and states plainly that §3 step 1's only enforcement
+sweeps database roles and is structurally blind to an HTTP surface.
+
+What that does **not** settle is deployment. Standing ingest up requires this
+project's first server-side execution surface, which the owner has directed
+lands together with the ingest as one reviewed change; `docs/DEPLOYMENT.md`
+carries the pre-merge checklist.
 
 ### Release correlation without public source maps
 `vite.config.ts` keeps `sourcemap: false` for shipped assets. Diagnostics
