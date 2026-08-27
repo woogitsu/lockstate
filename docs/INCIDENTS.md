@@ -87,6 +87,27 @@ already resolves its schedule from whatever array it was constructed with
 via `findRegimeSchedule`, and scoring already operates on whatever
 categories the active block allows. There is no parallel riot AI.
 
+**The framework needed no changes; the content did, and for a while it did not
+have it.** `free-association` was a member of `ACTION_CATEGORIES` with no
+action authored under it, and both `recreation` actions target a zoned room —
+so a rioting prisoner in a prison with no yard and no common room had *no
+candidate at all*, and `beginNextAction` reached its empty-candidate path on
+every reconsideration of every day the riot lasted. `action.free-association`
+closes that
+([ADR 0042](./adr/0042-attaching-consequences-to-the-simulation-loop.md)
+decision 1); `tests/unit/prisoners-free-association.test.ts` drives the real
+`ActionSystem` under the real riot schedule and measures a full riot day at
+zero unmet-demand cycles, and
+`tests/unit/prisoners-action-catalog.test.ts` records the same figure as a
+per-schedule census (2,400 of 2,400 ticks before, 0 after).
+
+**Two things still stand between that and a riot a player can see.**
+`applyRiotRegimeOverride` has no caller in `src/` — it is reached from tests
+only — and `ActionSystem` takes its schedule array as a `readonly` constructor
+field with no setter, so nothing can swap a live session onto the riot
+schedule even if something wanted to. Both belong to ADR 0042 step 2, and the
+second is not mentioned in that ADR: a producer alone would not be enough.
+
 ## Gangs: lightweight, deterministic, feeding existing scoring
 
 `gangs.ts`'s `GangRegistry` covers membership (exclusive — joining a new

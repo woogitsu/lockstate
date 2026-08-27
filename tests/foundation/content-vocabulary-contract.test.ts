@@ -313,10 +313,19 @@ describe('the message-key namespaces are counted, and no call site names one tha
   /**
    * **A census, deliberately not a purge and deliberately not an allow-list.**
    *
-   * Most of this table is unreachable from `src/`: 151 of the 171 derived
+   * Most of this table is unreachable from `src/`: 152 of the 172 derived
    * labels, across 38 of the 42 namespaces, sit under a namespace no
    * `deriveSimulationMessageKey` call site names. Four namespaces have one --
    * `build-edge`, `build-order-state`, `intake-stage` and `guard-claim`.
+   *
+   * **The counts moved by one, and the direction is the one this census is
+   * for.** They read 151 of 171 until `action.free-association` was appended
+   * to `DEFAULT_ACTIONS` and labelled `'Association'`
+   * ([ADR 0042](../../docs/adr/0042-attaching-consequences-to-the-simulation-loop.md)
+   * decision 1). The `action` namespace has no `deriveSimulationMessageKey`
+   * call site -- no panel renders a prisoner's current action yet, which is
+   * `docs/HUD_PROJECTIONS.md` gap 3 rather than anything about this entry --
+   * so the new label lands in the unreachable column with the other 151.
    *
    * That number is **not** a defect list, and the distinction is the same one
    * `unconsumed-content-contract`'s docblock spends its length on. These
@@ -348,10 +357,10 @@ describe('the message-key namespaces are counted, and no call site names one tha
       labelsWithoutACallSite: labelsWithoutCallSite,
     }).toEqual({
       namespaces: 42,
-      labels: 171,
+      labels: 172,
       namespacesWithACallSite: 4,
       namespacesWithoutACallSite: 38,
-      labelsWithoutACallSite: 151,
+      labelsWithoutACallSite: 152,
     });
   });
 

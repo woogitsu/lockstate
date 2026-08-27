@@ -13,11 +13,17 @@ Per the issue's explicit scope, this is deliberately bounded:
 
 - **6 core needs** (hunger, sleep, hygiene, bladder, safety, recreation),
   not the full eventual need catalog.
-- **8 candidate actions**, **2 classification groups**
+- **9 candidate actions**, **2 classification groups**
   (general-population, high-risk) each with their own regime schedule --
   enough to prove the mechanism (data-driven actions, regime-gated
   eligibility, capacity/permission-aware routing), not a balanced,
-  complete content set.
+  complete content set. It was eight for the whole of issue #24's life; the
+  ninth is `action.free-association`, appended for
+  [ADR 0042](./adr/0042-attaching-consequences-to-the-simulation-loop.md)
+  decision 1 (see *Actions* below for why appending is the load-bearing word).
+  Six of the seven `ACTION_CATEGORIES` now have content;
+  `tests/unit/prisoners-action-catalog.test.ts` carries the seventh with the
+  reason it does not.
 - Final personality/trait depth (#39), full violence/contraband/security
   systems (#26-28), advanced crowd steering and final need-catalog balance
   are all explicitly out of scope here.
@@ -130,6 +136,37 @@ own accommodation, or a #23 room-catalog id), an optional required
 #23 object *capability* tag, and a minimum performance duration. Adding a
 new action is one more entry here -- never a new branch in
 `utility-ai.ts` or `action-system.ts`.
+
+**Append it. `DEFAULT_ACTIONS` is a save format as well as a catalogue.**
+`CurrentActionComponent.actionIndex` is a *positional* index into that array
+and `src/persistence/save-schema.ts` carries the integer verbatim, with no id
+anywhere near it -- unlike the `needs` object six lines above it in the same
+schema, which is keyed by name and whose comment says why. An entry inserted
+anywhere but the end shifts every index above it and silently reinterprets
+every in-flight action in every existing save: a prisoner who was showering
+resumes doing something else, at the same phase and the same tick stamp, with
+no decode failure and no `SAVE_SCHEMA_VERSION` mismatch to notice it by.
+Appending moves no existing index, so it needs no migration and no version
+bump, which is the only reason a catalogue entry is a content change here
+rather than a persistence one --
+[ADR 0042](./adr/0042-attaching-consequences-to-the-simulation-loop.md)
+decision 1 corrects issue #440 on exactly this point.
+`tests/unit/prisoners-action-catalog.test.ts` is the gate; this paragraph is
+the reason.
+
+**`action.free-association` is the catalogue's one entry with no need effect,
+and that is deliberate.** `scoreAction` sums `deficit x effect`, so an action
+with no effects scores exactly 0 -- the floor, since no authored effect is
+negative -- and it can therefore never displace a candidate addressing a need
+that is even slightly unmet. It is reached when nothing better resolves, and
+in an exact 0-0 tie where every legal alternative is already at `NEED_MAX`. It
+targets `own-accommodation` and names no capability, because an entry that
+exists to close a hole has to resolve wherever the hole opens and a
+`room-catalog-id` target would need the very room whose absence opens it.
+`ActionSystem.continuePerforming` does not stamp `needFulfilledLastTick` while
+it runs: that field reaches the HUD verbatim through
+`projectPrisonerDetail`, and a "need fulfilled at tick N" that no need was
+fulfilled at is a sentence the simulation would not be keeping.
 
 ## Utility AI: deterministic scoring and selection
 
