@@ -125,6 +125,18 @@ const REQUIRED_WIRINGS: readonly RequiredWiring[] = [
       'Issue #261, and the other half of the same seam. The key reaches the HUD rather than the command sender so that a refusal paints the refusal line instead of a `console.warn` -- the defect #225 removed from the build drag. `MountHudOptions.editHistory` is optional, so deleting this argument compiles, and the HUD then registers no sink: `BuildTool.undo()` drops the request and the player gets silence from a key that is bound. Measured: with `editHistory: tool` deleted, `tsc` is clean and all 1,780 tests pass, because `tests/browser/ui-shell.spec.ts` mounts the HUD with a source of its own.',
   },
   {
+    what: 'the telemetry pump is started, so the sink ever flushes',
+    source: 'pipeline.startPump(',
+    reason:
+      'Issues #36 and #446, and the same shape as #146 exactly. `BatchingTelemetrySink` is deliberately timer-free -- its own header says "the host calls `pump(now)` from its own idle or interval orchestration" -- and for the whole life of the subsystem no host did, so nothing ever flushed and `git log --all -S "recorder.pump"` was empty. `startTelemetryPump` has its own unit tests over an injected scheduler and they pass whether or not anything calls it; the browser primitive it needs (`requestIdleCallback`) exists only here. Deleting this call leaves `tsc` clean and every test green while restoring a sink that queues forever and sends nothing, which is precisely the state ADR 0044 recorded.',
+  },
+  {
+    what: 'the telemetry consent prompt is mounted when there is somewhere to send',
+    source: 'createTelemetryConsentPrompt({',
+    reason:
+      'Issue #36, and the defect ADR 0044 called the clearest single statement of what was wrong: the four `telemetry.consent.*` strings shipped inside the bundle through `defaultMessageCatalogEn` while nothing rendered them, so "a player downloads the consent prompt for a telemetry system that cannot send". `localization-key-completeness` proves those keys resolve and would keep proving it with nothing on screen; `createTelemetryConsentPrompt` is browser-only code no headless test executes. Deleting this call leaves `tsc` clean and the suite green and returns the keys to being text no surface reaches -- and, worse than before, leaves a build that has an ingestion destination configured collecting nothing while never asking, because the gate defaults closed. Guarded by `telemetry.enabled` on purpose: with no destination configured there is nothing to consent to and the prompt must not appear.',
+  },
+  {
     what: 'the lifecycle save handler is attached to the controller',
     source: 'new LifecycleSaveHandler(controller).attach()',
     reason:

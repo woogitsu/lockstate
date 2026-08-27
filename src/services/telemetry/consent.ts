@@ -80,3 +80,37 @@ export function loadTelemetryConsent(store: KeyValueStore): TelemetryConsent | u
 export function saveTelemetryConsent(store: KeyValueStore, consent: TelemetryConsent): void {
   store.setItem(CONSENT_STORAGE_KEY, JSON.stringify(telemetryConsentSchema.parse(consent)));
 }
+
+/**
+ * The one live consent value the pipeline reads.
+ *
+ * Before this existed, `TelemetryRecorder` held the player's decision in a
+ * private field and `BatchingTelemetrySink` held nothing -- which is why
+ * `sink.record()` could enqueue an envelope for a category the player had
+ * refused. Both halves now read the same holder, so there is no arrangement
+ * in which the recorder believes consent was withdrawn and the sink does not.
+ *
+ * A mutable holder rather than a value passed at construction, because
+ * withdrawal has to take effect on the very next event: a value copied into
+ * two objects at boot is a value that can only be revoked in one of them.
+ */
+export class TelemetryConsentGate {
+  private consent: TelemetryConsent | undefined;
+
+  public constructor(initial?: TelemetryConsent) {
+    this.consent = initial;
+  }
+
+  /** The decision on record, or `undefined` for "no valid decision" -- which includes a stale policy version. */
+  public current(): TelemetryConsent | undefined {
+    return this.consent;
+  }
+
+  public set(consent: TelemetryConsent | undefined): void {
+    this.consent = consent;
+  }
+
+  public allows(category: TelemetryCategory): boolean {
+    return isTelemetryAllowed(this.consent, category);
+  }
+}

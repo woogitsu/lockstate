@@ -1,10 +1,16 @@
+import type { TelemetryAdmission, TelemetryAdmissionRefusal } from './admission';
 import type { TelemetryEnvelope } from './events';
 
 /**
- * Transport boundary. No transport implementation ships in this issue: an
- * ingestion endpoint is a deployment decision, and inventing one here
- * would ship a URL nobody reviewed. `MemoryTelemetryTransport` covers
- * tests and development.
+ * Transport boundary.
+ *
+ * An ingestion endpoint remains a deployment decision, and no URL, host,
+ * project reference or table name is written down anywhere in `src/`.
+ * `HttpTelemetryTransport` (`./http-transport`) is the one implementation
+ * that leaves the device, and it is constructed only from configuration
+ * resolved by `./ingestion-config`; with that configuration absent, nothing
+ * constructs it and no transport exists at all. `MemoryTelemetryTransport`
+ * still covers tests and development.
  */
 export interface TelemetryTransport {
   send(batch: readonly TelemetryEnvelope[]): Promise<void>;
@@ -29,13 +35,17 @@ export class MemoryTelemetryTransport implements TelemetryTransport {
   }
 }
 
-export type TelemetryRecordOutcome = 'queued' | 'rate-limited' | 'queue-full';
+export type TelemetryRecordOutcome = 'queued' | 'rate-limited' | 'queue-full' | 'refused';
 
 export interface TelemetrySinkStats {
   readonly queued: number;
   readonly sent: number;
   readonly droppedQueueFull: number;
   readonly droppedRateLimited: number;
+  /** Envelopes the admission gate refused. Non-zero means something bypassed the recorder. */
+  readonly refused: number;
+  /** Why the most recent refusal happened, so a development build can say so. */
+  readonly lastRefusal: TelemetryAdmissionRefusal | undefined;
   readonly failedBatches: number;
   readonly lastFlushAt: number | undefined;
 }
@@ -49,7 +59,13 @@ export interface BatchingTelemetrySinkOptions {
 }
 
 const DEFAULT_MAX_BATCH_SIZE = 20;
-const DEFAULT_FLUSH_INTERVAL_MS = 30_000;
+/**
+ * Exported, unlike its three neighbours, for one reason: the host pump has to
+ * look more often than this or a batch that comes due waits a whole extra
+ * period, and `tests/unit/services-telemetry-pump.test.ts` asserts that
+ * relationship against this value rather than against a second copy of 30,000.
+ */
+export const DEFAULT_FLUSH_INTERVAL_MS = 30_000;
 const DEFAULT_MAX_QUEUE_LENGTH = 200;
 const DEFAULT_RATE_LIMIT = { maxEvents: 60, windowMs: 60_000 } as const;
 
@@ -60,8 +76,21 @@ const DEFAULT_RATE_LIMIT = { maxEvents: 60, windowMs: 60_000 } as const;
  * simulation tick or render frame path, and every test is deterministic
  * without fake timers.
  *
- * `record()` is O(1), never awaits and never throws into its caller --
- * losing a diagnostic must never break the thing it was diagnosing.
+ * `record()` never awaits and never throws into its caller -- losing a
+ * diagnostic must never break the thing it was diagnosing. It is O(1) in the
+ * queue and O(attributes) in the admission check, over a set the envelope
+ * schema caps at 24 scalars.
+ *
+ * ## `record()` is a privacy boundary, not a plumbing call
+ *
+ * It is `public`, and it must stay callable: the recorder is a separate class
+ * and TypeScript cannot grant one class private access to another. What
+ * changed is that being callable no longer means being trusted. Every
+ * envelope handed to it goes through `TelemetryAdmission` -- schema,
+ * registration, category agreement, consent and redaction -- before it can
+ * reach the queue, and the gate is a **required** constructor argument, so
+ * there is no way to build a sink that admits everything by forgetting an
+ * option. See `./admission` for what is checked and what deliberately is not.
  */
 export class BatchingTelemetrySink {
   private readonly queue: TelemetryEnvelope[] = [];
@@ -74,11 +103,17 @@ export class BatchingTelemetrySink {
   private sent = 0;
   private droppedQueueFull = 0;
   private droppedRateLimited = 0;
+  private refused = 0;
+  private lastRefusal: TelemetryAdmissionRefusal | undefined;
   private failedBatches = 0;
   private lastFlushAt: number | undefined;
   private flushing: Promise<void> | undefined;
 
-  public constructor(private readonly transport: TelemetryTransport, options: BatchingTelemetrySinkOptions = {}) {
+  public constructor(
+    private readonly transport: TelemetryTransport,
+    private readonly admission: TelemetryAdmission,
+    options: BatchingTelemetrySinkOptions = {},
+  ) {
     this.options = {
       maxBatchSize: options.maxBatchSize ?? DEFAULT_MAX_BATCH_SIZE,
       flushIntervalMs: options.flushIntervalMs ?? DEFAULT_FLUSH_INTERVAL_MS,
@@ -88,6 +123,17 @@ export class BatchingTelemetrySink {
   }
 
   public record(envelope: TelemetryEnvelope, now: number): TelemetryRecordOutcome {
+    // Before the rate limit, so a refused envelope cannot spend the budget a
+    // legitimate crash report needs -- and so a caller flooding hand-built
+    // events cannot rate-limit the recorder out of reporting the crash it is
+    // causing.
+    const verdict = this.admission.admit(envelope);
+    if (!verdict.admitted) {
+      this.refused += 1;
+      this.lastRefusal = verdict.reason;
+      return 'refused';
+    }
+
     if (now - this.windowStartedAt >= this.options.rateLimit.windowMs) {
       this.windowStartedAt = now;
       this.windowCount = 0;
@@ -167,6 +213,8 @@ export class BatchingTelemetrySink {
       sent: this.sent,
       droppedQueueFull: this.droppedQueueFull,
       droppedRateLimited: this.droppedRateLimited,
+      refused: this.refused,
+      lastRefusal: this.lastRefusal,
       failedBatches: this.failedBatches,
       lastFlushAt: this.lastFlushAt,
     };

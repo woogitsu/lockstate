@@ -49,6 +49,20 @@ import {
  *   was wired by #229, and nothing anywhere recorded that one of the four had
  *   left the set.
  *
+ * ## One of the four has left, and this is the record of it
+ *
+ * **`src/services/telemetry/` was wired** — consent surface, host pump and a
+ * configuration-driven transport — and this gate is what said so: it failed on
+ * the commit that did it, in the reverse direction, naming all thirteen of the
+ * tree's modules. That is the half working exactly as designed, and unlike
+ * #229's it did not pass unnoticed.
+ *
+ * The tree is therefore out of `PARKED_TREES` and into the positive control
+ * below, which is the stronger statement: it is now asserted *reachable*, so
+ * un-wiring it fails here too. Three trees remain parked and all three still
+ * have a live server half, which was ADR 0044's discriminator — telemetry was
+ * the one exception, and it is no longer in the list.
+ *
  * ## Scope, stated rather than assumed
  *
  * `src/services/**` and `src/persistence/**` only. #378 proposes generalising
@@ -126,16 +140,23 @@ const PARKED_TREES: readonly ParkedTree[] = [
       "A payment provider, which #36's own Out of scope requires a separate commercial and legal review to choose, and — for the free-tier half, which needs no provider — cloud save, because the slots being counted are cloud slots. Its server half is live: `entitlements`, `entitlement_events`, `record_entitlement_event`, and `supabase/tests/002`, `003` and `004` in CI.",
     whatWouldMakeItDead: 'The owner deciding there will be no paid tier.',
   },
-  {
-    prefix: 'src/services/telemetry/',
-    modules: 8,
-    what: 'Consent, redaction, sampling, a bounded rate-limited sink and crash diagnostics (#36, ADR 0010, `docs/TELEMETRY.md`).',
-    waitingOn:
-      'An ingestion endpoint, which `src/services/telemetry/sink.ts` says outright is "a deployment decision" and which nobody has made, and a consent surface, which no module in `src/ui/` provides. **This is the one of the four with no server half at all** — nothing under `supabase/` mentions telemetry — and the one that cannot be switched on where it lives: `tests/unit/services-layer-boundaries.test.ts` refuses every egress API under `src/services/` against a deliberately *empty* allow-list.',
-    whatWouldMakeItDead:
-      'A decision that Lockstate collects no telemetry, which supersedes ADR 0010 and removes `docs/TELEMETRY.md`\'s retention commitments. ADR 0044 records this as the shortest leash of the four and states the inconsistency it is already causing: the ten `telemetry.consent.*` and product strings ship inside the bundle through `defaultMessageCatalogEn` while the code that would render them does not.',
-  },
 ];
+
+/**
+ * Trees that were in `PARKED_TREES` and are not any more, with the change that
+ * discharged each.
+ *
+ * Kept rather than deleted, because the failure this gate exists for is a fact
+ * being *rediscovered*: three inventories measured the same four trees and
+ * none left anything behind, and `src/services/localization/` left the set
+ * with nothing recording it. A removed row with no successor is the same
+ * defect one step later. Each entry is asserted reachable below, so this list
+ * is a gate rather than a note in both directions.
+ */
+const WIRED_TREES: Readonly<Record<string, string>> = {
+  'src/services/telemetry/':
+    'Wired 2026-08-27 (#36, #446). ADR 0044 open question 2 -- "does Lockstate collect telemetry at all?" -- was the owner\'s and was answered yes, so the tree gained the three things it was waiting on: a consent surface (`src/ui/telemetry-consent-prompt.ts` over `src/services/telemetry/consent-flow.ts`), a host pump called from `src/main.ts`\'s idle callback, and a transport whose destination comes from deployment configuration and which is not constructed at all when that configuration is absent. `tests/unit/services-layer-boundaries.test.ts`\'s I/O allow-list -- the "deliberately empty" one ADR 0044 named as the structural obstacle -- now holds exactly one entry, `services/telemetry/http-transport.ts`.',
+};
 
 /**
  * The unreachable modules that are not part of a parked tree.
@@ -151,6 +172,8 @@ const UNREACHABLE_MODULES: Readonly<Record<string, string>> = {
   'src/persistence/session/index.ts': 'The same. No importer in `src/` or `tests/`.',
   'src/services/index.ts':
     'The trusted-services barrel. It states this layer\'s boundary rules in prose and re-exports all four subsystems, so it is unreachable for the same reason three of those four are — and would stay unreachable even after one of them was wired, since nothing writes the barrel specifier.',
+  'src/services/telemetry/index.ts':
+    'The telemetry subsystem\'s own barrel, unreachable for exactly the reason `src/services/index.ts` is and *not* because the tree is parked -- the tree was wired (see `WIRED_TREES`) and `src/main.ts` reaches it by the direct specifiers `./services/telemetry/pipeline` and `./services/telemetry/pump`, which is what every other consumer in `src/` does too. One test file writes the barrel specifier (`tests/unit/services-telemetry.test.ts`), so it is exercised; nothing in the production graph does, so it contributes no code. Deleting it would be a change to how tests import, not a removal of dead capability.',
   'src/persistence/size.ts':
     '`estimateSaveEnvelopeByteSize` — the size hook #18 and `docs/BENCHMARKING.md` call for. Three test files call it; nothing in `src/` does, because no storage backend has had to decide whether compression is worth it yet. It is one exported function, so this is a tail rather than a tier.',
   'src/persistence/local/memory-store.ts':
@@ -222,6 +245,12 @@ describe('the walk this gate rules on reaches a real graph', () => {
       'src/persistence/save-schema.ts',
       'src/services/localization/localizer.ts',
       'src/services/localization/default-catalog.ts',
+      // The tree that left PARKED_TREES. Asserting it reachable is what makes
+      // `WIRED_TREES` a gate: un-wiring telemetry fails here rather than
+      // quietly restoring the state three inventories kept re-measuring.
+      'src/services/telemetry/pipeline.ts',
+      'src/services/telemetry/http-transport.ts',
+      'src/services/telemetry/consent-flow.ts',
     ]) {
       expect(readFromDisk(module), `${module} has moved; this control names a module that no longer exists`).toBeDefined();
       expect(reachedByValue.has(module), `${module} is no longer in the production graph, which is a finding of its own`).toBe(
@@ -247,6 +276,25 @@ describe('every unreachable module under src/services and src/persistence is acc
       unexplained,
       'a module under src/services/ or src/persistence/ is outside the production import graph and nothing says why. That is the state issues #141, #315 and #378 each re-measured from scratch: it compiles, its tests are green, and no code path reaches it. Either give it a production consumer, or add it to PARKED_TREES / UNREACHABLE_MODULES with the reason and the condition that would discharge it -- and see docs/adr/0044-what-happens-to-a-service-tier-nothing-calls.md for what the four existing entries argue',
     ).toEqual([]);
+  });
+
+  it('reaches every tree recorded as wired, so a removed parked entry cannot rot either', () => {
+    // The direction `src/services/localization/` slipped through: it left the
+    // parked set and nothing anywhere said so, which is how a "keep" decision
+    // and the code it describes drift apart. A tree recorded as wired that
+    // stops being reachable is that drift running backwards.
+    const notReached = Object.keys(WIRED_TREES).filter(
+      (prefix) => !scanned.some((module) => module.startsWith(prefix) && reachedByValue.has(module)),
+    );
+    expect(
+      notReached,
+      'a tree WIRED_TREES records as having a production consumer no longer has one. Either restore the wiring, or move it back into PARKED_TREES with the reason -- and amend docs/adr/0044-what-happens-to-a-service-tier-nothing-calls.md and the tier\'s own document in the same change',
+    ).toEqual([]);
+
+    // And a wired tree must not also be listed as parked, which would let both
+    // assertions hold while the list said two contradictory things.
+    const both = Object.keys(WIRED_TREES).filter((prefix) => PARKED_TREES.some((tree) => tree.prefix === prefix));
+    expect(both, 'a tree is in both PARKED_TREES and WIRED_TREES').toEqual([]);
   });
 
   it('holds no entry for a module that has since been wired', () => {
