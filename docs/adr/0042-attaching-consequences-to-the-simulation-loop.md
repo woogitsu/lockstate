@@ -1,4 +1,4 @@
-# ADR XXXX: The consequence chain is built and has no producer a player can reach
+# ADR 0042: The consequence chain is built and has no producer a player can reach
 
 ## Status
 
@@ -11,16 +11,14 @@ delegates the *thoroughness*, not the ordering. **The order in which a product
 loop is closed is the decision**, not a detail inside it, so it goes back to the
 owner. Nothing in `src/` changes on the strength of this document until it does.
 
-**The number is a placeholder.** ADR numbers are assigned centrally after drafts
-return (`AGENTS.md`, *"A number is not reserved until it appears in
-`docs/adr/README.md`"*), and two agents once took `0034` within an hour. This
-document renumbers without argument on landing, and its filename and heading are
-expected to be rewritten by whoever assigns the number. It deliberately does not
-edit `docs/adr/README.md`, which means **`tests/foundation/adr-numbering-contract.test.ts`
-is red for as long as this file sits here unnumbered** — three assertions:
-`names every ADR NNNN-kebab-case.md`, the index-set comparison, and the
-next-free-number check. That is a known, one-command cost of not claiming a
-number, stated here rather than discovered.
+**The number was a placeholder, and 0042 was assigned on landing.** ADR numbers
+are assigned centrally after drafts return (`AGENTS.md`, *"A number is not
+reserved until it appears in `docs/adr/README.md`"*), and two agents once took
+`0034` within an hour. This draft carried `XXXX` and did not touch
+`docs/adr/README.md`; 0042 was one of the two genuine gaps that README's own
+paragraph records, so assigning it left the stated next free number (0045,
+`max(on disk) + 1`) correct and untouched. `tests/foundation/` is green: 35
+files, 327 passed.
 
 ## Context
 
