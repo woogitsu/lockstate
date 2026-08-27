@@ -3459,6 +3459,18 @@ test.describe('the assembled application', () => {
    *     read as silence.
    */
   test('zones a room and admits a prisoner with the keyboard alone (#411)', async ({ page }) => {
+    // Measured at 27.4 s and 28.5 s on this machine against the 60 s default.
+    // The #88 sweep above is the precedent and its comment is the rule: it
+    // takes `test.slow()` at 14-28 s because that margin is "close enough that
+    // a slower CI runner would fail it for being slow rather than for finding
+    // anything, which is the worst kind of red". This test sits at the top of
+    // that same range and landed without one. The cost is the work: `tabTo`
+    // spends one key press and one `page.evaluate` round trip per hop with no
+    // padding to remove, and behind the hops are a real worker, a zoning round
+    // trip and an intake. `test.slow()` triples the budget; it does not make
+    // the test do less.
+    test.slow();
+
     await page.setViewportSize({ width: 1280, height: 800 });
     await installTrustedPointerTripwire(page);
     await openApp(page);
@@ -3615,6 +3627,14 @@ test.describe('the assembled application', () => {
   test('takes a room back with the keyboard alone, through the same confirm control (#411)', async ({
     page,
   }) => {
+    // Measured at 34.2 s and 36.2 s on this machine against the 60 s default
+    // -- dearer than the whole 14-28 s range that earns the #88 sweep its
+    // `test.slow()`, and the most expensive test in this file that did not
+    // have one. Same reason as its sibling above, with less margin: it zones a
+    // room from the keyboard before it can take one back, so it pays that
+    // test's cost and then its own.
+    test.slow();
+
     await page.setViewportSize({ width: 1280, height: 800 });
     await installTrustedPointerTripwire(page);
     await openApp(page);
