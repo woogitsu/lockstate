@@ -221,3 +221,116 @@ Every trusted mutation path, without exception, is:
 - Public ranking stays gated on ADR 0009's runner plus a security review.
 - Each of entitlements, diagnostics and localization gets its own ADR
   refining this boundary rather than re-deciding it.
+
+## Amendment, 2026-08-27: §3's "without exception" has an exception, and it is the oldest and busiest `SECURITY DEFINER` function in the schema
+
+*This amends **§3, "Mandatory shape of a Z2 entry point"**. No decision moves and
+no zone or authority row changes. What is recorded is that §3's scope is
+unstated, and that under the only reading §1 supports it is contradicted by
+shipped SQL — including by a gap §2 of this same document already admits. The
+form is ADR 0029's and ADR 0034 §9's: the old wording is quoted rather than
+overwritten.*
+
+*Status is untouched: this ADR remains **Accepted**. Read at `792bf94`
+(v0.0.121); every migration named below was opened on that tree.*
+
+### The sentence, and the function it does not describe
+
+§3 opens:
+
+> Every trusted mutation path, without exception, is:
+> 1. **Authenticate** … 2. **Authorize** … 3. **Validate** … 4. **Deduplicate** —
+> every mutation carries a caller-supplied idempotency key … 5. **Apply** — as an
+> append to an audit log first; derived projections are computed from that log,
+> never written independently. 6. **Audit** — record actor, reason, source, and
+> prior/next value.
+
+§1 defines Z2 as *"Supabase Edge Function / Cloudflare Worker / `SECURITY
+DEFINER` SQL"*. Nine migrations declare `security definer` functions on this
+tree; `public.create_save_version`
+(`supabase/migrations/20260822190300_create_save_version_rpc.sql:53-153`) is one
+of them, is the path every cloud save on `main` goes through, and is the function
+§3 step 2 names as its own precedent (*"same rule as `create_save_version`"*).
+Measured against the six steps:
+
+- **Steps 1–3 hold.** `auth.uid()` is the only principal
+  (`:104`), the owner check is explicit and fails closed on a NULL subject
+  (`:104-106`), and the arguments are typed and pre-validated (`:79-84`).
+- **Step 4 does not.** The signature (`:53-61`) carries no caller-supplied
+  idempotency key. Replay safety is *derived* — a row already at
+  `(prison_id, revision, checksum)` returns `idempotent_replay` (`:121-130`) —
+  which is a good design and is not the one this step describes.
+- **Step 5 does not.** `update public.prisons set current_version_id = …,
+  current_revision = … ` (`:145-149`) writes the projection directly. Nothing is
+  appended to a log and nothing is folded. The entitlements path is the only one
+  in the schema shaped the way step 5 requires
+  (`public.record_entitlement_event` → `public.recompute_entitlement_projection`,
+  `supabase/migrations/20260823090000_create_entitlement_events.sql:215-251`).
+- **Step 6 does not.** No actor, reason, source or prior value is recorded. Nor
+  can it be: **§2 of this ADR already says so** — *"no audit trail on the trusted
+  write path exists yet (#105 finding 8)"* — and uses that absence as an argument
+  for revoking `TRUNCATE`. So this document asserts a mandatory step in §3 and
+  records its absence in §2, three sections apart, and nothing mechanical can see
+  that: the gates over `docs/adr/` compare a status word to a document and never
+  a document to itself.
+
+`public.submit_challenge_evidence` and `public.create_prison` are in the same
+position for steps 5 and 6.
+
+### Which is wrong, the document or the code
+
+**The document, on scope — probably.** The defensible reading is that §3 governs
+paths that mutate **server-authoritative** state, and `create_save_version`
+mutates state §2's own authority table classifies as **Z0/Z1
+(client-authoritative, RLS-scoped)**. The function's own closing comment takes
+that view explicitly: *"a cloud save is client-authoritative state (ADR 0008's
+authority table) … and no trusted path writes saves"*
+(`20260822190300_create_save_version_rpc.sql:171-174`). Under that reading the
+six steps are right and merely mis-scoped, and the fix is one clause in §3.
+
+**But §3 as written does not permit that reading**, because §1 defines a zone by
+its *runtime* and not by the authority of what it touches, and
+`create_save_version` is `SECURITY DEFINER` SQL. An agent applying §3 literally
+to the next RPC that touches a save will demand an idempotency key and an audit
+log for it; an agent applying it by authority will not. Nothing in the document
+tells them apart, and the two answers differ in real work.
+
+**This is recorded, not decided.** It is the owner's call whether §3 gains
+*"every mutation path over Z2-authoritative state"*, or whether the three
+functions above acquire steps 4–6. No `Status` moves either way, and neither
+answer makes any zone, authority row or threat-model row wrong.
+
+### What was checked and found intact
+
+Every code and SQL citation in this ADR resolves and every absolute in it holds
+at `792bf94`. `20260824090100_revoke_client_truncate.sql`,
+`20260824150000_revoke_trusted_truncate.sql`,
+`20260826120000_revoke_ambient_table_privileges.sql`,
+`20260824140000_protect_server_timestamps.sql` and
+`20260826130000_server_stamp_updated_at.sql` all exist under
+`supabase/migrations/`, and the last one creates `before insert or update`
+triggers on exactly the three tables §2 names — `prisons` (`:161-163`),
+`profiles` (`:166-168`) and `user_settings`. T3's `evidence_digest` is a real
+column with a real unique constraint
+(`20260824100000_bind_challenge_evidence_to_payload.sql:252`, `:291-292`). T9's
+`sourcemap: false` is at `vite.config.ts:84`. The Consequences bullet holds in
+both halves: `grep -rn "from '.*services/" src/simulation/` is empty, nothing
+under `src/services/` imports Phaser or touches the DOM, and
+`supabase/` holds `config.toml`, `migrations` and `tests` and no `functions`
+directory at all, so the deployment units really are still uncreated while the
+modules they will host exist. (That directory is named here without a rooted
+path on purpose: `documentation-links-contract.test.ts` refuses a cited path
+that is not on disk, and this one is absent by design.)
+
+Two forward commitments are worth a reader's attention and neither is a defect.
+The Consequences bullet *"Each of entitlements, diagnostics and localization gets
+its own ADR"* is met for diagnostics ([ADR 0010](./0010-telemetry-and-diagnostics-privacy.md))
+and localization ([ADR 0011](./0011-localization-architecture.md)); for
+entitlements the nearest document is
+[ADR 0013](./0013-free-tier-cloud-save-capacity.md), which names itself *"an
+engineering decision inside the boundary ADR 0008 already set"* rather than a
+refinement of the boundary. And §4's *"No trusted-service call is on the frame or
+tick path"* is currently true the uninteresting way: `docs/adr/STATUS-QUEUE.md`
+§5 already records that nothing outside `src/services/telemetry/` imports that
+layer at all. A rule that no call site can violate is not yet a rule that has
+been tested.
