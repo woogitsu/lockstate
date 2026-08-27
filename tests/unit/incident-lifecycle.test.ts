@@ -104,6 +104,59 @@ describe('IncidentLog: one validated, forward-only lifecycle', () => {
   });
 });
 
+describe('IncidentLog: how long a sector has been quiet, without walking the log', () => {
+  it('answers the most recent start per sector, and nothing for a sector with no history', () => {
+    const log = new IncidentLog();
+    log.open({ id: 'a-1', type: 'riot', sectorId: 'block-a', participantIds: [1, 2], severity: 5, causeFactors: [] }, 400);
+    log.open({ id: 'b-1', type: 'riot', sectorId: 'block-b', participantIds: [3, 4], severity: 5, causeFactors: [] }, 900);
+    log.transition('a-1', 'lapsed', 1_000, { injuredEntityIds: [], propertyDamage: 0, escaped: false });
+    log.open({ id: 'a-2', type: 'riot', sectorId: 'block-a', participantIds: [1, 2], severity: 5, causeFactors: [] }, 6_000);
+
+    expect(log.lastIncidentStartedAtTick('block-a')).toBe(6_000);
+    expect(log.lastIncidentStartedAtTick('block-b')).toBe(900);
+    // Not zero: a sector that has never had an incident is a different state
+    // from one whose last incident was at tick 0, and the quiet-period gate in
+    // `IncidentTriggerSystem` reads the difference.
+    expect(log.lastIncidentStartedAtTick('block-c')).toBeUndefined();
+  });
+
+  it('rebuilds the index on restore, so a save does not hand a rioting prison a clean slate', () => {
+    // The index is derived rather than persisted -- there is no save-schema
+    // field for it -- so `loadSnapshot` is the only thing standing between a
+    // restored session and a quiet period that silently expired.
+    const log = new IncidentLog();
+    log.open({ id: 'a-1', type: 'riot', sectorId: 'block-a', participantIds: [1, 2], severity: 5, causeFactors: [] }, 6_000);
+    log.transition('a-1', 'lapsed', 6_050, { injuredEntityIds: [], propertyDamage: 0, escaped: false });
+
+    const restored = new IncidentLog();
+    restored.loadSnapshot(log.getSnapshot());
+
+    expect(restored.lastIncidentStartedAtTick('block-a')).toBe(6_000);
+  });
+
+  it('takes the latest start rather than the last one replayed, because a snapshot replays in id order', () => {
+    // `getSnapshot` sorts by id, and `incident.riot.10` sorts *before*
+    // `incident.riot.2` in code-unit order. So a history where the later
+    // incident is `.10` replays newest-first, and an index that assigned rather
+    // than compared would come back holding the *earlier* tick -- a quiet period
+    // that is shorter on the far side of a save than on the near side, for no
+    // reason a player could see. The tick order and the id order are opposed
+    // here on purpose.
+    const log = new IncidentLog();
+    log.open({ id: 'incident.riot.2', type: 'riot', sectorId: 'block-a', participantIds: [1, 2], severity: 5, causeFactors: [] }, 4_000);
+    log.transition('incident.riot.2', 'lapsed', 4_050, { injuredEntityIds: [], propertyDamage: 0, escaped: false });
+    log.open({ id: 'incident.riot.10', type: 'riot', sectorId: 'block-a', participantIds: [1, 2], severity: 5, causeFactors: [] }, 12_000);
+    log.transition('incident.riot.10', 'lapsed', 12_050, { injuredEntityIds: [], propertyDamage: 0, escaped: false });
+
+    expect(log.getSnapshot().map(([id]) => id)).toEqual(['incident.riot.10', 'incident.riot.2']);
+    expect(log.lastIncidentStartedAtTick('block-a')).toBe(12_000);
+
+    const restored = new IncidentLog();
+    restored.loadSnapshot(log.getSnapshot());
+    expect(restored.lastIncidentStartedAtTick('block-a')).toBe(12_000);
+  });
+});
+
 describe('incident alerts and summary: player-visible projections only', () => {
   it('an alert withholds the raw cause factors that produced the incident', () => {
     const log = new IncidentLog();

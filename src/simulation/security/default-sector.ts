@@ -79,7 +79,9 @@ export const DEFAULT_SECURITY_SECTOR_ID = 'security-sector.prison';
 export const DEFAULT_SECURITY_SECTOR_GRADE_ID = 'grade.general';
 
 /**
- * One guard, all day.
+ * One guard, all day -- and since
+ * [ADR 0048](../../../docs/adr/0048-what-a-sectors-occupants-are.md) decision 3
+ * this is a **floor** rather than the whole requirement.
  *
  * A **directional default, not a balance decision**, in the same sense as
  * `DEFAULT_SECTOR_RISK_POLICY` and `DEFAULT_NAVIGATION_SYSTEM_OPTIONS`; the
@@ -95,6 +97,18 @@ export const DEFAULT_SECURITY_SECTOR_GRADE_ID = 'grade.general';
  * `n` means the first `n` guards a player hires can never respond to anything.
  * At one, the first hire is visibly posted and every hire after it is available
  * to an incident.
+ *
+ * **What ADR 0048 changed, and why that reasoning survives it.** A requirement
+ * that never moves makes `staffingShortfall` -- `shortage / required` -- zero
+ * for ever after the first hire, whatever the population, which is issue #442's
+ * headline. `resolveOccupancyScaledGuardCount` in `sector-staffing.ts` therefore
+ * raises this number by one per
+ * `DEFAULT_SECTOR_PRISONERS_PER_GUARD` occupants. The paragraph above still
+ * decides the *floor*, and its trade-off is now explicit rather than avoided: a
+ * prison of `n` prisoners needs `ceil(n / 8)` guards posted **plus** a reserve
+ * for `IncidentResponseSystem` to claim, and a player who hires exactly the
+ * requirement will watch every incident lapse. That is the bound ADR 0036
+ * decision 3 records, made visible by a requirement that grows.
  */
 export const DEFAULT_SECURITY_SECTOR_REQUIRED_GUARD_COUNT = 1;
 
@@ -149,11 +163,21 @@ function postChunk(world: DefaultSecuritySectorWorld): ChunkPosition {
  * 1. A guard hired through `HireStaff` is already standing on the post, so the
  *    first hire is posted without a route request that could fail.
  * 2. An admitted prisoner arrives there, and an arrival with nowhere to be
- *    housed *stays* there — so `resolveSectorOccupants` in
- *    `new-session.ts`, which counts prisoners standing exactly on the post
- *    tile, actually finds somebody. That placeholder is what feeds
- *    `needsPressure` into `IncidentTriggerSystem`, and it is the reason a riot
- *    is reachable in a new session at all.
+ *    housed *stays* there -- so the post tile is where a homeless population
+ *    accumulates, which is what a responder walks to and what a player looking
+ *    at the map sees.
+ *
+ *    **This used to say something stronger, and it is no longer true.** It read
+ *    that an unhoused arrival "*is* a sector occupant ... so `resolveSectorOccupants`
+ *    in `new-session.ts`, which counts prisoners standing exactly on the post
+ *    tile, actually finds somebody", and called that placeholder "the reason a
+ *    riot is reachable in a new session at all". It was: a housed prisoner was
+ *    never an occupant of the only sector there is, so the trigger's needs term
+ *    measured homelessness and nothing else.
+ *    [ADR 0048](../../../docs/adr/0048-what-a-sectors-occupants-are.md) replaced
+ *    that rule -- the derived sector is the prison, and its occupants are every
+ *    prisoner standing on owned land -- so occupancy no longer depends on this
+ *    coincidence. The other two reasons below are untouched by that change.
  * 3. It is on owned, walkable ground in a session a player can start, so a
  *    responder can route to it.
  *

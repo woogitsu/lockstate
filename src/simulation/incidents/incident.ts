@@ -124,6 +124,19 @@ export class IncidentLog {
   private readonly records = new Map<string, IncidentMutableRecord>();
   private readonly openIds = new Set<string>();
   private readonly openIdsBySectorId = new Map<string, Set<string>>();
+  /**
+   * The tick the most recent incident in each sector *started*, so a caller can
+   * ask how long a sector has been quiet without walking the log.
+   *
+   * A third derived index rather than a fourth persisted field, and derived is
+   * the whole point: `IncidentTriggerSystem`'s quiet period is read from it
+   * every sampling point, `all()` grows for the life of a prison and is never
+   * pruned ("Nothing is ever deleted"), and a per-sample scan of the full
+   * auditable history is exactly what `openIdsBySectorId` exists to avoid. It
+   * is rebuilt from the records in `loadSnapshot`, so the save format does not
+   * move and a restored session answers what a live one answers.
+   */
+  private readonly lastStartedAtTickBySectorId = new Map<string, number>();
 
   private require(id: string): IncidentMutableRecord {
     const record = this.records.get(id);
@@ -151,6 +164,26 @@ export class IncidentLog {
       this.openIdsBySectorId.set(input.sectorId, bucket);
     }
     bucket.add(input.id);
+    this.noteStart(input.sectorId, tick);
+  }
+
+  /**
+   * `Math.max` rather than an assignment: `open` is called with the kernel's
+   * current tick and nothing orders two sectors' incidents against each other,
+   * but `loadSnapshot` replays a whole history in id order, which is not tick
+   * order -- `incident.riot.10` sorts before `incident.riot.2`. Taking the
+   * larger makes the index a function of the set of records rather than of the
+   * order they arrive in, which is what lets the live and restored answers
+   * agree.
+   */
+  private noteStart(sectorId: string, tick: number): void {
+    const previous = this.lastStartedAtTickBySectorId.get(sectorId);
+    if (previous === undefined || tick > previous) this.lastStartedAtTickBySectorId.set(sectorId, tick);
+  }
+
+  /** When the most recent incident in this sector opened, or `undefined` where none ever has. */
+  public lastIncidentStartedAtTick(sectorId: string): number | undefined {
+    return this.lastStartedAtTickBySectorId.get(sectorId);
   }
 
   /** Rejects any transition not in `LEGAL_TRANSITIONS` -- "incidents progress through one validated lifecycle." */
@@ -201,8 +234,10 @@ export class IncidentLog {
     this.records.clear();
     this.openIds.clear();
     this.openIdsBySectorId.clear();
+    this.lastStartedAtTickBySectorId.clear();
     for (const [id, record] of snapshot) {
       this.records.set(id, { ...record, participantIds: [...record.participantIds], causeFactors: record.causeFactors.map((factor) => ({ ...factor })), timeline: record.timeline.map((entry) => ({ ...entry })) });
+      this.noteStart(record.sectorId, record.startedAtTick);
       if (record.state !== 'resolved' && record.state !== 'lapsed') {
         this.openIds.add(id);
         let bucket = this.openIdsBySectorId.get(record.sectorId);

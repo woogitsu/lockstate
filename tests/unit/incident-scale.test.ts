@@ -52,7 +52,14 @@ describe('incident scale: many simultaneous incidents across many sectors', () =
     const trigger = new IncidentTriggerSystem(
       incidents, risk, gangs, sectorIds,
       () => ({ needsPressure: 1, staffingShortfall: 1, contrabandPressure: 1 }),
-      (sectorId) => [Number(sectorId.slice('sector-'.length))],
+      // Two prisoners per sector: a riot needs `DEFAULT_MINIMUM_RIOT_PARTICIPANTS`
+      // of them (ADR 0048), and this file's subject is thirty simultaneous
+      // responses rather than the participant floor. The second id is offset by
+      // the sector count so no two sectors claim the same prisoner.
+      (sectorId) => {
+        const cellIndex = Number(sectorId.slice('sector-'.length));
+        return [cellIndex, cellIndex + cellCount];
+      },
     );
     const response = new IncidentResponseSystem(incidents, sectors, guards, navigation);
 

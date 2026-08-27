@@ -7,7 +7,15 @@
  * reaching into every other subsystem itself.
  */
 export interface SectorRiskSample {
-  /** Mean unmet-need pressure across the sector's prisoners (1 = fully unmet). */
+  /**
+   * Mean unmet-need pressure across the sector's prisoners (1 = fully unmet).
+   *
+   * "Mean" over two axes since [ADR 0048](../../../docs/adr/0048-what-a-sectors-occupants-are.md)
+   * decision 2: each occupant's deficit is the mean over `NEED_IDS`, and the
+   * sample is the mean of those. It used to be the `safety` deficit alone,
+   * which `action.sleep` restores twenty times faster than it decays, so the
+   * term was pinned near zero for anybody with a bed.
+   */
   readonly needsPressure: number;
   /** Guard coverage shortfall (1 = zero of the required guards present). */
   readonly staffingShortfall: number;
@@ -30,13 +38,42 @@ export interface SectorRiskPolicy {
   readonly sustainedSamplesRequired: number;
 }
 
-/** Directional defaults, not a committed balance decision (issue #28 explicitly excludes final balance; see `docs/BENCHMARKING.md`'s no-hard-threshold policy). */
+/**
+ * Directional defaults, not a committed balance decision (issue #28 explicitly
+ * excludes final balance; see `docs/BENCHMARKING.md`'s no-hard-threshold
+ * policy).
+ *
+ * **Three of the five moved with [ADR 0048](../../../docs/adr/0048-what-a-sectors-occupants-are.md),
+ * and the ladder they were chosen against is in that document.** The shape they
+ * now express, in one sentence each:
+ *
+ * - `needsPressureWeight: 1` — **neglect alone can cause a riot.** It was `0.5`
+ *   against a `hotThreshold` of `0.6`, so the needs term could contribute at
+ *   most `0.5` and no prison, however badly run, could riot while its single
+ *   guard was on post. That is the second half of issue #442, and it made
+ *   staffing the cause of unrest rather than its amplifier.
+ * - `staffingShortfallWeight: 0.3` — **unchanged, and now the amplifier it was
+ *   named for.** A completely unguarded sector adds `0.3`, which turns a
+ *   mediocre prison into a rioting one and leaves a well-run one alone:
+ *   measured, a furnished prison sits at `0.164` at its worst and is still
+ *   below the line with no guards at all.
+ * - `contrabandPressureWeight: 0.2` — unchanged, and still structurally zero:
+ *   `IntelligenceLedger.report`'s only caller in `src/` is `reportInformantTip`,
+ *   which has no caller at all (ADR 0042 §#442).
+ * - `hotThreshold: 0.65` — the line, read directly off `needsPressure` now that
+ *   its weight is 1: a sector is hot when its prisoners' needs are on average
+ *   about two-thirds unmet, or a third unmet with nobody guarding them.
+ * - `sustainedSamplesRequired: 12` — twelve samples at the trigger's 50-tick
+ *   cadence is 600 ticks, a quarter of an in-game day of *continuously* bad
+ *   conditions. It was three, which is 150 ticks; the window is what makes a
+ *   riot the end of a bad stretch rather than of a bad moment.
+ */
 export const DEFAULT_SECTOR_RISK_POLICY: SectorRiskPolicy = {
-  needsPressureWeight: 0.5,
+  needsPressureWeight: 1,
   staffingShortfallWeight: 0.3,
   contrabandPressureWeight: 0.2,
-  hotThreshold: 0.6,
-  sustainedSamplesRequired: 3,
+  hotThreshold: 0.65,
+  sustainedSamplesRequired: 12,
 };
 
 /** Pure, explicit-factor weighted sum, clamped to [0,1] -- the same "explicit factors, no hidden condition chain" shape as #27's `resolveDetectionProbability`. */
