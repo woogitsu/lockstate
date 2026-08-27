@@ -105,10 +105,22 @@ export type VersionedPayload = DeepReadonly<
  * living only inside `z.enum([...])`, for the same reason
  * `PROTOCOL_DECODE_ERROR_CODES` in `./decode.ts` is shaped this way: a test
  * cannot enumerate the members of a schema that is not exported, so the
- * vocabulary could not be checked for reachability at all. Two of these twelve
- * are currently emitted by nothing (#187 finding 2), and
- * `tests/foundation/fault-code-reachability-contract.test.ts` is what makes
- * that a checked state rather than something a reader rediscovers.
+ * vocabulary could not be checked for reachability at all.
+ * `tests/foundation/fault-code-reachability-contract.test.ts` is what makes an
+ * unemitted member a checked state rather than something a reader rediscovers.
+ *
+ * **One of these twelve is emitted by nothing today**: `shutting-down`, which
+ * has never had a producer and is recorded with its reason in that gate's
+ * `UNEMITTED_CODES` (#444 item 1). Both directions of the correction are kept
+ * here rather than overwritten, because each was wrong in its own way:
+ *
+ * - This sentence used to read "two of these twelve are currently emitted by
+ *   nothing (#187 finding 2)", and it was false in the commit that wrote it --
+ *   `6ff871f` made `duplicate-message` and `sequence-gap` reachable and
+ *   described them as unreachable in the same change.
+ * - The gate then read the vocabulary as fully reachable for the opposite
+ *   reason: it matched the code anywhere in the producer's text, and
+ *   `state-machine.ts` spells `'shutting-down'` three times as a `WorkerState`.
  *
  * `as const` keeps the literal tuple, so `ProtocolFaultCode` stays these
  * twelve strings and does not widen to `string`.
