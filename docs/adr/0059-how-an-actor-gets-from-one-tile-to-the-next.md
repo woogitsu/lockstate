@@ -135,7 +135,8 @@ untouched; a new `LocomotionStore` holds where within it.
   published velocity rather than from a guess.
 - **The price, and it is the real one:** travel takes time, and every figure in
   this repository that depends on *when* a prisoner starts an action moves. See
-  "What this costs" below; twenty-five integration assertions were re-measured.
+  "What this costs" below; thirty-five assertions across fifteen integration
+  files were re-measured.
 
 ### Option 5 — Option 4, plus persisting the walk
 
@@ -209,10 +210,13 @@ never idle inside a 100-tick meal block never eats at all.
 continuous motion but which reads as hurried. That is the trade this decision
 makes, and the section below says what forces it.
 
-**What the choice costs in a running prison**: in the six-prisoner
-contended-canteen fixture over 12,000 ticks, prisoners spend roughly a tenth of
-their time travelling at ten tiles a second, against a third to a half at 2.5
-and 3.5% under the old abstracted arrival.
+**What the choice costs in a running prison**, measured in the six-prisoner
+contended-canteen fixture over 12,000 ticks: prisoners spent **33–56%** of their
+time travelling at 2.5 tiles a second and **18–28%** at 5, against **3.5%**
+under the old abstracted arrival. The fraction at the shipped ten tiles a second
+was **not** measured on that fixture — it is bounded above by the 18–28% band
+and the shape of the day at that speed is instead visible in the census tables
+those tests now carry.
 
 ### The tension this exposes, and it is not resolved here
 
@@ -378,9 +382,13 @@ because they are the ones that could have gone wrong:
 - **A save/restore round trip is not byte-identical for a prisoner who was
   walking.** It never was — travellers have always been dropped to `idle` on
   load — but the state now covers a whole journey rather than a tick or two, so
-  it is reached often. Measured: a save taken mid-journey and stepped 400 ticks
-  produces the same actions term for term and a phase split one reconsideration
-  cycle apart (160 idle / 196 travelling live, 140 / 216 restored).
+  it is reached often. Measured on `tests/integration/riot-regime-loop.test.ts`:
+  a save taken mid-journey and stepped 400 ticks has both sessions performing
+  the **same set of actions** and one reconsideration cycle apart in how much of
+  one of them they get through — 592 ticks of association and 28 travelling
+  live, against 568 and 72 restored. That test pins both censuses so the
+  divergence is recorded rather than hidden, and asserts the property it exists
+  for (the riot regime is in force, so the toilet is absent from both) directly.
 
 ---
 
