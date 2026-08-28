@@ -26,8 +26,8 @@ import './ui-harness-api'; // pulls in the `Window.lockstateUiHarness` global au
  * placement. **This block has no disclosure to hide behind**, so it does take
  * height the moment the simulation reports a held guard -- and it can, for a
  * reason that is a fact about `mountHud` rather than a hope: it builds one panel
- * for the rail's `.hud__side` slot and shows exactly one of Build, Rooms, Staff
- * and Intake, keyed on the active tab. The Staff panel is never laid out beside
+ * for the rail's `.hud__side` slot and shows exactly one of Build, Rooms, Staff,
+ * Intake and Regime, keyed on the active tab. The Staff panel is never laid out beside
  * the Build panel, so the height budget that panel has been fixed for twice
  * (#143, #174) is not a constraint on this one, and `.ui-panel.hud-staff` already
  * carries `overflow-y: auto` so that whatever the rail cannot give it is its own
@@ -274,6 +274,26 @@ test.describe('the Staff panel held-guards block', () => {
           staff.panelBox!.right + 1,
         );
       }
+
+      // And the "nobody is assigned" sentence is *not* on screen above five held
+      // guards. `heldEmpty` carries `.hud-staff__note` and nothing else, and the
+      // `@media (max-height: 700px)` block in `hud.css` gives that class an
+      // author `display: -webkit-box`, which beats the user agent's
+      // `[hidden] { display: none }` -- so at 900x600, the one viewport in this
+      // list 700px tall or shorter, the attribute said hidden and the browser
+      // drew the line anyway, between the held rows and the count of the ones it
+      // was denying the existence of. `.hud-staff__note[hidden]` is the guard
+      // that closes it, and only a viewport that short can tell.
+      //
+      // Read with `innerText` rather than through `held.emptyText`, which cannot
+      // answer this: that field takes the first laid-out `.hud-staff__note` in
+      // the block, and the block ends with a permanent hint carrying the same
+      // class, so it reports that hint the moment the empty line is correctly
+      // gone. Only rendered text distinguishes the two.
+      expect(
+        await page.locator('.hud-staff__held').innerText(),
+        `the "nobody is assigned" sentence is on screen beside five held guards at ${where}`,
+      ).not.toContain('Nobody is assigned');
 
       // And vertically: either every Release is above the panel's fold, or the
       // panel can scroll to the ones that are not. Both are reachable; a control
