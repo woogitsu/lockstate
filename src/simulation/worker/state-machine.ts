@@ -471,8 +471,20 @@ export class SimulationWorkerStateMachine {
    * gave the strip's occupancy bar a denominator, and the number is checked
    * against the projection's own schema rather than trusted
    * (`tests/foundation/documentation-claims-contract.test.ts`).
+   *
+   * **`dispatchedWhilePaused` is a third player-initiated event**, on exactly
+   * the terms the refusal and the zoning notice are: it opens the interval
+   * gate and it bypasses the "nothing changed" comparison, and it can fire at
+   * most once per command the player submits against a paused clock, which is
+   * bounded by how fast a button can be pressed. It bypasses the comparison
+   * because it has to: a build order moves none of the thirteen figures this
+   * payload carries, so `statusCountsEqual` would suppress the very
+   * publication the six pull readouts in `src/main.ts` ride on -- and while
+   * the clock is paused there is no tick-loop wake behind it to catch the
+   * miss. See ADR XXXX (drafted with a placeholder number, to be renumbered on
+   * landing).
    */
-  private publishStatusCounts(nowMilliseconds: number): void {
+  private publishStatusCounts(nowMilliseconds: number, dispatchedWhilePaused = false): void {
     if (this._kernel === null || this._runtime === null) return;
 
     const refusal = this._runtime.refusals.last;
@@ -488,7 +500,7 @@ export class SimulationWorkerStateMachine {
     const zoning = this._runtime.roomZoning.lastNotice;
     const zoningSequence = zoning?.sequence ?? 0;
     const zoningIsNew = zoningSequence !== this._publishedZoningSequence;
-    const eventIsNew = refusalIsNew || zoningIsNew;
+    const eventIsNew = refusalIsNew || zoningIsNew || dispatchedWhilePaused;
     if (!eventIsNew && nowMilliseconds - this._countsProjectedAtMs < STATUS_COUNTS_PUBLISH_INTERVAL_MS) return;
     this._countsProjectedAtMs = nowMilliseconds;
 
@@ -844,13 +856,15 @@ export class SimulationWorkerStateMachine {
       return; // Ignore commands during shutdown
     }
 
+    let accepted = false;
     try {
       this._kernel.submitCommand(
-        msg.payload.commandId, 
-        msg.payload.sequence, 
-        msg.payload.executeAtTick, 
+        msg.payload.commandId,
+        msg.payload.sequence,
+        msg.payload.executeAtTick,
         msg.payload.command
       );
+      accepted = true;
       this.post({
         protocolVersion: SIMULATION_PROTOCOL_VERSION,
         messageId: crypto.randomUUID(),
@@ -880,6 +894,52 @@ export class SimulationWorkerStateMachine {
           }
         }
       });
+    }
+
+    if (!accepted) return;
+
+    /*
+     * The paused drain (ADR XXXX, drafted with a placeholder number and to be
+     * renumbered on landing).
+     *
+     * **Why anything happens here at all.** The tick loop is the only thing
+     * that calls `Kernel.step()`, and `transition` runs that loop only while
+     * the state is `running` -- so before this, a command a player gave
+     * against a paused clock was accepted, acknowledged, and then sat in the
+     * kernel's queue producing nothing a player could see. That is thirteen
+     * gestures with no answer: a wall that does not appear, a room that does
+     * not register, a hire that changes no figure, an `Undo` that undoes
+     * nothing. It is not a *publication* gap and republishing would not have
+     * closed it -- nothing had been applied, so there was nothing new to
+     * publish.
+     *
+     * **After the acknowledgement, never before it.** ADR 0003 decision 9:
+     * the worker "never reports a command as applied merely because the
+     * message was received", and `status: 'queued'` is receipt. Composing
+     * that reply first keeps it true of the moment it describes.
+     *
+     * **Only while paused.** A running clock's tick loop dispatches within one
+     * 15 ms wake, so there is nothing to add and a second dispatch site on the
+     * hot path would be cost for nothing.
+     *
+     * **Every command a player submits while paused is due**, so this is not a
+     * rare branch: `SimulationCommandSender.projectExecuteTick` returns the
+     * last reported tick with no lead while the clock is stopped, and
+     * `handleSetClock` answers with the kernel's exact tick so that number is
+     * not stale. A command still queued ahead at a *future* tick -- one given
+     * while running and then paused inside its lead -- is not due and is left
+     * alone, which is what keeps ADR 0020's admission decision intact.
+     *
+     * **The catch matches `onTickLoop`'s and not `handleMessage`'s**: a throw
+     * out of a command handler has already touched simulation state, so the
+     * fault is unrecoverable, and it carries no `replyTo` because the request
+     * that provoked it has already been answered.
+     */
+    if (this._clock.control.mode !== 'paused') return;
+    try {
+      if (this._kernel.dispatchDueCommands() > 0) this.publishStatusCounts(this.performanceNow(), true);
+    } catch (e) {
+      this.fault('internal-error', e instanceof Error ? e.message : String(e));
     }
   }
 

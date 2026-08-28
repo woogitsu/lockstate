@@ -149,3 +149,69 @@ test('Kernel snapshot and restore yields identical state', () => {
   expect(handledCommands).toBe(1);
   expect(restored.tick).toBe(7);
 });
+
+/**
+ * `dispatchDueCommands`, the entry point ADR XXXX added (drafted with a
+ * placeholder number, to be renumbered on landing).
+ *
+ * It exists so the worker can answer a player who gives an order while the
+ * clock is stopped, and the three properties below are what make that safe to
+ * do: it dispatches exactly what `step()` would have dispatched, it leaves
+ * everything `step()` would have done *after* the dispatch undone, and calling
+ * it changes nothing about what the next `step()` produces.
+ */
+test('Kernel.dispatchDueCommands runs the due commands and nothing else', () => {
+  const kernel = new Kernel();
+  const log: string[] = [];
+  kernel.setCommandHandler((command) => log.push(`command:${command.id}`));
+  kernel.registerSystem({
+    id: 'sysA',
+    order: 1,
+    schedule: { intervalTicks: 1, phaseTicks: 0 },
+    update: () => log.push('system'),
+  });
+
+  kernel.submitCommand('due-first', 0, 0, null);
+  kernel.submitCommand('due-second', 1, 0, null);
+  kernel.submitCommand('later', 2, 5, null);
+
+  // Both due commands, in submission order, and no system.
+  expect(kernel.dispatchDueCommands()).toBe(2);
+  expect(log).toEqual(['command:due-first', 'command:due-second']);
+  // The tick did not move, which is the whole point: this is what a paused
+  // clock is allowed to do.
+  expect(kernel.tick).toBe(0);
+  // And the command scheduled ahead is untouched, so this cannot pull a
+  // command forward past the tick it names.
+  expect(kernel.snapshot().commands.map((command) => command.id)).toEqual(['later']);
+
+  // Idempotent in the sense that matters: nothing is due any more.
+  expect(kernel.dispatchDueCommands()).toBe(0);
+  expect(log).toEqual(['command:due-first', 'command:due-second']);
+
+  // And the next `step()` is the ordinary one -- it dispatches nothing that
+  // was already dispatched, runs the systems, and advances.
+  kernel.step();
+  expect(log).toEqual(['command:due-first', 'command:due-second', 'system']);
+  expect(kernel.tick).toBe(1);
+});
+
+test('Kernel.step still dispatches every due command before any system runs', () => {
+  // The property the extraction must not have broken, asserted against the
+  // ordering rather than against the refactor: two commands due at tick 0 and
+  // a system on every tick, and both commands run first.
+  const kernel = new Kernel();
+  const log: string[] = [];
+  kernel.setCommandHandler((command) => log.push(`command:${command.id}`));
+  kernel.registerSystem({
+    id: 'sysA',
+    order: 1,
+    schedule: { intervalTicks: 1, phaseTicks: 0 },
+    update: () => log.push('system'),
+  });
+  kernel.submitCommand('first', 0, 0, null);
+  kernel.submitCommand('second', 1, 0, null);
+
+  kernel.step();
+  expect(log).toEqual(['command:first', 'command:second', 'system']);
+});

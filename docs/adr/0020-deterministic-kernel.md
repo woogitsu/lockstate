@@ -427,3 +427,48 @@ already queued: tick 42 < queued 62`, two of its four cases fail, and so do
 `tests/unit/kernel.test.ts` and `tests/unit/worker-status-counts.test.ts`. The
 dispatch *ordering* stays pinned where it was, in
 `tests/determinism/kernel-system-order.test.ts`.
+
+## Amendment, 2026-08-28: dispatch is no longer tied to the start of a tick
+
+*This amends **the "Ordered Command Queue" heading** for a second time, and
+records where the decision now lives. Status is untouched: this ADR remains
+**Accepted**. Nothing about ordering, sequencing or replay changes.*
+
+The heading says, and the 2026-08-27 amendment above restates:
+
+> At the start of a tick, all due commands are dispatched in strict sequence
+> order before any systems run.
+
+The clause corrected there was *"in strict sequence order"*. The clause
+corrected here is **"at the start of a tick"**.
+
+`Kernel.step()` no longer holds the drain loop itself: it is
+`Kernel.dispatchDue`, reached from `step()` as step 1 and from the public
+`Kernel.dispatchDueCommands()`, which dispatches every due command and advances
+nothing. The worker calls that second entry point from `handleSubmitCommand`
+while the clock's control is `paused`, because the tick loop runs only in the
+`running` state and a command a player gave during a pause would otherwise
+produce nothing they could see until they pressed play. **ADR XXXX** (*"What a
+player sees for an order given while the clock is paused"*, drafted with a
+placeholder number and to be renumbered on landing) carries the reasoning, the
+alternatives and the open questions.
+
+**What the sentence should now say:** *every command is dispatched at the tick
+its `executeAtTick` names, in ascending `(executeAtTick, sequence)` order,
+before any system runs at that tick.*
+
+That is the property determinism rests on, and it is unchanged by the new
+caller: `_commands` is sorted by `(executeAtTick, sequence)` and drained from
+the head by one loop, so a command dispatched during a pause at tick *N* is
+dispatched at tick *N*, in the same position `step()` would have dispatched it,
+before any system has run at tick *N*. A replay from a snapshot taken before
+the pause re-dispatches it identically; a snapshot taken during the pause
+carries its effect and no longer carries the command.
+
+The section *"`submitCommand` keeps admitting a command scheduled behind one
+already queued"* is **not** amended and its cost argument still holds. A
+command carrying the twenty-tick lead it was given while the clock ran is not
+due, so the paused drain leaves it alone: it remains the highest tick in the
+queue for the length of the pause, and every further order given during that
+pause still has the shape the rejected guard would have refused.
+`tests/determinism/command-queue-admission.test.ts` measures both halves.
