@@ -147,12 +147,17 @@ const AWAITING_CONSUMER: Readonly<Record<string, string>> = {
   // and its new `src/` consumer moves `unconsumedBySrcOnly` instead.
 
 
-  // The exception, and the more interesting entry: no room requires a sink.
-  // `validateRoomObjectReferences` checks room -> object and not the reverse,
-  // so an object no room asks for is unchecked by design. Which room should
-  // require it -- shower room, canteen, kitchen, infirmary, all of them -- is
-  // a content decision, so it is reported in #141 rather than guessed at here.
-  'object.sink': 'Required by NO room definition, so nothing references it at all. The room-to-object validator does not check this direction.',
+  // **No object ids left.** `object.sink` was the last, and it graduated the
+  // same way `object.loading-dock-door` did: something started naming it.
+  // `src/rendering/world/environment-art.ts` lists every catalogued object the
+  // renderer draws as a coloured block rather than as artwork, and the sink is
+  // on that list. The reason its old entry gave -- "required by NO room
+  // definition, so nothing references it at all" -- is still true of the room
+  // catalogue and is now beside the point here, because the reference the gate
+  // measures exists. Its protection is stronger without the entry:
+  // `tests/unit/environment-art.test.ts` asserts that the renderer's drawn and
+  // fallback lists together are exactly the object registry's ids, so deleting
+  // the sink from the catalogue fails a named test rather than passing quietly.
 
   // Staff roles. Three of the eight (guard, nurse, warden) are referenced
   // outside the catalogue -- and since ADR 0025 the guard is the one of those
@@ -307,12 +312,16 @@ describe('every unconsumed content id is accounted for', () => {
      * if the id is deleted from the catalogue, which is a louder failure than a
      * test listing a reason.
      *
-     * `object.sink` is the one object id that stays, and its entry is unchanged.
-     * No room requires a sink, so it is outside phase 4's stated scope
-     * ("buildables for the remaining object ids the room catalogue already
-     * requires") and the ADR says so directly: "`object.sink` is the one entry a
-     * room requirement does not reach, so it moves only if something places
-     * it." Nothing places it.
+     * `object.sink` was the one object id that stayed, and it has since gone
+     * too. **Both directions are marked rather than overwritten**: the sentence
+     * this replaces read *"`object.sink` is the one object id that stays, and
+     * its entry is unchanged"*, and the ADR reason it gave -- "`object.sink` is
+     * the one entry a room requirement does not reach, so it moves only if
+     * something places it" -- has not been falsified. Nothing places a sink.
+     * What changed is that something *names* it:
+     * `src/rendering/world/environment-art.ts` declares which catalogued
+     * objects the renderer has no artwork for, and the gate measures a
+     * single-quoted literal rather than a placement
      */
     expect({
       declared: declaredIds.length,
@@ -345,7 +354,14 @@ describe('every unconsumed content id is accounted for', () => {
       // generically and names no room id, so nothing moved in `src/` -- and the
       // 53 -> 52 below is ADR 0025's alone, for the reason above. The two
       // measures moved on different changes and each is stated where it moved.
-    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 15, unconsumedBySrcOnly: 32 });
+      //
+      // 14 and 31, not 15 and 32: `object.sink` gained a `src/` consumer in
+      // `src/rendering/world/environment-art.ts` (ADR 0052), which is the first
+      // change to move *both* measures at once -- every previous graduation was
+      // a test-only consumer. Its entry is removed from the list above rather
+      // than kept with a new reason, which is what this file's stale-entry gate
+      // asks for.
+    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 14, unconsumedBySrcOnly: 31 });
   });
 
   it('scans a non-trivial catalog and a non-trivial consumer set, so this cannot pass vacuously', () => {

@@ -43,6 +43,21 @@ const LAYER_BIAS: Readonly<Record<RowSortedLayer, number>> = {
 export const FLOOR_DEPTH = -1_000_000_000;
 
 /**
+ * Floor artwork, which sits one step *below* the ground `Graphics`.
+ *
+ * Below, not above, and that is what makes it one `Graphics` per chunk instead
+ * of two. The ground layer paints four things in one buffer -- terrain colour,
+ * the room tint, the unowned shade and the grid -- and only the first of them
+ * belongs under the art. So the painter skips the terrain fill on any tile a
+ * floor sprite covers and lets the sprite show through from underneath, which
+ * leaves the other three drawing over it exactly as they always did.
+ *
+ * It is still a billion units below the row-sorted band, so nothing with height
+ * can reach it.
+ */
+export const FLOOR_ART_DEPTH = FLOOR_DEPTH - 1;
+
+/**
  * Depth for something whose base sits at `anchorWorldY`.
  *
  * Pure and total: given the same anchor and layer it always returns the same

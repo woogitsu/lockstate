@@ -1,6 +1,11 @@
 import { defaultObjectRegistry } from '../../content/object-catalog';
 import { defaultRoomContentRegistry, type RoomCategory } from '../../content/room-catalog';
-import { BUILDABLE_REGISTRY, type BuildableCategory } from '../../simulation/construction/definition';
+import {
+  BUILDABLE_REGISTRY,
+  DOOR_EDGE_NUMERIC_ID,
+  WALL_EDGE_NUMERIC_ID,
+  type BuildableCategory,
+} from '../../simulation/construction/definition';
 import { DEFAULT_TERRAIN_DEFINITIONS } from '../../simulation/world/terrain';
 
 /**
@@ -92,6 +97,18 @@ const ZONING_TINT_BY_CATEGORY: Readonly<Record<RoomCategory, number>> = {
 
 export const ZONING_TINT_ALPHA = 0.28;
 
+/**
+ * The same tint over a tile that has floor artwork under it.
+ *
+ * Weaker, because the two marks are now competing for the same pixels: at 0.28
+ * the wash is strong enough that a photographed linoleum floor stops reading as
+ * a floor and becomes a coloured rectangle again, which would have thrown away
+ * the whole point of drawing it. It is not removed, because the tint is what
+ * says *which* room this is -- `zoningTint` is keyed by the room's category --
+ * and that is gameplay information, not decoration.
+ */
+export const ZONING_TINT_ALPHA_OVER_ART = 0.14;
+
 /** Undefined when the tile is unzoned or the zoning id is not a known room. */
 export function zoningTint(zoningNumericId: number): number | undefined {
   if (zoningNumericId === 0) return undefined;
@@ -114,6 +131,20 @@ export interface StructureAppearance {
 
 const WALL_HEIGHT_TILES = 0.75;
 
+/**
+ * Named rather than written inline in the table below, because the edge lookup
+ * needs the same colours at the wall's height: a door standing in a wall line
+ * is as tall as the wall it is standing in.
+ */
+const DOOR_WOODEN_APPEARANCE: StructureAppearance = {
+  kind: 'object',
+  footprintTiles: { width: 1, height: 1 },
+  heightTiles: 0.55,
+  topFill: 0xb08a4f,
+  sideFill: 0x7c6037,
+  outline: 0x3b2d1a,
+};
+
 const STRUCTURE_APPEARANCE: Readonly<Record<string, StructureAppearance>> = {
   'wall-brick': {
     kind: 'wall',
@@ -123,14 +154,7 @@ const STRUCTURE_APPEARANCE: Readonly<Record<string, StructureAppearance>> = {
     sideFill: 0x6d4a39,
     outline: 0x3a251c,
   },
-  'door-wooden': {
-    kind: 'object',
-    footprintTiles: { width: 1, height: 1 },
-    heightTiles: 0.55,
-    topFill: 0xb08a4f,
-    sideFill: 0x7c6037,
-    outline: 0x3b2d1a,
-  },
+  'door-wooden': DOOR_WOODEN_APPEARANCE,
 };
 
 const CATEGORY_FALLBACK: Readonly<Record<BuildableCategory, StructureAppearance>> = {
@@ -202,6 +226,36 @@ export const PLANNED_OBJECT_TINT = CATEGORY_FALLBACK.object.topFill;
 
 /** Walls stored as tile edges in the world's own `topEdge`/`leftEdge` layers. */
 export const EDGE_WALL_APPEARANCE: StructureAppearance = CATEGORY_FALLBACK.wall;
+
+/**
+ * How each value the edge layers can carry is drawn when there is no artwork.
+ *
+ * **This is the per-value lookup `DOOR_EDGE_NUMERIC_ID`'s own comment says is
+ * missing.** `definition.ts` writes `1` for a wall and `2` for a door into the
+ * same `topEdge` / `leftEdge` layers, and `tile-layer.ts` painted every
+ * non-zero value with `EDGE_WALL_APPEARANCE` -- so the door a player watched
+ * being built in `door-wooden`'s own colours turned into a brick wall the
+ * moment it finished. The value that tells the two apart was already in the
+ * layer the renderer reads.
+ *
+ * The door is given the *wall's* height rather than its own, because here it is
+ * a segment of a wall line rather than a free-standing object: at 0.55 tiles it
+ * would put a notch in the top of every wall it sat in.
+ */
+const EDGE_APPEARANCE_BY_NUMERIC_ID: ReadonlyMap<number, StructureAppearance> = new Map<number, StructureAppearance>([
+  [WALL_EDGE_NUMERIC_ID, CATEGORY_FALLBACK.wall],
+  [DOOR_EDGE_NUMERIC_ID, { ...DOOR_WOODEN_APPEARANCE, heightTiles: WALL_HEIGHT_TILES }],
+]);
+
+/**
+ * Appearance for an edge value. An unrecognised non-zero value still draws, as
+ * a wall, rather than vanishing -- the layer's only published meaning is
+ * "non-zero means something is here", and something is better drawn wrongly
+ * than not at all.
+ */
+export function edgeAppearance(edgeNumericId: number): StructureAppearance {
+  return EDGE_APPEARANCE_BY_NUMERIC_ID.get(edgeNumericId) ?? EDGE_WALL_APPEARANCE;
+}
 
 /** Thickness of an edge wall as a fraction of a tile. */
 export const EDGE_WALL_THICKNESS_TILES = 0.22;
