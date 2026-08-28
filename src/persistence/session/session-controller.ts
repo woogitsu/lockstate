@@ -3,7 +3,7 @@ import { AutosaveScheduler } from '../local/autosave';
 import type { PrisonSaveRepository, SaveImportResult, SaveResult } from '../local/repository';
 import type { PrisonSlotMetadata } from '../local/store';
 import { createSaveEnvelope, type SaveEnvelope, type TrustedSaveEnvelope } from '../save-schema';
-import { SnapshotRestoreRejectedError, type SessionRuntimeHost } from './runtime-host';
+import { SnapshotRestoreFaultError, SnapshotRestoreRejectedError, type SessionRuntimeHost } from './runtime-host';
 
 /** Directional default: the informal probe in `docs/PERSISTENCE.md` puts a representative save well under a second, so a 30s trailing-edge cadence costs little while bounding worst-case loss. Not a tuned figure -- see `docs/BENCHMARKING.md`. */
 export const DEFAULT_AUTOSAVE_INTERVAL_MS = 30_000;
@@ -220,16 +220,58 @@ export class SessionController {
    * that timed out, was never started or has gone away propagates unchanged:
    * the save may be perfectly good and deleting it would be the more
    * expensive mistake.
+   *
+   * **And only a *declared* refusal is one (#431).** The paragraph above
+   * describes a bound that was standing in for a diagnosis: the worker
+   * labelled a bug in this build's own restore code `snapshot-incompatible`
+   * exactly as it labelled a bad payload, and what kept that from deleting
+   * saves was that nothing is retired until something restores. The diagnosis
+   * exists now. An exception that no check on the restore path declared
+   * arrives as `SnapshotRestoreFaultError`, which is a different class, so it
+   * cannot reach `demoteGeneration` however this method is later edited --
+   * that is the point of two classes rather than a field on one.
+   *
+   * A code fault still **continues the walk**. Our defect may be specific to
+   * what one generation happens to contain, and abandoning the load would cost
+   * the player a recovery they can have; the two sets below are what keeps
+   * "try the next one" separate from "this one has earned retirement".
+   * `attempted` is what makes the walk terminate -- it is the skip set, and
+   * every generation the loop touches joins it. `refused` is the subset a
+   * declared verdict was reached about, and it is the only thing the
+   * retirement loop reads.
+   *
+   * If the walk runs out having hit at least one code fault, the first of them
+   * is thrown rather than `no-valid-generation` being returned. The two say
+   * different things to the player and only one of them would be true:
+   * `save.status.no-readable-generation` asserts that *"every retained copy
+   * failed validation"*, which is a claim about their data that a defect of
+   * ours does not license. A throw reaches the save panel's
+   * `save.failure.load` instead -- "Loading failed: {detail}" -- carrying the
+   * message the restore actually produced.
    */
   public async loadPrison(prisonId: string): Promise<SessionLoadOutcome> {
-    // Insertion-ordered, so this is both the set `loadCurrent` skips and the
-    // newest-first order the refused generations are retired in below.
+    // Every generation this walk has tried. It is what `loadCurrent` skips and
+    // what makes the walk terminate, and it grows for a code fault as well as
+    // for a refusal -- a generation we cannot judge still must not be offered
+    // back, or the loop spins inside a click handler.
+    const attempted = new Set<string>();
+    // The subset a declared verdict was reached about. Insertion-ordered, so
+    // this is also the newest-first order they are retired in below. A code
+    // fault never joins it, which is how "must not enter the demotion path at
+    // all" is enforced rather than promised.
     const refused = new Set<string>();
+    // The first fault our own code produced, if any: reported only if nothing
+    // restores, because a later generation restoring means the player has
+    // their prison and our defect cost them nothing.
+    let firstCodeFault: SnapshotRestoreFaultError | undefined;
 
     for (;;) {
-      const result = await this.repository.loadCurrent(prisonId, { skip: refused });
-      if (!result.ok) return { ok: false, reason: result.reason };
-      if (refused.has(result.generationId)) {
+      const result = await this.repository.loadCurrent(prisonId, { skip: attempted });
+      if (!result.ok) {
+        if (firstCodeFault !== undefined) throw firstCodeFault;
+        return { ok: false, reason: result.reason };
+      }
+      if (attempted.has(result.generationId)) {
         // The skip set is what makes this walk terminate: it only ever grows,
         // so a repository that honours it runs out of candidates. One that
         // offers a skipped generation back would spin for ever inside a click
@@ -250,10 +292,19 @@ export class SessionController {
       try {
         await this.host.startFromSnapshot(bundle);
       } catch (error) {
+        if (error instanceof SnapshotRestoreFaultError) {
+          // Our defect, so no verdict has been reached about this save at all.
+          // It is skipped so the walk can go on, and it is *not* added to
+          // `refused`, so nothing below can retire it.
+          firstCodeFault ??= error;
+          attempted.add(result.generationId);
+          continue;
+        }
         if (!(error instanceof SnapshotRestoreRejectedError)) throw error;
         // Set aside, not retired. Nothing on disk changes until something
         // restores, so a walk that reaches the end of the window leaves the
         // player with exactly what they had.
+        attempted.add(result.generationId);
         refused.add(result.generationId);
         continue;
       }
@@ -293,7 +344,7 @@ export class SessionController {
 
       return {
         ok: true,
-        recovered: refused.size > 0 || result.outcome === 'recovered-previous',
+        recovered: attempted.size > 0 || result.outcome === 'recovered-previous',
         scope: restoredScopeFor(bundle),
       };
     }

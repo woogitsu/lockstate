@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { WorkerFaultError, WorkerSessionHost } from '../../src/persistence/session/worker-session-host';
-import { SnapshotRestoreRejectedError } from '../../src/persistence/session/runtime-host';
+import { SnapshotRestoreFaultError, SnapshotRestoreRejectedError } from '../../src/persistence/session/runtime-host';
 import type { SimulationClient } from '../../src/simulation/worker/client';
 import { SIMULATION_PROTOCOL_VERSION } from '../../src/simulation/protocol/types';
 import { SESSION_SNAPSHOT_SCHEMA_ID, SESSION_SNAPSHOT_SCHEMA_VERSION } from '../../src/simulation/runtime/restore-session';
@@ -156,13 +156,70 @@ describe('WorkerSessionHost: failures surface as errors, never as unsettled prom
    * dead worker must not produce that error, or one broken worker would
    * delete the player's newest good saves one load at a time.
    */
-  it('re-raises a refused snapshot as SnapshotRestoreRejectedError, keeping the fault detail', async () => {
+  it('re-raises a refused snapshot as SnapshotRestoreRejectedError, keeping the fault detail and the declared reason', async () => {
+    const { client, host } = buildHost();
+    const started = host.startFromSnapshot(BUNDLE as never);
+    client.reply('protocol/error', {
+      code: 'snapshot-incompatible',
+      message: 'Snapshot could not be restored: bad world',
+      recoverable: true,
+      details: { snapshotRestore: 'damaged-payload' },
+    });
+
+    await expect(started).rejects.toThrow(SnapshotRestoreRejectedError);
+    await expect(started).rejects.toThrow(/Snapshot could not be restored: bad world/);
+    // The reason the worker declared, not one derived here from the code or
+    // the message (#431).
+    await expect(started).rejects.toMatchObject({ reason: 'damaged-payload' });
+  });
+
+  /**
+   * The other declared save-side reason, on the same code, so the two are
+   * shown to be told apart by `details` rather than by `snapshot-incompatible`
+   * carrying one fixed meaning.
+   */
+  it('carries `unsupported-by-this-build` through unchanged rather than flattening it', async () => {
+    const { client, host } = buildHost();
+    const started = host.startFromSnapshot(BUNDLE as never);
+    client.reply('protocol/error', {
+      code: 'snapshot-incompatible',
+      message: 'Cannot restore snapshot "simulation-save-payload" v99',
+      recoverable: true,
+      details: { snapshotRestore: 'unsupported-by-this-build' },
+    });
+
+    await expect(started).rejects.toMatchObject({ reason: 'unsupported-by-this-build' });
+  });
+
+  /**
+   * #431's whole point on this boundary: a fault our own restore code caused
+   * must not arrive as a verdict about the player's save.
+   */
+  it('raises a declared restore-code fault as SnapshotRestoreFaultError, which costs no generation', async () => {
+    const { client, host } = buildHost();
+    const started = host.startFromSnapshot(BUNDLE as never);
+    client.reply('protocol/error', {
+      code: 'internal-error',
+      message: 'Restoring this snapshot threw where nothing declared a refusal: boom',
+      recoverable: false,
+      details: { snapshotRestore: 'restore-code-fault' },
+    });
+
+    await expect(started).rejects.toThrow(SnapshotRestoreFaultError);
+    await expect(started).rejects.not.toBeInstanceOf(SnapshotRestoreRejectedError);
+  });
+
+  /**
+   * A refusal that declares nothing is a producer that forgot, so no verdict
+   * has been reached about the save and none is invented on its behalf.
+   */
+  it('does not invent a verdict for a snapshot-incompatible fault that declares no reason', async () => {
     const { client, host } = buildHost();
     const started = host.startFromSnapshot(BUNDLE as never);
     client.reply('protocol/error', { code: 'snapshot-incompatible', message: 'Snapshot could not be restored: bad world', recoverable: true });
 
-    await expect(started).rejects.toThrow(SnapshotRestoreRejectedError);
-    await expect(started).rejects.toThrow(/Snapshot could not be restored: bad world/);
+    await expect(started).rejects.toThrow(SnapshotRestoreFaultError);
+    await expect(started).rejects.not.toBeInstanceOf(SnapshotRestoreRejectedError);
   });
 
   it('does not blame the snapshot for a worker that never replied', async () => {

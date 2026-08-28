@@ -26,6 +26,7 @@ import {
   RENDER_ACTORS_SCHEMA_ID,
   RENDER_ACTORS_SCHEMA_VERSION,
 } from '../protocol/render-actors-payload';
+import { RESTORE_CODE_FAULT, restoreFailureDetails, restoreFailureReasonOf } from '../runtime/restore-refusal';
 import { PROJECTION_CATALOG, type ProjectionRequest } from './projection-catalog';
 import { encodeRenderActorsKeyframe } from './render-actors-keyframe';
 import { projectStatusCounts, statusCountsEqual } from './status-counts';
@@ -658,7 +659,7 @@ export class SimulationWorkerStateMachine {
   public fault(
     code: ProtocolFaultCode,
     message: string,
-    options: { readonly replyTo?: string; readonly recoverable?: boolean } = {},
+    options: { readonly replyTo?: string; readonly recoverable?: boolean; readonly details?: JsonValue } = {},
   ): void {
     const recoverable = options.recoverable ?? false;
     if (!recoverable) this.transition('faulted');
@@ -671,6 +672,15 @@ export class SimulationWorkerStateMachine {
         code,
         message,
         recoverable,
+        // `protocolFaultSchema` has declared an optional `details` since ADR
+        // 0003's envelope contract and nothing emitted one until #431, which
+        // is why carrying a machine-readable refusal reason across this
+        // boundary needs no protocol version and no new fault code. Spread
+        // rather than written as `undefined`: the schema is `.strict()` and a
+        // key holding `undefined` does not survive a structured clone the
+        // same way on both sides, so a fault with nothing to add posts exactly
+        // the payload it posted before this field was used.
+        ...(options.details === undefined ? {} : { details: options.details }),
       }
     });
   }
@@ -756,41 +766,86 @@ export class SimulationWorkerStateMachine {
         return this.fault(
           'snapshot-incompatible',
           `Cannot restore snapshot "${snapshot.schemaId}" v${snapshot.schemaVersion}; this build understands "${SESSION_SNAPSHOT_SCHEMA_ID}" v${SESSION_SNAPSHOT_SCHEMA_VERSION}.`,
-          rejectedSnapshotFault(msg.messageId),
+          { ...rejectedSnapshotFault(msg.messageId), details: restoreFailureDetails('unsupported-by-this-build') },
         );
       }
       if (snapshot.transport !== 'structured-clone') {
-        return this.fault('snapshot-incompatible', `Session snapshots must use the structured-clone transport, got "${snapshot.transport}".`, rejectedSnapshotFault(msg.messageId));
+        return this.fault(
+          'snapshot-incompatible',
+          `Session snapshots must use the structured-clone transport, got "${snapshot.transport}".`,
+          { ...rejectedSnapshotFault(msg.messageId), details: restoreFailureDetails('unsupported-by-this-build') },
+        );
       }
 
-      // **A catch-all, and what hangs off it.** Every exception out of
-      // `restoreSimulationRuntime` is reported under one code, so a payload
-      // this build genuinely cannot restore and a *bug in this build's own
-      // restore code* are indistinguishable from here. That code is not
-      // inert on the other side: `WorkerSessionHost` turns
-      // `snapshot-incompatible` into `SnapshotRestoreRejectedError`, which is
-      // the one error `SessionController.loadPrison` demotes a save
-      // generation for -- and demotion deletes.
+      // **Not a catch-all any more, and this comment used to say it was.**
       //
-      // Bounded rather than solved, and the bound has moved since this comment
-      // was written. It used to say the floor in
-      // `PrisonSaveRepository.demoteGeneration` -- which refuses to delete the
-      // last retained generation (docs/PERSISTENCE.md, "Never the last copy")
-      // -- is what stops a deterministic failure here from walking a player's
-      // whole retained window. That was true, and it cost all but one
-      // generation: measured at three to one in a single load, and at three to
-      // zero before the floor existed. It is now #403 mitigation (d) that does
-      // the stopping -- a refused generation is retired only once a *different*
-      // one has restored -- so a deterministic failure costs **nothing**, and
-      // the floor is the second belt rather than the first. Telling
-      // the two causes apart is the fix this comment is not: it needs every
-      // deliberate rejection on the restore path to be a declared verdict
-      // rather than whichever error class was nearest, which is a decision
-      // about the restore modules and not about this call site.
+      // It read: *"Every exception out of `restoreSimulationRuntime` is
+      // reported under one code, so a payload this build genuinely cannot
+      // restore and a bug in this build's own restore code are
+      // indistinguishable from here"*, and it closed by naming the fix it was
+      // not -- *"it needs every deliberate rejection on the restore path to be
+      // a declared verdict rather than whichever error class was nearest,
+      // which is a decision about the restore modules and not about this call
+      // site."* That is #431, and it landed: the decision is in the restore
+      // modules, and what is left here is one call to the classifier they
+      // declare (`../runtime/restore-refusal.ts`).
+      //
+      // Kept in the past tense rather than deleted, because the bound that
+      // stood in for it is still load-bearing and still worth reading. Before
+      // #403 (d) a deterministic refusal here cost the player every retained
+      // generation -- measured at three to zero in a single load, and at three
+      // to one once `PrisonSaveRepository.demoteGeneration` gained its
+      // "never the last copy" floor. A refused generation is now retired only
+      // once a *different* one has restored, so a deterministic refusal costs
+      // nothing at all. What this call site adds on top is that a refusal our
+      // own code caused is no longer *called* a refusal: it goes out as
+      // `internal-error`, which is what it is.
+      //
+      // Two codes, and neither is a fallback:
+      //
+      // - `snapshot-incompatible`, recoverable, for a declared verdict about
+      //   the save. Nothing was installed, so the worker is not spent -- ADR
+      //   0024 §1, and ADR 0038 §5's *"whatever is refused is refused at
+      //   restore, and is never an `internal-error`"*.
+      // - `internal-error` for an exception nothing declared. ADR 0038 §5 is
+      //   not contradicted by that: what §5 forbids is a *save-compatibility
+      //   condition* arriving as an internal error, and a defect in our own
+      //   restore code is not one.
+      //
+      // **And it is recoverable, which is the one place this departs from a
+      // sentence ADR 0024 wrote.** §1 contrasts a refused envelope with the
+      // other call sites -- *"`internal-error` after a caught exception may
+      // have left a system part-way through its work ... Those are real
+      // faults"* -- and the operative word is *may*. The test that sentence
+      // applies is whether the failure reached simulation state, and here it
+      // provably did not: `restoreSimulationRuntime` is a factory that holds
+      // no reference to this machine and builds an entirely new runtime, and
+      // `this._runtime` and `this._kernel` are assigned only from its return
+      // value. A throw inside it leaves this worker exactly `uninitialized`,
+      // which is the same fact `rejectedSnapshotFault` passes
+      // `recoverable: true` for one branch up. Reporting it as spent would
+      // also cost the player a recovery: `SessionController.loadPrison` tries
+      // the next-oldest generation after a code fault, and a `faulted` worker
+      // answers that attempt `already-initialized`.
+      //
+      // Both carry the reason in the fault's `details`, which is what lets
+      // `WorkerSessionHost` re-raise the right class on the other side without
+      // reading a message string.
       try {
         this._runtime = restoreSimulationRuntime(snapshot.data as unknown as SessionSnapshotBundle).runtime;
       } catch (error) {
-        return this.fault('snapshot-incompatible', `Snapshot could not be restored: ${error instanceof Error ? error.message : String(error)}`, rejectedSnapshotFault(msg.messageId));
+        const reason = restoreFailureReasonOf(error);
+        const detail = error instanceof Error ? error.message : String(error);
+        if (reason === RESTORE_CODE_FAULT) {
+          return this.fault('internal-error', `Restoring this snapshot threw where nothing declared a refusal: ${detail}`, {
+            ...rejectedSnapshotFault(msg.messageId),
+            details: restoreFailureDetails(reason),
+          });
+        }
+        return this.fault('snapshot-incompatible', `Snapshot could not be restored: ${detail}`, {
+          ...rejectedSnapshotFault(msg.messageId),
+          details: restoreFailureDetails(reason),
+        });
       }
       this._kernel = this._runtime.kernel;
     }

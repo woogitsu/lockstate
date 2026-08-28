@@ -51,10 +51,15 @@ export type SaveImportResult =
  * (`SessionController.loadPrison`) walks the retained window newest-first, and
  * the *usual* reason a host refuses a generation is deterministic — a payload
  * shape this build cannot restore, or a bug in this build's own restore code,
- * which `SimulationWorkerStateMachine.handleInitialize` labels
+ * which `SimulationWorkerStateMachine.handleInitialize` used to label
  * `snapshot-incompatible` identically to a genuinely bad blob because it
- * catches every exception from `restoreSimulationRuntime`. A deterministic
- * cause fails on *every* generation, so a walk that demoted each refusal as it
+ * caught every exception from `restoreSimulationRuntime`. **That second half
+ * is history since #431**: an exception no check on the restore path declared
+ * now arrives as `SnapshotRestoreFaultError`, which is not the class
+ * `loadPrison` demotes on, so a defect of ours can no longer reach this method
+ * at all. The first half stands unchanged, and so does everything below: a
+ * genuinely bad payload is still deterministic, so it still fails on *every*
+ * generation. A walk that demoted each refusal as it
  * happened deleted the whole window: measured on v0.0.112, three good
  * generations became zero in a single load, and the prison stayed unloadable
  * afterwards even once the failure was removed, because there was nothing left
@@ -390,8 +395,10 @@ export class PrisonSaveRepository {
    * by every read path and would never be deleted by `delete()` either, so
    * un-pointing alone would leak it. The caller decides what counts as
    * confirmed-unrestorable; `SessionController.loadPrison` demotes only on a
-   * `SnapshotRestoreRejectedError`, never on a host that failed to answer, and
-   * only once a different generation has restored (#403 (d)).
+   * `SnapshotRestoreRejectedError`, never on a host that failed to answer,
+   * never on a `SnapshotRestoreFaultError` — an exception out of our own
+   * restore code, which reaches no verdict about the save (#431) — and only
+   * once a different generation has restored (#403 (d)).
    *
    * **The last retained generation is never demoted**, and that floor is the
    * reason this method reports what it did instead of returning `void`. See
