@@ -51,10 +51,10 @@ import { stripComments } from '../helpers/canonical-iteration';
  * ever existed on a closed pull request's branch, and it is allowlisted below
  * with that reason.
  *
- * Re-measured at `0850fe8`, after the extractor was taught the two forms it
+ * Re-measured at `3bfb799`, after the extractor was taught the two forms it
  * had been blind to (a `file:line` anchor, and the `` `x` `` code span --
- * both below): **3,608** citations across 107 markdown files, of which
- * **3,607** resolve and the exception is still that one. Those are
+ * both below): **3,625** citations across 108 markdown files, of which
+ * **3,624** resolve and the exception is still that one. Those are
  * occurrences, not distinct paths -- the same number the check itself counts,
  * so the figure and the check cannot disagree.
  */
@@ -242,7 +242,7 @@ const citations = markdownFiles.flatMap((file) => rootedPathCitations(relative(R
 
 describe('every rooted path cited in the documentation is on disk', () => {
   it('finds citations to check, so this cannot pass vacuously', () => {
-    // An order of magnitude below the 3,608 measured at `0850fe8`: high
+    // An order of magnitude below the 3,625 measured at `3bfb799`: high
     // enough that an extractor which silently stopped matching fails here,
     // low enough that deleting a documentation file does not. It was 50
     // against the 630 measured at `7a15b17`, and moves with the corpus.
@@ -289,18 +289,19 @@ describe('every rooted path cited in the documentation is on disk', () => {
  *
  * ## The measurement, which is the whole argument
  *
- * Measured at `0850fe8`, over 693 `.ts`, `.mts` and `.mjs` files under `src/`,
- * `tests/`, `tooling/` and `scripts/`: **2,291** rooted-path citations in
- * comments, of which **2,285** resolve. The remaining six occurrences name
+ * Measured at `3bfb799`, over 695 `.ts`, `.mts` and `.mjs` files under `src/`,
+ * `tests/`, `tooling/` and `scripts/`: **2,300** rooted-path citations in
+ * comments, of which **2,294** resolve. The remaining six occurrences name
  * four distinct paths that are truthfully absent, allowlisted below with their
  * reasons. That is the same justification the markdown side gave for itself --
- * 629 of 630 at `7a15b17`, 3,607 of 3,608 at `0850fe8` -- and it is what makes
+ * 629 of 630 at `7a15b17`, 3,624 of 3,625 at `3bfb799` -- and it is what makes
  * this a check rather than a list nobody reads, which is the objection the
  * first docblock raises against flagging bare filenames and which still
  * stands.
  *
- * Ten did not resolve on the first run. **Three were real**, and are corrected
- * in the commit before this one:
+ * Ten did not resolve when this was first run, over the 693 files of
+ * `0850fe8`. **Three were real**, and are corrected two commits before this
+ * one:
  *
  * - `src/rendering/assets/environment-atlas-plan.ts` said
  *   `environment-atlas-plan.test.ts`, under `tests/unit/`, "drives both" of
@@ -391,7 +392,7 @@ describe('every rooted path cited in the documentation is on disk', () => {
  * ## What this does not reach
  *
  * Shell, Python, PowerShell and SQL under `scripts/` and `tooling/`: 13 files
- * carrying 14 rooted citations at `0850fe8`, all of which resolve. Reaching
+ * carrying 11 rooted citations at `3bfb799`, all of which resolve. Reaching
  * them needs a `#`-comment scanner, which is the second extractor this block
  * exists to avoid; the honest statement is that the surface is unchecked and
  * was clean when last counted by hand. A citation split across two lines of a
@@ -477,7 +478,7 @@ const sourceCitations = sourceFiles.flatMap((file) =>
 
 describe('every rooted path cited in a source comment is on disk', () => {
   it('finds source files and citations to check, so this cannot pass vacuously', () => {
-    // An order of magnitude below the 2,291 measured at `0850fe8`.
+    // An order of magnitude below the 2,300 measured at `3bfb799`.
     // This is the guard that fails if `commentsOf` ever returns nothing, or if
     // `CODE_SPAN` stops matching: either would leave every assertion below
     // trivially satisfied and the check silently gone.
