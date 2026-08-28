@@ -56,6 +56,7 @@ So the standing rules for anything added here:
 | [2026-08-26 failure modes](./2026-08-26-failure-modes.md) | What should failing look like, and what is the cheapest honest route to it from what already exists? | None yet — it states two shapes and declines to pick. **§3's mutual-exclusion finding is corrected in place** (#396): an *unhoused* arrival's `safety` does decay to zero, so overcrowding is the reachable pressure and a riot fires at tick 15,600 |
 | [2026-08-26 repository audit](./2026-08-26-repository-audit.md) | Across every discipline at once, what is wrong with this repository at v0.0.108, and what should be done first? | None yet — it ranks work and names the decisions that need an ADR |
 | [2026-08-28 risk tier and income](./2026-08-28-risk-tier-and-income.md) | Does a prisoner's `riskTier` change what the state pays, or what the prison spends? | None — it refutes an audit finding and proposes no change. ADR 0017 decision 6 stands |
+| [2026-08-28 navigation tick budget](./2026-08-28-navigation-tick-budget.md) | What does a navigation tick cost, and may its budget be a wall clock? | None yet — it carries an ADR draft awaiting a centrally assigned number. ADR 0009 stands unamended |
 
 ### Findings from the first four records that changed a decision
 
