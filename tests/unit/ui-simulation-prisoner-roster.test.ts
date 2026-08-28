@@ -49,7 +49,7 @@ import { PrisonerRosterReader, prisonerRosterFromProjection } from '../../src/ui
  */
 
 const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
-const t = (key: string, parameters?: Record<string, string | number>): string =>
+const t = (key: string, parameters?: Readonly<Record<string, string | number | boolean>>): string =>
   parameters === undefined ? localizer.format(key) : localizer.format(key, parameters);
 
 /**
@@ -60,8 +60,22 @@ const t = (key: string, parameters?: Record<string, string | number>): string =>
  * forwarding one of them would show up in the `toEqual` assertions below
  * instead of being invisible.
  */
-function projectedRow(overrides: Partial<PrisonerRosterRowViewModel> = {}): PrisonerRosterRowViewModel {
-  return {
+/**
+ * An override set to `undefined` means **the key is absent**, not present and
+ * holding `undefined`.
+ *
+ * `tsconfig` sets `exactOptionalPropertyTypes: true`, so
+ * `PrisonerRosterRowViewModel`'s `name?`, `classificationGroupId?`, `riskTier?`
+ * and `currentActionId?` each mean "a value, or no key at all" -- and
+ * `{ name: undefined }` is a third thing the type deliberately forbids. A
+ * spread cannot express removal, so the keys are deleted instead. That is not
+ * a compile-time convenience: `'name' in row` is what the projection's readers
+ * branch on, and a row carrying `name: undefined` would answer `true`.
+ */
+type RowOverrides = { readonly [K in keyof PrisonerRosterRowViewModel]?: PrisonerRosterRowViewModel[K] | undefined };
+
+function projectedRow(overrides: RowOverrides = {}): PrisonerRosterRowViewModel {
+  const row: Record<string, unknown> = {
     entityId: 7,
     name: { givenName: 'Ada', familyName: 'Cole' },
     intakeStage: 'completed',
@@ -74,7 +88,11 @@ function projectedRow(overrides: Partial<PrisonerRosterRowViewModel> = {}): Pris
     accommodation: { instanceId: 'room.cell:4:6', roomCatalogId: 'room.cell', roomNameKey: 'room.cell.name' },
     lowestNeed: { needId: 'safety', level: { permille: 120, filled: 2, segments: 10 } },
     ...overrides,
-  } as PrisonerRosterRowViewModel;
+  };
+  for (const [key, value] of Object.entries(overrides)) {
+    if (value === undefined) delete row[key];
+  }
+  return row as unknown as PrisonerRosterRowViewModel;
 }
 
 function page(rows: readonly PrisonerRosterRowViewModel[], total = rows.length): ViewModelPage<PrisonerRosterRowViewModel> {

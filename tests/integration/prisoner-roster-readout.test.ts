@@ -69,7 +69,7 @@ const SEED = 0x451;
 const ORIGIN = { x: 16, y: 16 } as const;
 
 const localizer = new Localizer({ locale: DEFAULT_LOCALE, catalogs: [defaultMessageCatalogEn] });
-const t = (key: string, parameters?: Record<string, string | number>): string =>
+const t = (key: string, parameters?: Readonly<Record<string, string | number | boolean>>): string =>
   parameters === undefined ? localizer.format(key) : localizer.format(key, parameters);
 
 function submit(runtime: SimulationRuntime, id: string, payload: ReturnType<typeof packCommand>): void {
