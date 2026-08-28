@@ -416,15 +416,53 @@ rather than numbers:
 
 ---
 
+## What it costs at population, measured
+
+Two population sizes, a third of them walking, on this container. The walking
+fraction is the one the six-prisoner fixtures produce at the shipped speed; the
+routes are made long enough that the store stays populated for the length of a
+timing run, because a first draft of this measurement timed an **empty** store
+and reported 0.0002 ms.
+
+| | 500 actors, 167 walking | 5,000 actors, 1,667 walking |
+| --- | --- | --- |
+| payload | 10,016 bytes | 100,016 bytes |
+| worker: `LocomotionStore.advance`, per tick | 0.0225 ms | 0.476 ms |
+| worker: `encodeRenderActorsKeyframe`, per publication | 0.045 ms | 0.357 ms |
+| main: `decodeRenderActorsPayload` | 0.015 ms | 0.068 ms |
+| main: `actorsFromDelta` | 0.084 ms | 0.601 ms |
+
+**What is flat, and it is the one #414 asked for.** The protocol boundary does
+not walk an `array-buffer` body -- it validates a schema id, a content type and
+a `byteLength` -- so `decodeWorkerToMainMessage` costs the same at both sizes
+and the `isJsonValue` term #414 measured at 41 ms is off the render path
+entirely. That was ADR 0040's win and layout 2 does not spend it: a longer
+buffer is still a buffer nothing walks.
+
+**What is not flat, stated plainly because the issue asks for it.** The
+receiver's *own* read of the buffer and the `RenderActor` list it builds are
+both O(population): 0.67 ms per publication at 5,000 actors, ten times a
+second, is 6.7 ms of a second's main-thread budget. ADR 0040 declined to fix
+that in slice 1 and named the fix -- changed-only records between keyframes --
+and **this decision makes that fix worth less than it looked**: a walking actor
+changes its position every tick, so the changed set at any moment is every
+actor in transit rather than the handful of arrivals ADR 0040 priced it
+against. At the fractions above it would still save roughly two thirds of the
+send, which is worth having and is not this decision's to take.
+
+**The per-tick worker cost is a function of the actors in transit, not of the
+population**, which is the property `LocomotionStore` was shaped for: 1,667
+walkers cost 0.476 ms a tick at 20 Hz, or about 1% of a second.
+
 ## What would change my mind
 
 - **A day length decision.** If `DAY_LENGTH_TICKS` grows to something a player
   can watch, the speed chosen here is too fast by whatever factor the day grew
   by, and the table above should be re-run rather than scaled.
-- **A measured cost at population.** The per-tick walk is O(actors in transit)
-  and the fixtures here run six. At 5,000 prisoners with a third of them
-  walking, 1,700 `Map` entries stepped per tick at 20 Hz is 34,000 iterations a
-  second, which I expect to be free and have not measured on a full prison.
+- **A real `postMessage` measurement.** The table above is in-process. If the
+  transfer of a 100 KB buffer ten times a second turned out to cost more in a
+  browser than the reads either side of it, the keyframe cadence is the thing to
+  revisit before the record width is.
 - **A room contention model.** If open question 2 is answered with a
   reservation, the one-line reconsideration in `arrive` should be deleted rather
   than kept beside it: two mechanisms for the same race is how the next defect
