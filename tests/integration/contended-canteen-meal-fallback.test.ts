@@ -10,6 +10,28 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * Consequences, claim 3: **"Under contention the losers eat a worse meal
  * instead of nothing."**
  *
+ * > **Amended for [ADR 0059](../../docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md),
+ * > and the sentence below that says *"half the population is refused a seat
+ * > in every meal block, by the ascending entity-index scan"* is no longer
+ * > true of this prison.** It was exactly true while an arrival was an
+ * > abstracted teleport: the six chose and arrived in the same tick, so the
+ * > three seats were handed out by the scan and the other three were refused
+ * > at once. Since prisoners walk, no two of them reach the canteen on the
+ * > same tick from six cells at six different distances, `findAvailableForUse`
+ * > has a seat to offer whenever one of them chooses, and **`action.eat-in-cell`
+ * > is now absent from every row of both arms**.
+ * >
+ * > The ceiling has not stopped biting -- one table still caps the canteen at
+ * > three at once and buys the prison 1,788 canteen ticks against the two-table
+ * > control's 3,640, with a worst-off prisoner at 17.5 of `NEED_MAX` against
+ * > 174.5 -- so this file now measures contention in food rather than in the
+ * > fallback. Claim 3 itself is guarded by
+ * > `tests/unit/prisoners-action-system.test.ts`'s *"falls back when the
+ * > canteen exists but is full"*, which stands the prisoner on the room's own
+ * > anchor tile so that the refusal is structural rather than a race. Every
+ * > figure in the table below was taken before that change and is kept as the
+ * > record of what the abstracted arrival produced.
+ *
  * ## Why this file exists
  *
  * That was the last of ADR 0041's Consequences with nothing behind it.
@@ -192,7 +214,7 @@ function watched(diningTables: 1 | 2): WatchedRun {
 }
 
 describe('six prisoners and a canteen that seats three', () => {
-  it('feeds every one of them, the refused half on the worse meal in their own cell', () => {
+  it('feeds every one of them, and the three the ceiling squeezes eat measurably less', () => {
     const run = watched(1);
 
     expect(run.runtime.refusals.count, 'an overlapping footprint would be a refusal, not a wrong number').toBe(0);
@@ -253,24 +275,44 @@ describe('six prisoners and a canteen that seats three', () => {
      * file is about have been contended eight days running.
      */
     expect(run.perPrisoner).toEqual([
-      { 'action.sleep': 3_000, 'action.eat-meal': 360, 'action.eat-in-cell': 200, 'action.use-toilet': 820, 'action.free-association': 4_360 },
-      { 'action.sleep': 3_000, 'action.eat-meal': 360, 'action.eat-in-cell': 200, 'action.use-toilet': 820, 'action.free-association': 4_360 },
-      { 'action.sleep': 3_000, 'action.eat-meal': 360, 'action.eat-in-cell': 200, 'action.use-toilet': 820, 'action.free-association': 4_360 },
-      { 'action.sleep': 3_000, 'action.eat-meal': 400, 'action.eat-in-cell': 200, 'action.use-toilet': 800, 'action.free-association': 4_320 },
-      { 'action.sleep': 3_000, 'action.eat-meal': 400, 'action.eat-in-cell': 200, 'action.use-toilet': 800, 'action.free-association': 4_320 },
-      { 'action.sleep': 3_000, 'action.eat-meal': 400, 'action.eat-in-cell': 200, 'action.use-toilet': 800, 'action.free-association': 4_320 },
+      { 'action.sleep': 2_400, 'action.eat-meal': 344, 'action.use-toilet': 600, 'action.free-association': 3_304 },
+      { 'action.sleep': 3_000, 'action.eat-meal': 144, 'action.use-toilet': 520, 'action.free-association': 3_980 },
+      { 'action.sleep': 3_000, 'action.eat-meal': 336, 'action.use-toilet': 460, 'action.free-association': 3_680 },
+      { 'action.sleep': 3_000, 'action.eat-meal': 132, 'action.use-toilet': 640, 'action.free-association': 3_800 },
+      { 'action.sleep': 3_000, 'action.eat-meal': 468, 'action.use-toilet': 460, 'action.free-association': 3_720 },
+      { 'action.sleep': 3_000, 'action.eat-meal': 364, 'action.use-toilet': 460, 'action.free-association': 3_840 },
     ]);
 
-    // Stated as properties as well as counts, so the intent survives a
-    // re-baseline. "A worse meal instead of nothing" is two claims, and this is
-    // both of them: the cell meal was performed by everybody, and it is the
-    // lower-scoring of the two on the same need.
+    /*
+     * **The cell meal is gone from every row, and this is the assertion that
+     * used to require it.** It read, per prisoner, `expect(counts['action.
+     * eat-in-cell'] ?? 0).toBeGreaterThan(0)` under the heading *"the cell
+     * meal was performed by everybody"*. That was true of an abstracted
+     * arrival and is false since ADR 0059, in both arms of this file.
+     *
+     * What is measured: with a walk between choosing and arriving, no hungry
+     * prisoner in this prison ever *chooses* at an instant when all three
+     * seats are held, so `findAvailableForUse` always answers, `action.
+     * eat-meal` always resolves, and ADR 0041's candidate walk never reaches
+     * the lower-scoring cell meal. What is **not** established here is why the
+     * instants no longer coincide -- staggered arrival is the obvious
+     * candidate and this file does not separate it from the block simply
+     * running out. The ceiling still bites: `maxUseClaims` is 3 above against
+     * 6 in the two-table control, and the cost of that shows up in the meal
+     * counts and the hunger floors rather than in a fallback.
+     *
+     * ADR 0041 Consequences claim 3 is therefore no longer guarded *here*. It
+     * is guarded, in the same-cycle form the ADR states it in, by
+     * `tests/unit/prisoners-action-system.test.ts`'s *"falls back when the
+     * canteen exists but is full, and takes no seat it was refused"*, which
+     * puts the prisoner on the room's own anchor tile so that selection and
+     * arrival are one tick and the refusal is structural rather than a race.
+     */
     const cellMeal = DEFAULT_ACTIONS.find((action) => action.id === 'action.eat-in-cell')!;
     const canteenMeal = DEFAULT_ACTIONS.find((action) => action.id === 'action.eat-meal')!;
     expect(cellMeal.target.kind, 'the fallback must be the own-accommodation meal for this to mean anything').toBe('own-accommodation');
     expect(canteenMeal.needEffectsPerTick.hunger!).toBeGreaterThan(cellMeal.needEffectsPerTick.hunger!);
     for (const [n, counts] of run.perPrisoner.entries()) {
-      expect(counts['action.eat-in-cell'] ?? 0, `prisoner ${n} never ate in their cell`).toBeGreaterThan(0);
       expect(counts['action.eat-meal'] ?? 0, `prisoner ${n} never reached the canteen`).toBeGreaterThan(0);
     }
 
@@ -289,14 +331,15 @@ describe('six prisoners and a canteen that seats three', () => {
      * the line under it, and every one of the six is still above two thirds of
      * `NEED_MAX` at their worst.
      */
-    expect(run.lowestHunger).toEqual([175.5, 175.5, 175.5, 177.5, 177.5, 177.5]);
+    expect(run.lowestHunger).toEqual([60.5, 17.5, 137.5, 17.5, 168.5, 137.5]);
     for (const [n, hunger] of run.lowestHunger.entries()) {
       expect(hunger, `prisoner ${n} was starved to the floor`).toBeGreaterThan(0);
     }
   });
 
-  it('is the contention and not the prison: a second dining table removes the cell meal entirely', () => {
+  it('is the contention and not the prison: a second dining table doubles the food and lifts every hunger floor', () => {
     const control = watched(2);
+    const squeezed = watched(1);
 
     // One more `PlaceObject`, the same rectangles, the same bill. The ceiling
     // is now six for six prisoners, so nobody is ever refused a seat.
@@ -304,20 +347,46 @@ describe('six prisoners and a canteen that seats three', () => {
     expect(control.diningCeiling, 'two 3-wide tables').toBe(6);
     expect(control.maxUseClaims, 'all six in the canteen at once, which the one-table run never reached').toBe(PRISONERS);
 
-    // 560 and 820, not 600 and 1,000, for the timing reason recorded on the
-    // one-table run above and then for the riot recorded beside it -- this
-    // prison riots too, at tick 13,500, for the same neglect and with the same
-    // consequence for `hygiene`. `action.free-association` appears here for the
-    // same reason it appears there. What this assertion is *for* is unchanged
-    // and is the line below it: with six seats for six prisoners,
-    // `action.eat-in-cell` is absent from every row.
-    expect(control.perPrisoner).toEqual(
-      Array.from({ length: PRISONERS }, () => ({ 'action.sleep': 3_000, 'action.eat-meal': 560, 'action.use-toilet': 820, 'action.free-association': 4_360 })),
-    );
+    /*
+     * **What this test asserted, and what it asserts now.** Its title was *"a
+     * second dining table removes the cell meal entirely"* and its closing
+     * loop required `action.eat-in-cell` to be **absent** from every row here
+     * and **present** in every row of the one-table run. Since ADR 0059 it is
+     * absent from both, for the reason recorded on that run: with a walk
+     * between choosing and arriving, nobody in this prison chooses a meal at
+     * an instant when all three seats are held, so the fallback is never
+     * reached. A pair of assertions that both read "absent" would say nothing
+     * about the ceiling at all.
+     *
+     * So the contrast is taken where the ceiling still shows: **food**. Both
+     * arms are run here rather than one, because a difference is not a fact
+     * about either run on its own.
+     */
+    expect(control.perPrisoner).toEqual([
+      { 'action.sleep': 2_000, 'action.eat-meal': 728, 'action.use-toilet': 580, 'action.free-association': 2_820 },
+      { 'action.sleep': 2_600, 'action.eat-meal': 540, 'action.use-toilet': 480, 'action.free-association': 3_508 },
+      { 'action.sleep': 2_200, 'action.eat-meal': 784, 'action.use-toilet': 500, 'action.free-association': 3_084 },
+      { 'action.sleep': 2_600, 'action.eat-meal': 540, 'action.use-toilet': 480, 'action.free-association': 3_508 },
+      { 'action.sleep': 3_000, 'action.eat-meal': 524, 'action.use-toilet': 380, 'action.free-association': 3_780 },
+      { 'action.sleep': 3_000, 'action.eat-meal': 524, 'action.use-toilet': 380, 'action.free-association': 3_780 },
+    ]);
     for (const [n, counts] of control.perPrisoner.entries()) {
       expect(counts['action.eat-in-cell'], `prisoner ${n} fell back to a cell meal with a seat free`).toBeUndefined();
     }
 
+    // The measured difference one ceiling makes, stated as the comparison
+    // rather than as two numbers a reader has to subtract: 3,640 canteen ticks
+    // against 1,788, and a worst-off prisoner at 174.5 of `NEED_MAX` against
+    // **17.5**. One three-seat table is not enough to feed six prisoners who
+    // have to walk to it, and that is a sharper statement of this file's
+    // subject than the cell-meal contrast it replaces.
+    const canteenTicks = (run: WatchedRun): number => run.perPrisoner.reduce((total, counts) => total + (counts['action.eat-meal'] ?? 0), 0);
+    expect(canteenTicks(control)).toBe(3_640);
+    expect(canteenTicks(squeezed)).toBe(1_788);
+    expect(canteenTicks(control)).toBeGreaterThan(canteenTicks(squeezed));
+    expect(Math.min(...control.lowestHunger)).toBe(174.5);
+    expect(Math.min(...squeezed.lowestHunger)).toBe(17.5);
+    expect(Math.min(...control.lowestHunger)).toBeGreaterThan(Math.min(...squeezed.lowestHunger));
   });
 
   it('spends the same money in both prisons, so the difference between them is one ceiling and not one budget', () => {

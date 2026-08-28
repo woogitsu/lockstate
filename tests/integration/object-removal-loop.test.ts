@@ -446,6 +446,18 @@ describe('a removal that drops capacity below the claims held on a room (ADR 002
      * (recreation 3 plus safety against recreation 2) and no common room is
      * zoned anyway, so the yard is where both of them go.
      *
+     * **1,165 rather than 1,120 since ADR 0059, and the 45 ticks are the walk
+     * to the yard.** The prisoners are admitted at the arrival tile and the
+     * yard is across the chunk; until locomotion existed they were written
+     * onto its anchor in the tick their route resolved, and both held a seat
+     * by 1,120. They now cover the tiles between at
+     * `DEFAULT_WALK_SUBTILE_UNITS_PER_TICK`, and 1,165 is the first tick at
+     * which both are inside -- found by stepping and asserted three lines
+     * below, exactly as the paragraph this one replaced described its own
+     * number. Everything that paragraph said about *which* action they pick is
+     * unchanged, and is kept here because it is still the reason they are in
+     * the yard at all:
+     *
      * **1,120 rather than 1,040, and the 80 ticks are ADR 0054 rather than
      * slack.** That change added `'free-association'` to this block, because
      * until it did the block resolved nothing at all in a prison with no yard
@@ -457,7 +469,7 @@ describe('a removal that drops capacity below the claims held on a room (ADR 002
      * `action.yard-recreation` scores above 0 for any safety deficit at all.
      * What moved is when the walk next runs, not what it picks.
      */
-    stepTo(runtime, 1_120);
+    stepTo(runtime, 1_165);
 
     const first = runtime.prisoners.entityStore.getIdByIndex(0);
     const second = runtime.prisoners.entityStore.getIdByIndex(1);
@@ -555,12 +567,16 @@ describe('a removal that drops capacity below the claims held on a room (ADR 002
   it('brings the removed object s own ceiling back when it is placed again', () => {
     const { runtime } = prisonWithYardInUse();
     submit(runtime, 'remove-yard-bed', packCommand({ type: 'RemoveObject', ...YARD_BED_TILE }));
-    stepTo(runtime, 1_180);
+    // Sixty ticks after the fixture leaves off, and then the same 220-tick
+    // delivery-and-build window the re-placed bed always had. Both offsets
+    // moved with the fixture's own tick when ADR 0059 made the walk to the
+    // yard take time (1,120 -> 1,165); they were 1,180 and 1,400.
+    stepTo(runtime, 1_225);
     expect(runtime.prisoners.roomInstances.findAvailableForUse(YARD, 'sleep-surface')).toBeUndefined();
 
     submit(runtime, 'buy-again', packCommand({ type: 'PurchaseMaterials', orderId: 'buy-2', itemId: 'item.wood-plank', quantity: 1 }));
     submit(runtime, 'bed-yard-2', packCommand({ type: 'PlaceObject', orderId: 'bed-4', definitionId: 'bed-wooden', ...YARD_BED_TILE }));
-    stepTo(runtime, 1_400);
+    stepTo(runtime, 1_445);
 
     // The capacity comes back from the object and nothing else -- there is no
     // remembered figure to restore, which is what makes the resolver's

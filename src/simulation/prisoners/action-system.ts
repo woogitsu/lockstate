@@ -1,7 +1,9 @@
 import type { SimulationContext, SystemRegistration } from '../kernel/system';
 import type { EntityStore } from '../entity/entity-store';
 import { EntityQuery } from '../entity/query';
+import type { LocomotionStore } from '../locomotion';
 import type { NavigationSystem } from '../navigation/navigation-system';
+import { routeWaypoints } from '../navigation/route';
 import type { RouteContext } from '../navigation/route-context';
 import { tileCoordinate, type TilePosition } from '../world/coordinates';
 import { DEFAULT_ACTIONS, type ActionDefinition } from './actions';
@@ -103,6 +105,16 @@ export class ActionSystem implements SystemRegistration {
     private readonly coldState: PrisonerColdState,
     private readonly roomInstances: RoomInstanceRegistry,
     private readonly navigation: NavigationSystem,
+    /**
+     * Where a prisoner is between the tiles of a resolved route
+     * ([ADR 0059](../../../docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md)),
+     * keyed by component index.
+     *
+     * This system starts and collects walks; `LocomotionSystem` advances them
+     * every tick, which is what makes an arrival happen a route-length later
+     * rather than in the statement that resolved the route.
+     */
+    private readonly locomotion: LocomotionStore,
     private readonly regimeSchedules: readonly RegimeSchedule[],
     private readonly routeContextResolver: PrisonerRouteContextResolver = DEFAULT_PRISONER_ROUTE_CONTEXT_RESOLVER,
     /**
@@ -316,6 +328,37 @@ export class ActionSystem implements SystemRegistration {
    * covers the one that is not.
    */
   private continueTravelling(entityId: number, index: number, tick: number): void {
+    /*
+     * **The room went away while they were walking to it.**
+     *
+     * Checked *before* the walk is allowed to continue, and that ordering is
+     * the whole of it: until ADR 0059 the route resolved and the arrival was
+     * applied in the same cycle, so this instance lookup -- which is still in
+     * `arrive` below, unchanged -- caught an un-zoned canteen within twenty
+     * ticks of the player's drag. With a walk in between, a check only on
+     * arrival would march the prisoner the whole way to a room that stopped
+     * existing, and `tests/integration/unzoned-target-mid-journey.test.ts`
+     * measures exactly that: a player may un-zone a canteen a prisoner is
+     * walking to, because ADR 0029 decision 2 gives a traveller no claim and
+     * `unzone` therefore does not refuse.
+     *
+     * So the journey is abandoned at the next reconsideration, as it always
+     * was, and the prisoner stops on the tile they had reached.
+     */
+    const targetInstanceId = this.coldState.getActionTarget(entityId);
+    if (targetInstanceId !== undefined && this.roomInstances.getById(targetInstanceId) === undefined) {
+      this.locomotion.cancelWalk(index);
+      this.currentAction.phase[index] = phaseIndex('idle');
+      this.coldState.setActionTarget(entityId, undefined);
+      this.unmetDemandCycles += 1;
+      return;
+    }
+
+    // Still between two tiles. `LocomotionSystem` moves them every tick; this
+    // system reconsiders every twenty, so most visits to a travelling prisoner
+    // now stop here and that is the change ADR 0059 makes.
+    if (this.locomotion.isWalking(index)) return;
+
     const requestId = this.coldState.getPathRequestId(entityId);
     if (requestId === undefined) {
       this.currentAction.phase[index] = phaseIndex('idle');
@@ -337,6 +380,60 @@ export class ActionSystem implements SystemRegistration {
       return;
     }
 
+    /*
+     * The route is walked rather than applied.
+     *
+     * This statement used to be the arrival: the prisoner was written onto the
+     * destination anchor in the same cycle the router answered, which is what
+     * `components.ts` called an *abstracted arrival* and what made every actor
+     * on screen teleport (#414). The waypoints the router had already computed
+     * were discarded on the line above it.
+     *
+     * Nothing about *what* arriving means moved with it -- the room check and
+     * the seat claim are `arrive` below, unchanged, and still happen at the
+     * destination rather than at departure, so ADR 0029 decision 2's "a
+     * traveller holds no claim" is untouched. What moved is *when*: a walk of
+     * `n` tiles takes `n` tiles' worth of ticks, and the room can be un-zoned
+     * or fill up during any of them exactly as it could before.
+     *
+     * A route of one waypoint means the prisoner was already standing on the
+     * destination; `beginWalk` marks it arrived, and collecting it here rather
+     * than twenty ticks later keeps that case as immediate as it was.
+     */
+    if (this.locomotion.beginWalk(index, routeWaypoints(outcome.result.route))) this.arrive(entityId, index, tick);
+  }
+
+  /**
+   * A walk this system started has reached its last waypoint.
+   *
+   * Called by `LocomotionSystem` on the tick the walk ends rather than at the
+   * next reconsideration, and that is not a detail. `schedule.intervalTicks`
+   * is twenty, so collecting arrivals on the reconsideration cadence would
+   * have every prisoner stand at the door of the room they had just walked to
+   * for up to a second of wall-clock -- an idle pause this decision would have
+   * *introduced*, since the old abstracted arrival happened inside the cycle
+   * that resolved the route.
+   *
+   * Guarded on both liveness and phase, because a walk outlives neither: a
+   * released prisoner's walk is forgotten by `releasePrisoner` and a restored
+   * one by `loadSnapshot`, and this guard is what keeps a third path from
+   * having to remember.
+   */
+  public onWalkArrived(index: number, tick: number): void {
+    if (!this.store.isIndexAlive(index)) return;
+    if (this.currentAction.phase[index] !== phaseIndex('travelling')) return;
+    this.arrive(this.store.getIdByIndex(index), index, tick);
+  }
+
+  /**
+   * What reaching the destination means: the room must still be there, and
+   * there must still be a seat.
+   *
+   * Split out of `continueTravelling` when the walk was put between the two
+   * (ADR 0059) -- the route resolving and the prisoner arriving are two
+   * moments now, and they were one statement before.
+   */
+  private arrive(entityId: number, index: number, tick: number): void {
     const targetInstanceId = this.coldState.getActionTarget(entityId);
     const instance = targetInstanceId === undefined ? undefined : this.roomInstances.getById(targetInstanceId);
     if (instance === undefined) {
@@ -353,17 +450,62 @@ export class ActionSystem implements SystemRegistration {
     // have filled up -- `findAvailableForUse` answers a question and holds
     // nothing -- and this is the point that makes the ceiling true rather than
     // advisory.
+    //
+    // "The tile they were standing on" is now the destination rather than the
+    // origin, because they walked there. That is the honest outcome of a
+    // refusal at the door and not a regression: the alternative would be to
+    // put them back where they set off from, which is the teleport this
+    // decision removed.
     const action = DEFAULT_ACTIONS[this.currentAction.actionIndex[index]!];
     if (action === undefined || !this.claimUseIfNeeded(entityId, action, instance.instanceId)) {
       this.currentAction.phase[index] = phaseIndex('idle');
       this.coldState.setActionTarget(entityId, undefined);
       this.unmetDemandCycles += 1;
+      /*
+       * **Turned away at the door, and reconsidering here rather than in up to
+       * twenty ticks' time.** This is the one thing ADR 0059 had to add to
+       * ADR 0041's fallback, and it is a defect the walk would otherwise have
+       * introduced rather than an improvement on top of it.
+       *
+       * ADR 0029 decision 2 claims a seat on arrival, and argues that the cost
+       * -- a wasted trip -- is worth a design that cannot leak a reservation.
+       * That argument was priced against an *abstracted* arrival, where
+       * selecting and arriving were the same tick, so a seat free at selection
+       * was still free on arrival unless another prisoner reconsidered in the
+       * same tick. With a walk between them the window is the whole journey,
+       * and the prisoner who loses the race goes back to idle, re-scores the
+       * same hunger, picks the same canteen -- `findAvailableForUse` answers
+       * about *now*, and by then a seat has usually come free again -- and
+       * walks the whole way a second time.
+       *
+       * Measured, in this repository's own contended fixture (six prisoners,
+       * one three-seat dining table, 12,000 ticks): without this line, at
+       * 5 tiles/s two of the six ended the run at hunger **0** and **24** of
+       * `NEED_MAX`, having spent the window walking back and forth. That is
+       * the starvation `tests/integration/contended-canteen-meal-fallback.ts`
+       * exists to prove is over.
+       *
+       * Reconsidering *here* cannot loop, and that is why it is safe rather
+       * than merely helpful: the seat was refused because the room is at its
+       * ceiling **now**, so `findAvailableForUse` refuses the same instance in
+       * the very next statement and ADR 0041's candidate walk falls through to
+       * the next-best action -- the cell meal the prisoner would have got had
+       * the canteen been full when they set out.
+       *
+       * ADR 0029's own revisit condition names the bigger answer -- *"if
+       * wasted trips ever become expensive -- a locomotion model where walking
+       * costs time ... the answer is a reservation with an explicit expiry"* --
+       * and ADR 0059 open question 2 is where that is left, because a
+       * reservation changes what a room's occupancy *means* and this does not.
+       */
+      this.beginNextAction(entityId, index, tick);
       return;
     }
 
-    // Abstracted arrival: teleport onto the destination anchor tile. Real
-    // tile-by-tile locomotion/rendering is out of scope here -- see #21's
-    // docs/NAVIGATION.md and the ADR/doc note for this issue.
+    // The walk has already stepped the prisoner onto this tile one tile at a
+    // time; writing it again is exact rather than corrective, and it is what
+    // keeps the degenerate one-waypoint route (already standing there) writing
+    // the same position the long way round would have.
     this.position.tileX[index] = instance.anchorTile.x;
     this.position.tileY[index] = instance.anchorTile.y;
     this.currentAction.phase[index] = phaseIndex('performing');

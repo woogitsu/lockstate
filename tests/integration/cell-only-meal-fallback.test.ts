@@ -180,11 +180,23 @@ describe('a prison of cells with no canteen', () => {
      * one command order, no RNG on this path -- and they are a measurement of
      * the loop that is supposed to move if the loop changes.
      */
+    /*
+     * **Two of the four moved on
+     * [ADR 0059](../../docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md):
+     * `action.sleep` 2,000 -> 2,012 and `action.free-association` 3,420 ->
+     * 3,360.** The prisoner now walks the tiles between the delivery tile and
+     * their cell instead of being written onto its anchor, so 60 ticks of
+     * this window are spent in transit, and they come out of the association
+     * that filled the blocks this prison cannot furnish. **The two counts this
+     * file is actually about did not move**: `action.eat-in-cell` is still 560
+     * and `action.use-toilet` still 580, which is what says the fallback is
+     * unaffected by the walk in front of it.
+     */
     expect(watched.performingTicks).toEqual({
-      'action.sleep': 2_000,
+      'action.sleep': 2_012,
       'action.eat-in-cell': 560,
       'action.use-toilet': 580,
-      'action.free-association': 3_420,
+      'action.free-association': 3_360,
     });
 
     /*
@@ -233,7 +245,10 @@ describe('a prison of cells with no canteen', () => {
      * proof a cell meal happened.
      */
     expect(watched.hungerEverRose, 'a hunger level that rises is a meal that happened').toBe(true);
-    expect(watched.finalHunger).toBe(230.5);
+    // 231.5, not the 230.5 this recorded before ADR 0059: the prisoner walks
+    // to their cell instead of appearing in it, which shifts by a few ticks
+    // when the last meal of the window is eaten.
+    expect(watched.finalHunger).toBe(231.5);
     /*
      * 178.5, and it was 179.5 before ADR 0054. One whole level, which is
      * exactly 20 ticks of `NEED_DECAY_PER_TICK.hunger` (0.05) -- one

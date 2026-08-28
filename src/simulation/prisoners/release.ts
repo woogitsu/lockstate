@@ -76,6 +76,17 @@ export interface PrisonerReleaseSurfaces {
   readonly identity?: PrisonerNameReleasePort;
   readonly gangs?: PrisonerGangReleasePort;
   readonly jobWorkers?: PrisonerWorkerReleasePort;
+  /**
+   * The walk store, keyed by component *index* rather than by entity id
+   * ([ADR 0059](../../../docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md)).
+   *
+   * Optional for the same reason the four ports above are: a caller that has
+   * no locomotion has nothing to forget. Where one exists it must be told,
+   * because the index it keys by returns to the free list two statements
+   * later, and a walk left behind would step the next prisoner allocated into
+   * that slot along a route the prisoner before them was walking.
+   */
+  readonly locomotion?: { forget(key: number): void };
 }
 
 /**
@@ -144,6 +155,9 @@ export function releasePrisoner(surfaces: PrisonerReleaseSurfaces, entityId: Ent
     surfaces.navigation.cancelRequest(pathRequestId);
     surfaces.navigation.clearResult(pathRequestId);
   }
+
+  // Before `destroy` recycles the index this store is keyed by.
+  surfaces.locomotion?.forget(index);
 
   roomInstances.releaseEntity(entityId);
   coldState.release(entityId);

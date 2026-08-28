@@ -3,6 +3,7 @@ import { ComponentBitset } from '../entity/component';
 import { EntityQuery } from '../entity/query';
 import type { ActorIdentityLifecycle } from '../identity/actor-identity';
 import type { Kernel } from '../kernel/kernel';
+import { LocomotionStore, LocomotionSystem } from '../locomotion';
 import type { NavigationSystem } from '../navigation/navigation-system';
 import { ActionSystem, type PrisonerRouteContextResolver } from './action-system';
 import type { ClassificationInput } from './classification';
@@ -124,6 +125,18 @@ export class PrisonerOperationsRuntime {
   public readonly needs: NeedsComponent;
   public readonly currentAction: CurrentActionComponent;
   public readonly position: PositionComponent;
+  /**
+   * Where a walking prisoner is *within* the tile `position` holds for it
+   * ([ADR 0059](../../../docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md)).
+   *
+   * Keyed by component index, which is what `PositionComponent` is addressed
+   * by and what `LocomotionSystem` writes back through. Public because the
+   * render publication reads it beside `position`
+   * (`src/simulation/worker/render-actors-keyframe.ts`); nothing outside this
+   * runtime writes it.
+   */
+  public readonly locomotion = new LocomotionStore();
+  private readonly locomotionSystem: LocomotionSystem;
   public readonly coldState = new PrisonerColdState();
 
   /**
@@ -196,9 +209,20 @@ export class PrisonerOperationsRuntime {
       this.coldState,
       this.roomInstances,
       options.navigation,
+      this.locomotion,
       options.regimeSchedules ?? DEFAULT_REGIME_SCHEDULES,
       options.routeContextResolver,
       options.regimeOverride,
+    );
+    this.locomotionSystem = new LocomotionSystem('prisoners.locomotion', (ticks, tick) =>
+      this.locomotion.advance(
+        ticks,
+        (index, tile) => {
+          this.position.tileX[index] = tile.x;
+          this.position.tileY[index] = tile.y;
+        },
+        (index) => this.actionSystem.onWalkArrived(index, tick),
+      ),
     );
 
     this.releaseSurfaces = {
@@ -214,6 +238,7 @@ export class PrisonerOperationsRuntime {
       ...(options.identity !== undefined ? { identity: options.identity } : {}),
       ...(options.gangs !== undefined ? { gangs: options.gangs } : {}),
       ...(options.jobWorkers !== undefined ? { jobWorkers: options.jobWorkers } : {}),
+      locomotion: this.locomotion,
     };
     this.dischargeSystem = new PrisonerDischargeSystem(this.entityStore, this.query, this.records, this.releaseSurfaces);
   }
@@ -224,6 +249,7 @@ export class PrisonerOperationsRuntime {
     kernel.registerSystem(this.needsDecaySystem);
     kernel.registerSystem(this.dischargeSystem);
     kernel.registerSystem(this.actionSystem);
+    kernel.registerSystem(this.locomotionSystem);
   }
 
   /**
@@ -280,6 +306,14 @@ export class PrisonerOperationsRuntime {
       if (this.entityStore.isIndexAlive(index)) this.bitset.add(index, PRISONER_COMPONENT_ID);
       else this.bitset.remove(index, PRISONER_COMPONENT_ID);
     }
+
+    // A walk is the second half of the transient travel state the block below
+    // drops, and it is dropped for the same reason: it names waypoints from a
+    // route a rebuilt `NavigationSystem` no longer holds, and a restored
+    // prisoner is re-planned from the tile the snapshot carried rather than
+    // resumed mid-leg. Clearing the headings with it is what stops a recycled
+    // component index from inheriting the way its previous occupant faced.
+    this.locomotion.clear();
 
     // Any entity mid-`'travelling'` referenced a path request in the
     // *previous* NavigationSystem instance's queue -- a fresh one (per this
