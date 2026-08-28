@@ -1,3 +1,4 @@
+import { BUILDABLE_REGISTRY, occupiesTileEdge } from '../../simulation/construction/definition';
 import type { ConstructionSnapshot } from '../../simulation/construction/system';
 
 /**
@@ -37,6 +38,32 @@ function phaseOf(state: string): StructurePhase | undefined {
     default:
       return undefined;
   }
+}
+
+/**
+ * Whether a finished order is already drawn from the world's own edge layers.
+ *
+ * A completed wall or door writes its value into `topEdge` / `leftEdge`
+ * (`edgeNumericIdFor`), and the renderer draws every non-zero edge. The order
+ * that produced it stays in the construction snapshot as `completed`, so the
+ * same wall reaches the painter twice -- once as an edge bar 0.22 tiles deep at
+ * the tile's northern boundary, and once as a **full-tile** block, because
+ * `structureAppearance` has no footprint for `wall-brick` and falls back to
+ * 1x1. The block is painted second and wins, so a finished wall has been drawn
+ * as a whole brown tile rather than as a wall.
+ *
+ * This is the predicate that lets the painter drop the duplicate, and it is a
+ * predicate rather than a filter on the projection for two reasons: the
+ * projection is what `simulation-snapshot-feed.ts` publishes and other readers
+ * may want the whole order list, and the painter can check something this
+ * cannot -- whether the world's edge layer really does carry that tile. A save
+ * written before #74 has completed wall orders and no edge values, and dropping
+ * those unconditionally would make its walls disappear.
+ */
+export function isDrawnAsWorldEdge(structure: RenderStructure): boolean {
+  if (structure.phase !== 'built') return false;
+  const definition = BUILDABLE_REGISTRY.get(structure.definitionId);
+  return definition !== undefined && occupiesTileEdge(definition);
 }
 
 /**

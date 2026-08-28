@@ -9,6 +9,8 @@ import {
 } from '../../input';
 import { AtlasFrameIndex } from '../assets/atlas-frame-index';
 import { AtlasLibrary } from '../assets/atlas-library';
+import { planEnvironmentAtlas } from '../assets/environment-atlas-plan';
+import { SourceArtCatalog } from '../assets/source-art-catalog';
 import { type CameraState, screenToWorld, visibleWorldBounds, zoomAtScreenPoint } from '../camera';
 import {
   type BuildToolPort,
@@ -22,6 +24,7 @@ import {
 import type { RenderFeed } from '../feed/render-feed';
 import { ActorLayer } from '../phaser/actor-layer';
 import { registerAtlasTextures } from '../phaser/atlas-textures';
+import { loadEnvironmentAtlas } from '../phaser/environment-textures';
 import { BuildOverlay } from '../phaser/build-overlay';
 import { AreaOverlay } from '../phaser/area-overlay';
 import {
@@ -86,6 +89,17 @@ export interface WorldSceneOptions {
   readonly feed: RenderFeed;
   /** Injectable so a test or a preview can supply a batch without the network. */
   readonly loadAtlasLibrary?: () => Promise<AtlasLibrary>;
+  /**
+   * The generated source-art catalog the environment sprites are cut from.
+   *
+   * Injectable for the same reason `loadAtlasLibrary` is, and separate from it
+   * because the two batches are independent: the actors come from
+   * `/assets/actors` and are 8-direction animation clips, the environment comes
+   * from `/game-content/source-art` and is whole sheets an extraction manifest
+   * carves up. Either can fail without the other, and either failing leaves a
+   * playable world.
+   */
+  readonly loadSourceArtCatalog?: () => Promise<SourceArtCatalog>;
   readonly onError?: (error: Error) => void;
   /**
    * Where a build gesture goes. Absent, the world is view-only and every
@@ -189,6 +203,7 @@ export interface WorldSceneOptions {
 export class WorldScene extends Phaser.Scene {
   private feed: RenderFeed;
   private readonly loadAtlasLibrary: () => Promise<AtlasLibrary>;
+  private readonly loadSourceArtCatalog: () => Promise<SourceArtCatalog>;
   private readonly onError: (error: Error) => void;
 
   /**
@@ -267,6 +282,7 @@ export class WorldScene extends Phaser.Scene {
       () => (isTextEntryFocused() ? ['text-entry'] : ['world']),
     );
     this.loadAtlasLibrary = options.loadAtlasLibrary ?? (() => AtlasLibrary.load());
+    this.loadSourceArtCatalog = options.loadSourceArtCatalog ?? (() => SourceArtCatalog.load());
     this.onError =
       options.onError ??
       ((error) => {
@@ -474,6 +490,7 @@ export class WorldScene extends Phaser.Scene {
     // Art is not correctness: a batch that fails to load must leave a playable,
     // legible tile world rather than a blank screen.
     void this.loadActorAtlases();
+    void this.loadEnvironmentArt();
   }
 
   public override update(time: number, delta: number): void {
@@ -968,6 +985,28 @@ export class WorldScene extends Phaser.Scene {
       ((bounds.minTileX + bounds.maxTileX + 1) / 2) * TILE_SIZE_PX,
       ((bounds.minTileY + bounds.maxTileY + 1) / 2) * TILE_SIZE_PX,
     );
+  }
+
+  /**
+   * Fetches the environment sheets, cuts the reviewed sprites out of them and
+   * hands the result to the tile layer.
+   *
+   * Started from `create` and never awaited, so the first frames of a session
+   * are drawn as coloured blocks and repainted once when the sheets arrive.
+   * That ordering is the contract, not a compromise: `docs/RENDERING.md` says
+   * art failing to load leaves a playable, legible tile world, and a boot that
+   * waited on several megabytes of PNG would break it in the other direction.
+   */
+  private async loadEnvironmentArt(): Promise<void> {
+    try {
+      const catalog = await this.loadSourceArtCatalog();
+      const art = await loadEnvironmentAtlas(this, planEnvironmentAtlas(catalog));
+      // The scene may have shut down while the batch was in flight.
+      if (this.tiles === undefined) return;
+      this.tiles.setEnvironmentArt(art);
+    } catch (error) {
+      this.onError(error instanceof Error ? error : new Error(String(error)));
+    }
   }
 
   private async loadActorAtlases(): Promise<void> {

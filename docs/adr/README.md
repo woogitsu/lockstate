@@ -177,7 +177,16 @@ Nothing here changes a status; this table only reports them.
 | [0044](./0044-what-happens-to-a-service-tier-nothing-calls.md) | What happens to a service tier nothing calls | Accepted, 2026-08-27 — by delegation; #378, and it keeps all four trees on stated terms rather than deleting any of them. The owner did not read it, and its two product questions (does cloud save ship, does Lockstate collect telemetry) are recorded open |
 | [0048](./0048-what-a-sectors-occupants-are.md) | What a sector's occupants are, and what it takes for a prison to riot | Proposed, 2026-08-27 — takes ADR 0042 decision 2 and answers its open questions 1 and 2: the derived sector is the prison, so its occupants are every prisoner standing on owned land, `needsPressure` is the mean deficit over all six needs, and `requiredGuardCount` scales with occupancy. It corrects ADR 0042 in two places — a riot *was* reachable in one degenerate prison, and occupancy alone would have made the trigger harder to reach rather than easier |
 
-**Next free number: 0049.** The gaps this paragraph used to record are gone:
+| [0052](./0052-drawing-the-world-with-the-source-art-sheets.md) | Drawing the world with the source-art sheets | Proposed, 2026-08-28 — answers ADR 0014's open question "should `public/game-content/source-art/` be published at all" with **yes, and the renderer now reads it**: a reviewed extraction manifest, crops cut and resampled in the browser with `createImageBitmap`, one packed texture, and a mapping keyed by **zoning rather than terrain** because nothing paints terrain. Costs a measured 4.40 MiB against the 16.43 MiB of actor atlases the page already fetches; names the offline packer as the deferred better answer |
+
+**Next free number: 0053.** The previous line said **0049**, and 0049 through
+0051 were all assigned in the 2026-08-28 integration pass: 0049 to the payroll
+arrears ADR, 0050 to the sentence-end ADR, 0051 to the paused-clock ADR. This
+branch is cut from `b30ae9b` and carries none of the three on disk, so the row
+above is the only one it adds and 0053 is one past the highest number this pass
+assigned. **If the three land in a different order, or one of them does not
+land, this line and the 0052 row are what have to move** -- a number is reserved
+by appearing here and nowhere else. The gaps this paragraph used to record are gone:
 0042 and 0043 were held for parallel drafts that had not merged, and both were
 taken in the 2026-08-27 integration pass — 0042 by the consequence-loop ADR,
 0043 by the account-session ADR — with 0045 going to the third draft in the same
