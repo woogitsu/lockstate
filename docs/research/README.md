@@ -55,6 +55,7 @@ So the standing rules for anything added here:
 | [2026-08-25 economy rate](./2026-08-25-economy-rate.md) | What does the state pay per prisoner-day, on what cadence, from what balance? | [#29](https://github.com/matmaxalez/lockstate/issues/29), within ADR 0017 |
 | [2026-08-26 failure modes](./2026-08-26-failure-modes.md) | What should failing look like, and what is the cheapest honest route to it from what already exists? | None yet — it states two shapes and declines to pick. **§3's mutual-exclusion finding is corrected in place** (#396): an *unhoused* arrival's `safety` does decay to zero, so overcrowding is the reachable pressure and a riot fires at tick 15,600 |
 | [2026-08-26 repository audit](./2026-08-26-repository-audit.md) | Across every discipline at once, what is wrong with this repository at v0.0.108, and what should be done first? | None yet — it ranks work and names the decisions that need an ADR |
+| [2026-08-28 risk tier and income](./2026-08-28-risk-tier-and-income.md) | Does a prisoner's `riskTier` change what the state pays, or what the prison spends? | None — it refutes an audit finding and proposes no change. ADR 0017 decision 6 stands |
 
 ### Findings from the first four records that changed a decision
 
@@ -78,6 +79,15 @@ Re-read on **2026-08-26** when the repository-audit record was added. That recor
 decision and contributed no bullet, so the ten below still belong to the four records this
 heading now names explicitly — the count moved out of the heading rather than being left to
 drift, which is the failure the paragraph above describes.
+
+Re-read again on **2026-08-28** when the risk-tier-and-income record was added. It fed no
+decision and contributes no bullet either, so the ten below still belong to the same four
+records. One bullet was checked against it specifically and survives: *"'Running out of
+money' is not a failure mode either"* was written on 2026-08-26 and is still true on
+`317f487` — the two `Treasury.spend` callers are both one-off and player-initiated, and
+nothing debits on a schedule. That is expected to be overtaken by the recurring payroll
+debit in progress on `agent/0042-step3-recurring-debit`; whoever lands it should mark this
+bullet overtaken rather than deleting it, the way the two above it are marked.
 
 - **Authoring one occupancy number per room type is a no-op.** `findAvailable`
   gates on capacity *and* on a `'sleep-surface'` capability, so a capacity
