@@ -190,16 +190,42 @@ function meanNeedDeficit(runtime: SimulationRuntime): number {
   return population === 0 ? 0 : sum / population;
 }
 
+/**
+ * The one riot in the log, whatever id the shared incident sequence gave it.
+ *
+ * **Looked up by type rather than by `'incident.riot.1'`, and the reason is a
+ * change rather than a preference.** `IncidentTriggerSystem.nextIncidentId`
+ * mints from a *single* sequence shared by every incident type, so since
+ * [ADR 0061](../../docs/adr/0061-what-the-prison-produces-on-its-own.md) gave
+ * `'assault'` a producer, an assault opening earlier in the same run takes
+ * `.1` and this prison's riot is `incident.riot.2`. The riot itself is
+ * unchanged -- same tick, same severity, same participants, all asserted below
+ * -- so the id was the brittle part of the assertion and not the subject of it.
+ */
+function theRiot(runtime: SimulationRuntime) {
+  const riots = runtime.incidents.all().filter((incident) => incident.type === 'riot');
+  expect(riots, 'exactly one riot is what this prison produces').toHaveLength(1);
+  return riots[0]!;
+}
+
 describe('a neglected prison a player can build riots, and the riot reaches its participants', () => {
   it('opens one riot naming both prisoners, and the same prison with guards opens none', () => {
     const rioting = neglectedPrison(0);
     stepTo(rioting, RIOT_TICK);
-    expect(rioting.incidents.all()).toEqual([]);
+    /*
+     * **No riot yet**, which is what this asserted before ADR 0061 by asserting
+     * an empty log. It cannot any more, and the difference is the subject of
+     * that ADR rather than an accident here: this prison is unguarded and its
+     * prisoners are 0.42 of their needs short, so it also produces `'assault'`
+     * incidents in the cool stretches before the riot streak completes. The
+     * assertion is narrowed to its own claim -- the riot has not started -- and
+     * the riot's tick, severity and participants below are all unchanged from
+     * the numbers ADR 0057 measured.
+     */
+    expect(rioting.incidents.all().filter((incident) => incident.type === 'riot')).toEqual([]);
     rioting.kernel.step();
 
-    expect(rioting.incidents.all()).toHaveLength(1);
-    expect(rioting.incidents.all()[0]).toMatchObject({
-      id: 'incident.riot.1',
+    expect(theRiot(rioting)).toMatchObject({
       type: 'riot',
       sectorId: DEFAULT_SECTOR_ID,
       severity: 7,
@@ -256,7 +282,7 @@ describe('a neglected prison a player can build riots, and the riot reaches its 
     // And it is given back. The incident lapses -- nobody was hired to answer
     // it -- and the toilet is legal again on the next reconsideration.
     stepTo(rioting, RIOT_LAPSE_TICK + 1);
-    expect(rioting.incidents.get('incident.riot.1')).toMatchObject({
+    expect(theRiot(rioting)).toMatchObject({
       state: 'lapsed',
       timeline: [{ state: 'active', atTick: RIOT_TICK }, { state: 'lapsed', atTick: RIOT_LAPSE_TICK }],
       outcome: { injuredEntityIds: [0, 1], propertyDamage: 7, escaped: false },
@@ -383,7 +409,7 @@ describe('a riot survives a save, because nothing about it is stored', () => {
      */
     const live = neglectedPrison(0);
     stepTo(live, RIOT_TICK + 100);
-    expect(live.incidents.get('incident.riot.1')?.state).toBe('active');
+    expect(theRiot(live).state).toBe('active');
     expect(live.incidents.isOpenRiotParticipant(0)).toBe(true);
 
     // Stated as a pinned value, because "no schema bump" is the claim: nothing
@@ -414,7 +440,7 @@ describe('a riot survives a save, because nothing about it is stored', () => {
     // simply overrode everybody for ever would pass that one.
     const live = neglectedPrison(0);
     stepTo(live, RIOT_LAPSE_TICK + 1);
-    expect(live.incidents.get('incident.riot.1')?.state).toBe('lapsed');
+    expect(theRiot(live).state).toBe('lapsed');
 
     const restored = restoreSimulationRuntime(captureSessionSnapshot(live), SEED).runtime;
 

@@ -40,19 +40,26 @@ import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from 
  * code under test produced holds for any implementation of it. Asking
  * `createNewSimulationRuntime` which streams it registers would agree with
  * `Kernel.restoreState` however wrong both were. The four names and the words
- * they derive to are literals here, so **adding a fifth stream to
- * `new-session.ts` must fail this file** -- which is exactly the delivery
- * hazard #415 is about, made loud at the one place that can see it.
+ * they derive to are literals here, so **adding a stream to `new-session.ts`
+ * must fail this file** -- which is exactly the delivery hazard #415 is about,
+ * made loud at the one place that can see it.
+ *
+ * **It did exactly that, once, on purpose.** ADR 0061 added a fifth stream,
+ * `contraband.introduction`, and every case below failed until the list and
+ * both word tables were extended by hand. That is this file working, and the
+ * extension is the deliberate, reviewed edit the paragraph above asks for --
+ * an old save that omits the stream still restores, seeded from its own
+ * `masterSeed`, which is the property the fifth entry now also pins.
  */
 
 /**
- * The streams a v0.0.121 session registers, in the order
- * `NamedRngStreams.snapshot()` emits them (sorted by name).
+ * The streams a session registers, in the order `NamedRngStreams.snapshot()`
+ * emits them (sorted by name).
  *
  * Written out, never read from `new-session.ts`. If this list is wrong the
  * cases below fail; if it goes stale the cases below fail. That is the point.
  */
-const REGISTERED_STREAMS = ['contraband.detection', 'contraband.intelligence', 'identity.actor-name', 'prisoners.classification'] as const;
+const REGISTERED_STREAMS = ['contraband.detection', 'contraband.intelligence', 'contraband.introduction', 'identity.actor-name', 'prisoners.classification'] as const;
 
 /**
  * `deriveXoshiroState(seed, name).words` for the two seeds these cases use,
@@ -67,6 +74,7 @@ const REGISTERED_STREAMS = ['contraband.detection', 'contraband.intelligence', '
 const DERIVED_WORDS_AT_SCENARIO_SEED: Readonly<Record<string, readonly number[]>> = {
   'contraband.detection': [621309470, 3931153762, 2125939972, 1520548512],
   'contraband.intelligence': [2519336100, 114212703, 3399945750, 2853866658],
+  'contraband.introduction': [3484590104, 358788944, 3779368715, 3836528074],
   'identity.actor-name': [1389004806, 3929526187, 801062818, 758337395],
   'prisoners.classification': [3766015752, 2847574757, 3141289015, 3676423178],
 };
@@ -74,6 +82,7 @@ const DERIVED_WORDS_AT_SCENARIO_SEED: Readonly<Record<string, readonly number[]>
 const DERIVED_WORDS_AT_SEED_ZERO: Readonly<Record<string, readonly number[]>> = {
   'contraband.detection': [3390858590, 1748548753, 4190260694, 3918636925],
   'contraband.intelligence': [2712648297, 2312656903, 3076870406, 3014949915],
+  'contraband.introduction': [4191607977, 1599308922, 1831874870, 2722278899],
   'identity.actor-name': [53358203, 2080006951, 2778740427, 1505507477],
   'prisoners.classification': [1731836178, 401524879, 2842153704, 1358188498],
 };

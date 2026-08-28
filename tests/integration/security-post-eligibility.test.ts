@@ -280,6 +280,24 @@ describe('a roster a save carries cannot cover a post with a role that has no du
   });
 });
 
+/**
+ * The one riot in the log, whatever id the shared incident sequence gave it.
+ *
+ * **By type rather than by `'incident.riot.1'`.**
+ * `IncidentTriggerSystem.nextIncidentId` mints from a single sequence shared by
+ * every incident type, so since
+ * [ADR 0061](../../docs/adr/0061-what-the-prison-produces-on-its-own.md) gave
+ * `'assault'` a producer, an assault opening earlier in the same run takes `.1`
+ * and this prison's riot is a later number. The riot is unchanged -- same tick,
+ * same severity, same staffing term -- so the id was the brittle part of the
+ * assertion rather than its subject.
+ */
+function theRiot(runtime: SimulationRuntime) {
+  const riots = runtime.incidents.all().filter((incident) => incident.type === 'riot');
+  expect(riots, 'exactly one riot is what this prison produces').toHaveLength(1);
+  return riots[0]!;
+}
+
 describe('a riot is answered by guards, and only by guards', () => {
   /** The measured tick the fixture's riot opens at, unchanged from `security-default-sector.test.ts`. */
   const RIOT_TICK = 4_000;
@@ -289,10 +307,15 @@ describe('a riot is answered by guards, and only by guards', () => {
     for (const roleId of [ADMINISTRATOR, NURSE, KITCHEN]) runtime.securityGuards.hire(roleId, POST_TILE);
 
     stepTo(runtime, RIOT_TICK - 1);
-    expect(runtime.incidents.all()).toEqual([]);
+    // No *riot* yet. This asserted an empty log until ADR 0061 gave `'assault'`
+    // a producer; an unguarded, overcrowded prison now also produces those in
+    // the stretches before the riot streak completes, so the precondition is
+    // narrowed to its own subject. The riot's tick, severity and staffing term
+    // below are unchanged.
+    expect(runtime.incidents.all().filter((incident) => incident.type === 'riot')).toEqual([]);
     stepTo(runtime, RIOT_TICK + 1);
 
-    const riots = runtime.incidents.all();
+    const riots = runtime.incidents.all().filter((incident) => incident.type === 'riot');
     expect(riots).toHaveLength(1);
     // The staffing term is 1, not 0: three bodies in the prison and no guard.
     // This is the whole of what the defect suppressed -- with the
@@ -300,13 +323,13 @@ describe('a riot is answered by guards, and only by guards', () => {
     // `needsPressure` alone (0.389) against a `hotThreshold` of 0.65, and this
     // prison never rioted at all.
     expect(riots[0]!.causeFactors.find((factor) => factor.kind === 'staffing-shortfall')?.value).toBe(1);
-    expect(riots[0]).toMatchObject({ id: 'incident.riot.1', type: 'riot', severity: 7, startedAtTick: RIOT_TICK });
+    expect(riots[0]).toMatchObject({ type: 'riot', severity: 7, startedAtTick: RIOT_TICK });
   });
 
   it('dispatches nobody from a pool of nurses, and lets the riot lapse', () => {
     const runtime = overcrowdedPrison();
     stepTo(runtime, RIOT_TICK + 1);
-    expect(runtime.incidents.get('incident.riot.1')?.state).toBe('active');
+    expect(theRiot(runtime).state).toBe('active');
 
     // Five, which is exactly what five guards would need to be to contain a
     // severity-7 riot in this sector -- one for the post and four responders.
@@ -321,9 +344,14 @@ describe('a riot is answered by guards, and only by guards', () => {
     expect(runtime.incidentResponseSystem.getMetrics()).toMatchObject({
       respondersDispatched: 0,
       incidentsResolved: 0,
-      incidentsLapsed: 1,
+      // `1` until ADR 0061. This counter is session-wide, and the same
+      // unguarded prison now also lapses one `'assault'` before the riot opens
+      // -- for the same reason nothing answers the riot, so the two numbers
+      // that carry this case's claim, `respondersDispatched` and
+      // `incidentsResolved`, are unchanged at zero.
+      incidentsLapsed: 2,
     });
-    expect(runtime.incidents.get('incident.riot.1')!.state).toBe('lapsed');
+    expect(theRiot(runtime).state).toBe('lapsed');
     expect(runtime.securitySectors.getControlState(DEFAULT_SECTOR_ID)).toBe('normal');
     expect(phases(runtime)).toEqual(['unassigned', 'unassigned', 'unassigned', 'unassigned', 'unassigned']);
   });
@@ -338,8 +366,12 @@ describe('a riot is answered by guards, and only by guards', () => {
 
     while (runtime.incidents.openIncidents().length > 0 && runtime.kernel.tick < RIOT_TICK + 700) runtime.kernel.step();
 
-    expect(runtime.incidents.get('incident.riot.1')).toMatchObject({ state: 'resolved', outcome: { injuredEntityIds: [] } });
-    expect(runtime.incidentResponseSystem.getMetrics()).toMatchObject({ respondersDispatched: 4, incidentsResolved: 1, incidentsLapsed: 0 });
+    expect(theRiot(runtime)).toMatchObject({ state: 'resolved', outcome: { injuredEntityIds: [] } });
+    // `incidentsLapsed` was `0` until ADR 0061: the five guards are hired
+    // *after* the riot opens, so the assault this prison produced before it had
+    // nobody to answer it either. The claim here is the riot -- four responders
+    // dispatched and one incident resolved -- and both are unchanged.
+    expect(runtime.incidentResponseSystem.getMetrics()).toMatchObject({ respondersDispatched: 4, incidentsResolved: 1, incidentsLapsed: 1 });
   });
 
   it('is deterministic: the same seed and the same roster produce the same run, twice', () => {
