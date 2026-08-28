@@ -112,7 +112,8 @@ supply exactly one -- the caller, which already knows sector membership
 from wherever it authored the sector/cells, supplies the list rather than
 this system inferring it). `submitOrder` enqueues; the order **stays
 queued** (observably, via `getMetrics().searchesQueued`/`isQueued`) until
-enough of `GuardRoster.unassignedGuardIds()` exist to meet the scope's
+enough post-eligible unassigned staff exist (`claimableGuardIds`,
+[ADR 0053](./adr/0053-who-may-stand-a-security-post.md)) to meet the scope's
 policy `requiredGuardCount` -- "searches create jobs and consume staff/
 time rather than resolving instantly," and a real staffing diversion,
 since every guard a search claims is one `DeploymentSystem` cannot use to

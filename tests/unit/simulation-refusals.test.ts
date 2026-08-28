@@ -161,6 +161,11 @@ describe('the wire vocabulary is exactly what the ten domains can produce', () =
     });
     expect(HIRE_REFUSAL_REASONS).toEqual({
       'insufficient-funds': 'hire.insufficient-funds',
+      // ADR 0053. `no-duty-for-role` and `unknown-role` are two different
+      // sentences about a role id and the namespace is what keeps them apart:
+      // one says the prison has never heard of it, the other says it has and
+      // there is nothing for it to do.
+      'no-duty-for-role': 'hire.no-duty-for-role',
       'roster-full': 'hire.roster-full',
       'unknown-role': 'hire.unknown-role',
     });

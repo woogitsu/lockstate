@@ -729,16 +729,28 @@ function buildCatalogue(): HudBuildViewModel {
  * What the Staff panel may offer, projected from the staff-role catalogue
  * ([ADR 0025](../docs/adr/0025-guard-hiring-surface.md)).
  *
- * **One role, and the reason is not that the other seven are wrong.**
- * `DeploymentSystem`, `PatrolSystem`, `IncidentResponseSystem` and
- * `SearchSystem` all claim staff from `GuardRoster.unassignedGuardIds()` with
- * no filter on role, so a nurse hired into that roster is sent to a patrol
- * post by the next scheduled deployment tick. Offering the other seven would
- * ship seven ways to put the wrong person on a wall. The *simulation* is
- * deliberately given no whitelist -- it accepts any declared role, exactly as
- * `GuardRoster` has stored any since #26 -- so this list is a producer's
- * judgement about what is useful today, and it grows the day a system reads a
- * department or a permission.
+ * **One role, and the reason it is one has changed.**
+ *
+ * This list used to be the *only* thing stopping a nurse from standing a wall,
+ * and it said so: *"`DeploymentSystem`, `PatrolSystem`,
+ * `IncidentResponseSystem` and `SearchSystem` all claim staff from
+ * `GuardRoster.unassignedGuardIds()` with no filter on role, so a nurse hired
+ * into that roster is sent to a patrol post by the next scheduled deployment
+ * tick... The *simulation* is deliberately given no whitelist... it grows the
+ * day a system reads a department or a permission."* That day arrived:
+ * [ADR 0053](../docs/adr/0053-who-may-stand-a-security-post.md) put the rule in
+ * the simulation, where a gameplay rule belongs (`AGENTS.md` boundary 1 --
+ * rendering is not simulation). `StaffHiringService` now refuses an ineligible
+ * role with `hire.no-duty-for-role`, and `claimableGuardIds` is what the four
+ * systems above draw from.
+ *
+ * So this list is no longer a safety rail. It is a *producer's* judgement about
+ * what is worth offering, and it is still one role rather than the two the
+ * simulation would accept: `staff-role.security-chief` is post-eligible, costs
+ * 200 a day against the guard's 80, and buys nothing the guard does not --
+ * offering it would be a pricing and content decision, which is #29's and not
+ * this file's. Widening it is now safe rather than dangerous, which is the
+ * whole of what changed.
  *
  * Every figure crosses as content the HUD is handed: the label is the role's
  * own `nameKey`, so no id→key mapping table of the `BUILDABLE_LABEL_KEY` kind

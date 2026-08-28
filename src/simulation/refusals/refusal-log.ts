@@ -154,6 +154,7 @@ export const ADMIT_REFUSAL_REASONS: Readonly<Record<AdmitPrisonerRefusalReason, 
  */
 export const HIRE_REFUSAL_REASONS: Readonly<Record<StaffHireRefusalReason, RefusalReason>> = {
   'insufficient-funds': 'hire.insufficient-funds',
+  'no-duty-for-role': 'hire.no-duty-for-role',
   'roster-full': 'hire.roster-full',
   'unknown-role': 'hire.unknown-role',
 };

@@ -158,15 +158,30 @@ const AWAITING_CONSUMER: Readonly<Record<string, string>> = {
   // fallback lists together are exactly the object registry's ids, so deleting
   // the sink from the catalogue fails a named test rather than passing quietly.
 
-  // Staff roles. Three of the eight (guard, nurse, warden) are referenced
-  // outside the catalogue -- and since ADR 0025 the guard is the one of those
-  // three with a reader in `src/`, because it is the only role the Staff panel
-  // offers. These five are referenced by nothing.
-  'staff-role.administrator': 'Declared with no reader anywhere. Hiring exists since ADR 0025 and does not reach it: the Staff panel offers `staff-role.guard` alone, because every system that reads `GuardRoster` claims from `unassignedGuardIds()` without filtering on role, so anyone else hired into it would be sent to a patrol post. The command itself accepts any declared role, so this id needs no code change to become reachable -- it needs a system that reads its department.',
-  'staff-role.doctor': 'Declared with no reader anywhere.',
-  'staff-role.kitchen-staff': 'Declared with no reader anywhere.',
-  'staff-role.maintenance-worker': 'Declared with no reader anywhere.',
-  'staff-role.security-chief': 'Declared with no reader anywhere.',
+  // **No staff-role ids left, and all five graduated in one change.** ADR 0053
+  // gave the security tier a post-eligibility rule, and
+  // `tests/integration/security-post-eligibility.test.ts` asserts it against
+  // the whole catalogue by name -- so `administrator`, `doctor`,
+  // `kitchen-staff`, `maintenance-worker` and `security-chief` all gained a
+  // single-quoted literal at once. That is the intended exit from this list:
+  // an id leaves because something started using it.
+  //
+  // The entry that stood here for `staff-role.administrator` is worth quoting,
+  // because it named its own exit condition and the exit condition was met:
+  // *"The command itself accepts any declared role, so this id needs no code
+  // change to become reachable -- it needs a system that reads its
+  // department."* One reads it now (`POST_ELIGIBLE_STAFF_DEPARTMENTS`), and
+  // what it decides for the six non-security roles is a refusal
+  // (`hire.no-duty-for-role`) rather than a job. So these ids are *consumed*
+  // by this gate's measure and still have no duty in the game, which is a
+  // distinction this file cannot see and ADR 0053's Consequences record
+  // instead.
+  //
+  // `unconsumedBySrcOnly` did not move with them: the rule reads a role's
+  // `department` field and names no id, so `src/` still contains no literal
+  // for any of the five. A rule over a *field* is invisible to a gate that
+  // measures id literals, and that is the honest limit of the measure rather
+  // than a hole in it.
 };
 
 interface Catalog {
@@ -361,12 +376,24 @@ describe('every unconsumed content id is accounted for', () => {
       // than kept with a new reason, which is what this file's stale-entry gate
       // asks for.
       //
-      // 13 and 30, not 14 and 31: `room.laundry` gained one the same way --
-      // `action.laundry-work` names it in `src/simulation/prisoners/actions.ts`
-      // ([ADR 0054](../../docs/adr/0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md)),
-      // so the room a player could zone and furnish to no effect now puts
-      // prisoners to work. Its entry is removed above rather than reworded.
-    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 13, unconsumedBySrcOnly: 30 });
+      // 8 and 30, from a base of 14 and 31, because two changes landed in the
+      // same window and each moved it differently.
+      //
+      // ADR 0053's integration test names five staff-role ids that nothing
+      // outside the catalogue had named before, so `unconsumedBySrcAndTests`
+      // falls by five while `unconsumedBySrcOnly` does not move at all -- the
+      // rule those five feed reads their `department` and writes no id literal
+      // into `src/`.
+      //
+      // ADR 0054 moves both by one: `action.laundry-work` names `room.laundry`
+      // in `src/simulation/prisoners/actions.ts`, so the room a player could
+      // zone and furnish to no effect now puts prisoners to work. Its entry is
+      // removed above rather than reworded.
+      //
+      // Between them that is the pair ADR 0052's `object.sink` and ADR 0053's
+      // staff roles illustrate: a consumer in `src/` moves both counts, a
+      // consumer that only reads a field moves one.
+    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 8, unconsumedBySrcOnly: 30 });
   });
 
   it('scans a non-trivial catalog and a non-trivial consumer set, so this cannot pass vacuously', () => {

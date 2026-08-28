@@ -117,22 +117,33 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
   when the browser suite is the thing being verified", was therefore stronger
   than the facts required, and it is withdrawn: verify on the branch you are
   actually changing.
-- **Three browser tests fail in the agent container and pass on CI, and none
-  is anybody's branch.** Each was confirmed by running it *alone* on plain
-  `main` here, and all three are green on the self-hosted runner:
-  `app-shell.spec.ts` *"every control can actually be pressed … (#88)"* (held-guard
-  rows 2 and 3 are never laid out), `app-shell.spec.ts` *"a pending delivery costs
-  the Build panel nothing … (#285)"* (the refund does not arrive inside a
-  20-second poll), and `ui-shell.spec.ts` *"the Rooms panel says what a zoned room
-  is missing … (#331)"*. All three wait on the simulation to produce something,
-  and this container is slower than the runner, so **they are a property of where
-  the suite runs and not of the diff**.
-  Two agents lost time to them on 2026-08-28, one reporting them as "pre-existing
-  failures on this branch" — true, and misleading, because they are pre-existing
-  on every branch. Measure `main` in a *separate* worktree before believing a
-  local browser failure is yours, and let the PR's own `browser` job be the gate.
-  This bullet is about these two tests today, not a licence to wave any red
-  browser test through: everything else in that suite has been reproducible here.
+- **Three browser tests are the contention canaries, and the integrator who
+  said otherwise was wrong.** `app-shell.spec.ts` *"every control can actually be
+  pressed … (#88)"* (held-guard rows 2 and 3 never laid out), *"a pending delivery
+  costs the Build panel nothing … (#285)"* (the refund misses a 20-second poll),
+  and `ui-shell.spec.ts` *"the Rooms panel says what a zoned room is missing …
+  (#331)"*. All three wait on the simulation to produce something, so they are the
+  first to give up when the machine is busy.
+  **This bullet said the opposite for one merge**, on 2026-08-28: that the three
+  were "a property of where the suite runs and not of the diff", confirmed by
+  running each *alone* on plain `main`. Both halves are withdrawn. On a genuinely
+  idle machine all three pass on `main` — measured, `3 passed (3.4m)` — and the
+  whole suite passed 220/220 on a branch that changes the renderer. The
+  "alone" runs were not alone: an agent was running browser suites throughout,
+  for nearly two hours, and `ps` was checked without the checker drawing the
+  conclusion.
+  Two agents had reported these as contention and were overruled. They were
+  right, and the bullet below about not running a suite alongside another
+  agent's already said so. **The failure mode this records is therefore not a
+  flaky test, it is an integrator promoting "I could not find the cause" into
+  "there is no cause in the diff"** — which is the same move `docs/AGENT_WORKFLOW.md`
+  §3 calls out under "a measurement is not a diagnosis", committed by the person
+  who wrote that rule.
+  So: a local browser failure is **yours until the machine is idle and it still
+  fails**. `ps -eo etime,args | grep -E "[p]laywright/test/cli|[v]itest"` returning
+  nothing is the precondition for any such claim, and re-running one test while
+  another suite runs proves nothing at all. Let the PR's own `browser` job be the
+  gate.
 - **A local browser run in the worktree you are editing is not a baseline.** Vite
   serves `src/**` live, so a run started before your edits reads them off disk as
   they land, and a "before" measurement taken that way is a measurement of the
