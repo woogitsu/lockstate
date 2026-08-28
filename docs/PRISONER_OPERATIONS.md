@@ -253,19 +253,59 @@ yard costs no objects at all.
 **How much of that riot the neglect is actually paying for was measured on
 2026-08-28 and is less than the sentence above implies.** The escape is real —
 one 8x8 yard, no objects, takes `recreation` from a floor of 0 to a floor of
-233.55, and a shower room with its two heads takes `hygiene` to 212.4 — but the
+232.65, and a shower room with its two heads takes `hygiene` to 212.4 — but the
 *pressure* only crosses `DEFAULT_SECTOR_RISK_POLICY`'s `hotThreshold` of 0.65
 when the prison is also understaffed. Two needs at zero across eight prisoners
 in eight furnished cells peaks at `needsPressure` **0.4824** and produces **no
 riot at all** while one guard stands the post; the same prison with no guard
-peaks at 0.7979 and riots three times in twenty in-game days
+peaks at 0.7981 and riots three times in ten in-game days
 (`tests/integration/room-gated-needs.test.ts`). So a well-staffed prison of
-cells leaves both needs on the floor for ever with no consequence anywhere, and
+cells leaves both needs on the floor for ever with no *riot* anywhere, and
 ADR 0054's own amendment records that this is the ruling's open edge rather than
 its intent. What it does **not** license is a cell-side sibling: measured at a
 quarter and at a sixteenth of a shower's rate, either one removes the unguarded
 prison's riot entirely, because `selectBestAction` drives any available route
 toward satiation and a low rate sets recovery speed rather than a floor.
+
+**Three figures in the paragraph above were wrong and are corrected rather than
+overwritten.** It said the yard takes `recreation` to a floor of **233.55**;
+that was the reading before [ADR 0059](./adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md)
+gave an actor a walk, and the fixture has pinned **232.65** since. It said
+**0.7979** where the same change made it **0.7981**. And it said **twenty**
+in-game days where the fixture runs 24,000 ticks, which at `DAY_LENGTH_TICKS`
+2,400 is **ten** — a claim that was in five documents and issue #477, and is
+corrected in all of them by #443. None of the conclusions move; the decay in
+question is twice as fast as the sentence implied.
+
+**And "no consequence anywhere" stopped being true with
+[ADR 0064](./adr/0064-what-an-unmet-need-costs-a-prison.md) (#443, #477).** What an unmet
+need costs a prison that never riots is now on the income line rather than in
+the risk score: `StateIncomeSystem` pays the state's prisoner-day grant per
+**occupied place**, and withholds
+`STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS` (40 of 300) for each of the
+six needs whose level is at or below `STATE_INCOME_UNMET_NEED_LEVEL` (51, a
+fifth of `NEED_MAX`) for that place's own occupant. The prison above therefore
+earns 300 a prisoner-day for four days, 260 once `hygiene` crosses the line on
+day 5, and 220 once `recreation` crosses on day 7 — 20,800 over ten days where
+the same eight cells with a shower room and a yard earn 24,000
+(`tests/integration/needs-state-grant-loop.test.ts`). The risk score is
+untouched, deliberately: the staffed row still reads 0.4824 and still riots
+zero times, which is the measurement #477 exists to present.
+
+Two consequences of that shape are worth stating here rather than leaving to be
+found. It is **per occupant and never a mean**, so seven contented prisoners
+cannot hide an eighth — the same distinction ADR 0061 draws between the assault
+trigger and the riot trigger. And a prisoner nobody housed still earns the
+prison **nothing at all**, unchanged: they hold no occupied place, and what
+*they* cost is ADR 0061's assault model.
+
+**What a player is told about it is still open**, and narrowed rather than
+answered: `docs/HUD_PROJECTIONS.md` gap 7 records that nothing defines a
+need's "warning" or "critical" band. There is now one line the simulation
+itself acts on, which is the fact that gap was waiting for; whether the
+interface should band a need bar at it, and how the reduction should be
+explained beside the "earned today" chip that already moves with it, is the
+owner's.
 
 **`action.free-association` is the catalogue's one entry with no need effect,
 and that is deliberate.** `scoreAction` sums `deficit x effect`, so an action

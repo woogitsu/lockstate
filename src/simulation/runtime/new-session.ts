@@ -544,7 +544,15 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   // day (#29). It reads `prisoners.roomInstances` -- an occupied place is an
   // occupancy slot there -- so it is constructed after the prisoner runtime,
   // and it holds no state of its own, which is why nothing new enters the save.
-  const stateIncome = new StateIncomeSystem(treasury, prisoners.roomInstances);
+  //
+  // The whole `prisoners` runtime rather than the registry alone, since
+  // [ADR 0064](../../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md):
+  // what a place pays depends on how many of its occupant's six needs the
+  // prison is leaving unmet, so the income line reads `needs` and `entityStore`
+  // beside the residency claims. `PrisonerOperationsRuntime` satisfies
+  // `PrisonerDayGrantSource` structurally, the same way it already satisfies
+  // both of `projectStatusStrip`'s source shapes.
+  const stateIncome = new StateIncomeSystem(treasury, prisoners);
 
   // Issue #261's route out for a command the simulation accepts and then
   // refuses on its content. Empty for a new session and for a restored one

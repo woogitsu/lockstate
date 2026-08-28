@@ -61,10 +61,15 @@ export interface SectorRiskPolicy {
  *   from it, so the only needs a *built* prison can pin at zero are `hygiene`
  *   and `recreation` — ADR 0054 decision 1 rules those room-gated — and two of
  *   six at zero is a ceiling of about `0.48` on `needsPressure`, under the
- *   `0.65` line. Measured over twenty in-game days, eight prisoners in eight
- *   furnished cells with no shower room and no yard: peak score **0.4824** and
- *   **zero** riots with one guard on post, **0.7979** and three riots with
- *   none (`tests/integration/room-gated-needs.test.ts`). The prisoner who does
+ *   `0.65` line. Measured over **ten** in-game days -- the fixture's 24,000
+ *   ticks at `DAY_LENGTH_TICKS` 2,400, which this bullet and four documents
+ *   beside it called twenty until
+ *   [ADR 0064](../../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md)
+ *   checked the division -- eight prisoners in eight furnished
+ *   cells with no shower room and no yard: peak score **0.4824** and **zero**
+ *   riots with one guard on post, **0.7979** and three riots with none
+ *   (`tests/integration/room-gated-needs.test.ts`; 0.7981 on the same fixture
+ *   since ADR 0059). The prisoner who does
  *   push the term past the line is the one with no accommodation at all, whose
  *   six needs all decay unopposed — which is what
  *   `tests/integration/security-default-sector.test.ts`'s and
@@ -74,6 +79,19 @@ export interface SectorRiskPolicy {
  *   that decides, for every prison whose prisoners have somewhere to live.**
  *   Whether that is the balance wanted is #442's and ADR 0048's, not a thing to
  *   settle in this docblock.
+ *
+ *   **And since
+ *   [ADR 0064](../../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md)
+ *   that staffed row is no longer free, without this weight moving at all.** What an unmet need costs a prison that never riots is on
+ *   the income line: `StateIncomeSystem` withholds part of the state's
+ *   prisoner-day grant for each of the six needs a place's occupant has at or
+ *   below `STATE_INCOME_UNMET_NEED_LEVEL`, so the prison above earns 20,800
+ *   over its ten days where a prison with a shower room and a yard earns
+ *   24,000 (`tests/integration/needs-state-grant-loop.test.ts`). That was
+ *   deliberately built *outside* this score: ADR 0061 already declined to feed
+ *   `contrabandPressure` into it because doing so moved the 0.4824 row to
+ *   ~0.60 and destroyed the evidence #477 exists to present, and the same
+ *   argument forbids reaching for `needsPressureWeight` here.
  * - `staffingShortfallWeight: 0.3` — **unchanged, and now the amplifier it was
  *   named for.** A completely unguarded sector adds `0.3`, which turns a
  *   mediocre prison into a rioting one and leaves a well-run one alone:

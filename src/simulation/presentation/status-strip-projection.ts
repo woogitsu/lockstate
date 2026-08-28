@@ -14,7 +14,7 @@ import {
   type ActionCategory,
   type RegimeSchedule,
 } from '../prisoners/regime';
-import { stateIncomeAccruedByTick } from '../economy/income';
+import { stateIncomeAccruedByTick, stateIncomeForCompletedDay } from '../economy/income';
 import { projectClockPosition } from './clock-projection';
 import type { ContrabandSearchSource } from './contraband-projection';
 import { projectPrisonerPopulationCounts, type PrisonerProjectionSource } from './prisoner-projection';
@@ -317,8 +317,22 @@ function accommodationCapacityOf(source: RoomProjectionSource, policy: Accommoda
  * counts (no per-prisoner allocation), `O(staff)` for the roster,
  * `O(roomInstances)` for the room totals, a second `O(accommodation
  * instances)` pass for `accommodationCapacity`, `O(openIncidents)` for the
- * incident count. Nothing here builds a per-actor object, so it is safe to
- * re-project every frame at the 5,000-actor tier.
+ * incident count, and -- since
+ * [ADR 0064](../../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md)
+ * -- `O(P log P)` in *housed* prisoners for
+ * `stateIncomeAccruedTodayMinorUnits`, which walks the occupied places and
+ * reads six need levels for each.
+ *
+ * **That last one is the exception to the sentence this note used to end
+ * with**, and it is marked rather than quietly dropped. It read: "Nothing here
+ * builds a per-actor object, so it is safe to re-project every frame at the
+ * 5,000-actor tier." No per-actor *object* is built and that half stands, but
+ * `RoomInstanceRegistry.residentIds` allocates and sorts one array of entity
+ * ids per call, which does scale with the population. It is a 200-element sort
+ * at the reference tier and a 5,000-element one at the top tier; the
+ * alternative -- deriving the chip from `totalOccupancy` and the flat rate --
+ * is not available any more, because the rate is no longer flat and a chip
+ * derived that way would promise money the day boundary declines to pay.
  */
 export function projectStatusStrip(source: StatusStripSource, options: StatusStripOptions = {}): StatusStripViewModel {
   const rooms = options.rooms ?? defaultRoomContentRegistry;
@@ -398,8 +412,20 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
       // under an unknown room-catalog id (gap 15), while the income line is
       // paid on every slot the registry holds. `RoomInstanceRegistry.totalOccupancy`
       // documents the difference.
+      // Since ADR 0064 the accrual is not `rate x totalOccupancy`: each occupied
+      // place pays at a rate set by how many of its occupant's needs the
+      // prison is leaving unmet, so the readout has to be derived from the
+      // same walk `StateIncomeSystem` credits from. Deriving it from the count
+      // instead would be a chip that promises money the day boundary then does
+      // not pay.
+      //
+      // `source.prisoners` is the grant source: it carries `needs`,
+      // `entityStore` and `roomInstances`, which is the whole of
+      // `PrisonerDayGrantSource`. The `source.rooms === undefined` guard is
+      // kept because it is the *session's* statement that it has no rooms, and
+      // it reports 0 for the same reason the treasury's absent case does.
       stateIncomeAccruedTodayMinorUnits:
-        source.rooms === undefined ? 0 : stateIncomeAccruedByTick(source.rooms.roomInstances.totalOccupancy, source.tick),
+        source.rooms === undefined ? 0 : stateIncomeAccruedByTick(stateIncomeForCompletedDay(source.prisoners), source.tick),
       dailyWageBillMinorUnits: source.payroll?.dailyWageBillMinorUnits() ?? 0,
       unpaidWagesMinorUnits: source.payroll?.unpaidWagesMinorUnits ?? 0,
     },

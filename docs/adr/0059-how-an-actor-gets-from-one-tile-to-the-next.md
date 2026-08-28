@@ -199,7 +199,7 @@ never idle inside a 100-tick meal block never eats at all.
 | units/tick | tiles/s | ticks a tile | measured |
 | --- | --- | --- | --- |
 | 32 | 2.5 | 8 | `prisoner-roster-readout`'s prison (a cell and a yard) starves its prisoner: hunger **0** of `NEED_MAX` after five in-game days |
-| 64 | 5 | 4 | that prison is fine (hunger 238), and `room-gated-needs`'s — a cell, a shower room and a yard — starves its prisoner: hunger **0** over twenty in-game days, in a prison that has built every room the six needs ask for |
+| 64 | 5 | 4 | that prison is fine (hunger 238), and `room-gated-needs`'s — a cell, a shower room and a yard — starves its prisoner: hunger **0** over ten in-game days (24,000 ticks at `DAY_LENGTH_TICKS` 2,400 — this row said twenty until #443 corrected the arithmetic in five places), in a prison that has built every room the six needs ask for |
 | 96 | 7.5 | 2.67 | both prisons fed (hunger 135.5), with no margin: it is the first value that works |
 | **128** | **10** | **2** | both prisons fed, and the value chosen — a clean two ticks a tile, and margin over the first value that worked |
 | 256 | 20 | 1 | no better, and a blur on screen |

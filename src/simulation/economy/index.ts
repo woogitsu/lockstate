@@ -1,9 +1,14 @@
 export {
   STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS,
+  STATE_INCOME_UNMET_NEED_LEVEL,
+  STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS,
   StateIncomeSystem,
   stateIncomeAccruedByTick,
   stateIncomeForCompletedDay,
+  stateIncomeForPrisonerDay,
+  unmetNeedCount,
   type OccupiedPlaceSource,
+  type PrisonerDayGrantSource,
 } from './income';
 export {
   PayrollSystem,

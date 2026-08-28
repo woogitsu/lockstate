@@ -1,4 +1,6 @@
+import type { EntityId } from '../entity/entity-store';
 import type { SimulationContext, SystemRegistration } from '../kernel/system';
+import { NEED_IDS, NEED_MAX, type NeedsComponent } from '../prisoners/needs';
 import { DAY_LENGTH_TICKS } from '../prisoners/regime';
 import type { Treasury } from './treasury';
 
@@ -159,7 +161,109 @@ export const STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS = 300;
  */
 export interface OccupiedPlaceSource {
   readonly totalOccupancy: number;
+  /**
+   * Who holds those places, ascending by entity id -- `length` is
+   * `totalOccupancy`.
+   *
+   * Needed because the rate is no longer flat: what one place pays depends on
+   * the conditions its occupant is held in, so the count alone cannot answer
+   * what a day is worth. See `stateIncomeForPrisonerDay`.
+   */
+  residentIds(): readonly EntityId[];
 }
+
+/**
+ * Everything a day's payment reads: the places, and the occupants' conditions.
+ *
+ * One source rather than three arguments, and structurally satisfied by
+ * `PrisonerOperationsRuntime` -- the same object `projectStatusStrip` is
+ * already handed for both its prisoner and its room source
+ * (`src/simulation/worker/status-counts.ts`). It stays narrow in the sense
+ * `PayrollStaffSource` is narrow: three members, none of them a system.
+ */
+export interface PrisonerDayGrantSource {
+  readonly roomInstances: OccupiedPlaceSource;
+  readonly entityStore: { getIndex(entityId: EntityId): number };
+  readonly needs: NeedsComponent;
+}
+
+/**
+ * The level at or below which the state calls a need **unmet** when it settles
+ * the day.
+ *
+ * `51`, which is `NEED_MAX / 5` exactly and is pinned against it by
+ * `tests/unit/economy-state-income.test.ts` rather than left as a coincidence
+ * of two literals.
+ *
+ * **It is a floor and not a warning line, and the difference is the whole
+ * reason a fifth was chosen over a half.** A day's payment is settled from one
+ * sample, at `DAY_LENGTH_TICKS - 1`, so the threshold has to be low enough
+ * that a *served* need cannot trip it merely by being sampled at the bottom of
+ * its own cycle. Measured on this tree, eight prisoners in eight furnished
+ * cells with a shower room and a yard -- every need served -- over ten in-game
+ * days, sampling all six needs of all eight prisoners on **every** tick: the
+ * lowest level any need reached at any tick was `bladder` at **65.4**, and the
+ * lowest at any day boundary was `hunger` at **124.5**. So no need a prison
+ * actually serves comes within a fifth of `NEED_MAX`, even on its worst tick,
+ * and the boundary sample has better than a factor of two in hand. A prison
+ * that meets its needs cannot lose a minor unit to an unlucky sample.
+ *
+ * What trips it is a need with **no route at all**: `hygiene` with no shower
+ * room and no laundry, `recreation` with no yard, common room or classroom
+ * ([ADR 0054](../../../docs/adr/0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md)
+ * decision 1 rules both room-gated), `bladder` with no toilet, and every need
+ * of a prisoner nobody housed. Those fall to 0 and stay there.
+ *
+ * **This is not the player-facing "your prisoners are unhappy" line.** That
+ * threshold is a statement to a player about what is bad and is the owner's
+ * ([ADR 0064](../../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md),
+ * "What the player must be told for this to be fair");
+ * this one is a statement about what the state declines to pay for. Issue #477
+ * is explicit that the first was unanswerable while neglect cost a staffed
+ * prison nothing -- *"fix the cost first, then the threshold has something true
+ * to say"* -- so this is the cost, and the readout stays open.
+ */
+export const STATE_INCOME_UNMET_NEED_LEVEL = 51;
+
+/**
+ * How much of one prisoner-day the state withholds for each of the six needs
+ * the prison is leaving unmet, in the same minor units.
+ *
+ * **Directional, not a committed balance decision**, the standing convention
+ * for a new rule's numbers here (`DEFAULT_SECTOR_RISK_POLICY` and
+ * `DEFAULT_ASSAULT_POLICY` both carry it, and issue #28 puts final balance out
+ * of scope). What is *not* directional is the shape, which is
+ * [ADR 0064](../../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md)'s
+ * decision: linear in the count, one term per need, no interaction.
+ *
+ * `40` against a rate of `300` makes the schedule
+ * `300, 260, 220, 180, 140, 100, 60` for zero through six unmet needs, and the
+ * three properties that were chosen rather than fallen into:
+ *
+ * - **A prison that serves every need earns exactly what it earns today.** The
+ *   rate is untouched at zero unmet, so no existing measurement of a well-run
+ *   prison moves and this change can only ever take money off a prison that is
+ *   withholding something.
+ * - **The floor is 60 and it is reached, not clamped.** `300 - 6 x 40` is
+ *   exactly a fifth of the rate, so a prison that meets none of the six needs
+ *   still earns something. The state does not stop paying for a prisoner it is
+ *   still making the prison hold, and -- the practical half -- a neglected
+ *   prison is not put beyond digging itself out.
+ *   [ADR 0049](../../../docs/adr/0049-what-a-prison-that-cannot-make-payroll-owes.md)
+ *   made insolvency a state rather than a loss condition; an income line that
+ *   could reach zero would make it one.
+ * - **The cheapest repair pays for itself in days.** `room.yard` requires no
+ *   object at all (`src/content/room-catalog.ts`), so zoning 8x8 of owned
+ *   ground turns `recreation` from unmet to served and returns 40 a prisoner a
+ *   day for nothing. That is the incentive the mechanic exists to create, and
+ *   it is why the withheld share is per *need* rather than per prison: the
+ *   player is paid for each thing they fix, on the day they fix it.
+ *
+ * An integer, for `STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS`'s reason: it
+ * multiplies into a balance a save carries and a determinism fingerprint
+ * hashes, and `docs/DETERMINISM.md` makes no exception for money.
+ */
+export const STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS = 40;
 
 /** Integer division. `%` and `-` are exact on safe integers, so the quotient is exact rather than a rounded float. */
 function floorDiv(numerator: number, denominator: number): number {
@@ -167,56 +271,113 @@ function floorDiv(numerator: number, denominator: number): number {
 }
 
 /**
- * What one whole day of `occupiedPlaces` occupied places is worth.
+ * How many of `NEED_IDS` this prisoner has at or below
+ * `STATE_INCOME_UNMET_NEED_LEVEL`.
  *
- * The amount `StateIncomeSystem` credits at a day boundary, and exact for
- * every whole `occupiedPlaces`: no rounding, no remainder to carry.
+ * `NeedsComponent.get`, which rounds to whole levels, rather than the stored
+ * sub-level units: the threshold is authored in the 0-255 levels every
+ * consumer outside the save codec works in, and a comparison against a level
+ * has no business being decided by a two-hundredth of one.
+ *
+ * `NEED_IDS` in its declared order. Nothing here depends on the order -- the
+ * result is a count -- but the iteration discipline is the one
+ * `NeedsComponent` uses everywhere, and a need added to that list is counted
+ * here with no second edit.
  */
-export function stateIncomeForCompletedDay(occupiedPlaces: number): number {
-  if (!Number.isSafeInteger(occupiedPlaces) || occupiedPlaces < 0) {
-    throw new RangeError('Occupied places must be a non-negative safe integer.');
+export function unmetNeedCount(needs: NeedsComponent, index: number): number {
+  let unmet = 0;
+  for (const needId of NEED_IDS) {
+    if (needs.get(index, needId) <= STATE_INCOME_UNMET_NEED_LEVEL) unmet += 1;
   }
-  return STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS * occupiedPlaces;
+  return unmet;
 }
 
 /**
- * What the current day has earned so far, at `tick`.
+ * What the state pays for one occupied place for one whole day, given how many
+ * of its occupant's six needs are unmet.
+ *
+ * `Math.max(0, ...)` rather than the arithmetic alone: at the shipped rate and
+ * withheld share the floor is 60 and the clamp never binds (pinned by test),
+ * but a future rate below `6 x` the withheld share would otherwise bill the
+ * prison for holding somebody, and `Treasury.credit` is not the place to
+ * discover that.
+ */
+export function stateIncomeForPrisonerDay(unmetNeeds: number): number {
+  if (!Number.isSafeInteger(unmetNeeds) || unmetNeeds < 0 || unmetNeeds > NEED_IDS.length) {
+    throw new RangeError('Unmet need count must be a whole number of needs.');
+  }
+  return Math.max(0, STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS - STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS * unmetNeeds);
+}
+
+/**
+ * What one whole day is worth: the sum over occupied places of what each one
+ * pays.
+ *
+ * The amount `StateIncomeSystem` credits at a day boundary. Exact -- a sum of
+ * authored integers over a canonically ordered walk, no rounding and no
+ * remainder to carry -- and it is `STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS x
+ * places` exactly when the prison is meeting every need, which is the sentence
+ * this function replaced.
+ *
+ * **`O(P log P)` in housed prisoners, once per in-game day.** The sort is
+ * `residentIds`'s and the six-need scan is `unmetNeedCount`'s; at the
+ * 200-prisoner reference tier that is one 200-element sort and 1,200 typed
+ * array reads every 2,400 ticks.
+ */
+export function stateIncomeForCompletedDay(source: PrisonerDayGrantSource): number {
+  let total = 0;
+  for (const entityId of source.roomInstances.residentIds()) {
+    total += stateIncomeForPrisonerDay(unmetNeedCount(source.needs, source.entityStore.getIndex(entityId)));
+  }
+  return total;
+}
+
+/**
+ * What the current day has earned so far, at `tick`, for a day whose whole
+ * value is `dailyGrantMinorUnits`.
  *
  * The "earned today" readout the owner asked for beside the balance: a day is
  * 2,400 ticks and two minutes of real time at 1x, which is too long to watch a
  * static number.
  *
+ * **The grant is passed in rather than derived here, and that is the change
+ * this signature records.** It used to take an occupied-place count, because a
+ * day's value *was* the count times a fixed rate. It is now a walk over the
+ * occupants (`stateIncomeForCompletedDay`), and a pure prorating function has
+ * no business owning that walk -- the caller does it once and prorates it,
+ * which also keeps this function exactly as testable as it was.
+ *
  * **Derived, never accumulated.** It is a pure function of the tick and the
- * current occupancy, which is what makes the save question below have no
+ * prison's current state, which is what makes the save question below have no
  * subtle answer -- there is no partial-day accumulator to lose, to restore or
- * to pay out twice. What it says is "what this day pays if occupancy stays as
+ * to pay out twice. What it says is "what this day pays if the prison stays as
  * it is, prorated by how much of the day has been served", and at the payment
  * tick that is exactly what is credited:
- * `stateIncomeAccruedByTick(n, DAY_LENGTH_TICKS - 1) === stateIncomeForCompletedDay(n)`,
- * pinned by test.
+ * `stateIncomeAccruedByTick(g, DAY_LENGTH_TICKS - 1) === g`, pinned by test.
  *
  * **Integer arithmetic, and the one division.** `300 / 2,400` is `1/8` of a
  * minor unit per tick per place, which is not an integer, so the accrual is
  * computed as one division of exact integers and floored -- `floorDiv`, not
  * float division. Nothing is lost by the truncation: at
- * `tickOfDay = DAY_LENGTH_TICKS - 1` the numerator is `300 x places x 2,400`,
+ * `tickOfDay = DAY_LENGTH_TICKS - 1` the numerator is `grant x 2,400`,
  * divisible by 2,400 with remainder zero, so the discarded sub-unit part is
- * zero exactly when it would otherwise have to be carried. That is why this
- * module needs no remainder accumulator of the kind `NEED_SCALE`
- * (`src/simulation/prisoners/needs.ts`) exists to provide: the rate and the
- * day length were chosen so the boundary divides.
+ * zero exactly when it would otherwise have to be carried. That holds for any
+ * whole `grant`, which is why withholding a whole number of minor units per
+ * unmet need was a condition on the schedule and not a preference. That is
+ * also why this module needs no remainder accumulator of the kind `NEED_SCALE`
+ * (`src/simulation/prisoners/needs.ts`) exists to provide.
  */
-export function stateIncomeAccruedByTick(occupiedPlaces: number, tick: number): number {
+export function stateIncomeAccruedByTick(dailyGrantMinorUnits: number, tick: number): number {
   if (!Number.isSafeInteger(tick) || tick < 0) throw new RangeError('Tick must be a non-negative integer.');
-  if (!Number.isSafeInteger(occupiedPlaces) || occupiedPlaces < 0) {
-    throw new RangeError('Occupied places must be a non-negative safe integer.');
+  if (!Number.isSafeInteger(dailyGrantMinorUnits) || dailyGrantMinorUnits < 0) {
+    throw new RangeError("A day's grant must be a non-negative safe integer.");
   }
   const tickOfDay = tick % DAY_LENGTH_TICKS;
   // `+ 1`: the payment at `tickOfDay === DAY_LENGTH_TICKS - 1` covers ticks
   // `0..DAY_LENGTH_TICKS - 1` inclusive, so the tick in progress is one of the
   // ticks served rather than one still to come.
   const ticksServed = tickOfDay + 1;
-  return floorDiv(STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS * occupiedPlaces * ticksServed, DAY_LENGTH_TICKS);
+  return floorDiv(dailyGrantMinorUnits * ticksServed, DAY_LENGTH_TICKS);
 }
 
 /**
@@ -257,6 +418,35 @@ export function stateIncomeAccruedByTick(occupiedPlaces: number, tick: number): 
  *   field's meaning, which are the three things V2, V3 and V4 were each bumped
  *   for. A bump with nothing behind it would invalidate the migration chain's
  *   own story.
+ *
+ * ## What the day is worth, and the half of it that is new
+ *
+ * A day is no longer `rate x places`. Each occupied place is paid
+ * `stateIncomeForPrisonerDay` of its own occupant's conditions, and the day is
+ * the sum -- so the same eight cells earn 2,400 in a prison that meets its
+ * prisoners' needs and 1,760 in one that has built no shower room and no yard.
+ * The reasons are in `STATE_INCOME_UNMET_NEED_LEVEL` and
+ * `STATE_INCOME_WITHHELD_PER_UNMET_NEED_MINOR_UNITS`; what belongs here is
+ * what it does to *this system*, which is almost nothing:
+ *
+ * - **Still no state.** The reduction is read from `NeedsComponent`, which the
+ *   save already carries in full, at the tick the day is settled. There is no
+ *   per-prisoner accumulator, no "days neglected" counter and no new field, so
+ *   every word of "Nothing to save" below is still true and
+ *   `SAVE_SCHEMA_VERSION` still does not move.
+ * - **Still no RNG.** A sum of authored integers over a canonically ordered
+ *   walk. No stream is taken, so `docs/DETERMINISM.md`'s named-stream contract
+ *   is untouched.
+ * - **Per occupant, never averaged.** Eight well-kept prisoners do not pay for
+ *   a ninth nobody houses, and one neglected prisoner is not hidden by seven
+ *   contented ones. That is the distinction
+ *   [ADR 0061](../../../docs/adr/0061-what-the-prison-produces-on-its-own.md)
+ *   draws between the assault trigger and the riot trigger, applied to money:
+ *   a mean is the wrong instrument for something owed per person.
+ * - **A prisoner nobody housed still earns nothing at all**, exactly as
+ *   before. They hold no place, so no term of this sum is theirs. The
+ *   consequence of leaving somebody unaccommodated is ADR 0061's, not this
+ *   line's.
  *
  * ## Sampled at the boundary, not integrated -- and the record disagrees
  *
@@ -310,7 +500,7 @@ export class StateIncomeSystem implements SystemRegistration {
 
   public constructor(
     private readonly treasury: Treasury,
-    private readonly places: OccupiedPlaceSource,
+    private readonly prison: PrisonerDayGrantSource,
   ) {}
 
   /**
@@ -318,11 +508,11 @@ export class StateIncomeSystem implements SystemRegistration {
    * balance. A read: it touches nothing.
    */
   public accruedThisDay(tick: number): number {
-    return stateIncomeAccruedByTick(this.places.totalOccupancy, tick);
+    return stateIncomeAccruedByTick(stateIncomeForCompletedDay(this.prison), tick);
   }
 
   public update(context: SimulationContext): void {
-    const amount = stateIncomeForCompletedDay(this.places.totalOccupancy);
+    const amount = stateIncomeForCompletedDay(this.prison);
     // An empty prison earns nothing, and says so by doing nothing rather than
     // by crediting zero: `Treasury.credit(0)` is legal and pointless, and a
     // future ledger (#29) should not have to filter out entries for no money.
