@@ -44,6 +44,7 @@ let hooksRegistered = false;
 let modulesPromise;
 let optionsPromise;
 let rngPromise;
+let actorPublicationPromise;
 
 export function assertTypeScriptTransformEnabled() {
   if (process.features.typescript === 'transform') return;
@@ -80,6 +81,17 @@ function registerTypeScriptResolution() {
 
 async function importSimulation(relativePath) {
   return import(pathToFileURL(path.join(repositoryRoot, 'src', 'simulation', relativePath)).href);
+}
+
+/**
+ * The one import that leaves `src/simulation/`. `actorsFromDelta` is the
+ * *receiving* half of ADR 0059's cost table and lives under `src/rendering/`,
+ * so a benchmark that measured only the worker half would report half the
+ * number the ADR reports. It imports no Phaser and touches no DOM -- scenario
+ * rule 7 -- which is checked by the fact that this loads at all in plain Node.
+ */
+async function importRendering(relativePath) {
+  return import(pathToFileURL(path.join(repositoryRoot, 'src', 'rendering', relativePath)).href);
 }
 
 /**
@@ -158,4 +170,55 @@ export async function loadSimulationRng() {
     });
   })();
   return rngPromise;
+}
+
+/**
+ * The production surface behind ADR 0059's per-population cost table -- the
+ * whole actor-publication path, worker side and main side, loaded once per
+ * process.
+ *
+ * ADR 0059 prices four steps in milliseconds at 500 and 5,000 actors and
+ * nothing gates any of them; `actor-render-publication.mjs` is what turns that
+ * table into counted work. The list is explicit for the same reason
+ * `loadNavigationModules` is: what a benchmark depends on should be readable
+ * from the benchmark side.
+ *
+ * `FixedStepClock` is here to be *read* rather than copied, the way
+ * `loadProductionNavigationOptions` reads the navigation options: the tick rate
+ * the encoder converts velocity against is the clock's step duration, and a
+ * benchmark that hard-codes 50 ms keeps passing after somebody changes it.
+ */
+export async function loadActorPublicationModules() {
+  assertTypeScriptTransformEnabled();
+  registerTypeScriptResolution();
+
+  actorPublicationPromise ??= (async () => {
+    const [entity, components, locomotion, keyframe, payload, feed, clock, stateMachine] = await Promise.all([
+      importSimulation('entity/entity-store.ts'),
+      importSimulation('prisoners/components.ts'),
+      importSimulation('locomotion/index.ts'),
+      importSimulation('worker/render-actors-keyframe.ts'),
+      importSimulation('protocol/render-actors-payload.ts'),
+      importRendering('feed/actors-from-delta.ts'),
+      importSimulation('clock/fixed-step-clock.ts'),
+      importSimulation('worker/state-machine.ts'),
+    ]);
+
+    return Object.freeze({
+      EntityStore: entity.EntityStore,
+      PositionComponent: components.PositionComponent,
+      LocomotionStore: locomotion.LocomotionStore,
+      DEFAULT_WALK_SUBTILE_UNITS_PER_TICK: locomotion.DEFAULT_WALK_SUBTILE_UNITS_PER_TICK,
+      LOCOMOTION_SUBTILE_UNITS: locomotion.LOCOMOTION_SUBTILE_UNITS,
+      encodeRenderActorsKeyframe: keyframe.encodeRenderActorsKeyframe,
+      decodeRenderActorsPayload: payload.decodeRenderActorsPayload,
+      renderActorsByteLength: payload.renderActorsByteLength,
+      RENDER_ACTORS_SUBTILE_UNITS: payload.RENDER_ACTORS_SUBTILE_UNITS,
+      actorsFromDelta: feed.actorsFromDelta,
+      FixedStepClock: clock.FixedStepClock,
+      RENDER_DELTA_PUBLISH_INTERVAL_MS: stateMachine.RENDER_DELTA_PUBLISH_INTERVAL_MS,
+    });
+  })();
+
+  return actorPublicationPromise;
 }
