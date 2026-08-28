@@ -62,10 +62,16 @@ import type { StaffHireRefusalReason } from '../staff/hiring';
  *   `docs/HUD_PROJECTIONS.md` gap 33 already records as not surviving a
  *   restore, and it is recorded there and in `docs/PERSISTENCE.md` rather
  *   than left to be discovered.
- * - **It holds no coordinates, order id or item id.** The alert says what was
- *   refused and why, not where. Carrying a tile would put a second copy of
+ * - **`SimulationRefusal` -- what crosses the worker boundary -- holds no
+ *   coordinates, order id or item id.** The alert says what was refused and
+ *   why, not where. Carrying a tile on the wire would put a second copy of
  *   the order's position on the boundary and needs a decision about how the
  *   HUD renders it; recorded in `docs/HUD_PROJECTIONS.md` rather than guessed.
+ *   **This class itself now holds one more thing that never reaches the
+ *   wire**: `record`'s optional `key` (issue #492), compared only by
+ *   `supersede` and read by nothing else, including nothing in
+ *   `src/ui/`. It is what lets a later success withdraw the very refusal it
+ *   answers without needing a tile on the public payload -- see `supersede`.
  * - **It orders nothing.** There is exactly one record, so there is no
  *   iteration here for `docs/DETERMINISM.md`'s canonical-order rule to
  *   govern -- the rule is satisfied by there being no list, not by a sort.
@@ -73,29 +79,95 @@ import type { StaffHireRefusalReason } from '../staff/hiring';
  * Writing to it is deterministic: it is written only from the kernel's
  * command handler, at the tick the command executes, from values the command
  * itself decided. Two runs of the same commands record the same refusals in
- * the same order.
+ * the same order. `supersede` is called from the same handler at the same
+ * point, so a withdrawal is exactly as deterministic as a record.
  */
 export class RefusalLog {
-  private _last: SimulationRefusal | undefined;
+  /**
+   * The total number of refusals ever recorded. Monotonic -- `supersede`
+   * withdraws `_current`, never this -- because it answers "how many times
+   * has this session refused something", and a withdrawal does not undo the
+   * fact that the refusal happened. See `count`.
+   */
+  private _sequence = 0;
+  private _current: SimulationRefusal | undefined;
+  /**
+   * An opaque identity for whatever `_current` is standing about, or
+   * `undefined` if the current refusal carries none. Compared by `supersede`
+   * and never read otherwise -- in particular it is never put on
+   * `SimulationRefusal` and never crosses the worker boundary, so it does not
+   * reopen the "no coordinates on the wire" decision above: a key can encode
+   * a tile, an id or nothing at all, and no caller outside this class and
+   * `session-commands.ts`/`construction/handler.ts` ever inspects one.
+   */
+  private _currentKey: string | undefined;
 
   /**
    * Records a refusal at `tick`, replacing whatever was last recorded.
    *
    * Replacing rather than accumulating is the whole design: see the class
    * comment. The count is not lost by replacing -- it is `sequence`.
+   *
+   * @param key See `supersede`. Omitted by a caller with no supersession
+   * story of its own; `supersede` can then never match this record, which is
+   * the correct, inert default rather than a caller having to opt out.
    */
-  public record(reason: RefusalReason, tick: number): void {
-    this._last = { sequence: (this._last?.sequence ?? 0) + 1, tick, reason };
+  public record(reason: RefusalReason, tick: number, key?: string): void {
+    this._sequence += 1;
+    this._current = { sequence: this._sequence, tick, reason };
+    this._currentKey = key;
   }
 
-  /** The most recent refusal, or `undefined` while the session has refused nothing. */
+  /**
+   * Withdraws the standing refusal if it was the one recorded under `key`,
+   * and does nothing otherwise.
+   *
+   * This is the mechanism issue #492 asked for: the simulation later
+   * *accepting* a command it had refused is a fact the simulation itself now
+   * knows, and it belongs here rather than inferred by the HUD from a rising
+   * count elsewhere (a count is a proxy, and would clear the line on a
+   * *different* room being zoned -- exactly the failure mode this method is
+   * shaped to avoid). Called once per route, from the same call site that
+   * would have called `record` had the command been refused instead, with
+   * the same key either would have used -- so "the command that just
+   * succeeded is the command that produced the standing refusal, argument
+   * for argument" is exactly what a match means, and a refusal about a
+   * different target is left alone. See each call site's own key for why
+   * that comparison is the right width for its domain: some are per-target
+   * (zone, unzone, build, place-object, remove-object, purchase,
+   * cancel-purchase, hire, release-guard), one is domain-wide because its
+   * reasons are session-global facts a differently-parameterised success
+   * still disproves (admit).
+   *
+   * A miss -- no current refusal, or one recorded under a different key, or
+   * with no key at all -- is silent and cheap: a string comparison against
+   * `undefined` is not a match, so a caller may call this on every success
+   * unconditionally rather than guarding it on "is anything currently
+   * standing".
+   */
+  public supersede(key: string): void {
+    if (this._currentKey === undefined || this._currentKey !== key) return;
+    this._current = undefined;
+    this._currentKey = undefined;
+  }
+
+  /** The most recent refusal, or `undefined` while the session has refused nothing or the last one was superseded. */
   public get last(): SimulationRefusal | undefined {
-    return this._last;
+    return this._current;
   }
 
-  /** How many refusals this session has recorded. `0` before the first. */
+  /**
+   * How many refusals this session has recorded. `0` before the first.
+   *
+   * Not affected by `supersede`: this is a historical tally of how many times
+   * `record` has run, and a later withdrawal of the standing refusal does not
+   * make it not have happened. `tests/unit/simulation-refusals.test.ts`
+   * "frees the tiles" case is the one that would catch this coupling coming
+   * back -- its final `count` assertion is 1 across a sequence whose last
+   * command supersedes that very refusal.
+   */
   public get count(): number {
-    return this._last?.sequence ?? 0;
+    return this._sequence;
   }
 }
 
@@ -313,3 +385,102 @@ export const UNZONE_REFUSAL_REASONS: Readonly<Record<UnzoneRoomRefusalReason, Re
   'nothing-to-remove': 'unzone.nothing-to-remove',
   'room-occupied': 'unzone.room-occupied',
 };
+
+/**
+ * Supersession keys (issue #492): one per route, built from the same
+ * arguments at the point a refusal would be recorded and at the point a
+ * later success is dispatched, so `RefusalLog.supersede` can tell "the
+ * command that just succeeded is the command the standing refusal was about"
+ * from "some other command in the same domain succeeded". `session-commands.ts`
+ * and `construction/handler.ts` call the matching pair on both branches of
+ * every route.
+ *
+ * **Two shapes, not one, and the difference is the answer to "does this
+ * generalise past zoning".** Nine of the ten are per-target: their refusal
+ * reasons are facts about the specific rectangle, tile, order or guard the
+ * command named, so the key names that target and nothing wider -- a
+ * successful zoning of room B must not silence a still-true refusal about
+ * room A, which is exactly the failure mode a *count* would have produced and
+ * the reason this is per-target rather than per-namespace. `admit` is the
+ * exception and is keyed domain-wide on purpose: both of its reasons
+ * (`no-accommodation`, `population-full`) are session-global facts
+ * re-evaluated identically for every admission regardless of the prisoner's
+ * own parameters (`PrisonerOperationsRuntime.requestAdmission`), so a
+ * *different* admission succeeding is not a proxy for the standing refusal
+ * being false -- it is the same check, run again, coming back the other way.
+ * A per-target key for `admit` would key on fields (`sentenceLengthTicks`,
+ * `priorIncidents`, the reception tile) that a retried admission has no
+ * reason to repeat, which would leave the bug this issue reports unfixed for
+ * intake rather than merely narrow.
+ *
+ * `hire`'s four reasons split unevenly across that boundary --
+ * `roster-full` is global like `admit`'s pair, while `insufficient-funds` and
+ * `no-duty-for-role` are per-role facts a different role's successful hire
+ * does not disprove -- and there is no one key that is exactly right for
+ * both without carrying a role for the global member and none for the
+ * per-role ones. Keyed per role uniformly: it undersells `roster-full` (a
+ * hire of a *different* role after the roster freed up will not clear a
+ * stale `roster-full` line about the first role until that same role is
+ * tried again) rather than oversells the per-role pair, which is the
+ * direction #492 asks this to err in -- "does not withdraw a refusal that is
+ * still true" is the requirement; being slower than it could be about one
+ * reason is not a violation of it. `purchase` and `place-object` key on the
+ * catalogue/definition and the target and deliberately omit the order id
+ * they also carry: an order id is minted fresh per attempt
+ * (`crypto.randomUUID()` at the call site) and is a `duplicate-order`
+ * refusal's whole subject, but a second attempt at the *same* item/tile that
+ * succeeds under a fresh id is, to the player, the same request landing --
+ * the sentence "an order like this already exists" is no longer the sentence
+ * this session needs on screen, exactly as a repeated build at the same tile
+ * clears `build.*`.
+ */
+
+/** `admit.*`'s key: both reasons are the same global check, so any successful admission answers either. */
+export function admitSupersessionKey(): string {
+  return 'admit';
+}
+
+/** `build.*`'s key: the tile, the buildable and the edge, normalised the way `resolveBuildEdge` does at the point of use. */
+export function buildSupersessionKey(definitionId: string, x: number, y: number, edge: string): string {
+  return `build:${definitionId}:${x}:${y}:${edge}`;
+}
+
+/** `zone.*`'s key: the room type and the exact rectangle -- see the class comment for why the type is part of it (`below-minimum-size` is a per-type fact). */
+export function zoneSupersessionKey(roomCatalogId: string, x: number, y: number, width: number, height: number): string {
+  return `zone:${roomCatalogId}:${x}:${y}:${width}:${height}`;
+}
+
+/** `unzone.*`'s key: the exact rectangle. `UnzoneRoom` names no room type, so none is part of it. */
+export function unzoneSupersessionKey(x: number, y: number, width: number, height: number): string {
+  return `unzone:${x}:${y}:${width}:${height}`;
+}
+
+/** `purchase.*`'s key: the item and the quantity, not the order id -- see the section comment. */
+export function purchaseSupersessionKey(itemId: string, quantity: number): string {
+  return `purchase:${itemId}:${quantity}`;
+}
+
+/** `cancel-purchase.*`'s key: the order id, which is the one thing `CancelMaterialPurchase` names. */
+export function purchaseCancelSupersessionKey(orderId: string): string {
+  return `cancel-purchase:${orderId}`;
+}
+
+/** `hire.*`'s key: the role -- see the section comment for the trade-off against `roster-full`. */
+export function hireSupersessionKey(staffRoleId: string): string {
+  return `hire:${staffRoleId}`;
+}
+
+/** `place-object.*`'s key: the buildable and the tile, not the order id -- see the section comment. */
+export function placeObjectSupersessionKey(definitionId: string, x: number, y: number): string {
+  return `place-object:${definitionId}:${x}:${y}`;
+}
+
+/** `remove-object.*`'s key: the tile. `RemoveObject` names no order id at all. */
+export function removeObjectSupersessionKey(x: number, y: number): string {
+  return `remove-object:${x}:${y}`;
+}
+
+/** `release-guard.*`'s key: the guard id, which is the one thing `ReleaseGuardAssignment` names. */
+export function releaseGuardSupersessionKey(guardId: number): string {
+  return `release-guard:${guardId}`;
+}

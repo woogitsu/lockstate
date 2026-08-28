@@ -315,9 +315,16 @@ that reached a bounded in-worker window and stopped there.
   closed union, so a reason added to the protocol fails to compile until it
   has something to say. `hudRefusalFromWorkerMessage` reads the same table for
   the band, so the two surfaces cannot drift apart about what a reason says.
-- **It stays up until another refusal replaces it, or the session ends.**
-  Nothing on this channel can say "dismissed"; that needs a main-to-worker
-  message and simulation state to hold it. Recorded as gap 34 below rather
+- **It stays up until another refusal replaces it, the session ends, or the
+  simulation accepts the very command it refused.** The third case is issue
+  #492, and it is not the HUD dismissing anything: nothing on this channel
+  can say "dismissed" in the sense of a player gesture, and that still needs
+  a main-to-worker message and simulation state to hold it, unbuilt. What
+  changed is that `RefusalLog.supersede` (`src/simulation/refusals/`) lets a
+  route withdraw its own standing refusal, from inside the same handler that
+  would have recorded it, the moment the identical command it once refused
+  succeeds — a wall built at the tile it was refused for, a room zoned over
+  the rectangle it was refused for. Recorded as gap 34 below, amended rather
   than invented here.
 - **Not snapshotted.** A restored session starts with none — see gap 33.
 
@@ -1247,16 +1254,29 @@ decision about what to build next.
     buy, and it is written down as such under "What is deliberately excluded
     from the payload" in `docs/PERSISTENCE.md`.
 
-34. **A refusal cannot be dismissed, and carries no location.** The refusal
-    raised by `simulation/status-counts` stands until another refusal replaces
-    it or the session ends: the channel is a snapshot, so "the last refusal
-    was X" stays true, and there is no way for the HUD to say "dismissed" —
-    that needs a main-to-worker message and a piece of simulation state to
-    hold the acknowledgement. The refusal also carries no tile, order id or
-    item id, so the sentence can say *what* was refused and *why* but not
-    *where*; carrying a position would put a second copy of the order's
-    location on the boundary and needs a decision about how the HUD renders it
-    (highlight the tile? move the camera?).
+34. **A refusal cannot be dismissed by the player, and carries no location on
+    the wire.** *Amended for issue #492 — the standing-until-another-refusal
+    half of this gap was closed, the rest of it stands.* The refusal raised
+    by `simulation/status-counts` used to stand until another refusal
+    replaced it or the session ended, full stop; it now also withdraws the
+    moment the simulation accepts the exact command it once refused —
+    `RefusalLog.supersede`, called from the same route that would have
+    recorded the refusal, with a key built from that command's own arguments
+    (a rectangle, a tile, an order id, a role, a guard id — one domain,
+    `admit`, compares nothing narrower than "an admission of any kind
+    succeeded", because both its reasons are session-global facts re-checked
+    identically regardless of which admission asked; see
+    `src/simulation/refusals/refusal-log.ts`'s "Supersession keys" section
+    for the ten routes' own reasoning). What is still true: there is no
+    *player* gesture that dismisses a refusal — no "close" button, no
+    main-to-worker message for it — and `SimulationRefusal`, what actually
+    crosses the worker boundary, still carries no tile, order id or item id,
+    so the sentence on screen can say *what* was refused and *why* but not
+    *where*. The key `supersede` compares against is a second, purely
+    in-worker string that never reaches `src/ui/` and is not part of
+    `SimulationRefusal`; carrying a *position* on the wire itself is still the
+    open question this gap always named, and still needs a decision about how
+    the HUD would render it (highlight the tile? move the camera?).
 
     **The placement half of this gap is closed, and this is the answer it
     named.** It used to record that the alerts section starts *folded*
