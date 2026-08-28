@@ -126,7 +126,13 @@ describe('resolveActiveRegimeBlock', () => {
 
   it('resolves the correct block right at a boundary tick (inclusive start)', () => {
     const block = resolveActiveRegimeBlock(GENERAL_POPULATION_REGIME, 500);
-    expect(block.allowedCategories).toEqual(['work', 'education']);
+    // `'free-association'` joined this block in
+    // [ADR 0054](../../docs/adr/0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md):
+    // both `work` and `education` are served only by actions naming a zoned
+    // room, so before it the block was 500 ticks a prisoner in a prison
+    // without a laundry or a classroom stood through. The boundary this test
+    // is about is unchanged; the list it reads off is not.
+    expect(block.allowedCategories).toEqual(['work', 'education', 'free-association']);
   });
 
   it('resolves the previous block one tick before a boundary (exclusive end)', () => {

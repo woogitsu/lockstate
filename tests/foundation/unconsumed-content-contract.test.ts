@@ -108,7 +108,6 @@ const AWAITING_CONSUMER: Readonly<Record<string, string>> = {
   // content rather than from a constant the service holds.
   'room.garbage-room': 'Declared with no reader anywhere; no build order, job, need or regime action names it.',
   'room.kitchen': 'Declared with no reader anywhere.',
-  'room.laundry': 'Declared with no reader anywhere.',
   // Still unconsumed, but no longer for the reason this entry gave. It read
   // "intake has no admission path yet (#89)" until an admission path arrived:
   // `src/main.ts` handles an `admit-prisoner` command (#261 step 4) and the
@@ -361,7 +360,13 @@ describe('every unconsumed content id is accounted for', () => {
       // a test-only consumer. Its entry is removed from the list above rather
       // than kept with a new reason, which is what this file's stale-entry gate
       // asks for.
-    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 14, unconsumedBySrcOnly: 31 });
+      //
+      // 13 and 30, not 14 and 31: `room.laundry` gained one the same way --
+      // `action.laundry-work` names it in `src/simulation/prisoners/actions.ts`
+      // ([ADR 0054](../../docs/adr/0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md)),
+      // so the room a player could zone and furnish to no effect now puts
+      // prisoners to work. Its entry is removed above rather than reworded.
+    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 13, unconsumedBySrcOnly: 30 });
   });
 
   it('scans a non-trivial catalog and a non-trivial consumer set, so this cannot pass vacuously', () => {

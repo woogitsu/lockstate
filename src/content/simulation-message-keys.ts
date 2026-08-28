@@ -174,6 +174,9 @@ export const SIMULATION_ENUM_GROUPS = [
       // regime's own word for the block would make the two columns read as
       // the same fact; the shorter form is also what the wing calls it.
       'action.free-association': 'Association',
+      // The job, not the room: a roster cell says what the prisoner is doing,
+      // and `room.laundry.name` is already "Laundry" two catalogs over.
+      'action.laundry-work': 'Laundry Duty',
     },
   },
   {

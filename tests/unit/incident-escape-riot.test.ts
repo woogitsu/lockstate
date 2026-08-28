@@ -185,7 +185,10 @@ describe('riot regime override: reuses the existing regime/action framework', ()
     expect(highRiskBlock.allowedCategories).toEqual(['sleep', 'meal', 'hygiene']);
 
     // The originals are unmodified, so lifting the override is just reverting to them.
+    // The list gained `'free-association'` in ADR 0054 and is read verbatim off
+    // the shipped schedule for that reason: what this asserts is that the
+    // override did not mutate it, not what the block happens to allow.
     const originalBlock = resolveActiveRegimeBlock(DEFAULT_REGIME_SCHEDULES.find((s) => s.classificationGroupId === 'general-population')!, 600);
-    expect(originalBlock.allowedCategories).toEqual(['work', 'education']);
+    expect(originalBlock.allowedCategories).toEqual(['work', 'education', 'free-association']);
   });
 });

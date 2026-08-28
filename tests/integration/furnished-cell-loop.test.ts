@@ -332,10 +332,15 @@ describe('what the toilet does and does not change in the running prison', () =>
     expect(needLevel(furnished, 'sleep')).toBeGreaterThan(250);
   });
 
-  it('makes none of the five room-gated actions reachable, and would not even if it were a bed', () => {
+  it('makes none of the six room-gated actions reachable, and would not even if it were a bed', () => {
     const furnished = prisonWithBedAndToiletOrdered();
     stepTo(furnished, 200);
 
+    // Six, not five: `action.laundry-work` joined them in
+    // [ADR 0054](../../docs/adr/0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md),
+    // and it is the sixth room this prison has not built rather than a change
+    // to what this file measures. The list is the point -- a bed and a toilet
+    // make a cell, and a cell is none of these rooms.
     const roomGated = DEFAULT_ACTIONS.filter((action) => action.target.kind === 'room-catalog-id');
     expect(roomGated.map((action) => action.id)).toEqual([
       'action.eat-meal',
@@ -343,6 +348,7 @@ describe('what the toilet does and does not change in the running prison', () =>
       'action.yard-recreation',
       'action.common-room-recreation',
       'action.classroom-education',
+      'action.laundry-work',
     ]);
 
     /*

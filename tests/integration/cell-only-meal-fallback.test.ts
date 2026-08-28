@@ -183,7 +183,8 @@ describe('a prison of cells with no canteen', () => {
     expect(watched.performingTicks).toEqual({
       'action.sleep': 2_000,
       'action.eat-in-cell': 560,
-      'action.use-toilet': 620,
+      'action.use-toilet': 580,
+      'action.free-association': 3_420,
     });
 
     /*
@@ -199,6 +200,21 @@ describe('a prison of cells with no canteen', () => {
      * sibling and ADR 0041 alternative A says so -- but the prisoner is no
      * longer doing nothing, which is a distinction the ADR's text runs
      * together.
+     *
+     * **Two of those three counts moved again on
+     * [ADR 0054](../../docs/adr/0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md),
+     * and the fourth entry is the change.** `action.free-association` was
+     * legal in two of the general-population day's ten blocks and is now legal
+     * in five, because the three that allowed only room-gated categories --
+     * both `work`/`education` blocks and the `recreation`-only block, 1,200
+     * ticks a day between them -- had no candidate this prison could resolve
+     * at all. `action.use-toilet` fell 620 -> 580 because `[1000,1200)` now
+     * ends in association rather than in the toilet the prisoner reached for
+     * once the block's own actions failed; the 3,420 ticks of association are
+     * time that was previously spent standing still. **Nothing here feeds a
+     * need that was not fed before**: association's `needEffectsPerTick` is
+     * empty, `scoreAction` therefore gives it exactly 0, and every hunger and
+     * bladder figure below is unchanged to the level.
      */
 
     // Stated as a property as well as a count, so the intent survives a
@@ -218,7 +234,17 @@ describe('a prison of cells with no canteen', () => {
      */
     expect(watched.hungerEverRose, 'a hunger level that rises is a meal that happened').toBe(true);
     expect(watched.finalHunger).toBe(230.5);
-    expect(watched.minHunger, 'the prisoner is never starved to the floor').toBe(179.5);
+    /*
+     * 178.5, and it was 179.5 before ADR 0054. One whole level, which is
+     * exactly 20 ticks of `NEED_DECAY_PER_TICK.hunger` (0.05) -- one
+     * `ActionSystem` reconsideration cadence. A 60-tick association started in
+     * the `[1000,1200)` block runs one cycle past the block it began in, so
+     * the first meal of the `[1200,1300)` block begins one cycle later than it
+     * used to and the trough is one cycle deeper. It is a shift in *when* the
+     * prisoner eats, not in whether: the meal count above is unchanged at 560
+     * ticks.
+     */
+    expect(watched.minHunger, 'the prisoner is never starved to the floor').toBe(178.5);
 
     /*
      * And it is nowhere near what pure decay would leave. The prisoner is

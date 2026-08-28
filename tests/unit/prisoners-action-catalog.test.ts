@@ -51,7 +51,9 @@ import { buildRiotRegimeSchedule } from '../../src/simulation/incidents/riot-reg
  * with any arrangement of it, including the one this file exists to reject.
  * Indices 0–7 are the eight actions every save written before
  * `action.free-association` existed could name; index 8 is that entry, appended
- * rather than inserted, and appended is why 0–7 still read as they did.
+ * rather than inserted, and appended is why 0–7 still read as they did. Index 9
+ * is `action.laundry-work` ([ADR 0054](../../docs/adr/0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md)),
+ * appended for the same reason and behind the same gate.
  *
  * Extending this list is what adding an action looks like: put the new id at
  * the **end**, next index, same commit. Editing any line above the last one is
@@ -68,6 +70,7 @@ const SAVED_ACTION_INDEX_MEANS: readonly (readonly [index: number, actionId: str
   [6, 'action.common-room-recreation'],
   [7, 'action.classroom-education'],
   [8, 'action.free-association'],
+  [9, 'action.laundry-work'],
 ];
 
 describe('a saved actionIndex still names the action it named when it was written', () => {
@@ -119,11 +122,13 @@ describe('a saved actionIndex still names the action it named when it was writte
     ).toBe(SAVED_ACTION_INDEX_MEANS.length);
   });
 
-  it('put the new entry at the end rather than beside its category siblings', () => {
-    // The instance, stated separately from the rule. `action.free-association`
-    // reads naturally next to the two recreation entries and that is precisely
-    // where it must not go: index 5 and 6 already mean something on disk.
-    expect(DEFAULT_ACTIONS[DEFAULT_ACTIONS.length - 1]!.id).toBe('action.free-association');
+  it('put each new entry at the end rather than beside its category siblings', () => {
+    // The instances, stated separately from the rule. `action.free-association`
+    // reads naturally next to the two recreation entries and `action.laundry-work`
+    // next to `action.shower`, whose need it shares -- and both are precisely
+    // where they must not go: indices 4, 5 and 6 already mean something on disk.
+    expect(DEFAULT_ACTIONS[DEFAULT_ACTIONS.length - 1]!.id).toBe('action.laundry-work');
+    expect(DEFAULT_ACTIONS[DEFAULT_ACTIONS.length - 2]!.id).toBe('action.free-association');
   });
 });
 
@@ -142,7 +147,16 @@ describe('a saved actionIndex still names the action it named when it was writte
  */
 
 const CATEGORIES_WITH_NO_ACTION: Readonly<Record<string, string>> = {
-  work: 'Declared in `ACTION_CATEGORIES` and allotted 1,000 of `GENERAL_POPULATION_REGIME`\'s 2,400 daily ticks across two blocks, with nothing authored under it. Deliberate and deferred rather than overlooked: a `work` action needs somewhere to work and something to be worth, which is [ADR 0042](../../docs/adr/0042-attaching-consequences-to-the-simulation-loop.md) step 6 and `docs/ROADMAP.md` phase 9. Both blocks also allow `education`, so they are not empty — they resolve for a prison that has zoned and furnished a classroom, and for no other. ADR 0042 records the cheaper interim if step 6 slips: drop `work` from the two schedules rather than author it badly.',
+  /*
+   * **Empty, and an empty list is the assertion rather than the absence of
+   * one.** `work` was the last entry and it went with `action.laundry-work`
+   * ([ADR 0054](../../docs/adr/0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md));
+   * `free-association` went with `action.free-association` before it (ADR 0042
+   * decision 1). The three assertions below all still run against it: the first
+   * fails if a category is ever added to `ACTION_CATEGORIES` without content
+   * and without a reason written here, and the other two fail if an entry
+   * outlives the fact it records. Deleting the map would delete all three.
+   */
 };
 
 /** Every category any shipped or runtime-built schedule can put in front of `beginNextAction`. */
@@ -225,22 +239,23 @@ describe('every action category a schedule can allow, measured against the catal
 
   it('measures how much of each schedule a cell-only prison cannot serve', () => {
     /*
-     * **The number this change exists to move, and the two it does not.**
+     * **The number this change exists to move, and it is now zero for all
+     * three.**
      *
-     * The riot schedule was 2,400 of 2,400 — a full day, every day the riot
-     * lasted, with `beginNextAction` reaching its empty-candidate path at
-     * `action-system.ts:427` on every one of the 120 reconsiderations. Both
-     * `RIOT_ALLOWED_CATEGORIES` are authored, so a catalogue-only reading said
-     * the riot was covered; both recreation actions target a zoned room, so in
-     * a prison with no yard and no common room it was not.
+     * `GENERAL_POPULATION_REGIME` was 1,200 of 2,400 -- its two
+     * `work`/`education` blocks (1,000) and its one `recreation`-only block
+     * (200), every category in all three being served only by an action that
+     * names a zoned room. `HIGH_RISK_REGIME` was 200, its supervised-yard
+     * block. The riot schedule was 2,400 until ADR 0042 decision 1 appended
+     * `action.free-association`, and has been 0 since.
      *
-     * The other two do not move, and saying so is the honest half of the
-     * report. `GENERAL_POPULATION_REGIME`'s 1,200 is its two `work`/`education`
-     * blocks (1,000) and its one `recreation`-only block (200); the two blocks
-     * that allow `free-association` also allow `hygiene`, and
-     * `action.use-toilet` is an `own-accommodation` action, so those 400 ticks
-     * were already served. `HIGH_RISK_REGIME`'s 200 is its supervised-yard
-     * block. Both are ADR 0042's later steps, not this one.
+     * [ADR 0054](../../docs/adr/0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md)
+     * adds `'free-association'` to those four blocks, which is what takes the
+     * other two to zero. It is not the same fix as authoring `work`:
+     * `action.laundry-work` names `room.laundry` and so moves none of these
+     * numbers, because this function counts blocks with no
+     * `own-accommodation` candidate and a work action in a room is not one.
+     * Both landed together and only one of them is measured here.
      */
     const general = DEFAULT_REGIME_SCHEDULES.find((schedule) => schedule.classificationGroupId === 'general-population')!;
     const highRisk = DEFAULT_REGIME_SCHEDULES.find((schedule) => schedule.classificationGroupId === 'high-risk')!;
@@ -251,10 +266,93 @@ describe('every action category a schedule can allow, measured against the catal
       riot: idleTicksPerDayInACellOnlyPrison(buildRiotRegimeSchedule('general-population')),
       dayLengthTicks: DAY_LENGTH_TICKS,
     }).toEqual({
-      generalPopulation: 1_200,
-      highRisk: 200,
+      generalPopulation: 0,
+      highRisk: 0,
       riot: 0,
       dayLengthTicks: 2_400,
     });
+  });
+
+  it('names the individual block if one is ever authored with nowhere for a housed prisoner to go', () => {
+    /*
+     * **The class, not the instance.** The measurement above is a total, and a
+     * total goes back up by 200 without saying which of thirteen blocks did
+     * it. This one fails with the block's own bounds and categories in the
+     * message, and it is the assertion a *future* schedule has to satisfy --
+     * the failure mode ADR 0054 exists to close is a block authored out of
+     * room-gated categories alone, which reads perfectly well until a player
+     * has not built the room.
+     *
+     * Deliberately phrased over every schedule this repository ships or builds
+     * at runtime, including the riot one, rather than over the two the module
+     * checks for gaplessness at load: `buildRiotRegimeSchedule` is exactly the
+     * schedule that had this defect and exactly the one `assertGaplessSchedule`
+     * never sees.
+     */
+    const schedules = [...DEFAULT_REGIME_SCHEDULES, buildRiotRegimeSchedule('general-population')];
+    const strandingBlocks: string[] = [];
+
+    for (const schedule of schedules) {
+      for (const block of schedule.blocks) {
+        const terminal = DEFAULT_ACTIONS.filter(
+          (action) => block.allowedCategories.includes(action.category) && action.target.kind === 'own-accommodation',
+        );
+        if (terminal.length === 0) {
+          strandingBlocks.push(`${schedule.classificationGroupId} [${block.startTickOfDay},${block.endTickOfDay}) allows ${block.allowedCategories.join('+')}`);
+        }
+      }
+    }
+
+    expect(
+      strandingBlocks,
+      'this block allows only categories whose every action names a zoned room, so a housed prisoner in a prison that has not built one stands through the whole of it and beginNextAction counts an unmet demand cycle for every reconsideration. Give the block a category with an own-accommodation action -- free-association is the one authored for this -- or author the roomless action the block needs',
+    ).toEqual([]);
+  });
+
+  it('cannot pass by there being no room-gated action left to strand anybody', () => {
+    /*
+     * The vacuity guard for the assertion above, and it is not a formality:
+     * if every action in the catalogue targeted `own-accommodation` the check
+     * would be unfailable and would still read as a strong statement. Five of
+     * the ten name a room, so the property being asserted is a real one about
+     * how the blocks are composed.
+     */
+    const roomGated = DEFAULT_ACTIONS.filter((action) => action.target.kind === 'room-catalog-id');
+    expect(roomGated.length).toBeGreaterThan(0);
+    expect(roomGated.map((action) => action.id)).toContain('action.laundry-work');
+  });
+
+  it('gives the work category a room a player can zone and furnish, not a second cell terminal', () => {
+    /*
+     * What ADR 0054 decided about `work`, stated where a future edit would
+     * trip over it. The measurement it rests on is that no block anywhere
+     * allows `work` alone -- so an `own-accommodation` work action would have
+     * closed no gap and would only have duplicated `action.free-association`,
+     * which is the "author it badly" ADR 0042 step 6 warned against.
+     */
+    const work = DEFAULT_ACTIONS.filter((action) => action.category === 'work');
+    expect(work.map((action) => action.id)).toEqual(['action.laundry-work']);
+    expect(work[0]!.target).toEqual({ kind: 'room-catalog-id', roomCatalogId: 'room.laundry' });
+    expect(work[0]!.requiredObjectCapability).toBe('laundry');
+
+    const workOnlyBlocks = [...DEFAULT_REGIME_SCHEDULES, buildRiotRegimeSchedule('general-population')]
+      .flatMap((schedule) => schedule.blocks)
+      .filter((block) => block.allowedCategories.length === 1 && block.allowedCategories[0] === 'work');
+    expect(workOnlyBlocks, 'a block allowing work alone would make this a room-gated block with no terminal').toEqual([]);
+  });
+
+  it('keeps the second route to a need slower than the first, as the catalogue already does', () => {
+    /*
+     * The convention `action.eat-in-cell` (3) against `action.eat-meal` (4)
+     * and `action.common-room-recreation` (2) against `action.yard-recreation`
+     * (3) set, stated over the pairs rather than about the new one, so it is a
+     * property of the catalogue and not a restatement of one row.
+     */
+    const rateOf = (id: string, need: 'hunger' | 'hygiene' | 'recreation'): number =>
+      DEFAULT_ACTIONS.find((action) => action.id === id)!.needEffectsPerTick[need]!;
+
+    expect(rateOf('action.eat-in-cell', 'hunger')).toBeLessThan(rateOf('action.eat-meal', 'hunger'));
+    expect(rateOf('action.common-room-recreation', 'recreation')).toBeLessThan(rateOf('action.yard-recreation', 'recreation'));
+    expect(rateOf('action.laundry-work', 'hygiene')).toBeLessThan(rateOf('action.shower', 'hygiene'));
   });
 });

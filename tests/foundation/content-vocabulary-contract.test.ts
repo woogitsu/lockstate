@@ -139,7 +139,6 @@ const UNGATED_BY_ANY_ACTION: Readonly<Record<string, string>> = {
   'food-preparation': 'Declared by `object.stove` and `object.prep-counter`, both required by `room.kitchen`. No action prepares food: `DEFAULT_ACTIONS` has `action.eat-meal` gating on `dining` in a canteen, and nothing that cooks. A meal-production or kitchen-job system is what would gate on it, and neither exists.',
   'food-storage': 'Declared by `object.fridge`, required by `room.kitchen`. Gated on by no action, for the same reason as `food-preparation`: nothing in the simulation produces or stores a meal as an object yet.',
   'item-storage': "Declared by `object.storage-rack`, required by `room.storage-room`. `src/simulation/construction/definition.ts` lists it among the capabilities that \"appear in no `DEFAULT_ACTIONS` entry and in no other room's requirements\", and names #99's salvage destination as what would consume it.",
-  laundry: "Declared by `object.washing-machine`, required by `room.laundry`. `src/simulation/construction/definition.ts` singles this one out: the capability \"is gated by **nothing**: no entry in `DEFAULT_ACTIONS` names it and no other room requires it, so a furnished `room.laundry` reads both its requirements satisfied and changes no prisoner's behaviour\", and names a laundry job system as what would consume it.",
   'medical-supply': 'Declared by `object.medicine-cabinet`, required by `room.infirmary`. No action treats or medicates a prisoner; the health/treatment system that would gate on it does not exist.',
   'medical-treatment': "Declared by `object.medical-bed`, required by `room.infirmary`. It is load-bearing in the containment join and `src/simulation/construction/definition.ts` explains the asymmetry it produces -- a plain `object.bed` cannot satisfy an infirmary's requirement while a medical bed can satisfy a cell's -- but no action names it, so nothing a prisoner does depends on it.",
   seating: "Declared by `object.chair` and `object.bench`. Not gated on by any action, and the near miss is recorded in `src/simulation/construction/definition.ts`: a bench declares `'seating'` and `'recreation'` and **not** `'dining'`, so a canteen's dining capacity comes from its tables and its benches bound nothing. Whether a bench should carry `'dining'` is left open there deliberately (#326) and is a content decision, not this gate's to make.",
@@ -147,7 +146,7 @@ const UNGATED_BY_ANY_ACTION: Readonly<Record<string, string>> = {
   surveillance: "Declared by `object.security-console`, required by `room.security-office`. `src/simulation/construction/definition.ts` lists it among the ungated five and names a security-deployment system as what would consume it. It is also the capability that makes the desk/console asymmetry work, which that comment sets out in full.",
   'utility-control': "Declared by `object.utility-panel`, required by `room.utility-room`. Listed in `src/simulation/construction/definition.ts` among the capabilities gated by nothing, with a maintenance job system named as what would consume it.",
   'waste-disposal': "Declared by `object.waste-bin`, required by `room.garbage-room`. Listed in `src/simulation/construction/definition.ts` among the capabilities gated by nothing.",
-  workstation: "Declared by `object.desk` **and** `object.security-console`, and required by `room.reception` and `room.staff-room` through the desk. No action gates on it -- `ACTION_CATEGORIES` has a `work` category with no member in `DEFAULT_ACTIONS` at all (#440), so the actions that would name it are the two categories that are empty. This is the capability the reproduction above mutated, and the one whose typo nothing caught.",
+  workstation: "Declared by `object.desk` **and** `object.security-console`, and required by `room.reception` and `room.staff-room` through the desk. No action gates on it. **The reason recorded here used to be that `ACTION_CATEGORIES`' `work` category had no member in `DEFAULT_ACTIONS` at all (#440), and that is no longer true**: `action.laundry-work` is authored under `work` and gates on `'laundry'` ([ADR 0054](../../docs/adr/0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md)). A prisoner working at a desk is a different job in a different room -- `room.reception` and `room.staff-room` are staff rooms -- and no action names one yet. This is the capability the reproduction above mutated, and the one whose typo nothing caught.",
 };
 
 describe('an object capability is declared and gated on, or it is accounted for', () => {
@@ -168,7 +167,7 @@ describe('an object capability is declared and gated on, or it is accounted for'
       required: requiredCapabilities.length,
       declaredNotRequired: declaredNotRequired.length,
       requiredNotDeclared: requiredNotDeclared.length,
-    }).toEqual({ declared: 19, required: 6, declaredNotRequired: 13, requiredNotDeclared: 0 });
+    }).toEqual({ declared: 19, required: 7, declaredNotRequired: 12, requiredNotDeclared: 0 });
   });
 
   it('cannot pass vacuously on an empty catalogue or an empty scan', () => {
@@ -378,7 +377,7 @@ describe('the message-key namespaces are counted, and no call site names one tha
       labelsWithoutACallSite: labelsWithoutCallSite,
     }).toEqual({
       namespaces: 42,
-      labels: 172,
+      labels: 173,
       namespacesWithACallSite: 9,
       namespacesWithoutACallSite: 33,
       labelsWithoutACallSite: 127,

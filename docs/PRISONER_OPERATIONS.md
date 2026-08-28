@@ -13,17 +13,22 @@ Per the issue's explicit scope, this is deliberately bounded:
 
 - **6 core needs** (hunger, sleep, hygiene, bladder, safety, recreation),
   not the full eventual need catalog.
-- **9 candidate actions**, **2 classification groups**
+- **10 candidate actions**, **2 classification groups**
   (general-population, high-risk) each with their own regime schedule --
   enough to prove the mechanism (data-driven actions, regime-gated
   eligibility, capacity/permission-aware routing), not a balanced,
   complete content set. It was eight for the whole of issue #24's life; the
   ninth is `action.free-association`, appended for
   [ADR 0042](./adr/0042-attaching-consequences-to-the-simulation-loop.md)
-  decision 1 (see *Actions* below for why appending is the load-bearing word).
-  Six of the seven `ACTION_CATEGORIES` now have content;
-  `tests/unit/prisoners-action-catalog.test.ts` carries the seventh with the
-  reason it does not.
+  decision 1, and the tenth is `action.laundry-work`, appended for
+  [ADR 0054](./adr/0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md)
+  decision 3 (see *Actions* below for why appending is the load-bearing word).
+  **All seven `ACTION_CATEGORIES` now have content.**
+  `tests/unit/prisoners-action-catalog.test.ts` carried the seventh, `work`,
+  with the reason it did not until ADR 0054 authored it, and its
+  `CATEGORIES_WITH_NO_ACTION` map is now empty rather than deleted -- the
+  three assertions over it are what fail if a category is ever added without
+  content again.
 - Final personality/trait depth (#39), full violence/contraband/security
   systems (#26-28), advanced crowd steering and final need-catalog balance
   are all explicitly out of scope here.
@@ -197,6 +202,21 @@ rather than a persistence one --
 decision 1 corrects issue #440 on exactly this point.
 `tests/unit/prisoners-action-catalog.test.ts` is the gate; this paragraph is
 the reason.
+
+**Six of the ten actions target a zoned room, and a regime block whose every
+category is served only by those is a block the prisoner stands through.**
+`assertGaplessSchedule` answers "does every tick fall in a block" and cannot
+answer "does every block leave a housed prisoner something to start"; four of
+the two schedules' thirteen blocks failed the second question until
+[ADR 0054](./adr/0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md)
+added `'free-association'` to them. Measured on the real kernel, one prisoner,
+ten in-game days, a prison of cells and nothing else: **1,442 of 2,400 ticks a
+day idle and 560 unmet demand cycles before, 610 and 0 after** -- the 610 being
+`ActionSystem`'s twenty-tick reconsideration cadence, which a fully furnished
+prison also pays. `hygiene` and `recreation` are still served by nothing in
+that prison, deliberately: ADR 0054 decision 1 rules them room-gated by design,
+because ADR 0048 makes an unmet need the thing a riot is built out of and a
+yard costs no objects at all.
 
 **`action.free-association` is the catalogue's one entry with no need effect,
 and that is deliberate.** `scoreAction` sums `deficit x effect`, so an action
