@@ -901,12 +901,25 @@ counts the unmet cycle, which is the convention `continuePerforming` already
 followed for the same two conditions.
 `tests/integration/unzoned-target-mid-journey.test.ts` is the run.
 
-**Abstracted arrival, by explicit design.** On a resolved route, a
-prisoner's tile position updates directly to the destination -- there is
-no tile-by-tile locomotion simulation. This mirrors #21/#22's own explicit
-scope boundary ("actor movement/rendering... out of scope for both");
-implementing real per-tick locomotion belongs to a future
-rendering/movement system, not this issue.
+**A prisoner walks the route, one tile at a time**
+([ADR 0059](./adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md)).
+`ActionSystem` hands the resolved route's waypoints to `LocomotionStore` and
+`LocomotionSystem` advances them every tick at one tile per four kernel ticks;
+`arrive` -- the room check and the seat claim, unchanged -- runs when the walk
+ends. Sub-tile progress lives in that store and **no save carries it**, for the
+same reason no save carries the path request: a restored session rebuilds the
+navigation queue empty and drops a traveller to `idle`.
+
+> **This paragraph said the opposite until ADR 0059, and it was right about the
+> code it described:** *"Abstracted arrival, by explicit design. On a resolved
+> route, a prisoner's tile position updates directly to the destination -- there
+> is no tile-by-tile locomotion simulation. This mirrors #21/#22's own explicit
+> scope boundary ('actor movement/rendering... out of scope for both');
+> implementing real per-tick locomotion belongs to a future rendering/movement
+> system, not this issue."* The future system is `src/simulation/locomotion/`
+> and it is a *simulation* system rather than a rendering one, which is the one
+> word of that sentence that turned out to be wrong: a position the renderer
+> invented would have been a renderer-side movement model.
 
 ## Snapshot/restore
 
@@ -978,8 +991,14 @@ re-benchmark navigation throughput at scale -- see
 ## What is out of scope here
 
 Full violence/gangs/contraband/rehabilitation systems (#27/#28/#30); final
-personality/trait depth (#39); advanced crowd steering; tile-by-tile
-locomotion/rendering; the complete final need/action catalog and balance;
+personality/trait depth (#39); advanced crowd steering; the complete final
+need/action catalog and balance;
+**"tile-by-tile locomotion/rendering" was listed here as out of scope and is
+removed, because it shipped**:
+[ADR 0059](./adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md) makes a
+prisoner walk the route, and the body of this document says so above. Crowd
+steering stays out: a walk here follows one route's waypoints and no actor
+avoids another;
 **"real object-placement tracking" was listed here as out of scope and is
 removed, because it shipped**: `PlacedObjectRegistry` and `RemoveObject` are
 described by this same document at `:178-180` and `:315-325`, so the exclusion

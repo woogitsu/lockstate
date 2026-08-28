@@ -294,25 +294,44 @@ it is on.
 
 ## What is not rendered yet, and why
 
-- **Actor movement, and guards.** Every prisoner is drawn with the idle clip and
-  `actor-pose.ts`'s default facing, on both of the paths that reach the frame.
-  Those are written as documented defaults and labelled as such at the call
-  site, not derived by differencing two publications into an invented walk --
-  that would be a renderer-side movement model, which architectural boundary 1
-  forbids.
+- **Guards.** Prisoners walk (see below); guards do not reach the renderer at
+  all yet. They are the other population whose tiles the simulation already
+  holds (`simulation.security.guards`, as `GuardRecord.tileX`/`tileY`), the
+  delta's record carries a population ordinal for exactly this, and ADR 0040
+  puts them in slice 2. [ADR 0059](./adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md)
+  open question 4 says why the two halves are one decision: guards still
+  teleport between patrol waypoints, and drawing them doing it beside prisoners
+  who walk would look worse than not drawing them.
 
-  **The render delta channel is not what is missing for motion, and this
-  paragraph used to say it was.** The simulation updates an actor's position
-  only on arrival at a resolved route's destination
-  (`src/simulation/prisoners/components.ts` states the convention;
-  `action-system.ts` and `patrol-system.ts` each teleport and say so), so an
-  actor's authoritative position changes about twice per errand. A channel at
-  any cadence therefore delivers *fresher teleports*, not walking. What is
-  missing is simulation-side locomotion, which is its own decision and is not
-  taken by ADR 0040 -- and until it is taken, no cadence on this channel will
-  make an actor walk. The renderer's half is finished and proven:
-  `DemoActorFeed` produces fractional positions and real motion vectors and
-  `ActorLayer` draws them.
+  > **Prisoner movement was in this list until ADR 0059, and the paragraph that
+  > held it read:** *"The render delta channel is not what is missing for
+  > motion, and this paragraph used to say it was. The simulation updates an
+  > actor's position only on arrival at a resolved route's destination …, so an
+  > actor's authoritative position changes about twice per errand. A channel at
+  > any cadence therefore delivers fresher teleports, not walking. What is
+  > missing is simulation-side locomotion, which is its own decision and is not
+  > taken by ADR 0040."* Every word of that was true of the code it described,
+  > and ADR 0059 is the decision it was waiting for. What survives it unchanged
+  > is the sentence before: a renderer may not difference two publications into
+  > an invented walk, and it still does not — the velocity it draws by is
+  > published, and `actor-extrapolation.ts` states the four conditions that
+  > keep advancing a published position on the right side of boundary 1.
+
+- **How a prisoner is drawn while walking.** The payload carries a **sub-tile
+  position**, a **velocity in sub-tile units per wall-clock second** and a
+  **heading** (layout 2, ADR 0059). `actors-from-delta.ts` turns the first into
+  the continuous tile coordinates `RenderActor` has always declared, the second
+  into `deltaX`/`deltaY`, and the third into a facing through
+  `directionFromMovement` — so `selectActorPose` chooses the walk clip and the
+  authored direction, and the 8-direction atlases are reached by a real prison
+  rather than only by `DemoActorFeed`. An actor that has never walked publishes
+  heading `0, 0`, and `facing` is then **absent** rather than written as south.
+
+  Between two publications — 100 ms apart at ADR 0040's ceiling — the feed
+  advances each actor from the position it was published at by the velocity
+  published with it, bounded to `MAX_ACTOR_EXTRAPOLATION_SECONDS` and only while
+  the clock runs. Without that a prisoner walking at five tiles a second moves
+  in half-tile steps ten times a second.
 
   Guards are the other population whose tiles the simulation already holds
   (`simulation.security.guards`, as `GuardRecord.tileX`/`tileY`), and they are
