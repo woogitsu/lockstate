@@ -119,10 +119,14 @@ export class StaffHiringService {
      * reading `Treasury.spend` already takes of a purchase nobody can afford.
      *
      * `allGuardIds().length` is the live headcount rather than a high-water
-     * mark: nothing in `src/` destroys an entity (#31), so it cannot yet
-     * disagree with the store's own occupancy -- and if a destroy path
-     * arrives, a count of live records is the reading that stays correct while
-     * a spawn counter would not.
+     * mark: nothing dismisses a guard, so this store's occupancy cannot yet
+     * disagree with it. **The guard store, specifically** -- this comment used
+     * to say "nothing in `src/` destroys an entity (#31)", and since #441 gave
+     * a prisoner's sentence an end that is false of the *prisoner* store, which
+     * recycles indices in an ordinary session. Staff and prisoners are two
+     * `EntityStore`s, and no path in `src/` destroys a staff entity. The
+     * reading was already the one that survives a destroy path arriving here,
+     * which is why nothing needs to change but the sentence.
      */
     if (this.roster.allGuardIds().length >= this.roster.entityStore.capacity) {
       return { kind: 'refused', reason: 'roster-full' };

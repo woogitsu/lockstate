@@ -280,6 +280,21 @@ describe('kernel system ordering', () => {
    * inert. A test that ran past tick 2,399 would see the treasury move, and
    * should.
    *
+   * **What the fourth one does and does not disturb.**
+   * `prisoners.discharge` (order 65) is appended into the gap between
+   * `prisoners.needs-decay` (60) and `construction` (100), so again no existing
+   * system moves. Its position is argued rather than convenient: a prisoner
+   * whose sentence ended must not be handed a route (`navigation`, 150), an
+   * action (`prisoners.actions`, 250) or a haulage job (`operations.jobs`, 260)
+   * later in the tick they leave on. Unlike the three above it fires often --
+   * `intervalTicks: 20`, `phaseTicks: 0` -- but it releases nobody in this
+   * directory's 400-tick scenarios, because the earliest tick at which any
+   * sentence in them can end is the classification tick plus the shortest
+   * sentence the scenario admits. The recorded outcome is byte-identical for
+   * that reason and not because the system is inert;
+   * `tests/integration/sentence-end-release.test.ts` runs past a sentence end
+   * and watches a prisoner leave.
+   *
    * The retirement the sentence above requires was looked for and **there is
    * nothing in this repository to retire**, which is worth recording so the
    * next person does not go hunting for a list that does not exist:
@@ -302,6 +317,7 @@ describe('kernel system ordering', () => {
       { id: 'prisoners.intake', order: 50 },
       { id: 'prisoners.classification-review', order: 55 },
       { id: 'prisoners.needs-decay', order: 60 },
+      { id: 'prisoners.discharge', order: 65 },
       { id: 'construction', order: 100 },
       { id: 'procurement', order: 110 },
       { id: 'economy.state-income', order: 120 },

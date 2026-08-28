@@ -184,13 +184,17 @@ export class IntakeSystem implements SystemRegistration {
    * Placement-relevant records for a cell's current occupants, **skipping
    * any id that is no longer alive**.
    *
-   * The liveness filter is required rather than defensive. `release` is
-   * never called for a destroyed prisoner (#31), so `occupants` can hold
-   * the id of an entity that no longer exists, and `EntityStore.getIndex`
-   * masks without checking -- reading that id's record would silently
-   * return whoever currently occupies the recycled slot. The caller's
-   * ascending-entity-id order is preserved: this appends in input order and
-   * only ever drops.
+   * The liveness filter is required rather than defensive, **and the reason it
+   * is required has been replaced by a better one.** It used to be that
+   * `release` was never called for a destroyed prisoner (#31), so `occupants`
+   * could hold the id of an entity that no longer existed. Since #441 it is
+   * called -- `releasePrisoner` drops a departing prisoner from every instance
+   * -- so the ordinary case is now that a dead id is *not* in this list. The
+   * filter stays because it is the guard that makes that a fact rather than a
+   * hope: `EntityStore.getIndex` masks without checking, so a single missed
+   * removal anywhere would silently rate this cell against whoever currently
+   * occupies the recycled slot. The caller's ascending-entity-id order is
+   * preserved: this appends in input order and only ever drops.
    */
   private sharingViewsOf(occupants: readonly EntityId[]): readonly CellSharingView[] {
     const views: CellSharingView[] = [];
@@ -216,12 +220,17 @@ export class IntakeSystem implements SystemRegistration {
    * is the whole reason this exists, and it is a difference in *kind*:
    *
    * - `allByRoomCatalogId(...).length === 0` is `'failed'`, and `'failed'` is
-   *   **terminal**. No branch of `update` matches it, so a prisoner who
-   *   reaches it stays there for the rest of the session -- measured:
-   *   registering a matching room instance four hundred ticks later leaves
-   *   the stage at `'failed'`. `ActionSystem` gates on `'completed'`
-   *   (`action-system.ts`), and nothing in `src/` releases a prisoner (#31),
-   *   so that record is inert and undeletable.
+   *   **terminal within the stage machine**. No branch of `update` matches it,
+   *   so a prisoner who reaches it stays there -- measured: registering a
+   *   matching room instance four hundred ticks later leaves the stage at
+   *   `'failed'`. `ActionSystem` gates on `'completed'`
+   *   (`action-system.ts`), so that record is inert.
+   *   **It is no longer undeletable, and this sentence used to say it was**,
+   *   on the grounds that nothing in `src/` released a prisoner (#31). Since
+   *   #441 `PrisonerDischargeSystem` treats `'failed'` as a sentence-bearing
+   *   stage, so the record ends when the sentence would have -- which changes
+   *   how long the bad answer lasts and not that it is one, so the guard
+   *   below is unchanged.
    * - An instance that exists but is full or lacks the capability is a
    *   *wait*: the stage is kept and retried, `accommodationBacklogTicks`
    *   counts it, and the arrival completes the moment a place frees up. That
