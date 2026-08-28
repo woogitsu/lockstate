@@ -4,6 +4,7 @@ import type { NavigationSystem } from '../navigation/navigation-system';
 import type { RouteContext } from '../navigation/route-context';
 import { resolveStaffRouteContext } from '../security/access-policy';
 import type { GuardRoster } from '../security/guard-roster';
+import { claimableGuardIds } from '../security/post-eligibility';
 import type { SecuritySectorRegistry } from '../security/sector';
 import type { TilePosition } from '../world/coordinates';
 import type { IncidentRecord, IncidentOutcome } from './incident';
@@ -277,7 +278,15 @@ export class IncidentResponseSystem implements SystemRegistration {
    */
   private claimableResponders(incident: IncidentRecord): readonly EntityId[] | undefined {
     const required = this.requiredResponderCount(incident.severity);
-    const available = this.guards.unassignedGuardIds();
+    /*
+     * `claimableGuardIds`, not `unassignedGuardIds()`: answering a riot is a
+     * security duty, so only a post-eligible role counts towards `required`
+     * (ADR 0053). Before it, a roster of nurses satisfied a severity-7
+     * response and the pipeline reported `respondersDispatched: 4` -- which
+     * is exactly the "true and meaningless" completion issue #457 warns this
+     * issue may be blocking.
+     */
+    const available = claimableGuardIds(this.guards);
     if (available.length < required) return undefined;
     return available.slice(0, required);
   }

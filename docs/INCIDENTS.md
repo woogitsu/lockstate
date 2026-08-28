@@ -163,10 +163,14 @@ matter how understaffed the sector is.
 
 ## Response: real guards, real routes, real lockdown
 
-`IncidentResponseSystem` claims guards from
-`GuardRoster.unassignedGuardIds()` — the same finite shared pool
+`IncidentResponseSystem` claims guards through `claimableGuardIds`
+(`src/simulation/security/post-eligibility.ts`) — the same finite shared pool
 `DeploymentSystem` and #27's `SearchSystem` draw from, so emergency
-response is a genuine staffing diversion. Responder count scales with
+response is a genuine staffing diversion. Since
+[ADR 0053](./adr/0053-who-may-stand-a-security-post.md) that pool is the
+*post-eligible* unassigned staff rather than every unassigned staff member: a
+nurse on the roster is not a responder, and a prison holding five of them lets a
+severity-7 riot lapse rather than reporting `respondersDispatched: 4`. Responder count scales with
 severity (`respondersPerSeverityPoint`); while too few guards exist the
 incident stays observably `'active'` rather than silently resolving.
 

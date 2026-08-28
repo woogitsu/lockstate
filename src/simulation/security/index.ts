@@ -5,6 +5,7 @@ export * from './deployment-system';
 export * from './guard-release';
 export * from './guard-roster';
 export * from './patrol-system';
+export * from './post-eligibility';
 export * from './sector';
 export * from './sector-occupancy';
 export * from './sector-staffing';

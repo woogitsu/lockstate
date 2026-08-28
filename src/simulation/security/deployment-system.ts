@@ -4,6 +4,7 @@ import type { RouteContext } from '../navigation/route-context';
 import type { TilePosition } from '../world/coordinates';
 import { resolveStaffRouteContext } from './access-policy';
 import { resolveRequiredGuardCount, type DeploymentSchedule } from './deployment-schedule';
+import { claimableGuardIds } from './post-eligibility';
 import { resolveOccupancyScaledGuardCount, type SectorOccupantCountResolver } from './sector-staffing';
 import type { EntityId } from '../entity/entity-store';
 import type { GuardRoster } from './guard-roster';
@@ -129,7 +130,15 @@ export class DeploymentSystem implements SystemRegistration {
       let shortage = required - this.assignedGuardCountFor(sector.id);
       if (shortage <= 0) continue;
 
-      for (const guardId of this.guards.unassignedGuardIds()) {
+      /*
+       * `claimableGuardIds`, not `unassignedGuardIds()`: a sector post is a
+       * security duty and only a post-eligible role may hold one (ADR 0053).
+       * Before it, the first hire of any of the eight roles was posted and
+       * `getCoverageReport` then read `shortage: 0` -- so an administrator on
+       * the wall took `staffingShortfall` to zero and the sector stopped
+       * being able to reach `hotThreshold` at all.
+       */
+      for (const guardId of claimableGuardIds(this.guards)) {
         if (shortage <= 0) break;
         this.beginDeployment(guardId, sector.id, sector.postTile, tick);
         shortage -= 1;

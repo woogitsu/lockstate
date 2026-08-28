@@ -269,6 +269,12 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // and a purchase alike, and somebody who pressed Hire must not be told the
   // materials were not ordered.
   'hud.alert.refusal.hire.insufficient-funds': 'Nobody was hired — there are not enough funds.',
+  // ADR 0053: the only work a staff member can be sent to do today is a
+  // security duty, so a role outside the security department is a wage with
+  // nothing behind it. The sentence names the rule rather than the department
+  // of the role that tripped it, because the refusal channel carries an id and
+  // no parameters (`SimulationRefusal` is sequence, tick and reason).
+  'hud.alert.refusal.hire.no-duty-for-role': 'Nobody was hired — only security staff can hold a post, and this prison has no other work for that role.',
   'hud.alert.refusal.hire.roster-full': 'Nobody was hired — this prison cannot hold any more staff.',
   'hud.alert.refusal.hire.unknown-role': 'Nobody was hired — that is not a role this prison knows.',
   // The seven `place-object.*` sentences (ADR 0028 phase 1). Three of them name

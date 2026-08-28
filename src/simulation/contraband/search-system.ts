@@ -4,6 +4,7 @@ import type { NavigationSystem } from '../navigation/navigation-system';
 import type { RouteContext } from '../navigation/route-context';
 import { resolveStaffRouteContext } from '../security/access-policy';
 import type { GuardRoster } from '../security/guard-roster';
+import { claimableGuardIds } from '../security/post-eligibility';
 import type { TilePosition } from '../world/coordinates';
 import { ConfiscationLedger } from './confiscation';
 import { ContrabandRegistry } from './item';
@@ -232,7 +233,8 @@ export class SearchSystem implements SystemRegistration {
     while (this.queue.length > 0) {
       const next = this.queue[0]!;
       const policy = this.findPolicy(next.scope);
-      const available = this.guards.unassignedGuardIds();
+      // A search is a security duty, so the pool is the post-eligible one (ADR 0053) -- a kitchen worker does not frisk a prisoner.
+      const available = claimableGuardIds(this.guards);
       if (available.length < policy.requiredGuardCount) return; // stays queued -- observable backlog, not a failure
       this.queue.shift();
       const guardIds = available.slice(0, policy.requiredGuardCount);
