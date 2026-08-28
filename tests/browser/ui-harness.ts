@@ -18,6 +18,8 @@ import {
   type HudRoomGesture,
   type HudBuildQueueViewModel,
   type HudPendingDeliveriesViewModel,
+  type HudPrisonerRosterViewModel,
+  type HudRegimeViewModel,
   type HudRoomNeedsViewModel,
   type HudRoomsViewModel,
   type HudViewModel,
@@ -47,6 +49,9 @@ import type {
   LayoutProbe,
   LockstateUiHarness,
   RefusalProbe,
+  RegimeBlockProbe,
+  RegimeProbe,
+  RegimeRosterRowProbe,
   RepaintFormatterCost,
   RoomsLayoutProbe,
   RoomsProbe,
@@ -582,6 +587,87 @@ function staffCoverageProbe(): StaffCoverageProbe {
         .map((line) => (line.textContent ?? '').trim())
         .find((text) => text.length > 0) ?? '',
     blockBox: layoutBoxOf(block),
+  };
+}
+
+/**
+ * The Regime panel's two blocks and the bottom of the lower one (issue #451).
+ *
+ * Module-level beside `heldGuardsProbe`, and it follows that function's one
+ * load-bearing rule: **every list is filtered by `getClientRects()`**. Both
+ * lists here have a way of holding words a player cannot see -- the roster's
+ * rows are pooled and merely hidden when the reply is shorter, and the two note
+ * lines carry `.hud-regime__note`, which `hud.css` gives an author `display`
+ * under `max-height: 700px`. Reading `textContent` off either would report the
+ * previous tick's prisoners as though they were still on the roster.
+ */
+function regimeProbe(): RegimeProbe {
+  const panel = document.querySelector<HTMLElement>('.hud-regime');
+  const blocks = document.querySelector<HTMLElement>('.hud-regime__blocks');
+  const roster = document.querySelector<HTMLElement>('.hud-regime__roster');
+  const empty = [...(roster?.querySelectorAll<HTMLElement>('.hud-regime__note') ?? [])].find(
+    (note) => !note.classList.contains('hud-regime__roster-more'),
+  );
+  const more = roster?.querySelector<HTMLElement>('.hud-regime__roster-more');
+  const drawn = (node: Element | null | undefined): boolean =>
+    node !== null && node !== undefined && node.getClientRects().length > 0;
+  const textOf = (node: Element | null | undefined): string => (node?.textContent ?? '').trim();
+
+  const rows = [...document.querySelectorAll<HTMLElement>('.hud-regime__roster-row')].filter((row) => drawn(row));
+
+  return {
+    // `offsetParent`, not `getClientRects()`: this is the rail question, and
+    // `setVisible(false)` hides the panel's own element, so the answer has to
+    // come from the ancestor chain the way `staffProbe` and `intakeProbe` take
+    // it.
+    laidOut: panel !== null && panel.offsetParent !== null,
+    blocksLaidOut: drawn(blocks),
+    blocks: [...(blocks?.querySelectorAll<HTMLElement>('.hud-regime__block-row') ?? [])].map(
+      (row): RegimeBlockProbe => ({
+        group: row.dataset['group'] ?? '',
+        nameText: textOf(row.querySelector('.hud-regime__block-name')),
+        progressText: textOf(row.querySelector('.hud-regime__block-progress')),
+        allowsText: textOf(row.querySelector('.hud-regime__block-allows')),
+        laidOut: drawn(row),
+      }),
+    ),
+    rosterLaidOut: drawn(roster),
+    total: roster?.dataset['total'] ?? null,
+    countText: textOf(roster?.querySelector('.hud-regime__roster-count')),
+    rows: rows.map((row): RegimeRosterRowProbe => {
+      const badge = row.querySelector<HTMLElement>('.ui-badge');
+      return {
+        prisoner: row.dataset['prisoner'] ?? '',
+        classificationGroup: row.dataset['classificationGroup'] ?? null,
+        riskTier: row.dataset['riskTier'] ?? null,
+        nameText: textOf(row.querySelector('.hud-regime__roster-name')),
+        activityText: textOf(row.querySelector('.hud-regime__roster-activity')),
+        badgeText: textOf(badge),
+        badgeTone: badge?.dataset['tone'] ?? null,
+        box: layoutBoxOf(row),
+      };
+    }),
+    emptyLaidOut: drawn(empty),
+    emptyText: textOf(empty),
+    moreLaidOut: drawn(more),
+    moreText: textOf(more),
+    // `innerText`, so the answer is what was rendered: the pooled rows the
+    // panel hid are left out of it, and a panel with no box at all reports
+    // nothing rather than reporting its whole vocabulary.
+    text: panel === null ? '' : panel.innerText,
+    panelVisibleBottom:
+      panel === null ? 0 : panel.getBoundingClientRect().top + panel.clientTop + panel.clientHeight,
+    panelOverflow: panel === null ? 0 : panel.scrollHeight - panel.clientHeight,
+    panelScrollTop: panel?.scrollTop ?? 0,
+    // The lowest edge the panel actually drew, whichever line that is: the last
+    // roster row on a full window, the "and N more" line when the population
+    // outgrew it, or the empty sentence in a prison that holds nobody.
+    lastLineBottom: [
+      ...rows,
+      ...(drawn(more) && more !== null && more !== undefined ? [more] : []),
+      ...(drawn(empty) && empty !== undefined ? [empty] : []),
+    ].reduce((lowest, node) => Math.max(lowest, node.getBoundingClientRect().bottom), 0),
+    panelBox: layoutBoxOf(panel),
   };
 }
 
@@ -1198,6 +1284,31 @@ window.lockstateUiHarness = {
     if (release.offsetParent === null) return false;
     release.click();
     return true;
+  },
+
+  regimeProbe(): RegimeProbe {
+    return regimeProbe();
+  },
+
+  /**
+   * Publishes the timetable and the roster, which in the real app arrive over
+   * `simulation/request-projection` on the counts cadence.
+   *
+   * Both in one call: they are the two blocks of one panel, their heights
+   * interact, and a spec that could only set one at a time could never measure
+   * the panel a player is actually given -- the reason `reportPendingDeliveries`
+   * takes the queue beside the deliveries.
+   *
+   * Spread rather than passed as `undefined`, so "nothing has been asked" is an
+   * absent property: `exactOptionalPropertyTypes` is on, and the panel branches
+   * on the field being there at all.
+   */
+  reportRegime(regime: HudRegimeViewModel | undefined, roster?: HudPrisonerRosterViewModel): void {
+    hud?.update({
+      ...BASE_VIEW_MODEL,
+      ...(regime === undefined ? {} : { regime }),
+      ...(roster === undefined ? {} : { prisonerRoster: roster }),
+    });
   },
 
   clickHireStaff(): boolean {

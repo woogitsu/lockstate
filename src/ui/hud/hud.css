@@ -820,6 +820,18 @@
 
 .hud-staff__note { white-space: normal; text-transform: none; letter-spacing: 0; }
 
+/* The same guard as `.hud-regime__note[hidden]` below, for the same reason and
+   found the same way. `heldEmpty` in `staff-panel.ts` carries this class and
+   nothing else, and is hidden the moment a guard is held -- but the
+   `@media (max-height: 700px)` block gives `.hud-staff__note` an author
+   `display: -webkit-box`, which beats the user agent's
+   `[hidden] { display: none }`. Without this line "Nobody is assigned right
+   now." is laid out between the held rows and the "and N more" line at every
+   viewport 700px tall or shorter; measured at 900x600, the only one of the six
+   `ui-held-guards.spec.ts` visits that is. `.hud-staff__held-more` was already
+   safe: it carries a second class with a rule of its own. */
+.hud-staff__note[hidden] { display: none; }
+
 /* The coverage block (ADR 0048), first in the panel body. A `border-bottom`
    rather than the `border-top` its two siblings carry, because it is above them
    rather than below something: the hairline still separates two regions of one
@@ -1380,6 +1392,171 @@
 .hud-intake__pipeline-failed:not([hidden]) { color: var(--status-warning); }
 
 /* ------------------------------------------------------------------ */
+/* Regime panel (Regime tab, issue #451)                               */
+/* ------------------------------------------------------------------ */
+
+/*
+ * Written `.ui-panel.hud-regime` rather than `.hud-regime` for the reason
+ * `.ui-panel.hud-staff` and `.ui-panel.hud-build` are: `.ui-panel` sets
+ * `overflow: hidden` and this overrides it on one axis, and two single-class
+ * selectors would leave the winner to the order `styles.css` happens to import
+ * the two files in (issue #143).
+ *
+ * `overflow-y: auto` for the same reason too. This panel is the only one in the
+ * rail whose height grows with the *population* rather than with a content
+ * catalogue -- `PRISONER_ROSTER_ROW_LIMIT` bounds the rows, so it grows to a
+ * ceiling and stops -- and whatever the rail cannot give it is its own to
+ * scroll rather than the rail's to hang off its edge.
+ */
+.ui-panel.hud-regime {
+  width: var(--hud-rail-panel-width);
+  max-width: 100%;
+  /* `border-box`, so this panel and the save panel above it render at exactly
+     the same width from the same token -- the rail's one-width invariant that
+     `tests/browser/app-shell.spec.ts` asserts. */
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: var(--surface-raised);
+}
+
+/* Sentences, not labels: an eyebrow's uppercase single-line treatment is undone
+   here exactly as `.hud-intake__note` above undoes it. */
+.hud-regime__note { white-space: normal; text-transform: none; letter-spacing: 0; }
+
+/* And `display: none` when the attribute says so, which the rule above cannot
+   be relied on to leave alone. The `@media (max-height: 700px)` block at the
+   foot of this file gives `.hud-regime__note` an author `display: -webkit-box`
+   to clamp it to one line, and an author `display` beats the user agent's
+   `[hidden] { display: none }` -- so without this guard the empty-roster
+   sentence is laid out beside a full roster at every viewport 700px tall or
+   shorter. Measured, not theorised: at 900x600, one of the five viewports the
+   browser suite visits, "Nobody has been admitted yet." was on screen under
+   four prisoners. Its sibling "and N more" line escapes the same trap only
+   because it carries a second class with a rule of its own, which is what
+   `.hud-build__deliveries-more` documents one panel over. */
+.hud-regime__note[hidden] { display: none; }
+
+/* The timetable, first in the panel body. A `border-bottom` rather than the
+   `border-top` its sibling carries, because it is above it rather than below
+   something -- the choice `.hud-staff__coverage` makes for the same position.
+   `display: none` on `[hidden]` because a block whose children carry
+   `.hud-regime__note` inherits a `display` from the `max-height: 700px` block
+   at the foot of this file, which would otherwise override the attribute. */
+.hud-regime__blocks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-bottom: var(--space-2);
+  border-bottom: var(--hairline) solid var(--border-hairline);
+}
+
+.hud-regime__blocks[hidden] { display: none; }
+
+.hud-regime__block-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* Name left, share right: the shape every readout line in this HUD uses. */
+.hud-regime__block-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.hud-regime__block-name { color: var(--text-heading); }
+.hud-regime__block-progress { font-variant-numeric: tabular-nums; }
+
+/* The categories are a sentence and wrap: "Allows Recreation, Hygiene, Free
+   Association" is longer than the 264px rail at every locale worth planning
+   for. */
+.hud-regime__block-allows {
+  display: block;
+  white-space: normal;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* The roster. Same gutter and hairline treatment as the block above it, so the
+   two regions of one panel do not read as two designs. */
+.hud-regime__roster {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-top: var(--space-2);
+}
+
+.hud-regime__roster[hidden] { display: none; }
+
+/* Label left, figure right. */
+.hud-regime__roster-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.hud-regime__roster-count { font-variant-numeric: tabular-nums; }
+
+.hud-regime__roster-list:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* One row: who, what they are doing, and how they stand. `align-items: center`
+   so a wrapped name keeps the badge beside its middle rather than pushing it to
+   the top -- the same choice `.hud-staff__held-row` makes. */
+.hud-regime__roster-row:not([hidden]) {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* `min-width: 0` so a long name-plus-activity pair shrinks rather than pushing
+   the badge out of the panel -- the same declaration `.hud-staff__held-text`
+   carries. Kept, but **defensive here rather than load-bearing**, which is the
+   opposite of what this comment used to claim and is measured rather than
+   argued: with it deleted, a 38-character unbroken given name still left every
+   badge inside the panel at all five viewports the browser suite visits, and a
+   26-character badge word made the row taller instead of wider.
+   `overflow-wrap: anywhere` on `.hud-regime__roster-name` below is why -- the
+   name contributes no min-content width to break, and the activity's longest
+   word is a catalogue word. It stays because a locale whose action vocabulary
+   has a long compound word would reach it and nothing here would notice; the
+   attempted browser assertion over it was removed as vacuous instead, and
+   `tests/browser/ui-shell.spec.ts` records that where it would have gone. */
+.hud-regime__roster-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.hud-regime__roster-name {
+  color: var(--text-heading);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* A sentence rather than a label, and it wraps: an action's word plus the
+   "Heading to" wrapper is the longest thing on the row. */
+.hud-regime__roster-activity {
+  display: block;
+  white-space: normal;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Never shrinks. The pair beside it wraps instead. */
+.hud-regime__roster-row > .ui-badge { flex: 0 0 auto; }
+
+.hud-regime__roster-more[hidden] { display: none; }
+
+/* ------------------------------------------------------------------ */
 /* Bottom-centre tab bar                                               */
 /* ------------------------------------------------------------------ */
 
@@ -1512,6 +1689,18 @@
      string and nothing downstream of it has to know about this rule. */
   .hud-build__note,
   .hud-staff__note {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    overflow: hidden;
+  }
+
+  /* The Regime panel's own note, on the same terms and for the same
+     four-declaration reason: the empty-roster sentence and the "and N more"
+     line are the two that can wrap, and a short viewport is where the roster
+     block is competing with the timetable above it for the panel's box. The
+     text node stays in the DOM in full, clipped rather than replaced. */
+  .hud-regime__note {
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 1;
@@ -1930,6 +2119,11 @@
      to follow it: two classes for the same specificity reason, or it would
      stay 264px in a 343px rail. */
   .ui-panel.hud-intake { width: 100%; }
+
+  /* And the Regime panel, which shares the same rail slot on the fifth tab:
+     two classes for the same specificity reason, or it would stay 264px in a
+     343px rail. */
+  .ui-panel.hud-regime { width: 100%; }
 
   .hud-strip {
     flex-wrap: wrap;
