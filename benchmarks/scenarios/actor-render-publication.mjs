@@ -92,6 +92,20 @@
  *   50 and agrees with the literal `state-machine.ts:208` passes -- but that
  *   literal is not exported, so a session re-tuned there and not in the class
  *   default would leave this scenario measuring the old cadence.
+ *
+ * ## What this scenario's `samplesMs` over-counts
+ *
+ * Nothing gates on it, but somebody will read it, so: an iteration restores the
+ * position arrays from a template and calls `beginWalk` once per walker, both
+ * to put the fixture back where the previous iteration found it. A real
+ * publication does neither -- a prison starts a handful of walks per
+ * reconsideration cycle, not 1,667 every 100 ms -- and `beginWalk` validates
+ * every leg of the route it is handed. Routes are kept to the shortest that
+ * outlives a publication (two legs) to make that overhead as small as it can
+ * be, but it is still there, and it is one more reason the counted metrics
+ * rather than the timings are this scenario's subject. ADR 0059's own table is
+ * the place to look for a per-step figure, with the caveat its 2026-08-28
+ * amendment records about reproducing it.
  */
 import { buildActorPopulation } from '../fixtures/actor-population.mjs';
 import { loadActorPublicationModules } from '../production-modules.mjs';
