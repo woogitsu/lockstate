@@ -664,7 +664,7 @@ export class ActionSystem implements SystemRegistration {
        * one three-seat dining table, 12,000 ticks): without this line, at
        * 5 tiles/s two of the six ended the run at hunger **0** and **24** of
        * `NEED_MAX`, having spent the window walking back and forth. That is
-       * the starvation `tests/integration/contended-canteen-meal-fallback.ts`
+       * the starvation `tests/integration/contended-canteen-meal-fallback.test.ts`
        * exists to prove is over.
        *
        * Reconsidering *here* cannot loop, and that is why it is safe rather
