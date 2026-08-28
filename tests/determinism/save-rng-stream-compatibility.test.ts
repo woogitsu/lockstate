@@ -18,7 +18,7 @@ import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from 
  * ### The defect these cases were written against
  *
  * `Kernel.restoreState` used to do `this._rng = new NamedRngStreams(snapshot.rngStates)`
- * -- replace, not merge -- discarding the four streams the runtime factory had
+ * -- replace, not merge -- discarding the streams the runtime factory had
  * just derived from the master seed. A bundle that omitted a stream therefore
  * restored **clean**, played **clean**, and threw `RangeError: Unknown RNG
  * stream` out of `Kernel.step()` at the first draw, which the worker's
@@ -234,7 +234,7 @@ describe("the repository's own V1 fixture", () => {
    * ticks, and threw `Unknown RNG stream: identity.actor-name` five ticks after
    * the player's first Admit.
    */
-  it('loads with all four streams, and admitting a prisoner names them', () => {
+  it('loads with every stream this build registers, and admitting a prisoner names them', () => {
     const decoded = decodeSaveEnvelope(JSON.parse(readFileSync(V1_FRESH_PRISON_FIXTURE, 'utf8')));
     if (!decoded.ok) throw new Error(`the fixture no longer decodes: ${decoded.error.code}`);
     expect(decoded.migrated).toBe(true);
@@ -327,7 +327,7 @@ describe('a save-compatibility condition never reaches the worker as an internal
     expect(faults, `the worker faulted: ${JSON.stringify(faults.map((fault) => fault.payload))}`).toEqual([]);
 
     // Asserted through the protocol rather than by surviving: the session the
-    // worker is holding has the four streams, so there is no later tick at
+    // worker is holding has every registered stream, so there is no later tick at
     // which this save can start throwing either.
     deliver({ protocolVersion: SIMULATION_PROTOCOL_VERSION, messageId: 'snapshot-1', kind: 'simulation/request-snapshot', payload: { reason: 'consistency-check' } });
     const reply = lastOfKind('simulation/snapshot');
