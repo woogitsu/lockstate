@@ -7,7 +7,9 @@ import {
   DEFAULT_MINIMUM_RIOT_PARTICIPANTS,
   DEFAULT_SECTOR_QUIET_TICKS_AFTER_INCIDENT,
   IncidentTriggerSystem,
+  type PrisonerFlashpointSampler,
 } from '../../src/simulation/incidents/trigger-system';
+import type { PrisonerFlashpoint } from '../../src/simulation/incidents/flashpoint';
 
 const CALM: SectorRiskSample = { needsPressure: 0, staffingShortfall: 0, contrabandPressure: 0 };
 const HOT: SectorRiskSample = { needsPressure: 1, staffingShortfall: 1, contrabandPressure: 1 };
@@ -33,6 +35,8 @@ function buildHarness(options: {
   readonly gangs?: GangRegistry;
   /** Defaults to the production value; a file measuring the streak alone passes 0 to take the quiet period out of the way. */
   readonly quietTicksAfterIncident?: number;
+  /** ADR 0061's per-occupant sampler. Omitted, the system opens riots and gang retaliations exactly as it did before. */
+  readonly sampleFlashpoints?: PrisonerFlashpointSampler;
 }) {
   const incidents = new IncidentLog();
   const risk = new SectorRiskTracker(DEFAULT_SECTOR_RISK_POLICY);
@@ -46,6 +50,8 @@ function buildHarness(options: {
     options.occupants ?? TWO_OCCUPANTS,
     undefined,
     options.quietTicksAfterIncident,
+    undefined,
+    options.sampleFlashpoints,
   );
   const kernel = new Kernel();
   kernel.registerSystem(trigger);
@@ -290,5 +296,142 @@ describe('IncidentTriggerSystem: gang retaliation feeds the same pipeline', () =
     const ids = restoredIncidents.all().map((incident) => incident.id);
     expect(new Set(ids).size).toBe(ids.length);
     expect(ids).toContain(firstId);
+  });
+});
+
+describe('a riot is what a prison does; an assault is what happens in a prison that is not having one', () => {
+  /**
+   * **The structural separation between ADR 0061's assault producer and the
+   * riot**, and it is here rather than in an integration fixture because it is
+   * the one claim an integration fixture proved badly.
+   *
+   * Measured: deleting the gate from `tryOpenAssault` left every test in
+   * `riot-regime-loop.test.ts` and `security-default-sector.test.ts` green and
+   * turned exactly one test in the whole suite red -- one in
+   * `room-gated-needs.test.ts`, which is about room gating. A structural rule
+   * with one accidental witness in a file about something else is not guarded,
+   * so this asserts it directly.
+   *
+   * The risk samples are supplied, and that is what makes this a unit test:
+   * `SectorRiskSampler` and `PrisonerFlashpointSampler` are the system's two
+   * declared seams. What is *measured* is which incident type opens, which is
+   * this system's own decision and nothing to do with the inputs. That a real
+   * prison reaches both conditions is
+   * `tests/integration/incident-trigger-reachability.test.ts`'s subject.
+   */
+  const READY_TO_FIGHT: readonly PrisonerFlashpoint[] = [
+    // Two prisoners well past the assault line on need alone -- nothing housed,
+    // nothing served. Neither can attempt an escape: tier 0, carrying nothing.
+    { entityId: 2, needDeficit: 1, contrabandSeverity: 0, sentenceRemaining: 1, riskTier: 0 },
+    { entityId: 6, needDeficit: 1, contrabandSeverity: 0, sentenceRemaining: 1, riskTier: 0 },
+  ];
+
+  it('opens an assault while the sector is cool', () => {
+    const harness = buildHarness({
+      sectorIds: ['block-a'],
+      // Cool: `needsPressure` 0.1 scores 0.1 against a 0.65 line, so the sector
+      // never becomes hot however long this runs.
+      sampleFor: () => ({ needsPressure: 0.1, staffingShortfall: 0, contrabandPressure: 0 }),
+      sampleFlashpoints: () => READY_TO_FIGHT,
+    });
+
+    stepSamples(harness.kernel, 20);
+
+    const opened = harness.incidents.all();
+    expect(opened.length).toBeGreaterThan(0);
+    expect(opened.every((incident) => incident.type === 'assault')).toBe(true);
+    expect(opened[0]!.participantIds).toEqual([2, 6]);
+  });
+
+  /**
+   * The case the gate exists for. The same two prisoners, the same scores --
+   * only the *sector* is different, and now the twelve-sample riot window is
+   * running. Without the gate the assault fires on the first sampling point,
+   * takes the sector's one open incident slot, and the riot the window was
+   * building towards never opens.
+   */
+  it('opens nothing but the riot once the sector has started running hot', () => {
+    const harness = buildHarness({
+      sectorIds: ['block-a'],
+      sampleFor: () => HOT,
+      sampleFlashpoints: () => READY_TO_FIGHT,
+    });
+
+    // One hot sample in: the streak is running and the riot cannot fire yet.
+    stepSamples(harness.kernel, 1);
+    expect(harness.risk.getConsecutiveHotSamples('block-a')).toBe(1);
+    expect(harness.incidents.all(), 'nothing may take the slot while the riot window is running').toEqual([]);
+
+    // And when something does open, it is the riot the window was for.
+    stepSamples(harness.kernel, DEFAULT_SECTOR_RISK_POLICY.sustainedSamplesRequired);
+    const opened = harness.incidents.all();
+    expect(opened.length).toBeGreaterThan(0);
+    expect(opened.every((incident) => incident.type === 'riot')).toBe(true);
+  });
+
+  it('needs two occupants for an assault, for the reason a riot needs two', () => {
+    const harness = buildHarness({
+      sectorIds: ['block-a'],
+      sampleFor: () => ({ needsPressure: 0.1, staffingShortfall: 0, contrabandPressure: 0 }),
+      sampleFlashpoints: () => [READY_TO_FIGHT[0]!],
+    });
+
+    stepSamples(harness.kernel, 20);
+    expect(harness.incidents.all()).toEqual([]);
+  });
+
+  it('opens nothing at all for a session that supplies no flashpoint sampler', () => {
+    const harness = buildHarness({
+      sectorIds: ['block-a'],
+      sampleFor: () => ({ needsPressure: 0.1, staffingShortfall: 0, contrabandPressure: 0 }),
+    });
+
+    stepSamples(harness.kernel, 20);
+    expect(harness.incidents.all()).toEqual([]);
+  });
+});
+
+describe('an escape attempt takes the sector’s slot ahead of an assault, and only for somebody who could try', () => {
+  const ARMED_HIGH_RISK: PrisonerFlashpoint = { entityId: 4, needDeficit: 1, contrabandSeverity: 0.9, sentenceRemaining: 1, riskTier: 3 };
+  const DESPERATE_BUT_ORDINARY: PrisonerFlashpoint = { entityId: 9, needDeficit: 1, contrabandSeverity: 0.9, sentenceRemaining: 1, riskTier: 2 };
+
+  it('opens the escape attempt rather than the assault, naming one prisoner', () => {
+    const harness = buildHarness({
+      sectorIds: ['block-a'],
+      sampleFor: () => ({ needsPressure: 0.1, staffingShortfall: 1, contrabandPressure: 0 }),
+      sampleFlashpoints: () => [ARMED_HIGH_RISK, DESPERATE_BUT_ORDINARY],
+    });
+
+    stepSamples(harness.kernel, 1);
+    const opened = harness.incidents.all();
+    expect(opened).toHaveLength(1);
+    expect(opened[0]).toMatchObject({ type: 'escape-attempt', participantIds: [4] });
+  });
+
+  it('opens an assault instead when nobody in the sector is high risk, however desperate they are', () => {
+    const harness = buildHarness({
+      sectorIds: ['block-a'],
+      sampleFor: () => ({ needsPressure: 0.1, staffingShortfall: 1, contrabandPressure: 0 }),
+      sampleFlashpoints: () => [DESPERATE_BUT_ORDINARY, { ...DESPERATE_BUT_ORDINARY, entityId: 10 }],
+    });
+
+    stepSamples(harness.kernel, 1);
+    const opened = harness.incidents.all();
+    expect(opened).toHaveLength(1);
+    expect(opened[0]!.type).toBe('assault');
+  });
+
+  it('opens neither for a high-risk prisoner carrying nothing, because the means is a condition', () => {
+    const harness = buildHarness({
+      sectorIds: ['block-a'],
+      sampleFor: () => ({ needsPressure: 0.1, staffingShortfall: 1, contrabandPressure: 0 }),
+      sampleFlashpoints: () => [
+        { ...ARMED_HIGH_RISK, contrabandSeverity: 0, needDeficit: 0 },
+        { ...ARMED_HIGH_RISK, entityId: 11, contrabandSeverity: 0, needDeficit: 0 },
+      ],
+    });
+
+    stepSamples(harness.kernel, 20);
+    expect(harness.incidents.all()).toEqual([]);
   });
 });

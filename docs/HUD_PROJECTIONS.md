@@ -1080,9 +1080,16 @@ decision about what to build next.
     incidents only; history is reachable solely through `all()`, which
     materialises every incident ever recorded. An incident-history panel is
     `O(all)` per projection and unbounded over a long session.
-29. **`assault` and `escape-attempt` are declared but never triggered.**
-    `IncidentTriggerSystem` opens only `riot` and `gang-retaliation`, so
-    two of the four incident types are permanently absent from any panel.
+29. **~~`assault` and `escape-attempt` are declared but never triggered.~~
+    Closed by [ADR 0061](./adr/0061-what-the-prison-produces-on-its-own.md).**
+    `IncidentTriggerSystem` opened only `riot` and `gang-retaliation`, so two
+    of the four types were permanently absent from every panel. Both now have
+    producers reading real prisoner state, `gang-retaliation` is the one member
+    of the union left without one, and the labels these rows need were already
+    in `simulation-message-keys.ts` waiting for them. **What is not closed is
+    the gap one layer up**, and ADR 0061 open question 2 records it beside
+    ADR 0057's: nothing on screen says *which* prisoners are in an incident, so
+    a player sees that an assault happened and not to whom.
 30. **No incident-to-responder linkage in the record.**
     `IncidentResponseSystem` keeps response bookkeeping private and drops
     it on restore, so a panel cannot show who is responding.

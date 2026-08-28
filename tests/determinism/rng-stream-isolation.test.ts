@@ -171,7 +171,7 @@ describe('named RNG stream isolation in the real session runtime', () => {
 
     // Non-vacuous: the scenario really did draw from the streams it claims.
     const fresh = buildDeterminismScenario(SCENARIO_SEED).kernel.snapshot().rngStates;
-    for (const name of ['contraband.detection', 'prisoners.classification']) {
+    for (const name of ['contraband.detection', 'contraband.introduction', 'prisoners.classification']) {
       const before = fresh.find((entry) => entry.name === name)!;
       const after = baseline.kernel.snapshot().rngStates.find((entry) => entry.name === name)!;
       expect(after.state.words, `${name} was never drawn from`).not.toEqual(before.state.words);
@@ -183,9 +183,10 @@ describe('named RNG stream isolation in the real session runtime', () => {
     const names = runtime.kernel.snapshot().rngStates.map((entry) => entry.name);
 
     // `identity.actor-name` joined the list when #70 wired ADR 0015's
-    // registry into `new-session.ts`. Adding a stream changes what a recorded
-    // command stream reproduces, so this pin must move deliberately.
-    expect(names).toEqual(['contraband.detection', 'contraband.intelligence', 'identity.actor-name', 'prisoners.classification']);
+    // registry into `new-session.ts`, and `contraband.introduction` when
+    // ADR 0061 gave contraband a producer. Adding a stream changes what a
+    // recorded command stream reproduces, so this pin must move deliberately.
+    expect(names).toEqual(['contraband.detection', 'contraband.intelligence', 'contraband.introduction', 'identity.actor-name', 'prisoners.classification']);
 
     // Seeding is checked against a session that has not been *used* yet.
     // `buildDeterminismScenario` hires five guards, and since #70 wired ADR
