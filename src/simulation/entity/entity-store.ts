@@ -141,8 +141,9 @@ export class EntityStore {
    * Destroying an id that does not name a live entity is a no-op, not an
    * error: this store reports misuse of an *id* by ignoring it (the guards
    * below) and reserves exceptions for structural faults it cannot continue
-   * past -- capacity exhaustion in `spawn`, a capacity mismatch in
-   * `loadSnapshot`. `tests/unit/entity.test.ts`'s "prevents double destroy"
+   * past -- capacity exhaustion in `spawn`, and a snapshot in `loadSnapshot`
+   * whose written slots outnumber this store's.
+   * `tests/unit/entity.test.ts`'s "prevents double destroy"
    * has pinned that tolerance since the store was written, and ADR 0005
    * describes generation mismatches as "safely caught" rather than raised.
    */
@@ -255,15 +256,78 @@ export class EntityStore {
     };
   }
 
+  /**
+   * Restores this store's liveness ledger from a snapshot.
+   *
+   * **The snapshot's `capacity` is not a precondition, and used to be** (#433).
+   * This method opened with `if (snapshot.capacity !== this.capacity) throw`,
+   * and `capacity` is a property of the *build that wrote the save* -- the
+   * length of the array the slots were written into -- not of the save's
+   * content. So a ledger carrying two live prisoners was refused because the
+   * array around them was eight long and this build allocates
+   * `DEFAULT_PRISONER_CAPACITY` (5,000). The repository's own
+   * `tests/fixtures/persistence/save-v1-in-progress.json` is exactly that
+   * save: it migrates V1 -> V5, its checksum verifies, `importSave` accepts it
+   * and `loadCurrent` returns it, and then this line threw. Every earlier gate
+   * passed, so nothing warned the player.
+   *
+   * What matters is the **written prefix** -- the slots the writing build
+   * actually used. `EncodedEntityStoreSnapshot` already calls itself
+   * "population-shaped", and `session-systems.ts` says the same of the
+   * component arrays beside it; the capacity-shaped array this ledger expands
+   * into on the way back is a decoding detail, and comparing its *length*
+   * against ours was comparing two decoding details.
+   *
+   * So the rule is that the prefix must fit, and this is where a save is
+   * genuinely refused: a ledger whose written slots outnumber this store's is
+   * one this build cannot address, `packEntityId` could not name its top
+   * indices, and the message says which two numbers disagreed. That refusal is
+   * ADR 0038's compatibility rule applied unchanged -- "a *value* the build
+   * cannot interpret is a fact about the blob and is refused" -- and the
+   * capacity comparison was the same rule misapplied to a value the build can
+   * interpret perfectly well.
+   *
+   * **Indices, and therefore entity ids, are preserved.** The prefix is copied
+   * at the same offsets it was written at, and `generations` comes across
+   * untouched, so `packEntityId(index, generation)` reproduces every id the
+   * writing build had issued (ADR 0005, ADR 0026: a slot index is not free to
+   * be re-homed, and generations are what make stale-reference detection
+   * work). Nothing here renumbers anything.
+   *
+   * Slots above the prefix are cleared rather than left as they were. A store
+   * this method is called on twice would otherwise keep the taller snapshot's
+   * tail behind the shorter one -- generations and liveness flags for indices
+   * the new snapshot never mentions -- which is residue the old
+   * equal-capacity `set()` could not produce and this one could.
+   */
   public loadSnapshot(snapshot: EntityStoreSnapshot): void {
-    if (snapshot.capacity !== this.capacity) {
-      throw new Error('Cannot load snapshot with different capacity');
+    // The high-water mark of allocated indices. `maxActiveIndex` alone would
+    // be enough for any store this repository writes -- `spawn` raises it for
+    // the very index it took from `nextAvailableIndex`, so the two move
+    // together -- but both are read off a save here, so the prefix is
+    // whatever the wider of them claims. `freeCount` joins them because the
+    // free list is copied at its own length.
+    const writtenPrefix = Math.max(snapshot.maxActiveIndex + 1, snapshot.nextAvailableIndex, snapshot.freeCount);
+    if (writtenPrefix > this.capacity) {
+      throw new Error(
+        `Cannot load an entity snapshot: it has ${writtenPrefix} written slots and this store has capacity for ${this.capacity}.`,
+      );
     }
+
     this.nextAvailableIndex = snapshot.nextAvailableIndex;
     this.maxActiveIndex = snapshot.maxActiveIndex;
     this.freeCount = snapshot.freeCount;
-    this.generations.set(snapshot.generations);
-    this.freeIndices.set(snapshot.freeIndices);
-    this.alive.set(snapshot.alive);
+
+    const generations = Math.min(snapshot.generations.length, this.capacity);
+    this.generations.set(snapshot.generations.subarray(0, generations));
+    this.generations.fill(0, generations);
+
+    const freeIndices = Math.min(snapshot.freeIndices.length, this.capacity);
+    this.freeIndices.set(snapshot.freeIndices.subarray(0, freeIndices));
+    this.freeIndices.fill(0, freeIndices);
+
+    const alive = Math.min(snapshot.alive.length, this.capacity);
+    this.alive.set(snapshot.alive.subarray(0, alive));
+    this.alive.fill(0, alive);
   }
 }

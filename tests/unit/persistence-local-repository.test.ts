@@ -454,6 +454,133 @@ describe('PrisonSaveRepository: export/import', () => {
   });
 });
 
+/**
+ * #438. The write path's half of "nothing is deleted on the strength of a
+ * verdict this build cannot justify".
+ *
+ * `importSave` went through the ordinary save path, so
+ * `applyGenerationRetention` evicted the oldest generation the moment the
+ * imported bytes landed. Decoding, migrating and checksumming a file
+ * establishes that it is a well-formed save; none of them establishes that
+ * this build can *restore* it, and the repository ships a fixture that passes
+ * all three and throws. So the player paid one of their own saves for a file
+ * that had proved nothing yet.
+ *
+ * Each case below asserts on a named generation's stored tick, which is a
+ * fact about the payload, rather than on the window's length -- "the player's
+ * saves are still there" is exactly the claim a count cannot make.
+ */
+describe('PrisonSaveRepository: an import does not evict until it has restored', () => {
+  async function prisonWithThreeSaves(): Promise<{
+    readonly store: MemoryLocalSaveStore;
+    readonly repo: PrisonSaveRepository;
+  }> {
+    const store = new MemoryLocalSaveStore();
+    const repo = new PrisonSaveRepository(store, { generateGenerationId: idSequence('gen') });
+    await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0' });
+    await repo.save('prison-1', buildEnvelope(1, 11));
+    await repo.save('prison-1', buildEnvelope(2, 22));
+    await repo.save('prison-1', buildEnvelope(3, 33));
+    return { store, repo };
+  }
+
+  /** What `importSave` is actually handed: a file, not an in-process envelope. */
+  function asImportedFile(envelope: SaveEnvelope): unknown {
+    return JSON.parse(JSON.stringify(envelope)) as unknown;
+  }
+
+  it('writes the imported generation into the window without deleting the oldest', async () => {
+    const { store, repo } = await prisonWithThreeSaves();
+
+    expect(await repo.importSave('prison-1', asImportedFile(buildEnvelope(9, 99)))).toEqual({
+      ok: true,
+      generationId: 'gen-4',
+      migrated: false,
+    });
+
+    const [metadata] = await repo.list();
+    expect(metadata).toMatchObject({ currentGenerationId: 'gen-4', generationIds: ['gen-1', 'gen-2', 'gen-3', 'gen-4'] });
+    const oldest = await store.runTransaction('readonly', (tx) => tx.getGeneration('prison-1', 'gen-1'));
+    expect(oldest).toMatchObject({ revision: 1, payload: { kernel: { tick: 11 } } });
+  });
+
+  it('retires the oldest only once the imported generation is confirmed, and says which one it retired', async () => {
+    const { store, repo } = await prisonWithThreeSaves();
+    await repo.importSave('prison-1', asImportedFile(buildEnvelope(9, 99)));
+
+    expect(await repo.confirmGeneration('prison-1', 'gen-4')).toEqual({ confirmed: true, retired: ['gen-1'] });
+
+    const [metadata] = await repo.list();
+    expect(metadata).toMatchObject({ currentGenerationId: 'gen-4', generationIds: ['gen-2', 'gen-3', 'gen-4'] });
+    expect(await store.runTransaction('readonly', (tx) => tx.getGeneration('prison-1', 'gen-1'))).toBeUndefined();
+    const survivor = await store.runTransaction('readonly', (tx) => tx.getGeneration('prison-1', 'gen-2'));
+    expect(survivor).toMatchObject({ revision: 2, payload: { kernel: { tick: 22 } } });
+  });
+
+  /**
+   * The bound. The spare slot is one slot, and the generation holding it is
+   * the only thing a later import may take -- never another of the player's
+   * own, however many files they try.
+   */
+  it('reuses the spare slot on a second import rather than taking another of the player\'s own', async () => {
+    const { store, repo } = await prisonWithThreeSaves();
+    await repo.importSave('prison-1', asImportedFile(buildEnvelope(9, 99)));
+    await repo.importSave('prison-1', asImportedFile(buildEnvelope(10, 111)));
+    await repo.importSave('prison-1', asImportedFile(buildEnvelope(11, 222)));
+
+    const [metadata] = await repo.list();
+    expect(metadata).toMatchObject({ currentGenerationId: 'gen-6', generationIds: ['gen-1', 'gen-2', 'gen-3', 'gen-6'] });
+
+    // The player's oldest, untouched after three imports.
+    const oldest = await store.runTransaction('readonly', (tx) => tx.getGeneration('prison-1', 'gen-1'));
+    expect(oldest).toMatchObject({ revision: 1, payload: { kernel: { tick: 11 } } });
+    // The imports that gave up the slot are gone, which is what bounds the
+    // window: a file the player still holds, against a save they do not.
+    expect(await store.runTransaction('readonly', (tx) => tx.getGeneration('prison-1', 'gen-4'))).toBeUndefined();
+    expect(await store.runTransaction('readonly', (tx) => tx.getGeneration('prison-1', 'gen-5'))).toBeUndefined();
+    const kept = await store.runTransaction('readonly', (tx) => tx.getGeneration('prison-1', 'gen-6'));
+    expect(kept).toMatchObject({ revision: 11, payload: { kernel: { tick: 222 } } });
+  });
+
+  it('confirms a window already within budget without retiring or rewriting anything', async () => {
+    const store = new MemoryLocalSaveStore();
+    const repo = new PrisonSaveRepository(store, { generateGenerationId: idSequence('gen'), now: () => 7 });
+    await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0' });
+    await repo.save('prison-1', buildEnvelope(1, 11));
+
+    expect(await repo.confirmGeneration('prison-1', 'gen-1')).toEqual({ confirmed: true, retired: [] });
+    const [metadata] = await repo.list();
+    expect(metadata).toMatchObject({ currentGenerationId: 'gen-1', generationIds: ['gen-1'] });
+  });
+
+  /**
+   * Reported rather than silent, for `demoteGeneration`'s reason: a caller
+   * must be able to tell "nothing needed doing" from "this did not apply".
+   * The middle case is the rule -- the spare slot belongs to the newest
+   * generation, so confirming an older one must not close the window at the
+   * expense of an import still sitting on top of it.
+   */
+  it('refuses to close the window on anything but the newest generation, and says why', async () => {
+    const { store, repo } = await prisonWithThreeSaves();
+    await repo.importSave('prison-1', asImportedFile(buildEnvelope(9, 99)));
+
+    expect(await repo.confirmGeneration('prison-1', 'gen-2')).toEqual({
+      confirmed: false,
+      reason: 'not-the-newest-generation',
+    });
+    expect(await repo.confirmGeneration('prison-2', 'gen-4')).toEqual({ confirmed: false, reason: 'not-retained' });
+    expect(await repo.confirmGeneration('prison-1', 'gen-nonexistent')).toEqual({
+      confirmed: false,
+      reason: 'not-retained',
+    });
+
+    const [metadata] = await repo.list();
+    expect(metadata?.generationIds).toEqual(['gen-1', 'gen-2', 'gen-3', 'gen-4']);
+    const oldest = await store.runTransaction('readonly', (tx) => tx.getGeneration('prison-1', 'gen-1'));
+    expect(oldest).toMatchObject({ revision: 1, payload: { kernel: { tick: 11 } } });
+  });
+});
+
 describe('PrisonSaveRepository: pending sync metadata', () => {
   it('marks and clears pending-sync state independently of the prison payload', async () => {
     const repo = new PrisonSaveRepository(new MemoryLocalSaveStore(), { now: () => 42 });

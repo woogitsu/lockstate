@@ -748,10 +748,20 @@ export class SavePanel {
    * `exportActive` sets: the file the player exported came from the active
    * prison and it goes back into one, and `importInto` requires an existing
    * slot in any case (`PrisonSaveRepository.save` refuses a prison that was
-   * never created). Nothing is overwritten destructively -- the pre-import
-   * state stays in the retained generation window and the repository's
-   * recovery scan can still reach it -- and with no active prison the panel
-   * says so in the sentence it already has for that state.
+   * never created). With no active prison the panel says so in the sentence
+   * it already has for that state.
+   *
+   * **What an import costs the player, stated because this comment used to
+   * get it wrong.** It said "nothing is overwritten destructively -- the
+   * pre-import state stays in the retained generation window", which was
+   * true of the *newest* pre-import generation and false of the oldest: the
+   * write went through the ordinary retention rule, so the oldest generation
+   * was deleted the moment the imported bytes landed, before anything had
+   * asked whether they restore. Three imports of a file this build cannot
+   * restore emptied the window (#438). An import now takes the window's spare
+   * slot and pays for it only once it has restored, so a refused import costs
+   * the player nothing and a working one costs the oldest generation, then --
+   * which is what `docs/PERSISTENCE.md` records under "Export/import".
    *
    * **Then it loads.** An import that only wrote a generation would leave the
    * player looking at their old game with a new save on disk, which is not
