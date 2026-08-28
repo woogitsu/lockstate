@@ -168,15 +168,25 @@ const ROOTED_PATH = /^(?:docs|src|tests|scripts|supabase|public|\.github)\//;
 const NOT_A_SINGLE_PATH = /[*\u2026<>{}]|\.\.\./;
 
 /**
- * Rooted paths that truthfully name a file this repository does not contain.
+ * Rooted paths that truthfully name a file this repository does not contain,
+ * keyed on `<citing file> -> <path>`.
  *
  * Each entry has to earn its place by being *true as written*, not merely
  * tolerated: an allowlist that absorbs a real dangling reference is worse than
  * no check, because it makes the reference look reviewed.
+ *
+ * **Keyed on the pair since 2026-08-28; it was keyed on the path alone
+ * before.** A path-alone key hands out a grant the sentence that earned it
+ * never asked for: one honest mention of a path that is absent on purpose
+ * silently excuses every other mention of the same path, anywhere in the
+ * corpus, including a genuine dangling reference written later by an author
+ * who never saw the entry. That is the paragraph above happening to the
+ * allowlist itself, and no entry here needs the wider grant -- both corpora
+ * are checked against pairs.
  */
 const ABSENT_BY_DESIGN: ReadonlyMap<string, string> = new Map([
   [
-    'docs/adr/0018-construction-material-supply.md',
+    'docs/adr/README.md -> docs/adr/0018-construction-material-supply.md',
     // `docs/adr/README.md` names this file to explain where the 0018 number
     // went, and states two paragraphs earlier that "0018 is the one number
     // with no file in this directory". The file existed on PR #91's branch,
@@ -184,7 +194,44 @@ const ABSENT_BY_DESIGN: ReadonlyMap<string, string> = new Map([
     // is accurate; it is the absence that is the point of writing it.
     'named by docs/adr/README.md as the file PR #91 added before it was closed as superseded',
   ],
+  [
+    'tests/foundation/documentation-links-contract.test.ts -> tests/browser/save-panel-concurrency.spec.ts',
+    // The first docblock in this file names it as one of the two paths #140
+    // found cited and absent. It has never existed in any commit on any
+    // branch; naming it is what the sentence is for.
+    'named by this file as a path #140 found cited and absent, which has never existed',
+  ],
+  [
+    'tests/foundation/documentation-links-contract.test.ts -> docs/specs/',
+    // Same sentence as the entry below, and the same evidence:
+    // `git log --all --diff-filter=A -- docs/specs` returns nothing.
+    'named by this file as a path cited across eight issues that has never existed',
+  ],
+  [
+    'tests/foundation/documentation-links-contract.test.ts -> docs/research/NEW_FEATURES.md',
+    'named by this file as a path cited across eight issues that has never existed',
+  ],
+  [
+    'scripts/verify-cloudflare-build.mjs -> public/.assetsignore',
+    // `@cloudflare/vite-plugin` prefixes any `.assetsignore` the repository
+    // supplies under `public/` to the one it emits into `dist/`. This
+    // repository supplies none, which is why the gate asserts on the built
+    // output; the comment's two mentions are conditional and both true.
+    'the optional plugin input this repository does not supply, which is the point of the paragraph',
+  ],
 ]);
+
+/** `source -> path`, the key `ABSENT_BY_DESIGN` is written in. */
+const cited = ({ source, path }: Citation): string => `${source} -> ${path}`;
+
+/** The path half of such a key. */
+const allowedPath = (key: string): string => key.split(' -> ')[1]!;
+
+/** Whether some corpus's citations leave an entry with nothing to excuse. */
+function unusedAllowlistEntries(...corpora: readonly (readonly Citation[])[]): readonly string[] {
+  const present = new Set(corpora.flat().map(cited));
+  return [...ABSENT_BY_DESIGN.keys()].filter((key) => !present.has(key));
+}
 
 /**
  * A code span, at any backtick-run length.
@@ -251,23 +298,10 @@ describe('every rooted path cited in the documentation is on disk', () => {
 
   it('resolves every cited path', () => {
     const dangling = citations
-      .filter(({ path }) => !ABSENT_BY_DESIGN.has(path) && !existsSync(join(ROOT, path)))
-      .map(({ source, path }) => `${source} -> ${path}`);
+      .filter((citation) => !ABSENT_BY_DESIGN.has(cited(citation)) && !existsSync(join(ROOT, citation.path)))
+      .map(cited);
 
     expect(dangling, 'these documented paths name a file that does not exist').toEqual([]);
-  });
-
-  it('keeps the allowlist honest: an entry that starts existing must be removed', () => {
-    const nowPresent = [...ABSENT_BY_DESIGN.keys()].filter((path) => existsSync(join(ROOT, path)));
-
-    expect(nowPresent, 'these are allowlisted as absent but are on disk').toEqual([]);
-  });
-
-  it('keeps the allowlist used: an entry nothing cites is dead weight', () => {
-    const cited = new Set(citations.map(({ path }) => path));
-    const uncited = [...ABSENT_BY_DESIGN.keys()].filter((path) => !cited.has(path));
-
-    expect(uncited, 'these allowlist entries are cited by no documentation').toEqual([]);
   });
 });
 
@@ -354,14 +388,16 @@ describe('every rooted path cited in the documentation is on disk', () => {
  *
  * ## The allowlist is keyed on the pair, not on the path
  *
- * `ABSENT_BY_DESIGN` above keys on the path alone, which means the one honest
- * mention that earned an entry also excuses every other mention of the same
- * path anywhere in the corpus -- including a genuinely dangling one written
- * later by someone who never saw the entry. That is the failure the markdown
- * docblock warns about in its own words, *"an allowlist that absorbs a real
- * dangling reference is worse than no check"*, reached by a different road.
- * This map keys on `source -> path`, so a grant is worth exactly the sentence
- * that earned it.
+ * One `ABSENT_BY_DESIGN` serves both corpora, keyed on `source -> path`, so a
+ * grant is worth exactly the sentence that earned it. Keying on the path alone
+ * -- which is how it was written until 2026-08-28 -- hands out a grant nobody
+ * asked for: the one honest mention excuses every other mention of the same
+ * path anywhere, including a genuinely dangling one written later by an author
+ * who never saw the entry. That is *"an allowlist that absorbs a real dangling
+ * reference is worse than no check"*, the markdown docblock's own words,
+ * happening to the allowlist itself. The last test in this file is the
+ * demonstration: take an entry's path, cite it from a different file, and it
+ * is not excused.
  *
  * ## How to record a path that is meant to be dead
  *
@@ -436,42 +472,6 @@ function commentsOf(source: string): string {
   return comments;
 }
 
-/** `source -> path`, the key `ABSENT_BY_DESIGN_IN_SOURCE` is written in. */
-const cited = ({ source, path }: Citation): string => `${source} -> ${path}`;
-
-/**
- * Rooted paths a source comment names truthfully, in a sentence whose point is
- * that the file is not there. Keyed on the citing file as well as the path:
- * see "The allowlist is keyed on the pair" above.
- */
-const ABSENT_BY_DESIGN_IN_SOURCE: ReadonlyMap<string, string> = new Map([
-  [
-    'tests/foundation/documentation-links-contract.test.ts -> tests/browser/save-panel-concurrency.spec.ts',
-    // The first docblock in this file names it as one of the two paths #140
-    // found cited and absent. It has never existed in any commit on any
-    // branch; naming it is what the sentence is for.
-    'named by this file as a path #140 found cited and absent, which has never existed',
-  ],
-  [
-    'tests/foundation/documentation-links-contract.test.ts -> docs/specs/',
-    // Same sentence as the entry below, and the same evidence:
-    // `git log --all --diff-filter=A -- docs/specs` returns nothing.
-    'named by this file as a path cited across eight issues that has never existed',
-  ],
-  [
-    'tests/foundation/documentation-links-contract.test.ts -> docs/research/NEW_FEATURES.md',
-    'named by this file as a path cited across eight issues that has never existed',
-  ],
-  [
-    'scripts/verify-cloudflare-build.mjs -> public/.assetsignore',
-    // `@cloudflare/vite-plugin` prefixes any `.assetsignore` the repository
-    // supplies under `public/` to the one it emits into `dist/`. This
-    // repository supplies none, which is why the gate asserts on the built
-    // output; the comment's two mentions are conditional and both true.
-    'the optional plugin input this repository does not supply, which is the point of the paragraph',
-  ],
-]);
-
 const sourceCitations = sourceFiles.flatMap((file) =>
   rootedPathCitations(relative(ROOT, file), commentsOf(readFileSync(file, 'utf8'))),
 );
@@ -504,24 +504,42 @@ describe('every rooted path cited in a source comment is on disk', () => {
 
   it('resolves every cited path', () => {
     const dangling = sourceCitations
-      .filter((citation) => !ABSENT_BY_DESIGN_IN_SOURCE.has(cited(citation)) && !existsSync(join(ROOT, citation.path)))
+      .filter((citation) => !ABSENT_BY_DESIGN.has(cited(citation)) && !existsSync(join(ROOT, citation.path)))
       .map(cited);
 
     expect(dangling, 'these paths cited in source comments name a file that does not exist').toEqual([]);
   });
+});
 
-  it('keeps the allowlist honest: an entry that starts existing must be removed', () => {
-    const nowPresent = [...ABSENT_BY_DESIGN_IN_SOURCE.keys()].filter((key) =>
-      existsSync(join(ROOT, key.split(' -> ')[1]!)),
-    );
+/**
+ * The allowlist's own hygiene, over both corpora at once because one map now
+ * serves both. Kept here rather than inside either describe block above: an
+ * entry earned by a markdown sentence is not dead weight because no source
+ * comment repeats it, and an entry read by only one of the two checks would
+ * be exactly the silent over-grant the pair key exists to prevent.
+ */
+describe('the absent-by-design allowlist earns its entries', () => {
+  it('holds no entry whose file has started existing', () => {
+    const nowPresent = [...ABSENT_BY_DESIGN.keys()].filter((key) => existsSync(join(ROOT, allowedPath(key))));
 
     expect(nowPresent, 'these are allowlisted as absent but are on disk').toEqual([]);
   });
 
-  it('keeps the allowlist used: an entry nothing cites is dead weight', () => {
-    const present = new Set(sourceCitations.map(cited));
-    const uncited = [...ABSENT_BY_DESIGN_IN_SOURCE.keys()].filter((key) => !present.has(key));
+  it('holds no entry that nothing cites', () => {
+    expect(
+      unusedAllowlistEntries(citations, sourceCitations),
+      'these allowlist entries are cited by nothing',
+    ).toEqual([]);
+  });
 
-    expect(uncited, 'these allowlist entries are cited by no source comment').toEqual([]);
+  it('excuses the sentence that earned the entry and no other', () => {
+    for (const key of ABSENT_BY_DESIGN.keys()) {
+      const elsewhere: Citation = { source: 'docs/some-other-document.md', path: allowedPath(key) };
+
+      // The path really is absent, so nothing but the allowlist could excuse
+      // it -- and cited from a file with no entry of its own, nothing does.
+      expect(existsSync(join(ROOT, elsewhere.path))).toBe(false);
+      expect(ABSENT_BY_DESIGN.has(cited(elsewhere)), `${key} excuses a citation it never earned`).toBe(false);
+    }
   });
 });
