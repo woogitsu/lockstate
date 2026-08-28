@@ -478,8 +478,11 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   // follows -- so a fresh prison still has no rooms until a `ZoneRoom`
   // command arrives. It is handed the capacity resolver because a newly zoned
   // rectangle has to count the objects already standing in it (ADR 0028
-  // decision 2).
-  const roomZoning = new RoomZoningService(world, prisoners.roomInstances, defaultRoomContentRegistry, roomCapacity);
+  // decision 2), and the prisoner runtime itself as its `ResidentRelocationPort`
+  // (issue #478): `PrisonerOperationsRuntime.relocateResidentsOutOf` is what
+  // lets `unzone` relocate an occupied room's residents instead of refusing
+  // it for the life of the session.
+  const roomZoning = new RoomZoningService(world, prisoners.roomInstances, defaultRoomContentRegistry, roomCapacity, prisoners);
 
   // Issue #25's job/inventory substrate. Starts empty -- no default stock,
   // no default containers beyond the one construction draws from, no

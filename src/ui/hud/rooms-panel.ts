@@ -737,6 +737,22 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    * no recovery of any kind. That is the defect this control closes, and it is
    * why it is always visible.
    *
+   * **This sentence was false for one case, from the day `UnzoneRoom` shipped
+   * until issue #478.** A cell that had acquired an occupant -- an ordinary
+   * admission into a bed the player zoned, nothing exotic -- was refused with
+   * `room-occupied` unconditionally, and stayed refused for as long as that
+   * prisoner's sentence ran: there was no command anywhere in `src/` that moved
+   * a prisoner out of accommodation, so this button, pressed on that cell, did
+   * nothing forever. That was not "every mistake this panel can make"; it was
+   * every mistake except the one a learning player was most likely to make
+   * second. #478 closed it by relocating the resident to other suitable
+   * accommodation before the removal proceeds
+   * (`PrisonerOperationsRuntime.relocateResidentsOutOf`,
+   * `RoomZoningService.unzone`'s "Occupancy" section) and refuses only when the
+   * prison genuinely has nowhere left to put them -- at which point this
+   * sentence is true again, because there is no mistake this panel made that
+   * a player can still be permanently stuck behind.
+   *
    * It needs no selected room type, and that asymmetry is real rather than an
    * oversight: a removal names no room type, because what comes out is whatever
    * the rectangle covers.

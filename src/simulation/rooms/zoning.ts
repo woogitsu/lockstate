@@ -315,6 +315,36 @@ export interface UnzoneRoomAccepted {
 export type UnzoneRoomOutcome = UnzoneRoomAccepted | UnzoneRoomRefusal;
 
 /**
+ * What `unzone` asks when a room it would remove still has residents
+ * (issue #478). Implemented by `PrisonerOperationsRuntime.relocateResidentsOutOf`
+ * and wired in through the constructor's `residentRelocation` parameter --
+ * a narrow port rather than the runtime itself, the same shape `capacity`
+ * above takes, so this module keeps no dependency on prisoner internals
+ * (classification, cold state, accommodation policy) beyond the one question
+ * it actually asks.
+ *
+ * **Optional, and absence means the old refusal.** A test or a fixture that
+ * builds a `RoomZoningService` with no fourth argument -- most of
+ * `tests/unit/rooms-zoning.test.ts` -- gets exactly the behaviour this
+ * service always had: `room-occupied`, unconditionally, for any claimed
+ * instance. Only a session that wires `new-session.ts`'s real
+ * `PrisonerOperationsRuntime` in gets the relocate-then-remove path.
+ */
+export interface ResidentRelocationPort {
+  /**
+   * Attempts to move every resident out of every instance named in
+   * `instanceIds`, excluding those same instances as destinations, and
+   * reports whether it fully succeeded. All-or-nothing: on any resident with
+   * nowhere to go, every relocation this call already made is undone before
+   * it returns, so a refused `unzone` leaves residency exactly as it found
+   * it. See `PrisonerOperationsRuntime.relocateResidentsOutOf` for what
+   * "nowhere to go" means and why the choice of destination cannot be an
+   * unseeded one.
+   */
+  relocateResidentsOutOf(instanceIds: readonly string[]): 'relocated' | 'no-vacancy';
+}
+
+/**
  * What the last accepted zoning says about the room it created.
  *
  * Snapshot-shaped for the same reason `SimulationRefusal` is: the route out is
@@ -396,6 +426,16 @@ export class RoomZoningService {
      * supply one.
      */
     private readonly capacity?: { resolveInstance(instanceId: string): unknown },
+    /**
+     * What `unzone` asks instead of an unconditional refusal when a room it
+     * would remove still has residents (issue #478). Optional and fifth, so
+     * every existing caller -- every fixture in
+     * `tests/unit/rooms-zoning.test.ts` included -- constructs the service
+     * unchanged and keeps the refusal `unzone` always gave. `new-session.ts`
+     * is the one production wiring, and it passes the session's own
+     * `PrisonerOperationsRuntime`.
+     */
+    private readonly residentRelocation?: ResidentRelocationPort,
   ) {}
 
   /**
@@ -659,21 +699,51 @@ export class RoomZoningService {
    * `removedInstanceIds` is sorted, so two runs of the same commands produce an
    * identical outcome.
    *
-   * ## Occupancy
+   * ## Occupancy (issue #478 narrowed this from a permanent refusal)
    *
-   * A room with occupants is refused rather than removed. A prisoner holds an
-   * `accommodationInstanceId` in cold state, so unregistering an instance
-   * underneath them would leave a reference to a room that no longer exists --
-   * and unlike the geometry, that is not something another drag can repair. It
-   * used to be unreachable from a session zoned only through this service,
-   * because a zoned room had `capacity: 0` and `RoomInstanceRegistry.assign`
-   * refuses to fill it. **It is reachable now**: a cell with a bed in it has a
-   * `residentCapacity` of 1, `IntakeSystem` houses an arrival there, and a
-   * player who then drags a removal across that cell is told
-   * `unzone.room-occupied` rather than having the prisoner's
-   * `accommodationInstanceId` left naming a room that no longer exists. So this
-   * refusal moved from a corruption guard to a rule a player meets, which is
-   * what ADR 0028 phase 1 turns on.
+   * A prisoner holds an `accommodationInstanceId` in cold state, so
+   * unregistering an instance underneath them would leave a reference to a
+   * room that no longer exists -- and unlike the geometry, that used to be
+   * nothing another drag could repair. Until #478, *any* claim on the
+   * instance -- a resident living there or a prisoner merely using it for one
+   * action -- refused the whole removal outright, unconditionally, with
+   * `unzone.room-occupied`.
+   *
+   * **A use claim still refuses outright, and that half is unchanged.** It is
+   * transient by construction (`RoomInstanceRegistry.claimUse`'s own comment:
+   * a claim lasts one action), so a canteen a prisoner is eating in can be
+   * un-zoned a moment later, and there is nowhere to *relocate* a diner to --
+   * the room they are using is the whole of what "using" means. This is
+   * asked first, with `useOccupancyOf`, before anything below even looks at
+   * residents.
+   *
+   * **A residency claim is now relocated rather than refused, when
+   * `residentRelocation` is wired.** A cell with a bed has a
+   * `residentCapacity` of 1, `IntakeSystem` houses an arrival there, and that
+   * arrival used to be permanent furniture: nothing in `src/` before #478
+   * moved a prisoner *out* of accommodation, so a cell zoned in the wrong
+   * place and later occupied by an ordinary admission could never be
+   * un-zoned again for the life of the session. `ResidentRelocationPort`
+   * (`PrisonerOperationsRuntime.relocateResidentsOutOf`) is asked, once, for
+   * every instance this removal would otherwise strand a resident out of,
+   * and its contract is all-or-nothing: either every resident named finds
+   * somewhere else to live and the removal proceeds, or none of them move
+   * and this returns `unzone.room-occupied` exactly as before. **The
+   * refusal that remains is therefore the honest one** -- not "somebody is
+   * using that room" as a permanent condition, but "there is nowhere in this
+   * prison to put them right now", which lifts the moment the player builds
+   * more accommodation or a resident leaves some other room. A caller that
+   * wires no `residentRelocation` -- every fixture in
+   * `tests/unit/rooms-zoning.test.ts` -- gets the original, unconditional
+   * refusal: nothing about a room's occupants changes for a service built
+   * without the port.
+   *
+   * **This generalises past `room.cell`.** Relocation is keyed on the
+   * resident's own classification group (`firstAvailableAccommodationTarget`,
+   * the same lookup `IntakeSystem` and `SanctionSystem` already make), never
+   * on which room type is being removed -- so un-zoning an occupied
+   * `room.solitary-cell` relocates its resident by the identical rule, into
+   * whatever their group's accommodation policy prefers.
    */
   public unzone(request: UnzoneRoomRequest, tick: number): UnzoneRoomOutcome {
     if (
@@ -734,25 +804,48 @@ export class RoomZoningService {
     // tiles. The anchor is the only tile of an instance the registry knows
     // about, and it always lies inside the instance's own region, so this
     // finds every room whose tiles are about to go.
+    //
+    // Every instance is resolved and checked for a *use* claim before any
+    // relocation is attempted, and the loop still returns on the first one
+    // found -- that half of the guard is unconditional, exactly as it always
+    // was, so no resident-relocation attempt is ever made for a room a
+    // command handler could not have unregistered anyway. `occupiedInstanceIds`
+    // collects residency claims instead of refusing on them immediately,
+    // because whether they can be resolved is not known until every affected
+    // instance has been seen -- see `ResidentRelocationPort`'s all-or-nothing
+    // contract above.
     const removed: RoomInstance[] = [];
+    const occupiedInstanceIds: string[] = [];
     for (const tile of ordered) {
       const definition = this.rooms.getByNumericId(this.world.getZoning(tile));
       if (definition === undefined) continue;
       const instance = this.roomInstances.getById(roomInstanceIdFor(definition.id, tile));
       if (instance === undefined) continue;
-      // `claimCountOf` and not `occupancyOf`: since ADR 0029 a prisoner can
-      // hold this instance because they are *using* it for an action rather
-      // than living in it, and that reference dangles in exactly the same way
-      // if the instance is unregistered underneath it. It is also the same
-      // predicate `RoomInstanceRegistry.unregister` throws on, and the two must
-      // agree or a refusal the player should have seen becomes an exception out
-      // of `Kernel.step()`. The use-claim half of the refusal is transient by
-      // construction -- a claim lasts one action -- so a canteen a prisoner is
-      // eating in can be un-zoned a moment later.
-      if (this.roomInstances.claimCountOf(instance.instanceId) > 0) {
+      if (this.roomInstances.useOccupancyOf(instance.instanceId) > 0) {
         return { kind: 'refused', reason: 'room-occupied', request: { ...request }, tick };
       }
+      if (this.roomInstances.occupancyOf(instance.instanceId) > 0) occupiedInstanceIds.push(instance.instanceId);
       removed.push(instance);
+    }
+
+    if (occupiedInstanceIds.length > 0) {
+      // Sorted -- code-unit order, never `localeCompare`
+      // (`docs/DETERMINISM.md`) -- so the set handed to the port does not
+      // depend on the anchor-tile scan order above, only on which instances
+      // this removal affects.
+      occupiedInstanceIds.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+      const outcome = this.residentRelocation?.relocateResidentsOutOf(occupiedInstanceIds);
+      if (outcome !== 'relocated') {
+        // Either no port is wired (the original, unconditional refusal every
+        // existing fixture still gets) or it tried and found nowhere to put
+        // somebody. Either way nothing has been written yet -- `world.setZoning`
+        // and `roomInstances.unregister` are both still ahead of this line --
+        // so the refusal is exact: residency is exactly as it was.
+        return { kind: 'refused', reason: 'room-occupied', request: { ...request }, tick };
+      }
+      // Every named resident now lives elsewhere, so every instance in
+      // `removed` reads zero claims of both kinds and `unregister` below
+      // cannot throw.
     }
 
     for (const tile of ordered) this.world.setZoning(tile, 0);
