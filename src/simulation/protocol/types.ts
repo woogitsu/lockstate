@@ -784,6 +784,7 @@ export const REFUSAL_REASONS = [
   'build.water-blocked',
   'cancel-purchase.not-pending',
   'hire.insufficient-funds',
+  'hire.no-duty-for-role',
   'hire.roster-full',
   'hire.unknown-role',
   'place-object.duplicate-order',

@@ -91,6 +91,39 @@ optional `patrolWaypointIndex` are the only fields `DeploymentSystem` and
 `PatrolSystem` need to coordinate ownership of a travelling guard (see
 below).
 
+## Who may stand a post
+
+A staff member may be claimed for a security duty -- a sector post, an
+incident response, a contraband search -- only if their role is in a
+department `POST_ELIGIBLE_STAFF_DEPARTMENTS` names
+(`src/content/staff-role-catalog.ts`). Today that list is `security` alone, so
+`staff-role.guard` and `staff-role.security-chief` are the two roles of eight
+that can be sent anywhere. [ADR 0053](./adr/0053-who-may-stand-a-security-post.md)
+decides it and issue #456 is what it closes.
+
+The rule is read in exactly one place, `claimableGuardIds`
+(`src/simulation/security/post-eligibility.ts`), which `DeploymentSystem`,
+`IncidentResponseSystem` and `SearchSystem` each call where they used to call
+`GuardRoster.unassignedGuardIds()` directly. `GuardRoster` itself is unchanged:
+`unassignedGuardIds()` still answers who has no assignment, which is what the
+Staff panel's `unassigned` headcount is a count of.
+
+`StaffHiringService` refuses a hire into an ineligible role outright
+(`hire.no-duty-for-role`), because nothing in `src/` removes a staff member from
+the roster and `PayrollSystem` bills every id on it at every day boundary -- so
+such a hire would be a permanent wage for no effect. A save written before this
+rule can still carry one, and the claim filter is what stops those from covering
+a post.
+
+Measured on `bb3a01e`, in the three-prisoner one-bed prison
+`tests/integration/security-default-sector.test.ts` builds, hiring an
+administrator, a nurse, a cook, a doctor and a warden through the real command
+path: **zero refusals, the administrator `on-post`, coverage
+`required: 1, assigned: 1, shortage: 0`, and over 30,000 ticks four riots -- all
+four resolved, sixteen responders dispatched, nobody injured.** Under the rule
+the same prison has six riots, all six lapsed, nobody dispatched and eighteen
+injuries, which is what a prison with no guards should look like.
+
 ## Deployment: filling sector requirements without teleporting
 
 `deployment-schedule.ts`'s `DeploymentSchedule` states a sector's required
@@ -102,7 +135,8 @@ fabricated demand.
 
 `deployment-system.ts`'s `DeploymentSystem` (a `SystemRegistration`,
 scheduled every 10 ticks) deterministically fills each sector's shortage
-from unassigned guards (ascending entity id) and drives every assigned
+from **post-eligible** unassigned guards (ascending entity id; see "Who may
+stand a post" below) and drives every assigned
 guard to its `postTile` through the real `NavigationSystem` -- staff do not
 teleport into deployment zones. `getCoverageReport(tick)` exposes
 per-sector required/assigned/shortage counts, sorted by sector id, without

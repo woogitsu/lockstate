@@ -1,6 +1,6 @@
 import type { ContentRegistry } from '../../content/registry';
 import type { StaffRoleDefinition } from '../../content/staff-role-catalog';
-import { defaultStaffRoleRegistry } from '../../content/staff-role-catalog';
+import { defaultStaffRoleRegistry, isPostEligibleStaffRole } from '../../content/staff-role-catalog';
 import type { Treasury } from '../economy/treasury';
 import { staffDailyWageForRole, staffDailyWageMinorUnits } from '../economy/wages';
 import type { EntityId } from '../entity/entity-store';
@@ -69,12 +69,25 @@ import type { TilePosition } from '../world/coordinates';
 /**
  * Why a hire was refused.
  *
- * Three, and they are the three this service can produce. Mapped onto the wire
+ * Four, and they are the four this service can produce. Mapped onto the wire
  * through an exhaustive `Record` in `src/simulation/refusals/refusal-log.ts`,
- * so a fourth added here fails to compile until somebody decides what the
+ * so a fifth added here fails to compile until somebody decides what the
  * player is told about it.
+ *
+ * **`no-duty-for-role` is the fourth**
+ * ([ADR 0053](../../../docs/adr/0053-who-may-stand-a-security-post.md)
+ * decision 2, issue #456). The sentence above is why it is a refusal rather
+ * than a hire that quietly does nothing: this service is the only way anybody
+ * reaches `GuardRoster`, nothing in `src/` ever removes a staff member from
+ * it, and `PayrollSystem` bills every id it holds at every in-game day
+ * boundary -- so hiring a role no duty can claim is an unrecoverable standing
+ * cost for no effect, and the player has no channel that would tell them.
+ * A refusal has one: `src/simulation/refusals/refusal-log.ts` carries it to the
+ * status strip, where `src/ui/simulation-alerts.ts` maps the id onto an
+ * authored sentence -- a resolved message key and never a raw dotted id, which
+ * is what issue #409 asks of a refusal the player did not expect.
  */
-export type StaffHireRefusalReason = 'unknown-role' | 'insufficient-funds' | 'roster-full';
+export type StaffHireRefusalReason = 'unknown-role' | 'no-duty-for-role' | 'insufficient-funds' | 'roster-full';
 
 /** What a hire did. `hired` is not a refusal. */
 export type StaffHireOutcome =
@@ -114,7 +127,7 @@ export class StaffHiringService {
   /**
    * Hires, or refuses and changes nothing.
    *
-   * The order of the three checks is the whole of the correctness argument:
+   * The order of the four checks is the whole of the correctness argument:
    * every refusal has to leave the treasury, the roster and the entity store
    * exactly as it found them, so the money is spent only once the role has
    * resolved and the roster has been shown to have room. There is no ordering
@@ -123,6 +136,22 @@ export class StaffHiringService {
   public hire(request: StaffHireRequest): StaffHireOutcome {
     const role = this.staffRoles.getById(request.staffRoleId);
     if (role === undefined) return { kind: 'refused', reason: 'unknown-role' };
+
+    /*
+     * The department gate (ADR 0053 decision 2), second because it needs the
+     * resolved role and nothing else -- no money has moved and no entity has
+     * been spawned, so the "every refusal leaves the world as it found it"
+     * argument above covers it without any new reasoning.
+     *
+     * It is checked here rather than only where staff are claimed for duty
+     * because the two answer different questions. `claimableGuardIds` decides
+     * who may be *sent*; this decides who the prison may *take on*, and a
+     * prison that took on a nurse it can never send anywhere would be paying
+     * for her for the rest of the save. Both are needed: a save written before
+     * this change can carry an ineligible staff member, and no refusal can
+     * reach backwards into one.
+     */
+    if (!isPostEligibleStaffRole(role)) return { kind: 'refused', reason: 'no-duty-for-role' };
 
     /*
      * A guard against a throw, not a policy.
