@@ -117,6 +117,28 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
   when the browser suite is the thing being verified", was therefore stronger
   than the facts required, and it is withdrawn: verify on the branch you are
   actually changing.
+- **Three browser tests fail in the agent container and pass on CI, and none
+  is anybody's branch.** Each was confirmed by running it *alone* on plain
+  `main` here, and all three are green on the self-hosted runner:
+  `app-shell.spec.ts` *"every control can actually be pressed … (#88)"* (held-guard
+  rows 2 and 3 are never laid out), `app-shell.spec.ts` *"a pending delivery costs
+  the Build panel nothing … (#285)"* (the refund does not arrive inside a
+  20-second poll), and `ui-shell.spec.ts` *"the Rooms panel says what a zoned room
+  is missing … (#331)"*. All three wait on the simulation to produce something,
+  and this container is slower than the runner, so **they are a property of where
+  the suite runs and not of the diff**.
+  Two agents lost time to them on 2026-08-28, one reporting them as "pre-existing
+  failures on this branch" — true, and misleading, because they are pre-existing
+  on every branch. Measure `main` in a *separate* worktree before believing a
+  local browser failure is yours, and let the PR's own `browser` job be the gate.
+  This bullet is about these two tests today, not a licence to wave any red
+  browser test through: everything else in that suite has been reproducible here.
+- **A local browser run in the worktree you are editing is not a baseline.** Vite
+  serves `src/**` live, so a run started before your edits reads them off disk as
+  they land, and a "before" measurement taken that way is a measurement of the
+  "after" tree. An agent caught its own baseline doing this and re-took it in a
+  second worktree checked out at the unmodified commit. That is the only way to
+  get one.
 - **Do not run a suite while another agent is running one.** Timing-sensitive
   tests flake under contention and this repository has measured it: identical
   clean trees gave 9, 5 and 5 failures, every one a `Test timed out in 5000ms`.
@@ -126,6 +148,27 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
   missed `tests/browser/app-shell.spec.ts`, because it could not run the browser
   suite. Ask what *else* asserts the behaviour you just changed, and name the
   suites you did not run.
+- **There is no such thing as an unnumbered ADR draft here.** An integrator on
+  2026-08-28 told three agents to draft with a placeholder id `ADR-XXXX` and to
+  leave `docs/adr/README.md` alone. That is impossible, and an agent proved it
+  rather than complying: `tests/foundation/adr-numbering-contract.test.ts`
+  requires the filename to be `NNNN-kebab-case.md`, requires a matching row in
+  `docs/adr/README.md` — its own failure message reads *"Adding an ADR means
+  adding its row in the same commit, and the index says so itself"* — and
+  requires the index's **Next free number** line to name a number no file has
+  taken. A placeholder fails the first check; a numbered file with no row fails
+  the other two.
+  `AGENTS.md`'s rule was right all along and says how this works: *"A number is
+  not reserved until it appears in `docs/adr/README.md`."* Adding the row **is**
+  the reservation. So an ADR arrives numbered, indexed and with the next-free
+  line moved, all in one commit — and, because a branch nobody has merged is
+  invisible from the index, it also carries the sentence ADR 0048 and 0049 both
+  carry: the number is provisional, and if it collides, the file, its row and
+  every citation of it get renumbered.
+  **What "assigned centrally" then means in a parallel session is that the
+  integrator hands out the numbers before the drafts exist**, one per agent, at
+  the moment it becomes plausible that an agent will need one. Two agents that
+  each read "next free" off `main` will both write 0050.
 
 ### Handovers between parallel agents
 
