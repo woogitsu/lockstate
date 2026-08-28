@@ -301,6 +301,30 @@ export class PrisonerColdState {
     else this.currentActionPathRequestId.set(entityId, requestId);
   }
 
+  /**
+   * Drops every entry this cold state holds for one entity, because that
+   * entity has ceased to exist (ADR 0050 decision 2; ADR 0026 question 2).
+   *
+   * The three maps are keyed by `EntityId` and until now the only thing that
+   * emptied them was `loadSnapshot`'s whole-registry `clear()`. That was safe
+   * only while nothing was ever destroyed: `EntityStore` bumps a slot's
+   * generation on destroy, so the next occupant's id misses rather than
+   * inheriting -- until the generation wraps at 4,096 recycles of that index
+   * and the miss becomes a hit (ADR 0026's subject). A per-entity drop is
+   * correct with or without that wrap, which is why it is this and not a
+   * longer fuse.
+   *
+   * Total in every direction a release can be wrong: an entity that holds no
+   * accommodation, no target and no path request is three no-op deletes, and
+   * releasing twice is three more. `Map.delete` reports rather than throws, and
+   * this keeps no counters that a double delete could drive negative.
+   */
+  public release(entityId: EntityId): void {
+    this.accommodationInstanceId.delete(entityId);
+    this.currentActionTargetInstanceId.delete(entityId);
+    this.currentActionPathRequestId.delete(entityId);
+  }
+
   public getSnapshot() {
     return {
       accommodationInstanceId: [...this.accommodationInstanceId.entries()].sort(([a], [b]) => a - b),

@@ -112,6 +112,20 @@ export class SimulationSnapshotFeed implements RenderFeed {
   private clockRunning = false;
   /** Set when something happened that could have changed the world. */
   private dirty = false;
+  /**
+   * Whether the request now in flight was provoked by a change rather than by
+   * the consistency interval.
+   *
+   * It is `dirty`, captured at the moment the request went out, because
+   * `dirty` is cleared there and the answer comes back later. `apply` reads it
+   * to decide whether the unchanged-tick skip is allowed to fire: a snapshot
+   * fetched *because something happened* must be applied even at a tick that
+   * did not move, which is the case a command dispatched against a paused
+   * clock creates (ADR 0051). A snapshot
+   * fetched by the thirty-second consistency poll may still be skipped, which
+   * is what the optimisation was for.
+   */
+  private pendingForcesApply = false;
   private pendingMessageId: string | undefined;
   private pendingSince = 0;
   private nextPollAt = Number.POSITIVE_INFINITY;
@@ -259,16 +273,20 @@ export class SimulationSnapshotFeed implements RenderFeed {
         }
         break;
 
-      case 'simulation/snapshot':
+      case 'simulation/snapshot': {
         if (message.replyTo !== this.pendingMessageId) return; // Somebody else's snapshot (a save).
         this.pendingMessageId = undefined;
-        this.apply(message.payload);
+        const forced = this.pendingForcesApply;
+        this.pendingForcesApply = false;
+        this.apply(message.payload, forced);
         break;
+      }
 
       case 'simulation/stopped':
         this.sessionReady = false;
         this.clockRunning = false;
         this.pendingMessageId = undefined;
+        this.pendingForcesApply = false;
         this.lastDeltaTick = undefined;
         this.awaitedCommandTick = undefined;
         break;
@@ -304,6 +322,11 @@ export class SimulationSnapshotFeed implements RenderFeed {
     const messageId = this.generateMessageId();
     this.pendingMessageId = messageId;
     this.pendingSince = nowSeconds;
+    // Captured before `dirty` is cleared: it is the difference between "we
+    // asked because something happened" and "we asked because thirty seconds
+    // went by", and only the reply to the first may bypass the unchanged-tick
+    // skip in `apply`.
+    this.pendingForcesApply = this.dirty;
     this.dirty = false;
     this.nextPollAt = nowSeconds + this.pollIntervalSeconds;
 
@@ -399,7 +422,10 @@ export class SimulationSnapshotFeed implements RenderFeed {
     this.lastDeltaTick = payload.tick;
   }
 
-  private apply(payload: Extract<WorkerToMainMessage, { kind: 'simulation/snapshot' }>['payload']): void {
+  private apply(
+    payload: Extract<WorkerToMainMessage, { kind: 'simulation/snapshot' }>['payload'],
+    forced: boolean,
+  ): void {
     const { snapshot } = payload;
     if (snapshot.schemaId !== SESSION_SNAPSHOT_SCHEMA_ID || snapshot.schemaVersion !== SESSION_SNAPSHOT_SCHEMA_VERSION) {
       this.onError(
@@ -414,9 +440,28 @@ export class SimulationSnapshotFeed implements RenderFeed {
       return;
     }
 
-    // Nothing in the world can change without the simulation advancing, so an
-    // unchanged tick means the decoded view we already hold is still correct.
-    if (this.lastAppliedTick === payload.tick && this.frame.revision > 0) return;
+    /*
+     * An unchanged tick means the decoded view we already hold is still
+     * correct -- **unless something asked for this snapshot**, which is the
+     * half of the sentence that used to be missing.
+     *
+     * It read "nothing in the world can change without the simulation
+     * advancing", and that stopped being true when the worker began
+     * dispatching a command submitted against a paused clock (ADR 0051). A wall ordered during a pause
+     * becomes an `approved` build order at the tick the session is already
+     * on, `structuresFromConstruction` maps that to the `planned` ghost this
+     * renderer has always known how to draw, and the tick behind it does not
+     * move -- so this skip discarded the one snapshot that carried it and the
+     * player's order stayed invisible until they pressed play.
+     *
+     * `forced` is the reason the poll went out, not a property of the reply:
+     * a command acknowledgement, a new session, a resumed clock or a lost
+     * request set `dirty`, and every one of those means "the world may differ
+     * from what is painted". The thirty-second consistency poll sets none of
+     * them and is still skipped at an unmoved tick, which is what the
+     * optimisation was for.
+     */
+    if (!forced && this.lastAppliedTick === payload.tick && this.frame.revision > 0) return;
 
     // Validated as JSON by the protocol decoder before it reached us; the
     // schema id above says which shape that JSON has. `WorldRenderView` still

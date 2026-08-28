@@ -335,6 +335,23 @@ const INJECTED_STATUS_COUNTS = {
       // is dropped by `decodeWorkerToMainMessage` and every assertion below it
       // fails on a strip that was never updated at all.
       stateIncomeAccruedTodayMinorUnits: 4_631,
+      // The fourteenth and fifteenth counts (ADR 0042 step 3), and required
+      // for the third time for the same reason the two notes above give: the
+      // counts payload is `.strict()`, so a fixture missing either field is
+      // dropped whole by `decodeWorkerToMainMessage` and every assertion after
+      // the injection fails on a strip that was never updated. That is exactly
+      // how this test failed when payroll landed -- `[data-metric="prisoners"]`
+      // stuck at `0`, which reads like a broken HUD and is a rejected message.
+      //
+      // Chosen so neither could be mistaken for something else in the payload:
+      // 480 is not derivable from the six staff (`6 x 80` is a coincidence this
+      // fixture would rather not invite, so it is not 480 for that reason --
+      // the roster behind an injected payload does not exist), and 1,700 is not
+      // a share of `treasuryMinorUnits`. Both are deliberately non-zero:
+      // nothing renders them yet, so a zero here would be indistinguishable
+      // from the field being absent again.
+      dailyWageBillMinorUnits: 620,
+      unpaidWagesMinorUnits: 1_700,
     },
   },
 } as const;
@@ -1383,8 +1400,11 @@ async function wallRectanglesFromTheKeyboard(
     .toBeNull();
 
   // Stopped again, so the caller inherits the paused session a new prison
-  // arrives as -- which is what lets every "a command queued against a paused
-  // clock is not dispatched until it runs" claim below stay true.
+  // arrives as. It used to be what let every "a command queued against a
+  // paused clock is not dispatched until it runs" claim below stay true; since
+  // ADR 0051 a *due* command is dispatched
+  // during a pause, so what those places now rest on is narrower and is stated
+  // where each of them stands.
   // Backwards, for the reason above: the starting point is still *Fast
   // forward*, and *Pause* is two controls behind it and a whole lap ahead.
   await shiftTabTo(page, 'the Pause control', {
@@ -3187,10 +3207,12 @@ test.describe('the assembled application', () => {
      * up as a control outside the panel. Measured: with three bought, a limit of
      * four leaves the fourth row hidden and every assertion below green.
      *
-     * The clock has to run for any of them to execute -- `Kernel.step` is what
-     * dispatches a queued command -- and it is stopped again afterwards so the
+     * The clock is started for them and stopped again afterwards, so the
      * deliveries stay in flight for the rest of the test rather than landing
-     * mid-measurement.
+     * mid-measurement. It is the *delivery* that needs the clock --
+     * `ProcurementSystem.update` runs on a tick -- rather than the purchase
+     * itself, which since ADR 0051 would be
+     * dispatched during a pause as well.
      */
     const purchases = 5;
     await page.locator('.hud-build__buy-toggle').click();
@@ -3810,9 +3832,11 @@ test.describe('the assembled application', () => {
     ).toEqual(firstCell);
     await page.locator('.hud-rooms__confirm').click();
     // The walls above left the clock stopped again, exactly as a new session
-    // arrives, and a command queued against a stopped clock is not dispatched
-    // -- so the room does not register until it runs. The count moving from 0
-    // is the proof that a real worker took it.
+    // arrives. The count moving from 0 is the proof that a real worker took the
+    // `ZoneRoom`; play is pressed here because this test was written when a
+    // command given during a pause waited for it, and since ADR 0051 the room registers on the confirm instead. The
+    // press is kept rather than removed: it makes the assertion hold on either
+    // behaviour, and what is being measured is the room, not the clock.
     await page.getByRole('button', { name: localeText('hud.transport.play') }).click();
     await expect(page.locator('[data-metric="rooms"]')).toContainText('1');
 
@@ -4098,9 +4122,11 @@ test.describe('the assembled application', () => {
     await hop('the confirm control', { selector: '.hud-rooms__confirm' });
     await page.keyboard.press('Enter');
 
-    // A new session starts paused, and a command queued against a paused clock
-    // is not dispatched until it runs. The count moving is the proof that a
-    // real simulation worker accepted a real `ZoneRoom`.
+    // A new session starts paused. The count moving is the proof that a real
+    // simulation worker accepted a real `ZoneRoom` -- and since ADR 0051
+    // it moves on the confirm rather than
+    // on this press, which is kept because the claim under test is the typed
+    // rectangle reaching the worker and not when the clock ran.
     await hop('the Play control', {
       selector: '.hud-strip__transport button',
       text: localeText('hud.transport.play'),
@@ -4551,6 +4577,83 @@ test.describe('the assembled application', () => {
     const atPause = await progress.textContent();
     await page.waitForTimeout(3_000);
     expect(await progress.textContent()).toBe(atPause);
+  });
+
+  /**
+   * An order given while the clock is paused, answered while the clock is
+   * still paused (ADR 0051).
+   *
+   * **This is the first thing a player does, and it used to produce nothing.**
+   * A new session arrives paused -- `handleInitialize` builds the clock
+   * `{ mode: 'paused' }` and nothing in `src/` starts it, so the only way it
+   * runs is a transport control the player has not pressed yet. Against that
+   * clock the worker accepted a `PlaceBuildOrder`, answered `status: 'queued'`,
+   * and then had no `Kernel.step()` to dispatch it with, because the tick loop
+   * exists only in the `running` state. The wall did not appear, the Build
+   * panel's queue block stayed hidden, no count moved and no sentence was
+   * painted. Thirteen `HudIntent` kinds reach the simulation and every one of
+   * them was silent for the length of the pause.
+   *
+   * **Why it can only be settled here.** Vitest runs in the `node` environment
+   * with no DOM, so nothing headless executes `build-panel.ts` at all; and the
+   * claim is not about any one layer but about five of them meeting -- a real
+   * click, a real `postMessage`, the worker's paused dispatch, the forced
+   * `simulation/status-counts` behind it, the `hud/build-queue` projection the
+   * composition root asks for on that message, and the block that draws the
+   * answer. A worker-level test can show the command was dispatched; only this
+   * one can show the player was told.
+   *
+   * **The clock is asserted to be stopped at both ends**, before the press and
+   * after the row appears, and the day readout is asserted not to have moved.
+   * Without that pair this test would pass just as well against a build that
+   * quietly started the simulation, which is the fix this one rejects.
+   */
+  test('answers an order given while the clock is paused, without the clock ever running', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.save-panel__item-label').first()).toContainText('New Prison');
+
+    const pause = page.locator('.hud-strip__transport [title="Pause"]');
+    const progress = page.locator('.hud-clock__day-progress');
+    // Non-vacuous: the session really is paused at the start of day one, so
+    // everything below is measured against a clock that has never run.
+    await expect(pause).toHaveAttribute('aria-pressed', 'true');
+    await expect(progress).toHaveText('0%');
+
+    await page.getByRole('button', { name: 'Build' }).click();
+    await expect(page.locator('.hud-build')).toBeVisible();
+    // And the queue block is genuinely absent beforehand -- `paintQueue` hides
+    // the section and deletes `data-queued` for a prison with nothing ordered,
+    // so a row appearing below cannot be furniture that was always there.
+    await expect(page.locator('.hud-build')).not.toHaveAttribute('data-queued', /.*/);
+    await expect(page.locator('.hud-build__queue')).toBeHidden();
+
+    // One wall, through the panel's own numeric route: the keyboard-reachable
+    // half of the two producers of `place-build-order`, and the one that needs
+    // no camera arithmetic. One press is one order.
+    const coordinates = page.locator('.hud-build__coordinates > .ui-section__header');
+    if ((await coordinates.getAttribute('aria-expanded')) === 'false') await coordinates.click();
+    await page.getByRole('spinbutton', { name: 'Tile X' }).fill('5');
+    await page.getByRole('spinbutton', { name: 'Tile Y' }).fill('5');
+    await page.locator('.hud-build__coordinates .ui-action').click();
+
+    // The answer, on the panel, with the clock still stopped.
+    await expect(page.locator('.hud-build')).toHaveAttribute('data-queued', '1', { timeout: 15_000 });
+    const queueFold = page.locator('.hud-build__queue > .ui-section__header');
+    await expect(queueFold).toBeVisible();
+    await queueFold.click();
+    const rows = page.locator('.hud-build__queue-row:not([hidden])');
+    await expect(rows).toHaveCount(1);
+    // The row names the tile the player typed, which is how they aim at an
+    // order -- `projectBuildQueue` carries the tile precisely because an id is
+    // not something a player can read.
+    await expect(rows.first().locator('.hud-build__queue-label')).toContainText('5');
+
+    // And the clock never ran: the order was answered by the pause, not by
+    // time passing behind it.
+    await expect(pause).toHaveAttribute('aria-pressed', 'true');
+    await expect(progress).toHaveText('0%');
   });
 
   /**
@@ -5538,52 +5641,57 @@ test.describe('the assembled application', () => {
    * Each PR proved its own surface. #89 proved that the main thread's
    * pre-flight paints the refusal line for a total the published balance
    * cannot cover; #261 proved that a refusal the *worker* decides reaches the
-   * alerts list -- using a refused **build order**. Nothing drove a refused
-   * *purchase* from a real worker to the alerts list, and nothing asserted
-   * that either surface stays quiet while the other speaks. Measured on this
-   * branch before these tests existed: deleting purchase refusals from the
-   * view model at the composition root, and separately making the pre-flight
-   * raise an alert row *as well as* throwing, each left `tsc` clean, all 1862
-   * headless tests passing, and every browser test passing but the one this
-   * container always fails on unfetched Git LFS content.
+   * alerts list -- using a refused **build order**, which is still the case
+   * `a build order the simulation refuses reaches the alerts list (#261)`
+   * drives here. What neither proved was that either surface stays quiet
+   * while the other speaks, and "exactly one" is a statement about *two*
+   * surfaces at once, which only the assembled page has both of.
    *
-   * Neither half is provable a layer down, and for different reasons.
-   * `hudAlertsFromWorkerMessage` and `RefusalLog` each have full unit tests
-   * that pass either way, because the thing that can break is the join: the
-   * kernel dispatching the command at its tick, `ProcurementSystem` refusing
-   * it, the worker opening its own publication gate for a new refusal, and
-   * `src/main.ts`'s single listener writing the row into the view model. And
-   * "exactly one" is a statement about *two* surfaces at once, which only the
-   * assembled page has both of.
+   * **The first of these used to drive the worker's half with a purchase, and
+   * cannot any more.** It pressed twice against a paused clock: both presses
+   * passed the pre-flight because a paused clock had dispatched neither, and
+   * the treasury refused the second once the clock ran. Since ADR 0051
+   * a command
+   * submitted while paused carries the tick the session is already on, so the
+   * worker dispatches it at once -- the balance moves, the status strip is
+   * republished, and the second press meets an accurate pre-flight instead of
+   * a stale one.
    *
-   * Both are driven with the clock **paused** at the point where determinism
-   * matters, which is a fact about the sender rather than a trick:
-   * `SimulationCommandSender.projectExecuteTick` says "a paused clock cannot
-   * have moved, so the last reported tick is exact and the order runs on the
-   * very first step after play -- no lead, no wait". So presses made while
-   * paused are all scheduled for the same tick, and `Kernel.step` drains every
-   * command whose `executeAtTick` equals the tick it is on -- all of them, in
-   * one pass. That is the "several purchases pressed inside one tick" case
-   * `src/main.ts` names as the one its pre-flight cannot see, produced without
-   * racing a 50 ms tick and without a fixed sleep anywhere.
+   * That is a product change and not a test problem, and it is the better
+   * behaviour: the player is refused immediately, on the control they pressed,
+   * rather than a moment later by an alert about money. Its cost is recorded
+   * rather than hidden -- from this panel, `ProcurementSystem`'s
+   * `insufficient-funds` is now reachable only inside the twenty-tick lead an
+   * order given while the clock *runs* carries, which is a one-second window
+   * this suite cannot win reliably (measured: pressing Buy and then Pause took
+   * longer than the lead in this container, and the queued order had already
+   * been paid for). So the worker's half of the purchase claim is asserted at
+   * the layer where it is deterministic -- `tests/unit/worker-state-machine.test.ts`,
+   * "a purchase the treasury cannot cover" -- against the shipped worker and a
+   * real `ProcurementSystem`, and the *join* it used to prove here
+   * (`RefusalLog` -> `simulation/status-counts` -> the band and the alerts
+   * list, with no control marked) is proven by the refused build order, which
+   * takes exactly the same route with a different reason id.
    */
 
   /**
-   * The worker's half: the simulation refuses a purchase, and the alerts list
-   * is the only place the player hears about it.
+   * The pre-flight's other half, and the one the pause used to hide: a second
+   * purchase inside one pause, refused before it is sent.
    *
-   * Two presses at half the treasury plus one unit. Each passes the
-   * pre-flight on its own -- it compares against the balance the worker last
-   * published, and a paused clock has dispatched neither of them, so that
-   * figure is still the starting balance for both. The pair cannot both be
-   * paid for, so when the clock runs `Treasury.spend` refuses the second and
-   * `ProcurementSystem` answers `insufficient-funds`: the only one of its four
-   * refusal reasons this panel can reach at all (a fresh `crypto.randomUUID()`
-   * per press rules out `duplicate-order`, the stepper's clamp rules out
-   * `invalid-quantity`, and the pre-flight answers `unknown-material` before
-   * the worker ever sees it).
+   * Two presses at half the treasury plus one unit, both while the clock is
+   * stopped. The first is affordable and is dispatched on the spot, which is
+   * the behaviour under test and is asserted directly -- the balance on the
+   * status strip moves with the clock at `0%`. The second is then measured
+   * against that new balance and refused here, so nothing reaches the worker
+   * and the alerts list stays on its empty-state row.
+   *
+   * The interesting half is that last one: an empty list proves nothing on its
+   * own, because it is also what "the worker has not published yet" looks
+   * like. It cannot mean that here -- the balance moved, and the readout that
+   * carried it is the very message an alert row would have arrived on -- and
+   * that is asserted rather than left implied.
    */
-  test('a purchase the simulation refuses reaches the band and the log, and no control (#89, #261, #220)', async ({
+  test('a second purchase inside one pause is refused before it is sent, and the list stays empty (#89, #261, #220)', async ({
     page,
   }) => {
     await installCommandTee(page);
@@ -5595,8 +5703,10 @@ test.describe('the assembled application', () => {
     await page.getByRole('button', { name: 'New prison' }).click();
     await expect(page.locator('.hud-clock__day')).toHaveText('1');
 
-    // Paused on arrival, which is the state the two presses below depend on.
-    await expect(page.locator('.hud-clock__day-progress')).toHaveText('0%');
+    // Paused on arrival, and it stays paused for the whole test -- which is
+    // the point: everything below happens with the clock stopped.
+    const progress = page.locator('.hud-clock__day-progress');
+    await expect(progress).toHaveText('0%');
 
     const funds = page.locator('[data-metric="funds"] .ui-stat__value');
     // Published once on `simulation/ready`, before any tick runs -- so the
@@ -5621,102 +5731,52 @@ test.describe('the assembled application', () => {
     await setBuyQuantity(page, quantity);
     const buy = page.locator('.hud-build__buy-submit');
 
+    // ---- the first press: accepted, and paid for during the pause ----------
     await buy.click();
     await expect
       .poll(async () => (await purchasesSent(page)).length, {
-        message: 'the first press sent no PurchaseMaterials, so there is no purchase to refuse',
+        message: 'the first press sent no PurchaseMaterials, so there is nothing to measure',
       })
       .toBe(1);
-    await buy.click();
-    await expect
-      .poll(async () => (await purchasesSent(page)).length, {
-        message: 'the second press was swallowed, so the treasury is never asked for more than it has',
-      })
-      .toBe(2);
-
-    // Both got past the main thread, which is what makes this a test of the
-    // worker's refusal: a lit band here -- with the clock still paused, so no
-    // command has been dispatched -- would mean the pre-flight had spoken and
-    // there was nothing left for the simulation to refuse.
-    await expect(refusal).toBeHidden();
-    await expect(page.locator('[data-action-failed="true"]')).toHaveCount(0);
-    expect(await purchasesSent(page)).toEqual([
-      { itemId: 'item.brick', quantity },
-      { itemId: 'item.brick', quantity },
-    ]);
-
-    // Nothing has been dispatched yet, so nothing has been spent and nothing
-    // has been refused: a paused clock steps no ticks, and commands are
-    // applied inside `Kernel.step`.
-    await expect(funds).toHaveText(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS));
-    await expect(emptyRow).toHaveCount(1);
-
-    await page.locator('.hud-strip__transport [title="Play at normal speed"]').click();
-
-    // Exactly one of the two was paid for, measured rather than inferred: the
-    // balance lands one purchase down. Both succeeding is impossible because
-    // the treasury refuses rather than overdrawing, and neither succeeding
-    // would leave this at the starting figure.
     await expect
       .poll(async () => funds.textContent(), {
-        message: 'the balance never moved, so neither queued purchase was ever dispatched',
+        message: 'the purchase given during the pause was never dispatched, so the balance never moved',
         timeout: 20_000,
       })
       .toBe(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS - quantity * unitPrice));
+    // With the clock still stopped, which is what makes the line above a
+    // statement about the paused dispatch rather than about time passing.
+    await expect(progress).toHaveText('0%');
+    await expect(page.locator('.hud-strip__transport [title="Pause"]')).toHaveAttribute('aria-pressed', 'true');
+    await expect(refusal).toBeHidden();
+    await expect(page.locator('[data-action-failed="true"]')).toHaveCount(0);
 
-    // The row arrives on the worker's own schedule: a new refusal opens the
-    // status-counts publication gate, so it is posted on the tick-loop wake
-    // the command was refused on rather than waiting out the 500 ms interval.
-    await expect
-      .poll(async () => alertRow.count(), {
-        message: 'the simulation refused the purchase and the alerts list never heard about it',
-        timeout: 20_000,
-      })
-      .toBe(1);
-    await expect(emptyRow).toHaveCount(0);
+    // ---- the second press: refused here, and nothing leaves this thread ----
+    await buy.click();
+    await expect(refusal).toBeVisible();
+    await expect(refusal).toHaveAttribute('data-action', 'purchase-materials');
+    await expect(refusal).toContainText(localeText('hud.refusal.purchase-materials'));
+    // The thrown English never reaches the screen (ADR 0011).
+    await expect(refusal).not.toContainText('cannot cover');
+    // On the control that was pressed, as well as in the line.
+    await expect(buy).toHaveAttribute('data-action-failed', 'true');
+    // The throw happened instead of the submit, not alongside it, so the
+    // worker has nothing it *could* report about this press.
+    expect(await purchasesSent(page)).toEqual([{ itemId: 'item.brick', quantity }]);
+    // And the balance did not move again: nothing was spent twice.
+    await expect(funds).toHaveText(fundsText(TREASURY_STARTING_BALANCE_MINOR_UNITS - quantity * unitPrice));
 
-    // **Visible, not merely present.** The alerts section starts folded
-    // (`INITIAL_HUD_SHELL_STATE.collapsedPanels` holds `'alerts'`), so the row
-    // is in the DOM with a 0x0 box until the player opens it -- and a text
-    // assertion against a folded region passes while nothing is on screen,
-    // which is exactly the state #220 measured. Opened here the same way the
-    // #261 test opens it.
-    await expect(alertRow).toBeHidden();
-    await expect(alertsSection).toHaveAttribute('data-collapsed', 'true');
+    // ---- exactly one surface, and the other stays quiet --------------------
+    // The alerts list is empty because the channel carried no refusal, not
+    // because it has not spoken: it published the new balance a moment ago,
+    // on the very message an alert row would have arrived on.
+    await expect(alertRow).toHaveCount(0);
+    await expect(emptyRow).toHaveCount(1);
     await page.locator('.hud-minimap .ui-section__header').click();
     await expect(alertsSection).toHaveAttribute('data-collapsed', 'false');
-    await expect(alertRow).toBeVisible();
-
-    // The sentence the bundled locale gives the reason the simulation
-    // actually sent, resolved from the catalog rather than typed here.
-    await expect(alertRow).toContainText(localeText('hud.alert.refusal.purchase.insufficient-funds'));
-    // And not the wire vocabulary (ADR 0011): `insufficient-funds` is what
-    // `ProcurementSystem` decided and `purchase.insufficient-funds` is the id
-    // it crossed the boundary as. Neither is a sentence.
-    await expect(alertRow).not.toContainText('insufficient-funds');
-    await expect(alertRow).not.toContainText('purchase.');
-
-    // The HUD's own rendered text says it -- the measurement #220 established
-    // as the honest one, because `toBeVisible` and `innerText` can disagree
-    // about a subtree the layout has dropped.
-    expect((await page.locator('.hud').innerText()).includes(localeText('hud.alert.refusal.purchase.insufficient-funds'))).toBe(
-      true,
-    );
-
-    // **Exactly one refusal, from exactly one producer**, which is the
-    // assertion this seam had none of. The band carries the simulation's
-    // sentence -- and carried it before the fold above was opened, which is
-    // the half #220 left unfixed for every refusal but one -- while no
-    // control is marked and no `data-action` names one, because the pre-flight
-    // in `src/main.ts` said nothing about this gesture and the command it sent
-    // was accepted.
-    await expect(refusal).toBeVisible();
-    await expect(refusal).toHaveAttribute('data-source', 'simulation');
-    await expect(refusal).toContainText(localeText('hud.alert.refusal.purchase.insufficient-funds'));
-    await expect(refusal).not.toContainText('purchase.');
-    await expect(refusal).not.toHaveAttribute('data-action', /.*/u);
-    await expect(page.locator('[data-action-failed="true"]')).toHaveCount(0);
-    await expect(alertRow).toHaveCount(1);
+    await expect(emptyRow).toBeVisible();
+    // Nothing on the band claims the simulation decided this one.
+    await expect(refusal).not.toHaveAttribute('data-source', 'simulation');
   });
 
   /**

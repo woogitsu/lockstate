@@ -55,6 +55,10 @@ export function projectStatusCounts(runtime: SimulationRuntime, tick: number): S
     incidents: runtime.incidents,
     searchSystem: runtime.searchSystem,
     treasury: runtime.treasury,
+    // The system itself rather than a captured pair of numbers: the bill is a
+    // live read over the roster, so a hire between two publications changes it
+    // without anything here having to notice.
+    payroll: runtime.payroll,
   }).counts;
 }
 

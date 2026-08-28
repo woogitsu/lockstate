@@ -322,17 +322,31 @@ describe('the message-key namespaces are counted, and no call site names one tha
    * for.** They read 151 of 171 until `action.free-association` was appended
    * to `DEFAULT_ACTIONS` and labelled `'Association'`
    * ([ADR 0042](../../docs/adr/0042-attaching-consequences-to-the-simulation-loop.md)
-   * decision 1). The `action` namespace has no `deriveSimulationMessageKey`
-   * call site, and the reason is not this entry: **nothing under `src/ui/`
-   * requests `hud/prisoner-roster` or `hud/prisoner-detail` at all.** Six
-   * projections have a painter -- `hud/build-queue`, `hud/prisoner-population`,
+   * decision 1). The `action` namespace had no `deriveSimulationMessageKey`
+   * call site, and the reason was not that entry: **nothing under `src/ui/`
+   * requested `hud/prisoner-roster` or `hud/prisoner-detail` at all.** Six
+   * projections had a painter -- `hud/build-queue`, `hud/prisoner-population`,
    * `hud/pending-deliveries`, `hud/held-guards`, `hud/room-list` and
-   * `hud/room-detail`; the two that carry a prisoner's current action have a
+   * `hud/room-detail`; the two that carry a prisoner's current action had a
    * route and no panel on the end of it, which is the state
    * `tests/foundation/projection-reachability-contract.test.ts` exists to
-   * distinguish from having no route. So the new label lands in the
+   * distinguish from having no route. So the new label landed in the
    * unreachable column with the other 151, exactly as this docblock says the
    * table was written to do.
+   *
+   * **And then it moved the other way, by 25, which is the largest single
+   * move this census has recorded** (issue #451). Both halves are left
+   * standing rather than one being overwritten, because the pair is what a
+   * reader checks. The Regime panel on the fifth tab reads
+   * `hud/prisoner-roster` through `src/ui/simulation-prisoner-roster.ts` and
+   * `hud/status-strip` through `src/ui/simulation-regime.ts`, and between them
+   * those two modules call `deriveSimulationMessageKey` for five namespaces
+   * that had no call site the day before: `action` (9 labels),
+   * `action-category` (7), `action-phase` (3), `classification-group` (2) and
+   * `risk-tier` (4). So 152 unreachable labels became 127 and four namespaces
+   * with a call site became nine. Nothing was added to the table to achieve
+   * it: every one of those 25 labels was already written, waiting for the
+   * panel this docblock said they were waiting for.
    *
    * That number is **not** a defect list, and the distinction is the same one
    * `unconsumed-content-contract`'s docblock spends its length on. These
@@ -345,10 +359,10 @@ describe('the message-key namespaces are counted, and no call site names one tha
    * So this asserts the count exactly -- a number that moves is a visible
    * change -- and gates the one direction that is unambiguously a defect,
    * below. **An allow-list with a reason per namespace is owed and not
-   * delivered**: it would be 38 entries whose reason is uniformly "the panel
+   * delivered**: it would be 33 entries whose reason is uniformly "the panel
    * that would render it is not built yet", edited on every feature that
    * builds one, which is the trade-off `unconsumed-content-contract` declines
-   * in terms ("a list nobody reads enforces nothing"). Which of the 38 are
+   * in terms ("a list nobody reads enforces nothing"). Which of the 33 are
    * genuinely awaiting a panel and which are the `REFUSAL_REASONS` case --
    * vocabularies that reach the player as a *sentence* and should be exempted
    * from the table rather than labelled by it -- is a judgement per namespace,
@@ -365,15 +379,25 @@ describe('the message-key namespaces are counted, and no call site names one tha
     }).toEqual({
       namespaces: 42,
       labels: 172,
-      namespacesWithACallSite: 4,
-      namespacesWithoutACallSite: 38,
-      labelsWithoutACallSite: 152,
+      namespacesWithACallSite: 9,
+      namespacesWithoutACallSite: 33,
+      labelsWithoutACallSite: 127,
     });
   });
 
   it('cannot pass vacuously with a scan that matched nothing', () => {
     expect(calledNamespaces.size).toBeGreaterThan(0);
-    expect([...calledNamespaces].sort()).toEqual(['build-edge', 'build-order-state', 'guard-claim', 'intake-stage']);
+    expect([...calledNamespaces].sort()).toEqual([
+      'action',
+      'action-category',
+      'action-phase',
+      'build-edge',
+      'build-order-state',
+      'classification-group',
+      'guard-claim',
+      'intake-stage',
+      'risk-tier',
+    ]);
   });
 
   /**

@@ -143,9 +143,16 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // `hud.build.buy*` below came with the purchase control that spends it
   // (#89); `hud.status.earned-today` came with the state's per-prisoner-day
   // payment that credits it (#29). There is still no payroll or running-cost
-  // key, and no rate, budget or forecast key, because nothing *debits* the
-  // treasury on a schedule and nothing projects forward --
-  // `tests/unit/ui-hud-messages.test.ts` is the gate that keeps it that way.
+  // key, and no rate, budget or forecast key -- but **the reason has changed**,
+  // and it is worth writing down rather than leaving the sentence to be read
+  // the old way. It used to be that "nothing *debits* the treasury on a
+  // schedule and nothing projects forward". Since ADR 0042 step 3 something
+  // does: `PayrollSystem` bills every employee's wage at the end of every
+  // in-game day, and `simulation/status-counts` carries both what that costs
+  // and what has gone unpaid. What is missing is the *panel*, and the rule
+  // above is what keeps the key waiting for it -- a label authored before
+  // something renders the figure it names is `AGENTS.md`'s fourth exclusion,
+  // not a head start. `tests/unit/ui-hud-messages.test.ts` is still the gate.
   // ---------------------------------------------------------------
   'hud.status.title': 'Prison status',
   'hud.status.prisoners': 'Prisoners',
@@ -562,6 +569,50 @@ const authoredMessages: Readonly<Record<string, string>> = {
   'hud.security.coverage-short-hint': 'Hire {count} more to cover this population.',
   'hud.security.coverage-unguarded': 'Unguarded',
   'hud.security.coverage-unguarded-hint': 'Nobody is on duty. Hire {count} to cover this population.',
+
+  // The Regime panel on the fifth tab (issue #451). Two blocks: what each
+  // classification group's day allows at this tick, and who is in the prison.
+  //
+  // "Today's blocks" rather than "Schedule" or a time: there is no hour-of-day
+  // anywhere in this simulation (`docs/HUD_PROJECTIONS.md` gap 5) and a
+  // schedule readout that implied one would be the `07:45` the status strip
+  // already had to withdraw. A block's *bounds* are quoted in ticks and are
+  // deliberately not rendered for the same reason; how far through it is, is a
+  // share and renders honestly as one.
+  //
+  // "Allows" is the verb because that is exactly what a regime block does --
+  // `ActionSystem` filters the candidate actions to the block's categories --
+  // and because a bare list of category names would not say whether the group
+  // may do them or is doing them.
+  'hud.regime.title': 'Regime',
+  'hud.regime.blocks': "Today's blocks",
+  'hud.regime.block-allows': 'Allows {categories}',
+  'hud.regime.block-progress': '{percent}% through',
+  // A list separator, which is vocabulary rather than punctuation: it is `، `
+  // in Arabic and `、` in Japanese.
+  'hud.regime.category-separator': ', ',
+  // The roster. `{shown} of {total}` in the shape `hud.status.occupancy-value`
+  // set, because the panel draws a window and the prison is the ceiling.
+  //
+  // A name is two halves in the order this locale puts them (ADR 0015): the
+  // halves are state and are never translated, and only their order is a
+  // locale decision. An arrival who has not reached the stage that mints a
+  // name is still a row, and is named by the id a future selection would
+  // carry.
+  //
+  // "Heading to" is the only wrapper around an activity, and only when the
+  // prisoner is walking to one the simulation has named. What they are doing
+  // once they arrive is the action's own word.
+  'hud.regime.roster': 'Prisoners',
+  'hud.regime.roster-count': '{shown} of {total}',
+  'hud.regime.roster-name': '{given} {family}',
+  'hud.regime.roster-unnamed': 'Prisoner {id}',
+  'hud.regime.roster-heading': 'Heading to {activity}',
+  'hud.regime.roster-more': 'and {count} more',
+  // Not "No prisoners": an empty prison is the state every new game starts in
+  // and the Overview tab has the control that ends it, so the line says where
+  // to go rather than restating the count above it.
+  'hud.regime.roster-empty': 'Nobody has been admitted yet.',
 
   // What a refused control says (issue #207). Four comments in `src/` claimed
   // the HUD reported a refusal "on the control that was pressed" while the

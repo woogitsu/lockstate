@@ -1,7 +1,7 @@
 import { EntityStore, type EntityId } from '../entity/entity-store';
 import { ComponentBitset } from '../entity/component';
 import { EntityQuery } from '../entity/query';
-import type { ActorIdentityMinter } from '../identity/actor-identity';
+import type { ActorIdentityLifecycle } from '../identity/actor-identity';
 import type { Kernel } from '../kernel/kernel';
 import type { NavigationSystem } from '../navigation/navigation-system';
 import { ActionSystem, type PrisonerRouteContextResolver } from './action-system';
@@ -9,7 +9,14 @@ import type { ClassificationInput } from './classification';
 import { ClassificationReviewSystem } from './classification-review-system';
 import type { DisciplinaryEvidenceSource } from './disciplinary-record';
 import { ACTION_PHASES, CurrentActionComponent, PositionComponent, PrisonerColdState, PrisonerRecordComponent } from './components';
+import { PrisonerDischargeSystem } from './discharge-system';
 import { DEFAULT_ACCOMMODATION_POLICY, type AccommodationPolicy, IntakeSystem } from './intake-system';
+import {
+  releasePrisoner,
+  type PrisonerGangReleasePort,
+  type PrisonerReleaseSurfaces,
+  type PrisonerWorkerReleasePort,
+} from './release';
 import { NeedsComponent } from './needs';
 import { NeedsDecaySystem } from './needs-system';
 import { DEFAULT_REGIME_SCHEDULES, type RegimeSchedule } from './regime';
@@ -51,7 +58,7 @@ export interface PrisonerOperationsRuntimeOptions {
    * only tells `IntakeSystem` to name an arrival at reception. Omitted, no
    * prisoner is named and no draw is made.
    */
-  readonly identity?: ActorIdentityMinter;
+  readonly identity?: ActorIdentityLifecycle;
   /** Overrides the stream identity draws from. Defaults to `ACTOR_IDENTITY_RNG_STREAM`; a session must have registered whichever name is used. */
   readonly identityRngStreamName?: string;
   /**
@@ -67,6 +74,25 @@ export interface PrisonerOperationsRuntimeOptions {
    * would misfile them.
    */
   readonly disciplinaryEvidence?: DisciplinaryEvidenceSource;
+  /**
+   * Gang membership (`src/simulation/incidents/gangs.ts`), for the one thing
+   * this runtime has to tell it: a prisoner who has left the prison is not in a
+   * gang any more.
+   *
+   * Not owned here, for the reason `identity` above is not owned here -- it is
+   * session state that outlives the prisoner slice -- and optional for the same
+   * reason too: a fixture that stands up prisoners alone has no gangs, and an
+   * absent registry holds no membership to leak. See
+   * `PrisonerReleaseSurfaces`.
+   */
+  readonly gangs?: PrisonerGangReleasePort;
+  /**
+   * The haulage labour pool (`src/simulation/operations/job-system.ts`). Same
+   * ownership and optionality as `gangs`: `JobWorkerPool` is session state,
+   * `JobSystem` will hand a job to any registered worker, and a departed
+   * prisoner left in it is a job assigned to a slot somebody else now occupies.
+   */
+  readonly jobWorkers?: PrisonerWorkerReleasePort;
 }
 
 /**
@@ -104,6 +130,15 @@ export class PrisonerOperationsRuntime {
   public readonly needsDecaySystem: NeedsDecaySystem;
   public readonly actionSystem: ActionSystem;
   public readonly classificationReviewSystem: ClassificationReviewSystem;
+  public readonly dischargeSystem: PrisonerDischargeSystem;
+
+  /**
+   * Every store a departing prisoner has to be dropped from, assembled once
+   * here from what this runtime owns plus the session-level collaborators it
+   * was handed. One object, built in one place, so `releasePrisoner` and
+   * `PrisonerDischargeSystem` cannot be looking at two different lists.
+   */
+  private readonly releaseSurfaces: PrisonerReleaseSurfaces;
 
   private readonly bitset: ComponentBitset;
   private readonly query: EntityQuery;
@@ -151,13 +186,45 @@ export class PrisonerOperationsRuntime {
       options.regimeSchedules ?? DEFAULT_REGIME_SCHEDULES,
       options.routeContextResolver,
     );
+
+    this.releaseSurfaces = {
+      entityStore: this.entityStore,
+      bitset: this.bitset,
+      coldState: this.coldState,
+      roomInstances: this.roomInstances,
+      navigation: options.navigation,
+      // `exactOptionalPropertyTypes` is on, so an absent collaborator has to be
+      // an absent *key*: spreading a conditional is what keeps
+      // `identity: undefined` from being a different thing to "no identity
+      // registry", which is the distinction `PrisonerReleaseSurfaces` relies on.
+      ...(options.identity !== undefined ? { identity: options.identity } : {}),
+      ...(options.gangs !== undefined ? { gangs: options.gangs } : {}),
+      ...(options.jobWorkers !== undefined ? { jobWorkers: options.jobWorkers } : {}),
+    };
+    this.dischargeSystem = new PrisonerDischargeSystem(this.entityStore, this.query, this.records, this.releaseSurfaces);
   }
 
   public registerOn(kernel: Kernel): void {
     kernel.registerSystem(this.intakeSystem);
     kernel.registerSystem(this.classificationReviewSystem);
     kernel.registerSystem(this.needsDecaySystem);
+    kernel.registerSystem(this.dischargeSystem);
     kernel.registerSystem(this.actionSystem);
+  }
+
+  /**
+   * Removes one prisoner from the prison, giving back everything they hold
+   * (#441, ADR 0050). Answers `false` for an id that names no living prisoner.
+   *
+   * The unguarded counterpart of `PrisonerDischargeSystem`, in the same
+   * relationship `admitPrisoner` has to `requestAdmission`: the system decides
+   * *whose* sentence has ended, this carries a departure out whatever the
+   * reason. It exists as a public method because a scenario, a test, or a later
+   * transfer/parole path needs one door into release rather than its own copy
+   * of the teardown -- which is precisely how #111 happened one layer down.
+   */
+  public releasePrisoner(entityId: EntityId): boolean {
+    return releasePrisoner(this.releaseSurfaces, entityId);
   }
 
   /**
@@ -243,12 +310,18 @@ export class PrisonerOperationsRuntime {
    *    `'failed'`.** With no room instance of any accommodation target,
    *    `IntakeSystem` marks the arrival `'failed'` -- and no branch of
    *    `IntakeSystem.update` matches that stage, so the record never
-   *    recovers, not even once a room is zoned (measured). Nothing releases a
-   *    prisoner either (#31). Allocating in that state hands the player a
-   *    permanent, undeletable, inert record while the status strip counts it
+   *    recovers, not even once a room is zoned (measured). Allocating in that
+   *    state hands the player an inert record while the status strip counts it
    *    as a prisoner, which is a worse answer than saying no. See
    *    `IntakeSystem.hasAccommodationTarget` for the full line between "not
    *    yet" and "never".
+   *
+   *    This used to add "Nothing releases a prisoner either (#31)" and call
+   *    the record *permanent* and *undeletable*. Since #441 it is neither: the
+   *    sentence such an arrival is serving ends, and
+   *    `PrisonerDischargeSystem` releases them. The refusal is kept because a
+   *    prisoner who does nothing for the length of their sentence is still not
+   *    what the player asked for.
    *
    * What it deliberately does **not** do is pre-empt any other outcome. A
    * zoned cell with no bed in it makes the admission *succeed* here and then
@@ -283,10 +356,15 @@ export class PrisonerOperationsRuntime {
     //
     // Only the index-keyed SoA components need this. `coldState` and the
     // actor-identity registry key off `EntityId`, whose generation `destroy`
-    // bumps, so the new occupant's lookups miss rather than inherit -- and
-    // this is emphatically not the release path: dropping a destroyed
-    // prisoner's cold state, room occupancy, gang membership and component
-    // bit is still unimplemented (#31).
+    // bumps, so the new occupant's lookups miss rather than inherit.
+    //
+    // **This is still not the release path, and the release path now exists.**
+    // The sentence here used to end "dropping a destroyed prisoner's cold
+    // state, room occupancy, gang membership and component bit is still
+    // unimplemented (#31)"; #441 implemented it, in `releasePrisoner` below.
+    // The division of labour is unchanged and is the point: defaults are
+    // stated once and applied when an index is *allocated*, so release has
+    // nothing to reset and cannot state a second, drifting copy of them.
     this.records.reset(index);
     this.needs.reset(index);
     this.currentAction.reset(index);

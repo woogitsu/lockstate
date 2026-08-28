@@ -33,6 +33,8 @@ import {
   type HudIntakePipelineViewModel,
   type HudIntent,
   type HudPendingDeliveriesViewModel,
+  type HudPrisonerRosterViewModel,
+  type HudRegimeViewModel,
   type HudRoomNeedsViewModel,
   type HudRoomViewModel,
   type HudRoomsViewModel,
@@ -50,6 +52,8 @@ import { BuildQueueReader } from './ui/simulation-build-queue';
 import { IntakePipelineReader } from './ui/simulation-intake';
 import { HeldGuardsReader } from './ui/simulation-held-guards';
 import { StaffCoverageReader } from './ui/simulation-staff-coverage';
+import { PrisonerRosterReader } from './ui/simulation-prisoner-roster';
+import { RegimeReader } from './ui/simulation-regime';
 import { PendingDeliveriesReader } from './ui/simulation-pending-deliveries';
 import { RoomNeedsReader } from './ui/simulation-room-needs';
 import { SimulationCommandSender } from './ui/simulation-commands';
@@ -1107,6 +1111,31 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
    * content name for the composition root to resolve.
    */
   const staffCoverageReader = client === undefined ? undefined : new StaffCoverageReader(client);
+
+  /**
+   * The seventh and eighth readers on #104's channel, and the first two whose
+   * subject is the prison's *inhabitants* rather than its building, its money
+   * or its staff (issue #451).
+   *
+   * They are constructed as a pair because they answer one question between
+   * them and neither answers it alone. `hud/status-strip` says what each
+   * classification group's day allows at this tick; `hud/prisoner-roster` says
+   * who is in each group and what they are doing. #450 spent ~4,200 lines
+   * making a prison capable of going wrong -- an incident writes a
+   * disciplinary record, `ClassificationReviewSystem` rewrites the prisoner's
+   * tier and group from it, and `ActionSystem` puts them on a different
+   * timetable -- and the whole of what reached the player from that chain was
+   * `activeIncidents`, one integer on one stat tile. Both routes were
+   * catalogued and read by nothing in `src/`.
+   *
+   * No lookup is handed to either, unlike the room and delivery readers: every
+   * word on either block is a message key derived from an id the simulation
+   * published, and `src/content/simulation-message-keys.ts` is where those ids
+   * are labelled. There is no content catalogue entry for the composition root
+   * to resolve.
+   */
+  const prisonerRosterReader = client === undefined ? undefined : new PrisonerRosterReader(client);
+  const regimeReader = client === undefined ? undefined : new RegimeReader(client);
   let activeTab: HudTabId = INITIAL_HUD_SHELL_STATE.activeTab;
 
   /**
@@ -1266,6 +1295,74 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       // this layer exists to avoid. The failure reaches no control, because the
       // player pressed nothing.
       .catch(() => applyStaffCoverage(undefined));
+  };
+
+  /**
+   * Puts the timetable on the view model, or takes it off. The same
+   * absent-property dance the others do, and for the same reason: "nothing has
+   * asked" and "this prison runs a regime" are different facts, and only the
+   * second is a statement about the prison (issue #451).
+   */
+  const applyRegime = (next: HudRegimeViewModel | undefined): void => {
+    if (next === undefined) {
+      if (viewModel.regime === undefined) return;
+      const { regime: _cleared, ...withoutRegime } = viewModel;
+      viewModel = withoutRegime;
+    } else {
+      viewModel = { ...viewModel, regime: next };
+    }
+    hud?.update(viewModel);
+  };
+
+  const refreshRegime = (): void => {
+    if (regimeReader === undefined || activeTab !== 'regime') return;
+    void regimeReader
+      .read()
+      .then((next) => {
+        // `undefined` is "a read was already in flight", not an answer, so it
+        // must leave what is on screen alone rather than blanking it.
+        if (next !== undefined) applyRegime(next);
+      })
+      // A refusal, a timeout, or a worker that went away. The block comes off
+      // rather than staying: a timetable naming what the prison permits right
+      // now, with nothing still answering for it, is the class of lie this
+      // layer exists to avoid. The failure reaches no control, because the
+      // player pressed nothing.
+      .catch(() => applyRegime(undefined));
+  };
+
+  /**
+   * Puts the roster on the view model, or takes it off. The same
+   * absent-property dance the others do, and for the same reason: "nothing has
+   * asked" and "this prison holds nobody" are different facts, and only the
+   * second is a statement about the prison (issue #451).
+   */
+  const applyPrisonerRoster = (next: HudPrisonerRosterViewModel | undefined): void => {
+    if (next === undefined) {
+      if (viewModel.prisonerRoster === undefined) return;
+      const { prisonerRoster: _cleared, ...withoutRoster } = viewModel;
+      viewModel = withoutRoster;
+    } else {
+      viewModel = { ...viewModel, prisonerRoster: next };
+    }
+    hud?.update(viewModel);
+  };
+
+  const refreshPrisonerRoster = (): void => {
+    if (prisonerRosterReader === undefined || activeTab !== 'regime') return;
+    void prisonerRosterReader
+      .read()
+      .then((next) => {
+        // `undefined` is "a read was already in flight", not an answer, so it
+        // must leave what is on screen alone rather than blanking it.
+        if (next !== undefined) applyPrisonerRoster(next);
+      })
+      // A refusal, a timeout, or a worker that went away. The block comes off
+      // rather than staying, and it matters here for a reason the readouts
+      // above share: every row names a person by name, and a list of people
+      // nothing is still answering for is a claim about who is in the prison.
+      // The failure reaches no control, because the player pressed nothing.
+      .catch(() => applyPrisonerRoster(undefined));
   };
 
   const refreshRoomNeeds = (): void => {
@@ -1434,6 +1531,8 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       applyPendingDeliveries(undefined);
       applyHeldGuards(undefined);
       applyStaffCoverage(undefined);
+      applyRegime(undefined);
+      applyPrisonerRoster(undefined);
     } else {
       refreshRoomNeeds();
       refreshBuildQueue();
@@ -1441,6 +1540,8 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       refreshPendingDeliveries();
       refreshHeldGuards();
       refreshStaffCoverage();
+      refreshRegime();
+      refreshPrisonerRoster();
     }
   });
 
@@ -1553,6 +1654,15 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           // block off, because from here on nothing is refreshing it.
           if (activeTab === 'overview') refreshIntakePipeline();
           else applyIntakePipeline(undefined);
+          // And the two readouts on the fifth tab, on the same terms as every
+          // one above (issue #451). Arriving asks at once rather than waiting
+          // up to 500ms for the next counts publication, because this tab is
+          // the one a player opens to look at somebody in particular and an
+          // empty panel is indistinguishable from a prison holding nobody.
+          if (activeTab === 'regime') refreshRegime();
+          else applyRegime(undefined);
+          if (activeTab === 'regime') refreshPrisonerRoster();
+          else applyPrisonerRoster(undefined);
           return;
         }
 
@@ -2055,14 +2165,22 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
            * `'failed'` when no room instance of its accommodation target
            * exists, and `'failed'` is terminal: no branch of
            * `IntakeSystem.update` matches it, so zoning a cell afterwards
-           * does not rescue the record (measured), `ActionSystem` never runs
-           * for it because it gates on `'completed'`, and nothing in `src/`
-           * releases a prisoner (#31). Admitting into a roomless prison
-           * therefore does not produce a prisoner who will start behaving
-           * once rooms arrive -- it produces a permanent, undeletable, inert
-           * record that the status strip counts as a prisoner and that the
+           * does not rescue the record (measured), and `ActionSystem` never
+           * runs for it because it gates on `'completed'`. Admitting into a
+           * roomless prison therefore does not produce a prisoner who will
+           * start behaving once rooms arrive -- it produces an inert record
+           * that the status strip counts as a prisoner and that the
            * arrivals-backlog readout excludes, because `prisonersInIntake`
            * filters `'failed'` out. That is a worse answer than saying no.
+           *
+           * **The word this paragraph has lost is "permanent".** It used to
+           * read "permanent, undeletable, inert", on the grounds that "nothing
+           * in `src/` releases a prisoner (#31)". Since #441 that record does
+           * end: `PrisonerDischargeSystem` counts `'failed'` as a
+           * sentence-bearing stage, so the arrival leaves when their sentence
+           * would have ended. Inert for the length of a sentence is still a bad
+           * answer to give a player who pressed a button, so the refusal
+           * stands; it is simply no longer forever.
            *
            * The check is here rather than in the HUD, and it is a *report*,
            * not a second registry, exactly as the affordability check above
@@ -2074,12 +2192,23 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
            * player-visible message -- this throw, or that alert row, never
            * both and never neither.
            *
-           * Why the check has to be here as well as there: a new session
-           * starts paused (`FixedStepClock`, `mode: 'paused'`), and a command
-           * queued against a paused clock is not dispatched, so the worker's
-           * refusal would not arrive until the player started the clock. For a
-           * player who presses this before touching the clock that is the
-           * difference between an answer and nothing at all.
+           * Why the check has to be here as well as there, and what changed
+           * about that reason. It used to be timing: a new session starts
+           * paused (`FixedStepClock`, `mode: 'paused'`) and a command queued
+           * against a paused clock was not dispatched, so the worker's refusal
+           * did not arrive until the player started the clock -- for a player
+           * who pressed this before touching the clock, the difference between
+           * an answer and nothing at all. **That is no longer why**: since ADR
+           * 0051 the worker dispatches a due command as soon as it is
+           * submitted against a paused clock, so the far-side refusal now
+           * reaches the player during the pause too.
+           *
+           * The check stays, on the reason that was always the stronger one:
+           * it is measured against a *different* condition from the worker's,
+           * it is the only one of the two that can answer before a command is
+           * composed at all, and the two are arranged so that exactly one of
+           * them speaks per press -- which is the paragraph below. Removing it
+           * would make that arrangement depend on the clock.
            *
            * `counts.rooms` is the room-*instance* count the worker last
            * published, at most 500ms old and published once on

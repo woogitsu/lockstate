@@ -27,7 +27,7 @@ import {
   type SectorOccupantResolver,
   type SectorRiskSampler,
 } from '../incidents';
-import { ProcurementSystem, StateIncomeSystem, Treasury } from '../economy';
+import { PayrollSystem, ProcurementSystem, StateIncomeSystem, Treasury } from '../economy';
 import { RefusalLog } from '../refusals';
 import { StaffHiringService } from '../staff';
 import { createSessionCommandHandler } from './session-commands';
@@ -119,6 +119,20 @@ export interface SimulationRuntime {
   readonly treasury: Treasury;
   readonly procurement: ProcurementSystem;
   readonly stateIncome: StateIncomeSystem;
+  /**
+   * Wages, once per in-game day, for everyone on the roster
+   * ([ADR 0042](../../../docs/adr/0042-attaching-consequences-to-the-simulation-loop.md)
+   * step 3).
+   *
+   * The counterweight to `stateIncome` and the first debit in the prison a
+   * player cannot decline: `ProcurementSystem` and `StaffHiringService` both
+   * spend only when asked and both refuse when they cannot. It is the reason
+   * ADR 0017 decision 8's *"insolvency is a state, not a loss condition"* is
+   * reachable at all -- and it carries the arrears when a day's bill cannot be
+   * met, which is the only state in this runtime that says the prison owes
+   * somebody something.
+   */
+  readonly payroll: PayrollSystem;
   /**
    * What the simulation last refused, and how many times (#261).
    *
@@ -332,11 +346,30 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     confiscations: () => confiscations.all(),
   };
 
+  /*
+   * Two more session-level stores hoisted above `prisoners` for the same reason
+   * the two evidence logs are, and the reason is #441's release path.
+   *
+   * `GangRegistry` records which prisoner belongs to which gang and
+   * `JobWorkerPool` records which prisoner is in the haulage labour pool; both
+   * are keyed by prisoner `EntityId`, and both have to forget a prisoner who
+   * has left the prison, or a recycled index eventually inherits a gang and a
+   * job queue (ADR 0026 question 2, answered in ADR 0050 decision 2). Their
+   * writers are still further down -- `IncidentTriggerSystem` reads the gangs,
+   * `JobSystem` drives the pool -- and this changes no arrow: both are bare
+   * constructors with no dependencies, exactly as `incidents` and
+   * `confiscations` above are, so hoisting them costs nothing.
+   */
+  const gangs = new GangRegistry();
+  const jobWorkers = new JobWorkerPool();
+
   const prisoners = new PrisonerOperationsRuntime({
     capacity: DEFAULT_PRISONER_CAPACITY,
     navigation,
     identity: actorIdentity,
     disciplinaryEvidence,
+    gangs,
+    jobWorkers,
   });
 
   /*
@@ -444,7 +477,6 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   const refusals = new RefusalLog();
 
   const jobs = new JobBoard();
-  const jobWorkers = new JobWorkerPool();
   const jobWorkerAdapter = new PrisonerJobWorkerAdapter(prisoners);
   const jobSystem = new JobSystem(jobs, containers, jobWorkers, jobWorkerAdapter, navigation);
 
@@ -508,6 +540,14 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   // still empty until a command arrives, the same convention as every registry
   // above -- and it holds no state, so nothing here joins the save.
   const staffHiring = new StaffHiringService(securityGuards, treasury);
+  /*
+   * ADR 0042 step 3's recurring debit: every employee's authored
+   * `wageBand.minPerDay`, billed at the end of every in-game day, out of the
+   * income the same tick has just credited. Constructed here because
+   * `GuardRoster` is the only staff store there is and this is where it exists;
+   * registered below at order 130, immediately after `economy.state-income`.
+   */
+  const payroll = new PayrollSystem(treasury, securityGuards);
   const securitySchedules: DeploymentSchedule[] = [];
   /*
    * The fifth argument is the constructor's own default, restated (and skipped)
@@ -585,7 +625,6 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   // a scenario can pass richer sampling by constructing its own
   // IncidentTriggerSystem, exactly like #27's TargetLocationResolver seam.
   const sectorRisk = new SectorRiskTracker();
-  const gangs = new GangRegistry();
   const tunnels = new TunnelRegistry();
   const incidentSectorIds: string[] = [];
 
@@ -696,6 +735,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   kernel.registerSystem(construction);
   kernel.registerSystem(procurement);
   kernel.registerSystem(stateIncome);
+  kernel.registerSystem(payroll);
   kernel.registerSystem(navigation);
   prisoners.registerOn(kernel);
   kernel.registerSystem(jobSystem);
@@ -717,6 +757,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     treasury,
     procurement,
     stateIncome,
+    payroll,
     refusals,
     actorIdentity,
     topology,

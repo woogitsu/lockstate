@@ -152,6 +152,15 @@ payload -- the largest form the channel can send, carrying thirteen counts, a
 refusal and the longest declared reason -- flat from 250 to 5,000 actors
 (`tests/unit/worker-status-counts.test.ts`, reported not asserted).
 
+**Re-measured at fifteen counts**, and stated here rather than substituted into
+the paragraph above, which is what that paragraph's whole subject asks for: the
+same case now reports `payloadJsonBytes=473` at 250 actors and `475` at 1,000,
+2,500 and 5,000, still flat in the population. The two fields are payroll's
+(ADR 0042 step 3): what one in-game day of the roster costs, and what the
+prison has failed to pay. The `436` bound below moved to **493** by the rule it
+was itself set by -- the measured maximum plus the same 18 bytes of head room --
+so a *sixteenth* count breaches it too.
+
 **Those figures replace a `380-382` that had already stopped being current
 before the thirteenth count was written**, and the correction is recorded in
 both directions because the paragraph below is about exactly this failure. Run
@@ -178,9 +187,9 @@ the byte figure never moving off 380-382 -- which is exactly why
 `docs/BENCHMARKING.md` keeps this evidence reported rather than gated, and why
 the byte figure is the half of it worth quoting.
 
-What the test *asserts* is the shape and not any of these numbers -- thirteen
+What the test *asserts* is the shape and not any of these numbers -- fifteen
 integers of counts, every one of them an integer scalar rather than a list, a
-refusal of exactly three scalars, and a serialized payload under 436 bytes -- because the shape is the
+refusal of exactly three scalars, and a serialized payload under 493 bytes -- because the shape is the
 property that makes the cadence safe, and the population cannot move it.
 
 **The thirteenth count arrived, and the paragraph that predicted it read:**
@@ -202,6 +211,16 @@ about it, so that the raise is derived and not arbitrary:
   one once it is long enough; this sees it at length zero, at any population.
   A relaxed bound needs the thing it was proxying for pinned where it cannot be
   relaxed.
+
+**The fourteenth and fifteenth arrived together, and the prediction held
+again.** Payroll (ADR 0042 step 3) put `dailyWageBillMinorUnits` and
+`unpaidWagesMinorUnits` on the channel -- two fields rather than one because a
+treasury that cannot go negative cannot express a debt, so what the prison
+holds and what it owes are separate non-negative integers. Re-measured rather
+than adjusted by arithmetic: 473-475 bytes, so the bound is 493 and the head
+room is again 18. The scalar assertion above is what actually excludes a list,
+and it is unchanged by the raise -- which is exactly why it was added when the
+bound was last relaxed.
 
 That the field was worth 28 bytes at all is the argument for it, not against:
 `HudCountsViewModel.prisonerCapacity` was the literal `0` until it existed, so
