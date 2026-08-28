@@ -12,6 +12,15 @@ import {
   REMOVE_OBJECT_REFUSAL_REASONS,
   UNZONE_REFUSAL_REASONS,
   ZONE_REFUSAL_REASONS,
+  admitSupersessionKey,
+  hireSupersessionKey,
+  placeObjectSupersessionKey,
+  purchaseCancelSupersessionKey,
+  purchaseSupersessionKey,
+  releaseGuardSupersessionKey,
+  removeObjectSupersessionKey,
+  unzoneSupersessionKey,
+  zoneSupersessionKey,
   type RefusalLog,
 } from '../refusals';
 import type { ConstructionSystem } from '../construction/system';
@@ -79,6 +88,17 @@ import { tileCoordinate } from '../world/coordinates';
  * refund and a release of a guard nothing was holding are the same kind of fact
  * about the session -- the kernel took the command and a system then declined to
  * carry it out -- and they reach the player down one channel (#261).
+ *
+ * Every branch below also calls `refusals.supersede` on its success path
+ * (issue #492): a refusal outlives the thing it refused otherwise, because
+ * nothing told the log the simulation had gone on to accept the very command
+ * it once declined. Each call passes the same key its own `record` call would
+ * have used had the command been refused instead, built by that route's own
+ * `*SupersessionKey` function in `../refusals`; see those functions for why
+ * nine of the ten compare a target (a rectangle, a tile, an order id, a
+ * guard id) and one -- `admit` -- compares nothing but the domain, and for
+ * why a role, an item or a tile that does not match the standing refusal's
+ * own leaves that refusal exactly as it was.
  */
 export function createSessionCommandHandler(
   construction: ConstructionSystem,
@@ -118,7 +138,25 @@ export function createSessionCommandHandler(
         },
         context.tick,
       );
-      if (outcome.kind === 'refused') refusals.record(ZONE_REFUSAL_REASONS[outcome.reason], context.tick);
+      const zoneKey = zoneSupersessionKey(
+        simCommand.roomId,
+        simCommand.x,
+        simCommand.y,
+        simCommand.width,
+        simCommand.height,
+      );
+      if (outcome.kind === 'refused') {
+        refusals.record(ZONE_REFUSAL_REASONS[outcome.reason], context.tick, zoneKey);
+      } else {
+        // Issue #492: this exact rectangle, for this exact room type, is what
+        // the standing refusal (if any) was about, and it has just been
+        // accepted -- so whatever it said is no longer true. Withdrawing it
+        // here rather than leaving the HUD to infer one from `rooms` rising
+        // is the whole point: a room zoned *elsewhere* leaves a standing
+        // refusal about *this* rectangle alone, because its key would not
+        // match.
+        refusals.supersede(zoneKey);
+      }
       return;
     }
 
@@ -156,7 +194,17 @@ export function createSessionCommandHandler(
         },
         context.tick,
       );
-      if (outcome.kind === 'refused') refusals.record(UNZONE_REFUSAL_REASONS[outcome.reason], context.tick);
+      const unzoneKey = unzoneSupersessionKey(simCommand.x, simCommand.y, simCommand.width, simCommand.height);
+      if (outcome.kind === 'refused') {
+        refusals.record(UNZONE_REFUSAL_REASONS[outcome.reason], context.tick, unzoneKey);
+      } else {
+        // Issue #492, the same mechanism as `ZoneRoom`'s: this rectangle just
+        // cleared, so a standing refusal about it -- `nothing-to-remove` on a
+        // retry once something was zoned there, `room-occupied` once the
+        // occupants have gone -- is withdrawn rather than left to answer a
+        // request that has since succeeded.
+        refusals.supersede(unzoneKey);
+      }
       return;
     }
 
@@ -204,7 +252,17 @@ export function createSessionCommandHandler(
         { sentenceLengthTicks: simCommand.sentenceLengthTicks, priorIncidents: simCommand.priorIncidents },
         { x: simCommand.x, y: simCommand.y },
       );
-      if (outcome.kind === 'refused') refusals.record(ADMIT_REFUSAL_REASONS[outcome.reason], context.tick);
+      if (outcome.kind === 'refused') {
+        refusals.record(ADMIT_REFUSAL_REASONS[outcome.reason], context.tick, admitSupersessionKey());
+      } else {
+        // Issue #492, keyed domain-wide rather than per-request -- see
+        // `admitSupersessionKey`. `no-accommodation` and `population-full`
+        // are both re-checked identically for every admission regardless of
+        // this one's own `sentenceLengthTicks`/`priorIncidents`/tile, so a
+        // *different* admission succeeding is the same fact turning out
+        // false, not a proxy for it.
+        refusals.supersede(admitSupersessionKey());
+      }
       return;
     }
 
@@ -261,7 +319,15 @@ export function createSessionCommandHandler(
       // refusal reason added to `ProcurementSystem` fails to compile until it
       // is given a wire id and a message key.
       const outcome = procurement.purchase(simCommand.orderId, simCommand.itemId, simCommand.quantity, context.tick);
-      if (!outcome.ok) refusals.record(PURCHASE_REFUSAL_REASONS[outcome.reason], context.tick);
+      const purchaseKey = purchaseSupersessionKey(simCommand.itemId, simCommand.quantity);
+      if (!outcome.ok) {
+        refusals.record(PURCHASE_REFUSAL_REASONS[outcome.reason], context.tick, purchaseKey);
+      } else {
+        // Issue #492: the item and quantity, not the order id -- see the key
+        // module's section comment for why a fresh id on the same item and
+        // quantity still counts as the same request landing.
+        refusals.supersede(purchaseKey);
+      }
       return;
     }
 
@@ -298,7 +364,15 @@ export function createSessionCommandHandler(
        * stale copy may decide.
        */
       const outcome = procurement.cancel(simCommand.orderId);
-      if (!outcome.ok) refusals.record(PURCHASE_CANCEL_REFUSAL_REASONS[outcome.reason], context.tick);
+      const cancelKey = purchaseCancelSupersessionKey(simCommand.orderId);
+      if (!outcome.ok) {
+        refusals.record(PURCHASE_CANCEL_REFUSAL_REASONS[outcome.reason], context.tick, cancelKey);
+      } else {
+        // Issue #492: the one id `CancelMaterialPurchase` carries. A refund
+        // of a different order must not silence a standing `not-pending`
+        // about this one.
+        refusals.supersede(cancelKey);
+      }
       return;
     }
 
@@ -334,7 +408,14 @@ export function createSessionCommandHandler(
         staffRoleId: simCommand.staffRoleId,
         originTile: { x: tileCoordinate(simCommand.x), y: tileCoordinate(simCommand.y) },
       });
-      if (outcome.kind === 'refused') refusals.record(HIRE_REFUSAL_REASONS[outcome.reason], context.tick);
+      const hireKey = hireSupersessionKey(simCommand.staffRoleId);
+      if (outcome.kind === 'refused') {
+        refusals.record(HIRE_REFUSAL_REASONS[outcome.reason], context.tick, hireKey);
+      } else {
+        // Issue #492, keyed per role -- see the key module's section comment
+        // for the trade-off this makes against `roster-full`.
+        refusals.supersede(hireKey);
+      }
       return;
     }
 
@@ -378,7 +459,14 @@ export function createSessionCommandHandler(
         },
         context.tick,
       );
-      if (outcome.kind === 'refused') refusals.record(PLACE_OBJECT_REFUSAL_REASONS[outcome.reason], context.tick);
+      const placeKey = placeObjectSupersessionKey(simCommand.definitionId, simCommand.x, simCommand.y);
+      if (outcome.kind === 'refused') {
+        refusals.record(PLACE_OBJECT_REFUSAL_REASONS[outcome.reason], context.tick, placeKey);
+      } else {
+        // Issue #492: the buildable and the tile, not the order id -- see the
+        // key module's section comment.
+        refusals.supersede(placeKey);
+      }
       return;
     }
 
@@ -407,7 +495,14 @@ export function createSessionCommandHandler(
        * found from the tile rather than named on the wire.
        */
       const outcome = objectPlacement.remove({ x: simCommand.x, y: simCommand.y }, context.tick);
-      if (outcome.kind === 'refused') refusals.record(REMOVE_OBJECT_REFUSAL_REASONS[outcome.reason], context.tick);
+      const removeKey = removeObjectSupersessionKey(simCommand.x, simCommand.y);
+      if (outcome.kind === 'refused') {
+        refusals.record(REMOVE_OBJECT_REFUSAL_REASONS[outcome.reason], context.tick, removeKey);
+      } else {
+        // Issue #492: the tile. A removal elsewhere must not silence a
+        // standing `nothing-to-remove` about this one.
+        refusals.supersede(removeKey);
+      }
       return;
     }
 
@@ -444,7 +539,14 @@ export function createSessionCommandHandler(
        * reason fails to compile until it has a wire id and a message key.
        */
       const outcome = guardRelease.release(simCommand.guardId);
-      if (outcome.kind === 'refused') refusals.record(RELEASE_GUARD_REFUSAL_REASONS[outcome.reason], context.tick);
+      const releaseKey = releaseGuardSupersessionKey(simCommand.guardId);
+      if (outcome.kind === 'refused') {
+        refusals.record(RELEASE_GUARD_REFUSAL_REASONS[outcome.reason], context.tick, releaseKey);
+      } else {
+        // Issue #492: the guard id. Releasing a different guard must not
+        // silence a standing refusal about this one.
+        refusals.supersede(releaseKey);
+      }
       return;
     }
 

@@ -1,13 +1,15 @@
 import type { CommandHandler } from '../kernel/kernel';
 import { unpackCommand } from '../protocol/commands';
-import { BUILD_REFUSAL_REASONS, type RefusalLog } from '../refusals';
+import { BUILD_REFUSAL_REASONS, buildSupersessionKey, type RefusalLog } from '../refusals';
 import { tileCoordinate } from '../world/coordinates';
-import { createBuildOrder } from './build-order';
+import { createBuildOrder, resolveBuildEdge } from './build-order';
 import type { ConstructionSystem } from './system';
 
 /**
  * @param refusals Where an order the construction system fails is recorded so
- * the player can be told (#261).
+ * the player can be told (#261), and where a later order the system accepts
+ * withdraws that record if it was about the same tile, buildable and edge
+ * (#492) -- see `buildSupersessionKey`.
  *
  * **Required, not optional.** An optional sink is exactly how this wiring
  * would be lost again: `tests/foundation/composition-root-contract.test.ts`
@@ -50,8 +52,19 @@ export function createConstructionCommandHandler(
         //
         // `failReason` is a closed union since #261, so the lookup is total:
         // there is no `?? 'unknown'` here, and there cannot be one.
+        const buildKey = buildSupersessionKey(
+          order.definitionId,
+          order.location.x,
+          order.location.y,
+          resolveBuildEdge(order),
+        );
         if (order.state === 'failed' && order.failReason !== undefined) {
-          refusals.record(BUILD_REFUSAL_REASONS[order.failReason], context.tick);
+          refusals.record(BUILD_REFUSAL_REASONS[order.failReason], context.tick, buildKey);
+        } else {
+          // Issue #492: the same tile, buildable and edge, accepted this
+          // time. A wall placed elsewhere must not silence a standing
+          // refusal about this one.
+          refusals.supersede(buildKey);
         }
         constructionSystem.registerTransactionOrder(order.id, simCommand.transactionId);
         break;

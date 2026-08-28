@@ -626,3 +626,94 @@ describe('recording a refusal is deterministic', () => {
     expect(run()).toEqual(['build.out-of-bounds', 'purchase.unknown-material', 'purchase.unknown-material']);
   });
 });
+
+describe('issue #492: a refusal is withdrawn once the simulation accepts the very command it refused', () => {
+  it("clears the line once the room the player was told is open on a side gets walled and the same rectangle succeeds", () => {
+    // The reproduction transcript in #492, exactly: `room.cell` at 20,20 2x3,
+    // refused for being open, walled, and zoned again.
+    const runtime = createNewSimulationRuntime(0x492);
+    submit(runtime, 0, packCommand({ type: 'ZoneRoom', roomId: 'room.cell', x: 20, y: 20, width: 2, height: 3 }));
+    expect(runtime.refusals.last?.reason).toBe('zone.not-enclosed');
+
+    wallRoomPerimeter(runtime.world, { x: 20, y: 20, width: 2, height: 3 });
+    submit(runtime, 1, packCommand({ type: 'ZoneRoom', roomId: 'room.cell', x: 20, y: 20, width: 2, height: 3 }));
+
+    expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.cell')).toHaveLength(1);
+    expect(runtime.refusals.last, 'the sentence the player was shown is no longer true and must not still be on screen').toBeUndefined();
+    // The withdrawal is not an undo of the fact that a refusal happened --
+    // see `RefusalLog.count`.
+    expect(runtime.refusals.count).toBe(1);
+  });
+
+  it('leaves the line alone when a different rectangle is what got walled and zoned -- the narrow reading, not the wide one', () => {
+    // Answers #492's first question: a successful `zone` withdraws only the
+    // refusal about the *same* rectangle, not every standing `zone.*`
+    // refusal. The wide reading would clear the line below even though the
+    // first rectangle is exactly as unenclosed as it was.
+    const runtime = createNewSimulationRuntime(0x492);
+    submit(runtime, 0, packCommand({ type: 'ZoneRoom', roomId: 'room.cell', x: 2, y: 2, width: 2, height: 3 }));
+    expect(runtime.refusals.last?.reason).toBe('zone.not-enclosed');
+
+    wallRoomPerimeter(runtime.world, { x: 10, y: 10, width: 2, height: 3 });
+    submit(runtime, 1, packCommand({ type: 'ZoneRoom', roomId: 'room.cell', x: 10, y: 10, width: 2, height: 3 }));
+
+    expect(
+      runtime.refusals.last?.reason,
+      'a different rectangle succeeding does not make this one enclosed',
+    ).toBe('zone.not-enclosed');
+  });
+
+  it('generalises to a build order: granting ownership back and retrying the same tile clears the refusal', () => {
+    const runtime = createNewSimulationRuntime(0x492);
+    runtime.world.setOwned({ x: chunkCoordinate(0), y: chunkCoordinate(0) }, false);
+    placeWall(runtime, 0, OWNED_TILE);
+    expect(runtime.refusals.last?.reason).toBe('build.unowned-land');
+
+    runtime.world.setOwned({ x: chunkCoordinate(0), y: chunkCoordinate(0) }, true);
+    placeWall(runtime, 1, OWNED_TILE);
+
+    expect(
+      runtime.refusals.last,
+      'the same wall, retried once the land is owned again, must clear its own refusal',
+    ).toBeUndefined();
+  });
+
+  it('generalises to a build order, narrowly: a different tile succeeding does not clear the standing one', () => {
+    const runtime = createNewSimulationRuntime(0x492);
+    runtime.world.setOwned({ x: chunkCoordinate(0), y: chunkCoordinate(0) }, false);
+    placeWall(runtime, 0, OWNED_TILE);
+    expect(runtime.refusals.last?.reason).toBe('build.unowned-land');
+
+    runtime.world.setOwned({ x: chunkCoordinate(0), y: chunkCoordinate(0) }, true);
+    placeWall(runtime, 1, { x: OWNED_TILE.x + 1, y: OWNED_TILE.y });
+
+    expect(runtime.refusals.last?.reason, 'a different tile built must not clear this one').toBe('build.unowned-land');
+  });
+
+  it('generalises to admission, keyed domain-wide rather than per-request (see `admitSupersessionKey`)', () => {
+    // `admit.no-accommodation` and `admit.population-full` are both the same
+    // global check, re-run identically for every admission -- so a
+    // *different* admission's success is not a proxy for the standing
+    // refusal being false, it is the same fact turning out false. Answers
+    // #492's second question for this domain: unlike `zone`, keying `admit`
+    // per-request would leave the analogous bug unfixed, because a retried
+    // admission has no reason to repeat its predecessor's sentence length or
+    // prior-incidents count.
+    const runtime = createNewSimulationRuntime(0x492);
+    submit(runtime, 0, packCommand({ type: 'AdmitPrisoner', sentenceLengthTicks: 10_000, priorIncidents: 0, x: 16, y: 16 }));
+    expect(runtime.refusals.last?.reason).toBe('admit.no-accommodation');
+
+    wallRoomPerimeter(runtime.world, { x: 2, y: 2, width: 2, height: 3 });
+    submit(runtime, 1, packCommand({ type: 'ZoneRoom', roomId: 'room.cell', x: 2, y: 2, width: 2, height: 3 }));
+    submit(
+      runtime,
+      2,
+      packCommand({ type: 'AdmitPrisoner', sentenceLengthTicks: 5_000, priorIncidents: 2, x: 16, y: 16 }),
+    );
+
+    expect(
+      runtime.refusals.last,
+      'a successful admission, even with different parameters, disproves the standing admit refusal',
+    ).toBeUndefined();
+  });
+});
