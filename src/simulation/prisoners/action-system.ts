@@ -16,7 +16,7 @@ import {
   type PrisonerRecordComponent,
 } from './components';
 import type { NeedsComponent } from './needs';
-import { findRegimeSchedule, resolveActiveRegimeBlock, type RegimeSchedule } from './regime';
+import { findRegimeSchedule, resolveActiveRegimeBlock, type PrisonerRegimeOverrideResolver, type RegimeSchedule } from './regime';
 import type { RoomInstance, RoomInstanceRegistry } from './room-instance-registry';
 import { isActionCategoryAllowed, rankActions } from './utility-ai';
 
@@ -105,6 +105,26 @@ export class ActionSystem implements SystemRegistration {
     private readonly navigation: NavigationSystem,
     private readonly regimeSchedules: readonly RegimeSchedule[],
     private readonly routeContextResolver: PrisonerRouteContextResolver = DEFAULT_PRISONER_ROUTE_CONTEXT_RESOLVER,
+    /**
+     * What an incident is imposing on this prisoner's day in place of their
+     * timetable, asked once per idle prisoner per reconsideration cycle
+     * ([ADR 0057](../../../docs/adr/0057-what-a-riot-does-to-a-prisoners-day.md)).
+     *
+     * **`regimeSchedules` above stays `readonly` and still has no setter**, and
+     * this is why one was not added. A setter makes the live array mutable
+     * state that no snapshot carries, so a save taken mid-riot would come back
+     * on the base timetable with the incident still open; it overrides by
+     * classification group, which is not the set the incident record names; and
+     * it needs every close path to remember to write it back. Resolving at the
+     * point of use has none of those properties, and the array a session was
+     * constructed with is still the only timetable it holds.
+     *
+     * Defaults to naming no override, which is what a fixture with no incident
+     * pipeline wants: `PrisonerOperationsRuntime` can be stood up alone, and
+     * every prisoner then runs their classification group's schedule exactly as
+     * before.
+     */
+    private readonly regimeOverride: PrisonerRegimeOverrideResolver = () => undefined,
   ) {}
 
   public getMetrics(): ActionMetrics {
@@ -410,7 +430,13 @@ export class ActionSystem implements SystemRegistration {
    */
   private beginNextAction(entityId: number, index: number, tick: number): void {
     const classificationGroupId = classificationGroupIdFromIndex(this.records.classificationGroupIndex[index]!);
-    const schedule = findRegimeSchedule(this.regimeSchedules, classificationGroupId);
+    // The override, where one stands, *replaces* the timetable rather than
+    // narrowing it -- see `PrisonerRegimeOverrideResolver` for why an
+    // intersection would be the wrong shape. Everything downstream of this line
+    // is unchanged: the block is still resolved from a gapless schedule, the
+    // candidates are still `DEFAULT_ACTIONS` filtered by the block, and the
+    // walk is still ADR 0041's.
+    const schedule = this.regimeOverride(entityId, classificationGroupId) ?? findRegimeSchedule(this.regimeSchedules, classificationGroupId);
     const block = resolveActiveRegimeBlock(schedule, tick);
     const legalActions = DEFAULT_ACTIONS.filter((action) => isActionCategoryAllowed(action, block.allowedCategories));
     const currentTile: TilePosition = { x: tileCoordinate(this.position.tileX[index]!), y: tileCoordinate(this.position.tileY[index]!) };
