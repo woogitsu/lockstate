@@ -87,9 +87,15 @@ carried is now actively misleading.** It cited `src/ui/hud/hud.ts:153-195`.
 `HudIntent` is now at `src/ui/hud/hud.ts:270-540` and declares **eighteen**
 members, three of them room-related — `zone-room`, `unzone-room` and
 `arm-room-tool`, which are this ADR's own decision having shipped. And
-`hud.ts:153` now declares **`HudRoomGesture`**, the room gesture this document
+`hud.ts:154` now declares **`HudRoomGesture`**, the room gesture this document
 introduced. So a reader following the old anchor to check *"none of them is a
-room"* lands on a type that is about nothing else. The count and the anchor are
+room"* lands on a type that is about nothing else. **That replacement anchor
+said `:153` until 2026-08-28**, and was off by one when it was written -- the
+`export type HudRoomGesture` line is at `:154`, and `git show` at the previous
+STATUS-QUEUE anchor puts it at `:154` there too, so this is not drift. A
+correction that carries a wrong number is the failure it was written to fix,
+one revision later, which is why the old number is recorded here rather than
+quietly replaced. The count and the anchor are
 corrected here rather than left as
 [`STATUS-QUEUE.md`](./STATUS-QUEUE.md) recorded them, because that entry said
 this belonged in a change of its own and this is that change; the historical
