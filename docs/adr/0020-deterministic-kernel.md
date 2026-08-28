@@ -418,6 +418,31 @@ at `materials-pending`, `undoStack` empty and `redoStack` holding `first`. The
 stacks are the part this section understated: after the inversion the player
 cannot undo again, and Redo offers back a wall they never asked to remove.
 
+> **Taken, 2026-08-28, as [ADR 0056](./0056-keeping-a-players-orders-in-the-order-they-gave-them.md)**
+> — the `Math.max` above, with the restored-queue incompleteness closed by
+> seeding the floor from the snapshot's own pending queue. Two consequences for
+> *this* section, recorded here because a reader arrives at it from the decision
+> and not from #437. **The decision itself stands and is not re-opened.** But
+> grounds 2 and 3 above are costs of refusing an `executeAtTick` *below* the
+> highest queued, and **the shipped sender no longer submits one** — so against
+> today's front door the rejected guard is inert rather than expensive, and the
+> end-to-end numbers quoted under *"Every caller"* (62, pause at 42, then 42)
+> now read 62, pause at 42, then 62. Ground 1 is untouched and is what the
+> decision rests on: `Kernel.restore` still bypasses `submitCommand` and
+> `kernelSnapshotSchema` still never validates the tick relation, so a guard
+> here still could not establish its invariant.
+> `tests/determinism/command-queue-admission.test.ts` was updated with the new
+> observations and still pins admission, against `Kernel` directly for the two
+> cases the front door no longer reaches.
+>
+> **One correction to the paragraph above**, which ADR 0056 measured: the run it
+> quotes sent no `transactionId`, and the shipped HUD sends one per gesture
+> (`src/main.ts:1915`). Re-run that way the redo stack is **empty too**, because
+> `second` arriving after the `Undo` opens a gesture of its own and
+> `registerTransactionOrder` clears it. So *"Redo offers back a wall they never
+> asked to remove"* understates it in turn: through the real front door there was
+> nothing to press at all, and the wrongly cancelled wall was unrecoverable.
+
 ### The guard
 
 `tests/determinism/command-queue-admission.test.ts` pins this decision, and was
@@ -448,10 +473,12 @@ corrected here is **"at the start of a tick"**.
 nothing. The worker calls that second entry point from `handleSubmitCommand`
 while the clock's control is `paused`, because the tick loop runs only in the
 `running` state and a command a player gave during a pause would otherwise
-produce nothing they could see until they pressed play. **ADR XXXX** (*"What a
-player sees for an order given while the clock is paused"*, drafted with a
-placeholder number and to be renumbered on landing) carries the reasoning, the
-alternatives and the open questions.
+produce nothing they could see until they pressed play.
+[**ADR 0051**](./0051-what-a-player-sees-for-an-order-given-while-the-clock-is-paused.md)
+(*"What a player sees for an order given while the clock is paused"*) carries the
+reasoning, the alternatives and the open questions. It was drafted with a
+placeholder number and landed as 0051; this sentence still said `XXXX`
+afterwards, which is corrected here rather than left for the next reader.
 
 **What the sentence should now say:** *every command is dispatched at the tick
 its `executeAtTick` names, in ascending `(executeAtTick, sequence)` order,

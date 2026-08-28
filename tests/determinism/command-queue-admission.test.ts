@@ -31,22 +31,45 @@ import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from 
  *
  * - the end-to-end case drives the shipped `SimulationCommandSender` against
  *   the shipped `SimulationWorkerStateMachine` -- a real `Kernel` and a real
- *   `FixedStepClock` inside it -- and watches the pause produce a command
- *   whose `sequence` is higher and whose `executeAtTick` is lower than the one
- *   still queued ahead of it;
+ *   `FixedStepClock` inside it -- and watches what a pause actually submits;
  * - the paused-run case shows the cost is not one refusal but every refusal
  *   for the length of the pause, because `FixedStepClock.pump` returns `0`
  *   while paused, so nothing drains the command that would be blocking them.
  *
  * **ADR 0051 narrows the second bullet and
- * leaves the decision alone.** The worker now dispatches a command that is
- * *due* the moment it is submitted against a paused clock, so a paused order
- * no longer piles up in the queue behind the one blocking it. The command
- * ahead is not due -- it carries the twenty-tick lead it was given while the
- * clock ran -- so it still does not drain during the pause, it is still the
- * highest tick in the queue, and every further order given during that pause
- * still has the shape a refusal would have rejected. The cost of refusing is
- * therefore exactly what the ADR said it was.
+ * leaves the decision alone.** The worker dispatches a command that is *due*
+ * the moment it is submitted against a paused clock, so a paused order that is
+ * due does not pile up in the queue behind anything.
+ *
+ * ## What ADR 0056 changed here, and what it did not
+ *
+ * The end-to-end case used to watch the pause produce a command whose
+ * `sequence` was higher and whose `executeAtTick` was *lower* than the one
+ * still queued ahead of it -- 62, then a pause reported at 42, then 42 again.
+ * **The shipped front door no longer produces that shape**, and this is the
+ * one place in the suite where that is directly observable:
+ * [ADR 0056](../../docs/adr/0056-keeping-a-players-orders-in-the-order-they-gave-them.md)
+ * holds `projectExecuteTick` to a floor of the highest tick already submitted,
+ * because `Undo` and `Redo` count positions in the command stream and the
+ * inverted shape was reordering them against the orders they were aimed at
+ * (#437, reproduced; `command-submission-monotonicity.test.ts` is that guard).
+ * The paused order now lands *level* with the one ahead rather than behind it,
+ * and the strictly increasing sequence breaks the tie in submission order.
+ *
+ * **The decision this file guards is unchanged, and two things follow that are
+ * worth stating rather than leaving to be rediscovered.** Nothing here is
+ * refused, which is the decision. But two of the four grounds ADR 0020 gave
+ * for it -- *"the cost is every refusal for the length of the pause"* and
+ * *"it refuses the first order after a load"* -- were costs of refusing a tick
+ * *below* the highest queued, and the shipped sender no longer submits one.
+ * Against this front door the rejected guard is now inert rather than
+ * expensive. What is untouched is the ground the decision actually rests on:
+ * `Kernel.restore` bypasses `submitCommand` by design and
+ * `kernelSnapshotSchema` never validates the tick relation, so the guard still
+ * cannot establish the invariant it would exist for. The last two cases in
+ * this file drive `Kernel` directly and pin exactly that, which is why
+ * admission stays measured here after the front door stopped producing the
+ * shape.
  *
  * The ordering itself -- `(executeAtTick, sequence)`, on submission and on
  * both restore paths -- is pinned by `kernel-system-order.test.ts`; this file
@@ -201,7 +224,7 @@ afterEach(() => {
 });
 
 describe('the front door admits what a pause actually submits', () => {
-  it('takes a paused order scheduled behind one still queued ahead, through the shipped HUD and the shipped worker', () => {
+  it('takes a paused order level with one still queued ahead, through the shipped HUD and the shipped worker', () => {
     const { port, sender, wake, requestSnapshot } = startLoop();
 
     // Play, and let the worker's own tick loop run for two seconds of real time.
@@ -231,40 +254,47 @@ describe('the front door admits what a pause actually submits', () => {
 
     const [first, second] = accepted(port);
     if (first === undefined || second === undefined) return expect.unreachable('both orders should have been acknowledged');
-    // Non-vacuous in both directions. The first order really is in the future
-    // relative to the pause, so it really is still queued...
-    expect(first.scheduledForTick).toBeGreaterThan(tickAtPause);
-    // ...and the paused projection really is the exact current tick.
-    expect(second.scheduledForTick).toBe(tickAtPause);
-    // Which is the shape the refused-`executeAtTick` guard would have
-    // rejected: a later sequence at an earlier tick.
-    expect(second.sequence).toBeGreaterThan(first.sequence);
-    expect(second.scheduledForTick).toBeLessThan(first.scheduledForTick);
+    // Non-vacuous, and this is the half that has not changed. The first order
+    // really is in the future relative to the pause -- it carries the lead it
+    // was given while the clock ran -- so it really is still queued, and the
+    // pause really did report a tick well behind it.
+    expect(first.scheduledForTick).toBe(62);
+    expect(tickAtPause).toBe(42);
 
     /*
-     * And what the kernel is left holding, which is where ADR 0051 changed the
-     * observation without changing the decision.
+     * And the half ADR 0056 changed. This assertion used to read
+     * `expect(second.scheduledForTick).toBe(tickAtPause)` -- 42, *behind* the
+     * 62 already queued, which was the shape the rejected guard would have
+     * refused and the shape that inverted `Undo` against the order it was
+     * aimed at (#437).
      *
-     * This used to read `[second.sequence, first.sequence]` -- the queue
-     * head-first by tick rather than by sequence, with both orders still in
-     * it. The worker now dispatches a *due* command the moment it is submitted
-     * against a paused clock, so `second` -- whose `executeAtTick` is exactly
-     * the tick the session is on -- is gone from the queue before this line
-     * runs, and the order given while the clock was running is still waiting
-     * at its own tick.
+     * The paused projection is now floored at the highest tick this sender has
+     * already submitted, so it lands level with the order ahead instead of
+     * behind it. Written out rather than compared to `first.scheduledForTick`,
+     * so a build that floors both to the *same wrong* number still fails.
+     */
+    expect(second.scheduledForTick).toBe(62);
+    expect(second.sequence).toBeGreaterThan(first.sequence);
+    expect(second.scheduledForTick).not.toBeLessThan(first.scheduledForTick);
+
+    /*
+     * And what the kernel is left holding.
      *
-     * **The decision this file guards is untouched, and that is asserted
-     * above rather than argued here**: the paused order was admitted and not
-     * refused (`refusals(port)` is empty), its sequence really is higher and
-     * its tick really is lower than the one queued ahead, and the ADR 0020
-     * cost that made refusing wrong is unchanged -- the command ahead still
-     * does not drain during the pause, so it stays the highest tick in the
-     * queue and every further paused order still meets the shape a refusal
-     * would have rejected.
+     * Neither order is due -- both sit at 62 and the session is paused at 42
+     * -- so ADR 0051's paused drain leaves both alone, and the queue holds
+     * them in the order the player gave them. That is the whole point: at
+     * equal ticks the strictly increasing `sequence` is the tie-break, so
+     * dispatch order *is* submission order and the `(executeAtTick, sequence)`
+     * comparator needs no help from a refusal to make it so.
+     *
+     * **The decision this file guards is untouched, and it is asserted rather
+     * than argued**: both orders were admitted and neither was refused
+     * (`refusals(port)` is empty, checked above before anything is read out of
+     * the acknowledgements).
      */
     requestSnapshot();
-    expect(pendingQueue(port).map((command) => command.sequence)).toEqual([first.sequence]);
-    expect(pendingQueue(port).map((command) => command.executeAtTick)).toEqual([first.scheduledForTick]);
+    expect(pendingQueue(port).map((command) => command.sequence)).toEqual([first.sequence, second.sequence]);
+    expect(pendingQueue(port).map((command) => command.executeAtTick)).toEqual([62, 62]);
   });
 
   it('takes the first order after a load, though the loaded queue holds commands seventy ticks out', () => {
@@ -295,7 +325,20 @@ describe('the front door admits what a pause actually submits', () => {
     expect(refusals(port)).toEqual([]);
     const [order] = accepted(port);
     if (order === undefined) return expect.unreachable('the first order after a load should have been acknowledged');
-    expect(order.scheduledForTick).toBeLessThan(highestLoaded);
+    /*
+     * Admitted, which is the decision, and *level with* the loaded queue's
+     * highest tick rather than below it -- which is ADR 0056's second half.
+     * This used to assert `toBeLessThan(highestLoaded)`: the order aimed at
+     * tick 0, the tick the restored session resumed at, overtaking two build
+     * orders the player had issued before the save was written. `baseline`
+     * now seeds the sender's tick floor from the kernel's own pending queue,
+     * so the first gesture after a load queues behind what the load brought
+     * with it. `command-submission-monotonicity.test.ts` is the guard for the
+     * ordering that buys; this line is here so the *admission* case cannot
+     * silently stop being about a loaded queue that reaches past the sender.
+     */
+    expect(highestLoaded).toBe(70);
+    expect(order.scheduledForTick).toBe(70);
     // And it resumed the saved count rather than restarting at zero.
     expect(order.sequence).toBe(loadedQueue.length);
   });
