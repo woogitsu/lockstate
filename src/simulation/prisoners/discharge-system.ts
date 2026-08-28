@@ -75,7 +75,7 @@ export interface PrisonerDischargeMetrics {
  * The prisoner leaves at the tick their sentence ends. They do not walk to a
  * gate, because there is no gate: `world.setOwned` has one call site at session
  * creation, no room-catalog entry names an exit, and no action targets one.
- * ADR-XXXX decision 4 records that an instantaneous departure is slice 1 and
+ * ADR 0050 decision 4 records that an instantaneous departure is slice 1 and
  * what slice 2 would need. Nothing here models parole, reoffending, a release
  * ceremony, an inspection consequence or a reputation effect -- those are #31
  * and `docs/ROADMAP.md` Phase 9, and this system deliberately builds none of

@@ -214,7 +214,7 @@ export class PrisonerOperationsRuntime {
 
   /**
    * Removes one prisoner from the prison, giving back everything they hold
-   * (#441, ADR-XXXX). Answers `false` for an id that names no living prisoner.
+   * (#441, ADR 0050). Answers `false` for an id that names no living prisoner.
    *
    * The unguarded counterpart of `PrisonerDischargeSystem`, in the same
    * relationship `admitPrisoner` has to `requestAdmission`: the system decides
