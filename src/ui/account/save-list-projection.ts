@@ -1,3 +1,4 @@
+import { readableGenerationIds } from '../../persistence/local/generation-policy';
 import type { PrisonSlotMetadata } from '../../persistence/local/store';
 import { orderPrisonsForDisplay } from '../save-panel';
 import { type AccountSessionState, hasCloudIdentity } from './account-session';
@@ -119,9 +120,17 @@ export interface SaveListProjectionInput {
   readonly failures?: Readonly<Record<string, SyncFailureReason>>;
 }
 
+/**
+ * Quarantined generations are deliberately not counted (#432). One is a copy
+ * this build has just refused as unreadable and kept for a build that can read
+ * it; reporting a prison as `recoverable` on the strength of one would promise
+ * the player a fallback this build cannot perform. Whether they should be told
+ * that such a copy exists is a new player-visible promise and therefore the
+ * owner's -- see `readableGenerationIds`.
+ */
 function recoveryOf(slot: PrisonSlotMetadata): PrisonRecoveryStatus {
   if (slot.currentGenerationId === undefined) return 'no-readable-generation';
-  return slot.generationIds.length > 1 ? 'recoverable' : 'none';
+  return readableGenerationIds(slot.generationIds).length > 1 ? 'recoverable' : 'none';
 }
 
 function conflictOf(localRevision: number, cloudRevision: number): SyncConflictReason | undefined {
@@ -145,7 +154,7 @@ function rowForLocal(
     cloudRevision: cloud?.revision,
     lastPlayedAt: slot.updatedAt,
     recovery: recoveryOf(slot),
-    retainedGenerations: slot.generationIds.length,
+    retainedGenerations: readableGenerationIds(slot.generationIds).length,
   } as const;
 
   if (cloud === undefined) {

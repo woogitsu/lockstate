@@ -3,6 +3,10 @@ import {
   applyConfirmedRetention,
   applyGenerationRetention,
   applyProvisionalRetention,
+  isQuarantinedGenerationId,
+  quarantinedGenerationId,
+  readableGenerationIds,
+  releasedGenerationId,
   type GenerationRetentionResult,
 } from './generation-policy';
 import { classifyStoreError, type SaveWriteError } from './errors';
@@ -124,6 +128,58 @@ export type DemotionResult =
 export type GenerationConfirmation =
   | { readonly confirmed: true; readonly retired: readonly string[] }
   | { readonly confirmed: false; readonly reason: 'not-retained' | 'not-the-newest-generation' };
+
+/**
+ * What `quarantineGeneration` did with the window's one quarantine slot
+ * (#432).
+ *
+ * `'not-retained'` matches the arm of the same name above: an unknown prison,
+ * or a generation outside the retained window. `'nothing-stored'` is the
+ * neighbouring case the other two methods never have to name -- the id is
+ * retained but no record answers to it -- and it is separate because
+ * quarantine exists to keep *bytes*, so "there are none" is a different
+ * outcome from "there is no such generation".
+ *
+ * `'last-readable-generation-retained'` is `DemotionResult`'s floor, restated
+ * for the one caller that does not delete anything. Setting a generation aside
+ * costs no bytes, but it does take it out of the count this build offers the
+ * player, and a window every one of whose generations is quarantined would
+ * report a prison with saves as a prison with none.
+ *
+ * `'newer-generation-quarantined'` is the bound. The slot holds **one**
+ * generation, and it holds the newest candidate for it, so quarantining an
+ * older one is declined rather than allowed to evict a newer save that is
+ * worth at least as much. The declined generation stays an ordinary retained
+ * generation and is evicted by the ordinary rules in due course -- which is
+ * exactly what is sacrificed when the bound binds: of two saves this build
+ * cannot read, the older one goes.
+ *
+ * `evicted` on the success arm names the quarantined generations this call
+ * deleted to take the slot. It is empty on every call but the one that
+ * displaces a previous occupant.
+ */
+export type QuarantineResult =
+  | { readonly quarantined: true; readonly generationId: string; readonly evicted: readonly string[] }
+  | {
+      readonly quarantined: false;
+      readonly reason: 'not-retained' | 'nothing-stored' | 'last-readable-generation-retained' | 'newer-generation-quarantined';
+    };
+
+/**
+ * What `releaseQuarantinedGeneration` did (#432).
+ *
+ * The mark says *this build refused these bytes*. A build that has just
+ * restored them has falsified that, so the mark comes off and the generation
+ * goes back to being an ordinary member of the retained window -- including
+ * being evictable again, which is the slot being handed back.
+ *
+ * `'not-quarantined'` is the no-op every ordinary load takes, reported rather
+ * than swallowed for `DemotionResult`'s reason: a caller must be able to tell
+ * "nothing needed doing" from "this did not apply".
+ */
+export type QuarantineRelease =
+  | { readonly released: true; readonly generationId: string }
+  | { readonly released: false; readonly reason: 'not-retained' | 'nothing-stored' | 'not-quarantined' };
 
 export type LoadRecoveryOutcome = 'current' | 'recovered-previous';
 
@@ -298,6 +354,14 @@ export class PrisonSaveRepository {
     }
 
     const generationId = this.generateGenerationId();
+    // The quarantine mark is what makes a generation exempt from every
+    // retention rule in `generation-policy.ts` (#432), and `generateGenerationId`
+    // is injectable. A generator that emitted a marked id would mint saves
+    // that never expire and are never offered to the player's own count, so
+    // it is refused here rather than discovered as a window that grew for ever.
+    if (isQuarantinedGenerationId(generationId)) {
+      return { ok: false, error: { code: 'unknown-error', message: `Refusing to write generation "${generationId}": that id is reserved for a quarantined generation.` } };
+    }
 
     try {
       await this.store.runTransaction('readwrite', async (tx) => {
@@ -414,12 +478,22 @@ export class PrisonSaveRepository {
       // remaining copy of this prison, and there is nothing to fall back to
       // once it is gone, so demoting it can only turn a prison this build
       // cannot load into a prison no build can ever load.
-      if (metadata.generationIds.length <= 1) return { demoted: false, reason: 'last-generation-retained' };
+      //
+      // Counted over the generations this build has *not* already set aside as
+      // unreadable (#432). A quarantined generation is a copy for a later
+      // build, not a fallback for this one, so a window of [quarantined, X]
+      // holds exactly one save this build could use and X is it.
+      if (readableGenerationIds(metadata.generationIds).length <= 1) return { demoted: false, reason: 'last-generation-retained' };
 
       const generationIds = metadata.generationIds.filter((id) => id !== generationId);
-      // `generationIds` is ordered oldest-first, so the newest survivor is last.
+      // `generationIds` is ordered oldest-first, so the newest survivor is
+      // last -- preferring the newest *readable* one, because the pointer is
+      // read as "the generation to try first" and a quarantined generation is
+      // one this build has already refused. It falls back to the newest of any
+      // kind rather than to `undefined`, which would orphan the window.
+      const readable = readableGenerationIds(generationIds);
       const nextCurrent = metadata.currentGenerationId === generationId
-        ? generationIds[generationIds.length - 1]
+        ? readable[readable.length - 1] ?? generationIds[generationIds.length - 1]
         : metadata.currentGenerationId;
       await writeSlot(tx, {
         ...metadata,
@@ -429,6 +503,162 @@ export class PrisonSaveRepository {
       });
       await tx.deleteGeneration(prisonId, generationId);
       return { demoted: true };
+    });
+  }
+
+  /**
+   * Keeps a generation this build refused as `unsupported-by-this-build`
+   * instead of deleting it (#432, #403 mitigation (c)).
+   *
+   * ## What it is for
+   *
+   * `demoteGeneration` above deletes, and the evidence that licenses deleting
+   * is that a *different* generation restored through the same code moments
+   * earlier -- so what is wrong is this save. That evidence is exactly as
+   * strong for both of ADR 0063's save-side verdicts and it means different
+   * things under each. `damaged-payload` says the content contradicts itself
+   * and no build restores it. `unsupported-by-this-build` says the opposite:
+   * the bytes are coherent and a build that reads them **already exists** --
+   * it is the build that wrote them. Deleting those bytes because today's
+   * build cannot read them is the one deletion this repository makes against
+   * its own stated verdict, and it is what this method replaces.
+   *
+   * ## What it actually does
+   *
+   * It renames the stored record and the id in the window to the quarantined
+   * form (see `isQuarantinedGenerationId` for why the mark lives in the id and
+   * not in a field of its own), inside one transaction, so the key the bytes
+   * are under and the id the window holds never disagree. Nothing is copied
+   * elsewhere and nothing is re-encoded: the value read out of the store is
+   * the value written back.
+   *
+   * Everything that follows from the mark is in `generation-policy.ts`: a
+   * quarantined generation is not counted against `keep`, is never evicted by
+   * a save, an import or a confirmation, and is not one of the generations
+   * this build reports to the player as available.
+   *
+   * ## What it deliberately does *not* do
+   *
+   * It does not take the generation out of `loadCurrent`'s walk, and #432's
+   * fourth acceptance criterion asked for exactly that. Two of that issue's
+   * criteria pull against each other, and this is the one that gives: a
+   * quarantined generation must be *"recoverable by a later build without the
+   * player doing anything unusual"*, and leaving it in the walk **is** that
+   * recovery -- it is the newest generation, so a build that can read it
+   * restores it on the very next load with no new code path, no new control
+   * and no new promise to the player. Hiding it from the walk would need a
+   * second, explicit recovery route, and a route the player has to be told
+   * about is a player-visible promise, which `AGENTS.md` reserves to the
+   * owner.
+   *
+   * What that costs is one refused restore per load, and only while the
+   * quarantined generation is still the newest thing in the window: the first
+   * save after the fallback restore puts an ordinary generation above it, and
+   * from then on the walk never reaches it. That is the same price
+   * `docs/PERSISTENCE.md` already records for the deterministic-refusal case,
+   * on the same once-per-load path.
+   *
+   * The walk still terminates for the same reason it did before: `loadPrison`
+   * accumulates every generation it has tried into `LoadCurrentOptions.skip`,
+   * which only grows.
+   */
+  public async quarantineGeneration(prisonId: string, generationId: string): Promise<QuarantineResult> {
+    return this.store.runTransaction('readwrite', async (tx) => {
+      const metadata = readSlot(await tx.getMetadata(prisonId), prisonId);
+      if (metadata === undefined) return { quarantined: false, reason: 'not-retained' };
+      if (!metadata.generationIds.includes(generationId)) return { quarantined: false, reason: 'not-retained' };
+      // Idempotent, and it has to be: the same build refuses the same
+      // generation on every load, so the second load asks for this again.
+      if (isQuarantinedGenerationId(generationId)) return { quarantined: true, generationId, evicted: [] };
+      if (readableGenerationIds(metadata.generationIds).length <= 1) {
+        return { quarantined: false, reason: 'last-readable-generation-retained' };
+      }
+
+      // The bound: one quarantined generation per prison, and it is the
+      // newest candidate. `generationIds` is oldest-first, so an occupant at a
+      // higher index is a newer save, and a newer save this build cannot read
+      // is worth at least as much as this one -- so this call is declined
+      // rather than allowed to evict it.
+      const occupants = metadata.generationIds.filter(isQuarantinedGenerationId);
+      const position = metadata.generationIds.indexOf(generationId);
+      if (occupants.some((id) => metadata.generationIds.indexOf(id) > position)) {
+        return { quarantined: false, reason: 'newer-generation-quarantined' };
+      }
+
+      const stored = await tx.getGeneration(prisonId, generationId);
+      if (stored === undefined) return { quarantined: false, reason: 'nothing-stored' };
+
+      const quarantinedId = quarantinedGenerationId(generationId);
+      await tx.putGeneration(prisonId, quarantinedId, stored);
+      await tx.deleteGeneration(prisonId, generationId);
+      for (const evictedId of occupants) {
+        await tx.deleteGeneration(prisonId, evictedId);
+      }
+
+      const generationIds = metadata.generationIds
+        .filter((id) => !occupants.includes(id))
+        .map((id) => (id === generationId ? quarantinedId : id));
+      // The pointer follows the bytes: it named this generation because it is
+      // the newest save, and quarantine changes its id, not that fact. It is
+      // only recomputed when it named an occupant this call just evicted.
+      const currentGenerationId =
+        metadata.currentGenerationId === generationId
+          ? quarantinedId
+          : metadata.currentGenerationId !== undefined && occupants.includes(metadata.currentGenerationId)
+            ? generationIds[generationIds.length - 1]
+            : metadata.currentGenerationId;
+      await writeSlot(tx, { ...metadata, currentGenerationId, generationIds, updatedAt: this.now() });
+      return { quarantined: true, generationId: quarantinedId, evicted: occupants };
+    });
+  }
+
+  /**
+   * Takes the quarantine mark off a generation a build has just restored
+   * (#432).
+   *
+   * The mark is a recorded verdict -- *this build refused these bytes* -- and
+   * a restore falsifies it. Leaving it on would keep a generation the player
+   * is actively playing out of their own retained count for ever, and would
+   * hold the prison's one quarantine slot against the next save that needs
+   * it. So the mark comes off, the generation rejoins the ordinary window, and
+   * the slot is handed back.
+   *
+   * It is the same evidence `demoteGeneration` and `confirmGeneration` both
+   * require, spent a third way: only a restore that actually happened moves
+   * anything here.
+   *
+   * `SessionController.loadPrison` calls this **before** the demotion loop, so
+   * the generation it just restored is out of the quarantine slot before that
+   * loop can evict an occupant of it.
+   */
+  public async releaseQuarantinedGeneration(prisonId: string, generationId: string): Promise<QuarantineRelease> {
+    if (!isQuarantinedGenerationId(generationId)) return { released: false, reason: 'not-quarantined' };
+    return this.store.runTransaction('readwrite', async (tx) => {
+      const metadata = readSlot(await tx.getMetadata(prisonId), prisonId);
+      if (metadata === undefined) return { released: false, reason: 'not-retained' };
+      if (!metadata.generationIds.includes(generationId)) return { released: false, reason: 'not-retained' };
+
+      const releasedId = releasedGenerationId(generationId);
+      if (metadata.generationIds.includes(releasedId)) {
+        // Impossible unless a `generateGenerationId` handed back an id the
+        // window already held, which is a contract violation rather than a
+        // state to recover from -- and continuing would overwrite the bytes of
+        // whichever generation got there first.
+        throw new Error(`Cannot release save generation "${generationId}": the prison already retains "${releasedId}".`);
+      }
+
+      const stored = await tx.getGeneration(prisonId, generationId);
+      if (stored === undefined) return { released: false, reason: 'nothing-stored' };
+
+      await tx.putGeneration(prisonId, releasedId, stored);
+      await tx.deleteGeneration(prisonId, generationId);
+      await writeSlot(tx, {
+        ...metadata,
+        currentGenerationId: metadata.currentGenerationId === generationId ? releasedId : metadata.currentGenerationId,
+        generationIds: metadata.generationIds.map((id) => (id === generationId ? releasedId : id)),
+        updatedAt: this.now(),
+      });
+      return { released: true, generationId: releasedId };
     });
   }
 
@@ -463,7 +693,15 @@ export class PrisonSaveRepository {
       const metadata = readSlot(await tx.getMetadata(prisonId), prisonId);
       if (metadata === undefined) return { confirmed: false, reason: 'not-retained' };
       if (!metadata.generationIds.includes(generationId)) return { confirmed: false, reason: 'not-retained' };
-      if (metadata.generationIds[metadata.generationIds.length - 1] !== generationId) {
+      // "Newest" over the generations that compete for the spare slot: the
+      // readable ones, plus this one whether or not it is readable (#432). A
+      // quarantined generation is outside the retention arithmetic, so leaving
+      // it in this comparison would let one sitting on top of the window block
+      // an import below it from ever being confirmed. Including `generationId`
+      // itself is what lets a *later* build confirm the quarantined generation
+      // it has just restored.
+      const competing = metadata.generationIds.filter((id) => id === generationId || !isQuarantinedGenerationId(id));
+      if (competing[competing.length - 1] !== generationId) {
         return { confirmed: false, reason: 'not-the-newest-generation' };
       }
 

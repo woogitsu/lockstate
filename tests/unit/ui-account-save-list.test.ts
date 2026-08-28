@@ -170,6 +170,24 @@ describe('the save list surfaces what local recovery is available (#19, #34)', (
     const [row] = project({ local: [slot('p1', { currentGenerationId: undefined, generationIds: [] })] });
     expect(row).toMatchObject({ recovery: 'no-readable-generation', retainedGenerations: 0 });
   });
+
+  /**
+   * A quarantined generation is one this build has just refused as unreadable
+   * and kept for a build that can read it (#432). Counting it here would tell
+   * the player a prison has a copy to fall back to when this build cannot
+   * perform that fallback -- a promise the code does not keep, which is
+   * `AGENTS.md`'s fourth exclusion. So it is invisible above the persistence
+   * layer, and the two numbers this row carries mean exactly what they meant
+   * before quarantine existed.
+   *
+   * Whether the player *should* be told a save is being held for a later
+   * build is a new promise and therefore the owner's; it is recorded as an
+   * open question rather than answered here.
+   */
+  it('counts only the generations this build can offer, so a quarantined copy is not a fallback', () => {
+    const [row] = project({ local: [slot('p1', { generationIds: ['gen-1', '!unreadable!gen-2'] })] });
+    expect(row).toMatchObject({ recovery: 'none', retainedGenerations: 1 });
+  });
 });
 
 describe('the save list is ordered most recently played first, across both sources', () => {
