@@ -576,6 +576,31 @@ export class RoomInstanceRegistry {
   }
 
   /**
+   * Whether this prison has anywhere at all that an action targeting
+   * `roomCatalogId` could be performed -- an instance of that type with a
+   * non-zero ceiling for the capability the action consumes.
+   *
+   * **`findAvailableForUse` without the claims**, and the omission is the whole
+   * point rather than an optimisation. Its one caller is `needUrgency`'s
+   * providability test (issue #434), which decides the *order* the contended
+   * scan runs in. An ordering key that counted the claims taken earlier in the
+   * same scan would be a function of the scan position it is deciding: prisoner
+   * A's key would depend on whether prisoner B had already been served, the sort
+   * would stop being a function of state, and two runs of the same seed could
+   * disagree the moment anything reordered the collection loop. This asks the
+   * question that has one answer for the whole cycle -- *can this prison serve
+   * this at all* -- and leaves *who gets it now* to `findAvailableForUse`, which
+   * still runs per prisoner in the execution half of the scan.
+   *
+   * A zero ceiling is the honest "no": since issue #326 a capability no object
+   * in the room carries derives 0, so an unfurnished canteen answers `false`
+   * here for `'dining'` exactly as it refuses a seat there.
+   */
+  public hasPlaceForUse(roomCatalogId: string, requiredObjectCapability?: string): boolean {
+    return this.allByRoomCatalogId(roomCatalogId).some((instance) => this.concurrentUseCapacityFor(instance, requiredObjectCapability) > 0);
+  }
+
+  /**
    * The free instance of `roomCatalogId` whose **current occupants** rate
    * best for `rate`, rather than merely the first one with a free bed.
    *
