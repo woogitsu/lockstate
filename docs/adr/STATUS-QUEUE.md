@@ -14,8 +14,11 @@ by authority, and the preconditions on the change that gives this project its
 first server-side entry point** — above the account of why the queue had been
 emptied three times and what that bought (ADR 0029 was accepted on 2026-08-26
 and its entry deleted; 0031 arrived immediately after and was itself accepted)
-— and everything after it is the residue — one genuinely open decision, one
-watch item, and the gaps between an accepted decision and the code.
+— and everything after it is the residue — the open decisions, one
+watch item, and the gaps between an accepted decision and the code. **That
+clause read "one genuinely open decision" until 2026-08-28**, when nine
+`Proposed` ADRs landed in eleven releases; §3 still holds the one that is
+partly enforced in SQL, and §5's first bullet holds the nine.
 
 **This sentence and the title above it were both false, and this is the second
 time this file's title has rotted the same way.** They read *"One decision is
@@ -68,8 +71,9 @@ seventeen named files, twelve ADRs (0002, 0008, 0010, 0012, 0013, 0015, 0017,
 
 **The delta touched a great deal that §§3-6 depend on, and the sentence this
 header warns about would have been false.** Reading the intersection withdrew
-**three** claims outright, overtook **four** more as done-elsewhere, and moved
-citations in nineteen places. What was withdrawn: §5's *"the telemetry layer is
+**three** claims outright, overtook **four** more as done-elsewhere, retired
+**fourteen** prose citations in favour of quoted sentences, and re-anchored every
+code citation in §§3-6 against `bb3a01e`. What was withdrawn: §5's *"the telemetry layer is
 inert"*, §6's *"no ADR in the directory is `Proposed`"* (nine are), and §5's
 *"exactly one file, and for exactly one reason"* about object ids outside
 `src/content/`.
@@ -844,7 +848,22 @@ to stop claiming a queue; §6 records what was corrected and what was left.
 
 ## 3. Still outstanding: ADR 0013 §§5-6
 
-The one genuinely open decision left in the corpus. 0013 is **Accepted for §§1-4
+**This section opened *"The one genuinely open decision left in the corpus"* and
+that is false at `bb3a01e`.** It was true at `54418b6`, when no document in
+`docs/adr/` was `Proposed`; nine now are (0042, 0043, 0046-0052, all arrived in
+this delta, all listed in §5's first bullet). What is still true, and is why the
+section keeps its subject rather than being folded into that bullet, is narrower
+and is the durable half: **0013 §§5-6 is the only open decision in the corpus
+whose two halves are *partly enforced in a live database*, and the only one this
+file has ever had to track by reading SQL.** The nine are ordinary `Proposed`
+documents with index rows; this one is a split status inside an `Accepted` one,
+which no index row can show.
+
+A count in a section's opening sentence is the shape this file's own title
+rotted twice on, and it has now done it here. Stated as a subject above rather
+than as a tally.
+
+0013 is **Accepted for §§1-4
 only**, and that is not a formality: two of its six decisions are enforced in the
 database and two are explicitly absent.
 
@@ -1191,8 +1210,28 @@ one direction.
   exactly one file and for exactly one reason"* — is now wrong in the half it
   claimed was durable. It is not a boundary violation: `environment-art.ts` is a
   data module by `AGENTS.md` boundary 6 and its own header says so, and
-  `tests/unit/environment-art-coverage.test.ts` fails if its lists and the
-  registries disagree in either direction. What the entry was watching for was
+  `tests/unit/environment-art.test.ts` fails if its lists and the
+  registries disagree in either direction — *"accounts for every catalogued
+  object exactly once"* (`:248`) and *"accounts for every terrain exactly once"*
+  (`:256`).
+
+  **Handed over, because it is not this file's to fix: that module's own header
+  cites a test that does not exist.** `src/rendering/world/environment-art.ts:24`
+  names a suite `environment-art-coverage.test.ts` under `tests/unit/` and says
+  it *"fails if the lists and the registries disagree in either direction"*.
+  **There is no such file**; the suite is `tests/unit/environment-art.test.ts`.
+  (The wrong name is written here without its directory on purpose:
+  `tests/foundation/documentation-links-contract.test.ts` rejects a rooted path
+  that is not on disk, with no allowlist, and it rejected this paragraph twice
+  before the quotation was broken — which is how the defect was found in the
+  first place. That gate reads `docs/`, `README.md` and `.github/` and not `src/`
+  comments, which is why the comment shipped and why quoting it into a document
+  is what caught it.) The claim
+  the comment makes is true of the file it means. **Whether the gate should scan
+  `src/` comments is a decision, not an edit**, and it is the same class as the
+  four blind spots listed above.
+
+  What the entry was watching for was
   object ids leaking into *logic*; a second data module is a second reason, which
   is the thing the sentence denied. **An absence held for two corrections of the
   count and died on the first change that added a reason** — which is what §4 of
@@ -1273,7 +1312,8 @@ one direction.
   and without the `sleep-surface` filter *in a prison whose cell is empty*; a
   zoned room with nothing in it does derive zero
   (`tests/unit/objects-room-capacity.test.ts`, *"is zero for a room with nothing
-  in it"*); and the case at `prisoners-intake-system.test.ts:229` does still
+  in it"*); and the case at `tests/unit/prisoners-intake-system.test.ts:230` —
+  cited as `:229` here, one line out at `bb3a01e` — does still
   pass. **That case was retitled by #371 and this entry's quotation of it is
   stale**: it read *"houses nobody at all through the shipped session path"* and
   now reads *"houses nobody through the shipped session path **while the cell is
@@ -1312,9 +1352,13 @@ one direction.
   a reader should go first: `docs/adr/0027-cell-sharing-assessment.md:14-32`,
   *"Update, 2026-08-26 — the subject is now reachable, and this ADR named the
   day"*, with the preconditions kept verbatim below it *"because every design
-  argument below them was made under them"*. The index row moved with it —
-  `docs/adr/README.md:97` now reads *"its subject became reachable when 0028
-  shipped (measured 2026-08-26)"* where it read *"unreachable until 0028 ships"*.
+  argument below them was made under them"*. The index row moved with it — the
+  `0027` row in `docs/adr/README.md` now reads *"its subject became reachable
+  when 0028 shipped (measured 2026-08-26)"* where it read *"unreachable until
+  0028 ships"*. (Cited as `:97` here; the row is at `:158` at `bb3a01e`, and
+  `:97` is now a sentence about queue entries — the index gained twelve ADR rows
+  in this delta, so a row number in that file is the least durable citation in
+  the corpus after `docs/CLOUD_SAVE.md`'s.)
 
   **And #371 adds one live gap this entry did not have.** `rateCellSharing` *"is
   deciding real allocations in a live session for the first time, and nothing
@@ -1499,10 +1543,14 @@ one direction.
 
   **Two corrections at `bb3a01e`, both to the same clause.** It said *"the single
   mention elsewhere (`src/main.ts:86`) is a comment naming the file, not an
-  import"*. `src/main.ts:86` is now `import type { CancelScheduledPump } from
-  './services/telemetry/pump';` — a real import, of a different layer, which is
-  exactly the *"lands on plausible-looking code"* failure ADR 0006's paragraph
-  names. The comment moved to `src/main.ts:102`. And **there are two mentions
+  import"*. `src/main.ts:86` is now `import './styles.css';` — a real import, of
+  nothing to do with challenges, so the anchor no longer supports the sentence it
+  was given for. The comment moved to `src/main.ts:102`, where it reads
+  *"`src/services/challenges/verification.ts`, against a challenge definition's
+  …"*. (**Written here as `import type { CancelScheduledPump }` in the first
+  draft of this correction and caught by re-deriving every anchor mechanically
+  before commit** — that line is `:84`. Recorded because it is the same off-by-two
+  the entry is about, committed while correcting it.) And **there are two mentions
   now, not one**: `src/persistence/save-schema.ts:1164` names
   `masterSeedSchema` *"from `services/challenges`"* in a comment explaining why it
   does **not** import it. Both are comments, so the finding holds; the word
@@ -1944,9 +1992,13 @@ caught a third that was *true*, *"No row is `Proposed`."* It matches on the
 status word rather than parsing the claim, so a sentence saying that **no** ADR
 holds a status trips it exactly as a false one would. The wording was changed to
 "every row is accepted", which is true and leaves the gate meaningful, and the
-constraint is written down where it binds
-(`docs/adr/README.md:44-52`) rather than left for the next person to
-rediscover by failing the suite. Teaching the scanner to read negation is the
+constraint is written down where it binds — `docs/adr/README.md`, the note
+opening *"A note on how this paragraph is worded, because it matters to a
+test"*, `:103-110` at `bb3a01e` — rather than left for the next person to
+rediscover by failing the suite. (**This entry cited `:44-52`, which at
+`bb3a01e` is a paragraph about prose tallies rotting beside a table** — a
+plausible neighbour on the same subject, which is the worse kind of drift, so
+the quotation is the citation from here on.) Teaching the scanner to read negation is the
 alternative and is not obviously worth it. **It belongs in this list**, because
 it is the same class as the three above: a claim the scanner's shape cannot
 evaluate, which a reader has to hold instead.
@@ -2168,10 +2220,62 @@ command union's, three of the four `transition()` sites, and three in
 changed. The count is still thirteen, the transitions are still four, `'ready'`
 is still unreachable.
 
-**So this file has now diagnosed the same defect three times and fixed it zero
-times, and repeating the diagnosis a fourth time is not the useful response.**
-What would be, stated as a proposal for the owner rather than as something done
-here, because it changes how the corpus is cited and that is a decision:
+**The fourth pass, at `bb3a01e`, stopped counting and started rewriting, so the
+running total above is discontinued rather than extended.** A retired citation is
+not a corrected one and the two cannot be added together, so a fourth number in
+that series would compare unlike things — which is the same defect the series was
+recording. What this pass did instead, stated so it can be checked:
+
+- **Every rooted `file:line` in §§3-6 was re-derived mechanically before this
+  commit was written** — extract each backticked `path:N` span, open the file,
+  print the line. That is the whole check, it takes seconds, and **it caught
+  three errors this pass had just introduced**: `src/main.ts:86` written as an
+  import it is not, `docs/adr/README.md:44-52` for a constraint that has moved to
+  `:103-110`, and `docs/adr/README.md:97` for an index row now at `:158`. A
+  correction is exactly as liable to be wrong as the claim it corrects, and this
+  is the third consecutive pass to prove it inside its own text.
+- **Fourteen prose citations were retired rather than renumbered**, replaced by a
+  section title and a quoted sentence: three into `docs/DEPLOYMENT.md` (the
+  71-second window, #87, and the ADR 0016 paragraph, which has now been `:163`,
+  `:164` and `:168` across three anchors without a word changing), the two in
+  §5's ADR 0002 entry, five in `docs/CLOUD_SAVE.md`, the
+  `docs/TRUSTED_SERVICES.md` range, `docs/HUD_PROJECTIONS.md`'s gap 13 (`:553`,
+  `:639`, `:754` — three anchors, one sentence) and the two
+  `docs/adr/README.md` anchors above.
+- **Every code anchor was re-numbered against `bb3a01e`**, because grep checks a
+  code anchor and `src/` moves for reasons that change meaning: four
+  `transition()` sites, two handshake receivers, six in `zoning.ts` across §5 and
+  §6, two in `intake-system.ts`, two in `prisoners-intake-system.test.ts`, four
+  in `hud.ts`, one in `main.ts`, two in `unconsumed-command-contract.test.ts`,
+  and `ui-hud-messages.test.ts:218-224`. Enumerated rather than totalled, for the
+  reason this whole subsection exists.
+- **Two of them were wrong at `54418b6`, before this delta opened**: the
+  `AWAITING_PRODUCER` declaration (`:173-203` for a thing at `:204`) and
+  `arm-room-tool` (`:486-491` for a thing at `:536`). Both are in files
+  `git diff 54418b6..bb3a01e` reports as **untouched**, so the delta method could
+  not have raised either. Only opening them did, and that is the argument for
+  spot-reading the untouched half rather than resting on the diff — which the
+  third pass had already learned once and which this makes twice.
+- **Three claims of substance were withdrawn and four were discharged
+  elsewhere**, all named in §§3-5 with what they used to say. The withdrawals are
+  §5's *"the telemetry layer is inert"*, §6's *"no ADR in the directory is
+  `Proposed`"* and §5's *"exactly one file and for exactly one reason"* about
+  object ids. The discharges are ADR 0025's 3.9px withdrawal, ADR 0022's own
+  count-and-anchor correction, ADR 0026's question 2, and ADR 0012's Decision no
+  longer denying its Status — **four entries closed by the documents they were
+  about, all inside one pull request**, which is what §5 is supposed to produce
+  and had not before.
+
+**The two paragraphs above about the second and third passes are left as they
+were, and two of their numbers no longer land.** `docs/DEPLOYMENT.md:163` is a
+blank line at `bb3a01e` and `:164` is the row above the ADR 0016 paragraph. They
+are records of what a past pass checked on a past tree, not live citations, and
+rewriting them would destroy the record — the same exemption `§6`'s gate grants
+past-tense status claims.
+
+**So the diagnosis has been made four times and acted on once, and the once is
+this commit.** The proposal below is what was acted on; it is left standing
+because only its first item is done, and items 2 and 3 are still the owner's:
 
 1. **Stop citing a bare `file:line` into a document under active edit.** Every
    correction in this subsection across three passes has been a number pointing
