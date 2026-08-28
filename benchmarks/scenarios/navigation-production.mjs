@@ -277,6 +277,154 @@ async function runSingleRequestBudget(seed, side) {
 }
 
 /**
+ * Many requests, each with a large frontier, over one open yard region -- the
+ * shape that calibrates a per-tick budget, and the one the three scenarios
+ * above between them do not cover (#413).
+ *
+ * `meal-rush` and `lockdown-return` drain hundreds of requests but every
+ * search is small: a prison block's regions are three-by-three cells and a
+ * one-tile corridor, so a request costs 60-130 expansions and a 2,000-expansion
+ * budget buys twenty of them. `single-request-budget` has the large frontier
+ * but is **one** request, and says nothing about a tick. Neither can show what
+ * a tick costs when the budget is spent on expensive searches, which is
+ * exactly the case a budget has to be safe in.
+ *
+ * A yard is that case and it is not contrived: `buildNavigationGraph` floods a
+ * region across chunk boundaries, so any unwalled ground -- an exercise yard,
+ * a plot before its interior walls go up -- is one region thousands of tiles
+ * across, and `boundedLocalSearch` inside it has nothing but the heuristic to
+ * stop it.
+ *
+ * ## What this scenario is for, and it is one number
+ *
+ * `tickOvershootRatio` = `maxExpansionsInOneTick / workBudgetPerTick`.
+ * `processTick` tests `usedBudget >= workBudget` **before** a request and
+ * never inside one, so a tick's true bound is not the budget: it is
+ * `budget + (the most expensive single request)`. In a block those two terms
+ * differ by a factor of twenty and the second is invisible. Here they are the
+ * same order, and the ratio comes back at 1.7-2.0 -- a tick spending twice
+ * what it budgeted, measured on production modules, deterministically, in
+ * counted work.
+ *
+ * That is why the ratio carries a **floor** and not only a ceiling. The floor
+ * is what fails when the overshoot is fixed (a suspendable search resuming next
+ * tick would drive it to ~1.0), which makes retiring this scenario's subject a
+ * decision somebody writes down rather than a ceiling quietly relaxing -- the
+ * same argument `single-request-budget` makes for its own ratio, one layer up.
+ *
+ * ## `ticksToDrain` is the guard on the budget's *value*
+ *
+ * `workBudgetPerTick: { equals: 2_000 }` pins the constant, the way it is
+ * pinned on `single-request-budget`, but an equality alone says only that
+ * somebody changed a number -- not what changing it cost. The two ceilings
+ * either side say that. Raise the budget and `maxExpansionsInOneTick` goes
+ * through its ceiling; lower it and `ticksToDrain` goes through its own,
+ * because the same 80,970 expansions of counted work then need more ticks to
+ * spend. Measured: at 1,200 the smoke drain takes 48 ticks against a ceiling
+ * of 34. So a re-calibration has to arrive with both numbers re-measured,
+ * which is the whole of what "the constant has a test" can mean when the
+ * repository refuses to gate on wall clock (`docs/BENCHMARKING.md`).
+ *
+ * `ticksToDrain` is also this scenario's only latency reading, and latency is
+ * the thing a smaller budget spends: at 2,000 the p95 request waits 29 ticks
+ * (1.45 s of game time) at 250 actors and 114 (5.7 s) at 1,000.
+ *
+ * ## What it does not cover
+ *
+ * Everything the header excludes, plus: **one region, so the region-graph pass
+ * is trivial here.** All work in this scenario is tile-level A*. A regression
+ * in the portal Dijkstra is invisible to it; `meal-rush` is where that lives.
+ */
+async function runYardCrossing(seed, actorCount, side) {
+  const layout = await buildOpenRegionLayout(side);
+  const options = await loadProductionNavigationOptions();
+  const { Xoshiro128StarStar, deriveXoshiroState } = await loadSimulationRng();
+
+  const system = new layout.nav.NavigationSystem(layout.world, options, layout.doors);
+  system.setLoadedChunks(layout.chunkPositions);
+
+  const rng = new Xoshiro128StarStar(deriveXoshiroState(seed, 'navigation.production.yard-crossing').words);
+  const context = { role: 'stub-actor', securityClearance: 0 };
+  const idWidth = String(actorCount - 1).length;
+  const requestIds = [];
+
+  for (let index = 0; index < actorCount; index += 1) {
+    const origin = { x: layout.nav.tileCoordinate(rng.nextInt(layout.tileWidth)), y: layout.nav.tileCoordinate(rng.nextInt(layout.tileHeight)) };
+    const destination = { x: layout.nav.tileCoordinate(rng.nextInt(layout.tileWidth)), y: layout.nav.tileCoordinate(rng.nextInt(layout.tileHeight)) };
+    const priority = rng.nextInt(3);
+    // Zero-padded for the same reason the drain scenarios pad: the queue's
+    // final id tie-break must not depend on how many digits the population
+    // happens to need.
+    const id = String(index).padStart(idWidth, '0');
+    requestIds.push(id);
+    system.requestRoute(id, origin, destination, context, priority, 0);
+  }
+
+  const expansionsPerTick = [];
+  let tick = 0;
+  while (system.pendingCount() > 0 && tick < MAX_DRAIN_TICKS) {
+    const before = system.getQueueMetrics().totalExpansions;
+    system.update({ tick });
+    expansionsPerTick.push(system.getQueueMetrics().totalExpansions - before);
+    tick += 1;
+  }
+  if (system.pendingCount() > 0) {
+    throw new Error(`navigation.production.yard-crossing did not drain within ${MAX_DRAIN_TICKS} ticks.`);
+  }
+
+  const queueMetrics = system.getQueueMetrics();
+  let stateHash = seed >>> 0;
+  let resolvedOk = 0;
+  let resolvedFailed = 0;
+  let maxExpansionsForOneRequest = 0;
+  const waitedTicks = [];
+
+  for (const id of requestIds) {
+    const resolved = system.getResult(id);
+    if (resolved === undefined) throw new Error(`Request ${id} drained without a result.`);
+    if (resolved.result.ok) resolvedOk += 1;
+    else resolvedFailed += 1;
+    if (resolved.expansions > maxExpansionsForOneRequest) maxExpansionsForOneRequest = resolved.expansions;
+    waitedTicks.push(resolved.waitedTicks);
+
+    const totalCost = resolved.result.ok ? Math.round(resolved.result.route.totalCost * 1000) : -1;
+    stateHash = mixHash(stateHash, totalCost);
+    stateHash = mixHash(stateHash, resolved.expansions);
+    stateHash = mixHash(stateHash, resolved.waitedTicks);
+  }
+  stateHash = mixHash(stateHash, queueMetrics.totalExpansions);
+  stateHash = mixHash(stateHash, tick);
+
+  const maxExpansionsInOneTick = Math.max(...expansionsPerTick);
+  const sortedWaits = [...waitedTicks].sort((left, right) => left - right);
+
+  return {
+    checksum: `0x${stateHash.toString(16).padStart(8, '0')}`,
+    metrics: {
+      source: 'production',
+      actorCount,
+      regionTileWidth: layout.tileWidth,
+      regionCount: layout.regionCount,
+      workBudgetPerTick: options.workBudgetPerTick,
+      resolvedOk,
+      resolvedFailed,
+      ticksToDrain: tick,
+      totalExpansions: queueMetrics.totalExpansions,
+      maxExpansionsInOneTick,
+      maxExpansionsForOneRequest,
+      /** The finding: what a tick actually spends against what it budgeted. */
+      tickOvershootRatio: round3(maxExpansionsInOneTick / options.workBudgetPerTick),
+      latencyTicks: {
+        mean: round3(waitedTicks.reduce((sum, value) => sum + value, 0) / waitedTicks.length),
+        p50: percentileNearestRank(sortedWaits, 50),
+        p95: percentileNearestRank(sortedWaits, 95),
+        max: sortedWaits.at(-1) ?? 0,
+      },
+    },
+  };
+}
+
+/**
  * Counted-work ceilings and outcome pins, in the unit ADR 0007 budgets.
  *
  * Every number below was **measured** on this tree (see the issue thread for
@@ -418,5 +566,57 @@ export const navigationProductionSingleRequestBudgetScenario = Object.freeze({
   }),
   run({ seed, operationsPerIteration }) {
     return runSingleRequestBudget(seed, operationsPerIteration);
+  },
+});
+
+/** The yard the crossings happen in: 64x64 at ADR 0004's chunk size, one flood-filled region, no doors. */
+const YARD_SIDE = 64;
+
+export const navigationProductionYardCrossingScenario = Object.freeze({
+  id: 'navigation.production.yard-crossing',
+  version: 1,
+  description:
+    'Real NavigationSystem draining a population of path requests crossing one open 64x64 yard region, where a single search is worth a large fraction of the whole per-tick budget. Reports tickOvershootRatio: what one tick actually spends in production SearchStats expansions against DEFAULT_NAVIGATION_SYSTEM_OPTIONS.workBudgetPerTick.',
+  seed: 0x59524344, // 'YRCD'
+  profiles: Object.freeze({
+    smoke: Object.freeze({
+      warmupIterations: 1,
+      measuredIterations: 3,
+      operationsPerIteration: 250,
+      // measured: 80,970 total expansions over 32 ticks, 4,083 in the busiest
+      // tick (2.042x the budget), 2,667 for the dearest single request.
+      metricBounds: Object.freeze({
+        resolvedOk: { equals: 250 },
+        resolvedFailed: { equals: 0 },
+        regionCount: { equals: 1 },
+        workBudgetPerTick: { equals: 2_000 },
+        totalExpansions: { max: 85_000 },
+        maxExpansionsInOneTick: { max: 4_300 },
+        maxExpansionsForOneRequest: { max: 2_800 },
+        ticksToDrain: { max: 34 },
+        tickOvershootRatio: { min: 1.9 },
+      }),
+    }),
+    full: Object.freeze({
+      warmupIterations: 1,
+      measuredIterations: 3,
+      operationsPerIteration: 1_000,
+      // measured: 300,186 total expansions over 122 ticks, 4,910 in the busiest
+      // tick (2.455x the budget), 2,957 for the dearest single request.
+      metricBounds: Object.freeze({
+        resolvedOk: { equals: 1_000 },
+        resolvedFailed: { equals: 0 },
+        regionCount: { equals: 1 },
+        workBudgetPerTick: { equals: 2_000 },
+        totalExpansions: { max: 315_000 },
+        maxExpansionsInOneTick: { max: 5_200 },
+        maxExpansionsForOneRequest: { max: 3_150 },
+        ticksToDrain: { max: 128 },
+        tickOvershootRatio: { min: 2.3 },
+      }),
+    }),
+  }),
+  run({ seed, operationsPerIteration }) {
+    return runYardCrossing(seed, operationsPerIteration, YARD_SIDE);
   },
 });
