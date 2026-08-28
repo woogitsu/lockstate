@@ -570,6 +570,55 @@ export const HUD_MESSAGE_KEY = {
   roomsNeedsMore: 'hud.rooms.needs-more',
   roomsNeedsObjectUnknown: 'hud.rooms.needs-object-unknown',
 
+  /*
+   * The Regime panel, on the fifth tab (issue #451).
+   *
+   * The tab has existed and rendered nothing since ADR 0022 spent the last
+   * slot on Rooms, and `tests/browser/ui-shell.spec.ts` pinned that emptiness
+   * on purpose. These are the keys that retire it.
+   *
+   * `regimeTitle` names the panel after the tab it sits on, because the tab's
+   * own label already says "Regime" and a panel that called itself something
+   * else would be the mismatch `hud-state.ts` refuses to create by
+   * relabelling a tab.
+   *
+   * `regimeBlockAllows` is a sentence and not a bare list, because a list of
+   * words with no verb in front of it does not say whether they are what the
+   * group *may* do or what it is doing. `regimeCategorySeparator` is what
+   * joins them: a list separator is locale vocabulary (`، ` in Arabic, `、` in
+   * Japanese) and `src/ui/save-panel.ts:217` hard-codes `', '` for the same
+   * job, which is the one place in the tree that does.
+   *
+   * `regimeRosterName` exists because the *order* of a person's two names is a
+   * locale decision even though neither half is translated (ADR 0015, and
+   * `docs/HUD_PROJECTIONS.md` contract 3). `regimeRosterUnnamed` is the row
+   * for a prisoner who has not reached the intake stage that mints one -- it
+   * names the entity id, so the row is still identifiable rather than
+   * anonymous, exactly as `securityHeldRowUnnamed` does one panel over.
+   *
+   * `regimeRosterHeading` is the *only* wrapper around an activity. A
+   * performing prisoner's row says the action's own word and nothing else;
+   * putting "Doing" in front of "Showering" would be a second sentence saying
+   * what the first already said.
+   *
+   * There is deliberately no key for a need, a threshold or a warning about
+   * one. `docs/HUD_PROJECTIONS.md` gap 7: the simulation defines no
+   * warning or critical level for any need, so a row that called one low would
+   * be a balance decision made in a message catalogue.
+   */
+  regimeTitle: 'hud.regime.title',
+  regimeBlocks: 'hud.regime.blocks',
+  regimeBlockAllows: 'hud.regime.block-allows',
+  regimeBlockProgress: 'hud.regime.block-progress',
+  regimeCategorySeparator: 'hud.regime.category-separator',
+  regimeRoster: 'hud.regime.roster',
+  regimeRosterCount: 'hud.regime.roster-count',
+  regimeRosterName: 'hud.regime.roster-name',
+  regimeRosterUnnamed: 'hud.regime.roster-unnamed',
+  regimeRosterHeading: 'hud.regime.roster-heading',
+  regimeRosterMore: 'hud.regime.roster-more',
+  regimeRosterEmpty: 'hud.regime.roster-empty',
+
   refusalSetClock: 'hud.refusal.set-clock',
   refusalPlaceBuildOrder: 'hud.refusal.place-build-order',
   refusalPurchaseMaterials: 'hud.refusal.purchase-materials',

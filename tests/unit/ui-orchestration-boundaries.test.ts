@@ -293,6 +293,34 @@ const ALLOWED_FOREIGN_TREES: readonly CrossTreeAllowance[] = [
       "Type-only: `StaffViewModel` from `src/simulation/presentation/staff-projection`. The tenth of the translators outside `src/ui/hud/` and the sixth that reads a *pulled* read model, so it is `simulation-held-guards.ts`'s entry above one projection over: it names the view-model shape `hud/staff` answers with and turns its `totals` into `HudStaffCoverageViewModel`. Erased, so no simulation code runs on its account -- the projection executes in the worker, and it has to, because how many guards a sector requires is `DeploymentSystem.requiredGuardCountFor`'s answer over occupancy and an authored schedule (ADR 0048 decision 3), neither of which this thread holds. A `value` import here would mean the main thread had started deciding *how many guards this prison needs*, which is a second definition of a rule the deployment system enforces -- so the panel would eventually warn about a requirement nothing was acting on. It imports no `src/content/**` at all, unlike the two readers above it: the block renders three integers and the HUD's own message keys, so there is no content name to resolve.",
   },
   {
+    file: 'src/ui/simulation-prisoner-roster.ts',
+    tree: 'content',
+    kind: 'value',
+    reason:
+      "Value: `deriveSimulationMessageKey` from `src/content/simulation-message-keys`, to label an action, an action phase, a risk tier and an intake stage -- four namespaces from one module, which is more than any other entry here derives and is the reason the roster is renderable at all. The **third** `value` content dependency in this manifest, beside `simulation-intake.ts`'s and `simulation-held-guards.ts`'s, and it is one for the identical reason both of those give: the alternative is a hand-written table of nine `action.*.name`, three `action-phase.*.name`, four `risk-tier.*.name` and six `intake-stage.*.name` strings, which is exactly the drift that module's derivation rule exists to prevent -- it says a message key is *never* hand-authored, so renaming an action renames its key in one edit. The function composes a string from a namespace and an id; it reads no catalogue, resolves no text and holds no state, so calling it runs no content logic in the sense this manifest measures.",
+  },
+  {
+    file: 'src/ui/simulation-prisoner-roster.ts',
+    tree: 'simulation',
+    kind: 'type-only',
+    reason:
+      "Type-only: `PrisonerRosterRowViewModel` from `src/simulation/presentation/prisoner-projection` and `ViewModelPage` from `src/simulation/presentation/view-model`. The eleventh of the translators outside `src/ui/hud/` and the seventh that reads a *pulled* read model, so it is `simulation-staff-coverage.ts`'s entry above one projection over: it names the view-model shape `hud/prisoner-roster` answers with and turns each row into a `HudPrisonerRowViewModel`. The `ActionPhase` union it tests against is read off that same view-model type rather than from `src/simulation/prisoners/components.ts`, deliberately, so this module's simulation dependency stays on the presentation layer instead of reaching into the prisoner runtime -- the rule `simulation-intake.ts` states for `IntakeStage`. Erased, so no simulation code runs on its account; the projection executes in the worker, and it has to, because which action a prisoner is on is `ActionSystem`'s selection over a regime schedule and a utility score, and the liveness walk behind the roster is over an `EntityStore` this thread does not hold. A `value` import here would mean the main thread had started deciding *what a prisoner is doing*, which is the second source of truth `AGENTS.md` boundary 1 forbids in its purest form.",
+  },
+  {
+    file: 'src/ui/simulation-regime.ts',
+    tree: 'content',
+    kind: 'value',
+    reason:
+      "Value: `deriveSimulationMessageKey` from `src/content/simulation-message-keys`, to label a classification group and an action category. The **fourth** `value` content dependency in this manifest and the last of the four to arrive; the reason is the one the other three give, and the derivation is what stops a second spelling of `classification-group.high-risk.name` existing anywhere. The function composes a string from a namespace and an id; it reads no catalogue, resolves no text and holds no state.",
+  },
+  {
+    file: 'src/ui/simulation-regime.ts',
+    tree: 'simulation',
+    kind: 'type-only',
+    reason:
+      "Type-only: `StatusStripViewModel` from `src/simulation/presentation/status-strip-projection`. The twelfth of the translators outside `src/ui/hud/` and the eighth that reads a *pulled* read model: it names the view-model shape `hud/status-strip` answers with and turns its `regime` array into `HudRegimeViewModel`. Erased, so no simulation code runs on its account -- and the erasure is doing real work here, because the module it names also exports nothing this thread may run: which block is active is `resolveActiveRegimeBlock`'s answer over a schedule and a tick, and computing it here would be a second definition of what the prison is doing now, on a thread that holds neither the schedule array `ActionSystem` was constructed with nor the authoritative tick. It reads the whole strip view model and uses one field of it, which is deliberate: `projection-catalog.ts` builds that projection from the same source the timer publication uses, so the pull route and the push route cannot disagree.",
+  },
+  {
     file: 'src/ui/simulation-projections.ts',
     tree: 'simulation',
     kind: 'value',
@@ -439,7 +467,9 @@ describe('UI orchestration boundaries', () => {
       'src/ui/simulation-held-guards.ts',
       'src/ui/simulation-intake.ts',
       'src/ui/simulation-pending-deliveries.ts',
+      'src/ui/simulation-prisoner-roster.ts',
       'src/ui/simulation-projections.ts',
+      'src/ui/simulation-regime.ts',
       'src/ui/simulation-room-needs.ts',
       'src/ui/simulation-staff-coverage.ts',
       'src/ui/simulation-zoning.ts',

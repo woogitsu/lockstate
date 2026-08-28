@@ -831,6 +831,133 @@ export interface HudViewModel {
    * for", and the two must not render the same.
    */
   readonly staffCoverage?: HudStaffCoverageViewModel;
+  /**
+   * What each classification group's day allows right now, or absent because
+   * nothing asked (issue #451).
+   *
+   * The seventh pulled field, on the same terms as the six above: absent is
+   * "nobody asked", and there is no state of the prison that renders the same
+   * -- every schedule covers every tick of the day by construction
+   * (`assertGaplessSchedule`), so a group is always inside exactly one block
+   * and an empty list is never an answer.
+   */
+  readonly regime?: HudRegimeViewModel;
+  /**
+   * Who is in the prison, what each of them is doing, and how each is
+   * classified -- or absent because nothing asked (issue #451).
+   *
+   * The eighth pulled field, and it draws the distinction the six above draw:
+   * absent is "nobody asked" and `total: 0` is "this prison holds nobody", and
+   * a panel that rendered the first as the second would state a fact about an
+   * empty prison on behalf of a session that has said nothing.
+   */
+  readonly prisonerRoster?: HudPrisonerRosterViewModel;
+}
+
+/**
+ * A person's name, as the HUD is willing to know it.
+ *
+ * The one player-facing string in this file that is **not** a message key, and
+ * it is not an exception to ADR 0011 so much as outside it: a name is minted
+ * from an RNG stream as state (ADR 0015), is never authored into a catalog, is
+ * never translated and is identical in every locale.
+ * `docs/HUD_PROJECTIONS.md` contract 3 says so on the projection side; this is
+ * the same fact on this side of the boundary.
+ *
+ * The two halves stay separate rather than arriving pre-joined, because
+ * *which order they go in* is a locale decision and this layer is where locale
+ * decisions are made. `hud.regime.roster-name` is the key that puts them
+ * together.
+ */
+export interface HudActorNameViewModel {
+  readonly givenName: string;
+  readonly familyName: string;
+}
+
+/**
+ * One classification group's position in its own timetable, right now.
+ *
+ * Nothing here is computed on this thread. The group, the block it is in and
+ * the categories that block allows are `projectStatusStrip`'s `regime` entry
+ * verbatim; the only thing added is the message key for each id (ADR 0011) and
+ * the percent, which is a rendering of the projection's own authoritative
+ * `permille` rather than a second measurement of the day.
+ */
+export interface HudRegimeBlockViewModel {
+  /** The stable classification-group id, so a probe can name a row without matching text. */
+  readonly classificationGroupId: string;
+  readonly labelKey: LocalizationKey;
+  /**
+   * What this group may do in the block that is running, in the order the
+   * schedule declares them. Never empty: a block with no legal category would
+   * leave `ActionSystem` with no candidate at all, which is the state
+   * `assertGaplessSchedule` and the regime catalogue exist to make impossible.
+   */
+  readonly allowedCategoryLabelKeys: readonly LocalizationKey[];
+  /** How far through the running block, `0`--`100`, floored. */
+  readonly blockProgressPercent: number;
+}
+
+export interface HudRegimeViewModel {
+  /** One entry per classification group, in the projection's own stable-id order. */
+  readonly groups: readonly HudRegimeBlockViewModel[];
+}
+
+/**
+ * One prisoner, as a roster row says them.
+ *
+ * Three facts and an id, and each is carried rather than derived: the name is
+ * allocated state, the activity is `CurrentActionComponent`'s selection, and
+ * the standing is what `IntakeSystem` or `ClassificationReviewSystem` last
+ * wrote. `docs/HUD_PROJECTIONS.md` gap 3 is what makes the last two
+ * renderable at all -- every one of those ids has an authored label in
+ * `src/content/simulation-message-keys.ts`.
+ */
+export interface HudPrisonerRowViewModel {
+  readonly entityId: number;
+  /**
+   * Absent until the intake pipeline's `reception` stage mints one, and absent
+   * for every row when the session supplies no identity registry.
+   */
+  readonly name?: HudActorNameViewModel;
+  /**
+   * What the prisoner is doing: the action when one is selected, and the
+   * action *phase* when none is -- so an idle prisoner reads as idle rather
+   * than as a blank cell. Always present, which is why the panel never has to
+   * choose a word for "nothing".
+   */
+  readonly activityLabelKey: LocalizationKey;
+  /**
+   * True only while the prisoner is walking **to a named action**. A phase of
+   * `travelling` with no action selected cannot name a destination, so it is
+   * reported as the phase instead and this stays `false`.
+   */
+  readonly travelling: boolean;
+  /**
+   * The badge word: the risk tier once classification has run, and the intake
+   * stage before it. One slot rather than two, because the two are never both
+   * meaningful -- `classified: false` means `riskTier` is still the zero a
+   * fresh record holds, which is exactly why the projection omits it.
+   */
+  readonly standingLabelKey: LocalizationKey;
+  /**
+   * The stable classification-group id, absent until classification has run.
+   *
+   * Carried as an id rather than as a label because nothing renders it as a
+   * word: it decides the badge's *tone*, and the group's name is on screen
+   * already, in the block above the roster that says what that group's day
+   * allows. It is also the row's handle for a browser assertion.
+   */
+  readonly classificationGroupId?: string;
+  /** `0` (minimal) to `3` (high risk); absent until classification has run. */
+  readonly riskTier?: number;
+}
+
+export interface HudPrisonerRosterViewModel {
+  /** Every live prisoner, not the window -- the projection's own `total`. */
+  readonly total: number;
+  /** The window the panel asked for, in ascending entity index (ADR 0005). */
+  readonly rows: readonly HudPrisonerRowViewModel[];
 }
 
 /**

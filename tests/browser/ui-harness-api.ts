@@ -3,6 +3,8 @@ import type {
   HudHeldGuardsViewModel,
   HudStaffCoverageViewModel,
   HudPendingDeliveriesViewModel,
+  HudPrisonerRosterViewModel,
+  HudRegimeViewModel,
   HudRoomNeedsViewModel,
   HudViewModel,
 } from '../../src/ui/hud';
@@ -376,6 +378,149 @@ export interface StaffProbe {
   readonly panelVisibleBottom: number;
   /** `scrollHeight - clientHeight` on the panel: 0 when the panel itself does not scroll. */
   readonly panelOverflow: number;
+  readonly panelBox: LayoutBox | null;
+}
+
+/**
+ * One line of the timetable, as a player actually receives it (issue #451).
+ *
+ * The pairing every readout in this file needs: an id nothing can get wrong
+ * beside the words that can be. `group` is `data-group`, so an implementation
+ * that labelled every group "General Population" still reports `high-risk`
+ * there -- which is why the rendered strings sit next to it rather than being
+ * derived from it.
+ *
+ * `laidOut` is `getClientRects()` and not the `hidden` attribute, for the
+ * reason `.hud-regime__blocks[hidden]` exists in `hud.css`: this block carries
+ * an author `display: flex`, which beats the user agent's `[hidden] { display:
+ * none }`, so "the attribute says hidden" and "the browser drew nothing" are
+ * two different claims here.
+ */
+export interface RegimeBlockProbe {
+  /** `data-group` -- the stable classification-group id. */
+  readonly group: string;
+  /** The group's rendered name. */
+  readonly nameText: string;
+  /** How far through the running block, as the panel words it. */
+  readonly progressText: string;
+  /** The sentence listing what this group may do right now. */
+  readonly allowsText: string;
+  readonly laidOut: boolean;
+}
+
+/**
+ * One roster row that the browser actually drew.
+ *
+ * The rows are **pooled**: `PRISONER_ROSTER_ROW_LIMIT` of them exist from the
+ * first paint and a shorter reply hides the tail rather than removing it, so
+ * every one of them keeps the last prisoner's words in its `textContent`
+ * forever. A `textContent` walk therefore reports people who are no longer on
+ * the roster, and `RegimeProbe.rows` is filtered by `getClientRects()` for
+ * exactly that reason -- it is the list a player can see, not the list the DOM
+ * holds.
+ */
+export interface RegimeRosterRowProbe {
+  /** `data-prisoner` -- the entity id, which is the row's only stable name. */
+  readonly prisoner: string;
+  /** `data-classification-group`, or null before classification has run. */
+  readonly classificationGroup: string | null;
+  /** `data-risk-tier`, or null before classification has run. */
+  readonly riskTier: string | null;
+  /** Who the row is about, as the panel put the two halves of a name together. */
+  readonly nameText: string;
+  /** What they are doing, wrapper included when they are walking to it. */
+  readonly activityText: string;
+  /** The badge's word -- the half of the badge that survives a colour-blind player. */
+  readonly badgeText: string;
+  /** `data-tone` on the badge, so a word and a colour that disagreed would show. */
+  readonly badgeTone: string | null;
+  /**
+   * The row's border box.
+   *
+   * Not a way to detect a row overflowing sideways -- it is a flex item of a
+   * column the panel sizes, so it reports the container's width whatever its
+   * contents do, which is the same reason `BuildProbe.actionsOverflowPx` is read
+   * off the buttons rather than off the row's `scrollWidth`. What it is for is
+   * the vertical question: where this row sits against the panel's fold.
+   */
+  readonly box: LayoutBox | null;
+}
+
+/**
+ * The Regime panel on the fifth tab (issue #451): the timetable, the roster,
+ * and where the browser put the bottom of it.
+ *
+ * Nothing here restates a decision `regime-panel.ts` makes headlessly.
+ * `describePrisonerRow`, `formatPrisonerName`, `formatPrisonerActivity` and
+ * `formatRegimeAllowsText` are pure and exported precisely so `pnpm test` can
+ * own which word goes in which slot; what this reports is the half `pnpm test`
+ * cannot reach at all -- which of these boxes the browser laid out, what text
+ * it actually rendered into them, and where the last of them ends against the
+ * panel's fold.
+ */
+export interface RegimeProbe {
+  /**
+   * `offsetParent`, which is null for a `hidden` element or one inside a
+   * `hidden` ancestor. The rail question: this panel is the fifth occupant of
+   * `.hud__side` and exactly one of the five may have a box.
+   */
+  readonly laidOut: boolean;
+  /** Whether the timetable block was drawn at all -- `false` until a reply arrives, by design. */
+  readonly blocksLaidOut: boolean;
+  /** Every timetable line the browser drew, in the order it drew them. */
+  readonly blocks: readonly RegimeBlockProbe[];
+  /** Whether the roster block was drawn at all -- `false` until a reply arrives, by design. */
+  readonly rosterLaidOut: boolean;
+  /** `data-total`: the population the projection reported, not the window's length. */
+  readonly total: string | null;
+  /** The "N of M" figure beside the roster header. */
+  readonly countText: string;
+  /** Only the rows a player can see -- see `RegimeRosterRowProbe`. */
+  readonly rows: readonly RegimeRosterRowProbe[];
+  /**
+   * The empty-prison sentence, and whether the browser gave it a box.
+   *
+   * Both, because the attribute cannot answer it. Under
+   * `@media (max-height: 700px)` `hud.css` gives `.hud-regime__note` an author
+   * `display: -webkit-box` to clamp it to one line, and an author `display`
+   * beats the user agent's `[hidden] { display: none }` -- the trap
+   * `.hud-build__deliveries-more` is named for. So "this line is hidden" is a
+   * claim only a real layout at a real viewport can settle.
+   */
+  readonly emptyLaidOut: boolean;
+  readonly emptyText: string;
+  /** The "and N more" line, on the same terms and for the same reason. */
+  readonly moreLaidOut: boolean;
+  readonly moreText: string;
+  /**
+   * `innerText` of the whole panel: what the browser rendered, with the pooled
+   * rows it did not draw left out.
+   *
+   * `textContent` is the wrong read here twice over -- it carries the hidden
+   * rows' stale words, and it is identical on a panel that was never painted.
+   */
+  readonly text: string;
+  /**
+   * The bottom of the panel's *client* box -- where its content starts being
+   * clipped, unaffected by scrolling. The fold, in the shape
+   * `StaffProbe.panelVisibleBottom` and `RoomsLayoutProbe.panelVisibleBottom`
+   * report it.
+   */
+  readonly panelVisibleBottom: number;
+  /** `scrollHeight - clientHeight` on the panel: 0 when the panel itself does not scroll. */
+  readonly panelOverflow: number;
+  readonly panelScrollTop: number;
+  /**
+   * The bottom edge of the lowest thing the panel drew: the last roster row,
+   * the "and N more" line, or the empty sentence, whichever is furthest down.
+   *
+   * The number a reachability assertion turns on. A roster is the only block in
+   * this rail whose height grows with the *population*, and the panel is
+   * `overflow-y: auto`, so a roster that does not fit is pushed below the fold
+   * rather than clipped visibly -- which a screenshot would not show and
+   * `panelOverflow` alone would not localise to a line.
+   */
+  readonly lastLineBottom: number;
   readonly panelBox: LayoutBox | null;
 }
 
@@ -867,6 +1012,25 @@ export interface LockstateUiHarness {
   reportStaffCoverage(coverage: HudStaffCoverageViewModel | undefined): void;
   /** Presses the release control on the row aimed at `guardId`. Returns false when no such row is laid out. */
   pressGuardRelease(guardId: number): boolean;
+  /** The Regime panel on the fifth tab (issue #451). */
+  regimeProbe(): RegimeProbe;
+  /**
+   * Publishes what each classification group's day allows and who is in the
+   * prison, which in the real app arrive over `simulation/request-projection`
+   * by way of `src/ui/simulation-regime.ts` and
+   * `src/ui/simulation-prisoner-roster.ts`.
+   *
+   * Both in one call, and that is not a convenience: they are the two blocks of
+   * one panel and their heights interact, so a spec that could only publish one
+   * at a time could never measure the panel a player actually gets. The same
+   * reason `reportPendingDeliveries` takes the queue beside the deliveries.
+   *
+   * Spread rather than passed as `undefined`, so "nothing has been asked" is an
+   * absent property: `exactOptionalPropertyTypes` is on, and the panel branches
+   * on the field being there at all -- absent draws no block, and `total: 0`
+   * draws the sentence about an empty prison.
+   */
+  reportRegime(regime: HudRegimeViewModel | undefined, roster?: HudPrisonerRosterViewModel): void;
   roomsProbe(): RoomsProbe;
   roomsLayoutProbe(): RoomsLayoutProbe;
   buildLayoutProbe(): BuildLayoutProbe;
