@@ -1062,6 +1062,20 @@ there, and a prisoner who is reclassified to high-risk while already housed
 player who sees somebody in solitary still cannot tell "arrived high-risk"
 from "did something", because only the first is possible.
 
+**Correction (issue #80, ADR 00XX -- number not yet assigned).** The sanction
+half now exists, and this paragraph's "does not exist in either direction" is
+no longer true of it. `SanctionSystem` (`src/simulation/prisoners/sanction-system.ts`)
+relocates an already-placed prisoner into `room.solitary-cell` when
+`PrisonerOperationsRuntime.imposeSolitarySanction` marks them sanctioned --
+called from `IncidentResponseSystem`'s new `onAssaultAdjudicated` port the
+moment an assault they instigated (`IncidentRecord.instigatorId`) reaches a
+terminal state -- and moves them back once the term ends, through the same
+`firstAvailableAccommodationTarget` question `IntakeSystem` asks a fresh
+arrival. So a player who sees somebody in solitary today can be looking at
+either reason this paragraph named, and telling them apart is exactly the
+gap the branch's ADR records as still open (nothing on screen distinguishes
+"arrived high-risk" from "sanctioned").
+
 ## Action execution: idle -> travelling -> performing, via real navigation
 
 `action-system.ts`'s `ActionSystem` reconsiders each prisoner's action

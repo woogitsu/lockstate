@@ -130,6 +130,35 @@ export const DEFAULT_ACCOMMODATION_POLICY: AccommodationPolicy = {
  * policy's own declared order within each group. The `Set` is membership-tested
  * and never iterated (`docs/DETERMINISM.md`).
  */
+/**
+ * The first room type in a classification group's preference order of which
+ * `roomInstances` holds **any** instance, or `undefined` when it holds none of
+ * them.
+ *
+ * Extracted from `IntakeSystem.resolveExistingTarget` (issue #80) so
+ * `SanctionSystem` can ask the identical question when a solitary term ends
+ * and a sanctioned prisoner is returned to ordinary housing -- the same
+ * "which room does this classification group belong in" question intake asks
+ * on admission, asked again on release, from one definition rather than two
+ * that could disagree about what a group's targets are. See
+ * `IntakeSystem.resolveExistingTarget`'s own doc comment for why "any
+ * instance" and not "an available instance" is the right question, and for
+ * the guarantee `hasAccommodationTarget` rests on it.
+ *
+ * Draws nothing and iterates an authored array, so no named stream moves and
+ * no scenario fingerprint depends on it.
+ */
+export function firstAvailableAccommodationTarget(
+  policy: AccommodationPolicy,
+  roomInstances: RoomInstanceRegistry,
+  classificationGroupId: string,
+): AccommodationTarget | undefined {
+  for (const target of policy.resolveTargets(classificationGroupId)) {
+    if (roomInstances.allByRoomCatalogId(target.roomCatalogId).length > 0) return target;
+  }
+  return undefined;
+}
+
 export function resolveAccommodationTargets(
   policy: AccommodationPolicy = DEFAULT_ACCOMMODATION_POLICY,
 ): readonly AccommodationTarget[] {
@@ -355,10 +384,7 @@ export class IntakeSystem implements SystemRegistration {
    * no scenario fingerprint depends on it.
    */
   private resolveExistingTarget(classificationGroupId: string): AccommodationTarget | undefined {
-    for (const target of this.accommodationPolicy.resolveTargets(classificationGroupId)) {
-      if (this.roomInstances.allByRoomCatalogId(target.roomCatalogId).length > 0) return target;
-    }
-    return undefined;
+    return firstAvailableAccommodationTarget(this.accommodationPolicy, this.roomInstances, classificationGroupId);
   }
 
   public update(context: SimulationContext): void {

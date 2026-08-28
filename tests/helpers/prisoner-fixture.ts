@@ -3,6 +3,7 @@ import type { Kernel } from '../../src/simulation/kernel/kernel';
 import { NavigationSystem } from '../../src/simulation/navigation/navigation-system';
 import { PrisonerOperationsRuntime } from '../../src/simulation/prisoners/prisoner-operations-runtime';
 import type { RoomInstance } from '../../src/simulation/prisoners/room-instance-registry';
+import type { SanctionPolicy } from '../../src/simulation/prisoners/sanction-system';
 import { buildCellBlockFixture } from './navigation-fixture';
 
 export interface PrisonerScenarioFixture {
@@ -34,6 +35,8 @@ export function buildPrisonerScenarioFixture(options: {
   readonly flowFieldActivationThreshold?: number;
   /** Optional actor identity; omitted, intake names nobody and draws nothing (`src/simulation/identity/`). The lifecycle type, not the minter alone, because the runtime it is handed to also releases a departing prisoner's name (#441). */
   readonly identity?: ActorIdentityLifecycle;
+  /** Optional solitary-sanction policy (issue #80); omitted, `DEFAULT_SANCTION_POLICY` applies, exactly as a real session gets. Passed through so a test of `SanctionSystem` itself is not stuck driving thousands of ticks to reach a real term's end. */
+  readonly sanctionPolicy?: SanctionPolicy;
 }): PrisonerScenarioFixture {
   const cellBlock = buildCellBlockFixture(options.cellCount);
   const navigation = new NavigationSystem(
@@ -51,6 +54,7 @@ export function buildPrisonerScenarioFixture(options: {
     capacity: options.capacity,
     navigation,
     ...(options.identity !== undefined ? { identity: options.identity } : {}),
+    ...(options.sanctionPolicy !== undefined ? { sanctionPolicy: options.sanctionPolicy } : {}),
   });
 
   // classifyPrisoner's scoring (classification.ts) puts a sizeable minority

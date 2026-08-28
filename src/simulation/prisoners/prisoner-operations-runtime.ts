@@ -21,8 +21,9 @@ import {
 } from './release';
 import { NeedsComponent } from './needs';
 import { NeedsDecaySystem } from './needs-system';
-import { DEFAULT_REGIME_SCHEDULES, type PrisonerRegimeOverrideResolver, type RegimeSchedule } from './regime';
+import { combineRegimeOverrides, DEFAULT_REGIME_SCHEDULES, HIGH_RISK_REGIME, type PrisonerRegimeOverrideResolver, type RegimeSchedule } from './regime';
 import { RoomInstanceRegistry } from './room-instance-registry';
+import { DEFAULT_SANCTION_POLICY, SanctionSystem, SOLITARY_SANCTION_ROOM_CATALOG_ID, type SanctionPolicy } from './sanction-system';
 
 const PRISONER_COMPONENT_ID = 0;
 
@@ -122,6 +123,12 @@ export interface PrisonerOperationsRuntimeOptions {
   readonly contrabandIntroducer?: IntakeContrabandIntroducer;
   /** The named stream `contrabandIntroducer` draws from. Only read when one is supplied. */
   readonly contrabandRngStreamName?: string;
+  /**
+   * How long a solitary sanction runs (issue #80, ADR 00XX). Defaults to
+   * `DEFAULT_SANCTION_POLICY`, the same directional-default shape
+   * `accommodationPolicy` above and `IncidentResponsePolicy` elsewhere use.
+   */
+  readonly sanctionPolicy?: SanctionPolicy;
 }
 
 /**
@@ -183,6 +190,10 @@ export class PrisonerOperationsRuntime {
   public readonly actionSystem: ActionSystem;
   public readonly classificationReviewSystem: ClassificationReviewSystem;
   public readonly dischargeSystem: PrisonerDischargeSystem;
+  public readonly sanctionSystem: SanctionSystem;
+
+  /** Issue #80's solitary-sanction term. Not a constructor parameter default read twice: `imposeSolitarySanction` and `sanctionSystem` both need the one policy, so it is resolved once here. */
+  private readonly sanctionPolicy: SanctionPolicy;
 
   /**
    * Every store a departing prisoner has to be dropped from, assembled once
@@ -228,6 +239,8 @@ export class PrisonerOperationsRuntime {
       this.records,
       options.disciplinaryEvidence,
     );
+    this.sanctionPolicy = options.sanctionPolicy ?? DEFAULT_SANCTION_POLICY;
+    this.sanctionSystem = new SanctionSystem(this.entityStore, this.query, this.records, this.coldState, this.roomInstances, this.accommodationPolicy);
     this.actionSystem = new ActionSystem(
       this.entityStore,
       this.query,
@@ -242,7 +255,15 @@ export class PrisonerOperationsRuntime {
       this.locomotion,
       options.regimeSchedules ?? DEFAULT_REGIME_SCHEDULES,
       options.routeContextResolver,
-      options.regimeOverride,
+      // The caller's override (a live riot, ADR 0057) tried first, and this
+      // runtime's own solitary-sanction override underneath it -- see
+      // `combineRegimeOverrides` for why a riot in progress wins over a
+      // standing sanction rather than the two fighting over one prisoner's
+      // day. Built here rather than accepted as an option: it is a pure
+      // function of `this.records`, which is not exposed for a caller to
+      // build one from itself, and it must not read the clock
+      // (`PrisonerRegimeOverrideResolver`'s own contract).
+      combineRegimeOverrides(options.regimeOverride, (entityId) => (this.isServingSolitarySanction(entityId) ? HIGH_RISK_REGIME : undefined)),
     );
     this.locomotionSystem = new LocomotionSystem('prisoners.locomotion', (ticks, tick) =>
       this.locomotion.advance(
@@ -281,6 +302,74 @@ export class PrisonerOperationsRuntime {
     kernel.registerSystem(this.dischargeSystem);
     kernel.registerSystem(this.actionSystem);
     kernel.registerSystem(this.locomotionSystem);
+    kernel.registerSystem(this.sanctionSystem);
+  }
+
+  /**
+   * Whether `entityId` is currently *physically confined* under a solitary
+   * sanction (issue #80) -- both a live sanction (`solitarySanctionEndTick`
+   * non-zero) **and** actually housed in `room.solitary-cell` right now.
+   *
+   * **Both conditions, and the second is not redundant.** A sanction is
+   * recorded the instant an assault it names an instigator for closes, but
+   * `SanctionSystem` can only *enforce* it once a solitary cell is free --
+   * see its class comment. Reading only the flag would restrict a prisoner's
+   * day for a sanction their prison has no way to carry out, which is a
+   * consequence this simulation cannot make true: nothing about a general
+   * cell changes when someone next to it is sanctioned, and applying
+   * `HIGH_RISK_REGIME` anyway would be a punishment the player-visible world
+   * gives no account of. **A sanction a prison never built a
+   * `room.solitary-cell` for is real -- it is recorded and it will lift on
+   * schedule -- and it costs nothing, honestly, because there is nowhere to
+   * carry it out.** That is the same shape `SanctionSystem`'s own
+   * never-relocated-before-the-term-ends branch already accepts, read here
+   * from the other side.
+   *
+   * A pure read of state (the sanction field, `PrisonerColdState`'s
+   * accommodation and the room registry's catalog id), never a comparison
+   * against the current tick -- the regime override this feeds may not read
+   * the clock (see the constructor), so both halves of "currently confined"
+   * have to be answerable from state alone, and both are: whether the
+   * sanction still stands is `SanctionSystem.update`'s to lift, and where the
+   * prisoner is housed is what the room registry already answers for every
+   * other reader.
+   *
+   * `false` for an id that names nobody living, so a stale reference cannot
+   * force a regime schedule for an entity this runtime no longer holds.
+   */
+  public isServingSolitarySanction(entityId: EntityId): boolean {
+    if (!this.entityStore.isAlive(entityId)) return false;
+    if (this.records.solitarySanctionEndTick[this.entityStore.getIndex(entityId)]! === 0) return false;
+    const instanceId = this.coldState.getAccommodation(entityId);
+    if (instanceId === undefined) return false;
+    return this.roomInstances.getById(instanceId)?.roomCatalogId === SOLITARY_SANCTION_ROOM_CATALOG_ID;
+  }
+
+  /**
+   * Imposes (or extends) a solitary sanction on `entityId`, ending at
+   * `max(the sanction's current end tick, tick) + sanctionPolicy.solitaryTermTicks`
+   * (issue #80). Called from `IncidentResponseSystem`'s `onAssaultAdjudicated`
+   * port the moment an assault this prisoner instigated
+   * (`IncidentRecord.instigatorId`) reaches a terminal state.
+   *
+   * `max(existing, tick)` rather than a plain overwrite: a prisoner already
+   * serving a sanction who earns a second one has their term extended forward
+   * from whichever end is later, not reset to a shorter one measured from
+   * `tick` alone -- the same non-decreasing shape `PrisonerDischargeSystem`
+   * relies on for `sentenceEndTick` never running backwards.
+   *
+   * Silently does nothing for an id that names nobody living. An instigator
+   * named by a terminal incident record is, ordinarily, exactly the prisoner
+   * this runtime still holds; the guard is defensive against the one path
+   * that could disagree -- a save restored between the incident opening and
+   * closing with a build that has since freed the same index -- rather than a
+   * case this runtime's own tests can produce.
+   */
+  public imposeSolitarySanction(entityId: EntityId, tick: number): void {
+    if (!this.entityStore.isAlive(entityId)) return;
+    const index = this.entityStore.getIndex(entityId);
+    const currentEnd = this.records.solitarySanctionEndTick[index]!;
+    this.records.solitarySanctionEndTick[index] = Math.max(currentEnd, tick) + this.sanctionPolicy.solitaryTermTicks;
   }
 
   /**

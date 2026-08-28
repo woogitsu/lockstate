@@ -324,6 +324,23 @@ describe('kernel system ordering', () => {
    * `prisoners.actions` (250), which asks whether a walk has finished, so a
    * walk that ends on tick *n* is acted on at tick *n*.
    *
+   * **The sixth is `prisoners.sanctions` (order 300), and it is a reviewed
+   * edit for the same reason `prisoners.classification-review` was: issue
+   * #80's solitary sanction, the follow-through half of ADR 0061's assault.**
+   * Appended after `incidents.response` (295) -- the highest order any system
+   * declares -- so no existing system moves. The order is argued rather than
+   * merely available: `IncidentResponseSystem`'s new `onAssaultAdjudicated`
+   * port writes `solitarySanctionEndTick` from *inside* its own update, so a
+   * system ordered after it can attempt the same tick's relocation instead of
+   * waiting a full scheduled cycle -- nothing about correctness depends on
+   * this, since a sanction picked up one cycle later is the same outcome
+   * later, but it is the tighter of two legal orderings and costs nothing to
+   * take. Scheduled every 5 ticks, matching `prisoners.intake`. None of the
+   * determinism scenarios in this directory run an assault to a terminal
+   * state, so this system is registered, pinned here and never moves anything
+   * in any of them -- `tests/integration/assault-sanction-loop.test.ts` is
+   * where a sanction is watched actually being imposed, enforced and lifted.
+   *
    * The retirement the sentence above requires was looked for and **there is
    * nothing in this repository to retire**, which is worth recording so the
    * next person does not go hunting for a list that does not exist:
@@ -361,6 +378,7 @@ describe('kernel system ordering', () => {
       { id: 'incidents.trigger', order: 285 },
       { id: 'contraband.search', order: 290 },
       { id: 'incidents.response', order: 295 },
+      { id: 'prisoners.sanctions', order: 300 },
     ]);
   });
 

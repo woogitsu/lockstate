@@ -117,6 +117,8 @@ const SLOT_DEFAULTS: Readonly<Record<string, number>> = {
   'records.riskTier': 0,
   'records.classificationGroupIndex': 0,
   'records.intakeStage': intakeStageIndex('queued'),
+  // `0` -- not sanctioned. Issue #80, ADR 00XX.
+  'records.solitarySanctionEndTick': 0,
   // Stated once for every need, the way `NeedsComponent.reset` itself loops
   // `NEED_IDS`: a seventh need is covered here with no second edit. The value
   // is `NEED_MAX` expressed in the units `levels` actually stores -- scaled by
@@ -138,29 +140,31 @@ const SLOT_DEFAULTS: Readonly<Record<string, number>> = {
 };
 
 describe('per-prisoner component slot defaults', () => {
-  it('counts twenty per-slot arrays across the five index-keyed components', () => {
+  it('counts twenty-one per-slot arrays across the five index-keyed components', () => {
     const perComponent = componentsUnderTest().map((entry) => [entry.name, slotArraysOf(entry.make()).size] as const);
 
     // **The two numbers here are no longer one number, and that is the point.**
-    // `admitPrisoner` has to reset every array below -- twenty since #435 --
-    // while `session-systems.ts` and `docs/PERSISTENCE.md` say "eighteen
+    // `admitPrisoner` has to reset every array below -- twenty-one since #80
+    // added `solitarySanctionEndTick` (ADR 00XX) to the twenty #435 left --
+    // while `session-systems.ts` and `docs/PERSISTENCE.md` say "nineteen
     // per-prisoner component arrays" about the *payload*, which is the same
     // list minus `SubstitutionRecordComponent`'s two: they are diagnostics, no
     // save carries them, and a restore clears them rather than migrating them
-    // (see that component). This assertion used to read eighteen across four
-    // components and pinned both facts at once; it now pins the reset's total
-    // and names the persisted subset, so a twenty-first array still fails here
-    // and the prompt is to say which of the two lists it joins.
+    // (see that component). This assertion used to read eighteen persisted
+    // across four components and pinned both facts at once; it now pins the
+    // reset's total and names the persisted subset, so a twenty-second array
+    // still fails here and the prompt is to say which of the two lists it
+    // joins.
     expect(perComponent).toEqual([
-      ['PrisonerRecordComponent', 6],
+      ['PrisonerRecordComponent', 7],
       ['NeedsComponent', 6],
       ['CurrentActionComponent', 4],
       ['PositionComponent', 2],
       ['SubstitutionRecordComponent', 2],
     ]);
-    expect(perComponent.reduce((total, [, count]) => total + count, 0)).toBe(20);
+    expect(perComponent.reduce((total, [, count]) => total + count, 0)).toBe(21);
     const persisted = perComponent.filter(([name]) => name !== 'SubstitutionRecordComponent');
-    expect(persisted.reduce((total, [, count]) => total + count, 0)).toBe(18);
+    expect(persisted.reduce((total, [, count]) => total + count, 0)).toBe(19);
   });
 
   it('pins the value of every default, not only that reset agrees with construction', () => {
@@ -178,7 +182,7 @@ describe('per-prisoner component slot defaults', () => {
       for (const [path, array] of dirtiedArrays) afterReset.set(`${runtimeKey}.${path}`, array[slot]!);
     }
 
-    // A twenty-first array has to state its default here as well as in its
+    // A twenty-second array has to state its default here as well as in its
     // component's list -- the count assertion above says an array was added,
     // this one says nobody decided what it should read as when unoccupied.
     expect([...fresh.keys()].sort()).toEqual(Object.keys(SLOT_DEFAULTS).sort());

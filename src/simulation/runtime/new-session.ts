@@ -916,6 +916,16 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     (entityId, tick) => {
       prisoners.releasePrisoner(entityId, tick);
     },
+    /*
+     * Issue #80, ADR 00XX (number not yet assigned): the assault's instigator
+     * -- not both participants -- is sanctioned to a term in solitary
+     * confinement the moment the incident closes. `imposeSolitarySanction`
+     * is the one write; `SanctionSystem` (registered by
+     * `PrisonerOperationsRuntime.registerOn`) is what carries it out.
+     */
+    (entityId, tick) => {
+      prisoners.imposeSolitarySanction(entityId, tick);
+    },
   );
 
   // After both `'on-search'` claimants, because it reads each of them live: a

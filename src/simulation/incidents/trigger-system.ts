@@ -413,6 +413,12 @@ export class IncidentTriggerSystem implements SystemRegistration {
         // Scaled into the assault band rather than onto the shared 0-10 scale.
         // See `ASSAULT_SEVERITY_CEILING`, which carries the measurement.
         severity: Math.max(1, Math.min(ASSAULT_SEVERITY_CEILING, Math.round(worst.score * ASSAULT_SEVERITY_CEILING))),
+        // The worst-ranked of the pair, named before `participantIds` above
+        // sorts the two into a canonical order that no longer says which was
+        // which (issue #80, ADR 00XX). `worst` is `ranked[0]` -- the entity
+        // `scoreAssaultPressure` finds a reason for -- not a struck-first
+        // determination.
+        instigatorId: worst.entityId,
         causeFactors: [
           { kind: 'assault-pressure', value: worst.score },
           { kind: 'need-deficit', value: source.needDeficit },
