@@ -69,16 +69,21 @@ export function selectBestAction(needs: NeedsComponent, index: number, candidate
  * the score of the **highest-ranked candidate the prison can actually
  * provide**, or `0` when it can provide none of them.
  *
- * This is the key `ActionSystem.update` orders the contended scan by (issue
- * #434, taking [ADR 0041](../../../docs/adr/0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md)
+ * This is the key `ActionSystem.update` orders the contended scan by, and the
+ * decision is
+ * [ADR 0062](../../../docs/adr/0062-who-gets-the-room-when-more-prisoners-want-it-than-it-seats.md)
+ * (issue #434, taking
+ * [ADR 0041](../../../docs/adr/0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md)
  * decision 2 and the fairness half of
  * [ADR 0029](../../../docs/adr/0029-concurrent-room-use-claims.md) decision 5).
- * **The ADR that records this choice is owed a centrally-assigned number and is
- * not written yet**; until it lands, the argument below and the commit that
- * introduced it are the whole of the warrant. It is deliberately the same
- * number `rankActions` already sorts one prisoner's own options with rather
- * than a second, parallel notion of urgency. Two consequences follow from that
- * reuse, and both are the reason for it:
+ * **This paragraph said the ADR was "owed a centrally-assigned number and is
+ * not written yet" and told the reader to treat the choice as open. It is
+ * written**, it carries the rejected alternatives and the measurements, and a
+ * reader who wants the argument rather than the mechanism should start there.
+ *
+ * It is deliberately the same number `rankActions` already sorts one prisoner's
+ * own options with rather than a second, parallel notion of urgency. Two
+ * consequences follow from that reuse, and both are the reason for it:
  *
  * - **Restricted to the prisoners contending for one room, this is exactly the
  *   deficit of the need that room serves.** Everyone whose best providable
@@ -110,7 +115,7 @@ export function selectBestAction(needs: NeedsComponent, index: number, candidate
  * room-gated on purpose, so an early prison is exactly the case.
  *
  * **Reported rather than claimed: no integration fixture in this repository
- * kills this branch.** Bypassing the filter leaves
+ * kills this branch** (ADR 0062 open question 2 carries it and three more). Bypassing the filter leaves
  * `tests/integration/contended-shower-fairness.test.ts` green to the tick,
  * because in that prison the prisoners the plateau flattens are the ones with
  * no shower claim to press anyway, and the arrival gate -- keyed on the action

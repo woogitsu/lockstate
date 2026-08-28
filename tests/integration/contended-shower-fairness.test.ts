@@ -12,7 +12,10 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * [ADR 0041](../../docs/adr/0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md)
  * decision 2 and the fairness half of
  * [ADR 0029](../../docs/adr/0029-concurrent-room-use-claims.md) decision 5 both
- * name ordering the contended scan by need urgency as the fix. ADR 0029
+ * name ordering the contended scan by need urgency as the fix, and
+ * [ADR 0062](../../docs/adr/0062-who-gets-the-room-when-more-prisoners-want-it-than-it-seats.md)
+ * is the decision that took it. The numbers below are its Context and its
+ * Consequences; this file is where they are re-derived on every run. ADR 0029
  * decision 5 states the defect in its own words: *"a low-index prisoner is
  * systematically favoured, and sustained contention can starve a high-index
  * one"*, because *"the need raises their score against their own other options,

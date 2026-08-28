@@ -342,7 +342,8 @@ identically on every run.*
 
 > **Amended 2026-08-28: this decision's fairness half is closed, and its
 > revisit condition was never what fired.** ADR 0041 decision 2 was taken as
-> issue #434: `ActionSystem.update` now runs the two contending passes —
+> issue #434 and
+> [ADR 0062](./0062-who-gets-the-room-when-more-prisoners-want-it-than-it-seats.md): `ActionSystem.update` now runs the two contending passes —
 > arrivals, then idle selections — in descending need urgency, with ascending
 > entity index as the tie-break, which is the *"stated ordering rather than a
 > tie-break buried in `claimUse`"* the revisit condition above asked for. What
@@ -369,10 +370,14 @@ identically on every run.*
 > classification group, the incident override, the room instances and the tick —
 > so nothing was persisted to buy the fairness.
 >
-> **The ADR that records *which need decides urgency* is owed a
-> centrally-assigned number and does not exist yet.** Until it does, the
-> argument lives at `needUrgency` in `src/simulation/prisoners/utility-ai.ts`
-> and in the commit; treat the choice as open.
+> **The ADR that records *which need decides urgency* is
+> [ADR 0062](./0062-who-gets-the-room-when-more-prisoners-want-it-than-it-seats.md).**
+> This paragraph said it "is owed a centrally-assigned number and does not exist
+> yet" and told the reader to treat the choice as open; the number was assigned
+> the same day and the document exists. It also carries, as its open question 1,
+> the half of decision 5 that is *not* closed — a canteen whose contenders are
+> identical to the stored unit — with ADR 0041's option C and a tick-derived
+> rotation costed against each other and neither taken.
 
 ### 6. A use claim is derived, not persisted. No save version moves
 

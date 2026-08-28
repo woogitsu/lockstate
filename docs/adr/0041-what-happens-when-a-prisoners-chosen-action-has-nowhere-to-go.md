@@ -123,15 +123,18 @@ constraint ADR 0020 and ADR 0029 decision 7 put on a second iteration order.
 > Three things a reader of the paragraph above now needs, and the third is not
 > what this document predicted:
 >
-> - **Which need decides urgency is answered, and the answer is owed its own
->   ADR.** The key is `needUrgency` (`src/simulation/prisoners/utility-ai.ts`):
->   the `scoreAction` of the highest-ranked candidate *the prison can actually
+> - **Which need decides urgency is answered, and the answer is
+>   [ADR 0062](./0062-who-gets-the-room-when-more-prisoners-want-it-than-it-seats.md).**
+>   The key is `needUrgency` (`src/simulation/prisoners/utility-ai.ts`): the
+>   `scoreAction` of the highest-ranked candidate *the prison can actually
 >   provide*, which is the deficit of the need at stake rather than an aggregate
->   of the prisoner's misery. The argument is written at that function and in the
->   commit; **the ADR recording it has not been written, because ADR numbers are
->   assigned centrally and none had been assigned when the work landed.** Until
->   it exists, this bullet and that docblock are the whole of the warrant, and a
->   reader who disagrees should treat the choice as open.
+>   of the prisoner's misery. **This bullet said "the ADR recording it has not
+>   been written, because ADR numbers are assigned centrally and none had been
+>   assigned when the work landed", and told the reader to treat the choice as
+>   open until it existed.** The number was assigned the same day and the
+>   document exists; it carries the rejected alternatives — `needsPressure`, the
+>   single worst need, ordering the selections alone, and ADR 0041's own options
+>   C and D — which this bullet never could.
 > - **The `O(N log N)` cost was measured rather than assumed.** Worst case —
 >   every prisoner idle and standing on the contended room's anchor, so the whole
 >   population is planned and sorted every cycle — the reconsideration cycle

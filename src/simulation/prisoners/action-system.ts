@@ -196,10 +196,14 @@ export class ActionSystem implements SystemRegistration {
   /**
    * One reconsideration cycle over the whole population, in **three passes**:
    * everybody mid-action first, then the arrivals **ordered by need urgency**,
-   * then the idle selections **ordered by need urgency** (issue #434, taking
+   * then the idle selections **ordered by need urgency** --
+   * [ADR 0062](../../../docs/adr/0062-who-gets-the-room-when-more-prisoners-want-it-than-it-seats.md),
+   * issue #434, taking
    * [ADR 0041](../../../docs/adr/0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md)
    * decision 2, which is the fairness half of
-   * [ADR 0029](../../../docs/adr/0029-concurrent-room-use-claims.md) decision 5).
+   * [ADR 0029](../../../docs/adr/0029-concurrent-room-use-claims.md) decision 5.
+   * The argument for the key, the rejected alternatives and the costs are
+   * there; what follows is why the code is shaped the way it is.
    *
    * ## What was wrong with one pass in ascending index
    *
@@ -615,7 +619,7 @@ export class ActionSystem implements SystemRegistration {
    * settled before the action index, the target and `actionsStarted`.
    *
    * **This paragraph also said "the population's iteration order is untouched",
-   * and since issue #434 that is no longer true.** It was exactly true of ADR
+   * and since issue #434 and ADR 0062 that is no longer true.** It was exactly true of ADR
    * 0041: the fallback changed what one prisoner does, not who is asked first.
    * The order is now descending need urgency with an ascending-entity-index
    * tie-break, `ActionSystem.update` carries the argument, and the sentence is

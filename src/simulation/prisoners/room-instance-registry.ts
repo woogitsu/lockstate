@@ -581,9 +581,11 @@ export class RoomInstanceRegistry {
    * non-zero ceiling for the capability the action consumes.
    *
    * **`findAvailableForUse` without the claims**, and the omission is the whole
-   * point rather than an optimisation. Its one caller is `needUrgency`'s
-   * providability test (issue #434), which decides the *order* the contended
-   * scan runs in. An ordering key that counted the claims taken earlier in the
+   * point rather than an optimisation --
+   * [ADR 0062](../../../docs/adr/0062-who-gets-the-room-when-more-prisoners-want-it-than-it-seats.md)
+   * decision 3 makes it the rule and not merely this method's habit. Its one
+   * caller is `needUrgency`'s providability test (issue #434), which decides
+   * the *order* the contended scan runs in. An ordering key that counted the claims taken earlier in the
    * same scan would be a function of the scan position it is deciding: prisoner
    * A's key would depend on whether prisoner B had already been served, the sort
    * would stop being a function of state, and two runs of the same seed could

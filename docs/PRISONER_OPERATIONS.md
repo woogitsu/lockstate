@@ -393,8 +393,11 @@ that are worth stating here rather than leaving to be discovered:
   two; `src/simulation/economy/income.ts` had named that exact condition as one
   that had to be settled before this landed.
 - **Contention is decided by need urgency, and by ascending entity index only
-  where two prisoners are exactly as urgent as each other** (issue #434, taking
-  ADR 0041 decision 2 and the fairness half of ADR 0029 decision 5).
+  where two prisoners are exactly as urgent as each other** — issue #434 and
+  [ADR 0062](./adr/0062-who-gets-the-room-when-more-prisoners-want-it-than-it-seats.md),
+  taking [ADR 0041](./adr/0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md)
+  decision 2 and the fairness half of
+  [ADR 0029](./adr/0029-concurrent-room-use-claims.md) decision 5.
   **This bullet read "Contention is decided by ascending entity index, which is
   `EntityQuery.execute`'s order and therefore the order the reconsideration scan
   already runs in"**, and that is what it was: one ascending pass, so the
@@ -429,7 +432,8 @@ that are worth stating here rather than leaving to be discovered:
   every meal block opens. Prisoners 12 to 23 still never enter that canteen --
   and no measurement distinguishes them from the twelve who do, so there is no
   state-derived reason to prefer either. `tests/integration/contended-shower-fairness.test.ts`
-  records both halves.
+  records both halves, and ADR 0062 open question 1 costs the two ways of
+  rotating identical contenders without taking either.
 - **Nothing a player can build is affected yet, and that is the honest
   reading.** Every room type whose actions resolve by catalogue id derives its
   ceiling from the objects in it. **This paragraph used to read "the two

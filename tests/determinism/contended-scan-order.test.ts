@@ -14,7 +14,10 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * That is exactly the kind of change [ADR 0020](../../docs/adr/0020-deterministic-kernel.md)
  * governs and [ADR 0029](../../docs/adr/0029-concurrent-room-use-claims.md)
  * decision 7's four commitments constrain, so it gets its own guard rather than
- * relying on the general ones. What could go wrong is specific:
+ * relying on the general ones.
+ * [ADR 0062](../../docs/adr/0062-who-gets-the-room-when-more-prisoners-want-it-than-it-seats.md)
+ * decision 3 is the argument this file is the executable half of, and its open
+ * question 2 carries the survivor list below. What could go wrong is specific:
  *
  * 1. **A key that is not a pure function of saved state.** Both keys are read
  *    off `NeedsComponent` (carried verbatim in stored units), the classification
@@ -60,7 +63,9 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
  * So this file is a **regression guard** and not a demonstrated tripwire: it
  * fails the day something is added to `ActionSystem` that varies per prisoner
  * and is not snapshotted, and until then it holds by construction. Issue #375
- * is why that is written here rather than left to look like coverage.
+ * is why that is written here rather than left to look like coverage, and
+ * ADR 0062 open question 2 is where it is on the record for a reader who never
+ * opens this file.
  */
 
 const SEED = 0x0b1ec7;
