@@ -225,6 +225,23 @@ that prison, deliberately: ADR 0054 decision 1 rules them room-gated by design,
 because ADR 0048 makes an unmet need the thing a riot is built out of and a
 yard costs no objects at all.
 
+**How much of that riot the neglect is actually paying for was measured on
+2026-08-28 and is less than the sentence above implies.** The escape is real —
+one 8x8 yard, no objects, takes `recreation` from a floor of 0 to a floor of
+233.55, and a shower room with its two heads takes `hygiene` to 212.4 — but the
+*pressure* only crosses `DEFAULT_SECTOR_RISK_POLICY`'s `hotThreshold` of 0.65
+when the prison is also understaffed. Two needs at zero across eight prisoners
+in eight furnished cells peaks at `needsPressure` **0.4824** and produces **no
+riot at all** while one guard stands the post; the same prison with no guard
+peaks at 0.7979 and riots three times in twenty in-game days
+(`tests/integration/room-gated-needs.test.ts`). So a well-staffed prison of
+cells leaves both needs on the floor for ever with no consequence anywhere, and
+ADR 0054's own amendment records that this is the ruling's open edge rather than
+its intent. What it does **not** license is a cell-side sibling: measured at a
+quarter and at a sixteenth of a shower's rate, either one removes the unguarded
+prison's riot entirely, because `selectBestAction` drives any available route
+toward satiation and a low rate sets recovery speed rather than a floor.
+
 **`action.free-association` is the catalogue's one entry with no need effect,
 and that is deliberate.** `scoreAction` sums `deficit x effect`, so an action
 with no effects scores exactly 0 -- the floor, since no authored effect is
