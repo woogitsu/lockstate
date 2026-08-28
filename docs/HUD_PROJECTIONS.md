@@ -727,7 +727,8 @@ decision about what to build next.
    threshold is still the owner's, and so is whether it should be this one.
 
    What the interface would need, if the owner wants the mechanic to be fair
-   rather than merely correct, is named in the ADR accompanying #443: which
+   rather than merely correct, is named in
+   [ADR 0064](./adr/0064-what-an-unmet-need-costs-a-prison.md): which
    needs are unmet **per prisoner**, what that is costing **per day**, and
    which room would fix it. The first is already projected
    (`PrisonerDetailViewModel.needs`), the second is derivable from figures the

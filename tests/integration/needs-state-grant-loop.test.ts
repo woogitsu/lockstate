@@ -9,7 +9,8 @@ import { wallRoomPerimeter } from '../helpers/room-walls';
 
 /**
  * **What an unserved need costs a prison that is otherwise well run**
- * (issue #443's second half, issue #477).
+ * ([ADR 0064](../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md),
+ * issue #443's second half, issue #477).
  *
  * ## The measurement this file exists to answer
  *

@@ -545,7 +545,8 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   // occupancy slot there -- so it is constructed after the prisoner runtime,
   // and it holds no state of its own, which is why nothing new enters the save.
   //
-  // The whole `prisoners` runtime rather than the registry alone, since #443:
+  // The whole `prisoners` runtime rather than the registry alone, since
+  // [ADR 0064](../../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md):
   // what a place pays depends on how many of its occupant's six needs the
   // prison is leaving unmet, so the income line reads `needs` and `entityStore`
   // beside the residency claims. `PrisonerOperationsRuntime` satisfies

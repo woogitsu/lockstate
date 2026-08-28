@@ -410,7 +410,9 @@ export class RoomInstanceRegistry {
    * The counterpart `totalOccupancy` could not answer, and it exists because
    * an occupied place stopped being worth a flat rate: `StateIncomeSystem`
    * pays per occupied place at a rate that depends on the conditions the
-   * *occupant* is held in (#443, #477), so the income line needs the occupants
+   * *occupant* is held in
+   * ([ADR 0064](../../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md)),
+   * so the income line needs the occupants
    * and not only the count. Residency and not use claims, for the reason
    * `totalOccupancy` above gives at length -- a prisoner eating lunch is not a
    * second prisoner-day.

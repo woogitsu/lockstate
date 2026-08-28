@@ -317,7 +317,9 @@ function accommodationCapacityOf(source: RoomProjectionSource, policy: Accommoda
  * counts (no per-prisoner allocation), `O(staff)` for the roster,
  * `O(roomInstances)` for the room totals, a second `O(accommodation
  * instances)` pass for `accommodationCapacity`, `O(openIncidents)` for the
- * incident count, and -- since #443 -- `O(P log P)` in *housed* prisoners for
+ * incident count, and -- since
+ * [ADR 0064](../../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md)
+ * -- `O(P log P)` in *housed* prisoners for
  * `stateIncomeAccruedTodayMinorUnits`, which walks the occupied places and
  * reads six need levels for each.
  *
@@ -410,7 +412,7 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
       // under an unknown room-catalog id (gap 15), while the income line is
       // paid on every slot the registry holds. `RoomInstanceRegistry.totalOccupancy`
       // documents the difference.
-      // Since #443 the accrual is not `rate x totalOccupancy`: each occupied
+      // Since ADR 0064 the accrual is not `rate x totalOccupancy`: each occupied
       // place pays at a rate set by how many of its occupant's needs the
       // prison is leaving unmet, so the readout has to be derived from the
       // same walk `StateIncomeSystem` credits from. Deriving it from the count

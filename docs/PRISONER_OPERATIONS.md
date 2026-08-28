@@ -267,7 +267,8 @@ in-game days where the fixture runs 24,000 ticks, which at `DAY_LENGTH_TICKS`
 corrected in all of them by #443. None of the conclusions move; the decay in
 question is twice as fast as the sentence implied.
 
-**And "no consequence anywhere" stopped being true with #443.** What an unmet
+**And "no consequence anywhere" stopped being true with
+[ADR 0064](./adr/0064-what-an-unmet-need-costs-a-prison.md) (#443, #477).** What an unmet
 need costs a prison that never riots is now on the income line rather than in
 the risk score: `StateIncomeSystem` pays the state's prisoner-day grant per
 **occupied place**, and withholds

@@ -63,7 +63,9 @@ export interface SectorRiskPolicy {
  *   six at zero is a ceiling of about `0.48` on `needsPressure`, under the
  *   `0.65` line. Measured over **ten** in-game days -- the fixture's 24,000
  *   ticks at `DAY_LENGTH_TICKS` 2,400, which this bullet and four documents
- *   beside it called twenty until #443 -- eight prisoners in eight furnished
+ *   beside it called twenty until
+ *   [ADR 0064](../../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md)
+ *   checked the division -- eight prisoners in eight furnished
  *   cells with no shower room and no yard: peak score **0.4824** and **zero**
  *   riots with one guard on post, **0.7979** and three riots with none
  *   (`tests/integration/room-gated-needs.test.ts`; 0.7981 on the same fixture
@@ -78,8 +80,9 @@ export interface SectorRiskPolicy {
  *   Whether that is the balance wanted is #442's and ADR 0048's, not a thing to
  *   settle in this docblock.
  *
- *   **And since #443 that staffed row is no longer free, without this weight
- *   moving at all.** What an unmet need costs a prison that never riots is on
+ *   **And since
+ *   [ADR 0064](../../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md)
+ *   that staffed row is no longer free, without this weight moving at all.** What an unmet need costs a prison that never riots is on
  *   the income line: `StateIncomeSystem` withholds part of the state's
  *   prisoner-day grant for each of the six needs a place's occupant has at or
  *   below `STATE_INCOME_UNMET_NEED_LEVEL`, so the prison above earns 20,800

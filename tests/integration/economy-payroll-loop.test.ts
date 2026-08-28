@@ -176,7 +176,9 @@ describe('hiring before there is anybody to guard is a decision the balance now 
      * 42,640 on day 10, from 24,240 after the build.
      *
      * **This read 45,840 until the state grant became conditional on the
-     * conditions a prisoner is held in** (#443, #477), and the 3,200 between
+     * conditions a prisoner is held in**
+     * ([ADR 0064](../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md)),
+     * and the 3,200 between
      * the two figures is the whole of what this prison is now charged for
      * being a row of cells and nothing else. `beddedPrison` builds no shower
      * room and no yard, so `hygiene` crosses the unmet line on day 5 and
@@ -240,8 +242,9 @@ describe('a prison can run out of money, and ADR 0017 decision 8`s ladder follow
      * it pays 600, the balance stops at 0 rather than going to -360, and 360
      * is owed.
      *
-     * **This read 280 before the grant became conditional** (#443, #477). The
-     * extra 80 is the neglect, and the direction is the one worth stating: a
+     * **This read 280 before the grant became conditional**
+     * ([ADR 0064](../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md)).
+     * The extra 80 is the neglect, and the direction is the one worth stating: a
      * prison that is failing its prisoners reaches insolvency sooner and digs
      * out of it more slowly.
      */

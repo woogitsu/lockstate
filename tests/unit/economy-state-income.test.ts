@@ -296,7 +296,8 @@ describe('the "earned today" readout matches what is actually credited', () => {
 });
 
 /**
- * **What a place pays depends on the occupant's conditions** (#443, #477).
+ * **What a place pays depends on the occupant's conditions**
+ * ([ADR 0064](../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md), #443, #477).
  *
  * The arithmetic of the rule, against need levels this file sets. What a real
  * prison actually leaves unmet, and what that costs it over days of play, is

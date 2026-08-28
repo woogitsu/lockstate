@@ -215,7 +215,9 @@ export interface PrisonerDayGrantSource {
  * of a prisoner nobody housed. Those fall to 0 and stay there.
  *
  * **This is not the player-facing "your prisoners are unhappy" line.** That
- * threshold is a statement to a player about what is bad and is the owner's;
+ * threshold is a statement to a player about what is bad and is the owner's
+ * ([ADR 0064](../../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md),
+ * "What the player must be told for this to be fair");
  * this one is a statement about what the state declines to pay for. Issue #477
  * is explicit that the first was unanswerable while neglect cost a staffed
  * prison nothing -- *"fix the cost first, then the threshold has something true
@@ -230,8 +232,9 @@ export const STATE_INCOME_UNMET_NEED_LEVEL = 51;
  * **Directional, not a committed balance decision**, the standing convention
  * for a new rule's numbers here (`DEFAULT_SECTOR_RISK_POLICY` and
  * `DEFAULT_ASSAULT_POLICY` both carry it, and issue #28 puts final balance out
- * of scope). What is *not* directional is the shape, which is the decision the
- * ADR records: linear in the count, one term per need, no interaction.
+ * of scope). What is *not* directional is the shape, which is
+ * [ADR 0064](../../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md)'s
+ * decision: linear in the count, one term per need, no interaction.
  *
  * `40` against a rate of `300` makes the schedule
  * `300, 260, 220, 180, 140, 100, 60` for zero through six unmet needs, and the

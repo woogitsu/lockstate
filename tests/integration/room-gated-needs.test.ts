@@ -81,7 +81,9 @@ const SECTOR = 'security-sector.prison';
  * **Ten in-game days** at `DAY_LENGTH_TICKS` 2,400 — long enough that a need
  * served once a day is served ten times.
  *
- * **This comment read "Twenty in-game days" until #443**, and so did the two
+ * **This comment read "Twenty in-game days" until
+ * [ADR 0064](../../docs/adr/0064-what-an-unmet-need-costs-a-prison.md)**,
+ * and so did the two
  * `describe` names below, `src/simulation/incidents/sector-risk.ts`,
  * `docs/PRISONER_OPERATIONS.md`, ADR 0059's speed ladder, ADR 0061's opening
  * measurement and issue #477 itself. `24_000 / 2_400` is 10. Nothing measured
