@@ -386,10 +386,11 @@ because they are the ones that could have gone wrong:
 
 ## What this costs
 
-**Twenty-five integration assertions moved**, every one of them a census or a
-pinned tick that a journey taking time genuinely relocates. Each is re-measured
-in place with the figure it replaced named beside it. Three of them are findings
-rather than numbers:
+**Thirty-five assertions across fifteen integration files moved**, counted as
+`+.*expect\(` lines against `origin/main`, and every one of them is a census or
+a pinned tick that a journey taking time genuinely relocates. Each is
+re-measured in place with the figure it replaced named beside it. Three of them
+are findings rather than numbers:
 
 1. **Walking spreads a contended room's outcomes out again, and ADR 0062's
    exact equality did not survive it.** That ADR's contended-canteen fixture
@@ -490,6 +491,18 @@ walkers cost 0.476 ms a tick at 20 Hz, or about 1% of a second.
 - ADR 0029 decision 2's *"the design that cannot leak is worth two wasted
   walks"* is unchanged as a decision and its revisit condition is now met; ADR
   0040's open question 1 is answered.
+- **[ADR 0062](./0062-who-gets-the-room-when-more-prisoners-want-it-than-it-seats.md)
+  keeps its rule and loses its headline number.** Its comparator is carried into
+  the arrival gate, because a walk moves the moment a seat is claimed out of the
+  pass that ADR sorts; and its *"every one of the six now bottoms out at exactly
+  the same hunger"* becomes a bounded spread that does not track scan position,
+  because six cells at six distances are six different days. Its own test says
+  both, in its own words, with the sentence it replaced quoted.
+- `docs/HUD_PROJECTIONS.md`'s paging-contract exemption priced this channel at
+  **16 bytes an actor** and `docs/RENDERING.md`'s benchmark table gave one
+  keyframe row; both carry layout 2's 20 bytes now, with the layout-1 figures
+  kept beside them because the order-of-magnitude argument each supports is
+  unchanged.
 - **Guards, incident responders, contraband searchers and job carriers still
   teleport on arrival.** They are named in "What the code did" and not
   converted: the two security paths are inert or one-shot in a session a player
