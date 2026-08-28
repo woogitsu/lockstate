@@ -38,13 +38,17 @@ import { describe, expect, it } from 'vitest';
  * token is not plausibly a module name, a concept or an example -- it is a
  * path, and it either resolves or it does not. The measured false-positive
  * rate is what justifies the distinction rather than the argument alone:
- * measured at `7a15b17`, the documentation carries **630** such citations, of
- * which **629** resolve. The single exception is prose about a file that only
+ * measured at `7a15b17`, the documentation carried **630** such citations, of
+ * which **629** resolved. The single exception is prose about a file that only
  * ever existed on a closed pull request's branch, and it is allowlisted below
  * with that reason.
  *
- * Those are occurrences, not distinct paths -- the same 630 the check itself
- * counts, so the figure and the check cannot disagree.
+ * Re-measured at `0850fe8`, after the extractor was taught the two forms it
+ * had been blind to (a `file:line` anchor, and the `` `x` `` code span --
+ * both below): **3,608** citations across 107 markdown files, of which
+ * **3,607** resolve and the exception is still that one. Those are
+ * occurrences, not distinct paths -- the same number the check itself counts,
+ * so the figure and the check cannot disagree.
  */
 
 const ROOT = join(__dirname, '../..');
@@ -135,13 +139,22 @@ const ROOTED_PATH = /^(?:docs|src|tests|scripts|supabase|public|\.github)\//;
  * Tokens excluded before the existence check, each because it is not a claim
  * that one specific file is on disk.
  *
- * `*` is a glob and `\u2026` is an elision standing in for a name the sentence
- * does not know -- `` `supabase/migrations/\u2026_create_challenge_tables.sql` ``
- * in ADR 0009 is a migration whose timestamp prefix is deliberately not
- * written down. Both describe a shape, and a shape has no single path to
- * resolve.
+ * `*` is a glob; `…`, `...` and `<name>` each stand in for something the
+ * sentence deliberately does not write down. ADR 0009's
+ * `` `supabase/migrations/…_create_challenge_tables.sql` `` is a migration
+ * whose timestamp prefix is not known to the sentence,
+ * `tests/unit/module-boundary-rules.test.ts` says its fixture trees are
+ * fictional by naming `` `src/alpha/...` ``, and
+ * `tests/unit/ui-orchestration-boundaries.test.ts` writes
+ * `` `src/ui/<something>/` `` for any subtree at all. Each describes a shape,
+ * and a shape has no single path to resolve.
+ *
+ * Tested against the raw token, before the trailing-punctuation strip below,
+ * because that strip runs the other way: it takes the three dots off
+ * `src/alpha/...` and leaves a claim that the directory `src/alpha/` is on
+ * disk. Measured: that is exactly what it did.
  */
-const NOT_A_SINGLE_PATH = /[*\u2026]/;
+const NOT_A_SINGLE_PATH = /[*\u2026<>]|\.\.\./;
 
 /**
  * Rooted paths that truthfully name a file this repository does not contain.
@@ -162,6 +175,19 @@ const ABSENT_BY_DESIGN: ReadonlyMap<string, string> = new Map([
   ],
 ]);
 
+/**
+ * A code span, at any backtick-run length.
+ *
+ * Markdown -- and the JSDoc that borrows its conventions -- writes
+ * `` `x` `` when it wants a span to be visibly a span, and this file's own
+ * docblock uses that form for every path it quotes. A one-backtick pattern is
+ * therefore blind to precisely the sentences that explain what a path citation
+ * is, and it was: the ADR filename offered above as the worked example of a
+ * well-formed rooted token was wrong from the day it was written, and the two
+ * backticks around it are the reason no check could say so.
+ */
+const CODE_SPAN = /(?<!`)(`+)(?!`)([^\n]*?)(?<!`)\1(?!`)/g;
+
 interface Citation {
   readonly source: string;
   readonly path: string;
@@ -170,11 +196,23 @@ interface Citation {
 function rootedPathCitations(path: string): readonly Citation[] {
   const source = relative(ROOT, path);
   const citations: Citation[] = [];
-  for (const match of readFileSync(path, 'utf8').matchAll(/`([^`\n]+)`/g)) {
-    // Trailing sentence punctuation is the sentence's, not the path's.
-    const token = match[1]!.trim().replace(/[.,;:]+$/, '');
+  for (const match of readFileSync(path, 'utf8').matchAll(CODE_SPAN)) {
+    let raw = match[2]!.trim();
+    // `` `x` ``: the outer run delimits and the inner backticks are the
+    // span. Anything else keeps its content as written.
+    if (raw.length > 1 && raw.startsWith('`') && raw.endsWith('`')) raw = raw.slice(1, -1).trim();
+    if (NOT_A_SINGLE_PATH.test(raw)) continue;
+    const token = raw
+      // Trailing sentence punctuation is the sentence's, not the path's.
+      .replace(/[.,;:]+$/, '')
+      // A `file:line` anchor names one file and one line, and only the file
+      // is checked. A line number rots on every edit above it, so a check
+      // that demanded exact lines would be red constantly and deleted within
+      // a week -- the same argument this file already makes about gates on
+      // equality, and the one `docs/adr/STATUS-QUEUE.md` makes for quoting a
+      // sentence instead of numbering it.
+      .replace(/:\d+(?:-\d+)?$/, '');
     if (!ROOTED_PATH.test(token)) continue;
-    if (NOT_A_SINGLE_PATH.test(token)) continue;
     // A path has no spaces, and a token carrying brackets is prose about a
     // path rather than the path itself.
     if (/[\s(),[\]]/.test(token)) continue;
@@ -188,10 +226,11 @@ const citations = markdownFiles.flatMap(rootedPathCitations);
 
 describe('every rooted path cited in the documentation is on disk', () => {
   it('finds citations to check, so this cannot pass vacuously', () => {
-    // An order of magnitude below the 630 measured at `7a15b17`: high enough
-    // that an extractor which silently stopped matching fails here, low
-    // enough that deleting a documentation file does not.
-    expect(citations.length).toBeGreaterThan(50);
+    // An order of magnitude below the 3,608 measured at `0850fe8`: high
+    // enough that an extractor which silently stopped matching fails here,
+    // low enough that deleting a documentation file does not. It was 50
+    // against the 630 measured at `7a15b17`, and moves with the corpus.
+    expect(citations.length).toBeGreaterThan(500);
   });
 
   it('resolves every cited path', () => {
