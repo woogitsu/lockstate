@@ -126,6 +126,27 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
   missed `tests/browser/app-shell.spec.ts`, because it could not run the browser
   suite. Ask what *else* asserts the behaviour you just changed, and name the
   suites you did not run.
+- **There is no such thing as an unnumbered ADR draft here.** An integrator on
+  2026-08-28 told three agents to draft with a placeholder id `ADR-XXXX` and to
+  leave `docs/adr/README.md` alone. That is impossible, and an agent proved it
+  rather than complying: `tests/foundation/adr-numbering-contract.test.ts`
+  requires the filename to be `NNNN-kebab-case.md`, requires a matching row in
+  `docs/adr/README.md` — its own failure message reads *"Adding an ADR means
+  adding its row in the same commit, and the index says so itself"* — and
+  requires the index's **Next free number** line to name a number no file has
+  taken. A placeholder fails the first check; a numbered file with no row fails
+  the other two.
+  `AGENTS.md`'s rule was right all along and says how this works: *"A number is
+  not reserved until it appears in `docs/adr/README.md`."* Adding the row **is**
+  the reservation. So an ADR arrives numbered, indexed and with the next-free
+  line moved, all in one commit — and, because a branch nobody has merged is
+  invisible from the index, it also carries the sentence ADR 0048 and 0049 both
+  carry: the number is provisional, and if it collides, the file, its row and
+  every citation of it get renumbered.
+  **What "assigned centrally" then means in a parallel session is that the
+  integrator hands out the numbers before the drafts exist**, one per agent, at
+  the moment it becomes plausible that an agent will need one. Two agents that
+  each read "next free" off `main` will both write 0050.
 
 ### Handovers between parallel agents
 
