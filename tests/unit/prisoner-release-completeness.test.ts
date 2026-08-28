@@ -128,11 +128,25 @@ function pathsMentioning(root: object, target: number): readonly Hit[] {
  * recycled index gets a new generation, so a later occupant's id misses. It
  * stops being safe at the 4,096th recycle of one index, which is ADR 0026
  * question 1 -- open, escalated by ADR 0050, and not answered by anything here.
+ *
+ * **The log grew its second id-keyed container on
+ * [ADR 0057](../../docs/adr/0057-what-a-riot-does-to-a-prisoners-day.md), and
+ * the paragraph above anticipated it in those words.** `openRiotCountByParticipant`
+ * is a derived index over exactly the participant lists this rule already
+ * exempts -- `IncidentLog.open` writes it, `transition` to a terminal state
+ * clears it, and `loadSnapshot` rebuilds it, so it holds nothing the records do
+ * not. It differs from the records in one way worth stating rather than
+ * glossing: it is **not** permanent. A prisoner released while a riot naming
+ * them is still open stays in it until that riot resolves or lapses, which
+ * `responseDeadlineTicks` bounds at 600 ticks past the riot's start. Dropping
+ * them on release would be worse than keeping them, because it would make the
+ * index disagree with the records it is derived from -- and the disagreement,
+ * not the entry, is what a later reader would trip on.
  */
-const HISTORICAL_FRAGMENT = 'incidents.records';
+const HISTORICAL_FRAGMENTS = ['incidents.records', 'incidents.openRiotCountByParticipant'] as const;
 
 function releaseRelevant(hits: readonly Hit[]): readonly Hit[] {
-  return hits.filter((hit) => !hit.includes(HISTORICAL_FRAGMENT));
+  return hits.filter((hit) => !HISTORICAL_FRAGMENTS.some((fragment) => hit.includes(fragment)));
 }
 
 /**
@@ -222,7 +236,11 @@ describe('what a released prisoner must be dropped from (ADR 0026 question 2)', 
     expect({ paths: before, pathRequest: holds('coldState.currentActionPathRequestId') }).toMatchObject({ pathRequest: 1 });
     expect({ paths: before, occupants: holds('roomInstances.occupants') }).toMatchObject({ occupants: 1 });
     expect({ paths: before, jobWorkers: holds('jobWorkers.workers') }).toMatchObject({ jobWorkers: 1 });
-    expect({ paths: before, history: holds(HISTORICAL_FRAGMENT) }).toMatchObject({ history: 1 });
+    expect({ paths: before, history: holds('incidents.records') }).toMatchObject({ history: 1 });
+    // The derived index the riot regime reads, asserted by name for the reason
+    // every other line here is: a container that silently stopped holding the
+    // prisoner must fail here rather than make the release look complete.
+    expect({ paths: before, riotIndex: holds('incidents.openRiotCountByParticipant') }).toMatchObject({ riotIndex: 1 });
     expect({ paths: before, releaseRelevant: releaseRelevant(before).length }).toMatchObject({ releaseRelevant: 8 });
 
     expect(runtime.prisoners.releasePrisoner(entityId)).toBe(true);

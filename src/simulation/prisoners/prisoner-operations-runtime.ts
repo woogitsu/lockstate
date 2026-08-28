@@ -19,7 +19,7 @@ import {
 } from './release';
 import { NeedsComponent } from './needs';
 import { NeedsDecaySystem } from './needs-system';
-import { DEFAULT_REGIME_SCHEDULES, type RegimeSchedule } from './regime';
+import { DEFAULT_REGIME_SCHEDULES, type PrisonerRegimeOverrideResolver, type RegimeSchedule } from './regime';
 import { RoomInstanceRegistry } from './room-instance-registry';
 
 const PRISONER_COMPONENT_ID = 0;
@@ -49,6 +49,19 @@ export interface PrisonerOperationsRuntimeOptions {
   readonly capacity: number;
   readonly navigation: NavigationSystem;
   readonly regimeSchedules?: readonly RegimeSchedule[];
+  /**
+   * What an open incident imposes on one prisoner's day in place of the
+   * schedule above (`createRiotRegimeOverride` in
+   * `src/simulation/incidents/riot-regime.ts`, ADR 0057).
+   *
+   * A port rather than the `IncidentLog` itself, for the reason
+   * `disciplinaryEvidence` below is a port: the log is session-level state that
+   * spans this runtime and the guard roster, and owning it here would misfile
+   * it. Omitted, no prisoner is ever overridden and every one of them runs
+   * their classification group's timetable — which is what a fixture with no
+   * incident pipeline wants, and what this runtime did before ADR 0057.
+   */
+  readonly regimeOverride?: PrisonerRegimeOverrideResolver;
   readonly accommodationPolicy?: AccommodationPolicy;
   readonly routeContextResolver?: PrisonerRouteContextResolver;
   /**
@@ -185,6 +198,7 @@ export class PrisonerOperationsRuntime {
       options.navigation,
       options.regimeSchedules ?? DEFAULT_REGIME_SCHEDULES,
       options.routeContextResolver,
+      options.regimeOverride,
     );
 
     this.releaseSurfaces = {

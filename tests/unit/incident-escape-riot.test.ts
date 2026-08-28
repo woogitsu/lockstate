@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { DoorRegistry } from '../../src/simulation/navigation/door';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { TunnelRegistry, resolveEscapeOpportunity } from '../../src/simulation/incidents/escape';
-import { RIOT_ALLOWED_CATEGORIES, applyRiotRegimeOverride, buildRiotRegimeSchedule } from '../../src/simulation/incidents/riot-regime';
+import { RIOT_ALLOWED_CATEGORIES, buildRiotRegimeSchedule, createRiotRegimeOverride } from '../../src/simulation/incidents/riot-regime';
+import { IncidentLog } from '../../src/simulation/incidents/incident';
 import { assertGaplessSchedule, DAY_LENGTH_TICKS, DEFAULT_REGIME_SCHEDULES, resolveActiveRegimeBlock } from '../../src/simulation/prisoners/regime';
 import { DEFAULT_ACTIONS } from '../../src/simulation/prisoners/actions';
 import { isActionCategoryAllowed } from '../../src/simulation/prisoners/utility-ai';
@@ -142,11 +143,24 @@ describe('riot regime override: reuses the existing regime/action framework', ()
 
   /**
    * The override's *output* is what `ActionSystem` resolves against, so the
-   * invariant has to survive the swap, not merely hold for each input.
+   * invariant has to survive the substitution, not merely hold for each input.
+   *
+   * **This used to iterate `applyRiotRegimeOverride`'s returned array.** That
+   * function swapped whole classification groups, had no caller in `src/`, and
+   * was deleted by ADR 0057 in favour of the per-participant resolver below;
+   * the invariant it was asserting is the one that matters and is kept, asked
+   * of every group the resolver can produce a schedule for.
    */
-  it('leaves every schedule in the overridden array gapless', () => {
-    for (const schedule of applyRiotRegimeOverride(DEFAULT_REGIME_SCHEDULES, ['general-population', 'high-risk'])) {
-      expect(() => assertGaplessSchedule(schedule), schedule.classificationGroupId).not.toThrow();
+  it('leaves every schedule the resolver can return gapless', () => {
+    const incidents = new IncidentLog();
+    const override = createRiotRegimeOverride(incidents);
+    incidents.open({ id: 'i-1', type: 'riot', sectorId: 's', participantIds: [7], severity: 5, causeFactors: [] }, 0);
+
+    for (const { classificationGroupId } of DEFAULT_REGIME_SCHEDULES) {
+      const schedule = override(7, classificationGroupId);
+      expect(schedule, classificationGroupId).toBeDefined();
+      expect(schedule!.classificationGroupId).toBe(classificationGroupId);
+      expect(() => assertGaplessSchedule(schedule!), classificationGroupId).not.toThrow();
     }
   });
 
@@ -174,21 +188,78 @@ describe('riot regime override: reuses the existing regime/action framework', ()
     expect(legalActionIds).not.toContain('action.classroom-education');
   });
 
-  it('the override replaces only the named groups and leaves the caller\'s original array untouched', () => {
-    const overridden = applyRiotRegimeOverride(DEFAULT_REGIME_SCHEDULES, ['general-population']);
+  it('overrides a participant of an open riot, and nobody else', () => {
+    const incidents = new IncidentLog();
+    const override = createRiotRegimeOverride(incidents);
 
-    const generalBlock = resolveActiveRegimeBlock(overridden.find((s) => s.classificationGroupId === 'general-population')!, 600);
-    expect(generalBlock.allowedCategories).toEqual(RIOT_ALLOWED_CATEGORIES);
+    // Nothing has happened yet: every prisoner runs their own timetable.
+    expect(override(7, 'general-population')).toBeUndefined();
 
-    // high-risk was not named -> untouched.
-    const highRiskBlock = resolveActiveRegimeBlock(overridden.find((s) => s.classificationGroupId === 'high-risk')!, 600);
-    expect(highRiskBlock.allowedCategories).toEqual(['sleep', 'meal', 'hygiene']);
+    incidents.open({ id: 'i-1', type: 'riot', sectorId: 's', participantIds: [7, 9], severity: 5, causeFactors: [] }, 0);
 
-    // The originals are unmodified, so lifting the override is just reverting to them.
-    // The list gained `'free-association'` in ADR 0054 and is read verbatim off
-    // the shipped schedule for that reason: what this asserts is that the
+    // The two the record names, and only them. `8` is a prisoner who was not in
+    // the sector; asserting on them is what makes this a statement about the
+    // participant list rather than about the log being non-empty.
+    expect(resolveActiveRegimeBlock(override(7, 'general-population')!, 600).allowedCategories).toEqual(RIOT_ALLOWED_CATEGORIES);
+    expect(resolveActiveRegimeBlock(override(9, 'high-risk')!, 600).allowedCategories).toEqual(RIOT_ALLOWED_CATEGORIES);
+    expect(override(8, 'general-population')).toBeUndefined();
+
+    // The shipped array is never touched, so there is nothing to lift: the
+    // list gained `'free-association'` in ADR 0054 and is read verbatim off the
+    // shipped schedule for that reason. What this asserts is that resolving an
     // override did not mutate it, not what the block happens to allow.
     const originalBlock = resolveActiveRegimeBlock(DEFAULT_REGIME_SCHEDULES.find((s) => s.classificationGroupId === 'general-population')!, 600);
     expect(originalBlock.allowedCategories).toEqual(['work', 'education', 'free-association']);
+  });
+
+  it('stops overriding the moment the riot reaches a terminal state, on both routes out', () => {
+    for (const terminal of ['resolved', 'lapsed'] as const) {
+      const incidents = new IncidentLog();
+      const override = createRiotRegimeOverride(incidents);
+      incidents.open({ id: 'i-1', type: 'riot', sectorId: 's', participantIds: [7], severity: 5, causeFactors: [] }, 0);
+
+      // Through the whole non-terminal lifecycle, not merely at `'active'`.
+      expect(override(7, 'general-population'), `${terminal}: active`).toBeDefined();
+      incidents.transition('i-1', 'notified', 10);
+      expect(override(7, 'general-population'), `${terminal}: notified`).toBeDefined();
+      if (terminal === 'resolved') {
+        incidents.transition('i-1', 'responding', 20);
+        expect(override(7, 'general-population'), 'resolved: responding').toBeDefined();
+      }
+
+      incidents.transition('i-1', terminal, 30);
+      expect(override(7, 'general-population'), terminal).toBeUndefined();
+    }
+  });
+
+  it('keeps a participant overridden while a second open riot still names them', () => {
+    /*
+     * Two sectors can riot at once and one prisoner can be an occupant of both
+     * -- the derived default sector is the whole prison (ADR 0048) and any
+     * other registered sector keeps the post-tile rule -- so the index counts
+     * rather than sets. With a set, closing the first riot would end the
+     * second one's override for this prisoner while it is still running.
+     */
+    const incidents = new IncidentLog();
+    const override = createRiotRegimeOverride(incidents);
+    incidents.open({ id: 'i-1', type: 'riot', sectorId: 'prison', participantIds: [7], severity: 5, causeFactors: [] }, 0);
+    incidents.open({ id: 'i-2', type: 'riot', sectorId: 'wing', participantIds: [7, 9], severity: 5, causeFactors: [] }, 0);
+
+    incidents.transition('i-1', 'lapsed', 30);
+
+    expect(override(7, 'general-population')).toBeDefined();
+    incidents.transition('i-2', 'lapsed', 40);
+    expect(override(7, 'general-population')).toBeUndefined();
+  });
+
+  it('does not override a participant of an incident that is not a riot', () => {
+    // `RIOT_ALLOWED_CATEGORIES` is authored for a riot. The only other type
+    // anything in `src/` opens is `'gang-retaliation'`, and reading a riot's
+    // categories onto it would be a content decision nothing has measured.
+    const incidents = new IncidentLog();
+    const override = createRiotRegimeOverride(incidents);
+    incidents.open({ id: 'i-1', type: 'gang-retaliation', sectorId: 's', participantIds: [7], severity: 5, causeFactors: [] }, 0);
+
+    expect(override(7, 'general-population')).toBeUndefined();
   });
 });
