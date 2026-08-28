@@ -137,6 +137,20 @@ and absent means zero rather than unknown. `economySectionSchema` is shared by
 the V3, V4 and V5 session-systems shapes, exactly as `contrabandSectionSchema`
 is, so no migration step has to add it there either.
 
+**Not every ADR 0038 §1 change is a new key.** ADR 0061 widened
+`simulation.contraband.items[].state` from `'concealed' | 'confiscated'` to
+include `'departed'` -- a prisoner who leaves takes what they were concealing --
+and `SAVE_SCHEMA_VERSION` stayed 5. The three conditions hold for a *widened
+enum* the same way they hold for an added key, and each was checked rather than
+assumed: every older save still validates, because no payload written before the
+change can carry a value the enum did not have; the value's absence has exactly
+one meaning, that no holder of that item has ever left; and no existing member
+changed meaning. It carries §4's cost identically -- the section is `.strict()`
+and the enum is closed, so an *older* build reading a save that has recorded a
+departure refuses it as `invalid-shape`. **A narrowing would be a different
+question entirely** and is not what this precedent covers: removing a member
+makes every save that recorded one unreadable, which is a migration.
+
 **Proven rather than argued.** `tests/integration/economy-payroll-save.test.ts`
 decodes a real V5 save with the key removed and a real V4 save that predates the
 field, and restores both to zero arrears -- and refuses a hand-edited save that

@@ -25,7 +25,26 @@ export interface ContrabandProvenance {
   readonly introducedAtTick: number;
 }
 
-export type ContrabandState = 'concealed' | 'confiscated';
+/**
+ * Where an item's lifecycle has got to.
+ *
+ * `'departed'` is the third state and it arrived with the intake introduction
+ * route (ADR 0061): once contraband can enter on an arriving prisoner, it has
+ * to be able to leave with them. A prisoner who is discharged, or who gets out
+ * through an escape attempt nobody contained, takes whatever they were
+ * concealing with them -- and the alternative was worse in both directions.
+ * Deleting the record would break "every contraband item has stable
+ * identity/provenance sufficient for debugging and evidence" (issue #27) and
+ * `getMovementHistory` with it; leaving it `'concealed'` at a holder key naming
+ * a destroyed entity would leave `byHolder` answering for a prisoner who no
+ * longer exists and would keep the item counted for ever by anything that
+ * totals what the prison is holding.
+ *
+ * It is deliberately *not* a fourth way for an item to leave circulation from
+ * inside the prison: nothing confiscates, consumes or destroys an item here.
+ * The only thing that produces it is a holder leaving.
+ */
+export type ContrabandState = 'concealed' | 'confiscated' | 'departed';
 
 export interface ContrabandMovementEntry {
   readonly holder: ContrabandHolder;
@@ -125,6 +144,35 @@ export class ContrabandRegistry {
     this.indexRemove(record.holder, itemId);
     record.state = 'confiscated';
     return toView(record);
+  }
+
+  /**
+   * Every still-concealed item at this holder leaves the prison with them, in
+   * ascending item id.
+   *
+   * The counterpart of `introduce` for a holder that stops existing, and it is
+   * `'departed'` rather than `confiscate` because nobody found these: a
+   * confiscation is evidence, it records a finding guard and a search order,
+   * and `buildDisciplinaryIndex` charges the holder a point for it
+   * (`src/simulation/prisoners/disciplinary-record.ts`). Charging a prisoner on
+   * the way out for something the prison never discovered would be a finding
+   * the prison never made.
+   *
+   * Answers the ids it moved so a caller can log or count them; it is a no-op
+   * for a holder that never held anything, which is the ordinary case on every
+   * discharge.
+   */
+  public departHolder(kind: ContrabandHolderKind, id: string, atTick: number): readonly string[] {
+    const bucket = this.idsByHolderKey.get(holderKey({ kind, id }));
+    if (bucket === undefined || bucket.size === 0) return [];
+    const departed = [...bucket].sort();
+    for (const itemId of departed) {
+      const record = this.require(itemId);
+      record.state = 'departed';
+      record.movementLog.push({ holder: record.holder, atTick });
+    }
+    bucket.clear();
+    return departed;
   }
 
   public get(itemId: string): ContrabandItemView | undefined {

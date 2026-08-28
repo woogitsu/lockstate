@@ -377,10 +377,16 @@ describe('the message-key namespaces are counted, and no call site names one tha
       labelsWithoutACallSite: labelsWithoutCallSite,
     }).toEqual({
       namespaces: 42,
-      labels: 173,
+      // 173 until ADR 0061 gave `ContrabandState` a third member,
+      // `'departed'` -- a prisoner who leaves takes what they were concealing
+      // with them. One label added to an existing namespace, so `namespaces`
+      // does not move and both unreachable counts rise by one: `contraband-state`
+      // is one of the 33 namespaces waiting for a panel, and the new member
+      // waits with the two beside it.
+      labels: 174,
       namespacesWithACallSite: 9,
       namespacesWithoutACallSite: 33,
-      labelsWithoutACallSite: 127,
+      labelsWithoutACallSite: 128,
     });
   });
 
