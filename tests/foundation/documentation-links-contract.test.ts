@@ -53,8 +53,8 @@ import { stripComments } from '../helpers/canonical-iteration';
  *
  * Re-measured at `3bfb799`, after the extractor was taught the two forms it
  * had been blind to (a `file:line` anchor, and the `` `x` `` code span --
- * both below): **3,625** citations across 108 markdown files, of which
- * **3,624** resolve and the exception is still that one. Those are
+ * both below): **3,693** citations across 108 markdown files, of which
+ * **3,692** resolve and the exception is still that one. Those are
  * occurrences, not distinct paths -- the same number the check itself counts,
  * so the figure and the check cannot disagree.
  */
@@ -140,8 +140,23 @@ describe('every relative markdown link points at a file that exists', () => {
  * A check cannot reach issue bodies, but it can stop the same citation from
  * being written into the documentation, which is where it would then be read
  * as settled.
+ *
+ * `tooling/` and `benchmarks/` joined the list on 2026-08-28. They were the
+ * two top-level directories of committed source that nothing could cite
+ * checkably, and `tooling/` was by then being *scanned* for citations while
+ * being uncitable itself, which is an asymmetry with no argument behind it.
+ * Measured before adding them, at `3bfb799`: 68 markdown citations and 24 in
+ * source comments become checkable, and every one of them resolves.
+ *
+ * `assets/` is deliberately still absent, and measuring it is what settled
+ * that: five documentation citations under it name build output rather than
+ * committed files -- `assets/index-ByAs-HH3.js` in `docs/DEPLOYMENT.md` is a
+ * hashed bundle name, `assets/intermediate/` in `docs/ART_PIPELINE.md` and ADR
+ * 0014 is a working directory the pipeline creates. Those sentences are true
+ * and the files are not in git, which is the case a rooted-path check has no
+ * way to tell from a defect.
  */
-const ROOTED_PATH = /^(?:docs|src|tests|scripts|supabase|public|\.github)\//;
+const ROOTED_PATH = /^(?:docs|src|tests|scripts|tooling|benchmarks|supabase|public|\.github)\//;
 
 /**
  * Tokens excluded before the existence check, each because it is not a claim
@@ -289,7 +304,7 @@ const citations = markdownFiles.flatMap((file) => rootedPathCitations(relative(R
 
 describe('every rooted path cited in the documentation is on disk', () => {
   it('finds citations to check, so this cannot pass vacuously', () => {
-    // An order of magnitude below the 3,625 measured at `3bfb799`: high
+    // An order of magnitude below the 3,693 measured at `3bfb799`: high
     // enough that an extractor which silently stopped matching fails here,
     // low enough that deleting a documentation file does not. It was 50
     // against the 630 measured at `7a15b17`, and moves with the corpus.
@@ -323,12 +338,12 @@ describe('every rooted path cited in the documentation is on disk', () => {
  *
  * ## The measurement, which is the whole argument
  *
- * Measured at `3bfb799`, over 695 `.ts`, `.mts` and `.mjs` files under `src/`,
- * `tests/`, `tooling/` and `scripts/`: **2,300** rooted-path citations in
- * comments, of which **2,294** resolve. The remaining six occurrences name
+ * Measured at `3bfb799`, over 705 `.ts`, `.mts` and `.mjs` files under `src/`,
+ * `tests/`, `tooling/`, `scripts/` and `benchmarks/`: **2,358** rooted-path
+ * citations in comments, of which **2,352** resolve. The remaining six occurrences name
  * four distinct paths that are truthfully absent, allowlisted below with their
  * reasons. That is the same justification the markdown side gave for itself --
- * 629 of 630 at `7a15b17`, 3,624 of 3,625 at `3bfb799` -- and it is what makes
+ * 629 of 630 at `7a15b17`, 3,692 of 3,693 at `3bfb799` -- and it is what makes
  * this a check rather than a list nobody reads, which is the objection the
  * first docblock raises against flagging bare filenames and which still
  * stands.
@@ -435,7 +450,7 @@ describe('every rooted path cited in the documentation is on disk', () => {
  * JSDoc is not reached either, for the same reason the markdown side does not
  * reach one split across two lines of prose: `CODE_SPAN` stops at a newline.
  */
-const SOURCE_TREES = ['src', 'tests', 'tooling', 'scripts'] as const;
+const SOURCE_TREES = ['src', 'tests', 'tooling', 'scripts', 'benchmarks'] as const;
 
 /** The extensions `stripComments` is a correct scanner for. */
 const SOURCE_FILE = /\.(?:ts|mts|mjs)$/;
@@ -478,7 +493,7 @@ const sourceCitations = sourceFiles.flatMap((file) =>
 
 describe('every rooted path cited in a source comment is on disk', () => {
   it('finds source files and citations to check, so this cannot pass vacuously', () => {
-    // An order of magnitude below the 2,300 measured at `3bfb799`.
+    // An order of magnitude below the 2,358 measured at `3bfb799`.
     // This is the guard that fails if `commentsOf` ever returns nothing, or if
     // `CODE_SPAN` stops matching: either would leave every assertion below
     // trivially satisfied and the check silently gone.
