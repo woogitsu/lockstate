@@ -437,12 +437,27 @@ describe('the prisoner uses the rooms, which is what the phase is for', () => {
      * costs two meal blocks out of fourteen: `eat-meal` 560 -> 480. Sleep is
      * untouched, because the two sleep blocks allow nothing but `action.sleep`
      * and it always resolved.
+     *
+     * **They moved a second time on
+     * [ADR 0054](../../docs/adr/0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md),
+     * and the second move is the two blocks the first one could not reach.**
+     * ADR 0041's fallback rescued the *recreation* blocks here because they
+     * also allow `hygiene`; the two `work`/`education` blocks allow neither,
+     * and this prison has no classroom and no laundry, so 1,000 ticks a day
+     * still resolved nothing at all. `'free-association'` is now legal in
+     * them, which is the whole of the 3,160. `eat-meal` 480 -> 360 is the same
+     * boundary effect the first move recorded in the other direction: an
+     * association begun in `[500,1000)` or `[1300,1800)` runs one 20-tick
+     * cadence past the block, so the meal block after it starts one cycle
+     * late. `action.laundry-work` is absent, and deliberately: it names
+     * `room.laundry`, and this prison has a cell, a shower room and a canteen.
      */
     expect(performingTicks).toEqual({
       'action.sleep': 1_800,
-      'action.eat-meal': 480,
+      'action.eat-meal': 360,
       'action.use-toilet': 280,
       'action.shower': 240,
+      'action.free-association': 3_160,
     });
     // Stated as a property as well as a count, so the intent survives a
     // re-baseline: the two room-gated actions really were reached.
@@ -497,23 +512,37 @@ describe('the prisoner uses the rooms, which is what the phase is for', () => {
     const control = watchedPrison(prisonWithoutDiningTables);
 
     expect(control.runtime.prisoners.roomInstances.findAvailableForUse('room.canteen', 'dining')).toBeUndefined();
+    // 400 / 340, not 560 / 300, plus the 3,240 ticks of association: the same
+    // ADR 0054 change recorded on the run above, measured on the prison whose
+    // canteen has no table.
     expect(control.performingTicks).toEqual({
       'action.sleep': 1_800,
-      'action.eat-in-cell': 560,
-      'action.use-toilet': 300,
+      'action.eat-in-cell': 400,
+      'action.use-toilet': 340,
       'action.shower': 240,
+      'action.free-association': 3_240,
     });
 
     // Stated as the player-visible consequence as well as a count: a hunger
     // level that rises is a meal that happened, and no decay curve can produce
     // one. Before ADR 0041 this prison's prisoner ate nothing at all.
     expect(control.hungerEverRose, 'a hunger level that rises is a meal that happened').toBe(true);
-    expect(control.finalHunger).toBe(230.5);
+    expect(control.finalHunger).toBe(231.5);
 
-    // And the cost of losing the canteen is now a **worse meal**, not
-    // starvation: 3 hunger a tick instead of 4, over the same number of
-    // sittings, ends one level below the furnished prison rather than at the
-    // floor.
+    /*
+     * And the cost of losing the canteen is a **worse meal**, not starvation.
+     *
+     * **The two now end level at 231.5, and until ADR 0054 they ended one
+     * apart** (230.5 against 231.5). Nothing about either meal changed: the
+     * canteen prison lost meal ticks to the association that runs past a block
+     * boundary (`eat-meal` 480 -> 360) and the cell prison lost fewer
+     * (`eat-in-cell` 560 -> 400), and 360 sittings at 4 a tick and 400 at 3
+     * land on the same level at this horizon. **The end level is therefore no
+     * longer the thing that distinguishes the two prisons, and this comment
+     * says so rather than leaving a reader to infer a difference from an
+     * equality.** What does distinguish them is next door: with tables
+     * standing, `action.eat-in-cell` does not appear in the run at all.
+     */
     const withTables = watchedPrison();
     expect(withTables.finalHunger).toBe(231.5);
     expect(control.finalHunger).toBeGreaterThan(withTables.finalHunger - 10);
@@ -580,9 +609,16 @@ describe('the prisoner uses the rooms, which is what the phase is for', () => {
     expect(control.hygieneEverRose, 'with no shower head, hygiene can only drain').toBe(false);
     expect(control.finalHygiene).toBe(91);
 
-    // With two shower heads it is refilled, and ends 125.0 higher.
+    // With two shower heads it is refilled, and ends 124.6 higher.
+    //
+    // 215.6, not the 216 this recorded before ADR 0054, and the 0.4 is exactly
+    // 20 ticks of `NEED_DECAY_PER_TICK.hygiene` -- one `ActionSystem`
+    // reconsideration cadence, the delay an association running past a block
+    // boundary puts in front of the day's last shower. The control is
+    // unchanged at 91, because a prison with no shower head has nothing whose
+    // timing could shift.
     expect(withShower.hygieneEverRose, 'a hygiene level that rises is a shower that happened').toBe(true);
-    expect(withShower.finalHygiene).toBe(216);
+    expect(withShower.finalHygiene).toBe(215.6);
     expect(withShower.finalHygiene).toBeGreaterThan(control.finalHygiene);
 
     // Both prisons bought and paid for the same 15 planks and 3 bricks -- the

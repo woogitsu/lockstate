@@ -362,13 +362,20 @@ export const BUILDABLE_REGISTRY = new Map<string, BuildableDefinition>([
   /*
    * A machine body, so brick, and 2 wide -- two bricks and 60 work.
    *
-   * `object.washing-machine`'s `'laundry'` capability is gated by **nothing**:
-   * no entry in `DEFAULT_ACTIONS` names it and no other room requires it, so a
-   * furnished `room.laundry` reads both its requirements satisfied and changes
-   * no prisoner's behaviour. That is a true statement about this row rather
-   * than a defect in it -- a laundry job system is what would consume it -- and
-   * it is recorded here because the next reader will otherwise look for the
-   * consumer.
+   * `object.washing-machine`'s `'laundry'` capability **was** gated by nothing:
+   * no entry in `DEFAULT_ACTIONS` named it and no other room required it, so a
+   * furnished `room.laundry` read both its requirements satisfied and changed
+   * no prisoner's behaviour. The paragraph said so, called it a true statement
+   * rather than a defect, and predicted that "a laundry job system is what
+   * would consume it". **`action.laundry-work` is that consumer**
+   * (`src/simulation/prisoners/actions.ts`,
+   * [ADR 0054](../../../docs/adr/0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md)):
+   * it targets `room.laundry`, requires this capability, and gains `hygiene`
+   * at 1 a tick against `action.shower`'s 4. Two machines are the room's
+   * authored minimum and each is 2 tiles wide, so the capability-scoped
+   * ceiling `concurrentUse(laundry, 'laundry')` is 4 -- a furnished laundry
+   * puts four prisoners to work. Both directions are kept rather than
+   * overwritten, because the sentence this replaces was correct when written.
    */
   ['washing-machine-brick', {
     id: 'washing-machine-brick',

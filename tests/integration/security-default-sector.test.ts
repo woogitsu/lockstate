@@ -259,12 +259,26 @@ describe('an incident is triggered, responded to and closed, in a session starte
       'contraband-pressure',
     ]);
     expect(riots[0]!.causeFactors.find((factor) => factor.kind === 'staffing-shortfall')?.value).toBe(1);
-    // The measured value, not a bound: 0.3888... is 7/18, which is what three
-    // prisoners come to when two of them have all six needs on the floor and the
-    // third has three of six met by a bed and a cell to eat in. A `>= 0.35`
-    // bound would also pass for a sample that had drifted to 0.9, which is a
-    // different prison.
-    expect(riots[0]!.causeFactors.find((factor) => factor.kind === 'needs-pressure')?.value).toBeCloseTo(0.3889, 4);
+    /*
+     * The measured value, not a bound. It is what three prisoners come to when
+     * two of them have all six needs on the floor and the third has three of
+     * six met by a bed and a cell to eat in. A `>= 0.35` bound would also pass
+     * for a sample that had drifted to 0.9, which is a different prison.
+     *
+     * **0.3898, and it was 0.3889 -- exactly 7/18 -- before
+     * [ADR 0054](../../docs/adr/0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md).**
+     * It is no longer a clean fraction because the housed prisoner's met needs
+     * are a fraction of a level lower at this tick than they used to be: that
+     * change ends the `[500, 1000)` block in a 60-tick association rather than
+     * in nothing, which delays their next meal and next toilet by one 20-tick
+     * reconsideration cadence. **Association fulfils no need** -- its
+     * `needEffectsPerTick` is empty and `scoreAction` gives it exactly 0 -- so
+     * the pressure went *up* by 0.0009 rather than down, which is the direction
+     * that matters: filling an empty block with something to do does not
+     * relieve the neglect that ADR 0048 made a riot out of. The riot still
+     * fires at the same `RIOT_TICK`.
+     */
+    expect(riots[0]!.causeFactors.find((factor) => factor.kind === 'needs-pressure')?.value).toBeCloseTo(0.3898, 4);
     expect(riots[0]!.causeFactors.find((factor) => factor.kind === 'contraband-pressure')?.value).toBe(0);
   });
 

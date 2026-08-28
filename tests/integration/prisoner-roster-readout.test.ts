@@ -166,15 +166,29 @@ describe('every row the panel can draw is a row a real prison produces', () => {
       for (const row of roster(runtime).rows) seen.add(`${row.activityLabelKey}|${String(row.travelling)}`);
     }
 
-    // Written out rather than collected into a set the test also builds: these
-    // are the nine states this build reaches, and a reviewer has to see the
-    // list change if the action catalogue or the regime does. The one
-    // performing-only entry is `action-phase.idle`, which is not a place a
-    // prisoner walks to.
+    /*
+     * Written out rather than collected into a set the test also builds: these
+     * are the eleven states this build reaches, and a reviewer has to see the
+     * list change if the action catalogue or the regime does. The one
+     * performing-only entry is `action-phase.idle`, which is not a place a
+     * prisoner walks to.
+     *
+     * **Eleven, and it was nine before
+     * [ADR 0054](../../docs/adr/0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md).**
+     * The two new rows are `action.free-association`, which this prison now
+     * reaches during the two `work`/`education` blocks -- 1,000 ticks a day
+     * that used to read `action-phase.idle` because the block's own categories
+     * are served only by actions naming a classroom or a laundry, and this
+     * prison has a cell and a yard. `|true` appears for it because a prisoner
+     * whose cell is not the tile they are standing on walks back to it, which
+     * is a real journey the panel draws.
+     */
     expect([...seen].sort()).toEqual([
       'action-phase.idle.name|false',
       'action.eat-in-cell.name|false',
       'action.eat-in-cell.name|true',
+      'action.free-association.name|false',
+      'action.free-association.name|true',
       'action.sleep.name|false',
       'action.sleep.name|true',
       'action.use-toilet.name|false',
@@ -229,7 +243,14 @@ describe('two prisoners on two timetables read differently at the same tick', ()
     const blocks = regime(runtime);
     const allowed = (groupId: string): readonly string[] =>
       blocks.groups.find((group) => group.classificationGroupId === groupId)?.allowedCategoryLabelKeys ?? [];
-    expect(allowed('general-population')).toEqual(['action-category.recreation.name']);
+    // Two labels, not one, since ADR 0054 added `'free-association'` to this
+    // block: a `recreation`-only block resolves nothing in a prison with no
+    // yard and no common room. The invariant this line is here for is
+    // unchanged -- `sleep` is still not among them.
+    expect(allowed('general-population')).toEqual([
+      'action-category.recreation.name',
+      'action-category.free-association.name',
+    ]);
     expect(allowed('high-risk')).toEqual([
       'action-category.sleep.name',
       'action-category.meal.name',

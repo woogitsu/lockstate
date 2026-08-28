@@ -440,12 +440,24 @@ describe('a removal that drops capacity below the claims held on a room (ADR 002
 
     submit(runtime, 'admit-1', packCommand({ type: 'AdmitPrisoner', ...ADMISSION, ...ARRIVAL }));
     submit(runtime, 'admit-2', packCommand({ type: 'AdmitPrisoner', ...ADMISSION, x: ARRIVAL.x + 1, y: ARRIVAL.y }));
-    // Into the recreation block, `[1000, 1200)` of the day, whose only legal
-    // category is `recreation`. `action.yard-recreation` outscores
-    // `action.common-room-recreation` (recreation 3 plus safety against
-    // recreation 2) and no common room is zoned anyway, so the yard is where
-    // both of them go.
-    stepTo(runtime, 1_040);
+    /*
+     * Into the recreation block, `[1000, 1200)` of the day.
+     * `action.yard-recreation` outscores `action.common-room-recreation`
+     * (recreation 3 plus safety against recreation 2) and no common room is
+     * zoned anyway, so the yard is where both of them go.
+     *
+     * **1,120 rather than 1,040, and the 80 ticks are ADR 0054 rather than
+     * slack.** That change added `'free-association'` to this block, because
+     * until it did the block resolved nothing at all in a prison with no yard
+     * and no common room. `action.free-association` runs for 60 ticks and the
+     * previous block, `[500, 1000)`, now ends in one -- so an association
+     * begun at 980 is still being performed at 1,040 and the prisoner has not
+     * yet reconsidered into the yard. It never *displaces* the yard: it
+     * declares no need effect, `scoreAction` therefore gives it exactly 0, and
+     * `action.yard-recreation` scores above 0 for any safety deficit at all.
+     * What moved is when the walk next runs, not what it picks.
+     */
+    stepTo(runtime, 1_120);
 
     const first = runtime.prisoners.entityStore.getIdByIndex(0);
     const second = runtime.prisoners.entityStore.getIdByIndex(1);

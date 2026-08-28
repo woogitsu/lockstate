@@ -108,7 +108,6 @@ const AWAITING_CONSUMER: Readonly<Record<string, string>> = {
   // content rather than from a constant the service holds.
   'room.garbage-room': 'Declared with no reader anywhere; no build order, job, need or regime action names it.',
   'room.kitchen': 'Declared with no reader anywhere.',
-  'room.laundry': 'Declared with no reader anywhere.',
   // Still unconsumed, but no longer for the reason this entry gave. It read
   // "intake has no admission path yet (#89)" until an admission path arrived:
   // `src/main.ts` handles an `admit-prisoner` command (#261 step 4) and the
@@ -377,13 +376,24 @@ describe('every unconsumed content id is accounted for', () => {
       // than kept with a new reason, which is what this file's stale-entry gate
       // asks for.
       //
-      // 9 and 31, not 14 and 31: ADR 0053's integration test names five
-      // staff-role ids that nothing outside the catalogue had named before, so
-      // `unconsumedBySrcAndTests` falls by five in one change while
-      // `unconsumedBySrcOnly` does not move at all -- the rule those five now
-      // feed reads their `department` and writes no id literal into `src/`.
-      // That is the mirror image of ADR 0052's `object.sink`, which moved both.
-    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 9, unconsumedBySrcOnly: 31 });
+      // 8 and 30, from a base of 14 and 31, because two changes landed in the
+      // same window and each moved it differently.
+      //
+      // ADR 0053's integration test names five staff-role ids that nothing
+      // outside the catalogue had named before, so `unconsumedBySrcAndTests`
+      // falls by five while `unconsumedBySrcOnly` does not move at all -- the
+      // rule those five feed reads their `department` and writes no id literal
+      // into `src/`.
+      //
+      // ADR 0054 moves both by one: `action.laundry-work` names `room.laundry`
+      // in `src/simulation/prisoners/actions.ts`, so the room a player could
+      // zone and furnish to no effect now puts prisoners to work. Its entry is
+      // removed above rather than reworded.
+      //
+      // Between them that is the pair ADR 0052's `object.sink` and ADR 0053's
+      // staff roles illustrate: a consumer in `src/` moves both counts, a
+      // consumer that only reads a field moves one.
+    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 8, unconsumedBySrcOnly: 30 });
   });
 
   it('scans a non-trivial catalog and a non-trivial consumer set, so this cannot pass vacuously', () => {

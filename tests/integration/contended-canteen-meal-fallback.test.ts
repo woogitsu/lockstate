@@ -217,14 +217,32 @@ describe('six prisoners and a canteen that seats three', () => {
      * The split by scan position is the ascending entity-index contention rule
      * `docs/PRISONER_OPERATIONS.md` records: the first three admitted take more
      * of the canteen, the last three more of the cell. Both halves eat.
+     *
+     * **Every count here moved on
+     * [ADR 0054](../../docs/adr/0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md),
+     * and the reason is one entry rather than six.** This prison has a canteen
+     * and nothing else, so its three room-gated blocks -- both
+     * `work`/`education` blocks and the `recreation`-only one -- resolved no
+     * candidate at all and the six stood through 1,200 ticks a day.
+     * `'free-association'` is now legal in those blocks, so the 4,200 ticks
+     * that appear in every row are ticks that used to be nothing. The meal
+     * counts moved with them because the association that fills `[1000,1200)`
+     * runs one reconsideration cycle into `[1200,1300)`, which shifts who is
+     * scanned first at the moment the canteen's three seats are handed out:
+     * the split flattens from 440/160 and 320/240 to 200 cell meals for
+     * everybody, with the first three taking 360 canteen ticks and the last
+     * three 400. **The contention itself is unchanged** -- `diningCeiling` is
+     * still 3, `maxUseClaims` is still 3, and every one of the six still eats
+     * both meals -- and association feeds nothing, so no hunger figure moved
+     * for any reason but timing.
      */
     expect(run.perPrisoner).toEqual([
-      { 'action.sleep': 3_000, 'action.eat-meal': 440, 'action.eat-in-cell': 160, 'action.use-toilet': 1_000 },
-      { 'action.sleep': 3_000, 'action.eat-meal': 440, 'action.eat-in-cell': 160, 'action.use-toilet': 1_000 },
-      { 'action.sleep': 3_000, 'action.eat-meal': 440, 'action.eat-in-cell': 160, 'action.use-toilet': 1_000 },
-      { 'action.sleep': 3_000, 'action.eat-meal': 320, 'action.eat-in-cell': 240, 'action.use-toilet': 900 },
-      { 'action.sleep': 3_000, 'action.eat-meal': 320, 'action.eat-in-cell': 240, 'action.use-toilet': 900 },
-      { 'action.sleep': 3_000, 'action.eat-meal': 320, 'action.eat-in-cell': 240, 'action.use-toilet': 900 },
+      { 'action.sleep': 3_000, 'action.eat-meal': 360, 'action.eat-in-cell': 200, 'action.use-toilet': 920, 'action.free-association': 4_200 },
+      { 'action.sleep': 3_000, 'action.eat-meal': 360, 'action.eat-in-cell': 200, 'action.use-toilet': 920, 'action.free-association': 4_200 },
+      { 'action.sleep': 3_000, 'action.eat-meal': 360, 'action.eat-in-cell': 200, 'action.use-toilet': 920, 'action.free-association': 4_200 },
+      { 'action.sleep': 3_000, 'action.eat-meal': 400, 'action.eat-in-cell': 200, 'action.use-toilet': 880, 'action.free-association': 4_200 },
+      { 'action.sleep': 3_000, 'action.eat-meal': 400, 'action.eat-in-cell': 200, 'action.use-toilet': 880, 'action.free-association': 4_200 },
+      { 'action.sleep': 3_000, 'action.eat-meal': 400, 'action.eat-in-cell': 200, 'action.use-toilet': 880, 'action.free-association': 4_200 },
     ]);
 
     // Stated as properties as well as counts, so the intent survives a
@@ -246,7 +264,16 @@ describe('six prisoners and a canteen that seats three', () => {
      * put the refused half at 0.0 -- see the header table. Every one of the six
      * stays above two thirds of `NEED_MAX` at their worst.
      */
-    expect(run.lowestHunger).toEqual([177.5, 177.5, 177.5, 178.5, 178.5, 178.5]);
+    /*
+     * Two levels lower than the 177.5 / 178.5 this recorded before ADR 0054,
+     * which is 40 ticks of `NEED_DECAY_PER_TICK.hunger` -- two `ActionSystem`
+     * reconsideration cadences, the delay an association running past the
+     * `[1000,1200)` boundary puts in front of the first meal of the next
+     * block. It is when they eat, not whether: the point of the assertion is
+     * the line under it, and every one of the six is still above two thirds of
+     * `NEED_MAX` at their worst.
+     */
+    expect(run.lowestHunger).toEqual([175.5, 175.5, 175.5, 177.5, 177.5, 177.5]);
     for (const [n, hunger] of run.lowestHunger.entries()) {
       expect(hunger, `prisoner ${n} was starved to the floor`).toBeGreaterThan(0);
     }
@@ -261,8 +288,13 @@ describe('six prisoners and a canteen that seats three', () => {
     expect(control.diningCeiling, 'two 3-wide tables').toBe(6);
     expect(control.maxUseClaims, 'all six in the canteen at once, which the one-table run never reached').toBe(PRISONERS);
 
+    // 560 and 920, not 600 and 1,000, for the timing reason recorded on the
+    // one-table run above; `action.free-association` appears here for the same
+    // reason it appears there. What this assertion is *for* is unchanged and is
+    // the line below it: with six seats for six prisoners, `action.eat-in-cell`
+    // is absent from every row.
     expect(control.perPrisoner).toEqual(
-      Array.from({ length: PRISONERS }, () => ({ 'action.sleep': 3_000, 'action.eat-meal': 600, 'action.use-toilet': 1_000 })),
+      Array.from({ length: PRISONERS }, () => ({ 'action.sleep': 3_000, 'action.eat-meal': 560, 'action.use-toilet': 920, 'action.free-association': 4_200 })),
     );
     for (const [n, counts] of control.perPrisoner.entries()) {
       expect(counts['action.eat-in-cell'], `prisoner ${n} fell back to a cell meal with a seat free`).toBeUndefined();

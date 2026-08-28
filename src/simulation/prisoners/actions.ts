@@ -149,4 +149,60 @@ export const DEFAULT_ACTIONS: readonly ActionDefinition[] = [
     id: 'action.free-association', category: 'free-association', target: { kind: 'own-accommodation' },
     needEffectsPerTick: {}, minDurationTicks: 60,
   },
+  /*
+   * Prison labour, and the seventh category's first content. **Appended, for
+   * the reason the paragraph above this array gives at length.**
+   *
+   * `'work'` has been in `ACTION_CATEGORIES` since issue #24 and
+   * `GENERAL_POPULATION_REGIME` gives it 1,000 of the day's 2,400 ticks across
+   * two blocks. Issue #440 reads that as 1,000 ticks with nothing to do; the
+   * measurement says otherwise, and the difference is why this entry is a
+   * *room* action rather than a second `own-accommodation` terminal. Both of
+   * those blocks also allow `education`, and in a prison with a furnished
+   * classroom they are already full: measured on the real kernel over ten
+   * in-game days, `action.classroom-education` performs 9,000 of their 10,000
+   * ticks. **No block of any schedule this repository ships or builds at
+   * runtime allows `work` alone**, so the empty category was costing zero
+   * ticks and an `own-accommodation` work action would have moved no number
+   * that a prisoner or a player can see. What was actually empty is a prison
+   * with no rooms in it, and `regime.ts` closes that.
+   *
+   * So this entry is authored for what it *adds*, not for a hole it plugs:
+   *
+   * - **`room.laundry`, because the room is already in the game and nothing
+   *   has ever used it.** It is zonable (`src/content/room-catalog.ts`),
+   *   furnishable (`washing-machine-brick`, two bricks apiece), and
+   *   `src/simulation/construction/definition.ts` records of its capability
+   *   that it "is gated by **nothing**: no entry in `DEFAULT_ACTIONS` names it
+   *   and no other room requires it, so a furnished `room.laundry` reads both
+   *   its requirements satisfied and changes no prisoner's behaviour ... a
+   *   laundry job system is what would consume it". This is that consumer. The
+   *   comment is corrected in the same commit rather than left to rot.
+   * - **`hygiene`, at 1 against `action.shower`'s 4**, which is the content
+   *   convention the catalogue already uses for a second route to a need
+   *   (`action.eat-in-cell` gains 3 against `action.eat-meal`'s 4;
+   *   `action.common-room-recreation` 2 against `action.yard-recreation`'s 3).
+   *   Hygiene rather than an invented need because `room.laundry`'s own
+   *   authored `category` in the room catalogue is `'hygiene'` -- content that
+   *   has said what this room is for since it shipped, with no code reading
+   *   it. It also gives the two work/education blocks a second thing to be
+   *   for: `action.classroom-education` gains `recreation: 1` there, so a
+   *   prisoner in a prison with both takes whichever of boredom and grime is
+   *   the worse today, and a player choosing which room to build is making a
+   *   real choice rather than a cosmetic one.
+   * - **It does not give `hygiene` a cell-side route, and that is the
+   *   decision rather than an omission.** `hygiene` and `recreation` stay
+   *   room-gated (issue #436, [ADR 0054](../../../docs/adr/0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md)):
+   *   since ADR 0048 made `needsPressure` the mean deficit over all six needs,
+   *   an unmet need is what a riot is made of, and a cell-side sibling for
+   *   every need would delete the pressure that makes building a shower room
+   *   or a yard worth doing.
+   * - **120 ticks**, the same shift as `action.classroom-education`, because
+   *   the two share both work blocks and an unequal duration would decide
+   *   which of them a block is mostly spent on for reasons unrelated to need.
+   */
+  {
+    id: 'action.laundry-work', category: 'work', target: { kind: 'room-catalog-id', roomCatalogId: 'room.laundry' },
+    requiredObjectCapability: 'laundry', needEffectsPerTick: { hygiene: 1 }, minDurationTicks: 120,
+  },
 ];
