@@ -534,11 +534,15 @@ describe('a populated prison survives save -> load', () => {
    * here, while agreeing with any assertion phrased as "two entities are
    * alive".
    *
-   * This is issue #433's acceptance criterion 4 arriving early: a V2-shape
-   * bundle whose capacity matches this build's store restores its entities.
-   * What #433 still owes is the capacity *mismatch* -- a real V1 save carries
-   * 8 slots against this build's 5,000, and that is the case
-   * `session-restore-failure.test.ts` pins as a refusal.
+   * This is the matched-capacity case. **The sentence that stood here said
+   * #433 still owed the capacity *mismatch*, and that a real V1 save's 8
+   * slots against this build's 5,000 was "the case
+   * `session-restore-failure.test.ts` pins as a refusal".** It is no longer
+   * one: `EntityStore.loadSnapshot` compares the written prefix rather than
+   * the allocation, so that V1 save restores, and what
+   * `session-restore-failure.test.ts` pins as a refusal is a ledger whose
+   * *prefix* is wider than this build can address. The case below is the
+   * other direction #433 asked for.
    */
   it('brings a V2-shape save back with its entity ledger alive, ids and generations included', () => {
     const source = new EntityStore(DEFAULT_PRISONER_CAPACITY);
@@ -587,6 +591,85 @@ describe('a populated prison survives save -> load', () => {
     // session's sequence instead of colliding with it.
     expect(store.maxActiveIndex).toBe(2);
     expect(store.spawn()).toBe(3);
+  });
+
+  /**
+   * The reverse direction, and the one that costs more than a ledger to get
+   * right (#433): a **populated** save -- every subsystem section present --
+   * whose writing build allocated more prisoner slots than this one does.
+   *
+   * The ledger is the visible half, and `EntityStore.loadSnapshot`'s written
+   * prefix covers it. The half underneath is `restoreSessionSystems`, which
+   * used to size the prisoner component arrays from the *save's* capacity and
+   * then copy them into this runtime's: fine while the two builds agreed, and
+   * a bare `RangeError` out of `TypedArray.set` the moment they did not, with
+   * nothing said about capacity at all. They are sized to this runtime's store
+   * now, and the payload is a prefix, so the copy is well-defined either way.
+   *
+   * Asserted on the prisoners the *source* runtime holds -- their ids and a
+   * component value each -- rather than on a re-captured bundle, and never on
+   * a count: an id folds the slot index into it, so a restore that re-homed a
+   * slot would renumber them (ADR 0005, ADR 0026) while agreeing with any
+   * assertion phrased as "the prisoners are still there".
+   */
+  it('restores a populated save whose ledger was written at a wider capacity than this build allocates', () => {
+    const source = buildPopulatedPrison();
+    const bundle = captureSessionSnapshot(source);
+    const ledger = bundle.entities;
+    if (ledger === undefined || bundle.simulation === undefined) {
+      throw new Error('a populated prison must capture both an entity ledger and a simulation section');
+    }
+
+    // What the source prison actually holds, read before anything is
+    // rewritten, so the expectations below come from a live runtime rather
+    // than from the payload under test.
+    const liveIndices = [...Array(source.prisoners.entityStore.maxActiveIndex + 1).keys()].filter((index) =>
+      source.prisoners.entityStore.isIndexAlive(index),
+    );
+    expect(liveIndices.length).toBeGreaterThan(1);
+    const expected = liveIndices.map((index) => ({
+      id: source.prisoners.entityStore.getIdByIndex(index),
+      sentenceEndTick: source.prisoners.records.sentenceEndTick[index]!,
+    }));
+
+    // The same save, written by a build with 8,000 prisoner slots. Only the
+    // ledger's *allocation* changes: the runs the writing build wrote are
+    // untouched and the unallocated tail grows, which is exactly the
+    // difference between two builds' `DEFAULT_PRISONER_CAPACITY`.
+    const widerCapacity = DEFAULT_PRISONER_CAPACITY + 3_000;
+    const padded = (runs: readonly (readonly [number, number])[]): readonly (readonly [number, number])[] => [
+      ...runs,
+      [0, widerCapacity - DEFAULT_PRISONER_CAPACITY] as const,
+    ];
+    const envelope = createSaveEnvelope({
+      gameVersion: 'lockstate-0.0.0',
+      prisonId: PRISON_ID,
+      revision: 1,
+      createdAt: 1_700_000_000_000,
+      updatedAt: 1_700_000_000_001,
+      kernel: bundle.kernel,
+      world: bundle.world,
+      construction: bundle.construction,
+      entities: { ...ledger, capacity: widerCapacity, generations: padded(ledger.generations), alive: padded(ledger.alive) },
+      simulation: bundle.simulation,
+      ...(bundle.identity === undefined ? {} : { identity: bundle.identity }),
+    });
+
+    const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)) as unknown);
+    expect(decoded).toMatchObject({ ok: true, migrated: false });
+    if (!decoded.ok) throw new Error('the envelope must decode for this test to mean anything');
+    expect(decoded.value.payload.entities?.capacity).toBe(widerCapacity);
+
+    const { runtime: restored } = restoreSimulationRuntime(
+      decoded.value.payload as unknown as SessionSnapshotBundle,
+      SCENARIO_SEED,
+    );
+
+    expect(restored.prisoners.entityStore.capacity).toBe(DEFAULT_PRISONER_CAPACITY);
+    for (const { id, sentenceEndTick } of expected) {
+      expect(restored.prisoners.entityStore.isAlive(id), `entity ${id}`).toBe(true);
+      expect(restored.prisoners.records.sentenceEndTick[restored.prisoners.entityStore.getIndex(id)]).toBe(sentenceEndTick);
+    }
   });
 });
 
