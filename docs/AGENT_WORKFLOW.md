@@ -117,14 +117,16 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
   when the browser suite is the thing being verified", was therefore stronger
   than the facts required, and it is withdrawn: verify on the branch you are
   actually changing.
-- **Two browser tests fail in the agent container and pass on CI, and neither
-  is anybody's branch.** `tests/browser/app-shell.spec.ts` — *"every control can
-  actually be pressed … (#88)"* and *"a pending delivery costs the Build panel
-  nothing … (#285)"* — reproduce on plain `main` here and are green on the
-  self-hosted runner. #88 fails because held-guard rows 2 and 3 are never laid
-  out; #285 because a refund does not arrive inside a 20-second poll. Both wait
-  on the simulation to produce something, and this container is slower than the
-  runner, so **they are a property of where the suite runs and not of the diff**.
+- **Three browser tests fail in the agent container and pass on CI, and none
+  is anybody's branch.** Each was confirmed by running it *alone* on plain
+  `main` here, and all three are green on the self-hosted runner:
+  `app-shell.spec.ts` *"every control can actually be pressed … (#88)"* (held-guard
+  rows 2 and 3 are never laid out), `app-shell.spec.ts` *"a pending delivery costs
+  the Build panel nothing … (#285)"* (the refund does not arrive inside a
+  20-second poll), and `ui-shell.spec.ts` *"the Rooms panel says what a zoned room
+  is missing … (#331)"*. All three wait on the simulation to produce something,
+  and this container is slower than the runner, so **they are a property of where
+  the suite runs and not of the diff**.
   Two agents lost time to them on 2026-08-28, one reporting them as "pre-existing
   failures on this branch" — true, and misleading, because they are pre-existing
   on every branch. Measure `main` in a *separate* worktree before believing a
