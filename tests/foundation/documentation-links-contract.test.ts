@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { stripComments } from '../helpers/canonical-iteration';
 
 /**
  * Every relative markdown link resolves to a file that exists.
@@ -23,6 +24,13 @@ import { describe, expect, it } from 'vitest';
  * a path in a way that a filename mentioned in prose is not, so this is the
  * subset that is *mechanically* checkable at all. The other three were each
  * caught by a person reading carefully, which is not a mechanism.
+ *
+ * **That last sentence stopped being the whole story on 2026-08-28.** It is
+ * kept as written because it is why the third describe block below exists:
+ * that block runs the rooted-path check of the second one over the comments in
+ * `src/`, `tests/`, `tooling/` and `scripts/`, which is where two of those
+ * three lived. What is still true is the narrowing -- a bare filename in prose
+ * is not checkable and is not checked, wherever it is written.
  *
  * Deliberately narrow. It checks `[text](target)`, not backticked filenames in
  * prose: `` `foo.ts` `` in a sentence may be a module, a concept, a file that
@@ -146,15 +154,18 @@ const ROOTED_PATH = /^(?:docs|src|tests|scripts|supabase|public|\.github)\//;
  * `tests/unit/module-boundary-rules.test.ts` says its fixture trees are
  * fictional by naming `` `src/alpha/...` ``, and
  * `tests/unit/ui-orchestration-boundaries.test.ts` writes
- * `` `src/ui/<something>/` `` for any subtree at all. Each describes a shape,
- * and a shape has no single path to resolve.
+ * `` `src/ui/<something>/` `` for any subtree at all. A `{}` substitution is
+ * the same thing in code -- `` `src/{tree}/index.ts` `` -- and matters because
+ * a template literal is delimited by backticks, so an interpolated path quoted
+ * in a comment arrives here looking exactly like a citation. Each describes a
+ * shape, and a shape has no single path to resolve.
  *
  * Tested against the raw token, before the trailing-punctuation strip below,
  * because that strip runs the other way: it takes the three dots off
- * `src/alpha/...` and leaves a claim that the directory `src/alpha/` is on
- * disk. Measured: that is exactly what it did.
+ * `src/alpha/...` and leaves behind a claim that the fictional directory those
+ * dots were eliding is on disk. Measured: that is exactly what it did.
  */
-const NOT_A_SINGLE_PATH = /[*\u2026<>]|\.\.\./;
+const NOT_A_SINGLE_PATH = /[*\u2026<>{}]|\.\.\./;
 
 /**
  * Rooted paths that truthfully name a file this repository does not contain.
@@ -193,10 +204,15 @@ interface Citation {
   readonly path: string;
 }
 
-function rootedPathCitations(path: string): readonly Citation[] {
-  const source = relative(ROOT, path);
+/**
+ * Takes the text rather than the file, because the two corpora hand it
+ * different text: a markdown file is scanned whole, and a source file is
+ * scanned through `commentsOf` below. One extractor with two callers, rather
+ * than two extractors that agree on the day they are written.
+ */
+function rootedPathCitations(source: string, content: string): readonly Citation[] {
   const citations: Citation[] = [];
-  for (const match of readFileSync(path, 'utf8').matchAll(CODE_SPAN)) {
+  for (const match of content.matchAll(CODE_SPAN)) {
     let raw = match[2]!.trim();
     // `` `x` ``: the outer run delimits and the inner backticks are the
     // span. Anything else keeps its content as written.
@@ -222,7 +238,7 @@ function rootedPathCitations(path: string): readonly Citation[] {
   return citations;
 }
 
-const citations = markdownFiles.flatMap(rootedPathCitations);
+const citations = markdownFiles.flatMap((file) => rootedPathCitations(relative(ROOT, file), readFileSync(file, 'utf8')));
 
 describe('every rooted path cited in the documentation is on disk', () => {
   it('finds citations to check, so this cannot pass vacuously', () => {
@@ -252,5 +268,259 @@ describe('every rooted path cited in the documentation is on disk', () => {
     const uncited = [...ABSENT_BY_DESIGN.keys()].filter((path) => !cited.has(path));
 
     expect(uncited, 'these allowlist entries are cited by no documentation').toEqual([]);
+  });
+});
+
+/**
+ * The same check, over the comments in this repository's own source.
+ *
+ * ## Why this exists
+ *
+ * The docblock at the top of this file, about the four dangling paths that
+ * paid for the check above: *"The other three were each caught by a person
+ * reading carefully, which is not a mechanism."* Two of those three were
+ * filenames in TypeScript comments. This is the mechanism.
+ *
+ * It is deliberately the *same* mechanism -- the same `ROOTED_PATH`, the same
+ * `NOT_A_SINGLE_PATH`, the same `CODE_SPAN`, the same `rootedPathCitations`.
+ * A second extractor would agree with the first on the day it was written and
+ * drift afterwards, and two checks that disagree about what a citation is are
+ * worse than one, because only one of them gets read.
+ *
+ * ## The measurement, which is the whole argument
+ *
+ * Measured at `0850fe8`, over 693 `.ts`, `.mts` and `.mjs` files under `src/`,
+ * `tests/`, `tooling/` and `scripts/`: **2,291** rooted-path citations in
+ * comments, of which **2,285** resolve. The remaining six occurrences name
+ * four distinct paths that are truthfully absent, allowlisted below with their
+ * reasons. That is the same justification the markdown side gave for itself --
+ * 629 of 630 at `7a15b17`, 3,607 of 3,608 at `0850fe8` -- and it is what makes
+ * this a check rather than a list nobody reads, which is the objection the
+ * first docblock raises against flagging bare filenames and which still
+ * stands.
+ *
+ * Ten did not resolve on the first run. **Three were real**, and are corrected
+ * in the commit before this one:
+ *
+ * - `src/rendering/assets/environment-atlas-plan.ts` said
+ *   `environment-atlas-plan.test.ts`, under `tests/unit/`, "drives both" of
+ *   the failures it throws on. The tests are real; they are
+ *   `describe('environment atlas plan')` in `tests/unit/environment-art.test.ts`.
+ * - `tests/helpers/production-reachability.ts` said its `findImports` fixtures
+ *   were in `module-boundaries.test.ts`, under `tests/unit/`. They are in
+ *   `tests/unit/module-boundary-rules.test.ts`.
+ * - **this file** offered `0007-navigation-and-pathfinding.md`, under
+ *   `docs/adr/`, as its worked example of a well-formed rooted token -- in the
+ *   sentence that defines what a rooted token *is*. The ADR is
+ *   `docs/adr/0007-navigation-work-budgets-and-flow-fields.md`. The contract
+ *   written to catch confident pointers at files that are not there carried
+ *   one in its own explanation of what it catches, for as long as it has
+ *   existed: `7a887b3` wrote that sentence on 2026-08-24 and nothing touched
+ *   the filename in it until 2026-08-28. That is the best argument this block
+ *   has for existing, so it is written here rather than left in a commit
+ *   message.
+ *
+ * **Two were the extractor's fault, not an author's**: the elision
+ * `src/alpha/...`, which the trailing-punctuation strip stripped down into a
+ * claim about a directory, and the placeholder `src/ui/<something>/`, which
+ * was a shape all along. `NOT_A_SINGLE_PATH` excludes both shapes now.
+ * **The other five are true as written**, naming four distinct paths, and are
+ * allowlisted below.
+ *
+ * ## Comments, not code
+ *
+ * Scanning a source file whole would be wrong in a way that is easy to miss: a
+ * template literal is delimited by backticks, so an interpolated path in code
+ * reads as a code span in prose. `commentsOf` keeps only the comments, and it
+ * does so without adding a second scanner to this repository.
+ *
+ * `stripComments` (`tests/helpers/canonical-iteration.ts`) replaces every
+ * comment character with a space and keeps every newline, so an offset into
+ * the stripped text is an offset into the source -- a property pinned across
+ * the whole corpus by `tests/foundation/comment-stripping-contract.test.ts`,
+ * *"preserves length and line count, so offsets and line numbers stay true"*,
+ * and asserted there over every `.ts` file under `src/` and `tests/`. The
+ * comments are therefore exactly the characters at which the two texts differ,
+ * and that is all `commentsOf` computes.
+ *
+ * Its residual error is inherited too, and it runs in the safe direction. That
+ * scanner resolves the one genuine ambiguity in lexing JavaScript -- whether
+ * `/` divides or opens a regular expression -- so that a mis-read leaves a
+ * comment *in* the stripped text rather than taking code *out* of it. Read
+ * backwards, as here, that means a mis-read costs a comment this check never
+ * looks at. It cannot produce a false citation out of code; it can only miss
+ * a real one.
+ *
+ * ## The allowlist is keyed on the pair, not on the path
+ *
+ * `ABSENT_BY_DESIGN` above keys on the path alone, which means the one honest
+ * mention that earned an entry also excuses every other mention of the same
+ * path anywhere in the corpus -- including a genuinely dangling one written
+ * later by someone who never saw the entry. That is the failure the markdown
+ * docblock warns about in its own words, *"an allowlist that absorbs a real
+ * dangling reference is worse than no check"*, reached by a different road.
+ * This map keys on `source -> path`, so a grant is worth exactly the sentence
+ * that earned it.
+ *
+ * ## How to record a path that is meant to be dead
+ *
+ * This repository's rot discipline requires the opposite of what a checker
+ * wants: `docs/AGENT_WORKFLOW.md` §4 says to *"mark both directions rather
+ * than overwriting"*, so a corrected citation is supposed to be written down
+ * *beside* the correction -- and a dead path recorded that way is a dangling
+ * rooted path, standing in the tree on purpose. The two rules are in permanent
+ * tension and this is how it is resolved here:
+ *
+ * - **Write the dead name as a bare filename** --
+ *   `environment-art-coverage.test.ts` rather than the same name rooted at
+ *   `tests/unit/`. It is out of this check's scope by the same rule that keeps
+ *   bare filenames out of it everywhere else, the record survives intact, and
+ *   the correction standing next to it supplies the directory. This is the
+ *   default, and all three corrections above took it.
+ * - **Allowlist it only when the rootedness is the point of the sentence.**
+ *   `docs/research/NEW_FEATURES.md` below is not a name that was once wrong;
+ *   it is a specific rooted path, cited as settled across eight issues, which
+ *   has never existed. Shortening it to `NEW_FEATURES.md` would make the
+ *   sentence vaguer and no truer. An entry costs a reviewer's attention once,
+ *   and the honesty tests below keep it from outliving its reason.
+ *
+ * The distinction is whether the sentence is about a *name* or about a *path*.
+ * A name that turned out to be wrong is prose; a path that was never there is
+ * a claim, and a claim gets an entry with a reason attached.
+ *
+ * ## What this does not reach
+ *
+ * Shell, Python, PowerShell and SQL under `scripts/` and `tooling/`: 13 files
+ * carrying 14 rooted citations at `0850fe8`, all of which resolve. Reaching
+ * them needs a `#`-comment scanner, which is the second extractor this block
+ * exists to avoid; the honest statement is that the surface is unchecked and
+ * was clean when last counted by hand. A citation split across two lines of a
+ * JSDoc is not reached either, for the same reason the markdown side does not
+ * reach one split across two lines of prose: `CODE_SPAN` stops at a newline.
+ */
+const SOURCE_TREES = ['src', 'tests', 'tooling', 'scripts'] as const;
+
+/** The extensions `stripComments` is a correct scanner for. */
+const SOURCE_FILE = /\.(?:ts|mts|mjs)$/;
+
+function collectSourceFiles(directory: string): readonly string[] {
+  const files: string[] = [];
+  for (const entry of readdirSync(directory)) {
+    if (entry === 'node_modules' || entry.startsWith('.')) continue;
+    const path = join(directory, entry);
+    if (statSync(path).isDirectory()) {
+      files.push(...collectSourceFiles(path));
+      continue;
+    }
+    if (SOURCE_FILE.test(entry)) files.push(path);
+  }
+  return files;
+}
+
+const sourceFiles = SOURCE_TREES.flatMap((tree) => collectSourceFiles(join(ROOT, tree)));
+
+/**
+ * The comments of a source file, with every other character blanked and every
+ * newline kept, so what comes out has the shape of the file and none of its
+ * code. The inverse of `stripComments`, computed by difference against it --
+ * see "Comments, not code" above for why that difference is exact.
+ */
+function commentsOf(source: string): string {
+  const stripped = stripComments(source);
+  let comments = '';
+  for (let index = 0; index < source.length; index += 1) {
+    const character = source[index]!;
+    comments += character === '\n' ? '\n' : stripped[index] === character ? ' ' : character;
+  }
+  return comments;
+}
+
+/** `source -> path`, the key `ABSENT_BY_DESIGN_IN_SOURCE` is written in. */
+const cited = ({ source, path }: Citation): string => `${source} -> ${path}`;
+
+/**
+ * Rooted paths a source comment names truthfully, in a sentence whose point is
+ * that the file is not there. Keyed on the citing file as well as the path:
+ * see "The allowlist is keyed on the pair" above.
+ */
+const ABSENT_BY_DESIGN_IN_SOURCE: ReadonlyMap<string, string> = new Map([
+  [
+    'tests/foundation/documentation-links-contract.test.ts -> tests/browser/save-panel-concurrency.spec.ts',
+    // The first docblock in this file names it as one of the two paths #140
+    // found cited and absent. It has never existed in any commit on any
+    // branch; naming it is what the sentence is for.
+    'named by this file as a path #140 found cited and absent, which has never existed',
+  ],
+  [
+    'tests/foundation/documentation-links-contract.test.ts -> docs/specs/',
+    // Same sentence as the entry below, and the same evidence:
+    // `git log --all --diff-filter=A -- docs/specs` returns nothing.
+    'named by this file as a path cited across eight issues that has never existed',
+  ],
+  [
+    'tests/foundation/documentation-links-contract.test.ts -> docs/research/NEW_FEATURES.md',
+    'named by this file as a path cited across eight issues that has never existed',
+  ],
+  [
+    'scripts/verify-cloudflare-build.mjs -> public/.assetsignore',
+    // `@cloudflare/vite-plugin` prefixes any `.assetsignore` the repository
+    // supplies under `public/` to the one it emits into `dist/`. This
+    // repository supplies none, which is why the gate asserts on the built
+    // output; the comment's two mentions are conditional and both true.
+    'the optional plugin input this repository does not supply, which is the point of the paragraph',
+  ],
+]);
+
+const sourceCitations = sourceFiles.flatMap((file) =>
+  rootedPathCitations(relative(ROOT, file), commentsOf(readFileSync(file, 'utf8'))),
+);
+
+describe('every rooted path cited in a source comment is on disk', () => {
+  it('finds source files and citations to check, so this cannot pass vacuously', () => {
+    // An order of magnitude below the 2,291 measured at `0850fe8`.
+    // This is the guard that fails if `commentsOf` ever returns nothing, or if
+    // `CODE_SPAN` stops matching: either would leave every assertion below
+    // trivially satisfied and the check silently gone.
+    expect(sourceFiles.length).toBeGreaterThan(400);
+    expect(sourceCitations.length).toBeGreaterThan(200);
+  });
+
+  it('reads comments and not code, in both directions', () => {
+    const fixture = [
+      'const label = "see `docs/in-a-string.md`";',
+      'const template = `docs/in-a-template.md`;',
+      'const ratio = width / height; // `docs/after-a-division.md`',
+      '// `docs/in-a-line-comment.md`',
+      '/* `docs/in-a-block-comment.md` */',
+    ].join('\n');
+
+    expect(rootedPathCitations('fixture.ts', commentsOf(fixture)).map(({ path }) => path)).toEqual([
+      'docs/after-a-division.md',
+      'docs/in-a-line-comment.md',
+      'docs/in-a-block-comment.md',
+    ]);
+  });
+
+  it('resolves every cited path', () => {
+    const dangling = sourceCitations
+      .filter((citation) => !ABSENT_BY_DESIGN_IN_SOURCE.has(cited(citation)) && !existsSync(join(ROOT, citation.path)))
+      .map(cited);
+
+    expect(dangling, 'these paths cited in source comments name a file that does not exist').toEqual([]);
+  });
+
+  it('keeps the allowlist honest: an entry that starts existing must be removed', () => {
+    const nowPresent = [...ABSENT_BY_DESIGN_IN_SOURCE.keys()].filter((key) =>
+      existsSync(join(ROOT, key.split(' -> ')[1]!)),
+    );
+
+    expect(nowPresent, 'these are allowlisted as absent but are on disk').toEqual([]);
+  });
+
+  it('keeps the allowlist used: an entry nothing cites is dead weight', () => {
+    const present = new Set(sourceCitations.map(cited));
+    const uncited = [...ABSENT_BY_DESIGN_IN_SOURCE.keys()].filter((key) => !present.has(key));
+
+    expect(uncited, 'these allowlist entries are cited by no source comment').toEqual([]);
   });
 });
