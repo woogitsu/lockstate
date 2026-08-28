@@ -82,6 +82,20 @@ showers in total (`unmetDemandCycles` 1,364 → 978, `actionsCompleted`
 8,758 → 9,114), because ordering the arrivals also stops two prisoners walking
 to the same last free head and one of them wasting the trip.
 
+> **Every figure in this shower table is pre-[ADR 0059](./0059-how-an-actor-gets-from-one-tile-to-the-next.md) too**,
+> for the same reason the canteen numbers are (see *Open questions* 1's
+> amendment) — this section says so at the top, *"both runs below are the real
+> kernel driven by real commands, on `c00b641`"*, and `c00b641` predates the
+> walk. **What the table claims is unaffected and its numbers have moved.**
+> `tests/integration/contended-shower-fairness.test.ts` was re-measured when the
+> walk landed and carries the current ones beside the old, in its own words:
+> *"90.4 and 125.2 since ADR 0059, against 96.8 and 166.4 before it … a prisoner
+> spends part of the day walking, so a two-head room washes 24 people slightly
+> less thoroughly"* — still nowhere near the floor, still zero prisoners who
+> never wash. Noted rather than restated here (#435), because the re-measurement
+> is that file's and this document should point at it rather than keep a second
+> copy that can rot again.
+
 **A canteen, which is the scenario ADR 0029's amendment measured, and which
 turns out not to be the sharp case.** 24 prisoners, a six-seat canteen, 30,000
 ticks: prisoners 12–23 entered the canteen **zero** times on every one of the
