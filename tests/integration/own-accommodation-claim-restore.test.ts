@@ -135,7 +135,7 @@ describe('restoring a save taken while a housed prisoner is performing in their 
     expect(actionId, 'the most-performed action in every shipped prison').toBe('action.sleep');
     expect(DEFAULT_ACTIONS.find((action) => action.id === actionId)!.target.kind).toBe('own-accommodation');
     /*
-     * **241 until ADR 0059, 329 since**, and the 88 ticks are the walk from
+     * **241 until ADR 0059, 285 since**, and the 44 ticks are the walk from
      * the delivery tile to the cell's anchor. `continueTravelling` used to
      * write the destination in the statement that resolved the route; a
      * prisoner now covers the tiles between at
@@ -145,7 +145,7 @@ describe('restoring a save taken while a housed prisoner is performing in their 
      * asserted so a shifted schedule fails loudly instead of silently testing
      * a prisoner who never got there.
      */
-    expect(tick).toBe(329);
+    expect(tick).toBe(285);
     expect(prisoners.currentAction.phase[index]).toBe(PERFORMING_PHASE);
     expect(prisoners.coldState.getAccommodation(prisoner)).toBe(CELL_ID);
     expect(prisoners.coldState.getActionTarget(prisoner)).toBe(CELL_ID);

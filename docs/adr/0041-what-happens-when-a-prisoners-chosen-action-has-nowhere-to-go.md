@@ -111,6 +111,50 @@ part of this decision.** It is recorded here as the answer to ADR 0029 decision
 which need decides urgency, the `O(N log N)` per-cycle cost, and the determinism
 constraint ADR 0020 and ADR 0029 decision 7 put on a second iteration order.
 
+> **Amended 2026-08-28. Decision 2 has been taken, so "is deliberately not taken
+> now" is no longer a description of the tree.** `ActionSystem.update` runs three
+> passes: `performing` in ascending entity index, then the arrivals and then the
+> idle selections, both ordered by descending need urgency with ascending entity
+> index as the tie-break. The sentence is marked rather than rewritten because
+> what it recorded — that ADR 0041 bought its fix *without* touching ADR 0020's
+> territory — is still a true statement about ADR 0041, and is the reason this
+> was a separate change.
+>
+> Three things a reader of the paragraph above now needs, and the third is not
+> what this document predicted:
+>
+> - **Which need decides urgency is answered, and the answer is
+>   [ADR 0062](./0062-who-gets-the-room-when-more-prisoners-want-it-than-it-seats.md).**
+>   The key is `needUrgency` (`src/simulation/prisoners/utility-ai.ts`): the
+>   `scoreAction` of the highest-ranked candidate *the prison can actually
+>   provide*, which is the deficit of the need at stake rather than an aggregate
+>   of the prisoner's misery. **This bullet said "the ADR recording it has not
+>   been written, because ADR numbers are assigned centrally and none had been
+>   assigned when the work landed", and told the reader to treat the choice as
+>   open until it existed.** The number was assigned the same day and the
+>   document exists; it carries the rejected alternatives — `needsPressure`, the
+>   single worst need, ordering the selections alone, and ADR 0041's own options
+>   C and D — which this bullet never could.
+> - **The `O(N log N)` cost was measured rather than assumed.** Worst case —
+>   every prisoner idle and standing on the contended room's anchor, so the whole
+>   population is planned and sorted every cycle — the reconsideration cycle
+>   goes from 0.062-0.068 ms to 0.083-0.111 ms at 24 prisoners, 0.46-0.49 ms to
+>   0.52-0.56 ms at 500, and 4.20-4.46 ms to 5.85-6.20 ms at
+>   `DEFAULT_PRISONER_CAPACITY`-scale 5,000. A cycle runs once every 20 ticks, so
+>   the 5,000-prisoner delta is about +1.7 ms once a second of simulated time.
+> - **It fixes less of the canteen than this document's Consequences imply, and
+>   more of the shower.** Where the contending prisoners are in *identical* need
+>   states the key has nothing to separate them by and the tie-break reproduces
+>   the old order exactly — and a canteen is that case, because
+>   `action.eat-in-cell` keeps everyone's hunger topped up. Measured at
+>   `c00b641`: 24 prisoners against a six-seat canteen all sit at the same stored
+>   hunger unit as each meal block opens, and prisoners 12-23 enter the canteen
+>   zero times both before and after. `action.shower` has no cell-side sibling
+>   (ADR 0054 decision 1), so it is where the ordering decides a *need*: the two
+>   highest-index prisoners go from 0 showers in 40,000 ticks to six each, and
+>   the worst hygiene anyone touches goes from 0.0 to 96.8.
+>   `tests/integration/contended-shower-fairness.test.ts` is the run.
+
 ## Alternatives, with their real costs
 
 **A — the in-cycle fallback (decided).** Fixes the starvation, in the base case
@@ -210,6 +254,8 @@ all, so this option no longer describes a defensible position.
   already authors.
 - Under contention the losers eat a worse meal instead of nothing. **The
   unfairness ADR 0029 decision 5 accepted is unchanged**, and stays open as B.
+  *B was taken on 2026-08-28 (issue #434); see the amendment under Decision 2 for
+  what it did and did not close.*
 - `furnished-prison-loop.test.ts:410`'s deliberate absence assertion inverts, and
   `furnished-cell-loop.test.ts:298`'s explanatory comment must be corrected: its
   number was pure decay, not a weaker meal.
@@ -242,6 +288,30 @@ all, so this option no longer describes a defensible position.
 **All three are now tracked, so none of them is waiting on this document to be
 re-read.** 1 and 3 are one issue because answering either answers the other:
 #436. 2 is #435.
+
+> **Amended 2026-08-28. Questions 1 and 3 are no longer open, and the paragraph
+> above is now only half true.** It says all three are *tracked*; two of them
+> have since been *answered*, by
+> [ADR 0054](./0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md),
+> which took #436 and #440 together and shipped at `2e3b166`. The sentence is
+> marked rather than rewritten because the reason it was written — that a reader
+> of this document should not have to re-derive where the questions went — is
+> exactly why it now has to say where they went *to*.
+>
+> - **Question 1 is answered by ADR 0054 decision 4: the walk stays unbounded.**
+>   An action fulfilling nothing scores exactly 0, so `action.free-association`
+>   ranks last and the walk cannot reach it while anything better resolves. What
+>   was wanted was a terminal, not a limit. `ActionSystem.beginNextAction`'s
+>   docblock carries the answer.
+> - **Question 3 is answered by ADR 0054 decision 1: `hygiene` and `recreation`
+>   are room-gated by design, and get no cell-side siblings.** That is the
+>   *opposite* of the answer this document gave for `hunger` one day earlier, and
+>   ADR 0054 says at length why the difference is not inconsistency: ADR 0048
+>   gave an unmet need a downstream reader in between, so the "requirement the
+>   game never enforces" this document refused no longer describes the state.
+>   Read ADR 0054's amendment before relying on that sentence — the enforcement
+>   is measurably narrower than its main text claims.
+> - Question 2 is still open and still #435.
 
 1. **Should a fallback be bounded?** Walking the whole list means a prisoner
    always does *something* if anything resolves. Whether that is right, or

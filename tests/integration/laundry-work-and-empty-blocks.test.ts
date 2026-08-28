@@ -219,10 +219,10 @@ describe('a prison with a furnished laundry', () => {
      */
     expect(withMachines.performingTicks).toEqual({
       'action.sleep': 3_000, // unchanged
-      'action.eat-in-cell': 440, // 640
-      'action.use-toilet': 460, // 880
-      'action.laundry-work': 2_508, // 2,420
-      'action.free-association': 1_188, // 1,740
+      'action.eat-in-cell': 560, // 640
+      'action.use-toilet': 740, // 880
+      'action.laundry-work': 2_756, // 2,420
+      'action.free-association': 1_140, // 1,740
     });
 
     /*
@@ -236,11 +236,12 @@ describe('a prison with a furnished laundry', () => {
      * there, which is where every cell-only prison sat before this change.
      */
     expect(withMachines.hygieneEverRose, 'a hygiene level that rises is a shift that happened').toBe(true);
-    // 250.4, not 254.4, since ADR 0059: the prisoner walks to the laundry, so
-    // fewer of the window's ticks are spent working in it. The claim this
+    // 254.8, not 254.4, since ADR 0059: the prisoner walks to the laundry, and
+    // at the shipped speed the reshuffled day happens to leave hygiene a
+    // fraction *higher* rather than lower. The claim this
     // supports -- hygiene *rises* where no shower stands -- is the assertion
     // beside it and is unchanged.
-    expect(withMachines.finalHygiene).toBe(250.4);
+    expect(withMachines.finalHygiene).toBe(254.8);
 
     const control = watch(prisonWithLaundry(0));
     expect(control.runtime.prisoners.roomInstances.findAvailableForUse('room.laundry', 'laundry')).toBeUndefined();
@@ -319,11 +320,12 @@ describe('a prison of cells and nothing else', () => {
      * `unmetDemandCycles` above is the figure with no such floor in it, and it
      * is zero.
      */
-    // 1,238, not 1,257, since ADR 0059: nineteen of those ticks are now spent
-    // *travelling* rather than standing, and this counter reads the `idle`
-    // phase specifically. The floor the paragraph above derives is unchanged --
-    // it is the reconsideration cadence, which no walk shortens.
-    expect(run.idleWorkBlockTicks).toBe(1_238);
+    // Unmoved by ADR 0059 at the shipped walking speed, and it is worth saying
+    // so: this prison is one cell, so a prisoner has nowhere to walk to and the
+    // ticks the floor is made of are the reconsideration cadence, which no walk
+    // shortens. It read 1,238 at an earlier, slower speed, where the one short
+    // walk inside the cell still cost nineteen ticks of standing.
+    expect(run.idleWorkBlockTicks).toBe(1_257);
     expect(run.idleWorkBlockTicks, 'a work/education block with no classroom and no laundry is still mostly spent standing still').toBeLessThan(DAY_LENGTH_TICKS);
     expect(run.performingTicks['action.free-association'] ?? 0).toBeGreaterThan(0);
 

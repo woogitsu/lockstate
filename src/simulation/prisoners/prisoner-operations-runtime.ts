@@ -221,7 +221,7 @@ export class PrisonerOperationsRuntime {
           this.position.tileX[index] = tile.x;
           this.position.tileY[index] = tile.y;
         },
-        (index) => this.actionSystem.onWalkArrived(index, tick),
+        (indices) => this.actionSystem.onWalksArrived(indices, tick),
       ),
     );
 

@@ -80,7 +80,7 @@ export const LOCOMOTION_SUBTILE_UNITS = 256;
  * every 2,000 ticks and a 100-tick walk to the canteen is five per cent of
  * that budget.
  */
-export const DEFAULT_WALK_SUBTILE_UNITS_PER_TICK = 64;
+export const DEFAULT_WALK_SUBTILE_UNITS_PER_TICK = 128;
 
 /** Sign of one axis of a heading: `-1`, `0` or `1`. Every leg is axis-aligned, so one of the two is always `0`. */
 export type HeadingComponent = -1 | 0 | 1;
@@ -144,16 +144,21 @@ export class LocomotionStore {
   private readonly walks = new Map<number, WalkState>();
   private readonly headings = new Map<number, { x: HeadingComponent; y: HeadingComponent }>();
   /**
-   * Keys that finished this call, collected during the walk loop and
-   * dispatched after it.
+   * Keys that finished this call, collected during the walk loop and handed
+   * over after it.
    *
-   * Two properties, and both are the reason it exists rather than a direct
-   * call from inside the loop. **Arrivals are dispatched in ascending key
-   * order**, which is ADR 0005's canonical entity order, so two prisoners who
-   * reach the last free seat in one tick are served in an order that is a
-   * property of who they are rather than of who set off first. And a handler
-   * cannot mutate the map that is being iterated, which is what a handler that
-   * starts the next journey would otherwise do.
+   * Handed over as a **set** rather than one at a time, because who arrived
+   * together is the question the owner has to answer: two prisoners who reach
+   * the last free seat of a room on one tick are served in the order the owner
+   * chooses, and since [ADR 0062](../../../docs/adr/0062-who-gets-the-room-when-more-prisoners-want-it-than-it-seats.md)
+   * that order is need urgency, which this module knows nothing about. It is
+   * sorted **ascending by key** on the way out anyway -- ADR 0005's canonical
+   * entity order -- so an owner that adds no order of its own still gets a
+   * total one rather than "whoever set off first".
+   *
+   * Collected rather than dispatched inside the loop for a second reason: a
+   * handler cannot then mutate the map that is being iterated, which is what a
+   * handler that starts the next journey would otherwise do.
    *
    * Reused rather than allocated: this runs every tick.
    */
@@ -252,7 +257,7 @@ export class LocomotionStore {
   public advance(
     ticks: number,
     writeTile: (key: number, tile: TilePosition) => void,
-    onArrive: (key: number) => void = () => {},
+    onArrived: (keys: readonly number[]) => void = () => {},
   ): void {
     if (!Number.isInteger(ticks) || ticks <= 0) throw new RangeError('Locomotion advances by a positive whole number of ticks.');
     const step = this.unitsPerTick * ticks;
@@ -288,11 +293,11 @@ export class LocomotionStore {
 
     if (this.arrived.length === 0) return;
     this.arrived.sort((a, b) => a - b);
-    // Every finished walk is forgotten *before* any handler runs, so a handler
-    // that starts the next journey cannot have the walk it just started
-    // deleted by the rest of this loop.
+    // Every finished walk is forgotten *before* the handler runs, so a handler
+    // that starts the next journey cannot have the walk it just started deleted
+    // by the rest of this loop.
     for (const key of this.arrived) this.walks.delete(key);
-    for (const key of this.arrived) onArrive(key);
+    onArrived(this.arrived);
     this.arrived.length = 0;
   }
 

@@ -330,8 +330,8 @@ it is on.
   Between two publications — 100 ms apart at ADR 0040's ceiling — the feed
   advances each actor from the position it was published at by the velocity
   published with it, bounded to `MAX_ACTOR_EXTRAPOLATION_SECONDS` and only while
-  the clock runs. Without that a prisoner walking at five tiles a second moves
-  in half-tile steps ten times a second.
+  the clock runs. Without that a prisoner walking at ten tiles a second moves
+  in whole-tile steps ten times a second.
 
   Guards are the other population whose tiles the simulation already holds
   (`simulation.security.guards`, as `GuardRecord.tileX`/`tileY`), and they are

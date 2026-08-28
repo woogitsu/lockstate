@@ -34,7 +34,7 @@ function drive(store: LocomotionStore, ticks: number): { readonly written: Writt
   const written: Written[] = [];
   const arrived: number[] = [];
   for (let n = 0; n < ticks; n += 1) {
-    store.advance(1, (key, position) => written.push({ key, tile: position }), (key) => arrived.push(key));
+    store.advance(1, (key, position) => written.push({ key, tile: position }), (keys) => arrived.push(...keys));
   }
   return { written, arrived };
 }
@@ -133,15 +133,17 @@ describe('a walk covers the tiles between, one at a time', () => {
     expect(() => store.beginWalk(1, [])).toThrow(/at least the tile it starts on/);
   });
 
-  it('dispatches simultaneous arrivals in ascending key order, whatever order the walks began in', () => {
+  it('hands simultaneous arrivals over in ascending key order, whatever order the walks began in', () => {
     const store = new LocomotionStore(LOCOMOTION_SUBTILE_UNITS);
     // Begun highest-first, so insertion order and key order disagree.
     for (const key of [7, 2, 5]) store.beginWalk(key, [tile(0, 0), tile(1, 0)]);
 
     const { arrived } = drive(store, 1);
 
-    // ADR 0005's canonical entity order, because the handler decides who takes
-    // the last free seat in a room.
+    // ADR 0005's canonical entity order. The *owner* re-sorts by need urgency
+    // (ADR 0062, `ActionSystem.onWalksArrived`), which is why this is handed
+    // over as a set rather than one key at a time -- but a total order out of
+    // this module is what stops "whoever set off first" being the fallback.
     expect(arrived).toEqual([2, 5, 7]);
   });
 
@@ -167,9 +169,12 @@ describe('a walk covers the tiles between, one at a time', () => {
     expect(store.isWalking(1)).toBe(false);
   });
 
-  it('walks at the documented speed: four ticks a tile at the shipped default', () => {
+  it('walks at the documented speed: two ticks a tile at the shipped default', () => {
     // Pinned rather than derived, because the number is a balance decision ADR
-    // 0059 argues for and a silent change to it changes how a prison plays.
-    expect(LOCOMOTION_SUBTILE_UNITS / DEFAULT_WALK_SUBTILE_UNITS_PER_TICK).toBe(4);
+    // 0059 argues for at length and a silent change to it changes how a prison
+    // plays: at half this speed a prison with a shower room and a yard starved
+    // its prisoner to hunger 0, measured, because a journey outlasted the
+    // 100-tick regime block that had sent them on it.
+    expect(LOCOMOTION_SUBTILE_UNITS / DEFAULT_WALK_SUBTILE_UNITS_PER_TICK).toBe(2);
   });
 });

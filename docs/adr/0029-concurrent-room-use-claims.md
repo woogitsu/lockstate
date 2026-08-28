@@ -340,6 +340,45 @@ the starvation this paragraph predicts: with a six-seat canteen and 24
 prisoners, indices 0–5 eat 40 meals each and indices 6–23 eat nothing at all,
 identically on every run.*
 
+> **Amended 2026-08-28: this decision's fairness half is closed, and its
+> revisit condition was never what fired.** ADR 0041 decision 2 was taken as
+> issue #434 and
+> [ADR 0062](./0062-who-gets-the-room-when-more-prisoners-want-it-than-it-seats.md): `ActionSystem.update` now runs the two contending passes —
+> arrivals, then idle selections — in descending need urgency, with ascending
+> entity index as the tie-break, which is the *"stated ordering rather than a
+> tie-break buried in `claimUse`"* the revisit condition above asked for. What
+> actually triggered it was the issue, not a need readout; no HUD surface shows
+> a prisoner's needs even now (#104), so the trigger this paragraph names is
+> still unable to fire and the fix landed without it.
+>
+> **Decision 5's own words hold in a narrower form than they did.** *"A
+> low-index prisoner is systematically favoured"* is no longer true of a
+> contested **need**: measured over 40,000 ticks with 24 prisoners and a
+> two-head shower room, the two highest-index prisoners went from zero showers
+> to six each and the worst hygiene anyone reached went from 0.0 to 96.8. It is
+> still true of a contested **room whose need is served another way**: the
+> six-seat canteen this decision's amendment measured leaves all 24 prisoners at
+> the same stored hunger unit as each meal block opens, so the urgency key has
+> nothing to separate them by and the tie-break reproduces the old order.
+> Prisoners 12-23 still never enter it. That residue is recorded rather than
+> fixed, because with the prisoners measurably identical there is no
+> state-derived reason to prefer either, and the alternatives that would rotate
+> them anyway are the ones ADR 0041 rejected as C and D.
+>
+> **Decision 6 is untouched and no save version moved.** The ordering keys are
+> pure functions of state the save already carries — needs in stored units, the
+> classification group, the incident override, the room instances and the tick —
+> so nothing was persisted to buy the fairness.
+>
+> **The ADR that records *which need decides urgency* is
+> [ADR 0062](./0062-who-gets-the-room-when-more-prisoners-want-it-than-it-seats.md).**
+> This paragraph said it "is owed a centrally-assigned number and does not exist
+> yet" and told the reader to treat the choice as open; the number was assigned
+> the same day and the document exists. It also carries, as its open question 1,
+> the half of decision 5 that is *not* closed — a canteen whose contenders are
+> identical to the stored unit — with ADR 0041's option C and a tick-derived
+> rotation costed against each other and neither taken.
+
 ### 6. A use claim is derived, not persisted. No save version moves
 
 **Decided.** `RoomInstanceRegistry.getSnapshot` still emits residency only, no
@@ -395,6 +434,17 @@ Four commitments, and one gate entry.
    settled before the action index, the action target and `actionsStarted` are
    written, so a refusal leaves no half-started action behind and the metric
    counts actions that actually began.
+   *ADR 0041's amendment reported this commitment as held but **unguarded** — a
+   mutation violating it left the whole suite green, because no ordinary prison
+   can reach the branch. It has a guard since issue #434:
+   `tests/unit/prisoners-concurrent-room-use.test.ts`, "leaves no action index,
+   no target and no started-action count behind", drives the refusal through a
+   registry that refuses `claimUse` and asserts the three production writes.
+   Moving `actionsStarted += 1` above the claim turns it red. **The branch is
+   still unreachable from a fixture that only builds a prison**, and #434's
+   reordering did not change that: `findAvailableForUse` is consulted two
+   statements before `claimUseIfNeeded` and nothing runs in between, within one
+   prisoner's turn, whichever prisoner's turn it is.*
 
 ---
 

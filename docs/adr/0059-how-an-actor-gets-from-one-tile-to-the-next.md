@@ -18,7 +18,7 @@ citation of it are renumbered without argument.
 ## The decision, in one sentence
 
 **An actor that has a resolved route walks it, one tile at a time, at a fixed
-speed of one tile per four kernel ticks, with the sub-tile progress held in a
+speed of one tile per two kernel ticks, with the sub-tile progress held in a
 transient store that no save carries — so a position changes every tick instead
 of twice per errand, and the render channel gains a real position, velocity and
 heading to publish.**
@@ -106,8 +106,8 @@ The actor's tile changes every *k* ticks along the route; nothing sub-tile
 exists.
 
 - **Cost:** the smallest change, and it delivers the simulation half. It does
-  **not** deliver the visible half: at one tile per four ticks the renderer sees
-  a one-tile jump five times a second, and it cannot smooth it, because
+  **not** deliver the visible half: at one tile per two ticks the renderer sees
+  a one-tile jump ten times a second, and it cannot smooth it, because
   extrapolating from a whole-tile position that has not moved yet makes an actor
   oscillate — draw `5 + v·t` until the tile flips, then start again from 5.
 - **Rejected** for that reason: the deliverable is that the game stops looking
@@ -174,45 +174,49 @@ restored session resumes mid-stride.
 A power of two, and large enough that one tick of walking is several units so
 nothing rounds to nothing. It reaches the wire unconverted (see "The payload").
 
-### Speed: 64 units a tick — one tile per four kernel ticks, five tiles a second
+### Speed: 128 units a tick — one tile per two kernel ticks, ten tiles a second
 
 **A directional default, not a locked balance decision**, in the sense
 `DEFAULT_SECURITY_SECTOR_REQUIRED_GUARD_COUNT` uses the phrase. It is bounded on
-both sides by measurement rather than taste.
+both sides by measurement rather than taste, and the lower bound was hit twice
+before it settled here.
 
-**The lower bound is starvation, and it was hit.** An in-game day is 2,400 ticks
+**The lower bound is starvation.** An in-game day is 2,400 ticks
 (`regime.ts`), the general-population timetable's meal blocks are **100 ticks**
-each, and a starter prison is one 32×32 chunk. At the 2.5 tiles/s this was first
-built with, an errand across such a prison costs more than a whole block, and a
-prisoner can spend every meal block in transit. Measured on
-`tests/integration/prisoner-roster-readout.test.ts`'s prison — a cell and a
-yard, no canteen — over five in-game days:
+each, and a starter prison is one 32×32 chunk whose walled rooms make a
+cross-prison path fifty tiles or so. A journey that outlasts the block that sent
+the prisoner on it costs them the *next* block as well, and a prisoner who is
+never idle inside a 100-tick meal block never eats at all.
 
-| units/tick | tiles/s | hunger at the end, of `NEED_MAX` |
-| --- | --- | --- |
-| 32 | 2.5 | **0** |
-| 64 | 5 | 238 |
-| 96 | 7.5 | 166 |
-| 128 | 10 | 164 |
+| units/tick | tiles/s | ticks a tile | measured |
+| --- | --- | --- | --- |
+| 32 | 2.5 | 8 | `prisoner-roster-readout`'s prison (a cell and a yard) starves its prisoner: hunger **0** of `NEED_MAX` after five in-game days |
+| 64 | 5 | 4 | that prison is fine (hunger 238), and `room-gated-needs`'s — a cell, a shower room and a yard — starves its prisoner: hunger **0** over twenty in-game days, in a prison that has built every room the six needs ask for |
+| 96 | 7.5 | 2.67 | both prisons fed (hunger 135.5), with no margin: it is the first value that works |
+| **128** | **10** | **2** | both prisons fed, and the value chosen — a clean two ticks a tile, and margin over the first value that worked |
+| 256 | 20 | 1 | no better, and a blur on screen |
 
 **The upper bound is that it stops reading as walking.** A tile is 64 px
-(`src/rendering/tile-metrics.ts`), so 5 tiles/s is 320 px/s at 1× zoom — a
-brisk walk on screen, and about five pixels a frame at 60 Hz, which is what the
-extrapolation has to smooth.
+(`src/rendering/tile-metrics.ts`), so ten tiles a second is 640 px/s at 1× zoom
+— about eleven pixels a frame at 60 Hz, which the extrapolation smooths into
+continuous motion but which reads as hurried. That is the trade this decision
+makes, and the section below says what forces it.
 
-**What the choice costs in a running prison**, measured over 12,000 ticks in the
-six-prisoner contended-canteen fixture: prisoners spend **18–28%** of their time
-travelling at 5 tiles/s, against 33–56% at 2.5 and 3.5% under the old abstracted
-arrival.
+**What the choice costs in a running prison**: in the six-prisoner
+contended-canteen fixture over 12,000 ticks, prisoners spend roughly a tenth of
+their time travelling at ten tiles a second, against a third to a half at 2.5
+and 3.5% under the old abstracted arrival.
 
 ### The tension this exposes, and it is not resolved here
 
 **A 2,400-tick day is short enough that no walking speed is both visually
 credible and cheap in game time.** A day is two real minutes at 1×, so the world
 runs about 720× real time; a human walking at that scale would cross the prison
-in a frame. Five tiles a second is a compromise chosen to keep the *shortest
-regime block* usable, and the fact that it had to be is a statement about
-`DAY_LENGTH_TICKS` rather than about locomotion. That constant's own comment
+in a frame. Ten tiles a second is a compromise chosen to keep the *shortest
+regime block* usable, and the fact that a speed had to be raised twice to stop
+prisoners starving is a statement about `DAY_LENGTH_TICKS` rather than about
+locomotion: at a longer day the same walk would be a smaller fraction of a
+block and the art could have the slower pace it wants. That constant's own comment
 already calls itself *"a candidate value, not a locked balance decision"*.
 **Open question 1.**
 
@@ -236,10 +240,17 @@ already calls itself *"a candidate value, not a locked balance decision"*.
    `intervalTicks` is 20 and collecting it on that cadence would have every
    prisoner stand at the door of the room they just walked to for up to a
    second.
-4. **Simultaneous arrivals are dispatched in ascending key order** — ADR 0005's
-   canonical entity order — because two prisoners reaching the last free seat on
-   one tick are decided by who claims it first, and insertion order would make
-   that a property of who set off first.
+4. **Simultaneous arrivals are dispatched in need-urgency order**, ties by
+   ascending index. `LocomotionStore` hands the set of walks that finished this
+   tick over in ascending key order — ADR 0005's canonical order, so a
+   population that adds no order of its own still gets a total one — and
+   `ActionSystem.onWalksArrived` re-sorts it with the comparator
+   [ADR 0062](./0062-who-gets-the-room-when-more-prisoners-want-it-than-it-seats.md)
+   added. **That is not tidiness.** ADR 0062 sorts `update`'s *arriving* pass
+   for one measured reason: ADR 0029 decision 2 takes the claim on arrival, so
+   ordering the selections alone fixed nothing. A walk moves the moment of
+   claiming out of that pass, and sorting here is what keeps its guarantee true
+   rather than true-on-the-tick-it-was-measured.
 5. **An external write to a walker's tile ends the walk.** There is one such
    write outside `prisoners/`: `PrisonerJobWorkerAdapter.setPositionTile`.
    `releasePrisoner` forgets the walk *and* the heading before the index is
@@ -318,8 +329,8 @@ Three choices in that table are decisions rather than encoding:
 
 **The renderer advances a published actor from the position it was published at
 by the velocity that was published with it, bounded to 0.25 s, and only while
-the clock runs.** Without it a prisoner walking at five tiles a second moves in
-half-tile steps ten times a second, which is #414's stutter an order of
+the clock runs.** Without it a prisoner walking at ten tiles a second moves in
+whole-tile steps ten times a second, which is #414's stutter an order of
 magnitude smaller.
 
 **This is not the renderer-side movement model `AGENTS.md` boundary 1 forbids**,
@@ -373,23 +384,28 @@ pinned tick that a journey taking time genuinely relocates. Each is re-measured
 in place with the figure it replaced named beside it. Three of them are findings
 rather than numbers:
 
-1. **Walking staggers demand, and the contended-canteen fixture stopped
-   contending.** Six prisoners, one three-seat table: with an instantaneous
-   arrival all six chose and arrived on the same tick and three were refused, so
-   `action.eat-in-cell` appeared in every row. Now no two of them reach the
-   canteen on the same tick from six cells at six different distances, the
-   fallback is never reached, and the ceiling shows up as **food** instead —
-   1,788 canteen ticks against the two-table control's 3,640, worst hunger 17.5
-   of `NEED_MAX` against 174.5. ADR 0041's claim 3 is still guarded, at the unit
-   level, by the case that stands the prisoner on the room's own anchor tile.
-2. **`action.sleep` with `travelling` true has left the roster panel's
-   reachable-row list.** A prisoner walks home for the association block that
-   runs up against the sleep block, so they are already standing on the cell
-   anchor when they are told to sleep. Verified over five in-game days.
-3. **Two riot fixtures moved in opposite directions**, which is the honest shape
-   of a change that alters how well needs are met: the derived-sector prison's
-   `needs-pressure` fell 0.0011 and the mean need deficit at the riot tick rose
-   from 0.3752 to 0.4242 in the neglected-prison fixture.
+1. **Walking spreads a contended room's outcomes out again, and ADR 0062's
+   exact equality did not survive it.** That ADR's contended-canteen fixture
+   ended with all six prisoners bottoming out at *exactly* 177.5 of `NEED_MAX`,
+   and the equality was the result: scan position no longer decided who ate.
+   Six cells at six distances now put the six through six different days, so the
+   floors sit within three levels of one another instead. **What #434 was about
+   is intact and is now asserted rather than implied**: the spread does not
+   track scan position — the prisoner last in the old ascending-index order
+   holds the *best* floor of the six — and it is a third of the size of the one
+   #434 removed. The assertion that read `new Set(...).size === 1` is replaced
+   by those two, with the sentence it replaced quoted beside them.
+2. **Two rows have left the roster panel's reachable-row list**, both of them
+   `travelling` rows for actions that target the prisoner's own cell
+   (`action.sleep` and `action.free-association`). Both blocks follow one the
+   prisoner has already walked home for, so the journey never happens. Checked
+   over three in-game days before the list was shortened.
+3. **A prison whose rooms are far apart can miss a whole regime block**, and at
+   half the shipped speed it missed the same one every day. This is the
+   measurement behind the speed table above, and it is worth reading as a
+   *design* finding rather than a calibration one: a 100-tick block is short
+   enough that travel time is a first-class term in whether a need is ever
+   served.
 
 ---
 

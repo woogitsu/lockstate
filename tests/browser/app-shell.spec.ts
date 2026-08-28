@@ -1057,6 +1057,46 @@ async function typeCoordinate(
 }
 
 /**
+ * Chooses a room type from the catalogue with the keyboard, and answers with
+ * how many `Tab` presses reaching the catalogue took (#411).
+ *
+ * **One `Tab`, then arrows.** The catalogue is a `radiogroup` with a roving tab
+ * stop, so the whole eighteen-row list is a single stop and the arrows move
+ * inside it -- which is the point of the change this helper exists for. Before
+ * it, the walk to a room type was one `Tab` per row and the walk *out* of the
+ * catalogue was every remaining row again.
+ *
+ * The arrow count is deliberately not the caller's business and is not
+ * reported: it is a function of where the host happens to order this room in
+ * the catalogue, which is not a fact about the keyboard route. What is
+ * reported, and what the callers bound, is the `Tab` cost -- because that is
+ * the number the roving tab stop changed.
+ */
+async function chooseRoomTypeFromTheKeyboard(page: Page, roomId: string): Promise<number> {
+  const presses = await tabTo(page, 'the room catalogue', { selector: '.hud-rooms__rows [data-room]' });
+  const rowCount = await page.locator('.hud-rooms__rows [data-room]').count();
+  const focusedRoom = async (): Promise<string> =>
+    page.evaluate(() => (document.activeElement as HTMLElement | null)?.dataset?.['room'] ?? '');
+  // Bounded by one lap of the ring: the group wraps, so a room that is really
+  // in the list is reached within `rowCount` presses and one that is not is a
+  // failure rather than an infinite walk.
+  for (let step = 0; step < rowCount; step += 1) {
+    if ((await focusedRoom()) === roomId) {
+      await page.keyboard.press('Enter');
+      await expect(
+        page.locator(`.hud-rooms__rows [data-room="${roomId}"]`),
+        `${roomId} did not become the selected room type`,
+      ).toHaveAttribute('aria-checked', 'true');
+      return presses;
+    }
+    await page.keyboard.press('ArrowDown');
+  }
+  throw new Error(
+    `${rowCount} arrow presses never reached ${roomId} in the catalogue; focus ended on ${await focusedControl(page)}`,
+  );
+}
+
+/**
  * The rectangle the Rooms panel is currently holding, off its own `data-area`.
  *
  * That attribute is what a finished drag writes and what the typed route
@@ -4130,10 +4170,20 @@ test.describe('the assembled application', () => {
     await page.keyboard.press('Enter');
     await expect(page.locator('.hud-rooms')).toBeVisible();
 
-    await hop('the Cell row in the catalogue', { selector: '.hud-rooms__list [data-room="room.cell"]' });
-    await page.keyboard.press('Enter');
-    // A vacuity guard rather than a claim: if this press did not land, every
-    // number below would be about a room type nobody chose.
+    /*
+     * One `Tab` into the catalogue, then arrows to the room (#411).
+     *
+     * The catalogue is eighteen rows and a `radiogroup`, so it costs one tab
+     * stop rather than eighteen -- and `room.cell` is not even the first of
+     * them in the order the host draws: measured on this page it is fifth. The
+     * helper presses `Enter` on it and checks `aria-checked`, which is a
+     * vacuity guard rather than a claim: if the choice did not land, every
+     * number below would be about a room type nobody chose.
+     */
+    hops.push({
+      target: 'the room catalogue',
+      presses: await chooseRoomTypeFromTheKeyboard(page, 'room.cell'),
+    });
     await expect(page.locator('.hud-rooms__list [data-room="room.cell"]')).toHaveAttribute(
       'data-selected',
       'true',
@@ -4212,6 +4262,12 @@ test.describe('the assembled application', () => {
      * HUD, which is a fact about the page's document order and has nothing to
      * say about this route; bounding it here would make an unrelated control
      * added anywhere on the page fail a Rooms panel test.
+     *
+     * `the room catalogue` is recorded and deliberately *not* bounded, for
+     * that same reason: it is the walk from the Rooms tab across the panel's
+     * own chrome to the first row, so its length is a fact about how many
+     * controls the panel header carries. What the roving tab stop changed is
+     * the hop *out* of the catalogue, and that is the number asserted below.
      */
     const routeHops = new Set([
       'the coordinates disclosure',
@@ -4227,6 +4283,35 @@ test.describe('the assembled application', () => {
       hops.filter((entry) => routeHops.has(entry.target) && entry.presses > 20).map((entry) => entry.target),
       `a control on the typed route took more than 20 Tab presses to reach (${summary})`,
     ).toEqual([]);
+
+    /*
+     * And the route is short, which is a different claim from reachable.
+     *
+     * The bound above is #411's "sensible tab order" and it was met on the day
+     * ADR 0039 landed. What was not met is the shape of the walk: the
+     * catalogue is eighteen rows, each a `<button>` and therefore each its own
+     * tab stop, and the coordinate form is the last child of the same
+     * scroller -- so a player crossed the remainder of the list to reach it on
+     * every room they ever zoned. This assertion was watched going red with
+     * the roving tab stop removed by hand, and it reported the old number:
+     * `the room catalogue: 18, the coordinates disclosure: 14`. Eighteen tab
+     * stops for one choice is the case the WAI-ARIA
+     * composite-widget rule exists for, and the catalogue is now a
+     * `radiogroup` with a roving tab stop: one `Tab` in, arrows inside, one
+     * `Tab` out.
+     *
+     * So this is asserted as an exact number rather than a bound. `1` is the
+     * whole claim -- from the chosen room type, the disclosure is the very next
+     * thing `Tab` reaches -- and a bound of "a few" would have been satisfied
+     * by the eighteen this replaced if the list had been shorter, which would
+     * make the assertion a statement about the catalogue's length rather than
+     * about its focus model.
+     */
+    const disclosureHop = hops.find((entry) => entry.target === 'the coordinates disclosure');
+    expect(
+      disclosureHop?.presses,
+      `the typed route is no longer one Tab from the chosen room type (${summary})`,
+    ).toBe(1);
     // And the route was actually walked, rather than the filter above quietly
     // matching nothing because a name was reworded.
     expect(
@@ -4324,10 +4409,7 @@ test.describe('the assembled application', () => {
     await tabTo(page, 'the Rooms tab', { selector: '.ui-tab[data-tab="rooms"]' });
     await page.keyboard.press('Enter');
     await expect(page.locator('.hud-rooms')).toBeVisible();
-    await tabTo(page, 'the Cell row in the catalogue', {
-      selector: '.hud-rooms__list [data-room="room.cell"]',
-    });
-    await page.keyboard.press('Enter');
+    await chooseRoomTypeFromTheKeyboard(page, 'room.cell');
 
     await typeRectangleAndConfirm();
     await tabTo(page, 'the Play control', {

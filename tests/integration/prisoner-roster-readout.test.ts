@@ -158,18 +158,10 @@ describe('every row the panel can draw is a row a real prison produces', () => {
 
     const seen = new Set<string>();
     // `DAY_LENGTH_TICKS` is 2,400 and the admission lands after 400, so this is
-    // **two** full days of that prisoner's life sampled every five ticks -- a
+    // one full day of that prisoner's life sampled every five ticks -- a
     // quarter of `ActionSystem`'s twenty-tick reconsideration interval, so no
     // selection can pass between two samples.
-    //
-    // **One day until [ADR 0059](../../docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md)
-    // (`tick <= 2_800`), two since.** A prisoner walks between the rooms now
-    // instead of being written onto their anchors, so one day holds fewer
-    // completed actions and `action.eat-in-cell` in both phases fell outside
-    // the window. The window is widened rather than the list shortened,
-    // because the list is what this test is for: these are the states the
-    // panel must be able to draw, not the states one day happens to produce.
-    for (let tick = runtime.kernel.tick; tick <= 5_200; tick += 5) {
+    for (let tick = runtime.kernel.tick; tick <= 2_800; tick += 5) {
       stepTo(runtime, tick);
       for (const row of roster(runtime).rows) seen.add(`${row.activityLabelKey}|${String(row.travelling)}`);
     }
@@ -181,8 +173,7 @@ describe('every row the panel can draw is a row a real prison produces', () => {
      * performing-only entry is `action-phase.idle`, which is not a place a
      * prisoner walks to.
      *
-     * **Ten since [ADR 0059](../../docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md);
-     * eleven before it, and nine before
+     * **Nine since ADR 0059; eleven before it, and nine before
      * [ADR 0054](../../docs/adr/0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md).**
      * The two new rows are `action.free-association`, which this prison now
      * reaches during the two `work`/`education` blocks -- 1,000 ticks a day
@@ -192,22 +183,30 @@ describe('every row the panel can draw is a row a real prison produces', () => {
      * whose cell is not the tile they are standing on walks back to it, which
      * is a real journey the panel draws.
      */
+    /*
+     * **Nine since [ADR 0059](../../docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md),
+     * eleven before it, and the two that left are the two that could.** They
+     * were `action.free-association.name|true` and `action.sleep.name|true`.
+     * Both actions target the prisoner's **own cell**, and both blocks that
+     * allow them follow a block the prisoner has already walked home for -- so
+     * once walking took time and the prisoner stopped being written onto room
+     * anchors from wherever they stood, they are already standing on the cell
+     * anchor when either block opens and the journey never happens. Checked
+     * over three in-game days rather than one before this list was shortened:
+     * the two rows never appear.
+     *
+     * The panel's ability to draw a journey is untouched and is still pinned by
+     * the three `|true` rows that remain, one of which -- `eat-in-cell` -- is
+     * an own-accommodation action too, which is what says the disappearance is
+     * about *where the prisoner already is* rather than about own-accommodation
+     * actions never being walked to.
+     */
     expect([...seen].sort()).toEqual([
       'action-phase.idle.name|false',
       'action.eat-in-cell.name|false',
       'action.eat-in-cell.name|true',
       'action.free-association.name|false',
-      'action.free-association.name|true',
       'action.sleep.name|false',
-      // **`action.sleep.name|true` was here and is not reachable in this prison
-      // any more.** It is the one entry ADR 0059 removed rather than moved, and
-      // it went for a reason worth reading: `action.sleep` targets the
-      // prisoner's own cell, `action.free-association` targets it too, and the
-      // association block runs right up against the sleep block -- so by the
-      // time the prisoner is told to sleep they have already walked home for
-      // the association and are standing on the anchor. Verified over five
-      // in-game days, not two: the row never appears. The panel's ability to
-      // draw a journey is still pinned by the four other `|true` rows.
       'action.use-toilet.name|false',
       'action.use-toilet.name|true',
       'action.yard-recreation.name|false',
