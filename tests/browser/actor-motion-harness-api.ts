@@ -26,6 +26,24 @@ export interface LockstateActorMotionHarness {
   publishActor(tick: number, tile: { readonly x: number; readonly y: number }, tilesPerSecond: { readonly x: number; readonly y: number }): void;
   /** Tells the feed the clock is running or paused, as an unsolicited `simulation/clock-state` would. */
   publishClock(tick: number, mode: 'running' | 'paused'): void;
+  /**
+   * Starts a walk the page keeps publishing, one message every
+   * `framesPerPublication` drawn frames, with the position each message carries
+   * derived from the wall clock exactly as a running worker's would be.
+   *
+   * **Frame-driven rather than timer-driven, and that is the whole point.** It
+   * fixes the ratio of publications to frames whatever the frame rate is, so a
+   * spec can say "the sprite took more distinct positions than there were
+   * messages" and mean it on a fast machine and on a loaded one alike. A
+   * wall-clock cadence cannot: under load the frames thin out until every
+   * frame carries its own message, and the assertion becomes untestable
+   * exactly when the machine is busy.
+   */
+  startWalking(options: { readonly tilesPerSecond: number; readonly framesPerPublication: number }): void;
+  /** Stops the frame-driven walk. */
+  stopWalking(): void;
+  /** How many messages `startWalking` has published since it was called. */
+  publicationCount(): number;
   /** Every actor sprite currently on the display list, in the order Phaser holds them. */
   actorSprites(): readonly SpritePosition[];
   /**

@@ -155,9 +155,18 @@ answers it by the record width instead of by `offset`/`limit`:
   decoding the whole message measures 0.0049 ms at 500 actors and 0.0051 ms at
   5,000 (`docs/RENDERING.md` carries the table). A paged JSON reply is bounded
   at 500 rows; this is bounded at one comparison.
-- The **payload** is 16 bytes an actor: 8,016 bytes at 500 and 80,016 at 5,000,
-  against 596,659 for the session bundle the renderer used to poll for the same
-  three fields.
+- The **payload** is 20 bytes an actor: 10,016 bytes at 500 and 100,016 at
+  5,000, against 596,659 for the session bundle the renderer used to poll for
+  the same fields.
+
+  > **16 bytes, 8,016 and 80,016 until
+  > [ADR 0059](./adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md)**,
+  > which made actors walk and gave the record a sub-tile position, a velocity
+  > and a heading to carry — one word more each. The argument the figure is
+  > here to support is unchanged and is why the correction is a number rather
+  > than a rewrite: an order of magnitude under the bundle it replaced, and the
+  > boundary cost beside it is still flat, because a longer buffer is still a
+  > buffer nothing walks.
 - A **window would be wrong here** in a way it is not for a roster. The receiver
   draws every actor it is told about and culls by camera range; a worker-chosen
   page would be exactly the truncation-the-UI-cannot-scroll this contract
@@ -165,7 +174,10 @@ answers it by the record width instead of by `offset`/`limit`:
   know which actors it is missing, which is the base-tick problem in a worse
   place. ADR 0040's answer is the keyframe interval and, in a later slice,
   changed-only records — bounding what is *sent*, rather than bounding what is
-  *asked for*.
+  *asked for*. ADR 0059 makes that later slice worth less than it looked:
+  a walking actor changes its position every tick, so under locomotion the
+  changed set at any moment is every actor in transit rather than the handful
+  of arrivals ADR 0040 priced it against.
 
 So the rule stands as written for anything carrying rows of view-model objects,
 and this is the recorded exception with the property that replaces it: a payload

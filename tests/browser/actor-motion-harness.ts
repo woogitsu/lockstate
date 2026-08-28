@@ -117,6 +117,44 @@ let frames = 0;
 const samples: SpritePosition[] = [];
 const SAMPLE_LIMIT = 600;
 
+interface Walk {
+  readonly tilesPerSecond: number;
+  readonly framesPerPublication: number;
+  readonly startedAtMs: number;
+  readonly startTileX: number;
+  framesSincePublication: number;
+  tick: number;
+}
+
+let walk: Walk | undefined;
+/**
+ * Kept outside `walk` so that stopping the walk does not forget how many
+ * messages it sent -- a spec reads the two together and would otherwise have to
+ * order the calls exactly right to get a number rather than a zero.
+ */
+let publications = 0;
+
+/**
+ * Publishes where the walk has got to, from the wall clock.
+ *
+ * The position a real worker publishes is the position its kernel has stepped
+ * to, and the kernel is driven by the same wall clock this reads -- so deriving
+ * it here rather than counting frames keeps each message a *correction* of the
+ * renderer's own advance rather than a second, frame-based movement model that
+ * would agree with it by construction.
+ */
+const publishWalk = (): void => {
+  if (walk === undefined) return;
+  const elapsedSeconds = (performance.now() - walk.startedAtMs) / 1_000;
+  walk.tick += 1;
+  publications += 1;
+  harness.publishActor(
+    walk.tick,
+    { x: walk.startTileX + walk.tilesPerSecond * elapsedSeconds, y: 6 },
+    { x: walk.tilesPerSecond, y: 0 },
+  );
+};
+
 const countFrame = (): void => {
   // Rescheduled **first**. The sampling below reads the scene's display list,
   // which does not exist until the SceneManager has installed the scene, and a
@@ -126,6 +164,13 @@ const countFrame = (): void => {
   requestAnimationFrame(countFrame);
   frames += 1;
   try {
+    if (walk !== undefined) {
+      walk.framesSincePublication += 1;
+      if (walk.framesSincePublication >= walk.framesPerPublication) {
+        walk.framesSincePublication = 0;
+        publishWalk();
+      }
+    }
     const drawn = actorSprites();
     if (drawn.length > 0 && samples.length < SAMPLE_LIMIT) samples.push(drawn[0]!);
   } catch {
@@ -209,6 +254,21 @@ const harness: LockstateActorMotionHarness = {
       payload: { tick, clock: mode === 'paused' ? { mode: 'paused' } : { mode: 'running', speed: 1 } },
     } as unknown as WorkerToMainMessage);
   },
+  startWalking: ({ tilesPerSecond, framesPerPublication }) => {
+    walk = {
+      tilesPerSecond,
+      framesPerPublication,
+      startedAtMs: performance.now(),
+      startTileX: 6,
+      framesSincePublication: framesPerPublication,
+      tick: 100,
+    };
+    publications = 0;
+  },
+  stopWalking: () => {
+    walk = undefined;
+  },
+  publicationCount: () => publications,
   actorSprites,
   motionSamples: () => [...samples],
   resetSamples: () => {

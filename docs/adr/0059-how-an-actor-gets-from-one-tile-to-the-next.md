@@ -2,16 +2,23 @@
 
 ## Status
 
-**Proposed, 2026-08-28.** Written on `agent/414-delta-channel` against `main` at
-`7f60b12` (v0.0.140), with the implementation on the same branch. Nobody has
+**Proposed, 2026-08-28.** Written on `agent/414-delta-channel`, with the
+implementation on the same branch; re-measured after merging `main` at
+`6c23974`, which brought [ADR 0062](./0062-who-gets-the-room-when-more-prisoners-want-it-than-it-seats.md)
+and the larger prison that moved this decision's one free parameter. Nobody has
 approved it; the argument below is the whole of the warrant, and a reader who
 disagrees with it should treat the decision as open.
 
 **The number was assigned centrally before this draft existed**, per
-`AGENTS.md` and `docs/AGENT_WORKFLOW.md`. 0058 and 0060 are held by parallel
-drafts in the same pass. If 0059 turns out to have been taken by something that
-has not merged, this document, its row in `docs/adr/README.md` and every
-citation of it are renumbered without argument.
+`AGENTS.md` and `docs/AGENT_WORKFLOW.md`. **0058 and 0060 were handed out in
+the same pass and returned unused** -- the keyboard work and the needs work each
+declined to write an ADR rather than manufacture one -- 0061 is held by a draft
+in flight, and 0062 landed on `main` on 2026-08-28 for the contention-fairness
+decision this one had to be merged against. The index's `Next free number` is
+therefore `0063` and not `0060`: the contract is `max` on disk `+ 1`, not the
+lowest gap. If 0059 turns out to have been taken by something that has not
+merged, this document, its row in `docs/adr/README.md` and every citation of it
+are renumbered without argument.
 
 ---
 

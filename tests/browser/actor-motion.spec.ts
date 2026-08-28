@@ -56,45 +56,66 @@ test.describe('the renderer draws a walking actor moving', () => {
     });
   });
 
-  test('moves the sprite between two frames of a single publication (#414)', async ({ page }) => {
-    // One publication: an actor on tile (6, 6), walking east at five tiles a
-    // second. Nothing else is published for the rest of this test, so anything
-    // the sprite does afterwards is the renderer advancing a published position
-    // rather than a new message arriving.
+  test('draws more distinct positions than there were publications (#414)', async ({ page }) => {
+    /*
+     * **The assertion the defect fails, in the one form that is honest on a
+     * loaded machine.**
+     *
+     * The straightforward version -- publish once, watch several frames, expect
+     * the sprite to be somewhere new on each -- is frame-rate dependent twice
+     * over: `MAX_ACTOR_EXTRAPOLATION_SECONDS` bounds how long the advance runs,
+     * so on a machine slow enough that two frames span a quarter of a second
+     * every sample lands on the clamp and reports the same pixel. That version
+     * was written first and failed exactly once, inside a full-suite run, after
+     * passing alone three times.
+     *
+     * So the harness publishes on a **frame** cadence instead -- one message
+     * every six drawn frames, at a position derived from the wall clock as a
+     * worker's would be. The ratio of publications to frames is then fixed
+     * whatever the frame rate is, and the claim #414 asks for can be stated as
+     * a comparison between two counts the run produces itself: the sprite took
+     * more distinct positions than there were messages telling it where to be.
+     * Before ADR 0059 those two numbers were equal by construction.
+     */
     await page.evaluate(() => {
       window.lockstateActorMotionHarness!.resetSamples();
-      window.lockstateActorMotionHarness!.publishActor(10, { x: 6, y: 6 }, { x: 5, y: 0 });
+      window.lockstateActorMotionHarness!.startWalking({ tilesPerSecond: 10, framesPerPublication: 6 });
     });
-    await waitForFrames(page, 8);
+    await waitForFrames(page, 30);
+    const { samples, publications } = await page.evaluate(() => {
+      window.lockstateActorMotionHarness!.stopWalking();
+      return {
+        samples: window.lockstateActorMotionHarness!.motionSamples(),
+        publications: window.lockstateActorMotionHarness!.publicationCount(),
+      };
+    });
 
-    const samples = settled(await page.evaluate(() => window.lockstateActorMotionHarness!.motionSamples()));
-    expect(samples.length, 'no actor sprite was drawn at all -- are the git-LFS atlases pulled?').toBeGreaterThan(3);
+    const drawn = settled(samples);
+    expect(drawn.length, 'no actor sprite was drawn at all -- are the git-LFS atlases pulled?').toBeGreaterThan(10);
+    expect(publications, 'nothing was published, so there is nothing for the renderer to have improved on').toBeGreaterThan(2);
+
+    const distinct = new Set(drawn.map((sample) => sample.x));
+    expect(
+      distinct.size,
+      'the sprite took no more positions than it was sent, which is what a renderer that only moves on a publication does',
+    ).toBeGreaterThan(publications);
 
     /*
-     * **The assertion the defect fails.** Before ADR 0059 an actor's position
-     * changed only when a publication carried a new one, so every frame of one
-     * publication drew the same pixel and this list would hold one value
-     * repeated.
+     * Never off the other axis, and never *far* backwards on this one.
      *
-     * Sampled in the page rather than by two `page.evaluate` reads, and that is
-     * not a convenience: a round trip costs longer than
-     * `MAX_ACTOR_EXTRAPOLATION_SECONDS`, so both reads land after the advance
-     * has stopped and report the same pixel. The first draft of this file did
-     * exactly that and reported `496` twice against a sprite that had in fact
-     * moved 80 pixels.
+     * Strict monotonicity would be the wrong assertion and it was tried: a
+     * publication is a **correction**, and where the renderer's advance had run
+     * a little ahead of where the simulation actually got to, taking the
+     * correction moves the sprite back a few pixels. That is the behaviour the
+     * third case in this file exists to require. What must not happen is a
+     * lurch, so the bound is one tile -- `TILE_SIZE_PX` is 64.
      */
-    const distinct = new Set(samples.map((sample) => sample.x));
-    expect(distinct.size, 'every frame of one publication drew the sprite at the same x').toBeGreaterThan(2);
-    expect(samples.at(-1)!.x, 'the sprite ended no further east than it started').toBeGreaterThan(samples[0]!.x);
-
-    // Never backwards, and never off the other axis: the published velocity is
-    // east-only, and a sprite that wandered would be the renderer inventing
-    // motion rather than reading it.
-    for (const [index, sample] of samples.entries()) {
+    for (const [index, sample] of drawn.entries()) {
       if (index === 0) continue;
-      expect(sample.x).toBeGreaterThanOrEqual(samples[index - 1]!.x);
-      expect(sample.y).toBeCloseTo(samples[0]!.y, 5);
+      expect(sample.x, 'the sprite jumped backwards by more than a tile').toBeGreaterThan(drawn[index - 1]!.x - 64);
+      expect(sample.y).toBeCloseTo(drawn[0]!.y, 5);
     }
+    expect(drawn.at(-1)!.x, 'the sprite ended no further east than it started').toBeGreaterThan(drawn[0]!.x);
   });
 
   test('stops the sprite where it stands when the clock pauses', async ({ page }) => {

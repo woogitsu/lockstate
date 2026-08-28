@@ -221,8 +221,18 @@ a fresh process per configuration:
 | `actorsFromSnapshot` | 0.22 ms | 0.19 ms |
 | `actorsFromDelta(decodeRenderActorsPayload(...))` | 0.05 ms | 0.32 ms |
 | session bundle, as JSON | 101,856 bytes | 596,659 bytes |
-| render-actors keyframe | 8,016 bytes | **80,016 bytes** |
+| render-actors keyframe (layout 1) | 8,016 bytes | **80,016 bytes** |
+| render-actors keyframe (layout 2, ADR 0059) | 10,016 bytes | **100,016 bytes** |
 | the same actors as JSON rows | 11,811 bytes | 126,823 bytes |
+
+Every timing in that table was measured against layout 1, whose record was four
+words. [ADR 0059](./adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md)
+made it five -- a sub-tile position, a velocity and a heading, because there is
+now motion to publish -- so the two payload rows are given for both layouts and
+the timings are **not** re-measured here: the boundary row cannot move for the
+reason the paragraph below gives, and the two decode rows would move by a fifth
+of a walk of the same records. A re-measurement is worth taking before either is
+cited as a current figure.
 
 The delta's boundary cost is **flat in the population** -- a tenfold prison
 moves it by 0.0002 ms -- because `arrayBufferPayloadSchema` validates a schema
