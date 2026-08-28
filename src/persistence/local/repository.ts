@@ -81,9 +81,19 @@ export type SaveImportResult =
  * retires nothing, and "demotes the unrestorable generation, restores the
  * previous one" for the retirement a success earns.
  *
+ * **Which of ADR 0063's two save-side verdicts a refusal declared decides
+ * whether this method is the one called at all (#432).** `damaged-payload`
+ * comes here. `unsupported-by-this-build` goes to `quarantineGeneration`
+ * instead, because the bytes are coherent and the build that reads them
+ * already exists — deleting them would be the one deletion this repository
+ * makes against a verdict it has just reached.
+ *
  * `'last-generation-retained'` is the floor underneath that, and it is now a
  * second belt rather than the thing holding the window up: the last retained
- * generation is never deleted, however confidently it has been refused.
+ * generation is never deleted, however confidently it has been refused. It is
+ * counted over the generations this build has *not* set aside as unreadable,
+ * because a quarantined generation is a copy for a later build rather than a
+ * fallback for this one.
  * `loadPrison` can no longer reach it -- the generation that restored is
  * always retained, so a demotion driven by it always leaves at least that one
  * behind -- but the floor is what any *other* caller runs into, and what

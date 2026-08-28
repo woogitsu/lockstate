@@ -9,9 +9,14 @@ import { RESTORE_CODE_FAULT, restoreFailureReasonOf, type SnapshotRefusalReason 
  *
  * The distinction is load-bearing, not decoration. `SessionController` sets
  * the generation it just tried to load aside when it sees this error, tries
- * the next-oldest, and — **once one of them has actually restored** — demotes
- * the ones it set aside, which drops them from the retained window and deletes
- * them. So a hung, dead or mid-shutdown host must *not* raise it: everything
+ * the next-oldest, and — **once one of them has actually restored** — retires
+ * the ones it set aside. **What "retires" means is decided by `reason` since
+ * #432**, and this paragraph said "deletes them" for both until then: a
+ * `damaged-payload` generation is dropped from the retained window and
+ * deleted, and an `unsupported-by-this-build` one is *quarantined* — kept on
+ * disk under a marked id, outside the retention budget, for the build that can
+ * read it (`PrisonSaveRepository.quarantineGeneration`). Either way a hung,
+ * dead or mid-shutdown host must *not* raise it: everything
  * else (`WorkerSessionHost`'s reply timeout, a `send` that throws, a stopped
  * session) keeps propagating as an ordinary `Error`, costs no generation, and
  * ends the load rather than the window.
@@ -29,7 +34,9 @@ import { RESTORE_CODE_FAULT, restoreFailureReasonOf, type SnapshotRefusalReason 
  * `reason` is why the *save* was refused, decided at the check that refused it
  * and carried across the worker boundary in the fault's `details` — never
  * inferred from `message`. See `src/simulation/runtime/restore-refusal.ts` for
- * the two values and the argument for two.
+ * the two values and the argument for two, and
+ * `SessionController.loadPrison` for the keep-or-delete decision they now
+ * drive (#432).
  */
 export class SnapshotRestoreRejectedError extends Error {
   public constructor(

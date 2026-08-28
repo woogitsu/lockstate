@@ -1694,7 +1694,11 @@ either.
 
 `demoteGeneration` **refuses to demote the last retained generation** and
 reports the refusal (`DemotionResult`), and that floor is what stops one
-restore-time throw from costing a player every save they have.
+restore-time throw from costing a player every save they have. Since #432 it is
+counted over the generations this build has **not** set aside as unreadable: a
+quarantined generation is a copy held for a later build, not a fallback this
+one can use, so a window of `[quarantined, X]` holds exactly one save this
+build could load and `X` is it.
 
 The chain it breaks, **as that chain stood before #431**: `handleInitialize`
 wrapped `restoreSimulationRuntime` in a catch-all and reported *every*
@@ -1770,7 +1774,13 @@ deleted:
 | --- | --- | --- |
 | Deterministic and *declared* (a shape no generation carries correctly) | every generation but one deleted | **none deleted**; `no-valid-generation`, window intact |
 | Deterministic and *undeclared* (a fault in our own restore code) | every generation but one deleted | **none deleted**, and none is even a candidate for deletion: it is not a `SnapshotRestoreRejectedError` (#431) |
-| This save only (a genuinely bad newest generation) | that generation deleted, older one loaded | unchanged: that generation deleted, older one loaded |
+| This save only, `damaged-payload` (a genuinely bad newest generation) | that generation deleted, older one loaded | unchanged: that generation deleted, older one loaded |
+| This save only, `unsupported-by-this-build` (a newer build wrote it) | that generation deleted, older one loaded | **that generation quarantined**, older one loaded (#432) |
+
+The last row is the one #432 changed, and it is split from the row above it
+rather than reworded, because the "Before" column is identical for both and
+that is the point: until the reasons existed, one rule covered two verdicts
+that want opposite handling.
 
 The middle row used to be the top row's parenthesis — *"a code fault, or a
 shape no generation carries correctly"* — because before #431 those two were
@@ -1804,21 +1814,27 @@ code:**
    #103's rollback. The mitigation is that the direction is the safe one (the
    walk continues, nothing is deleted) and that the undeclared set is written
    down rather than left to be discovered.
-2. **Quarantine instead of delete** (#432), so a demoted generation stays
-   recoverable by a fixed build rather than only the last one. The obvious
-   form — a `quarantinedGenerationIds` field on the slot record — is a
-   persistence format change with a *downgrade* hazard:
+2. **Quarantine instead of delete — settled by #432, and "A save only another
+   build can read is kept" below is the answer.** This item read: *"so a
+   demoted generation stays recoverable by a fixed build rather than only the
+   last one. The obvious form — a `quarantinedGenerationIds` field on the slot
+   record — is a persistence format change with a downgrade hazard:
    `prisonSlotMetadataSchema` is `.strict()`, so a record written by a newer
-   build makes `list()` refuse the whole prison list on an older one (see
-   `CorruptSlotMetadataError` above). Un-pointing without deleting is not an
-   option for the reason stated above.
+   build makes `list()` refuse the whole prison list on an older one."* Both
+   halves stand: the hazard is real and the obvious form is still the wrong
+   one. What changed is that the mark did not have to be a new field. It lives
+   in the generation id, which every version of the slot schema already accepts
+   as an arbitrary non-empty string, so an older build reads the record without
+   complaint. Un-pointing without deleting is still not an option, for the
+   reason stated above.
 The third — demoting only once a fallback has actually restored — is settled,
 and is the section above. It also removes most of what (2) was for: after it, a
 deterministic failure deletes nothing, so there is nothing left to quarantine
 in the case quarantine was designed for.
 
-**(2) is now behind (1) rather than beside it, and that is a change of
-sequence, not of scope.** What made quarantine urgent was that a refusal could
+**(2) was behind (1) rather than beside it, and that was a change of
+sequence, not of scope. Both have since landed; the paragraph is kept because
+the argument for the sequence is what shaped the answer.** What made quarantine urgent was that a refusal could
 not be trusted: the worker labels a bug in this build's own restore code
 `snapshot-incompatible` exactly as it labels a bad payload, so a generation
 deleted for being unrestorable might have been perfectly good. Two things have
@@ -1868,8 +1884,8 @@ declared reasons**, and they are declared at the check that decided them
 
 | Reason | What it means | Whose fault | May the generation be retired? |
 | --- | --- | --- | --- |
-| `unsupported-by-this-build` | The payload is coherent and this build cannot interpret it: a snapshot `schemaVersion` it does not implement, an entity ledger whose written prefix is wider than it allocates, an actor-identity snapshot version it does not know, an RNG algorithm it does not implement. | Neither. The bytes are fine and another build reads them. | Yes, once a different generation has restored — and this is the row #432's quarantine exists for. |
-| `damaged-payload` | A declared check found the content inconsistent with itself: a terrain run that overruns its chunk, an RNG stream that is not four words, a `simulation` section with no `entities`, an identity snapshot naming one entity twice, a construction section with no `orders` array. | The save. No build restores it. | Yes, once a different generation has restored. |
+| `unsupported-by-this-build` | The payload is coherent and this build cannot interpret it: a snapshot `schemaVersion` it does not implement, an entity ledger whose written prefix is wider than it allocates, an actor-identity snapshot version it does not know, an RNG algorithm it does not implement. | Neither. The bytes are fine and another build reads them. | **No. Quarantined instead, once a different generation has restored** (#432) — see "A save only another build can read is kept" below. This column read *"Yes, once a different generation has restored — and this is the row #432's quarantine exists for"* until that landed. |
+| `damaged-payload` | A declared check found the content inconsistent with itself: a terrain run that overruns its chunk, an RNG stream that is not four words, a `simulation` section with no `entities`, an identity snapshot naming one entity twice, a construction section with no `orders` array. | The save. No build restores it. | Yes, deleted, once a different generation has restored. |
 | `restore-code-fault` | Nothing declared a refusal and an exception escaped. | **This build.** No verdict has been reached about the save at all. | **No, ever.** It arrives as `SnapshotRestoreFaultError`, which is not the class the demotion decision reads. |
 
 Three and not four: *shape* and *checksum* failures never reach a restore —
@@ -1986,11 +2002,125 @@ to get it wrong: **nothing, if it cannot be restored; the oldest retained
 generation, once it has been.** The only thing an import can destroy is another
 import that never loaded, and the player still has that file.
 
-This does **not** close #432. A generation retired here — by an import that
-worked, or by a demotion — is still deleted rather than quarantined, and a
-quarantined generation would still be outside the retained window, which is why
-#432 reduces this issue's blast radius without closing it and why closing it
-did not need #432.
+This did **not** close #432, and the sentence that stood here — *"a generation
+retired here is still deleted rather than quarantined"* — was true until #432
+landed. It is now half true, and the half that changed is the one that matters:
+a generation retired by an import that worked, or by a `damaged-payload`
+demotion, is still deleted; a generation retired for
+`unsupported-by-this-build` is quarantined. The spare slot and the quarantine
+slot are separate and do not interact — `applyProvisionalRetention` neither
+grants the spare slot to a quarantined generation nor lets one make the window
+look over budget — so a prison may briefly hold `keep + 2`.
+
+#### A save only another build can read is kept, not deleted (#432)
+
+> The decision behind this section is
+> [`docs/ADR-DRAFT-432-quarantine.md`](./ADR-DRAFT-432-quarantine.md), which is
+> **an ADR awaiting a central number** and is therefore deliberately not in
+> `docs/adr/` — see its header for what landing it involves, and replace this
+> note with the numbered link at that point.
+
+The rules above decide **when** a refused generation may be retired and **what
+a refusal means**. This one decides **what "retired" does**, and the answer is
+no longer one thing.
+
+`unsupported-by-this-build` says the payload is coherent and this build cannot
+interpret it — so the build that reads it *already exists*: it is the one that
+wrote it. Deleting those bytes is the one deletion this repository would make
+against a verdict it has just reached, and it was what happened, because
+`SessionController.loadPrison` called `demoteGeneration` for every refusal
+without reading the reason. **A generation refused for that reason is now
+quarantined instead.** `damaged-payload` is unchanged: a declared check found
+the content inconsistent with itself, no build restores it, and it is deleted
+exactly as before.
+
+Why only the first of the two gets the slot: the slot is one slot, and the two
+verdicts differ in whether the recovery is demonstrated or hypothesised. For
+`unsupported-by-this-build` a build that reads the bytes is known to exist and
+only the shipping is pending; for `damaged-payload` a build that reads them
+would have to be written, against a check that says the content contradicts
+itself. If such a check is ever found to be over-strict, the remedy is to move
+that throw site to the other reason — which is where "Why a restore was refused"
+above puts the decision — not to widen quarantine.
+
+**What quarantine is, mechanically.** `PrisonSaveRepository.quarantineGeneration`
+renames the stored record and the id in `generationIds` to a marked form, in
+one transaction, so the key the bytes are under and the id the window holds
+never disagree. Nothing is copied elsewhere and nothing is re-encoded: the
+value read out of the store is the value written back, which is what lets
+`tests/integration/session-restore-failure.test.ts` assert the record is byte
+for byte what was there before the load.
+
+**Why the mark is in the id.** The obvious form is a `quarantinedGenerationIds`
+field on the slot record, and it is the wrong one for the reason "Slot metadata
+is validated" above already gives: `prisonSlotMetadataSchema` is `.strict()`,
+so a record written by a newer build throws `CorruptSlotMetadataError` on an
+older one and `list()` refuses the player's **whole prison list**. A quarantine
+whose price is that a downgrade hides every save is not insurance. A generation
+id is a string this repository generates and nothing else interprets —
+`generationIds` is `z.array(z.string().min(1))` at every version the schema has
+ever had — so a marked id is a record an older build reads without complaint,
+and what it then does with it is the ordinary thing: offer it, be refused,
+demote it, exactly as it would have before #432. The mark therefore costs no
+`SAVE_SCHEMA_VERSION` bump (ADR 0038), no slot-schema change and no migration.
+
+**What it is exempt from.** Everything in `generation-policy.ts`. A quarantined
+generation is not counted against `keep`, is not eligible for eviction by a
+save, an import or a confirmation, and is not the spare slot an import may
+take. That exemption is the whole of what quarantine buys: the window evicts
+from the oldest end, so a generation that merely escaped deletion would be gone
+after `keep` further autosaves — 90 seconds at the 30-second cadence, against a
+fix measured in weeks.
+
+**The bound, and what it sacrifices.** **One quarantined generation per
+prison**, held by the newest candidate for it.
+
+| Situation | What happens |
+| --- | --- |
+| Nothing quarantined | the refused generation takes the slot |
+| The same generation refused again on a later load | idempotent; nothing moves |
+| A **newer** generation is refused | it takes the slot and the older quarantined generation is **deleted** |
+| An **older** generation is refused while a newer one holds the slot | declined (`newer-generation-quarantined`); it stays an ordinary retained generation and the ordinary rules evict it in due course |
+| A build **restores** the quarantined generation | the mark comes off (`releaseQuarantinedGeneration`), the slot is handed back, and the generation rejoins the ordinary window |
+| The prison is deleted | it goes with the rest; it is inside `generationIds`, so `delete()` reaches it |
+
+So what is sacrificed when the bound binds is stated plainly: **of two saves
+this build cannot read, the older one goes.** The newer one is the more recent
+state of the prison, and a build that can read one can generally read both.
+
+**What it costs in storage.** One extra generation per prison, so the
+per-prison worst case goes from `keep + 1` — the import spare slot above — to
+`keep + 2`: five records at the default `keepGenerations: 3`. Against the tiers
+in "Measured size impact" that is +42 KiB at 25 prisoners and +2.86 MiB at
+3,000, per prison, under [ADR 0013](./adr/0013-free-tier-cloud-save-capacity.md)
+§4's accepted 4 MiB per stored save version, and at most ~14 MiB of local
+IndexedDB across the five free slots. Nothing here reaches cloud storage: this
+is `src/persistence/local/` and #20 is unimplemented.
+
+**`loadCurrent` still offers a quarantined generation, and that is the
+recovery.** #432 asked for the opposite — *"`loadCurrent`'s recovery walk must
+not offer a quarantined generation back"* — and that criterion is the one that
+gives, because the same issue requires the bytes to be *"recoverable by a later
+build without the player doing anything unusual"*. Leaving it in the walk **is**
+that recovery: the quarantined generation is the newest thing in the window, so
+a build that can read it restores it on the very next load, with no new code
+path, no new control and nothing for the player to be told. Hiding it would
+need a second, explicit recovery route, and a route the player has to be told
+about is a player-visible promise, which `AGENTS.md`'s fourth exclusion
+reserves to the owner. Termination is unaffected: it rests on
+`LoadCurrentOptions.skip`, which only grows, exactly as before. The cost is one
+refused restore per load and only while the quarantined generation is still the
+newest — the first save after the fallback restore puts an ordinary generation
+above it, and the walk never reaches it again.
+
+**It is invisible to the player, deliberately.** The save-list projection's
+`recovery` and `retainedGenerations`, and the save panel's per-prison count,
+all count readable generations only (`readableGenerationIds`). Counting a
+quarantined copy would report a prison as `recoverable` when this build cannot
+perform that fallback — a promise the code does not keep. Whether the player
+*should* be told that a save is being held for a later build is a new promise
+and therefore the owner's; it is an open question in this issue's ADR, not a
+decision taken here, and no locale key is added.
 
 ### Autosave
 
