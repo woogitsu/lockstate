@@ -68,14 +68,43 @@ two caches and one pool, all keyed by things that rarely change:
 
 | Layer | Unit of work | Repainted when |
 | --- | --- | --- |
-| Ground (terrain, ownership, zoning, grid) | one `Graphics` per **chunk** | the chunk scrolls into view, or the world revision changes |
-| Walls, doors, objects | one `Graphics` per **world row that has something on it** | that row scrolls into view, or the world revision changes |
+| Ground (terrain, ownership, zoning, grid) | one `Graphics` per **chunk**, plus one pooled `TileSprite` per merged rectangle of floor art in it | the chunk scrolls into view, or the world revision changes |
+| Walls, doors, objects | one `Graphics` per **world row that has something on it**, plus one pooled `TileSprite` per run of wall art on it | that row scrolls into view, or the world revision changes |
 | Actors | one pooled `Image` per **visible** actor | every frame, in place |
 
 Consequences worth stating plainly:
 
 - Panning and zooming repaint nothing. They move the camera; the geometry is
   already there. Chunks and rows that leave the view return to a pool.
+- **Art did not change that, and the sprite counts are bounded by runs rather
+  than by tiles.** `mergeFloorRects` collapses a chunk's floor art into greedy
+  rectangles, so a zoned room is one sprite and not one per tile;
+  `mergeTopEdgeRuns` collapses a row's north wall into one sprite per unbroken
+  run. Both are pure functions in `src/rendering/world/tile-art-runs.ts` and
+  both are unit-tested, which is the only way any of this is reachable from a
+  suite with no canvas.
+- **What art costs a chunk paint, measured** (Node 24, the production modules
+  loaded through the same `registerHooks` resolution `benchmarks/production-modules.mjs`
+  uses; 3,000 iterations after 300 warm-up, one 32x32 chunk):
+
+  | | per chunk paint |
+  | --- | --- |
+  | the tile pass that already existed (1,024 `readTile`) | 73.25 us |
+  | `buildRowIndex` over the same chunk, for scale | 74.83 us |
+  | **added:** 1,024 `zonedFloorSprite`, every tile zoned | **1.04 us** |
+  | **added:** `mergeFloorRects`, one room-shaped rectangle | **18.63 us** |
+  | **added:** `mergeFloorRects`, 512 rectangles (alternating zoning) | 141.42 us |
+
+  So a chunk that scrolls into view costs about 20 us more than it did, against
+  the ~75 us it already spent — and nothing extra per frame, because a chunk is
+  still painted once. The floor decision is taken **inside** the pass that
+  already reads every tile rather than in one of its own; a separate pass was
+  written first and measured 73-79 us, which is the whole existing cost again.
+  The 141 us row is a chunk zoned like a chessboard, which is not a prison; it
+  is here because a greedy merge's worst case should be stated rather than
+  discovered. These are direct measurements, not a `benchmarks/` scenario:
+  adding one would mean a registry entry, a scenario version and a kind
+  declaration for a figure that is not a gate.
 - The ground is painted per chunk because the world *is* chunked
   (`AGENTS.md` boundary 8), not because it is convenient.
 - **A world revision costs one pass over the materialised tiles**, and only
@@ -291,11 +320,24 @@ it is on.
   population ordinal for exactly this, and ADR 0040 puts guards in slice 2 with
   their own asset choice.
 
-- **Environment art.** The 23 source sheets under
-  `public/game-content/source-art/` are intake material awaiting a reviewed
-  extraction manifest, and ADR-0014 leaves their fate as an open content
-  decision. Nothing loads them. Ground, walls and objects are drawn as shaded
-  geometry from the appearance tables in `src/rendering/world/appearance.ts`.
+- **Environment art, for everything except floors, walls and doors.** Three of
+  the 23 sheets under `public/game-content/source-art/` are now read
+  (ADR-0052): a zoned tile is drawn as institutional linoleum, an east-west wall
+  as a frontal elevation, a north-south wall as its coping seen from above, and
+  a door as a door. Everything else is still shaded geometry from the appearance
+  tables in `src/rendering/world/appearance.ts`, and which identities those are
+  is written down rather than implied —
+  `src/rendering/world/environment-art.ts` holds the lists and the reason for
+  each, and a test fails if they and the content registries disagree. **No
+  terrain is drawn as art**, and the reason is not that no sheet fits: nothing
+  in `src/` calls `SparseWorld.setTerrain`, so every tile is `dirt` and a
+  terrain-keyed mapping would download a sheet to draw nothing.
+
+  Furniture is the largest gap. Seven of the twenty catalogued objects have no
+  sheet at all — no stove, fridge, bookshelf, washing machine, medical bed,
+  medicine cabinet or security console — and the thirteen that do have one are
+  left on colour deliberately, because each additional sheet is a ~1.5 MiB
+  download. ADR-0052 records that as its open question.
 
 - **Build input.** The scene owns one non-camera gesture: while the HUD's build
   tool is armed, a press on the world reports the tile edge it landed nearest
@@ -324,7 +366,17 @@ it is on.
   tracks one touch pointer by default, so the second finger was previously
   never delivered at all).
 
-- **A completed door is drawn as a wall.** Issue #74 made
+- **A completed door is drawn as a wall.** *No longer true, and kept in place
+  rather than deleted because the mechanism it describes is still exactly right
+  and is what the fix used.* `appearance.ts` now holds
+  `edgeAppearance(edgeNumericId)`, a per-value lookup beside
+  `EDGE_WALL_APPEARANCE`, and `environment-art.ts` maps the same two values to
+  two different sprites — so a door is drawn as a door with art and in
+  `door-wooden`'s own colours without it. What the paragraph below diagnosed
+  was right: the value that tells the two apart was already in the layer the
+  renderer reads. The original follows.
+
+  Issue #74 made
   `ConstructionSystem.finalizeConstruction` write the world's `topEdge` /
   `leftEdge` layers, so a completed **wall** order is real geometry and the
   renderer draws it from the world like any other edge — the order-derived

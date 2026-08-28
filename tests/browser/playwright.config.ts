@@ -60,7 +60,10 @@ const baseURL = `http://127.0.0.1:${port}`;
  * what the keyboard listeners it puts on `window` do when focus moves, and what
  * a **second finger** does -- a pinch needs a context created with `hasTouch`
  * and CDP `Input.dispatchTouchEvent`, which no layer below this one can supply
- * (#209); for the assembled page it is canvas sizing, hit-testing the centre
+ * (#209); for the environment artwork it is decoding a Git LFS-tracked PNG,
+ * cutting frames out of it with `createImageBitmap` and a 2D canvas, and
+ * reading back the pixel the renderer actually put on the screen; for the
+ * assembled page it is canvas sizing, hit-testing the centre
  * pixel and decoding a real PNG. Everything else stays headless.
  *
  * `docs/TESTING.md` gates browser test environments behind explicit review,

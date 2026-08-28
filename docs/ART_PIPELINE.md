@@ -132,8 +132,19 @@ The supplied object sheets are built by `pnpm content:source-art`
 (`tooling/build-source-art-catalog.mjs`) into
 `public/game-content/source-art.v1.json`. Their immutable content-hashed PNG
 filenames, SHA-256 digests, source rectangles, anchors and owner-supplied
-attribution are recorded there. They remain a whole-sheet atlas until a later
-reviewed extraction manifest selects individual variants.
+attribution are recorded there.
+
+**The reviewed extraction manifest this used to promise now exists**, and this
+paragraph used to end *"They remain a whole-sheet atlas until a later reviewed
+extraction manifest selects individual variants."* It is
+`src/rendering/assets/environment-sprites.ts` — a typed source module rather
+than generated data, because which pixels of a sheet are a wall is a judgement a
+reviewer has to be able to read next to its reason, and the generator writes
+`sourceRectPx: {0, 0, 1448, 1086}` for every entry. The catalog is still the
+only thing that names a file. See
+[ADR-0052](./adr/0052-drawing-the-world-with-the-source-art-sheets.md), which
+also answers ADR-0014's open question about whether these sheets should be
+published at all.
 
 **It needs the LFS content and refuses without it.** The inputs under
 `assets/source/generated/` are git-lfs tracked, so in a checkout that has not
