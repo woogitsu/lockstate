@@ -28,8 +28,8 @@ import { stripComments } from '../helpers/canonical-iteration';
  * **That last sentence stopped being the whole story on 2026-08-28.** It is
  * kept as written because it is why the third describe block below exists:
  * that block runs the rooted-path check of the second one over the comments in
- * `src/`, `tests/`, `tooling/` and `scripts/`, which is where two of those
- * three lived. What is still true is the narrowing -- a bare filename in prose
+ * `src/`, `tests/`, `tooling/`, `scripts/` and `benchmarks/`, which is where
+ * two of those three lived. What is still true is the narrowing -- a bare filename in prose
  * is not checkable and is not checked, wherever it is written.
  *
  * Deliberately narrow. It checks `[text](target)`, not backticked filenames in
