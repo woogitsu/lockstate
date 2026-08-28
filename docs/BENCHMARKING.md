@@ -42,6 +42,7 @@ checked against its imports by
 | `navigation.meal-rush`, `navigation.lockdown-return`, `navigation.mixed-destination` | navigation work budget/queue/flow field | modelled — see the file header for what it costs |
 | `navigation.production.meal-rush`, `navigation.production.lockdown-return` | `NavigationSystem` + `PathRequestQueue` + `RouteCache` + `FlowFieldCache` draining a population | **production** |
 | `navigation.production.single-request-budget` | one `findRoute` against `DEFAULT_NAVIGATION_SYSTEM_OPTIONS.workBudgetPerTick` | **production** |
+| `navigation.production.yard-crossing` | a population crossing one open 64×64 region, where one search is worth a large fraction of the whole budget; reports `tickOvershootRatio` | **production** |
 | `actors.production.render-publication` | `LocomotionStore` + `encodeRenderActorsKeyframe` + `decodeRenderActorsPayload` + `actorsFromDelta` over one render-delta publication; the counted work behind ADR 0059's cost table | **production** |
 
 For the same 250-request meal rush, the modelled scenario reports 4,780 work
@@ -288,35 +289,74 @@ It exists for **#413**, whose remaining half is that
 clock. Counted work is the right unit for a deterministic kernel — ADR 0009's
 replay guarantee, the save format and the named RNG streams all depend on the
 tick computing the same thing everywhere — and it is only *honest* if one unit
-costs roughly the same everywhere. Measured on 2026-08-28, nine repeats per row,
-minimum / median / maximum microseconds per expansion:
+costs roughly the same everywhere **and** if the budget is what a tick's cost is
+made of. The script measures both, in three sections.
 
-| scenario | profile | expansions | µs per expansion | 2,000 expansions cost at least |
-| --- | --- | --- | --- | --- |
-| `single-request-budget` | smoke | 4,094 | 1.552 / 1.944 / 2.647 | 3.10 ms |
-| `single-request-budget` | full | 16,290 | 2.012 / 2.275 / 2.619 | 4.02 ms |
-| `meal-rush` | smoke | 16,087 | 2.106 / 2.183 / 2.344 | 4.21 ms |
-| `meal-rush` | full | 51,901 | 3.270 / 3.368 / 3.847 | 6.54 ms |
-| `lockdown-return` | smoke | 19,898 | 1.691 / 1.779 / 1.853 | 3.38 ms |
-| `lockdown-return` | full | 78,997 | 3.202 / 3.314 / 3.606 | 6.40 ms |
+**The table this section used to carry was measured with an instrument that
+over-attributed, and both the table and the conclusion drawn from it are
+withdrawn.** It read:
 
-Two readings, both of them inputs to #413 rather than conclusions of it:
+> | `meal-rush` | full | 51,901 | 3.270 / 3.368 / 3.847 | 6.54 ms |
 
-- **An expansion is not a constant amount of time.** It costs 1.55 µs in the
-  cheapest shape measured and 3.27 µs in the dearest, and within one scenario it
-  rises 30–90% as the search grows about fourfold. It is far more constant than
-  before the frontier heap landed — #413 recorded 15–20 µs and rising — but a
-  budget of 2,000 still bounds a different amount of frame time depending on
-  what it is spent on.
-- **The shipped budget already exceeds the allowance #413 states, as a floor.**
-  2,000 expansions cost *at least* 3.1 ms in the cheapest shape and *at least*
-  6.5 ms in the dearest, against the ~3 ms of a 50 ms tick #413 allots
-  navigation. These are floors from the fastest sample of each shape, so the
-  real figure is higher.
+and concluded *"The shipped budget already exceeds the allowance #413 states, as
+a floor … 2,000 expansions cost at least 3.1 ms in the cheapest shape and at
+least 6.5 ms in the dearest."* Every number in it was really measured. What was
+wrong is the denominator: the script divided **the whole scenario run** by its
+expansions, and a run also contains one lazy `buildNavigationGraph` rebuild
+(12–17 ms, paid on the first `NavigationSystem.update`) and, on every tick, a
+`PathRequestQueue.processTick` prelude proportional to queue depth. Neither is
+an expansion. On `meal-rush` full, about two thirds of what the quotient charged
+to expansions was one of those two. The conclusion does not survive the
+correction: an expansion in that shape costs about 1.28 µs, so 2,000 of them
+cost about 2.6 ms, and the budget does **not** exceed a 3 ms allowance on the
+term it bounds.
 
-Whether the budget may therefore be non-deterministic is not a number and is not
-settled here; it is the architectural question #413's own comment hands to an
-ADR.
+Marking both directions rather than overwriting, per `docs/AGENT_WORKFLOW.md`
+§4: the withdrawn reading was not a guess, it was a rigorous measurement of the
+wrong quantity, which is the failure this document is most likely to repeat.
+
+### 1. The unit: one `findRoute`, timed on its own
+
+Measured 2026-08-28 at `21e5f66` (v0.0.156) plus this branch, nine repeats,
+minimum per row — one corner-to-corner route across one open square region,
+which is the shape with the largest frontier:
+
+| open region | expansions | route ms at min | µs per expansion |
+| --- | --- | --- | --- |
+| 32×32 | 987 | 1.35 | 1.370 |
+| 64×64 | 4,030 | 6.29 | 1.560 |
+| 128×128 | 16,162 | 34.07 | 2.108 |
+| 256×256 | 65,200 | 199.89 | 3.066 |
+
+**An expansion is not a constant amount of time, and it is close enough.** It
+moves 2.2× over a 66× range in search size — against 7.0× before the frontier
+heap landed (#413 recorded 15–20 µs and rising). At the dearest, 2,000
+expansions are 6.13 ms of search; at the cheapest, 2.74 ms.
+
+### 2. The tick: `NavigationSystem.update`, timed per tick
+
+Same run, element-wise minimum per tick index across repeats, one open 64×64
+region, the shipped budget of 2,000:
+
+| pending | tick 0 | steady tick | steady expansions | worst tick after 0 | its expansions | prelude at steady |
+| --- | --- | --- | --- | --- | --- | --- |
+| 250 | 12.43 ms | 4.06 ms | 2,332 | 6.96 ms | 4,026 | 0.42 ms |
+| 5,000 | 16.37 ms | 6.79 ms | 2,332 | 9.82 ms | 3,979 | 3.15 ms |
+
+**The two steady rows differ by 2.7 ms on identical counted work.** That gap is
+`processTick`'s prelude — it sorts every pending entry and computes a
+flow-field group key, `routeContextFingerprint` included, for every pending
+request every tick, including the ones the tick will never reach — and no budget
+value changes it. Tick 0 is the one-off graph rebuild, and no budget value
+changes that either. A fourth term is gated rather than timed:
+`navigation.production.yard-crossing` reports `tickOvershootRatio` at 2.04
+(smoke) and 2.46 (full), because the queue tests `usedBudget >= workBudget`
+before a request and never inside one.
+
+So the reading #413 needs is not that the unit is wrong. It is that the budget
+bounds one of four terms, and not the largest one at scale. Whether the budget
+may therefore be non-deterministic is not a number and is not settled here; it
+is the architectural question #413's own comment hands to an ADR.
 
 ## Current smoke scenario
 
@@ -325,6 +365,16 @@ ADR.
 ## Delivered: navigation work-budget/queue/flow-field scenarios (issue #22)
 
 `navigation.meal-rush`, `navigation.lockdown-return` and `navigation.mixed-destination` (`benchmarks/scenarios/navigation-actor-tiers.mjs`) **model** a path-request queue, work budget and flow-field sharing at the 250 (smoke) and 5,000 (full) actor tiers — they import nothing from `src/` and gate nothing about it; the file's own header now says so, and the scenarios that do drive the production modules are `navigation.production.*` (#410). **This sentence said they "measure `src/simulation/navigation/`"** and admitted the mirror only in a trailing clause deferring to two other documents. Each returns `{ checksum, metrics }`, where `metrics` carries work units (expanded search nodes), cache hit/miss, flow-field activation counts and per-tick latency distribution, deterministically re-verified by `scripts/verify-benchmark-result.mjs` exactly like the checksum. The remaining two tiers (1,000/2,500) and a memory reading are covered by the separate, non-CI-gating `scripts/run-navigation-actor-tier-report.mjs` — see `docs/NAVIGATION.md`'s Performance section and `docs/adr/0007-navigation-work-budgets-and-flow-fields.md` for evidence, rationale and why these are a hand-rolled mirror rather than an import of the production modules.
+
+A fourth production scenario, `navigation.production.yard-crossing`, drives a
+shape none of the three above covers and #413 needed: many requests whose
+searches each have a large frontier. In a prison block a request costs 60–130
+expansions, so a 2,000-expansion budget buys twenty of them and the
+always-process-one overshoot is invisible; in one open yard region a single
+request is worth 2,667 expansions and the busiest tick spends 2.04× (smoke) to
+2.46× (full) what it budgeted. That ratio is bounded from **below**, so the
+scenario's subject cannot quietly disappear, and `ticksToDrain` is bounded from
+above so a re-calibration of the budget has to arrive with its cost re-measured.
 
 **These three are modelled** (see the table above), and #410 replaced them as
 the gate rather than deleting them: `navigation.production.meal-rush` and
