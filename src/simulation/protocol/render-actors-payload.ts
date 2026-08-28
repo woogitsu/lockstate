@@ -268,9 +268,11 @@ export class RenderActorsKeyframeWriter {
     this.view.setInt32(offset + 2 * RENDER_ACTORS_WORD_BYTES, subX, true);
     this.view.setInt32(offset + 3 * RENDER_ACTORS_WORD_BYTES, subY, true);
     // Two `i16` in the fifth word. A velocity is bounded by the walking speed
-    // and the speed ladder's ceiling -- 64 sub-tile units a tick at x4 is
-    // 5,120 a second -- so sixteen bits is room to spare, and a whole word an
-    // axis would be four bytes an actor for nothing.
+    // and the speed ladder's ceiling -- 128 sub-tile units a tick at x4 is
+    // 10,240 a second -- so sixteen bits is still room to spare (a third of the
+    // range), and a whole word an axis would be four bytes an actor for
+    // nothing. A speed ladder reaching x16, or a walk three times this one,
+    // would be the thing that overflows it.
     this.view.setInt16(offset + 4 * RENDER_ACTORS_WORD_BYTES, velocitySubX, true);
     this.view.setInt16(offset + 4 * RENDER_ACTORS_WORD_BYTES + 2, velocitySubY, true);
     this.written += 1;

@@ -44,8 +44,9 @@ import type { MutableRenderActor } from './render-feed';
  * 100 ms ceiling -- enough slack that an ordinary late message does not make
  * an actor stop and start, and short enough that a worker which has genuinely
  * stopped publishing leaves the prison standing still within a frame or two
- * rather than drifting. At the shipped walking speed the worst-case error a
- * clamp of this size can hold is 1.25 tiles.
+ * rather than drifting. At the shipped walking speed -- ten tiles a second,
+ * `DEFAULT_WALK_SUBTILE_UNITS_PER_TICK` -- the worst-case error a clamp of this
+ * size can hold is two and a half tiles.
  */
 export const MAX_ACTOR_EXTRAPOLATION_SECONDS = 0.25;
 

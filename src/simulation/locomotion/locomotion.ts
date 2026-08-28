@@ -50,35 +50,39 @@ import type { TilePosition } from '../world/coordinates';
  * Sub-tile resolution: how many units of progress make up one tile.
  *
  * A power of two so that a tile boundary is a shift rather than a division,
- * and large enough that one tick of walking is several units -- at
- * `DEFAULT_WALK_SUBTILE_UNITS_PER_TICK` a tile takes eight ticks, so the
- * quantum is an eighth of a tile per tick and nothing rounds to nothing.
+ * and large enough that a tick of walking is a whole number of units at every
+ * speed anybody is likely to try: at `DEFAULT_WALK_SUBTILE_UNITS_PER_TICK` a
+ * tile takes two ticks, and it would still be exact at eight times slower.
+ *
+ * It is also the scale the render payload carries -- `render-actors-payload.ts`
+ * re-exports this rather than declaring one of its own, so an actor's position
+ * between two tiles reaches the renderer unconverted.
  */
 export const LOCOMOTION_SUBTILE_UNITS = 256;
 
 /**
  * Walking speed, in sub-tile units per kernel tick.
  *
- * `32 / 256` of a tile per tick at the kernel's 20 Hz is **2.5 tiles per
- * second**, or eight ticks to cross a tile.
+ * `128 / 256` of a tile per tick at the kernel's 20 Hz is **ten tiles per
+ * second**, or two ticks to cross a tile.
  *
  * **A directional default, not a locked balance decision**, in the sense
- * `DEFAULT_SECURITY_SECTOR_REQUIRED_GUARD_COUNT` uses the phrase, and the
- * reasoning is written down so a balance pass has something to disagree with.
- * The two ends of the range it sits between are both real:
+ * `DEFAULT_SECURITY_SECTOR_REQUIRED_GUARD_COUNT` uses the phrase.
+ * [ADR 0059](../../../docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md)
+ * argues it at length and carries the table; the short version is that it is
+ * bounded on both sides and the lower bound was hit **twice**, by measurement
+ * rather than by taste:
  *
- * - Faster reads as sliding rather than walking. A tile is 64 px
- *   (`src/rendering/tile-metrics.ts`), so this is 160 px/s on screen at 1x.
- * - Slower eats the day. An in-game day is 2,400 ticks
- *   (`../prisoners/regime.ts`), so an in-game hour is 100 ticks and this speed
- *   spends one of them on a twelve-and-a-half-tile walk. A starter prison is
- *   one 32x32 chunk (`createNewSimulationRuntime`), so an ordinary errand is a
- *   fraction of an hour and the longest possible walk inside it is about five.
- *
- * The needs it has to stay clear of are the ones a walk delays: `hunger`
- * decays `0.05` a tick (`../prisoners/needs.ts`), so a meal is due roughly
- * every 2,000 ticks and a 100-tick walk to the canteen is five per cent of
- * that budget.
+ * - **Slower starves prisoners.** The general-population timetable's meal
+ *   blocks are 100 ticks (`../prisoners/regime.ts`) and a walled starter prison
+ *   is fifty tiles of path across, so a journey that outlasts the block that
+ *   sent the prisoner on it costs them the next block too. At 2.5 tiles a
+ *   second a prison with a cell and a yard starved its prisoner to hunger `0`;
+ *   at 5, a prison with a cell, a shower room *and* a yard did the same.
+ * - **Faster reads as sliding rather than walking.** A tile is 64 px
+ *   (`src/rendering/tile-metrics.ts`), so this is 640 px/s on screen at 1x --
+ *   hurried, and the honest cost of a 2,400-tick day. ADR 0059 open question 1
+ *   is where the day length is handed back.
  */
 export const DEFAULT_WALK_SUBTILE_UNITS_PER_TICK = 128;
 
