@@ -53,9 +53,16 @@ export const GENERATION_SHIFT = 20;
  * there over-claimed and is corrected to what the loop delivers; it is not
  * something `>>> 0` repairs.
  *
- * No save is affected. Reaching generation 2,048 needs 2,048 destroy/spawn
- * cycles of one index, and nothing in `src/` destroys an entity at all
- * (#31), so no save this codebase can produce holds such an id.
+ * **No save produced so far is affected, and the reason has changed.** This
+ * used to say "nothing in `src/` destroys an entity at all (#31)", which was
+ * true until #441 gave a sentence an end: `releasePrisoner` destroys the entity
+ * and the index goes back on the free list, so prisoner indices are now
+ * recycled in an ordinary session. What is unchanged is the arithmetic --
+ * reaching generation 2,048 at one index needs 2,048 releases *of that index*,
+ * and the free list is LIFO over every freed slot -- so a prison would have to
+ * churn a multiple of that through a single slot before an id went negative.
+ * That is a long-running prison rather than an impossible one, which is why
+ * ADR 0026 question 1 is escalated by ADR 0050 rather than closed by it.
  *
  * Exported because the id format has a second reader outside this class:
  * `src/rendering/feed/actors-from-snapshot.ts` rebuilds ids from a *snapshot*

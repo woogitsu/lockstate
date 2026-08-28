@@ -48,8 +48,28 @@ const CELL_RECT = { x: 4, y: 6, width: 2, height: 3 } as const;
 const BED_TILE = { x: 4, y: 6 } as const;
 /** The tile `src/main.ts` admits at. */
 const ARRIVAL = { x: 16, y: 16 };
-/** What one press of the Intake panel's control asks for, copied from `ADMISSION_REQUEST` in `src/main.ts`. */
-const ADMISSION = { sentenceLengthTicks: 10_000, priorIncidents: 0 };
+/**
+ * One press of the Intake panel's control (`ADMISSION_REQUEST` in
+ * `src/main.ts`), **with a longer sentence**.
+ *
+ * The panel asks for 10,000 ticks and this file used to copy that figure. It
+ * cannot any more: since #441 a sentence ends, and every case below runs to at
+ * least `FIRST_REVIEW_TICK` (23,999) -- three of them to 96,000 -- so the
+ * prisoner whose tier is under measurement left the prison long before the
+ * review that was supposed to move it, and five cases read tier 0 for a
+ * prisoner who no longer existed.
+ *
+ * 150,000 rather than a round 100,000 for a reason that has to be checked
+ * rather than assumed: `classifyPrisoner` adds a point at
+ * `LONG_SENTENCE_THRESHOLD_TICKS` (200,000), so any value below that leaves
+ * every tier in this file exactly where it was, and 150,000 clears the longest
+ * run here (96,000) with room for the review interval to move.
+ *
+ * That the panel's own figure now empties a cell in about four in-game days is
+ * a **balance** question rather than a defect, and it is recorded in ADR 0050's
+ * consequences rather than answered by editing `src/main.ts` from a test file.
+ */
+const ADMISSION = { sentenceLengthTicks: 150_000, priorIncidents: 0 };
 
 /**
  * `CLASSIFICATION_REVIEW_INTERVAL_TICKS`, written out rather than imported.
@@ -146,7 +166,8 @@ describe('an incident has a consequence for the prisoner who was in it', () => {
 
     stepTo(runtime, FIRST_REVIEW_TICK + 1);
 
-    // 0 (short sentence) + 0 (no priors) + 3 (findings, capped) - 0 (the
+    // 0 (sentence below `LONG_SENTENCE_THRESHOLD_TICKS`) + 0 (no priors)
+    // + 3 (findings, capped) - 0 (the
     // finding is 17,949 ticks old, less than one credit period) = 3.
     expect(tierOf(runtime, entityId)).toBe(3);
     const detail = projectPrisonerDetail(runtime.prisoners, entityId);

@@ -18,11 +18,18 @@ const RNG_STREAM = 'prisoners.classification';
  * `entityStore` and `admitPrisoner` publicly, so these tests use nothing but
  * the public surface -- the same surface
  * `tests/determinism/snapshot-restore-fidelity.test.ts` already recycles an
- * index through. But no *gameplay* path reaches it: nothing in `src/` destroys
- * a prisoner entity and nothing in `src/` admits one either, so the situation
- * cannot occur in a session today and becomes reachable only with the first
- * release/parole path (#31). These tests exist so that the day it does, a
- * recycled slot behaves like a fresh one.
+ * index through.
+ *
+ * **These cases have stopped being anticipatory.** They used to close with
+ * "the situation cannot occur in a session today and becomes reachable only
+ * with the first release/parole path (#31) ... so that the day it does, a
+ * recycled slot behaves like a fresh one". That day is #441: a prisoner whose
+ * sentence ends is released, their index goes back on the free list, and the
+ * next admission lands on it. What these cases pin is now ordinary gameplay,
+ * and it is deliberately still driven through `entityStore.destroy` rather than
+ * through `releasePrisoner` -- destroy alone is the *harsher* input, because it
+ * leaves behind exactly the cold state and occupancy a real release drops, so a
+ * component reset that only worked alongside a full release would fail here.
  */
 
 interface SlotArrayLike {
@@ -304,9 +311,12 @@ describe('admitting a prisoner into a recycled index', () => {
     // `phaseStartedAtTick`) and the one named RNG draw per classification
     // would both differ if the two arms admitted at different ticks or made a
     // different number of draws, and the comparison would be meaningless
-    // rather than merely failing. Occupancy stays symmetric too -- nothing
-    // releases a destroyed prisoner's cell (#31), so the recycled arm's first
-    // prisoner holds its cell exactly as the fresh arm's does.
+    // rather than merely failing. Occupancy stays symmetric too, and since
+    // #441 that is a property of what this test calls rather than of the
+    // codebase: `entityStore.destroy` releases nothing, so the recycled arm's
+    // first prisoner holds its cell exactly as the fresh arm's does.
+    // `releasePrisoner` would free it and the two arms would then differ in
+    // occupancy for a reason that has nothing to do with slot recycling.
     const admit = (fixture: PrisonerScenarioFixture) =>
       fixture.prisoners.admitPrisoner({ sentenceLengthTicks: 90_000, priorIncidents: 1 }, fixture.originTile);
 

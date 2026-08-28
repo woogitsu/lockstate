@@ -770,6 +770,52 @@ export class RoomInstanceRegistry {
   }
 
   /**
+   * Drops `entityId` from **both** of this registry's entity-keyed ledgers --
+   * every residency and every concurrent-use claim -- because that entity has
+   * ceased to exist (ADR-XXXX decision 2).
+   *
+   * ## Why one method and not two calls from the release path
+   *
+   * `release` and `releaseUse` each need an instance id the caller has to know,
+   * and the caller's two pointers -- `PrisonerColdState`'s
+   * `accommodationInstanceId` and `currentActionTargetInstanceId` -- are not a
+   * complete answer to "where is this entity recorded". ADR 0026 question 3
+   * measured a prisoner holding `['cell-0', 'solitary-cell-0']` while the cold
+   * state named only the newer of the two, with the older one leaked
+   * permanently. A release built on those pointers would reproduce that leak
+   * exactly on the day something reintroduces it. This asks the ledgers
+   * themselves instead, so the answer cannot disagree with them.
+   *
+   * The two ledgers are dropped together for the same reason `ActionSystem`'s
+   * `releaseUseClaim` is not gated on the action's target kind: one method per
+   * exit, asked unconditionally, so no path can be the one that forgot.
+   *
+   * ## Cost
+   *
+   * One walk of each ledger -- two `Map` probes per registered instance -- paid
+   * once per departure, never per tick. At the scale this registry is built for
+   * (`DEFAULT_PRISONER_CAPACITY` is 5,000 and a cell instance houses one
+   * prisoner, so instances are population-shaped) that is the same order as the
+   * `0..maxActiveIndex` walk `EntityQuery.execute` already performs on every
+   * scheduled prisoner tick, and it happens on a small fraction of them. A
+   * reverse `EntityId -> instanceId` index would make it O(1) and would be a
+   * third ledger to keep consistent with the two above; that trade is worth
+   * revisiting only if a departure rate ever makes it measurable.
+   *
+   * Total: an entity recorded nowhere is a no-op, and releasing twice is
+   * another. Both counters follow the observed size change rather than the
+   * call, so neither can go negative.
+   */
+  public releaseEntity(entityId: EntityId): void {
+    for (const occupants of this.occupants.values()) {
+      if (occupants.delete(entityId)) this.occupiedPlaceCount -= 1;
+    }
+    for (const claims of this.useClaims.values()) {
+      if (claims.delete(entityId)) this.useClaimCount -= 1;
+    }
+  }
+
+  /**
    * Every instance this entity **lives** in -- normally at most one for
    * accommodation, but the registry does not assume that.
    *

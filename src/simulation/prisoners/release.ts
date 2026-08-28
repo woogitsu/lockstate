@@ -1,0 +1,158 @@
+import type { ComponentBitset } from '../entity/component';
+import type { EntityId, EntityStore } from '../entity/entity-store';
+import type { PrisonerColdState } from './components';
+import type { RoomInstanceRegistry } from './room-instance-registry';
+
+/**
+ * Cancelling the route a departing prisoner was walking. `NavigationSystem`
+ * satisfies it structurally; a narrow port keeps `prisoners/` from depending on
+ * the navigation module for one call it makes at most once per departure.
+ */
+export interface PrisonerRouteCancelPort {
+  cancelRequest(id: string): boolean;
+  clearResult(id: string): void;
+}
+
+/**
+ * Dropping a departing prisoner's name. `ActorIdentityRegistry` satisfies it,
+ * and its own `release` doc already states the contract this call keeps:
+ * *"**Required** when the actor is destroyed: `EntityStore` recycles the index,
+ * so a retained entry would eventually hand the slot's next occupant the
+ * previous occupant's name."* Until now nothing called it.
+ */
+export interface PrisonerNameReleasePort {
+  release(kind: 'prisoner', entityId: EntityId): boolean;
+}
+
+/** Dropping a departing prisoner's gang membership. `GangRegistry` satisfies it. */
+export interface PrisonerGangReleasePort {
+  removeMember(entityId: EntityId): void;
+}
+
+/** Dropping a departing prisoner from the job labour pool. `JobWorkerPool` satisfies it. */
+export interface PrisonerWorkerReleasePort {
+  unregister(entityId: EntityId): void;
+}
+
+/**
+ * Every store a departing prisoner has to be dropped from, named in one place.
+ *
+ * ## Why this type exists at all
+ *
+ * [ADR 0026](../../../docs/adr/0026-entity-id-lifetime.md) question 2 does not
+ * ask whether release should drop these -- *"obviously it should"* -- it asks
+ * **what mechanism keeps the list complete**, because a hand-written list is
+ * the failure mode issue #111 already produced once (thirteen component arrays
+ * initialised in one place and forgotten in the other). This type is half of
+ * the answer and it is the weaker half: it makes the list *visible* and makes
+ * every entry *required*, so a store cannot be dropped from the release path
+ * by editing one line, but nothing about it notices a store that is never
+ * added.
+ *
+ * The other half, and the one that does the work, is executable:
+ * `tests/unit/prisoner-release-completeness.test.ts` walks the real session's
+ * object graph by reflection, finds every `Map` and `Set` in it that mentions a
+ * living prisoner's `EntityId`, and requires that none of them still mentions
+ * it after the prisoner has left. A nineteenth store fails there whether or not
+ * anybody remembered this file.
+ *
+ * ## The four optional entries, and why they are optional rather than required
+ *
+ * `identity`, `gangs`, `jobWorkers` and `navigation` are session-level: they
+ * span prisoners and staff, or prisoners and haulage, and none of them is owned
+ * by `PrisonerOperationsRuntime`. A fixture that stands up the prisoner slice
+ * alone genuinely has none of them, exactly as `IntakeSystem`'s existing
+ * optional `identity` collaborator does -- and an absent store holds no entry
+ * to leak. `exactOptionalPropertyTypes` is on, so an omitted key and an
+ * explicit `undefined` are different things and neither can be a silently
+ * skipped required store.
+ */
+export interface PrisonerReleaseSurfaces {
+  readonly entityStore: EntityStore;
+  readonly bitset: ComponentBitset;
+  readonly coldState: PrisonerColdState;
+  readonly roomInstances: RoomInstanceRegistry;
+  readonly navigation?: PrisonerRouteCancelPort;
+  readonly identity?: PrisonerNameReleasePort;
+  readonly gangs?: PrisonerGangReleasePort;
+  readonly jobWorkers?: PrisonerWorkerReleasePort;
+}
+
+/**
+ * Removes one prisoner from the prison completely: every claim they hold is
+ * given back, every store keyed by their id forgets them, and the entity is
+ * destroyed so its index returns to the free list.
+ *
+ * Answers `false` -- and touches nothing -- for an id that does not name a
+ * living entity, so a double release and a stale handle are both no-ops rather
+ * than a partial teardown of whoever occupies that slot now.
+ *
+ * ## The order is load-bearing, step by step
+ *
+ * 1. **Liveness first.** Everything below reads the id, and
+ *    `EntityStore.getIndex` masks without checking; a dead id would name
+ *    whoever holds that slot.
+ * 2. **The route, before the cold state that names it.** The request id lives
+ *    in `PrisonerColdState`, so cancelling has to happen while it is still
+ *    readable. Both halves are called: `cancelRequest` drops a request still
+ *    queued, `clearResult` drops one already resolved and waiting to be
+ *    collected -- a departing traveller can be in either state, and the one
+ *    left behind is a `Map` entry nothing would ever remove.
+ * 3. **Both room ledgers, through the registry's own scan.** See
+ *    `RoomInstanceRegistry.releaseEntity` for why the cold state's two instance
+ *    pointers are not a complete answer to where a prisoner is recorded.
+ * 4. **The cold state itself**, once nothing else needs to read it.
+ * 5. **Name, gang, labour pool** -- the three session-level stores.
+ * 6. **The component bit**, so `EntityQuery` stops matching the index even if
+ *    something re-marks it alive.
+ * 7. **The entity last.** `destroy` bumps the generation, after which the id
+ *    names nobody and every step above would have become a lookup against the
+ *    wrong key.
+ *
+ * ## What it deliberately does not do
+ *
+ * **It does not reset the index-keyed component arrays.** Those are reset when
+ * an index is *allocated* (`PrisonerOperationsRuntime.admitPrisoner`, the fix
+ * for #111), and stating the same defaults in a second place is how the two
+ * copies come to disagree. The consequence is that a freed slot keeps its
+ * previous occupant's record until it is reused, which is exactly what a
+ * never-released prison already did with slots above the high-water mark, and
+ * every reader in `src/` walks `0..maxActiveIndex` behind an `isIndexAlive`
+ * guard.
+ *
+ * **It writes no history.** Whether a departed prisoner leaves a record behind
+ * is ADR 0026 question 2's open half and a Phase 9 product question; nothing
+ * here invents one.
+ *
+ * ## Determinism
+ *
+ * Draws nothing, reads no clock, and every step is a keyed delete whose result
+ * does not depend on the order the map happens to hold. The caller's iteration
+ * order therefore decides nothing about the outcome -- but it is canonical
+ * anyway (`PrisonerDischargeSystem` walks `EntityQuery.execute`), because two
+ * prisoners released on one tick free places that a later intake tick fills in
+ * a fixed order.
+ */
+export function releasePrisoner(surfaces: PrisonerReleaseSurfaces, entityId: EntityId): boolean {
+  const { entityStore, bitset, coldState, roomInstances } = surfaces;
+  if (!entityStore.isAlive(entityId)) return false;
+
+  const index = entityStore.getIndex(entityId);
+
+  const pathRequestId = coldState.getPathRequestId(entityId);
+  if (pathRequestId !== undefined && surfaces.navigation !== undefined) {
+    surfaces.navigation.cancelRequest(pathRequestId);
+    surfaces.navigation.clearResult(pathRequestId);
+  }
+
+  roomInstances.releaseEntity(entityId);
+  coldState.release(entityId);
+
+  surfaces.identity?.release('prisoner', entityId);
+  surfaces.gangs?.removeMember(entityId);
+  surfaces.jobWorkers?.unregister(entityId);
+
+  bitset.clear(index);
+  entityStore.destroy(entityId);
+  return true;
+}

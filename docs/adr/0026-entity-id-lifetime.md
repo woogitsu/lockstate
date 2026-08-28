@@ -160,6 +160,48 @@ drive, so neither the wrap nor the re-intake is reachable through any shipped
 path; `submitIntake`'s only caller remains `admitPrisoner`, which spawns a
 fresh entity every time. The decisions below stay with #31.
 
+### Amendment, 2026-08-28 (#441): question 2 is answered, and the paragraph above is no longer true
+
+*No decision in the rest of this document is edited. The paragraph above is
+kept, dated and contradicted here rather than rewritten, because what it
+recorded — that every observation in this ADR was reached by driving
+`EntityStore` directly, never by playing — is the reason the questions were
+framed as they are.*
+
+[ADR 0050](./0050-when-a-sentence-ends.md) implements a release path for
+prisoners: a prisoner whose `sentenceEndTick` the clock has passed is dropped
+from every `EntityId`-keyed store and the entity is destroyed. So:
+
+- **`EntityStore.destroy` now has a call site in `src/`**
+  (`src/simulation/prisoners/release.ts`), and prisoner indices are recycled in
+  an ordinary session. Measured over a 200,000-tick run of the real kernel: 115
+  lifetime prisoners against a `maxActiveIndex` of 23.
+- **Question 2 is answered, as option C plus the accounting option C asked
+  for.** ADR 0050 decision 2 names every store, and
+  `tests/unit/prisoner-release-completeness.test.ts` is the mechanism that keeps
+  the list complete — a reflection walk of the real session's object graph
+  rather than a hand-written list, which is what this document said the decision
+  actually was. All four of the methods tabulated under question 2 now have a
+  caller, and `PrisonerColdState` has the per-entity `release` it lacked.
+- **Question 1 is not answered and is now reachable**, which is the reverse of
+  the situation this ADR was written in. Option A is still not taken, and the
+  re-baseline of `actor-identity.test.ts` this document names as part of taking
+  it is still not approved. What has changed is the exposure: with option C
+  implemented, no store holds a departed prisoner's id at all, so the surviving
+  hazard is a stale handle held *outside* every store across 4,096 recycles of
+  one index. ADR 0050's *What would change my mind* names the experiment that
+  would settle whether one exists.
+- **Question 3 is not answered.** The release path creates no re-intake caller.
+  The "one prisoner, two beds" state it measured is now recoverable rather than
+  permanent, because `RoomInstanceRegistry.releaseEntity` drops an entity from
+  every instance rather than from the one the cold state names.
+- **The two tripwire files are unchanged**, and that is the correct outcome
+  rather than an omission: they pin question 1's and question 3's behaviour, and
+  neither is decided here. `tests/unit/prisoner-slot-recycling.test.ts`, which
+  pins the #111 component reset, keeps driving `EntityStore.destroy` directly
+  rather than `releasePrisoner` — destroy alone is the harsher input, because it
+  leaves behind exactly what a real release drops.
+
 ## Question 1 — what happens when a generation is exhausted?
 
 ### A. Refuse to recycle an index past its last generation

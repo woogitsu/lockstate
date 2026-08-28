@@ -346,11 +346,30 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     confiscations: () => confiscations.all(),
   };
 
+  /*
+   * Two more session-level stores hoisted above `prisoners` for the same reason
+   * the two evidence logs are, and the reason is #441's release path.
+   *
+   * `GangRegistry` records which prisoner belongs to which gang and
+   * `JobWorkerPool` records which prisoner is in the haulage labour pool; both
+   * are keyed by prisoner `EntityId`, and both have to forget a prisoner who
+   * has left the prison, or a recycled index eventually inherits a gang and a
+   * job queue (ADR 0026 question 2, answered in ADR-XXXX decision 2). Their
+   * writers are still further down -- `IncidentTriggerSystem` reads the gangs,
+   * `JobSystem` drives the pool -- and this changes no arrow: both are bare
+   * constructors with no dependencies, exactly as `incidents` and
+   * `confiscations` above are, so hoisting them costs nothing.
+   */
+  const gangs = new GangRegistry();
+  const jobWorkers = new JobWorkerPool();
+
   const prisoners = new PrisonerOperationsRuntime({
     capacity: DEFAULT_PRISONER_CAPACITY,
     navigation,
     identity: actorIdentity,
     disciplinaryEvidence,
+    gangs,
+    jobWorkers,
   });
 
   /*
@@ -458,7 +477,6 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   const refusals = new RefusalLog();
 
   const jobs = new JobBoard();
-  const jobWorkers = new JobWorkerPool();
   const jobWorkerAdapter = new PrisonerJobWorkerAdapter(prisoners);
   const jobSystem = new JobSystem(jobs, containers, jobWorkers, jobWorkerAdapter, navigation);
 
@@ -607,7 +625,6 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   // a scenario can pass richer sampling by constructing its own
   // IncidentTriggerSystem, exactly like #27's TargetLocationResolver seam.
   const sectorRisk = new SectorRiskTracker();
-  const gangs = new GangRegistry();
   const tunnels = new TunnelRegistry();
   const incidentSectorIds: string[] = [];
 
