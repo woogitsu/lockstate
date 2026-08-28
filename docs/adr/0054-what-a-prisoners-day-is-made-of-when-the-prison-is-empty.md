@@ -145,6 +145,61 @@ acceptance criterion asks to be *named* rather than built, and it is named here:
 **HUD_PROJECTIONS gap 7 is the surface this ruling depends on, and it is the
 owner's, because a threshold is a statement to a player about what is bad.**
 
+> **Amended 2026-08-28, on #436's re-verification pass. The decision stands. Its
+> first leg is narrower than the paragraph above states, and its rejection of
+> alternative C is stronger than that section argues.** Both halves are marked
+> rather than rewritten, because the sentence being corrected is the one a
+> reader would otherwise rely on.
+>
+> **"It *is* enforced" is true only of an understaffed prison, and the split was
+> never measured.** Measured now on the real command path, one furnished cell
+> per prisoner (bed and toilet), no shower room and no yard, twenty in-game
+> days, `tests/integration/room-gated-needs.test.ts`:
+>
+> | prison | peak sector risk | riots |
+> | --- | --- | --- |
+> | 8 prisoners, **1 guard** (coverage satisfied) | **0.4824** | **0** |
+> | 8 prisoners, **0 guards** | 0.7979 | 3 |
+> | 1 prisoner, 1 guard | 0.4837 | 0 |
+>
+> `hotThreshold` is `0.65` and `contrabandPressure` is structurally zero, so in
+> a staffed prison the score *is* `needsPressure`, and two needs pinned at zero
+> for twenty days never reach the line. **The chain from an unmet need to a riot
+> closes only when `staffingShortfall` is carrying the rest of it**, and one
+> guard hire is the whole of the difference between three riots and none. The
+> repository already asserted the same shape one case over and nobody drew the
+> conclusion: `tests/integration/incident-trigger-reachability.test.ts` calls
+> its beds-only fixture *"one guard away from rioting"* and asserts it *"does
+> not, once a single guard is hired"*. So ADR 0041's three-part bar —
+> *enforced*, *reported*, *resolves* — is met at **one and a half** of three by
+> this ruling, not two: resolution is real and cheap, enforcement is real and
+> conditional, and the readout is still owed.
+>
+> **What that does not do is rescue alternative C, and this is the measurement
+> that settles it.** The obvious repair — give the two needs a cell-side sibling
+> at a low rate, so the pressure survives — does not work at any rate, because
+> the loser is precisely the unguarded prison that sits near the line. Measured
+> by appending a hypothetical `action.wash-in-cell` (`own-accommodation`,
+> `hygiene`) and `action.rest-in-cell` (`own-accommodation`, `recreation`) to
+> `DEFAULT_ACTIONS`, running, and removing them again:
+>
+> | sibling rate vs `action.shower`'s 4 | cells-only, 1 guard: peak risk | cells-only, 0 guards: peak risk / riots |
+> | --- | --- | --- |
+> | none (today) | 0.4837 | 0.7979 / **3** |
+> | 1 (a quarter) | 0.1948 | 0.4948 / **0** |
+> | 0.25 (a sixteenth) | 0.3484 | 0.6484 / **0** |
+>
+> Even at a sixteenth of a shower's rate the riot is gone, because
+> `selectBestAction` drives *any* available route toward satiation — the rate
+> sets how fast a need recovers, never a floor it stops at. (ADR 0041 measured
+> the same thing from the other side: with `action.eat-in-cell` reachable,
+> hunger *"never falls below 179.5"*.) **A cell-side sibling is therefore not a
+> weaker version of the room; it is the deletion of the room's reason to
+> exist**, and the *Alternatives* section's C was right for a reason it did not
+> have. What follows is that closing the enforcement gap has to be done in
+> `DEFAULT_SECTOR_RISK_POLICY` or in a per-prisoner consequence (#442, #80,
+> #443) and not in the action catalogue.
+
 ### 2. No regime block may leave a housed prisoner with nothing to start
 
 `'free-association'` is added to the four blocks whose every category was
@@ -300,6 +355,17 @@ and real understaffing — but **nothing tells the player which need caused it**
 and the ruling is only as good as the readout it is waiting on. If HUD gap 7 is
 not going to be closed, decision 1 is wrong and C is the honest answer, because
 an invisible pressure with an invisible escape is the state ADR 0041 refused.
+
+> **Amended 2026-08-28. Half of this paragraph is now measured, and it went the
+> way the paragraph feared and the other way at the same time.** The link is
+> weaker than stated — in a *staffed* prison the riot does not fire at all, so
+> the neglect is invisible **and** inconsequential, not merely unlabelled (see
+> decision 1's amendment for the numbers). But the escape route this paragraph
+> offers if the link fails is closed: C does not preserve the pressure at any
+> rate, measured. So the paragraph's *"decision 1 is wrong and C is the honest
+> answer"* is withdrawn. The honest answer if the link cannot be repaired is a
+> consequence or a threshold, not a catalogue entry, and both are outside this
+> document.
 
 Three smaller things would move me:
 
