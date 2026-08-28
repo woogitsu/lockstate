@@ -895,6 +895,19 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
    * True when the pending rectangle's own perimeter is open against a
    * selected room type that requires one closed (issue #493).
    *
+   * **Feeds the note only, never `confirmButton.setDisabled` (CI on #498
+   * found the version that did).** `pendingEnclosure` can be a false
+   * negative -- `classifyArea`'s answer is only as fresh as the render
+   * snapshot feed's own cadence, which can go stale for as long as the
+   * session stays paused -- and disabling on a possibly-stale `'open'`
+   * blocked a designation the simulation would have accepted, which is worse
+   * than the missing warning this panel exists to add. The warning itself
+   * carries no equivalent risk: shown when it need not have been, it costs
+   * confusion for one press and no more, because the control stays live and
+   * the real simulation still decides. See `paintActions`'s comment beside
+   * `confirmButton.setDisabled` for the full reasoning and the ADR for the
+   * options weighed.
+   *
    * Reads `pendingEnclosure`, never `options.classifyArea` again: the host
    * already answered once, when the rectangle became pending, and asking a
    * second time here could disagree with it if the world moved in between --
@@ -1146,21 +1159,51 @@ export function createRoomsPanel(options: RoomsPanelOptions): RoomsPanel {
     );
 
     if (pending !== undefined) {
-      // A rectangle under the authored minimum, or open against a room type
-      // that requires enclosure, can be *held* but not confirmed. Disabled
-      // rather than absent: the rectangle is real and the player drew it, so
-      // the control that would designate it stays where it is and the note
-      // beside it says what is wrong. Removing the control would leave a
-      // pending rectangle with no visible reason for having no way forward.
+      // Only too-small disables. **Enclosure does not, and issue #493's own
+      // first design disabled on it too -- that was wrong, and CI on #498
+      // is why this comment says so rather than the reasoning it replaced.**
+      //
+      // Too-small is arithmetic on numbers the panel already holds outright:
+      // the pending rectangle's own width and height against the selected
+      // room's authored minimum, nothing about world state, so there is
+      // nothing for it to be stale about. Enclosure is not that. `pending
+      // Enclosure` is `classifyArea`'s answer against `WorldRenderView`,
+      // which is refreshed on the render-snapshot feed's own cadence
+      // (`SimulationSnapshotFeed`) -- up to a 30-second poll interval while
+      // the clock runs, and **not refreshed at all while it is paused**,
+      // with no final catch-up snapshot taken when it stops. A prison built
+      // its walls, ran the clock long enough for `data-queued` to empty, and
+      // paused again before the next periodic poll happened to land -- which
+      // is an ordinary sequence, not a contrived one -- left the client's
+      // world stale by exactly the tail of that window, still reporting
+      // `'open'` for a rectangle the simulation had already sealed. Disabling
+      // on that verdict blocked a designation `RoomZoningService.zone` would
+      // have accepted, with no way to recover but running the clock further
+      // or drawing a new rectangle -- worse than #493's original bug, which
+      // only cost a press. `'sealed'` carries no equivalent risk: a wall
+      // this view has already seen was really built (nothing un-builds one
+      // from underneath a pending rectangle), so a false *positive* from
+      // staleness cannot happen, only a false negative. That asymmetry is
+      // why only `'open'` is ever suspect and why the fix is to stop acting
+      // on it as ever certain, rather than to chase the staleness bound
+      // tighter. See the ADR for the options weighed and why this one.
+      //
+      // The note still warns on `pendingIsUnenclosed()` (below): a warning
+      // that turns out to be stale costs nothing but confusion, since the
+      // control is still live and the real simulation still accepts a
+      // rectangle it agrees is sealed. Disabled rather than absent for the
+      // too-small case that remains: the rectangle is real and the player
+      // drew it, so the control that would designate it stays where it is
+      // and the note beside it says what is wrong.
       //
       // The simulation refuses both cases independently
-      // (`zone.below-minimum-size`, `zone.not-enclosed`), so this is a *report*
-      // and not the only guard: a `ZoneRoom` composed anywhere else is still
-      // refused. It is also why the disabled control produces no message: a
-      // press that does not dispatch is not a refusal, and the note beside it
-      // is already saying what is wrong -- so the "exactly one message per
-      // refusal" rule is not in play until a command is actually sent.
-      confirmButton.setDisabled(pendingIsTooSmall() || pendingIsUnenclosed());
+      // (`zone.below-minimum-size`, `zone.not-enclosed`), so a disabled
+      // control is a *report* and not the only guard either way: a
+      // `ZoneRoom` composed anywhere else is still refused, and now so is
+      // one composed through this control on a rectangle that turns out to
+      // still be genuinely open -- the existing refusal line is what tells
+      // the player then, exactly as it did before this panel warned at all.
+      confirmButton.setDisabled(pendingIsTooSmall());
     }
 
     paintArea();

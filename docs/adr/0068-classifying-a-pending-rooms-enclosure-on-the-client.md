@@ -21,6 +21,14 @@ side of a rectangle is open — is explicitly **not** decided here and is left
 to the owner, per `AGENTS.md`'s fourth exclusion (a player-visible promise the
 code does not keep until the owner approves the words).
 
+**Corrected once already, before landing.** CI on issue #498 found that the
+first version of decision 3 disabled the confirm control on a possibly-stale
+client-side verdict, which can block a designation the simulation would
+accept. Decisions 1 and 3 below carry the correction in place, marked rather
+than silently fixed, per this repository's own rule that a correction is no
+more durable than the claim it corrected unless both directions are written
+down.
+
 ## The decision, in one sentence
 
 **No message crosses the worker boundary for this at all.** The rectangle's
@@ -118,13 +126,41 @@ per-tick prelude proportional to pending work can cost more than the work
 itself, on the simulation's own thread; this feature adds no work to the
 simulation's thread at all, in any tick, ever. The entire computation runs on
 the main thread's own frame budget, using data the render pipeline already
-holds for an unrelated reason (drawing walls). The worst case is one rendered
-frame of staleness between a wall finishing construction and the tool's own
-copy noticing — which is also, exactly, the staleness bound of what the
-player sees drawn on screen. The enclosure hint can therefore never disagree
-with what the player is looking at; it can only (rarely, for one frame) be
-behind it, in the same direction and by the same amount the walls themselves
-are.
+holds for an unrelated reason (drawing walls).
+
+**This paragraph used to end here, claiming the worst-case staleness was one
+rendered frame and that the hint could therefore never disagree with what the
+player is looking at. That was wrong, CI on #498 found it wrong, and the
+correction is kept rather than the claim silently fixed**, because the wrong
+bound is exactly what made decision 3's first version look safe when it was
+not. `WorldRenderView` is not refreshed once per rendered frame; it is
+refreshed on `SimulationSnapshotFeed`'s own cadence, which is coarser and, in
+one real state, does not run at all. Read from `src/rendering/feed/simulation-
+snapshot-feed.ts`: a fresh snapshot is requested when the clock transitions
+from stopped to running, when an accepted command's `scheduledForTick` is
+reached (reported only by an *unsolicited* `clock-state` publish, which the
+worker posts only while the clock runs), and otherwise on a plain 30-second
+poll — **also only while the clock runs**. Once the clock stops, `due` in
+`pump()` can never become true again until something makes it `dirty`, and
+pausing does not. A prison that builds walls, runs the clock until
+`data-queued` empties, and pauses again — an entirely ordinary sequence,
+and exactly what `wallRectanglesFromTheKeyboard` in `tests/browser/app-shell.
+spec.ts` does — can pause in the tail of that 30-second window, after the
+last wall finished and before the next poll would have seen it. From that
+moment the client's `WorldRenderView` is stale by up to that whole window,
+and **stays** stale, indefinitely, until a new command or a running clock
+makes the feed ask again. Measured by reproducing it: `.hud-rooms__confirm`
+resolved `disabled` and Playwright's own retry loop gave up after 279
+attempts, on a rectangle `RoomZoningService.zone` would have accepted.
+
+The asymmetry that survives this correction, and the one decision 3 now
+rests on instead: **a `'sealed'` verdict cannot be wrong this way.** Nothing
+in this application un-builds a wall out from under a pending rectangle, so
+if the client has ever seen every one of a rectangle's perimeter edges
+occupied, they really are — a stale client is only ever *behind* the
+simulation, never ahead of it, so it can under-report a wall that exists but
+can never over-report one that does not. Only `'open'` can be a false
+negative. That is decided in decision 3.
 
 **Both producers of a rectangle reach the same verdict for the same reason.**
 `RoomTool.classifyArea` is a query (`HudWorldRoomSource.classifyArea`), not an
@@ -181,30 +217,88 @@ not yet keep.
 
 ## Decision 3 — What the confirm control does
 
-**Disable it, with the note carrying the reason — the same treatment the
-too-small warning already has, extended rather than duplicated.**
+**This decision shipped wrong once and is corrected here rather than
+silently fixed, because the wrong version passed every gate this project runs
+except the one that actually drives a real simulation: `pnpm typecheck`,
+`pnpm test` and this repository's own browser suite for the panel in
+isolation (`tests/browser/ui-shell.spec.ts`, which mocks `classifyArea` and
+so cannot see staleness) were all green. Only `tests/browser/app-shell.spec.ts`
+against a real worker — three tests, one of them the #331 contention canary
+`docs/AGENT_WORKFLOW.md` already names — caught it, by driving the exact
+build-then-pause sequence decision 1's correction describes. The lesson is
+decision 1's, not a new one: a claim about staleness needs a test that can
+observe staleness, and a harness that supplies the answer directly cannot.**
 
-`confirmButton` is disabled when the pending rectangle is either under the
-selected room's authored minimum **or** open against a room type that
-requires enclosure (`enclosed`). The rectangle is not taken away — the player
-drew it, and a pending rectangle with no visible reason for having no way
-forward is its own dead end, which is precisely what a disabled control with
-no sentence beside it would be. `paintNote` already had a precedence rule for
-one warning ("too-small wins over everything"); it now has two, in the same
-order:
+### What shipped first, and why it was wrong
 
-1. **Too small** wins outright. A rectangle can be both too small and open at
-   once (shrinking or growing a rectangle changes which edges are even in
-   play), and the size is what has to be fixed first.
-2. **Not enclosed**, only reachable once too-small does not apply, and only
-   for a room type whose `enclosure` requirement is `'enclosed'` — a room
-   type requiring `'outdoors'` or with no requirement is unaffected, because
-   the question does not apply to it.
-3. Otherwise, the existing arm/remove hint, unchanged.
+**Disable the control, with the note carrying the reason — the same
+treatment the too-small warning already has.** `confirmButton` was disabled
+when the pending rectangle was either under the selected room's authored
+minimum **or** open against a room type requiring enclosure. That is wrong
+for the second clause: decision 1's correction shows `'open'` can be a false
+negative for as long as a session stays paused after building, and disabling
+on it blocks a designation `RoomZoningService.zone` would accept, with no
+recourse in the panel — only running the clock further or drawing a new
+rectangle un-sticks it. Refusing correct input is worse than the missing
+warning issue #493 exists to fix; the whole point was that a press should not
+surprise the player, not that a press should stop working at all.
 
-Disabling and warning are both `RoomEdgeReader`-cheap and both already had a
-precedent in this exact panel; the decision here is only that the precedent
-extends rather than that a new mechanism was invented.
+### The decision, corrected
+
+**Only `pendingIsTooSmall()` disables `confirmButton`. Enclosure disable is
+removed outright; the note still warns on it, and the control stays live.**
+
+The asymmetry decision 1 ends on is why the two are no longer treated alike:
+
+- **Too small** is arithmetic on numbers already in hand — the pending
+  rectangle's own width and height against the selected room's authored
+  minimum. No world state is read, so there is nothing about it to be stale,
+  and it keeps disabling exactly as before.
+- **Not enclosed** reads `pendingEnclosure`, which is exactly the fact that
+  can lag. A wrong warning here costs a moment of confusion and nothing else:
+  the control stays pressable, and if the rectangle turns out to still be
+  genuinely open, the player learns it from the existing refusal line —
+  precisely the gap issue #493 opened with, not a new one. A wrong *disable*
+  costs the designation itself. `paintNote`'s existing precedence — too-small
+  first, else not-enclosed, else the default hint — is unchanged; only which
+  of the two may also gate the control changed.
+
+### What this gives up, named rather than hidden
+
+A player can still press Confirm on a rectangle this panel warned is open and
+have it refused, exactly as before issue #493, for the residual case where
+the warning is not stale but correct. That residual is the whole of what
+`#493`'s pre-confirm warning was ever able to promise on its own terms — *a
+warning*, not a guarantee — and it is the honest floor once a guaranteed
+answer would require a round trip this ADR's decision 1 already declined for
+good reason (see "What a round trip would have bought instead" below).
+
+### What a round trip would have bought instead
+
+The other option on the table was to keep disabling, but only once confident
+— asking the simulation for a fresh, authoritative verdict before deciding
+whether to disable, rather than trusting the client's own copy. Rejected,
+for three reasons rather than one:
+
+1. **It resurrects exactly the cost decision 1 spent its whole argument
+   avoiding.** A confidence check has to fire whenever the pending rectangle
+   changes, which is the same "per gesture, against the worker" shape decision
+   1 measured as unnecessary against ADR 0066's findings — the difference is
+   only that now there is a known failure mode (staleness) motivating paying
+   for it, rather than a hypothetical one.
+2. **It does not remove the staleness window, it only moves who waits on it.**
+   A confidence query answered from the same authoritative source the confirm
+   press itself will consult buys nothing a disabled-then-refused press does
+   not already have; a query answered from a *faster* but still-not-live
+   source (a push notification on construction completion, say) reintroduces
+   a version of the same race with a shorter window rather than none.
+3. **Fail-open already meets the acceptance bar issue #493 set.** The
+   criterion was "tells the player so before they press, and the press either
+   cannot be made or is not the way they find out" — read as the disjunction
+   it is written as, a warned player who presses anyway and is refused
+   through the existing line satisfies the second clause exactly. Chasing a
+   guarantee the issue never asked for is scope the staleness finding does
+   not justify adding.
 
 ## Consequences
 
@@ -229,6 +323,19 @@ extends rather than that a new mechanism was invented.
   unchanged. It remains exactly as unhelpful as it was, which is the
   consequence of decision 2 being partly deferred rather than a regression
   introduced by this document.
+- **A player can still be refused after this warning, on a rectangle it
+  called open that a fresh check would have called sealed, or the reverse
+  (a rectangle it did not warn about that has since been un-zoned by another
+  actor).** Decision 3's correction accepts this outright rather than
+  building it out: the warning is advisory, the simulation still decides, and
+  the residual failure mode is a refusal with a warning already given, which
+  is `#493`'s acceptance bar and not short of it.
+- `tests/browser/app-shell.spec.ts`'s real-worker suite is now load-bearing
+  for this decision in a way `tests/browser/ui-shell.spec.ts`'s mocked one
+  cannot be: the mock's `classifyArea` answers exactly what a spec tells it
+  to and so has no staleness to get wrong. A future change to this panel's
+  enclosure handling should be checked against the real-worker suite before
+  it is believed, not only the mocked one.
 
 ## Left undone, deliberately
 
