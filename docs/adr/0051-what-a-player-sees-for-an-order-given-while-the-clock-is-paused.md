@@ -1,19 +1,21 @@
-# ADR XXXX: What a player sees for an order given while the clock is paused
+# ADR 0051: What a player sees for an order given while the clock is paused
 
-> **Drafted as `XXXX`.** ADR numbers in this repository are assigned centrally
-> after parallel drafts return — `AGENTS.md` and `docs/AGENT_WORKFLOW.md` §2
-> both say so, and the author could not enumerate open pull requests from a
-> worktree. This document pre-commits to being renumbered on landing, and
-> deliberately does not add its own row to [`README.md`](./README.md).
+> **Drafted as `XXXX`; assigned 0051 on landing.** The author could not
+> enumerate open pull requests from a worktree, and wrote here that the
+> placeholder makes `tests/foundation/adr-numbering-contract.test.ts` fail —
+> which it does, and which is the point that has since been settled the other
+> way: there is no state in which an unnumbered draft is valid, because that
+> test also requires a row in [`README.md`](./README.md) in the same commit and
+> a **Next free number** line that no file on disk has taken. Adding the row
+> *is* the reservation (`AGENTS.md`), so numbers are now handed out by the
+> integrator **before** a draft exists rather than after it returns. See
+> `docs/AGENT_WORKFLOW.md` §2.
 >
-> One consequence is worth naming here rather than leaving to be discovered:
-> while the filename carries `XXXX`,
-> `tests/foundation/adr-numbering-contract.test.ts` fails on it, because that
-> test requires every document in `docs/adr/` that is not `README.md` or
-> `STATUS-QUEUE.md` to be named `NNNN-kebab-case.md`. Five earlier drafts
-> landed on branches under the same placeholder (`git log --diff-filter=A
-> --name-only -- 'docs/adr/XXXX-*'`); numbering the file is what turns the
-> test green.
+> **The number is provisional** in the ordinary way: 0049 and 0050 were taken
+> on unmerged branches while this was written, and a branch nobody has merged
+> is invisible from the index. If 0051 collides, renumber this file, its row in
+> [`README.md`](./README.md), and every citation of it
+> (`grep -rn "0051" src/ tests/ docs/`).
 
 ## Status
 

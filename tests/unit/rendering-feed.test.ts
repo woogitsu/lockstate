@@ -394,8 +394,7 @@ describe('simulation snapshot feed', () => {
   });
 
   /**
-   * The unchanged-tick skip, and the case that made it wrong (ADR XXXX,
-   * drafted with a placeholder number and to be renumbered on landing).
+   * The unchanged-tick skip, and the case that made it wrong (ADR 0051).
    *
    * The skip's comment read *"nothing in the world can change without the
    * simulation advancing"*, and that sentence stopped being true when the

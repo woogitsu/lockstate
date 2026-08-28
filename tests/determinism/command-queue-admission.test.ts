@@ -38,7 +38,7 @@ import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from 
  *   for the length of the pause, because `FixedStepClock.pump` returns `0`
  *   while paused, so nothing drains the command that would be blocking them.
  *
- * **ADR XXXX (drafted with a placeholder number) narrows the second bullet and
+ * **ADR 0051 narrows the second bullet and
  * leaves the decision alone.** The worker now dispatches a command that is
  * *due* the moment it is submitted against a paused clock, so a paused order
  * no longer piles up in the queue behind the one blocking it. The command
@@ -242,8 +242,7 @@ describe('the front door admits what a pause actually submits', () => {
     expect(second.scheduledForTick).toBeLessThan(first.scheduledForTick);
 
     /*
-     * And what the kernel is left holding, which is where ADR XXXX (drafted
-     * with a placeholder number, to be renumbered on landing) changed the
+     * And what the kernel is left holding, which is where ADR 0051 changed the
      * observation without changing the decision.
      *
      * This used to read `[second.sequence, first.sequence]` -- the queue
@@ -309,8 +308,7 @@ describe('the front door admits what a pause actually submits', () => {
     //
     // This drives `Kernel` directly, and `Kernel` still drains nothing by
     // itself: `submitCommand` queues and nothing dispatches until `step()` or
-    // `dispatchDueCommands()` is called. ADR XXXX (drafted with a placeholder
-    // number) put that second call in the *worker*, which is why the
+    // `dispatchDueCommands()` is called. ADR 0051 put that second call in the *worker*, which is why the
     // end-to-end case above sees the paused order leave the queue and this one
     // does not. What both show is the same thing: the command ahead survives
     // the pause.

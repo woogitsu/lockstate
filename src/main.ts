@@ -2055,14 +2055,22 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
            * `'failed'` when no room instance of its accommodation target
            * exists, and `'failed'` is terminal: no branch of
            * `IntakeSystem.update` matches it, so zoning a cell afterwards
-           * does not rescue the record (measured), `ActionSystem` never runs
-           * for it because it gates on `'completed'`, and nothing in `src/`
-           * releases a prisoner (#31). Admitting into a roomless prison
-           * therefore does not produce a prisoner who will start behaving
-           * once rooms arrive -- it produces a permanent, undeletable, inert
-           * record that the status strip counts as a prisoner and that the
+           * does not rescue the record (measured), and `ActionSystem` never
+           * runs for it because it gates on `'completed'`. Admitting into a
+           * roomless prison therefore does not produce a prisoner who will
+           * start behaving once rooms arrive -- it produces an inert record
+           * that the status strip counts as a prisoner and that the
            * arrivals-backlog readout excludes, because `prisonersInIntake`
            * filters `'failed'` out. That is a worse answer than saying no.
+           *
+           * **The word this paragraph has lost is "permanent".** It used to
+           * read "permanent, undeletable, inert", on the grounds that "nothing
+           * in `src/` releases a prisoner (#31)". Since #441 that record does
+           * end: `PrisonerDischargeSystem` counts `'failed'` as a
+           * sentence-bearing stage, so the arrival leaves when their sentence
+           * would have ended. Inert for the length of a sentence is still a bad
+           * answer to give a player who pressed a button, so the refusal
+           * stands; it is simply no longer forever.
            *
            * The check is here rather than in the HUD, and it is a *report*,
            * not a second registry, exactly as the affordability check above
@@ -2081,8 +2089,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
            * did not arrive until the player started the clock -- for a player
            * who pressed this before touching the clock, the difference between
            * an answer and nothing at all. **That is no longer why**: since ADR
-           * XXXX (drafted with a placeholder number, to be renumbered on
-           * landing) the worker dispatches a due command as soon as it is
+           * 0051 the worker dispatches a due command as soon as it is
            * submitted against a paused clock, so the far-side refusal now
            * reaches the player during the pause too.
            *

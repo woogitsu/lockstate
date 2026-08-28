@@ -29,6 +29,20 @@ const RNG_STREAM = 'prisoners.classification';
 const FIXED_CELL_COUNT = 300;
 const TICKS = 200;
 
+/**
+ * The floor under every drawn sentence, so that the population this file
+ * projects is the population it admitted.
+ *
+ * The draw used to be `rng.nextInt(500_000)` with no floor, which admits
+ * sentences of a few ticks. That cost nothing while nothing in `src/` ever
+ * released a prisoner; since #441 a sentence that ends inside the fixture's
+ * 200-tick warm-up means the prisoner leaves, and three of 2,500 and three of
+ * 5,000 did -- so `page.total` read 2,498 and 4,997 and the tier's own number
+ * stopped being the population. A floor rather than a shorter run, because the
+ * run length is what gives the projection something to project.
+ */
+const SHORTEST_SENTENCE_TICKS = TICKS + 1;
+
 interface Tier {
   readonly actorCount: number;
   readonly pageLimit: number;
@@ -42,7 +56,10 @@ function buildPopulation(actorCount: number): ReturnType<typeof buildPrisonerSce
 
   const rng = new Xoshiro128StarStar(deriveXoshiroState(seed, 'test.scenario-actors').words);
   for (let index = 0; index < actorCount; index += 1) {
-    fixture.prisoners.admitPrisoner({ sentenceLengthTicks: rng.nextInt(500_000), priorIncidents: rng.nextInt(4) }, fixture.originTile);
+    fixture.prisoners.admitPrisoner(
+      { sentenceLengthTicks: SHORTEST_SENTENCE_TICKS + rng.nextInt(500_000), priorIncidents: rng.nextInt(4) },
+      fixture.originTile,
+    );
   }
   for (let tick = 0; tick < TICKS; tick += 1) kernel.step();
   return fixture;

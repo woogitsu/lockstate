@@ -245,8 +245,7 @@ export function createSessionCommandHandler(
       // returns zero executed ticks while its mode is `paused`, so a purchase
       // submitted against a paused clock was not refused yet -- it was not
       // dispatched yet -- and its refusal waited for the player to press play.
-      // Since ADR XXXX (drafted with a placeholder number, to be renumbered on
-      // landing) the worker dispatches a due command on submission while the
+      // Since ADR 0051 the worker dispatches a due command on submission while the
       // clock is stopped, so a paused purchase is refused here, now, and the
       // one message it produces is immediate.
       //

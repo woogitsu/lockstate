@@ -464,25 +464,25 @@ export class SimulationWorkerStateMachine {
    *
    * Every payload carries the tick it was read at, so a readout can never be
    * mistaken for a statement about a later state, and no list crosses at all
-   * -- thirteen integers of counts beside at most one refusal record, which is
+   * -- fifteen integers of counts beside at most one refusal record, which is
    * why `docs/HUD_PROJECTIONS.md` contract 5 (paging) has nothing to bound
    * here yet. It was eleven until #29's income line added
-   * `stateIncomeAccruedTodayMinorUnits` and twelve until `accommodationCapacity`
-   * gave the strip's occupancy bar a denominator, and the number is checked
-   * against the projection's own schema rather than trusted
-   * (`tests/foundation/documentation-claims-contract.test.ts`).
+   * `stateIncomeAccruedTodayMinorUnits`, twelve until `accommodationCapacity`
+   * gave the strip's occupancy bar a denominator and thirteen until payroll
+   * (ADR 0042 step 3) added the daily wage bill and the arrears beside it, and
+   * the number is checked against the projection's own schema rather than
+   * trusted (`tests/foundation/documentation-claims-contract.test.ts`).
    *
    * **`dispatchedWhilePaused` is a third player-initiated event**, on exactly
    * the terms the refusal and the zoning notice are: it opens the interval
    * gate and it bypasses the "nothing changed" comparison, and it can fire at
    * most once per command the player submits against a paused clock, which is
    * bounded by how fast a button can be pressed. It bypasses the comparison
-   * because it has to: a build order moves none of the thirteen figures this
+   * because it has to: a build order moves none of the fifteen figures this
    * payload carries, so `statusCountsEqual` would suppress the very
    * publication the six pull readouts in `src/main.ts` ride on -- and while
    * the clock is paused there is no tick-loop wake behind it to catch the
-   * miss. See ADR XXXX (drafted with a placeholder number, to be renumbered on
-   * landing).
+   * miss. See [ADR 0051](../../../docs/adr/0051-what-a-player-sees-for-an-order-given-while-the-clock-is-paused.md).
    */
   private publishStatusCounts(nowMilliseconds: number, dispatchedWhilePaused = false): void {
     if (this._kernel === null || this._runtime === null) return;
@@ -899,8 +899,7 @@ export class SimulationWorkerStateMachine {
     if (!accepted) return;
 
     /*
-     * The paused drain (ADR XXXX, drafted with a placeholder number and to be
-     * renumbered on landing).
+     * The paused drain (ADR 0051).
      *
      * **Why anything happens here at all.** The tick loop is the only thing
      * that calls `Kernel.step()`, and `transition` runs that loop only while

@@ -301,7 +301,7 @@ test('StateMachine queues valid commands', () => {
   
   // The last *command result*, not the last message. A command accepted while
   // the clock is paused is now dispatched on the spot, and that publishes a
-  // `simulation/status-counts` behind the acknowledgement (ADR XXXX), so
+  // `simulation/status-counts` behind the acknowledgement (ADR 0051), so
   // "the last message" stopped naming the reply. The assertion is unchanged in
   // substance and narrower in what it reads.
   const results = port.messages.filter((message) => message.kind === 'simulation/command-result');
@@ -376,7 +376,7 @@ describe('a refused command reports which refusal it was (#187 finding 2)', () =
   /**
    * The last command result, which is not always the last message: an accepted
    * command against a paused clock is dispatched at once and publishes a
-   * counts readout after the acknowledgement (ADR XXXX). A refusal publishes
+   * counts readout after the acknowledgement (ADR 0051). A refusal publishes
    * none -- nothing was dispatched -- so this filter changes nothing for the
    * cases below and stops the helper from depending on that.
    */
@@ -431,8 +431,7 @@ describe('a refused command reports which refusal it was (#187 finding 2)', () =
 });
 
 /**
- * The paused drain, at the boundary that owns it (ADR XXXX, drafted with a
- * placeholder number and to be renumbered on landing).
+ * The paused drain, at the boundary that owns it (ADR 0051).
  *
  * The behaviour under test is the worker's, not the kernel's, and the split is
  * deliberate: `Kernel.submitCommand` still only queues, and

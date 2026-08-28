@@ -121,7 +121,7 @@ export class SimulationSnapshotFeed implements RenderFeed {
    * to decide whether the unchanged-tick skip is allowed to fire: a snapshot
    * fetched *because something happened* must be applied even at a tick that
    * did not move, which is the case a command dispatched against a paused
-   * clock creates (ADR XXXX, drafted with a placeholder number). A snapshot
+   * clock creates (ADR 0051). A snapshot
    * fetched by the thirty-second consistency poll may still be skipped, which
    * is what the optimisation was for.
    */
@@ -447,8 +447,7 @@ export class SimulationSnapshotFeed implements RenderFeed {
      *
      * It read "nothing in the world can change without the simulation
      * advancing", and that stopped being true when the worker began
-     * dispatching a command submitted against a paused clock (ADR XXXX,
-     * drafted with a placeholder number). A wall ordered during a pause
+     * dispatching a command submitted against a paused clock (ADR 0051). A wall ordered during a pause
      * becomes an `approved` build order at the tick the session is already
      * on, `structuresFromConstruction` maps that to the `planned` ghost this
      * renderer has always known how to draw, and the tick behind it does not

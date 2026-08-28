@@ -146,8 +146,7 @@ becomes ready, after any command is accepted, again once the simulation reaches
 the tick that command was scheduled for, when the clock *starts*, and on a
 **30-second** interval while the clock is running. A paused, *idle* prison costs
 exactly one request — idle meaning the player is not doing anything, which since
-ADR XXXX (*"What a player sees for an order given while the clock is paused"*,
-drafted with a placeholder number) is a distinction worth drawing: an order given
+ADR 0051 (*"What a player sees for an order given while the clock is paused"*) is a distinction worth drawing: an order given
 during a pause is dispatched on the spot, so it costs the request its acceptance
 already asked for, and the reply is applied even though the tick has not moved.
 That last part is the feed's `pendingForcesApply`, which records whether a poll

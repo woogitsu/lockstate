@@ -151,8 +151,7 @@ test('Kernel snapshot and restore yields identical state', () => {
 });
 
 /**
- * `dispatchDueCommands`, the entry point ADR XXXX added (drafted with a
- * placeholder number, to be renumbered on landing).
+ * `dispatchDueCommands`, the entry point ADR 0051 added.
  *
  * It exists so the worker can answer a player who gives an order while the
  * clock is stopped, and the three properties below are what make that safe to

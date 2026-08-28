@@ -133,12 +133,31 @@ export function buildDeterminismScenario(masterSeed: number = SCENARIO_SEED, opt
   // objects exist, so every room that contains one is re-derived once.
   runtime.roomCapacity.resolveAll();
 
-  // -- prisoners: classification draws from `prisoners.classification`.
+  /*
+   * -- prisoners: classification draws from `prisoners.classification`.
+   *
+   * **The four sentences are forty times what they were, and the ratios
+   * between them are unchanged.** They used to be 900, 4,000, 2,200 and 600
+   * ticks, which was a free choice while nothing in `src/` released anybody and
+   * a wrong one afterwards: #441 made a sentence end, and this scenario's whole
+   * population walked out inside two in-game days. Every consumer that runs
+   * further than that then measures a prison emptying rather than the thing it
+   * is about -- `economy-state-income-persistence.test.ts` was measuring a
+   * per-prisoner-day income line against a population that halved mid-day.
+   *
+   * The shortest is now 24,000 ticks, ten in-game days, against a longest
+   * consumer run of three (`DAY_LENGTH_TICKS * 3`); the longest is 160,000,
+   * still under `LONG_SENTENCE_THRESHOLD_TICKS` (200,000), so **no
+   * classification input crosses a threshold and no tier moves**. That is what
+   * makes this a fixture change rather than a scenario change: the draws, the
+   * tiers, the housing and the iteration orders every test in
+   * `tests/determinism/` pins are all identical.
+   */
   const prisonerIds = [
-    runtime.prisoners.admitPrisoner({ sentenceLengthTicks: 900, priorIncidents: 0 }, TILE(1, 1)),
-    runtime.prisoners.admitPrisoner({ sentenceLengthTicks: 4_000, priorIncidents: 6 }, TILE(2, 1)),
-    runtime.prisoners.admitPrisoner({ sentenceLengthTicks: 2_200, priorIncidents: 2 }, TILE(3, 1)),
-    runtime.prisoners.admitPrisoner({ sentenceLengthTicks: 600, priorIncidents: 9 }, TILE(1, 2)),
+    runtime.prisoners.admitPrisoner({ sentenceLengthTicks: 36_000, priorIncidents: 0 }, TILE(1, 1)),
+    runtime.prisoners.admitPrisoner({ sentenceLengthTicks: 160_000, priorIncidents: 6 }, TILE(2, 1)),
+    runtime.prisoners.admitPrisoner({ sentenceLengthTicks: 88_000, priorIncidents: 2 }, TILE(3, 1)),
+    runtime.prisoners.admitPrisoner({ sentenceLengthTicks: 24_000, priorIncidents: 9 }, TILE(1, 2)),
   ];
 
   // -- security: doors, sectors (registered out of id order), schedules, patrol route.

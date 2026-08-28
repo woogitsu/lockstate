@@ -163,8 +163,7 @@ export class Kernel {
    * own -- it hands the handler the same `SimulationContext` `step()` would
    * have handed it at this tick. Factoring it out is what lets the worker
    * dispatch a command a player gave while the clock is paused, which is ADR
-   * XXXX ("What a player sees for an order given while the clock is paused",
-   * drafted with a placeholder number and to be renumbered on landing).
+   * 0051 ("What a player sees for an order given while the clock is paused").
    *
    * **Why that is not a determinism change**, stated as the property rather
    * than as reassurance: `_commands` is sorted by `(executeAtTick, sequence)`

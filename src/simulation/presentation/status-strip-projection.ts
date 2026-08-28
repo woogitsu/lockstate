@@ -58,6 +58,23 @@ export interface StatusStripSource {
    * runtime that has no treasury genuinely has no money.
    */
   readonly treasury?: { readonly balanceMinorUnits: number };
+  /**
+   * What the prison pays its staff, and what it has failed to pay them
+   * ([ADR 0042](../../../docs/adr/0042-attaching-consequences-to-the-simulation-loop.md)
+   * step 3).
+   *
+   * Two figures rather than one because they answer two different questions and
+   * only one of them is a warning. The bill is a fact about the roster that is
+   * true every day and is the number a player weighs a hire against; the
+   * arrears are the state the prison is in when the bill went unmet.
+   *
+   * Absent reports `0` for both, exactly as `treasury` does and for the same
+   * reason: a runtime with no payroll genuinely owes nobody.
+   */
+  readonly payroll?: {
+    dailyWageBillMinorUnits(): number;
+    readonly unpaidWagesMinorUnits: number;
+  };
   /** Defaults to the shipped schedules; a session running custom regimes passes its own. */
   readonly regimeSchedules?: readonly RegimeSchedule[];
   /**
@@ -188,6 +205,48 @@ export interface StatusStripViewModel {
      * rather than a guess.
      */
     readonly stateIncomeAccruedTodayMinorUnits: number;
+    /**
+     * What one in-game day of the current roster costs, in the same minor
+     * units (ADR 0042 step 3).
+     *
+     * The counterweight to `stateIncomeAccruedTodayMinorUnits` beside it, and
+     * the first standing *cost* the interface can show at all: until payroll
+     * existed every debit in the prison was a purchase the player chose, so
+     * there was no rate to display and `src/ui/hud/messages.ts` says so in its
+     * own words.
+     *
+     * It is the **preventable** half of insolvency. A player deciding whether
+     * to hire can read what the prison already pays per day against what it
+     * earns; a player who has already over-hired reads it as the reason the
+     * balance is falling. `DEFAULT_SECTOR_PRISONERS_PER_GUARD` means a prison
+     * that hires to its requirement and no further will see this stay small
+     * against the income; a prison that hires ahead of its population sees it
+     * eat the opening balance with nothing coming in.
+     *
+     * A read over the roster and the staff-role catalogue, computed by the
+     * simulation rather than the HUD for the reason
+     * `stateIncomeAccruedTodayMinorUnits` gives: which end of the authored wage
+     * band is money is a simulation fact, and a HUD that decided it again would
+     * be a second definition of the charge.
+     */
+    readonly dailyWageBillMinorUnits: number;
+    /**
+     * Wages billed and not paid, in the same minor units (ADR 0042 step 3,
+     * ADR 0017 decision 8).
+     *
+     * **`0` in a solvent prison, and the only number in this payload that says
+     * the prison owes somebody something.** ADR 0017 decision 8 makes
+     * insolvency *"a state, not a loss condition"*, and a state nothing renders
+     * is the invisible stall that same decision warns its degradation ladder
+     * must not become -- so this is what a panel needs to say it out loud.
+     *
+     * `countSchema`'s floor of `0` is `PayrollSystem`'s own invariant rather
+     * than an assumption made here: the treasury pays what it holds and carries
+     * the remainder, so the figure is a debt and a debt is never negative. The
+     * balance beside it stays non-negative for the same reason, which is the
+     * whole of why there are two fields here instead of one signed one.
+     */
+    readonly unpaidWagesMinorUnits: number;
   };
 }
 
@@ -341,6 +400,8 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
       // documents the difference.
       stateIncomeAccruedTodayMinorUnits:
         source.rooms === undefined ? 0 : stateIncomeAccruedByTick(source.rooms.roomInstances.totalOccupancy, source.tick),
+      dailyWageBillMinorUnits: source.payroll?.dailyWageBillMinorUnits() ?? 0,
+      unpaidWagesMinorUnits: source.payroll?.unpaidWagesMinorUnits ?? 0,
     },
   };
 }

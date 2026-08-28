@@ -335,6 +335,23 @@ const INJECTED_STATUS_COUNTS = {
       // is dropped by `decodeWorkerToMainMessage` and every assertion below it
       // fails on a strip that was never updated at all.
       stateIncomeAccruedTodayMinorUnits: 4_631,
+      // The fourteenth and fifteenth counts (ADR 0042 step 3), and required
+      // for the third time for the same reason the two notes above give: the
+      // counts payload is `.strict()`, so a fixture missing either field is
+      // dropped whole by `decodeWorkerToMainMessage` and every assertion after
+      // the injection fails on a strip that was never updated. That is exactly
+      // how this test failed when payroll landed -- `[data-metric="prisoners"]`
+      // stuck at `0`, which reads like a broken HUD and is a rejected message.
+      //
+      // Chosen so neither could be mistaken for something else in the payload:
+      // 480 is not derivable from the six staff (`6 x 80` is a coincidence this
+      // fixture would rather not invite, so it is not 480 for that reason --
+      // the roster behind an injected payload does not exist), and 1,700 is not
+      // a share of `treasuryMinorUnits`. Both are deliberately non-zero:
+      // nothing renders them yet, so a zero here would be indistinguishable
+      // from the field being absent again.
+      dailyWageBillMinorUnits: 620,
+      unpaidWagesMinorUnits: 1_700,
     },
   },
 } as const;
@@ -1385,7 +1402,7 @@ async function wallRectanglesFromTheKeyboard(
   // Stopped again, so the caller inherits the paused session a new prison
   // arrives as. It used to be what let every "a command queued against a
   // paused clock is not dispatched until it runs" claim below stay true; since
-  // ADR XXXX (drafted with a placeholder number) a *due* command is dispatched
+  // ADR 0051 a *due* command is dispatched
   // during a pause, so what those places now rest on is narrower and is stated
   // where each of them stands.
   // Backwards, for the reason above: the starting point is still *Fast
@@ -3194,7 +3211,7 @@ test.describe('the assembled application', () => {
      * deliveries stay in flight for the rest of the test rather than landing
      * mid-measurement. It is the *delivery* that needs the clock --
      * `ProcurementSystem.update` runs on a tick -- rather than the purchase
-     * itself, which since ADR XXXX (drafted with a placeholder number) would be
+     * itself, which since ADR 0051 would be
      * dispatched during a pause as well.
      */
     const purchases = 5;
@@ -3817,8 +3834,7 @@ test.describe('the assembled application', () => {
     // The walls above left the clock stopped again, exactly as a new session
     // arrives. The count moving from 0 is the proof that a real worker took the
     // `ZoneRoom`; play is pressed here because this test was written when a
-    // command given during a pause waited for it, and since ADR XXXX (drafted
-    // with a placeholder number) the room registers on the confirm instead. The
+    // command given during a pause waited for it, and since ADR 0051 the room registers on the confirm instead. The
     // press is kept rather than removed: it makes the assertion hold on either
     // behaviour, and what is being measured is the room, not the clock.
     await page.getByRole('button', { name: localeText('hud.transport.play') }).click();
@@ -4107,8 +4123,8 @@ test.describe('the assembled application', () => {
     await page.keyboard.press('Enter');
 
     // A new session starts paused. The count moving is the proof that a real
-    // simulation worker accepted a real `ZoneRoom` -- and since ADR XXXX
-    // (drafted with a placeholder number) it moves on the confirm rather than
+    // simulation worker accepted a real `ZoneRoom` -- and since ADR 0051
+    // it moves on the confirm rather than
     // on this press, which is kept because the claim under test is the typed
     // rectangle reaching the worker and not when the clock ran.
     await hop('the Play control', {
@@ -4565,7 +4581,7 @@ test.describe('the assembled application', () => {
 
   /**
    * An order given while the clock is paused, answered while the clock is
-   * still paused (ADR XXXX, drafted with a placeholder number).
+   * still paused (ADR 0051).
    *
    * **This is the first thing a player does, and it used to produce nothing.**
    * A new session arrives paused -- `handleInitialize` builds the clock
@@ -5634,8 +5650,8 @@ test.describe('the assembled application', () => {
    * **The first of these used to drive the worker's half with a purchase, and
    * cannot any more.** It pressed twice against a paused clock: both presses
    * passed the pre-flight because a paused clock had dispatched neither, and
-   * the treasury refused the second once the clock ran. Since ADR XXXX
-   * (drafted with a placeholder number, to be renumbered on landing) a command
+   * the treasury refused the second once the clock ran. Since ADR 0051
+   * a command
    * submitted while paused carries the tick the session is already on, so the
    * worker dispatches it at once -- the balance moves, the status strip is
    * republished, and the second press meets an accurate pre-flight instead of
