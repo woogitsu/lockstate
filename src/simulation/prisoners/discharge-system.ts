@@ -169,7 +169,7 @@ export class PrisonerDischargeSystem implements SystemRegistration {
 
   public update(context: SimulationContext): void {
     for (const entityId of this.due(context.tick)) {
-      if (releasePrisoner(this.surfaces, entityId)) this.dischargedCount += 1;
+      if (releasePrisoner(this.surfaces, entityId, context.tick)) this.dischargedCount += 1;
     }
   }
 }
