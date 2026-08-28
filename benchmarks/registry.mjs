@@ -1,3 +1,4 @@
+import { actorRenderPublicationScenario } from './scenarios/actor-render-publication.mjs';
 import { foundationSmokeScenario } from './scenarios/foundation-smoke.mjs';
 import {
   worldChunkSizeDensePrisonScenario,
@@ -28,6 +29,7 @@ export const benchmarkScenarios = Object.freeze([
   navigationProductionMealRushScenario,
   navigationProductionLockdownReturnScenario,
   navigationProductionSingleRequestBudgetScenario,
+  actorRenderPublicationScenario,
 ]);
 
 export function findBenchmarkScenario(id) {

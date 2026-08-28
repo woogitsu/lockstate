@@ -65,6 +65,18 @@ import { describe, expect, it } from 'vitest';
  *   tell whether the rest of a description is true. It can tell that a
  *   modelled scenario's description opens by saying so, which is the specific
  *   thing `kernel.throughput.benchmark`'s did not.
+ * - **The import check is one hop deep**, which constrains how a production
+ *   scenario may be written rather than letting a false one through. A file
+ *   that reached `src/` only through a fixture -- `benchmarks/fixtures/` files
+ *   may import `production-modules.mjs`, and `navigation-layouts.mjs` does --
+ *   would be told it is modelled while its description truthfully described
+ *   production code, and the tempting way out is a decorative direct import
+ *   that satisfies the string and does nothing. So the rule this bound implies
+ *   is the one `actor-render-publication.mjs` follows: **the scenario loads the
+ *   production modules and hands them to its fixture**, which keeps the import
+ *   load-bearing on the file that claims it. The unsafe direction is unaffected
+ *   -- a file claiming to drive production code and importing nothing anywhere
+ *   still fails.
  */
 
 const ROOT = join(__dirname, '../..');
