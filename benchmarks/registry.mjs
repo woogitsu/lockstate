@@ -15,6 +15,7 @@ import {
   navigationProductionLockdownReturnScenario,
   navigationProductionMealRushScenario,
   navigationProductionSingleRequestBudgetScenario,
+  navigationProductionYardCrossingScenario,
 } from './scenarios/navigation-production.mjs';
 
 export const benchmarkScenarios = Object.freeze([
@@ -29,6 +30,7 @@ export const benchmarkScenarios = Object.freeze([
   navigationProductionMealRushScenario,
   navigationProductionLockdownReturnScenario,
   navigationProductionSingleRequestBudgetScenario,
+  navigationProductionYardCrossingScenario,
   actorRenderPublicationScenario,
 ]);
 
