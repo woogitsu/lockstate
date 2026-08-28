@@ -50,7 +50,11 @@ at all: `applyRiotRegimeOverride` has no caller in `src/`
 (`src/simulation/incidents/riot-regime.ts:52`) and `ActionSystem` holds its
 schedules as a `private readonly` constructor field with no setter
 (`src/simulation/prisoners/action-system.ts:106`), which is ADR 0042 step 2's
-work and not this document's.
+work and not this document's. **That last sentence stopped being true on
+[ADR 0057](./0057-what-a-riot-does-to-a-prisoners-day.md)**, which did that
+work: `applyRiotRegimeOverride` is deleted, the schedule array is still
+`readonly` and still has no setter, and the regime a riot imposes is resolved
+per participant at the point of use instead. Marked rather than rewritten.
 
 **Clause 3 — "half the general-population day has nothing to do". True, and
 larger than the arithmetic in the issue.** Measured on the real kernel, one
