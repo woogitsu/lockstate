@@ -404,6 +404,44 @@ export class RoomInstanceRegistry {
   }
 
   /**
+   * **Who** holds those places: every entity with a residency claim anywhere
+   * in the registry, ascending by entity id. `length` is `totalOccupancy`.
+   *
+   * The counterpart `totalOccupancy` could not answer, and it exists because
+   * an occupied place stopped being worth a flat rate: `StateIncomeSystem`
+   * pays per occupied place at a rate that depends on the conditions the
+   * *occupant* is held in (#443, #477), so the income line needs the occupants
+   * and not only the count. Residency and not use claims, for the reason
+   * `totalOccupancy` above gives at length -- a prisoner eating lunch is not a
+   * second prisoner-day.
+   *
+   * **Sorted, and for `occupantsOf`'s reason rather than for tidiness.** Live
+   * insertion order is `assign` order and a restored session's is
+   * `getSnapshot`'s ascending sort, so an unsorted walk would fold the same
+   * prison two ways across a save. The current consumer folds integers, where
+   * order happens not to matter; writing the sort down here is what stops that
+   * from being a property the next consumer has to rediscover.
+   *
+   * **Cost, stated because two callers are on paths that care.**
+   * `O(P log P)` in the number of housed prisoners, with one array: the day
+   * boundary pays it once per 2,400 ticks, and `projectStatusStrip` pays it
+   * once per projection. At the 200-prisoner reference tier that is a
+   * 200-element sort; at the 5,000-actor tier
+   * (`docs/PRISONER_OPERATIONS.md`'s actor tiers) it is a 5,000-element one,
+   * which is the one allocation that projection makes that scales with the
+   * population -- `projectStatusStrip`'s own cost note says so rather than
+   * leaving the claim it used to make ("nothing here builds a per-actor
+   * object") standing unqualified.
+   */
+  public residentIds(): readonly EntityId[] {
+    const result: EntityId[] = [];
+    for (const occupants of this.occupants.values()) {
+      for (const entityId of occupants) result.push(entityId);
+    }
+    return result.sort((left, right) => left - right);
+  }
+
+  /**
    * Every concurrent-use claim currently held, across every registered
    * instance -- the mirror of `totalOccupancy` for the other kind of claim.
    *

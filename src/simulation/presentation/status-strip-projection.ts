@@ -14,7 +14,7 @@ import {
   type ActionCategory,
   type RegimeSchedule,
 } from '../prisoners/regime';
-import { stateIncomeAccruedByTick } from '../economy/income';
+import { stateIncomeAccruedByTick, stateIncomeForCompletedDay } from '../economy/income';
 import { projectClockPosition } from './clock-projection';
 import type { ContrabandSearchSource } from './contraband-projection';
 import { projectPrisonerPopulationCounts, type PrisonerProjectionSource } from './prisoner-projection';
@@ -398,8 +398,20 @@ export function projectStatusStrip(source: StatusStripSource, options: StatusStr
       // under an unknown room-catalog id (gap 15), while the income line is
       // paid on every slot the registry holds. `RoomInstanceRegistry.totalOccupancy`
       // documents the difference.
+      // Since #443 the accrual is not `rate x totalOccupancy`: each occupied
+      // place pays at a rate set by how many of its occupant's needs the
+      // prison is leaving unmet, so the readout has to be derived from the
+      // same walk `StateIncomeSystem` credits from. Deriving it from the count
+      // instead would be a chip that promises money the day boundary then does
+      // not pay.
+      //
+      // `source.prisoners` is the grant source: it carries `needs`,
+      // `entityStore` and `roomInstances`, which is the whole of
+      // `PrisonerDayGrantSource`. The `source.rooms === undefined` guard is
+      // kept because it is the *session's* statement that it has no rooms, and
+      // it reports 0 for the same reason the treasury's absent case does.
       stateIncomeAccruedTodayMinorUnits:
-        source.rooms === undefined ? 0 : stateIncomeAccruedByTick(source.rooms.roomInstances.totalOccupancy, source.tick),
+        source.rooms === undefined ? 0 : stateIncomeAccruedByTick(stateIncomeForCompletedDay(source.prisoners), source.tick),
       dailyWageBillMinorUnits: source.payroll?.dailyWageBillMinorUnits() ?? 0,
       unpaidWagesMinorUnits: source.payroll?.unpaidWagesMinorUnits ?? 0,
     },
