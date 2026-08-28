@@ -89,7 +89,16 @@ export function resolveModule(importer: string, specifier: string, read: ReadMod
  * effect, which is exactly the distinction the content gate turns on.
  * `findImports` makes that call, and it is the same scanner
  * `tests/unit/*-module-boundaries.test.ts` uses, pinned by fixtures in
- * `tests/unit/module-boundaries.test.ts`.
+ * `tests/unit/module-boundary-rules.test.ts`, `describe('the import scanner
+ * reads what it claims to')` at `:39`.
+ *
+ * That named `module-boundaries.test.ts` under `tests/unit/` until 2026-08-28,
+ * and no such file has ever existed (`git log --all --diff-filter=A` finds no
+ * commit adding it). The fixtures are real and are in the file named above;
+ * `tests/helpers/module-boundaries.ts` is where `findImports` itself lives,
+ * which is a module and not a set of fixtures. The dead name is recorded as a
+ * bare filename rather than a rooted path on purpose;
+ * `tests/foundation/documentation-links-contract.test.ts` says why.
  *
  * Takes its reader as an argument so the walk itself can be exercised against
  * a written-out graph rather than only against the real tree, where a walk

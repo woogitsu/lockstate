@@ -33,7 +33,8 @@ import { describe, expect, it } from 'vitest';
  * That argument is about a *bare filename*, and the second describe block
  * below covers the one subset it does not reach: a backticked token that is
  * **rooted at a top-level directory of this repository and carries a file
- * extension**, like `` `docs/adr/0007-navigation-and-pathfinding.md` ``. Such a
+ * extension**, like
+ * `` `docs/adr/0007-navigation-work-budgets-and-flow-fields.md` ``. Such a
  * token is not plausibly a module name, a concept or an example -- it is a
  * path, and it either resolves or it does not. The measured false-positive
  * rate is what justifies the distinction rather than the argument alone:

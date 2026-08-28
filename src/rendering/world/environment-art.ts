@@ -27,13 +27,17 @@ import type { EnvironmentSpriteId } from '../assets/environment-sprites';
  *   guard is `describe('declared fallback')` at `:241`, and the two
  *   directions are `:248` and `:256`.
  *
- *   This named `tests/unit/environment-art-coverage.test.ts` until 2026-08-28.
+ *   This named `environment-art-coverage.test.ts` until 2026-08-28.
  *   That file has never existed -- `git log --diff-filter=A` finds no commit
  *   adding it, in the whole history -- so the citation was wrong from the day
  *   it was written rather than overtaken by a rename. The promise above was
  *   checked before the name was corrected, because a docblock pointing at a
  *   file that was never written is equally consistent with the guard being
  *   real and misnamed and with there being no guard at all; it is the first.
+ *   The dead name is written bare rather than rooted at `tests/unit/` so that
+ *   `tests/foundation/documentation-links-contract.test.ts` does not read this
+ *   record as a live claim; its docblock says when to do that and when to
+ *   allowlist instead.
  *
  * No Phaser and no DOM.
  */
