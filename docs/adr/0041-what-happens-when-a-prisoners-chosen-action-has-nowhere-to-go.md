@@ -286,6 +286,30 @@ all, so this option no longer describes a defensible position.
 re-read.** 1 and 3 are one issue because answering either answers the other:
 #436. 2 is #435.
 
+> **Amended 2026-08-28. Questions 1 and 3 are no longer open, and the paragraph
+> above is now only half true.** It says all three are *tracked*; two of them
+> have since been *answered*, by
+> [ADR 0054](./0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md),
+> which took #436 and #440 together and shipped at `2e3b166`. The sentence is
+> marked rather than rewritten because the reason it was written — that a reader
+> of this document should not have to re-derive where the questions went — is
+> exactly why it now has to say where they went *to*.
+>
+> - **Question 1 is answered by ADR 0054 decision 4: the walk stays unbounded.**
+>   An action fulfilling nothing scores exactly 0, so `action.free-association`
+>   ranks last and the walk cannot reach it while anything better resolves. What
+>   was wanted was a terminal, not a limit. `ActionSystem.beginNextAction`'s
+>   docblock carries the answer.
+> - **Question 3 is answered by ADR 0054 decision 1: `hygiene` and `recreation`
+>   are room-gated by design, and get no cell-side siblings.** That is the
+>   *opposite* of the answer this document gave for `hunger` one day earlier, and
+>   ADR 0054 says at length why the difference is not inconsistency: ADR 0048
+>   gave an unmet need a downstream reader in between, so the "requirement the
+>   game never enforces" this document refused no longer describes the state.
+>   Read ADR 0054's amendment before relying on that sentence — the enforcement
+>   is measurably narrower than its main text claims.
+> - Question 2 is still open and still #435.
+
 1. **Should a fallback be bounded?** Walking the whole list means a prisoner
    always does *something* if anything resolves. Whether that is right, or
    whether some actions should be all-or-nothing, is not decided here.

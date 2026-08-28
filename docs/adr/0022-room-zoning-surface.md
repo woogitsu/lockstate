@@ -87,9 +87,15 @@ carried is now actively misleading.** It cited `src/ui/hud/hud.ts:153-195`.
 `HudIntent` is now at `src/ui/hud/hud.ts:270-540` and declares **eighteen**
 members, three of them room-related — `zone-room`, `unzone-room` and
 `arm-room-tool`, which are this ADR's own decision having shipped. And
-`hud.ts:153` now declares **`HudRoomGesture`**, the room gesture this document
+`hud.ts:154` now declares **`HudRoomGesture`**, the room gesture this document
 introduced. So a reader following the old anchor to check *"none of them is a
-room"* lands on a type that is about nothing else. The count and the anchor are
+room"* lands on a type that is about nothing else. **That replacement anchor
+said `:153` until 2026-08-28**, and was off by one when it was written -- the
+`export type HudRoomGesture` line is at `:154`, and `git show` at the previous
+STATUS-QUEUE anchor puts it at `:154` there too, so this is not drift. A
+correction that carries a wrong number is the failure it was written to fix,
+one revision later, which is why the old number is recorded here rather than
+quietly replaced. The count and the anchor are
 corrected here rather than left as
 [`STATUS-QUEUE.md`](./STATUS-QUEUE.md) recorded them, because that entry said
 this belonged in a change of its own and this is that change; the historical
@@ -761,6 +767,34 @@ Left open deliberately, and none of them decided in code.
    tile rather than a room type, which is a persistence-format decision
    (`docs/HUD_PROJECTIONS.md` gap 11). `tests/unit/rooms-zoning.test.ts` pins
    both directions so that changing either is a visible decision.
+
+   **The second direction is no longer true, and the reason it was thought
+   unfixable is the part that was wrong.** `dea529c` (#337, 2026-08-26 22:01
+   UTC, on `main`) narrowed removal to the instance: `collectRemovableRegion`
+   (`src/simulation/rooms/zoning.ts:808`) resolves each covered tile through
+   `roomInstanceContaining` (`src/simulation/rooms/zoning.ts:811`;
+   `src/simulation/objects/room-capacity.ts:83`) and clears *that instance's*
+   rectangle, so clipping one corner of one of two touching cells removes one
+   cell. The same-type fill survives only for paint no rectangle claims — a
+   restored V4 row records no `width`/`height` — and it now stops at any tile an
+   instance owns.
+
+   So **neither end needs an instance id per tile**, and this paragraph's claim
+   that both do was the load-bearing error: a `RoomInstance` has carried its
+   rectangle since ADR 0028 phase 1, which is a *derivation* of the same fact,
+   and ADR 0028 decision 6 removed the last persisted derived value from a room
+   instance rather than adding one. `SAVE_SCHEMA_VERSION` did not move and no
+   field changed (`docs/PERSISTENCE.md`, "**#337 changed nothing in this format:
+   no field, no section, no version bump**"). The first direction — two adjacent
+   same-type rectangles are two `RoomInstance`s — is unchanged and was always
+   right.
+
+   The pinning sentence still holds, with more behind it:
+   `tests/unit/rooms-zoning.test.ts`'s *"two adjacent rectangles of one type are
+   two rooms at both ends (#337)"* and
+   `tests/integration/room-zoning-loop.test.ts`'s *"un-zoning one of two
+   adjacent same-type rooms (#337)"* pin the instance-bounded behaviour through
+   the real command path and across a save round trip.
 
 3. **Whether a zone gesture should carry a `transactionId`** — still open, and
    the implementation sends none. The reasoning in §3 is unchanged: zoning

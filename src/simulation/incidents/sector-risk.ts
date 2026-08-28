@@ -52,6 +52,28 @@ export interface SectorRiskPolicy {
  *   most `0.5` and no prison, however badly run, could riot while its single
  *   guard was on post. That is the second half of issue #442, and it made
  *   staffing the cause of unrest rather than its amplifier.
+ *
+ *   **Measured 2026-08-28 on #436's re-verification pass, and the sentence
+ *   above is true of the *weight* and not yet of the *game*.** Raising it to 1
+ *   made neglect able in principle to reach `hotThreshold` on its own; what
+ *   reaches it in practice is homelessness, not neglect. A prisoner who holds a
+ *   furnished cell has `sleep`, `hunger`, `bladder` and `safety` all served
+ *   from it, so the only needs a *built* prison can pin at zero are `hygiene`
+ *   and `recreation` — ADR 0054 decision 1 rules those room-gated — and two of
+ *   six at zero is a ceiling of about `0.48` on `needsPressure`, under the
+ *   `0.65` line. Measured over twenty in-game days, eight prisoners in eight
+ *   furnished cells with no shower room and no yard: peak score **0.4824** and
+ *   **zero** riots with one guard on post, **0.7979** and three riots with
+ *   none (`tests/integration/room-gated-needs.test.ts`). The prisoner who does
+ *   push the term past the line is the one with no accommodation at all, whose
+ *   six needs all decay unopposed — which is what
+ *   `tests/integration/security-default-sector.test.ts`'s and
+ *   `incident-trigger-reachability.test.ts`'s riot fixtures are actually made
+ *   of. So the bullet is kept rather than rewritten, and this paragraph is what
+ *   it does not yet say: **at these numbers, staffing is still the amplifier
+ *   that decides, for every prison whose prisoners have somewhere to live.**
+ *   Whether that is the balance wanted is #442's and ADR 0048's, not a thing to
+ *   settle in this docblock.
  * - `staffingShortfallWeight: 0.3` — **unchanged, and now the amplifier it was
  *   named for.** A completely unguarded sector adds `0.3`, which turns a
  *   mediocre prison into a rioting one and leaves a well-run one alone:

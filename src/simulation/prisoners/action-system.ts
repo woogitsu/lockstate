@@ -623,11 +623,30 @@ export class ActionSystem implements SystemRegistration {
    * bought its fix without touching ADR 0020's territory -- is still a true
    * statement about ADR 0041.
    *
+   * **The walk is unbounded, and that is decided rather than merely
+   * unimplemented.** ADR 0041 open question 1 asked *"should a fallback be
+   * bounded?"*, and
+   * [ADR 0054](../../../docs/adr/0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md)
+   * decision 4 answers no. An action fulfilling nothing scores exactly 0 in
+   * `scoreAction` -- the floor, since no authored effect is negative -- so
+   * `action.free-association` can only ever rank *last*, and the loop below
+   * cannot reach it while anything better resolves. What was actually wanted was
+   * a **terminal** rather than a limit: every regime block now holds one
+   * candidate that resolves for any housed prisoner, so the loop ends at an
+   * action instead of at the end of the list. Bounding it would reintroduce the
+   * standing-still ADR 0041 removed, and would make a starved need visible only
+   * as idleness -- which a player cannot read, because a well-served prisoner is
+   * idle 360 ticks a day on the reconsideration cadence alone.
+   *
    * `unmetDemandCycles` keeps its meaning exactly ("no legal action had a
    * reachable, available target"): it is now counted once, after every candidate
-   * has been tried, rather than at the first that failed. ADR 0041 open question
-   * 2 asks whether it should instead count a prisoner who got a *worse* action
-   * than the one they wanted; that is a different number and is not decided here.
+   * has been tried, rather than at the first that failed. In a prison with a
+   * housed population it is therefore 0, and the one thing it still distinguishes
+   * is **a prisoner with no accommodation**, who exhausts the walk because every
+   * `own-accommodation` terminal resolves by an instance id they do not have.
+   * ADR 0041 open question 2 asks whether it should instead count a prisoner who
+   * got a *worse* action than the one they wanted; that is a different number and
+   * is not decided here (#435).
    */
   private beginNextAction(plan: PlannedSelection, tick: number): void {
     const { entityId, index, classificationGroupId } = plan;
