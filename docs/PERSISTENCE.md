@@ -2014,11 +2014,12 @@ look over budget — so a prison may briefly hold `keep + 2`.
 
 #### A save only another build can read is kept, not deleted (#432)
 
-> The decision behind this section is
-> [`docs/ADR-DRAFT-432-quarantine.md`](./ADR-DRAFT-432-quarantine.md), which is
-> **an ADR awaiting a central number** and is therefore deliberately not in
-> `docs/adr/` — see its header for what landing it involves, and replace this
-> note with the numbered link at that point.
+The decision behind this section is
+[ADR 0065](./adr/0065-what-happens-to-a-save-this-build-cannot-read.md), which
+carries the arguments: why only one of the two save-side verdicts earns the
+slot, why the mark is in the generation id rather than in a new field, why
+exemption from the retention budget *is* the decision, and why it declines
+#432's fourth acceptance criterion on purpose.
 
 The rules above decide **when** a refused generation may be retired and **what
 a refusal means**. This one decides **what "retired" does**, and the answer is

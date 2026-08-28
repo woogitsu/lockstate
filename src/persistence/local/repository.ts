@@ -518,7 +518,8 @@ export class PrisonSaveRepository {
 
   /**
    * Keeps a generation this build refused as `unsupported-by-this-build`
-   * instead of deleting it (#432, #403 mitigation (c)).
+   * instead of deleting it (#432, #403 mitigation (c); ADR 0065 carries the
+   * argument, `docs/PERSISTENCE.md` the rule).
    *
    * ## What it is for
    *

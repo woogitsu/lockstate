@@ -26,7 +26,7 @@ export interface GenerationRetentionResult {
 
 /**
  * The mark a generation id carries once this build has refused it as
- * `unsupported-by-this-build` and kept it anyway (#432).
+ * `unsupported-by-this-build` and kept it anyway (#432, ADR 0065 decision 2).
  *
  * ## Why the mark is in the id and not in a field of its own
  *
@@ -55,6 +55,19 @@ export interface GenerationRetentionResult {
  * `!` is not a character `defaultGenerationId` can emit (`gen-<base36>-<base36>`),
  * and `writeGeneration` refuses an injected id that carries the mark, so a
  * generation is quarantined only by having been quarantined.
+ *
+ * ## This module imports nothing, and two `src/ui/**` modules depend on that
+ *
+ * `readableGenerationIds` below is imported *as a value* by
+ * `src/ui/save-panel.ts` and `src/ui/account/save-list-projection.ts`, so that
+ * the counts those show the player exclude a generation this build cannot
+ * offer. `tests/unit/ui-orchestration-boundaries.test.ts` records both as
+ * `kind: 'value'` and both reasons rest on this file having **no imports at
+ * all** -- that is what stops a store, a schema or a package reaching the UI
+ * tier through it. That gate compares direct imports and does not follow what
+ * an imported module pulls in, so **adding an import here makes those two
+ * reasons false and leaves the suite green.** Keep this file import-free, or
+ * rewrite both entries in the same change.
  */
 const QUARANTINE_MARKER = '!unreadable!';
 
