@@ -354,3 +354,138 @@ export class PrisonerColdState {
     this.currentActionPathRequestId.clear();
   }
 }
+
+/**
+ * The saturation point of both arrays below, and the value they stop at rather
+ * than wrapping to zero.
+ *
+ * `Uint32Array`'s ceiling. A prisoner reaches it after 4,294,967,295
+ * reconsideration cycles of being served worse than they asked for, which at
+ * `ActionSystem.schedule.intervalTicks` is 8.6e10 ticks and is not a session
+ * anyone will play -- but a counter that silently reads *zero* after counting
+ * for that long is the one failure mode a diagnostic must not have, and the
+ * branch costs a comparison on a path that only runs when a substitution
+ * actually happened.
+ */
+const SUBSTITUTION_COUNT_MAX = 0xffff_ffff;
+
+/**
+ * How often each prisoner was **served worse than they asked for** -- issue
+ * #435, [ADR 0041](../../../docs/adr/0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md)
+ * open question 2.
+ *
+ * ## What it counts, and why per prisoner
+ *
+ * Since ADR 0041 decision 1 a prisoner whose best action cannot resolve a
+ * target takes the next-best one that can, so the interesting event stopped
+ * being *nobody was served* and started being *this prisoner was served worse*.
+ * `ActionMetrics.unmetDemandCycles` still counts the first and is unchanged;
+ * nothing counted the second, which is what
+ * [ADR 0062](../../../docs/adr/0062-who-gets-the-room-when-more-prisoners-want-it-than-it-seats.md)
+ * open question 3 reports as the thing that blinded it: *"in a housed prison it
+ * is 0 whether twelve prisoners are being quietly downgraded from the canteen
+ * to their cell at every meal or nobody is"*.
+ *
+ * **Per prisoner rather than a population total, because the population total
+ * cannot answer the question that matters.** ADR 0062's canteen residue is that
+ * the *same* twelve prisoners lose the room every day; an aggregate would show
+ * twelve downgrades a day either way and could not tell a rotation from a
+ * caste. A named prisoner's own count can, which is the same standard
+ * `tests/integration/contended-shower-fairness.test.ts` holds the fairness fix
+ * to.
+ *
+ * ## The two numbers, and why the split is the cause rather than the degree
+ *
+ * - `substitutionCycles` -- every cycle in which this prisoner began an action
+ *   ranked below their first choice.
+ * - `contendedSubstitutionCycles` -- the subset in which the prison **had
+ *   somewhere** to perform the first choice and this prisoner did not get it.
+ *   The complement is a want the prison provides nowhere: no canteen has been
+ *   built, no shower room stands.
+ *
+ * That boundary is `RoomInstanceRegistry.hasPlaceForUse`, which ADR 0062
+ * decision 3 already forbids from reading a use claim, so it costs no extra
+ * question -- `ActionSystem.planIdleSelection` has already asked it to order
+ * the scan. It is the split a reader needs because the two have opposite
+ * remedies: one says *build the room*, the other says *the room you built is
+ * too small, or is always the same people's*.
+ *
+ * **What is deliberately not recorded is the degree** -- neither the score gap
+ * between the wanted action and the taken one nor a wanted/taken pair matrix.
+ * The gap is a difference of utilities at the instant of choosing, in
+ * `deficit x effect` units that are not comparable across needs, and for the
+ * canteen it reduces to the hunger deficit itself, so it measures *when in the
+ * meal block* the prisoner was refused rather than what the refusal cost them.
+ * What the refusal costs is a rate -- `action.eat-in-cell` restores 3 a tick
+ * against `action.eat-meal`'s 4 -- and the need level, which the save already
+ * carries and the projection already publishes, is where that lands. A pair
+ * matrix is `DEFAULT_ACTIONS.length` squared per prisoner, and the pair is
+ * already recoverable from the regime block and the need levels of the cycle
+ * that recorded it.
+ *
+ * ## Not persisted, and cleared by a restore
+ *
+ * Issue #435 puts a save-schema change out of scope, and the counters are
+ * diagnostics rather than state any system reads back: nothing here is an input
+ * to a decision, so a restored session behaves identically whatever these hold.
+ * They are **cleared** on a restore rather than carried, because a save's
+ * component arrays are re-indexed into this runtime's store and a count left
+ * standing would be attributed to whoever now occupies that slot -- the #111
+ * shape, one component further out. `ActionMetrics.substitutionsCountedSinceTick`
+ * is what makes the reset legible to a reader instead of silent.
+ */
+export class SubstitutionRecordComponent {
+  /** Cycles in which this prisoner began an action ranked below their first choice, whatever the reason. */
+  public readonly substitutionCycles: Uint32Array;
+  /** The subset of those in which the prison provided the first choice somewhere and somebody else was in it. */
+  public readonly contendedSubstitutionCycles: Uint32Array;
+
+  private readonly slotDefaults: readonly SlotDefault[];
+
+  public constructor(public readonly capacity: number) {
+    this.substitutionCycles = new Uint32Array(capacity);
+    this.contendedSubstitutionCycles = new Uint32Array(capacity);
+    // A slot nobody has occupied has been served worse zero times, and so has a
+    // prisoner admitted into a recycled one: the count is a fact about a
+    // sentence, and the previous occupant's sentence is over.
+    this.slotDefaults = [
+      [this.substitutionCycles, 0],
+      [this.contendedSubstitutionCycles, 0],
+    ];
+    fillEverySlot(this.slotDefaults);
+  }
+
+  /** Restores one slot to the values a never-occupied slot holds. Called when an index is allocated, so a recycled index cannot inherit its previous occupant's history. */
+  public reset(index: number): void {
+    resetOneSlot(this.slotDefaults, index);
+  }
+
+  /**
+   * Empties every slot, which is what a restore does to this component.
+   *
+   * Distinct from `reset` on purpose: `reset` is per index and is the
+   * recycling contract every other component here implements, while this is the
+   * whole-component window boundary `ActionSystem` opens when a snapshot is
+   * loaded. Written as `fill(0)` over the same `SlotDefault` list so a third
+   * array cannot be cleared by one and forgotten by the other.
+   */
+  public clear(): void {
+    fillEverySlot(this.slotDefaults);
+  }
+
+  /**
+   * Records one cycle in which the prisoner at `index` began something worse
+   * than their first choice.
+   *
+   * Both arrays are written here rather than by two callers, which is what
+   * makes `contendedSubstitutionCycles <= substitutionCycles` true by
+   * construction instead of by discipline.
+   */
+  public record(index: number, contended: boolean): void {
+    const total = this.substitutionCycles[index]!;
+    if (total < SUBSTITUTION_COUNT_MAX) this.substitutionCycles[index] = total + 1;
+    if (!contended) return;
+    const contendedTotal = this.contendedSubstitutionCycles[index]!;
+    if (contendedTotal < SUBSTITUTION_COUNT_MAX) this.contendedSubstitutionCycles[index] = contendedTotal + 1;
+  }
+}

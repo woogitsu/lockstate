@@ -14,6 +14,7 @@ import {
   PositionComponent,
   PrisonerColdState,
   PrisonerRecordComponent,
+  SubstitutionRecordComponent,
   intakeStageIndex,
 } from '../../src/simulation/prisoners/components';
 import { DEFAULT_ACTIONS } from '../../src/simulation/prisoners/actions';
@@ -124,6 +125,7 @@ function buildAssociationFixture(options: {
   const needs = new NeedsComponent(capacity);
   const currentAction = new CurrentActionComponent(capacity);
   const position = new PositionComponent(capacity);
+  const substitutions = new SubstitutionRecordComponent(capacity);
   const coldState = new PrisonerColdState();
   const roomInstances = new RoomInstanceRegistry();
 
@@ -158,7 +160,7 @@ function buildAssociationFixture(options: {
   const kernel = new Kernel(options.startTick, 0, new NamedRngStreams([{ name: RNG_STREAM, state: deriveXoshiroState(1, RNG_STREAM) }]));
   const locomotion = registerLocomotion(kernel, position);
   const actionSystem = new ActionSystem(
-    store, query, records, needs, currentAction, position, coldState, roomInstances, navigation, locomotion, options.schedules,
+    store, query, records, needs, currentAction, position, substitutions, coldState, roomInstances, navigation, locomotion, options.schedules,
   );
   kernel.registerSystem(navigation);
   kernel.registerSystem(actionSystem);

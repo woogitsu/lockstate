@@ -42,7 +42,9 @@ Per the issue's explicit scope, this is deliberately bounded:
   stage), `NeedsComponent` (needs.ts, one `Uint16Array` per need, holding
   the level scaled by `NEED_SCALE`),
   `CurrentActionComponent` (action index/phase/timing), `PositionComponent`
-  (tile-space, integer).
+  (tile-space, integer) and, since #435, `SubstitutionRecordComponent` (how
+  often this prisoner was served worse than they asked for -- a diagnostic no
+  save carries, and the only one of the five that is not part of the payload).
 - **Cold, rarely-mutated, string-keyed metadata** as a small wrapper class
   over plain `Map`s -- `PrisonerColdState` holds accommodation assignment
   and the current action's travel target/path-request id, exactly the
@@ -59,15 +61,20 @@ by #22's benchmark-only stub actors).
 ### Slot defaults, and where they are pinned
 
 Every one of those components exposes `reset(index)`, restoring one slot to
-the values an *unoccupied* slot holds, and `admitPrisoner` calls all four
+the values an *unoccupied* slot holds, and `admitPrisoner` calls **all five**
 before it writes the arrival's own fields. It has to: `EntityStore.spawn`
 recycles a freed index and nothing clears a component array on destroy, so
-without the resets thirteen of the eighteen per-slot arrays handed a new
+without the resets thirteen of the then eighteen per-slot arrays handed a new
 arrival the previous occupant's needs, classification and action plan
-(#111). The three typed-array components state each default once, in a
-`SlotDefault` list that drives both the constructor's initial fill and
-`reset`; `NeedsComponent` instead loops `NEED_IDS` in both places, so a
-seventh need is covered without a second edit either way.
+(#111). **This paragraph said "all four" and "the eighteen per-slot arrays",
+which is what the tree held until #435 added a fifth component and a
+nineteenth and twentieth array** -- the count is marked rather than rewritten
+because thirteen-of-eighteen is what #111 actually cost and re-scaling it to
+today's total would make the historical number unreadable. The four
+typed-array components state each default once, in a `SlotDefault` list that
+drives both the constructor's initial fill and `reset`; `NeedsComponent`
+instead loops `NEED_IDS` in both places, so a seventh need is covered without
+a second edit either way.
 
 Two of those defaults carry meaning rather than merely being zero:
 `currentAction.actionIndex` is `-1`, the "no action selected" sentinel
@@ -75,8 +82,11 @@ Two of those defaults carry meaning rather than merely being zero:
 to show an action at all, and every need starts at `NEED_MAX`. Both the
 reset coverage and the default *values* are pinned in
 `tests/unit/prisoner-slot-recycling.test.ts`, which discovers each
-component's arrays by reflection, so a nineteenth array fails until someone
-states what it reads as when unoccupied.
+component's arrays by reflection, so a **twenty-first** array fails until
+someone states what it reads as when unoccupied. (It said "a nineteenth"
+while there were eighteen; #435's two are the nineteenth and twentieth, and
+they were added by extending that file's pinned lists rather than by
+loosening them, which is what the sentence is for.)
 
 Resetting the slot is not a release path, and it is still not one -- but the
 paragraph that used to stand here said *"Nothing in `src/` destroys a prisoner
@@ -489,6 +499,70 @@ that are worth stating here rather than leaving to be discovered:
   state-derived reason to prefer either. `tests/integration/contended-shower-fairness.test.ts`
   records both halves, and ADR 0062 open question 1 costs the two ways of
   rotating identical contenders without taking either.
+
+  > **Two sentences above are no longer true of this tree, and the measurement
+  > that replaces them is #435's** (see *What a downgrade costs* below).
+  > "24 prisoners against a six-seat canteen sit at the same stored hunger unit
+  > at the moment every meal block opens" and "prisoners 12 to 23 still never
+  > enter that canteen" were both measured on `origin/main` at `c00b641`, which
+  > is **before** [ADR 0059](./adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md)
+  > made a prisoner walk to the room instead of appearing in it. Re-measured at
+  > `aefd8fc` on a faithful reconstruction of that prison -- 24 prisoners
+  > admitted in one tick, a dormitory, a six-seat canteen, no shower room,
+  > 30,000 ticks -- prisoners 12 to 23 enter the canteen **three** times each
+  > rather than zero, the population is no longer identical at a meal block's
+  > opening, and the residue's *need* cost is no longer nil: the lowest stored
+  > hunger anybody reaches goes from **35,500** to **3,500**, which is 17.5 of
+  > `NEED_MAX`. The same reconstruction at `c00b641` reproduces the old numbers
+  > exactly, so this is a change in the tree and not a disagreement about how to
+  > measure it. Both readings are kept because the old one is what ADR 0062
+  > decided against, and the new one is what a decision on its open question 1
+  > would now be deciding about.
+
+### What a downgrade costs, and who it costs it to (#435)
+
+Since ADR 0041 decision 1 the interesting event stopped being *nobody was
+served* and started being *this prisoner was served worse*, and until #435
+nothing counted the second. `ActionMetrics` therefore carries two more
+population totals and `SubstitutionRecordComponent` the per-prisoner breakdown
+behind them:
+
+- **`substitutionCycles`** -- cycles in which a prisoner began an action ranked
+  below their first choice. Disjoint from `unmetDemandCycles` by construction:
+  that one counts a prisoner who got *nothing*, this one a prisoner who got
+  *less*, and every path that increments one returns without reaching the other.
+- **`contendedSubstitutionCycles`** -- the subset where the prison **had
+  somewhere** to perform the first choice and this prisoner did not get it. The
+  complement is a want the prison provides nowhere. The two have opposite
+  remedies -- *the room you built is too small* against *build the room* -- and
+  the boundary between them is `RoomInstanceRegistry.hasPlaceForUse`, which the
+  scan's ordering key already asks and which ADR 0062 decision 3 forbids from
+  reading a claim.
+- **`substitutionsCountedSinceTick`** -- the tick both totals and the whole
+  breakdown have been counting from. `0` in a session that was never restored;
+  a restore reopens the window at the tick it resumes from, because no save
+  carries per-prisoner counts and one left standing would be attributed to
+  whoever now occupies that index.
+
+**Per prisoner, because the population total cannot answer the question that
+matters.** ADR 0062's canteen residue is that the *same* twelve lose the room;
+an aggregate shows twelve downgrades a day either way and cannot tell a
+rotation from a caste. Measured in
+`tests/integration/contended-canteen-substitution-cost.test.ts`: 24 prisoners
+against six dining places, and the twelve the counter says are refused most are
+exactly the twelve an independent watcher says eat in the canteen least.
+
+**What is deliberately not recorded is the degree** -- neither the score gap
+between the wanted action and the taken one nor a wanted/taken matrix. The gap
+is a difference of utilities at the instant of choosing, in `deficit x effect`
+units that are not comparable across needs, and for a canteen it reduces to the
+hunger deficit, so it measures *when in the meal block* the refusal happened
+rather than what it cost. What it costs is a need level, and the save already
+carries that: in the same three prisons, a population downgraded 6,264 times
+(no canteen at all) ends up **better** fed than one downgraded 4,782 times at a
+six-seat canteen, because eating in a cell costs a rate and walking to a full
+canteen costs a meal block. A count and a cost are two quantities and this
+records the count.
 - **Nothing a player can build is affected yet, and that is the honest
   reading.** Every room type whose actions resolve by catalogue id derives its
   ceiling from the objects in it. **This paragraph used to read "the two
