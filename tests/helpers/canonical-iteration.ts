@@ -613,6 +613,19 @@ export interface CanonicalIterationReport {
   readonly staleExemptions: readonly CanonicalIterationExemption[];
   /** Every unordered enumeration found, exempt or not: the denominator that makes an empty violation list meaningful rather than merely quiet. */
   readonly unorderedCount: number;
+  /**
+   * The **distinct** `file::expression` pairs behind `unorderedCount`, sorted.
+   *
+   * The number a reviewer actually has to audit, and not the same thing as
+   * `unorderedCount`: an exemption is keyed by `(file, expression)` and covers
+   * every occurrence of it, so one justified field walked from two methods is
+   * two sites and one thing to review. Comparing this against the allow-list's
+   * own keys says "these and no others are unordered", which is what the
+   * allow-list claims; comparing the tally only said "as many as there are
+   * entries", which was the same statement only while every field happened to
+   * be walked once.
+   */
+  readonly unorderedExpressions: readonly string[];
   /** Every enumeration found, ordered or not. */
   readonly siteCount: number;
 }
@@ -642,6 +655,7 @@ export function reportCanonicalIterationViolations(
 
   let unorderedCount = 0;
   let siteCount = 0;
+  const unorderedExpressions = new Set<string>();
 
   for (const { file, source } of files) {
     for (const site of findEnumerationSites(source)) {
@@ -649,6 +663,7 @@ export function reportCanonicalIterationViolations(
       if (site.ordered) continue;
       unorderedCount += 1;
       const entryKey = key(file, site.expression);
+      unorderedExpressions.add(entryKey);
       if (exempt.has(entryKey)) {
         used.add(entryKey);
         continue;
@@ -661,6 +676,7 @@ export function reportCanonicalIterationViolations(
     violations,
     staleExemptions: exemptions.filter((entry) => !used.has(key(entry.file, entry.expression))),
     unorderedCount,
+    unorderedExpressions: [...unorderedExpressions].sort(),
     siteCount,
   };
 }

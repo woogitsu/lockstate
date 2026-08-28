@@ -43,7 +43,16 @@ const SHOWER = { x: 26, y: 1, width: 3, height: 3 } as const;
 const CANTEEN = { x: 19, y: 6, width: 6, height: 6 } as const;
 const YARD = { x: 20, y: 20, width: 8, height: 8 } as const;
 const ARRIVAL = { x: 16, y: 16 } as const;
-/** Long enough that nobody's sentence can interact with a run this length; `sentenceEndTick` has no reader that compares it to the tick anyway (ADR 0042 §#441). */
+/**
+ * Long enough that nobody's sentence can interact with a run this length.
+ *
+ * That was already the intent and it is now the only thing holding it up: this
+ * comment used to add that "`sentenceEndTick` has no reader that compares it to
+ * the tick anyway (ADR 0042 §#441)", and #441 gave it one --
+ * `PrisonerDischargeSystem`. 400,000 against `RUN_TICKS` of 30,000 keeps the
+ * margin; it also sits above `LONG_SENTENCE_THRESHOLD_TICKS`, so it is a
+ * classification input this file has always been making and is unchanged.
+ */
 const ADMISSION = { sentenceLengthTicks: 400_000, priorIncidents: 0 } as const;
 
 interface PrisonPlan {

@@ -1,4 +1,4 @@
-import type { ActorIdentityMinter } from '../../src/simulation/identity/actor-identity';
+import type { ActorIdentityLifecycle } from '../../src/simulation/identity/actor-identity';
 import type { Kernel } from '../../src/simulation/kernel/kernel';
 import { NavigationSystem } from '../../src/simulation/navigation/navigation-system';
 import { PrisonerOperationsRuntime } from '../../src/simulation/prisoners/prisoner-operations-runtime';
@@ -32,8 +32,8 @@ export function buildPrisonerScenarioFixture(options: {
   readonly workBudgetPerTick?: number;
   readonly agingIntervalTicks?: number;
   readonly flowFieldActivationThreshold?: number;
-  /** Optional actor-identity minting; omitted, intake names nobody and draws nothing (`src/simulation/identity/`). */
-  readonly identity?: ActorIdentityMinter;
+  /** Optional actor identity; omitted, intake names nobody and draws nothing (`src/simulation/identity/`). The lifecycle type, not the minter alone, because the runtime it is handed to also releases a departing prisoner's name (#441). */
+  readonly identity?: ActorIdentityLifecycle;
 }): PrisonerScenarioFixture {
   const cellBlock = buildCellBlockFixture(options.cellCount);
   const navigation = new NavigationSystem(

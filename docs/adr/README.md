@@ -176,8 +176,11 @@ Nothing here changes a status; this table only reports them.
 | [0047](./0047-raising-a-building-on-open-ground.md) | Raising a building on open ground | Proposed, 2026-08-27 — the owner asked for a building layer so that rooms live inside a structure rather than on bare land. **Its headline finding is a refusal**: the building layer does *not* dissolve ADR 0045's edge-of-owned-land consequence, because a building has a south boundary for the same reason a room does. The real cause is an asymmetric ownership predicate on edge orders, and slice 0 fixes that on its own |
 | [0044](./0044-what-happens-to-a-service-tier-nothing-calls.md) | What happens to a service tier nothing calls | Accepted, 2026-08-27 — by delegation; #378, and it keeps all four trees on stated terms rather than deleting any of them. The owner did not read it, and its two product questions (does cloud save ship, does Lockstate collect telemetry) are recorded open |
 | [0048](./0048-what-a-sectors-occupants-are.md) | What a sector's occupants are, and what it takes for a prison to riot | Proposed, 2026-08-27 — takes ADR 0042 decision 2 and answers its open questions 1 and 2: the derived sector is the prison, so its occupants are every prisoner standing on owned land, `needsPressure` is the mean deficit over all six needs, and `requiredGuardCount` scales with occupancy. It corrects ADR 0042 in two places — a riot *was* reachable in one degenerate prison, and occupancy alone would have made the trigger harder to reach rather than easier |
+| [0049](./0049-what-a-prison-that-cannot-make-payroll-owes.md) | What a prison that cannot make payroll owes | Proposed, 2026-08-28 — answers ADR 0042 open question 3, which ADR 0017 answer 3's *"None of that is licensed to be decided in implementation code"* forbids answering in a docblock. The treasury stays floored at zero and the unpaid part of a wage bill becomes **arrears**, a second non-negative integer beside the balance: a treasury that could overdraw would pay the wages out of debt and ADR 0017's ladder would never reach its bottom rung. Measured over 30 in-game days, the debit costs one part in thirty of income at the staffing the game asks for, and break-even needs thirty times it |
 
-**Next free number: 0049.** The gaps this paragraph used to record are gone:
+| [0050](./0050-when-a-sentence-ends.md) | When a sentence ends | Proposed, 2026-08-28 — closes #441, the owner's own issue, by giving `sentenceEndTick` the reader it never had: a prisoner whose sentence the clock has passed leaves and everything they held is given back. It takes [ADR 0026](./0026-entity-id-lifetime.md) question 2 and answers it with option C plus a reflection gate over the real session graph; **it deliberately does not answer question 1 (generation exhaustion), which this change makes reachable for the first time**, and builds no part of Phase 9 |
+
+**Next free number: 0051.** The gaps this paragraph used to record are gone:
 0042 and 0043 were held for parallel drafts that had not merged, and both were
 taken in the 2026-08-27 integration pass — 0042 by the consequence-loop ADR,
 0043 by the account-session ADR — with 0045 going to the third draft in the same
@@ -185,8 +188,15 @@ pass. **Both directions are marked rather than overwritten**, because the reason
 those gaps existed is the durable part: the stated number is `max(on disk) + 1`,
 which is what `tests/foundation/adr-numbering-contract.test.ts` asserts, so an
 out-of-order assignment turns this line into a ceiling rather than the next gap,
-and a reader must still read the table rather than this line. There is no gap
-below 0045 today; the next out-of-order assignment recreates one. 0041 is this table's newest *contiguous* row and **0030 is still
+and a reader must still read the table rather than this line. The sentence here
+used to read "There is no gap below 0045 today; the next out-of-order assignment
+recreates one" — and the very next assignment did. **0049 is a gap in this table
+and is not free**: it was taken on `agent/0042-step3-recurring-debit` while the
+2026-08-28 pass was running, and 0051 was assigned to a third branch in the same
+pass, so this line's `max(on disk) + 1` skips over one taken number and stops
+short of another. Both directions are marked rather than overwritten, because
+the mechanism is the durable part and it has now demonstrated itself twice.
+0041 is this table's newest *contiguous* row and **0030 is still
 held by an unmerged branch** — the incident-response restore change, which
 allocated it in the same hour it was stated free here. It is listed nowhere above
 because nothing is merged under that number yet, which is precisely the gap a

@@ -73,14 +73,58 @@ reset coverage and the default *values* are pinned in
 component's arrays by reflection, so a nineteenth array fails until someone
 states what it reads as when unoccupied.
 
-Resetting the slot is not a release path. Nothing in `src/` destroys a
-prisoner entity today, and a real release still has to free room-instance
-occupancy, release the actor identity (ADR 0015), drop the gang-membership
-entry and clear the `ComponentBitset` bit. A primitive for each of those
-four already exists -- `RoomInstanceRegistry.release`,
-`ActorIdentityRegistry.release`, `GangRegistry.removeMember`,
-`ComponentBitset.remove` -- and nothing calls any of them for a destroyed
-prisoner (#31).
+Resetting the slot is not a release path, and it is still not one -- but the
+paragraph that used to stand here said *"Nothing in `src/` destroys a prisoner
+entity today"* and named four uncalled primitives, and that has been false since
+#441. Both directions are marked rather than overwritten, because the
+distinction the old sentence drew is the one that still matters: **a slot is
+reset when it is allocated, and a prisoner is released when their sentence
+ends, and those are two different events in two different files.**
+
+What release now does is `releasePrisoner`
+(`src/simulation/prisoners/release.ts`), reached from
+`PrisonerDischargeSystem` or from `PrisonerOperationsRuntime.releasePrisoner`.
+It frees room-instance residency and any concurrent-use claim, cancels an
+in-flight path request, drops the cold state, releases the actor identity
+(ADR 0015), drops the gang membership, unregisters the prisoner from the job
+labour pool, clears the `ComponentBitset` bit and destroys the entity -- in
+that order, for the reasons that function records. See
+[ADR 0050](adr/0050-when-a-sentence-ends.md).
+
+It deliberately does **not** reset the component arrays. That stays where
+`admitPrisoner` does it, so the defaults are stated once; a freed slot therefore
+keeps its previous occupant's record until the index is reused, and every reader
+in `src/` walks `0..maxActiveIndex` behind an `isIndexAlive` guard.
+
+## The end of a sentence (#441, ADR 0050)
+
+`IntakeSystem` writes `sentenceEndTick = tick + sentenceLengthTicks` at the
+`classification` stage. Until #441 nothing compared it against the clock, so the
+stage machine's `completed` really was the end of the lifecycle and a prison's
+population could only rise.
+
+`PrisonerDischargeSystem` (`discharge-system.ts`, order 65, every 20 ticks) now
+walks `EntityQuery.execute()` and releases every prisoner whose sentence has
+ended. Two guards decide who that is:
+
+- **The stage.** `sentenceEndTick` reads 0 before classification, and 0 is in
+  the past, so only `accommodation-assignment`, `completed` and `failed` are
+  considered. `failed` is included on purpose: that record was previously
+  terminal and undeletable, and its sentence runs like anybody else's.
+- **The `Uint32` wrap.** `classifiedAtTickOf` already detects a
+  `sentenceEndTick` whose sum overflowed (it is then strictly less than the
+  sentence length). Such a prisoner is neither reviewed nor released -- without
+  the guard the longest sentence in the game would be the shortest.
+
+Order 65 puts the release after `prisoners.needs-decay` and before
+`navigation`, `prisoners.actions` and `operations.jobs`, so nothing hands a
+departing prisoner a route, an action or a job on the tick they leave. The
+20-tick cadence matches `prisoners.actions`, which bounds how late a departure
+can be by one reconsideration cycle.
+
+**The prisoner vanishes rather than walking out**, and that is slice 1 rather
+than the finished shape: there is no gate, no reception exit and no action that
+targets one. ADR 0050 decision 4 records what slice 2 needs.
 
 ## Needs and decay
 

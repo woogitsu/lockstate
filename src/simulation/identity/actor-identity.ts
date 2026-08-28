@@ -102,6 +102,27 @@ export interface ActorIdentityMinter {
   assign(kind: ActorKind, entityId: EntityId, rng: Xoshiro128StarStar): ActorName;
 }
 
+/**
+ * Minting **and** dropping a name: the pair a caller that owns an actor's whole
+ * lifetime needs, as opposed to `ActorIdentityMinter`, which is the half a
+ * caller that only ever admits needs.
+ *
+ * It exists because minting without releasing is a leak with a schedule.
+ * `release` below already states the contract -- a retained entry eventually
+ * hands a recycled slot the previous occupant's name -- and until #441 nothing
+ * in `src/` called it, so every collaborator that could mint was typed as
+ * though the other half did not exist. A caller that spawns and destroys
+ * prisoners asks for this type instead, and cannot be handed a registry that
+ * can only mint.
+ *
+ * `ActorIdentityRegistry` satisfies it. `GuardRoster` still takes the minter
+ * alone, which is honest: no path in `src/` dismisses a guard, so nothing there
+ * has a release to call yet.
+ */
+export interface ActorIdentityLifecycle extends ActorIdentityMinter {
+  release(kind: ActorKind, entityId: EntityId): boolean;
+}
+
 export interface ActorIdentityEntry {
   readonly kind: ActorKind;
   readonly entityId: EntityId;

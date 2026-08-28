@@ -105,13 +105,13 @@ const ALLOWED: readonly CanonicalIterationExemption[] = [
     file: 'src/simulation/prisoners/room-instance-registry.ts',
     expression: 'this.occupants.values()',
     reason:
-      '`loadSnapshot` clears every occupancy set before refilling from the snapshot. Emptying all of them touches each set once and leaves no residue that could depend on the order, and the refill is driven by the snapshot array, not by this walk.',
+      '`loadSnapshot` clears every occupancy set before refilling from the snapshot, and `releaseEntity` deletes one departing entity from every set (#441). Both touch each set exactly once and fold nothing from one set into another, so the resulting occupancy is identical in any order -- a deletion of a given key from a given set has the same effect wherever in the walk it happens. The refill is driven by the snapshot array, not by this walk, and every read of occupancy goes through `occupantsOf`/`getSnapshot`, which sort.',
   },
   {
     file: 'src/simulation/prisoners/room-instance-registry.ts',
     expression: 'this.useClaims.values()',
     reason:
-      "`loadSnapshot` clears every concurrent-use claim map, for the same reason and with the same argument as `this.occupants.values()` above: emptying all of them touches each set once and leaves no residue an order could depend on. It is not refilled from the payload at all -- use claims are derived rather than persisted (ADR 0029), and `ActionSystem.reinstateUseClaims` rebuilds them afterwards over `EntityQuery.execute`'s ascending index order, which is a total order derived from state.",
+      "`loadSnapshot` clears every concurrent-use claim map and `releaseEntity` drops one departing entity's claim from every one of them (#441), for the same reason and with the same argument as `this.occupants.values()` above: each map is touched once, nothing is folded across maps, and a keyed delete commutes. It is not refilled from the payload at all -- use claims are derived rather than persisted (ADR 0029), and `ActionSystem.reinstateUseClaims` rebuilds them afterwards over `EntityQuery.execute`'s ascending index order, which is a total order derived from state.",
   },
   {
     file: 'src/simulation/prisoners/room-instance-registry.ts',
@@ -222,8 +222,23 @@ describe('the simulation iterates collections in a canonical order', () => {
       expect(entry.reason.length, `exemption for ${entry.file} -> ${entry.expression} needs a real reason`).toBeGreaterThan(80);
     }
     // The allow-list accounts for every unordered enumeration and nothing
-    // more, so its length is the number a reviewer has to audit.
-    expect(REPORT.unorderedCount).toBe(ALLOWED.length);
+    // more. Stated as the *identities* rather than as a tally, which is both
+    // stronger and no longer accidentally coupled to how many times a justified
+    // field happens to be walked.
+    //
+    // It used to read `expect(REPORT.unorderedCount).toBe(ALLOWED.length)`, and
+    // that held only while every exempted field was enumerated from exactly one
+    // method. `reportCanonicalIterationViolations`'s own contract has always
+    // said otherwise -- "an exemption ... covers every occurrence of that
+    // expression in that file" -- so the tally was measuring occurrences
+    // against justifications. #441 gave `RoomInstanceRegistry` a second walk of
+    // `occupants` and of `useClaims` (`releaseEntity`), which is two more
+    // occurrences and no more claims to audit: the count moved to 13 while this
+    // list stayed at eleven, and both numbers were right.
+    expect(REPORT.unorderedExpressions).toEqual([...ALLOWED.map((entry) => `${entry.file}::${entry.expression}`)].sort());
+    // The tally is still non-vacuous, and is now allowed to exceed the list by
+    // exactly the number of extra occurrences of an already-justified field.
+    expect(REPORT.unorderedCount).toBeGreaterThanOrEqual(ALLOWED.length);
   });
 });
 
