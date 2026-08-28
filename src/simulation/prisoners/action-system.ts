@@ -16,11 +16,12 @@ import {
   type PositionComponent,
   type PrisonerColdState,
   type PrisonerRecordComponent,
+  type SubstitutionRecordComponent,
 } from './components';
 import type { NeedsComponent } from './needs';
 import { findRegimeSchedule, resolveActiveRegimeBlock, type ActionCategory, type PrisonerRegimeOverrideResolver, type RegimeSchedule } from './regime';
 import type { RoomInstance, RoomInstanceRegistry } from './room-instance-registry';
-import { isActionCategoryAllowed, needUrgency, rankActions, scoreAction } from './utility-ai';
+import { firstProvidedCandidateIndex, isActionCategoryAllowed, rankActions, scoreAction, urgencyOfProvidedCandidate } from './utility-ai';
 
 function phaseIndex(phase: (typeof ACTION_PHASES)[number]): number {
   return ACTION_PHASES.indexOf(phase);
@@ -56,6 +57,20 @@ interface PlannedSelection extends UrgencyRanked {
   readonly classificationGroupId: string;
   /** `rankActions`' output for the active regime block: what this prisoner wants, best first. */
   readonly candidates: readonly ActionDefinition[];
+  /**
+   * Where in `candidates` the prison's own answer starts -- the position of the
+   * highest-ranked candidate it can provide anywhere, or `-1` for a prisoner
+   * whose every want this prison has nowhere for
+   * (`firstProvidedCandidateIndex`).
+   *
+   * `urgency` above is this candidate's score, so the two are one reading of
+   * `provided` rather than two. It is carried into the execution half because
+   * it is what tells a substitution's **cause** from its fact: everything
+   * ranked above it is a room nobody built, and everything between it and the
+   * action actually started is a room somebody else is in. See
+   * `SubstitutionRecordComponent`.
+   */
+  readonly providedIndex: number;
 }
 
 /**
@@ -89,6 +104,50 @@ export interface ActionMetrics {
   readonly actionsStarted: number;
   readonly actionsCompleted: number;
   readonly routeFailures: number;
+  /**
+   * Cycles in which **somebody was served worse than they asked for**: an
+   * action was begun, and it was not the prisoner's first choice (issue #435,
+   * ADR 0041 open question 2).
+   *
+   * Disjoint from `unmetDemandCycles` by construction, and the pair is the
+   * point: that one counts a prisoner who got *nothing*, this one a prisoner
+   * who got *less*. In a housed prison the first is 0 whether or not the second
+   * is enormous, which is what
+   * [ADR 0062](../../../docs/adr/0062-who-gets-the-room-when-more-prisoners-want-it-than-it-seats.md)
+   * open question 3 reports as the thing that made the canteen half of its
+   * measurement impossible without a test-only watcher.
+   *
+   * A population total. The per-prisoner breakdown -- which is what answers
+   * *"is it the same twelve every day"* -- is `SubstitutionRecordComponent`,
+   * and this is its sum plus whatever prisoners who have since been released
+   * contributed.
+   */
+  readonly substitutionCycles: number;
+  /**
+   * The subset of `substitutionCycles` in which the prison **had somewhere** to
+   * perform the first choice and this prisoner did not get it.
+   *
+   * The complement -- `substitutionCycles - contendedSubstitutionCycles` -- is
+   * demand for a room the prison does not have. The two have opposite remedies,
+   * which is the reason the split exists rather than a degree.
+   */
+  readonly contendedSubstitutionCycles: number;
+  /**
+   * The tick the two counters above, and every per-prisoner count in
+   * `SubstitutionRecordComponent`, have been counting from.
+   *
+   * `0` in a session that was never restored. A restore reopens the window at
+   * the tick it resumes from, because the per-prisoner counts cannot survive
+   * being re-indexed into another save's population and an aggregate that
+   * outlived its own breakdown would be worse than either.
+   *
+   * **It describes the substitution counters and not the four above it**, whose
+   * behaviour across a restore is unchanged and deliberately so: issue #435
+   * keeps `unmetDemandCycles` meaning exactly what it means today, and
+   * redefining when it starts counting would be a second change hidden inside
+   * this one.
+   */
+  readonly substitutionsCountedSinceTick: number;
 }
 
 /** Maps a prisoner's classification group + risk tier to the `RouteContext` #21/#22's navigation uses to gate doors. */
@@ -150,6 +209,9 @@ export class ActionSystem implements SystemRegistration {
   private actionsStarted = 0;
   private actionsCompleted = 0;
   private routeFailures = 0;
+  private substitutionCycles = 0;
+  private contendedSubstitutionCycles = 0;
+  private substitutionsCountedSinceTick = 0;
   private requestSequence = 0;
 
   public constructor(
@@ -159,6 +221,13 @@ export class ActionSystem implements SystemRegistration {
     private readonly needs: NeedsComponent,
     private readonly currentAction: CurrentActionComponent,
     private readonly position: PositionComponent,
+    /**
+     * Where the per-prisoner half of the substitution count is written
+     * (issue #435). This system is the only writer: it is the only place that
+     * knows a prisoner's first choice was refused, because the ranked walk that
+     * discovers it lives in `beginNextAction`.
+     */
+    private readonly substitutions: SubstitutionRecordComponent,
     private readonly coldState: PrisonerColdState,
     private readonly roomInstances: RoomInstanceRegistry,
     private readonly navigation: NavigationSystem,
@@ -202,7 +271,31 @@ export class ActionSystem implements SystemRegistration {
       actionsStarted: this.actionsStarted,
       actionsCompleted: this.actionsCompleted,
       routeFailures: this.routeFailures,
+      substitutionCycles: this.substitutionCycles,
+      contendedSubstitutionCycles: this.contendedSubstitutionCycles,
+      substitutionsCountedSinceTick: this.substitutionsCountedSinceTick,
     };
+  }
+
+  /**
+   * Starts the substitution counters again from `atTick`, dropping every count
+   * this system and its per-prisoner record hold.
+   *
+   * Called by `PrisonerOperationsRuntime.loadSnapshot` and by nothing else. The
+   * aggregate is cleared alongside the breakdown deliberately: a total that
+   * outlived the per-prisoner counts it is the sum of would be a number with no
+   * way to read it, and keeping the two on one window is what makes
+   * `sum(per-prisoner) <= substitutionCycles` a statement about released
+   * prisoners rather than about a restore.
+   *
+   * The four older counters are left alone, because issue #435's scope is
+   * adding a number and not redefining `unmetDemandCycles`.
+   */
+  public reopenSubstitutionWindow(atTick: number): void {
+    this.substitutions.clear();
+    this.substitutionCycles = 0;
+    this.contendedSubstitutionCycles = 0;
+    this.substitutionsCountedSinceTick = atTick;
   }
 
   /**
@@ -760,8 +853,16 @@ export class ActionSystem implements SystemRegistration {
     const block = resolveActiveRegimeBlock(schedule, tick);
     const legalActions = DEFAULT_ACTIONS.filter((action) => isActionCategoryAllowed(action, block.allowedCategories));
     const candidates = rankActions(this.needs, index, legalActions);
-    const urgency = needUrgency(this.needs, index, candidates, (action) => this.prisonProvides(entityId, action));
-    return { entityId, index, classificationGroupId, candidates, urgency };
+    // `needUrgency` split in two (issue #435), so that one walk over
+    // `prisonProvides` answers both of the questions that depend on it: how
+    // badly this prisoner wants what they are about to ask for, which orders
+    // the scan, and where the prison's own answer starts in their ranking,
+    // which is what tells a substitution's cause from its fact. Asking twice
+    // would double a `RoomInstanceRegistry.hasPlaceForUse` per unprovidable
+    // candidate per prisoner per cycle for a number the first walk already knew.
+    const providedIndex = firstProvidedCandidateIndex(candidates, (action) => this.prisonProvides(entityId, action));
+    const urgency = urgencyOfProvidedCandidate(this.needs, index, candidates, providedIndex);
+    return { entityId, index, classificationGroupId, candidates, providedIndex, urgency };
   }
 
   /**
@@ -818,15 +919,26 @@ export class ActionSystem implements SystemRegistration {
    * housed population it is therefore 0, and the one thing it still distinguishes
    * is **a prisoner with no accommodation**, who exhausts the walk because every
    * `own-accommodation` terminal resolves by an instance id they do not have.
-   * ADR 0041 open question 2 asks whether it should instead count a prisoner who
-   * got a *worse* action than the one they wanted; that is a different number and
-   * is not decided here (#435).
+   *
+   * **ADR 0041 open question 2 asked whether it should instead count a prisoner
+   * who got a *worse* action than the one they wanted. It should not, and this
+   * paragraph said the question was undecided until issue #435 answered it:** a
+   * second number counts that, `recordSubstitution` below is where, and
+   * redefining this one would have hidden both. The sentence is marked rather
+   * than deleted because *why* the meaning was held still through ADR 0041's
+   * behaviour change is the argument for adding a counter instead of
+   * repurposing one.
    */
   private beginNextAction(plan: PlannedSelection, tick: number): void {
     const { entityId, index, classificationGroupId } = plan;
     const currentTile: TilePosition = { x: tileCoordinate(this.position.tileX[index]!), y: tileCoordinate(this.position.tileY[index]!) };
 
-    for (const chosen of plan.candidates) {
+    // Indexed rather than `entries()`, for the reason
+    // `firstProvidedCandidateIndex` gives: the rank is what tells a
+    // substitution from a first choice, and a counter supplies it without
+    // allocating a tuple per candidate on a per-prisoner, per-cycle path.
+    for (let rank = 0; rank < plan.candidates.length; rank += 1) {
+      const chosen = plan.candidates[rank]!;
       const target = this.resolveTargetInstance(entityId, chosen);
       if (target === undefined) continue;
 
@@ -839,6 +951,7 @@ export class ActionSystem implements SystemRegistration {
       const arrivesImmediately = sameTile(currentTile, target.anchorTile);
       if (arrivesImmediately && !this.claimUseIfNeeded(entityId, chosen, target.instanceId)) continue;
 
+      this.recordSubstitution(index, rank, plan.providedIndex);
       this.currentAction.actionIndex[index] = actionIndexOf(chosen.id);
       this.coldState.setActionTarget(entityId, target.instanceId);
       this.actionsStarted += 1;
@@ -860,6 +973,67 @@ export class ActionSystem implements SystemRegistration {
     }
 
     this.unmetDemandCycles += 1;
+  }
+
+  /**
+   * Counts one prisoner who was **served worse than they asked for**, on the
+   * one line that knows it -- issue #435,
+   * [ADR 0041](../../../docs/adr/0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md)
+   * open question 2, which asked whether `unmetDemandCycles` should start
+   * counting this and is answered *no, a second number should*.
+   *
+   * ## What a substitution is
+   *
+   * `rank` is the position in `plan.candidates` of the action that is about to
+   * begin, and `candidates[0]` is by definition the one this prisoner wanted
+   * most: `rankActions` is a total order over their own needs with no
+   * availability term in it, so the ranking says what they *want* and this walk
+   * says what they can *have*. `rank > 0` is therefore exactly *"they are
+   * starting something they rated below their first choice"*, and `rank === 0`
+   * is a prisoner who got what they asked for.
+   *
+   * **It is counted here rather than at the `continue` above**, one statement
+   * after the last thing that can refuse, for the same reason `actionsStarted`
+   * is counted here: a candidate that failed to resolve or was refused a seat
+   * has written nothing, and a cycle that ends with nothing started is
+   * `unmetDemandCycles`' event and not this one. The two are disjoint by
+   * construction -- every path that increments one returns without reaching the
+   * other -- which is what lets a reader subtract.
+   *
+   * ## Contended, or never built
+   *
+   * `providedIndex` is where the prison's own answer starts (see
+   * `PlannedSelection`), and the comparison against `rank` is the whole of the
+   * classification:
+   *
+   * - `providedIndex < rank` -- at least one candidate ranked above this one is
+   *   an action the prison **provides somewhere** and that this prisoner still
+   *   did not get. Nothing else can refuse a providable candidate: for a
+   *   `room-catalog-id` target the two questions differ only by the use claims
+   *   (`hasPlaceForUse` against `findAvailableForUse`, ADR 0062 decision 3), and
+   *   an `own-accommodation` target resolves by instance id and asks the same
+   *   question both times. So the refusal was somebody else being in the room.
+   * - `providedIndex === rank` -- everything above it is a want with nowhere in
+   *   this prison to satisfy it. No canteen has been built; the shower room was
+   *   never zoned.
+   *
+   * `providedIndex > rank` cannot happen and is not defended against: the
+   * candidate at `rank` resolved a target, so the prison provides it, so the
+   * first providable candidate is at or above it.
+   *
+   * A note on double counting, because there is one place it looks like it:
+   * `arrive` counts an `unmetDemandCycles` for a prisoner turned away at the
+   * door and *then* re-plans through this method, which may count a
+   * substitution for the same prisoner on the same tick. That is two events --
+   * a wasted journey and a worse meal -- and collapsing them would lose the
+   * first, which `unmetDemandCycles` has counted since before ADR 0041.
+   */
+  private recordSubstitution(index: number, rank: number, providedIndex: number): void {
+    if (rank === 0) return;
+    const contended = providedIndex < rank;
+    this.substitutions.record(index, contended);
+    this.substitutionCycles += 1;
+    if (contended) this.contendedSubstitutionCycles += 1;
   }
 
   /**

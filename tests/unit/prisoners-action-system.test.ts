@@ -8,7 +8,15 @@ import { NavigationSystem } from '../../src/simulation/navigation/navigation-sys
 import { deriveXoshiroState } from '../../src/simulation/rng/seed';
 import { NamedRngStreams } from '../../src/simulation/rng/streams';
 import { ActionSystem } from '../../src/simulation/prisoners/action-system';
-import { ACTION_PHASES, CurrentActionComponent, PositionComponent, PrisonerColdState, PrisonerRecordComponent, intakeStageIndex } from '../../src/simulation/prisoners/components';
+import {
+  ACTION_PHASES,
+  CurrentActionComponent,
+  PositionComponent,
+  PrisonerColdState,
+  PrisonerRecordComponent,
+  SubstitutionRecordComponent,
+  intakeStageIndex,
+} from '../../src/simulation/prisoners/components';
 import { DEFAULT_ACTIONS } from '../../src/simulation/prisoners/actions';
 import { NEED_MAX, NEED_MAX_SCALED, NeedsComponent, type NeedId } from '../../src/simulation/prisoners/needs';
 import { DEFAULT_REGIME_SCHEDULES } from '../../src/simulation/prisoners/regime';
@@ -77,6 +85,7 @@ describe('ActionSystem: end-to-end selection, travel and performance', () => {
     const needs = new NeedsComponent(capacity);
     const currentAction = new CurrentActionComponent(capacity);
     const position = new PositionComponent(capacity);
+    const substitutions = new SubstitutionRecordComponent(capacity);
     const coldState = new PrisonerColdState();
     const roomInstances = new RoomInstanceRegistry();
 
@@ -90,7 +99,7 @@ describe('ActionSystem: end-to-end selection, travel and performance', () => {
 
     const kernel = makeKernel();
     const locomotion = registerLocomotion(kernel, position);
-    const actionSystem = new ActionSystem(store, query, records, needs, currentAction, position, coldState, roomInstances, navigation, locomotion, DEFAULT_REGIME_SCHEDULES, () => ({
+    const actionSystem = new ActionSystem(store, query, records, needs, currentAction, position, substitutions, coldState, roomInstances, navigation, locomotion, DEFAULT_REGIME_SCHEDULES, () => ({
       role: 'prisoner', securityClearance: 0, permissions: [],
     }));
 
@@ -148,6 +157,7 @@ describe('a prisoner whose best action cannot resolve a target falls back within
     const needs = new NeedsComponent(capacity);
     const currentAction = new CurrentActionComponent(capacity);
     const position = new PositionComponent(capacity);
+    const substitutions = new SubstitutionRecordComponent(capacity);
     const coldState = new PrisonerColdState();
     const roomInstances = new RoomInstanceRegistry();
 
@@ -169,7 +179,7 @@ describe('a prisoner whose best action cannot resolve a target falls back within
 
     const kernel = new Kernel(MEAL_BLOCK_START_TICK, 0, new NamedRngStreams([{ name: RNG_STREAM, state: deriveXoshiroState(1, RNG_STREAM) }]));
     const locomotion = registerLocomotion(kernel, position);
-    const actionSystem = new ActionSystem(store, query, records, needs, currentAction, position, coldState, roomInstances, navigation, locomotion, DEFAULT_REGIME_SCHEDULES);
+    const actionSystem = new ActionSystem(store, query, records, needs, currentAction, position, substitutions, coldState, roomInstances, navigation, locomotion, DEFAULT_REGIME_SCHEDULES);
     kernel.registerSystem(navigation);
     kernel.registerSystem(actionSystem);
 

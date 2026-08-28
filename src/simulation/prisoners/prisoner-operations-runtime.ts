@@ -9,7 +9,7 @@ import { ActionSystem, type PrisonerRouteContextResolver } from './action-system
 import type { ClassificationInput } from './classification';
 import { ClassificationReviewSystem } from './classification-review-system';
 import type { DisciplinaryEvidenceSource } from './disciplinary-record';
-import { ACTION_PHASES, CurrentActionComponent, PositionComponent, PrisonerColdState, PrisonerRecordComponent } from './components';
+import { ACTION_PHASES, CurrentActionComponent, PositionComponent, PrisonerColdState, PrisonerRecordComponent, SubstitutionRecordComponent } from './components';
 import { PrisonerDischargeSystem } from './discharge-system';
 import { DEFAULT_ACCOMMODATION_POLICY, type AccommodationPolicy, IntakeSystem, type IntakeContrabandIntroducer } from './intake-system';
 import {
@@ -141,6 +141,17 @@ export class PrisonerOperationsRuntime {
   public readonly currentAction: CurrentActionComponent;
   public readonly position: PositionComponent;
   /**
+   * How often each prisoner has been served worse than they asked for
+   * (issue #435). Written by `actionSystem`, which is the only thing that
+   * knows a first choice was refused; public because reading it is the whole
+   * point of it existing, and because it is the per-prisoner half of
+   * `ActionMetrics`' two substitution totals.
+   *
+   * No save carries it -- see `SubstitutionRecordComponent` for why the
+   * counters are cleared by a restore rather than migrated through one.
+   */
+  public readonly substitutions: SubstitutionRecordComponent;
+  /**
    * Where a walking prisoner is *within* the tile `position` holds for it
    * ([ADR 0059](../../../docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md)).
    *
@@ -194,6 +205,7 @@ export class PrisonerOperationsRuntime {
     this.needs = new NeedsComponent(options.capacity);
     this.currentAction = new CurrentActionComponent(options.capacity);
     this.position = new PositionComponent(options.capacity);
+    this.substitutions = new SubstitutionRecordComponent(options.capacity);
 
     this.accommodationPolicy = options.accommodationPolicy ?? DEFAULT_ACCOMMODATION_POLICY;
     this.intakeSystem = new IntakeSystem(
@@ -223,6 +235,7 @@ export class PrisonerOperationsRuntime {
       this.needs,
       this.currentAction,
       this.position,
+      this.substitutions,
       this.coldState,
       this.roomInstances,
       options.navigation,
@@ -308,7 +321,16 @@ export class PrisonerOperationsRuntime {
     };
   }
 
-  public loadSnapshot(snapshot: ReturnType<typeof this.getSnapshot>): void {
+  /**
+   * `atTick` is the kernel tick the restored session resumes at, and its only
+   * use is stamping `ActionMetrics.substitutionsCountedSinceTick` -- nothing
+   * about the restore itself depends on it, which is why it defaults, in the
+   * same shape and for the same reason `releasePrisoner` above takes an
+   * `atTick = 0`. `restoreSessionSystems` passes the real one; a fixture that
+   * round-trips a snapshot without one gets a window that says it opened at 0,
+   * which is what a fixture with no clock means.
+   */
+  public loadSnapshot(snapshot: ReturnType<typeof this.getSnapshot>, atTick = 0): void {
     this.entityStore.loadSnapshot(snapshot.entityStore);
     this.records.loadSnapshot(snapshot.records);
     this.needs.loadSnapshot(snapshot.needs);
@@ -358,6 +380,16 @@ export class PrisonerOperationsRuntime {
     // performing, and cannot reinstate a claim for a journey that no longer
     // exists.
     this.actionSystem.reinstateUseClaims();
+
+    // **After the components, because it clears rather than reads them.** A
+    // save carries no substitution history (issue #435 puts a save-schema
+    // change out of scope, and `SubstitutionRecordComponent` says why that is
+    // the right answer rather than only the permitted one), so a restore opens
+    // a fresh counting window instead of resuming one. Left alone, the counts
+    // this runtime happened to be holding would survive into a population
+    // re-indexed from somebody else's save -- #111's shape, one component
+    // further out.
+    this.actionSystem.reopenSubstitutionWindow(atTick);
   }
 
   /**
@@ -435,6 +467,7 @@ export class PrisonerOperationsRuntime {
     this.needs.reset(index);
     this.currentAction.reset(index);
     this.position.reset(index);
+    this.substitutions.reset(index);
     this.bitset.add(index, PRISONER_COMPONENT_ID);
     this.position.tileX[index] = originTile.x;
     this.position.tileY[index] = originTile.y;

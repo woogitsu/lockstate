@@ -1126,7 +1126,7 @@ original `'open'`.
 ### Prisoner components: allocated prefix, not capacity, and not RLE
 
 `DEFAULT_PRISONER_CAPACITY` is 5,000 slots and there are eighteen per-prisoner
-arrays. Writing them at capacity would cost ~298 KiB (305,332 bytes) in every
+arrays *in the payload*. Writing them at capacity would cost ~298 KiB (305,332 bytes) in every
 save regardless of population — the same mistake #50 removed from `entities`,
 at eighteen times the size. That is measured, not derived: the encoded arrays
 are `readonly number[]`, so the cost is digit widths rather than element sizes,
@@ -1155,10 +1155,15 @@ allocated and hold exactly their component-constructor defaults, which
 `decodePrisonerComponents` reproduces — so the restore is exact either way.
 
 Until #111 that residue was also future behaviour: `admitPrisoner` reset five
-of the eighteen arrays, so recycling a freed index handed the next prisoner
-the previous one's needs, classification and action state. It now resets all
-eighteen, so a dead slot's contents can no longer become a live prisoner's
-starting state. Whether the payload could therefore shrink to the live indices
+of the then eighteen arrays, so recycling a freed index handed the next
+prisoner the previous one's needs, classification and action state. It now
+resets **all twenty**, so a dead slot's contents can no longer become a live
+prisoner's starting state. **This paragraph read "all eighteen", and since
+#435 the payload's eighteen and the runtime's twenty are two different sets**:
+`SubstitutionRecordComponent` holds two per-prisoner counters that
+`admitPrisoner` resets and no save carries, because they are diagnostics and
+nothing reads them back into a decision. The count above is the payload's; this
+one is the reset's. Whether the payload could therefore shrink to the live indices
 only is a save-format change and a decision of its own; it has not been taken,
 and writing the prefix is correct either way.
 
