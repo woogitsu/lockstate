@@ -189,6 +189,19 @@ describe('simulation worker protocol', () => {
             // that claimed a rounder figure would be asserting a state no tick
             // in this envelope could produce.
             stateIncomeAccruedTodayMinorUnits: 4,
+            // Five guards on this payload's own roster at the catalogue's
+            // 80-a-day guard band: 5 x 80 = 400 (ADR 0042 step 3). Chosen to
+            // agree with `staff: 5` above rather than picked, for the reason
+            // the accommodation comment gives -- a figure unrelated to the rest
+            // of the envelope could not tell a decoder reading the wrong field
+            // apart from one reading the right one.
+            dailyWageBillMinorUnits: 400,
+            // A prison paying its way owes nothing, which is the reading every
+            // other field in this envelope describes: 24,920 in the treasury
+            // and no shortfall anywhere. The non-zero case is measured against
+            // a real runtime in tests/unit/economy-payroll.test.ts, not
+            // asserted from a hand-written envelope.
+            unpaidWagesMinorUnits: 0,
           },
         },
       },
@@ -400,6 +413,16 @@ describe('simulation worker protocol', () => {
       // (#29 added this field to the projection). Same figure as the fixture
       // at the top of this file, for the same reason it is that figure there.
       stateIncomeAccruedTodayMinorUnits: 4,
+      // The same reason a fourth and a fifth time, and the reason this local
+      // copy exists at all: ADR 0042 step 3 added two counts to the projection,
+      // and until they were added here every payload below was invalid for two
+      // *missing counts* -- so the `replyTo` case in particular passed while
+      // proving nothing about `replyTo`. That is the failure the paragraph
+      // above records #96 causing once already, repeated by #29 and repeated
+      // again here; the fixture is a copy, so it has to be brought forward by
+      // hand each time. Same figures as the fixture at the top of this file.
+      dailyWageBillMinorUnits: 400,
+      unpaidWagesMinorUnits: 0,
     };
 
     // Nothing ever requests this message, so ADR 0003 decision 2 says it must
@@ -482,6 +505,11 @@ describe('simulation worker protocol', () => {
       contrabandDiscovered: 0,
       treasuryMinorUnits: 25_000,
       stateIncomeAccruedTodayMinorUnits: 0,
+      // A session that has hired nobody: the whole of this fixture is a prison
+      // at tick 0 with its opening balance untouched, so both payroll counts
+      // (ADR 0042 step 3) are 0 for the same reason every count above is.
+      dailyWageBillMinorUnits: 0,
+      unpaidWagesMinorUnits: 0,
     };
     const withRefusal = (refusal: unknown): unknown => ({
       ...eventEnvelope,

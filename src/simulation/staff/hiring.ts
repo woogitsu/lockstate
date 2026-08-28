@@ -2,6 +2,7 @@ import type { ContentRegistry } from '../../content/registry';
 import type { StaffRoleDefinition } from '../../content/staff-role-catalog';
 import { defaultStaffRoleRegistry } from '../../content/staff-role-catalog';
 import type { Treasury } from '../economy/treasury';
+import { staffDailyWageForRole, staffDailyWageMinorUnits } from '../economy/wages';
 import type { EntityId } from '../entity/entity-store';
 import type { GuardRoster } from '../security/guard-roster';
 import type { TilePosition } from '../world/coordinates';
@@ -41,13 +42,28 @@ import type { TilePosition } from '../world/coordinates';
  * that what the field holds is content owned by issue #29, which the
  * catalogue's own comment on `wageBand` says as well.
  *
- * It is an engagement charge and **not a payroll**: it does not recur, it
- * creates no schedule, and it is therefore not
- * [ADR 0017](../../../docs/adr/0017-money-primary-resource-model.md) decision
- * 3's standing cost. That matters beyond tidiness -- decision 8's insolvency
- * ladder is unreachable precisely because no charge a player cannot decline
- * exists, and `Treasury.spend` refusing rather than overdrawing keeps it that
- * way. Nothing here can produce a negative balance.
+ * It is an engagement charge **beside** the payroll rather than instead of it,
+ * and that sentence used to read the other way. It said: *"It is an engagement
+ * charge and **not a payroll**: it does not recur, it creates no schedule, and
+ * it is therefore not [ADR 0017] decision 3's standing cost. That matters
+ * beyond tidiness -- decision 8's insolvency ladder is unreachable precisely
+ * because no charge a player cannot decline exists."* The last clause was true
+ * when it was written and stopped being true with
+ * `src/simulation/economy/payroll.ts`, which charges the same authored figure
+ * at every in-game day boundary the role is on the roster for. The charge here
+ * has not changed and neither has ADR 0025 decision 2; what changed is the
+ * world around it.
+ *
+ * **The consequence worth naming rather than hiding:** a hire pays one day's
+ * wage up front and the day boundary bills the same day again, so a guard
+ * engaged at any point during a day costs two days' wage for that day. The
+ * alternative is a per-guard hire tick in the save so payroll can skip a
+ * same-day hire, which is a persisted field bought for a rounding difference
+ * of one day's wage on a hire that is already a standing cost.
+ *
+ * Nothing here can produce a negative balance, and neither can payroll: it
+ * pays what the treasury holds and carries the rest as arrears, for reasons
+ * `payroll.ts` gives at length.
  */
 
 /**
@@ -85,7 +101,7 @@ export function staffHireCostMinorUnits(
   staffRoleId: string,
   staffRoles: ContentRegistry<StaffRoleDefinition> = defaultStaffRoleRegistry,
 ): number | undefined {
-  return staffRoles.getById(staffRoleId)?.wageBand.minPerDay;
+  return staffDailyWageMinorUnits(staffRoleId, staffRoles);
 }
 
 export class StaffHiringService {
@@ -132,7 +148,7 @@ export class StaffHiringService {
       return { kind: 'refused', reason: 'roster-full' };
     }
 
-    const paidMinorUnits = role.wageBand.minPerDay;
+    const paidMinorUnits = staffDailyWageForRole(role);
     if (!this.treasury.spend(paidMinorUnits)) return { kind: 'refused', reason: 'insufficient-funds' };
 
     return { kind: 'hired', entityId: this.roster.hire(role.id, request.originTile), paidMinorUnits };

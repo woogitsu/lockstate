@@ -88,6 +88,20 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
   binaries the scripts wrap:
   `node /workspace/lockstate/node_modules/typescript/bin/tsc -b --pretty false`,
   `node /workspace/lockstate/node_modules/vitest/vitest.mjs run <files>`.
+  - **`git worktree add` does not create that symlink.** It creates no
+    `node_modules` at all, and every import then fails to resolve in a way that
+    looks like the branch is broken. Make it yourself, first thing:
+    `ln -sfn /workspace/lockstate/node_modules <worktree>/node_modules`.
+  - The same pre-run check used to break the **browser** suite from a worktree,
+    invisibly. `tests/browser/playwright.config.ts` started its web server with
+    `pnpm exec vite`; pnpm shelled out to `pnpm install`; the install refused;
+    and Playwright reported exactly one line — `Process from config.webServer
+    was not able to start. Exit code: 1` — with every spec failing under it,
+    which reads like a broken harness. Fixed on 2026-08-28: that config now
+    resolves Vite's bin from its own `package.json` and runs it on the current
+    `process.execPath`, so no package manager is in the path. If you are on a
+    branch cut before that change, `pnpm --config.verify-deps-before-run=false
+    exec vite …` is the escape hatch.
 - **`vitest.config.ts` sets `environment: 'node'` and there is no jsdom.** Code
   that touches `document` is therefore unreachable from `pnpm test` *at all* —
   not merely untested. A mutation there survives because nothing could observe
@@ -97,8 +111,12 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
   text in a fresh container, so `pnpm test:browser` fails at atlas decode by
   design. `bash scripts/provision-git-lfs.sh && git lfs pull` makes it runnable,
   and an agent that must verify a browser change should do that rather than
-  push a guess. A worktree does not carry the blobs; work in the main checkout
-  when the browser suite is the thing being verified.
+  push a guess. A worktree does not carry the blobs **on checkout** — but
+  running `git lfs pull` inside the worktree fetches them there, verified on
+  2026-08-28. The advice this bullet used to give, "work in the main checkout
+  when the browser suite is the thing being verified", was therefore stronger
+  than the facts required, and it is withdrawn: verify on the branch you are
+  actually changing.
 - **Do not run a suite while another agent is running one.** Timing-sensitive
   tests flake under contention and this repository has measured it: identical
   clean trees gave 9, 5 and 5 failures, every one a `Test timed out in 5000ms`.

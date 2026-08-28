@@ -335,6 +335,23 @@ const INJECTED_STATUS_COUNTS = {
       // is dropped by `decodeWorkerToMainMessage` and every assertion below it
       // fails on a strip that was never updated at all.
       stateIncomeAccruedTodayMinorUnits: 4_631,
+      // The fourteenth and fifteenth counts (ADR 0042 step 3), and required
+      // for the third time for the same reason the two notes above give: the
+      // counts payload is `.strict()`, so a fixture missing either field is
+      // dropped whole by `decodeWorkerToMainMessage` and every assertion after
+      // the injection fails on a strip that was never updated. That is exactly
+      // how this test failed when payroll landed -- `[data-metric="prisoners"]`
+      // stuck at `0`, which reads like a broken HUD and is a rejected message.
+      //
+      // Chosen so neither could be mistaken for something else in the payload:
+      // 480 is not derivable from the six staff (`6 x 80` is a coincidence this
+      // fixture would rather not invite, so it is not 480 for that reason --
+      // the roster behind an injected payload does not exist), and 1,700 is not
+      // a share of `treasuryMinorUnits`. Both are deliberately non-zero:
+      // nothing renders them yet, so a zero here would be indistinguishable
+      // from the field being absent again.
+      dailyWageBillMinorUnits: 620,
+      unpaidWagesMinorUnits: 1_700,
     },
   },
 } as const;
