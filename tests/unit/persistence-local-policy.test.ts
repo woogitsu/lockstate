@@ -3,6 +3,10 @@ import {
   applyConfirmedRetention,
   applyGenerationRetention,
   applyProvisionalRetention,
+  isQuarantinedGenerationId,
+  quarantinedGenerationId,
+  readableGenerationIds,
+  releasedGenerationId,
 } from '../../src/persistence/local/generation-policy';
 import { classifyStoreError } from '../../src/persistence/local/errors';
 
@@ -83,6 +87,81 @@ describe('applyConfirmedRetention', () => {
 
   it('rejects a non-positive keep count', () => {
     expect(() => applyConfirmedRetention(['a'], 0)).toThrow(RangeError);
+  });
+});
+
+/**
+ * #432. A quarantined generation is one this build has refused as
+ * `unsupported-by-this-build` and kept for the build that can read it. Every
+ * rule in `generation-policy.ts` has to leave it alone, and the reason it has
+ * to is arithmetic: the window evicts from the oldest end, so a generation
+ * that merely escaped deletion would be gone after `keep` further autosaves --
+ * 90 seconds at the 30-second cadence, against a fix measured in weeks.
+ *
+ * The literals below are the marked form spelled out rather than produced by
+ * `quarantinedGenerationId`, so these assertions do not take the mark's shape
+ * from the code they are checking.
+ */
+describe('a quarantined generation sits outside every retention rule', () => {
+  it('marks and unmarks an id, and recognises the marked form', () => {
+    expect(quarantinedGenerationId('gen-7')).toBe('!unreadable!gen-7');
+    expect(isQuarantinedGenerationId('!unreadable!gen-7')).toBe(true);
+    expect(isQuarantinedGenerationId('gen-7')).toBe(false);
+    expect(releasedGenerationId('!unreadable!gen-7')).toBe('gen-7');
+    // Idempotent in both directions: quarantining twice is quarantining once,
+    // and releasing something that was never marked returns it unchanged.
+    expect(quarantinedGenerationId('!unreadable!gen-7')).toBe('!unreadable!gen-7');
+    expect(releasedGenerationId('gen-7')).toBe('gen-7');
+  });
+
+  it('reports the generations this build can still offer, in window order', () => {
+    expect(readableGenerationIds(['a', '!unreadable!b', 'c'])).toEqual(['a', 'c']);
+  });
+
+  it('does not count a quarantined generation against the window, so the player keeps their full three', () => {
+    expect(applyGenerationRetention(['a', '!unreadable!b', 'c'], 'd', 3)).toEqual({
+      generationIds: ['a', '!unreadable!b', 'c', 'd'],
+      toDelete: [],
+    });
+  });
+
+  it('evicts the oldest readable generation and never the quarantined one, however full the window', () => {
+    expect(applyGenerationRetention(['a', '!unreadable!b', 'c', 'd'], 'e', 3)).toEqual({
+      generationIds: ['!unreadable!b', 'c', 'd', 'e'],
+      toDelete: ['a'],
+    });
+    // And it is still there once the window has turned over completely: `a`
+    // and `c` are both gone before it gives up a single slot.
+    expect(applyGenerationRetention(['!unreadable!b', 'c', 'd', 'e'], 'f', 3)).toEqual({
+      generationIds: ['!unreadable!b', 'd', 'e', 'f'],
+      toDelete: ['c'],
+    });
+  });
+
+  it('is not the spare slot an import may take, and does not make the window look over budget', () => {
+    // Three readable plus a quarantined one is a window *within* budget, so
+    // the import takes the spare slot and evicts nothing.
+    expect(applyProvisionalRetention(['a', '!unreadable!b', 'c', 'd'], 'e', 3)).toEqual({
+      generationIds: ['a', '!unreadable!b', 'c', 'd', 'e'],
+      toDelete: [],
+    });
+    // A second import reuses the spare slot -- the newest *readable*
+    // generation -- rather than the quarantined one above it.
+    expect(applyProvisionalRetention(['a', '!unreadable!b', 'c', 'd', 'e'], 'f', 3)).toEqual({
+      generationIds: ['a', '!unreadable!b', 'c', 'd', 'f'],
+      toDelete: ['e'],
+    });
+  });
+
+  it('is not what a confirmation closes the window on', () => {
+    expect(applyConfirmedRetention(['a', '!unreadable!b', 'c', 'd'], 3)).toEqual({
+      generationIds: ['a', '!unreadable!b', 'c', 'd'],
+      toDelete: [],
+    });
+    expect(applyConfirmedRetention(['a', '!unreadable!b', 'c', 'd', 'e'], 3)).toEqual({
+      generationIds: ['!unreadable!b', 'c', 'd', 'e'],
+      toDelete: ['a'],
+    });
   });
 });
 

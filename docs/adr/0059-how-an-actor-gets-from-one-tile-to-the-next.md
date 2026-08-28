@@ -463,6 +463,51 @@ send, which is worth having and is not this decision's to take.
 population**, which is the property `LocomotionStore` was shaped for: 1,667
 walkers cost 0.476 ms a tick at 20 Hz, or about 1% of a second.
 
+### 2026-08-28: the table now has a standing gate, in counted work rather than in milliseconds
+
+Added under #410, whose subject is benchmarks that do not import the code they
+are named after. Every figure above is a duration, and a duration cannot gate
+anything here: `docs/BENCHMARKING.md`'s CI policy refuses a wall-clock threshold
+on a shared runner, and the result contract is stricter still — the verifier
+deep-equals a scenario's metrics against a fresh run, so a timing could not even
+be recorded there. So `actors.production.render-publication`
+(`benchmarks/scenarios/actor-render-publication.mjs`) drives this whole path —
+real `EntityStore`, real `PositionComponent`, real `LocomotionStore`, real
+encoder, real decoder, real `actorsFromDelta` — and bounds **what makes those
+milliseconds what they are**:
+
+- `payloadByteLength` is pinned at 10,016 and 100,016, which is this table's own
+  payload row, and `payloadBytesPerActor` at the 20 bytes the whole main-thread
+  figure is linear in;
+- `isIndexAliveCallsPerSlot` is pinned at exactly 2, which is
+  `render-actors-keyframe.ts`'s "Two passes, deliberately" made mechanical, and
+  `locomotionReadCallsPerLiveActor` at exactly 1.
+
+**The two-thirds claim above is now measured and it holds.** The scenario reports
+`changedOnlyByteShare` — `renderActorsByteLength` over the actors whose position
+moved this publication, against the same production function over the whole live
+population — and it comes back **0.3351 at 500 actors and 0.3335 at 5,000**. A
+changed-only encoding would send a third of the keyframe and save two thirds, at
+this decision's walking fraction. It is reported rather than bounded, because
+the encoding it prices does not exist: ADR 0040 named it and did not build it.
+
+**What the gate deliberately does not do is re-price the four rows, and an
+independent measurement is the reason.** Timed in process on the same container
+on 2026-08-28, minimum of fifty samples at 5,000 actors with 1,667 walking:
+`LocomotionStore.advance` **0.087 ms** on a tick where no walker crosses a tile
+and **0.150 ms** on one where all of them do, against 0.476 above;
+`encodeRenderActorsKeyframe` **0.510 ms** against 0.357; `decodeRenderActorsPayload`
+**0.045 ms** against 0.068; `actorsFromDelta` **0.216 ms** against 0.601. Three
+of the four disagree by 1.5–3×, and they disagree in *both* directions, so this
+is not one machine being uniformly faster. The two fixtures differ — the
+benchmark restarts its walks every publication and its non-walkers have never
+walked, so they publish no facing — and neither run is the authority over the
+other. **That is the finding, not a footnote to it:** two honest in-process
+measurements of the same four functions on the same container differ by up to
+threefold, which is precisely why the counted work is what CI holds and this
+table is evidence a human reads. Re-pricing the rows needs a measurement
+designed for it, and is not claimed here.
+
 ## What would change my mind
 
 - **A day length decision.** If `DAY_LENGTH_TICKS` grows to something a player

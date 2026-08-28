@@ -1,15 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
-import { SnapshotRestoreFaultError } from '../../src/persistence/session/runtime-host';
+import { SnapshotRestoreFaultError, type SessionRuntimeHost } from '../../src/persistence/session/runtime-host';
 import { MemoryLocalSaveStore } from '../../src/persistence/local/memory-store';
 import { PrisonSaveRepository } from '../../src/persistence/local/repository';
-import { SessionController } from '../../src/persistence/session/session-controller';
+import { SessionController, type SessionLoadOutcome } from '../../src/persistence/session/session-controller';
 import { WorkerSessionHost } from '../../src/persistence/session/worker-session-host';
 import { computeSaveChecksum } from '../../src/persistence/checksum';
 import { createSaveEnvelope, SAVE_SCHEMA_VERSION, type SaveEnvelope } from '../../src/persistence/save-schema';
 import type { SimulationClient } from '../../src/simulation/worker/client';
 import { LoopbackWorker } from '../helpers/loopback-worker';
 import { createNewSimulationRuntime, DEFAULT_PRISONER_CAPACITY } from '../../src/simulation/runtime/new-session';
-import { captureSessionSnapshot } from '../../src/simulation/runtime/restore-session';
+import { captureSessionSnapshot, type SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
 import { decodeEntityStoreSnapshot, type EncodedEntityStoreSnapshot } from '../../src/simulation/entity/entity-codec';
 import { EntityStore } from '../../src/simulation/entity/entity-store';
 import v1InProgressFixture from '../fixtures/persistence/save-v1-in-progress.json';
@@ -252,6 +252,39 @@ async function buildFixture(): Promise<{
   const host = new WorkerSessionHost(worker as unknown as SimulationClient);
   const controller = new SessionController(repository, host, { gameVersion: 'test-version' });
   return { controller, repository, store, worker };
+}
+
+/**
+ * A build whose restore path accepts what this one refuses.
+ *
+ * Used by exactly one test, for the one thing a single process cannot supply:
+ * a *second build*. It fakes no verdict and injects no failure -- it stands in
+ * for the build that wrote the save, whose entity store is wide enough for its
+ * ledger, and it records the bundle it was handed so the test can assert which
+ * generation the repository offered rather than that a load returned `ok`.
+ *
+ * Deliberately not an `InProcessSessionHost` subclass: that host runs *this*
+ * build's `restoreSimulationRuntime`, so it refuses the same payload for the
+ * same reason and could stand in for nothing.
+ */
+class AcceptingHost implements SessionRuntimeHost {
+  public received: SessionSnapshotBundle | undefined;
+
+  public async startNew(): Promise<void> {
+    throw new Error('This host exists to restore a snapshot, not to start a new prison.');
+  }
+
+  public async startFromSnapshot(bundle: SessionSnapshotBundle): Promise<void> {
+    this.received = bundle;
+  }
+
+  public async capture(): Promise<SessionSnapshotBundle> {
+    throw new Error('This host holds no simulation to capture.');
+  }
+
+  public async stop(): Promise<void> {
+    this.received = undefined;
+  }
 }
 
 describe('a save that decodes and cannot be restored, end to end', () => {
@@ -801,5 +834,202 @@ describe('an import costs the player no generation of their own until it has res
     expect(await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, 'gen-1'))).toBeUndefined();
     const survivor = await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, 'gen-2'));
     expect(survivor).toMatchObject({ revision: 2, payload: { world: { chunks: [{ terrain: [[1, 1022], [1, 2]] }] } } });
+  });
+});
+
+/**
+ * #432, and it is the row ADR 0063 declared readable and then deleted anyway.
+ *
+ * The block above proves what a *refusal* costs while nothing else restores:
+ * nothing. This one is the case those rules never covered -- a save this build
+ * cannot read **and** another generation that restores fine. Today's rules
+ * retire the first one correctly and destroy it, and
+ * `unsupported-by-this-build` means *the bytes are coherent and another build
+ * reads them*, so that deletion contradicts the verdict the code just reached.
+ *
+ * Everything below runs on `v1WithWrittenPrefix`, ADR 0063's canonical
+ * specimen for that reason: the repository's own checked-in V1 file carrying a
+ * ledger whose written prefix is one slot wider than
+ * `DEFAULT_PRISONER_CAPACITY`. It clears V1 schema, the migration chain, the
+ * checksum, `importSave` and `loadCurrent`, and is refused by
+ * `EntityStore.loadSnapshot` naming both numbers. Nothing is stubbed and no
+ * failure is injected: the reason comes off the production throw site.
+ */
+describe('a save only another build can read is kept, not deleted', () => {
+  /** The id `PrisonSaveRepository.quarantineGeneration` gives `gen-2`. */
+  const QUARANTINED_GEN_2 = '!unreadable!gen-2';
+
+  /**
+   * A prison holding one of the player's own saves and, above it, a V1 file
+   * whose ledger this build cannot address -- and the load that finds out.
+   *
+   * Returns the bytes as they were on disk *before* the load, so the caller
+   * can make the byte-identity claim against what was actually stored rather
+   * than against anything this test rebuilt.
+   */
+  async function loadPastAWiderLedger(): Promise<{
+    readonly repository: PrisonSaveRepository;
+    readonly store: MemoryLocalSaveStore;
+    readonly outcome: SessionLoadOutcome;
+    readonly bytesBefore: string;
+  }> {
+    const { controller, repository, store } = await buildFixture();
+    expect((await repository.save(PRISON_ID, restorableEnvelope(1))).ok).toBe(true);
+    expect(await repository.importSave(PRISON_ID, v1WithWrittenPrefix(5_001))).toEqual({
+      ok: true,
+      generationId: 'gen-2',
+      migrated: true,
+    });
+    const stored = await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, 'gen-2'));
+    const bytesBefore = JSON.stringify(stored);
+
+    vi.useFakeTimers();
+    let outcome: SessionLoadOutcome;
+    try {
+      outcome = await controller.loadPrison(PRISON_ID);
+    } finally {
+      vi.useRealTimers();
+    }
+    return { repository, store, outcome, bytesBefore };
+  }
+
+  it('keeps the wider-ledger save on disk, byte for byte, after a different generation restores', async () => {
+    const { repository, store, outcome, bytesBefore } = await loadPastAWiderLedger();
+
+    // The player has their prison back, from their own save below it.
+    expect(outcome).toMatchObject({ ok: true, recovered: true });
+
+    // The refused generation is still retained -- under the id quarantine
+    // gives it, which is where the "kept" verdict is recorded (there is no
+    // slot-record field for it, deliberately: see `isQuarantinedGenerationId`).
+    const [metadata] = await repository.list();
+    expect(metadata).toMatchObject({
+      currentGenerationId: QUARANTINED_GEN_2,
+      generationIds: ['gen-1', QUARANTINED_GEN_2],
+    });
+    expect(await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, 'gen-2'))).toBeUndefined();
+
+    // Its own contents, against the V1 file's literals rather than against
+    // anything this test could have rebuilt: the fixture's revision, and the
+    // written prefix that made it unreadable here.
+    const kept = await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, QUARANTINED_GEN_2));
+    expect(kept).toMatchObject({
+      saveSchemaVersion: SAVE_SCHEMA_VERSION,
+      revision: 7,
+      payload: { entities: { nextAvailableIndex: 5_001, maxActiveIndex: 5_000 } },
+    });
+    // And byte for byte what was stored before the load, which is the claim
+    // "quarantined" has to make and "retained" alone does not: the record was
+    // moved to a new key, not re-encoded on the way.
+    expect(JSON.stringify(kept)).toBe(bytesBefore);
+  });
+
+  /**
+   * The property the whole design turns on, and the one a quarantine that
+   * merely declines to delete does not have.
+   *
+   * The player goes on playing on the build that cannot read this save. Every
+   * autosave calls `applyGenerationRetention`, which evicts from the oldest
+   * end -- so a kept-but-unprotected generation would be gone after `keep`
+   * further saves: 90 seconds at the 30-second autosave cadence, against a fix
+   * that ships in weeks. A quarantined generation is outside `keep` entirely,
+   * so what rotates out is the player's own oldest save, exactly as it would
+   * have without the quarantine.
+   */
+  it('survives the saves that follow it, while the player\'s own oldest generation rotates out as usual', async () => {
+    const { repository, store } = await loadPastAWiderLedger();
+
+    for (const revision of [3, 4, 5]) {
+      expect((await repository.save(PRISON_ID, restorableEnvelope(revision))).ok).toBe(true);
+    }
+
+    const [metadata] = await repository.list();
+    expect(metadata).toMatchObject({
+      currentGenerationId: 'gen-5',
+      generationIds: [QUARANTINED_GEN_2, 'gen-3', 'gen-4', 'gen-5'],
+    });
+    // The player kept their full three readable saves: the quarantined
+    // generation cost them none of them, and gen-1 gave way on the same save
+    // it would have given way on anyway.
+    expect(await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, 'gen-1'))).toBeUndefined();
+    const kept = await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, QUARANTINED_GEN_2));
+    expect(kept).toMatchObject({ revision: 7, payload: { entities: { nextAvailableIndex: 5_001 } } });
+    // And a save of the player's own from after the quarantine, so this is a
+    // window that went on being written rather than one that stood still.
+    const newest = await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, 'gen-5'));
+    expect(newest).toMatchObject({ revision: 5, payload: { world: { chunks: [{ terrain: [[1, 1_019], [1, 5]] }] } } });
+  });
+
+  /**
+   * Recovery, which is the point of keeping it: **a build that can read the
+   * save loads it with the player doing nothing.**
+   *
+   * The one thing a single process cannot supply is a second build, so the
+   * *build* is what is stood in for here and nothing else. The store, the
+   * repository, the window, the quarantine and the bytes are the real ones
+   * left behind by the load above; only the host is replaced, by one that
+   * accepts a bundle this build's `EntityStore` will not -- which is exactly
+   * what "a build whose entity store is wider" means at this boundary
+   * (`SessionRuntimeHost`'s two production implementations differ in no other
+   * way that matters here).
+   *
+   * What that stand-in cannot fake is *which bytes it is handed*, and that is
+   * what the assertion is on: the ledger it receives carries the V1 file's
+   * 5,001 written slots, so `loadCurrent` offered it the quarantined
+   * generation, first, with no new control and no player action.
+   */
+  it('hands the quarantined save straight to a build that can read it, and drops the mark once it has', async () => {
+    const { repository, store } = await loadPastAWiderLedger();
+
+    const widerBuild = new AcceptingHost();
+    const laterBuild = new SessionController(repository, widerBuild, { gameVersion: 'test-version' });
+    const outcome = await laterBuild.loadPrison(PRISON_ID);
+
+    // No walk and no fallback: the quarantined generation is the newest thing
+    // in the window, so it is the first one offered.
+    expect(outcome).toMatchObject({ ok: true, recovered: false });
+    expect(widerBuild.received?.entities).toMatchObject({ nextAvailableIndex: 5_001, maxActiveIndex: 5_000 });
+
+    // And the mark comes off, because a build has restored these bytes and
+    // the mark records that one could not. The generation is an ordinary
+    // member of the window again -- countable for the player, evictable by
+    // retention, and the quarantine slot is free for the next save that needs
+    // it.
+    const [metadata] = await repository.list();
+    expect(metadata).toMatchObject({ currentGenerationId: 'gen-2', generationIds: ['gen-1', 'gen-2'] });
+    expect(await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, QUARANTINED_GEN_2))).toBeUndefined();
+    const recovered = await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, 'gen-2'));
+    expect(recovered).toMatchObject({ revision: 7, payload: { entities: { nextAvailableIndex: 5_001 } } });
+  });
+
+  /**
+   * The other verdict, unchanged, in the same load -- because the decision
+   * this issue makes is *which* verdict earns the slot, and a test that only
+   * shows one arm shows a branch rather than a choice.
+   *
+   * `damaged-payload` says a declared check found the content inconsistent
+   * with itself, so no build restores it; keeping it would spend the prison's
+   * one quarantine slot on bytes whose recovery nobody can demonstrate, at the
+   * cost of the case where the build that reads them already exists.
+   */
+  it('still deletes a damaged generation while keeping an unreadable one from the same walk', async () => {
+    const { controller, repository, store } = await buildFixture();
+    expect((await repository.save(PRISON_ID, restorableEnvelope(1))).ok).toBe(true);
+    expect(await repository.importSave(PRISON_ID, v1WithWrittenPrefix(5_001))).toMatchObject({ generationId: 'gen-2' });
+    expect((await repository.save(PRISON_ID, unrestorableEnvelope(3) as SaveEnvelope)).ok).toBe(true);
+
+    vi.useFakeTimers();
+    try {
+      expect(await controller.loadPrison(PRISON_ID)).toMatchObject({ ok: true, recovered: true });
+    } finally {
+      vi.useRealTimers();
+    }
+
+    const [metadata] = await repository.list();
+    expect(metadata?.generationIds).toEqual(['gen-1', QUARANTINED_GEN_2]);
+    // The terrain run that overruns its chunk is gone; the wider ledger is not.
+    expect(await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, 'gen-3'))).toBeUndefined();
+    const kept = await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, QUARANTINED_GEN_2));
+    expect(kept).toMatchObject({ revision: 7, payload: { entities: { nextAvailableIndex: 5_001 } } });
   });
 });

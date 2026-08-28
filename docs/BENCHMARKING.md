@@ -42,6 +42,7 @@ checked against its imports by
 | `navigation.meal-rush`, `navigation.lockdown-return`, `navigation.mixed-destination` | navigation work budget/queue/flow field | modelled — see the file header for what it costs |
 | `navigation.production.meal-rush`, `navigation.production.lockdown-return` | `NavigationSystem` + `PathRequestQueue` + `RouteCache` + `FlowFieldCache` draining a population | **production** |
 | `navigation.production.single-request-budget` | one `findRoute` against `DEFAULT_NAVIGATION_SYSTEM_OPTIONS.workBudgetPerTick` | **production** |
+| `actors.production.render-publication` | `LocomotionStore` + `encodeRenderActorsKeyframe` + `decodeRenderActorsPayload` + `actorsFromDelta` over one render-delta publication; the counted work behind ADR 0059's cost table | **production** |
 
 For the same 250-request meal rush, the modelled scenario reports 4,780 work
 units and the production one 16,087. Three mutations of real navigation code
@@ -86,8 +87,21 @@ error from inside a production file.
 
 Loading the production graph costs roughly 500 ms once per process (most of it
 `runtime/new-session.ts`, imported so the work budget is *read* rather than
-copied). The three production scenarios add about 1.4 s to the smoke profile,
-which runs in about 12 s in total.
+copied). `actors.production.render-publication` loads a second graph for the
+same reason -- `worker/state-machine.ts` for `RENDER_DELTA_PUBLISH_INTERVAL_MS`
+and `clock/fixed-step-clock.ts` for the kernel step, so a publication's cadence
+is read rather than copied -- which is about 300 ms more.
+
+**This paragraph used to close "which runs in about 12 s in total", and that
+could not be reproduced.** Measured on 2026-08-28 on the shared container, by
+running the two binaries directly rather than through `pnpm` (which aborts in a
+worktree with `ERR_PNPM_UNSAFE_MODULES_DIR`): the smoke profile's twelve
+scenarios take **1.5 s** and the verification step **0.8 s**, so
+`verify:benchmark`'s own work is about **2.3 s**. Both figures are wall clock on
+a machine that was not quiet, and neither includes `pnpm`/corepack start-up,
+which is where the difference may live. The old number is named here rather than
+overwritten silently, because a benchmark document that quietly re-baselines its
+own cost is the shape of thing this file exists to refuse.
 
 ## Counted-work gates: `metricBounds`
 
@@ -112,6 +126,31 @@ Rules, none of them optional:
   falls).
 - **Changing a bound is a reviewed act.** Re-baseline deliberately, with the
   run that justifies it attached, exactly like any other budget decision here.
+
+### What a counted-work bound cannot see, measured
+
+It bounds *how many times* production touches a thing and *how many bytes* it
+spends on one. It cannot bound what happens between two of those touches, so a
+change that made a per-actor step twice as expensive without changing how often
+it runs would pass every bound in this repository.
+
+That limit is worth stating next to its consolation, which is that on this
+runner wall clock could not have caught those regressions either. Two mutations
+of `src/` were made by hand while `actors.production.render-publication` was
+being written, each one strictly more work than the code it replaced, and each
+timed over 15 samples at 5,000 actors:
+
+| mutation of `src/` | counted-work bound | wall clock, min / median |
+| --- | --- | --- |
+| unmutated baseline | — | 1.705 / 2.915 ms |
+| `RENDER_ACTORS_RECORD_WORDS` 5 → 6, a 20% larger record | `payloadByteLength` 12,016 ≠ 10,016 | 1.553 / 2.979 ms |
+| a third liveness pass in `encodeRenderActorsKeyframe` | `isIndexAliveCalls` 1,650 ≠ 1,100 | 1.493 / 2.399 ms |
+
+Both regressions measured **faster** than the tree they regressed, by minimum
+and by median. That is not a claim that the mutations are free; it is a
+measurement of how much signal a duration carries on a shared machine, and it is
+the reason the rule above is "counted work only, never a duration" rather than a
+preference.
 
 ## Result contract
 
@@ -212,6 +251,73 @@ CI does **not** fail on wall-clock regression thresholds yet. Shared/self-hosted
 
 Correctness and deterministic checksum failures are hard gates immediately.
 
+### If a timing threshold is ever proposed, the statistic matters more than the number
+
+Recorded here because the list above asks for "observed variance" and does not
+say how to read it. Measured on the shared container on 2026-08-28, three
+consecutive smoke-profile runs on an unchanged tree, with two other agents
+working — same scenario, same three samples per run, three different ways of
+reducing them:
+
+| statistic of `navigation.production.single-request-budget` | range across the three runs |
+| --- | --- |
+| mean of the samples | 7.004 – 8.586 ms (**23%**) |
+| median of the samples | 6.889 – 7.201 ms (4.5%) |
+| **minimum** of the samples | 6.731 – 6.834 ms (**1.5%**) |
+
+The minimum is fifteen times tighter than the mean, and not by luck: preemption
+is one-sided. Another process can only make a sample slower, so the minimum over
+repeats is the closest available estimate of uncontended cost and its error runs
+in one direction only. A mean or a p95 mixes the code's cost with the runner's
+load and cannot tell them apart.
+
+None of that makes a wall-clock gate advisable here -- see the section above,
+where two real regressions both measured *faster* than the code they regressed
+-- but if one is ever proposed, it should be a minimum over many repeats, and
+the six items above should be recorded for it first.
+
+## Wall-clock evidence that is deliberately not a gate
+
+`scripts/report-navigation-cost-model.mjs` measures what one expanded search
+node costs in wall clock, on the production navigation modules, and prints what
+ADR 0007's `workBudgetPerTick` therefore buys. It runs nothing in CI and gates
+nothing, for the reason immediately above.
+
+It exists for **#413**, whose remaining half is that
+`path-request-queue.ts`'s budget counts expanded search nodes rather than wall
+clock. Counted work is the right unit for a deterministic kernel — ADR 0009's
+replay guarantee, the save format and the named RNG streams all depend on the
+tick computing the same thing everywhere — and it is only *honest* if one unit
+costs roughly the same everywhere. Measured on 2026-08-28, nine repeats per row,
+minimum / median / maximum microseconds per expansion:
+
+| scenario | profile | expansions | µs per expansion | 2,000 expansions cost at least |
+| --- | --- | --- | --- | --- |
+| `single-request-budget` | smoke | 4,094 | 1.552 / 1.944 / 2.647 | 3.10 ms |
+| `single-request-budget` | full | 16,290 | 2.012 / 2.275 / 2.619 | 4.02 ms |
+| `meal-rush` | smoke | 16,087 | 2.106 / 2.183 / 2.344 | 4.21 ms |
+| `meal-rush` | full | 51,901 | 3.270 / 3.368 / 3.847 | 6.54 ms |
+| `lockdown-return` | smoke | 19,898 | 1.691 / 1.779 / 1.853 | 3.38 ms |
+| `lockdown-return` | full | 78,997 | 3.202 / 3.314 / 3.606 | 6.40 ms |
+
+Two readings, both of them inputs to #413 rather than conclusions of it:
+
+- **An expansion is not a constant amount of time.** It costs 1.55 µs in the
+  cheapest shape measured and 3.27 µs in the dearest, and within one scenario it
+  rises 30–90% as the search grows about fourfold. It is far more constant than
+  before the frontier heap landed — #413 recorded 15–20 µs and rising — but a
+  budget of 2,000 still bounds a different amount of frame time depending on
+  what it is spent on.
+- **The shipped budget already exceeds the allowance #413 states, as a floor.**
+  2,000 expansions cost *at least* 3.1 ms in the cheapest shape and *at least*
+  6.5 ms in the dearest, against the ~3 ms of a 50 ms tick #413 allots
+  navigation. These are floors from the fastest sample of each shape, so the
+  real figure is higher.
+
+Whether the budget may therefore be non-deterministic is not a number and is not
+settled here; it is the architectural question #413's own comment hands to an
+ADR.
+
 ## Current smoke scenario
 
 `foundation.integer-mix@1` is a deterministic CPU workload used only to exercise the harness, result schema and checksum validation. It is deliberately not the simulation RNG, not an entity model and not a performance target for gameplay code. Its throughput must never be presented as Lockstate simulation capacity.
@@ -249,7 +355,14 @@ are registered in `benchmarks/registry.mjs` and run under `pnpm benchmark`.
 The rest are still inputs to future measurement work, not accepted implementation decisions or budgets:
 
 - backlog behavior under a tick the scheduler cannot keep up with;
-- worker snapshot/delta encode, transfer and decode cost;
+- worker snapshot/delta encode, transfer and decode cost — **the delta half of
+  this shipped** as `actors.production.render-publication`, which drives
+  `encodeRenderActorsKeyframe`, `decodeRenderActorsPayload` and `actorsFromDelta`
+  over a real population and bounds the counted work in all three. What is still
+  open is the two words in the middle: **transfer**, meaning a real
+  `postMessage` of a 100 KB buffer rather than an in-process hand-over, which is
+  ADR 0059's own open question 1; and **snapshot**, which goes through
+  `captureSessionSnapshot` and shares nothing with the delta path;
 - save serialization, compression, checksum and migration cost;
 - IndexedDB read/write and recovery behavior;
 - renderer submission/culling and browser frame-time percentiles in a future browser harness.

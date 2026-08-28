@@ -581,6 +581,224 @@ describe('PrisonSaveRepository: an import does not evict until it has restored',
   });
 });
 
+/**
+ * #432. `demoteGeneration` above deletes, and what licenses deleting is that a
+ * *different* generation restored moments earlier. That evidence means two
+ * different things under ADR 0063's two save-side verdicts: for
+ * `damaged-payload` the content contradicts itself and no build restores it,
+ * and for `unsupported-by-this-build` the bytes are coherent and the build
+ * that reads them already exists. This is the primitive for the second.
+ *
+ * The marked ids are spelled out rather than produced by
+ * `quarantinedGenerationId`, so nothing here takes the mark's shape from the
+ * code it is checking.
+ */
+describe('PrisonSaveRepository: quarantineGeneration', () => {
+  async function prisonWithThreeSaves(): Promise<{
+    readonly store: MemoryLocalSaveStore;
+    readonly repo: PrisonSaveRepository;
+  }> {
+    const store = new MemoryLocalSaveStore();
+    const repo = new PrisonSaveRepository(store, { generateGenerationId: idSequence('gen'), now: () => 5 });
+    await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0' });
+    await repo.save('prison-1', buildEnvelope(1, 11));
+    await repo.save('prison-1', buildEnvelope(2, 22));
+    await repo.save('prison-1', buildEnvelope(3, 33));
+    return { store, repo };
+  }
+
+  it('moves the record to the marked id and keeps its bytes, leaving every other generation alone', async () => {
+    const { store, repo } = await prisonWithThreeSaves();
+
+    expect(await repo.quarantineGeneration('prison-1', 'gen-3')).toEqual({
+      quarantined: true,
+      generationId: '!unreadable!gen-3',
+      evicted: [],
+    });
+
+    const [metadata] = await repo.list();
+    expect(metadata).toMatchObject({
+      currentGenerationId: '!unreadable!gen-3',
+      generationIds: ['gen-1', 'gen-2', '!unreadable!gen-3'],
+    });
+    expect(await store.runTransaction('readonly', (tx) => tx.getGeneration('prison-1', 'gen-3'))).toBeUndefined();
+    const kept = await store.runTransaction('readonly', (tx) => tx.getGeneration('prison-1', '!unreadable!gen-3'));
+    expect(kept).toMatchObject({ revision: 3, payload: { kernel: { tick: 33 } } });
+    const untouched = await store.runTransaction('readonly', (tx) => tx.getGeneration('prison-1', 'gen-1'));
+    expect(untouched).toMatchObject({ revision: 1, payload: { kernel: { tick: 11 } } });
+  });
+
+  /**
+   * The bound, stated as a number: **one quarantined generation per prison.**
+   *
+   * It is the newest candidate that holds it, because of two saves this build
+   * cannot read the newer one is the more recent state of the prison. The
+   * older one is deleted -- the one deletion quarantine performs, and the only
+   * thing that keeps a repeatedly-refused restore from growing storage without
+   * limit.
+   */
+  it('holds one quarantined generation, and a newer one displaces the older', async () => {
+    const { store, repo } = await prisonWithThreeSaves();
+    await repo.quarantineGeneration('prison-1', 'gen-2');
+
+    expect(await repo.quarantineGeneration('prison-1', 'gen-3')).toEqual({
+      quarantined: true,
+      generationId: '!unreadable!gen-3',
+      evicted: ['!unreadable!gen-2'],
+    });
+
+    const [metadata] = await repo.list();
+    expect(metadata?.generationIds).toEqual(['gen-1', '!unreadable!gen-3']);
+    expect(await store.runTransaction('readonly', (tx) => tx.getGeneration('prison-1', '!unreadable!gen-2'))).toBeUndefined();
+    const kept = await store.runTransaction('readonly', (tx) => tx.getGeneration('prison-1', '!unreadable!gen-3'));
+    expect(kept).toMatchObject({ revision: 3, payload: { kernel: { tick: 33 } } });
+  });
+
+  /**
+   * The same bound from the other side, and it is where the sacrifice is
+   * visible: the older of two unreadable saves does not get the slot, stays an
+   * ordinary retained generation, and is evicted by the ordinary rules in due
+   * course.
+   */
+  it('declines a generation older than the one already in the slot, and says why', async () => {
+    const { store, repo } = await prisonWithThreeSaves();
+    await repo.quarantineGeneration('prison-1', 'gen-3');
+
+    expect(await repo.quarantineGeneration('prison-1', 'gen-2')).toEqual({
+      quarantined: false,
+      reason: 'newer-generation-quarantined',
+    });
+
+    const [metadata] = await repo.list();
+    expect(metadata?.generationIds).toEqual(['gen-1', 'gen-2', '!unreadable!gen-3']);
+    // Nothing was deleted by the refusal itself -- gen-2 is simply back under
+    // the ordinary rules, and two further saves are what take it.
+    await repo.save('prison-1', buildEnvelope(4, 44));
+    await repo.save('prison-1', buildEnvelope(5, 55));
+    expect((await repo.list())[0]?.generationIds).toEqual(['gen-2', '!unreadable!gen-3', 'gen-4', 'gen-5']);
+    await repo.save('prison-1', buildEnvelope(6, 66));
+    expect((await repo.list())[0]?.generationIds).toEqual(['!unreadable!gen-3', 'gen-4', 'gen-5', 'gen-6']);
+    const stillKept = await store.runTransaction('readonly', (tx) => tx.getGeneration('prison-1', '!unreadable!gen-3'));
+    expect(stillKept).toMatchObject({ revision: 3, payload: { kernel: { tick: 33 } } });
+  });
+
+  /**
+   * `demoteGeneration`'s floor, restated for the caller that deletes nothing.
+   * Setting a generation aside costs no bytes, but it does take it out of the
+   * count this build offers the player, and a window every one of whose
+   * generations was quarantined would report a prison holding saves as a
+   * prison holding none.
+   */
+  it('refuses to set aside the last generation this build could still use', async () => {
+    const store = new MemoryLocalSaveStore();
+    const repo = new PrisonSaveRepository(store, { generateGenerationId: idSequence('gen'), now: () => 5 });
+    await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0' });
+    await repo.save('prison-1', buildEnvelope(1, 11));
+
+    expect(await repo.quarantineGeneration('prison-1', 'gen-1')).toEqual({
+      quarantined: false,
+      reason: 'last-readable-generation-retained',
+    });
+    const [metadata] = await repo.list();
+    expect(metadata).toMatchObject({ currentGenerationId: 'gen-1', generationIds: ['gen-1'] });
+    const untouched = await store.runTransaction('readonly', (tx) => tx.getGeneration('prison-1', 'gen-1'));
+    expect(untouched).toMatchObject({ revision: 1, payload: { kernel: { tick: 11 } } });
+  });
+
+  it('is idempotent, and reports the cases it does not apply to', async () => {
+    const { repo } = await prisonWithThreeSaves();
+    await repo.quarantineGeneration('prison-1', 'gen-3');
+
+    // The same build refuses the same generation on every load, so the second
+    // load asks for this again and must not move anything.
+    expect(await repo.quarantineGeneration('prison-1', '!unreadable!gen-3')).toEqual({
+      quarantined: true,
+      generationId: '!unreadable!gen-3',
+      evicted: [],
+    });
+    expect(await repo.quarantineGeneration('prison-2', 'gen-1')).toEqual({ quarantined: false, reason: 'not-retained' });
+    expect(await repo.quarantineGeneration('prison-1', 'gen-nonexistent')).toEqual({
+      quarantined: false,
+      reason: 'not-retained',
+    });
+    expect((await repo.list())[0]?.generationIds).toEqual(['gen-1', 'gen-2', '!unreadable!gen-3']);
+  });
+
+  /**
+   * The mark records a verdict -- *this build refused these bytes* -- and a
+   * build that restores them falsifies it. Releasing hands the slot back and
+   * returns the generation to the player's own count.
+   */
+  it('releases the mark, restoring the id the generation had, and reports the no-op cases', async () => {
+    const { store, repo } = await prisonWithThreeSaves();
+    await repo.quarantineGeneration('prison-1', 'gen-3');
+
+    expect(await repo.releaseQuarantinedGeneration('prison-1', '!unreadable!gen-3')).toEqual({
+      released: true,
+      generationId: 'gen-3',
+    });
+    const [metadata] = await repo.list();
+    expect(metadata).toMatchObject({ currentGenerationId: 'gen-3', generationIds: ['gen-1', 'gen-2', 'gen-3'] });
+    const recovered = await store.runTransaction('readonly', (tx) => tx.getGeneration('prison-1', 'gen-3'));
+    expect(recovered).toMatchObject({ revision: 3, payload: { kernel: { tick: 33 } } });
+    expect(await store.runTransaction('readonly', (tx) => tx.getGeneration('prison-1', '!unreadable!gen-3'))).toBeUndefined();
+
+    expect(await repo.releaseQuarantinedGeneration('prison-1', 'gen-3')).toEqual({
+      released: false,
+      reason: 'not-quarantined',
+    });
+    expect(await repo.releaseQuarantinedGeneration('prison-1', '!unreadable!gen-9')).toEqual({
+      released: false,
+      reason: 'not-retained',
+    });
+  });
+
+  /**
+   * The mark is what makes a generation exempt from every retention rule, and
+   * `generateGenerationId` is injectable. A generator that emitted a marked id
+   * would mint saves that never expire and are never counted for the player,
+   * so the write refuses it rather than leaving a window that grows for ever.
+   */
+  it('refuses to write a generation whose id carries the quarantine mark', async () => {
+    const store = new MemoryLocalSaveStore();
+    const repo = new PrisonSaveRepository(store, { generateGenerationId: () => '!unreadable!gen-1' });
+    await repo.create({ prisonId: 'prison-1', gameVersion: 'lockstate-0.0.0' });
+
+    const result = await repo.save('prison-1', buildEnvelope(1, 11));
+    expect(result).toMatchObject({ ok: false, error: { code: 'unknown-error' } });
+    expect((await repo.list())[0]).toMatchObject({ currentGenerationId: undefined, generationIds: [] });
+    expect(await store.runTransaction('readonly', (tx) => tx.getGeneration('prison-1', '!unreadable!gen-1'))).toBeUndefined();
+  });
+
+  /**
+   * `loadCurrent` deliberately still offers a quarantined generation, and
+   * #432's fourth acceptance criterion asked for the opposite. That criterion
+   * is the one that gives, because the same issue requires the bytes to be
+   * *"recoverable by a later build without the player doing anything
+   * unusual"*, and staying in the walk is that recovery: the quarantined
+   * generation is the newest, so a build that can read it restores it on the
+   * next load with no new code path and no new control to explain.
+   *
+   * Termination is unaffected -- it rests on `LoadCurrentOptions.skip`, which
+   * only grows -- and this pins both halves: the quarantined generation is
+   * offered when nothing skips it, and the walk still ends when everything is
+   * skipped.
+   */
+  it('still offers a quarantined generation to the recovery walk, and still terminates when it is skipped', async () => {
+    const { repo } = await prisonWithThreeSaves();
+    await repo.quarantineGeneration('prison-1', 'gen-3');
+
+    const offered = await repo.loadCurrent('prison-1');
+    expect(offered).toMatchObject({ ok: true, generationId: '!unreadable!gen-3', outcome: 'current' });
+    expect(offered.ok && offered.envelope.payload.kernel.tick).toBe(33);
+
+    const exhausted = await repo.loadCurrent('prison-1', {
+      skip: new Set(['gen-1', 'gen-2', '!unreadable!gen-3']),
+    });
+    expect(exhausted).toEqual({ ok: false, reason: 'no-valid-generation' });
+  });
+});
+
 describe('PrisonSaveRepository: pending sync metadata', () => {
   it('marks and clears pending-sync state independently of the prison payload', async () => {
     const repo = new PrisonSaveRepository(new MemoryLocalSaveStore(), { now: () => 42 });

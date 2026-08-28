@@ -1,4 +1,5 @@
 import type { LocalizationKey } from '../content/localization';
+import { readableGenerationIds } from '../persistence/local/generation-policy';
 import type { SaveImportResult, SaveResult } from '../persistence/local/repository';
 import type { PrisonSlotMetadata } from '../persistence/local/store';
 import type { SaveEnvelope } from '../persistence/save-schema';
@@ -579,7 +580,10 @@ export class SavePanel {
         // A prison's display name is player-authored and a prison id is a
         // stable identifier: neither is translatable, and both are data.
         name: prison.displayName ?? prison.prisonId,
-        count: this.localizer.formatNumber(prison.generationIds.length),
+        // Readable generations only (#432): a quarantined generation is one
+        // this build refused and kept for a later build, so counting it here
+        // would tell the player they have a save this build cannot offer them.
+        count: this.localizer.formatNumber(readableGenerationIds(prison.generationIds).length),
       });
       item.append(label);
 

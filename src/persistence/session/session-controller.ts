@@ -1,4 +1,5 @@
 import { restoredScopeFor, type RestoredScope, type SessionSnapshotBundle } from '../../simulation/runtime/restore-session';
+import type { SnapshotRefusalReason } from '../../simulation/runtime/restore-refusal';
 import { AutosaveScheduler } from '../local/autosave';
 import type { PrisonSaveRepository, SaveImportResult, SaveResult } from '../local/repository';
 import type { PrisonSlotMetadata } from '../local/store';
@@ -211,7 +212,20 @@ export class SessionController {
    *
    * A generation that *is* retired here has earned it in the strongest sense
    * available: another generation restored through the same code on the same
-   * build moments later, so what is wrong is that save. `demoteGeneration`
+   * build moments later, so what is wrong is that save.
+   *
+   * **And "retired" now means one of two things, decided by the reason the
+   * refusal declared (#432).** That evidence is equally strong for both of ADR
+   * 0063's save-side verdicts and it means opposite things under each.
+   * `damaged-payload` says a declared check found the content inconsistent
+   * with itself, so no build restores it: deleted, exactly as before.
+   * `unsupported-by-this-build` says the bytes are coherent and this build
+   * cannot interpret them -- so a build that reads them **already exists**,
+   * and deleting them is the one deletion this repository would make against
+   * its own stated verdict. Those are quarantined instead: kept on disk under
+   * a marked id, outside the retention budget, and still offered to the
+   * recovery walk so a build that can read them restores them with the player
+   * doing nothing. See `PrisonSaveRepository.quarantineGeneration`. `demoteGeneration`
    * still refuses to delete the last retained copy (see `DemotionResult`),
    * which is now a second belt — the restored generation is always retained,
    * so the window can no longer be walked empty in the first place.
@@ -255,11 +269,13 @@ export class SessionController {
     // for a refusal -- a generation we cannot judge still must not be offered
     // back, or the loop spins inside a click handler.
     const attempted = new Set<string>();
-    // The subset a declared verdict was reached about. Insertion-ordered, so
-    // this is also the newest-first order they are retired in below. A code
-    // fault never joins it, which is how "must not enter the demotion path at
-    // all" is enforced rather than promised.
-    const refused = new Set<string>();
+    // The subset a declared verdict was reached about, each against the reason
+    // the check that refused it declared (#431). Insertion-ordered, so this is
+    // also the newest-first order they are retired in below. A code fault
+    // never joins it, which is how "must not enter the demotion path at all"
+    // is enforced rather than promised -- and the reason is what decides,
+    // below, whether retirement means deletion or quarantine (#432).
+    const refused = new Map<string, SnapshotRefusalReason>();
     // The first fault our own code produced, if any: reported only if nothing
     // restores, because a later generation restoring means the player has
     // their prison and our defect cost them nothing.
@@ -305,7 +321,7 @@ export class SessionController {
         // restores, so a walk that reaches the end of the window leaves the
         // player with exactly what they had.
         attempted.add(result.generationId);
-        refused.add(result.generationId);
+        refused.set(result.generationId, error.reason);
         continue;
       }
 
@@ -325,9 +341,37 @@ export class SessionController {
       // this call sat *ahead* of the successful restore, so a throw here
       // could only fail a load that was failing anyway.)
       this.retirementFailure = undefined;
+      let restoredGenerationId = result.generationId;
       try {
-        for (const refusedGenerationId of refused) {
-          await this.repository.demoteGeneration(prisonId, refusedGenerationId);
+        // First, because the generation that restored may itself be one a
+        // previous load quarantined, and a build that has restored it has
+        // falsified the verdict that put it there (#432). Releasing it before
+        // the loop below also keeps it out of the quarantine slot the loop may
+        // be about to claim.
+        const release = await this.repository.releaseQuarantinedGeneration(prisonId, restoredGenerationId);
+        if (release.released) restoredGenerationId = release.generationId;
+
+        for (const [refusedGenerationId, reason] of refused) {
+          switch (reason) {
+            // The bytes are coherent and a build that reads them already
+            // exists -- it is the one that wrote them. Kept, not deleted
+            // (#432); see `PrisonSaveRepository.quarantineGeneration`.
+            case 'unsupported-by-this-build':
+              await this.repository.quarantineGeneration(prisonId, refusedGenerationId);
+              break;
+            // A declared check found the content inconsistent with itself, so
+            // no build restores it. Retired exactly as before.
+            case 'damaged-payload':
+              await this.repository.demoteGeneration(prisonId, refusedGenerationId);
+              break;
+            default: {
+              // A third refusal reason must decide keep-or-delete here rather
+              // than inheriting whichever branch happened to be the fallback.
+              // `never` makes adding one a typecheck failure at this line.
+              const unhandled: never = reason;
+              throw new Error(`Unhandled snapshot refusal reason "${String(unhandled)}"; a refused generation was neither retired nor quarantined.`);
+            }
+          }
         }
         // And the same evidence pointed the other way (#438). An imported
         // generation is written into the retained window's spare slot rather
@@ -337,7 +381,7 @@ export class SessionController {
         // and the generation it displaces is displaced now, having been kept
         // for exactly as long as it took to find out. A no-op on every load
         // into a prison nobody imported into, which is why it is unguarded.
-        await this.repository.confirmGeneration(prisonId, result.generationId);
+        await this.repository.confirmGeneration(prisonId, restoredGenerationId);
       } catch (error) {
         this.retirementFailure = error;
       }
