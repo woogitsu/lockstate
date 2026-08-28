@@ -1312,11 +1312,12 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   /*
    * The Security tab's first inhabitant (ADR 0025).
    *
-   * Two of the five tabs still render no panel at all -- Overview, until the
-   * Intake panel below, and Regime -- and before this one Security was among
-   * them: selecting it hid the Build panel and put nothing in its place. Hiring
-   * goes here rather than onto the Build panel because no two of these panels
-   * are ever laid out at the same time -- so it costs the Build panel's
+   * Two of the five tabs rendered no panel at all when this one landed --
+   * Overview, until the Intake panel below, and Regime, until the Regime panel
+   * below that -- and before this one Security was among them: selecting it
+   * hid the Build panel and put nothing in its place. Hiring goes here rather
+   * than onto the Build panel because no two of these panels are ever laid out
+   * at the same time -- so it costs the Build panel's
    * measured height budget nothing, and the third button
    * `.hud-build__actions` cannot hold is never needed -- and because a guard is
    * not made of the material the selected buildable is made of.
@@ -1348,12 +1349,13 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   });
 
   // ---- bottom-right intake panel (Overview tab) ---------------------
-  // Shares `.hud__side` with the Build, Rooms and Staff panels and is never
-  // laid out beside any of them: exactly one of the four is visible, keyed on
-  // the active tab, so the always-visible budget ADR 0022 measured for the
-  // Build tab is unchanged and the last tab bound to no panel is Regime. See
-  // `intake-panel.ts` for why the Overview tab rather than a Build-panel row
-  // or a tab of its own, with the measurements behind it.
+  // Shares `.hud__side` with the Build, Rooms, Staff and Regime panels and is
+  // never laid out beside any of them: exactly one of the five is visible,
+  // keyed on the active tab, so the always-visible budget ADR 0022 measured for
+  // the Build tab is unchanged. No tab is bound to no panel any more -- the
+  // Regime panel below took the last one (issue #451). See `intake-panel.ts`
+  // for why the Overview tab rather than a Build-panel row or a tab of its own,
+  // with the measurements behind it.
   const intakePanel: IntakePanel = createIntakePanel({
     localizer,
     // Admitting is a *command*: it asks the host to change the simulation,

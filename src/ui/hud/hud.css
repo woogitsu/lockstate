@@ -820,6 +820,18 @@
 
 .hud-staff__note { white-space: normal; text-transform: none; letter-spacing: 0; }
 
+/* The same guard as `.hud-regime__note[hidden]` below, for the same reason and
+   found the same way. `heldEmpty` in `staff-panel.ts` carries this class and
+   nothing else, and is hidden the moment a guard is held -- but the
+   `@media (max-height: 700px)` block gives `.hud-staff__note` an author
+   `display: -webkit-box`, which beats the user agent's
+   `[hidden] { display: none }`. Without this line "Nobody is assigned right
+   now." is laid out between the held rows and the "and N more" line at every
+   viewport 700px tall or shorter; measured at 900x600, the only one of the six
+   `ui-held-guards.spec.ts` visits that is. `.hud-staff__held-more` was already
+   safe: it carries a second class with a rule of its own. */
+.hud-staff__note[hidden] { display: none; }
+
 /* The coverage block (ADR 0048), first in the panel body. A `border-bottom`
    rather than the `border-top` its two siblings carry, because it is above them
    rather than below something: the hairline still separates two regions of one
@@ -1412,6 +1424,19 @@
    here exactly as `.hud-intake__note` above undoes it. */
 .hud-regime__note { white-space: normal; text-transform: none; letter-spacing: 0; }
 
+/* And `display: none` when the attribute says so, which the rule above cannot
+   be relied on to leave alone. The `@media (max-height: 700px)` block at the
+   foot of this file gives `.hud-regime__note` an author `display: -webkit-box`
+   to clamp it to one line, and an author `display` beats the user agent's
+   `[hidden] { display: none }` -- so without this guard the empty-roster
+   sentence is laid out beside a full roster at every viewport 700px tall or
+   shorter. Measured, not theorised: at 900x600, one of the five viewports the
+   browser suite visits, "Nobody has been admitted yet." was on screen under
+   four prisoners. Its sibling "and N more" line escapes the same trap only
+   because it carries a second class with a rule of its own, which is what
+   `.hud-build__deliveries-more` documents one panel over. */
+.hud-regime__note[hidden] { display: none; }
+
 /* The timetable, first in the panel body. A `border-bottom` rather than the
    `border-top` its sibling carries, because it is above it rather than below
    something -- the choice `.hud-staff__coverage` makes for the same position.
@@ -1491,9 +1516,19 @@
   gap: var(--space-2);
 }
 
-/* `min-width: 0` is load-bearing rather than defensive, exactly as on the held
-   rows: without it a long name-plus-activity pair refuses to shrink below its
-   content width and pushes the badge out of the panel. */
+/* `min-width: 0` so a long name-plus-activity pair shrinks rather than pushing
+   the badge out of the panel -- the same declaration `.hud-staff__held-text`
+   carries. Kept, but **defensive here rather than load-bearing**, which is the
+   opposite of what this comment used to claim and is measured rather than
+   argued: with it deleted, a 38-character unbroken given name still left every
+   badge inside the panel at all five viewports the browser suite visits, and a
+   26-character badge word made the row taller instead of wider.
+   `overflow-wrap: anywhere` on `.hud-regime__roster-name` below is why -- the
+   name contributes no min-content width to break, and the activity's longest
+   word is a catalogue word. It stays because a locale whose action vocabulary
+   has a long compound word would reach it and nothing here would notice; the
+   attempted browser assertion over it was removed as vacuous instead, and
+   `tests/browser/ui-shell.spec.ts` records that where it would have gone. */
 .hud-regime__roster-text {
   display: flex;
   flex-direction: column;
