@@ -14,6 +14,7 @@ import { type Panel, createPanel } from '../primitives/panel';
 import { type TabButton, createTabButton } from '../primitives/tab-button';
 import { type BuildPanel, type BuildPanelTarget, createBuildPanel } from './build-panel';
 import { type IntakePanel, createIntakePanel } from './intake-panel';
+import { type RegimePanel, createRegimePanel } from './regime-panel';
 import { type RoomsPanel, createRoomsPanel } from './rooms-panel';
 import {
   HUD_PANEL_IDS,
@@ -1364,9 +1365,18 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     },
   });
 
+  // ---- bottom-right regime panel (Regime tab) -----------------------
+  /*
+   * The fifth occupant of `.hud__side`, and the one that retires the last tab
+   * bound to no panel (issue #451). It issues no command and takes no
+   * selection, so it joins no busy group: everything it holds is a readout
+   * pulled while this tab is the one showing.
+   */
+  const regimePanel: RegimePanel = createRegimePanel({ localizer });
+
   const side = element('div', {
     className: 'hud__side',
-    children: [intakePanel.element, buildPanel.element, roomsPanel.element, staffPanel.element],
+    children: [intakePanel.element, buildPanel.element, roomsPanel.element, staffPanel.element, regimePanel.element],
   });
 
   /**
@@ -1513,10 +1523,14 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     buildPanel.setVisible(state.activeTab === 'build');
     roomsPanel.setVisible(state.activeTab === 'rooms');
     staffPanel.setVisible(state.activeTab === 'security');
-    // The fourth occupant of `.hud__side`, and the reason the four can share
+    // The fourth occupant of `.hud__side`, and the reason the five can share
     // one box: the conditions are mutually exclusive, so exactly one panel is
     // ever laid out there and none pays for the others' height.
     intakePanel.setVisible(state.activeTab === 'overview');
+    // The fifth, on the tab that had none (issue #451). With this line every
+    // member of `HUD_TAB_IDS` answers a tap with a panel, which is the state
+    // `tests/browser/ui-shell.spec.ts` used to pin the opposite of.
+    regimePanel.setVisible(state.activeTab === 'regime');
     for (const panel of HUD_PANEL_IDS) {
       const collapsed = isPanelCollapsed(state, panel);
       if (panel === 'minimap') minimapPanel.setCollapsed(collapsed);
@@ -1624,6 +1638,16 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     // many are at each stage and which stage is terminal; the panel decides the
     // sentences; this line decides nothing.
     intakePanel.setPipeline(next.intakePipeline);
+    // And what each classification group's day allows at this tick, on
+    // identical terms (issue #451). `resolveActiveRegimeBlock` picked the
+    // block, the schedule decided what it permits, the panel decides the
+    // sentence, and this line decides nothing.
+    regimePanel.setRegime(next.regime);
+    // And who is in the prison and what each of them is doing, on identical
+    // terms. Every word on a row is a message key the projection's ids were
+    // turned into; the total is the projection's own count of the live
+    // population, not the length of the window; this line decides nothing.
+    regimePanel.setRoster(next.prisonerRoster);
     // Last, so that a snapshot which both empties the alerts list and carries
     // a refusal leaves the band and the log agreeing about the same record.
     applySimulationRefusal(next.refusal);

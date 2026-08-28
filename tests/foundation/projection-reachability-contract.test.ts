@@ -61,29 +61,49 @@ import { PROJECTION_CATALOG } from '../../src/simulation/worker/projection-catal
  * missing -- so the entry is gone and the assertion that replaced it runs the
  * other way: **there must be a painter**, and deleting the last one fails here
  * rather than quietly returning the channel to a pipe with nothing on the end
- * of it. It still does not claim that every projection is painted; **eight of the
+ * of it. It still does not claim that every projection is painted; **six of the
  * fifteen catalogued read models have a route and no reader.**
  *
  * That number is stated with the way to re-derive it, because it is a tally and
  * this file's whole subject is claims that rot. `PROJECTION_IDS`
  * (`src/simulation/protocol/types.ts`, the tuple `PROJECTION_IDS`) has fifteen
  * members; grepping all fifteen as string literals across `src/ui/` and
- * `src/rendering/` returns **seven**, so fifteen minus seven is eight. The seven
+ * `src/rendering/` returns **nine**, so fifteen minus nine is six. The nine
  * are `hud/room-list` and `hud/room-detail` (`simulation-room-needs.ts`),
  * `hud/held-guards` (`simulation-held-guards.ts`), `hud/pending-deliveries`
  * (`simulation-pending-deliveries.ts`), `hud/prisoner-population`
- * (`simulation-intake.ts`), `hud/build-queue` (`simulation-build-queue.ts`) and
- * `hud/staff` (`simulation-staff-coverage.ts`). `src/rendering/` matches none.
+ * (`simulation-intake.ts`), `hud/build-queue` (`simulation-build-queue.ts`),
+ * `hud/staff` (`simulation-staff-coverage.ts`), `hud/prisoner-roster`
+ * (`simulation-prisoner-roster.ts`) and `hud/status-strip`
+ * (`simulation-regime.ts`). `src/rendering/` matches none. The six with a route
+ * and nobody on it are `hud/prisoner-detail`, `hud/security`, `hud/contraband`,
+ * `hud/incidents`, `hud/incident-detail` and `world/render-snapshot`.
  *
- * **This said "nine of the fifteen" and "six", and both were right when written.**
- * `src/ui/simulation-staff-coverage.ts` is the seventh reader (ADR 0048
- * consequence 1): the Staff panel now renders how many guards the prison asks
- * for against how many it has, which is the requirement `DeploymentSystem`
- * scales with occupancy and which reached no surface at all before it. The
- * `file:line` citations that used to sit beside each reader are gone rather than
+ * **This said "nine of the fifteen" and "six", then "eight" and "seven", and
+ * every one of them was right when written.** The directions are marked rather
+ * than overwritten because the pair -- how many read models, how many reader
+ * modules -- is what a reader checks, and the two stop agreeing whenever one
+ * module requests two projections. `src/ui/simulation-staff-coverage.ts` was
+ * the seventh reader (ADR 0048 consequence 1); the eighth and ninth are
+ * `src/ui/simulation-prisoner-roster.ts` and `src/ui/simulation-regime.ts`
+ * (issue #451), which are counted here as *two* modules reading two projections
+ * so the two counts happen to move together this time. The `file:line`
+ * citations that used to sit beside each reader are gone rather than
  * renumbered, for `docs/AGENT_WORKFLOW.md` §4's reason: a line number into a file
  * under active edit is the least durable citation here, and every one of these
  * pointed at a `request(` call that a single inserted comment moves.
+ *
+ * The eighth and ninth readers are the first whose subject is the prison's
+ * **inhabitants**. `src/ui/simulation-prisoner-roster.ts` carries who is in the
+ * prison, what each of them is doing and how each is classified;
+ * `src/ui/simulation-regime.ts` carries what each classification group's day
+ * allows at this tick, off the one field of `hud/status-strip` that the *push*
+ * route does not already publish. Together they are the first surface for
+ * #450's consequence chain -- an incident writes a disciplinary record,
+ * `ClassificationReviewSystem` rewrites the prisoner's tier and group from it,
+ * and `ActionSystem` puts them on a different timetable -- of which the only
+ * thing that had ever reached a player was `activeIncidents`, one integer on
+ * one stat tile.
  *
  * **This said "ten", and the arithmetic slip is the interesting part rather than
  * the digit.** Six ids are read by *five* modules, because
@@ -216,6 +236,8 @@ const PAINTERS = [
   'simulation-held-guards.ts',
   'simulation-intake.ts',
   'simulation-pending-deliveries.ts',
+  'simulation-prisoner-roster.ts',
+  'simulation-regime.ts',
   'simulation-room-needs.ts',
   'simulation-staff-coverage.ts',
 ] as const;
