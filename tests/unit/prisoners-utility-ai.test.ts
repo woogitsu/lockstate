@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ActionDefinition } from '../../src/simulation/prisoners/actions';
 import { NeedsComponent } from '../../src/simulation/prisoners/needs';
-import { isActionCategoryAllowed, rankActions, scoreAction, selectBestAction } from '../../src/simulation/prisoners/utility-ai';
+import { isActionCategoryAllowed, needUrgency, rankActions, scoreAction, selectBestAction } from '../../src/simulation/prisoners/utility-ai';
 
 const SLEEP: ActionDefinition = { id: 'z-sleep', category: 'sleep', target: { kind: 'own-accommodation' }, needEffectsPerTick: { sleep: 2 }, minDurationTicks: 10 };
 const EAT: ActionDefinition = { id: 'a-eat', category: 'meal', target: { kind: 'own-accommodation' }, needEffectsPerTick: { hunger: 4 }, minDurationTicks: 10 };
@@ -118,5 +118,78 @@ describe('isActionCategoryAllowed', () => {
   it('checks category membership in the allowed list', () => {
     expect(isActionCategoryAllowed(SLEEP, ['sleep', 'meal'])).toBe(true);
     expect(isActionCategoryAllowed(SLEEP, ['meal'])).toBe(false);
+  });
+});
+
+describe('needUrgency', () => {
+  /*
+   * Issue #434's ordering key. These are unit assertions on a pure function
+   * because the branch below is one an integration fixture cannot reach: it
+   * decides *how much* a prisoner outranks another, and the shower fixture's
+   * outcomes turn out to be the same either way (recorded there and in the
+   * commit rather than hidden). A survivor with no guard is what #375 is about,
+   * so the guard is here, where the mechanism is directly observable.
+   */
+
+  /** Scored deficits: 255 - level, times the action's per-tick effect on that need. */
+  function needsAt(levels: { readonly hunger?: number; readonly recreation?: number; readonly sleep?: number }): NeedsComponent {
+    const needs = new NeedsComponent(1);
+    for (const [needId, level] of Object.entries(levels)) needs.set(0, needId as 'hunger', level);
+    return needs;
+  }
+
+  const everything = () => true;
+
+  it('is the score of the highest-ranked candidate the prison provides', () => {
+    const needs = needsAt({ hunger: 55, sleep: 255, recreation: 255 });
+    // EAT: deficit 200 x effect 4 = 800. Written out rather than computed, so
+    // the expectation cannot be satisfied by whatever `scoreAction` happens to
+    // return.
+    expect(needUrgency(needs, 0, rankActions(needs, 0, [SLEEP, EAT, RECREATE]), everything)).toBe(800);
+  });
+
+  it('skips a candidate the prison cannot provide, and takes the next one it can', () => {
+    const needs = needsAt({ hunger: 55, sleep: 155, recreation: 255 });
+    // EAT scores 800 and SLEEP scores 100 x 2 = 200. With the canteen shut, the
+    // urgency is the sleep the prisoner can actually have, not the meal they
+    // cannot.
+    const ranked = rankActions(needs, 0, [SLEEP, EAT, RECREATE]);
+    expect(ranked[0]).toBe(EAT);
+    expect(needUrgency(needs, 0, ranked, (action) => action !== EAT)).toBe(200);
+  });
+
+  /*
+   * **The reason the filter exists, stated as the failure it prevents.** A need
+   * with no route in this prison decays to the floor for *everybody*, so the
+   * action addressing it scores the same maximum for everybody and ranks first
+   * for everybody. Keyed on the bare head, two prisoners in visibly different
+   * states become indistinguishable and the sort falls through to its
+   * tie-break -- entity index, which is the order #434 exists to stop deciding
+   * things. Keyed on what the prison can provide, they separate.
+   */
+  it('separates two prisoners whose unservable first choice is identically maxed out', () => {
+    const tired = needsAt({ recreation: 0, sleep: 155, hunger: 255 });
+    const rested = needsAt({ recreation: 0, sleep: 205, hunger: 255 });
+    const candidates = [SLEEP, EAT, RECREATE];
+
+    // Both rank RECREATE first at 255 x 1 = 255, because no room serves it.
+    expect(rankActions(tired, 0, candidates)[0]).toBe(RECREATE);
+    expect(rankActions(rested, 0, candidates)[0]).toBe(RECREATE);
+    expect(needUrgency(tired, 0, rankActions(tired, 0, candidates), everything)).toBe(255);
+    expect(needUrgency(rested, 0, rankActions(rested, 0, candidates), everything)).toBe(255);
+
+    // With RECREATE unprovided they separate: 100 x 2 = 200 against 50 x 2 = 100.
+    const provided = (action: ActionDefinition) => action !== RECREATE;
+    expect(needUrgency(tired, 0, rankActions(tired, 0, candidates), provided)).toBe(200);
+    expect(needUrgency(rested, 0, rankActions(rested, 0, candidates), provided)).toBe(100);
+  });
+
+  it('is 0 when the prison provides none of the candidates, so such a prisoner sorts last rather than first', () => {
+    const needs = needsAt({ hunger: 0, sleep: 0, recreation: 0 });
+    expect(needUrgency(needs, 0, rankActions(needs, 0, [SLEEP, EAT, RECREATE]), () => false)).toBe(0);
+  });
+
+  it('is 0 for an empty candidate list, which is what a regime block with nothing legal in it produces', () => {
+    expect(needUrgency(new NeedsComponent(1), 0, [], everything)).toBe(0);
   });
 });

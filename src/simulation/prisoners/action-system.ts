@@ -18,10 +18,67 @@ import {
 import type { NeedsComponent } from './needs';
 import { findRegimeSchedule, resolveActiveRegimeBlock, type PrisonerRegimeOverrideResolver, type RegimeSchedule } from './regime';
 import type { RoomInstance, RoomInstanceRegistry } from './room-instance-registry';
-import { isActionCategoryAllowed, rankActions } from './utility-ai';
+import { isActionCategoryAllowed, needUrgency, rankActions, scoreAction } from './utility-ai';
 
 function phaseIndex(phase: (typeof ACTION_PHASES)[number]): number {
   return ACTION_PHASES.indexOf(phase);
+}
+
+/**
+ * One prisoner and how badly they want what they are about to ask for -- the
+ * shape both reordered passes of `ActionSystem.update` sort.
+ *
+ * `urgency` is `needUrgency` for a prisoner still choosing and
+ * `committedActionUrgency` for one already walking somewhere; the two are the
+ * same `scoreAction` reading of the same needs, so the two passes cannot
+ * disagree about what urgent means.
+ */
+interface UrgencyRanked {
+  readonly entityId: number;
+  /** The prisoner's live storage index, and the total order the urgency tie breaks by. */
+  readonly index: number;
+  readonly urgency: number;
+}
+
+/**
+ * One idle prisoner's answer to "what do you want, and how badly", computed
+ * before any of them is allowed to act on it.
+ *
+ * Every field is a pure function of that prisoner's own state, the room
+ * instances and the tick -- **nothing here reads a use claim, a position or
+ * another prisoner** -- which is what makes it safe to compute the whole
+ * population's plans, reorder them, and only then execute them. See
+ * `ActionSystem.update` for the argument in full.
+ */
+interface PlannedSelection extends UrgencyRanked {
+  readonly classificationGroupId: string;
+  /** `rankActions`' output for the active regime block: what this prisoner wants, best first. */
+  readonly candidates: readonly ActionDefinition[];
+}
+
+/**
+ * **Descending need urgency, ties broken by ascending entity index.** The
+ * contended scan's order since issue #434, replacing bare ascending index.
+ *
+ * Total by construction, which is the property ADR 0029 decision 7 commitment 3
+ * requires and the one a fairness rule is easiest to get wrong: two live
+ * prisoners cannot share a storage index, so this never answers `0` for two
+ * distinct entries. The sorted result is therefore one unique permutation of
+ * the input, independent of whether the engine's `Array.prototype.sort` is
+ * stable and of the order the idle list happened to be collected in. A
+ * comparator that stopped at the urgency term would be neither -- it would fall
+ * back to collection order, which is ascending index today and would silently
+ * become something else the day the collection loop moved.
+ *
+ * Ascending index rather than ascending entity **id** deliberately: since #441
+ * an id is `(generation, index)` and a recycled low index sorts *after* a fresh
+ * high one, so id order and index order are no longer the same order.
+ * `EntityQuery.execute` guarantees index order and the rest of this system
+ * already runs in it, so the tie-break is the order everything else here
+ * already agrees on rather than a second one.
+ */
+function compareByNeedUrgency(left: UrgencyRanked, right: UrgencyRanked): number {
+  return right.urgency - left.urgency || left.index - right.index;
 }
 
 export interface ActionMetrics {
@@ -136,7 +193,94 @@ export class ActionSystem implements SystemRegistration {
     };
   }
 
+  /**
+   * One reconsideration cycle over the whole population, in **three passes**:
+   * everybody mid-action first, then the arrivals **ordered by need urgency**,
+   * then the idle selections **ordered by need urgency** --
+   * [ADR 0062](../../../docs/adr/0062-who-gets-the-room-when-more-prisoners-want-it-than-it-seats.md),
+   * issue #434, taking
+   * [ADR 0041](../../../docs/adr/0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md)
+   * decision 2, which is the fairness half of
+   * [ADR 0029](../../../docs/adr/0029-concurrent-room-use-claims.md) decision 5.
+   * The argument for the key, the rejected alternatives and the costs are
+   * there; what follows is why the code is shaped the way it is.
+   *
+   * ## What was wrong with one pass in ascending index
+   *
+   * A room's concurrent-use claims are taken *during* this walk and each one is
+   * visible to the next prisoner in it, so the walk's order **is** the
+   * contention rule -- ADR 0029 decision 5 says exactly that and accepts it.
+   * Ascending entity index never changes, and the winners' needs are refilled
+   * while the losers' are not, so the losing set never reopens. ADR 0029 calls
+   * that incumbency.
+   *
+   * Measured on `origin/main` at `c00b641`, 24 prisoners in one furnished
+   * dormitory with a two-head shower room, 40,000 ticks: the two highest-index
+   * prisoners finished at hygiene **0.0**, six finished there, and the spread
+   * over the population tracked nothing but scan position. `action.shower` has
+   * no `own-accommodation` sibling and gets none by design
+   * ([ADR 0054](../../../docs/adr/0054-what-a-prisoners-day-is-made-of-when-the-prison-is-empty.md)
+   * decision 1), so unlike a meal a lost shower is a need that simply goes
+   * unserved. `tests/integration/contended-shower-fairness.test.ts` is the run.
+   *
+   * ## Both gates, because ADR 0029 decision 2 put the claim at the far end
+   *
+   * Contention is resolved at **two** points and reordering only one of them
+   * fixes nothing. The selection gate is `findAvailableForUse`, which is *an
+   * answer and not a reservation* -- it can tell six prisoners the same
+   * two-seat shower room is free. The arrival gate is `claimUse` in
+   * `continueTravelling`, and that is where a room reached by walking is
+   * actually won or lost. Measured: ordering the idle selections alone left the
+   * two highest-index prisoners on 0 showers in 40,000 ticks, unchanged,
+   * because they were being refused on arrival rather than at selection.
+   *
+   * **Pass 1 -- `performing`, ascending entity index.** Order irrelevant and
+   * therefore left alone: a performer either continues or *releases* its claim,
+   * and running all of them first means every seat freed this cycle is free
+   * before anybody competes for it.
+   *
+   * **Pass 2 -- `travelling`, by descending urgency of the action they walked
+   * for.** Two prisoners arriving at the last free shower head in the same
+   * cycle are settled by which of them is dirtier, not by which was admitted
+   * first. Arrivals run before selections so a prisoner who has already walked
+   * to a room is not pre-empted by one who decided to go a moment ago.
+   *
+   * **Pass 3 -- the idle, by descending `needUrgency`.** The set is exactly the
+   * prisoners whose phase was `idle` when pass 1 reached them, which is the same
+   * set the single-pass loop used to call `beginNextAction` for: a prisoner
+   * dropped to `idle` *by* an earlier pass waits for the next cycle exactly as
+   * they always did.
+   *
+   * ## Why planning happens before the sort, and why that is safe
+   *
+   * `planIdleSelection` computes the regime block, the legal candidates and the
+   * ranked walk for one prisoner. It is a pure function of that prisoner's own
+   * needs, their classification group, any incident override and the tick --
+   * **no part of it reads a room's claims or another prisoner** -- so computing
+   * it for everybody before executing anybody cannot change what it answers.
+   * `resolveTargetInstance`, the one step that does look at claims, stays in
+   * pass 3's execution half where the claims taken by earlier prisoners are
+   * visible to later ones, exactly as before. The same holds of pass 2's key,
+   * which is scored off the action the prisoner is already committed to.
+   *
+   * ## Determinism
+   *
+   * ADR 0029 decision 7's four commitments hold, and the third is the one this
+   * touches. No RNG is drawn and no stream moves; no `Map` or `Set` is walked;
+   * both urgency keys are pure functions of `NeedsComponent` (which the save
+   * carries verbatim in stored units), the classification group, the incident
+   * override, the room instances and the tick. The comparator is **total** --
+   * entity index is unique among live prisoners, so it never answers `0` for two
+   * distinct entries and the result therefore does not depend on
+   * `Array.prototype.sort` being stable, on the engine's sort algorithm, or on
+   * the order either list happened to be collected in. Ascending entity index is
+   * the same total order derived from state that `EntityQuery.execute` already
+   * guarantees and that ADR 0029 decision 7 commitment 3 already names.
+   */
   public update(context: SimulationContext): void {
+    const arriving: UrgencyRanked[] = [];
+    const idle: PlannedSelection[] = [];
+
     for (const entityId of this.query.execute()) {
       const index = this.store.getIndex(entityId);
       if (this.records.intakeStage[index] !== intakeStageIndex('completed')) continue;
@@ -149,12 +293,35 @@ export class ActionSystem implements SystemRegistration {
       }
 
       if (phase === 'travelling') {
-        this.continueTravelling(entityId, index, context.tick);
+        arriving.push({ entityId, index, urgency: this.committedActionUrgency(index) });
         continue;
       }
 
-      this.beginNextAction(entityId, index, context.tick);
+      idle.push(this.planIdleSelection(entityId, index, context.tick));
     }
+
+    arriving.sort(compareByNeedUrgency);
+    for (const arrival of arriving) this.continueTravelling(arrival.entityId, arrival.index, context.tick);
+
+    idle.sort(compareByNeedUrgency);
+    for (const plan of idle) this.beginNextAction(plan, context.tick);
+  }
+
+  /**
+   * How badly a traveller wants the action they are already walking to perform
+   * -- pass 2's ordering key.
+   *
+   * `needUrgency`'s counterpart for a prisoner who has already chosen: there is
+   * no candidate list to walk, because the choice was made in an earlier cycle
+   * and is recorded in `actionIndex`. Scored with the same `scoreAction` the
+   * selection half uses, so the two halves of the scan cannot disagree about
+   * what "urgent" means. An unreadable action index scores `0` and therefore
+   * sorts last, which is the same treatment `continueTravelling` gives it two
+   * lines later when it drops the prisoner back to `idle`.
+   */
+  private committedActionUrgency(index: number): number {
+    const action = DEFAULT_ACTIONS[this.currentAction.actionIndex[index]!];
+    return action === undefined ? 0 : scoreAction(this.needs, index, action);
   }
 
   /**
@@ -398,6 +565,36 @@ export class ActionSystem implements SystemRegistration {
   }
 
   /**
+   * What one idle prisoner *wants* this cycle, and how badly -- the half of the
+   * old `beginNextAction` that reads nothing but the prisoner.
+   *
+   * Split out for issue #434, so that the whole idle population can be planned,
+   * reordered by `compareByNeedUrgency` and only then executed. Everything it
+   * touches is that prisoner's own state plus the tick, so the split changes no
+   * answer: the block comes from a gapless schedule, the candidates from
+   * `DEFAULT_ACTIONS` filtered by that block, and the ranking from
+   * `rankActions`' total order over needs. `resolveTargetInstance` -- the one
+   * step that looks at a room and at the claims other prisoners have taken --
+   * stays in `beginNextAction` below, which is what keeps a claim visible to
+   * everybody scanned after the prisoner who took it.
+   */
+  private planIdleSelection(entityId: number, index: number, tick: number): PlannedSelection {
+    const classificationGroupId = classificationGroupIdFromIndex(this.records.classificationGroupIndex[index]!);
+    // The override, where one stands, *replaces* the timetable rather than
+    // narrowing it -- see `PrisonerRegimeOverrideResolver` for why an
+    // intersection would be the wrong shape. Everything downstream of this line
+    // is unchanged: the block is still resolved from a gapless schedule, the
+    // candidates are still `DEFAULT_ACTIONS` filtered by the block, and the
+    // walk is still ADR 0041's.
+    const schedule = this.regimeOverride(entityId, classificationGroupId) ?? findRegimeSchedule(this.regimeSchedules, classificationGroupId);
+    const block = resolveActiveRegimeBlock(schedule, tick);
+    const legalActions = DEFAULT_ACTIONS.filter((action) => isActionCategoryAllowed(action, block.allowedCategories));
+    const candidates = rankActions(this.needs, index, legalActions);
+    const urgency = needUrgency(this.needs, index, candidates, (action) => this.prisonProvides(entityId, action));
+    return { entityId, index, classificationGroupId, candidates, urgency };
+  }
+
+  /**
    * Picks and starts one action for a prisoner who is idle, **falling back to
    * the next-best legal candidate when the best one has nowhere to go** --
    * [ADR 0041](../../../docs/adr/0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md)
@@ -414,13 +611,21 @@ export class ActionSystem implements SystemRegistration {
    * prison at 1, 4 and 24 prisoners
    * (`tests/integration/cell-only-meal-fallback.test.ts` records the run).
    *
-   * The walk is the whole of the change. Nothing new is stored, no RNG is drawn,
-   * the population's iteration order is untouched, and the four determinism
-   * commitments of ADR 0029 decision 7 hold as they stood: the candidate order is
-   * `rankActions`' total order over state, and a candidate that fails to resolve
-   * or is refused a seat has written nothing when the next one is tried -- which
-   * is why the claim is still settled before the action index, the target and
-   * `actionsStarted`.
+   * The walk is the whole of *that* change. Nothing new is stored, no RNG is
+   * drawn, and the four determinism commitments of ADR 0029 decision 7 hold as
+   * they stood: the candidate order is `rankActions`' total order over state,
+   * and a candidate that fails to resolve or is refused a seat has written
+   * nothing when the next one is tried -- which is why the claim is still
+   * settled before the action index, the target and `actionsStarted`.
+   *
+   * **This paragraph also said "the population's iteration order is untouched",
+   * and since issue #434 and ADR 0062 that is no longer true.** It was exactly true of ADR
+   * 0041: the fallback changed what one prisoner does, not who is asked first.
+   * The order is now descending need urgency with an ascending-entity-index
+   * tie-break, `ActionSystem.update` carries the argument, and the sentence is
+   * marked rather than deleted because what it was claiming -- that ADR 0041
+   * bought its fix without touching ADR 0020's territory -- is still a true
+   * statement about ADR 0041.
    *
    * **The walk is unbounded, and that is decided rather than merely
    * unimplemented.** ADR 0041 open question 1 asked *"should a fallback be
@@ -447,20 +652,11 @@ export class ActionSystem implements SystemRegistration {
    * got a *worse* action than the one they wanted; that is a different number and
    * is not decided here (#435).
    */
-  private beginNextAction(entityId: number, index: number, tick: number): void {
-    const classificationGroupId = classificationGroupIdFromIndex(this.records.classificationGroupIndex[index]!);
-    // The override, where one stands, *replaces* the timetable rather than
-    // narrowing it -- see `PrisonerRegimeOverrideResolver` for why an
-    // intersection would be the wrong shape. Everything downstream of this line
-    // is unchanged: the block is still resolved from a gapless schedule, the
-    // candidates are still `DEFAULT_ACTIONS` filtered by the block, and the
-    // walk is still ADR 0041's.
-    const schedule = this.regimeOverride(entityId, classificationGroupId) ?? findRegimeSchedule(this.regimeSchedules, classificationGroupId);
-    const block = resolveActiveRegimeBlock(schedule, tick);
-    const legalActions = DEFAULT_ACTIONS.filter((action) => isActionCategoryAllowed(action, block.allowedCategories));
+  private beginNextAction(plan: PlannedSelection, tick: number): void {
+    const { entityId, index, classificationGroupId } = plan;
     const currentTile: TilePosition = { x: tileCoordinate(this.position.tileX[index]!), y: tileCoordinate(this.position.tileY[index]!) };
 
-    for (const chosen of rankActions(this.needs, index, legalActions)) {
+    for (const chosen of plan.candidates) {
       const target = this.resolveTargetInstance(entityId, chosen);
       if (target === undefined) continue;
 
@@ -494,6 +690,31 @@ export class ActionSystem implements SystemRegistration {
     }
 
     this.unmetDemandCycles += 1;
+  }
+
+  /**
+   * Could this prisoner take this action **in an empty prison** -- is there
+   * anywhere in this prison it could ever be performed?
+   *
+   * `resolveTargetInstance` without the contention, and the pair have to stay
+   * that way round. This one answers `needUrgency`'s providability question and
+   * therefore decides the *order* the scan runs in, so it must not read a use
+   * claim: see `RoomInstanceRegistry.hasPlaceForUse` for why a key that did
+   * would stop being a function of state. `resolveTargetInstance` keeps the
+   * claims and runs per prisoner in the execution half, where a claim taken by
+   * an earlier prisoner is supposed to be visible.
+   *
+   * The `own-accommodation` branch is identical to `resolveTargetInstance`'s
+   * because that branch never consulted a claim in the first place: it resolves
+   * by instance id, which is the asymmetry `claimUseIfNeeded` documents at
+   * length.
+   */
+  private prisonProvides(entityId: number, action: ActionDefinition): boolean {
+    if (action.target.kind === 'own-accommodation') {
+      const instanceId = this.coldState.getAccommodation(entityId);
+      return instanceId !== undefined && this.roomInstances.getById(instanceId) !== undefined;
+    }
+    return this.roomInstances.hasPlaceForUse(action.target.roomCatalogId, action.requiredObjectCapability);
   }
 
   private resolveTargetInstance(entityId: number, action: ActionDefinition): RoomInstance | undefined {

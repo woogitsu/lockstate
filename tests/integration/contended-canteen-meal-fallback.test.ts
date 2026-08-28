@@ -281,15 +281,26 @@ describe('six prisoners and a canteen that seats three', () => {
      * stays above two thirds of `NEED_MAX` at their worst.
      */
     /*
-     * Two levels lower than the 177.5 / 178.5 this recorded before ADR 0054,
-     * which is 40 ticks of `NEED_DECAY_PER_TICK.hunger` -- two `ActionSystem`
-     * reconsideration cadences, the delay an association running past the
-     * `[1000,1200)` boundary puts in front of the first meal of the next
-     * block. It is when they eat, not whether: the point of the assertion is
-     * the line under it, and every one of the six is still above two thirds of
-     * `NEED_MAX` at their worst.
+     * **This read `[175.5, 175.5, 175.5, 177.5, 177.5, 177.5]` until issue
+     * #434, and the reason it had two values is the reason it now has one.**
+     * The comment here used to explain the 175.5 as 40 ticks of
+     * `NEED_DECAY_PER_TICK.hunger` -- two `ActionSystem` reconsideration
+     * cadences of extra delay in front of the first three prisoners' first meal
+     * of a block, put there by an association running past the `[1000,1200)`
+     * boundary. That reading was right, and what it was describing was the scan
+     * position: the two levels were the price of being at the head of an
+     * ascending-index walk that reaches the canteen before the association has
+     * finished handing the seats out.
+     *
+     * Ordering the contended scan by need urgency removes the price by removing
+     * the position. Every one of the six now bottoms out at exactly the same
+     * hunger, and that equality is the change: it is not that they eat more --
+     * `run.perPrisoner` above is unmoved to the tick, canteen and cell alike --
+     * it is that no prisoner is systematically served two cadences later than
+     * another for a reason that has nothing to do with how hungry they are.
      */
-    expect(run.lowestHunger).toEqual([175.5, 175.5, 175.5, 177.5, 177.5, 177.5]);
+    expect(run.lowestHunger).toEqual([177.5, 177.5, 177.5, 177.5, 177.5, 177.5]);
+    expect(new Set(run.lowestHunger).size, 'scan position no longer costs anybody two levels of hunger (#434)').toBe(1);
     for (const [n, hunger] of run.lowestHunger.entries()) {
       expect(hunger, `prisoner ${n} was starved to the floor`).toBeGreaterThan(0);
     }

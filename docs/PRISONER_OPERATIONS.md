@@ -283,12 +283,18 @@ category, so a prison with no canteen chose the canteen for ever and fed
 nobody: measured at 0 performing ticks of `action.eat-in-cell` and hunger
 pinned at the floor, at 1, 4 and 24 prisoners alike, so it was never a
 contention effect. `tests/integration/cell-only-meal-fallback.test.ts` is the
-run. Ordering the *contended* scan by need urgency is
+run.
+
+**Ordering the *contended* scan by need urgency was
 [ADR 0041](./adr/0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md)
-decision 2 and
-is deliberately not done -- ADR 0029 decision 5's unfairness is unchanged, and
-under contention a loser now eats a worse meal rather than nothing, which is
-measured in `tests/integration/contended-canteen-meal-fallback.test.ts`.
+decision 2's tracked successor, and this paragraph said it "is deliberately not
+done". It is done now (issue #434), so both halves of the old sentence have
+moved.** What it said next -- *"ADR 0029 decision 5's unfairness is unchanged,
+and under contention a loser now eats a worse meal rather than nothing"* -- was
+true of ADR 0041 and is still the right description of *that* change; it is no
+longer a description of the tree. `ActionSystem.update` now runs in three
+passes and the two that contend are ordered by need urgency; see *Contention*
+below.
 
 The one intentional RNG use in this whole slice is
 `classification.ts`'s screening-variance draw (issue #24: "deterministic
@@ -386,11 +392,48 @@ that are worth stating here rather than leaving to be discovered:
   pays per residency slot and a prisoner at lunch earns one prisoner-day, not
   two; `src/simulation/economy/income.ts` had named that exact condition as one
   that had to be settled before this landed.
-- **Contention is decided by ascending entity index**, which is
+- **Contention is decided by need urgency, and by ascending entity index only
+  where two prisoners are exactly as urgent as each other** — issue #434 and
+  [ADR 0062](./adr/0062-who-gets-the-room-when-more-prisoners-want-it-than-it-seats.md),
+  taking [ADR 0041](./adr/0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md)
+  decision 2 and the fairness half of
+  [ADR 0029](./adr/0029-concurrent-room-use-claims.md) decision 5.
+  **This bullet read "Contention is decided by ascending entity index, which is
   `EntityQuery.execute`'s order and therefore the order the reconsideration scan
-  already runs in. There is no queue and no rotation: when more prisoners want a
-  room than it seats, the ones later in the scan are refused, counted in
-  `unmetDemandCycles`, and retry on the next cycle.
+  already runs in"**, and that is what it was: one ascending pass, so the
+  prisoners scanned last lost every time and, because the winners' needs were
+  refilled and the losers' were not, the losing set never reopened. Measured on
+  `origin/main` at `c00b641`: 24 prisoners and a two-head shower room over
+  40,000 ticks left the two highest-index prisoners with **zero** showers and
+  six of the 24 sitting at hygiene 0.0.
+
+  `ActionSystem.update` now runs three passes. Pass 1 advances every
+  `performing` prisoner in ascending index -- order irrelevant, and it releases
+  every seat freed this cycle before anybody competes for one. Pass 2 admits the
+  **arrivals**, ordered by how badly each wants the action they walked for; that
+  is where a room reached on foot is actually won, because ADR 0029 decision 2
+  takes the claim on arrival. Pass 3 runs the **idle selections**, ordered by
+  `needUrgency` -- the score of the highest-ranked candidate the prison can
+  actually provide. Both orders tie-break on ascending entity index, which is
+  unique among live prisoners and therefore makes the comparator total.
+
+  There is still no queue and no rotation, and no state was added: the keys are
+  pure functions of needs, the regime block and the room instances, so no save
+  key moved and ADR 0029 decision 6 is untouched. A prisoner who is refused is
+  still counted in `unmetDemandCycles` and retries on the next cycle -- what has
+  changed is that they rise up the order while they wait.
+
+  **What it does not fix, stated because the issue's title implies otherwise.**
+  Where the contending prisoners are in *identical* need states the urgency key
+  has nothing to separate them by and the tie-break reproduces the old order
+  exactly. That is not hypothetical: a canteen is the case, because
+  `action.eat-in-cell` keeps everybody's hunger topped up, and 24 prisoners
+  against a six-seat canteen sit at the same stored hunger unit at the moment
+  every meal block opens. Prisoners 12 to 23 still never enter that canteen --
+  and no measurement distinguishes them from the twelve who do, so there is no
+  state-derived reason to prefer either. `tests/integration/contended-shower-fairness.test.ts`
+  records both halves, and ADR 0062 open question 1 costs the two ways of
+  rotating identical contenders without taking either.
 - **Nothing a player can build is affected yet, and that is the honest
   reading.** Every room type whose actions resolve by catalogue id derives its
   ceiling from the objects in it. **This paragraph used to read "the two
