@@ -93,10 +93,20 @@ describe('status strip: which metrics exist, in what order', () => {
      * simulation publishes may be shown; anything implying the half that does
      * not exist may not.
      *
-     * Nothing credits or debits the treasury on a schedule -- no income, no
-     * payroll, no running cost -- so a `budget`, a `cost` or a `wage` on the
-     * strip would be a number no system produces. `fund` is admitted only as
-     * the metric id and label key this change adds.
+     * **The sentence here used to be false and is kept in both directions.**
+     * It read: *"Nothing credits or debits the treasury on a schedule -- no
+     * income, no payroll, no running cost -- so a `budget`, a `cost` or a
+     * `wage` on the strip would be a number no system produces."* The income
+     * clause stopped being true at `4f711d5` (#311), which is the change that
+     * added the `earned-today` metric this same file asserts on; the payroll
+     * clause stopped being true with ADR 0042 step 3.
+     *
+     * What the assertion below still guards, and it is a real thing: the
+     * simulation now publishes `dailyWageBillMinorUnits` and
+     * `unpaidWagesMinorUnits` and **the strip renders neither**, so a money
+     * word appearing here would be a metric with nothing behind it -- exactly
+     * the failure the original rule was written for, arrived at from the
+     * opposite side. `fund` is admitted only as the metric id and label key.
      */
     const metrics = projectStatusMetrics(counts({ prisoners: 12, treasuryMinorUnits: 24_920 }));
     const serialized = JSON.stringify(metrics);

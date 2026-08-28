@@ -5,7 +5,14 @@ export {
   stateIncomeForCompletedDay,
   type OccupiedPlaceSource,
 } from './income';
+export {
+  PayrollSystem,
+  dailyWageBillMinorUnits,
+  type PayrollSnapshot,
+  type PayrollStaffSource,
+} from './payroll';
 export { Treasury, TREASURY_STARTING_BALANCE_MINOR_UNITS, type TreasurySnapshot } from './treasury';
+export { staffDailyWageMinorUnits } from './wages';
 export {
   MAX_PURCHASE_QUANTITY,
   ProcurementSystem,
