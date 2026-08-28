@@ -50,10 +50,10 @@ import type { SimulationRuntime } from './new-session';
  *    registry directly (doors, sector definitions, room instances, the
  *    runtime's mutable configuration arrays) it sorts explicitly.
  * 2. **Population-shaped, never capacity-shaped.** `DEFAULT_PRISONER_CAPACITY`
- *    is 5,000 slots; writing eighteen per-prisoner component arrays at that
- *    allocation would cost **~298 KiB (305,332 bytes) in every save even for a
- *    prison with no prisoners at all** — the exact mistake #50 removed from
- *    the entity ledger. See `encodePrisonerComponents` for what is written
+ *    is 5,000 slots; writing the eighteen *persisted* per-prisoner component
+ *    arrays at that allocation would cost **~298 KiB (305,332 bytes) in every
+ *    save even for a prison with no prisoners at all** — the exact mistake #50
+ *    removed from the entity ledger. See `encodePrisonerComponents` for what is written
  *    instead.
  *
  *    That figure is the JSON size of the encoded shape at 5,000 slots with
@@ -88,12 +88,20 @@ import type { SimulationRuntime } from './new-session';
  * prefix costs nothing for them.
  *
  * Until #111 that residue was also future behaviour: `admitPrisoner` reset
- * five of the eighteen arrays, so recycling a freed index handed the next
+ * five of the then eighteen arrays, so recycling a freed index handed the next
  * prisoner the previous one's needs, classification and action state. It now
- * resets all eighteen, so a dead slot's contents can no longer become a live
- * prisoner's starting state. Whether the payload could therefore shrink to
- * the live indices only is a save-format change and a decision of its own;
- * writing the prefix is correct either way, and is what this codec does.
+ * resets **all twenty**, so a dead slot's contents can no longer become a live
+ * prisoner's starting state. **This sentence read "all eighteen", and the
+ * eighteen and the twenty are now two different sets**: #435 added
+ * `SubstitutionRecordComponent`'s two arrays, which `admitPrisoner` resets and
+ * this codec deliberately does not write -- they are diagnostics, not state any
+ * system reads back, and issue #435 puts a save-schema change out of scope. The
+ * payload's eighteen is the number the size claim above is about; the reset's
+ * twenty is the number `tests/unit/prisoner-slot-recycling.test.ts` pins.
+ *
+ * Whether the payload could therefore shrink to the live indices only is a
+ * save-format change and a decision of its own; writing the prefix is correct
+ * either way, and is what this codec does.
  *
  * Why plain arrays and not run-length encoding (which `entities` uses):
  * needs levels, positions and tick stamps differ per prisoner, so RLE would
@@ -734,7 +742,14 @@ export function restoreSessionSystems(
       currentActionTargetInstanceId: systems.prisoners.coldState.currentActionTargetInstanceId.map(([id, value]) => [id, value] as [number, string]),
     },
     roomInstanceOccupancy: systems.prisoners.roomInstanceOccupancy.map(([id, occupants]) => [id, [...occupants]] as const),
-  });
+  },
+  // The tick the restored session resumes at, which `Kernel.restoreState` has
+  // already installed by the time this runs -- `restoreSimulationRuntime` calls
+  // it before this function. Its only use is stamping
+  // `ActionMetrics.substitutionsCountedSinceTick`: the substitution counters
+  // are per prisoner and no save carries them (issue #435), so a restore opens
+  // a new counting window and this is the number that says so out loud.
+  runtime.kernel.tick);
 
   // 4. Operations.
   runtime.containers.loadSnapshot(systems.operations.containers);

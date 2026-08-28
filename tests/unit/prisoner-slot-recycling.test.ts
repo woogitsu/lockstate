@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { Kernel } from '../../src/simulation/kernel/kernel';
-import { ACTION_PHASES, CurrentActionComponent, PositionComponent, PrisonerRecordComponent, intakeStageIndex } from '../../src/simulation/prisoners/components';
+import {
+  ACTION_PHASES,
+  CurrentActionComponent,
+  PositionComponent,
+  PrisonerRecordComponent,
+  SubstitutionRecordComponent,
+  intakeStageIndex,
+} from '../../src/simulation/prisoners/components';
 import { NEED_IDS, NEED_MAX_SCALED, NeedsComponent } from '../../src/simulation/prisoners/needs';
 import type { PrisonerOperationsRuntime } from '../../src/simulation/prisoners/prisoner-operations-runtime';
 import { deriveXoshiroState } from '../../src/simulation/rng/seed';
@@ -81,6 +88,7 @@ function componentsUnderTest(): readonly {
     { name: 'NeedsComponent', runtimeKey: 'needs', make: () => new NeedsComponent(CAPACITY) },
     { name: 'CurrentActionComponent', runtimeKey: 'currentAction', make: () => new CurrentActionComponent(CAPACITY) },
     { name: 'PositionComponent', runtimeKey: 'position', make: () => new PositionComponent(CAPACITY) },
+    { name: 'SubstitutionRecordComponent', runtimeKey: 'substitutions', make: () => new SubstitutionRecordComponent(CAPACITY) },
   ];
 }
 
@@ -122,24 +130,37 @@ const SLOT_DEFAULTS: Readonly<Record<string, number>> = {
   'currentAction.needFulfilledLastTick': 0,
   'position.tileX': 0,
   'position.tileY': 0,
+  // Nobody has been served worse than they asked for in a slot nobody has
+  // occupied, and a prisoner admitted into a recycled one starts their own
+  // sentence with their own count (#435).
+  'substitutions.substitutionCycles': 0,
+  'substitutions.contendedSubstitutionCycles': 0,
 };
 
 describe('per-prisoner component slot defaults', () => {
-  it('counts eighteen per-slot arrays across the four index-keyed components', () => {
+  it('counts twenty per-slot arrays across the five index-keyed components', () => {
     const perComponent = componentsUnderTest().map((entry) => [entry.name, slotArraysOf(entry.make()).size] as const);
 
-    // Both `session-systems.ts` and `docs/PERSISTENCE.md` state "eighteen
-    // per-prisoner component arrays" when justifying the save payload's
-    // shape, and `admitPrisoner` has to reset all of them. A nineteenth
-    // array fails here, which is the prompt to update the reset list, the
-    // codec and both documents together.
+    // **The two numbers here are no longer one number, and that is the point.**
+    // `admitPrisoner` has to reset every array below -- twenty since #435 --
+    // while `session-systems.ts` and `docs/PERSISTENCE.md` say "eighteen
+    // per-prisoner component arrays" about the *payload*, which is the same
+    // list minus `SubstitutionRecordComponent`'s two: they are diagnostics, no
+    // save carries them, and a restore clears them rather than migrating them
+    // (see that component). This assertion used to read eighteen across four
+    // components and pinned both facts at once; it now pins the reset's total
+    // and names the persisted subset, so a twenty-first array still fails here
+    // and the prompt is to say which of the two lists it joins.
     expect(perComponent).toEqual([
       ['PrisonerRecordComponent', 6],
       ['NeedsComponent', 6],
       ['CurrentActionComponent', 4],
       ['PositionComponent', 2],
+      ['SubstitutionRecordComponent', 2],
     ]);
-    expect(perComponent.reduce((total, [, count]) => total + count, 0)).toBe(18);
+    expect(perComponent.reduce((total, [, count]) => total + count, 0)).toBe(20);
+    const persisted = perComponent.filter(([name]) => name !== 'SubstitutionRecordComponent');
+    expect(persisted.reduce((total, [, count]) => total + count, 0)).toBe(18);
   });
 
   it('pins the value of every default, not only that reset agrees with construction', () => {
@@ -157,7 +178,7 @@ describe('per-prisoner component slot defaults', () => {
       for (const [path, array] of dirtiedArrays) afterReset.set(`${runtimeKey}.${path}`, array[slot]!);
     }
 
-    // A nineteenth array has to state its default here as well as in its
+    // A twenty-first array has to state its default here as well as in its
     // component's list -- the count assertion above says an array was added,
     // this one says nobody decided what it should read as when unoccupied.
     expect([...fresh.keys()].sort()).toEqual(Object.keys(SLOT_DEFAULTS).sort());
@@ -236,11 +257,13 @@ describe('admitting a prisoner into a recycled index', () => {
     const runtime = fixture.prisoners;
 
     const resettable = resettableComponentsOf(runtime);
-    // Pinned so that a fifth index-keyed component added to the runtime shows
-    // up here rather than being silently left out of `admitPrisoner` -- the
-    // component-level twin of the array-level count assertion above. Once
-    // listed, the loop below covers it with no further edit.
-    expect([...resettable.keys()].sort()).toEqual(['currentAction', 'needs', 'position', 'records']);
+    // Pinned so that a **sixth** index-keyed component added to the runtime
+    // shows up here rather than being silently left out of `admitPrisoner` --
+    // the component-level twin of the array-level count assertion above. Once
+    // listed, the loop below covers it with no further edit. The fifth arrived
+    // with #435 and was added by extending this list, which is what the
+    // assertion is for.
+    expect([...resettable.keys()].sort()).toEqual(['currentAction', 'needs', 'position', 'records', 'substitutions']);
 
     const first = runtime.admitPrisoner({ sentenceLengthTicks: 400_000, priorIncidents: 3 }, fixture.originTile);
     const index = runtime.entityStore.getIndex(first);
@@ -265,6 +288,7 @@ describe('admitting a prisoner into a recycled index', () => {
       ['needs', new NeedsComponent(CAPACITY)],
       ['currentAction', new CurrentActionComponent(CAPACITY)],
       ['position', new PositionComponent(CAPACITY)],
+      ['substitutions', new SubstitutionRecordComponent(CAPACITY)],
     ] as const) {
       for (const [path, array] of slotArraysOf(component)) freshDefaults.set(`${name}.${path}`, array[0]!);
     }

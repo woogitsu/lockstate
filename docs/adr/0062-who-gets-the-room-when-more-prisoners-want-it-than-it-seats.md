@@ -323,6 +323,44 @@ What remains is that a room the player built is used by only half the
 population, for ever, which is a *playability* complaint rather than a
 correctness one — and `AGENTS.md` says playability counts as correctness here.
 
+> **Amended 2026-08-28 (#435). The two paragraphs above were measured at
+> `c00b641` and are no longer a description of the tree — and the difference is
+> not small enough to leave unmarked.** Both were taken before
+> [ADR 0059](./0059-how-an-actor-gets-from-one-tile-to-the-next.md) made a
+> prisoner *walk* to the room instead of appearing in it. #435's instrument was
+> checked against them first, as its brief required, by rebuilding this prison
+> exactly — 24 prisoners admitted **in one tick**, one dormitory with 24 beds
+> and 24 toilets, a six-seat canteen, **no shower room**, 30,000 ticks — and
+> running it on both trees:
+>
+> | | `c00b641`, where this was measured | `aefd8fc`, today's `main` |
+> | --- | --- | --- |
+> | canteen entries per prisoner over twelve days | 19 ×6, 20 ×6, **0 ×12** | 8 ×6, 6 ×6, **3 ×12** |
+> | stored hunger when the midday meal block opens | **`36300`**, one value for all 24 | three distinct values |
+> | lowest stored hunger anybody reaches | 35,500 | **3,500** (17.5 of `NEED_MAX`) |
+> | `unmetDemandCycles` | 192 | 342 |
+>
+> So: the old numbers reproduce **exactly** on the tree they were taken on —
+> `36300` and the twelve zeroes are right, and this document's canteen paragraph
+> was sound when written. On today's `main` the residue is **not total** (the
+> twelve enter three times each rather than never) and its need cost is **not
+> nil** (17.5 of 255 against 179.5 before). It is therefore no longer only a
+> playability complaint: prisoners at a canteen that is too small now go
+> measurably hungrier than prisoners in a prison with **no canteen at all**,
+> which reaches 35,700 — because a cell meal costs a rate and a wasted walk to a
+> full canteen costs a meal block.
+>
+> **Nothing was done about it, deliberately.** #435's scope is the instrument;
+> the two options costed below are still the options, and whichever is taken now
+> has a welfare argument behind it and not only a fairness one. The
+> reconstruction is `tests/integration/contended-canteen-substitution-cost.test.ts`,
+> which pins today's numbers; the `c00b641` column was taken by running the same
+> scenario in a worktree at that commit and is not reproducible from this branch.
+>
+> One precision, since this document says *"each meal block"*: at `c00b641` the
+> single-value reading is per block rather than one value across the day — all
+> 24 read `36300` when the midday block opens, and ~`44300` at the other two.
+
 Two ways to rotate them, with their real costs:
 
 - **Option C, the per-room round-robin cursor** (ADR 0041's rejected
@@ -342,7 +380,7 @@ Two ways to rotate them, with their real costs:
   is otherwise stable, which no other part of this kernel does.
 
 Both need the substitution counter of **#435** to be measurable at all — see
-open question 3.
+open question 3, which is now closed and gives them one.
 
 ### 2. The determinism guard is a regression guard, not a demonstrated tripwire
 
@@ -387,3 +425,28 @@ shower half needed no such instrument, because hygiene has no substitute and the
 need level *is* the readout. #435's substitution counter is the production
 answer and is the natural first consumer of any decision taken on open question
 1.
+
+> **Closed 2026-08-28. The counter exists**, and the paragraph above is kept
+> because it is the specification it was built to:
+> `ActionMetrics.substitutionCycles` and `contendedSubstitutionCycles`, with the
+> per-prisoner breakdown in `SubstitutionRecordComponent`, split on
+> `RoomInstanceRegistry.hasPlaceForUse` — the same providability question
+> decision 3 above forbids from reading a claim, asked once per idle prisoner
+> per cycle and reused rather than asked twice. No save carries it, nothing
+> reads it back into a decision, no version moved, and the contended canteen run
+> is byte-identical with and without it. The argument for a count rather than a
+> score gap, and for the per-prisoner half, is in
+> [ADR 0041](./0041-what-happens-when-a-prisoners-chosen-action-has-nowhere-to-go.md)
+> open question 2's amendment; the run is
+> `tests/integration/contended-canteen-substitution-cost.test.ts`.
+>
+> **One sentence above no longer describes the tree.** *"In a housed prison it
+> is 0"* is true of `unmetDemandCycles` in an uncontended prison and false in a
+> contended one since
+> [ADR 0059](./0059-how-an-actor-gets-from-one-tile-to-the-next.md): a prisoner
+> who walks to a canteen and is turned away at the door counts an unmet cycle
+> for the wasted journey. Measured on the reconstruction in *open question 1*'s
+> amendment below — 342 unmet cycles with a six-seat canteen, **0** with a
+> canteen that seats everybody and **0** with no canteen at all. So the metric
+> is not quite blind any more; what it still cannot do is say *who*, which is
+> the half this issue was about.

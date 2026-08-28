@@ -142,8 +142,59 @@ export function needUrgency(
   rankedCandidates: readonly ActionDefinition[],
   provided: (action: ActionDefinition) => boolean,
 ): number {
-  for (const action of rankedCandidates) {
-    if (provided(action)) return scoreAction(needs, index, action);
+  return urgencyOfProvidedCandidate(needs, index, rankedCandidates, firstProvidedCandidateIndex(rankedCandidates, provided));
+}
+
+/**
+ * Where in the ranked list the prison's answer starts: the position of the
+ * **highest-ranked candidate the prison can provide**, or `-1` when it can
+ * provide none of them.
+ *
+ * `needUrgency`'s first half, split out for issue #435 rather than duplicated
+ * there, because the position and the score are two readings of one fact and a
+ * second copy of the walk could disagree with this one. The doc above is the
+ * argument for what `provided` may and may not ask; this is the loop that asks
+ * it.
+ *
+ * **The position is what separates two kinds of "served worse".** Everything
+ * ranked above the answer is a want this prison has nowhere to satisfy -- no
+ * canteen has been built, no shower room stands -- and everything between the
+ * answer and the action a prisoner actually starts is a place that exists and
+ * that somebody else is in. `ActionSystem.beginNextAction` counts those two as
+ * different numbers on exactly this boundary, and neither is visible without
+ * it. See `SubstitutionRecordComponent`.
+ *
+ * Pure, and evaluated **once** per idle prisoner per cycle: `provided` reaches
+ * `RoomInstanceRegistry.hasPlaceForUse`, so the caller keeps this answer rather
+ * than asking again for the score.
+ */
+export function firstProvidedCandidateIndex(
+  rankedCandidates: readonly ActionDefinition[],
+  provided: (action: ActionDefinition) => boolean,
+): number {
+  // An indexed loop rather than `entries()`: this runs once per idle prisoner
+  // per reconsideration cycle, and `entries()` allocates a two-element tuple
+  // per candidate for a position a counter already has.
+  for (let position = 0; position < rankedCandidates.length; position += 1) {
+    if (provided(rankedCandidates[position]!)) return position;
   }
-  return 0;
+  return -1;
+}
+
+/**
+ * `needUrgency`'s second half: the score of the candidate
+ * `firstProvidedCandidateIndex` found, or `0` for a prisoner whose every want
+ * is unprovidable.
+ *
+ * Taking the position rather than re-walking the list is what makes the two
+ * halves cost one pass over `provided` between them.
+ */
+export function urgencyOfProvidedCandidate(
+  needs: NeedsComponent,
+  index: number,
+  rankedCandidates: readonly ActionDefinition[],
+  providedIndex: number,
+): number {
+  const action = providedIndex < 0 ? undefined : rankedCandidates[providedIndex];
+  return action === undefined ? 0 : scoreAction(needs, index, action);
 }

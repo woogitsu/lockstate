@@ -483,6 +483,24 @@ every unmet demand there was a routing failure. They now differ by 8,058, and
 that difference is the capacity refusals this change introduced: demand that was
 previously invisible because it was silently satisfied.
 
+> **Amended 2026-08-28 (#435): this table has two more rows available, and the
+> four it already has are unchanged.** `substitutionCycles` and
+> `contendedSubstitutionCycles` count a prisoner who *was* served, and worse
+> than they asked for — the case ADR 0041 decision 1 created and nothing
+> counted. Re-derived on this same scenario at `aefd8fc` (250 actors, seed
+> `0x5eed5eed`, 2,500 ticks, admitted through the test's own generator):
+> `substitutionCycles` **3,956** and `contendedSubstitutionCycles` **356**, with
+> a per-prisoner spread of 0..29 and 0..3 respectively.
+>
+> **Those two are a re-derivation and the four above are not**, which is the
+> distinction that matters for reading this section. The `main` and `this
+> branch` columns are a before/after of *this* decision at `84e247c`; five
+> merges of prisoner behaviour later — ADR 0041's fallback, #434's ordering,
+> ADR 0059's walk — the same scenario now measures `actionsStarted` 11,828,
+> `actionsCompleted` 714, `unmetDemandCycles` 11,004 and `routeFailures` 10,903.
+> The table is not restated with those, because what it records is a delta this
+> change caused and not a current reading of the fixture.
+
 `totalOccupancy` is unchanged, which is decision 1's whole point: the economy
 does not move.
 

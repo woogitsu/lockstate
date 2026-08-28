@@ -312,6 +312,15 @@ re-read.** 1 and 3 are one issue because answering either answers the other:
 >   Read ADR 0054's amendment before relying on that sentence — the enforcement
 >   is measurably narrower than its main text claims.
 > - Question 2 is still open and still #435.
+>
+> **Amended 2026-08-28, second pass. Question 2 is answered too.** #435 built
+> the counter, and the answer to *"what should `unmetDemandCycles` count now?"*
+> is **nothing different** -- a *second* number counts a prisoner who was served
+> worse, and this document's own guess that `unmetDemandCycles` "should probably
+> count" it is the half that was wrong. See the amendment under question 2
+> itself for the argument and the numbers. No ADR was taken for it: it adds no
+> iteration order, no RNG, no save key and no behaviour at all -- the contended
+> canteen run is byte-identical with and without the counters.
 
 1. **Should a fallback be bounded?** Walking the whole list means a prisoner
    always does *something* if anything resolves. Whether that is right, or
@@ -320,6 +329,37 @@ re-read.** 1 and 3 are one issue because answering either answers the other:
    prisoner who did nothing. After A it should probably count a prisoner who got
    a worse action than the one they wanted, which is a different and more useful
    number — and the readout B waits on is the natural consumer.
+
+   > **Answered 2026-08-28 by issue #435, and the answer is that
+   > `unmetDemandCycles` should keep counting exactly what it counts.** The
+   > sentence above proposes redefining it; redefining a metric inside the
+   > behaviour change that made it uninteresting would have hidden both, which
+   > is why ADR 0041's own implementing commit held its meaning still. What
+   > #435 added instead is a second pair of numbers:
+   >
+   > - **`ActionMetrics.substitutionCycles`**, with the per-prisoner breakdown
+   >   `SubstitutionRecordComponent` behind it — a cycle in which a prisoner
+   >   *began* an action ranked below their first choice. Disjoint from
+   >   `unmetDemandCycles` by construction, so the pair reads as "got nothing"
+   >   against "got less".
+   > - **`contendedSubstitutionCycles`** — the subset where the prison had
+   >   somewhere to perform the first choice and this prisoner did not get it,
+   >   split from the rest on `RoomInstanceRegistry.hasPlaceForUse`, the
+   >   question [ADR 0062](./0062-who-gets-the-room-when-more-prisoners-want-it-than-it-seats.md)
+   >   decision 3 already forbids from reading a claim, and which the scan's
+   >   ordering key already asks.
+   >
+   > **Per prisoner and not by degree.** A score gap is a difference of
+   > utilities at the instant of choosing, in `deficit × effect` units that are
+   > not comparable across needs; for a canteen it reduces to the hunger
+   > deficit, so it would measure *when in the meal block* the refusal landed
+   > rather than what it cost. What a downgrade costs is a need level, which
+   > the save already carries. Measured across three prisons in
+   > `tests/integration/contended-canteen-substitution-cost.test.ts`, the
+   > population downgraded **most** — 6,264 times, in a prison with no canteen
+   > at all — is the best fed of the three, and the one downgraded 4,782 times
+   > at a six-seat canteen is the worst. A count and a cost are two quantities,
+   > and this records the count.
 3. **Do `action.shower` and the two recreation actions want cell-side
    siblings**, or is their contention B's to fix? They have no fallback at all
    today, so A leaves them exactly as they are.

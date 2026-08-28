@@ -14,6 +14,7 @@ import {
   PositionComponent,
   PrisonerColdState,
   PrisonerRecordComponent,
+  SubstitutionRecordComponent,
   intakeStageIndex,
 } from '../../src/simulation/prisoners/components';
 import { NeedsComponent } from '../../src/simulation/prisoners/needs';
@@ -141,6 +142,7 @@ function buildContentionFixture(options: {
   const needs = new NeedsComponent(slots);
   const currentAction = new CurrentActionComponent(slots);
   const position = new PositionComponent(slots);
+  const substitutions = new SubstitutionRecordComponent(slots);
   const coldState = new PrisonerColdState();
   const roomInstances = options.registry ?? new RoomInstanceRegistry();
 
@@ -172,6 +174,7 @@ function buildContentionFixture(options: {
     needs,
     currentAction,
     position,
+    substitutions,
     coldState,
     roomInstances,
     navigation,
