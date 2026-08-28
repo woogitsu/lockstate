@@ -24,6 +24,7 @@ import {
   IncidentTriggerSystem,
   SectorRiskTracker,
   TunnelRegistry,
+  createRiotRegimeOverride,
   type SectorOccupantResolver,
   type SectorRiskSampler,
 } from '../incidents';
@@ -368,6 +369,21 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     navigation,
     identity: actorIdentity,
     disciplinaryEvidence,
+    /*
+     * The riot's effect on its participants' day
+     * ([ADR 0057](../../../docs/adr/0057-what-a-riot-does-to-a-prisoners-day.md)).
+     * It reads the log this call already takes `disciplinaryEvidence` over, and
+     * is the second reason `incidents` is constructed above this statement
+     * rather than beside the systems that write it.
+     *
+     * A closure over the log rather than a value, for the reason the sentence
+     * above `disciplinaryEvidence` gives about `all()` versus `drain()`: the
+     * answer has to be the log's *current* contents on the tick it is asked,
+     * and `ActionSystem` asks on every reconsideration cycle. It holds no state
+     * of its own, so nothing here has to be snapshotted -- see
+     * `createRiotRegimeOverride`.
+     */
+    regimeOverride: createRiotRegimeOverride(incidents),
     gangs,
     jobWorkers,
   });

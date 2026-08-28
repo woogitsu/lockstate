@@ -20,7 +20,7 @@ import { NEED_IDS, NEED_MAX, NeedsComponent } from '../../src/simulation/prisone
 import { DAY_LENGTH_TICKS, DEFAULT_REGIME_SCHEDULES, type RegimeSchedule } from '../../src/simulation/prisoners/regime';
 import { RoomInstanceRegistry } from '../../src/simulation/prisoners/room-instance-registry';
 import { isActionCategoryAllowed, rankActions, scoreAction } from '../../src/simulation/prisoners/utility-ai';
-import { applyRiotRegimeOverride, RIOT_ALLOWED_CATEGORIES } from '../../src/simulation/incidents/riot-regime';
+import { buildRiotRegimeSchedule, RIOT_ALLOWED_CATEGORIES } from '../../src/simulation/incidents/riot-regime';
 import { buildCellBlockFixture } from '../helpers/navigation-fixture';
 
 /**
@@ -39,17 +39,29 @@ import { buildCellBlockFixture } from '../helpers/navigation-fixture';
  * to `unmetDemandCycles` on every reconsideration of every day the riot lasted.
  *
  * These tests step the real kernel with the real `NavigationSystem` and the
- * real riot schedule, and they are deliberately *unit*-scale: the riot regime
- * has no producer in `src/` (`applyRiotRegimeOverride` is called from tests
- * alone, and `ActionSystem.regimeSchedules` is a `readonly` constructor field
- * with no setter), so an integration test that provoked one would be asserting
- * against a state a session cannot reach. Constructing the system with the
- * overridden array is the honest way to drive the schedule that exists.
+ * real riot schedule, and they are deliberately *unit*-scale.
+ *
+ * **The reason they were unit-scale has been withdrawn, and the scale is kept
+ * anyway.** This paragraph used to read: "the riot regime has no producer in
+ * `src/` (`applyRiotRegimeOverride` is called from tests alone, and
+ * `ActionSystem.regimeSchedules` is a `readonly` constructor field with no
+ * setter), so an integration test that provoked one would be asserting against
+ * a state a session cannot reach." Since
+ * [ADR 0057](../../docs/adr/0057-what-a-riot-does-to-a-prisoners-day.md) a
+ * session does reach it, and
+ * `tests/integration/riot-regime-loop.test.ts` provokes a real riot through
+ * real commands and measures the day either side of it. What these cases are
+ * for is the *candidate walk* under the riot block — a prison built by hand so
+ * that exactly one candidate can resolve — which an integration fixture cannot
+ * isolate. `applyRiotRegimeOverride` was deleted by that ADR; the array below
+ * is built from `buildRiotRegimeSchedule` directly, which is what it did.
  */
 
 const RNG_STREAM = 'prisoners.classification';
 
-const RIOT_SCHEDULES = applyRiotRegimeOverride(DEFAULT_REGIME_SCHEDULES, ['general-population']);
+const RIOT_SCHEDULES: readonly RegimeSchedule[] = DEFAULT_REGIME_SCHEDULES.map((schedule) =>
+  schedule.classificationGroupId === 'general-population' ? buildRiotRegimeSchedule(schedule.classificationGroupId) : schedule,
+);
 
 interface AssociationFixture {
   readonly kernel: Kernel;

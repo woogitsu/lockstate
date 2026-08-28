@@ -98,18 +98,32 @@ Issue #28 asks for "riot-specific candidate actions/regime override **using
 the existing utility/action framework**." `riot-regime.ts` therefore
 expresses a riot as an ordinary `RegimeSchedule`: a single full-day block
 allowing only `RIOT_ALLOWED_CATEGORIES` (`free-association`, `recreation`)
-— work, education, meals and scheduled sleep all become illegal.
-`applyRiotRegimeOverride` returns a *new* schedule array with the named
-classification groups swapped, leaving the caller's original untouched, so
-lifting the override is simply going back to it.
+— work, education, meals, scheduled hygiene and sleep all become illegal.
 
-`ActionSystem` and `utility-ai.ts` needed **zero changes**: `ActionSystem`
-already resolves its schedule from whatever array it was constructed with
-via `findRegimeSchedule`, and scoring already operates on whatever
-categories the active block allows. There is no parallel riot AI.
+**Who gets that schedule is decided per prisoner, at the point of use**
+([ADR 0057](./adr/0057-what-a-riot-does-to-a-prisoners-day.md)).
+`ActionSystem`'s `beginNextAction` asks an injected
+`PrisonerRegimeOverrideResolver` before it consults `findRegimeSchedule`, and
+`createRiotRegimeOverride` answers `buildRiotRegimeSchedule` for any prisoner
+`IncidentLog` names in a riot that is still open. Three properties follow:
+nothing is stored, so a save taken mid-riot restores onto the riot regime with
+no schema bump; there is no lift step to forget, because the override ends when
+the incident does; and the set is `IncidentRecord.participantIds`, so a riot in
+one sector does not restrict a prisoner in another.
 
-**The framework needed no changes; the content did, and for a while it did not
-have it.** `free-association` was a member of `ACTION_CATEGORIES` with no
+`utility-ai.ts` needed **zero changes**, and `ActionSystem` needed one
+constructor port and one line in `beginNextAction`: scoring already operates on
+whatever categories the active block allows, and the block still comes from a
+gapless schedule resolved the same way. There is no parallel riot AI.
+
+**`applyRiotRegimeOverride` was deleted rather than wired**, and the paragraph
+this replaced described it as "the whole regime override mechanism". It returned
+a new schedule array with named *classification groups* swapped — the same set
+as the participants while one derived sector is the whole prison, and the wrong
+set the moment a second sector exists.
+
+**The scoring and candidate machinery needed no changes; the content did, and
+for a while it did not have it.** `free-association` was a member of `ACTION_CATEGORIES` with no
 action authored under it, and both `recreation` actions target a zoned room —
 so a rioting prisoner in a prison with no yard and no common room had *no
 candidate at all*, and `beginNextAction` reached its empty-candidate path on
@@ -122,12 +136,25 @@ zero unmet-demand cycles, and
 `tests/unit/prisoners-action-catalog.test.ts` records the same figure as a
 per-schedule census (2,400 of 2,400 ticks before, 0 after).
 
-**Two things still stand between that and a riot a player can see.**
-`applyRiotRegimeOverride` has no caller in `src/` — it is reached from tests
-only — and `ActionSystem` takes its schedule array as a `readonly` constructor
-field with no setter, so nothing can swap a live session onto the riot
-schedule even if something wanted to. Both belong to ADR 0042 step 2, and the
-second is not mentioned in that ADR: a producer alone would not be enough.
+**Two things used to stand between that and a riot a player can see, and both
+are gone.** This paragraph read: *"`applyRiotRegimeOverride` has no caller in
+`src/` — it is reached from tests only — and `ActionSystem` takes its schedule
+array as a `readonly` constructor field with no setter, so nothing can swap a
+live session onto the riot schedule even if something wanted to."* ADR 0057 did
+that work and neither half survived in the form the sentence implies: the
+function is deleted, and the array is still `readonly` with no setter because
+the override is resolved rather than swapped.
+
+Measured on the real kernel, in a neglected two-prisoner prison that riots at
+tick 13,300 against the same prison with two guards hired, which does not:
+before, the two produced **byte-identical** action censuses over the day the
+riot ran. After, the rioting prison loses 160 of the day's 360
+`action.use-toilet` prisoner-ticks — `hygiene` is not a riot category — and its
+population's mean need deficit ends 611 ticks of riot at 0.4542 against the
+control's 0.3497. `tests/integration/riot-regime-loop.test.ts` holds both
+columns. What a player still cannot see is *which* prisoners are rioting: the
+status strip counts open incidents and the roster names each prisoner's
+activity, and nothing joins them (ADR 0057 open question 1).
 
 ## Gangs: lightweight, deterministic, feeding existing scoring
 

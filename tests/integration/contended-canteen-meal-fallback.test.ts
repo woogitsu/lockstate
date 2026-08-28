@@ -235,14 +235,30 @@ describe('six prisoners and a canteen that seats three', () => {
      * still 3, `maxUseClaims` is still 3, and every one of the six still eats
      * both meals -- and association feeds nothing, so no hunger figure moved
      * for any reason but timing.
+     *
+     * **Two of them moved again on
+     * [ADR 0057](../../docs/adr/0057-what-a-riot-does-to-a-prisoners-day.md),
+     * and this prison riots.** Six neglected prisoners with no shower room, no
+     * yard, no common room and no classroom put `needsPressure` over the line
+     * with no guard on the post, and `IncidentTriggerSystem` opens a
+     * severity-7 riot naming all six at tick 13,450 -- 550 ticks before
+     * `WATCH_UNTIL`. A riot now replaces its participants' timetable with
+     * `RIOT_ALLOWED_CATEGORIES`, which does not include `hygiene`, so those
+     * last 550 ticks hold no `action.use-toilet`: 100 (or 80) of it becomes
+     * `action.free-association` in every row, plus the 60 (or 40) ticks the
+     * same prisoners used to spend idle between reconsiderations. **`sleep`,
+     * `eat-meal` and `eat-in-cell` are unchanged in all six rows**, which is
+     * both why the re-baseline is attributable to the riot and why this file's
+     * subject is untouched: the riot opens long after the meal blocks this
+     * file is about have been contended eight days running.
      */
     expect(run.perPrisoner).toEqual([
-      { 'action.sleep': 3_000, 'action.eat-meal': 360, 'action.eat-in-cell': 200, 'action.use-toilet': 920, 'action.free-association': 4_200 },
-      { 'action.sleep': 3_000, 'action.eat-meal': 360, 'action.eat-in-cell': 200, 'action.use-toilet': 920, 'action.free-association': 4_200 },
-      { 'action.sleep': 3_000, 'action.eat-meal': 360, 'action.eat-in-cell': 200, 'action.use-toilet': 920, 'action.free-association': 4_200 },
-      { 'action.sleep': 3_000, 'action.eat-meal': 400, 'action.eat-in-cell': 200, 'action.use-toilet': 880, 'action.free-association': 4_200 },
-      { 'action.sleep': 3_000, 'action.eat-meal': 400, 'action.eat-in-cell': 200, 'action.use-toilet': 880, 'action.free-association': 4_200 },
-      { 'action.sleep': 3_000, 'action.eat-meal': 400, 'action.eat-in-cell': 200, 'action.use-toilet': 880, 'action.free-association': 4_200 },
+      { 'action.sleep': 3_000, 'action.eat-meal': 360, 'action.eat-in-cell': 200, 'action.use-toilet': 820, 'action.free-association': 4_360 },
+      { 'action.sleep': 3_000, 'action.eat-meal': 360, 'action.eat-in-cell': 200, 'action.use-toilet': 820, 'action.free-association': 4_360 },
+      { 'action.sleep': 3_000, 'action.eat-meal': 360, 'action.eat-in-cell': 200, 'action.use-toilet': 820, 'action.free-association': 4_360 },
+      { 'action.sleep': 3_000, 'action.eat-meal': 400, 'action.eat-in-cell': 200, 'action.use-toilet': 800, 'action.free-association': 4_320 },
+      { 'action.sleep': 3_000, 'action.eat-meal': 400, 'action.eat-in-cell': 200, 'action.use-toilet': 800, 'action.free-association': 4_320 },
+      { 'action.sleep': 3_000, 'action.eat-meal': 400, 'action.eat-in-cell': 200, 'action.use-toilet': 800, 'action.free-association': 4_320 },
     ]);
 
     // Stated as properties as well as counts, so the intent survives a
@@ -288,13 +304,15 @@ describe('six prisoners and a canteen that seats three', () => {
     expect(control.diningCeiling, 'two 3-wide tables').toBe(6);
     expect(control.maxUseClaims, 'all six in the canteen at once, which the one-table run never reached').toBe(PRISONERS);
 
-    // 560 and 920, not 600 and 1,000, for the timing reason recorded on the
-    // one-table run above; `action.free-association` appears here for the same
-    // reason it appears there. What this assertion is *for* is unchanged and is
-    // the line below it: with six seats for six prisoners, `action.eat-in-cell`
-    // is absent from every row.
+    // 560 and 820, not 600 and 1,000, for the timing reason recorded on the
+    // one-table run above and then for the riot recorded beside it -- this
+    // prison riots too, at tick 13,500, for the same neglect and with the same
+    // consequence for `hygiene`. `action.free-association` appears here for the
+    // same reason it appears there. What this assertion is *for* is unchanged
+    // and is the line below it: with six seats for six prisoners,
+    // `action.eat-in-cell` is absent from every row.
     expect(control.perPrisoner).toEqual(
-      Array.from({ length: PRISONERS }, () => ({ 'action.sleep': 3_000, 'action.eat-meal': 560, 'action.use-toilet': 920, 'action.free-association': 4_200 })),
+      Array.from({ length: PRISONERS }, () => ({ 'action.sleep': 3_000, 'action.eat-meal': 560, 'action.use-toilet': 820, 'action.free-association': 4_360 })),
     );
     for (const [n, counts] of control.perPrisoner.entries()) {
       expect(counts['action.eat-in-cell'], `prisoner ${n} fell back to a cell meal with a seat free`).toBeUndefined();

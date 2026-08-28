@@ -163,7 +163,12 @@ the eight catalogue roles and puts every one of them on the `GuardRoster`
 police. The default sector has no patrol route, by decision and with the reason
 written down (`src/simulation/security/default-sector.ts:194-198`).
 `applyRiotRegimeOverride` has no caller in `src/`
-(`src/simulation/incidents/riot-regime.ts:35`).
+(`src/simulation/incidents/riot-regime.ts:35`). **False since
+[ADR 0057](./0057-what-a-riot-does-to-a-prisoners-day.md), and not by that
+function gaining one:** it was deleted, and a riot now overrides its
+participants' timetable through an injected resolver `ActionSystem` asks per
+idle prisoner. Marked rather than rewritten, because it was true when it was
+written and it is the finding that produced the fix.
 
 ### #443 — the economy is monotone, and five of six needs have no reader —
 **holds; one clause is understated**
@@ -243,7 +248,12 @@ grep -rn "introduce(\|submitOrder(\|applyRiotRegimeOverride\|resolveEscapeOpport
   writer of the intelligence ledger, uncalled, which is exactly why
   `contrabandPressure` is 0.
 - `applyRiotRegimeOverride` (`src/simulation/incidents/riot-regime.ts:35`) —
-  called only from `tests/unit/incident-escape-riot.test.ts`.
+  called only from `tests/unit/incident-escape-riot.test.ts`. **Two
+  corrections, marked rather than overwritten:** it was reached from
+  `tests/unit/prisoners-free-association.test.ts` as well, and
+  [ADR 0057](./0057-what-a-riot-does-to-a-prisoners-day.md) deleted it in favour
+  of a per-participant resolver, so this entry has left the list by removal
+  rather than by acquiring a producer.
 - `resolveEscapeOpportunity` and `TunnelRegistry`
   (`src/simulation/incidents/escape.ts:19`, `:76`).
 - `GangRegistry.register` / `.addMember` / `.addGrudge` — written only by
