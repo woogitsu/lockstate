@@ -697,16 +697,26 @@ export class RoomInstanceRegistry {
    * path they cannot see from its call site. Reading `this.occupants`
    * directly keeps the two costs independent, and the duplicated comparator
    * is four tokens.
+   *
+   * `excludeInstanceIds` (issue #478) is a membership test only, never
+   * iterated -- it names instances a caller already knows are about to stop
+   * existing (`RoomZoningService.unzone` relocating residents out of a room
+   * it is in the middle of removing) and which must therefore never be
+   * offered back as somewhere to relocate *into*. Omitted, this is exactly
+   * the three-argument method it always was; `IntakeSystem` and
+   * `SanctionSystem` pass nothing and are unaffected.
    */
   public findBestAvailable(
     roomCatalogId: string,
     rate: (occupants: readonly EntityId[], instance: RoomInstance) => number,
     requiredObjectCapability?: string,
+    excludeInstanceIds?: ReadonlySet<string>,
   ): RoomInstance | undefined {
     let best: RoomInstance | undefined;
     let bestRating = Number.POSITIVE_INFINITY;
 
     for (const instance of this.allByRoomCatalogId(roomCatalogId)) {
+      if (excludeInstanceIds?.has(instance.instanceId) === true) continue;
       if (this.occupancyOf(instance.instanceId) >= instance.residentCapacity) continue;
       if (requiredObjectCapability !== undefined && !instance.objectCapabilities.includes(requiredObjectCapability)) continue;
 

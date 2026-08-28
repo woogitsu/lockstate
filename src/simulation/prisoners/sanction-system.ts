@@ -8,8 +8,9 @@ import type { RoomInstanceRegistry } from './room-instance-registry';
 
 /**
  * The room a solitary sanction relocates into, whatever the sanctioned
- * prisoner's own classification group prefers (issue #80, ADR 00XX -- number
- * not yet assigned; see the branch's report). Sharing the id with
+ * prisoner's own classification group prefers (issue #80,
+ * [ADR 0067](../../../docs/adr/0067-what-an-assault-costs-its-instigator.md)).
+ * Sharing the id with
  * `IntakeSystem`'s `SOLITARY_CELL` target deliberately: a sanction and a
  * high-risk admission put a prisoner in the same physical place for two
  * different reasons, and the catalog has exactly one room type for it.

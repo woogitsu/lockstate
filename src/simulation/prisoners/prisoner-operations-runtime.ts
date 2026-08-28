@@ -8,10 +8,19 @@ import type { NavigationSystem } from '../navigation/navigation-system';
 import { ActionSystem, type PrisonerRouteContextResolver } from './action-system';
 import type { ClassificationInput } from './classification';
 import { ClassificationReviewSystem } from './classification-review-system';
+import { rateCellSharing, type CellSharingView } from './cell-sharing';
 import type { DisciplinaryEvidenceSource } from './disciplinary-record';
-import { ACTION_PHASES, CurrentActionComponent, PositionComponent, PrisonerColdState, PrisonerRecordComponent, SubstitutionRecordComponent } from './components';
+import {
+  ACTION_PHASES,
+  classificationGroupIdFromIndex,
+  CurrentActionComponent,
+  PositionComponent,
+  PrisonerColdState,
+  PrisonerRecordComponent,
+  SubstitutionRecordComponent,
+} from './components';
 import { PrisonerDischargeSystem } from './discharge-system';
-import { DEFAULT_ACCOMMODATION_POLICY, type AccommodationPolicy, IntakeSystem, type IntakeContrabandIntroducer } from './intake-system';
+import { DEFAULT_ACCOMMODATION_POLICY, firstAvailableAccommodationTarget, type AccommodationPolicy, IntakeSystem, type IntakeContrabandIntroducer } from './intake-system';
 import {
   releasePrisoner,
   type PrisonerGangReleasePort,
@@ -124,7 +133,9 @@ export interface PrisonerOperationsRuntimeOptions {
   /** The named stream `contrabandIntroducer` draws from. Only read when one is supplied. */
   readonly contrabandRngStreamName?: string;
   /**
-   * How long a solitary sanction runs (issue #80, ADR 00XX). Defaults to
+   * How long a solitary sanction runs (issue #80,
+   * [ADR 0067](../../../docs/adr/0067-what-an-assault-costs-its-instigator.md)).
+   * Defaults to
    * `DEFAULT_SANCTION_POLICY`, the same directional-default shape
    * `accommodationPolicy` above and `IncidentResponsePolicy` elsewhere use.
    */
@@ -370,6 +381,126 @@ export class PrisonerOperationsRuntime {
     const index = this.entityStore.getIndex(entityId);
     const currentEnd = this.records.solitarySanctionEndTick[index]!;
     this.records.solitarySanctionEndTick[index] = Math.max(currentEnd, tick) + this.sanctionPolicy.solitaryTermTicks;
+  }
+
+  /** `CellSharingView` for one resident, read at the index the caller already has -- the same shape `SanctionSystem.sharingViewOf` and `IntakeSystem`'s own private helper build, extracted here because `relocateResidentsOutOf` is a third caller of the identical read. */
+  private sharingViewOf(entityId: EntityId, index: number): CellSharingView {
+    return { entityId, riskTier: this.records.riskTier[index]! };
+  }
+
+  /** Living occupants of `instanceId` as `CellSharingView`s, ascending by entity id (`occupantsOf`'s own order) -- the view `rateCellSharing` compares a candidate placement's current occupants against. */
+  private sharingViewsOf(occupants: readonly EntityId[]): readonly CellSharingView[] {
+    const views: CellSharingView[] = [];
+    for (const occupant of occupants) {
+      if (!this.entityStore.isAlive(occupant)) continue;
+      views.push(this.sharingViewOf(occupant, this.entityStore.getIndex(occupant)));
+    }
+    return views;
+  }
+
+  /**
+   * Moves every **resident** of every instance named in `instanceIds` into
+   * other suitable accommodation, so the caller can then remove those
+   * instances without stranding anybody (issue #478).
+   *
+   * `RoomZoningService.unzone` is the one caller: an occupied room used to be
+   * refused, permanently, for as long as the resident stayed sentenced --
+   * there was no command that moved a prisoner out of accommodation, so a
+   * cell zoned in the wrong place and then filled by an ordinary admission
+   * could never be un-zoned again. This is the fix, and it is built entirely
+   * out of the target-selection this runtime already had two callers for:
+   * `IntakeSystem`'s `accommodation-assignment` stage houses a fresh arrival
+   * this same way, and `SanctionSystem` releases a sanctioned prisoner back
+   * to ordinary housing this same way. A relocation is that same "where does
+   * this classification group live" question, asked one more time, for a
+   * resident whose room is about to stop existing rather than one who just
+   * arrived or whose sanction just ended.
+   *
+   * **All-or-nothing, and that is the answer to "what happens when there is
+   * nowhere to put them".** Residents are visited in ascending entity-id
+   * order (`docs/DETERMINISM.md`'s canonical order), ahead of any tile
+   * being cleared or any instance being unregistered. Each is offered
+   * exactly the one target `firstAvailableAccommodationTarget` says their
+   * *current* classification group prefers -- the same rule
+   * `IntakeSystem.resolveExistingTarget`'s own comment gives for not falling
+   * back onto a second room type merely because the first is full, so this
+   * does not quietly move a high-risk prisoner into general population for
+   * one relocation's convenience. The moment one resident has nowhere to go,
+   * every relocation this call already made is undone, in the same terms it
+   * was made -- released from where it just placed them, re-assigned to the
+   * instance it took them from, cold state pointed back -- so a refused
+   * un-zoning leaves residency exactly as it found it, and the caller sees
+   * one clean `'no-vacancy'` rather than a partially emptied room.
+   *
+   * **`excludeInstanceIds` is every instance in `instanceIds`, not only the
+   * one a resident is currently being moved out of.** A rectangle can cover
+   * several occupied rooms at once, and without this a resident of one could
+   * be "relocated" into a neighbour this very call is also about to
+   * unregister -- which would either strand them a second time or make
+   * `RoomInstanceRegistry.unregister`'s own claim-count guard refuse the
+   * removal it was trying to permit. `findBestAvailable`'s `excludeInstanceIds`
+   * parameter (issue #478) is exactly this exclusion, and it is a membership
+   * test only: nothing here iterates the set, so no `Map`/`Set` insertion
+   * order can decide an outcome.
+   *
+   * **Determinism.** No RNG stream is read, no clock is read, and the one
+   * candidate-ordering choice -- `findBestAvailable`'s -- is the same pure,
+   * total-order scan `IntakeSystem` and `SanctionSystem` already rely on.
+   * The only new ordering this method introduces is the ascending-entity-id
+   * visit order over the residents being displaced, which is a sort by a
+   * scalar id and therefore total.
+   *
+   * Answers `'relocated'` when every resident named by `instanceIds` now
+   * lives somewhere else (or there were none to move), and `'no-vacancy'`
+   * when at least one had nowhere to go and nothing was changed.
+   */
+  public relocateResidentsOutOf(instanceIds: readonly string[]): 'relocated' | 'no-vacancy' {
+    const excluded = new Set(instanceIds);
+
+    const pending: Array<{ readonly entityId: EntityId; readonly fromInstanceId: string }> = [];
+    for (const instanceId of instanceIds) {
+      for (const entityId of this.roomInstances.occupantsOf(instanceId)) pending.push({ entityId, fromInstanceId: instanceId });
+    }
+    // A resident can hold at most one residency claim, so no id above can
+    // repeat across two different `instanceId`s -- the sort below is total.
+    pending.sort((a, b) => a.entityId - b.entityId);
+
+    const moved: Array<{ readonly entityId: EntityId; readonly fromInstanceId: string; readonly toInstanceId: string }> = [];
+    for (const { entityId, fromInstanceId } of pending) {
+      const index = this.entityStore.getIndex(entityId);
+      const groupId = classificationGroupIdFromIndex(this.records.classificationGroupIndex[index]!);
+      const target = firstAvailableAccommodationTarget(this.accommodationPolicy, this.roomInstances, groupId);
+      const arrival = this.sharingViewOf(entityId, index);
+      const instance =
+        target === undefined
+          ? undefined
+          : this.roomInstances.findBestAvailable(
+              target.roomCatalogId,
+              (occupants) => rateCellSharing(arrival, this.sharingViewsOf(occupants)),
+              target.requiredObjectCapability,
+              excluded,
+            );
+
+      if (instance === undefined) {
+        // Undo every relocation this call already made, in reverse of
+        // nothing in particular -- the moves are to disjoint destinations,
+        // so the order they are unwound in cannot matter, only that each one
+        // is unwound exactly once.
+        for (const done of moved) {
+          this.roomInstances.release(done.toInstanceId, done.entityId);
+          this.roomInstances.assign(done.fromInstanceId, done.entityId);
+          this.coldState.setAccommodation(done.entityId, done.fromInstanceId);
+        }
+        return 'no-vacancy';
+      }
+
+      this.roomInstances.release(fromInstanceId, entityId);
+      this.roomInstances.assign(instance.instanceId, entityId);
+      this.coldState.setAccommodation(entityId, instance.instanceId);
+      moved.push({ entityId, fromInstanceId, toInstanceId: instance.instanceId });
+    }
+
+    return 'relocated';
   }
 
   /**
