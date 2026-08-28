@@ -249,6 +249,24 @@ convention: production has never supplied another value
 (`src/main.ts:2100` → `session-controller.ts:66` `?? 0`), so every save in
 existence was written by a session seeded at 0.
 
+> **Amended 2026-08-28 (#479).** "Production has never supplied another value"
+> stopped being true the day this line was fixed: `src/main.ts` now passes a
+> `generateMasterSeed` drawn from `crypto.getRandomValues` to
+> `SessionController`, and `SessionController.createPrison` draws a fresh one
+> from it on every call rather than reusing one constant for the controller's
+> whole lifetime — so a new prison's seed varies from the last one, including
+> two created without a page reload
+> (`tests/integration/session-master-seed-variety.test.ts`). **This rule is
+> unaffected by that fix and is not being reopened**: an absent `masterSeed`
+> still means 0, `SAVE_SCHEMA_VERSION` is still 5, #479 added no field and
+> bumped nothing, and `captureSessionSnapshot` already wrote the field
+> unconditionally before #479 too (see above) — what #479 changed is only
+> *which value* a fresh prison's session reports, never whether the field is
+> present. So "every save in existence was written by a session seeded at 0"
+> is exact for every save written before #479 landed, and is the last time
+> that sentence is true of *every* save: a save written by a build carrying
+> #479 records whatever `generateMasterSeed` actually drew.
+
 `masterSeed` is therefore added as an **optional field on the existing V5
 payload**, the pattern `entities` / `simulation` / `identity` already use
 (`save-schema.ts:1042-1051`). `SAVE_SCHEMA_VERSION` stays 5 and no migration step

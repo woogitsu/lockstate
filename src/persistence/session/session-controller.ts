@@ -24,7 +24,35 @@ export interface SessionControllerOptions {
   readonly gameVersion: string;
   readonly autosaveIntervalMs?: number;
   readonly now?: () => number;
+  /**
+   * Pins every `createPrison` in this controller's lifetime to one literal
+   * seed. Exists for tests and for anything that genuinely wants a fixed
+   * world (`tests/integration/session-save-master-seed.test.ts` is the only
+   * production-shaped caller today) -- **not** what a player's "New prison"
+   * should pass, because a controller outlives more than one such click
+   * (issue #479): the save panel can create several prisons in one page
+   * session (`src/ui/save-panel.ts`'s `requestCreate`), and a controller-wide
+   * constant would hand every one of them the same streams. Use
+   * `generateMasterSeed` for that; the two are mutually exclusive in intent
+   * even though both can technically be supplied.
+   */
   readonly masterSeed?: number;
+  /**
+   * Drawn once per `createPrison` call when `masterSeed` above is not given
+   * -- the seed varies *between prisons*, not only between page loads
+   * (issue #479). Defaults to a constant `0`, matching every build before
+   * this option existed (`docs/adr/0038-what-makes-a-save-compatible.md`
+   * §4), so a test or a caller that specifies neither option keeps exactly
+   * today's pinned behaviour. Production wiring lives in `src/main.ts`,
+   * which is outside the simulation's import graph
+   * (`tests/determinism/ambient-nondeterminism-contract.test.ts` walks
+   * outward *from* `src/simulation/`, and nothing there imports this file)
+   * and is free to use real entropy: the value crosses into
+   * `createNewSimulationRuntime` as a plain `number`, the same way any
+   * `masterSeed` does, so nothing about *how* it was chosen reaches a
+   * system, a command payload or a snapshot.
+   */
+  readonly generateMasterSeed?: () => number;
   /** Notified on every autosave and lifecycle-triggered save so a UI can surface durable success/failure without polling. */
   readonly onSaveResult?: (prisonId: string, result: SaveResult) => void;
 }
@@ -52,7 +80,8 @@ export interface SessionControllerOptions {
 export class SessionController {
   private readonly gameVersion: string;
   private readonly now: () => number;
-  private readonly masterSeed: number;
+  private readonly masterSeed: number | undefined;
+  private readonly generateMasterSeed: () => number;
   private readonly autosave: AutosaveScheduler;
   private session: ActiveSession | undefined;
   private lastSaveResult: SaveResult | undefined;
@@ -65,7 +94,8 @@ export class SessionController {
   ) {
     this.gameVersion = options.gameVersion;
     this.now = options.now ?? Date.now;
-    this.masterSeed = options.masterSeed ?? 0;
+    this.masterSeed = options.masterSeed;
+    this.generateMasterSeed = options.generateMasterSeed ?? (() => 0);
 
     this.autosave = new AutosaveScheduler({
       intervalMs: options.autosaveIntervalMs ?? DEFAULT_AUTOSAVE_INTERVAL_MS,
@@ -123,10 +153,17 @@ export class SessionController {
       ...(displayName === undefined ? {} : { displayName }),
     });
 
+    // Drawn per call, not once for the controller's whole lifetime: a
+    // player can press "New Prison" more than once without reloading the
+    // page (`src/ui/save-panel.ts`'s `requestCreate`), and issue #479 is
+    // precisely that every such prison got the identical streams because
+    // nothing drew a fresh value here.
+    const masterSeed = this.masterSeed ?? this.generateMasterSeed();
+
     let adopted = false;
     let result: SaveResult;
     try {
-      await this.host.startNew(this.masterSeed);
+      await this.host.startNew(masterSeed);
       this.adoptSession(prisonId);
       adopted = true;
       result = await this.saveNow();

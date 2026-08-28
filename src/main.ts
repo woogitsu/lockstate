@@ -2360,6 +2360,44 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
 }
 
 /**
+ * Draws the `masterSeed` a new prison is created with (issue #479).
+ *
+ * **Chosen outside the kernel and handed in, which is the whole argument.**
+ * `docs/DETERMINISM.md` bans ambient nondeterminism *inside* the simulation
+ * import graph, and `tests/determinism/ambient-nondeterminism-contract.test.ts`
+ * enforces that by walking outward from `src/simulation/` -- `main.ts` is not
+ * in that graph (nothing under `src/simulation/` imports it), so this
+ * function sits exactly where `FixedStepClock`'s pacing read and
+ * `crypto.randomUUID()` in this same file (`transactionId`, `orderId`) already
+ * sit: on the composition-root side of the boundary the guard actually draws.
+ * By the time the drawn value reaches `SessionController.createPrison` and
+ * `createNewSimulationRuntime`, it is an opaque `number` -- indistinguishable
+ * from any other `masterSeed`, including the literal ones tests pass.
+ *
+ * **`crypto.getRandomValues`, not `Date.now()`.** Both are technically
+ * "outside the kernel", but a clock read here would not merely be redundant
+ * with `FixedStepClock`'s pacing read -- it would be a *second* one with a
+ * different job: `docs/DETERMINISM.md` permits exactly the one, and only as
+ * pacing, so a second reader is not something this file gets to add by
+ * calling it something else. Real entropy has no such reservation, matches
+ * the existing convention in this file for anything that must differ between
+ * two otherwise-identical actions (`crypto.randomUUID()` for `transactionId`
+ * and every `orderId` above), and, unlike wall-clock milliseconds, cannot
+ * collide when a player creates two prisons in the same tick of the host
+ * clock.
+ *
+ * A `Uint32Array` of length 1 spans exactly `[0, 0xffff_ffff]` -- the full
+ * range `masterSeedSchema` (`src/services/challenges/challenge.ts`) and
+ * `deriveXoshiroState` (`src/simulation/rng/seed.ts`) accept -- so nothing
+ * downstream can reject a value this function produces.
+ */
+function generateMasterSeed(): number {
+  const drawn = new Uint32Array(1);
+  crypto.getRandomValues(drawn);
+  return drawn[0]!;
+}
+
+/**
  * The save panel goes in the HUD's aside slot, not in `#app`.
  *
  * It used to be appended to `#app` as a sibling of the HUD and positioned by
@@ -2418,6 +2456,7 @@ async function bootPersistence(workers: SimulationWorkerChannel, hud: HudHandle)
 
     controller = new SessionController(repository, host, {
       gameVersion: GAME_VERSION,
+      generateMasterSeed,
       onSaveResult: (_prisonId: string, result: SaveResult) => panel.reportBackgroundSave(result),
     });
     panel = new SavePanel(controller, hud.asideSlot, localizer);
