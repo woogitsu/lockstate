@@ -648,6 +648,93 @@ describe('RoomInstanceRegistry', () => {
     });
   });
 
+  /**
+   * **The last line of defence against the second half of issue #337** -- a
+   * prisoner left naming a room that no longer exists.
+   *
+   * `RoomZoningService.unzone` is the *first* line: it checks `claimCountOf`
+   * and answers the player `unzone.room-occupied`
+   * (`src/simulation/rooms/zoning.ts:753`), and
+   * `tests/unit/rooms-zoning.test.ts` and
+   * `tests/integration/room-zoning-loop.test.ts` guard that. The throw below is
+   * what stands behind it, for any *other* caller that unregisters without
+   * asking first -- and this describe block exists because nothing asserted it.
+   * `unregister` is the only method that can destroy a room instance
+   * (`grep -rn '\.unregister(' src/` finds one room-instance caller,
+   * `src/simulation/rooms/zoning.ts:759`), a prisoner's
+   * `accommodationInstanceId` is a plain string in cold state with no
+   * referential integrity behind it
+   * (`src/simulation/prisoners/components.ts:274`), and a mutation deleting the
+   * guard survived the whole suite.
+   *
+   * Two claim kinds, one guard, because ADR 0029 made both of them references:
+   * a resident holds `accommodationInstanceId` and a performer holds
+   * `currentActionTargetInstanceId`, and each dangles the same way.
+   */
+  describe('unregister', () => {
+    it('refuses a room a resident still names, and leaves that reference resolvable', () => {
+      const registry = new RoomInstanceRegistry();
+      registry.register({ instanceId: 'room.cell:0:0', roomCatalogId: 'room.cell', anchorTile: TILE, residentCapacity: 2, concurrentUseCapacity: 2, objectCapabilities: ['sleep-surface'] });
+      expect(registry.assign('room.cell:0:0', 7)).toBe(true);
+
+      expect(() => registry.unregister('room.cell:0:0')).toThrow(RangeError);
+
+      // Stated as the dangling reference rather than as a count: the id the
+      // prisoner's cold state holds still resolves to a registered room, that
+      // room still holds them, and every index still lists it.
+      expect(registry.getById('room.cell:0:0'), 'the room the resident names must still exist').toBeDefined();
+      expect(registry.occupantsOf('room.cell:0:0')).toEqual([7]);
+      expect(registry.occupancyOf('room.cell:0:0')).toBe(1);
+      expect(registry.totalOccupancy).toBe(1);
+      expect(registry.allByRoomCatalogId('room.cell').map((instance) => instance.instanceId)).toEqual(['room.cell:0:0']);
+      expect(registry.instancesOccupiedBy(7)).toEqual(['room.cell:0:0']);
+
+      // And the refusal is not permanent: it is a statement about the claim,
+      // so releasing the resident makes the same call succeed.
+      registry.release('room.cell:0:0', 7);
+      expect(registry.unregister('room.cell:0:0')).toBe(true);
+      expect(registry.getById('room.cell:0:0')).toBeUndefined();
+    });
+
+    it('refuses a room somebody is only *using*, not living in (ADR 0029)', () => {
+      const registry = new RoomInstanceRegistry();
+      registry.register({ instanceId: 'room.canteen:8:8', roomCatalogId: 'room.canteen', anchorTile: TILE, residentCapacity: 0, concurrentUseCapacity: 1, objectCapabilities: ['dining'] });
+      expect(registry.claimUse('room.canteen:8:8', 4, 'dining')).toBe(true);
+      expect(registry.occupancyOf('room.canteen:8:8'), 'nobody lives here; the guard must not be reading residency alone').toBe(0);
+
+      expect(() => registry.unregister('room.canteen:8:8')).toThrow(RangeError);
+      expect(registry.getById('room.canteen:8:8')).toBeDefined();
+      expect(registry.useOccupancyOf('room.canteen:8:8')).toBe(1);
+
+      // Transient by construction -- a use claim lasts one action.
+      registry.releaseUse('room.canteen:8:8', 4);
+      expect(registry.unregister('room.canteen:8:8')).toBe(true);
+    });
+
+    it('drops an unclaimed room out of every index, so a removed room is never handed to an arrival', () => {
+      const registry = new RoomInstanceRegistry();
+      registry.register({ instanceId: 'room.cell:0:0', roomCatalogId: 'room.cell', anchorTile: TILE, residentCapacity: 1, concurrentUseCapacity: 1, objectCapabilities: ['sleep-surface'] });
+      registry.register({ instanceId: 'room.cell:9:9', roomCatalogId: 'room.cell', anchorTile: TILE, residentCapacity: 1, concurrentUseCapacity: 1, objectCapabilities: ['sleep-surface'] });
+      // Warms the sorted cache before the removal, which is the state the
+      // intake hot path is actually in: `findAvailableResidence` reads
+      // `allByRoomCatalogId`, and a cache left behind would go on offering the
+      // removed room to the next arrival.
+      expect(registry.findAvailableResidence('room.cell', 'sleep-surface')?.instanceId).toBe('room.cell:0:0');
+
+      expect(registry.unregister('room.cell:0:0')).toBe(true);
+
+      expect(registry.getById('room.cell:0:0')).toBeUndefined();
+      expect(registry.allByRoomCatalogId('room.cell').map((instance) => instance.instanceId)).toEqual(['room.cell:9:9']);
+      expect(registry.findAvailableResidence('room.cell', 'sleep-surface')?.instanceId, 'the survivor, never the room that is gone').toBe('room.cell:9:9');
+      expect(registry.findAvailableForUse('room.cell', 'sleep-surface')?.instanceId).toBe('room.cell:9:9');
+    });
+
+    it('reports rather than throws for an id it never had', () => {
+      const registry = new RoomInstanceRegistry();
+      expect(registry.unregister('room.cell:1:1')).toBe(false);
+    });
+  });
+
   it('instancesOccupiedBy lists every instance holding an entity, sorted', () => {
     const registry = new RoomInstanceRegistry();
     registry.register({ instanceId: 'a', roomCatalogId: 'room.yard', anchorTile: TILE, residentCapacity: 5, concurrentUseCapacity: 5, objectCapabilities: [] });
