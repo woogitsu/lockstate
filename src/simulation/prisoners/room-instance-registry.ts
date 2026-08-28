@@ -772,7 +772,7 @@ export class RoomInstanceRegistry {
   /**
    * Drops `entityId` from **both** of this registry's entity-keyed ledgers --
    * every residency and every concurrent-use claim -- because that entity has
-   * ceased to exist (ADR-XXXX decision 2).
+   * ceased to exist (ADR 0050 decision 2).
    *
    * ## Why one method and not two calls from the release path
    *

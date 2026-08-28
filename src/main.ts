@@ -2192,12 +2192,23 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
            * player-visible message -- this throw, or that alert row, never
            * both and never neither.
            *
-           * Why the check has to be here as well as there: a new session
-           * starts paused (`FixedStepClock`, `mode: 'paused'`), and a command
-           * queued against a paused clock is not dispatched, so the worker's
-           * refusal would not arrive until the player started the clock. For a
-           * player who presses this before touching the clock that is the
-           * difference between an answer and nothing at all.
+           * Why the check has to be here as well as there, and what changed
+           * about that reason. It used to be timing: a new session starts
+           * paused (`FixedStepClock`, `mode: 'paused'`) and a command queued
+           * against a paused clock was not dispatched, so the worker's refusal
+           * did not arrive until the player started the clock -- for a player
+           * who pressed this before touching the clock, the difference between
+           * an answer and nothing at all. **That is no longer why**: since ADR
+           * 0051 the worker dispatches a due command as soon as it is
+           * submitted against a paused clock, so the far-side refusal now
+           * reaches the player during the pause too.
+           *
+           * The check stays, on the reason that was always the stronger one:
+           * it is measured against a *different* condition from the worker's,
+           * it is the only one of the two that can answer before a command is
+           * composed at all, and the two are arranged so that exactly one of
+           * them speaks per press -- which is the paragraph below. Removing it
+           * would make that arrangement depend on the clock.
            *
            * `counts.rooms` is the room-*instance* count the worker last
            * published, at most 500ms old and published once on

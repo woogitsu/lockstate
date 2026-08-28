@@ -1179,9 +1179,16 @@ decision about what to build next.
     total the last published balance cannot cover, *before* the command is
     sent — that rejects the HUD's gated action and marks the pressed control.
     `ProcurementSystem` refuses whatever got past that, once the queued
-    command reaches its tick — never while the clock is paused, because a
-    paused clock dispatches nothing. The dispatch sits between the two, so a
-    press produces one message or the other, never both and never neither.
+    command reaches its tick. The dispatch sits between the two, so a press
+    produces one message or the other, never both and never neither.
+
+    > **This said "never while the clock is paused, because a paused clock
+    > dispatches nothing", and that half is no longer true.** Since ADR 0051
+    > (*"What a player sees for an order given while the clock is paused"*) the
+    > worker dispatches a command that is already due the moment it is
+    > submitted against a paused clock, so a purchase pressed during a pause is
+    > refused during that pause. The "one message or the other" property is
+    > unchanged and is now simply immediate on both sides.
     Both now land on the same band, told apart by `data-source`; only the
     pre-flight's marks a control, because only it can name one. Gap 34 records
     why the simulation's half needed that band at all.

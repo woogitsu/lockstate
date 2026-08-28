@@ -303,7 +303,7 @@ export class PrisonerColdState {
 
   /**
    * Drops every entry this cold state holds for one entity, because that
-   * entity has ceased to exist (ADR-XXXX decision 2; ADR 0026 question 2).
+   * entity has ceased to exist (ADR 0050 decision 2; ADR 0026 question 2).
    *
    * The three maps are keyed by `EntityId` and until now the only thing that
    * emptied them was `loadSnapshot`'s whole-registry `clear()`. That was safe

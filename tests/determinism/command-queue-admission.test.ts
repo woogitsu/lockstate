@@ -38,6 +38,16 @@ import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from 
  *   for the length of the pause, because `FixedStepClock.pump` returns `0`
  *   while paused, so nothing drains the command that would be blocking them.
  *
+ * **ADR 0051 narrows the second bullet and
+ * leaves the decision alone.** The worker now dispatches a command that is
+ * *due* the moment it is submitted against a paused clock, so a paused order
+ * no longer piles up in the queue behind the one blocking it. The command
+ * ahead is not due -- it carries the twenty-tick lead it was given while the
+ * clock ran -- so it still does not drain during the pause, it is still the
+ * highest tick in the queue, and every further order given during that pause
+ * still has the shape a refusal would have rejected. The cost of refusing is
+ * therefore exactly what the ADR said it was.
+ *
  * The ordering itself -- `(executeAtTick, sequence)`, on submission and on
  * both restore paths -- is pinned by `kernel-system-order.test.ts`; this file
  * is about *admission*, not about order.
@@ -231,9 +241,30 @@ describe('the front door admits what a pause actually submits', () => {
     expect(second.sequence).toBeGreaterThan(first.sequence);
     expect(second.scheduledForTick).toBeLessThan(first.scheduledForTick);
 
-    // And the kernel holds them head-first by tick, not by sequence.
+    /*
+     * And what the kernel is left holding, which is where ADR 0051 changed the
+     * observation without changing the decision.
+     *
+     * This used to read `[second.sequence, first.sequence]` -- the queue
+     * head-first by tick rather than by sequence, with both orders still in
+     * it. The worker now dispatches a *due* command the moment it is submitted
+     * against a paused clock, so `second` -- whose `executeAtTick` is exactly
+     * the tick the session is on -- is gone from the queue before this line
+     * runs, and the order given while the clock was running is still waiting
+     * at its own tick.
+     *
+     * **The decision this file guards is untouched, and that is asserted
+     * above rather than argued here**: the paused order was admitted and not
+     * refused (`refusals(port)` is empty), its sequence really is higher and
+     * its tick really is lower than the one queued ahead, and the ADR 0020
+     * cost that made refusing wrong is unchanged -- the command ahead still
+     * does not drain during the pause, so it stays the highest tick in the
+     * queue and every further paused order still meets the shape a refusal
+     * would have rejected.
+     */
     requestSnapshot();
-    expect(pendingQueue(port).map((command) => command.sequence)).toEqual([second.sequence, first.sequence]);
+    expect(pendingQueue(port).map((command) => command.sequence)).toEqual([first.sequence]);
+    expect(pendingQueue(port).map((command) => command.executeAtTick)).toEqual([first.scheduledForTick]);
   });
 
   it('takes the first order after a load, though the loaded queue holds commands seventy ticks out', () => {
@@ -274,6 +305,13 @@ describe('the front door admits what a pause actually submits', () => {
     // worker runs no tick, so the command queued ahead never leaves the queue
     // and never stops being the highest tick in it -- every further order the
     // player gives during that pause would meet the same refusal.
+    //
+    // This drives `Kernel` directly, and `Kernel` still drains nothing by
+    // itself: `submitCommand` queues and nothing dispatches until `step()` or
+    // `dispatchDueCommands()` is called. ADR 0051 put that second call in the *worker*, which is why the
+    // end-to-end case above sees the paused order leave the queue and this one
+    // does not. What both show is the same thing: the command ahead survives
+    // the pause.
     const paused = new FixedStepClock(50, { mode: 'paused' });
     paused.pump(0, 5);
     expect(paused.pump(60_000, 5)).toBe(0);

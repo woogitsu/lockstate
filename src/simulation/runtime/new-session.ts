@@ -354,7 +354,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    * `JobWorkerPool` records which prisoner is in the haulage labour pool; both
    * are keyed by prisoner `EntityId`, and both have to forget a prisoner who
    * has left the prison, or a recycled index eventually inherits a gang and a
-   * job queue (ADR 0026 question 2, answered in ADR-XXXX decision 2). Their
+   * job queue (ADR 0026 question 2, answered in ADR 0050 decision 2). Their
    * writers are still further down -- `IncidentTriggerSystem` reads the gangs,
    * `JobSystem` drives the pool -- and this changes no arrow: both are bare
    * constructors with no dependencies, exactly as `incidents` and

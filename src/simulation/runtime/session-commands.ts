@@ -239,16 +239,23 @@ export function createSessionCommandHandler(
       // restored save, a future producer -- which is why this maps the whole
       // union rather than the one reason a panel can provoke.
       //
-      // **The clock has to run before this line is reached at all**, so the
-      // one message a refused press produces is not always immediate.
-      // `Kernel.step()` is what dispatches a command queued by `submitCommand`,
-      // and `FixedStepClock.pump` returns zero executed ticks while its mode is
-      // `paused`, so the worker steps nothing and a purchase submitted against
-      // a paused clock is not refused yet -- it is not dispatched yet. Its
-      // refusal, if it is refused, arrives when the clock next runs. That is
-      // also why a paused run of presses is each measured by the main-thread
-      // check against one unchanged balance: none of them has been dispatched,
-      // so none of them has spent anything.
+      // **The clock used to have to run before this line was reached at all,
+      // and no longer does.** `Kernel.step()` was the only thing that
+      // dispatched a command queued by `submitCommand`, and `FixedStepClock.pump`
+      // returns zero executed ticks while its mode is `paused`, so a purchase
+      // submitted against a paused clock was not refused yet -- it was not
+      // dispatched yet -- and its refusal waited for the player to press play.
+      // Since ADR 0051 the worker dispatches a due command on submission while the
+      // clock is stopped, so a paused purchase is refused here, now, and the
+      // one message it produces is immediate.
+      //
+      // The consequence that went with the old behaviour goes with it: a run of
+      // presses during one pause is no longer measured by the main-thread check
+      // against one unchanged balance, because each dispatch spends before the
+      // next press is composed. The two-case list below is what that narrows --
+      // "several purchases pressed inside one tick" now means several pressed
+      // faster than a `simulation/status-counts` can carry the new balance back,
+      // rather than several pressed during any pause at all.
       //
       // The lookup is exhaustive over `PurchaseRefusalReason`, so a fifth
       // refusal reason added to `ProcurementSystem` fails to compile until it

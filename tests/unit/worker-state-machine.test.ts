@@ -5,6 +5,9 @@ import {
   type MessagePortLike,
 } from '../../src/simulation/worker/state-machine';
 import { decodeWorkerToMainMessage } from '../../src/simulation/protocol/decode';
+import { packCommand } from '../../src/simulation/protocol/commands';
+import { procurableMaterial } from '../../src/content/procurement-catalog';
+import { TREASURY_STARTING_BALANCE_MINOR_UNITS } from '../../src/simulation/economy';
 import { SIMULATION_PROTOCOL_VERSION } from '../../src/simulation/protocol/types';
 
 class MockPort implements MessagePortLike {
@@ -296,7 +299,13 @@ test('StateMachine queues valid commands', () => {
     }
   });
   
-  const response = port.messages[port.messages.length - 1];
+  // The last *command result*, not the last message. A command accepted while
+  // the clock is paused is now dispatched on the spot, and that publishes a
+  // `simulation/status-counts` behind the acknowledgement (ADR 0051), so
+  // "the last message" stopped naming the reply. The assertion is unchanged in
+  // substance and narrower in what it reads.
+  const results = port.messages.filter((message) => message.kind === 'simulation/command-result');
+  const response = results[results.length - 1];
   expect(response.kind).toBe('simulation/command-result');
   expect(response.payload.status).toBe('queued');
 });
@@ -364,8 +373,20 @@ describe('a refused command reports which refusal it was (#187 finding 2)', () =
     });
   };
 
+  /**
+   * The last command result, which is not always the last message: an accepted
+   * command against a paused clock is dispatched at once and publishes a
+   * counts readout after the acknowledgement (ADR 0051). A refusal publishes
+   * none -- nothing was dispatched -- so this filter changes nothing for the
+   * cases below and stops the helper from depending on that.
+   */
+  const lastCommandResult = (port: MockPort): any => {
+    const results = port.messages.filter((message) => message.kind === 'simulation/command-result');
+    return results[results.length - 1];
+  };
+
   const lastFault = (port: MockPort): { code: string; message: string } => {
-    const last = port.messages[port.messages.length - 1];
+    const last = lastCommandResult(port);
     expect(last.kind).toBe('simulation/command-result');
     expect(last.payload.status).toBe('rejected');
     return last.payload.fault;
@@ -386,7 +407,7 @@ describe('a refused command reports which refusal it was (#187 finding 2)', () =
   test('a replayed sequence reports duplicate-message', () => {
     const port = initialized();
     submit(port, 0, 0);
-    expect(port.messages[port.messages.length - 1].payload.status).toBe('queued');
+    expect(lastCommandResult(port).payload.status).toBe('queued');
     // Sequence 0 again, now that the kernel expects 1.
     submit(port, 0, 0);
     const fault = lastFault(port);
@@ -406,5 +427,221 @@ describe('a refused command reports which refusal it was (#187 finding 2)', () =
     const port = initialized();
     submit(port, 0, -1);
     expect(lastFault(port).code).toBe('invalid-state');
+  });
+});
+
+/**
+ * The paused drain, at the boundary that owns it (ADR 0051).
+ *
+ * The behaviour under test is the worker's, not the kernel's, and the split is
+ * deliberate: `Kernel.submitCommand` still only queues, and
+ * `Kernel.dispatchDueCommands` still only dispatches when it is called. What
+ * changed is that `handleSubmitCommand` calls it while the clock is stopped,
+ * because nothing else will -- `transition` runs the tick loop only in the
+ * `running` state, so before this a command a player gave during a pause was
+ * acknowledged and then produced nothing until they pressed play.
+ *
+ * `tests/browser/app-shell.spec.ts` ("answers an order given while the clock is
+ * paused") is the half that shows the player is told; this is the half that
+ * shows the simulation was changed, and neither implies the other.
+ */
+describe('a command submitted against a paused clock', () => {
+  const placeWall = (machine: SimulationWorkerStateMachine, sequence: number, tile: number): void => {
+    machine.handleMessage({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: `place-${String(sequence)}`,
+      kind: 'simulation/submit-command',
+      payload: {
+        commandId: `order-command-${String(sequence)}`,
+        sequence,
+        // A fresh session sits at tick 0, which is what the HUD projects for a
+        // paused clock (`SimulationCommandSender.projectExecuteTick` adds no
+        // lead while stopped), so this is a *due* command rather than a
+        // contrived one.
+        executeAtTick: 0,
+        command: packCommand({
+          type: 'PlaceBuildOrder',
+          orderId: `order-${String(sequence)}`,
+          definitionId: 'wall-brick',
+          x: tile,
+          y: tile,
+        }),
+      },
+    });
+  };
+
+  const start = (): { port: MockPort; machine: SimulationWorkerStateMachine } => {
+    const port = new MockPort();
+    const machine = new SimulationWorkerStateMachine(port, 'test-build', () => 0);
+    machine.handleMessage({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: 'init',
+      kind: 'simulation/initialize',
+      payload: { sessionId: 'paused-session', source: { kind: 'new', masterSeed: 99 } },
+    });
+    expect(machine.state).toBe('paused');
+    return { port, machine };
+  };
+
+  /** The construction orders the worker would put in a save right now. */
+  const orderStates = (port: MockPort, machine: SimulationWorkerStateMachine): string[] => {
+    machine.handleMessage({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: 'snap',
+      kind: 'simulation/request-snapshot',
+      payload: { reason: 'manual-save' },
+    });
+    const reply = port.messages[port.messages.length - 1];
+    expect(reply.kind).toBe('simulation/snapshot');
+    return (reply.payload.snapshot.data.construction.orders as { state: string }[]).map((order) => order.state);
+  };
+
+  test('is dispatched immediately, so the order exists before any tick has run', () => {
+    const { port, machine } = start();
+    placeWall(machine, 0, 5);
+
+    // The kernel is still at tick 0 -- nothing here advanced time -- and the
+    // order is nonetheless real and approved. Both halves matter: an order
+    // that arrived by way of a tick would be a different fix.
+    const snapshotReply = port.messages.filter((message) => message.kind === 'simulation/ready')[0];
+    expect(snapshotReply.payload.tick).toBe(0);
+    expect(orderStates(port, machine)).toEqual(['approved']);
+    // And the command is out of the queue rather than waiting in it, which is
+    // what distinguishes "dispatched" from "still acknowledged".
+    const snapshot = port.messages[port.messages.length - 1];
+    expect(snapshot.payload.snapshot.data.kernel.commands).toEqual([]);
+    expect(snapshot.payload.snapshot.data.kernel.tick).toBe(0);
+  });
+
+  test('publishes a counts readout the player-facing readouts ride on, even though no count moved', () => {
+    const { port, machine } = start();
+    const before = port.messages.filter((message) => message.kind === 'simulation/status-counts').length;
+    // One baseline, from `handleInitialize`, and nothing else yet.
+    expect(before).toBe(1);
+
+    placeWall(machine, 0, 5);
+
+    const after = port.messages.filter((message) => message.kind === 'simulation/status-counts');
+    // A build order moves none of the figures this payload carries, so
+    // `statusCountsEqual` would have suppressed this publication: the forced
+    // event flag is the only reason it exists. It is what `src/main.ts`
+    // refreshes the Build panel's queue block on, and while the clock is
+    // stopped there is no tick-loop wake behind it to catch the miss.
+    expect(after.length).toBe(before + 1);
+    expect(after[after.length - 1].payload.tick).toBe(0);
+  });
+
+  test('answers a run of orders given during one pause, one publication each', () => {
+    const { port, machine } = start();
+    for (let sequence = 0; sequence < 3; sequence += 1) placeWall(machine, sequence, 5 + sequence);
+
+    expect(orderStates(port, machine)).toEqual(['approved', 'approved', 'approved']);
+    // Three presses, three readouts, on top of the one baseline -- the bound
+    // this forced publication is argued on is "one per command the player
+    // submits", and a run of them is where that bound is worth checking. The
+    // 500 ms interval does not suppress them: `performanceNow` is pinned at 0
+    // here, so every one of these is inside one window.
+    expect(port.messages.filter((message) => message.kind === 'simulation/status-counts').length).toBe(4);
+  });
+
+  /**
+   * The worker's own refusal of a purchase, at the layer where it stays
+   * deterministic.
+   *
+   * `tests/browser/app-shell.spec.ts` used to drive this through the Build
+   * panel by pressing Buy twice against a paused clock: both presses passed
+   * `src/main.ts`'s pre-flight because a paused clock had dispatched neither,
+   * and `ProcurementSystem` refused the second once the clock ran. The paused
+   * drain closes that window -- the first press is paid for at once and the
+   * second meets an accurate pre-flight -- so from that panel the refusal is
+   * now reachable only inside the twenty-tick lead an order given while the
+   * clock *runs* carries, which is a one-second race the browser suite lost
+   * when it was tried.
+   *
+   * Here there is no pre-flight to pre-empt it: the pre-flight lives in the
+   * composition root's intent handler, not in the command sender and not in
+   * the worker, so two `PurchaseMaterials` submitted straight at this boundary
+   * reach `Treasury.spend` exactly as a command from any other producer would
+   * -- a queued command in a restored save, or a future one. What this asserts
+   * is `ProcurementSystem`'s refusal reaching `RefusalLog` and riding out on
+   * `simulation/status-counts`. The *rest* of that route -- the payload
+   * becoming a band and an alerts row in the assembled page -- is proven by
+   * the refused build order in `tests/browser/app-shell.spec.ts`, which takes
+   * the identical path with a different reason id.
+   */
+  test('publishes the refusal when the treasury cannot cover a purchase dispatched during the pause', () => {
+    const { port, machine } = start();
+    const unitPrice = procurableMaterial('item.brick')?.unitPriceMinorUnits;
+    if (unitPrice === undefined) return expect.unreachable('item.brick is not for sale, so no purchase can be driven');
+    // Half the treasury plus one unit: affordable once, never twice.
+    const quantity = Math.floor(TREASURY_STARTING_BALANCE_MINOR_UNITS / unitPrice / 2) + 1;
+    expect(quantity * unitPrice).toBeLessThanOrEqual(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+    expect(2 * quantity * unitPrice).toBeGreaterThan(TREASURY_STARTING_BALANCE_MINOR_UNITS);
+
+    const purchase = (sequence: number): void => {
+      machine.handleMessage({
+        protocolVersion: SIMULATION_PROTOCOL_VERSION,
+        messageId: `buy-${String(sequence)}`,
+        kind: 'simulation/submit-command',
+        payload: {
+          commandId: `buy-command-${String(sequence)}`,
+          sequence,
+          executeAtTick: 0,
+          command: packCommand({
+            type: 'PurchaseMaterials',
+            orderId: `purchase-${String(sequence)}`,
+            itemId: 'item.brick',
+            quantity,
+          }),
+        },
+      });
+    };
+
+    purchase(0);
+    const afterFirst = port.messages.filter((message) => message.kind === 'simulation/status-counts').at(-1);
+    // The first one was paid for, during the pause, and the readout says so.
+    expect(afterFirst.payload.counts.treasuryMinorUnits).toBe(
+      TREASURY_STARTING_BALANCE_MINOR_UNITS - quantity * unitPrice,
+    );
+    expect(afterFirst.payload.refusal).toBeUndefined();
+
+    purchase(1);
+    const afterSecond = port.messages.filter((message) => message.kind === 'simulation/status-counts').at(-1);
+    // The second could not be, so `ProcurementSystem` refused it and the
+    // refusal rode out on the same channel the balance did.
+    expect(afterSecond.payload.counts.treasuryMinorUnits).toBe(
+      TREASURY_STARTING_BALANCE_MINOR_UNITS - quantity * unitPrice,
+    );
+    expect(afterSecond.payload.refusal?.reason).toBe('purchase.insufficient-funds');
+    // The refusal is what opened the gate: an unchanged balance would have
+    // been suppressed by `statusCountsEqual` without it.
+    expect(afterSecond).not.toBe(afterFirst);
+  });
+
+  test('leaves a command scheduled ahead of the pause alone, which is ADR 0020 decision territory', () => {
+    const { port, machine } = start();
+    // An order given while the clock was running carries a twenty-tick lead,
+    // so it is not due at tick 0 and must stay queued: draining it early would
+    // dispatch a command before the tick it names, which is the one thing this
+    // change must not do.
+    machine.handleMessage({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: 'ahead',
+      kind: 'simulation/submit-command',
+      payload: {
+        commandId: 'order-command-ahead',
+        sequence: 0,
+        executeAtTick: 20,
+        command: packCommand({ type: 'PlaceBuildOrder', orderId: 'order-ahead', definitionId: 'wall-brick', x: 9, y: 9 }),
+      },
+    });
+
+    expect(orderStates(port, machine)).toEqual([]);
+    const snapshot = port.messages[port.messages.length - 1];
+    expect(
+      (snapshot.payload.snapshot.data.kernel.commands as { executeAtTick: number }[]).map(
+        (command) => command.executeAtTick,
+      ),
+    ).toEqual([20]);
   });
 });

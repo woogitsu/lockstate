@@ -16,6 +16,7 @@ import {
   SimulationSnapshotFeed,
   type SimulationMessageSource,
 } from '../../src/rendering/feed/simulation-snapshot-feed';
+import { createBuildOrder } from '../../src/simulation/construction/build-order';
 import { selectActorPose } from '../../src/rendering/actors/actor-pose';
 import { writeRenderActorsPayload } from '../helpers/render-actors-reader';
 
@@ -111,6 +112,22 @@ function snapshotReplyFor(bundle: SessionSnapshotBundle, replyTo: string, tick: 
       },
     },
   } as unknown as WorkerToMainMessage;
+}
+
+/**
+ * One approved build order on a session still at tick 0.
+ *
+ * Written straight onto the construction system rather than through the
+ * kernel, so the fixture states the *world* the feed is handed and borrows
+ * nothing from the dispatch path under discussion. `submitOrder` is what the
+ * `PlaceBuildOrder` handler calls and it writes the order's state itself, so
+ * this is the same order a paused dispatch produces.
+ */
+function withPausedOrder(runtime: SimulationRuntime): SimulationRuntime {
+  runtime.construction.submitOrder(
+    createBuildOrder('order-paused', 'wall-brick', { x: tileCoordinate(5), y: tileCoordinate(5) }),
+  );
+  return runtime;
 }
 
 function newFeed(
@@ -374,6 +391,77 @@ describe('simulation snapshot feed', () => {
     client.emit(clockState(30, 'running'));
     feed.readFrame(1.5);
     expect(client.sent).toHaveLength(3);
+  });
+
+  /**
+   * The unchanged-tick skip, and the case that made it wrong (ADR 0051).
+   *
+   * The skip's comment read *"nothing in the world can change without the
+   * simulation advancing"*, and that sentence stopped being true when the
+   * worker began dispatching a command submitted against a paused clock: a
+   * wall ordered during a pause becomes an `approved` build order **at the
+   * tick the session is already on**, and `structuresFromConstruction` maps
+   * that to the `planned` ghost this renderer has always known how to draw.
+   * The feed asked for the snapshot that carried it -- an acceptance sets
+   * `dirty` -- and then threw the answer away on the tick test, so the
+   * player's order stayed invisible until they pressed play.
+   *
+   * Both halves are measured, because only the pair says the fix is not just
+   * "apply everything": the reply to a poll something provoked is applied at
+   * an unmoved tick, and the reply to the thirty-second consistency poll is
+   * still skipped at one.
+   */
+  it('applies a snapshot at an unmoved tick when a command provoked the poll', () => {
+    const client = new FakeClient();
+    const { feed } = newFeed(client);
+
+    const empty = captureSessionSnapshot(createNewSimulationRuntime(7));
+    // The same session with one order in it, at the same tick: exactly the
+    // bundle the worker now captures after a paused dispatch.
+    const ordered = captureSessionSnapshot(withPausedOrder(createNewSimulationRuntime(7)));
+    expect(ordered.kernel.tick, 'the fixture advanced the clock, so it is not the case under test').toBe(0);
+    expect(ordered.construction.orders.length, 'the fixture carries no order to notice').toBe(1);
+
+    client.emit(ready()); // Paused.
+    feed.readFrame(0);
+    client.emit(snapshotReplyFor(empty, client.lastRequestId, 0));
+    expect(feed.readFrame(0.1).structures).toEqual([]);
+    const revisionBefore = feed.readFrame(0.1).revision;
+
+    client.emit({
+      protocolVersion: SIMULATION_PROTOCOL_VERSION,
+      messageId: 'result-1',
+      replyTo: 'command-1',
+      kind: 'simulation/command-result',
+      payload: { status: 'queued', commandId: 'command-1', sequence: 0, scheduledForTick: 0 },
+    } as WorkerToMainMessage);
+    feed.readFrame(0.2);
+    expect(client.sent).toHaveLength(2);
+
+    // The tick has not moved and the world has, which is the whole case.
+    client.emit(snapshotReplyFor(ordered, client.lastRequestId, 0));
+    const painted = feed.readFrame(0.3);
+    expect(painted.structures.map((structure) => structure.phase)).toEqual(['planned']);
+    expect(painted.revision).toBeGreaterThan(revisionBefore);
+  });
+
+  it('still skips a consistency poll answered at the tick it already drew', () => {
+    const client = new FakeClient();
+    const { feed } = newFeed(client, { pollIntervalSeconds: 1 });
+    const bundle = captureSessionSnapshot(createNewSimulationRuntime(7));
+
+    client.emit(ready('running'));
+    feed.readFrame(0);
+    client.emit(snapshotReplyFor(bundle, client.lastRequestId, 4));
+    const revisionBefore = feed.readFrame(0.1).revision;
+
+    // The interval, and nothing else: no command, no session, no resume. The
+    // worker answers at the tick already drawn, and rebuilding the whole world
+    // view for it would be the cost this skip exists to avoid.
+    feed.readFrame(1.5);
+    expect(client.sent).toHaveLength(2);
+    client.emit(snapshotReplyFor(bundle, client.lastRequestId, 4));
+    expect(feed.readFrame(1.6).revision).toBe(revisionBefore);
   });
 
   it('polls immediately after a command is accepted, since commands change geometry', () => {
