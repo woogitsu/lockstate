@@ -94,6 +94,11 @@ budget 2,000, element-wise minimum per tick index over nine repeats:
 
 1. **The graph rebuild** (`navigation-system.ts:113`). 12–17 ms, paid again
    whenever geometry changes. Not budgeted; no budget value changes it.
+   Established as a cause rather than inferred from the shape of tick 0: an
+   `update` on an **empty** queue — no requests, so no expansions and no
+   prelude — costs 10.11 ms on the yard and 10.01 ms on the prison block the
+   first time, and 0.018 / 0.026 ms the second, minimum of nine repeats. The
+   whole of the difference is `isNavigationGraphStale` answering yes once.
 2. **The per-tick prelude.** `processTick` copies and sorts every pending entry
    (`path-request-queue.ts:152`) and then computes a flow-field group key for
    every pending entry (`:161`) — `tileKey`

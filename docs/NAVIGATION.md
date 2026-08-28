@@ -460,7 +460,9 @@ rationale lives in
      first, and `buildNavigationGraph` runs whenever
      `isNavigationGraphStale` says so — 12–17 ms here, and a geometry change
      makes the next tick pay it again. Not budgeted, and no budget value
-     changes it.
+     changes it. Measured on its own rather than inferred: an `update` on an
+     empty queue costs 10.11 ms (yard) / 10.01 ms (block) the first time and
+     0.018 / 0.026 ms the second.
   2. **The per-tick prelude.** `processTick` copies and sorts *every* pending
      entry and then computes a flow-field group key for every pending entry —
      `tileKey` plus `routeContextFingerprint`, which copies, sorts and joins
