@@ -1,3 +1,4 @@
+import type { TilePosition } from '../../simulation/world/coordinates';
 import type { ParcelRect } from '../../simulation/world/parcel';
 import { createParcelRect } from '../../simulation/world/parcel';
 import type { WorldSnapshotV1 } from '../../simulation/world/sparse-world';
@@ -178,6 +179,43 @@ export class WorldRenderView {
     out.leftEdge = layers?.leftEdge?.[index] ?? 0;
     out.zoning = layers?.zoning?.[index] ?? 0;
     out.owned = this.isTileOwnedInChunk(tileX, tileY, key);
+  }
+
+  /**
+   * The tile's own north edge, or `0` for a chunk the simulation has not
+   * materialised.
+   *
+   * Together with `getLeftEdge` this satisfies `RoomEdgeReader`
+   * (`src/simulation/rooms/enclosure.ts`), which is the whole reason this
+   * pair exists separately from `readTile`: `roomPerimeterEnclosure` can then
+   * classify a pending rectangle's own perimeter against this view exactly as
+   * `RoomZoningService.zone` classifies it against a live `SparseWorld` --
+   * one function, read on both sides of the worker boundary, rather than a
+   * second implementation of the same walk (issue #493).
+   *
+   * Not routed through `readTile`'s one-entry chunk memo: a perimeter walk is
+   * `2 * (width + height)` reads, bounded by the drag the player is holding,
+   * and memoising for it would only serve to invalidate the memo `readTile`'s
+   * own per-frame, row-major tile paint relies on.
+   */
+  public getTopEdge(tile: TilePosition): number {
+    return this.chunks.get(this.chunkKeyFor(tile.x, tile.y))?.topEdge?.[this.indexInChunk(tile.x, tile.y)] ?? 0;
+  }
+
+  /** The tile's own west edge. See `getTopEdge`. */
+  public getLeftEdge(tile: TilePosition): number {
+    return this.chunks.get(this.chunkKeyFor(tile.x, tile.y))?.leftEdge?.[this.indexInChunk(tile.x, tile.y)] ?? 0;
+  }
+
+  private chunkKeyFor(tileX: number, tileY: number): string {
+    return layerKey(Math.floor(tileX / this.chunkSize), Math.floor(tileY / this.chunkSize));
+  }
+
+  private indexInChunk(tileX: number, tileY: number): number {
+    const size = this.chunkSize;
+    const chunkX = Math.floor(tileX / size);
+    const chunkY = Math.floor(tileY / size);
+    return (tileY - chunkY * size) * size + (tileX - chunkX * size);
   }
 
   public isChunkLoaded(chunkX: number, chunkY: number): boolean {

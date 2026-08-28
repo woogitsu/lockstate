@@ -174,6 +174,31 @@ export interface HudWorldRoomSource {
   attachGestures(place: (gesture: HudRoomGesture) => void): void;
   /** Points the live readout at the mounted panel. Called once, at mount. */
   attachReadout(readout: (area: HudRoomArea | undefined) => void): void;
+  /**
+   * Whether an arbitrary rectangle's own perimeter is walled in, as of the
+   * newest world data the tool has (issue #493).
+   *
+   * A **query**, unlike every other member of this interface: `attachGestures`
+   * and `attachReadout` are wired once, at mount, and report *out* on the
+   * tool's own schedule. This one is called synchronously, on demand, by
+   * whichever of the two producers of a rectangle needs an answer for the one
+   * it just produced -- a finished world gesture (below) or the panel's own
+   * typed-coordinates form, which drags nothing and has no frame of its own to
+   * report on. Both must reach the same verdict for the same four numbers
+   * (#411's parity guarantee), so both ask the one thing that can answer for
+   * either: the tool holds the newest `WorldRenderView` the scene has handed
+   * it, and it is the only object on this side of the HUD boundary allowed to
+   * import the simulation's own perimeter walk
+   * (`src/simulation/rooms/enclosure.ts`) to answer with it, rather than a
+   * second implementation of the same rule.
+   *
+   * `'sealed' | 'open'`, not imported from the simulation: the HUD may not
+   * import `src/simulation/**` at all (`AGENTS.md` boundary 1,
+   * `tests/unit/ui-hud-messages.test.ts`), so this is the same two-value union
+   * restated on this side of the boundary, exactly as `HudZoningNoticeViewModel
+   * .enclosure` already is.
+   */
+  classifyArea(area: HudRoomArea): 'sealed' | 'open';
 }
 
 /**
@@ -1268,6 +1293,22 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * `onArm` is chrome and is deliberately not gated: it changes what a drag on
    * the world means and asks the host for nothing.
    */
+  /*
+   * Whether a rectangle's own perimeter is walled in, asked of whichever tool
+   * the host attached -- or `'open'`, conservatively, when there is none to
+   * ask (issue #493). `'open'` rather than `'sealed'` for the same reason a
+   * chunk the simulation has not materialised reads as no edge at all: an
+   * unanswerable question must not be reported as the answer that lets a
+   * command through.
+   *
+   * One function rather than an inline arrow at each of its two call sites
+   * below, because both the panel's own options and the world gesture handler
+   * need the identical answer for the identical rectangle (#411's parity
+   * guarantee), and two copies of `?? 'open'` is exactly the kind of small
+   * duplication that drifts first.
+   */
+  const classifyRoomArea = (area: HudRoomArea): 'sealed' | 'open' => options.worldRooms?.classifyArea(area) ?? 'open';
+
   const roomsPanel: RoomsPanel = createRoomsPanel({
     localizer,
     model: options.rooms ?? { rooms: [] },
@@ -1290,6 +1331,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
         reportError,
       );
     },
+    classifyArea: classifyRoomArea,
   });
 
   /*
@@ -1303,7 +1345,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * marked on, which a build drag never does.
    */
   options.worldRooms?.attachGestures((gesture) => {
-    roomsPanel.setPendingArea(gesture.area);
+    roomsPanel.setPendingArea(gesture.area, classifyRoomArea(gesture.area));
   });
   options.worldRooms?.attachReadout((area) => {
     roomsPanel.setArea(area);

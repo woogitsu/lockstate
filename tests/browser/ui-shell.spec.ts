@@ -2521,6 +2521,111 @@ test.describe('the Rooms panel', () => {
     expect(legal.noteTone).toBe('');
   });
 
+  /**
+   * Issue #493 -- the gap between "the panel states the rule" and "the press
+   * is refused" for a room type that requires enclosure.
+   *
+   * The reproduction transcript the issue was filed with is exactly the
+   * sequence up to `clickRoomsControl('confirm')`: an enabled "Designate 4 ×
+   * 3", pressed, refused. What is asserted here is that the state before the
+   * press already says so -- the same shape the too-small test above proves
+   * for the sibling rule, and deliberately so: one confirm control, one
+   * precedent for how it explains itself.
+   */
+  test('an open rectangle for a room type that must be enclosed is held, not sent (issue #493)', async ({
+    page,
+  }) => {
+    // `room.cell` is `enclosed` and is already selected by default.
+    await page.evaluate(() => window.lockstateUiHarness.setWorldRoomEnclosure('open'));
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('arm'));
+    await page.evaluate(() => window.lockstateUiHarness.dragWorldRoom({ x: 4, y: 6, width: 4, height: 3 }));
+
+    const probe = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    // The control still names the rectangle -- the player drew it, and taking
+    // the control away would leave a pending rectangle with no way forward at
+    // all, which is worse than one that cannot be pressed.
+    expect(probe.confirmText).toContain('Designate 4 × 3');
+    expect(probe.confirmDisabled, 'an open rectangle against an enclosed room type can be confirmed').toBe(true);
+    expect(probe.noteTone).toBe('warning');
+    // The same sentence the post-designation readout already uses for an open
+    // room -- reused rather than drafted new; see the ADR for why a sentence
+    // naming *which* side is open is not shipped here.
+    expect(probe.noteText).toBe('Open on at least one side');
+    await expectLaidOut(page, '.hud-rooms__note', 'the enclosure warning');
+
+    // And the disabled control really does not dispatch, which is the
+    // assertion that matters: a warning beside a control that still fires on
+    // press would be the defect wearing a different coat.
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('confirm'));
+    expect(await roomCommands(page), 'a disabled confirm dispatched a command').toEqual([]);
+    const refusal = await page.evaluate(() => window.lockstateUiHarness.refusalProbe());
+    expect(refusal.visible, 'a disabled control painted a refusal line as well as the note').toBe(false);
+  });
+
+  test('a sealed rectangle for a room type that must be enclosed is unchanged (issue #493)', async ({ page }) => {
+    await page.evaluate(() => window.lockstateUiHarness.setWorldRoomEnclosure('sealed'));
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('arm'));
+    await page.evaluate(() => window.lockstateUiHarness.dragWorldRoom({ x: 4, y: 6, width: 4, height: 3 }));
+
+    const probe = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    expect(probe.confirmDisabled).toBe(false);
+    expect(probe.noteTone).toBe('');
+
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('confirm'));
+    expect(await roomCommands(page)).toEqual([
+      JSON.stringify({ kind: 'zone-room', roomId: 'room.cell', area: { x: 4, y: 6, width: 4, height: 3 } }),
+    ]);
+  });
+
+  test('an open rectangle for a room type with no enclosure rule is unaffected (issue #493)', async ({ page }) => {
+    // `room.yard` requires `outdoors`, not `enclosed` -- the perimeter question
+    // this warning answers does not apply to it at all.
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomType('room.yard'));
+    await page.evaluate(() => window.lockstateUiHarness.setWorldRoomEnclosure('open'));
+    await page.evaluate(() => window.lockstateUiHarness.dragWorldRoom({ x: 0, y: 0, width: 8, height: 8 }));
+
+    const probe = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    expect(probe.confirmDisabled, 'a room type with no enclosure rule was gated on one anyway').toBe(false);
+    expect(probe.noteTone).toBe('');
+  });
+
+  /**
+   * Too-small wins over not-enclosed, exactly as it already won over the
+   * enclosure warning this panel used to show before #446's ADR made it
+   * unreachable. One rectangle earns both readings here -- 2x2 is short for a
+   * 2x3 cell *and* reported open -- and the note has room for one sentence.
+   */
+  test('a too-small rectangle keeps its own warning even when it is also open (issue #493)', async ({ page }) => {
+    await page.evaluate(() => window.lockstateUiHarness.setWorldRoomEnclosure('open'));
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('arm'));
+    await page.evaluate(() => window.lockstateUiHarness.dragWorldRoom({ x: 0, y: 0, width: 2, height: 2 }));
+
+    const probe = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    expect(probe.confirmDisabled).toBe(true);
+    expect(probe.noteText).toBe('Too small — this room needs at least 2 × 3 tiles.');
+  });
+
+  /**
+   * The typed-coordinates route reaches the identical warning (#411's parity
+   * guarantee), which is the reason `classifyArea` is a question the panel
+   * asks rather than an answer only a drag can carry: this producer never
+   * drags anything and has no frame of its own to be told on.
+   */
+  test('a typed rectangle reaches the same enclosure warning a drag does (#411, #493)', async ({ page }) => {
+    await page.evaluate(() => window.lockstateUiHarness.setWorldRoomEnclosure('open'));
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('coordinates'));
+    await page.evaluate(() => window.lockstateUiHarness.typeRoomCoordinates({ x: 4, y: 6, width: 4, height: 3 }));
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('coordinates-submit'));
+
+    const probe = await page.evaluate(() => window.lockstateUiHarness.roomsProbe());
+    expect(probe.area).toBe('4,6,4,3');
+    expect(probe.confirmDisabled, 'the typed route reached a different verdict from the drag').toBe(true);
+    expect(probe.noteText).toBe('Open on at least one side');
+
+    await page.evaluate(() => window.lockstateUiHarness.clickRoomsControl('confirm'));
+    expect(await roomCommands(page), 'the typed route dispatched a command through a disabled control').toEqual([]);
+  });
+
   test('a removal drag confirms as a removal, and says what it will really take', async ({ page }) => {
     // On touch this whole sequence is drag, read, tap -- which is the point:
     // undo is a keyboard chord, so before this there was no recovery of any kind

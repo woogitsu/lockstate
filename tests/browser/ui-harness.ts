@@ -773,6 +773,24 @@ let worldHistoryRequest: ((direction: HudHistoryDirection) => void) | undefined;
 let worldRoomPlace: ((gesture: HudRoomGesture) => void) | undefined;
 let worldRoomReadout: ((area: HudRoomArea | undefined) => void) | undefined;
 
+/**
+ * What the room tool's stand-in reports for `classifyArea` (issue #493).
+ *
+ * The running application answers this from a real `WorldRenderView`, which
+ * this harness has no scene to build. `'sealed'` by default -- **not** the
+ * `'open'` answer a real, worldless `RoomTool` gives, and deliberately so:
+ * this harness exists for specs that predate #493 and have no opinion about
+ * enclosure at all, and every one of them drags an ordinary rectangle
+ * expecting an ordinary designation to go through. `'open'` by default would
+ * silently gate every one of those on a fact none of them set up, which is
+ * exactly what broke on the first run of this change -- six pre-existing
+ * specs failed for a reason none of them tests, because the harness's world
+ * was reporting a state no real world with no walls yet is any more entitled
+ * to than the state this default now gives it. Only the specs that ask about
+ * enclosure call `setWorldRoomEnclosure`, and only they see anything else.
+ */
+let worldRoomEnclosure: 'sealed' | 'open' = 'sealed';
+
 /** Which room row the panel currently shows as selected, read off the DOM. */
 function roomsPanelSelection(): string | undefined {
   const row = document.querySelector<HTMLElement>('.hud-rooms__list [data-selected="true"]');
@@ -897,6 +915,7 @@ window.lockstateUiHarness = {
     worldHistoryRequest = undefined;
     worldRoomPlace = undefined;
     worldRoomReadout = undefined;
+    worldRoomEnclosure = 'sealed';
     hud = mountHud(root, {
       // Stands in for `BuildTool`, which is the only implementation in the
       // application: the composition root hands the HUD a source, the HUD
@@ -926,6 +945,10 @@ window.lockstateUiHarness = {
         attachReadout: (readout) => {
           worldRoomReadout = readout;
         },
+        // Issue #493: the HUD asks this synchronously, for both producers of a
+        // rectangle, rather than being told. `setWorldRoomEnclosure` is the
+        // spec's one lever over the answer.
+        classifyArea: () => worldRoomEnclosure,
       },
       localizer: countingLocalizer,
       // `empty` mounts the shipped default instead of a populated prison --
@@ -1473,6 +1496,10 @@ window.lockstateUiHarness = {
     if (worldRoomReadout === undefined) return false;
     worldRoomReadout(area);
     return true;
+  },
+
+  setWorldRoomEnclosure(enclosure: 'sealed' | 'open'): void {
+    worldRoomEnclosure = enclosure;
   },
 
   clickRoomType(roomId: string): boolean {

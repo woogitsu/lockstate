@@ -454,6 +454,14 @@ export const HUD_MESSAGE_KEY = {
    * and `roomsEnclosureOpen` are the readout of what the simulation actually
    * found.
    *
+   * **`roomsEnclosureOpen` gained a second render location in issue #493, not
+   * a second key.** `paintNote` now shows the identical sentence, before the
+   * press, when the pending rectangle is open against a room type that
+   * requires enclosure -- reusing this key rather than drafting a differently
+   * worded one for the same fact, which is exactly the kind of pair
+   * `docs/LOCALIZATION.md` would flag as drift the day one of the two changed
+   * and the other did not.
+   *
    * **There used to be a `roomsEnclosureOpenRequired` here** -- "the one case
    * that is worth flagging: the room asked to be enclosed and the rectangle's
    * perimeter is not. It is a *warning*, never a refusal." It is deleted, and

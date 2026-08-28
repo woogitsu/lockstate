@@ -921,6 +921,21 @@ export interface LockstateUiHarness {
   ): boolean;
   /** The live readout as the pointer moves; `undefined` clears it. */
   hoverWorldRoom(area: { x: number; y: number; width: number; height: number } | undefined): boolean;
+  /**
+   * Controls what the room tool's stand-in reports for `classifyArea` (issue
+   * #493) -- the answer to "is this rectangle's own perimeter walled in",
+   * which `RoomTool` would otherwise answer from a real `WorldRenderView` this
+   * harness never builds. Defaults to `'sealed'` -- **not** the `'open'`
+   * answer a real, worldless tool gives -- because every spec written before
+   * #493 drags an ordinary rectangle expecting an ordinary designation to
+   * succeed, and none of them calls this. Only a spec that is itself about
+   * enclosure needs to.
+   *
+   * Takes effect for every `dragWorldRoom` and `clickRoomsControl('coordinates-submit')`
+   * call from here on, so a spec sets it once before the gesture whose warning
+   * it is asserting about.
+   */
+  setWorldRoomEnclosure(enclosure: 'sealed' | 'open'): void;
   clickRoomType(roomId: string): boolean;
   /**
    * A real click on one of the panel's controls, so a disabled or hidden one
