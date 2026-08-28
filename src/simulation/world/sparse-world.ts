@@ -1,4 +1,5 @@
 import type { RunLengthDecodeContract } from '../codec/run-length';
+import { SnapshotRefusedError, type SnapshotRefusalReason } from '../runtime/restore-refusal';
 import { encodeRunLengths, expandRunLengthsInto } from '../codec/run-length';
 import type { ChunkPosition, TilePosition } from './coordinates';
 import {
@@ -63,9 +64,24 @@ export interface WorldSnapshotV1 {
   readonly ownedParcels?: readonly string[];
 }
 
-export class WorldSnapshotError extends Error {
-  public constructor(message: string) {
-    super(message);
+/**
+ * The world plane's declared snapshot refusal.
+ *
+ * Now a `SnapshotRefusedError` (#431), so the restore boundary can read *why*
+ * off the error the check raised instead of inferring it from the message.
+ * The class stays -- `tests/unit/run-length-codec-unification.test.ts` pins
+ * that each plane keeps its own type rather than sharing one generic error --
+ * and every existing `toThrow(WorldSnapshotError)` holds unchanged.
+ *
+ * The default reason is `damaged-payload`, because that is what all but one
+ * of these checks find: an RLE that overruns its chunk, a coordinate that is
+ * not a number, a duplicate chunk. The exception is the snapshot's own
+ * `version`, which is a statement about which build wrote it, and is raised
+ * `unsupported-by-this-build` at its own site.
+ */
+export class WorldSnapshotError extends SnapshotRefusedError {
+  public constructor(message: string, reason: SnapshotRefusalReason = 'damaged-payload') {
+    super(reason, message);
     this.name = 'WorldSnapshotError';
   }
 }
@@ -682,12 +698,19 @@ export class SparseWorld {
       ['ownedParcels', 'parcels'],
       'World snapshot',
     );
-    if (
-      record.version !== WORLD_SNAPSHOT_VERSION ||
-      !Array.isArray(record.chunks) ||
-      !Array.isArray(record.ownedChunks)
-    ) {
-      throw new WorldSnapshotError('World snapshot version or collections are invalid.');
+    // Split from the collection check below, and not for tidiness: a version
+    // this build does not implement is a fact about *which build wrote the
+    // save*, so it is `unsupported-by-this-build` and another build reads the
+    // file, while a missing `chunks` array is a fact about the bytes. Stated
+    // together they could only be reported as one of the two (#431).
+    if (record.version !== WORLD_SNAPSHOT_VERSION) {
+      throw new WorldSnapshotError(
+        `World snapshot version ${String(record.version)} is not version ${WORLD_SNAPSHOT_VERSION}, which is the only one this build reads.`,
+        'unsupported-by-this-build',
+      );
+    }
+    if (!Array.isArray(record.chunks) || !Array.isArray(record.ownedChunks)) {
+      throw new WorldSnapshotError('World snapshot collections are invalid.');
     }
 
     let size: number;

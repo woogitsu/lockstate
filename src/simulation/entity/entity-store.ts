@@ -1,3 +1,5 @@
+import { SnapshotRefusedError } from '../runtime/restore-refusal';
+
 export type EntityId = number;
 
 export interface EntityStoreSnapshot {
@@ -309,7 +311,12 @@ export class EntityStore {
     // free list is copied at its own length.
     const writtenPrefix = Math.max(snapshot.maxActiveIndex + 1, snapshot.nextAvailableIndex, snapshot.freeCount);
     if (writtenPrefix > this.capacity) {
-      throw new Error(
+      // `unsupported-by-this-build`, not `damaged-payload`, and the
+      // distinction is the whole of #431's taxonomy in one line: nothing is
+      // wrong with these bytes, a build that allocates a wider store reads
+      // them, and the save must survive being refused here so that build can.
+      throw new SnapshotRefusedError(
+        'unsupported-by-this-build',
         `Cannot load an entity snapshot: it has ${writtenPrefix} written slots and this store has capacity for ${this.capacity}.`,
       );
     }

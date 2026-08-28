@@ -118,6 +118,12 @@ const UNLABELLED: readonly { readonly sourceFile: string; readonly declaration: 
       'Whether a catalogued projection takes no target, an entity id or a string id (#104). It is a property of the *catalog entry*, read only by the worker\'s own request validation to decide whether a request named the right kind of thing, and it never crosses the boundary in either direction: the wire carries `ProjectionTarget`, which is the target itself, and never this classification of it. Nothing projects it and no panel could render it.',
   },
   {
+    sourceFile: 'src/simulation/runtime/restore-refusal.ts',
+    declaration: 'SNAPSHOT_REFUSAL_REASONS',
+    reason:
+      'Why a snapshot restore was refused (#431), and exempt for the reason `PROTOCOL_FAULT_CODES` below it is: developer diagnostics on the restore boundary, read by `SessionController.loadPrison` to decide whether a generation may be retired and by a support report to tell a bad save from a bug of ours. Nothing renders "unsupported-by-this-build". What the player is told about a failed load is the save panel\'s own authored sentence with its own key -- `save.status.no-readable-generation` when the walk is exhausted, `save.failure.load` when the load threw -- and both already existed and are unchanged by this vocabulary. Whether a player *should* be told which of the two reasons applied is a real product question and a new promise: it is recorded as an open question on the ADR that decides this taxonomy rather than being answered by adding keys here.',
+  },
+  {
     sourceFile: 'src/simulation/protocol/decode.ts',
     declaration: 'PROTOCOL_DECODE_ERROR_CODES',
     reason:

@@ -1,5 +1,6 @@
 import type { RunLength, RunLengthDecodeContract } from '../codec/run-length';
 import { encodeRunLengths, expandRunLengthsInto } from '../codec/run-length';
+import { SnapshotRefusedError } from '../runtime/restore-refusal';
 import type { EntityStoreSnapshot } from './entity-store';
 
 /**
@@ -12,6 +13,30 @@ import type { EntityStoreSnapshot } from './entity-store';
  * schema and `src/persistence/entity-codec.ts` callers name it.
  */
 export type EntityLivenessRun = RunLength;
+
+/**
+ * The entity-ledger plane's declared snapshot refusal (#431).
+ *
+ * A `SnapshotRefusedError` so the restore boundary reads the reason off the
+ * error, and its own subclass rather than the shared base so this plane keeps
+ * a type of its own -- the property
+ * `tests/unit/run-length-codec-unification.test.ts` asserts, and the reason
+ * the shared run-length codec takes a `fail` callback instead of throwing for
+ * both planes. `SnapshotRefusedError` extends `RangeError`, which is what
+ * every one of these sites already threw, so nothing that catches or asserts
+ * a `RangeError` here changes.
+ *
+ * Always `damaged-payload`: every check below is about the encoded ledger
+ * agreeing with itself. The one entity refusal that is *not* about the bytes
+ * -- a written prefix wider than the receiving store -- lives in
+ * `EntityStore.loadSnapshot` and is raised `unsupported-by-this-build` there.
+ */
+export class EntitySnapshotError extends SnapshotRefusedError {
+  public constructor(message: string) {
+    super('damaged-payload', message);
+    this.name = 'EntitySnapshotError';
+  }
+}
 
 /**
  * JSON-safe, **population-shaped** form of `EntityStoreSnapshot`.
@@ -106,9 +131,11 @@ export { encodeRunLengths };
  * value that only survives by `TypedArray.fill` coercion -- before #123 item
  * 3 this path checked no value at all, and a corrupt `alive` run of `999`
  * restored silently as `231`, `-1` as `255` and `NaN` as `0`. `fail` builds
- * the `RangeError` this codec has always thrown, with the messages it has
- * always used; the two additional failure kinds are the two checks this path
- * did not previously make.
+ * the refusal this codec has always thrown, with the messages it has always
+ * used; the two additional failure kinds are the two checks this path did not
+ * previously make. Since #431 that refusal is an `EntitySnapshotError`, which
+ * is still a `RangeError` and now also carries the reason the restore
+ * boundary reports.
  */
 function entityRunContract(field: string, maxValue: number): RunLengthDecodeContract {
   return {
@@ -116,17 +143,17 @@ function entityRunContract(field: string, maxValue: number): RunLengthDecodeCont
     fail: (failure): never => {
       switch (failure.kind) {
         case 'malformed-run':
-          throw new RangeError(`Entity snapshot "${field}" has a run that is not a [value, length] tuple.`);
+          throw new EntitySnapshotError(`Entity snapshot "${field}" has a run that is not a [value, length] tuple.`);
         case 'value-out-of-range':
-          throw new RangeError(
+          throw new EntitySnapshotError(
             `Entity snapshot "${field}" has a run value outside 0..${failure.maxValue} (${String(failure.value)}).`,
           );
         case 'invalid-length':
-          throw new RangeError(`Entity snapshot "${field}" has a non-positive run length (${String(failure.length)}).`);
+          throw new EntitySnapshotError(`Entity snapshot "${field}" has a non-positive run length (${String(failure.length)}).`);
         case 'exceeds-capacity':
-          throw new RangeError(`Entity snapshot "${field}" runs cover more than ${failure.capacity} slots.`);
+          throw new EntitySnapshotError(`Entity snapshot "${field}" runs cover more than ${failure.capacity} slots.`);
         case 'length-mismatch':
-          throw new RangeError(
+          throw new EntitySnapshotError(
             `Entity snapshot "${field}" runs cover ${failure.covered} slots, expected ${failure.capacity}.`,
           );
       }
@@ -142,6 +169,9 @@ const ALIVE_MAX_VALUE = 255;
 
 export function encodeEntityStoreSnapshot(snapshot: EntityStoreSnapshot): EncodedEntityStoreSnapshot {
   const { capacity, freeCount } = snapshot;
+  // Plain `RangeError`s, and deliberately: these two refuse a *live store*
+  // being captured, never a save being read, so a declared snapshot-refusal
+  // reason would be a verdict about a payload that does not exist yet (#431).
   if (snapshot.generations.length !== capacity || snapshot.alive.length !== capacity) {
     throw new RangeError('Entity snapshot generations/alive arrays must be exactly `capacity` long.');
   }
@@ -172,10 +202,10 @@ export function encodeEntityStoreSnapshot(snapshot: EntityStoreSnapshot): Encode
 export function decodeEntityStoreSnapshot(encoded: EncodedEntityStoreSnapshot): EntityStoreSnapshot {
   const capacity = encoded.capacity;
   if (!Number.isInteger(capacity) || capacity < 0) {
-    throw new RangeError(`Entity snapshot capacity must be a non-negative integer, got ${capacity}.`);
+    throw new EntitySnapshotError(`Entity snapshot capacity must be a non-negative integer, got ${capacity}.`);
   }
   if (encoded.freeIndices.length > capacity) {
-    throw new RangeError(`Entity snapshot free list (${encoded.freeIndices.length}) exceeds capacity (${capacity}).`);
+    throw new EntitySnapshotError(`Entity snapshot free list (${encoded.freeIndices.length}) exceeds capacity (${capacity}).`);
   }
 
   const generations = new Uint16Array(capacity);

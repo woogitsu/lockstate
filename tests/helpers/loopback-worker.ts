@@ -23,6 +23,16 @@ export class LoopbackWorker {
   public readonly machine: SimulationWorkerStateMachine;
   private readonly listeners = new Set<(message: WorkerToMainMessage) => void>();
   public readonly undecodableWorkerMessages: unknown[] = [];
+  /**
+   * Every message the worker posted that **decoded**, in order.
+   *
+   * Recorded post-decode on purpose: a test asserting on a fault's `details`
+   * is asserting that the envelope schema permits that shape, not merely that
+   * the state machine tried to send it (#431). A listener cannot stand in for
+   * this -- `WorkerSessionHost` consumes a correlated fault by rejecting the
+   * pending request, so the message is gone by the time a test could look.
+   */
+  public readonly posted: WorkerToMainMessage[] = [];
   /** Set by `terminate`, so a test can assert a worker was really disposed of. */
   public terminated = false;
 
@@ -39,6 +49,7 @@ export class LoopbackWorker {
             this.undecodableWorkerMessages.push(message);
             return;
           }
+          this.posted.push(decoded.value);
           for (const listener of this.listeners) listener(decoded.value);
         },
       },

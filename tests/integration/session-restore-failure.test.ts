@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { SnapshotRestoreFaultError } from '../../src/persistence/session/runtime-host';
 import { MemoryLocalSaveStore } from '../../src/persistence/local/memory-store';
 import { PrisonSaveRepository } from '../../src/persistence/local/repository';
 import { SessionController } from '../../src/persistence/session/session-controller';
@@ -163,6 +164,61 @@ function v1WithWrittenPrefix(writtenPrefix: number): unknown {
   };
 }
 
+/**
+ * A save that decodes, checksums and **is not refused by anything** -- the
+ * restore path throws where no declared check is watching (#431).
+ *
+ * Its `kernel.rngStates` names one stream twice. That passes the save schema
+ * (`rngStates: z.array(...)` has no name set and no uniqueness rule -- ADR
+ * 0038 records that a save carrying three streams, or zero, decodes `ok:true`)
+ * and is then refused by `NamedRngStreams`' constructor with a bare
+ * `RangeError`. That constructor is shared with a live session, so
+ * `src/simulation/runtime/restore-refusal.ts` deliberately leaves it
+ * undeclared: relabelling it would tell a developer who mistyped a stream name
+ * in code that a save was bad. So this payload is exactly the shape the
+ * taxonomy blames on *us*, produced by the production path rather than by an
+ * injected failure -- no stub host, no thrown-in error.
+ *
+ * The terrain runs cover the chunk's full 1,024 tiles and split at `revision`,
+ * so the world restores cleanly (the RNG is the only thing wrong) and a
+ * surviving record still identifies itself by its own bytes.
+ */
+function codeFaultEnvelope(revision: number): SaveEnvelope {
+  const base = goodPayload(1);
+  const first = base.kernel.rngStates[0];
+  if (first === undefined) throw new Error('A fresh capture carries four RNG streams; this fixture is wrong.');
+  const payload = {
+    ...base,
+    kernel: { ...base.kernel, rngStates: [first, first] },
+    world: {
+      version: 1,
+      chunkSize: 32,
+      ownedChunks: [],
+      chunks: [
+        {
+          x: 0,
+          y: 0,
+          lifecycle: 'loaded',
+          geometryRevision: 0,
+          contentRevision: 0,
+          dirty: false,
+          terrain: [[1, 1_024 - revision], [1, revision]],
+        },
+      ],
+    },
+  };
+  return {
+    saveSchemaVersion: SAVE_SCHEMA_VERSION,
+    gameVersion: 'test-version',
+    prisonId: PRISON_ID,
+    revision,
+    createdAt: 1,
+    updatedAt: revision,
+    checksum: computeSaveChecksum(payload as never),
+    payload,
+  } as unknown as SaveEnvelope;
+}
+
 function envelopeWithSeed(seed: number, revision: number): SaveEnvelope {
   const payload = goodPayload(seed);
   return {
@@ -299,13 +355,18 @@ describe('a save that decodes and cannot be restored, end to end', () => {
 /**
  * The failure that costs the player everything, and what it costs now.
  *
- * `loadPrison` walks the retained window newest-first, and the worker cannot
- * tell a bad save from a bug in this build's own restore code:
- * `handleInitialize` wraps `restoreSimulationRuntime` in a catch-all and
- * reports every exception out of it as `snapshot-incompatible`, which
- * `WorkerSessionHost` turns into the `SnapshotRestoreRejectedError` the walk
- * acts on. Either way the cause is deterministic, so it refuses *every*
- * generation in the window.
+ * `loadPrison` walks the retained window newest-first, and until #431 the
+ * worker could not tell a bad save from a bug in this build's own restore
+ * code: `handleInitialize` wrapped `restoreSimulationRuntime` in a catch-all
+ * and reported every exception out of it as `snapshot-incompatible`, which
+ * `WorkerSessionHost` turned into the `SnapshotRestoreRejectedError` the walk
+ * acts on. **It can now**, and the sentence above is kept in the past tense
+ * rather than deleted because the bound below is what stood in for the
+ * diagnosis and is still the reason a *refusal* costs nothing: every payload
+ * in this block is refused by a declared check, so it is a bad save under both
+ * regimes. The cases where the fault is ours are the block after this one.
+ * Either way the cause is deterministic, so it refuses *every* generation in
+ * the window.
  *
  * It used to retire each one as it was refused, which meant one load deleted
  * every generation but the last (three to zero before the floor landed, three
@@ -462,6 +523,177 @@ describe('a deterministic refusal costs no generation at all', () => {
     // And the session is running at this build's allocation, not the eight
     // slots the V1 file recorded: the ledger it writes back out is its own.
     expect(ledger.capacity).toBe(DEFAULT_PRISONER_CAPACITY);
+  });
+});
+
+/**
+ * #431: our own defect, told apart from the player's save at the point the
+ * deletion decision is made.
+ *
+ * The block above proves what a *refusal* costs. This one is the other half,
+ * and the one the retirement bound was standing in for. Until this issue, an
+ * exception out of our own restore code reached `SessionController` as the
+ * same `SnapshotRestoreRejectedError` a genuinely bad payload does, so the
+ * only thing keeping it from deleting saves was #403 (d)'s rule that nothing
+ * is retired until something restores -- a bound, not a diagnosis. Every case
+ * below runs on `codeFaultEnvelope`, which the production path refuses with an
+ * error no check declared; nothing is stubbed and no failure is injected.
+ *
+ * What is asserted is not that the walk survives -- it did before -- but that
+ * the *reason* is now the one the code arrived at, and that a save the walk
+ * cannot judge is left alone even when a different generation restores and
+ * unlocks retirement for everything the walk set aside.
+ */
+describe('a fault in our own restore code costs no generation, and is not called a refusal', () => {
+  /**
+   * The case the bound cannot cover and the class distinction can.
+   *
+   * A generation restores here, so retirement runs -- and the older
+   * generation the walk could not judge must still be untouched afterwards.
+   * Contrast the block above's *"demotes the unrestorable generation, restores
+   * the previous one on the same worker"*: same shape, same successful
+   * recovery, opposite outcome for the generation that failed, decided
+   * entirely by which class the restore path raised.
+   */
+  it('leaves the generation it could not judge on disk even after a different one restores and retirement runs', async () => {
+    const { controller, repository, store } = await buildFixture();
+    expect((await repository.save(PRISON_ID, restorableEnvelope(1))).ok).toBe(true);
+    expect((await repository.save(PRISON_ID, codeFaultEnvelope(2))).ok).toBe(true);
+
+    vi.useFakeTimers();
+    let outcome;
+    try {
+      outcome = await controller.loadPrison(PRISON_ID);
+    } finally {
+      vi.useRealTimers();
+    }
+
+    // The walk did not stop at our defect: the player has their prison back.
+    expect(outcome).toMatchObject({ ok: true, recovered: true });
+    expect(controller.getActiveSession()).toMatchObject({ prisonId: PRISON_ID, revision: 1 });
+    expect(controller.getLastRetirementFailure()).toBeUndefined();
+
+    // And gen-2 is still there, with its own bytes: the terrain split written
+    // for revision 2 and nothing else's, spelled out here rather than read
+    // back from the helper that wrote it.
+    const stored = await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, 'gen-2'));
+    expect(stored).toMatchObject({
+      saveSchemaVersion: SAVE_SCHEMA_VERSION,
+      revision: 2,
+      payload: { world: { chunkSize: 32, chunks: [{ x: 0, y: 0, terrain: [[1, 1_022], [1, 2]] }] } },
+    });
+    const [metadata] = await repository.list();
+    expect(metadata).toMatchObject({ generationIds: ['gen-1', 'gen-2'] });
+  });
+
+  /**
+   * And the answer the player is given when nothing restores.
+   *
+   * `no-valid-generation` is not a neutral code: the save panel renders it as
+   * *"No readable save generation remains for this prison. Every retained copy
+   * failed validation."* Nothing validated anything here, so that sentence
+   * would be a claim about the player's data that our own defect does not
+   * license. The load throws instead, which the panel reports through
+   * `save.failure.load` -- "Loading failed: {detail}" -- carrying what
+   * actually went wrong. Both keys already exist; neither is new text.
+   */
+  it('says the load failed rather than that every copy failed validation, and keeps all three saves', async () => {
+    const { controller, repository, store } = await buildFixture();
+    for (const revision of [1, 2, 3]) {
+      expect((await repository.save(PRISON_ID, codeFaultEnvelope(revision))).ok).toBe(true);
+    }
+
+    vi.useFakeTimers();
+    try {
+      await expect(controller.loadPrison(PRISON_ID)).rejects.toThrow(SnapshotRestoreFaultError);
+    } finally {
+      vi.useRealTimers();
+    }
+
+    // Every generation still holds the bytes it was written with.
+    const expected = [
+      { generationId: 'gen-1', revision: 1, terrain: [[1, 1_023], [1, 1]] },
+      { generationId: 'gen-2', revision: 2, terrain: [[1, 1_022], [1, 2]] },
+      { generationId: 'gen-3', revision: 3, terrain: [[1, 1_021], [1, 3]] },
+    ] as const;
+    for (const { generationId, revision, terrain } of expected) {
+      const stored = await store.runTransaction('readonly', (tx) => tx.getGeneration(PRISON_ID, generationId));
+      expect(stored, generationId).toMatchObject({
+        saveSchemaVersion: SAVE_SCHEMA_VERSION,
+        revision,
+        payload: { world: { chunkSize: 32, chunks: [{ x: 0, y: 0, terrain }] } },
+      });
+    }
+    const [metadata] = await repository.list();
+    expect(metadata).toMatchObject({ currentGenerationId: 'gen-3', generationIds: ['gen-1', 'gen-2', 'gen-3'] });
+  });
+
+  /**
+   * The worker's own answer, read off the protocol rather than inferred from
+   * what the controller did with it.
+   *
+   * `internal-error` and not `snapshot-incompatible`, because the HUD's alert
+   * list renders one sentence per fault code and the `snapshot-incompatible`
+   * one reads *"The save could not be loaded -- this build does not understand
+   * its format."* -- a statement about the player's file. Both keys already
+   * exist (`src/content/default-locale-en.ts`); what changes is which of them
+   * a defect of ours reaches.
+   *
+   * **Recoverable**, and that pairing is the one place this work reads ADR
+   * 0024 §1 more narrowly than its prose: recoverability there is decided by
+   * whether the failure reached simulation state, and
+   * `restoreSimulationRuntime` is a factory that cannot -- nothing is
+   * installed on the worker until it returns. The assertion is worth making
+   * because the alternative is not merely pedantic: a `faulted` worker answers
+   * the walk's next attempt `already-initialized`, so a non-recoverable pairing
+   * would silently cost the player the recovery the test above proves.
+   */
+  it('reports our defect to the main thread as internal-error carrying the declared reason', async () => {
+    const { controller, repository, worker } = await buildFixture();
+    expect((await repository.save(PRISON_ID, codeFaultEnvelope(1))).ok).toBe(true);
+
+    vi.useFakeTimers();
+    try {
+      await expect(controller.loadPrison(PRISON_ID)).rejects.toThrow(SnapshotRestoreFaultError);
+    } finally {
+      vi.useRealTimers();
+    }
+
+    // Crossed both real protocol decoders, so `details` is a shape the
+    // envelope schema permits rather than one this test invented.
+    expect(worker.undecodableWorkerMessages).toEqual([]);
+    const faults = worker.posted.filter((message) => message.kind === 'protocol/error');
+    expect(faults).toHaveLength(1);
+    expect(faults[0]?.payload).toMatchObject({
+      code: 'internal-error',
+      recoverable: true,
+      details: { snapshotRestore: 'restore-code-fault' },
+    });
+  });
+
+  /**
+   * The contrast on the same channel, so "internal-error" above is not simply
+   * what this worker now says about every failed restore. `unrestorableEnvelope`
+   * is refused by `SparseWorld.fromSnapshot`, a declared check.
+   */
+  it('still reports a declared refusal as a recoverable snapshot-incompatible with its own reason', async () => {
+    const { controller, repository, worker } = await buildFixture();
+    expect((await repository.save(PRISON_ID, unrestorableEnvelope(1) as SaveEnvelope)).ok).toBe(true);
+
+    vi.useFakeTimers();
+    try {
+      expect(await controller.loadPrison(PRISON_ID)).toEqual({ ok: false, reason: 'no-valid-generation' });
+    } finally {
+      vi.useRealTimers();
+    }
+
+    const faults = worker.posted.filter((message) => message.kind === 'protocol/error');
+    expect(faults).toHaveLength(1);
+    expect(faults[0]?.payload).toMatchObject({
+      code: 'snapshot-incompatible',
+      recoverable: true,
+      details: { snapshotRestore: 'damaged-payload' },
+    });
   });
 });
 

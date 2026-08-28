@@ -1436,6 +1436,11 @@ single generic failure:
 | `migration-step-threw` | A migration step threw instead of returning, so there was no output for a schema to reject. Distinct from the row above because it says something different to whoever has to fix it, and because the alternative — letting the exception escape — aborts `loadCurrent`'s recovery walk instead of failing one generation. |
 | `checksum-mismatch` | The envelope parses and migrates cleanly, but its checksum does not match its payload — corruption, not a shape problem. |
 
+This table covers the **decode** boundary only. A save that passes every row
+here can still fail to *restore*, and why it failed has its own three-reason
+taxonomy: see "Why a restore was refused, and whose fault it is (#431)" under
+"Generation retention and recovery".
+
 ## Size hook
 
 `estimateSaveEnvelopeByteSize` (`src/persistence/size.ts`) reports the
@@ -1691,12 +1696,15 @@ either.
 reports the refusal (`DemotionResult`), and that floor is what stops one
 restore-time throw from costing a player every save they have.
 
-The chain it breaks: `handleInitialize` wraps `restoreSimulationRuntime` in a
-catch-all and reports *every* exception out of it as `snapshot-incompatible`,
-so a bug in this build's own restore code is indistinguishable from a bad
-blob; `WorkerSessionHost` turns that code into a
-`SnapshotRestoreRejectedError`; `loadPrison` acts on it. A cause of that shape
-is deterministic, so it rejects every generation in the window. Measured on
+The chain it breaks, **as that chain stood before #431**: `handleInitialize`
+wrapped `restoreSimulationRuntime` in a catch-all and reported *every*
+exception out of it as `snapshot-incompatible`, so a bug in this build's own
+restore code was indistinguishable from a bad blob; `WorkerSessionHost` turned
+that code into a `SnapshotRestoreRejectedError`; `loadPrison` acted on it. A
+cause of that shape is deterministic, so it rejected every generation in the
+window. The first link is gone — see "Why a restore was refused, and whose
+fault it is" below — but the measurement that follows is what the floor was
+built for and is kept in the past tense rather than deleted. Measured on
 `main` at v0.0.112, when the walk demoted each generation as it was refused:
 **three good generations became zero in one load**, and the prison stayed
 unloadable afterwards even once the failure was removed, because nothing was
@@ -1760,8 +1768,15 @@ deleted:
 
 | Cause of the refusal | Before | Now |
 | --- | --- | --- |
-| Deterministic (a code fault, or a shape no generation carries correctly) | every generation but one deleted | **none deleted**; `no-valid-generation`, window intact |
+| Deterministic and *declared* (a shape no generation carries correctly) | every generation but one deleted | **none deleted**; `no-valid-generation`, window intact |
+| Deterministic and *undeclared* (a fault in our own restore code) | every generation but one deleted | **none deleted**, and none is even a candidate for deletion: it is not a `SnapshotRestoreRejectedError` (#431) |
 | This save only (a genuinely bad newest generation) | that generation deleted, older one loaded | unchanged: that generation deleted, older one loaded |
+
+The middle row used to be the top row's parenthesis — *"a code fault, or a
+shape no generation carries correctly"* — because before #431 those two were
+one thing here. They are separated rather than reworded, because the "Before"
+column is identical for both and that is the point: the bound covered them
+equally and could not tell them apart.
 
 The second row is why this is not simply "delete less": #103's requirement that
 an unrestorable generation must not stay current for ever is unchanged, and
@@ -1778,16 +1793,17 @@ a fixed build can still read.
 **Two things this does not settle, neither decidable inside implementation
 code:**
 
-1. **Classifying the failure.** A schema/checksum failure is a fact about the
+1. **Classifying the failure — settled by #431, and the section below is the
+   answer.** This item read: *"A schema/checksum failure is a fact about the
    blob; an unexpected exception is a fact about our code, and only the first
-   justifies deleting anything. Today they are one `catch`. Splitting them
-   needs every deliberate rejection on the restore path to be a *declared*
-   verdict rather than whatever error was nearest — today they are
-   `WorldSnapshotError` (`sparse-world.ts`), bare `RangeError`s
-   (`restore-session.ts`, `session-systems.ts`, `entity-codec.ts`) and bare
-   `Error`s (`entity-store.ts`, `component.ts`) — because the fallback
-   direction matters both ways: treat an unclassified error as a code fault
-   and #103's rollback silently stops covering the module that threw it.
+   justifies deleting anything. Today they are one `catch`."* They are no
+   longer one `catch`. What it asked for is what landed — every deliberate
+   rejection on the restore path is a declared verdict — and the hazard it
+   named is real and is stated plainly there: an unclassified error *is*
+   treated as a code fault, so a refusal nobody declared stops being covered by
+   #103's rollback. The mitigation is that the direction is the safe one (the
+   walk continues, nothing is deleted) and that the undeclared set is written
+   down rather than left to be discovered.
 2. **Quarantine instead of delete** (#432), so a demoted generation stays
    recoverable by a fixed build rather than only the last one. The obvious
    form — a `quarantinedGenerationIds` field on the slot record — is a
@@ -1811,19 +1827,105 @@ restored, so the refusals that reach a delete are the ones a working build
 disagreed with about one save. And the concrete instance everyone reasoned
 from — `save-v1-in-progress.json`, refused for carrying an eight-slot ledger —
 was not a bad save at all; #433 removed the refusal, and the fixture restores.
-Until (1) lands, the remaining case for (2) rests entirely on refusals nobody
-has yet exhibited; after (1) lands, a demotion is a *declared* verdict on a
-payload, and what quarantine insures against is a verdict the code stands
-behind. Either way the schema hazard above is the same price. Deciding (2)
-before (1) is buying insurance without knowing what is being insured, which is
-why this document records it as open rather than as next.
+**(1) has since landed (#431), so the sentence that stood here — *"until (1)
+lands, the remaining case for (2) rests entirely on refusals nobody has yet
+exhibited"* — has been overtaken, and what it predicted is now the state of
+things:** a demotion is a *declared* verdict on a payload, and what quarantine
+insures against is a verdict the code stands behind. It also sharpens what (2)
+is for. A demotion can now say which of two verdicts it reached, and only one
+of them describes bytes worth keeping — `unsupported-by-this-build` is a save
+another build reads, `damaged-payload` is one no build reads. The schema hazard
+above is unchanged and is still (2)'s real price.
 
 Who calls it is deliberately narrow: `SessionController.loadPrison` demotes
-**only** on a `SnapshotRestoreRejectedError`, the error a host raises when the
-*snapshot* was refused, and only once another generation has restored. A host
-that timed out, was never started or has gone away propagates unchanged and
-costs no generation — demoting a good save because the worker was busy would be
-the more expensive mistake.
+**only** on a `SnapshotRestoreRejectedError`, the error a host raises when a
+declared check refused the *snapshot*, and only once another generation has
+restored. A host that timed out, was never started or has gone away propagates
+unchanged and costs no generation — demoting a good save because the worker was
+busy would be the more expensive mistake. Neither does a
+`SnapshotRestoreFaultError`, which is our own restore code throwing and is a
+different class for exactly that reason (#431).
+
+#### Why a restore was refused, and whose fault it is (#431)
+
+The rules above decide **when** a refused generation may be retired. This one
+decides **what a refusal means**, which is the question they were standing in
+for.
+
+`decodeSaveEnvelope` has always answered its half of it — "Error taxonomy"
+above lists six codes and a meaning for each. The restore boundary had no such
+answer: `SimulationWorkerStateMachine.handleInitialize` reported every
+exception out of `restoreSimulationRuntime` under one code, and
+`WorkerSessionHost` turned that into a `SnapshotRestoreRejectedError` carrying
+a message string. So a save this build cannot read and a defect in this
+build's own restore code were the same class with different prose — the player
+was told their file was unreadable when the fault was ours, and a support
+report could not be told from a bug report.
+
+**A restore attempt that produced no session now ends for exactly one of three
+declared reasons**, and they are declared at the check that decided them
+(`src/simulation/runtime/restore-refusal.ts`):
+
+| Reason | What it means | Whose fault | May the generation be retired? |
+| --- | --- | --- | --- |
+| `unsupported-by-this-build` | The payload is coherent and this build cannot interpret it: a snapshot `schemaVersion` it does not implement, an entity ledger whose written prefix is wider than it allocates, an actor-identity snapshot version it does not know, an RNG algorithm it does not implement. | Neither. The bytes are fine and another build reads them. | Yes, once a different generation has restored — and this is the row #432's quarantine exists for. |
+| `damaged-payload` | A declared check found the content inconsistent with itself: a terrain run that overruns its chunk, an RNG stream that is not four words, a `simulation` section with no `entities`, an identity snapshot naming one entity twice, a construction section with no `orders` array. | The save. No build restores it. | Yes, once a different generation has restored. |
+| `restore-code-fault` | Nothing declared a refusal and an exception escaped. | **This build.** No verdict has been reached about the save at all. | **No, ever.** It arrives as `SnapshotRestoreFaultError`, which is not the class the demotion decision reads. |
+
+Three and not four: *shape* and *checksum* failures never reach a restore —
+`decodeSaveEnvelope` refuses those first, under the taxonomy above — so an arm
+for them would be permanently unreachable. Three and not two: collapsing the
+first two rows makes a save a newer build wrote indistinguishable from a
+corrupt one, and those two want opposite handling.
+
+**How each side of the worker boundary learns the reason.** The check that
+refused raises a `SnapshotRefusedError` carrying it; `restoreFailureReasonOf`
+is one `instanceof` and reads no message. The worker writes the reason into the
+`protocol/error`'s `details`, a field `protocolFaultSchema` has declared
+optional since ADR 0003 and nothing emitted until now — so this needs no new
+fault code, no protocol version and no save-schema change. `WorkerSessionHost`
+reads it back through a narrowing that only accepts the declared values, and
+raises the matching class. A `snapshot-incompatible` fault that declares *no*
+reason is treated as our defect rather than as a refusal: all three producers
+declare one, so a fault without one is a producer that forgot, and guessing a
+verdict about a player's save on its behalf is the defect this section removes.
+
+**A code fault reports as `internal-error`, and it is recoverable.** The code,
+because the HUD's alert list renders one sentence per fault code and the
+`snapshot-incompatible` one reads *"The save could not be loaded — this build
+does not understand its format."*, which is a claim about the player's file.
+Recoverable, because ADR 0024 decides recoverability by whether the failure
+reached simulation state and this one provably did not:
+`restoreSimulationRuntime` is a factory that holds no reference to the state
+machine, and `_runtime`/`_kernel` are assigned only from its return value. That
+is not a technicality — a `faulted` worker answers the recovery walk's next
+attempt `already-initialized`, so the pairing is what lets a code fault cost
+the player nothing.
+
+**What is deliberately left undeclared, and what that costs.** Only a check
+whose input can come from nowhere but a save declares a reason. Validators
+shared with a live session — `NamedRngStreams`' name-shape and uniqueness rule,
+`SecuritySectorRegistry.register`'s duplicate-id refusal, the
+content-definition lookups inside `restoreSessionSystems`' subsystem graph —
+keep throwing what they throw, because relabelling them would tell a developer
+who mistyped a stream name in code that a save was bad, which is this issue's
+own defect pointed the other way. Such a refusal is therefore blamed on this
+build. The cost runs in one direction only: the walk still tries the next
+generation, still retires nothing, and the player is told the load failed
+rather than that their saves are unreadable. At worst a genuinely bad
+generation is not retired as promptly as it could be, and the next load
+retries it.
+
+**What the player is told, and what has not changed.** No locale key is added
+by any of this. A load that exhausts the window on declared refusals still
+reports `no-valid-generation`, which the save panel renders as
+`save.status.no-readable-generation`. A load that ends in a code fault now
+**throws**, which the panel renders as `save.failure.load` — *"Loading failed:
+{detail}"* — instead of asserting that *"every retained copy failed
+validation"*, which is a claim about the player's data that a defect of ours
+does not license. Both keys already existed. Whether the player should be told
+*which* of the two save-side reasons applied is a product question and a new
+promise, and it is left open rather than answered here.
 
 #### An import does not evict until it has restored (#438)
 

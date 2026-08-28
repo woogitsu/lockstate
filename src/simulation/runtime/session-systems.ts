@@ -6,6 +6,7 @@ import type { ContrabandRegistry } from '../contraband/item';
 import type { SearchPolicyDefinition } from '../contraband/search-policy';
 import type { SearchSystem } from '../contraband/search-system';
 import { decodeEntityStoreSnapshot, encodeEntityStoreSnapshot, type EncodedEntityStoreSnapshot } from '../entity/entity-codec';
+import { SnapshotRefusedError } from './restore-refusal';
 import type { TunnelRecord } from '../incidents/escape';
 import type { GangRegistry } from '../incidents/gangs';
 import type { IncidentLog } from '../incidents/incident';
@@ -394,8 +395,19 @@ export function decodePrisonerComponents(
   position: ReturnType<PositionComponent['getSnapshot']>;
 } {
   const length = encoded.activeLength;
-  if (!Number.isInteger(length) || length < 0 || length > capacity) {
-    throw new RangeError(`Prisoner component snapshot covers ${length} slots, which is outside a capacity of ${capacity}.`);
+  // Two refusals wearing one message, and #431 needs them apart. A prefix
+  // wider than this build's capacity is the same fact `EntityStore.loadSnapshot`
+  // states one module over -- the writing build allocated more than we do, and
+  // a wider build reads the file. A non-integer or negative prefix is the
+  // payload contradicting itself and no build reads it.
+  if (!Number.isInteger(length) || length < 0) {
+    throw new SnapshotRefusedError('damaged-payload', `Prisoner component snapshot covers ${length} slots, which is not a slot count.`);
+  }
+  if (length > capacity) {
+    throw new SnapshotRefusedError(
+      'unsupported-by-this-build',
+      `Prisoner component snapshot covers ${length} slots, which is outside a capacity of ${capacity}.`,
+    );
   }
 
   const records = new PrisonerRecordComponent(capacity).getSnapshot();

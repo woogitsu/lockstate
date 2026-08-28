@@ -65,12 +65,20 @@ const SHUTDOWN_ACKNOWLEDGEMENT_GRACE_MS = 1_000;
  *
  * ### What it does *not* change
  *
- * The error vocabulary. `startFromSnapshot` still raises
- * `SnapshotRestoreRejectedError` only when the *snapshot* was refused, so
- * `SessionController` still demotes a generation only then. A worker that
- * could not be constructed is an ordinary `Error` and costs no generation:
- * the save may be perfectly good and deleting it would be the more expensive
- * mistake (`SnapshotRestoreRejectedError`'s own docs).
+ * The error vocabulary. Every rejection is `WorkerSessionHost`'s, unchanged:
+ * `SnapshotRestoreRejectedError` only when a declared check refused the
+ * *snapshot*, so `SessionController` still demotes a generation only then;
+ * `SnapshotRestoreFaultError` when our own restore code threw and nothing
+ * declared a refusal (#431), which costs no generation because it is not the
+ * class the demotion decision reads. A worker that could not be constructed is
+ * an ordinary `Error` and costs no generation either: the save may be
+ * perfectly good and deleting it would be the more expensive mistake
+ * (`SnapshotRestoreRejectedError`'s own docs).
+ *
+ * The sentence above used to name only the first of those three, because only
+ * two existed. It is corrected rather than rewritten because the property it
+ * asserted is the one that still matters: this layer adds no vocabulary of its
+ * own and must not, or the two hosts would disagree about what costs a save.
  */
 export class WorkerPerSessionHost implements SessionRuntimeHost {
   private active: WorkerSessionHost | undefined;

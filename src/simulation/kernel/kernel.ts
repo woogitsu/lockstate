@@ -1,4 +1,5 @@
 import { NamedRngStreams, type NamedRngStreamState } from '../rng/streams';
+import { SnapshotRefusedError } from '../runtime/restore-refusal';
 import type { SystemRegistration, SimulationContext } from './system';
 
 export interface QueuedCommand {
@@ -344,8 +345,17 @@ export class Kernel {
    * either way: `snapshot()` sorts by name.
    */
   public restoreState(snapshot: KernelSnapshot): void {
-    if (!Number.isInteger(snapshot.tick) || snapshot.tick < 0) throw new RangeError('Tick must be a non-negative integer.');
-    if (!Number.isInteger(snapshot.expectedSequence) || snapshot.expectedSequence < 0) throw new RangeError('Sequence must be a non-negative integer.');
+    // Declared refusals rather than bare `RangeError`s (#431): unlike the
+    // constructor's identical-looking pair two hundred lines up, these two
+    // only ever read a value that came out of a save, so they can say whose
+    // fault it is. Both are `damaged-payload` -- a negative tick is not a
+    // format a different build understands, it is a contradiction.
+    if (!Number.isInteger(snapshot.tick) || snapshot.tick < 0) {
+      throw new SnapshotRefusedError('damaged-payload', 'Tick must be a non-negative integer.');
+    }
+    if (!Number.isInteger(snapshot.expectedSequence) || snapshot.expectedSequence < 0) {
+      throw new SnapshotRefusedError('damaged-payload', 'Sequence must be a non-negative integer.');
+    }
     this._tick = snapshot.tick;
     this._expectedSequence = snapshot.expectedSequence;
     const merged = new Map<string, NamedRngStreamState>();

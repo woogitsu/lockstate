@@ -1,10 +1,11 @@
 import { captureSessionSnapshot, restoreSimulationRuntime, type SessionSnapshotBundle } from '../../simulation/runtime/restore-session';
 import { createNewSimulationRuntime, type SimulationRuntime } from '../../simulation/runtime/new-session';
+import { RESTORE_CODE_FAULT, restoreFailureReasonOf, type SnapshotRefusalReason } from '../../simulation/runtime/restore-refusal';
 
 /**
  * Thrown by `startFromSnapshot` when the failure is attributable to the
- * *snapshot* rather than to the host: the payload decoded as a save envelope
- * and then could not be restored.
+ * *snapshot* rather than to the host: the payload decoded as a save envelope,
+ * and then a declared check inside the restore path refused its contents.
  *
  * The distinction is load-bearing, not decoration. `SessionController` sets
  * the generation it just tried to load aside when it sees this error, tries
@@ -17,18 +18,53 @@ import { createNewSimulationRuntime, type SimulationRuntime } from '../../simula
  *
  * What this error can no longer do, and #403 is the reason to say so here:
  * raising it for a cause that is really *this build's* — a bug in restore
- * code, which the worker's catch-all cannot tell from a bad blob — used to
+ * code, which the worker's catch-all could not tell from a bad blob — used to
  * delete a save on every generation it refused, and a cause of that shape
- * refuses all of them. It now deletes nothing at all, because nothing is
+ * refuses all of them. It deleted nothing even before #431, because nothing is
  * retired until a different generation has restored through the same code.
- * The distinction above still matters for the same reason it always did; what
- * changed is the price of getting it wrong in the one direction the worker
- * cannot see.
+ * **Since #431 it cannot be raised for that cause at all**: an exception
+ * nothing declared is a `SnapshotRestoreFaultError`, a different class, and
+ * the demotion decision reads the class rather than a bound.
+ *
+ * `reason` is why the *save* was refused, decided at the check that refused it
+ * and carried across the worker boundary in the fault's `details` — never
+ * inferred from `message`. See `src/simulation/runtime/restore-refusal.ts` for
+ * the two values and the argument for two.
  */
 export class SnapshotRestoreRejectedError extends Error {
-  public constructor(message: string, options?: { readonly cause?: unknown }) {
+  public constructor(
+    public readonly reason: SnapshotRefusalReason,
+    message: string,
+    options?: { readonly cause?: unknown },
+  ) {
     super(message, options);
     this.name = 'SnapshotRestoreRejectedError';
+  }
+}
+
+/**
+ * Thrown by `startFromSnapshot` when the restore path threw and **nothing
+ * declared a refusal** — so the fault is this build's, and no verdict has been
+ * reached about the player's save at all (#431).
+ *
+ * It is a separate class rather than a `reason` arm on the error above, and
+ * that is the point: `SessionController.loadPrison` decides demotion by
+ * `instanceof SnapshotRestoreRejectedError`, so a code fault cannot reach the
+ * demotion path however that method is later edited. The property #431 asks
+ * for — *"a code fault must not enter the demotion path at all"* — is held by
+ * the type system rather than by a second conditional somebody can drop.
+ *
+ * It does **not** end the load. The controller tries the next-oldest
+ * generation exactly as it does for a refusal, because our defect may be
+ * specific to what one generation happens to contain; what it never does is
+ * retire the generation that provoked it. If the walk runs out, the first such
+ * fault is thrown rather than reported as `no-valid-generation`, so the player
+ * is told the load failed rather than being told their saves are unreadable.
+ */
+export class SnapshotRestoreFaultError extends Error {
+  public constructor(message: string, options?: { readonly cause?: unknown }) {
+    super(message, options);
+    this.name = 'SnapshotRestoreFaultError';
   }
 }
 
@@ -56,11 +92,15 @@ export interface SessionRuntimeHost {
   /**
    * Starts a simulation restored from a previously captured bundle.
    *
-   * Rejects with `SnapshotRestoreRejectedError` when the *bundle* was refused,
-   * and with an ordinary `Error` for anything about the host itself (no reply,
-   * gone away). `SessionController` moves on to the next generation on the
-   * first and abandons the load on the second, so an implementation must not
-   * blur the two.
+   * Three rejections, and an implementation must not blur them:
+   *
+   * - `SnapshotRestoreRejectedError` — a declared check refused the *bundle*.
+   *   `SessionController` sets that generation aside and may retire it later.
+   * - `SnapshotRestoreFaultError` — the restore path threw and nothing
+   *   declared a refusal, so the fault is this build's. The controller tries
+   *   the next generation and retires none.
+   * - an ordinary `Error` — anything about the host itself (no reply, gone
+   *   away). The controller abandons the load; the save may be perfectly good.
    */
   startFromSnapshot(bundle: SessionSnapshotBundle): Promise<void>;
   /** Captures current authoritative state. Rejects if no session is running. */
@@ -96,14 +136,20 @@ export class InProcessSessionHost implements SessionRuntimeHost {
     try {
       this.runtime = restoreSimulationRuntime(bundle).runtime;
     } catch (error) {
-      // In process there is no host to blame: `restoreSimulationRuntime`
-      // throwing means the bundle itself could not be restored. The previous
-      // session is left in place, exactly as a worker keeps its own state
-      // when it refuses a snapshot.
-      throw new SnapshotRestoreRejectedError(
-        `Snapshot could not be restored: ${error instanceof Error ? error.message : String(error)}`,
-        { cause: error },
-      );
+      // In process there is no host to blame, but there are still two things
+      // to blame (#431): a declared refusal from the restore modules, and an
+      // exception nothing declared. The classifier is the same one the worker
+      // boundary uses, so the two hosts cannot drift on what a reason means --
+      // which matters because `docs/PERSISTENCE.md` rests a whole section on
+      // a test against this host proving the contract the worker host
+      // satisfies. The previous session is left in place either way, exactly
+      // as a worker keeps its own state when it refuses a snapshot.
+      const reason = restoreFailureReasonOf(error);
+      const detail = error instanceof Error ? error.message : String(error);
+      if (reason === RESTORE_CODE_FAULT) {
+        throw new SnapshotRestoreFaultError(`Restoring this snapshot threw where nothing declared a refusal: ${detail}`, { cause: error });
+      }
+      throw new SnapshotRestoreRejectedError(reason, `Snapshot could not be restored: ${detail}`, { cause: error });
     }
   }
 
