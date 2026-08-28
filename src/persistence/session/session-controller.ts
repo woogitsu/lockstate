@@ -88,7 +88,9 @@ export class SessionController {
 
   /**
    * The error from the last load that restored a prison and then could not
-   * delete the generations it had refused, if there was one.
+   * finish its housekeeping -- deleting the generations it had refused, or
+   * closing the retained window on the generation that restored (#438) -- if
+   * there was one.
    *
    * Reported rather than swallowed: `loadPrison` deliberately does not fail a
    * successful load over housekeeping (see there), and an error nothing can
@@ -276,6 +278,15 @@ export class SessionController {
         for (const refusedGenerationId of refused) {
           await this.repository.demoteGeneration(prisonId, refusedGenerationId);
         }
+        // And the same evidence pointed the other way (#438). An imported
+        // generation is written into the retained window's spare slot rather
+        // than over one of the player's own, because a file that decodes,
+        // migrates and checksums has still not been shown to *restore*. It
+        // just has, so the window's ordinary budget applies to it again --
+        // and the generation it displaces is displaced now, having been kept
+        // for exactly as long as it took to find out. A no-op on every load
+        // into a prison nobody imported into, which is why it is unguarded.
+        await this.repository.confirmGeneration(prisonId, result.generationId);
       } catch (error) {
         this.retirementFailure = error;
       }

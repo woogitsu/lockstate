@@ -59,7 +59,23 @@ export type EntityLivenessRun = RunLength;
  * than persistence of a real contract.
  */
 export interface EncodedEntityStoreSnapshot {
-  /** Allocated slot count. Restored stores allocate exactly this many slots. */
+  /**
+   * How many slots the **writing** build had allocated.
+   *
+   * This line used to read "Restored stores allocate exactly this many
+   * slots", and that stopped being true with #433: a store is allocated by
+   * the build that owns it (`DEFAULT_PRISONER_CAPACITY`), and what a save's
+   * `capacity` does is tell the decoder how long the arrays it is expanding
+   * are. `EntityStore.loadSnapshot` compares the *written prefix* against its
+   * own capacity and refuses only a ledger whose written slots it cannot
+   * address; two live prisoners restore into a store of any size that holds
+   * them, at the same indices and therefore under the same entity ids.
+   *
+   * The run lengths still have to sum to exactly this, which is the check
+   * that keeps a save's ledger internally consistent -- it is a fact about
+   * the blob, where the comparison against a live store was a fact about two
+   * builds.
+   */
   readonly capacity: number;
   readonly nextAvailableIndex: number;
   readonly maxActiveIndex: number;
@@ -146,9 +162,10 @@ export function encodeEntityStoreSnapshot(snapshot: EntityStoreSnapshot): Encode
 }
 
 /**
- * Rebuilds the full-capacity `EntityStoreSnapshot` an `EntityStore` expects.
- * The returned arrays are always exactly `capacity` long, so
- * `EntityStore.loadSnapshot` sees the same shape it always has; the free-list
+ * Rebuilds the `EntityStoreSnapshot` the encoded form describes. The returned
+ * arrays are always exactly the *save's* `capacity` long -- which is not
+ * necessarily the receiving store's, and no longer needs to be: see
+ * `EntityStore.loadSnapshot`, which copies the written prefix. The free-list
  * tail above `freeCount` is restored as zeroes rather than as the original
  * stack garbage, which is unobservable because nothing ever reads it.
  */

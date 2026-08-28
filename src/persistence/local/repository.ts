@@ -1,5 +1,10 @@
 import { decodeSaveEnvelope, decodeSaveEnvelopeUnlessTrusted, type SaveDecodeError, type SaveEnvelope } from '../save-schema';
-import { applyGenerationRetention } from './generation-policy';
+import {
+  applyConfirmedRetention,
+  applyGenerationRetention,
+  applyProvisionalRetention,
+  type GenerationRetentionResult,
+} from './generation-policy';
 import { classifyStoreError, type SaveWriteError } from './errors';
 import { decodePrisonSlotMetadata, encodePrisonSlotMetadata, requirePrisonSlotMetadata } from './slot-metadata-schema';
 import type { LocalSaveStore, LocalSaveTransaction, PendingSyncState, PrisonSlotMetadata } from './store';
@@ -96,6 +101,24 @@ export type SaveImportResult =
 export type DemotionResult =
   | { readonly demoted: true }
   | { readonly demoted: false; readonly reason: 'last-generation-retained' | 'not-retained' };
+
+/**
+ * What `confirmGeneration` did with the window's spare slot.
+ *
+ * `'not-retained'` matches `DemotionResult`'s arm of the same name: an
+ * unknown prison, or a generation outside the retained window.
+ *
+ * `'not-the-newest-generation'` is the one that carries a rule. The spare
+ * slot belongs to the newest generation and to no other -- that is the whole
+ * of `applyProvisionalRetention`'s invariant -- so confirming an *older*
+ * generation must not close the window, because the generation that would
+ * pay for it is the unproven import still sitting on top. It is reported
+ * rather than treated as success so a caller cannot read "nothing was
+ * retired" as "the window is within budget".
+ */
+export type GenerationConfirmation =
+  | { readonly confirmed: true; readonly retired: readonly string[] }
+  | { readonly confirmed: false; readonly reason: 'not-retained' | 'not-the-newest-generation' };
 
 export type LoadRecoveryOutcome = 'current' | 'recovered-previous';
 
@@ -238,6 +261,32 @@ export class PrisonSaveRepository {
    * — is still fully validated here before it can reach storage.
    */
   public async save(prisonId: string, envelope: SaveEnvelope): Promise<SaveResult> {
+    return this.writeGeneration(prisonId, envelope, applyGenerationRetention);
+  }
+
+  /**
+   * The write both `save` and `importSave` perform, differing only in **which
+   * generation gives way** when the window is full (#438).
+   *
+   * `save` writes a generation the session it came from was running a moment
+   * ago, so it restores by construction and evicting the oldest to make room
+   * is a fair trade. `importSave` writes a file the player was handed, which
+   * has decoded, migrated and checksummed and still has not been shown to
+   * restore -- so it takes the window's spare slot instead, and
+   * `confirmGeneration` closes the window back down once it has. See
+   * `applyProvisionalRetention`.
+   *
+   * Everything else is identical, and deliberately in one place: the order
+   * inside the transaction is what makes a failed write survivable. The new
+   * generation and the advanced pointer are staged before anything is
+   * deleted, so a prior good generation can never be lost to a write that
+   * does not commit.
+   */
+  private async writeGeneration(
+    prisonId: string,
+    envelope: SaveEnvelope,
+    retentionFor: (existing: readonly string[], newGenerationId: string, keep: number) => GenerationRetentionResult,
+  ): Promise<SaveResult> {
     const decoded = decodeSaveEnvelopeUnlessTrusted(envelope);
     if (!decoded.ok) {
       return { ok: false, error: { code: 'unknown-error', message: `Refusing to persist an invalid envelope: ${decoded.error.message}` } };
@@ -254,7 +303,7 @@ export class PrisonSaveRepository {
 
         await tx.putGeneration(prisonId, generationId, decoded.value);
 
-        const retention = applyGenerationRetention(metadata.generationIds, generationId, this.keepGenerations);
+        const retention = retentionFor(metadata.generationIds, generationId, this.keepGenerations);
         await writeSlot(tx, {
           ...metadata,
           currentGenerationId: generationId,
@@ -377,6 +426,59 @@ export class PrisonSaveRepository {
   }
 
   /**
+   * Closes the window's spare slot once the generation holding it has
+   * actually restored (#438).
+   *
+   * An import is written without evicting anything
+   * (`applyProvisionalRetention`), so between the write and the first
+   * successful restore the window may hold `keep + 1` generations. This is
+   * the other end of that: the caller has seen the imported generation come
+   * back as a running simulation, so it has earned the slot, and the oldest
+   * generation gives way exactly as it would have on the write.
+   *
+   * **The same evidence `demoteGeneration` requires, pointed the other way.**
+   * Demotion deletes a save because a *different* generation restored;
+   * confirmation deletes one because *this* generation restored. Neither acts
+   * on a decode, a checksum or an intention -- only on a restore that
+   * happened, which is the one thing that distinguishes a save this build
+   * cannot read from a build that cannot read saves.
+   *
+   * Idempotent, and a no-op on every ordinary load: a window already within
+   * budget has no spare slot to close, which is the case for every prison the
+   * player has not imported into. `SessionController.loadPrison` therefore
+   * calls it after every successful restore without checking first, in the
+   * same failure-tolerant housekeeping block as the demotions -- a storage
+   * error while trimming a window must not fail a load that has already
+   * succeeded, and the next load trims it instead.
+   */
+  public async confirmGeneration(prisonId: string, generationId: string): Promise<GenerationConfirmation> {
+    return this.store.runTransaction('readwrite', async (tx) => {
+      const metadata = readSlot(await tx.getMetadata(prisonId), prisonId);
+      if (metadata === undefined) return { confirmed: false, reason: 'not-retained' };
+      if (!metadata.generationIds.includes(generationId)) return { confirmed: false, reason: 'not-retained' };
+      if (metadata.generationIds[metadata.generationIds.length - 1] !== generationId) {
+        return { confirmed: false, reason: 'not-the-newest-generation' };
+      }
+
+      const retention = applyConfirmedRetention(metadata.generationIds, this.keepGenerations);
+      // Nothing to close, which is the common case. Returning before the
+      // first write keeps a successful load from bumping `updatedAt` on every
+      // prison the player opens.
+      if (retention.toDelete.length === 0) return { confirmed: true, retired: [] };
+
+      await writeSlot(tx, {
+        ...metadata,
+        generationIds: retention.generationIds,
+        updatedAt: this.now(),
+      });
+      for (const retiredGenerationId of retention.toDelete) {
+        await tx.deleteGeneration(prisonId, retiredGenerationId);
+      }
+      return { confirmed: true, retired: retention.toDelete };
+    });
+  }
+
+  /**
    * Points the slot at `recoveredGenerationId` and deletes the generations
    * the caller proved invalid on the way to it. It runs **only after** a
    * generation has decoded, which is why the decode path has never been able
@@ -420,6 +522,15 @@ export class PrisonSaveRepository {
    * The decode error is returned rather than folded into the message, so the
    * caller can tell the four ways a file is refused apart. See
    * `SaveImportResult`.
+   *
+   * **It costs the player no generation of their own until it has restored**
+   * (#438). Decoding, migrating and checksumming a file establishes that it
+   * is a well-formed save; none of them establishes that this build can
+   * restore it, and this repository ships a fixture that passes all three and
+   * throws. So the write takes the retained window's spare slot rather than
+   * evicting the oldest generation -- see `applyProvisionalRetention` for the
+   * measurement, and `confirmGeneration` for where the eviction happens
+   * instead.
    */
   public async importSave(prisonId: string, raw: unknown): Promise<SaveImportResult> {
     const decoded = decodeSaveEnvelope(raw);
@@ -430,7 +541,7 @@ export class PrisonSaveRepository {
         rejected: decoded.error,
       };
     }
-    const result = await this.save(prisonId, decoded.value);
+    const result = await this.writeGeneration(prisonId, decoded.value, applyProvisionalRetention);
     return result.ok ? { ...result, migrated: decoded.migrated } : result;
   }
 

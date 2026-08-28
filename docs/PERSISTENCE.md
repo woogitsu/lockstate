@@ -294,6 +294,59 @@ happens — before the allocation instead of after it — and its label.
   standing #102 has: a hand-edited, corrupted or synthesised file — which is
   still a real route, through the save panel's Import control.
 
+### A save's entity capacity is the writer's allocation, not a restore precondition
+
+The section above bounds `capacity` because it *sizes an allocation* during
+migration. This one is about what it does **not** decide, which is whether the
+save can be restored at all (#433).
+
+`payload.entities.capacity` is how many prisoner slots the writing build had
+allocated. `EntityStore.loadSnapshot` used to compare it against the receiving
+store's `capacity` and throw `Cannot load snapshot with different capacity` on
+any difference — so a ledger carrying two live prisoners was refused because
+the array they were written into was eight long and this build allocates
+`DEFAULT_PRISONER_CAPACITY` (5,000). `tests/fixtures/persistence/save-v1-in-progress.json`
+is exactly that save: it migrates V1 → V5, its checksum verifies, `importSave`
+accepts it, `loadCurrent` returns it, and every gate before the restore passed,
+so nothing warned the player.
+
+**What must fit is the written prefix** — `max(maxActiveIndex + 1,
+nextAvailableIndex, freeCount)`, the slots the writing build actually used.
+A ledger whose prefix exceeds the receiving store's capacity is still refused,
+and that refusal is real rather than conservative: this build could not
+address those indices, and `packEntityId` could not name them. The message
+says which two numbers disagreed.
+
+This is [ADR 0038](adr/0038-what-makes-a-save-compatible.md) §1 applied
+unchanged — *"a **value** the build cannot interpret is a fact about the blob
+and is refused"* — and the capacity comparison was the same rule misapplied to
+a value the build can interpret perfectly well. It is not a schema change and
+not a version bump: the bytes already carry everything needed, which is the
+condition that ADR made the test.
+
+Two consequences worth stating, because both were checked rather than assumed:
+
+- **No entity id moves.** The prefix is copied at the offsets it was written
+  at and `generations` crosses untouched, so `packEntityId(index, generation)`
+  reproduces every id the writing build issued. ADR 0005 and ADR 0026 both
+  depend on a slot index not being re-homed, and nothing here renumbers
+  anything.
+- **The prisoner *components* are sized to the receiving store, not to the
+  save.** `restoreSessionSystems` decoded them at the save's capacity and then
+  copied them into this runtime's arrays, which worked only while the two
+  builds agreed — a save from a *wider* build threw a bare `RangeError` out of
+  `TypedArray.set` with nothing said about capacity at all. The payload is an
+  allocated *prefix* (see "Prisoner components: allocated prefix, not
+  capacity, and not RLE"), so decoding it at this runtime's capacity is
+  well-defined in both directions.
+
+`tests/unit/entity-snapshot.test.ts` covers the store in isolation (both
+directions, the refusal, and the tail a shorter ledger leaves behind),
+`tests/integration/session-save-round-trip.test.ts` covers a populated save
+written at a wider capacity, and
+`tests/integration/session-restore-failure.test.ts` covers the V1 fixture
+restoring with both its entities' own ids.
+
 ### A migration step that throws is a verdict, not an exception
 
 The class behind that instance, and the more valuable half.
@@ -1234,7 +1287,22 @@ Everything above `freeCount` is stack residue that `EntityStore.spawn`
 structurally cannot read, so `freeCount` is not stored either: it *is*
 `freeIndices.length`, and the two can no longer disagree. `capacity` stays an
 explicit field, and the schema cross-checks that the run lengths sum to
-exactly it, so a restored store allocates the same number of slots.
+exactly it.
+
+**That last sentence used to end "so a restored store allocates the same
+number of slots", and it was the defect underneath #433.** A store is
+allocated by the build that owns it — `DEFAULT_PRISONER_CAPACITY`, 5,000 —
+and a save's `capacity` records the build that *wrote* it. Treating the two
+as one number made `EntityStore.loadSnapshot` open with
+`if (snapshot.capacity !== this.capacity) throw`, which refused this
+repository's own `save-v1-in-progress.json`: two live prisoners inside an
+eight-slot array, migrated and checksummed and unloadable because the array
+around them was the wrong length. What has to fit is the **written prefix**,
+and that is what the store compares now — see
+"[A save's entity capacity is the writer's allocation, not a restore
+precondition](#a-saves-entity-capacity-is-the-writers-allocation-not-a-restore-precondition)".
+The cross-check above is untouched, because it is a fact about the blob's own
+consistency rather than about two builds agreeing.
 
 The encoding stays JSON-safe (plain numbers and arrays), which it must: the
 same shape crosses the worker protocol boundary, whose `structured-clone`
@@ -1706,17 +1774,35 @@ code:**
    `Error`s (`entity-store.ts`, `component.ts`) — because the fallback
    direction matters both ways: treat an unclassified error as a code fault
    and #103's rollback silently stops covering the module that threw it.
-2. **Quarantine instead of delete**, so a demoted generation stays recoverable
-   by a fixed build rather than only the last one. The obvious form —
-   a `quarantinedGenerationIds` field on the slot record — is a persistence
-   format change with a *downgrade* hazard: `prisonSlotMetadataSchema` is
-   `.strict()`, so a record written by a newer build makes `list()` refuse the
-   whole prison list on an older one (see `CorruptSlotMetadataError` above).
-   Un-pointing without deleting is not an option for the reason stated above.
+2. **Quarantine instead of delete** (#432), so a demoted generation stays
+   recoverable by a fixed build rather than only the last one. The obvious
+   form — a `quarantinedGenerationIds` field on the slot record — is a
+   persistence format change with a *downgrade* hazard:
+   `prisonSlotMetadataSchema` is `.strict()`, so a record written by a newer
+   build makes `list()` refuse the whole prison list on an older one (see
+   `CorruptSlotMetadataError` above). Un-pointing without deleting is not an
+   option for the reason stated above.
 The third — demoting only once a fallback has actually restored — is settled,
 and is the section above. It also removes most of what (2) was for: after it, a
 deterministic failure deletes nothing, so there is nothing left to quarantine
 in the case quarantine was designed for.
+
+**(2) is now behind (1) rather than beside it, and that is a change of
+sequence, not of scope.** What made quarantine urgent was that a refusal could
+not be trusted: the worker labels a bug in this build's own restore code
+`snapshot-incompatible` exactly as it labels a bad payload, so a generation
+deleted for being unrestorable might have been perfectly good. Two things have
+narrowed that. Retirement now requires a *different* generation to have
+restored, so the refusals that reach a delete are the ones a working build
+disagreed with about one save. And the concrete instance everyone reasoned
+from — `save-v1-in-progress.json`, refused for carrying an eight-slot ledger —
+was not a bad save at all; #433 removed the refusal, and the fixture restores.
+Until (1) lands, the remaining case for (2) rests entirely on refusals nobody
+has yet exhibited; after (1) lands, a demotion is a *declared* verdict on a
+payload, and what quarantine insures against is a verdict the code stands
+behind. Either way the schema hazard above is the same price. Deciding (2)
+before (1) is buying insurance without knowing what is being insured, which is
+why this document records it as open rather than as next.
 
 Who calls it is deliberately narrow: `SessionController.loadPrison` demotes
 **only** on a `SnapshotRestoreRejectedError`, the error a host raises when the
@@ -1724,6 +1810,71 @@ Who calls it is deliberately narrow: `SessionController.loadPrison` demotes
 that timed out, was never started or has gone away propagates unchanged and
 costs no generation — demoting a good save because the worker was busy would be
 the more expensive mistake.
+
+#### An import does not evict until it has restored (#438)
+
+The rule above is about the **load** path. Retention eviction on **write** is a
+different mechanism in a different file, and it was untouched by it.
+
+`importSave` went through the ordinary save path, so `applyGenerationRetention`
+deleted the oldest generation the moment the imported bytes landed — before
+anything had asked whether they restore. Decoding, migrating and checksumming a
+file establishes that it is a well-formed save; none of the three establishes
+that this build can restore it, and this repository ships a fixture that passed
+all three and threw. Measured on `main` @ `6f671d5` (v0.0.136), against a prison holding
+three of the player's own generations, with `save-v1-in-progress.json` as the
+imported file:
+
+| | window after | the player's saves |
+| --- | --- | --- |
+| before the import | `[gen-1, gen-2, gen-3]` | all three on disk |
+| one import | `[gen-2, gen-3, gen-4]` | `gen-1` deleted |
+| three imports, no load between | `[gen-4, gen-5, gen-6]` | all three deleted; next load `no-valid-generation` |
+
+**That file is no longer the way to reproduce it**, and the sentence is worth
+writing down before it rots: `save-v1-in-progress.json` restores now (see
+"A save's entity capacity is the writer's allocation" above), so an import of
+it is a *working* import and legitimately costs a generation. Any payload that
+decodes and then fails to restore reproduces the same table —
+`tests/integration/session-restore-failure.test.ts` uses a world snapshot whose
+terrain runs do not cover their chunk.
+
+**An unproven generation takes the window's spare slot instead.** The retained
+window may hold `keep + 1` generations while one of them has not been shown to
+restore, and there is at most one such generation at a time:
+
+- `applyProvisionalRetention` (`generation-policy.ts`) adds the imported
+  generation without evicting anything. A window already over `keep` can only
+  be over it because a previous import took the spare slot and nothing has
+  confirmed it since — every other write here trims back to `keep` — so a
+  second import retires *that* occupant. Exactly one per call, so a window
+  over budget for some other reason (a build that lowered `keepGenerations`)
+  converges rather than having its newest saves trimmed off in one write.
+- `PrisonSaveRepository.confirmGeneration` closes the window back to `keep`
+  once the generation holding the slot has actually restored, retiring the
+  oldest exactly as the write would have. `SessionController.loadPrison` calls
+  it after every successful restore, in the same failure-tolerant housekeeping
+  block as the demotions: a storage error while trimming must not fail a load
+  that has already succeeded, and the next load trims it instead. It is a
+  no-op on every prison the player has not imported into.
+
+**It is the same evidence `demoteGeneration` requires, pointed the other way.**
+Demotion deletes a save because a *different* generation restored;
+confirmation deletes one because *this* generation restored. Neither acts on a
+decode, a checksum or an intention — only on a restore that happened, which is
+the one thing that distinguishes a save this build cannot read from a build
+that cannot read saves.
+
+What an import costs, stated plainly because the save panel's own comment used
+to get it wrong: **nothing, if it cannot be restored; the oldest retained
+generation, once it has been.** The only thing an import can destroy is another
+import that never loaded, and the player still has that file.
+
+This does **not** close #432. A generation retired here — by an import that
+worked, or by a demotion — is still deleted rather than quarantined, and a
+quarantined generation would still be outside the retained window, which is why
+#432 reduces this issue's blast radius without closing it and why closing it
+did not need #432.
 
 ### Autosave
 
@@ -1816,6 +1967,16 @@ worth reporting, and the save panel reports it.
 refusals as one table (the property is the *distinction*), and the checked-in
 V1 fixture importing as `migrated: true` and loading back at the current
 version.
+
+**What an import costs the player.** Nothing, until it has restored. The write
+takes the retained window's spare slot rather than evicting the oldest
+generation, and the eviction happens on the first successful restore instead —
+see "[An import does not evict until it has
+restored](#an-import-does-not-evict-until-it-has-restored-438)" above for the
+measurement that made that necessary. So a file this build cannot restore
+leaves every save the player had, a file it can costs the oldest generation
+exactly as it always did, and a second import before either has loaded reuses
+the slot the first one took.
 
 ### Errors
 
