@@ -245,7 +245,7 @@ describe('kernel system ordering', () => {
    * per ADR 0009, by retiring incompatible challenge submissions through
    * the definition allow-lists.
    *
-   * ## The three times this list has changed, and what the ADR 0009 step came to
+   * ## The four times this list has changed, and what the ADR 0009 step came to
    *
    * `procurement` (order 110) was added with the purchase loop (#96, #89),
    * `economy.state-income` (order 120) with the state's per-prisoner-day
@@ -268,6 +268,23 @@ describe('kernel system ordering', () => {
    * scenario's outcome is byte-identical because of the schedule, not because
    * the system is inert: `tests/integration/incident-consequence-loop.test.ts`
    * runs past the phase and watches a tier move.
+   *
+   * **What the fourth one does and does not disturb.** `economy.payroll`
+   * (order 130) is [ADR 0042](../../docs/adr/0042-attaching-consequences-to-the-simulation-loop.md)
+   * step 3's recurring debit -- every employee's authored `wageBand.minPerDay`,
+   * billed once per in-game day. It is inserted into the gap between
+   * `economy.state-income` (120) and `navigation` (150), so no existing system
+   * moves, and the gap is not where it landed but *why*: both economy systems
+   * run on the day's last tick, so the order between them decides whether the
+   * day just served pays for the staff who served it. Before the income the
+   * prison would fall into arrears every day and clear them every day; after
+   * it, the day settles. It shares `economy.state-income`'s schedule
+   * (`intervalTicks: 2,400`, `phaseTicks: 2,399`), so the same sentence below
+   * applies to it unchanged: every determinism test in this directory runs the
+   * scenario for 400 ticks, and this system is registered, pinned here and
+   * never fires in any of them. A test that ran past tick 2,399 with anybody
+   * hired would see the treasury fall, and should --
+   * `tests/integration/economy-payroll-loop.test.ts` does.
    *
    * **What the second one does and does not disturb.** `economy.state-income`
    * is appended *after* `procurement` and before `navigation` (150), so no
@@ -305,6 +322,7 @@ describe('kernel system ordering', () => {
       { id: 'construction', order: 100 },
       { id: 'procurement', order: 110 },
       { id: 'economy.state-income', order: 120 },
+      { id: 'economy.payroll', order: 130 },
       { id: 'navigation', order: 150 },
       { id: 'prisoners.actions', order: 250 },
       { id: 'operations.jobs', order: 260 },

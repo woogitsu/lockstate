@@ -143,9 +143,16 @@ const authoredMessages: Readonly<Record<string, string>> = {
   // `hud.build.buy*` below came with the purchase control that spends it
   // (#89); `hud.status.earned-today` came with the state's per-prisoner-day
   // payment that credits it (#29). There is still no payroll or running-cost
-  // key, and no rate, budget or forecast key, because nothing *debits* the
-  // treasury on a schedule and nothing projects forward --
-  // `tests/unit/ui-hud-messages.test.ts` is the gate that keeps it that way.
+  // key, and no rate, budget or forecast key -- but **the reason has changed**,
+  // and it is worth writing down rather than leaving the sentence to be read
+  // the old way. It used to be that "nothing *debits* the treasury on a
+  // schedule and nothing projects forward". Since ADR 0042 step 3 something
+  // does: `PayrollSystem` bills every employee's wage at the end of every
+  // in-game day, and `simulation/status-counts` carries both what that costs
+  // and what has gone unpaid. What is missing is the *panel*, and the rule
+  // above is what keeps the key waiting for it -- a label authored before
+  // something renders the figure it names is `AGENTS.md`'s fourth exclusion,
+  // not a head start. `tests/unit/ui-hud-messages.test.ts` is still the gate.
   // ---------------------------------------------------------------
   'hud.status.title': 'Prison status',
   'hud.status.prisoners': 'Prisoners',

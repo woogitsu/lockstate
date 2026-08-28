@@ -130,17 +130,31 @@ describe('every HUD message key resolves in the bundled default locale', () => {
      * What exists is a **balance** the simulation publishes and, since #89, a
      * **purchase** that spends it: the Build panel's buy control renders a
      * unit price times a quantity, both handed to it by the composition root
-     * from `src/content/procurement-catalog.ts`. What does not exist is
+     * from `src/content/procurement-catalog.ts`.
+     *
+     * **What this paragraph went on to say is false, and both halves of it
+     * were false at different times.** It read: *"What does not exist is
      * anything that credits or debits the treasury *on a schedule* -- no
      * income, no payroll, no running cost. ADR 0017 decision 6 settles what
-     * the state pays for and nothing accrues it, so the gap this gate guards
-     * is between a decided answer and an unbuilt system rather than an
-     * undecided one.
+     * the state pays for and nothing accrues it."* The income half stopped
+     * being true at `4f711d5`, *"Pay the prison for the places it has somebody
+     * in (#311)"*, which put `stateIncomeAccruedTodayMinorUnits` on the counts
+     * channel and an `earned-today` metric on the strip -- `hud.status.earned-today`
+     * has been in the allow-list below ever since, in the same file that
+     * denied it. The payroll half stopped being true with ADR 0042 step 3,
+     * which bills every employee's wage at every in-game day boundary.
      *
-     * So the allow-list stays one entry long and the refused words stay
-     * exactly as they were, for a reason that moved with #89 rather than
-     * disappearing. `income`, `wage` and `salary` name a flow no system
-     * produces. `budget` names a ceiling nobody has set. `money`, `cash` and
+     * So what this gate now guards is a **narrower and real** thing: the
+     * simulation publishes a daily wage bill and an arrears figure, and no
+     * panel renders either, so no key may exist for them yet. A label authored
+     * before something renders the figure it names is `AGENTS.md`'s fourth
+     * exclusion. When the panel lands, the key lands with it and this list
+     * grows in the same change.
+     *
+     * So the refused words stay exactly as they were, for a reason that has
+     * moved twice rather than disappearing. `income`, `wage` and `salary` name
+     * flows that now exist in the simulation and that nothing on screen shows,
+     * which is the same rule from the other side. `budget` names a ceiling nobody has set. `money`, `cash` and
      * `currency` name a unit #96 deliberately did not choose. And `cost` and
      * `price` stay refused because a key carrying one would be a *standalone*
      * readout of a figure with no purchase behind it: the panel names the

@@ -69,11 +69,11 @@ it — see the three version sections below.
 
 ### Adding an optional field without a version bump
 
-Five payload fields have been added since their section was first written --
+Six payload fields have been added since their section was first written --
 `construction.orders[].edge` (#74), `construction.currentTransaction` /
-`currentTransactionId` (#108), `masterSeed` (#412) and
-`simulation.contraband.intelligenceSequence` -- and none of them bumped the
-schema version. The conditions that make that correct, rather than merely
+`currentTransactionId` (#108), `masterSeed` (#412),
+`simulation.contraband.intelligenceSequence` and `simulation.economy.payroll`
+(ADR 0042 step 3) -- and none of them bumped the schema version. The conditions that make that correct, rather than merely
 convenient, are:
 
 - **The field is optional, and absent means what the older build already
@@ -112,7 +112,7 @@ given the same refusal the label `unsupported-version`. Both builds refuse it;
 only the diagnosis differs. See [ADR 0038](./adr/0038-what-makes-a-save-compatible.md) §4.
 
 `simulation.contraband.intelligenceSequence` is the fifth, and its absence is
-unambiguous for the plainest reason of the five: it is what the reader already
+unambiguous for the plainest reason of the six: it is what the reader already
 did. `IntelligenceLedger.loadSnapshot` derived the counter from the maximum
 surviving `intel.<n>` suffix unconditionally, so a save without the key gets
 exactly that, and the key exists because the derivation is *wrong* — `decayAll`
@@ -123,6 +123,32 @@ session-systems shapes, so the key is equally valid in all three and no
 migration step has to add it. ADR 0012 category 1 is what requires the counter
 to be in the snapshot at all; `docs/DETERMINISM.md` records the divergence that
 remains for a save written before it was.
+
+`simulation.economy.payroll` is the sixth
+([ADR 0049](./adr/0049-what-a-prison-that-cannot-make-payroll-owes.md),
+[ADR 0042](./adr/0042-attaching-consequences-to-the-simulation-loop.md) step 3),
+and its absence is unambiguous for the same *fact about the corpus* reason
+`masterSeed`'s is. It carries the wages a prison has been billed and could not
+pay, and no build that could write a V5 save had a recurring charge at all --
+`Treasury.spend` was called only by `ProcurementSystem.purchase` and
+`StaffHiringService.hire`, both of which refuse rather than owe. So no save
+written before this key existed can be hiding a real debt behind a missing one,
+and absent means zero rather than unknown. `economySectionSchema` is shared by
+the V3, V4 and V5 session-systems shapes, exactly as `contrabandSectionSchema`
+is, so no migration step has to add it there either.
+
+**Proven rather than argued.** `tests/integration/economy-payroll-save.test.ts`
+decodes a real V5 save with the key removed and a real V4 save that predates the
+field, and restores both to zero arrears -- and refuses a hand-edited save that
+carries a negative one, with a valid checksum, so the refusal is the shape's and
+not the integrity check's. ADR 0042's own *Persistence* paragraph says step 3
+*"must carry a version and a migration before release (`AGENTS.md` boundary
+7)"*; boundary 7 asks for *"a version and a migration strategy"*, and this
+section is the strategy that already covers this shape. The sentence in ADR 0042
+was written before the field's shape was chosen and reads that requirement as
+demanding a new version; it is left standing there and corrected here, because
+the reason it was written -- a signed balance *would* have needed a migration --
+is the durable half.
 
 ### What makes a save compatible, and where a named RNG stream fits
 

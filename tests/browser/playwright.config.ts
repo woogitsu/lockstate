@@ -1,7 +1,37 @@
+import { createRequire } from 'node:module';
+import { dirname, resolve } from 'node:path';
+import { execPath } from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from '@playwright/test';
 
 const repositoryRoot = fileURLToPath(new URL('../../', import.meta.url));
+
+/**
+ * The web server below used to start with `pnpm exec vite ...`. That works in
+ * a normal checkout and fails in a **git worktree**, which is how parallel
+ * agents work on this repository.
+ *
+ * The mechanism, because the symptom hides it completely: pnpm 11 runs a
+ * dependency-status check before `exec`, that check decides the tree is out
+ * of date and shells out to `pnpm install`, and the install refuses with
+ * `ERR_PNPM_UNSAFE_MODULES_DIR` -- it will not touch a `node_modules` whose
+ * resolved target is not a strict subdirectory of the project root, which is
+ * exactly what a worktree's `node_modules -> <main checkout>/node_modules`
+ * symlink is. None of that reaches the operator. Playwright prints one line,
+ * `Process from config.webServer was not able to start. Exit code: 1`, and
+ * every spec fails, which reads like a broken harness or a broken page.
+ *
+ * So do not go through a package manager at all. Resolve Vite's bin from its
+ * own `package.json` -- `vite/bin/vite.js` is not in the package's `exports`
+ * map, so `require.resolve` on the subpath throws `ERR_PACKAGE_PATH_NOT_EXPORTED`
+ * and the `bin` field is the supported way in -- and run it on this process's
+ * own Node. That is one process instead of three, it has no opinion about
+ * whether `node_modules` is a symlink, and it behaves identically in a plain
+ * checkout and in a worktree.
+ */
+const viteManifestPath = createRequire(import.meta.url).resolve('vite/package.json');
+const viteBinField = (createRequire(import.meta.url)('vite/package.json') as { bin: { vite: string } }).bin.vite;
+const viteBinPath = resolve(dirname(viteManifestPath), viteBinField);
 
 /**
  * `LOCKSTATE_BROWSER_TEST_PORT` exists for the case where 5183 is taken —
@@ -70,7 +100,7 @@ export default defineConfig({
     ...(explicitExecutablePath === undefined ? {} : { launchOptions: { executablePath: explicitExecutablePath } }),
   },
   webServer: {
-    command: `pnpm exec vite --config tests/browser/vite.config.ts --port ${port} --strictPort`,
+    command: `${JSON.stringify(execPath)} ${JSON.stringify(viteBinPath)} --config tests/browser/vite.config.ts --port ${port} --strictPort`,
     cwd: repositoryRoot,
     url: `${baseURL}/tests/browser/harness.html`,
     /**

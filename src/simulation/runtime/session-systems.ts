@@ -1,4 +1,4 @@
-import type { ProcurementSnapshot, TreasurySnapshot } from '../economy';
+import type { PayrollSnapshot, ProcurementSnapshot, TreasurySnapshot } from '../economy';
 import type { ConfiscationEvent } from '../contraband/confiscation';
 import type { InformantRecord } from '../contraband/informants';
 import type { IntelligenceLedger } from '../contraband/intelligence';
@@ -317,6 +317,29 @@ export interface EncodedObjects {
 export interface EncodedEconomy {
   readonly treasury: TreasurySnapshot;
   readonly procurement: ProcurementSnapshot;
+  /**
+   * Wages billed and not paid
+   * ([ADR 0042](../../../docs/adr/0042-attaching-consequences-to-the-simulation-loop.md)
+   * step 3).
+   *
+   * **Optional, and absence means "nothing is owed"** -- which is what every
+   * save written before payroll existed meant, because no such build could
+   * leave a wage unpaid: `Treasury.spend` was called only by
+   * `ProcurementSystem.purchase` and `StaffHiringService.hire`, both of which
+   * refuse rather than owe. That is the optional-field pattern
+   * `docs/PERSISTENCE.md` describes, on its own stated condition -- absence is
+   * unambiguous as a fact about the corpus rather than by convention -- so
+   * `SAVE_SCHEMA_VERSION` stays at 5 and no migration step is added, exactly as
+   * for `simulation.objects` and `masterSeed`.
+   *
+   * **Why it is in the save at all**, when `StateIncomeSystem` beside it is
+   * proudly stateless: arrears are *history*, not a derivation. Nothing in a
+   * restored session's positions, occupancy or tick could reconstruct the fact
+   * that a day's wages went unpaid, and dropping it would forgive the debt on
+   * every load -- which would make saving and reloading the cheapest way out of
+   * insolvency in the game.
+   */
+  readonly payroll?: PayrollSnapshot;
 }
 
 // --- Prisoner component codec ------------------------------------------
@@ -545,6 +568,11 @@ export function captureSessionSystems(runtime: SimulationRuntime): EncodedSessio
     economy: {
       treasury: runtime.treasury.snapshot(),
       procurement: runtime.procurement.snapshot(),
+      // Emitted unconditionally by a live capture, zero and all -- the same
+      // distinction the `objects` section draws below: a prison that owes
+      // nothing writes `{ unpaidWagesMinorUnits: 0 }`, which says "nothing is
+      // owed", where an *absent* section says "this save does not know".
+      payroll: runtime.payroll.snapshot(),
     },
     // Emitted unconditionally by a live capture, empty array and all: a session
     // that has placed nothing writes `{ placedObjects: [] }`, which says "this
@@ -714,6 +742,10 @@ export function restoreSessionSystems(
   if (systems.economy !== undefined) {
     runtime.treasury.restore(systems.economy.treasury);
     runtime.procurement.restore(systems.economy.procurement);
+    // Absent on every save written before payroll existed, and the runtime
+    // then keeps the zero arrears `createNewSimulationRuntime` gave it -- which
+    // is what a prison that could not owe a wage actually owed.
+    if (systems.economy.payroll !== undefined) runtime.payroll.restore(systems.economy.payroll);
   }
 
   // 6. Contraband, intelligence and searches.

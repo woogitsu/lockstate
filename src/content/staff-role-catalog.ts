@@ -7,10 +7,26 @@ export const STAFF_ROLE_CATALOG_SCHEMA_VERSION = 1 as const;
 export const staffDepartmentSchema = z.enum(['administration', 'security', 'medical', 'operations']);
 export type StaffDepartment = z.infer<typeof staffDepartmentSchema>;
 
+/**
+ * **Whole minor units, and `.int()` is load-bearing rather than tidy.**
+ *
+ * This schema admitted any non-negative number until payroll landed, and every
+ * authored figure was already an integer -- so no catalogue value moves here.
+ * What moves is what a *fractional* one would do. `minPerDay` is money: it is
+ * charged through `Treasury.spend`, which requires a safe integer and refuses
+ * anything else, so a wage of `80.5` would have made every hire of that role
+ * answer `insufficient-funds` for ever with a full treasury, and it now also
+ * sums into `PayrollSystem`'s daily bill, where a float would put
+ * non-associative addition into a balance a save carries and the determinism
+ * fingerprint hashes (`docs/DETERMINISM.md` makes no exception for money).
+ *
+ * Rejecting it at the catalogue is the only place the refusal is legible: the
+ * failure it prevents surfaces nowhere near the number that caused it.
+ */
 export const wageBandSchema = z
   .object({
-    minPerDay: z.number().nonnegative(),
-    maxPerDay: z.number().nonnegative(),
+    minPerDay: z.number().int().nonnegative(),
+    maxPerDay: z.number().int().nonnegative(),
   })
   .strict()
   .refine((band) => band.maxPerDay >= band.minPerDay, { message: 'maxPerDay must be >= minPerDay' });
