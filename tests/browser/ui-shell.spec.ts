@@ -2688,6 +2688,165 @@ test.describe('the Rooms panel', () => {
     ]);
   });
 
+  /**
+   * The catalogue is one choice, so it costs one tab stop (#411).
+   *
+   * ### Why only a browser can answer this
+   *
+   * Every claim below is a fact about a live focus ring: which element
+   * `document.activeElement` is after a real key press, what `tabIndex` the
+   * browser resolved for each row, and whether a key the group did not consume
+   * still reached the page. `vitest.config.ts` runs in
+   * `environment: 'node'` with no jsdom, so there is no `activeElement` and no
+   * focus model there at all -- and jsdom would not help, because jsdom does
+   * not implement sequential focus navigation, which is the entire subject.
+   * The arithmetic underneath *is* reachable from node and is pinned in
+   * `tests/unit/ui-roving-focus.test.ts`; this is the wiring.
+   *
+   * ### What was wrong
+   *
+   * ADR 0039 gave zoning a keyboard route and `app-shell.spec.ts` proved the
+   * whole chain with it, so the route was *possible*. It was not short.
+   * The catalogue is eighteen rows, each a `<button>` and therefore each its
+   * own tab stop, and the coordinate form is the last child of the same
+   * scroller -- so a player crossed the remainder of the list to reach it on
+   * every room they ever zoned. Measured on the assembled page in
+   * `app-shell.spec.ts`, with `room.cell` drawn fifth: fourteen `Tab` presses
+   * from the chosen room to the disclosure, where there is now one. Eighteen
+   * tab stops for one choice is the case the WAI-ARIA composite-widget rule
+   * exists for.
+   *
+   * ### The half that keeps this from being a regression
+   *
+   * A roving `tabindex` alone would make seventeen rows unreachable for a
+   * sighted keyboard-only player, who has no browse mode and no cue to try an
+   * arrow. So the group is announced: `role="radiogroup"` on the box that holds
+   * only the rows, `role="radio"` and `aria-checked` on each. That is asserted
+   * here as part of the behaviour rather than as decoration, because without it
+   * the tab-stop count below is a defect and not a fix.
+   */
+  test('the room catalogue is one tab stop, and the arrows move inside it (#411)', async ({ page }) => {
+    const rowState = async (): Promise<{ tabStops: string[]; checked: string[]; focused: string }> =>
+      page.evaluate(() => {
+        const rows = [...document.querySelectorAll<HTMLElement>('.hud-rooms__rows [data-room]')];
+        return {
+          tabStops: rows.filter((row) => row.tabIndex === 0).map((row) => row.dataset['room'] ?? ''),
+          checked: rows
+            .filter((row) => row.getAttribute('aria-checked') === 'true')
+            .map((row) => row.dataset['room'] ?? ''),
+          focused: (document.activeElement as HTMLElement | null)?.dataset?.['room'] ?? '',
+        };
+      });
+
+    // The group is announced as one, and it holds only the rows -- the
+    // coordinate form ADR 0039 measured into the same scroller is deliberately
+    // outside it, or four number fields would be members of the choice.
+    expect(
+      await page.evaluate(
+        () => document.querySelector('.hud-rooms__rows')?.getAttribute('role') ?? '',
+      ),
+      'the row box is not announced as a single choice',
+    ).toBe('radiogroup');
+    expect(
+      await page.evaluate(() => document.querySelectorAll('.hud-rooms__rows .hud-rooms__coordinates').length),
+      'the coordinate form was swallowed into the radiogroup',
+    ).toBe(0);
+    expect(
+      await page.evaluate(() =>
+        [...document.querySelectorAll<HTMLElement>('.hud-rooms__rows [data-room]')].every(
+          (row) => row.getAttribute('role') === 'radio',
+        ),
+      ),
+      'a catalogue row is not announced as a member of the choice',
+    ).toBe(true);
+
+    /*
+     * One tab stop, however many rows there are -- read off the browser's own
+     * resolved `tabIndex`.
+     *
+     * The harness feeds this panel three room types where the shipped
+     * catalogue has eighteen (`src/content/room-catalog.ts`), so the *count*
+     * that motivated the change is asserted on the real application in
+     * `app-shell.spec.ts` and what is asserted here is the property that does
+     * not depend on it: the group costs one stop whatever its length. Three is
+     * still enough to tell a ring from an off-by-one, which is what the arrows
+     * below need.
+     */
+    const rows = (await page.evaluate(() => window.lockstateUiHarness.roomsProbe())).rows;
+    expect(rows.length, 'too few rows to tell a wrap from an off-by-one').toBeGreaterThanOrEqual(3);
+    const last = rows.length - 1;
+    const arrival = await rowState();
+    expect(arrival.tabStops, 'the catalogue does not cost exactly one tab stop').toHaveLength(1);
+
+    // Reaching it: one `Tab` from the catalogue's own disclosure header, not
+    // eighteen. Focus is put on the section header first so the count below is
+    // the catalogue's and not a lap of the page.
+    await page.locator('.hud-rooms__catalogue > .ui-section__header').focus();
+    await page.keyboard.press('Tab');
+    expect(
+      (await rowState()).focused,
+      'one Tab from the catalogue header did not land inside the row group',
+    ).toBe(arrival.tabStops[0]);
+
+    // And leaving it: one more `Tab` clears every row and reaches the typed
+    // route. Before the roving tab stop this press was the second of as many
+    // presses as the catalogue had rows.
+    await page.keyboard.press('Tab');
+    expect(
+      await page.evaluate(() => {
+        const active = document.activeElement;
+        return active instanceof HTMLElement && active.closest('.hud-rooms__coordinates') !== null;
+      }),
+      'one Tab out of the row group did not reach the coordinate form',
+    ).toBe(true);
+
+    // ---- the arrows, which are what the one tab stop buys back ----------
+    await page.locator('.hud-rooms__rows [data-room="room.cell"]').focus();
+    await page.keyboard.press('ArrowDown');
+    expect((await rowState()).focused, 'ArrowDown did not step to the next room type').toBe(
+      rows[1],
+    );
+    // The tab stop follows focus, so tabbing back in returns to where the
+    // player arrowed to rather than to the top of a list they have moved through.
+    expect((await rowState()).tabStops, 'the group kept two tab stops after an arrow').toEqual([rows[1]]);
+
+    await page.keyboard.press('ArrowUp');
+    expect((await rowState()).focused, 'ArrowUp did not step back').toBe(rows[0]);
+    await page.keyboard.press('ArrowUp');
+    expect((await rowState()).focused, 'the ring did not wrap backwards off the first row').toBe(
+      rows[last],
+    );
+    await page.keyboard.press('Home');
+    expect((await rowState()).focused, 'Home did not reach the first room type').toBe(rows[0]);
+    await page.keyboard.press('End');
+    expect((await rowState()).focused, 'End did not reach the last room type').toBe(rows[last]);
+
+    /*
+     * Focus moves; selection does not. The radiogroup convention is
+     * selection-follows-focus, and it is refused here because choosing a room
+     * type while the world tool is armed re-arms it -- so arrowing the length
+     * of the catalogue would fire that seventeen times. Explicit activation is
+     * also what a pointer press does, which keeps the two producers of a
+     * selection one gesture.
+     */
+    expect(
+      (await rowState()).checked,
+      'arrowing across the catalogue changed the selection without the player choosing',
+    ).toEqual(['room.cell']);
+
+    // `Enter` on the focused row is what chooses it, through the same
+    // `onActivate` a pointer press reaches -- and `aria-checked` is what says
+    // so to a screen reader, in place of the badge that only says it in ink.
+    await page.keyboard.press('Enter');
+    const chosen = await rowState();
+    expect(chosen.checked, 'Enter on a focused row did not choose it').toEqual([rows[last]]);
+    expect(chosen.tabStops, 'the tab stop did not follow the new selection').toEqual([rows[last]]);
+    expect(
+      (await page.evaluate(() => window.lockstateUiHarness.roomsProbe())).selected,
+      'the panel and the accessibility tree disagree about what is selected',
+    ).toBe(rows[last]);
+  });
+
   test('switching to removal discards a pending designation rather than reinterpreting it', async ({ page }) => {
     // The same four numbers mean "designate this" or "remove whatever is here",
     // and silently changing which would be the panel deciding something the
