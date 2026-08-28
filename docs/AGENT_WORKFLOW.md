@@ -117,6 +117,26 @@ Eight agents ran in parallel that day. None of these is taste; each was paid for
   when the browser suite is the thing being verified", was therefore stronger
   than the facts required, and it is withdrawn: verify on the branch you are
   actually changing.
+- **Two browser tests fail in the agent container and pass on CI, and neither
+  is anybody's branch.** `tests/browser/app-shell.spec.ts` — *"every control can
+  actually be pressed … (#88)"* and *"a pending delivery costs the Build panel
+  nothing … (#285)"* — reproduce on plain `main` here and are green on the
+  self-hosted runner. #88 fails because held-guard rows 2 and 3 are never laid
+  out; #285 because a refund does not arrive inside a 20-second poll. Both wait
+  on the simulation to produce something, and this container is slower than the
+  runner, so **they are a property of where the suite runs and not of the diff**.
+  Two agents lost time to them on 2026-08-28, one reporting them as "pre-existing
+  failures on this branch" — true, and misleading, because they are pre-existing
+  on every branch. Measure `main` in a *separate* worktree before believing a
+  local browser failure is yours, and let the PR's own `browser` job be the gate.
+  This bullet is about these two tests today, not a licence to wave any red
+  browser test through: everything else in that suite has been reproducible here.
+- **A local browser run in the worktree you are editing is not a baseline.** Vite
+  serves `src/**` live, so a run started before your edits reads them off disk as
+  they land, and a "before" measurement taken that way is a measurement of the
+  "after" tree. An agent caught its own baseline doing this and re-took it in a
+  second worktree checked out at the unmodified commit. That is the only way to
+  get one.
 - **Do not run a suite while another agent is running one.** Timing-sensitive
   tests flake under contention and this repository has measured it: identical
   clean trees gave 9, 5 and 5 failures, every one a `Test timed out in 5000ms`.
