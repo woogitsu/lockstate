@@ -658,6 +658,42 @@ export const statusCountsSchema = z
      * too.
      */
     stateIncomeAccruedTodayMinorUnits: countSchema,
+    /**
+     * What one in-game day of the current roster costs, in the same minor
+     * units ([ADR 0042](../../../docs/adr/0042-attaching-consequences-to-the-simulation-loop.md)
+     * step 3).
+     *
+     * The fourteenth count, and the first **cost** on this channel: every debit
+     * before payroll was a purchase the player chose, so there was no rate to
+     * show. `PayrollSystem` charges it at every in-game day boundary and the
+     * player cannot decline it, which is what makes it worth a permanent
+     * readout rather than a line on the Staff panel.
+     *
+     * `countSchema`'s floor of `0` is the figure's own invariant: it is a sum
+     * of `wageBand.minPerDay` over the roster, and the catalogue schema bounds
+     * that below at zero.
+     */
+    dailyWageBillMinorUnits: countSchema,
+    /**
+     * Wages billed and not paid, in the same minor units (ADR 0042 step 3,
+     * [ADR 0017](../../../docs/adr/0017-money-primary-resource-model.md)
+     * decision 8).
+     *
+     * The fifteenth, and the one that is `0` in every prison that is being run
+     * well. ADR 0017 decision 8 settles that insolvency is *"a state, not a
+     * loss condition"* and warns in the same paragraph that a degradation
+     * nobody surfaces is *"the same invisible stall as #89"* -- so the state
+     * has to be sayable, and this is what says it.
+     *
+     * **`countSchema`'s floor of `0` is not the same invariant as
+     * `treasuryMinorUnits`', and the pair is deliberate.** The balance is
+     * non-negative because `Treasury.spend` refuses rather than overdrawing;
+     * this is non-negative because it is a debt. Between them they hold the
+     * state a signed balance would have held in one field -- and a signed
+     * balance was rejected, because a treasury that could overdraw would pay
+     * the wages and decision 8's ladder would never reach its bottom rung.
+     */
+    unpaidWagesMinorUnits: countSchema,
   })
   .strict();
 

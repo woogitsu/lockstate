@@ -12,17 +12,31 @@
  * deliberately does not implement. The omission is the point, and it is an
  * omission against a settled answer rather than against an open question:
  *
- * - **No insolvency policy.** The balance cannot go negative: `spend` refuses
- *   rather than overdrawing, which is a validation answer and not a policy.
- *   Decision 8 settles that a negative balance should degrade the prison in a
- *   defined order rather than end the run, and that ladder is unbuilt — and
- *   still unreachable, because `spend` refuses rather than overdrawing and
- *   nothing debits the balance on a schedule, so no negative balance can occur
- *   for it to respond to. That is why this slice does not need it. Note that
- *   #29's income line does **not** change this: paying in cannot produce a
- *   negative balance. What makes decision 8 reachable is a recurring *charge*
- *   the player cannot decline — wages are the obvious one, and `wageBand`
- *   exists in content with no payroll behind it.
+ * - **The balance still cannot go negative, and that is now a decision rather
+ *   than a gap.** This paragraph used to say: *"Decision 8 settles that a
+ *   negative balance should degrade the prison in a defined order rather than
+ *   end the run, and that ladder is unbuilt — and still unreachable, because
+ *   `spend` refuses rather than overdrawing and nothing debits the balance on a
+ *   schedule, so no negative balance can occur for it to respond to. […] What
+ *   makes decision 8 reachable is a recurring *charge* the player cannot
+ *   decline — wages are the obvious one, and `wageBand` exists in content with
+ *   no payroll behind it."*
+ *
+ *   The charge exists: `src/simulation/economy/payroll.ts` bills every
+ *   employee's authored `wageBand.minPerDay` at the end of every in-game day
+ *   ([ADR 0042](../../../docs/adr/0042-attaching-consequences-to-the-simulation-loop.md)
+ *   step 3). What the old sentence got wrong is the *first* clause: decision 8
+ *   settles the ladder, and the ladder is what a **floored** balance produces.
+ *   Its three rungs — *"deliveries refused first, then construction halted, then
+ *   staff unpaid"* — are what one balance running out already does, in that
+ *   order, because every discretionary spend is refused before the undeclinable
+ *   one is. A treasury that could overdraw would pay the wages in full out of
+ *   debt and the third rung would never be reached, so the four non-negative
+ *   validators here are load-bearing for decision 8 rather than in its way.
+ *
+ *   What a prison owes therefore lives beside the balance rather than inside
+ *   it, as `PayrollSystem`'s arrears. `spend` still refuses rather than
+ *   overdrawing, and nothing here has changed.
  *
  * ## Integer minor units, and why that is not a formatting choice
  *

@@ -189,6 +189,19 @@ describe('simulation worker protocol', () => {
             // that claimed a rounder figure would be asserting a state no tick
             // in this envelope could produce.
             stateIncomeAccruedTodayMinorUnits: 4,
+            // Five guards on this payload's own roster at the catalogue's
+            // 80-a-day guard band: 5 x 80 = 400 (ADR 0042 step 3). Chosen to
+            // agree with `staff: 5` above rather than picked, for the reason
+            // the accommodation comment gives -- a figure unrelated to the rest
+            // of the envelope could not tell a decoder reading the wrong field
+            // apart from one reading the right one.
+            dailyWageBillMinorUnits: 400,
+            // A prison paying its way owes nothing, which is the reading every
+            // other field in this envelope describes: 24,920 in the treasury
+            // and no shortfall anywhere. The non-zero case is measured against
+            // a real runtime in tests/unit/economy-payroll.test.ts, not
+            // asserted from a hand-written envelope.
+            unpaidWagesMinorUnits: 0,
           },
         },
       },

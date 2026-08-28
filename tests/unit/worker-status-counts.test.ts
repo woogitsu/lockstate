@@ -243,6 +243,16 @@ describe('publishing the status counts', () => {
       // Six registered room instances with four beds between them earn
       // nothing while they are empty.
       stateIncomeAccruedTodayMinorUnits: 0,
+      // Five guards at the catalogue's 80-a-day guard band (ADR 0042 step 3).
+      // Not zero, and that is the point of asserting it here: the wage bill is
+      // a fact about who is *employed*, not about who is housed or deployed --
+      // this scenario's four prisoners are all still in intake and its five
+      // guards are all unassigned, and the prison is billed for them anyway.
+      dailyWageBillMinorUnits: 400,
+      // Nothing owed. The scenario is at tick 0, so no day boundary has passed
+      // and no bill has been raised, let alone gone unmet -- and the treasury
+      // above is untouched, which is the same fact read from the other side.
+      unpaidWagesMinorUnits: 0,
     });
     expect(first?.payload.schemaVersion).toBe(HUD_VIEW_MODEL_SCHEMA_VERSION);
   });
@@ -624,10 +634,14 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       expect(counts.prisoners).toBe(actorCount);
       expect(counts.rooms).toBe(CELL_COUNT);
       expect(counts.staff).toBe(GUARD_COUNT);
-      // Thirteen integers, whatever the population. It was ten until the
+      // Fifteen integers, whatever the population. It was ten until the
       // treasury balance joined them (#96), eleven until #29's
-      // "earned today" accrual did and twelve until `accommodationCapacity`
-      // gave the strip's occupancy bar a denominator; the exact count is
+      // "earned today" accrual did, twelve until `accommodationCapacity`
+      // gave the strip's occupancy bar a denominator, and thirteen until
+      // payroll (ADR 0042 step 3) added the wage bill and the arrears
+      // together -- two fields rather than one because the balance cannot go
+      // negative, so what the prison owes cannot be read off what it holds;
+      // the exact count is
       // pinned rather than bounded so that a *list* arriving here -- the thing
       // this channel is shaped to exclude -- cannot slip in as "one more
       // field". A scalar being added is a one-line, visible edit; that is the
@@ -635,7 +649,7 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       //
       // This is what a status-counts
       // payload is, and why it needs no paging.
-      expect(Object.keys(counts)).toHaveLength(13);
+      expect(Object.keys(counts)).toHaveLength(15);
       // And the exclusion stated directly, rather than only as a byte budget
       // that a list would happen to breach. The key count above cannot see a
       // field that *stayed* one key and became a list, and the size bound
@@ -654,22 +668,21 @@ describe.each([250, 1_000, 2_500, 5_000])('a status-counts publication at %i act
       // (`RefusalLog`). A queue would put the one growing thing this channel
       // is designed to exclude right next to the counts.
       expect(Object.keys(payload.refusal)).toHaveLength(3);
-      // 436 and not 400, and the difference is one field rather than a round
-      // number. ADR 0003 predicted this exact moment -- *"a thirteenth count
-      // with a name as long as the twelfth would breach it, and should be read
-      // as this channel's soft limit making itself felt rather than as an
-      // arbitrary threshold to raise"* -- so the raise is derived rather than
-      // chosen: `accommodationCapacity` costs 28 bytes here, the largest
-      // declared payload measures 416-418 with it, and 436 leaves the same 18
-      // bytes of head room the 400 had before this change. A *fourteenth*
-      // count with a name as long as the thirteenth therefore breaches this
-      // too, which is the property being preserved.
+      // 493 and not 436, and the raise is derived from a run rather than
+      // chosen -- the same way 436 replaced 400, and for the same reason: the
+      // 436 was set so that "a fourteenth count with a name as long as the
+      // thirteenth breaches this bound too", and payroll (ADR 0042 step 3)
+      // added a fourteenth and a fifteenth. Re-measured on this tree with
+      // both: `payloadJsonBytes=473` at 250 actors and `475` at 1,000, 2,500
+      // and 5,000 -- flat in the population exactly as before. 475 + 18 =
+      // **493**, which leaves the same 18 bytes of head room every previous
+      // bound was set to leave, so a *sixteenth* count breaches this one too
+      // and the channel's soft limit goes on being felt one field at a time.
       //
-      // ADR 0003 also said the head room under 400 was 18 bytes when it was
-      // in fact 10: re-measured on this tree before any of this landed, the
-      // largest payload was 388-390 and not the 380-382 that paragraph states.
-      // The number is re-derived from a run rather than adjusted by 28.
-      expect(JSON.stringify(payload).length).toBeLessThan(436);
+      // The bound is not what stops a list arriving -- the scalar assertion
+      // above is, at any length, which is why that was added the last time
+      // this bound was relaxed.
+      expect(JSON.stringify(payload).length).toBeLessThan(493);
 
       // Reported evidence, never a gate (docs/BENCHMARKING.md).
       console.log(

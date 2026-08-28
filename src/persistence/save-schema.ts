@@ -970,6 +970,37 @@ const economySectionSchema = z
           .max(MAX_PENDING_DELIVERIES),
       })
       .strict(),
+    /**
+     * What the prison owes its staff
+     * ([ADR 0042](../../docs/adr/0042-attaching-consequences-to-the-simulation-loop.md)
+     * step 3), in the same minor units as the balance beside it.
+     *
+     * **Optional, absent means nothing is owed, and `SAVE_SCHEMA_VERSION`
+     * stays at 5.** The condition `docs/PERSISTENCE.md` sets for that is that
+     * absence be unambiguous, and here it is a fact about the corpus rather
+     * than a convention: no build that could write a V5 save had a recurring
+     * charge, so no such save can be hiding a real debt behind a missing key.
+     * The cost of not bumping is the one that section records -- an *older*
+     * build reading a save that carries this key refuses it as `invalid-shape`
+     * where a V6 would have said `unsupported-version`.
+     *
+     * **`nonnegative()` here is the same invariant the balance above carries,
+     * and it points the other way.** A negative balance is what a debt would be
+     * if the treasury could overdraw; it cannot, deliberately, because
+     * ADR 0017 decision 8's ladder ends in *"staff unpaid"* and a treasury that
+     * overdrew would pay them. So the money the prison holds and the money it
+     * owes are two non-negative integers rather than one signed one, and this
+     * is the second.
+     *
+     * `.safe()` for the reason the fields above carry it: a save is a file the
+     * player's browser produced and could have edited, and
+     * `PayrollSystem.update` saturates rather than throwing if it is handed a
+     * figure one day short of the safe range.
+     */
+    payroll: z
+      .object({ unpaidWagesMinorUnits: z.number().int().nonnegative().safe() })
+      .strict()
+      .optional(),
   })
   .strict();
 
