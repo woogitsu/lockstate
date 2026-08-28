@@ -2,6 +2,7 @@ import { type SystemRegistration, type SimulationContext } from '../kernel/syste
 import { type BuildEdge, type BuildOrder, type BuildOrderFailReason, resolveBuildEdge } from './build-order';
 import { BUILDABLE_REGISTRY, edgeNumericIdFor, getBuildableDefinition, occupiesTileEdge } from './definition';
 import { type ConstructionMaterialsProvider, UNLIMITED_MATERIALS_PROVIDER } from './materials-provider';
+import { SnapshotRefusedError } from '../runtime/restore-refusal';
 import { SparseWorld } from '../world/sparse-world';
 import { type BuildabilityRequirement, canBuildAt } from '../world/buildability';
 import { type TilePosition, tileCoordinate, tileToChunk } from '../world/coordinates';
@@ -836,9 +837,51 @@ export class ConstructionSystem implements SystemRegistration {
     };
   }
 
+  /**
+   * ### The structural guard, and why it is here rather than in the schema
+   *
+   * ADR 0038 deferred this line explicitly -- *"`construction/system.ts` has
+   * the same replace-without-checking shape and produces a **`TypeError`** on
+   * a plausible corruption ... its right home is #403 mitigation (a), where a
+   * `TypeError` from our own restore code is the motivating example for
+   * classifying code-fault against data-fault"*. This is that home (#431).
+   *
+   * Without it, `data.orders` arriving as anything but an array threw
+   * `Cannot read properties of undefined (reading 'map')` -- an error class
+   * indistinguishable from a genuine defect in this method, which is exactly
+   * what the new taxonomy must not have to guess at. With it, the payload is
+   * refused as `damaged-payload` by a check that says so.
+   *
+   * Three array checks and no deeper walk, deliberately. A save reaching here
+   * through `SessionController` has already been validated field by field by
+   * `constructionSnapshotSchema`; what this guards is the *other* two callers
+   * of `restoreSimulationRuntime` -- a worker `simulation/initialize` payload,
+   * whose snapshot data the protocol declares only as `jsonValue`, and
+   * `InProcessSessionHost` -- so the check belongs to the shape the loop below
+   * actually depends on, not to a second copy of the schema
+   * (`src/persistence/save-schema.ts` owns that, and ADR 0038's
+   * *"Validate the stream set in the save schema"* section argues against
+   * duplicating a semantic rule into it).
+   */
   public restore(data: ConstructionSnapshot): void {
+    for (const [field, value] of [
+      ['orders', data.orders],
+      ['undoStack', data.undoStack],
+      ['redoStack', data.redoStack],
+    ] as const) {
+      if (!Array.isArray(value)) {
+        throw new SnapshotRefusedError('damaged-payload', `Construction snapshot "${field}" must be an array.`);
+      }
+    }
+
     this.orders.clear();
     for (const order of data.orders) {
+      if (!Array.isArray(order?.materialsAllocated)) {
+        throw new SnapshotRefusedError(
+          'damaged-payload',
+          `Construction snapshot order "${String(order?.id)}" must carry a materialsAllocated array.`,
+        );
+      }
       this.orders.set(order.id, { ...order, materialsAllocated: order.materialsAllocated.map((m) => ({ ...m })) });
     }
     this.undoStack = data.undoStack.map((transaction) => [...transaction]);

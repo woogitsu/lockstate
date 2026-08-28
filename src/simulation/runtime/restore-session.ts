@@ -6,6 +6,7 @@ import type { NamedRngStreamState } from '../rng/streams';
 import type { WorldSnapshotV1 } from '../world/sparse-world';
 import { SparseWorld } from '../world/sparse-world';
 import { createNewSimulationRuntime, type SimulationRuntime } from './new-session';
+import { SnapshotRefusedError } from './restore-refusal';
 import { captureSessionSystems, restoreSessionSystems, type EncodedSessionSystems } from './session-systems';
 
 /**
@@ -300,10 +301,12 @@ export interface RestoreResult {
 function toRngStreamState(entry: { readonly name: string; readonly state: { readonly algorithm: string; readonly version: number; readonly words: readonly number[] } }): NamedRngStreamState {
   const words = entry.state.words;
   if (words.length !== 4) {
-    throw new RangeError(`RNG stream "${entry.name}" must have exactly 4 state words, got ${words.length}.`);
+    throw new SnapshotRefusedError('damaged-payload', `RNG stream "${entry.name}" must have exactly 4 state words, got ${words.length}.`);
   }
   if (entry.state.algorithm !== 'xoshiro128**' || entry.state.version !== 1) {
-    throw new RangeError(`RNG stream "${entry.name}" has an unsupported algorithm/version.`);
+    // An algorithm this build does not implement is a save a build that does
+    // would read, so it is not the row above (#431).
+    throw new SnapshotRefusedError('unsupported-by-this-build', `RNG stream "${entry.name}" has an unsupported algorithm/version.`);
   }
   return {
     name: entry.name,
@@ -379,7 +382,10 @@ export function restoreSimulationRuntime(bundle: SessionSnapshotBundle, masterSe
     // store. A `simulation` section without `entities` is therefore a
     // malformed bundle, not a partial one.
     if (entityStore === undefined) {
-      throw new RangeError('A session bundle carrying `simulation` must also carry `entities`: prisoner components describe entity slots.');
+      throw new SnapshotRefusedError(
+        'damaged-payload',
+        'A session bundle carrying `simulation` must also carry `entities`: prisoner components describe entity slots.',
+      );
     }
     restoreSessionSystems(runtime, bundle.simulation, entityStore);
   } else if (entityStore !== undefined) {

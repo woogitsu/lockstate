@@ -1,5 +1,6 @@
 import type { EntityId } from '../entity/entity-store';
 import type { Xoshiro128StarStar } from '../rng/xoshiro128starstar';
+import { SnapshotRefusedError } from '../runtime/restore-refusal';
 import { assertValidActorNamePool, PLACEHOLDER_ACTOR_NAME_POOL, type ActorNamePool } from './name-pool';
 
 /**
@@ -327,8 +328,14 @@ export class ActorIdentityRegistry implements ActorIdentitySource {
    * population.
    */
   public loadSnapshot(snapshot: ActorIdentitySnapshot): void {
+    // A version this build does not implement says which build wrote the
+    // save, not that the save is bad, so it is `unsupported-by-this-build`
+    // and the file is still worth keeping for the build that reads it (#431).
     if (snapshot.version !== ACTOR_IDENTITY_SNAPSHOT_VERSION) {
-      throw new RangeError(`Unsupported actor identity snapshot version ${String(snapshot.version)}.`);
+      throw new SnapshotRefusedError(
+        'unsupported-by-this-build',
+        `Unsupported actor identity snapshot version ${String(snapshot.version)}.`,
+      );
     }
     for (const kind of ACTOR_KINDS) this.namesOf(kind).clear();
     this.fullNameCounts.clear();
@@ -344,7 +351,11 @@ export class ActorIdentityRegistry implements ActorIdentitySource {
     for (const entry of snapshot.entries) {
       assertEntityId(entry.entityId);
       const names = this.namesOf(entry.kind);
-      if (names.has(entry.entityId)) throw new RangeError(`Actor identity snapshot repeats ${entry.kind} ${entry.entityId}.`);
+      // The payload contradicting itself: no build restores two names for one
+      // entity, so `damaged-payload` rather than the version row above.
+      if (names.has(entry.entityId)) {
+        throw new SnapshotRefusedError('damaged-payload', `Actor identity snapshot repeats ${entry.kind} ${entry.entityId}.`);
+      }
       const name = this.validated({ givenName: entry.givenName, familyName: entry.familyName });
       names.set(entry.entityId, name);
       this.retain(name);
