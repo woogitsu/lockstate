@@ -229,32 +229,49 @@ describe('SimulationCommandSender gets the two numbers right', () => {
    * the number, so re-deriving it from `leadTicks` or from elapsed time --
    * the production expression in the test's clothes -- cannot make it agree
    * with a broken projection.
+   *
+   * **The order of the two submissions is load-bearing, and it changed with
+   * ADR 0056.** This case used to submit its non-vacuity control *first* --
+   * one order at 560, then the re-anchored one at 520 -- and read the drop
+   * from 560 to 520 as the evidence. `projectExecuteTick` is now floored at
+   * the highest tick this sender has already submitted (#437: an order that
+   * goes backwards reorders `Undo` against the order it was aimed at), so a
+   * projection can no longer be observed dropping: with the control first the
+   * three numbers are 560, 560, 560, and the reading the case was built on is
+   * gone even though the literals were still wrong in a detectable way.
+   *
+   * Rather than re-derive three numbers around a floor that now sits over two
+   * of them, the discriminating submission is moved **first**, where the floor
+   * is provably 0 and can mask nothing, and the control follows it. The
+   * stale-timestamp defect makes the projection too *high*, which a floor
+   * never hides in any arrangement -- with `payload.tick > this.lastTick` in
+   * `baseline` the first number below is 580 rather than 540. That was
+   * mutation-checked rather than reasoned about.
    */
   it('re-anchors the clock estimate on a snapshot repeating the tick it already knows', () => {
     transport.emit(ready(0, true)); // running, speed 1
     transport.emit(snapshot(500, 0)); // tick 500 reported at nowMs = 1_000
 
-    nowMs += 2_000; // 2s unobserved -> 40 ticks
-
-    // The control that makes the rest non-vacuous: elapsed time really does
-    // move the projection here, so a later assertion of a *smaller* tick is
-    // evidence of a re-anchor rather than of a projection that ignores time.
-    sender.submit(PLACE_WALL); // 500 + 40 + 20
-
     // The worker reports the same tick again -- an idle or just-unpaused
     // session does exactly this -- 2s later than the report before it.
+    nowMs += 2_000;
     transport.emit(snapshot(500, 0));
 
-    // No time has passed since that report, so the projection is the reported
-    // tick plus the lead and nothing else. With the timestamp left stale it is
-    // the first order's number all over again.
-    sender.submit(PLACE_WALL); // 500 + 0 + 20
+    // 1s from the *new* anchor. Re-anchored, that is 20 ticks of elapsed time;
+    // with the timestamp left stale it is the whole 3s, i.e. 60.
+    nowMs += 1_000;
 
-    nowMs += 1_000; // 1s from the *new* anchor -> 20 ticks
+    sender.submit(PLACE_WALL); // 500 + 20 + 20, and 500 + 60 + 20 when stale
 
-    sender.submit(PLACE_WALL); // 500 + 20 + 20
+    // The control that makes the assertion non-vacuous, and it has to come
+    // after the discriminating order now that the projection is floored:
+    // elapsed time really does still move it, so 540 above is a re-anchored
+    // projection and not one that ignores the clock.
+    nowMs += 2_000; // 3s from the new anchor -> 60 ticks
 
-    expect(executeTicks()).toEqual([560, 520, 540]);
+    sender.submit(PLACE_WALL); // 500 + 60 + 20
+
+    expect(executeTicks()).toEqual([540, 580]);
   });
 
   it('never lets a stale snapshot pull the sequence backwards', () => {

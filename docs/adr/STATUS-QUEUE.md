@@ -8,10 +8,12 @@ implementation.
 
 **Nothing here changes a status.** A status moves in the ADR and in the index,
 never in this file. What changed with this revision is what the file is *for*:
-§1 records **all thirteen** flips, §2 holds **three entries — the two dated rulings
+§1 records **all thirteen** flips, §2 holds **four entries — the two dated rulings
 #382 wrote into ADR 0008 §2, the 2026-08-27 amendment scoping that ADR's §3
-by authority, and the preconditions on the change that gives this project its
-first server-side entry point** — above the account of why the queue had been
+by authority, the preconditions on the change that gives this project its
+first server-side entry point, and ADR 0056's price for keeping a player's
+orders in the order they gave them (2026-08-28, and the first row filed by the
+change that wrote it since the rule was restated)** — above the account of why the queue had been
 emptied three times and what that bought (ADR 0029 was accepted on 2026-08-26
 and its entry deleted; 0031 arrived immediately after and was itself accepted)
 — and everything after it is the residue — the open decisions, one
@@ -465,7 +467,7 @@ cells is exercised nowhere, because no shipped session yet furnishes two.
 
 ---
 
-## 2. Three entries: #382's two rulings in ADR 0008 §2, 2026-08-27's scope clause for its §3, and the Worker that lands with telemetry ingest
+## 2. Four entries: #382's two rulings in ADR 0008 §2, 2026-08-27's scope clause for its §3, the Worker that lands with telemetry ingest, and ADR 0056's price for keeping a player's orders in order
 
 **This heading has now read "empty", "exactly one entry: ADR 0029", "empty
 again", one entry, two, one, empty for the third time, one again, and — on
@@ -697,6 +699,68 @@ than a reminder.**
 **And this entry is deleted** by the pull request that adds `main`, in the same
 commit — which is this file's standing rule that landing the change an entry
 describes means updating the entry with it.
+
+### ADR 0056 (2026-08-28) — the fix is decided, the second of simulated time it costs a player is not
+
+**Filed by the change that implements it, which is what §2's rule asks for.**
+`agent/437-undo-inversion` adds
+[ADR 0056](./0056-keeping-a-players-orders-in-the-order-they-gave-them.md)
+alongside the code it decides, so this row arrives in the same commit rather
+than being reconstructed later.
+
+**The evidence.** Issue #437 is reproduced on `6f671d5`, driving the shipped
+`SimulationCommandSender` against the shipped `SimulationWorkerStateMachine`
+with a real `Kernel`, `FixedStepClock` and `ConstructionSystem`. A player who
+places a wall, presses play, places a second wall, pauses inside the twenty-tick
+lead and presses Undo has **the first wall cancelled and the second one built**
+— because `projectExecuteTick` collapses backwards on a pause, so the Undo
+carries a higher `sequence` at a lower `executeAtTick` and dispatches first.
+Re-run with the transaction id per gesture that the shipped HUD actually mints,
+the outcome is one step worse than the issue reports: both undo and redo stacks
+end empty, so the wrongly cancelled wall cannot be recovered by any gesture.
+The defect survived [ADR 0051](./0051-what-a-player-sees-for-an-order-given-while-the-clock-is-paused.md)
+with every reported value unchanged but by a different route, which was measured
+rather than assumed: that ADR (#460) replaced the very dispatch mechanism #437
+names, so "the mechanism has changed" was treated as a reason to re-measure and
+not as a reason to assume the issue was stale.
+
+**What settling it commits the project to.** Two things, and only the second is
+a judgement call.
+
+1. *That the ordering fix is right.* It is the remedy
+   [ADR 0020](./0020-deterministic-kernel.md)'s own closing section names and
+   leaves open, it refuses nothing, it touches no simulation code, and the
+   determinism scenario's state hash does not move.
+2. *That the price is acceptable.* An order given during a pause that began
+   **within one second of the previous order** now takes effect on the first
+   step after play rather than immediately — which narrows ADR 0051's promise
+   that "`Undo` takes back the thing the player just did instead of nothing".
+   The window is bounded by one command lead and by nothing else; outside it
+   ADR 0051 is untouched. ADR 0056's open question 1 names the alternative that
+   would keep immediacy — rebasing pending commands down to the current tick
+   when the player pauses — and does not take it.
+
+**A third thing the owner should see even though it is not being decided here.**
+ADR 0056 records that grounds 2 and 3 of ADR 0020's *"Decision, 2026-08-27"*
+are overtaken by this change: they are costs of refusing an `executeAtTick`
+*below* the highest queued, and the shipped sender no longer submits one, so the
+kernel-side guard that decision rejected is now inert rather than expensive
+against the front door. **Ground 1 is untouched and is what the decision rests
+on.** #437 puts a kernel-side refusal out of scope and this branch does not
+re-open it; the note exists so the next reader of that section knows two of its
+four numbers describe a front door that has changed.
+
+**The exact line that would replace the status**, in
+`docs/adr/0056-keeping-a-players-orders-in-the-order-they-gave-them.md`:
+
+```
+**Accepted, <date>.**
+```
+
+replacing `**Proposed, 2026-08-28.** Not self-approved.`, with the matching
+`Proposed, 2026-08-28 — …` prefix in that ADR's
+[`README.md`](./README.md) row changed to `Accepted, <date> — …`, **and this
+entry deleted in the same commit**, which is this section's standing recipe.
 
 ### ADR 0031 — accepted 2026-08-26, and the entry is deleted
 
