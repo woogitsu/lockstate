@@ -365,7 +365,7 @@ describe('a bed removed from an occupied cell evicts nobody (ADR 0028 decision 2
     expect(ACTION_PHASES[runtime.prisoners.currentAction.phase[index]!]).toBe('performing');
   });
 
-  it('leaves nothing inconsistent after a long run, and the room cannot be un-zoned from under them', () => {
+  it('leaves nothing inconsistent after a long run, and un-zoning the bed-less cell relocates its resident (#478)', () => {
     const { runtime, prisoner } = prisonWithHousedPrisoner();
     submit(runtime, 'remove-bed', packCommand({ type: 'RemoveObject', ...BED_TILE }));
 
@@ -391,12 +391,23 @@ describe('a bed removed from an occupied cell evicts nobody (ADR 0028 decision 2
     // Every requirement is still answerable, and the projection still resolves.
     expect(projectRoomDetail(runtime.prisoners, cellInstanceId)).toBeDefined();
 
-    // And the guard that keeps a reference from dangling is unmoved by the
-    // removal: `unzone` still refuses a room somebody is living in, so a removal
-    // has not opened a route to unregistering an instance under a prisoner.
+    // Before issue #478, `unzone` refused this unconditionally -- a bare
+    // "somebody is using that room" that never lifted while this sentence
+    // ran, because nothing moved a prisoner out of accommodation. Since
+    // #478, an occupied room is relocated rather than refused when the
+    // prison has anywhere else to put the resident, and this cell's own
+    // neighbour still has a free bed (`residentCapacity: 0` here since the
+    // removal, one free place at `secondCellInstanceId` throughout). So the
+    // removal really has opened no route to a dangling reference -- the
+    // resident is moved to real, still-furnished accommodation first, and
+    // only then is the now-pointless bed-less cell unregistered.
     submit(runtime, 'unzone', packCommand({ type: 'UnzoneRoom', ...CELL_RECT }));
-    expect(runtime.refusals.last?.reason).toBe('unzone.room-occupied');
-    expect(runtime.prisoners.roomInstances.getById(cellInstanceId)).toBeDefined();
+    expect(runtime.refusals.last, 'accepted -- relocated rather than refused').toBeUndefined();
+    expect(runtime.prisoners.roomInstances.getById(cellInstanceId), 'the bed-less cell is gone').toBeUndefined();
+    expect(runtime.prisoners.coldState.getAccommodation(prisoner), 'moved into the still-furnished cell').toBe(
+      secondCellInstanceId,
+    );
+    expect(runtime.prisoners.roomInstances.occupantsOf(secondCellInstanceId)).toEqual([prisoner]);
   });
 });
 

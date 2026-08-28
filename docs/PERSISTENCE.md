@@ -101,15 +101,25 @@ history. The fix stops the loss; it does not reconstruct it, and a migration
 that invented an entry would be asserting a gesture the save never recorded.
 
 `masterSeed` (#412) is the fourth, and the one whose absence is unambiguous as
-a matter of *fact about the corpus* rather than of convention: production has
-never supplied another value (`src/main.ts` constructs `SessionController`
-with no `masterSeed`, and the controller takes `?? 0`), so every save written
-before the field existed was written by a session seeded at 0. The cost of not
+a matter of *fact about the corpus* rather than of convention: production went
+without supplying another value for long enough that every save written before
+the field existed was written by a session seeded at 0. The cost of not
 bumping is worth recording, because "no bump is needed" is true and "no bump
 costs nothing" is not: `.strict()` means an *older* build reading a save that
 carries the key refuses it as `invalid-shape`, where a V6 bump would have
 given the same refusal the label `unsupported-version`. Both builds refuse it;
 only the diagnosis differs. See [ADR 0038](./adr/0038-what-makes-a-save-compatible.md) §4.
+
+**Until #479, "production never supplied another value" held for every save,
+not only the ones written before this field existed** — `src/main.ts`
+constructed `SessionController` with no `masterSeed` at all, and the
+controller took `?? 0`, so a new prison was always seeded at 0 regardless of
+when it was created. #479 fixed that at the source rather than in this schema:
+`src/main.ts` now passes a `generateMasterSeed` drawn from
+`crypto.getRandomValues`, and `SessionController.createPrison` draws a fresh
+seed from it per call. Nothing above changed by that fix — absence still means
+0, `SAVE_SCHEMA_VERSION` is still 5 — only the value a *new* save's `masterSeed`
+actually holds did.
 
 `simulation.contraband.intelligenceSequence` is the fifth, and its absence is
 unambiguous for the plainest reason of the six: it is what the reader already

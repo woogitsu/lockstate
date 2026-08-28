@@ -340,3 +340,137 @@ describe('un-zoning one of two adjacent same-type rooms (#337)', () => {
     });
   });
 });
+
+/**
+ * Issue #478: **a room with a resident used to be refused, unconditionally
+ * and for ever** -- there was no command anywhere in `src/` that moved a
+ * prisoner out of accommodation, so a cell zoned in the wrong place and then
+ * filled by an ordinary admission could never be un-zoned again for the life
+ * of the session. This reproduces the trap end to end (zone, furnish, admit,
+ * attempt the removal) and then proves both halves of the fix: the removal
+ * now succeeds by relocating the resident when the prison has anywhere else
+ * to put them, and it still refuses -- exactly as before -- when it does not.
+ *
+ * Real admission path throughout (#375): nothing here calls
+ * `RoomInstanceRegistry.assign` or `PrisonerColdState.setAccommodation`
+ * directly. The occupant is housed by the real `AdmitPrisoner` command
+ * running the real intake pipeline, which is the condition the fix is
+ * actually measured against.
+ */
+describe('un-zoning an occupied room relocates its resident instead of refusing for ever (#478)', () => {
+  const LEFT = { x: 4, y: 6, width: 2, height: 3 } as const;
+  const RIGHT = { x: 6, y: 6, width: 2, height: 3 } as const;
+  const leftId = roomInstanceIdFor(CELL, tile(LEFT.x, LEFT.y));
+  const rightId = roomInstanceIdFor(CELL, tile(RIGHT.x, RIGHT.y));
+
+  function submit(runtime: SimulationRuntime, id: string, payload: ReturnType<typeof packCommand>): void {
+    runtime.kernel.submitCommand(id, runtime.kernel.expectedSequence, runtime.kernel.tick, payload);
+    runtime.kernel.step();
+  }
+
+  function stepTo(runtime: SimulationRuntime, target: number): void {
+    while (runtime.kernel.tick < target) runtime.kernel.step();
+  }
+
+  function submitUnzoneRoom(
+    runtime: SimulationRuntime,
+    id: string,
+    rect: { readonly x: number; readonly y: number; readonly width: number; readonly height: number },
+  ): void {
+    submit(runtime, id, packCommand({ type: 'UnzoneRoom', ...rect }));
+  }
+
+  it('moves the resident into the other cell and removes the room they left, when one is free', () => {
+    const runtime = createNewSimulationRuntime(SEED);
+    wallRoom(runtime, LEFT);
+    wallRoom(runtime, RIGHT);
+    submitZoneRoom(runtime, 'cmd-zone-left', { roomId: CELL, ...LEFT });
+    submitZoneRoom(runtime, 'cmd-zone-right', { roomId: CELL, ...RIGHT });
+    expect(projectStatusCounts(runtime, runtime.kernel.tick).rooms, 'two cells, so there is somewhere to relocate to').toBe(2);
+
+    // A bed in each cell, so both can house a resident -- the destination has
+    // to derive a real `residentCapacity` of its own, not merely exist.
+    submit(
+      runtime,
+      'buy-planks',
+      packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 2 }),
+    );
+    submit(
+      runtime,
+      'place-bed-left',
+      packCommand({ type: 'PlaceObject', orderId: 'bed-left', definitionId: 'bed-wooden', x: LEFT.x, y: LEFT.y }),
+    );
+    submit(
+      runtime,
+      'place-bed-right',
+      packCommand({ type: 'PlaceObject', orderId: 'bed-right', definitionId: 'bed-wooden', x: RIGHT.x, y: RIGHT.y }),
+    );
+    stepTo(runtime, 300);
+
+    submit(
+      runtime,
+      'admit',
+      packCommand({ type: 'AdmitPrisoner', sentenceLengthTicks: 10_000, priorIncidents: 0, x: 16, y: 16 }),
+    );
+    stepTo(runtime, 340);
+
+    const arrival = runtime.prisoners.entityStore.getIdByIndex(0);
+    expect(runtime.prisoners.coldState.getAccommodation(arrival), 'housed in the left-hand cell').toBe(leftId);
+    expect(runtime.prisoners.roomInstances.occupancyOf(leftId)).toBe(1);
+
+    // The drag a player in trouble actually needs recovery from: the cell
+    // their own resident already lives in.
+    submitUnzoneRoom(runtime, 'cmd-unzone-left', LEFT);
+
+    // Accepted this time -- the resident was relocated before the room went.
+    expect(runtime.prisoners.roomInstances.getById(leftId), 'the vacated room must go').toBeUndefined();
+    expect(runtime.world.getZoning(tile(LEFT.x, LEFT.y))).toBe(0);
+    expect(runtime.prisoners.coldState.getAccommodation(arrival), 'moved into the surviving cell').toBe(rightId);
+    expect(runtime.prisoners.roomInstances.occupantsOf(rightId)).toEqual([arrival]);
+    expect(runtime.prisoners.roomInstances.occupancyOf(leftId), 'nothing left recorded against the removed id').toBe(0);
+    // `recentRefusals()` is `RoomZoningService`'s own bounded window of *zone*
+    // refusals only (`ZoneRoomRefusal`) -- an `UnzoneRoom` refusal never
+    // reaches it and never could, so the session-wide `RefusalLog` is the
+    // right place to check that nothing was refused.
+    expect(runtime.refusals.last, 'accepted, so no refusal is standing').toBeUndefined();
+    expect(projectStatusCounts(runtime, runtime.kernel.tick)).toMatchObject({ rooms: 1, roomOccupants: 1 });
+  });
+
+  it('still refuses, exactly as before, when the prison has nowhere else to put the resident', () => {
+    const runtime = createNewSimulationRuntime(SEED);
+    wallRoom(runtime, LEFT);
+    submitZoneRoom(runtime, 'cmd-zone-left', { roomId: CELL, ...LEFT });
+    expect(projectStatusCounts(runtime, runtime.kernel.tick).rooms).toBe(1);
+
+    submit(
+      runtime,
+      'buy-plank',
+      packCommand({ type: 'PurchaseMaterials', orderId: 'buy-1', itemId: 'item.wood-plank', quantity: 1 }),
+    );
+    submit(
+      runtime,
+      'place-bed',
+      packCommand({ type: 'PlaceObject', orderId: 'bed-1', definitionId: 'bed-wooden', x: LEFT.x, y: LEFT.y }),
+    );
+    stepTo(runtime, 200);
+    submit(
+      runtime,
+      'admit',
+      packCommand({ type: 'AdmitPrisoner', sentenceLengthTicks: 10_000, priorIncidents: 0, x: 16, y: 16 }),
+    );
+    stepTo(runtime, 240);
+
+    const arrival = runtime.prisoners.entityStore.getIdByIndex(0);
+    expect(runtime.prisoners.coldState.getAccommodation(arrival)).toBe(leftId);
+
+    submitUnzoneRoom(runtime, 'cmd-unzone-left', LEFT);
+
+    // This prison's only accommodation is the cell the resident is standing
+    // in, so there is genuinely nowhere to relocate them -- the refusal that
+    // remains is the honest one, not a stranded control.
+    expect(runtime.prisoners.roomInstances.getById(leftId), 'the occupied room must survive').toBeDefined();
+    expect(runtime.prisoners.coldState.getAccommodation(arrival), 'the resident stays exactly where they were').toBe(leftId);
+    expect(runtime.world.getZoning(tile(LEFT.x, LEFT.y))).not.toBe(0);
+    expect(runtime.refusals.last).toMatchObject({ reason: 'unzone.room-occupied' });
+  });
+});

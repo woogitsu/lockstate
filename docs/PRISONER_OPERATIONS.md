@@ -741,7 +741,15 @@ long as lunch lasts with nothing on screen saying when it would start working.
 deliberately ignores the ceiling so a restore can reproduce a claim count above
 it, and it says so citing decision 2. **`unregister` still refuses above zero
 claims of either kind**, so a removal opens no route to dropping an instance
-somebody is holding: `unzone` answers `room-occupied` exactly as before.
+somebody is holding: a use claim still refuses `unzone` outright, exactly as
+before object removal existed. **A residency claim no longer answers
+`room-occupied` unconditionally, since issue #478** -- `unzone` relocates the
+resident to other suitable accommodation first and only refuses when the
+prison genuinely has none free; a bed removed from *this* cell (making its own
+`residentCapacity` 0, as this section measures) is exactly the shape that
+sends its resident looking for one, and `tests/integration/object-removal-loop.test.ts`
+measures the removal proceeding into the prison's other cell rather than being
+refused.
 
 **The save does not move.** A removal deletes a row from the optional objects
 section phase 1 added, and neither capacity nor the capability list is persisted,
@@ -1086,10 +1094,13 @@ failure (permission-denied, unreachable) returns the prisoner to `'idle'`
 and counts as observable unmet demand rather than getting stuck.
 
 **A room removed from under a walk does the same, and until now it did
-neither.** `RoomZoningService.unzone` refuses on `claimCountOf > 0`, and by
+neither.** `RoomZoningService.unzone` refuses outright on a *use* claim
+(`useOccupancyOf > 0`; before issue #478 both kinds of claim were one
+`claimCountOf > 0` check, and a residency claim now relocates rather than
+refusing -- see the "Two capacities, not one" discussion above), and by
 [ADR 0029](./adr/0029-concurrent-room-use-claims.md) decision 2 a traveller
-holds no claim -- so a canteen somebody is *eating in* cannot be un-zoned and a
-canteen somebody is *walking to* can. `continueTravelling`'s vanished-instance
+holds no claim of either kind -- so a canteen somebody is *eating in* cannot be
+un-zoned and a canteen somebody is *walking to* can. `continueTravelling`'s vanished-instance
 exit used to set the phase back to `'idle'` and return, leaving
 `currentActionTargetInstanceId` naming the removed room and counting nothing.
 That target is not transient: `beginNextAction` overwrites it only when some
