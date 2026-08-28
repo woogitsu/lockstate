@@ -25,13 +25,16 @@ export interface SessionSnapshotBundle {
    * (issue #412, ADR 0038 §4).
    *
    * Optional, and **absence means 0** -- not "unknown". That is a statement of
-   * fact about the corpus rather than a convention: production has never
-   * supplied another value (`src/main.ts` constructs `SessionController` with
-   * no `masterSeed`, and `session-controller.ts` takes `?? 0`), so every save
-   * written before this field existed was written by a session seeded at 0.
-   * It is therefore the optional-field pattern `entities` / `simulation` /
-   * `identity` already use, `SAVE_SCHEMA_VERSION` stays 5, and no migration
-   * step fabricates it.
+   * fact about the corpus rather than a convention: until issue #479,
+   * production never supplied another value (`src/main.ts` constructed
+   * `SessionController` with no `masterSeed`, and `session-controller.ts` took
+   * `?? 0`), so every save written before #479 was written by a session
+   * seeded at 0. #479 gave `src/main.ts` a real `generateMasterSeed`
+   * (`crypto.getRandomValues`), so a save written by a build carrying that fix
+   * records whatever seed its prison actually drew -- this field's own
+   * meaning did not change, only what production feeds it. It is therefore
+   * the optional-field pattern `entities` / `simulation` / `identity` already
+   * use, `SAVE_SCHEMA_VERSION` stays 5, and no migration step fabricates it.
    *
    * It was inert until #415: the seed's only job was deriving the four initial
    * stream states, and `Kernel.restoreState` overwrote all four. Now that a
