@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { applyGenerationRetention } from '../../src/persistence/local/generation-policy';
+import {
+  applyConfirmedRetention,
+  applyGenerationRetention,
+  applyProvisionalRetention,
+} from '../../src/persistence/local/generation-policy';
 import { classifyStoreError } from '../../src/persistence/local/errors';
 
 describe('applyGenerationRetention', () => {
@@ -21,6 +25,64 @@ describe('applyGenerationRetention', () => {
   it('rejects a non-positive keep count', () => {
     expect(() => applyGenerationRetention([], 'a', 0)).toThrow(RangeError);
     expect(() => applyGenerationRetention([], 'a', -1)).toThrow(RangeError);
+  });
+});
+
+/**
+ * #438. `applyGenerationRetention` evicts the oldest generation because the
+ * one arriving is a save the session was running a moment ago -- it restores
+ * by construction. An import has decoded, migrated and checksummed and still
+ * has not been shown to restore, so it may not spend one of the player's
+ * saves on the strength of that. It takes the window's one spare slot
+ * instead.
+ */
+describe('applyProvisionalRetention', () => {
+  it('adds an unproven generation without evicting anything while the window is within budget', () => {
+    expect(applyProvisionalRetention(['a', 'b', 'c'], 'd', 3)).toEqual({
+      generationIds: ['a', 'b', 'c', 'd'],
+      toDelete: [],
+    });
+  });
+
+  it('reuses the spare slot rather than granting a second one', () => {
+    expect(applyProvisionalRetention(['a', 'b', 'c', 'd'], 'e', 3)).toEqual({
+      generationIds: ['a', 'b', 'c', 'e'],
+      toDelete: ['d'],
+    });
+  });
+
+  /**
+   * A window over budget for some other reason -- a build that lowered
+   * `keepGenerations` between sessions -- converges one import at a time
+   * instead of having its newest saves trimmed off in a single write, and
+   * never loses `a`, which is what an import must never touch.
+   */
+  it('retires exactly one generation per call, never a run of them', () => {
+    expect(applyProvisionalRetention(['a', 'b', 'c', 'd'], 'e', 1)).toEqual({
+      generationIds: ['a', 'b', 'c', 'e'],
+      toDelete: ['d'],
+    });
+  });
+
+  it('rejects a non-positive keep count', () => {
+    expect(() => applyProvisionalRetention([], 'a', 0)).toThrow(RangeError);
+  });
+});
+
+describe('applyConfirmedRetention', () => {
+  it('leaves a window already within budget alone', () => {
+    expect(applyConfirmedRetention(['a', 'b', 'c'], 3)).toEqual({ generationIds: ['a', 'b', 'c'], toDelete: [] });
+  });
+
+  it('closes the spare slot from the oldest end, exactly as the ordinary write would have', () => {
+    expect(applyConfirmedRetention(['a', 'b', 'c', 'd'], 3)).toEqual({
+      generationIds: ['b', 'c', 'd'],
+      toDelete: ['a'],
+    });
+  });
+
+  it('rejects a non-positive keep count', () => {
+    expect(() => applyConfirmedRetention(['a'], 0)).toThrow(RangeError);
   });
 });
 

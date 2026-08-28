@@ -168,7 +168,14 @@ leave action selection with no legal category at all). The check is
 exported, because schedules also arrive from elsewhere: `riot-regime.ts`
 builds one at runtime, and both `PrisonerOperationsRuntime`'s constructor
 options and `projectStatusStrip`'s source accept a caller-supplied array,
-none of which the module-load call can see. `DAY_LENGTH_TICKS=2,400` is a
+none of which the module-load call can see. Since
+[ADR 0057](./adr/0057-what-a-riot-does-to-a-prisoners-day.md) the runtime-built
+one really reaches action selection: `beginNextAction` asks an injected
+`PrisonerRegimeOverrideResolver` for a schedule to use *in place of* the
+prisoner's classification group's, and a riot's implementation answers one for
+every prisoner the incident log names in an open riot. The array the system was
+constructed with is unchanged and has no setter; the override is resolved per
+idle prisoner and stored nowhere. `DAY_LENGTH_TICKS=2,400` is a
 deliberately short in-game day (not literal 24h/86,400 ticks at 20 Hz) so
 a full regime cycle is fast to simulate and test -- a candidate value, not
 a locked balance decision. Two representative schedules exist:

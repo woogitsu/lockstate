@@ -418,6 +418,11 @@ shortfall it names has closed one item at a time.
   `SectorRiskTracker.getSnapshot` sorts.
 - `applyRiotRegimeOverride` still has no caller in `src/`, so a riot still does
   not change what its participants *do* during it. See the open questions.
+  **Both halves were overtaken by
+  [ADR 0057](./0057-what-a-riot-does-to-a-prisoners-day.md)** — it deleted that
+  function and gave a riot a per-participant regime override — and the sentence
+  is marked rather than removed because it was true of this step and is what
+  open question 1 below was asked about.
 
 ### What it costs elsewhere
 
@@ -444,6 +449,15 @@ shortfall it names has closed one item at a time.
    array, and `findRegimeSchedule` runs per prisoner per reconsideration, so
    the shape of that swap is a real decision. ADR 0042 step 2 does not mention
    it.
+   **Answered by [ADR 0057](./0057-what-a-riot-does-to-a-prisoners-day.md):**
+   the array is not swapped at all. `ActionSystem` asks an injected
+   `PrisonerRegimeOverrideResolver` per idle prisoner, and the riot's
+   implementation answers from `IncidentLog`'s participant lists — so the
+   override is derived rather than stored, is scoped to the prisoners the record
+   names rather than to a classification group, and has no lift step. Measured
+   there: the same prison with and without a riot produced identical action
+   censuses before, and diverges by 160 toilet prisoner-ticks a day and 0.10 of
+   mean need deficit after.
 2. **When a player can draw a sector, does occupancy become the nearest-post
    partition or the drawn perimeter?** Decision 1 rejects the partition *for
    now*; a drawn perimeter would supersede both.

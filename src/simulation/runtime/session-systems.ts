@@ -700,7 +700,17 @@ export function restoreSessionSystems(
 
   // 3. Prisoners: liveness, components and occupancy in one call, so the
   //    runtime's own bitset re-derivation and in-flight travel reset run.
-  const components = decodePrisonerComponents(systems.prisoners.components, entityStore.capacity);
+  //    The components are sized to **this runtime's** store, not to the
+  //    capacity the save records, for the reason `EntityStore.loadSnapshot`
+  //    now gives: the save's capacity is the length of the array the writing
+  //    build happened to allocate. Sizing them to it produced arrays that
+  //    `PrisonerRecordComponent.loadSnapshot` could copy into this runtime's
+  //    only while the two builds agreed -- a save from a *larger* build threw
+  //    `RangeError` out of `TypedArray.set` with nothing said about capacity
+  //    at all. `decodePrisonerComponents` bounds `activeLength` against what
+  //    it is handed, so the refusal for a prefix that genuinely does not fit
+  //    now names this store's capacity, which is the number that decides.
+  const components = decodePrisonerComponents(systems.prisoners.components, runtime.prisoners.entityStore.capacity);
   runtime.prisoners.loadSnapshot({
     entityStore,
     records: components.records,

@@ -1,3 +1,5 @@
+import type { EntityId } from '../entity/entity-store';
+
 export const ACTION_CATEGORIES = ['sleep', 'meal', 'work', 'recreation', 'education', 'hygiene', 'free-association'] as const;
 export type ActionCategory = (typeof ACTION_CATEGORIES)[number];
 
@@ -136,6 +138,34 @@ export function resolveActiveRegimeBlock(schedule: RegimeSchedule, tick: number)
   }
   return block;
 }
+
+/**
+ * The schedule some *event* imposes on one prisoner in place of their
+ * classification group's timetable, or `undefined` where the timetable stands
+ * ([ADR 0057](../../../docs/adr/0057-what-a-riot-does-to-a-prisoners-day.md)).
+ *
+ * Declared here rather than in either module that uses it, because both sides
+ * already import this one and neither should have to import the other:
+ * `ActionSystem` asks the question on the action-selection path and knows
+ * nothing about incidents, and `incidents/riot-regime.ts` answers it and knows
+ * nothing about action selection. It is the same injected-port shape
+ * `SectorOccupantResolver`, `SectorRiskSampler` and `DisciplinaryEvidenceSource`
+ * use for the same reason.
+ *
+ * **It returns a whole `RegimeSchedule`, not a category filter**, and that is
+ * the decision rather than a convenience. Intersecting an override's categories
+ * with the block the clock is running can produce the empty set — a `sleep`
+ * block against a riot's `['free-association', 'recreation']` produces nothing
+ * at all — and `beginNextAction` with no legal candidate counts an unmet demand
+ * cycle every reconsideration, which is exactly the hole ADR 0042 decision 1
+ * closed. An override replaces the day; it does not narrow it.
+ *
+ * An implementation must be a pure function of state the save already carries,
+ * must draw nothing, and must not read the clock: it is consulted per idle
+ * prisoner per reconsideration cycle, and a resolver that varied with anything
+ * else would put a second, unsaved clock inside action selection.
+ */
+export type PrisonerRegimeOverrideResolver = (entityId: EntityId, classificationGroupId: string) => RegimeSchedule | undefined;
 
 export function findRegimeSchedule(schedules: readonly RegimeSchedule[], classificationGroupId: string): RegimeSchedule {
   const schedule = schedules.find((candidate) => candidate.classificationGroupId === classificationGroupId);

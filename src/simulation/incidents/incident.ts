@@ -138,6 +138,37 @@ export class IncidentLog {
    */
   private readonly lastStartedAtTickBySectorId = new Map<string, number>();
 
+  /**
+   * How many *open* riots name each prisoner as a participant, so a caller can
+   * ask "is this prisoner rioting right now" in one map lookup rather than by
+   * walking `openIncidents()`.
+   *
+   * A fourth derived index of exactly the shape the three above have, and it
+   * exists for the reason `lastStartedAtTickBySectorId` does: its reader runs
+   * often. `ActionSystem.beginNextAction` asks once per idle prisoner per
+   * reconsideration cycle, and `openIncidents()` allocates a sorted array and a
+   * fresh `IncidentRecord` per open incident every time it is called — a cost
+   * per prisoner per cycle for a question whose answer changes twice in an
+   * incident's life. Rebuilt in `loadSnapshot`, so the save format does not
+   * move and a restored session answers what a live one answers.
+   *
+   * **A count, not a set**, because two sectors can riot at once and
+   * `resolveSectorOccupants` can legitimately name one prisoner in both: the
+   * derived default sector is the whole prison
+   * ([ADR 0048](../../../docs/adr/0048-what-a-sectors-occupants-are.md)) and
+   * any other registered sector keeps the post-tile rule, so a prisoner
+   * standing on another sector's post tile is an occupant of two. With a set,
+   * closing the first riot would end the second one's override; with a count it
+   * cannot.
+   *
+   * Only `'riot'` is indexed. The categories a rioting prisoner is restricted
+   * to are authored for a riot (`riot-regime.ts`), and reading them onto
+   * `'gang-retaliation'` — the only other type anything in `src/` opens — would
+   * be a content decision with no measurement behind it. See ADR 0057's open
+   * questions.
+   */
+  private readonly openRiotCountByParticipant = new Map<EntityId, number>();
+
   private require(id: string): IncidentMutableRecord {
     const record = this.records.get(id);
     if (record === undefined) throw new RangeError(`Unknown incident id "${id}".`);
@@ -165,6 +196,40 @@ export class IncidentLog {
     }
     bucket.add(input.id);
     this.noteStart(input.sectorId, tick);
+    this.noteRiotParticipants(input.type, input.participantIds, 1);
+  }
+
+  /**
+   * Moves each participant's open-riot count by `delta`, for a record that has
+   * just opened (`+1`) or just reached a terminal state (`-1`).
+   *
+   * Deliberately keyed off the record's own `participantIds` on both sides, so
+   * the decrement can only ever undo the increment the same record made — a
+   * participant list is `readonly` from the moment `open` copies it, and
+   * nothing in this class rewrites one.
+   */
+  private noteRiotParticipants(type: IncidentType, participantIds: readonly EntityId[], delta: 1 | -1): void {
+    if (type !== 'riot') return;
+    for (const entityId of participantIds) {
+      const next = (this.openRiotCountByParticipant.get(entityId) ?? 0) + delta;
+      if (next > 0) this.openRiotCountByParticipant.set(entityId, next);
+      else this.openRiotCountByParticipant.delete(entityId);
+    }
+  }
+
+  /**
+   * Whether this prisoner is named as a participant in a riot that is still
+   * open — the question `riot-regime.ts`'s override resolver asks on the
+   * action-selection path (ADR 0057).
+   *
+   * "Still open" is `'active' | 'notified' | 'responding'`, the three
+   * non-terminal states, and that is the whole of the override's lifetime:
+   * there is no separate lift step to forget, because `transition` to
+   * `'resolved'` or `'lapsed'` is the same call that closes the incident for
+   * every other reader.
+   */
+  public isOpenRiotParticipant(entityId: EntityId): boolean {
+    return this.openRiotCountByParticipant.has(entityId);
   }
 
   /**
@@ -198,6 +263,7 @@ export class IncidentLog {
     if (to === 'resolved' || to === 'lapsed') {
       this.openIds.delete(id);
       this.openIdsBySectorId.get(record.sectorId)?.delete(id);
+      this.noteRiotParticipants(record.type, record.participantIds, -1);
     }
   }
 
@@ -235,10 +301,12 @@ export class IncidentLog {
     this.openIds.clear();
     this.openIdsBySectorId.clear();
     this.lastStartedAtTickBySectorId.clear();
+    this.openRiotCountByParticipant.clear();
     for (const [id, record] of snapshot) {
       this.records.set(id, { ...record, participantIds: [...record.participantIds], causeFactors: record.causeFactors.map((factor) => ({ ...factor })), timeline: record.timeline.map((entry) => ({ ...entry })) });
       this.noteStart(record.sectorId, record.startedAtTick);
       if (record.state !== 'resolved' && record.state !== 'lapsed') {
+        this.noteRiotParticipants(record.type, record.participantIds, 1);
         this.openIds.add(id);
         let bucket = this.openIdsBySectorId.get(record.sectorId);
         if (bucket === undefined) {
