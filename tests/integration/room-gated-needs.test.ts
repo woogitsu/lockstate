@@ -77,7 +77,19 @@ const YARD = { x: 20, y: 20, width: 8, height: 8 } as const;
 
 const SECTOR = 'security-sector.prison';
 
-/** Twenty in-game days at `DAY_LENGTH_TICKS` 2,400 — long enough that a need served once a day is served twenty times. */
+/**
+ * **Ten in-game days** at `DAY_LENGTH_TICKS` 2,400 — long enough that a need
+ * served once a day is served ten times.
+ *
+ * **This comment read "Twenty in-game days" until #443**, and so did the two
+ * `describe` names below, `src/simulation/incidents/sector-risk.ts`,
+ * `docs/PRISONER_OPERATIONS.md`, ADR 0059's speed ladder, ADR 0061's opening
+ * measurement and issue #477 itself. `24_000 / 2_400` is 10. Nothing measured
+ * here changes — every figure in this file was read off a 24,000-tick run and
+ * still is — but the window these numbers describe is half as long as five
+ * documents said, which matters to anyone reasoning about how fast a prison
+ * decays.
+ */
 const RUN_UNTIL = 24_000;
 /** Past intake, past every delivery and every build order, so nothing below is measuring a prison still under construction. */
 const WATCH_FROM = 2_000;
@@ -224,7 +236,7 @@ function watch(runtime: SimulationRuntime): WatchedPrisoner {
 const ROOM_GATED: readonly NeedId[] = ['hygiene', 'recreation'];
 const CELL_SERVED: readonly NeedId[] = ['hunger', 'sleep', 'bladder', 'safety'];
 
-describe('a prison of cells and nothing else, twenty in-game days', () => {
+describe('a prison of cells and nothing else, ten in-game days', () => {
   it('serves four of the six needs and cannot serve the other two', () => {
     const watched = watch(build({ prisoners: 1, guards: 1, shower: false, yard: false }));
 
@@ -340,7 +352,7 @@ describe('what the neglect costs, and how much of it is the staffing term', () =
     // 0.4824 is `needsPressure` alone: `staffingShortfall` is 0 and
     // `contrabandPressure` is structurally 0, so the score *is* the mean
     // deficit. `DEFAULT_SECTOR_RISK_POLICY.hotThreshold` is 0.65 and this never
-    // reaches it, in twenty in-game days of a prison nobody improves.
+    // reaches it, in ten in-game days of a prison nobody improves.
     expect(watched.peakRisk).toBeCloseTo(0.4824, 4);
     expect(watched.runtime.deploymentSystem.getCoverageReport(watched.runtime.kernel.tick)).toEqual([
       { sectorId: SECTOR, required: 1, assigned: 1, shortage: 0 },

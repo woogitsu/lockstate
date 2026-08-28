@@ -317,8 +317,20 @@ function accommodationCapacityOf(source: RoomProjectionSource, policy: Accommoda
  * counts (no per-prisoner allocation), `O(staff)` for the roster,
  * `O(roomInstances)` for the room totals, a second `O(accommodation
  * instances)` pass for `accommodationCapacity`, `O(openIncidents)` for the
- * incident count. Nothing here builds a per-actor object, so it is safe to
- * re-project every frame at the 5,000-actor tier.
+ * incident count, and -- since #443 -- `O(P log P)` in *housed* prisoners for
+ * `stateIncomeAccruedTodayMinorUnits`, which walks the occupied places and
+ * reads six need levels for each.
+ *
+ * **That last one is the exception to the sentence this note used to end
+ * with**, and it is marked rather than quietly dropped. It read: "Nothing here
+ * builds a per-actor object, so it is safe to re-project every frame at the
+ * 5,000-actor tier." No per-actor *object* is built and that half stands, but
+ * `RoomInstanceRegistry.residentIds` allocates and sorts one array of entity
+ * ids per call, which does scale with the population. It is a 200-element sort
+ * at the reference tier and a 5,000-element one at the top tier; the
+ * alternative -- deriving the chip from `totalOccupancy` and the flat rate --
+ * is not available any more, because the rate is no longer flat and a chip
+ * derived that way would promise money the day boundary declines to pay.
  */
 export function projectStatusStrip(source: StatusStripSource, options: StatusStripOptions = {}): StatusStripViewModel {
   const rooms = options.rooms ?? defaultRoomContentRegistry;

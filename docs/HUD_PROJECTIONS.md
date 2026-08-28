@@ -711,8 +711,27 @@ decision about what to build next.
 
 ### Prisoners
 
-7. **No need thresholds.** Nothing defines "warning" or "critical", so a
-   need bar cannot be banded without a balance decision.
+7. **No need *warning* thresholds.** Nothing defines "warning" or "critical"
+   for a player, so a need bar cannot be banded without a balance decision.
+
+   **Narrowed, not closed, by #443.** The simulation now has exactly one line
+   it acts on: `STATE_INCOME_UNMET_NEED_LEVEL` (51, a fifth of `NEED_MAX`) is
+   the level at or below which the state withholds part of that prisoner's
+   day of the operating grant. That is a statement about what the state
+   declines to pay for, not about what a player should be alarmed by, and the
+   two are deliberately separate — but it is the fact this gap was waiting
+   for. #477 put it exactly: *"a need warning threshold is a statement to a
+   player about what is bad, and on today's numbers the honest statement would
+   call 'bad' a condition that costs a staffed prison nothing … fix the cost
+   first, then the threshold has something true to say."* The cost exists; the
+   threshold is still the owner's, and so is whether it should be this one.
+
+   What the interface would need, if the owner wants the mechanic to be fair
+   rather than merely correct, is named in the ADR accompanying #443: which
+   needs are unmet **per prisoner**, what that is costing **per day**, and
+   which room would fix it. The first is already projected
+   (`PrisonerDetailViewModel.needs`), the second is derivable from figures the
+   status strip already carries, and the third exists nowhere.
 8. **No need trend.** Only the current level exists; nothing records recent
    history, so a panel cannot show rising/falling.
 9. **No health, injury or medical status.** Incidents produce
