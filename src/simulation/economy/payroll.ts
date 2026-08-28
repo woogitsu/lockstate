@@ -11,7 +11,9 @@ import { staffDailyWageMinorUnits } from './wages';
  * Wages: the one charge the player cannot decline
  * ([ADR 0042](../../../docs/adr/0042-attaching-consequences-to-the-simulation-loop.md)
  * step 3, [ADR 0017](../../../docs/adr/0017-money-primary-resource-model.md)
- * decision 8's precondition).
+ * decision 8's precondition,
+ * [ADR 0049](../../../docs/adr/0049-what-a-prison-that-cannot-make-payroll-owes.md)
+ * for what an unpayable bill becomes).
  *
  * ## What this closes
  *
@@ -29,8 +31,16 @@ import { staffDailyWageMinorUnits } from './wages';
  *
  * ## The unpayable case, and why the balance still cannot go negative
  *
- * The decision that matters here is what happens on the day the treasury
- * cannot cover the bill. ADR 0042 assumed a signed balance (*"A debt state is
+ * **The decision is
+ * [ADR 0049](../../../docs/adr/0049-what-a-prison-that-cannot-make-payroll-owes.md)'s,
+ * not this file's**, and it is recorded there because ADR 0017 answer 3 ends
+ * *"None of that is licensed to be decided in implementation code."* What
+ * follows is the summary a reader of this file needs; the alternatives, the
+ * comparable-sim research and the 30-day measurement that sized it are in the
+ * ADR.
+ *
+ * The question is what happens on the day the treasury cannot cover the bill.
+ * ADR 0042 assumed a signed balance (*"A debt state is
  * either a sign change on a persisted field or a new persisted arrears
  * field"*) and it is the sign change that is wrong, for a reason that comes out
  * of ADR 0017 decision 8 rather than out of taste.

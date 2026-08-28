@@ -972,7 +972,8 @@ const economySectionSchema = z
       .strict(),
     /**
      * What the prison owes its staff
-     * ([ADR 0042](../../docs/adr/0042-attaching-consequences-to-the-simulation-loop.md)
+     * ([ADR 0049](../../docs/adr/0049-what-a-prison-that-cannot-make-payroll-owes.md),
+     * [ADR 0042](../../docs/adr/0042-attaching-consequences-to-the-simulation-loop.md)
      * step 3), in the same minor units as the balance beside it.
      *
      * **Optional, absent means nothing is owed, and `SAVE_SCHEMA_VERSION`
@@ -996,6 +997,11 @@ const economySectionSchema = z
      * player's browser produced and could have edited, and
      * `PayrollSystem.update` saturates rather than throwing if it is handed a
      * figure one day short of the safe range.
+     *
+     * **Proven rather than asserted.** `tests/integration/economy-payroll-save.test.ts`
+     * decodes a real V5 save with this key removed and a real V4 save written
+     * before the field existed, restores both to zero arrears, and refuses a
+     * hand-edited save carrying a negative one behind a valid checksum.
      */
     payroll: z
       .object({ unpaidWagesMinorUnits: z.number().int().nonnegative().safe() })

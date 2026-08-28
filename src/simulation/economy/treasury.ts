@@ -35,7 +35,10 @@
  *   validators here are load-bearing for decision 8 rather than in its way.
  *
  *   What a prison owes therefore lives beside the balance rather than inside
- *   it, as `PayrollSystem`'s arrears. `spend` still refuses rather than
+ *   it, as `PayrollSystem`'s arrears
+ *   ([ADR 0049](../../../docs/adr/0049-what-a-prison-that-cannot-make-payroll-owes.md),
+ *   which records that choice, its alternatives and the 30-day measurement
+ *   that sized it). `spend` still refuses rather than
  *   overdrawing, and nothing here has changed.
  *
  * ## Integer minor units, and why that is not a formatting choice

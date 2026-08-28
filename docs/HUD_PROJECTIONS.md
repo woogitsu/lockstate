@@ -920,19 +920,42 @@ decision about what to build next.
     is also why hiring reads the *bottom* of a role's wage band and not a
     point inside it: where in the band an individual sits would need a skill
     or negotiation model, and there is none.
-21. **`wageBand` is read once, at hire, and there is still no payroll.** A
-    hire debits the treasury by the role's `wageBand.minPerDay`
-    ([ADR 0025](./adr/0025-guard-hiring-surface.md) decision 2), and the Staff
-    panel renders that figure on the button that will spend it — so the
-    earlier form of this gap, "no wage is ever debited" and "nothing
-    wage-related may be rendered as a live figure", is no longer true. What is
-    still true is everything else: **nothing recurring**. The charge happens
-    once, at the tick the command executes, and no system pays anyone on a
-    schedule — so ADR 0017 decision 3's standing cost and decision 8's
-    insolvency ladder are as unbuilt as before, and a one-off charge
-    `Treasury.spend` refuses rather than overdrawing keeps the ladder
-    unreachable. A *rate* — a per-day wage bill, a payroll forecast, a running
-    cost — is still a figure no system produces and must not be rendered.
+21. **`wageBand` is read at hire *and* on a schedule, and the payroll exists —
+    what is missing is the panel.** This gap has now been narrowed twice and
+    both narrowings are marked rather than overwritten, because the sentence it
+    keeps producing is the one that rots.
+
+    Its first form said "no wage is ever debited" and "nothing wage-related may
+    be rendered as a live figure". That stopped being true when the Staff panel
+    rendered `wageBand.minPerDay` on the button that spends it
+    ([ADR 0025](./adr/0025-guard-hiring-surface.md) decision 2).
+
+    Its second form said: *"What is still true is everything else: **nothing
+    recurring**. The charge happens once, at the tick the command executes, and
+    no system pays anyone on a schedule — so ADR 0017 decision 3's standing cost
+    and decision 8's insolvency ladder are as unbuilt as before […] A rate — a
+    per-day wage bill, a payroll forecast, a running cost — is still a figure no
+    system produces and must not be rendered."* Every clause of that is now
+    false. `PayrollSystem` (`src/simulation/economy/payroll.ts`,
+    [ADR 0042](./adr/0042-attaching-consequences-to-the-simulation-loop.md)
+    step 3) bills every employee's authored wage at the end of every in-game
+    day; `simulation/status-counts` carries both `dailyWageBillMinorUnits` —
+    which *is* the rate the old sentence forbade — and `unpaidWagesMinorUnits`,
+    the arrears
+    ([ADR 0049](./adr/0049-what-a-prison-that-cannot-make-payroll-owes.md)).
+    Decision 8's ladder is reachable: a real session can empty its treasury and
+    start owing wages, and does so in
+    `tests/integration/economy-payroll-loop.test.ts`.
+
+    **What is still a gap is the surface.** No locale key names a running cost
+    or an arrears figure, and none may be added before something renders the
+    figure it names — a label authored ahead of its readout is `AGENTS.md`'s
+    fourth exclusion, and `src/content/default-locale-en.ts` says so at the
+    `hud.status.*` block with `tests/unit/ui-hud-messages.test.ts` as the gate.
+    Two integers are on the channel and nothing on screen reads them, which is
+    the narrower and more accurate form of this gap: **the figures exist, the
+    panel does not.** A *forecast* — anything projecting the balance forward —
+    is still a figure no system produces and must not be rendered.
 
     **The two things that credit the treasury, and which of them is an income
     line.** `StateIncomeSystem` (`src/simulation/economy/income.ts`) is the

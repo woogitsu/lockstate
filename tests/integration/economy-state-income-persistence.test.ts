@@ -36,8 +36,17 @@ import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from 
  * mentions this system, which is what makes "derived, not stored" a fact about
  * the save rather than a claim about the code.
  *
- * The only economy state in a save is the treasury balance itself, and the
- * balance is a *result* of past payments rather than a record of a pending one.
+ * **The economy state in a save is no longer only the treasury balance**, and
+ * this paragraph used to say it was: *"The only economy state in a save is the
+ * treasury balance itself, and the balance is a result of past payments rather
+ * than a record of a pending one."* The second clause is still true and is
+ * still this file's subject. The first stopped being true with ADR 0042 step 3,
+ * which added `simulation.economy.payroll` -- arrears, which genuinely are a
+ * record rather than a result, because nothing in a restored session could
+ * recompute the fact that a day's wages went unpaid. That field is
+ * `tests/integration/economy-payroll-save.test.ts`'s subject, not this one's;
+ * what it costs this file is the netting below, because the scenario's five
+ * guards are now billed every day the income pays.
  *
  * ## Why this is an integration test and not a unit test
  *
@@ -142,10 +151,40 @@ function step(runtime: SimulationRuntime, count: number): void {
 const OCCUPIED_PLACES = 4;
 const ONE_DAY_PAYMENT = STATE_INCOME_PER_PRISONER_DAY_MINOR_UNITS * OCCUPIED_PLACES;
 
+/**
+ * What the scenario's own staff cost, which this file has to net off since
+ * ADR 0042 step 3.
+ *
+ * `buildDeterminismScenario` hires five guards straight onto the roster
+ * (`tests/helpers/determinism-scenario.ts:160`) rather than through
+ * `StaffHiringService`, so no engagement charge is taken -- but `PayrollSystem`
+ * reads the roster and bills all five at the catalogue's 80 a day on the same
+ * boundary tick this file's income lands on. **Both figures are written out
+ * here rather than read from the catalogue**, so a change to either is a
+ * deliberate edit to this file and not a silent re-derivation; the first case
+ * below asserts them against the runtime, so a literal that stops being true
+ * fails where it is legible instead of turning every balance below into a
+ * puzzle.
+ *
+ * Netting rather than removing the guards: the scenario is shared with the
+ * determinism suite, and changing it to suit this file would move a fixture
+ * several other files pin.
+ */
+const SCENARIO_STAFF = 5;
+const ONE_DAY_WAGES = 400;
+/** What one settled in-game day actually moves the balance by: 1,200 in, 400 out. */
+const ONE_DAY_NET = ONE_DAY_PAYMENT - ONE_DAY_WAGES;
+
 describe('a mid-day save neither loses the partial day nor pays for it twice', () => {
   it('settles at the occupied places intake actually produced, which is fewer than the prisoners admitted', () => {
     const runtime = sessionAtTick(40);
     expect(runtime.prisoners.roomInstances.totalOccupancy).toBe(OCCUPIED_PLACES);
+    // The two literals every balance below is netted with, anchored to the
+    // scenario that produces them rather than trusted.
+    expect(runtime.securityGuards.allGuardIds().length, 'the scenario hires its staff on the roster directly').toBe(
+      SCENARIO_STAFF,
+    );
+    expect(runtime.payroll.dailyWageBillMinorUnits(), 'five guards at the catalogue`s 80 a day').toBe(ONE_DAY_WAGES);
     expect(
       runtime.treasury.balanceMinorUnits,
       'nothing has been paid yet: the first day boundary is at tick 2,399',
@@ -197,11 +236,11 @@ describe('a mid-day save neither loses the partial day nor pays for it twice', (
 
     expect(original.kernel.tick).toBe(DAY_LENGTH_TICKS);
     expect(restored.kernel.tick).toBe(DAY_LENGTH_TICKS);
-    expect(original.treasury.balanceMinorUnits).toBe(25_000 + ONE_DAY_PAYMENT);
+    expect(original.treasury.balanceMinorUnits).toBe(25_000 + ONE_DAY_NET);
     expect(
       restored.treasury.balanceMinorUnits,
       'the restored session paid the same one day: not zero (the partial day lost) and not two days (the boundary replayed)',
-    ).toBe(25_000 + ONE_DAY_PAYMENT);
+    ).toBe(25_000 + ONE_DAY_NET);
   });
 
   it('pays once, not twice, when the save is taken on the very tick the payment is due', () => {
@@ -226,31 +265,31 @@ describe('a mid-day save neither loses the partial day nor pays for it twice', (
 
     step(restored, 1);
     expect(restored.treasury.balanceMinorUnits, 'the pending boundary runs after the restore, once').toBe(
-      25_000 + ONE_DAY_PAYMENT,
+      25_000 + ONE_DAY_NET,
     );
 
     // And it does not run a second time on the next tick.
     step(restored, 1);
-    expect(restored.treasury.balanceMinorUnits).toBe(25_000 + ONE_DAY_PAYMENT);
+    expect(restored.treasury.balanceMinorUnits).toBe(25_000 + ONE_DAY_NET);
   });
 
   it('does not re-pay a boundary the save was taken just after', () => {
     const original = sessionAtTick(DAY_LENGTH_TICKS);
-    expect(original.treasury.balanceMinorUnits).toBe(25_000 + ONE_DAY_PAYMENT);
+    expect(original.treasury.balanceMinorUnits).toBe(25_000 + ONE_DAY_NET);
 
     const { restored } = saveAndLoad(original);
     expect(restored.kernel.tick).toBe(DAY_LENGTH_TICKS);
-    expect(restored.treasury.balanceMinorUnits).toBe(25_000 + ONE_DAY_PAYMENT);
+    expect(restored.treasury.balanceMinorUnits).toBe(25_000 + ONE_DAY_NET);
 
     // The next payment is a whole day away, not immediate: the restored tick
     // is 2,400 and the predicate is `tick % 2,400 === 2,399`.
     step(restored, DAY_LENGTH_TICKS - 1);
     expect(restored.kernel.tick).toBe(DAY_LENGTH_TICKS * 2 - 1);
     expect(restored.treasury.balanceMinorUnits, 'still one day paid on the tick before the second boundary').toBe(
-      25_000 + ONE_DAY_PAYMENT,
+      25_000 + ONE_DAY_NET,
     );
     step(restored, 1);
-    expect(restored.treasury.balanceMinorUnits).toBe(25_000 + ONE_DAY_PAYMENT * 2);
+    expect(restored.treasury.balanceMinorUnits).toBe(25_000 + ONE_DAY_NET * 2);
   });
 
   it('pays a restored session over two further days at the same rate as one that was never saved', () => {
@@ -267,9 +306,9 @@ describe('a mid-day save neither loses the partial day nor pays for it twice', (
       // repeatedly rather than once.
       restored = saveAndLoad(restored).restored;
 
-      expect(original.treasury.balanceMinorUnits, `day ${String(day)}`).toBe(25_000 + ONE_DAY_PAYMENT * day);
+      expect(original.treasury.balanceMinorUnits, `day ${String(day)}`).toBe(25_000 + ONE_DAY_NET * day);
       expect(restored.treasury.balanceMinorUnits, `day ${String(day)}, restored`).toBe(
-        25_000 + ONE_DAY_PAYMENT * day,
+        25_000 + ONE_DAY_NET * day,
       );
     }
   });
