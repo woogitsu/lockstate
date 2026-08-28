@@ -138,6 +138,12 @@ const ALLOWED: readonly CanonicalIterationExemption[] = [
       'A membership test, not an ordering: `registerPrison` asks whether any prison already holds the requested slot index, and at most one can -- `prisons_owner_slot_unique` is on `(owner_id, slot_index)`. Every walk order therefore returns the same answer, and the answer is a boolean rather than a sequence. This is a test double for a cloud client besides, so nothing it enumerates reaches a simulation snapshot or a determinism hash.',
   },
   {
+    file: 'src/simulation/locomotion/locomotion.ts',
+    expression: 'this.walks',
+    reason:
+      "`advance` steps each walk by the same number of sub-tile units and writes that walker's own tile through the caller's `writeTile`; no walk reads or folds in another, so every walk order leaves every actor on the same tile (ADR 0059). The one step that is *not* commutative is deliberately not in this loop: two prisoners who reach the last free seat of a room on one tick are decided by who claims it first, so arrivals are collected into `this.arrived`, **sorted ascending by key** and dispatched after the walk -- ascending entity index, which is ADR 0005's canonical order and the same order `EntityQuery.execute` grants claims in. The map is also never read out: it holds no state a snapshot carries, `LocomotionStore.clear` empties it on restore, and `read` is a keyed lookup rather than a walk.",
+  },
+  {
     file: 'src/simulation/worker/worker-channel.ts',
     expression: 'this.listeners',
     reason:

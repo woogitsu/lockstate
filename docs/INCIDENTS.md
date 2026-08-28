@@ -68,6 +68,12 @@ produces one incident, not one per subsequent sample. Only one open
 incident per sector exists at a time, which keeps response staffing
 attributable.
 
+**Everything in this section is about the riot**, and that used to be the same
+thing as being about this system. Since
+[ADR 0061](./adr/0061-what-the-prison-produces-on-its-own.md) it produces two
+more types, from different state and behind different gates — see "Three
+producers, three readings of the same prison" below.
+
 **Four gates, not two.** The streak and the one-open-incident rule are the two
 above; [ADR 0048](./adr/0048-what-a-sectors-occupants-are.md) added the other
 two, and both became necessary only once the trigger could fire in a playable
@@ -89,8 +95,63 @@ prison at all:
   nobody to riot, and it opens one on the first sampling point after a second
   prisoner arrives.
 
+  **The quiet period is asked per incident type** since ADR 0061, through the
+  same derived index taking an optional `type`. Read sector-wide by three
+  producers, whichever fired first would silence the other two for its whole
+  window — so a prison that assaulted every in-game day would stop rioting. The
+  windows are 4,800 ticks for a riot, 2,400 for an assault and 12,000 for an
+  escape attempt. The *one-open-incident* rule stays shared across types:
+  `IncidentResponseSystem` claims responders from one pool and locks a sector
+  down by sector id, so two open records in one sector would be two responses
+  fighting over one lockdown.
+
 Every iteration order in this system is explicitly sorted (sector ids, gang
 ids, entity ids) -- issue #28's "without nondeterministic iteration."
+
+## Three producers, three readings of the same prison
+
+Until [ADR 0061](./adr/0061-what-the-prison-produces-on-its-own.md), `'assault'`
+and `'escape-attempt'` were declared in `IncidentType`, counted by
+`incident-projection.ts`, labelled in `simulation-message-keys.ts`, priced in
+`DISCIPLINARY_POINTS_BY_INCIDENT_TYPE` — and created by nothing. A prison could
+riot, and that was the whole of what could ever happen in one.
+
+`flashpoint.ts` adds the two producers, and the thing worth understanding about
+them is that neither is a weaker riot:
+
+| type | what it reads | who it names |
+| --- | --- | --- |
+| `'riot'` | the sector's **mean** need deficit, its staffing shortfall, its contraband suspicion, sustained over twelve samples | every occupant |
+| `'assault'` | **one prisoner's own** deficit and holdings, at the sector's own weights and line | the worst-off two |
+| `'escape-attempt'` | how much sentence is left and what the prison **classified** that person as — no need at all | one prisoner |
+
+- **The assault exists because a mean hides an individual.** Eight housed
+  prisoners at 0.48 and one homeless prisoner at 0.95 average to 0.53, nowhere
+  near `hotThreshold`, so a prison that is adequate for almost everybody and
+  intolerable for one person produced nothing at all.
+- **It defers to the riot structurally.** No assault opens in a sector whose hot
+  streak is non-zero. With the same weights and the same line, any prison whose
+  mean is hot has individuals who are hot — and the riot needs twelve
+  consecutive samples where the assault needs none, so without the gate the
+  assault took the sector's one slot every time. Measured: ADR 0057's
+  two-prisoner prison produced an assault at tick 13,250 instead of its riot.
+- **Its severity is scaled into `1..5`**, below `lockdownSeverityThreshold`.
+  Severity is an input — it sizes the response — and a fight is not a reason to
+  seal every door in the prison.
+- **The escape attempt is gated, not merely scored**: the prisoner is classified
+  high risk *and* is concealing something. The second gate is the honest one
+  rather than the strict one — this model has no perimeter to walk through, so
+  an escape with no means is the one thing the state cannot support.
+- **And a lapsed escape attempt removes the prisoner**, through the same
+  `releasePrisoner` a sentence ending uses. `lapse` has written
+  `escaped: incident.type === 'escape-attempt'` since #28 and it had never once
+  been true in a running prison; the moment it can be, a panel saying *escaped:
+  yes* beside a prisoner still in their bed would be a promise the code does not
+  keep.
+
+What none of them can do is be **found**: a player cannot order a search, so the
+contraband both new producers read is real, hidden and unanswerable. That is
+ADR 0061 open question 1 and it is the owner's.
 
 ## Riots reuse the existing regime/action framework
 
@@ -288,6 +349,14 @@ a special case that was being read as the general rule.
 until a session/scenario registers them — the same "no fabricated default
 content" convention every prior issue's wiring follows, asserted directly in
 `tests/unit/new-session-runtime.test.ts`.
+
+**A session now also supplies a `PrisonerFlashpointSampler`**, the third
+injection seam beside `SectorRiskSampler` and `SectorOccupantResolver`, reading
+each occupant's own need deficit, contraband holdings, sentence remaining and
+risk tier out of the real components. It is optional at the constructor: a
+`IncidentTriggerSystem` built without one opens `'riot'` and
+`'gang-retaliation'` and nothing else, which is what every fixture predating
+ADR 0061 expects.
 
 **`incidentSectorIds` is the exception, and it is not a small one.** It used to
 start empty too, and because it did, `IncidentTriggerSystem` sampled nothing and

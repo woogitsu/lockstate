@@ -35,6 +35,24 @@ export interface PrisonerWorkerReleasePort {
 }
 
 /**
+ * Taking a departing prisoner's contraband out of the prison with them.
+ * `ContrabandRegistry` satisfies it through `departHolder`.
+ *
+ * Required from the moment contraband can be held by a prisoner at all
+ * ([ADR 0061](../../../docs/adr/0061-what-the-prison-produces-on-its-own.md)),
+ * and it is the one store on this list that a *string* keys rather than an
+ * `EntityId`: `ContrabandHolder.id` is the stringified id, so
+ * `tests/unit/prisoner-release-completeness.test.ts` -- which walks the session
+ * graph for the numeric id -- cannot see a leak here. That is the reason this
+ * port is documented at length rather than added quietly: the executable gate
+ * that makes the rest of this list complete does not cover it, and the next
+ * store keyed by a stringified id will have the same hole.
+ */
+export interface PrisonerContrabandReleasePort {
+  departHolder(kind: 'prisoner', id: string, atTick: number): readonly string[];
+}
+
+/**
  * Every store a departing prisoner has to be dropped from, named in one place.
  *
  * ## Why this type exists at all
@@ -76,6 +94,18 @@ export interface PrisonerReleaseSurfaces {
   readonly identity?: PrisonerNameReleasePort;
   readonly gangs?: PrisonerGangReleasePort;
   readonly jobWorkers?: PrisonerWorkerReleasePort;
+  /**
+   * The walk store, keyed by component *index* rather than by entity id
+   * ([ADR 0059](../../../docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md)).
+   *
+   * Optional for the same reason the four ports above are: a caller that has
+   * no locomotion has nothing to forget. Where one exists it must be told,
+   * because the index it keys by returns to the free list two statements
+   * later, and a walk left behind would step the next prisoner allocated into
+   * that slot along a route the prisoner before them was walking.
+   */
+  readonly locomotion?: { forget(key: number): void };
+  readonly contraband?: PrisonerContrabandReleasePort;
 }
 
 /**
@@ -102,7 +132,11 @@ export interface PrisonerReleaseSurfaces {
  *    `RoomInstanceRegistry.releaseEntity` for why the cold state's two instance
  *    pointers are not a complete answer to where a prisoner is recorded.
  * 4. **The cold state itself**, once nothing else needs to read it.
- * 5. **Name, gang, labour pool** -- the three session-level stores.
+ * 5. **Name, gang, labour pool, contraband** -- the four session-level stores.
+ *    The contraband step needs the tick, which is why this function takes one;
+ *    `departHolder` writes a movement-log entry, and an entry stamped with a
+ *    tick the departure did not happen on would make the audit trail wrong
+ *    rather than absent.
  * 6. **The component bit**, so `EntityQuery` stops matching the index even if
  *    something re-marks it alive.
  * 7. **The entity last.** `destroy` bumps the generation, after which the id
@@ -133,7 +167,7 @@ export interface PrisonerReleaseSurfaces {
  * prisoners released on one tick free places that a later intake tick fills in
  * a fixed order.
  */
-export function releasePrisoner(surfaces: PrisonerReleaseSurfaces, entityId: EntityId): boolean {
+export function releasePrisoner(surfaces: PrisonerReleaseSurfaces, entityId: EntityId, atTick = 0): boolean {
   const { entityStore, bitset, coldState, roomInstances } = surfaces;
   if (!entityStore.isAlive(entityId)) return false;
 
@@ -145,12 +179,16 @@ export function releasePrisoner(surfaces: PrisonerReleaseSurfaces, entityId: Ent
     surfaces.navigation.clearResult(pathRequestId);
   }
 
+  // Before `destroy` recycles the index this store is keyed by.
+  surfaces.locomotion?.forget(index);
+
   roomInstances.releaseEntity(entityId);
   coldState.release(entityId);
 
   surfaces.identity?.release('prisoner', entityId);
   surfaces.gangs?.removeMember(entityId);
   surfaces.jobWorkers?.unregister(entityId);
+  surfaces.contraband?.departHolder('prisoner', String(entityId), atTick);
 
   bitset.clear(index);
   entityStore.destroy(entityId);

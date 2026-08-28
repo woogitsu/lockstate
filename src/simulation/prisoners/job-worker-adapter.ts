@@ -25,8 +25,21 @@ export class PrisonerJobWorkerAdapter implements JobWorkerAdapter {
     return { x: tileCoordinate(this.prisoners.position.tileX[index]!), y: tileCoordinate(this.prisoners.position.tileY[index]!) };
   }
 
+  /**
+   * Moves a worker, and **ends whatever walk they were on**
+   * ([ADR 0059](../../../docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md)).
+   *
+   * The cancellation is the whole reason this is not two assignments. A walk
+   * writes the tile once per tile crossed, so a job placement that only wrote
+   * the destination would be dragged back onto the route the prisoner was
+   * walking before it, one tile at a time, and the prisoner would arrive at a
+   * canteen they were pulled off the way to. The rule the store expects is
+   * therefore "an external write to a walker's tile ends the walk", and this is
+   * the one place outside `prisoners/` that makes such a write.
+   */
   public setPositionTile(entityId: EntityId, tile: TilePosition): void {
     const index = this.prisoners.entityStore.getIndex(entityId);
+    this.prisoners.locomotion.cancelWalk(index);
     this.prisoners.position.tileX[index] = tile.x;
     this.prisoners.position.tileY[index] = tile.y;
   }

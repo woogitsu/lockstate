@@ -11,11 +11,12 @@ import {
   RENDER_ACTORS_SCHEMA_ID,
   RENDER_ACTORS_SCHEMA_VERSION,
 } from '../../simulation/protocol/render-actors-payload';
+import { extrapolateActors, type PublishedActorPosition } from './actor-extrapolation';
 import { structuresFromConstruction } from '../world/structures';
 import { WorldRenderView } from '../world/world-view';
 import { actorsFromDelta } from './actors-from-delta';
 import { actorsFromSnapshot } from './actors-from-snapshot';
-import { EMPTY_RENDER_FRAME, type RenderFeed, type RenderFrame } from './render-feed';
+import { EMPTY_RENDER_FRAME, type MutableRenderActor, type RenderFeed, type RenderFrame } from './render-feed';
 
 /**
  * Feeds the renderer from the simulation worker over the existing protocol.
@@ -158,6 +159,26 @@ export class SimulationSnapshotFeed implements RenderFeed {
    * different simulations.
    */
   private lastDeltaTick: number | undefined;
+  /**
+   * The actors the last delta published, the positions it published them at,
+   * and the presentation time that publication was first drawn at.
+   *
+   * Held beside `frame.actors` -- which is the *same array* -- because
+   * `readFrame` advances each actor from where it was published rather than
+   * from where it drew it last frame
+   * ([ADR 0059](../../../docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md),
+   * `actor-extrapolation.ts`). Accumulating frame by frame would let a dropped
+   * frame overshoot; measuring from the publication cannot.
+   *
+   * The sample time is `undefined` until the first `readFrame` after a
+   * publication, because a message handler has no presentation clock: the
+   * scene's frame loop is the only thing in this file that knows what time it
+   * is, so "when was this published" is answered as "when was it first drawn".
+   * The error that introduces is at most one frame and it never accumulates.
+   */
+  private publishedActors: MutableRenderActor[] = [];
+  private publishedAt: PublishedActorPosition[] = [];
+  private publishedAtSeconds: number | undefined;
 
   private readonly pollIntervalSeconds: number;
   private readonly requestTimeoutSeconds: number;
@@ -181,7 +202,29 @@ export class SimulationSnapshotFeed implements RenderFeed {
 
   public readFrame(nowSeconds: number): RenderFrame {
     this.pump(nowSeconds);
+    this.advanceActors(nowSeconds);
     return this.frame;
+  }
+
+  /**
+   * Moves the published actors on by the time since they were published.
+   *
+   * **Only while the clock runs.** A paused worker publishes nothing -- the
+   * publication is skipped on an unmoved tick -- so a velocity from the last
+   * running publication would otherwise carry actors on for a quarter of a
+   * second after the player pressed pause. Reading the clock here is not a
+   * second source of truth about motion: it is the same `clockRunning` the
+   * poll already keeps, and it gates *whether* to advance rather than by how
+   * much.
+   */
+  private advanceActors(nowSeconds: number): void {
+    if (this.publishedActors.length === 0) return;
+    if (!this.clockRunning) {
+      extrapolateActors(this.publishedActors, this.publishedAt, 0);
+      return;
+    }
+    this.publishedAtSeconds ??= nowSeconds;
+    extrapolateActors(this.publishedActors, this.publishedAt, nowSeconds - this.publishedAtSeconds);
   }
 
   /** Exposed for the scene's one-time camera framing and for tests. */
@@ -193,6 +236,9 @@ export class SimulationSnapshotFeed implements RenderFeed {
     switch (message.kind) {
       case 'simulation/ready':
         this.sessionReady = true;
+        this.publishedActors = [];
+        this.publishedAt = [];
+        this.publishedAtSeconds = undefined;
         this.clockRunning = message.payload.clock.mode === 'running';
         this.dirty = true;
         // A new session, so the tick this feed last drew is a tick of a
@@ -413,11 +459,15 @@ export class SimulationSnapshotFeed implements RenderFeed {
       return;
     }
 
+    const actors = actorsFromDelta(decoded);
+    this.publishedActors = actors;
+    this.publishedAt = actors.map((actor) => ({ tileX: actor.tileX, tileY: actor.tileY }));
+    this.publishedAtSeconds = undefined;
     this.frame = {
       revision: this.frame.revision,
       world: this.frame.world,
       structures: this.frame.structures,
-      actors: actorsFromDelta(decoded),
+      actors,
     };
     this.lastDeltaTick = payload.tick;
   }
@@ -495,6 +545,13 @@ export class SimulationSnapshotFeed implements RenderFeed {
         // is the missing piece, and it is its own decision.
         actors: actorsFromSnapshot(bundle.simulation, bundle.entities),
       };
+      // A snapshot's actors carry no velocity and are not advanced between
+      // frames; they are also replaced wholesale by the next delta. Dropping
+      // the published set here is what stops the *previous* delta's actors
+      // being advanced against a frame that no longer holds them.
+      this.publishedActors = [];
+      this.publishedAt = [];
+      this.publishedAtSeconds = undefined;
       this.lastAppliedTick = payload.tick;
     } catch (error) {
       this.onError(error instanceof Error ? error : new Error(String(error)));

@@ -150,11 +150,25 @@ export class PrisonerRecordComponent {
 }
 
 /**
- * Tile-space position (integer, matching `TilePosition` -- not a
- * continuous render/world-space transform). Movement here is abstracted:
- * an entity's position updates only on arrival at a resolved route's
- * destination (see action-system.ts) -- literal tile-by-tile locomotion
- * and rendering are out of scope for #21/#22/#24 alike (docs/NAVIGATION.md).
+ * The tile an entity occupies, as an integer -- not a continuous
+ * render/world-space transform, and **not the whole of where the entity is**.
+ *
+ * Since [ADR 0059](../../../docs/adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md)
+ * a prisoner walks a resolved route rather than being written onto its
+ * destination, so this changes once per tile crossed. Where the prisoner is
+ * *within* that tile lives in `LocomotionStore` (`../locomotion/`), which is
+ * transient and which no save carries; every reader here -- projections, a
+ * route's origin, sector occupancy -- asks the same question it always did and
+ * gets the same kind of answer.
+ *
+ * > **This comment read:** *"Movement here is abstracted: an entity's position
+ * > updates only on arrival at a resolved route's destination (see
+ * > action-system.ts) -- literal tile-by-tile locomotion and rendering are out
+ * > of scope for #21/#22/#24 alike (docs/NAVIGATION.md)."* That was true of
+ * > prisoners until ADR 0059 and **is still true of guards**, whose tiles
+ * > `GuardRoster` holds and whose arrival `patrol-system.ts`,
+ * > `deployment-system.ts`, `response-system.ts` and `search-system.ts` still
+ * > apply in one statement.
  */
 export class PositionComponent {
   public readonly tileX: Int32Array;

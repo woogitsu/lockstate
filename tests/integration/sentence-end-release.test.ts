@@ -50,8 +50,8 @@ function submit(runtime: SimulationRuntime, id: string, payload: ReturnType<type
  * happens at the *other* end of a sentence. `object-placement-loop.test.ts`
  * drives the long way round.
  */
-function twoCellPrison(): SimulationRuntime {
-  const runtime = createNewSimulationRuntime(SEED);
+function twoCellPrison(seed: number = SEED): SimulationRuntime {
+  const runtime = createNewSimulationRuntime(seed);
   CELLS.forEach((rectangle, index) => {
     wallRoomPerimeter(runtime.world, rectangle, { doors: runtime.navigation.doors });
     submit(runtime, `zone-${index}`, packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...rectangle }));
@@ -69,8 +69,8 @@ function twoCellPrison(): SimulationRuntime {
   return runtime;
 }
 
-function admit(runtime: SimulationRuntime, id: string, sentenceLengthTicks = SENTENCE): number {
-  submit(runtime, id, packCommand({ type: 'AdmitPrisoner', sentenceLengthTicks, priorIncidents: 0, ...ARRIVAL }));
+function admit(runtime: SimulationRuntime, id: string, sentenceLengthTicks = SENTENCE, priorIncidents = 0): number {
+  submit(runtime, id, packCommand({ type: 'AdmitPrisoner', sentenceLengthTicks, priorIncidents, ...ARRIVAL }));
   const entityId = runtime.prisoners.entityStore.getIdByIndex(runtime.prisoners.entityStore.maxActiveIndex);
   expect(runtime.prisoners.entityStore.isAlive(entityId)).toBe(true);
   return entityId;
@@ -149,6 +149,66 @@ describe('a sentence that ends (#441)', () => {
     expect(housedIn(runtime, second)).toBe(firstCell);
     expect(runtime.prisoners.roomInstances.occupantsOf(firstCell)).toEqual([second]);
     expect(population(runtime)).toBe(1);
+  });
+
+  /**
+   * **And whatever they were concealing goes with them**
+   * ([ADR 0061](../../docs/adr/0061-what-the-prison-produces-on-its-own.md)
+   * decision 1).
+   *
+   * `ContrabandHolder.id` is a *string*, so this is the one store on
+   * `PrisonerReleaseSurfaces` that `tests/unit/prisoner-release-completeness.test.ts`
+   * cannot see: that gate walks the session's object graph for the numeric
+   * `EntityId`, and `"prisoner:7340032"` is not that number. Left behind, the
+   * item would sit concealed at a holder key naming a destroyed entity for the
+   * rest of the session, and everything that totals what the prison is holding
+   * would keep counting it.
+   *
+   * ## Why this sweeps seeds instead of admitting one prisoner
+   *
+   * Whether an arrival is carrying is a draw on `contraband.introduction`, and
+   * the first version of this case admitted one prisoner and returned early
+   * when the draw missed. It passed, and it **proved nothing** -- measured: the
+   * early return was taken. That is issue #375's shape exactly, arrived at
+   * while trying to avoid it.
+   *
+   * So the prison is built from a sweep of seeds until one produces a carrier,
+   * and the sweep having found one is itself asserted. Nothing is hand-placed:
+   * every seed builds the same prison through the same commands, and the item
+   * is read out of the registry the intake path put it in.
+   */
+  it('takes the contraband they were concealing out of the prison with them', () => {
+    let carrier: { runtime: SimulationRuntime; entityId: number; seedsTried: number } | undefined;
+    for (let seed = SEED; seed < SEED + 12 && carrier === undefined; seed += 1) {
+      const runtime = twoCellPrison(seed);
+      // `priorIncidents: 2` against a sentence over the long threshold puts the
+      // arrival in the top classification band, where the introduction chance is
+      // highest -- the same lever a player pulls by agreeing to take somebody.
+      const entityId = admit(runtime, 'admit-first', SENTENCE, 2);
+      housedIn(runtime, entityId);
+      if (runtime.contraband.byHolder('prisoner', String(entityId)).length > 0) {
+        carrier = { runtime, entityId, seedsTried: seed - SEED + 1 };
+      }
+    }
+
+    expect(carrier, 'no seed in the sweep admitted anybody carrying anything, so this case cannot run').toBeDefined();
+    const { runtime, entityId } = carrier!;
+
+    const carried = runtime.contraband.byHolder('prisoner', String(entityId));
+    expect(carried.length).toBeGreaterThan(0);
+    expect(carried.every((item) => item.state === 'concealed')).toBe(true);
+
+    const endTick = runtime.prisoners.records.sentenceEndTick[runtime.prisoners.entityStore.getIndex(entityId)]!;
+    stepTo(runtime, endTick + 20);
+
+    expect(runtime.prisoners.entityStore.isAlive(entityId)).toBe(false);
+    expect(runtime.contraband.byHolder('prisoner', String(entityId))).toEqual([]);
+    for (const item of carried) {
+      const after = runtime.contraband.get(item.id)!;
+      expect(after.state).toBe('departed');
+      // The record stays and stays traceable -- a departure is not a deletion.
+      expect(after.provenance).toEqual(item.provenance);
+    }
   });
 
   it('recycles the freed entity index without the new occupant inheriting anything', () => {

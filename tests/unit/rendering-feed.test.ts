@@ -18,7 +18,11 @@ import {
 } from '../../src/rendering/feed/simulation-snapshot-feed';
 import { createBuildOrder } from '../../src/simulation/construction/build-order';
 import { selectActorPose } from '../../src/rendering/actors/actor-pose';
-import { writeRenderActorsPayload } from '../helpers/render-actors-reader';
+import { LOCOMOTION_SUBTILE_UNITS } from '../../src/simulation/locomotion';
+import { writeRenderActorsPayload, type ReadRenderActorRecord } from '../helpers/render-actors-reader';
+
+/** Sub-tile units in a tile, spelled once so the records below read as tiles. */
+const SUB = LOCOMOTION_SUBTILE_UNITS;
 
 /**
  * The feed is where the renderer touches the worker protocol, so it is worth
@@ -602,7 +606,7 @@ describe('simulation snapshot feed', () => {
 describe('the render delta channel feeds the actors', () => {
   function delta(
     tick: number,
-    records: readonly { entityId: number; packedFields: number; tileX: number; tileY: number }[],
+    records: readonly ReadRenderActorRecord[],
     overrides: {
       readonly baseTick?: number;
       readonly flags?: number;
@@ -612,7 +616,7 @@ describe('the render delta channel feeds the actors', () => {
     } = {},
   ): WorkerToMainMessage {
     const data = writeRenderActorsPayload({
-      layoutVersion: overrides.layoutVersion ?? 1,
+      layoutVersion: overrides.layoutVersion ?? 2,
       flags: overrides.flags ?? 1,
       records,
       removed: [],
@@ -626,7 +630,7 @@ describe('the render delta channel feeds the actors', () => {
         tick,
         delta: {
           schemaId: overrides.schemaId ?? 'lockstate.render-actors',
-          schemaVersion: overrides.schemaVersion ?? 1,
+          schemaVersion: overrides.schemaVersion ?? 2,
           transport: 'array-buffer',
           contentType: 'application/x-lockstate-render-actors',
           byteLength: data.byteLength,
@@ -636,7 +640,15 @@ describe('the render delta channel feeds the actors', () => {
     } as unknown as WorkerToMainMessage;
   }
 
-  const RECORD = { entityId: 12, packedFields: 0, tileX: 5, tileY: 7 };
+  /** One standing prisoner on tile (5, 7): sub-tile units, no velocity, and the biased `0, 0` heading. */
+  const RECORD: ReadRenderActorRecord = {
+    entityId: 12,
+    packedFields: 0b0101 << 8,
+    subX: 5 * SUB,
+    subY: 7 * SUB,
+    velocitySubX: 0,
+    velocitySubY: 0,
+  };
 
   /** A feed holding a real world, so "the world is left alone" is a statement about something. */
   function feedWithWorld(): { client: FakeClient; feed: SimulationSnapshotFeed; errors: Error[] } {
@@ -679,7 +691,7 @@ describe('the render delta channel feeds the actors', () => {
     const revision = feed.readFrame(0.2).revision;
     expect(revision).toBe(1);
 
-    for (let tick = 2; tick <= 12; tick += 1) client.emit(delta(tick, [{ ...RECORD, tileX: tick }]));
+    for (let tick = 2; tick <= 12; tick += 1) client.emit(delta(tick, [{ ...RECORD, subX: tick * SUB }]));
 
     const after = feed.readFrame(0.3);
     expect(after.revision).toBe(revision);
@@ -703,14 +715,14 @@ describe('the render delta channel feeds the actors', () => {
 
   it('discards a coalesced or reordered publication instead of moving actors backwards', () => {
     const { client, feed } = feedWithWorld();
-    client.emit(delta(9, [{ ...RECORD, tileX: 9 }]));
+    client.emit(delta(9, [{ ...RECORD, subX: 9 * SUB }]));
     expect(feed.readFrame(0.2).actors[0]!.tileX).toBe(9);
 
-    client.emit(delta(5, [{ ...RECORD, tileX: 5 }]));
-    client.emit(delta(9, [{ ...RECORD, tileX: 99 }]));
+    client.emit(delta(5, [{ ...RECORD, subX: 5 * SUB }]));
+    client.emit(delta(9, [{ ...RECORD, subX: 99 * SUB }]));
     expect(feed.readFrame(0.3).actors[0]!.tileX).toBe(9);
 
-    client.emit(delta(10, [{ ...RECORD, tileX: 10 }]));
+    client.emit(delta(10, [{ ...RECORD, subX: 10 * SUB }]));
     expect(feed.readFrame(0.4).actors[0]!.tileX).toBe(10);
   });
 
@@ -719,25 +731,25 @@ describe('the render delta channel feeds the actors', () => {
     // is the reason `simulation/ready` clears what the feed last drew. Without
     // it the second session's actors would be discarded as stale.
     const { client, feed } = feedWithWorld();
-    client.emit(delta(9, [{ ...RECORD, tileX: 9 }]));
+    client.emit(delta(9, [{ ...RECORD, subX: 9 * SUB }]));
     expect(feed.readFrame(0.2).actors[0]!.tileX).toBe(9);
 
     client.emit(ready('running'));
-    client.emit(delta(2, [{ ...RECORD, tileX: 2 }]));
+    client.emit(delta(2, [{ ...RECORD, subX: 2 * SUB }]));
     expect(feed.readFrame(0.3).actors[0]!.tileX).toBe(2);
   });
 
   it('keeps the actors it has when a payload is one it cannot read', () => {
     const cases: readonly [string, WorkerToMainMessage, RegExp][] = [
       ['a schema id from another read model', delta(6, [RECORD], { schemaId: 'lockstate.something-else' }), /understands "lockstate.render-actors"/],
-      ['a payload version this build does not know', delta(6, [RECORD], { schemaVersion: 2 }), /v2/],
-      ['a header version this build does not know', delta(6, [RECORD], { layoutVersion: 2 }), /layout 2/],
-      ['a changed-only message, which slice 1 cannot apply', delta(6, [RECORD], { flags: 0 }), /keyframes only/],
+      ['a payload version this build does not know', delta(6, [RECORD], { schemaVersion: 3 }), /v3/],
+      ['a header version this build does not know', delta(6, [RECORD], { layoutVersion: 3 }), /layout 3/],
+      ['a changed-only message, which this receiver cannot apply', delta(6, [RECORD], { flags: 0 }), /keyframes only/],
     ];
 
     for (const [why, message, expected] of cases) {
       const { client, feed, errors } = feedWithWorld();
-      client.emit(delta(4, [{ ...RECORD, tileX: 4 }]));
+      client.emit(delta(4, [{ ...RECORD, subX: 4 * SUB }]));
       expect(feed.readFrame(0.2).actors[0]!.tileX, why).toBe(4);
 
       client.emit(message);
@@ -750,12 +762,55 @@ describe('the render delta channel feeds the actors', () => {
   it('reports a body whose length contradicts its own header rather than drawing a phantom', () => {
     const { client, feed, errors } = feedWithWorld();
     const truncated = delta(6, [RECORD]) as { payload: { delta: { data: ArrayBuffer; byteLength: number } } };
-    truncated.payload.delta.data = truncated.payload.delta.data.slice(0, 24);
-    truncated.payload.delta.byteLength = 24;
+    truncated.payload.delta.data = truncated.payload.delta.data.slice(0, 28);
+    truncated.payload.delta.byteLength = 28;
 
     client.emit(truncated as unknown as WorkerToMainMessage);
     expect(feed.readFrame(0.3).actors).toEqual([]);
-    expect(errors.at(-1)?.message).toMatch(/must be 32 bytes, got 24/);
+    expect(errors.at(-1)?.message).toMatch(/must be 36 bytes, got 28/);
+  });
+
+  it('moves a walking actor between publications, from where it was published', () => {
+    /*
+     * **The other half of #414's "actors teleport", and the half that is this
+     * side of the worker boundary.** ADR 0059 gives an actor a velocity; the
+     * worker publishes on a 100 ms ceiling; the scene draws every frame. Left
+     * alone, a prisoner walking at five tiles a second would move in half-tile
+     * steps ten times a second. `readFrame` advances the published position by
+     * the published velocity instead -- bounded, corrected by the next
+     * publication, and feeding nothing (`actor-extrapolation.ts` argues why
+     * that is not the renderer-side movement model `AGENTS.md` boundary 1
+     * forbids).
+     */
+    const { client, feed } = feedWithWorld();
+    // Five tiles a second east, published standing on tile 5.
+    client.emit(delta(4, [{ ...RECORD, subX: 5 * SUB, velocitySubX: 5 * SUB, packedFields: 0b0110 << 8 }]));
+
+    // The first frame after a publication is when it is "sampled": a message
+    // handler has no presentation clock, so the frame loop supplies one.
+    expect(feed.readFrame(1).actors[0]!.tileX).toBe(5);
+    expect(feed.readFrame(1.05).actors[0]!.tileX).toBeCloseTo(5.25, 10);
+    expect(feed.readFrame(1.1).actors[0]!.tileX).toBeCloseTo(5.5, 10);
+
+    // The next publication is the correction, and it resets the base: the
+    // renderer never accumulates its own idea of where an actor is.
+    client.emit(delta(6, [{ ...RECORD, subX: 6 * SUB, velocitySubX: 5 * SUB, packedFields: 0b0110 << 8 }]));
+    expect(feed.readFrame(1.2).actors[0]!.tileX).toBe(6);
+    expect(feed.readFrame(1.25).actors[0]!.tileX).toBeCloseTo(6.25, 10);
+  });
+
+  it('stops advancing actors the moment the clock pauses, rather than sliding them on', () => {
+    // A paused worker publishes nothing -- the publication is skipped on an
+    // unmoved tick -- so the last velocity it sent would otherwise carry every
+    // walking actor a quarter of a second past the pause.
+    const { client, feed } = feedWithWorld();
+    client.emit(delta(4, [{ ...RECORD, subX: 5 * SUB, velocitySubX: 5 * SUB, packedFields: 0b0110 << 8 }]));
+    expect(feed.readFrame(1).actors[0]!.tileX).toBe(5);
+    expect(feed.readFrame(1.05).actors[0]!.tileX).toBeCloseTo(5.25, 10);
+
+    client.emit(clockState(4, 'paused'));
+    expect(feed.readFrame(1.1).actors[0]!.tileX).toBe(5);
+    expect(feed.readFrame(2).actors[0]!.tileX).toBe(5);
   });
 
   it('lets a later snapshot correct the actors, since the poll is still a consistency net', () => {

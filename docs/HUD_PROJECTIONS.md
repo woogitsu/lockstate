@@ -155,9 +155,18 @@ answers it by the record width instead of by `offset`/`limit`:
   decoding the whole message measures 0.0049 ms at 500 actors and 0.0051 ms at
   5,000 (`docs/RENDERING.md` carries the table). A paged JSON reply is bounded
   at 500 rows; this is bounded at one comparison.
-- The **payload** is 16 bytes an actor: 8,016 bytes at 500 and 80,016 at 5,000,
-  against 596,659 for the session bundle the renderer used to poll for the same
-  three fields.
+- The **payload** is 20 bytes an actor: 10,016 bytes at 500 and 100,016 at
+  5,000, against 596,659 for the session bundle the renderer used to poll for
+  the same fields.
+
+  > **16 bytes, 8,016 and 80,016 until
+  > [ADR 0059](./adr/0059-how-an-actor-gets-from-one-tile-to-the-next.md)**,
+  > which made actors walk and gave the record a sub-tile position, a velocity
+  > and a heading to carry — one word more each. The argument the figure is
+  > here to support is unchanged and is why the correction is a number rather
+  > than a rewrite: an order of magnitude under the bundle it replaced, and the
+  > boundary cost beside it is still flat, because a longer buffer is still a
+  > buffer nothing walks.
 - A **window would be wrong here** in a way it is not for a roster. The receiver
   draws every actor it is told about and culls by camera range; a worker-chosen
   page would be exactly the truncation-the-UI-cannot-scroll this contract
@@ -165,7 +174,10 @@ answers it by the record width instead of by `offset`/`limit`:
   know which actors it is missing, which is the base-tick problem in a worse
   place. ADR 0040's answer is the keyframe interval and, in a later slice,
   changed-only records — bounding what is *sent*, rather than bounding what is
-  *asked for*.
+  *asked for*. ADR 0059 makes that later slice worth less than it looked:
+  a walking actor changes its position every tick, so under locomotion the
+  changed set at any moment is every actor in transit rather than the handful
+  of arrivals ADR 0040 priced it against.
 
 So the rule stands as written for anything carrying rows of view-model objects,
 and this is the recorded exception with the property that replaces it: a payload
@@ -1068,9 +1080,16 @@ decision about what to build next.
     incidents only; history is reachable solely through `all()`, which
     materialises every incident ever recorded. An incident-history panel is
     `O(all)` per projection and unbounded over a long session.
-29. **`assault` and `escape-attempt` are declared but never triggered.**
-    `IncidentTriggerSystem` opens only `riot` and `gang-retaliation`, so
-    two of the four incident types are permanently absent from any panel.
+29. **~~`assault` and `escape-attempt` are declared but never triggered.~~
+    Closed by [ADR 0061](./adr/0061-what-the-prison-produces-on-its-own.md).**
+    `IncidentTriggerSystem` opened only `riot` and `gang-retaliation`, so two
+    of the four types were permanently absent from every panel. Both now have
+    producers reading real prisoner state, `gang-retaliation` is the one member
+    of the union left without one, and the labels these rows need were already
+    in `simulation-message-keys.ts` waiting for them. **What is not closed is
+    the gap one layer up**, and ADR 0061 open question 2 records it beside
+    ADR 0057's: nothing on screen says *which* prisoners are in an incident, so
+    a player sees that an assault happened and not to whom.
 30. **No incident-to-responder linkage in the record.**
     `IncidentResponseSystem` keeps response bookkeeping private and drops
     it on restore, so a panel cannot show who is responding.

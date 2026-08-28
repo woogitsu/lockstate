@@ -312,6 +312,18 @@ describe('kernel system ordering', () => {
    * `tests/integration/sentence-end-release.test.ts` runs past a sentence end
    * and watches a prisoner leave.
    *
+   * **The fifth is `prisoners.locomotion` (order 200), and it is the first
+   * one in this list that changes what the recorded scenarios produce.** ADR
+   * 0059 puts a walk between a resolved route and the arrival that used to be
+   * applied in the same statement, so a prisoner reaches a room a route-length
+   * of ticks later than they did and every downstream figure that depends on
+   * *when* an action started moves with it. That is the decision rather than a
+   * side effect of the registration, and it is why this system was not simply
+   * appended into a free order slot and left unmentioned: 200 sits after
+   * `navigation` (150), which produces the routes, and before
+   * `prisoners.actions` (250), which asks whether a walk has finished, so a
+   * walk that ends on tick *n* is acted on at tick *n*.
+   *
    * The retirement the sentence above requires was looked for and **there is
    * nothing in this repository to retire**, which is worth recording so the
    * next person does not go hunting for a list that does not exist:
@@ -340,6 +352,7 @@ describe('kernel system ordering', () => {
       { id: 'economy.state-income', order: 120 },
       { id: 'economy.payroll', order: 130 },
       { id: 'navigation', order: 150 },
+      { id: 'prisoners.locomotion', order: 200 },
       { id: 'prisoners.actions', order: 250 },
       { id: 'operations.jobs', order: 260 },
       { id: 'contraband.intelligence', order: 265 },

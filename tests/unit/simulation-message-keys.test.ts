@@ -231,6 +231,12 @@ const UNLABELLED: readonly { readonly sourceFile: string; readonly declaration: 
     reason:
       'Metadata of the labelling mechanism itself -- how a declaration is written in source. It describes the table, it is not a value the simulation projects.',
   },
+  {
+    sourceFile: 'src/simulation/locomotion/locomotion.ts',
+    declaration: 'HeadingComponent',
+    reason:
+      "The sign of one axis of a walking actor's heading -- `-1`, `0` or `1` (ADR 0059). Exempt for the reason `ObjectOrientation` is: it is arithmetic rather than a vocabulary. Nothing labels it and nothing could: it is multiplied by a sub-tile offset to place an actor and packed into two nibbles of the render payload's fields word, where `src/rendering/feed/actors-from-delta.ts` hands it straight to `directionFromMovement` to choose an authored sprite direction. The eight *directions* that lookup produces are art in `assets/contracts/character-8-direction.contract.json`, not text, and a panel that ever states which way somebody is facing would be a HUD string with its own key rather than a caption for the number -1.",
+  },
   // `src/content/validate-catalog.ts::EnumIdExtractionFailure` was exempted
   // here until #307. It is not a new omission: the declaration left the
   // scanned roots with the rest of the source-scanning rules, so an exemption
