@@ -281,9 +281,10 @@ worktree and on this branch, one prisoner, ten in-game days, real commands:
   (ADR 0042 decision 1's correction of #440's out-of-scope note).
 - **`docs/PRISONER_OPERATIONS.md` and `src/simulation/construction/definition.ts`**
   each described the state this changes and are corrected in the same commit, in
-  both directions. #440'''s *Documentation impact* also names `docs/SIMULATION.md`,
-  which does not exist in this tree -- `docs/PRISONER_OPERATIONS.md` is where the
-  action catalogue and the regime schedules are documented.
+  both directions. #440's *Documentation impact* also names a simulation
+  overview document under `docs/` that has never existed in this tree, so the
+  action catalogue and the regime schedules are documented in
+  `docs/PRISONER_OPERATIONS.md` and nowhere else.
 
 ## What would change my mind
 
